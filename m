@@ -1,71 +1,71 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5ADF9FF885A
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  4 May 2026 11:01:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3DB51CD3436
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  4 May 2026 11:01:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 372618451E;
-	Mon,  4 May 2026 11:01:07 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id B6vkMoqK-Nri; Mon,  4 May 2026 11:01:06 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9A11484520
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1777892466;
-	bh=CejRnIOSXG7TH6lOmpRYm3VtCiFL2GlkRfG+lsH49MA=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=n+ekkMpGIx4e6f6gv8IkGbywHBuMq5DT6ASKdi36M8MzLTEuQhRfVi9hxuUstJwYV
-	 hShceXm+K8GrPgO6UntUey60yxk3eoVWwRlkhuDtOk7BLrC+oXA34mvYY/x3zPoHAe
-	 3WUhkXWVo5HKS/pNDRWINl+v6rsLc8Blb4DhroNrBO4T+9wS2WSp55Pjjg99w96WNv
-	 cSaA569LPQY749Su3522YncrxNAoOAAZb1OCVZTDO3q/NhsLnSAov1RTW/Y8XSLTPo
-	 dAdCfNs1Jai8a1tSGZHRo/hwLNwrnxJ3CmfEQ4Mj7Be7HSs/hWK5+TwEomdYL8I6fB
-	 CddEC8GOWiSdQ==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 9A11484520;
-	Mon,  4 May 2026 11:01:06 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 22164190
- for <intel-wired-lan@lists.osuosl.org>; Mon,  4 May 2026 11:01:04 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 0C3B06139D
- for <intel-wired-lan@lists.osuosl.org>; Mon,  4 May 2026 11:01:03 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id B4DC2613A7;
+	Mon,  4 May 2026 11:01:04 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ZAz9AzadZv7C for <intel-wired-lan@lists.osuosl.org>;
+ id kByjk3SCk0-W; Mon,  4 May 2026 11:01:04 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org F2FD8613A2
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1777892464;
+	bh=xU6G4CL5FryQEFtASw6G5N38AVNdaeBHYMj8xWF4ImI=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=EAjvnRHFu300rNeqgwNA2PdrTVBzH8oaha8iIfNDowgKuAb5ww+iRpUq6SAwtwIFK
+	 ZfpyorZRoZx/6o/ZGxNO52B/Tpc2IKBS1aFEkBwzi5CrlEd6ZRLcBHDpIbZibqyoHC
+	 KG87iHtxmfcKsEOs/atqjpOzgp9tCmnWWlUv/tIywvEEJhn8HbJ/FTYqvI7xQhDC1p
+	 pM0tX9Cd/i+i20Kpgxfh5EgVH4tjIpEkAU+7TKbwjm3pnn9Un/vhclb+PrEHf7SRNH
+	 1ij7i/puxbdYUDOxfIxdkSplFz+pSqHLIrMK1j/hpOonz9L4iiucq4XbFLlJz8nRJP
+	 LG9HITpx+Qwlw==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp3.osuosl.org (Postfix) with ESMTP id F2FD8613A2;
+	Mon,  4 May 2026 11:01:03 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 2651325D
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  4 May 2026 11:01:03 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id B9ED16139E
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  4 May 2026 11:01:02 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id z5VSZREJQ-HF for <intel-wired-lan@lists.osuosl.org>;
  Mon,  4 May 2026 11:01:02 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.16;
  helo=mgamail.intel.com; envelope-from=sergey.temerkhanov@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 6821D6139A
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6821D6139A
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org E485A6139D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E485A6139D
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 6821D6139A
- for <intel-wired-lan@lists.osuosl.org>; Mon,  4 May 2026 11:01:02 +0000 (UTC)
-X-CSE-ConnectionGUID: 79LRunjCSD2U9ZLy9o0CjQ==
-X-CSE-MsgGUID: iv4QTy+JQz2vi0cMwd740Q==
-X-IronPort-AV: E=McAfee;i="6800,10657,11775"; a="78939690"
-X-IronPort-AV: E=Sophos;i="6.23,215,1770624000"; d="scan'208";a="78939690"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id E485A6139D
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  4 May 2026 11:01:01 +0000 (UTC)
+X-CSE-ConnectionGUID: h5U2U/qjT4SfEKqSOp8i9g==
+X-CSE-MsgGUID: 98LSDLojTfiZxNW9PgOJPg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11775"; a="78939688"
+X-IronPort-AV: E=Sophos;i="6.23,215,1770624000"; d="scan'208";a="78939688"
 Received: from orviesa004.jf.intel.com ([10.64.159.144])
  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 04 May 2026 04:01:03 -0700
-X-CSE-ConnectionGUID: 1Jr09M9ZRjCWXsJ9erLfmQ==
-X-CSE-MsgGUID: X24t4QpYRCS3srp9wepcXQ==
+ 04 May 2026 04:01:01 -0700
+X-CSE-ConnectionGUID: WMMoLf2JTLuabZf8IU3r2A==
+X-CSE-MsgGUID: jvxMW35rQFG9iHa99BxgTA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,215,1770624000"; d="scan'208";a="239792124"
+X-IronPort-AV: E=Sophos;i="6.23,215,1770624000"; d="scan'208";a="239792120"
 Received: from gnrd8.igk.intel.com (HELO GNRD8) ([10.123.232.137])
- by orviesa004.jf.intel.com with ESMTP; 04 May 2026 04:01:01 -0700
+ by orviesa004.jf.intel.com with ESMTP; 04 May 2026 04:01:00 -0700
 From: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Mon,  4 May 2026 11:00:58 +0000
-Message-ID: <20260504110058.2373236-4-sergey.temerkhanov@intel.com>
+Date: Mon,  4 May 2026 11:00:56 +0000
+Message-ID: <20260504110058.2373236-2-sergey.temerkhanov@intel.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260504110058.2373236-1-sergey.temerkhanov@intel.com>
 References: <20260504110058.2373236-1-sergey.temerkhanov@intel.com>
@@ -73,25 +73,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1777892463; x=1809428463;
+ t=1777892462; x=1809428462;
  h=from:to:subject:date:message-id:in-reply-to:references:
  mime-version:content-transfer-encoding;
- bh=NYS+R40mOjYf6fmrJkydT5fr4ckbVWfdyHgaoqz5wAk=;
- b=hvco6sQHC/4mnw+3P6+DjZqbtH660IjkDVnB6cUHV1joM/gVzGELnAf0
- sKUqKuWm45MtnvIdfxGhaMGRMzQ8YKt6dMnQYK4FGCkZCMAUMK4mJ+dv/
- fX/3nxUqE25n0o3u9H2z4eyK0pZTKP5n7Q4R8h3S9iPqM1If4uRrJyfJ7
- VQD0TDwEs9ksOjYJjN8BSMf+/h3rkOkg0talv4uDC+AM/ZdeUMoDo/C6H
- +BnNYAkPBYkmESV8kkTqBUhw6Sc6+nZlIjiFXmn8ivHoLhs9FTZMQoXs1
- ++X1Mai9j4qR4sUA2nLyso+LA0J5I4X8geom4WXkgIubuCtxG+rX69jw8
- w==;
+ bh=3HvNmG7dbNqnno6mkc2eSWFyvfL5QznVo63SIYp0HBs=;
+ b=IJGFbAbdKPkFE25e7yqq4pi2rkkKA4OYu8Yhbyua8VaokxPJLX9o6TPs
+ sChn8VK1WL9L4W1TdP1iSyR6TAYgHFbxm8iyeVaR7S6isqMyybsqMWAIM
+ qSBlgeQE3Oap1O3FSyXlmgnO4vGYllRQAN6o6mFXtvxN2Oio2UlsuSc/S
+ w61EjkZ3Q2EiJyC5aSxAtFwYkLTxbXhOXcomrhK8agCfD+aA3zHRELSOd
+ cACHMFMr4VBXxNlPhGTIWg/HGcZQJKnsCQn5mQNEqxCqI1cdBJX3u8CS8
+ tlR4/Sc4zy3zj7IxkUO29uXhTkxxPNuaqNMKjF1XnUiTfj/wMF+RDXdrN
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=hvco6sQH
-Subject: [Intel-wired-lan] [PATCH iwl-net v1 3/3] ice: Cache struct ice_hw
- pointer for split register reads
+ header.a=rsa-sha256 header.s=Intel header.b=IJGFbAbd
+Subject: [Intel-wired-lan] [PATCH iwl-net v1 1/3] ice: Convert ctrl_pf
+ pointer in struct ice_adapter to RCU
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -107,71 +107,220 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Cache the primary ice_hw pointer to ensure consistency between
-calls (both parts of a value will be read from the same NAC).
-ice_get_primary_hw() will never return NULL, but during the
-ctrl_pf cleanup there may be a case when one call will return
-the pointer to the ctrl_pf->hw and the subsequent one - to the
-pf->hw which generally are not the same.
-Struct ice_hw is embedded in the struct ice_pf so it is protected
-by the same critical section - no additional synchronization is
-needed.
+Use RCU to ensure the consistent state of the control PF global
+pointer contained in struct ice_adapter. Enforce RCU usage on
+the callers.
+
+Fix a potential invalid pointer return due a TOCTOU issue
 
 Fixes: e2193f9f9ec9 ("ice: enable timesync operation on 2xNAC E825 devices")
 
 Signed-off-by: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 Reviewed-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 17 +++++++++++++----
- 1 file changed, 13 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/ice/ice.h         | 10 +++-
+ drivers/net/ethernet/intel/ice/ice_adapter.h |  2 +-
+ drivers/net/ethernet/intel/ice/ice_ptp.c     | 49 ++++++++++++++++----
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c  |  9 ++++
+ 4 files changed, 59 insertions(+), 11 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index 804f5aa8e9f5..2b2787d16c33 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -40,6 +40,7 @@
+ #include <linux/cpu_rmap.h>
+ #include <linux/dim.h>
+ #include <linux/gnss.h>
++#include <linux/rcupdate.h>
+ #include <net/pkt_cls.h>
+ #include <net/pkt_sched.h>
+ #include <net/tc_act/tc_mirred.h>
+@@ -1145,14 +1146,19 @@ static inline bool ice_pf_src_tmr_owned(struct ice_pf *pf)
+  * ice_get_primary_hw - Get pointer to primary ice_hw structure
+  * @pf: pointer to PF structure
+  *
++ * The function must be called from an RCU read-side critical section.
++ * hw is embedded in struct ice_pf, so it is protected by the RCU.
++ *
+  * Return: A pointer to ice_hw structure with access to timesync
+  * register space.
+  */
+ static inline struct ice_hw *ice_get_primary_hw(struct ice_pf *pf)
+ {
+-	if (!pf->adapter->ctrl_pf)
++	struct ice_pf *ctrl_pf = rcu_dereference(pf->adapter->ctrl_pf);
++
++	if (!ctrl_pf)
+ 		return &pf->hw;
+ 	else
+-		return &pf->adapter->ctrl_pf->hw;
++		return &ctrl_pf->hw;
+ }
+ #endif /* _ICE_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_adapter.h b/drivers/net/ethernet/intel/ice/ice_adapter.h
+index e95266c7f20b..349d49d57f11 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adapter.h
++++ b/drivers/net/ethernet/intel/ice/ice_adapter.h
+@@ -42,7 +42,7 @@ struct ice_adapter {
+ 	/* For access to GLCOMM_QTX_CNTX_CTL register */
+ 	spinlock_t txq_ctx_lock;
+ 
+-	struct ice_pf *ctrl_pf;
++	struct ice_pf __rcu *ctrl_pf;
+ 	struct ice_port_list ports;
+ 	u64 index;
+ };
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
+index 36e2223c37b8..1114a862c27b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+@@ -4,6 +4,7 @@
+ #include "ice.h"
+ #include "ice_lib.h"
+ #include "ice_trace.h"
++#include <linux/rcupdate.h>
+ 
+ static const char ice_pin_names[][64] = {
+ 	"SDP0",
+@@ -54,11 +55,35 @@ static const struct ice_ptp_pin_desc ice_pin_desc_dpll[] = {
+ 	{  SDP3, {  3, -1 }, { 0, 0 }},
+ };
+ 
++/**
++ * ice_get_ctrl_pf - Get the control PF for a given PF
++ * @pf: The PF pointer to look up at
++ *
++ * The control PF is the PF which owns the PTP clock for the adapter.
++ * Only the control PF is allowed to perform certain operations on the
++ * PTP clock such as adjusting the time or configuring the pins.
++ *
++ * This function must be called from an RCU read-side critical section.
++ *
++ * Return: Pointer to the control PF, or NULL if not found
++ */
+ static struct ice_pf *ice_get_ctrl_pf(struct ice_pf *pf)
+ {
+-	return !pf->adapter ? NULL : pf->adapter->ctrl_pf;
++	return !pf->adapter ? NULL : rcu_dereference(pf->adapter->ctrl_pf);
+ }
+ 
++/**
++ * ice_get_ctrl_ptp - Get the PTP structure for the control PF
++ * @pf: The PF pointer to look up at
++ *
++ * The control PF is the PF which owns the PTP clock for the adapter.
++ * Only the control PF is allowed to perform certain operations on the
++ * PTP clock such as adjusting the time or configuring the pins.
++ *
++ * This function must be called from an RCU read-side critical section.
++ *
++ * Return: Pointer to the PTP structure of the control PF, or NULL if not found
++ */
+ static struct ice_ptp *ice_get_ctrl_ptp(struct ice_pf *pf)
+ {
+ 	struct ice_pf *ctrl_pf = ice_get_ctrl_pf(pf);
+@@ -207,6 +232,8 @@ u64 ice_ptp_read_src_clk_reg(struct ice_pf *pf,
+ 	u32 hi, lo, lo2;
+ 	u8 tmr_idx;
+ 
++	guard(rcu)();
++
+ 	if (!ice_is_primary(hw))
+ 		hw = ice_get_primary_hw(pf);
+ 
+@@ -3074,18 +3101,19 @@ void ice_ptp_rebuild(struct ice_pf *pf, enum ice_reset_req reset_type)
+ 
+ static void ice_ptp_setup_adapter(struct ice_pf *pf)
+ {
+-	pf->adapter->ctrl_pf = pf;
++	rcu_assign_pointer(pf->adapter->ctrl_pf, pf);
+ }
+ 
+ static int ice_ptp_setup_pf(struct ice_pf *pf)
+ {
+-	struct ice_ptp *ctrl_ptp = ice_get_ctrl_ptp(pf);
+ 	struct ice_ptp *ptp = &pf->ptp;
+ 
+-	if (!ctrl_ptp) {
+-		dev_info(ice_pf_to_dev(pf),
+-			 "PTP unavailable: no controlling PF\n");
+-		return -EOPNOTSUPP;
++	scoped_guard(rcu) {
++		if (!ice_get_ctrl_ptp(pf)) {
++			dev_info(ice_pf_to_dev(pf),
++				 "PTP unavailable: no controlling PF\n");
++			return -EOPNOTSUPP;
++		}
+ 	}
+ 
+ 	if (pf->hw.mac_type == ICE_MAC_UNKNOWN)
+@@ -3121,11 +3149,16 @@ static void ice_ptp_cleanup_pf(struct ice_pf *pf)
+  */
+ int ice_ptp_clock_index(struct ice_pf *pf)
+ {
+-	struct ice_ptp *ctrl_ptp = ice_get_ctrl_ptp(pf);
++	struct ice_ptp *ctrl_ptp;
+ 	struct ptp_clock *clock;
+ 
++	guard(rcu)();
++
++	ctrl_ptp = ice_get_ctrl_ptp(pf);
++
+ 	if (!ctrl_ptp)
+ 		return -1;
++
+ 	clock = ctrl_ptp->clock;
+ 
+ 	return clock ? ptp_clock_index(clock) : -1;
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-index 892bcc50e82f..95238224b59a 100644
+index a1ec5d617aa0..892bcc50e82f 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-@@ -4,6 +4,7 @@
- #include <linux/cleanup.h>
+@@ -1,6 +1,7 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /* Copyright (C) 2021, Intel Corporation. */
+ 
++#include <linux/cleanup.h>
  #include <linux/delay.h>
  #include <linux/iopoll.h>
-+#include "ice.h"
  #include "ice_common.h"
- #include "ice_ptp_hw.h"
- #include "ice_ptp_consts.h"
-@@ -1988,10 +1989,14 @@ static int ice_read_phy_and_phc_time_eth56g(struct ice_hw *hw, u8 port,
+@@ -351,6 +352,8 @@ void ice_ptp_src_cmd(struct ice_hw *hw, enum ice_ptp_tmr_cmd cmd)
+ 	struct ice_pf *pf = container_of(hw, struct ice_pf, hw);
+ 	u32 cmd_val = ice_ptp_tmr_cmd_to_src_reg(hw, cmd);
+ 
++	guard(rcu)();
++
+ 	if (!ice_is_primary(hw))
+ 		hw = ice_get_primary_hw(pf);
+ 
+@@ -369,6 +372,8 @@ static void ice_ptp_exec_tmr_cmd(struct ice_hw *hw)
+ {
+ 	struct ice_pf *pf = container_of(hw, struct ice_pf, hw);
+ 
++	guard(rcu)();
++
+ 	if (!ice_is_primary(hw))
+ 		hw = ice_get_primary_hw(pf);
+ 
+@@ -1983,6 +1988,8 @@ static int ice_read_phy_and_phc_time_eth56g(struct ice_hw *hw, u8 port,
  		zo = rd32(hw, GLTSYN_SHTIME_0(tmr_idx));
  		lo = rd32(hw, GLTSYN_SHTIME_L(tmr_idx));
  	} else {
-+		struct ice_hw *pri_hw;
++		guard(rcu)();
 +
- 		guard(rcu)();
- 
--		zo = rd32(ice_get_primary_hw(pf), GLTSYN_SHTIME_0(tmr_idx));
--		lo = rd32(ice_get_primary_hw(pf), GLTSYN_SHTIME_L(tmr_idx));
-+		pri_hw = ice_get_primary_hw(pf);
-+
-+		zo = rd32(pri_hw, GLTSYN_SHTIME_0(tmr_idx));
-+		lo = rd32(pri_hw, GLTSYN_SHTIME_L(tmr_idx));
+ 		zo = rd32(ice_get_primary_hw(pf), GLTSYN_SHTIME_0(tmr_idx));
+ 		lo = rd32(ice_get_primary_hw(pf), GLTSYN_SHTIME_L(tmr_idx));
  	}
- 	*phc_time = (u64)lo << 32 | zo;
- 
-@@ -2159,10 +2164,14 @@ int ice_start_phy_timer_eth56g(struct ice_hw *hw, u8 port)
+@@ -2152,6 +2159,8 @@ int ice_start_phy_timer_eth56g(struct ice_hw *hw, u8 port)
  		lo = rd32(hw, GLTSYN_INCVAL_L(tmr_idx));
  		hi = rd32(hw, GLTSYN_INCVAL_H(tmr_idx));
  	} else {
-+		struct ice_hw *pri_hw;
++		guard(rcu)();
 +
- 		guard(rcu)();
- 
--		lo = rd32(ice_get_primary_hw(pf), GLTSYN_INCVAL_L(tmr_idx));
--		hi = rd32(ice_get_primary_hw(pf), GLTSYN_INCVAL_H(tmr_idx));
-+		pri_hw = ice_get_primary_hw(pf);
-+
-+		lo = rd32(pri_hw, GLTSYN_INCVAL_L(tmr_idx));
-+		hi = rd32(pri_hw, GLTSYN_INCVAL_H(tmr_idx));
+ 		lo = rd32(ice_get_primary_hw(pf), GLTSYN_INCVAL_L(tmr_idx));
+ 		hi = rd32(ice_get_primary_hw(pf), GLTSYN_INCVAL_H(tmr_idx));
  	}
- 	incval = (u64)hi << 32 | lo;
- 
 -- 
 2.53.0
 
