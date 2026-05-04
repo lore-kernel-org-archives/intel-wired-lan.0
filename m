@@ -1,74 +1,73 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7E7BCD343B
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  4 May 2026 14:25:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 782C6FF885A
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  4 May 2026 14:25:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 7799961369;
-	Mon,  4 May 2026 14:25:03 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 430BE81D4F;
+	Mon,  4 May 2026 14:25:06 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id fuRhsFI6yrM6; Mon,  4 May 2026 14:25:02 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id cLsUCujuJmJW; Mon,  4 May 2026 14:25:04 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9E6DA6134C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2707C81F95
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1777904702;
-	bh=4rrshrAI/Nio1RLjF9wiUSrePYKLX1Xdx5pgr8Ux1yQ=;
+	s=default; t=1777904704;
+	bh=jNGxF2l+R9CnVMp6l4YalRL/JZPvQonlHrBei6o9HUg=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=JG6s8Rg/GF2Bas2V3rCtKzWCFuB6ElVCx9DD8ApqJzdFyubPTBMDwEQJxtO9Y/TfG
-	 a0RdoFglP8RUgRbEgGkL48zu8fZDeooW0+a9fYvt9waRhrnkr8FAXIRhvs/vMlAbU6
-	 Vu2YUEc2gWXi+juiudvR/UfZLNuW9J6CAmK5uXH1znilNeUngLcjI9QkJ0vn3hN2Kc
-	 6jE0Nyi98+kocaSB2jziLm9V24ClMNmq2Av0sUMveAxsVtkxu7XUjLqT0h1XZ3V6Pf
-	 nGfR6JdehUZ0CsHiRPlFjyZIpo/N8JzCEyaHNbRoxdX6C41SsoRrHcHOjocuMoMuJT
-	 +eMPpYZV6tr2A==
+	b=v9qsOx0OdwpI5RcKJvEFt8FS2goC/A5B6qmY7m18xKPI5UFM9vWUOeO8j+QNhPzD+
+	 EkqD8qziYuQ1dctPcnF1AZGnsX8BjGoM7jJp6CWrjK6RGpHNodeGwJG5KYLtMZKcDH
+	 ieXlxp5jIiFFyVAjz9i2jZxR8RbFDRQddwQxpjORaFIJB/TQHwKwr5aPRHIG4TYmLC
+	 +xS7j0XrWUnXgPuIez6Hc8aa10+r86F7AXleAsKcGtrhHI9RbC4If/yqRgTHJC/wIC
+	 JlE2IKveglHYWrBCbK9o0YKX2ZRY05z8e4dq9MnmkKy47j9QY7Zq8wYI3roMQc3dWA
+	 tTy71dY6W6xnw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 9E6DA6134C;
-	Mon,  4 May 2026 14:25:02 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 2707C81F95;
+	Mon,  4 May 2026 14:25:04 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 458B3204
- for <intel-wired-lan@lists.osuosl.org>; Mon,  4 May 2026 14:25:01 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 56728204
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  4 May 2026 14:25:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 2C14940CED
- for <intel-wired-lan@lists.osuosl.org>; Mon,  4 May 2026 14:25:01 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 48C9340CFE
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  4 May 2026 14:25:02 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id C1LpGuxpXf3B for <intel-wired-lan@lists.osuosl.org>;
- Mon,  4 May 2026 14:25:00 +0000 (UTC)
+ id yK6gm53CYIYv for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  4 May 2026 14:25:01 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.19;
  helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 15925408D7
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 15925408D7
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 75669408D7
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 75669408D7
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 15925408D7
- for <intel-wired-lan@lists.osuosl.org>; Mon,  4 May 2026 14:25:00 +0000 (UTC)
-X-CSE-ConnectionGUID: beeKQynaSzOrpRjGz1vwFw==
-X-CSE-MsgGUID: Sd9CJZFeQWSGeqLQ6U1n9g==
-X-IronPort-AV: E=McAfee;i="6800,10657,11776"; a="78691614"
-X-IronPort-AV: E=Sophos;i="6.23,215,1770624000"; d="scan'208";a="78691614"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 75669408D7
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  4 May 2026 14:25:01 +0000 (UTC)
+X-CSE-ConnectionGUID: Kvzmcnl1TNmDJO9cmjgzXw==
+X-CSE-MsgGUID: 6xrZD4qSTciAKkkN3Zw4jg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11776"; a="78691617"
+X-IronPort-AV: E=Sophos;i="6.23,215,1770624000"; d="scan'208";a="78691617"
 Received: from fmviesa006.fm.intel.com ([10.60.135.146])
  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 04 May 2026 07:25:00 -0700
-X-CSE-ConnectionGUID: ks4DLOgaQMSQv20nfR1PWQ==
-X-CSE-MsgGUID: I2mMo+LkQIK8LkynDeGVOA==
+ 04 May 2026 07:25:02 -0700
+X-CSE-ConnectionGUID: D9l56hhRQ/254amepnlPYQ==
+X-CSE-MsgGUID: YJgxcTBSSxiDAfkMUbKdjg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,215,1770624000"; d="scan'208";a="230935408"
+X-IronPort-AV: E=Sophos;i="6.23,215,1770624000"; d="scan'208";a="230935411"
 Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by fmviesa006.fm.intel.com with ESMTP; 04 May 2026 07:24:58 -0700
+ by fmviesa006.fm.intel.com with ESMTP; 04 May 2026 07:25:00 -0700
 From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 To: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
  aleksandr.loktionov@intel.com
-Cc: netdev@vger.kernel.org,
- Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-Date: Mon,  4 May 2026 16:24:50 +0200
-Message-ID: <20260504142451.4161845-5-aleksandr.loktionov@intel.com>
+Cc: netdev@vger.kernel.org
+Date: Mon,  4 May 2026 16:24:51 +0200
+Message-ID: <20260504142451.4161845-6-aleksandr.loktionov@intel.com>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <20260504142451.4161845-1-aleksandr.loktionov@intel.com>
 References: <20260504142451.4161845-1-aleksandr.loktionov@intel.com>
@@ -76,25 +75,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1777904700; x=1809440700;
+ t=1777904702; x=1809440702;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=HeCSJC8AQFIhb51F7c7FJSajP0xoCAzaU8poc4y0+BU=;
- b=Z0xHu5v/d31uSmPXf7YOKBn8Ow9c7urcGeQ1S9+S6IKTUO14QPoPscR/
- jhK4jVMay35aD7+aPWowKuFunv8zlQjUBMuXDYQmv1CUDy9rg7mtiKbIL
- bSFHeleEPa7DHLo9vl+jlcG0kjC0a80lBZQOMkcs/8zxv5XmaWdIexbhL
- NLvc0y0mdGAIwBOhf2uWk4ITEjm34ZxPA0VPJsFMRyVMXifARTnIf4a0A
- Q47L5DKMEMG2/xYA44wPiQH7ioPuEUwJD+xeHWHYu2MMmvC1yLb1vMIWf
- dOvPMKOyWBTOvZXDyobQkLfmyGA7HqulKrjJGhEeM8qGFZwe9+DI5/5Vx
- Q==;
+ bh=yPN+lmUC+V9SjMLQPhkRnt+TgdSTwYMAW5C7MIsny0I=;
+ b=g/Q3xm3us+yxeP081PcecR52JD4+UI/EWdJRJPyQ5YbHZqMLODKsn8PX
+ 40mhEuaDUOzq7cl//5bmqpOGIT2YOwrR3KAMyvicefnGl+dzpLsNKoLsp
+ JNBAJ76Zy4AbUa9dFTAdrxi1g9AjQpOLC0Z70Nmtplhjp2EoQD/KEPtO3
+ CFuznYjJhrc6AuzOm7IjdoWhYEpxfshssRPLWNpt2/RxxuhCx6f5bHhXe
+ OTR0USAK1YMhtug/5pyq4KGAVmtSVtiFlo+0GNwoTMOuGHkBG5irQse2C
+ bpzst5yFsuSEdEc2fZxhx8Sqmz+4sHum18JO+0qrRLKvQhN6R+eOy/Ibl
+ w==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Z0xHu5v/
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 4/5] ice: fix DPLL pin
- frequency range in CGU pin descriptors
+ header.a=rsa-sha256 header.s=Intel header.b=g/Q3xm3u
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 5/5] ice: use
+ element-by-element comparison for DCB config changes
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -110,238 +109,149 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+Comparing two ice_dcbx_cfg structs with memcmp() is unreliable on
+non-packed structs due to uninitialised padding bytes.  The HW DCB
+path already has ice_dcb_need_recfg() that compares fields
+individually; export it and use it in the SW DCB netlink setters
+(setets, setpfc, setapp, cee_set_all) instead of the unsafe memcmp.
 
-Replace the per-type frequency tables (ice_cgu_pin_freq_1_hz and
-ice_cgu_pin_freq_10_mhz) and the two-entry ice_cgu_pin_freq_common array
-with a named range constant ICE_CGU_MAX_FREQ_HZ (25 MHz), a new
-ice_cgu_pin_freq_range array containing DPLL_PIN_FREQUENCY_RANGE(1,
-ICE_CGU_MAX_FREQ_HZ), and a separate ice_cgu_pin_freq_gnss array that
-retains DPLL_PIN_FREQUENCY_1PPS for GNSS input pins.
+Remove the now-redundant memcmp check from ice_pf_dcb_cfg() so that
+function always attempts the HW reconfiguration when called.
 
-The hardware firmware spec defines an any_freq capability for CGU inputs
-(ICE_AQC_GET_CGU_IN_CFG_FLG1_ANYFREQ), but the static pin descriptor
-tables constrained configurable pins to 1PPS or 10MHz, preventing users
-from setting valid intermediate frequencies. Use a range entry so the
-DPLL netlink interface correctly reflects what the firmware will accept.
-The firmware validates the actual value and rejects out-of-range requests.
-
-MUX, SyncE ETH port, and configurable EXT pins now advertise the full
-frequency range, matching the hardware capability. GNSS input pins retain
-the 1PPS-only advertisement since a GNSS receiver is physically
-constrained to 1 Hz.
-
-Fixes: 6db5f2cd9ebb ("ice: dpll: fix output pin capabilities")
-Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
 Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 128 +++++++++++---------
- 1 file changed, 72 insertions(+), 56 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 13 ++-------
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.h |  2 ++
+ drivers/net/ethernet/intel/ice/ice_dcb_nl.c  | 30 ++++++++++++++++++--
+ 3 files changed, 32 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-index 7b1b402..3949138 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-@@ -7,127 +7,143 @@
- #include "ice_ptp_hw.h"
- #include "ice_ptp_consts.h"
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+index bd77f1c..2e85fae 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+@@ -353,15 +353,11 @@ int ice_pf_dcb_cfg(struct ice_pf *pf, struct ice_dcbx_cfg *new_cfg, bool locked)
+ 	struct ice_dcbx_cfg *old_cfg, *curr_cfg;
+ 	struct device *dev = ice_pf_to_dev(pf);
+ 	struct iidc_rdma_event *event;
+-	int ret = ICE_DCB_NO_HW_CHG;
+ 	struct ice_vsi *pf_vsi;
++	int ret;
  
--static struct dpll_pin_frequency ice_cgu_pin_freq_common[] = {
--	DPLL_PIN_FREQUENCY_1PPS,
--	DPLL_PIN_FREQUENCY_10MHZ,
--};
-+/* Maximum frequency supported by CGU pins, in Hz */
-+#define ICE_CGU_MAX_FREQ_HZ	25000000
+ 	curr_cfg = &pf->hw.port_info->qos_cfg.local_dcbx_cfg;
  
--static struct dpll_pin_frequency ice_cgu_pin_freq_1_hz[] = {
--	DPLL_PIN_FREQUENCY_1PPS,
-+static struct dpll_pin_frequency ice_cgu_pin_freq_range[] = {
-+	DPLL_PIN_FREQUENCY_RANGE(1, ICE_CGU_MAX_FREQ_HZ),
- };
+-	/* FW does not care if change happened */
+-	if (!pf->hw.port_info->qos_cfg.is_sw_lldp)
+-		ret = ICE_DCB_HW_CHG_RST;
+-
+ 	/* Enable DCB tagging only when more than one TC */
+ 	if (ice_dcb_get_num_tc(new_cfg) > 1) {
+ 		dev_dbg(dev, "DCB tagging enabled (num TC > 1)\n");
+@@ -377,11 +373,6 @@ int ice_pf_dcb_cfg(struct ice_pf *pf, struct ice_dcbx_cfg *new_cfg, bool locked)
+ 		clear_bit(ICE_FLAG_DCB_ENA, pf->flags);
+ 	}
  
--static struct dpll_pin_frequency ice_cgu_pin_freq_10_mhz[] = {
--	DPLL_PIN_FREQUENCY_10MHZ,
-+static struct dpll_pin_frequency ice_cgu_pin_freq_gnss[] = {
-+	DPLL_PIN_FREQUENCY_1PPS,
- };
+-	if (!memcmp(new_cfg, curr_cfg, sizeof(*new_cfg))) {
+-		dev_dbg(dev, "No change in DCB config required\n");
+-		return ret;
+-	}
+-
+ 	if (ice_dcb_bwchk(pf, new_cfg))
+ 		return -EINVAL;
  
- static const struct ice_cgu_pin_desc ice_e810t_sfp_cgu_inputs[] = {
- 	{ "CVL-SDP22",	  ZL_REF0P, DPLL_PIN_TYPE_INT_OSCILLATOR,
--		ARRAY_SIZE(ice_cgu_pin_freq_common), ice_cgu_pin_freq_common },
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
- 	{ "CVL-SDP20",	  ZL_REF0N, DPLL_PIN_TYPE_INT_OSCILLATOR,
--		ARRAY_SIZE(ice_cgu_pin_freq_common), ice_cgu_pin_freq_common },
--	{ "C827_0-RCLKA", ZL_REF1P, DPLL_PIN_TYPE_MUX, 0, },
--	{ "C827_0-RCLKB", ZL_REF1N, DPLL_PIN_TYPE_MUX, 0, },
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
-+	{ "C827_0-RCLKA", ZL_REF1P, DPLL_PIN_TYPE_MUX,
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
-+	{ "C827_0-RCLKB", ZL_REF1N, DPLL_PIN_TYPE_MUX,
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
- 	{ "SMA1",	  ZL_REF3P, DPLL_PIN_TYPE_EXT,
--		ARRAY_SIZE(ice_cgu_pin_freq_common), ice_cgu_pin_freq_common },
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
- 	{ "SMA2/U.FL2",	  ZL_REF3N, DPLL_PIN_TYPE_EXT,
--		ARRAY_SIZE(ice_cgu_pin_freq_common), ice_cgu_pin_freq_common },
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
- 	{ "GNSS-1PPS",	  ZL_REF4P, DPLL_PIN_TYPE_GNSS,
--		ARRAY_SIZE(ice_cgu_pin_freq_1_hz), ice_cgu_pin_freq_1_hz },
-+		ARRAY_SIZE(ice_cgu_pin_freq_gnss), ice_cgu_pin_freq_gnss },
- };
+@@ -481,7 +472,7 @@ static void ice_cfg_etsrec_defaults(struct ice_port_info *pi)
+  * @old_cfg: current DCB config
+  * @new_cfg: new DCB config
+  */
+-static bool
++bool
+ ice_dcb_need_recfg(struct ice_pf *pf, struct ice_dcbx_cfg *old_cfg,
+ 		   struct ice_dcbx_cfg *new_cfg)
+ {
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
+index da9ba81..a7eaa2f9 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
+@@ -20,6 +20,8 @@ u8 ice_dcb_get_num_tc(struct ice_dcbx_cfg *dcbcfg);
+ void ice_vsi_set_dcb_tc_cfg(struct ice_vsi *vsi);
+ bool ice_is_pfc_causing_hung_q(struct ice_pf *pf, unsigned int txqueue);
+ u8 ice_dcb_get_tc(struct ice_vsi *vsi, int queue_index);
++bool ice_dcb_need_recfg(struct ice_pf *pf, struct ice_dcbx_cfg *old_cfg,
++			struct ice_dcbx_cfg *new_cfg);
+ int
+ ice_pf_dcb_cfg(struct ice_pf *pf, struct ice_dcbx_cfg *new_cfg, bool locked);
+ int ice_dcb_bwchk(struct ice_pf *pf, struct ice_dcbx_cfg *dcbcfg);
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
+index a10c1c8d..13a52c1 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
++++ b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
+@@ -108,11 +108,17 @@ static int ice_dcbnl_setets(struct net_device *netdev, struct ieee_ets *ets)
+ 	if (!bwrec)
+ 		new_cfg->etsrec.tcbwtable[0] = 100;
  
- static const struct ice_cgu_pin_desc ice_e810t_qsfp_cgu_inputs[] = {
- 	{ "CVL-SDP22",	  ZL_REF0P, DPLL_PIN_TYPE_INT_OSCILLATOR,
--		ARRAY_SIZE(ice_cgu_pin_freq_common), ice_cgu_pin_freq_common },
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
- 	{ "CVL-SDP20",	  ZL_REF0N, DPLL_PIN_TYPE_INT_OSCILLATOR,
--		ARRAY_SIZE(ice_cgu_pin_freq_common), ice_cgu_pin_freq_common },
--	{ "C827_0-RCLKA", ZL_REF1P, DPLL_PIN_TYPE_MUX, },
--	{ "C827_0-RCLKB", ZL_REF1N, DPLL_PIN_TYPE_MUX, },
--	{ "C827_1-RCLKA", ZL_REF2P, DPLL_PIN_TYPE_MUX, },
--	{ "C827_1-RCLKB", ZL_REF2N, DPLL_PIN_TYPE_MUX, },
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
-+	{ "C827_0-RCLKA", ZL_REF1P, DPLL_PIN_TYPE_MUX,
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
-+	{ "C827_0-RCLKB", ZL_REF1N, DPLL_PIN_TYPE_MUX,
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
-+	{ "C827_1-RCLKA", ZL_REF2P, DPLL_PIN_TYPE_MUX,
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
-+	{ "C827_1-RCLKB", ZL_REF2N, DPLL_PIN_TYPE_MUX,
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
- 	{ "SMA1",	  ZL_REF3P, DPLL_PIN_TYPE_EXT,
--		ARRAY_SIZE(ice_cgu_pin_freq_common), ice_cgu_pin_freq_common },
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
- 	{ "SMA2/U.FL2",	  ZL_REF3N, DPLL_PIN_TYPE_EXT,
--		ARRAY_SIZE(ice_cgu_pin_freq_common), ice_cgu_pin_freq_common },
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
- 	{ "GNSS-1PPS",	  ZL_REF4P, DPLL_PIN_TYPE_GNSS,
--		ARRAY_SIZE(ice_cgu_pin_freq_1_hz), ice_cgu_pin_freq_1_hz },
-+		ARRAY_SIZE(ice_cgu_pin_freq_gnss), ice_cgu_pin_freq_gnss },
- };
++	if (!ice_dcb_need_recfg(pf, &pf->hw.port_info->qos_cfg.local_dcbx_cfg,
++				new_cfg)) {
++		err = ICE_DCB_NO_HW_CHG;
++		goto ets_out;
++	}
++
+ 	err = ice_pf_dcb_cfg(pf, new_cfg, true);
+ 	/* return of zero indicates new cfg applied */
+-	if (err == ICE_DCB_HW_CHG_RST)
++	if (!err)
+ 		ice_dcbnl_devreset(netdev);
+-	if (err == ICE_DCB_NO_HW_CHG)
++	else if (err == ICE_DCB_NO_HW_CHG)
+ 		err = ICE_DCB_HW_CHG_RST;
  
- static const struct ice_cgu_pin_desc ice_e810t_sfp_cgu_outputs[] = {
- 	{ "REF-SMA1",	    ZL_OUT0, DPLL_PIN_TYPE_EXT,
--		ARRAY_SIZE(ice_cgu_pin_freq_common), ice_cgu_pin_freq_common },
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
- 	{ "REF-SMA2/U.FL2", ZL_OUT1, DPLL_PIN_TYPE_EXT,
--		ARRAY_SIZE(ice_cgu_pin_freq_common), ice_cgu_pin_freq_common },
--	{ "PHY-CLK",	    ZL_OUT2, DPLL_PIN_TYPE_SYNCE_ETH_PORT, },
--	{ "MAC-CLK",	    ZL_OUT3, DPLL_PIN_TYPE_SYNCE_ETH_PORT, },
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
-+	{ "PHY-CLK",	    ZL_OUT2, DPLL_PIN_TYPE_SYNCE_ETH_PORT,
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
-+	{ "MAC-CLK",	    ZL_OUT3, DPLL_PIN_TYPE_SYNCE_ETH_PORT,
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
- 	{ "CVL-SDP21",	    ZL_OUT4, DPLL_PIN_TYPE_EXT,
--		ARRAY_SIZE(ice_cgu_pin_freq_1_hz), ice_cgu_pin_freq_1_hz },
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
- 	{ "CVL-SDP23",	    ZL_OUT5, DPLL_PIN_TYPE_EXT,
--		ARRAY_SIZE(ice_cgu_pin_freq_1_hz), ice_cgu_pin_freq_1_hz },
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
- };
+ ets_out:
+@@ -287,11 +293,18 @@ static int ice_dcbnl_setpfc(struct net_device *netdev, struct ieee_pfc *pfc)
  
- static const struct ice_cgu_pin_desc ice_e810t_qsfp_cgu_outputs[] = {
- 	{ "REF-SMA1",	    ZL_OUT0, DPLL_PIN_TYPE_EXT,
--		ARRAY_SIZE(ice_cgu_pin_freq_common), ice_cgu_pin_freq_common },
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
- 	{ "REF-SMA2/U.FL2", ZL_OUT1, DPLL_PIN_TYPE_EXT,
--		ARRAY_SIZE(ice_cgu_pin_freq_common), ice_cgu_pin_freq_common },
--	{ "PHY-CLK",	    ZL_OUT2, DPLL_PIN_TYPE_SYNCE_ETH_PORT, 0 },
--	{ "PHY2-CLK",	    ZL_OUT3, DPLL_PIN_TYPE_SYNCE_ETH_PORT, 0 },
--	{ "MAC-CLK",	    ZL_OUT4, DPLL_PIN_TYPE_SYNCE_ETH_PORT, 0 },
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
-+	{ "PHY-CLK",	    ZL_OUT2, DPLL_PIN_TYPE_SYNCE_ETH_PORT,
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
-+	{ "PHY2-CLK",	    ZL_OUT3, DPLL_PIN_TYPE_SYNCE_ETH_PORT,
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
-+	{ "MAC-CLK",	    ZL_OUT4, DPLL_PIN_TYPE_SYNCE_ETH_PORT,
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
- 	{ "CVL-SDP21",	    ZL_OUT5, DPLL_PIN_TYPE_EXT,
--		ARRAY_SIZE(ice_cgu_pin_freq_1_hz), ice_cgu_pin_freq_1_hz },
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
- 	{ "CVL-SDP23",	    ZL_OUT6, DPLL_PIN_TYPE_EXT,
--		ARRAY_SIZE(ice_cgu_pin_freq_1_hz), ice_cgu_pin_freq_1_hz },
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
- };
+ 	new_cfg->pfc.pfcena = pfc->pfc_en;
  
- static const struct ice_cgu_pin_desc ice_e823_si_cgu_inputs[] = {
- 	{ "NONE",	  SI_REF0P, 0, 0 },
- 	{ "NONE",	  SI_REF0N, 0, 0 },
--	{ "SYNCE0_DP",	  SI_REF1P, DPLL_PIN_TYPE_MUX, 0 },
--	{ "SYNCE0_DN",	  SI_REF1N, DPLL_PIN_TYPE_MUX, 0 },
-+	{ "SYNCE0_DP",	  SI_REF1P, DPLL_PIN_TYPE_MUX,
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
-+	{ "SYNCE0_DN",	  SI_REF1N, DPLL_PIN_TYPE_MUX,
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
- 	{ "EXT_CLK_SYNC", SI_REF2P, DPLL_PIN_TYPE_EXT,
--		ARRAY_SIZE(ice_cgu_pin_freq_common), ice_cgu_pin_freq_common },
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
- 	{ "NONE",	  SI_REF2N, 0, 0 },
- 	{ "EXT_PPS_OUT",  SI_REF3,  DPLL_PIN_TYPE_EXT,
--		ARRAY_SIZE(ice_cgu_pin_freq_common), ice_cgu_pin_freq_common },
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
- 	{ "INT_PPS_OUT",  SI_REF4,  DPLL_PIN_TYPE_EXT,
--		ARRAY_SIZE(ice_cgu_pin_freq_common), ice_cgu_pin_freq_common },
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
- };
++	if (!ice_dcb_need_recfg(pf, &pf->hw.port_info->qos_cfg.local_dcbx_cfg,
++				new_cfg)) {
++		err = ICE_DCB_NO_HW_CHG;
++		goto pfc_out;
++	}
++
+ 	err = ice_pf_dcb_cfg(pf, new_cfg, true);
+ 	if (err == ICE_DCB_HW_CHG_RST)
+ 		ice_dcbnl_devreset(netdev);
+ 	if (err == ICE_DCB_NO_HW_CHG)
+ 		err = ICE_DCB_HW_CHG_RST;
++pfc_out:
+ 	mutex_unlock(&pf->tc_mutex);
+ 	return err;
+ }
+@@ -845,6 +858,12 @@ static int ice_dcbnl_setapp(struct net_device *netdev, struct dcb_app *app)
+ 	new_cfg->dscp_map[app->protocol] = app->priority;
+ 	new_cfg->app[new_cfg->numapps++] = new_app;
  
- static const struct ice_cgu_pin_desc ice_e823_si_cgu_outputs[] = {
- 	{ "1588-TIME_SYNC", SI_OUT0, DPLL_PIN_TYPE_EXT,
--		ARRAY_SIZE(ice_cgu_pin_freq_common), ice_cgu_pin_freq_common },
--	{ "PHY-CLK",	    SI_OUT1, DPLL_PIN_TYPE_SYNCE_ETH_PORT, 0 },
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
-+	{ "PHY-CLK",	    SI_OUT1, DPLL_PIN_TYPE_SYNCE_ETH_PORT,
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
- 	{ "10MHZ-SMA2",	    SI_OUT2, DPLL_PIN_TYPE_EXT,
--		ARRAY_SIZE(ice_cgu_pin_freq_10_mhz), ice_cgu_pin_freq_10_mhz },
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
- 	{ "PPS-SMA1",	    SI_OUT3, DPLL_PIN_TYPE_EXT,
--		ARRAY_SIZE(ice_cgu_pin_freq_common), ice_cgu_pin_freq_common },
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
- };
++	if (!ice_dcb_need_recfg(pf, &pf->hw.port_info->qos_cfg.local_dcbx_cfg,
++				new_cfg)) {
++		ret = ICE_DCB_NO_HW_CHG;
++		goto setapp_out;
++	}
++
+ 	ret = ice_pf_dcb_cfg(pf, new_cfg, true);
+ 	/* return of zero indicates new cfg applied */
+ 	if (ret == ICE_DCB_HW_CHG_RST)
+@@ -991,8 +1010,15 @@ static u8 ice_dcbnl_cee_set_all(struct net_device *netdev)
  
- static const struct ice_cgu_pin_desc ice_e823_zl_cgu_inputs[] = {
- 	{ "NONE",	  ZL_REF0P, 0, 0 },
- 	{ "INT_PPS_OUT",  ZL_REF0N, DPLL_PIN_TYPE_EXT,
--		ARRAY_SIZE(ice_cgu_pin_freq_1_hz), ice_cgu_pin_freq_1_hz },
--	{ "SYNCE0_DP",	  ZL_REF1P, DPLL_PIN_TYPE_MUX, 0 },
--	{ "SYNCE0_DN",	  ZL_REF1N, DPLL_PIN_TYPE_MUX, 0 },
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
-+	{ "SYNCE0_DP",	  ZL_REF1P, DPLL_PIN_TYPE_MUX,
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
-+	{ "SYNCE0_DN",	  ZL_REF1N, DPLL_PIN_TYPE_MUX,
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
- 	{ "NONE",	  ZL_REF2P, 0, 0 },
- 	{ "NONE",	  ZL_REF2N, 0, 0 },
- 	{ "EXT_CLK_SYNC", ZL_REF3P, DPLL_PIN_TYPE_EXT,
--		ARRAY_SIZE(ice_cgu_pin_freq_common), ice_cgu_pin_freq_common },
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
- 	{ "NONE",	  ZL_REF3N, 0, 0 },
- 	{ "EXT_PPS_OUT",  ZL_REF4P, DPLL_PIN_TYPE_EXT,
--		ARRAY_SIZE(ice_cgu_pin_freq_1_hz), ice_cgu_pin_freq_1_hz },
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
- 	{ "OCXO",	  ZL_REF4N, DPLL_PIN_TYPE_INT_OSCILLATOR, 0 },
- };
+ 	mutex_lock(&pf->tc_mutex);
  
- static const struct ice_cgu_pin_desc ice_e823_zl_cgu_outputs[] = {
- 	{ "PPS-SMA1",	   ZL_OUT0, DPLL_PIN_TYPE_EXT,
--		ARRAY_SIZE(ice_cgu_pin_freq_1_hz), ice_cgu_pin_freq_1_hz },
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
- 	{ "10MHZ-SMA2",	   ZL_OUT1, DPLL_PIN_TYPE_EXT,
--		ARRAY_SIZE(ice_cgu_pin_freq_10_mhz), ice_cgu_pin_freq_10_mhz },
--	{ "PHY-CLK",	   ZL_OUT2, DPLL_PIN_TYPE_SYNCE_ETH_PORT, 0 },
--	{ "1588-TIME_REF", ZL_OUT3, DPLL_PIN_TYPE_SYNCE_ETH_PORT, 0 },
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
-+	{ "PHY-CLK",	   ZL_OUT2, DPLL_PIN_TYPE_SYNCE_ETH_PORT,
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
-+	{ "1588-TIME_REF", ZL_OUT3, DPLL_PIN_TYPE_SYNCE_ETH_PORT,
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
- 	{ "CPK-TIME_SYNC", ZL_OUT4, DPLL_PIN_TYPE_EXT,
--		ARRAY_SIZE(ice_cgu_pin_freq_common), ice_cgu_pin_freq_common },
-+		ARRAY_SIZE(ice_cgu_pin_freq_range), ice_cgu_pin_freq_range },
- 	{ "NONE",	   ZL_OUT5, 0, 0 },
- };
++	if (!ice_dcb_need_recfg(pf, &pf->hw.port_info->qos_cfg.local_dcbx_cfg,
++				new_cfg)) {
++		err = ICE_DCB_NO_HW_CHG;
++		goto out;
++	}
++
+ 	err = ice_pf_dcb_cfg(pf, new_cfg, true);
  
++out:
+ 	mutex_unlock(&pf->tc_mutex);
+ 	return (err != ICE_DCB_HW_CHG_RST) ? ICE_DCB_NO_HW_CHG : err;
+ }
 -- 
 2.52.0
 
