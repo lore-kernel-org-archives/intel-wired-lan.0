@@ -1,99 +1,106 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20185CD3427
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  5 May 2026 12:51:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E1F2BFF8855
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  5 May 2026 15:30:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id D0DA760840;
-	Tue,  5 May 2026 12:51:27 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 7E77140AA7;
+	Tue,  5 May 2026 15:30:41 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id su_2fkTQ_beh; Tue,  5 May 2026 15:30:40 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6861440A82
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1777995040;
+	bh=w8LGlOBYIAvHI+P3ej113KoNEWAWWBE47MXU9sD9xGc=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=qg/FGd24Ghml1OZLkKrdICigQ22QVP4A7EKii9dMyaCw7pLWXVZgmuqah1lEwF9UK
+	 DfoEamdnMXA7NdrJeccd7Mptf9YNl4qkqYCk7Eq+wxauy5fA0ChxokkNjkignZswcz
+	 hPqxubIuZYrr6tIAs9Y308xt+gZPe+dIdrwlOsqWfWLIs0N1MdOj4OgeAxvsfAfBKQ
+	 PRltxA4ZWQv2Ln1lwcIzfgeeh24WuRO2GP93A/+Qulxts7lBDqsIog7s/HMO6Yjdjn
+	 +Yx4FvzbOD5D+p4c897k0UIikQx21p2oFGfkw/i9aDepsFmQmiDgNvIST3Zl/hMcnA
+	 sXn+ZBZ1I4nfw==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 6861440A82;
+	Tue,  5 May 2026 15:30:40 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 91FBA280
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  5 May 2026 15:30:38 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id 84030608B0
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  5 May 2026 15:30:38 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id G1DoJxh4PfkH; Tue,  5 May 2026 12:51:27 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 099A860842
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1777985487;
-	bh=5gCXSEYEFFiXV2aitnRBv60G+WOwVgrtKEBYklKh8rs=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=XJU3pmbaASx3BdW1nl/IkelCi1aYduj6ZIvd3AbvZESuRfrzMNa09e2H7gYBQ/Wb8
-	 ycHC4OrOF5hcXmcGx7p38EE5cXAfLAUXkTW0CpJmIiytp3GqSibYzs7NUO4zQ1kalw
-	 LTI4sMvgl5EWZjyzCQKUTsWfjvl54gX9Z8HURi9rI7VqwSTvY/jQ3z97JjA+fThRYZ
-	 qumyi0TmloTniROXou7VWwTNy46QQfAt5lwZUvBUv/C8NGIe4dp6LaXbA5H2s38xK9
-	 brIvLOPD6+k5Gjg0V7Q99N/d9NRsAnsZpaAR9GOd5OXwYSuQS0d/FfkKqfBuprtups
-	 VybA9HFcz+HvA==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 099A860842;
-	Tue,  5 May 2026 12:51:27 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 15D352A8
- for <intel-wired-lan@lists.osuosl.org>; Tue,  5 May 2026 12:51:25 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id EFD348134F
- for <intel-wired-lan@lists.osuosl.org>; Tue,  5 May 2026 12:51:24 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ErpeMj237lSj for <intel-wired-lan@lists.osuosl.org>;
- Tue,  5 May 2026 12:51:24 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
- helo=us-smtp-delivery-124.mimecast.com; envelope-from=poros@redhat.com;
+ id t528Md3dO7F7 for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  5 May 2026 15:30:37 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.7;
+ helo=mgamail.intel.com; envelope-from=aleksander.lobakin@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org E88268132A
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E88268132A
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp1.osuosl.org (Postfix) with ESMTPS id E88268132A
- for <intel-wired-lan@lists.osuosl.org>; Tue,  5 May 2026 12:51:23 +0000 (UTC)
-Received: from mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-255-TLuPElacP1GjBmZ2M8C3eQ-1; Tue,
- 05 May 2026 08:51:18 -0400
-X-MC-Unique: TLuPElacP1GjBmZ2M8C3eQ-1
-X-Mimecast-MFC-AGG-ID: TLuPElacP1GjBmZ2M8C3eQ_1777985476
-Received: from mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com
- (mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.4])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
- id 63FA51800347; Tue,  5 May 2026 12:51:16 +0000 (UTC)
-Received: from ShadowPeak.redhat.com (unknown [10.44.49.137])
- by mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
- id C161030001A1; Tue,  5 May 2026 12:51:11 +0000 (UTC)
-From: Petr Oros <poros@redhat.com>
-To: netdev@vger.kernel.org
-Date: Tue,  5 May 2026 14:51:08 +0200
-Message-ID: <20260505125108.2019998-1-poros@redhat.com>
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 4DF85607CE
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4DF85607CE
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 4DF85607CE
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  5 May 2026 15:30:36 +0000 (UTC)
+X-CSE-ConnectionGUID: rg+HbxYOTp6G03wxOVAXKA==
+X-CSE-MsgGUID: WbxIwDG8QHmEadFbtgxuuQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11777"; a="104316977"
+X-IronPort-AV: E=Sophos;i="6.23,217,1770624000"; d="scan'208";a="104316977"
+Received: from orviesa010.jf.intel.com ([10.64.159.150])
+ by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 05 May 2026 08:30:36 -0700
+X-CSE-ConnectionGUID: DgEFnLZkSteLllHdnnS9Yg==
+X-CSE-MsgGUID: QztnzmU6Smi7nhtc0Z+reQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,217,1770624000"; d="scan'208";a="234971504"
+Received: from newjersey.igk.intel.com ([10.102.20.203])
+ by orviesa010.jf.intel.com with ESMTP; 05 May 2026 08:30:33 -0700
+From: Alexander Lobakin <aleksander.lobakin@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Cc: Alexander Lobakin <aleksander.lobakin@intel.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>,
+ Kohei Enju <kohei@enjuk.jp>, Jacob Keller <jacob.e.keller@intel.com>,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
+ nxne.cnse.osdt.itp.upstreaming@intel.com, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Date: Tue,  5 May 2026 17:29:18 +0200
+Message-ID: <20260505152923.1040589-1-aleksander.lobakin@intel.com>
+X-Mailer: git-send-email 2.54.0
 MIME-Version: 1.0
-X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.4
-X-Mimecast-MFC-PROC-ID: jge8j4HkMhwek5eqigQg7ojyK6_6zJ1Xy5hXXLuev4w_1777985476
-X-Mimecast-Originator: redhat.com
 Content-Transfer-Encoding: 8bit
-content-type: text/plain; charset="US-ASCII"; x-default=true
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=redhat.com; 
- s=mimecast20190719; t=1777985482;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding;
- bh=5gCXSEYEFFiXV2aitnRBv60G+WOwVgrtKEBYklKh8rs=;
- b=NLnkFYHcNCpFAxOz9T0ocDYWtU5WbXMIPXh5r6Yp6kkxUt2CZqTneRc+eIt1rZ5ufgx9++
- g1L7NCsSwmgn7SfR/Wlk7pRiQll3QD8cAa/nRbnB+bGgI3VzKkIajik+B/LS+3vNrTV+S3
- clSsRnrvWCLF17qKYK3yBcrSj7ZySjk=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=redhat.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=NLnkFYHc
-Subject: [Intel-wired-lan] [PATCH iwl-net v2] ice: fix missing priority
- callbacks for U.FL DPLL pins
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1777995037; x=1809531037;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=Ok+4ECv3s+pYujUHLo68Z1g1L6HzzFD6IgmwTokVWG0=;
+ b=fw5Zm5p6F7P6VRdPkTcpI2d9OrMSx3RcU6TmW4BT22y8/qhqVXnCG2kx
+ Sb1vuJSm1SR8Je3nO4+AhmEwzKrGKfSCrs3xJNdnnhLaWwtBeMyfcDUq1
+ +iUFPzFom/m7UU0Ywym4HJvHKn+L2zhiDyjV/HJ5g+UtbFFM6BBEgJthI
+ S1yd4qYjbTTx5VhRAHoJpfQwTSykQFZVzIaTlgouoo3qq30MRkvr7hCZZ
+ VuXu48EUCcYDnoKSclfiHj6ZHkoU2BME+qalXmUcIoZug7myANY0dPx28
+ y91ENYp5Fx2KaG4zkgiRI7X6G4XVhVGKMxxZ3U/Cxm6Z3b5mOwnTi2uOP
+ A==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=fw5Zm5p6
+Subject: [Intel-wired-lan] [PATCH iwl-next v5 0/5] ice: add support for
+ devmem/io_uring Rx and Tx
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -106,82 +113,84 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Paul Menzel <pmenzel@molgen.mpg.de>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Eric Dumazet <edumazet@google.com>,
- Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>,
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>, Tony Nguyen <anthony.l.nguyen@intel.com>,
- Simon Horman <horms@kernel.org>, intel-wired-lan@lists.osuosl.org,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The U.FL2 input pin advertises DPLL_PIN_CAPABILITIES_PRIORITY_CAN_CHANGE
-in its capability mask, but ice_dpll_pin_ufl_ops does not provide
-.prio_get and .prio_set callbacks. As a result the DPLL subsystem
-cannot report or accept priority for U.FL pins: pin-get omits the prio
-field on U.FL2 and pin-set with prio is rejected as invalid, even
-though the capability is present. This prevents user space from using
-priority to select or disable U.FL2 as a DPLL input source.
+Now that ice uses libeth for managing Rx buffers and supports
+configurable header split, it's ready to get support for sending
+and receiving packets with unreadable (to the kernel) frags.
 
-Reproducer with iproute2 (dpll command):
+Extend libeth just a little bit to allow creating PPs with custom
+memory providers and make sure ice works correctly with the netdev
+ops locking. Then add the full set of queue_mgmt_ops and don't
+unmap unreadable frags on Tx completion.
+No perf regressions for the regular flows and no code duplication
+implied.
 
-  # dpll pin show board-label U.FL2
-  pin id 16:
-    module-name ice
-    board-label U.FL2
-    type ext
-    capabilities priority-can-change|state-can-change
-    parent-device:
-      id 0 direction input state selectable phase-offset 0
-    /* note: no "prio" between "direction" and "state",
-       even though priority-can-change is advertised */
+Credits to the fbnic developers, whose code helped me understand
+the memory providers and queue_mgmt_ops logics and served as
+a reference.
 
-  # dpll pin set id 16 parent-device 0 prio 5
-  RTNETLINK answers: Operation not supported
+Alexander Lobakin (5):
+  libeth: pass Rx queue index to PP when creating a fill queue
+  libeth: handle creating pools with unreadable buffers
+  ice: migrate to netdev ops lock
+  ice: implement Rx queue management ops
+  ice: add support for transmitting unreadable frags
 
-After the fix the prio field is reported by pin show and pin set with
-prio is accepted on U.FL2.
+ drivers/net/ethernet/intel/ice/ice_base.h    |   2 +
+ drivers/net/ethernet/intel/ice/ice_lib.h     |  18 +-
+ drivers/net/ethernet/intel/ice/ice_txrx.h    |   2 +
+ drivers/net/ethernet/intel/idpf/idpf_txrx.h  |   2 +
+ include/net/libeth/rx.h                      |   2 +
+ include/net/libeth/tx.h                      |   2 +-
+ drivers/net/ethernet/intel/iavf/iavf_txrx.c  |   1 +
+ drivers/net/ethernet/intel/ice/ice_base.c    | 247 +++++++++++++++----
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.c |  15 +-
+ drivers/net/ethernet/intel/ice/ice_eswitch.c |  26 +-
+ drivers/net/ethernet/intel/ice/ice_lib.c     | 227 +++++++++++++----
+ drivers/net/ethernet/intel/ice/ice_main.c    |  79 +++---
+ drivers/net/ethernet/intel/ice/ice_sf_eth.c  |   4 +
+ drivers/net/ethernet/intel/ice/ice_txrx.c    |  43 +++-
+ drivers/net/ethernet/intel/ice/ice_xsk.c     |   4 +-
+ drivers/net/ethernet/intel/idpf/idpf_txrx.c  |  13 +
+ drivers/net/ethernet/intel/libeth/rx.c       |  43 ++++
+ 17 files changed, 566 insertions(+), 164 deletions(-)
 
-Add the missing .prio_get and .prio_set callbacks to
-ice_dpll_pin_ufl_ops, reusing ice_dpll_sw_input_prio_{get,set}. The
-same ops struct is shared by U.FL1 and U.FL2: U.FL2 (input) delegates
-to the backing hardware input pin, while U.FL1 (output) does not
-advertise DPLL_PIN_CAPABILITIES_PRIORITY_CAN_CHANGE so the dpll core
-capability gate never invokes prio_set for it, and prio_get reports
-the OUTPUT sentinel (ICE_DPLL_PIN_PRIO_OUTPUT) on the output side
-exactly like the SMA path does today.
-
-Fixes: 2dd5d03c77e2 ("ice: redesign dpll sma/u.fl pins control")
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
-Signed-off-by: Petr Oros <poros@redhat.com>
 ---
-v2:
-- describe the userspace reproducer (dpll pin show / dpll pin set)
-  in the commit message, suggested by Paul Menzel
-- collect Reviewed-by tags from v1
+Note: apply to net-next, not Tony's next-queue (ready to be sent as
+a PR).
 
-v1: https://lore.kernel.org/all/20260504121603.1702674-1-poros@redhat.com/
----
- drivers/net/ethernet/intel/ice/ice_dpll.c | 2 ++
- 1 file changed, 2 insertions(+)
+From v4[0]:
+* rebase on top of the latest net-next;
+* 3/5: fix the last [hopefully] missing netdev lock (E-Switch code,
+       Simon), rechecked with our internal Intel's Sashiko setup;
+* 3/5: pick fixes for .ndo_bpf() and safe mode from Kohei.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dpll.c b/drivers/net/ethernet/intel/ice/ice_dpll.c
-index 27b460926baced..be72a076f7a15c 100644
---- a/drivers/net/ethernet/intel/ice/ice_dpll.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dpll.c
-@@ -2628,6 +2628,8 @@ static const struct dpll_pin_ops ice_dpll_pin_ufl_ops = {
- 	.state_on_dpll_set = ice_dpll_ufl_pin_state_set,
- 	.state_on_dpll_get = ice_dpll_sw_pin_state_get,
- 	.direction_get = ice_dpll_pin_sw_direction_get,
-+	.prio_get = ice_dpll_sw_input_prio_get,
-+	.prio_set = ice_dpll_sw_input_prio_set,
- 	.frequency_get = ice_dpll_sw_pin_frequency_get,
- 	.frequency_set = ice_dpll_sw_pin_frequency_set,
- 	.esync_set = ice_dpll_sw_esync_set,
+From v3[1]:
+* rebase on top of recent Larysa's changes;
+* 3/5: fix the last locking inconsistencies (Jakub);
+* 3/5: pick a kdoc fix from Tony.
+
+From v2[2]:
+* rebase on top of net-next-7.0;
+* 3/5: fix [hopefully] all inconsistent locking (Jakub, Tony);
+* 4/5: pick a hotfix from Kohei.
+
+From v1[3]:
+* rebase on top of the latest next-queue;
+* fix a typo 'rxq_ixd' -> 'rxq_idx' (Tony).
+
+Testing hints:
+* regular Rx and Tx for regressions;
+* <kernel root>/tools/testing/selftests/drivers/net/hw/ contains
+  scripts for testing netmem Rx and Tx, namely devmem.py and
+  iou-zcrx.py (read the documentation first).
+
+[0] https://lore.kernel.org/intel-wired-lan/20260318163505.31765-1-aleksander.lobakin@intel.com
+[1] https://lore.kernel.org/intel-wired-lan/20260224174618.2780516-1-aleksander.lobakin@intel.com
+[2] https://lore.kernel.org/intel-wired-lan/20251204155133.2437621-1-aleksander.lobakin@intel.com
+[3] https://lore.kernel.org/intel-wired-lan/20251125173603.3834486-1-aleksander.lobakin@intel.com
 -- 
-2.53.0
+2.54.0
 
