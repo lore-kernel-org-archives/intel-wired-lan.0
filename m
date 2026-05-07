@@ -1,89 +1,95 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CB02CD3427
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  7 May 2026 11:47:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 445D0CD3427
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  7 May 2026 12:16:00 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B66EB410C0;
-	Thu,  7 May 2026 11:47:04 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id BA35B6101F;
+	Thu,  7 May 2026 12:15:59 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id fUZB-eZ691OD; Thu,  7 May 2026 11:47:04 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id V1WCTs8sjG7n; Thu,  7 May 2026 12:15:58 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DE7AC410F9
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org AFEB06101D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1778154423;
-	bh=CacD8KaM9P+gf5/RAVfp4kYH7Dy5TsiuDs/z8ccvcf8=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1778156158;
+	bh=k3DI5VHNsX2dtInGmX3aR5Hyj7MlF2pGpMlNqzUivf8=;
+	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=3XAQ5wUPZkrztCXqlYfQlaw6ajnl4qMsgRzHiWniyXj6TDUshfH+/gv7OOfVZS+Q1
-	 GpKVzWkeYANHRO1LARWSmIspHvCP8Pkcn7Pc0f3/xAwzBOP4vD3yaeEfLolbj4i0u1
-	 jhosD3qJ16yYt4KAxwjHhTN2Ql3Iu6JKsorwbYonBAV3cLnbjbECyycKW3CyzEfYed
-	 R/eHy50UWHs31A8FsW98LnmXfjMeJnDfoDDNJCZBbEgcC3BqmFweobZuTZH+va0utr
-	 rv9WMkk3LGXLz9xnCXa9/9OYE4k+eYOe36X9AMqtyLrDNH1IemP5JSMbsUD8S4w/2i
-	 ji7b/A0Og3kpQ==
+	b=Wq1jmOf7OJ+snd0dqjOFT3XdjTj5Ui9Y8pNpRjTFdukmdLhoabuyJJU9THrn0ZY5a
+	 mxxP+Eb07HGHxsK4CF9P6z7PMzfIttbrRo99ls2IHg/aYafn5UAF40I62NSFvhHtMj
+	 Njv0tT4kKqrPVT5nwhSn4GQiKJglKYeHek5p8TKIYx2HgE1G2hzqN1uo5gmGL3ubks
+	 yAPVWoiH3ZhjU+myRtuCUxb8Y4jMn0Brwp8vJUO1gASXLDU9C55uGBwxF2MdMURu5T
+	 5tZzry323vuAHoCHKopkWGSVMiCXZHfqyPxdfQJFKtv/HdWeXdteG9eu8/1WhIASzN
+	 Bz1KGeVKDzxXA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id DE7AC410F9;
-	Thu,  7 May 2026 11:47:03 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 4219D11B
- for <intel-wired-lan@lists.osuosl.org>; Thu,  7 May 2026 11:47:03 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id AFEB06101D;
+	Thu,  7 May 2026 12:15:58 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 9EA99317
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  7 May 2026 12:15:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 33F20407A4
- for <intel-wired-lan@lists.osuosl.org>; Thu,  7 May 2026 11:47:03 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 8FBC06101D
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  7 May 2026 12:15:57 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id KlUqzz5tGx2L for <intel-wired-lan@lists.osuosl.org>;
- Thu,  7 May 2026 11:47:02 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
- envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 4752B40798
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4752B40798
-Received: from sea.source.kernel.org (sea.source.kernel.org
- [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 4752B40798
- for <intel-wired-lan@lists.osuosl.org>; Thu,  7 May 2026 11:47:02 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sea.source.kernel.org (Postfix) with ESMTP id 0160843F45;
- Thu,  7 May 2026 11:47:02 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B8E2FC2BCC7;
- Thu,  7 May 2026 11:47:00 +0000 (UTC)
-From: Simon Horman <horms@kernel.org>
-To: aleksandr.loktionov@intel.com
-Cc: 'Simon Horman' <horms@kernel.org>, intel-wired-lan@lists.osuosl.org,
- anthony.l.nguyen@intel.com, netdev@vger.kernel.org
-Date: Thu,  7 May 2026 12:46:54 +0100
-Message-ID: <20260507114654.916528-1-horms@kernel.org>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260504142451.4161845-6-aleksandr.loktionov@intel.com>
-References: <20260504142451.4161845-6-aleksandr.loktionov@intel.com>
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 7v4mP3IPdTUj for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  7 May 2026 12:15:56 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=156.67.10.101;
+ helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 6174561019
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6174561019
+Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 6174561019
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  7 May 2026 12:15:56 +0000 (UTC)
+Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
+ (envelope-from <andrew@lunn.ch>)
+ id 1wKxdh-001o9u-9v; Thu, 07 May 2026 14:15:37 +0200
+Date: Thu, 7 May 2026 14:15:37 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+To: "Abdul Rahim, Faizal" <faizal.abdul.rahim@linux.intel.com>
+Cc: David Laight <david.laight.linux@gmail.com>,
+ KhaiWenTan <khai.wen.tan@linux.intel.com>,
+ anthony.l.nguyen@intel.com, andrew+netdev@lunn.ch,
+ davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
+ pabeni@redhat.com, intel-wired-lan@lists.osuosl.org,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ faizal.abdul.rahim@intel.com, hong.aun.looi@intel.com,
+ khai.wen.tan@intel.com, hector.blanco.alcaine@intel.com
+Message-ID: <a74089d5-1b27-4d05-bd8c-9ec2226667be@lunn.ch>
+References: <20260428060009.311393-1-khai.wen.tan@linux.intel.com>
+ <20260430154105.505739ac@pumpkin>
+ <63b186e0-046d-496e-8ae4-d68cd5eb5817@linux.intel.com>
+ <20260506104053.7a4f5bf5@pumpkin>
+ <78e48cc4-759f-46e1-83c7-1c9442308ae3@linux.intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1778154421;
- bh=h3EAL/S01YS8fybSqcWD1qgy/RTvjx3UPUp6EuoYrGg=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=AxDvMBSR+KTVU1wY7BS+di8mIKjFNZru+csLiT0ysg0yGADHxFtdeA7CuPOmKoLLo
- 6fXBWGJKD4IpvUZWC8WWNamvfglBJG27bdFHeng9mLttN2ESB5nvTWdtwihqJIYH+P
- xyRRNc0hmAysyI8Jy75wPwKVZqBAn67IPGQyDlBic1a4Q1cVbxPJK9Lw4Ktnu0uSCG
- 9BgSEaZ7XcFy2ku0TIUU5kqTD4eHO06nb8z9EOMagvsgqG7dP0Er2deoOgHxBV3mxL
- BG/bCxf5osAiRtzWJaaiysuMGSXN0H2P4ZvjCmtSKTheLJYJJdJ4m6QPgv8Gp1vG9G
- guUCimo/JV6EA==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=AxDvMBSR
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v2 5/5] ice: use
- element-by-element comparison for DCB config changes
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <78e48cc4-759f-46e1-83c7-1c9442308ae3@linux.intel.com>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
+ c=relaxed/relaxed; d=lunn.ch; 
+ s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
+ References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
+ Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
+ Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
+ bh=k3DI5VHNsX2dtInGmX3aR5Hyj7MlF2pGpMlNqzUivf8=; b=MvG1GfRfk8yPoSwjN4if1WBYr7
+ uAOS9Oxk/4pLC4AqlwuIGpKPaCLF4vPWHlY31q/mU4dnmdaeDsHwZaJ6t6dLT0wbD8bVA1haBle/3
+ bvyc/NMBTWqn6TpqhJ8RUcmYxbUdNbdyYw93LjwJ7s7QfjOXTzAPr4pGtifjReRzwiH0=;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=lunn.ch
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (1024-bit key,
+ unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256
+ header.s=20171124 header.b=MvG1GfRf
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v4 0/3] igc: add support for
+ forcing link speed without autonegotiation
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -99,115 +105,25 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: 'Simon Horman' <horms@kernel.org>
+> I agree that for normal Ethernet use, auto-negotiation on both link
+> partners is safer and avoids the issues you mentioned.
+> 
+> The reason for this patch is the more specific PROFINET Fast Start Up
+> (FSU) use case. For FSU, the requirement is different from normal Ethernet
+> use. It is intended for deterministic startup, for example in industrial
+> robot/tool-change applications.
+> 
+> One of the startup optimizations is to use "fixed transmission parameters"
+> instead of automatic detection in the profinet specification:
+>   https://us.profinet.com/profinet_tech/fast-start-up/
 
-This is an AI-generated review of your patch. The human sending this
-email has considered the AI review valid, or at least plausible.
-Full review at: https://sashiko.dev
----
-Subject: ice: use element-by-element comparison for DCB config changes
+Automotive also have similar requirements. For them, Autoneg is slow,
+takes around 1 second, where as a fixed link is operative very
+fast. There are even some automotive ethernet devices which don't even
+support autoneg.
 
-This commit replaces the use of memcmp() for DCB configurations with an
-element-by-element comparison using ice_dcb_need_recfg(). It exports this
-function and applies it to the SW DCB netlink setters to prevent issues
-with uninitialized padding bytes.
+So this use case makes sense to me, for embedded systems. If the
+hardware can do it, any most PHYs can, i see no reason not to support
+it. And anything using phylib gets it for free.
 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-> index a10c1c8d86977..13a52c1a4da3e 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-> @@ -108,11 +108,17 @@ static int ice_dcbnl_setets(struct net_device *netdev, struct ieee_ets *ets)
->  	if (!bwrec)
->  		new_cfg->etsrec.tcbwtable[0] = 100;
->  
-> +	if (!ice_dcb_need_recfg(pf, &pf->hw.port_info->qos_cfg.local_dcbx_cfg,
-> +				new_cfg)) {
-> +		err = ICE_DCB_NO_HW_CHG;
-> +		goto ets_out;
-> +	}
-
-Does ice_dcb_need_recfg() correctly detect bandwidth changes?
-
-Looking at the implementation of ice_dcb_need_recfg(), it only logs a debug
-message but doesn't set need_reconfig to true when only the ETS Bandwidth
-Table or TSA Table changes:
-
-drivers/net/ethernet/intel/ice/ice_dcb_lib.c:ice_dcb_need_recfg() {
-    ...
-    if (memcmp(&new_cfg->etscfg.tcbwtable,
-               &old_cfg->etscfg.tcbwtable,
-               sizeof(new_cfg->etscfg.tcbwtable)))
-        dev_dbg(dev, "ETS TC BW Table changed.\n");
-    ...
-}
-
-Since the function returns false, will this cause ice_dcbnl_setets() to
-abort early and silently drop user-requested bandwidth modifications?
-
-Also, since new_cfg points to the shared desired_dcbx_cfg state, does this
-early return leave uncommitted modifications in the software state?
-
-If a subsequent unrelated operation (like setting PFC) correctly returns
-true from ice_dcb_need_recfg(), it appears it could unintentionally push
-these abandoned ETS bandwidth changes to the hardware.
-
->  	err = ice_pf_dcb_cfg(pf, new_cfg, true);
->  	/* return of zero indicates new cfg applied */
-> -	if (err == ICE_DCB_HW_CHG_RST)
-> +	if (!err)
->  		ice_dcbnl_devreset(netdev);
-
-This isn't a bug introduced by this patch, but can ice_dcbnl_devreset()
-cause a deadlock against hardware reset tasks?
-
-The ice_dcbnl_devreset() function spins in a usleep_range() loop while
-ice_is_reset_in_progress() is true.
-
-Since DCBNL callbacks like ice_dcbnl_setets() run with the global
-rtnl_lock held, and a concurrent hardware or PCIe reset worker likely
-requires rtnl_lock to complete the reset, will the reset task block
-forever while this thread waits for it?
-
-> -	if (err == ICE_DCB_NO_HW_CHG)
-> +	else if (err == ICE_DCB_NO_HW_CHG)
->  		err = ICE_DCB_HW_CHG_RST;
->  
->  ets_out:
-
-Does this change cause the function to return a positive error code to
-userspace when applying an identical configuration?
-
-By bypassing the translation from ICE_DCB_NO_HW_CHG (which is 1) to
-ICE_DCB_HW_CHG_RST (which evaluates to 0) in the early goto added
-above, err remains 1 at the ets_out label.
-
-The DCBNL core evaluates any non-zero return value as an error:
-
-net/dcb/dcbnl.c:dcbnl_ieee_set() {
-    ...
-    err = netdev->dcbnl_ops->ieee_setets(netdev, ets);
-    if (err)
-        goto err;
-    ...
-}
-
-Will this cause tools like lldptool to fail when configuring an
-existing setup?
-
-[ ... ]
-
-> @@ -845,6 +858,12 @@ static int ice_dcbnl_setapp(struct net_device *netdev, struct dcb_app *app)
->  	new_cfg->dscp_map[app->protocol] = app->priority;
->  	new_cfg->app[new_cfg->numapps++] = new_app;
-
-This isn't a bug introduced by this patch, but does this array append
-lack bounds checking against ICE_DCBX_MAX_APPS?
-
-The app array has a capacity of 64. The function restricts duplicate
-DSCP protocols using the dscp_mapped bitmap, but since DSCP_MAX is also
-64, a user could map all 64 unique values.
-
-If numapps starts greater than 0 due to existing EtherType applications,
-adding 64 valid DSCP mappings would cause numapps to exceed 64, leading
-to an out-of-bounds write that overwrites the adjacent dscp_mapped
-bitmap.
+	Andrew
