@@ -1,129 +1,208 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E67AECD3445
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  8 May 2026 22:09:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E3358CD342F
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  8 May 2026 22:34:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id BC291410EA;
-	Fri,  8 May 2026 22:09:19 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 9190784AD8;
+	Fri,  8 May 2026 22:34:35 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id VwwZTO_stcA3; Fri,  8 May 2026 22:34:35 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org F269284AD9
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1778279675;
+	bh=6NO1uP6S21JNI2yd7ZDkVKwR6D550xTIjQZew5U4cKU=;
+	h=Date:To:CC:References:From:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=BxMN0phNisbIweaOHJTSVRi8bhpWCL8cHPgkNmVZK346VhMOMD0G/WKIK2SZHo9Bu
+	 sIndgLSQCbCFfCyfkS/DLfykECTCmHcnVEvAVnyNp9V1xDo9kuKZCwW3aE+P6wOFBk
+	 66Y7O1VSf4txINF2ZtR7tl7K20G4gjzTiA/gPLqZNwCRjxl1uHNeIfzK8dLFPCetO9
+	 7QBohljb4m8AHLEaNTxZkd4eJUsfUSCHX5A1LUiR42ZfeUE9FnSMGuirX1tJOkxR8z
+	 KGrQ5Fzg2ZFjEAza3uZMBlVD2EbBri2XRIQLHQIEb7fI+qmBO//LWjRcanmr2Xwwvh
+	 Auqj7pBYsyQ1g==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp1.osuosl.org (Postfix) with ESMTP id F269284AD9;
+	Fri,  8 May 2026 22:34:34 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 0F23F25B
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  8 May 2026 22:34:33 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id E113D41CF7
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  8 May 2026 22:34:32 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id UqHhr0xP-55u; Fri,  8 May 2026 22:09:14 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E921D410EC
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1778278154;
-	bh=uLHzQyOPEJEJGkFH5l7eU5xubxmYqwO7MmVfMNTLNB4=;
-	h=From:To:CC:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=n0/2h+bGj9sNJQIVX+HXOKwp+/W/ELBBvuXuEc5z0mbnasQTLSGtnjh/dBtk3KvVI
-	 PXrlwdBx8y0it9gVHof3kzHkE6p3rPCynrtFO5IrcMlZVfdfGVI3A2wROnFnQ8sCRJ
-	 8dio6bF9fTcGLcb+7QRifZ4jE12JoYC5mWx9h4VZcYdejZ6FFjqTwDRa2VB/5nJ7pX
-	 VkDN+pieoLdYV9SNO4geqy/ASd/ff2Ihqh2f+B7pFESBWNXSnkK+LVLMuxqzxFBqN3
-	 CmzBlGWvKp5drfkA7702xPfHeadMUd1A2iOxGSFw+uygAfRlMOyiNlG55Mz/0qTcRU
-	 uNnndkNx6864w==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id E921D410EC;
-	Fri,  8 May 2026 22:09:13 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id B7B12358
- for <intel-wired-lan@lists.osuosl.org>; Fri,  8 May 2026 04:07:51 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id B56ED409D6
- for <intel-wired-lan@lists.osuosl.org>; Fri,  8 May 2026 04:07:51 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id yhiD_hHZ8SG7 for <intel-wired-lan@lists.osuosl.org>;
- Fri,  8 May 2026 04:07:50 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=67.231.156.173;
- helo=mx0b-0016f401.pphosted.com;
- envelope-from=prvs=65883a0750=rkannoth@marvell.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org A974E404A0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A974E404A0
-Received: from mx0b-0016f401.pphosted.com (mx0b-0016f401.pphosted.com
- [67.231.156.173])
- by smtp2.osuosl.org (Postfix) with ESMTPS id A974E404A0
- for <intel-wired-lan@lists.osuosl.org>; Fri,  8 May 2026 04:07:50 +0000 (UTC)
-Received: from pps.filterd (m0431383.ppops.net [127.0.0.1])
- by mx0b-0016f401.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id
- 647NVKu02841680; Thu, 7 May 2026 20:49:30 -0700
-Received: from dc6wp-exch02.marvell.com ([4.21.29.225])
- by mx0b-0016f401.pphosted.com (PPS) with ESMTPS id 4e14g0gjd3-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 07 May 2026 20:49:30 -0700 (PDT)
-Received: from DC6WP-EXCH02.marvell.com (10.76.176.209) by
- DC6WP-EXCH02.marvell.com (10.76.176.209) with Microsoft SMTP Server
+ id Jkf0uyM2yZtM for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  8 May 2026 22:34:32 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.18;
+ helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 20A45420F3
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 20A45420F3
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 20A45420F3
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  8 May 2026 22:34:31 +0000 (UTC)
+X-CSE-ConnectionGUID: HPzy9EcERCqs42URaHqwKw==
+X-CSE-MsgGUID: aMchl8huSR+XEu6SSgKogQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11780"; a="78398423"
+X-IronPort-AV: E=Sophos;i="6.23,224,1770624000"; d="scan'208";a="78398423"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+ by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 08 May 2026 15:34:31 -0700
+X-CSE-ConnectionGUID: 8g9BVSjdQyWZMar6rgm2bw==
+X-CSE-MsgGUID: VFdVTJQDSAOFmZ1a7cY0Xw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,224,1770624000"; d="scan'208";a="241842207"
+Received: from fmsmsx903.amr.corp.intel.com ([10.18.126.92])
+ by fmviesa005.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 08 May 2026 15:34:31 -0700
+Received: from FMSMSX902.amr.corp.intel.com (10.18.126.91) by
+ fmsmsx903.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.25; Thu, 7 May 2026 20:49:29 -0700
-Received: from maili.marvell.com (10.69.176.80) by DC6WP-EXCH02.marvell.com
- (10.76.176.209) with Microsoft SMTP Server id 15.2.1544.25 via Frontend
- Transport; Thu, 7 May 2026 20:49:29 -0700
-Received: from rkannoth-OptiPlex-7090.. (unknown [10.28.36.165])
- by maili.marvell.com (Postfix) with ESMTP id 840263F7041;
- Thu,  7 May 2026 20:49:18 -0700 (PDT)
-From: Ratheesh Kannoth <rkannoth@marvell.com>
-To: <intel-wired-lan@lists.osuosl.org>, <linux-kernel@vger.kernel.org>,
- <linux-rdma@vger.kernel.org>, <netdev@vger.kernel.org>,
- <oss-drivers@corigine.com>
-CC: <akiyano@amazon.com>, <andrew+netdev@lunn.ch>,
- <anthony.l.nguyen@intel.com>, <arkadiusz.kubalewski@intel.com>,
- <brett.creeley@amd.com>, <darinzon@amazon.com>, <davem@davemloft.net>,
- <donald.hunter@gmail.com>, <edumazet@google.com>, <horms@kernel.org>,
- <idosch@nvidia.com>, <ivecera@redhat.com>, <jiri@resnulli.us>,
- <kuba@kernel.org>, <leon@kernel.org>, <mbloch@nvidia.com>,
- <michael.chan@broadcom.com>, <pabeni@redhat.com>,
- <pavan.chebbi@broadcom.com>, <petrm@nvidia.com>,
- <Prathosh.Satish@microchip.com>, <przemyslaw.kitszel@intel.com>,
- <saeedm@nvidia.com>, <sgoutham@marvell.com>, <tariqt@nvidia.com>,
- <vadim.fedorenko@linux.dev>, Ratheesh Kannoth <rkannoth@marvell.com>
-Date: Fri, 8 May 2026 09:19:03 +0530
-Message-ID: <20260508034912.4082520-1-rkannoth@marvell.com>
-X-Mailer: git-send-email 2.43.0
-MIME-Version: 1.0
+ 15.2.2562.37; Fri, 8 May 2026 15:34:31 -0700
+Received: from fmsedg902.ED.cps.intel.com (10.1.192.144) by
+ FMSMSX902.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37 via Frontend Transport; Fri, 8 May 2026 15:34:31 -0700
+Received: from CY7PR03CU001.outbound.protection.outlook.com (40.93.198.22) by
+ edgegateway.intel.com (192.55.55.82) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37; Fri, 8 May 2026 15:34:30 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=Hp+pGxucsSZtgBP2lN1kXAlc5FWEMJde61ku6GJatGKwVaYS+xh9Ea/k12MTmpPTCczU78zuQadq9m3XcGuH5+2m21ndktkkbz3FoeFga8bZi7gg37Kb4FDN5vv8wYpWVtdueNjAiGgWHerCwYmSKthM3G2vJNbmtittpzxn53zxWcn1OCcb1GzkBbBzjx1X1FfQqSFWgYa+HXmuo2vBLkTgja+X3U9BqjcMBc2cqMfaw3fq30Nc4jno2wsTlirnxjvJMgRQDkc5V/3WVnf3sY+c9XXwZ0OtpqUQ69oLkqGqeZBCUuirh3pb4G52aqrf044vcene3QwzF5u35KXc/A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=6NO1uP6S21JNI2yd7ZDkVKwR6D550xTIjQZew5U4cKU=;
+ b=gALtvPx2cmJ83l2GA+SDFBgsPeIVpYSHznsRfx10xu42UBwn7WOL+USP2aFH1tDoSp9Qvm5FRks2HZHfDZ1A8I6wez65GEBLBAoihfbdcceILz4n5+SRCGV98q+XNIertEfngBiW6+t1NDxGLHmaj/75XVM/x5c2RM/7ifzvKbEHa6u3Jzh04cAYEfPSw9k7dkE4Gtj6i2WqP5m6cKakxkusxbWcTMs4QTiQaJQXRFl6sREtH950TjweFW0Gm1dnqtthY/cG3OryPM8w2yQVtZEFqERWuTpSL9zQlyBEomilGo50zY0M7V5X7UKzoLeuWIQlNVIx6AmnTdad6Pe/Zw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from SN7PR11MB7592.namprd11.prod.outlook.com (2603:10b6:806:343::16)
+ by DS0PR11MB8740.namprd11.prod.outlook.com (2603:10b6:8:1b4::5) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9891.19; Fri, 8 May
+ 2026 22:34:25 +0000
+Received: from SN7PR11MB7592.namprd11.prod.outlook.com
+ ([fe80::3e09:8700:df72:37b6]) by SN7PR11MB7592.namprd11.prod.outlook.com
+ ([fe80::3e09:8700:df72:37b6%6]) with mapi id 15.20.9891.008; Fri, 8 May 2026
+ 22:34:25 +0000
+Message-ID: <a2c831d2-6825-4eed-a494-6e254d451667@intel.com>
+Date: Fri, 8 May 2026 15:34:24 -0700
+User-Agent: Mozilla Thunderbird
+To: John Ousterhout <ouster@cs.stanford.edu>
+CC: <anthony.l.nguyen@intel.com>, Jakub Kicinski <kuba@kernel.org>, "Paolo
+ Abeni" <pabeni@redhat.com>, <intel-wired-lan@lists.osuosl.org>,
+ <przemyslaw.kitszel@intel.com>, <netdev@vger.kernel.org>,
+ <stable@vger.kernel.org>
+References: <20260507183843.1457-1-ouster@cs.stanford.edu>
+ <379cd3dc-aff5-4fcd-bf9f-4878ae21ee74@intel.com>
+ <CAGXJAmzqBQha+XRu12ZpLTDBSMgAEANffD2uGKZ+VVdkMk6OVA@mail.gmail.com>
+ <3de05bb6-2cae-470f-8b8d-8ada1cd0a0f4@intel.com>
+ <CAGXJAmxKw-85-=0CX=s33CbfUmJA32=oqpDM=SeV5ZLi04fCOg@mail.gmail.com>
+Content-Language: en-US
+From: Jacob Keller <jacob.e.keller@intel.com>
+In-Reply-To: <CAGXJAmxKw-85-=0CX=s33CbfUmJA32=oqpDM=SeV5ZLi04fCOg@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Proofpoint-ORIG-GUID: 5XpSRK9UP1TGNbEpxu0D60bRyAkmyrqH
-X-Authority-Analysis: v=2.4 cv=bMUm5v+Z c=1 sm=1 tr=0 ts=69fd5d4a cx=c_pps
- a=gIfcoYsirJbf48DBMSPrZA==:117 a=gIfcoYsirJbf48DBMSPrZA==:17
- a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22 a=l0iWHRpgs5sLHlkKQ1IR:22
- a=qit2iCtTFQkLgVSMPQTB:22 a=VwQbUJbxAAAA:8 a=M5GUcnROAAAA:8
- a=1rdZWFfAsYpIarNArpIA:9 a=OBjm3rFKGHvpk9ecZwUJ:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTA4MDAzMyBTYWx0ZWRfX0obWHJ2emugt
- AVXQQfpG3hallSw2k2v/eUGF6kBD7WYzN8Lr4L6Irl7LfI/sE30VAU2mICRbFYQR7BNYdMInfng
- HU4AbGcGedhuppQHjgYeoRMUpC5IRxbKDcLkUwcmpPuIW2gvw3wDA6CJkVXSnRTqhAPhyP1BvGy
- f0p+ntvnehab0AmLR2sJt9BFcKZuOjq1PLX/kkfBxSdGj6+rEYNUfuy2mBGW308fSIfp/Q8h/ns
- JFoTihTjxTz37k8oKBK+s9Vj8HLz5FoV5Ck/4JfXbgMMgQCRqRakq4F/861JoxE2/3J9iKSlcdG
- poos7BYGByATjXTeOkYwipaVT3Rld2Zkv0uhYF5n6Sg3dQP2e+uPZCIrlyxo0ZC8fKUn7TrekRB
- GJHwmn348ljWKp8DFmNtXIIctRGib6SZH8ZRJvhmd3I5MTeA7vYAmSYVg6tGlrsGchYx/m/GUep
- saBw3cCgXm4Gw1rKKuQ==
-X-Proofpoint-GUID: 5XpSRK9UP1TGNbEpxu0D60bRyAkmyrqH
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-05-07_02,2026-05-06_01,2025-10-01_01
-X-Mailman-Approved-At: Fri, 08 May 2026 22:09:04 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=marvell.com; h=
- cc:content-transfer-encoding:content-type:date:from:message-id
- :mime-version:subject:to; s=pfpt0220; bh=uLHzQyOPEJEJGkFH5l7eU5x
- ubxmYqwO7MmVfMNTLNB4=; b=Ua0S++r0z8AicZemFOkhatok6BTIgGAzvWmBC/O
- 4/OgIAlOKfGewnxyFd6OARXp2nnBuse44bfnDS2rP/QouO34gALJA2fN+5nHgBtq
- PVvAL8mdSbT4aX8L49a6auT/oGFeUfF27ztmq7Sbp4jZvRViClKcys/UCG4ZqR8p
- 9nyoCNpX/pVNC2rbA6HrSw22dC05JJZb2KdDLP3RLxakKAjWbdutvgVIywzhh6BX
- FZ4LP+ZewXcqhCZV5u4QoN9EGwX8PV3B/V+dnt7F1kTNDTUi5ilNG7ibTBeK8uEH
- 3hA+WwV062FlrdieqEDpU6yyJW29ukHmRdchR0MOD6Lr7hA==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-ClientProxiedBy: MW4PR03CA0109.namprd03.prod.outlook.com
+ (2603:10b6:303:b7::24) To SN7PR11MB7592.namprd11.prod.outlook.com
+ (2603:10b6:806:343::16)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SN7PR11MB7592:EE_|DS0PR11MB8740:EE_
+X-MS-Office365-Filtering-Correlation-Id: e80f6b24-ccbd-436f-0daf-08dead51f500
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+ ARA:13230040|366016|376014|1800799024|22082099003|18002099003|56012099003; 
+X-Microsoft-Antispam-Message-Info: CotewVsewjq3iq2ssuuB8flOir54vJjPXQRUbETIiPbfzwkNk+25PJFZZASgHrzWS+IUmlHAa91bwYicXFj711SKJw4acH0VfqVGS+k15dwCp3g7IPzEDruxq5nlPZXKQaUDpujXhylrKWRSwgDDrqaBTDzJDlauBbydXuu7WWJ//5fFfKXFcrTwfEUJMx51mF5ye0Dx5wj89n04rBvDhAYsXi76XmyfFwQOFwW0FulyAk3Jp4cjrth7NS7P4RbaQMcM0nAnjBndoX0HVGMGegUOpIrxT6NlbS0SFZbxIAEco3yBdnE6wqyVf5S36maLDwKeUvSK156297Fbzfx7qK98BdJm1O4rGlwpMdPCAY21RU8WPbd7vTa51e4Obawci1He1jWNFeKCb8P1nZeGEiQBszW5co7StN9npk+js9KBIKy0mya2+k/XrJUcKBMkV8JSG7oWWz78E5uhZgNStsGc8aTWuf8KmmCLrHAZIFuXR87WfDWaTQyhg3JiA5lPU5z/R2oLwrxxhWr/Eyw3eXLkD3G0RczKLTrhGoX8Ol7pVSlErUfhPmQXoAUWLWvtDwjqGbOhUt60qbxfx3koQPt5qVGCeP1TNMw+aI05tsQcPVYjOMtf4DOBYmFe6P3xZeonPJ07Ejx4P5LH5fcRL9XtR4OmJu82fvbdPmL9WRmqv/sBMfpIjXwbGndYLsAP
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:SN7PR11MB7592.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230040)(366016)(376014)(1800799024)(22082099003)(18002099003)(56012099003);
+ DIR:OUT; SFP:1101; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?aHlNMk9MbldUWlM1MVh4MFQ0NUdMdWZzRnBhR3h5S1IxNHQxeGFnQ0tDUUds?=
+ =?utf-8?B?Sm9LekI3dFloVnBBL0FtVFhDc0NVRDd4ZEt6NXRVMVdFL2xsOVlGNHFCenFw?=
+ =?utf-8?B?MGZteW1kazRHVlE2UlV2MTRiL3NBa003RVYxa3d3UlhVK2FVSjdHckFnRVRw?=
+ =?utf-8?B?cnk2ZDRwcnhNdURMTVNpdVorS3dwRUFGeVZqTktSa2VZM3k2VE9WNWovNjAw?=
+ =?utf-8?B?TEZqcTJUVjlqVWpqeGxDdWY5N1Jwc3YwUUpDekFNb2kvTnVZNHl3OFFidzg2?=
+ =?utf-8?B?VmlKK2o1WWlrVUVUaGNDeGlybUg2M3diWlI4TXRCRnJVRDJzVUJZN2RPMlNX?=
+ =?utf-8?B?V3k4NDZUdDhKdEZQNFJvWmtUU3Y2TTJ1bjh6QXZMTEczRGRTZnFmejRFNGdv?=
+ =?utf-8?B?YzVYN3lPd2MzTjAwQkJ1WnpRcDcxRXNJSmJRbU9BWjg3UmVWMTVjaTdlY3NH?=
+ =?utf-8?B?ZWFCaFJLRnJEM3hranAvRklPWWZRK2Z1YTRvdkt3aXRQcjBPRStUSlp3emdo?=
+ =?utf-8?B?SU5SVThnSWdZMG81cUxuazQxcndSVFNUQktvS0NIQ21mVUp6TTNyd1NmcERT?=
+ =?utf-8?B?UmJSZDE5NnlzcEpzcEhzd2Vvd3Bibm1LdnhWTjNrZGs2NGNoc1owMVdwc1dB?=
+ =?utf-8?B?clBhQVZIS2pORWRIVnR1ckg2dkpHMVhiUFNkZE1JeHo4SXJ6ZkJsQnRRTkdD?=
+ =?utf-8?B?TWFCOTV5MWhBZWRScUE0UlJjZ2dQcElMZ1E4QWJVRVJ2Kyt2a2J2UXR5SWZL?=
+ =?utf-8?B?aDlYTEZaTkxmSlNBZG1lTXZsTFRHaXNZQW5NYTlrQ3BoeTkrREpKSElNRXN2?=
+ =?utf-8?B?eWppYi9wbERHZE5hTWZTZzdaZEtEQzVqV2RCTnN4UjQxYkRxaDFxb21pM2xQ?=
+ =?utf-8?B?WkhqMlN0ZXFISURtSmpCTFU1clN5SEZ4NWRWd3pnRkZPa2RHNWliRUszSnZm?=
+ =?utf-8?B?UURlWUdzUWUrOEZLQ3VWMVBmYytSRmtaK04wcjU3K2xOUnpvVkFENFJkTVlm?=
+ =?utf-8?B?SlEzL3VIQVM5aHBjeFBQbHlyV2Z2TWl5YTVici93WTM5UGlaSVppcXpSMkFW?=
+ =?utf-8?B?Qm1PdWxTcHRQSUVKd0JMc1N5Ymgxb2tROGMvc3R5eXE1OWZuZXVvZjZtMmZt?=
+ =?utf-8?B?aEJYbHo0S0dYK2pMQkhKTmhBWGZHZStsNkVVQlNRb093YzVkWmtxWDNIMm1m?=
+ =?utf-8?B?aWFLRlVMUGIwNU1vZDlVOGRjU01zeVhjeUpLZGZjWGZnMHpTa3VQVld5dVRK?=
+ =?utf-8?B?QWRENTVOdmhMTTZJUkFwUU0rVWRjK2pyNjVTemJBeEcyaG1kZHZ5OWV4ai80?=
+ =?utf-8?B?Z3VhbHpoUXBZUnlNaVg2aUUvTDVROE1GaUJpa2o5YkhJTEFjcU5reXl2a21E?=
+ =?utf-8?B?Z2k5S085eUtaTWxnVEU3Q1JPRXhvbm9mekdxdEMwKyt4aGVobThyY3ZWQjZW?=
+ =?utf-8?B?WnB1d3RSNXhsK0YvT0cvak5KN3czc3NWMDhCRUh3VGJWb3g3UmxHbDZrTTJs?=
+ =?utf-8?B?TGxHSEVLT2lZVGgwc3g1eVNlRVFHc2pCMkRhR2FYRkRtaXNXYW5lMnExekpZ?=
+ =?utf-8?B?WXN4dXNRTGh4V2xpQ3kzY2YvVDc0a3d1N2c0dHhJOTY0NHVEaVpPZ0s4Sko3?=
+ =?utf-8?B?U2ZHd1U3bUlxdFhGVFdyQXkycDFiSFdMeCtRR3l0OVlmQlAyV1V1bnhLTGhq?=
+ =?utf-8?B?WEh3RFhPWG1VOVA4ZWJGRHhNc2h3alFzZGNxRzJvWXdnKzRKVXQzQ2ljaVhK?=
+ =?utf-8?B?WkZPTW1yYTF6MHhtNmFSOFN4RXluTFViaXFyeGRtRGJtdmZuWXZuSEphV2sr?=
+ =?utf-8?B?TDRQR1ZDdHpYbmw2a3gxdG84Z2kwZ3pubm5Nd0ljMmRzU09lVGlkMEdUTHVG?=
+ =?utf-8?B?MHBFK0hVSkNnTnVCbWFzZW94ZTZiaUIwb2dHb1M4Mmw0UnEvVzIvbnExVWx5?=
+ =?utf-8?B?cndxc3FWWUZ3M09ybjNkSVBsakREUjloQTJKdkVycUpsVmxwZFlUTnJ2OGkx?=
+ =?utf-8?B?czNjc0Y1d1p0Wml5NnlVOHh4Y2F2cmg5WFNsMWNEOEQ3bnZlRUdQUTYyc0Zl?=
+ =?utf-8?B?Qy85Rm9VU2xmcHJtbXMvRHhaSy9EVlhDUFZYY0Vleml2YjNyWCt4aWNJeFRB?=
+ =?utf-8?B?TCtoSWNhV0pna1N1c1dlREptTE1jejJJL1NQNjIrK1B5Q2FxMklWNjNSTS8w?=
+ =?utf-8?B?TXpPQWx2QVl0ZU1yOWxzcEVPaEVwWkdLMFM3eXNEcVVReVVkMkhMUGJmSytL?=
+ =?utf-8?B?UmFCMGFPK0Z4WUJiTWJ5aG5MSTVVM2NySVZuei9hb2N0Ymg3eWJxdmFQUzVF?=
+ =?utf-8?B?c3NyS2M1c3cwZkF1bzVPTmRyQWhqMnNFVjVwQ09CRzkvVkptUEhmQT09?=
+X-Exchange-RoutingPolicyChecked: udShiXBS5rAxZ4qiQ+JdhAzZM3rEEbrPPgqlOqIZf2cIb7adr6WJbTyFyTzHpwmXGk+NEHgqenQYBm9pDZHCflmGo68Y7xcqf0+cnVuAPAc7jQCKxEROGvETVxj2xtZoFKZBnV13ZQwTCS9vhWcq3TiY2QZT4Nh82zxcKgFg15u34oawXRnrb1RK7b0HFbbPL0gc1qa6D3lojfPcV3vD2aelcaZWbvVsSXm3PNCb/VV0rqIxbfA5GL+Yx5LRu9krwsCmllMYrEwyY+XMxu3lVo7zqa4Gqdpwwi84hkOa59mi2hyFbVYKG4G2CAgQnQOtM0IAzXr5vaV7q8Voikc/7A==
+X-MS-Exchange-CrossTenant-Network-Message-Id: e80f6b24-ccbd-436f-0daf-08dead51f500
+X-MS-Exchange-CrossTenant-AuthSource: SN7PR11MB7592.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 May 2026 22:34:25.1460 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: luiAHtMKbYxm9fj7m2SgsV1xOrtHMcc9NngTBOWOvLL9sv4v6oFnWb/04tVqlohYarhLmskyTv5DIkFUTn4DvS1sp/zg9KAeUJmU9z8xKvo=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR11MB8740
+X-OriginatorOrg: intel.com
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1778279672; x=1809815672;
+ h=message-id:date:subject:to:cc:references:from:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=knQwe5Xw0Tp6fOgHWl28GmdmIA3W24lrw0EIflyvs1U=;
+ b=kjqVYuTalhgriK8oMGLhNUxOSXHe3tIYrQBU2PUQ156XHnHkaKf692Rq
+ e0iX2CzR1li4m4DIrZ0Sf4H7kNJGAATgu4pfnFUU7Xp8SB3uWhAG2akwP
+ l442B6Te4ZuBKzxUVuUWhDf17vOaVO8xWXtkPaztSrx3HyhroyoIwhjK9
+ erCsKZ9Vl+aLsrlFfDLxOgoSAl0jQVii50USSR5KWJLJYOWLgctFGeiNd
+ pNicHvI9gNVjun6ygXGUZOEN7EX6cJMGQHY5+WCMhx6nL49sjZKNpd39r
+ PnONJoBooBaVJuKDjiqZCiWi/dNRwy+SHnyS1I+oRt96nl6snANDtbFW/
+ g==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=marvell.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=marvell.com header.i=@marvell.com
- header.a=rsa-sha256 header.s=pfpt0220 header.b=Ua0S++r0
-Subject: [Intel-wired-lan] [PATCH v12 net-next 0/9] octeontx2-af: npc:
- Enhancements.
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=kjqVYuTa
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Subject: Re: [Intel-wired-lan] [PATCH net v2] ice: fix packet corruption due
+ to extraneous page flip
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -139,158 +218,63 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-This series extends Marvell octeontx2-af support for CN20K NPC (MCAM
-debuggability, allocation policy, default-rule lifetime, optional KPU
-profiles from firmware files, X2/X4 MCAM keyword handling in flows and
-defaults, and dynamic CN20K NPC private state), adds a devlink mechanism
-for multi-value parameters, and adjusts devlink param netlink helpers
-and mlx5 so stack usage stays within -Wframe-larger-than limits once union
-devlink_param_value grows.
+On 5/8/2026 2:59 PM, John Ousterhout wrote:
+> On Fri, May 8, 2026 at 2:55 PM Jacob Keller <jacob.e.keller@intel.com> wrote:
+>>
+>> On 5/7/2026 7:37 PM, John Ousterhout wrote:
+>>> Correct: this patch only applies to the ice driver before its conversion.
+>>>
+>>> The patch applies to versions 6.18.27 and 6.12.86. I believe the bug
+>>> may also be present in 6.6.137, but the code has a slightly different
+>>> structure there (the function ice_put_rx_mbuf doesn't yet exist in
+>>> that version) so the patch would need to be reworked a bit.
+>>>
+>>> This situation isn't all that rare. It isn't a zero-length packet that
+>>> triggers it; it seems to happen if a packet uses every available byte
+>>> in a buffer, ending precisely at the end of the buffer. When this
+>>> happens, the NIC seems to generate an extra zero-length "buffer". This
+>>> happens quite frequently (thousands of times per second in some of my
+>>> workloads).
+>>>
+>>> What keeps corruption from happening constantly is that there is only
+>>> a problem if the "other half" of the buffer page is still active when
+>>> the 0-length buffer is received from the NIC. I suspect that with TCP
+>>> this is pretty unlikely: packet buffers get recycled quickly. If the
+>>> other half is not in use, then it doesn't matter whether the page gets
+>>> "flipped" while processing the 0-length buffer. I ran into this
+>>> problem because I was testing Homa under conditions that caused some
+>>> packet buffers to stay alive for longer periods of time.
+>>>
+>>> -John-
+>> Right. So I think we need to make sure the patch is cc'd to stable.
+>> Technically it doesn't strictly follow any of the 3 rules, but its
+>> closest to 3 with a clarification that there is no upstream equivalent
+>> due to the libeth Rx refactor.
+> 
+> It looks like messages on this chain have been cc-ed to stable since
+> your first message. Is that sufficient, or do I need to resubmit (e.g.
+> v3) with stable in the cc list?
+> 
+> -John-
 
-Patch 1 improves CN20K MCAM visibility in debugfs: mcam_layout marks
-enabled entries, dstats reports per-entry hit deltas, and mismatch lists
-enabled entries without a PF mapping. MCAM enable state is tracked in a
-bitmap updated from the CN20K enable path.
+I had added cc to stable to get some visibility, but I suspect that it
+won't show up to the stable maintainers without being sent fully as a
+patch that can be picked up by patchwork etc. Thus....
 
-Patch 2 reduces stack usage in mlx5e_pcie_cong_get_thresh_config() by
-reusing a single union devlink_param_value and a local result struct
-instead of holding a large array of unions on the stack, so the helper
-stays under the frame-size warning limit as the union grows (patches 3-4).
+Its probably best to send a version to stable along with a comment about
+why you can't list an upstream commit id following the guidelines from
+Documentation/process/stable-rules.rst specifically the "option 3" rule,
+since we can't apply this fix to any main tree, and there is no
+equivalent commit already to backport.
 
-Patch 3 changes devlink_nl_param_value_put() and
-devlink_nl_param_value_fill_one() to pass union devlink_param_value by
-pointer instead of by value. Passing two copies of the union by value in
-the param netlink path consumes over 500 bytes of argument stack and risks
-CONFIG_FRAME_WARN as the union grows beyond its historical size (patch 4).
+Its a bit unorthodox but I can't see any other solution. It is also
+important to be extremely clear in the commit to explain why it deviates
+from the upstream (which was fixed accidentally by libeth refactor and
+pagepool conversion) as to why we need a separate commit is necessary.
 
-Patch 4 (Saeed) introduces DEVLINK_PARAM_TYPE_U64_ARRAY and nested
-DEVLINK_ATTR_PARAM_VALUE_DATA attributes so drivers and user space can
-exchange bounded u64 arrays; YAML, uapi, and netlink validation are
-updated.
+For now I would just target the kernels that the patch easily applies
+on. Fixing some is better than fixing none. For the 6.6.x series, I can
+try to poke someone from Intel to see if we can get something tested.
 
-Patch 5 adds a runtime devlink parameter srch_order to reorder CN20K
-subbank search during MCAM allocation.
-
-Patch 6 ties default MCAM entries to NIX LF alloc/free on CN20K, adds
-NIX_LF_DONT_FREE_DFT_IDXS for PF teardown paths that must not drop default
-NPC indexes while the driver still owns state, and tightens nix_lf_alloc
-error propagation.
-
-Patch 7 allows loading a custom KPU profile from /lib/firmware/kpu via
-module parameter kpu_profile, with cam2 / ptype_mask wiring and helpers
-that share firmware-sourced vs filesystem-sourced profile layouts.
-
-Patch 8 makes default-rule allocation, AF flow install, and PF-side RSS,
-defaults, and ethtool flows respect the active CN20K MCAM keyword width
-(X2 vs X4), including X4 reference-index masking and -EOPNOTSUPP when a
-flow needs X4 keys on an X2-only profile.
-
-Patch 9 replaces file-scope npc_priv and static dstats with allocation
-sized from discovered bank/subbank geometry, threads npc_priv_get()
-through CN20K NPC paths, and allocates dstats via devm_kzalloc for the
-debugfs helper.
-
-The mlx5 change sits immediately before the devlink patches so the series
-applies cleanly and stays warning-free when built incrementally;
-pass-by-pointer precedes the U64 array type so helpers are not copying an
-even larger union by value. The CN20K patches keep srch_order ahead of
-NIX LF coordination, KPU-from-filesystem, X2/X4 handling, and the npc_priv
-refactor that touches the same files heavily.
-
-Ratheesh Kannoth (8):
-  octeontx2-af: npc: cn20k: debugfs enhancements
-  net/mlx5e: trim stack use in PCIe congestion threshold helper
-  devlink: pass param values by pointer
-  octeontx2-af: npc: cn20k: add subbank search order control
-  octeontx2: cn20k: Coordinate default rules with NIX LF lifecycle
-  octeontx2-af: npc: Support for custom KPU profile from filesystem
-  octeontx2: cn20k: Respect NPC MCAM X2/X4 profile in flows and DFT
-    alloc
-  octeontx2-af: npc: cn20k: Allocate npc_priv and dstats dynamically.
-
-Saeed Mahameed (1):
-  devlink: Implement devlink param multi attribute nested data values
-
- Documentation/netlink/specs/devlink.yaml          |   4 +
- drivers/dpll/zl3073x/devlink.c                    |   6 ++-
- drivers/net/ethernet/amazon/ena/ena_devlink.c     |   8 ++-
- drivers/net/ethernet/amd/pds_core/core.h          |   2 ++-
- drivers/net/ethernet/amd/pds_core/devlink.c       |   2 ++-
- drivers/net/ethernet/broadcom/bnxt/bnxt_devlink.c |   6 ++-
- drivers/net/ethernet/intel/ice/devlink/devlink.c  |  30 ++-
- .../ethernet/marvell/octeontx2/af/cn20k/debugfs.c | 175 ++++-
- .../net/ethernet/marvell/octeontx2/af/cn20k/npc.c | 545 ++++++++-----
- .../net/ethernet/marvell/octeontx2/af/cn20k/npc.h |  13 +++-
- drivers/net/ethernet/marvell/octeontx2/af/mbox.h  |   1 +
- drivers/net/ethernet/marvell/octeontx2/af/npc.h   |  17 +
- drivers/net/ethernet/marvell/octeontx2/af/rvu.h   |  12 ++-
- ...et/ethernet/marvell/octeontx2/af/rvu_devlink.c | 114 ++-
- ...rs/net/ethernet/marvell/octeontx2/af/rvu_nix.c |  69 ++-
- ...rs/net/ethernet/marvell/octeontx2/af/rvu_npc.c | 478 +++++++++--
- ...rs/net/ethernet/marvell/octeontx2/af/rvu_npc.h |  17 +
- ...net/ethernet/marvell/octeontx2/af/rvu_npc_fs.c |  12 +++-
- ...rs/net/ethernet/marvell/octeontx2/af/rvu_reg.h |   1 +
- .../ethernet/marvell/octeontx2/nic/otx2_devlink.c |   4 ++-
- ...et/ethernet/marvell/octeontx2/nic/otx2_flows.c |  48 ++-
- ...s/net/ethernet/marvell/octeontx2/nic/otx2_pf.c |   6 +--
- drivers/net/ethernet/mellanox/mlx4/main.c         |  14 ++-
- drivers/net/ethernet/mellanox/mlx5/core/devlink.c |  72 ++-
- ...hernet/mellanox/mlx5/core/en/pcie_cong_event.c |  36 ++-
- ...ethernet/mellanox/mlx5/core/eswitch_offloads.c |   2 ++-
- drivers/net/ethernet/mellanox/mlx5/core/fs_core.c |   4 ++-
- ...net/ethernet/mellanox/mlx5/core/lib/nv_param.c |  12 ++-
- drivers/net/ethernet/mellanox/mlxsw/core.c        |   8 ++-
- ...ers/net/ethernet/netronome/nfp/devlink_param.c |   6 ++-
- drivers/net/netdevsim/dev.c                       |   4 ++-
- include/net/devlink.h                             |  12 ++-
- include/uapi/linux/devlink.h                      |   1 +
- net/devlink/netlink_gen.c                         |   2 +
- net/devlink/param.c                               | 120 ++-
-
- 35 files changed, 1315 insertions(+), 548 deletions(-)
-
---
-
-v11 -> v12: Addressed Paolo,Jiri comments.
-	https://lore.kernel.org/netdev/20260409025055.1664053-1-rkannoth@marvell.com/
-	Added one patch which was rejected by simon in net (as it was kind of enhancement rather than a bug)
-	Added one more patch- which allocates two variables from heap.
-
-v10 -> v11: Addressed Paolo comments.
-	https://lore.kernel.org/netdev/20260403025533.6250-1-rkannoth@marvell.com/
-
-v9 -> v10: Addressed Paolo comments
-	https://lore.kernel.org/netdev/
-	20260330053105.2722453-1-rkannoth@marvell.com/
-
-v8 -> v9: Addressed Simon comments
-	https://lore.kernel.org/netdev/
-	20260325072159.1126964-1-rkannoth@marvell.com/
-
-v7 -> v8: Addressed Simon comments
-	https://lore.kernel.org/netdev/
-	20260323035110.3908741-1-rkannoth@marvell.com/T/#t
-
-v6 -> v7: Addressed Simon comments
-	https://lore.kernel.org/netdev/20260320165432.98832-1-horms@kernel.org/
-
-v5 -> v6: Addressed Jakub,Jiri comments
-	https://lore.kernel.org/netdev/
-	20260317045623.250187-1-rkannoth@marvell.com/
-
-v4 -> v5: Addressed Jakub comments
-	https://lore.kernel.org/netdev/
-	20260312022754.2029595-6-rkannoth@marvell.com/
-
-v3 -> v4: Addressed Simon comments
-	https://lore.kernel.org/netdev/abDeXLpMMxp7G1v3@rkannoth-OptiPlex-7090/#t
-
-v2 -> v3: Addressed Simon comments.
-	https://lore.kernel.org/netdev/
-	20260304043032.3661647-1-rkannoth@marvell.com/
-
-v1 -> v2: Addressed Jakub comments.
-	https://lore.kernel.org/netdev/
-	20260302085803.2449828-1-rkannoth@marvell.com/#t
-
-2.43.0
+Thanks,
+Jake
