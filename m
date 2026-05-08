@@ -4,107 +4,130 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EAE20CD3445
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  8 May 2026 22:00:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0158ECD3445
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  8 May 2026 22:09:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id B530884A56;
-	Fri,  8 May 2026 22:00:13 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id C560584A9F;
+	Fri,  8 May 2026 22:09:09 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id h85ZHJyvEJTb; Fri,  8 May 2026 22:00:12 +0000 (UTC)
+ id etaItI4exXGT; Fri,  8 May 2026 22:09:08 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5D88384A54
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 63F7484A9E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1778277612;
-	bh=YvUyJVIIJnigpcUTciBeubD93lBY3xgoK9qBgnLvnzk=;
-	h=References:In-Reply-To:From:Date:To:Cc:Subject:List-Id:
+	s=default; t=1778278148;
+	bh=rUaGwj/5EfqjboI6zl6shS2RseKdRrZ9a6Rr/qljoKQ=;
+	h=From:To:CC:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=CNGLJZE0fGlHwtTndNFllFO/fkD92Jr6GcxQgWXuFEZ09P6+a0+yGKIDg5qZpSxp1
-	 CgOWLhpxsAxNKEEOrClOMWQXRyqBnfpgKjhnh/GCGi5u32i12HX7kM9+JDFGr2bXp+
-	 mF5uPsSBxqIi9LxGdWMRELjIr5rHbd9wu0wLDvj5/co5pkLA4k3eNSrufY2ybmJB1d
-	 XU4Am+mj8z70PQNxZK1WOA/LySjPrTH1guKGADyk8pGVSACE7L+/9SLwCI04edB7wV
-	 qLhC403vHIpk5tGDvlEqSsA23ytIlJjOqzYjPmFuQkd9Y5ajArwBIQOHokXRI123Pi
-	 fcEKEeFOZv85A==
+	b=2aC3wl5seZtzsW+kMvWKLq6ARwtpgBsCh3Knu2bC3zqnFAd703LdiMtnDIO3IV+Bi
+	 nV5Yq2q5O7pt0LOD/eiFz2g/yqfOtQdzwZlYAq67SdTg8jjDTVu3cQqpLldw7ytFuD
+	 vtd5nXFsGx9IW11J8bKdZ93MgUT2rT7nRZqhLNN5w32oFwAEPNGKJHThjZcvVK5JQN
+	 ddsBdYw1hjEPhqBLBYlZOr2vMZrN7He7whK1TUzy4v5zlHKfNWf23woEWjb4RA/i2B
+	 C+URHKkEefr/TpiMH8anT0xlROj71VWLKs5kV4VtGuYtduVDbIgqiC04IwaWLxdsdA
+	 rCZ0xU08s7hyQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 5D88384A54;
-	Fri,  8 May 2026 22:00:12 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id DFDA322F
- for <intel-wired-lan@lists.osuosl.org>; Fri,  8 May 2026 22:00:10 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 63F7484A9E;
+	Fri,  8 May 2026 22:09:08 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id E3096272
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  8 May 2026 04:04:51 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id B563B61C17
- for <intel-wired-lan@lists.osuosl.org>; Fri,  8 May 2026 22:00:10 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id E12FA61286
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  8 May 2026 04:04:51 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id vakTM813WBCq for <intel-wired-lan@lists.osuosl.org>;
- Fri,  8 May 2026 22:00:09 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=171.64.64.25;
- helo=smtp1.cs.stanford.edu; envelope-from=ouster@cs.stanford.edu;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org ACB0761C16
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org ACB0761C16
-Received: from smtp1.cs.Stanford.EDU (smtp1.cs.stanford.edu [171.64.64.25])
- by smtp3.osuosl.org (Postfix) with ESMTPS id ACB0761C16
- for <intel-wired-lan@lists.osuosl.org>; Fri,  8 May 2026 22:00:09 +0000 (UTC)
-Received: from mail-yw1-f181.google.com ([209.85.128.181]:48160)
- by smtp1.cs.Stanford.EDU with esmtpsa (TLS1.2) tls
- TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 (Exim 4.94.2)
- (envelope-from <ouster@cs.stanford.edu>) id 1wLTEt-000585-Pa
- for intel-wired-lan@lists.osuosl.org; Fri, 08 May 2026 15:00:08 -0700
-Received: by mail-yw1-f181.google.com with SMTP id
- 00721157ae682-7bd9f61458eso19872087b3.0
- for <intel-wired-lan@lists.osuosl.org>; Fri, 08 May 2026 15:00:07 -0700 (PDT)
-X-Forwarded-Encrypted: i=1;
- AFNElJ9VQzmjho9joXI6OtUzElmC7u9eGBxgtGI+ywACYl76FJZy6+ePn3ZYeNIZjItTTUen69gxAPyk66uzA8P3yNw=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YyasAPmPAjtljoeaAUE0DHzA47Ez9474BLhRBay3CSwiUatoi5A
- T8/B8/p4wm5NIlNCtUJyCHA3OYqPew/OcHE2Yk3kWztNzwsqe2q/9QtudaeG5nXmt5DI+fWC8Fs
- uFSSHDUL4eypSUHoyRSiLSkJd0Zvfya4=
-X-Received: by 2002:a05:690c:f06:b0:7bd:4a12:f08b with SMTP id
- 00721157ae682-7c10255cc5fmr3388507b3.3.1778277607075; Fri, 08 May 2026
- 15:00:07 -0700 (PDT)
+ id Jyts17PBDnQ0 for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  8 May 2026 04:04:51 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=67.231.156.173;
+ helo=mx0b-0016f401.pphosted.com;
+ envelope-from=prvs=65883a0750=rkannoth@marvell.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org CF5D46121C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CF5D46121C
+Received: from mx0b-0016f401.pphosted.com (mx0b-0016f401.pphosted.com
+ [67.231.156.173])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id CF5D46121C
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  8 May 2026 04:04:50 +0000 (UTC)
+Received: from pps.filterd (m0431383.ppops.net [127.0.0.1])
+ by mx0b-0016f401.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id
+ 647NVKJX2841681; Thu, 7 May 2026 20:49:41 -0700
+Received: from dc6wp-exch02.marvell.com ([4.21.29.225])
+ by mx0b-0016f401.pphosted.com (PPS) with ESMTPS id 4e14g0gjd9-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 07 May 2026 20:49:40 -0700 (PDT)
+Received: from DC6WP-EXCH02.marvell.com (10.76.176.209) by
+ DC6WP-EXCH02.marvell.com (10.76.176.209) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.25; Thu, 7 May 2026 20:49:40 -0700
+Received: from maili.marvell.com (10.69.176.80) by DC6WP-EXCH02.marvell.com
+ (10.76.176.209) with Microsoft SMTP Server id 15.2.1544.25 via Frontend
+ Transport; Thu, 7 May 2026 20:49:40 -0700
+Received: from rkannoth-OptiPlex-7090.. (unknown [10.28.36.165])
+ by maili.marvell.com (Postfix) with ESMTP id 9FE603F7041;
+ Thu,  7 May 2026 20:49:29 -0700 (PDT)
+From: Ratheesh Kannoth <rkannoth@marvell.com>
+To: <intel-wired-lan@lists.osuosl.org>, <linux-kernel@vger.kernel.org>,
+ <linux-rdma@vger.kernel.org>, <netdev@vger.kernel.org>,
+ <oss-drivers@corigine.com>
+CC: <akiyano@amazon.com>, <andrew+netdev@lunn.ch>,
+ <anthony.l.nguyen@intel.com>, <arkadiusz.kubalewski@intel.com>,
+ <brett.creeley@amd.com>, <darinzon@amazon.com>, <davem@davemloft.net>,
+ <donald.hunter@gmail.com>, <edumazet@google.com>, <horms@kernel.org>,
+ <idosch@nvidia.com>, <ivecera@redhat.com>, <jiri@resnulli.us>,
+ <kuba@kernel.org>, <leon@kernel.org>, <mbloch@nvidia.com>,
+ <michael.chan@broadcom.com>, <pabeni@redhat.com>,
+ <pavan.chebbi@broadcom.com>, <petrm@nvidia.com>,
+ <Prathosh.Satish@microchip.com>, <przemyslaw.kitszel@intel.com>,
+ <saeedm@nvidia.com>, <sgoutham@marvell.com>, <tariqt@nvidia.com>,
+ <vadim.fedorenko@linux.dev>, Ratheesh Kannoth <rkannoth@marvell.com>
+Date: Fri, 8 May 2026 09:19:04 +0530
+Message-ID: <20260508034912.4082520-2-rkannoth@marvell.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260508034912.4082520-1-rkannoth@marvell.com>
+References: <20260508034912.4082520-1-rkannoth@marvell.com>
 MIME-Version: 1.0
-References: <20260507183843.1457-1-ouster@cs.stanford.edu>
- <379cd3dc-aff5-4fcd-bf9f-4878ae21ee74@intel.com>
- <CAGXJAmzqBQha+XRu12ZpLTDBSMgAEANffD2uGKZ+VVdkMk6OVA@mail.gmail.com>
- <3de05bb6-2cae-470f-8b8d-8ada1cd0a0f4@intel.com>
-In-Reply-To: <3de05bb6-2cae-470f-8b8d-8ada1cd0a0f4@intel.com>
-From: John Ousterhout <ouster@cs.stanford.edu>
-Date: Fri, 8 May 2026 14:59:31 -0700
-X-Gmail-Original-Message-ID: <CAGXJAmxKw-85-=0CX=s33CbfUmJA32=oqpDM=SeV5ZLi04fCOg@mail.gmail.com>
-X-Gm-Features: AVHnY4JwMwFAqhZa5I5X9osjxt-s62Punjr1W9agb-27xSB4PVgjKpQPNdeAu50
-Message-ID: <CAGXJAmxKw-85-=0CX=s33CbfUmJA32=oqpDM=SeV5ZLi04fCOg@mail.gmail.com>
-To: Jacob Keller <jacob.e.keller@intel.com>
-Cc: anthony.l.nguyen@intel.com, Jakub Kicinski <kuba@kernel.org>, 
- Paolo Abeni <pabeni@redhat.com>, intel-wired-lan@lists.osuosl.org, 
- przemyslaw.kitszel@intel.com, netdev@vger.kernel.org, stable@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Scan-Signature: 993826b9125cbf1b907f71dc54053338
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
- c=relaxed/relaxed; 
- d=cs.stanford.edu; s=cs2308; h=Content-Transfer-Encoding:Content-Type:Cc:To:
- Subject:Message-ID:Date:From:In-Reply-To:References:MIME-Version:Sender:
- Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender
- :Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
- List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=YvUyJVIIJnigpcUTciBeubD93lBY3xgoK9qBgnLvnzk=; t=1778277609; x=1779141609; 
- b=o0UmvbPC6D30oGiu+kM3OcsCoZf8ms8bi8VGlVYUgc7hspIz/TC/P52XT+dU4b2sCOsN2bAZROx
- Nu4HU1zCqNnmgPzUqE8m8Qs6qkG1x46nQ0+g9sjGK8QiX4drSmWSN0eXl/fxaqW/XNJvfeeQ88lHA
- JaXEqDQ/dcO+3irLfUca8WTfGix8sDZoLtlUgurU+1K/kBDjexb0i/z7Ekgh0EL/b96BsgWMDGY0G
- 49yrPZ5Rc4JC4NKVjnJc5Z0UXJ9fWS7ho35+jZr2L07saojhxWDVQ5lVahyeKOqgBLr8oEcqjLdV/
- 43UJ9tUXkGYm004DZaClr3R1X1CQWH50KkRw==;
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Proofpoint-ORIG-GUID: _eoGeqS0d4l6TwKeN7i2iiQxY7-wfsY5
+X-Authority-Analysis: v=2.4 cv=bMUm5v+Z c=1 sm=1 tr=0 ts=69fd5d55 cx=c_pps
+ a=gIfcoYsirJbf48DBMSPrZA==:117 a=gIfcoYsirJbf48DBMSPrZA==:17
+ a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22 a=l0iWHRpgs5sLHlkKQ1IR:22
+ a=qit2iCtTFQkLgVSMPQTB:22 a=M5GUcnROAAAA:8 a=Ci00bJMBAOu-zhm_1uQA:9
+ a=OBjm3rFKGHvpk9ecZwUJ:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTA4MDAzMyBTYWx0ZWRfX4I/ATAgyQFpp
+ w5ylPHsXo3S0u5oH0s7rsnrPTQTJ4y7M51GsDZWiBcJkIqgjS+c76KEa2mwBd9GNuPv0V7ToH+3
+ tdeGQRsc3L38AxDfPKAIxgkLk8TYscIGehbdy0LWbBbVN2VA7Ml+IiL7YEV6Zp3nbqWFYBjl5sj
+ XOOP90gbz3AOZx7TGG/WjtcWrGBu56ySeOHPoM5LCXG1vR6raxVDeXmM799rKsjkr9HMgL+vbhX
+ avrtS9CNI3ykDaUhpkec8t0WnC2pl5y7VUHotctghm5cxsxGPwuNjpht2XKc4yiyNsMiJdjp1Hp
+ ZXB5undlDe5VBk+Md0Pw/OLQla3DM9qm+HH9Sp26p4jzvF7itauQZMrwqDjXKWfdXlQPsDhfUGy
+ LcresW3CiC1Mn+fcSk4v0AV3qMh2XUTurAVJKMOlq3fTcyJXBoSdw7W6dSBruxzmB2jVd8PdWcf
+ TbQxldHt+FKY56h0CwA==
+X-Proofpoint-GUID: _eoGeqS0d4l6TwKeN7i2iiQxY7-wfsY5
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-07_02,2026-05-06_01,2025-10-01_01
+X-Mailman-Approved-At: Fri, 08 May 2026 22:09:04 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=marvell.com; h=
+ cc:content-transfer-encoding:content-type:date:from:in-reply-to
+ :message-id:mime-version:references:subject:to; s=pfpt0220; bh=r
+ UaGwj/5EfqjboI6zl6shS2RseKdRrZ9a6Rr/qljoKQ=; b=hyLhHuzUvhqsrNYbz
+ 49yfZhWeiKGxdr6v4Mt8FA+bl84ohlY5yY/Qimt/+Jyp3SDC1AKqWzUlTpENLYOp
+ unUARSbKMi5ogAjZtgoUauZuz9ieZ5LrmgZEuX0WvEXIBX71T5D+TK6VMeJn/kde
+ Uwrv2wC7B9Ee+99EjHlvFiVnxOfy+IHv9M8+CTUSaVmj2LJEvORYdV/AYkwN5A7c
+ stUlE9vERPPhPtGy0kCjJ/AXeiNLzL7vX7IzemXLpQANhO4ey4cST+oAIsFLjKbs
+ xFR9iki2o8iw1rh6h5Joqi8R8dZvYwEb6dGBy1WbfZPrx0ZgVJGt6diFanI+t+H3
+ C2BJQ==
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=cs.stanford.edu
+ header.from=marvell.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=cs.stanford.edu header.i=@cs.stanford.edu
- header.a=rsa-sha256 header.s=cs2308 header.b=o0UmvbPC
-Subject: Re: [Intel-wired-lan] [PATCH net v2] ice: fix packet corruption due
- to extraneous page flip
+ dkim=pass (2048-bit key) header.d=marvell.com header.i=@marvell.com
+ header.a=rsa-sha256 header.s=pfpt0220 header.b=hyLhHuzU
+Subject: [Intel-wired-lan] [PATCH v12 net-next 1/9] octeontx2-af: npc:
+ cn20k: debugfs enhancements
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -120,42 +143,311 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Fri, May 8, 2026 at 2:55=E2=80=AFPM Jacob Keller <jacob.e.keller@intel.c=
-om> wrote:
->
-> On 5/7/2026 7:37 PM, John Ousterhout wrote:
-> > Correct: this patch only applies to the ice driver before its conversio=
-n.
-> >
-> > The patch applies to versions 6.18.27 and 6.12.86. I believe the bug
-> > may also be present in 6.6.137, but the code has a slightly different
-> > structure there (the function ice_put_rx_mbuf doesn't yet exist in
-> > that version) so the patch would need to be reworked a bit.
-> >
-> > This situation isn't all that rare. It isn't a zero-length packet that
-> > triggers it; it seems to happen if a packet uses every available byte
-> > in a buffer, ending precisely at the end of the buffer. When this
-> > happens, the NIC seems to generate an extra zero-length "buffer". This
-> > happens quite frequently (thousands of times per second in some of my
-> > workloads).
-> >
-> > What keeps corruption from happening constantly is that there is only
-> > a problem if the "other half" of the buffer page is still active when
-> > the 0-length buffer is received from the NIC. I suspect that with TCP
-> > this is pretty unlikely: packet buffers get recycled quickly. If the
-> > other half is not in use, then it doesn't matter whether the page gets
-> > "flipped" while processing the 0-length buffer. I ran into this
-> > problem because I was testing Homa under conditions that caused some
-> > packet buffers to stay alive for longer periods of time.
-> >
-> > -John-
-> Right. So I think we need to make sure the patch is cc'd to stable.
-> Technically it doesn't strictly follow any of the 3 rules, but its
-> closest to 3 with a clarification that there is no upstream equivalent
-> due to the libeth Rx refactor.
+Improve MCAM visibility and field debugging for CN20K NPC.
 
-It looks like messages on this chain have been cc-ed to stable since
-your first message. Is that sufficient, or do I need to resubmit (e.g.
-v3) with stable in the cc list?
+- Extend "mcam_layout" to show enabled (+) or disabled state per entry
+  so status can be verified without parsing the full "mcam_entry" dump.
+- Add "dstats" debugfs entry: reports recently hit MCAM indices with
+  packet counts; stats are cleared on read so each read shows deltas.
+- Add "mismatch" debugfs entry: lists MCAM entries that are enabled
+  but not explicitly allocated, helping diagnose allocation/field issues.
 
--John-
+Signed-off-by: Ratheesh Kannoth <rkannoth@marvell.com>
+---
+ .../marvell/octeontx2/af/cn20k/debugfs.c      | 157 +++++++++++++++++-
+ .../ethernet/marvell/octeontx2/af/cn20k/npc.c |  16 +-
+ .../ethernet/marvell/octeontx2/af/cn20k/npc.h |   7 +
+ 3 files changed, 169 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/net/ethernet/marvell/octeontx2/af/cn20k/debugfs.c b/drivers/net/ethernet/marvell/octeontx2/af/cn20k/debugfs.c
+index 6f13296303cb..9a4c2ea5b19e 100644
+--- a/drivers/net/ethernet/marvell/octeontx2/af/cn20k/debugfs.c
++++ b/drivers/net/ethernet/marvell/octeontx2/af/cn20k/debugfs.c
+@@ -13,6 +13,7 @@
+ #include "struct.h"
+ #include "rvu.h"
+ #include "debugfs.h"
++#include "cn20k/reg.h"
+ #include "cn20k/npc.h"
+ 
+ static int npc_mcam_layout_show(struct seq_file *s, void *unused)
+@@ -58,7 +59,8 @@ static int npc_mcam_layout_show(struct seq_file *s, void *unused)
+ 						 "v:%u", vidx0);
+ 				}
+ 
+-				seq_printf(s, "\t%u(%#x) %s\n", idx0, pf1,
++				seq_printf(s, "\t%u(%#x)%c %s\n", idx0, pf1,
++					   test_bit(idx0, npc_priv->en_map) ? '+' : ' ',
+ 					   map ? buf0 : " ");
+ 			}
+ 			goto next;
+@@ -101,9 +103,13 @@ static int npc_mcam_layout_show(struct seq_file *s, void *unused)
+ 						 vidx1);
+ 				}
+ 
+-				seq_printf(s, "%05u(%#x) %s\t\t%05u(%#x) %s\n",
+-					   idx1, pf2, v1 ? buf1 : "       ",
+-					   idx0, pf1, v0 ? buf0 : "       ");
++				seq_printf(s, "%05u(%#x)%c %s\t\t%05u(%#x)%c %s\n",
++					   idx1, pf2,
++					   test_bit(idx1, npc_priv->en_map) ? '+' : ' ',
++					   v1 ? buf1 : "       ",
++					   idx0, pf1,
++					   test_bit(idx0, npc_priv->en_map) ? '+' : ' ',
++					   v0 ? buf0 : "       ");
+ 
+ 				continue;
+ 			}
+@@ -120,8 +126,9 @@ static int npc_mcam_layout_show(struct seq_file *s, void *unused)
+ 						 vidx0);
+ 				}
+ 
+-				seq_printf(s, "\t\t   \t\t%05u(%#x) %s\n", idx0,
+-					   pf1, map ? buf0 : " ");
++				seq_printf(s, "\t\t   \t\t%05u(%#x)%c %s\n", idx0, pf1,
++					   test_bit(idx0, npc_priv->en_map) ? '+' : ' ',
++					   map ? buf0 : " ");
+ 				continue;
+ 			}
+ 
+@@ -134,7 +141,8 @@ static int npc_mcam_layout_show(struct seq_file *s, void *unused)
+ 				snprintf(buf1, sizeof(buf1), "v:%05u", vidx1);
+ 			}
+ 
+-			seq_printf(s, "%05u(%#x) %s\n", idx1, pf1,
++			seq_printf(s, "%05u(%#x)%c %s\n", idx1, pf1,
++				   test_bit(idx1, npc_priv->en_map) ? '+' : ' ',
+ 				   map ? buf1 : " ");
+ 		}
+ next:
+@@ -145,6 +153,135 @@ static int npc_mcam_layout_show(struct seq_file *s, void *unused)
+ 
+ DEFINE_SHOW_ATTRIBUTE(npc_mcam_layout);
+ 
++#define __OCTEONTX2_DEBUGFS_ATTRIBUTE_FOPS(__name)			\
++static const struct file_operations __name ## _fops = {			\
++	.owner = THIS_MODULE,						\
++	.open = __name ## _open,					\
++	.read = seq_read,						\
++	.llseek = seq_lseek,						\
++	.release = single_release,					\
++}
++
++#define DEFINE_OCTEONTX2_DEBUGFS_ATTRIBUTE_WITH_SIZE(__name, __size)		\
++static int __name ## _open(struct inode *inode, struct file *file)		\
++{										\
++	return single_open_size(file, __name ## _show, inode->i_private,	\
++				__size);					\
++}										\
++__OCTEONTX2_DEBUGFS_ATTRIBUTE_FOPS(__name)
++
++static DEFINE_MUTEX(stats_lock);
++
++static u64 dstats[MAX_NUM_BANKS][MAX_SUBBANK_DEPTH * MAX_NUM_SUB_BANKS] = {};
++static int npc_mcam_dstats_show(struct seq_file *s, void *unused)
++{
++	struct npc_priv_t *npc_priv;
++	int blkaddr, pf, mcam_idx;
++	u64 stats, delta;
++	struct rvu *rvu;
++	char buff[64];
++	u8 key_type;
++	void *map;
++
++	npc_priv = npc_priv_get();
++	rvu = s->private;
++	blkaddr = rvu_get_blkaddr(rvu, BLKTYPE_NPC, 0);
++	if (blkaddr < 0)
++		return 0;
++
++	mutex_lock(&stats_lock);
++	seq_puts(s, "idx\tpfunc\tstats\n");
++	for (int bank = npc_priv->num_banks - 1; bank >= 0; bank--) {
++		for (int idx = npc_priv->bank_depth - 1; idx >= 0; idx--) {
++			mcam_idx = bank * npc_priv->bank_depth + idx;
++
++			npc_mcam_idx_2_key_type(rvu, mcam_idx, &key_type);
++			if (key_type == NPC_MCAM_KEY_X4 && bank != 0)
++				continue;
++
++			if (!test_bit(mcam_idx, npc_priv->en_map))
++				continue;
++
++			stats = rvu_read64(rvu, blkaddr,
++					   NPC_AF_CN20K_MCAMEX_BANKX_STAT_EXT(idx, bank));
++			if (!stats)
++				continue;
++			if (stats == dstats[bank][idx])
++				continue;
++
++			if (stats < dstats[bank][idx])
++				dstats[bank][idx] = 0;
++
++			pf = 0xFFFF;
++			map = xa_load(&npc_priv->xa_idx2pf_map, mcam_idx);
++			if (map)
++				pf = xa_to_value(map);
++
++			if (stats > dstats[bank][idx])
++				delta = stats - dstats[bank][idx];
++			else
++				delta = stats;
++
++			snprintf(buff, sizeof(buff), "%u\t%#04x\t%llu\n",
++				 mcam_idx, pf, delta);
++			seq_puts(s, buff);
++
++			dstats[bank][idx] = stats;
++		}
++	}
++
++	mutex_unlock(&stats_lock);
++	return 0;
++}
++
++/*  "%u\t%#04x\t%llu\n" needs less than 64 characters to print */
++#define TOTAL_SZ (MAX_NUM_BANKS * MAX_NUM_SUB_BANKS * MAX_SUBBANK_DEPTH * 64)
++DEFINE_OCTEONTX2_DEBUGFS_ATTRIBUTE_WITH_SIZE(npc_mcam_dstats, TOTAL_SZ);
++
++static int npc_mcam_mismatch_show(struct seq_file *s, void *unused)
++{
++	struct npc_priv_t *npc_priv;
++	struct npc_subbank *sb;
++	int mcam_idx, sb_off;
++	struct rvu *rvu;
++	char buff[64];
++	void *map;
++	int rc;
++
++	npc_priv = npc_priv_get();
++	rvu = s->private;
++
++	seq_puts(s, "index\tsb idx\tkw type\n");
++	mutex_lock(&stats_lock);
++	for (int bank = npc_priv->num_banks - 1; bank >= 0; bank--) {
++		for (int idx = npc_priv->bank_depth - 1; idx >= 0; idx--) {
++			mcam_idx = bank * npc_priv->bank_depth + idx;
++
++			if (!test_bit(mcam_idx, npc_priv->en_map))
++				continue;
++
++			map = xa_load(&npc_priv->xa_idx2pf_map, mcam_idx);
++			if (map)
++				continue;
++
++			rc = npc_mcam_idx_2_subbank_idx(rvu, mcam_idx,
++							&sb, &sb_off);
++			if (rc)
++				continue;
++
++			snprintf(buff, sizeof(buff), "%u\t%d\t%u\n",
++				 mcam_idx, sb->idx, sb->key_type);
++
++			seq_puts(s, buff);
++		}
++	}
++	mutex_unlock(&stats_lock);
++	return 0;
++}
++
++/* "%u\t%d\t%u\n" needs less than 64 characters to print. */
++DEFINE_OCTEONTX2_DEBUGFS_ATTRIBUTE_WITH_SIZE(npc_mcam_mismatch, TOTAL_SZ);
++
+ static int npc_mcam_default_show(struct seq_file *s, void *unused)
+ {
+ 	struct npc_priv_t *npc_priv;
+@@ -259,6 +396,12 @@ int npc_cn20k_debugfs_init(struct rvu *rvu)
+ 	debugfs_create_file("vidx2idx", 0444, rvu->rvu_dbg.npc,
+ 			    npc_priv, &npc_vidx2idx_map_fops);
+ 
++	debugfs_create_file("dstats", 0444, rvu->rvu_dbg.npc, rvu,
++			    &npc_mcam_dstats_fops);
++
++	debugfs_create_file("mismatch", 0444, rvu->rvu_dbg.npc, rvu,
++			    &npc_mcam_mismatch_fops);
++
+ 	debugfs_create_file("idx2vidx", 0444, rvu->rvu_dbg.npc,
+ 			    npc_priv, &npc_idx2vidx_map_fops);
+ 
+diff --git a/drivers/net/ethernet/marvell/octeontx2/af/cn20k/npc.c b/drivers/net/ethernet/marvell/octeontx2/af/cn20k/npc.c
+index 6b3f453fd500..e9aad0ad3fa6 100644
+--- a/drivers/net/ethernet/marvell/octeontx2/af/cn20k/npc.c
++++ b/drivers/net/ethernet/marvell/octeontx2/af/cn20k/npc.c
+@@ -824,7 +824,7 @@ npc_cn20k_enable_mcam_entry(struct rvu *rvu, int blkaddr,
+ 		rvu_write64(rvu, blkaddr,
+ 			    NPC_AF_CN20K_MCAMEX_BANKX_CFG_EXT(mcam_idx, bank),
+ 			    cfg);
+-		return 0;
++		goto update_en_map;
+ 	}
+ 
+ 	/* For NPC_CN20K_MCAM_KEY_X4 keys, both the banks
+@@ -842,6 +842,12 @@ npc_cn20k_enable_mcam_entry(struct rvu *rvu, int blkaddr,
+ 			    cfg);
+ 	}
+ 
++update_en_map:
++	if (enable)
++		set_bit(index, npc_priv.en_map);
++	else
++		clear_bit(index, npc_priv.en_map);
++
+ 	return 0;
+ }
+ 
+@@ -1789,9 +1795,9 @@ static int npc_subbank_idx_2_mcam_idx(struct rvu *rvu, struct npc_subbank *sb,
+ 	return 0;
+ }
+ 
+-static int npc_mcam_idx_2_subbank_idx(struct rvu *rvu, u16 mcam_idx,
+-				      struct npc_subbank **sb,
+-				      int *sb_off)
++int npc_mcam_idx_2_subbank_idx(struct rvu *rvu, u16 mcam_idx,
++			       struct npc_subbank **sb,
++			       int *sb_off)
+ {
+ 	int bank_off, sb_id;
+ 
+@@ -4605,6 +4611,8 @@ void npc_cn20k_deinit(struct rvu *rvu)
+ 	 */
+ 	kfree(npc_priv.sb);
+ 	kfree(subbank_srch_order);
++	bitmap_clear(npc_priv.en_map, 0, MAX_NUM_BANKS * MAX_NUM_SUB_BANKS *
++		     MAX_SUBBANK_DEPTH);
+ }
+ 
+ static int npc_setup_mcam_section(struct rvu *rvu, int key_type)
+diff --git a/drivers/net/ethernet/marvell/octeontx2/af/cn20k/npc.h b/drivers/net/ethernet/marvell/octeontx2/af/cn20k/npc.h
+index 3d5eb952cc07..9567a2d80b58 100644
+--- a/drivers/net/ethernet/marvell/octeontx2/af/cn20k/npc.h
++++ b/drivers/net/ethernet/marvell/octeontx2/af/cn20k/npc.h
+@@ -170,6 +170,7 @@ struct npc_defrag_show_node {
+  * @num_banks:		Number of banks.
+  * @num_subbanks:	Number of subbanks.
+  * @subbank_depth:	Depth of subbank.
++ * @en_map:		Enable/disable status.
+  * @kw:			Kex configured key type.
+  * @sb:			Subbank array.
+  * @xa_sb_used:		Array of used subbanks.
+@@ -193,6 +194,9 @@ struct npc_priv_t {
+ 	const int num_banks;
+ 	int num_subbanks;
+ 	int subbank_depth;
++	DECLARE_BITMAP(en_map, MAX_NUM_BANKS *
++		       MAX_NUM_SUB_BANKS *
++		       MAX_SUBBANK_DEPTH);
+ 	u8 kw;
+ 	struct npc_subbank *sb;
+ 	struct xarray xa_sb_used;
+@@ -336,5 +340,8 @@ u16 npc_cn20k_vidx2idx(u16 index);
+ u16 npc_cn20k_idx2vidx(u16 idx);
+ int npc_cn20k_defrag(struct rvu *rvu);
+ bool npc_is_cgx_or_lbk(struct rvu *rvu, u16 pcifunc);
++int npc_mcam_idx_2_subbank_idx(struct rvu *rvu, u16 mcam_idx,
++			       struct npc_subbank **sb,
++			       int *sb_off);
+ 
+ #endif /* NPC_CN20K_H */
+-- 
+2.43.0
+
