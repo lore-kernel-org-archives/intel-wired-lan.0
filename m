@@ -1,70 +1,70 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 491C4CD37A7
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  8 May 2026 13:00:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8FB3FCD3436
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  8 May 2026 13:00:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id E830782F11;
-	Fri,  8 May 2026 13:00:07 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id mDKRBsUFh9MT; Fri,  8 May 2026 13:00:05 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6F8E682792
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1778245205;
-	bh=6aio19pTKV7xJ3PU58xFMQ0yxviiqzOcerFJfK0kn7A=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=HPUADpwai5/8Nf79P4rfTlLPID5PnW+NPN6tG0len0Ov2dOJ6YSRSUmSqhPL8ckoK
-	 1Nkns6WmvblItYF3qQVQ4Ny7+fH6QYv1Tyg1UQQskJY+SvfrnYRwannwftunEERC0s
-	 T+b0e8r/M11SY4fXXA6sT5qmQT5n3qWL0y0Maixpwck5ZsKtAuOJ1xZgqk4Hkg2Fgn
-	 Z3bB66/kaLwbO9hga/iGn7T+HikDmMi49OtHyVzanBowX1Y+ANiedQssJXbt1gp6yR
-	 1IIcy/UMp2CIwHGkpoAU6dyj19dzTX6LaMDQnKYvYylxqx0gFD+iDNjn+8BcTETHXu
-	 W9Y2fRKF+NzHw==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 6F8E682792;
-	Fri,  8 May 2026 13:00:05 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 30DE8317
- for <intel-wired-lan@lists.osuosl.org>; Fri,  8 May 2026 13:00:03 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 22D27410AA
- for <intel-wired-lan@lists.osuosl.org>; Fri,  8 May 2026 13:00:03 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 6BF2941281;
+	Fri,  8 May 2026 13:00:11 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id icnWIK-WzCAX for <intel-wired-lan@lists.osuosl.org>;
- Fri,  8 May 2026 13:00:01 +0000 (UTC)
+ id imMNpWBKLmJL; Fri,  8 May 2026 13:00:10 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 02A7D40F74
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1778245210;
+	bh=5F3qmPonnpG9UicxwSTV/tGKo1H8pWd5J3JD6jNwqDM=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=kHWxIW05iDxlIYPbNBsL8gPgGY0yRlAHlpBDXNISlK3UVCHzIs4uK7ebps0OGPuJr
+	 gl9iU7tAjwvKxlR0VEHjz31M0RHUHhSPSW6hmeDHwIKABXMaEQ+hKZaH818qoXq5Ak
+	 Mis3hslTLoRzl/+6e2E+Wb2JtTOMKnewt5oC8v7FdEc39vYesSE936npVVXzqPpNk5
+	 +wVJBh3lw+XRO1UIVaXFLK7t0FBrQanjFJXbiEskrsOvsaKPJ235/vyGmCvk1olcuQ
+	 wNNGuWedW2tVz/5OD25ZgRa0+X0oQ6htoWtcHVNv81VcSD53Ap8Ff4YFBCDXJ3d0li
+	 f4x3deEMSjMLQ==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 02A7D40F74;
+	Fri,  8 May 2026 13:00:10 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 8E271317
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  8 May 2026 13:00:08 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id 8B83940F8C
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  8 May 2026 13:00:08 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id KpTUquV2nZt2 for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  8 May 2026 13:00:07 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.17;
  helo=mgamail.intel.com; envelope-from=przemyslaw.kitszel@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 9E0EE40F70
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9E0EE40F70
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 36045410AA
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 36045410AA
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 9E0EE40F70
- for <intel-wired-lan@lists.osuosl.org>; Fri,  8 May 2026 13:00:01 +0000 (UTC)
-X-CSE-ConnectionGUID: dBXOBHdQQNqQjP74BK4OVA==
-X-CSE-MsgGUID: 0Jd/peijR7WXiH5NVKiqDQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11779"; a="79199981"
-X-IronPort-AV: E=Sophos;i="6.23,223,1770624000"; d="scan'208";a="79199981"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 36045410AA
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  8 May 2026 13:00:07 +0000 (UTC)
+X-CSE-ConnectionGUID: KoeWwfTZTdaVyQkAuqp+rA==
+X-CSE-MsgGUID: GgAYX9u4QqOAq+I3PgcCRQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11779"; a="79200017"
+X-IronPort-AV: E=Sophos;i="6.23,223,1770624000"; d="scan'208";a="79200017"
 Received: from fmviesa005.fm.intel.com ([10.60.135.145])
  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 08 May 2026 06:00:02 -0700
-X-CSE-ConnectionGUID: Sn7WXHuYTLulWvaeJXsD9A==
-X-CSE-MsgGUID: seXKWwaIR8y59DnpgFRZMA==
+ 08 May 2026 06:00:07 -0700
+X-CSE-ConnectionGUID: iOmkLC7lT22hmXlZb8Q87A==
+X-CSE-MsgGUID: BuKjJpg8QKG3eXJdQzNjbQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,223,1770624000"; d="scan'208";a="241730165"
+X-IronPort-AV: E=Sophos;i="6.23,223,1770624000"; d="scan'208";a="241730300"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmviesa005.fm.intel.com with ESMTP; 08 May 2026 05:59:54 -0700
+ by fmviesa005.fm.intel.com with ESMTP; 08 May 2026 06:00:00 -0700
 Received: from vecna.igk.intel.com (vecna.igk.intel.com [10.123.220.17])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 3B6EB2FC42;
- Fri,  8 May 2026 13:59:52 +0100 (IST)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id D618A2FC41;
+ Fri,  8 May 2026 13:59:58 +0100 (IST)
 From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 To: intel-wired-lan@lists.osuosl.org, Michal Schmidt <mschmidt@redhat.com>,
  Jakub Kicinski <kuba@kernel.org>, Jiri Pirko <jiri@resnulli.us>
@@ -82,9 +82,10 @@ Cc: netdev@vger.kernel.org, Simon Horman <horms@kernel.org>,
  Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>,
  Saeed Mahameed <saeedm@nvidia.com>, Leon Romanovsky <leon@kernel.org>,
  Tariq Toukan <tariqt@nvidia.com>, Mark Bloch <mbloch@nvidia.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Date: Fri,  8 May 2026 14:42:04 +0200
-Message-Id: <20260508124208.11622-12-przemyslaw.kitszel@intel.com>
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+Date: Fri,  8 May 2026 14:42:08 +0200
+Message-Id: <20260508124208.11622-16-przemyslaw.kitszel@intel.com>
 X-Mailer: git-send-email 2.39.3
 In-Reply-To: <20260508124208.11622-1-przemyslaw.kitszel@intel.com>
 References: <20260508124208.11622-1-przemyslaw.kitszel@intel.com>
@@ -92,25 +93,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1778245202; x=1809781202;
+ t=1778245208; x=1809781208;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=+6Fm5Nlok4KSB5kW9pnbyQfnuwTbhWexEntyNbjjdK0=;
- b=IgXHXR0A2mIuw0vVVM+dfQ9RNDc9byVwjRoVvYWZs1GtvCHJRGfq3mhp
- CBVnDQc3dwZBlQbU/THWUM6FI7MJDgnXJHkg1PhT7nsvCmsLHgDnNPp1J
- nzcu/rqgLiHBmP01PEUhUPNFpKUruTuSg7QNt9oNS/gvLGxiWbSlN+Qgc
- 1z6Ip8SZBfQukZJkdRxcEjL2okILKuBwWFWWdvY2284kpZtUQWTYA9snE
- t+H3ShzpXlAmx+fEi3/yXVpL8sLZOwdOBflNqgUbPSNQ4xw9cPv6oJPTU
- QuCSDUOh/uuqwF+M9O88xB6oNHg/vkg2Em0tmzmQOWZPPf5YrQPxG9YAg
+ bh=tRjA3Mv7plFdbQhSTB+xQGBFDB7tp/p65WZXZRKik3E=;
+ b=fA3fn8H1GwVIKvqT22sYb+M/yDYqkLPHXHS6duZa97noh4+K3MO6Zu+g
+ AW4nW5yutkRNt5IlDgoJQ4Voegb1v9w43dSUhHnKVk5StfyM/vqzhMe/M
+ hYwdxvPAy+uJ65g5GYHUd0u3EhPM3z6nOdHLL4p/DMkqAqwuVxef0lKPR
+ 7yFpE3FMgv83s+tfhMa5uiMsCkcugbu30joJPubDZEATyYueIC0hKC+sU
+ lOzBvileS2rdyfOX+PXRhMzKXE1ZKAdurBBR8+ueh92MyQ2UNIsP8v5Hk
+ J96k3NyFO3ehXjKKUPI/CtcgRUfmiVNGL9Nx1dz0rbrEohrSuYfxdntCK
  A==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=IgXHXR0A
-Subject: [Intel-wired-lan] [PATCH iwl-next v1 11/15] iavf: use new opcodes
- to request more than 16 queues
+ header.a=rsa-sha256 header.s=Intel header.b=fA3fn8H1
+Subject: [Intel-wired-lan] [PATCH iwl-next v1 15/15] ice: support up to 256
+ VF queues
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -126,824 +127,728 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Ahmed Zaki <ahmed.zaki@intel.com>
+Add support for up to 256 VF queues. To enable more than usual 16, user
+needs to assign GLOBAL LUT (devlink resource named "rss/lut_512") for 64
+queues or PF LUT (name "rss/lut_2048") for maximum of 256 queues. There is
+a need to assign the GLOBAL LUT to PF first, then release the PF LUT
+(initially assigned to PF) from PF, to finally assign it to VF, see
+examples further below. Usual default of number of CPU cores does still
+apply, but queues could be requested later by usual ethtool -L command.
 
-The Virtchnl is using a bit wide filed to enable, disable or configure
-the device queues. Define new OP codes in order to enable the VF to
-request a variable number of queues.
+Add devlink instance of VF device to track RSS LUT resources under
+a respective PF devlink instance.
 
-First the new capability VIRTCHNL_VF_LARGE_NUM_QPAIRS is defined. Only
-if this cap is negotiated, the VF is allowed to use the new OP codes.
+Number of MSI-X vectors assigned to VF is orthogonal to this.
 
-The VIRTCHNL_OP_GET_MAX_RSS_QREGION is exchanged right after the VF
-resource message is received. This is done similar to the PTP and other
-extended cap exchanges.
+Note that VF reset is deferred to service task.
 
-Enabling and disabling queues, and mapping queues to vectors is done
-through the new VIRTCHNL_OP_ENABLE_QUEUES_V2,
-VIRTCHNL_OP_DISABLE_QUEUES_V2, and VIRTCHNL_OP_MAP_QUEUE_VECTOR messages.
+How to use:
+1. Up to 64 queues
+   a. assign one of 16 GLOBAL LUTs to VF:
+      sudo devlink resource set pci/0000:18:01.0 path rss/lut_512 size 1
+   b. if more queues than the default (num of vCPU/CPU cores) are wanted:
+      sudo ethtool -L $vfiface combined $more
 
-Use the new iavf_request_queues() in the iavf_set_channels().
-It's not only for elegance, but it enables our brittle handcoded state
-machine to go through requesting the queues before PF driver reallocates
-queue-related arrays.
+2. Up to 256 queues
+   a. assign a GLOBAL LUT to PF:
+      sudo devlink resource set pci/0000:18:00.0 path rss/lut_512 size 1
+   b. free the PF LUT from PF:
+      sudo devlink resource set pci/0000:18:00.0 path rss/lut_2048 size 0
+   c. assign the PF LUT to VF:
+      sudo devlink resource set pci/0000:18:01.0 path rss/lut_2048 size 1
+   d. if more queues than the default (num of vCPU/CPU cores) are wanted:
+      sudo ethtool -L $vfiface combined	$more
 
-Signed-off-by: Ahmed Zaki <ahmed.zaki@intel.com>
-Co-developed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+3. display current RSS LUT or RSS table:
+   a. see if RSS is mapped correctly (e.g. for lut_512 there are 512
+      entries expected):
+      ethtool -x $vfiface
+   b. see what devlink devices are present:
+      devlink dev show # note the "faux" device over your pci netdevs
+   c. see PF, VF, and "whole device aggregate" (faux) resources:
+      devlink resource show pci/0000:18:00.0 # PF
+      devlink resource show pci/0000:18:01.0 # VF
+      devlink resource show faux/ice-90-cf-4c-ff-ff-6f-7c-50 # whole dev
+
+output will look like: below, for device with 1 of PF and GLOBAL LUTs:
+pci/0000:18:00.0:
+  name rss size 2 unit entry size_min 0 size_max 2 size_gran 1 dpipe_tables none
+    resources:
+      name lut_512 size 1 unit entry size_min 0 size_max 1 size_gran 1 dpipe_tables none
+      name lut_2048 size 1 unit entry size_min 0 size_max 1 size_gran 1 dpipe_tables none
+
+Big thanks to Mateusz for working together on the whole story for long
+time! Big thanks to Alex Loktionov for pointing the reason of one nasty
+bug with the message size!
+
+Co-developed-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
+Signed-off-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
+Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Reviewed-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 Signed-off-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf.h        |  11 +
- include/linux/intel/virtchnl.h                | 136 +++++++++++-
- .../net/ethernet/intel/iavf/iavf_ethtool.c    |   7 +-
- drivers/net/ethernet/intel/iavf/iavf_main.c   | 123 ++++++++++-
- .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 202 +++++++++++++++++-
- 5 files changed, 460 insertions(+), 19 deletions(-)
+ .../net/ethernet/intel/ice/devlink/resource.h |   3 +
+ drivers/net/ethernet/intel/ice/ice_lib.h      |   5 +-
+ drivers/net/ethernet/intel/ice/ice_vf_lib.h   |  13 +++
+ drivers/net/ethernet/intel/ice/virt/rss.h     |   1 +
+ .../net/ethernet/intel/ice/virt/virtchnl.h    |   4 +
+ .../net/ethernet/intel/ice/devlink/resource.c | 105 +++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_lib.c      |  27 ++++-
+ drivers/net/ethernet/intel/ice/ice_main.c     |  25 +++++
+ drivers/net/ethernet/intel/ice/ice_sriov.c    |  10 ++
+ drivers/net/ethernet/intel/ice/ice_vf_lib.c   |  42 +++++++
+ drivers/net/ethernet/intel/ice/virt/rss.c     |  36 +++++-
+ .../net/ethernet/intel/ice/virt/virtchnl.c    |  47 +++++++-
+ 12 files changed, 305 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
-index 569686d34ff4..541d602149d8 100644
---- a/drivers/net/ethernet/intel/iavf/iavf.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf.h
-@@ -345,6 +345,7 @@ struct iavf_adapter {
- #define IAVF_FLAG_AQ_GET_SUPPORTED_RXDIDS		BIT_ULL(42)
- #define IAVF_FLAG_AQ_GET_PTP_CAPS			BIT_ULL(43)
- #define IAVF_FLAG_AQ_SEND_PTP_CMD			BIT_ULL(44)
-+#define IAVF_FLAG_AQ_GET_MAX_RSS_QREGION		BIT_ULL(45)
+diff --git a/drivers/net/ethernet/intel/ice/devlink/resource.h b/drivers/net/ethernet/intel/ice/devlink/resource.h
+index 947f77a3cd49..9c6c97e2e62d 100644
+--- a/drivers/net/ethernet/intel/ice/devlink/resource.h
++++ b/drivers/net/ethernet/intel/ice/devlink/resource.h
+@@ -8,12 +8,15 @@ struct devlink;
+ struct ice_adapter;
+ struct ice_hw;
+ struct ice_pf;
++struct ice_vf;
  
- 	/* AQ messages that must be sent after IAVF_FLAG_AQ_GET_CONFIG, in
- 	 * order to negotiated extended capabilities.
-@@ -368,12 +369,16 @@ struct iavf_adapter {
- #define IAVF_EXTENDED_CAP_RECV_RXDID			BIT_ULL(3)
- #define IAVF_EXTENDED_CAP_SEND_PTP			BIT_ULL(4)
- #define IAVF_EXTENDED_CAP_RECV_PTP			BIT_ULL(5)
-+#define IAVF_EXTENDED_CAP_SEND_RSS_QREGION		BIT_ULL(6)
-+#define IAVF_EXTENDED_CAP_RECV_RSS_QREGION		BIT_ULL(7)
++void ice_devlink_vf_resources_register(struct ice_vf *vf);
+ void ice_devl_pf_resources_register(struct ice_pf *pf);
+ void ice_devl_whole_dev_resources_register(const struct ice_hw *hw,
+ 					   struct ice_adapter *adapter);
  
- #define IAVF_EXTENDED_CAPS				\
- 	(IAVF_EXTENDED_CAP_SEND_VLAN_V2 |		\
- 	 IAVF_EXTENDED_CAP_RECV_VLAN_V2 |		\
- 	 IAVF_EXTENDED_CAP_SEND_RXDID |			\
- 	 IAVF_EXTENDED_CAP_RECV_RXDID |			\
-+	 IAVF_EXTENDED_CAP_SEND_RSS_QREGION |		\
-+	 IAVF_EXTENDED_CAP_RECV_RSS_QREGION |		\
- 	 IAVF_EXTENDED_CAP_SEND_PTP |			\
- 	 IAVF_EXTENDED_CAP_RECV_PTP)
+ int ice_take_rss_lut_pf(struct ice_pf *pf);
+ void ice_free_rss_lut_flr(struct ice_pf *pf);
++void ice_free_rss_lut_vf(struct ice_vf *vf);
  
-@@ -413,6 +418,8 @@ struct iavf_adapter {
- #define RSS_REG(_a) (!((_a)->vf_res->vf_cap_flags & \
- 		       (VIRTCHNL_VF_OFFLOAD_RSS_AQ | \
- 			VIRTCHNL_VF_OFFLOAD_RSS_PF)))
-+#define LARGE_NUM_QPAIRS_SUPPORT(_a) \
-+	((_a)->vf_res->vf_cap_flags & VIRTCHNL_VF_LARGE_NUM_QPAIRS)
- #define VLAN_ALLOWED(_a) ((_a)->vf_res->vf_cap_flags & \
- 			  VIRTCHNL_VF_OFFLOAD_VLAN)
- #define VLAN_V2_ALLOWED(_a) ((_a)->vf_res->vf_cap_flags & \
-@@ -447,6 +454,7 @@ struct iavf_adapter {
- 	struct virtchnl_vlan_caps vlan_v2_caps;
- 	u64 supp_rxdids;
- 	struct iavf_ptp ptp;
-+	struct virtchnl_max_rss_qregion max_rss_qregion;
- 	u16 msg_enable;
- 	struct iavf_eth_stats current_stats;
- 	struct virtchnl_qos_cap_list *qos_caps;
-@@ -583,13 +591,16 @@ int iavf_send_vf_supported_rxdids_msg(struct iavf_adapter *adapter);
- int iavf_get_vf_supported_rxdids(struct iavf_adapter *adapter);
- int iavf_send_vf_ptp_caps_msg(struct iavf_adapter *adapter);
- int iavf_get_vf_ptp_caps(struct iavf_adapter *adapter);
-+int iavf_send_max_rss_qregion(struct iavf_adapter *adapter);
-+int iavf_get_max_rss_qregion(struct iavf_adapter *adapter);
- void iavf_set_queue_vlan_tag_loc(struct iavf_adapter *adapter);
- u16 iavf_get_num_vlans_added(struct iavf_adapter *adapter);
- void iavf_irq_enable(struct iavf_adapter *adapter, bool flush);
- void iavf_configure_queues(struct iavf_adapter *adapter);
- void iavf_enable_queues(struct iavf_adapter *adapter);
- void iavf_disable_queues(struct iavf_adapter *adapter);
- void iavf_map_queues(struct iavf_adapter *adapter);
-+int iavf_request_queues(struct iavf_adapter *adapter, int num);
- int iavf_add_ether_addrs(struct iavf_adapter *adapter);
- void iavf_del_ether_addrs(struct iavf_adapter *adapter);
- void iavf_mac_add_reject(struct iavf_adapter *adapter);
-diff --git a/include/linux/intel/virtchnl.h b/include/linux/intel/virtchnl.h
-index 511c8827c640..622e89847b21 100644
---- a/include/linux/intel/virtchnl.h
-+++ b/include/linux/intel/virtchnl.h
-@@ -1,5 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0-only */
--/* Copyright (c) 2013-2022, Intel Corporation. */
-+/* Copyright (c) 2013-2026, Intel Corporation. */
+ #endif /* _ICE_DEVL_RESOURCE_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
+index 54377c797bac..76efea676583 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_lib.h
+@@ -8,16 +8,19 @@
+ #include "ice_vlan.h"
  
- #ifndef _VIRTCHNL_H_
- #define _VIRTCHNL_H_
-@@ -22,8 +22,7 @@
-  * we must send all messages as "indirect", i.e. using an external buffer.
-  *
-  * All the VSI indexes are relative to the VF. Each VF can have maximum of
-- * three VSIs. All the queue indexes are relative to the VSI.  Each VF can
-- * have a maximum of sixteen queues for all of its VSIs.
-+ * three VSIs. All the queue indexes are relative to the VSI.
-  *
-  * The PF is required to return a status code in v_retval for all messages
-  * except RESET_VF, which does not require any response. The returned value
-@@ -147,6 +146,7 @@ enum virtchnl_ops {
- 	VIRTCHNL_OP_DEL_RSS_CFG = 46,
- 	VIRTCHNL_OP_ADD_FDIR_FILTER = 47,
- 	VIRTCHNL_OP_DEL_FDIR_FILTER = 48,
-+	VIRTCHNL_OP_GET_MAX_RSS_QREGION = 50,
- 	VIRTCHNL_OP_GET_OFFLOAD_VLAN_V2_CAPS = 51,
- 	VIRTCHNL_OP_ADD_VLAN_V2 = 52,
- 	VIRTCHNL_OP_DEL_VLAN_V2 = 53,
-@@ -159,7 +159,11 @@ enum virtchnl_ops {
- 	VIRTCHNL_OP_1588_PTP_GET_TIME = 61,
- 	/* opcode 62 - 65 are reserved */
- 	VIRTCHNL_OP_GET_QOS_CAPS = 66,
--	/* opcode 68 through 111 are reserved */
-+	/* opcodes 67 through 106 are reserved */
-+	VIRTCHNL_OP_ENABLE_QUEUES_V2 = 107,
-+	VIRTCHNL_OP_DISABLE_QUEUES_V2 = 108,
-+	/* opcodes 109 and 110 are reserved */
-+	VIRTCHNL_OP_MAP_QUEUE_VECTOR = 111,
- 	VIRTCHNL_OP_CONFIG_QUEUE_BW = 112,
- 	VIRTCHNL_OP_CONFIG_QUANTA = 113,
- 	VIRTCHNL_OP_MAX,
-@@ -257,6 +261,7 @@ VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_vsi_resource);
- #define VIRTCHNL_VF_OFFLOAD_REQ_QUEUES		BIT(6)
- /* used to negotiate communicating link speeds in Mbps */
- #define VIRTCHNL_VF_CAP_ADV_LINK_SPEED		BIT(7)
-+#define VIRTCHNL_VF_LARGE_NUM_QPAIRS		BIT(9)
- #define  VIRTCHNL_VF_OFFLOAD_CRC		BIT(10)
- #define VIRTCHNL_VF_OFFLOAD_TC_U32		BIT(11)
- #define VIRTCHNL_VF_OFFLOAD_VLAN_V2		BIT(15)
-@@ -500,6 +505,34 @@ struct virtchnl_queue_select {
+ /* Flags used for VSI configuration and rebuild */
+-#define ICE_VSI_FLAG_INIT	BIT(0)
+ #define ICE_VSI_FLAG_NO_INIT	0
++#define ICE_VSI_FLAG_INIT	BIT(0)
++#define ICE_VSI_FLAG_RELOAD	BIT(1) /* devlink reload action */
  
- VIRTCHNL_CHECK_STRUCT_LEN(12, virtchnl_queue_select);
+ #define ICE_L2TSEL_QRX_CONTEXT_REG_IDX	3
+ #define ICE_L2TSEL_BIT_OFFSET		23
+ enum ice_l2tsel {
+ 	ICE_L2TSEL_EXTRACT_FIRST_TAG_L2TAG2_2ND,
+ 	ICE_L2TSEL_EXTRACT_FIRST_TAG_L2TAG1,
+ };
  
-+/* VIRTCHNL_OP_GET_MAX_RSS_QREGION
-+ *
-+ * if VIRTCHNL_VF_LARGE_NUM_QPAIRS was negotiated in
-+ * VIRTCHNL_OP_GET_VF_RESOURCES then this op must be supported.
-+ *
-+ * VF sends this message in order to query the max RSS queue region
-+ * size supported by PF, when VIRTCHNL_VF_LARGE_NUM_QPAIRS is enabled.
-+ * This information should be used when configuring the RSS LUT and/or
-+ * configuring queue region based filters.
-+ *
-+ * The maximum RSS queue region is 2^qregion_width. So, a qregion_width of 6
-+ * would inform the VF that the PF supports a maximum RSS queue region of 64.
-+ *
-+ * A queue region represents a range of queues that can be used to configure
-+ * a RSS LUT. For example, if a VF is given 64 queues, but only a max queue
-+ * region size of 16 (i.e. 2^qregion_width = 16) then it will only be able
-+ * to configure the RSS LUT with queue indices from 0 to 15. However, other
-+ * filters can be used to direct packets to queues >15 via specifying a queue
-+ * base/offset and queue region width.
-+ */
-+struct virtchnl_max_rss_qregion {
-+	u16 vport_id;
-+	u16 qregion_width;
-+	u8 pad[4];
-+};
++u16 ice_lut_type_to_qs_num(enum ice_lut_type lut_type);
 +
-+VIRTCHNL_CHECK_STRUCT_LEN(8, virtchnl_max_rss_qregion);
-+
- /* VIRTCHNL_OP_ADD_ETH_ADDR
-  * VF sends this message in order to add one or more unicast or multicast
-  * address filters for the specified VSI.
-@@ -1664,6 +1697,70 @@ struct virtchnl_queue_chunk {
+ const char *ice_vsi_type_str(enum ice_vsi_type vsi_type);
  
- VIRTCHNL_CHECK_STRUCT_LEN(8, virtchnl_queue_chunk);
+ bool ice_pf_state_is_nominal(struct ice_pf *pf);
+diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.h b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
+index 5411eaa1761c..397e1fa00dbc 100644
+--- a/drivers/net/ethernet/intel/ice/ice_vf_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
+@@ -145,6 +145,7 @@ struct ice_vf {
+ 	struct kref refcnt;
+ 	struct ice_pf *pf;
+ 	struct pci_dev *vfdev;
++	struct devlink *devlink;
+ 	/* Used during virtchnl message handling and NDO ops against the VF
+ 	 * that will trigger a VFR
+ 	 */
+@@ -175,6 +176,7 @@ struct ice_vf {
+ 	u8 link_forced:1;
+ 	u8 link_up:1;			/* only valid if VF link is forced */
+ 	u8 lldp_tx_ena:1;
++	u8 needs_deferred_reset:1;
  
-+/* VIRTCHNL_OP_ENABLE_QUEUES_V2
-+ * VIRTCHNL_OP_DISABLE_QUEUES_V2
-+ *
-+ * These opcodes can be used if VIRTCHNL_VF_LARGE_NUM_QPAIRS was negotiated in
-+ * VIRTCHNL_OP_GET_VF_RESOURCES
-+ *
-+ * VF sends virtchnl_ena_dis_queues struct to specify the queues to be
-+ * enabled/disabled in chunks. Also applicable to single queue RX or
-+ * TX. PF performs requested action and returns status.
-+ */
-+struct virtchnl_del_ena_dis_queues {
-+	u16 vport_id;
-+	u16 pad;
-+	u16 num_chunks;
-+	u16 rsvd;
-+	struct virtchnl_queue_chunk chunks[];
-+};
-+
-+VIRTCHNL_CHECK_STRUCT_LEN(8, virtchnl_del_ena_dis_queues);
-+#define virtchnl_del_ena_dis_queues_LEGACY_SIZEOF	16
-+
-+/* Virtchannel interrupt throttling rate index */
-+enum virtchnl_itr_idx {
-+	VIRTCHNL_ITR_IDX_0	= 0,
-+	VIRTCHNL_ITR_IDX_1	= 1,
-+	VIRTCHNL_ITR_IDX_NO_ITR	= 3,
-+};
-+
-+/* Queue to vector mapping */
-+struct virtchnl_queue_vector {
-+	u16 queue_id;
-+	u16 vector_id;
-+	u8 pad[4];
-+
-+	/* see enum virtchnl_itr_idx */
-+	s32 itr_idx;
-+
-+	/* see enum virtchnl_queue_type */
-+	s32 queue_type;
-+};
-+
-+VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_queue_vector);
-+
-+/* VIRTCHNL_OP_MAP_QUEUE_VECTOR
-+ *
-+ * This opcode can be used only if VIRTCHNL_VF_LARGE_NUM_QPAIRS was negotiated
-+ * in VIRTCHNL_OP_GET_VF_RESOURCES
-+ *
-+ * VF sends this message to map queues to vectors and ITR index registers.
-+ * External data buffer contains virtchnl_queue_vector_maps structure
-+ * that contains num_qv_maps of virtchnl_queue_vector structures.
-+ * PF maps the requested queue vector maps after validating the queue and vector
-+ * ids and returns a status code.
-+ */
-+struct virtchnl_queue_vector_maps {
-+	u16 vport_id;
-+	u16 num_qv_maps;
-+	u8 pad[4];
-+	struct virtchnl_queue_vector qv_maps[];
-+};
-+
-+VIRTCHNL_CHECK_STRUCT_LEN(8, virtchnl_queue_vector_maps);
-+#define virtchnl_queue_vector_maps_LEGACY_SIZEOF	24
-+
- struct virtchnl_quanta_cfg {
- 	u16 quanta_size;
- 	u16 pad;
-@@ -1696,6 +1793,8 @@ VIRTCHNL_CHECK_STRUCT_LEN(12, virtchnl_quanta_cfg);
- 		 __vss(virtchnl_rdma_qvlist_info, __vss_byelem, p, m, c),     \
- 		 __vss(virtchnl_qos_cap_list, __vss_byelem, p, m, c),	      \
- 		 __vss(virtchnl_queues_bw_cfg, __vss_byelem, p, m, c),	      \
-+		 __vss(virtchnl_del_ena_dis_queues, __vss_byelem, p, m, c),   \
-+		 __vss(virtchnl_queue_vector_maps, __vss_byelem, p, m, c),    \
- 		 __vss(virtchnl_rss_key, __vss_byone, p, m, c),		      \
- 		 __vss(virtchnl_rss_lut, __vss_byone, p, m, c))
+ 	u16 num_msix;			/* num of MSI-X configured on this VF */
  
-@@ -1758,6 +1857,8 @@ virtchnl_vc_validate_vf_msg(struct virtchnl_version_info *ver, u32 v_opcode,
- 	case VIRTCHNL_OP_DISABLE_QUEUES:
- 		valid_len = sizeof(struct virtchnl_queue_select);
- 		break;
-+	case VIRTCHNL_OP_GET_MAX_RSS_QREGION:
-+		break;
- 	case VIRTCHNL_OP_ADD_ETH_ADDR:
- 	case VIRTCHNL_OP_DEL_ETH_ADDR:
- 		valid_len = virtchnl_ether_addr_list_LEGACY_SIZEOF;
-@@ -1930,7 +2031,32 @@ virtchnl_vc_validate_vf_msg(struct virtchnl_version_info *ver, u32 v_opcode,
- 	case VIRTCHNL_OP_1588_PTP_GET_TIME:
- 		valid_len = sizeof(struct virtchnl_phc_time);
- 		break;
--	/* These are always errors coming from the VF. */
-+	case VIRTCHNL_OP_ENABLE_QUEUES_V2:
-+	case VIRTCHNL_OP_DISABLE_QUEUES_V2:
-+		valid_len = sizeof(struct virtchnl_del_ena_dis_queues);
-+		if (msglen >= valid_len) {
-+			struct virtchnl_del_ena_dis_queues *qs =
-+				(struct virtchnl_del_ena_dis_queues *)msg;
+@@ -320,9 +322,12 @@ int
+ ice_vf_clear_vsi_promisc(struct ice_vf *vf, struct ice_vsi *vsi, u8 promisc_m);
+ int ice_reset_vf(struct ice_vf *vf, u32 flags);
+ void ice_reset_all_vfs(struct ice_pf *pf);
++void ice_schedule_vf_reset(struct ice_vf *vf);
+ struct ice_vsi *ice_get_vf_ctrl_vsi(struct ice_pf *pf, struct ice_vsi *vsi);
+ void ice_vf_update_mac_lldp_num(struct ice_vf *vf, struct ice_vsi *vsi,
+ 				bool incr);
++void ice_init_vf_devlink(struct ice_vf *vf);
++void ice_deinit_vf_devlink(struct ice_vf *vf);
+ #else /* CONFIG_PCI_IOV */
+ static inline struct ice_vf *ice_get_vf_by_id(struct ice_pf *pf, u16 vf_id)
+ {
+@@ -399,6 +404,14 @@ ice_get_vf_ctrl_vsi(struct ice_pf *pf, struct ice_vsi *vsi)
+ {
+ 	return NULL;
+ }
 +
-+			if (!qs->num_chunks) {
-+				err_msg_format = true;
-+				break;
-+			}
-+			valid_len = virtchnl_struct_size(qs, chunks,
-+							 qs->num_chunks);
-+		}
-+		break;
-+	case VIRTCHNL_OP_MAP_QUEUE_VECTOR:
-+		valid_len = virtchnl_queue_vector_maps_LEGACY_SIZEOF;
-+		if (msglen >= valid_len) {
-+			struct virtchnl_queue_vector_maps *v_qp = (void *)msg;
++static inline void ice_init_vf_devlink(struct ice_vf *vf)
++{
++}
 +
-+			err_msg_format = !v_qp->num_qv_maps;
-+			valid_len = virtchnl_struct_size(v_qp, qv_maps,
-+							 v_qp->num_qv_maps);
-+		}
-+		break;
-+	/* These are always errors when coming from the VF. */
- 	case VIRTCHNL_OP_EVENT:
- 	case VIRTCHNL_OP_UNKNOWN:
- 	default:
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-index dc2503e3c5ba..ff59d2dd5448 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-@@ -1744,12 +1744,9 @@ static int iavf_set_channels(struct net_device *netdev,
- 	if (ch->rx_count || ch->tx_count || ch->other_count != NONQ_VECS)
- 		return -EINVAL;
++static inline void ice_deinit_vf_devlink(struct ice_vf *vf)
++{
++}
+ #endif /* !CONFIG_PCI_IOV */
  
--	adapter->num_req_queues = num_req;
--	adapter->flags |= IAVF_FLAG_REINIT_ITR_NEEDED;
--	adapter->flags |= IAVF_FLAG_RESET_NEEDED;
--	iavf_reset_step(adapter);
+ #endif /* _ICE_VF_LIB_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/virt/rss.h b/drivers/net/ethernet/intel/ice/virt/rss.h
+index 784d4c43ce8b..388f980b4cdf 100644
+--- a/drivers/net/ethernet/intel/ice/virt/rss.h
++++ b/drivers/net/ethernet/intel/ice/virt/rss.h
+@@ -14,5 +14,6 @@ int ice_vc_config_rss_lut(struct ice_vf *vf, u8 *msg);
+ int ice_vc_config_rss_hfunc(struct ice_vf *vf, u8 *msg);
+ int ice_vc_get_rss_hashcfg(struct ice_vf *vf);
+ int ice_vc_set_rss_hashcfg(struct ice_vf *vf, u8 *msg);
++int ice_vc_get_max_rss_qregion(struct ice_vf *vf);
  
--	return 0;
-+	adapter->current_op = VIRTCHNL_OP_UNKNOWN;
-+	return iavf_request_queues(adapter, num_req);
+ #endif /* _ICE_VIRT_RSS_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/virt/virtchnl.h b/drivers/net/ethernet/intel/ice/virt/virtchnl.h
+index f7f909424098..c7e074726f8a 100644
+--- a/drivers/net/ethernet/intel/ice/virt/virtchnl.h
++++ b/drivers/net/ethernet/intel/ice/virt/virtchnl.h
+@@ -78,6 +78,10 @@ struct ice_virtchnl_ops {
+ 	int (*get_ptp_cap)(struct ice_vf *vf,
+ 			   const struct virtchnl_ptp_caps *msg);
+ 	int (*get_phc_time)(struct ice_vf *vf);
++	int (*get_max_rss_qregion)(struct ice_vf *vf);
++	int (*ena_qs_v2_msg)(struct ice_vf *vf, u8 *msg, u16 msglen);
++	int (*dis_qs_v2_msg)(struct ice_vf *vf, u8 *msg, u16 msglen);
++	int (*map_q_vector_msg)(struct ice_vf *vf, u8 *msg, u16 msglen);
+ };
+ 
+ #ifdef CONFIG_PCI_IOV
+diff --git a/drivers/net/ethernet/intel/ice/devlink/resource.c b/drivers/net/ethernet/intel/ice/devlink/resource.c
+index 42b65730ea52..dd2410f266b6 100644
+--- a/drivers/net/ethernet/intel/ice/devlink/resource.c
++++ b/drivers/net/ethernet/intel/ice/devlink/resource.c
+@@ -104,6 +104,16 @@ void ice_free_rss_lut_flr(struct ice_pf *pf)
+ 	}		
  }
  
- /**
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index abc0fe070ee7..b7b4b857f384 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -1758,10 +1758,14 @@ int iavf_config_rss(struct iavf_adapter *adapter)
-  **/
- static void iavf_fill_rss_lut(struct iavf_adapter *adapter)
- {
--	u16 i;
-+	struct virtchnl_max_rss_qregion *qregion = &adapter->max_rss_qregion;
-+	int max = adapter->num_active_queues;
++void ice_free_rss_lut_vf(struct ice_vf *vf)
++{
++	struct ice_pf *pf = vf->pf;
 +
-+	if (LARGE_NUM_QPAIRS_SUPPORT(adapter) && qregion->qregion_width)
-+		max = min(max, (int)BIT(qregion->qregion_width));
- 
--	for (i = 0; i < adapter->rss_lut_size; i++)
--		adapter->rss_lut[i] = i % adapter->num_active_queues;
-+	for (int i = 0; i < adapter->rss_lut_size; i++)
-+		adapter->rss_lut[i] = i % max;
++	scoped_guard(ice_adapter_devl, pf->adapter) {
++		ice_devl_res_free(pf, ICE_RSS_LUT_GLOBAL, vf);
++		ice_devl_res_free(pf, ICE_RSS_LUT_PF, vf);
++	}
++}
++
+ static int ice_devl_res_owned_idx(struct ice_adapter *adapter,
+ 				  enum ice_devl_resource_id res_id, void *owner)
+ {
+@@ -175,6 +185,37 @@ static u64 ice_rss_lut_pf_occ_get_both(void *priv)
+ 		       ice_is_devl_res_owned_by(adapter, ICE_RSS_LUT_GLOBAL, pf);
  }
  
- /**
-@@ -2246,6 +2250,10 @@ static int iavf_process_aq_command(struct iavf_adapter *adapter)
- 		iavf_virtchnl_send_ptp_cmd(adapter);
- 		return IAVF_SUCCESS;
- 	}
-+	if (adapter->aq_required & IAVF_FLAG_AQ_GET_MAX_RSS_QREGION) {
-+		iavf_get_max_rss_qregion(adapter);
-+		return 0;
-+	}
- 	if (adapter->aq_required & IAVF_FLAG_AQ_REQUEST_STATS) {
- 		iavf_request_stats(adapter);
- 		return 0;
-@@ -2441,8 +2449,9 @@ static void iavf_init_version_check(struct iavf_adapter *adapter)
-  */
- int iavf_parse_vf_resource_msg(struct iavf_adapter *adapter)
- {
--	int i, num_req_queues = adapter->num_req_queues;
-+	int i, qnum, num_req_queues = adapter->num_req_queues;
- 	struct iavf_vsi *vsi = &adapter->vsi;
-+	bool reconfig_rss = false;
- 
- 	for (i = 0; i < adapter->vf_res->num_vsis; i++) {
- 		if (adapter->vf_res->vsi_res[i].vsi_type == VIRTCHNL_VSI_SRIOV)
-@@ -2469,21 +2478,58 @@ int iavf_parse_vf_resource_msg(struct iavf_adapter *adapter)
- 
- 		return -EAGAIN;
- 	}
-+	if (!num_req_queues) {
-+		adapter->current_op = VIRTCHNL_OP_UNKNOWN;
-+		qnum = min(adapter->vsi_res->num_queue_pairs,
-+			   num_online_cpus());
++static u64 ice_rss_lut_vf_occ_get_global(void *priv)
++{
++	struct ice_adapter *adapter;
++	struct ice_vf *vf = priv;
 +
-+		return iavf_request_queues(adapter, qnum);
-+	}
- 	adapter->num_req_queues = 0;
- 	adapter->vsi.id = adapter->vsi_res->vsi_id;
++	adapter = vf->pf->adapter;
++	scoped_guard(ice_adapter_devl, adapter)
++		return ice_is_devl_res_owned_by(adapter, ICE_RSS_LUT_GLOBAL, vf);
++}
++
++static u64 ice_rss_lut_vf_occ_get_pf(void *priv)
++{
++	struct ice_adapter *adapter;
++	struct ice_vf *vf = priv;
++
++	adapter = vf->pf->adapter;
++	scoped_guard(ice_adapter_devl, adapter)
++		return ice_is_devl_res_owned_by(adapter, ICE_RSS_LUT_PF, vf);
++}
++
++static u64 ice_rss_lut_vf_occ_get_both(void *priv)
++{
++	struct ice_adapter *adapter;
++	struct ice_vf *vf = priv;
++
++	adapter = vf->pf->adapter;
++	scoped_guard(ice_adapter_devl, adapter)
++		return ice_is_devl_res_owned_by(adapter, ICE_RSS_LUT_PF, vf) +
++		       ice_is_devl_res_owned_by(adapter, ICE_RSS_LUT_GLOBAL, vf);
++}
++
+ static int ice_devl_resource_deny_occ_set(u64 size,
+ 					  struct netlink_ext_ack *extack,
+ 					  void *priv)
+@@ -220,6 +261,7 @@ static int ice_maybe_change_rss_lut(struct ice_pf *pf, void *owner,
+ 	struct ice_hw *hw = &pf->hw;
+ 	enum ice_lut_type lut_type;
+ 	int err, lut_size, lut_id;
++	struct ice_vf *vf = NULL;
+ 	struct ice_vsi *vsi;
+ 	u8 *lut;
  
- 	adapter->vsi.back = adapter;
- 	adapter->vsi.base_vector = 1;
- 	vsi->netdev = adapter->netdev;
- 	vsi->qs_handle = adapter->vsi_res->qset_handle;
- 	if (adapter->vf_res->vf_cap_flags & VIRTCHNL_VF_OFFLOAD_RSS_PF) {
-+		if ((adapter->rss_key &&
-+		     adapter->rss_key_size != adapter->vf_res->rss_key_size) ||
-+		    (adapter->rss_lut &&
-+		     adapter->rss_lut_size != adapter->vf_res->rss_lut_size)) {
-+			reconfig_rss = true;
-+		}
- 		adapter->rss_key_size = adapter->vf_res->rss_key_size;
- 		adapter->rss_lut_size = adapter->vf_res->rss_lut_size;
+@@ -246,7 +288,8 @@ static int ice_maybe_change_rss_lut(struct ice_pf *pf, void *owner,
+ 	if (pf == owner) {
+ 		vsi = ice_get_main_vsi(pf);
  	} else {
- 		adapter->rss_key_size = IAVF_HKEY_ARRAY_SIZE;
- 		adapter->rss_lut_size = IAVF_HLUT_ARRAY_SIZE;
+-		return -EOPNOTSUPP;
++		vf = owner;
++		vsi = ice_get_vf_vsi(vf);
  	}
  
-+	if (reconfig_rss) {
-+		u8 *rss_key, *rss_lut;
-+
-+		rss_key = krealloc(adapter->rss_key, adapter->rss_key_size,
-+				   GFP_KERNEL);
-+		if (rss_key)
-+			adapter->rss_key = rss_key;
-+		rss_lut = krealloc(adapter->rss_lut, adapter->rss_lut_size,
-+				   GFP_KERNEL);
-+		if (rss_lut)
-+			adapter->rss_lut = rss_lut;
-+		if (!rss_lut || !rss_key)
-+			return -ENOMEM;
-+
-+		iavf_init_rss(adapter);
+ 	lut_size = ice_lut_type_to_size(lut_type);
+@@ -266,6 +309,11 @@ static int ice_maybe_change_rss_lut(struct ice_pf *pf, void *owner,
+ 
+ 	vsi->rss_table_size = lut_size;
+ 	vsi->rss_lut_type = lut_type;
++	if (vf) {
++		vsi->rss_size = ice_lut_type_to_qs_num(lut_type);
++		vsi->flags |= ICE_VSI_FLAG_RELOAD;
++		ice_schedule_vf_reset(vf);
 +	}
-+
-+	qnum = min_t(int, IAVF_MAX_REQ_QUEUES, (int)(num_online_cpus()));
-+	if (LARGE_NUM_QPAIRS_SUPPORT(adapter) &&
-+	    adapter->vsi_res->num_queue_pairs < qnum) {
-+		adapter->current_op = VIRTCHNL_OP_UNKNOWN;
-+		return iavf_request_queues(adapter, qnum);
-+	}
-+
- 	return 0;
+ out:
+ 	kfree(lut);
+ 	return err;
+@@ -354,6 +402,30 @@ static int ice_rss_lut_pf_occ_set_global(u64 size,
+ 					   ICE_ANY_SLOT, extack);
  }
  
-@@ -2609,6 +2655,65 @@ static void iavf_init_recv_offload_vlan_v2_caps(struct iavf_adapter *adapter)
- 	iavf_change_state(adapter, __IAVF_INIT_FAILED);
- }
- 
-+/*
-+ * iavf_init_send_max_rss_qregion - part of querying for RSS max queue region
-+ * @adapter: board private structure
-+ *
-+ * Function processes send of the VIRTCHNL_OP_GET_MAX_RSS_QREGION to the PF.
-+ * Must clear IAVF_EXTENDED_CAP_RECV_RSS_QREGION if the message is not sent, e.g.
-+ * due to the PF not negotiating VIRTCHNL_VF_LARGE_NUM_QPAIRS.
-+ */
-+static void iavf_init_send_max_rss_qregion(struct iavf_adapter *adapter)
++static int ice_rss_lut_vf_occ_set_pf(u64 size, struct netlink_ext_ack *extack,
++				     void *occ_priv)
 +{
-+	int ret;
++	struct ice_vf *vf = occ_priv;
++	struct ice_pf *pf = vf->pf;
++	int pf_id = pf->hw.pf_id;
 +
-+	WARN_ON(!(adapter->extended_caps & IAVF_EXTENDED_CAP_SEND_RSS_QREGION));
-+
-+	ret = iavf_send_max_rss_qregion(adapter);
-+	if (ret == -EOPNOTSUPP) {
-+		/* PF does not support VIRTCHNL_VF_LARGE_NUM_QPAIRS. In this
-+		 * case, we did not send the capability exchange message and do
-+		 * not expect a response.
-+		 */
-+		adapter->extended_caps &= ~IAVF_EXTENDED_CAP_RECV_RSS_QREGION;
-+	}
-+
-+	/* We sent the message, so move on to the next step */
-+	adapter->extended_caps &= ~IAVF_EXTENDED_CAP_SEND_RSS_QREGION;
++	scoped_guard(ice_adapter_devl, pf->adapter)
++		return ice_devl_res_change(size, ICE_RSS_LUT_PF, pf, vf, pf_id,
++					   extack);
 +}
 +
-+/**
-+ * iavf_init_recv_max_rss_qregion - part of querying for RSS max queue region
-+ * @adapter: board private structure
-+ *
-+ * Function processes receipt of the RSS max qregion to be used for the LUT.
-+ */
-+static void iavf_init_recv_max_rss_qregion(struct iavf_adapter *adapter)
++static int ice_rss_lut_vf_occ_set_global(u64 size,
++					 struct netlink_ext_ack *extack,
++					 void *occ_priv)
 +{
-+	int ret;
++	struct ice_vf *vf = occ_priv;
++	struct ice_pf *pf = vf->pf;
 +
-+	WARN_ON(!(adapter->extended_caps & IAVF_EXTENDED_CAP_RECV_RSS_QREGION));
-+
-+	memset(&adapter->max_rss_qregion, 0, sizeof(adapter->max_rss_qregion));
-+
-+	ret = iavf_get_max_rss_qregion(adapter);
-+	if (ret)
-+		goto err;
-+
-+	/* We've processed the PF response to the VIRTCHNL_OP_GET_MAX_RSS_QREGION
-+	 * message we sent previously.
-+	 */
-+	adapter->extended_caps &= ~IAVF_EXTENDED_CAP_RECV_RSS_QREGION;
-+	return;
-+
-+err:
-+	/* We didn't receive a reply. Make sure we try sending again when
-+	 * __IAVF_INIT_FAILED attempts to recover.
-+	 */
-+	adapter->extended_caps |= IAVF_EXTENDED_CAP_RECV_RSS_QREGION;
-+	iavf_change_state(adapter, __IAVF_INIT_FAILED);
++	scoped_guard(ice_adapter_devl, pf->adapter)
++		return ice_devl_res_change(size, ICE_RSS_LUT_GLOBAL, pf, vf,
++					   ICE_ANY_SLOT, extack);
 +}
 +
  /**
-  * iavf_init_send_supported_rxdids - part of querying for supported RXDID
-  * formats
-@@ -2757,6 +2862,16 @@ static void iavf_init_process_extended_caps(struct iavf_adapter *adapter)
+  * ice_take_rss_lut_pf - allocate PF RSS LUT for PF
+  * @pf: the PF device that PF LUT is physically on, and to allocate it for
+@@ -467,3 +539,34 @@ void ice_devl_pf_resources_register(struct ice_pf *pf)
+ 	devl_assert_locked(devlink);
+ 	ice_devl_res_register(devlink, pf_resources, pf);
+ }
++
++void ice_devlink_vf_resources_register(struct ice_vf *vf)
++{
++	struct ice_devl_resource vf_resources[ICE_DEVL_RESOURCES_COUNT] = {
++		[ICE_RSS_LUT_GLOBAL] = {
++			.name = "lut_512",
++			.parent_id = ICE_RSS_LUT_BOTH,
++			.max_size = 1,
++			.get = ice_rss_lut_vf_occ_get_global,
++			.set = ice_rss_lut_vf_occ_set_global,
++		},
++		[ICE_RSS_LUT_PF] = {
++			.name = "lut_2048",
++			.parent_id = ICE_RSS_LUT_BOTH,
++			.max_size = 1,
++			.get = ice_rss_lut_vf_occ_get_pf,
++			.set = ice_rss_lut_vf_occ_set_pf,
++		},
++		[ICE_RSS_LUT_BOTH] = {
++			.name = "rss",
++			.parent_id = ICE_TOP_RESOURCE,
++			.max_size = 2,
++			.get = ice_rss_lut_vf_occ_get_both,
++			.set = ice_devl_resource_deny_occ_set,
++		},
++	};
++	struct devlink *devlink = vf->devlink;
++
++	scoped_guard(devl, devlink)
++		ice_devl_res_register(devlink, vf_resources, vf);
++}
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index e47f2f881701..2ab44eca7e11 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -12,6 +12,23 @@
+ 
+ #include "devlink/resource.h"
+ 
++#define ICE_LUT_VSI_MAX_QS	16
++#define ICE_LUT_GLOBAL_MAX_QS	64
++#define ICE_LUT_PF_MAX_QS	256
++
++u16 ice_lut_type_to_qs_num(enum ice_lut_type lut_type)
++{
++	switch (lut_type) {
++	case ICE_LUT_PF:
++		return ICE_LUT_PF_MAX_QS;
++	case ICE_LUT_GLOBAL:
++		return ICE_LUT_GLOBAL_MAX_QS;
++	case ICE_LUT_VSI:
++	default:
++		return ICE_LUT_VSI_MAX_QS;
++	}
++}
++
+ /**
+  * ice_vsi_type_str - maps VSI type enum to string equivalents
+  * @vsi_type: VSI type enum
+@@ -1547,8 +1564,6 @@ int ice_vsi_cfg_rss_lut_key(struct ice_vsi *vsi)
+ 	    (test_bit(ICE_FLAG_TC_MQPRIO, pf->flags))) {
+ 		vsi->rss_size = min_t(u16, vsi->rss_size, vsi->ch_rss_size);
+ 	} else {
+-		vsi->rss_size = min_t(u16, vsi->rss_size, vsi->num_rxq);
+-
+ 		/* If orig_rss_size is valid and it is less than determined
+ 		 * main VSI's rss_size, update main VSI's rss_size to be
+ 		 * orig_rss_size so that when tc-qdisc is deleted, main VSI
+@@ -2572,8 +2587,14 @@ void ice_vsi_decfg(struct ice_vsi *vsi)
+ 	ice_vsi_free_arrays(vsi);
+ 
+ 	if (vsi->flags & ICE_VSI_FLAG_INIT) {
+-		if (vsi->type == ICE_VSI_PF)
++		if (vsi->type == ICE_VSI_PF) {
+ 			ice_free_rss_lut_flr(pf);
++		} else if (vsi->type == ICE_VSI_VF) {
++			struct ice_vf *vf = vsi->vf;
++
++			vf->num_req_qs = 0;
++			vf->num_vf_qs = min(vf->num_vf_qs, pf->vfs.num_qps_per);
++		}
+ 	}
+ 
+ 	/* SR-IOV determines needed MSIX resources all at once instead of per
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 94232f4a45ad..606e863f0f54 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -2275,6 +2275,30 @@ static void ice_check_media_subtask(struct ice_pf *pf)
+ 	}
+ }
+ 
++static void ice_handle_deferred_vf_reset(struct ice_pf *pf)
++{
++	struct ice_vf *vf;
++	unsigned int bkt;
++	int err;
++
++	mutex_lock(&pf->vfs.table_lock);
++	ice_for_each_vf(pf, bkt, vf) {
++		if (!vf->needs_deferred_reset)
++			continue;
++
++		dev_info(ice_pf_to_dev(pf), "doing deferred reset of VF %d\n",
++			 vf->vf_id);
++		err = ice_reset_vf(vf, ICE_VF_RESET_NOTIFY | ICE_VF_RESET_LOCK);
++		if (err)
++			dev_warn(ice_pf_to_dev(pf), "deferred reset of VF %d failed: %d\n",
++				 vf->vf_id, err);
++
++		vf->needs_deferred_reset = 0;
++		ice_put_vf(vf);
++	}
++	mutex_unlock(&pf->vfs.table_lock);
++}
++
+ static void ice_service_task_recovery_mode(struct work_struct *work)
+ {
+ 	struct ice_pf *pf = container_of(work, struct ice_pf, serv_task);
+@@ -2357,6 +2381,7 @@ static void ice_service_task(struct work_struct *work)
  		return;
  	}
  
-+	/* Process capability exchange for RSS max qregion */
-+	if (adapter->extended_caps & IAVF_EXTENDED_CAP_SEND_RSS_QREGION) {
-+		iavf_init_send_max_rss_qregion(adapter);
-+		return;
-+	}
-+	if (adapter->extended_caps & IAVF_EXTENDED_CAP_RECV_RSS_QREGION) {
-+		iavf_init_recv_max_rss_qregion(adapter);
-+		return;
-+	}
-+
- 	/* When we reach here, no further extended capabilities exchanges are
- 	 * necessary, so we finally transition into __IAVF_INIT_CONFIG_ADAPTER
- 	 */
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-index 9102bc4bddb0..ab1019a91ff7 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-@@ -170,6 +170,7 @@ int iavf_send_vf_config_msg(struct iavf_adapter *adapter)
- 	       VIRTCHNL_VF_OFFLOAD_VLAN_V2 |
- 	       VIRTCHNL_VF_OFFLOAD_RX_FLEX_DESC |
- 	       VIRTCHNL_VF_OFFLOAD_CRC |
-+	       VIRTCHNL_VF_LARGE_NUM_QPAIRS |
- 	       VIRTCHNL_VF_OFFLOAD_ENCAP_CSUM |
- 	       VIRTCHNL_VF_OFFLOAD_REQ_QUEUES |
- 	       VIRTCHNL_VF_CAP_PTP |
-@@ -251,28 +252,44 @@ int iavf_send_vf_ptp_caps_msg(struct iavf_adapter *adapter)
- 				(u8 *)&hw_caps, sizeof(hw_caps));
++	ice_handle_deferred_vf_reset(pf);
+ 	ice_process_vflr_event(pf);
+ 	ice_clean_mailboxq_subtask(pf);
+ 	ice_clean_sbq_subtask(pf);
+diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
+index 28f9e68f46cd..3de352e8f45b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sriov.c
++++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
+@@ -655,6 +655,15 @@ static void ice_sriov_post_vsi_rebuild(struct ice_vf *vf)
+ 	wr32(&vf->pf->hw, VFGEN_RSTAT(vf->vf_id), VIRTCHNL_VFR_VFACTIVE);
  }
  
-+int iavf_send_max_rss_qregion(struct iavf_adapter *adapter)
++static struct ice_q_vector *ice_sriov_get_q_vector(struct ice_vsi *vsi,
++						   u16 vector_id)
 +{
-+	adapter->aq_required &= ~IAVF_FLAG_AQ_GET_MAX_RSS_QREGION;
-+
-+	if (!LARGE_NUM_QPAIRS_SUPPORT(adapter))
-+		return -EOPNOTSUPP;
-+
-+	iavf_send_pf_msg(adapter, VIRTCHNL_OP_GET_MAX_RSS_QREGION, NULL, 0);
-+	return 0;
++	/* Subtract non queue vector from vector_id passed by VF
++	 * to get actual number of VSI queue vector array index
++	 */
++	return vsi->q_vectors[vector_id - ICE_NONQ_VECS_VF];
 +}
 +
- /**
-  * iavf_validate_num_queues
-  * @adapter: adapter structure
-  *
-  * Validate that the number of queues the PF has sent in
-  * VIRTCHNL_OP_GET_VF_RESOURCES is not larger than the VF can handle.
-  **/
- static void iavf_validate_num_queues(struct iavf_adapter *adapter)
- {
--	if (adapter->vf_res->num_queue_pairs > IAVF_MAX_REQ_QUEUES) {
-+	u32 max_req_queues = IAVF_MAX_REQ_QUEUES;
-+
-+	if (!LARGE_NUM_QPAIRS_SUPPORT(adapter))
-+		max_req_queues = IAVF_MAX_VSI_QP;
-+
-+	if (adapter->vf_res->num_queue_pairs > max_req_queues) {
- 		struct virtchnl_vsi_resource *vsi_res;
- 		int i;
+ static const struct ice_vf_ops ice_sriov_vf_ops = {
+ 	.reset_type = ICE_VF_RESET,
+ 	.free = ice_sriov_free_vf,
+@@ -665,6 +674,7 @@ static const struct ice_vf_ops ice_sriov_vf_ops = {
+ 	.clear_reset_trigger = ice_sriov_clear_reset_trigger,
+ 	.irq_close = NULL,
+ 	.post_vsi_rebuild = ice_sriov_post_vsi_rebuild,
++	.get_q_vector = ice_sriov_get_q_vector,
+ };
  
- 		dev_info(&adapter->pdev->dev, "Received %d queues, but can only have a max of %d\n",
- 			 adapter->vf_res->num_queue_pairs,
--			 IAVF_MAX_REQ_QUEUES);
-+			 max_req_queues);
- 		dev_info(&adapter->pdev->dev, "Fixing by reducing queues to %d\n",
--			 IAVF_MAX_REQ_QUEUES);
--		adapter->vf_res->num_queue_pairs = IAVF_MAX_REQ_QUEUES;
-+			 max_req_queues);
-+		adapter->vf_res->num_queue_pairs = max_req_queues;
- 		for (i = 0; i < adapter->vf_res->num_vsis; i++) {
- 			vsi_res = &adapter->vf_res->vsi_res[i];
--			vsi_res->num_queue_pairs = IAVF_MAX_REQ_QUEUES;
-+			vsi_res->num_queue_pairs = max_req_queues;
- 		}
- 	}
+ /**
+diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.c b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
+index 55ad03085bc9..6e1f1c9733ef 100644
+--- a/drivers/net/ethernet/intel/ice/ice_vf_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
+@@ -6,6 +6,7 @@
+ #include "ice_lib.h"
+ #include "ice_fltr.h"
+ #include "virt/allowlist.h"
++#include "devlink/resource.h"
+ 
+ /* Public functions which may be accessed by all driver files */
+ 
+@@ -248,6 +249,8 @@ static void ice_vf_pre_vsi_rebuild(struct ice_vf *vf)
+ 	vf->vf_ops->clear_reset_trigger(vf);
  }
-@@ -371,6 +388,30 @@ int iavf_get_vf_ptp_caps(struct iavf_adapter *adapter)
+ 
++int ice_vsi_realloc_stat_arrays(struct ice_vsi *);
++
+ /**
+  * ice_vf_reconfig_vsi - Reconfigure a VF VSI with the device
+  * @vf: VF to reconfigure the VSI for
+@@ -989,6 +992,16 @@ int ice_reset_vf(struct ice_vf *vf, u32 flags)
  	return err;
  }
  
-+int iavf_get_max_rss_qregion(struct iavf_adapter *adapter)
++/**
++ * ice_schedule_vf_reset - reset VF, deferred to next service_task context
++ * @vf: VF to reset
++ */
++void ice_schedule_vf_reset(struct ice_vf *vf)
 +{
-+	struct iavf_arq_event_info event;
-+	int err;
-+	u16 len;
++	kref_get(&vf->refcnt);
++	vf->needs_deferred_reset = 1;
++}
 +
-+	len = sizeof(struct virtchnl_max_rss_qregion);
-+	event.buf_len = len;
-+	event.msg_buf = kzalloc(len, GFP_KERNEL);
-+	if (!event.msg_buf)
-+		return -ENOMEM;
+ /**
+  * ice_set_vf_state_dis - Set VF state to disabled
+  * @vf: pointer to the VF structure
+@@ -1043,6 +1056,9 @@ void ice_deinitialize_vf_entry(struct ice_vf *vf)
+ {
+ 	struct ice_pf *pf = vf->pf;
+ 
++	ice_free_rss_lut_vf(vf);
++	ice_deinit_vf_devlink(vf);
 +
-+	err = iavf_poll_virtchnl_msg(&adapter->hw, &event,
-+				     VIRTCHNL_OP_GET_MAX_RSS_QREGION);
-+	if (!err)
-+		memcpy(&adapter->max_rss_qregion, event.msg_buf,
-+		       min(event.msg_len, len));
+ 	if (!ice_is_feature_supported(pf, ICE_F_MBX_LIMIT))
+ 		list_del(&vf->mbx_info.list_entry);
+ }
+@@ -1429,3 +1445,29 @@ void ice_vf_update_mac_lldp_num(struct ice_vf *vf, struct ice_vsi *vsi,
+ 	if (was_ena != is_ena)
+ 		ice_vsi_cfg_sw_lldp(vsi, false, is_ena);
+ }
 +
-+	adapter->current_op = VIRTCHNL_OP_UNKNOWN;
++void ice_init_vf_devlink(struct ice_vf *vf)
++{
++	static const struct devlink_ops noop = {};
++	struct device *dev = &vf->vfdev->dev;
++	struct devlink *devlink;
 +
-+	kfree(event.msg_buf);
++	devlink = devlink_alloc(&noop, 0, dev);
++	if (!devlink)
++		return;
++
++	devl_nested_devlink_set(priv_to_devlink(vf->pf), devlink);
++	devlink_register(devlink);
++	vf->devlink = devlink;
++
++	ice_devlink_vf_resources_register(vf);
++}
++
++void ice_deinit_vf_devlink(struct ice_vf *vf)
++{
++	struct devlink *devlink = vf->devlink;
++
++	devlink_resources_unregister(devlink);
++	devlink_unregister(devlink);
++	devlink_free(devlink);
++}
+diff --git a/drivers/net/ethernet/intel/ice/virt/rss.c b/drivers/net/ethernet/intel/ice/virt/rss.c
+index 960012ca91b5..9b23ad40f7e2 100644
+--- a/drivers/net/ethernet/intel/ice/virt/rss.c
++++ b/drivers/net/ethernet/intel/ice/virt/rss.c
+@@ -1746,7 +1746,13 @@ int ice_vc_config_rss_lut(struct ice_vf *vf, u8 *msg)
+ 		goto error_param;
+ 	}
+ 
+-	if (vrl->lut_entries != ICE_LUT_VSI_SIZE) {
++	vsi = ice_get_vf_vsi(vf);
++	if (!vsi) {
++		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
++		goto error_param;
++	}
++
++	if (vrl->lut_entries != vsi->rss_table_size) {
+ 		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+ 		goto error_param;
+ 	}
+@@ -1762,7 +1768,7 @@ int ice_vc_config_rss_lut(struct ice_vf *vf, u8 *msg)
+ 		goto error_param;
+ 	}
+ 
+-	if (ice_set_rss_lut(vsi, vrl->lut, ICE_LUT_VSI_SIZE))
++	if (ice_set_rss_lut(vsi, vrl->lut, vrl->lut_entries))
+ 		v_ret = VIRTCHNL_STATUS_ERR_ADMIN_QUEUE_ERROR;
+ error_param:
+ 	return ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_CONFIG_RSS_LUT, v_ret,
+@@ -1920,3 +1926,29 @@ int ice_vc_set_rss_hashcfg(struct ice_vf *vf, u8 *msg)
+ 				     NULL, 0);
+ }
+ 
++int ice_vc_get_max_rss_qregion(struct ice_vf *vf)
++{
++	enum virtchnl_status_code v_ret = VIRTCHNL_STATUS_SUCCESS;
++	struct virtchnl_max_rss_qregion max_rss_qregion = {};
++	struct ice_vsi *vsi;
++	int err, len = 0;
++
++	if (!test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states)) {
++		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
++		goto reply;
++	}
++
++	vsi = vf->pf->vsi[vf->lan_vsi_idx];
++	if (!vsi) {
++		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
++		goto reply;
++	}
++
++	len = sizeof(max_rss_qregion);
++	max_rss_qregion.vport_id = vsi->vsi_num;
++	max_rss_qregion.qregion_width = ilog2(vsi->rss_table_size);
++reply:
++	err = ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_GET_MAX_RSS_QREGION, v_ret,
++				    (u8 *)&max_rss_qregion, len);
 +	return err;
 +}
-+
- static bool iavf_match_vc_op_cb(struct iavf_adapter *adapter, const void *data,
- 				enum virtchnl_ops recv_op)
+diff --git a/drivers/net/ethernet/intel/ice/virt/virtchnl.c b/drivers/net/ethernet/intel/ice/virt/virtchnl.c
+index 06d2f9be93ae..b7ece2c36165 100644
+--- a/drivers/net/ethernet/intel/ice/virt/virtchnl.c
++++ b/drivers/net/ethernet/intel/ice/virt/virtchnl.c
+@@ -246,10 +246,10 @@ static int ice_vc_get_vf_res_msg(struct ice_vf *vf, u8 *msg)
  {
-@@ -466,6 +507,50 @@ void iavf_configure_queues(struct iavf_adapter *adapter)
- 	kfree(vqci);
- }
+ 	enum virtchnl_status_code v_ret = VIRTCHNL_STATUS_SUCCESS;
+ 	struct virtchnl_vf_resource *vfres = NULL;
++	int ret, allowed_queues, len = 0;
+ 	struct ice_hw *hw = &vf->pf->hw;
++	enum ice_lut_type lut_type;
+ 	struct ice_vsi *vsi;
+-	int len = 0;
+-	int ret;
  
-+/**
-+ * iavf_enable_disable_queues_v2 - send V2 messages of ENABLE/DISABLE queues ops
-+ * @adapter: private adapter structure
-+ * @enable: true to enable and false to disable the queues
-+ */
-+static void iavf_enable_disable_queues_v2(struct iavf_adapter *adapter, bool enable)
-+{
-+	enum virtchnl_ops op = VIRTCHNL_OP_ENABLE_QUEUES_V2;
-+	struct virtchnl_del_ena_dis_queues *msg;
-+	u64 flag = IAVF_FLAG_AQ_ENABLE_QUEUES;
-+	struct virtchnl_queue_chunk *chunk;
-+	int len;
+ 	if (ice_check_vf_init(vf)) {
+ 		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+@@ -330,16 +330,24 @@ static int ice_vc_get_vf_res_msg(struct ice_vf *vf, u8 *msg)
+ 		vfres->vf_cap_flags |= VIRTCHNL_VF_CAP_PTP;
+ 
+ 	vfres->num_vsis = 1;
+-	/* Tx and Rx queue are equal for VF */
+-	vfres->num_queue_pairs = vsi->num_txq;
 +
-+	if (!enable) {
-+		op = VIRTCHNL_OP_DISABLE_QUEUES_V2;
-+		flag = IAVF_FLAG_AQ_DISABLE_QUEUES;
++	lut_type = vsi->rss_lut_type;
++	if (vf->driver_caps & VIRTCHNL_VF_LARGE_NUM_QPAIRS &&
++	    lut_type != ICE_LUT_VSI) {
++		vfres->vf_cap_flags |= VIRTCHNL_VF_LARGE_NUM_QPAIRS;
++		allowed_queues = ice_lut_type_to_qs_num(lut_type);
++	} else {
++		allowed_queues = vsi->num_txq;
 +	}
-+
-+	adapter->current_op = op;
-+
-+	/* We need 2 chunks (one Tx and one Rx). */
-+	len = virtchnl_struct_size(msg, chunks, 2);
-+	msg = kzalloc(len, GFP_KERNEL);
-+	if (!msg)
-+		return;
-+
-+	msg->vport_id = adapter->vsi_res->vsi_id;
-+	msg->num_chunks = 2;
-+
-+	chunk = &msg->chunks[0];
-+	chunk->type = VIRTCHNL_QUEUE_TYPE_RX;
-+	chunk->start_queue_id = 0;
-+	chunk->num_queues = adapter->num_active_queues;
-+
-+	chunk++;
-+	chunk->type = VIRTCHNL_QUEUE_TYPE_TX;
-+	chunk->start_queue_id = 0;
-+	chunk->num_queues = adapter->num_active_queues;
-+
-+	adapter->aq_required &= ~flag;
-+	iavf_send_pf_msg(adapter, op, (u8 *)msg, len);
-+	kfree(msg);
-+}
-+
++	vfres->num_queue_pairs = allowed_queues;
+ 	vfres->max_vectors = vf->num_msix;
+ 	vfres->rss_key_size = ICE_VSIQF_HKEY_ARRAY_SIZE;
+-	vfres->rss_lut_size = ICE_LUT_VSI_SIZE;
++	vfres->rss_lut_size = vsi->rss_table_size;
+ 	vfres->max_mtu = ice_vc_get_max_frame_size(vf);
+ 
+ 	vfres->vsi_res[0].vsi_id = ICE_VF_VSI_ID;
+ 	vfres->vsi_res[0].vsi_type = VIRTCHNL_VSI_SRIOV;
+-	vfres->vsi_res[0].num_queue_pairs = vsi->num_txq;
++	vfres->vsi_res[0].num_queue_pairs = allowed_queues;
+ 	ether_addr_copy(vfres->vsi_res[0].default_mac_addr,
+ 			vf->hw_lan_addr);
+ 
+@@ -2539,6 +2547,10 @@ static const struct ice_virtchnl_ops ice_virtchnl_dflt_ops = {
+ 	.cfg_q_quanta = ice_vc_cfg_q_quanta,
+ 	.get_ptp_cap = ice_vc_get_ptp_cap,
+ 	.get_phc_time = ice_vc_get_phc_time,
++	.get_max_rss_qregion = ice_vc_get_max_rss_qregion,
++	.ena_qs_v2_msg = ice_vc_ena_qs_v2_msg,
++	.dis_qs_v2_msg = ice_vc_dis_qs_v2_msg,
++	.map_q_vector_msg = ice_vc_map_q_vector_msg,
+ 	/* If you add a new op here please make sure to add it to
+ 	 * ice_virtchnl_repr_ops as well.
+ 	 */
+@@ -2676,6 +2688,10 @@ static const struct ice_virtchnl_ops ice_virtchnl_repr_ops = {
+ 	.cfg_q_quanta = ice_vc_cfg_q_quanta,
+ 	.get_ptp_cap = ice_vc_get_ptp_cap,
+ 	.get_phc_time = ice_vc_get_phc_time,
++	.get_max_rss_qregion = ice_vc_get_max_rss_qregion,
++	.ena_qs_v2_msg = ice_vc_ena_qs_v2_msg,
++	.dis_qs_v2_msg = ice_vc_dis_qs_v2_msg,
++	.map_q_vector_msg = ice_vc_map_q_vector_msg,
+ };
+ 
  /**
-  * iavf_enable_queues
-  * @adapter: adapter structure
-@@ -482,6 +567,12 @@ void iavf_enable_queues(struct iavf_adapter *adapter)
- 			adapter->current_op);
- 		return;
+@@ -2745,6 +2761,7 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event,
+ 	u32 v_opcode = le32_to_cpu(event->desc.cookie_high);
+ 	s16 vf_id = le16_to_cpu(event->desc.retval);
+ 	const struct ice_virtchnl_ops *ops;
++	bool need_devlink_init = false;
+ 	u16 msglen = event->msg_len;
+ 	u8 *msg = event->msg_buf;
+ 	struct ice_vf *vf = NULL;
+@@ -2783,6 +2800,8 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event,
+ 			err = -EINVAL;
  	}
-+
-+	if (adapter->num_active_queues > IAVF_MAX_VSI_QP) {
-+		iavf_enable_disable_queues_v2(adapter, true);
-+		return;
-+	}
-+
- 	adapter->current_op = VIRTCHNL_OP_ENABLE_QUEUES;
- 	vqs.vsi_id = adapter->vsi_res->vsi_id;
- 	vqs.tx_queues = BIT(adapter->num_active_queues) - 1;
-@@ -507,15 +598,81 @@ void iavf_disable_queues(struct iavf_adapter *adapter)
- 			adapter->current_op);
- 		return;
- 	}
-+
-+	if (LARGE_NUM_QPAIRS_SUPPORT(adapter)) {
-+		iavf_enable_disable_queues_v2(adapter, false);
-+		return;
-+	}
-+
- 	adapter->current_op = VIRTCHNL_OP_DISABLE_QUEUES;
- 	vqs.vsi_id = adapter->vsi_res->vsi_id;
- 	vqs.tx_queues = BIT(adapter->num_active_queues) - 1;
- 	vqs.rx_queues = vqs.tx_queues;
- 	adapter->aq_required &= ~IAVF_FLAG_AQ_DISABLE_QUEUES;
- 	iavf_send_pf_msg(adapter, VIRTCHNL_OP_DISABLE_QUEUES,
- 			 (u8 *)&vqs, sizeof(vqs));
- }
  
-+static void iavf_map_queue_vector(struct iavf_adapter *adapter)
-+{
-+	struct virtchnl_queue_vector_maps *qvmaps;
-+	int qnum = adapter->num_active_queues;
-+	struct virtchnl_queue_vector *qv;
-+	int len, max_pairs;
-+	
-+	max_pairs = iavf_max_vc_entries(qvmaps, qv_maps) / 2;
-+	len = virtchnl_struct_size(qvmaps, qv_maps, 2 * min(qnum, max_pairs));
-+	qvmaps = kzalloc(len, GFP_KERNEL);
-+	if (!qvmaps)
-+		return;
++	need_devlink_init = !vf->devlink;
 +
-+	qvmaps->vport_id = adapter->vsi_res->vsi_id;
-+	qv = qvmaps->qv_maps;
-+	for (int qid = 0, in_msg = 0; qid < qnum; qid++) {
-+		const bool last = qid + 1 == qnum;
-+		struct iavf_q_vector *q_vector;
-+
-+		q_vector = adapter->tx_rings[qid].q_vector;
-+		qv->queue_id = qid;
-+		qv->vector_id = NONQ_VECS + q_vector->v_idx;
-+		qv->itr_idx = IAVF_TX_ITR;
-+		qv->queue_type = VIRTCHNL_QUEUE_TYPE_TX;
-+		qv++;
-+
-+		q_vector = adapter->rx_rings[qid].q_vector;
-+		qv->queue_id = qid;
-+		qv->vector_id = NONQ_VECS + q_vector->v_idx;
-+		qv->itr_idx = IAVF_RX_ITR;
-+		qv->queue_type = VIRTCHNL_QUEUE_TYPE_RX;
-+		qv++;
-+
-+		in_msg++;
-+		if (last || in_msg == max_pairs) {
-+			int err;
-+
-+			qvmaps->num_qv_maps = 2 * in_msg;
-+			adapter->current_op = VIRTCHNL_OP_MAP_QUEUE_VECTOR;
-+			iavf_send_pf_msg(adapter, VIRTCHNL_OP_MAP_QUEUE_VECTOR,
-+					 (u8 *)qvmaps,
-+					 virtchnl_struct_size(qvmaps, qv_maps,
-+					 		      2 * in_msg));
-+			err = iavf_poll_virtchnl_response(adapter,
-+							  iavf_match_vc_op_cb,
-+							  (void *)VIRTCHNL_OP_MAP_QUEUE_VECTOR,
-+							  1000);
-+			if (err)
-+				dev_warn(&adapter->pdev->dev,
-+					 "polling response of mapping queue vectors failed, err: %d\n",
-+					 err);
-+
-+			in_msg = 0;
-+			qv = qvmaps->qv_maps;
-+		}
-+	}
-+	adapter->aq_required &= ~IAVF_FLAG_AQ_MAP_VECTORS;
-+	kfree(qvmaps);
-+}
-+
- /**
-  * iavf_map_queues
-  * @adapter: adapter structure
-@@ -537,6 +694,12 @@ void iavf_map_queues(struct iavf_adapter *adapter)
- 			adapter->current_op);
- 		return;
- 	}
-+
-+	if (LARGE_NUM_QPAIRS_SUPPORT(adapter)) {
-+		iavf_map_queue_vector(adapter);
-+		return;
-+	}
-+
- 	adapter->current_op = VIRTCHNL_OP_CONFIG_IRQ_MAP;
- 
- 	q_vectors = adapter->num_msix_vectors - NONQ_VECS;
-@@ -573,6 +736,32 @@ void iavf_map_queues(struct iavf_adapter *adapter)
- 	kfree(vimi);
- }
- 
-+/**
-+ * iavf_request_queues - request queues via virtchnl
-+ * @adapter: adapter structure
-+ * @num: number of requested queues
-+ *
-+ * Return: 0 on success, negative on failure.
-+ */
-+int iavf_request_queues(struct iavf_adapter *adapter, int num)
-+{
-+	struct virtchnl_vf_res_request vfres = { num };
-+
-+	if (adapter->current_op != VIRTCHNL_OP_UNKNOWN) {
-+		/* bail because we already have a command pending */
-+		dev_err(&adapter->pdev->dev, "Cannot request queues, command %d pending\n",
-+			adapter->current_op);
-+		return -EBUSY;
-+	}
-+
-+	adapter->current_op = VIRTCHNL_OP_REQUEST_QUEUES;
-+	adapter->flags |= IAVF_FLAG_REINIT_ITR_NEEDED;
-+	adapter->num_req_queues = num;
-+
-+	return iavf_send_pf_msg(adapter, VIRTCHNL_OP_REQUEST_QUEUES,
-+				(u8 *)&vfres, sizeof(vfres));
-+}
-+
- /**
-  * iavf_set_mac_addr_type - Set the correct request type from the filter type
-  * @virtchnl_ether_addr: pointer to requested list element
-@@ -2749,20 +2938,23 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
- 		iavf_virtchnl_ptp_get_time(adapter, msg, msglen);
+ error_handler:
+ 	if (err) {
+ 		ice_vc_send_msg_to_vf(vf, v_opcode, VIRTCHNL_STATUS_ERR_PARAM,
+@@ -2907,6 +2926,20 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event,
+ 	case VIRTCHNL_OP_GET_QOS_CAPS:
+ 		err = ops->get_qos_caps(vf);
  		break;
- 	case VIRTCHNL_OP_ENABLE_QUEUES:
++	case VIRTCHNL_OP_GET_MAX_RSS_QREGION:
++		err = ops->get_max_rss_qregion(vf);
++		break;
 +	case VIRTCHNL_OP_ENABLE_QUEUES_V2:
- 		/* enable transmits */
- 		iavf_irq_enable(adapter, true);
- 		adapter->flags &= ~IAVF_FLAG_QUEUES_DISABLED;
- 		break;
- 	case VIRTCHNL_OP_DISABLE_QUEUES:
++		err = ops->ena_qs_v2_msg(vf, msg, msglen);
++		if (!err)
++			ice_vc_notify_vf_link_state(vf);
++		break;
 +	case VIRTCHNL_OP_DISABLE_QUEUES_V2:
- 		iavf_free_all_tx_resources(adapter);
- 		iavf_free_all_rx_resources(adapter);
- 		if (adapter->state == __IAVF_DOWN_PENDING) {
- 			iavf_change_state(adapter, __IAVF_DOWN);
- 			wake_up(&adapter->down_waitqueue);
- 		}
- 		break;
- 	case VIRTCHNL_OP_VERSION:
- 	case VIRTCHNL_OP_CONFIG_IRQ_MAP:
++		err = ops->dis_qs_v2_msg(vf, msg, msglen);
++		break;
 +	case VIRTCHNL_OP_MAP_QUEUE_VECTOR:
- 		/* Don't display an error if we get these out of sequence.
- 		 * If the firmware needed to get kicked, we'll get these and
- 		 * it's no problem.
++		err = ops->map_q_vector_msg(vf, msg, msglen);
++		break;
+ 	case VIRTCHNL_OP_CONFIG_QUEUE_BW:
+ 		err = ops->cfg_q_bw(vf, msg);
+ 		break;
+@@ -2938,5 +2971,7 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event,
+ 
+ finish:
+ 	mutex_unlock(&vf->cfg_lock);
++	if (need_devlink_init)
++		ice_init_vf_devlink(vf);
+ 	ice_put_vf(vf);
+ }
 -- 
 2.39.3
 
