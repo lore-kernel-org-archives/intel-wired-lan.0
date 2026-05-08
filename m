@@ -4,67 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 55499CD3436
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  8 May 2026 12:59:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 21BCECD3447
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  8 May 2026 12:59:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 2B90040F62;
-	Fri,  8 May 2026 12:59:56 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id F3AD240E67;
+	Fri,  8 May 2026 12:59:57 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id CwdZSTm9zaPu; Fri,  8 May 2026 12:59:55 +0000 (UTC)
+ id crjFYIsFzHkX; Fri,  8 May 2026 12:59:57 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3F04041068
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 602B74100A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1778245195;
-	bh=/ksOojcXei/TfXFipAqDYeI+OI2GxXRjLV3fr5Yuc44=;
+	s=default; t=1778245197;
+	bh=vbQw2y7v23UaXpxycIQfCM4aoDdmvIwGc+GKDcKE2YI=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=p2Vi8A2dX4zaKkMY6fRVyGuhv+tc45PqexFTuCyl2ffa12xTV4671kvNKg5MrW/MB
-	 kN5Z+vJFUyzrVHhi2BIyFlyjxMDppnUMuT+iFEx3hJWGhm6n1+F5urwPqqTOT7u/7S
-	 ngGGRbdNXclFuAescajDIco33DDtFpaZLSFCBLcLHE28GdUekJRZT09AKVXsXu4Vg8
-	 TwTHupHlsrZ5iHxA+nZ5mTfFTEjsrI8lIec0Ac3vS+avzLIq0SsU2h4f49ZK1H7y/a
-	 +51mR/y+NIDZDWsC7FW3edDIgrL6hFok+QJHuGuvqlZJUsyN2Q7uMxXJ+0HGgvqcE2
-	 /Sj1WGeJW+xmw==
+	b=CwbTnYmRIFDaq3UMFE6+b5yEfLYfzR94of4M7YPqlpoNggFqCSGLpzUJr0WNz1MUp
+	 b9EnCdD0BFIdnxzQ91oFQ3hb+Ud5m2jo97RtDre7lWj5yhR6hh+O74DLRWji+1aAvy
+	 TO+Jz+GLHvEXXOQShuTM3Ryi/3ZVEXv7kHDyGnQPBxwu30blzwSvkEEHQat0T2Epjq
+	 ko6zOeAFsfakmEIH6Ji4Ab4zNHgOAp8rR5lWdA1NiP1TzPdROVQiEUBj5PecB7HBnL
+	 rOqRbY+291w+1mhWfgko/R7GtiqkjsBKx/0XChmQtQcK7opfK1CYa1WN5psSmwdBqY
+	 oSap3ruDF+sqg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 3F04041068;
-	Fri,  8 May 2026 12:59:55 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 251E2317
- for <intel-wired-lan@lists.osuosl.org>; Fri,  8 May 2026 12:59:53 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 602B74100A;
+	Fri,  8 May 2026 12:59:57 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 04998317
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  8 May 2026 12:59:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 0ADFA40F2F
- for <intel-wired-lan@lists.osuosl.org>; Fri,  8 May 2026 12:59:53 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 01DA940F62
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  8 May 2026 12:59:56 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 9O-1z6wxxtph for <intel-wired-lan@lists.osuosl.org>;
- Fri,  8 May 2026 12:59:52 +0000 (UTC)
+ id c-U0S3UUaH4k for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  8 May 2026 12:59:55 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.17;
  helo=mgamail.intel.com; envelope-from=przemyslaw.kitszel@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 01EA540FAC
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 01EA540FAC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 2D89841053
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2D89841053
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 01EA540FAC
- for <intel-wired-lan@lists.osuosl.org>; Fri,  8 May 2026 12:59:51 +0000 (UTC)
-X-CSE-ConnectionGUID: bJvLj2AVTEi37aygXWpwDA==
-X-CSE-MsgGUID: m5yP7j6pScqdLgb2/sRzhA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11779"; a="79199908"
-X-IronPort-AV: E=Sophos;i="6.23,223,1770624000"; d="scan'208";a="79199908"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 2D89841053
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  8 May 2026 12:59:55 +0000 (UTC)
+X-CSE-ConnectionGUID: UHMCuz7cSgesJFTuXRoZCA==
+X-CSE-MsgGUID: NmEqXQpMQZOFgM8eFzzKpw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11779"; a="79199931"
+X-IronPort-AV: E=Sophos;i="6.23,223,1770624000"; d="scan'208";a="79199931"
 Received: from fmviesa005.fm.intel.com ([10.60.135.145])
  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 08 May 2026 05:59:52 -0700
-X-CSE-ConnectionGUID: mKpDa3eOSfGXvqL8lWXsbQ==
-X-CSE-MsgGUID: k7a48ddlTS+z24AiWJ4EGg==
+ 08 May 2026 05:59:55 -0700
+X-CSE-ConnectionGUID: swZOTk4ZQf2P85VUdshBQQ==
+X-CSE-MsgGUID: wubMeUzcSOiZStO1K992YA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,223,1770624000"; d="scan'208";a="241730122"
+X-IronPort-AV: E=Sophos;i="6.23,223,1770624000"; d="scan'208";a="241730132"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmviesa005.fm.intel.com with ESMTP; 08 May 2026 05:59:46 -0700
+ by fmviesa005.fm.intel.com with ESMTP; 08 May 2026 05:59:49 -0700
 Received: from vecna.igk.intel.com (vecna.igk.intel.com [10.123.220.17])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 353482FC42;
- Fri,  8 May 2026 13:59:44 +0100 (IST)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 7C8272FC44;
+ Fri,  8 May 2026 13:59:47 +0100 (IST)
 From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 To: intel-wired-lan@lists.osuosl.org, Michal Schmidt <mschmidt@redhat.com>,
  Jakub Kicinski <kuba@kernel.org>, Jiri Pirko <jiri@resnulli.us>
@@ -82,10 +82,9 @@ Cc: netdev@vger.kernel.org, Simon Horman <horms@kernel.org>,
  Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>,
  Saeed Mahameed <saeedm@nvidia.com>, Leon Romanovsky <leon@kernel.org>,
  Tariq Toukan <tariqt@nvidia.com>, Mark Bloch <mbloch@nvidia.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Jedrzej Jagielski <jedrzej.jagielski@intel.com>
-Date: Fri,  8 May 2026 14:41:59 +0200
-Message-Id: <20260508124208.11622-7-przemyslaw.kitszel@intel.com>
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Date: Fri,  8 May 2026 14:42:01 +0200
+Message-Id: <20260508124208.11622-9-przemyslaw.kitszel@intel.com>
 X-Mailer: git-send-email 2.39.3
 In-Reply-To: <20260508124208.11622-1-przemyslaw.kitszel@intel.com>
 References: <20260508124208.11622-1-przemyslaw.kitszel@intel.com>
@@ -93,25 +92,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1778245193; x=1809781193;
+ t=1778245196; x=1809781196;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=FWfCl7UBwzOtiab25hIzZzlKGPLqepRD1UjJN8GGfV0=;
- b=OK/pJlcSHLGNTBlssPi20gVmJTQWaSs4g0JrqZyBJOa+2HuHUQ326SSo
- rob9uN6ywhhf4UXsWqXLxDNc5AXlEbpPRY+wGrguzsEGQLCay72mGF9vF
- 0QWziZDXb4EJYX8tDHOiU62BPIY6MpJgCjA099x9TPAiCZ6J5pWIyFHTv
- Zkdpp4Fa8kzQh/9zlKakybzqbYCP7sJYccXANXjR+D4ZXBYkt9MKnrPrb
- j7dHLZLSI33MSBdeoZIkvTTGX08TVGgc69h4OHyaSjU2qY0NEipKUw6gC
- s+OhbsdwK/GgoxWcteDIoG0BxGhJRafnz9wFGBDgJGD+KPVWGW6TuIIjF
- g==;
+ bh=MHtnV2d7on0QOsG7JkOnFzWyzfm4So4mltVlVNW1uq0=;
+ b=a+xtx97B0IBzfliOEfHlRQ/jsAQSCEfFIY3vh8e2rzFhY16VFz+dpgmk
+ CRCVzXfsBkCJi0edQbe03ocQ9IA2V7zt0iKQaSABfRo8r2AM6Equmrb3X
+ BwxX0NmqmXhWE9Al+WYXCgH2f2Ru3x3FXKIhJWLBmWCdnkulY5LIfInGj
+ bh2P+lvlgGOo6oLIL2QJt1/YVqQEVUkJdlL7xTHyZjlimVLHuZnkcwU1x
+ Sv/MhVxN/ZmyxcUZ4FidpzkGsTVRQiYM1z8zLN5d4Zd7imWmFG4HhbcOZ
+ dVTfpGhwfQ8+3/Hu0Nr+DfK8qjGnkwMZml+ROsdUrFSHXy7ExD4q2yvmh
+ A==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=OK/pJlcS
-Subject: [Intel-wired-lan] [PATCH iwl-next v1 06/15] ice: rename
- ICE_MAX_RSS_QS_PER_VF to ICE_MAX_QS_PER_VF_VCV1
+ header.a=rsa-sha256 header.s=Intel header.b=a+xtx97B
+Subject: [Intel-wired-lan] [PATCH iwl-next v1 08/15] iavf: extend
+ iavf_configure_queues() to support more queues
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -127,255 +126,126 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Rename ICE_MAX_RSS_QS_PER_VF to ICE_MAX_QS_PER_VF_VCV1, in preparation for
-the next patch that will extend the max to 256, using old value of 16 for
-the "v1" variant of virtchnl opcodes.
+Extend iavf_configure_queues() to support more than 31 queues.
+Virtchnl opcode used was already generic, but we have just not needed
+more than one message before.
 
-Suggested-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
-Suggested-by: Jacob Keller <jacob.e.keller@intel.com>
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Add helper, iavf_max_vc_entries(), that determines how many entries we
+could fit into virtchnl message (ending by flex array member). Will be
+also used on another op later in this series.
+
 Signed-off-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_lag.h     |  2 +-
- drivers/net/ethernet/intel/ice/ice_vf_lib.h  |  9 +++---
- drivers/net/ethernet/intel/ice/ice_lib.c     |  2 +-
- drivers/net/ethernet/intel/ice/ice_sriov.c   |  4 +--
- drivers/net/ethernet/intel/ice/ice_vf_lib.c  | 12 ++++----
- drivers/net/ethernet/intel/ice/virt/queues.c | 30 ++++++++++----------
- 6 files changed, 30 insertions(+), 29 deletions(-)
+ .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 55 +++++++++++++++----
+ 1 file changed, 45 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lag.h b/drivers/net/ethernet/intel/ice/ice_lag.h
-index f77ebcd61042..4bfffecbdc97 100644
---- a/drivers/net/ethernet/intel/ice/ice_lag.h
-+++ b/drivers/net/ethernet/intel/ice/ice_lag.h
-@@ -52,7 +52,7 @@ struct ice_lag {
- 	u8 bond_lport_sec; /* lport values for secondary PF */
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+index a2f75bb4a74e..7a97fc76420f 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+@@ -8,6 +8,11 @@
+ #include "iavf_ptp.h"
+ #include "iavf_prototype.h"
  
- 	/* q_home keeps track of which interface the q is currently on */
--	u8 q_home[ICE_MAX_SRIOV_VFS][ICE_MAX_RSS_QS_PER_VF];
-+	u8 q_home[ICE_MAX_SRIOV_VFS][ICE_MAX_QS_PER_VF_VCV1];
- 
- 	/* placeholder VSI for hanging VF queues from on secondary interface */
- 	struct ice_vsi *sec_vf[ICE_MAX_SRIOV_VFS];
-diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.h b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
-index cdfc2a558732..36dbe5412336 100644
---- a/drivers/net/ethernet/intel/ice/ice_vf_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
-@@ -19,7 +19,8 @@
- #define ICE_MAX_SRIOV_VFS		256
- 
- /* VF resource constraints */
--#define ICE_MAX_RSS_QS_PER_VF	16
-+/* for "old" virtchnl opcodes that accept up to 16 queues */
-+#define ICE_MAX_QS_PER_VF_VCV1	16
- 
- struct ice_pf;
- struct ice_vf;
-@@ -161,8 +162,8 @@ struct ice_vf {
- 	u8 dev_lan_addr[ETH_ALEN];
- 	u8 hw_lan_addr[ETH_ALEN];
- 	struct ice_time_mac legacy_last_added_umac;
--	DECLARE_BITMAP(txq_ena, ICE_MAX_RSS_QS_PER_VF);
--	DECLARE_BITMAP(rxq_ena, ICE_MAX_RSS_QS_PER_VF);
-+	DECLARE_BITMAP(txq_ena, ICE_MAX_QS_PER_VF_VCV1);
-+	DECLARE_BITMAP(rxq_ena, ICE_MAX_QS_PER_VF_VCV1);
- 	struct ice_vlan port_vlan_info;	/* Port VLAN ID, QoS, and TPID */
- 	struct virtchnl_vlan_caps vlan_v2_caps;
- 	struct ice_mbx_vf_info mbx_info;
-@@ -205,7 +206,7 @@ struct ice_vf {
- 	u16 lldp_recipe_id;
- 	u16 lldp_rule_id;
- 
--	struct ice_vf_qs_bw qs_bw[ICE_MAX_RSS_QS_PER_VF];
-+	struct ice_vf_qs_bw qs_bw[ICE_MAX_QS_PER_VF_VCV1];
- };
- 
- /* Flags for controlling behavior of ice_reset_vf */
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 2de62cde14ab..09e1dcab2179 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -925,7 +925,7 @@ static void ice_vsi_set_rss_params(struct ice_vsi *vsi)
- 		 * For VSI_LUT, LUT size should be set to 64 bytes.
- 		 */
- 		vsi->rss_table_size = ICE_LUT_VSI_SIZE;
--		vsi->rss_size = ICE_MAX_RSS_QS_PER_VF;
-+		vsi->rss_size = ICE_MAX_QS_PER_VF_VCV1;
- 		vsi->rss_lut_type = ICE_LUT_VSI;
- 		break;
- 	case ICE_VSI_LB:
-diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
-index 8686c382404f..0482454f453b 100644
---- a/drivers/net/ethernet/intel/ice/ice_sriov.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
-@@ -398,15 +398,15 @@ static int ice_set_per_vf_res(struct ice_pf *pf, u16 num_vfs)
- 	}
- 
- 	num_txq = min_t(u16, num_msix_per_vf - ICE_NONQ_VECS_VF,
--			ICE_MAX_RSS_QS_PER_VF);
-+			ICE_MAX_QS_PER_VF_VCV1);
- 	avail_qs = ice_get_avail_txq_count(pf) / num_vfs;
- 	if (!avail_qs)
- 		num_txq = 0;
- 	else if (num_txq > avail_qs)
- 		num_txq = rounddown_pow_of_two(avail_qs);
- 
- 	num_rxq = min_t(u16, num_msix_per_vf - ICE_NONQ_VECS_VF,
--			ICE_MAX_RSS_QS_PER_VF);
-+			ICE_MAX_QS_PER_VF_VCV1);
- 	avail_qs = ice_get_avail_rxq_count(pf) / num_vfs;
- 	if (!avail_qs)
- 		num_rxq = 0;
-diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.c b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-index f1f437b1af1b..8e88ab8547ab 100644
---- a/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-@@ -535,8 +535,8 @@ static void ice_vf_rebuild_host_cfg(struct ice_vf *vf)
- static void ice_set_vf_state_qs_dis(struct ice_vf *vf)
- {
- 	/* Clear Rx/Tx enabled queues flag */
--	bitmap_zero(vf->txq_ena, ICE_MAX_RSS_QS_PER_VF);
--	bitmap_zero(vf->rxq_ena, ICE_MAX_RSS_QS_PER_VF);
-+	bitmap_zero(vf->txq_ena, ICE_MAX_QS_PER_VF_VCV1);
-+	bitmap_zero(vf->rxq_ena, ICE_MAX_QS_PER_VF_VCV1);
- 	clear_bit(ICE_VF_STATE_QS_ENA, vf->vf_states);
- }
- 
-@@ -1217,13 +1217,13 @@ bool ice_is_vf_trusted(struct ice_vf *vf)
-  * ice_vf_has_no_qs_ena - check if the VF has any Rx or Tx queues enabled
-  * @vf: the VF to check
-  *
-- * Returns true if the VF has no Rx and no Tx queues enabled and returns false
-- * otherwise
-+ * Return: true if the VF has no Rx and no Tx queues enabled and returns false
-+ * otherwise.
-  */
- bool ice_vf_has_no_qs_ena(struct ice_vf *vf)
- {
--	return bitmap_empty(vf->rxq_ena, ICE_MAX_RSS_QS_PER_VF) &&
--		bitmap_empty(vf->txq_ena, ICE_MAX_RSS_QS_PER_VF);
-+	return bitmap_empty(vf->rxq_ena, ICE_MAX_QS_PER_VF_VCV1) &&
-+	       bitmap_empty(vf->txq_ena, ICE_MAX_QS_PER_VF_VCV1);
- }
- 
++/* how many Flex Array Member entires do fit into VC message of type *ptr */
++#define iavf_max_vc_entries(ptr, flex_member) \
++	((IAVF_MAX_AQ_BUF_SIZE - virtchnl_struct_size(ptr, flex_member, 1)) / \
++	 sizeof(ptr->flex_member[0]) + 1)
++
  /**
-diff --git a/drivers/net/ethernet/intel/ice/virt/queues.c b/drivers/net/ethernet/intel/ice/virt/queues.c
-index 28adc24197b8..7b165ee11a90 100644
---- a/drivers/net/ethernet/intel/ice/virt/queues.c
-+++ b/drivers/net/ethernet/intel/ice/virt/queues.c
-@@ -171,8 +171,8 @@ static int ice_vf_cfg_q_quanta_profile(struct ice_vf *vf, u16 quanta_size,
- static bool ice_vc_validate_vqs_bitmaps(struct virtchnl_queue_select *vqs)
- {
- 	if ((!vqs->rx_queues && !vqs->tx_queues) ||
--	    vqs->rx_queues >= BIT(ICE_MAX_RSS_QS_PER_VF) ||
--	    vqs->tx_queues >= BIT(ICE_MAX_RSS_QS_PER_VF))
-+	    vqs->rx_queues >= BIT(ICE_MAX_QS_PER_VF_VCV1) ||
-+	    vqs->tx_queues >= BIT(ICE_MAX_QS_PER_VF_VCV1))
- 		return false;
+  * iavf_send_pf_msg
+  * @adapter: adapter structure
+@@ -366,6 +371,14 @@ int iavf_get_vf_ptp_caps(struct iavf_adapter *adapter)
+ 	return err;
+ }
  
- 	return true;
-@@ -317,7 +317,7 @@ int ice_vc_ena_qs_msg(struct ice_vf *vf, u8 *msg)
- 	 * programmed using ice_vsi_cfg_txqs
- 	 */
- 	q_map = vqs->rx_queues;
--	for_each_set_bit(vf_q_id, &q_map, ICE_MAX_RSS_QS_PER_VF) {
-+	for_each_set_bit(vf_q_id, &q_map, ICE_MAX_QS_PER_VF_VCV1) {
- 		if (!ice_vc_isvalid_q_id(vsi, vf_q_id)) {
- 			v_ret = VIRTCHNL_STATUS_ERR_PARAM;
- 			goto error_param;
-@@ -330,7 +330,7 @@ int ice_vc_ena_qs_msg(struct ice_vf *vf, u8 *msg)
++static bool iavf_match_vc_op_cb(struct iavf_adapter *adapter, const void *data,
++				enum virtchnl_ops recv_op)
++{
++	enum virtchnl_ops wanted_op = (enum virtchnl_ops)data;
++
++	return recv_op == wanted_op;
++}
++
+ /**
+  * iavf_configure_queues
+  * @adapter: adapter structure
+@@ -377,8 +390,9 @@ void iavf_configure_queues(struct iavf_adapter *adapter)
+ 	struct virtchnl_vsi_queue_config_info *vqci;
+ 	int pairs = adapter->num_active_queues;
+ 	struct virtchnl_queue_pair_info *vqpi;
+-	u32 i, max_frame;
+ 	u8 rx_flags = 0;
++	u32 max_frame;
++	int max_pairs;
+ 	size_t len;
+ 
+ 	max_frame = LIBIE_MAX_RX_FRM_LEN(adapter->rx_rings->pp->p.offset);
+@@ -390,22 +404,22 @@ void iavf_configure_queues(struct iavf_adapter *adapter)
+ 			adapter->current_op);
+ 		return;
+ 	}
+-	adapter->current_op = VIRTCHNL_OP_CONFIG_VSI_QUEUES;
+-	len = virtchnl_struct_size(vqci, qpair, pairs);
++
++	max_pairs = iavf_max_vc_entries(vqci, qpair);
++	len = virtchnl_struct_size(vqci, qpair, min(pairs, max_pairs));
+ 	vqci = kzalloc(len, GFP_KERNEL);
+ 	if (!vqci)
+ 		return;
+ 
+ 	if (iavf_ptp_cap_supported(adapter, VIRTCHNL_1588_PTP_CAP_RX_TSTAMP))
+ 		rx_flags |= VIRTCHNL_PTP_RX_TSTAMP;
+ 
+ 	vqci->vsi_id = adapter->vsi_res->vsi_id;
+-	vqci->num_queue_pairs = pairs;
+ 	vqpi = vqci->qpair;
+-	/* Size check is not needed here - HW max is 16 queue pairs, and we
+-	 * can fit info for 31 of them into the AQ buffer before it overflows.
+-	 */
+-	for (i = 0; i < pairs; i++) {
++
++	for (int i = 0, in_msg = 0; i < pairs; i++) {
++		const bool last = i + 1 == pairs;
++
+ 		vqpi->txq.vsi_id = vqci->vsi_id;
+ 		vqpi->txq.queue_id = i;
+ 		vqpi->txq.ring_len = adapter->tx_rings[i].count;
+@@ -423,11 +437,32 @@ void iavf_configure_queues(struct iavf_adapter *adapter)
+ 						   NETIF_F_RXFCS);
+ 		vqpi->rxq.flags = rx_flags;
+ 		vqpi++;
++		in_msg++;
++		if (last || in_msg == max_pairs) {
++			int err;
++
++			adapter->current_op = VIRTCHNL_OP_CONFIG_VSI_QUEUES;
++			vqci->num_queue_pairs = in_msg;
++
++			iavf_send_pf_msg(adapter,
++					 VIRTCHNL_OP_CONFIG_VSI_QUEUES,
++					 (u8 *)vqci,
++					 virtchnl_struct_size(vqci, qpair, in_msg));
++			err = iavf_poll_virtchnl_response(adapter,
++							  iavf_match_vc_op_cb,
++							  (void *)VIRTCHNL_OP_CONFIG_VSI_QUEUES,
++							  1000);
++			if (err)
++				dev_warn(&adapter->pdev->dev,
++					 "config queues poll failed, err: %d\n",
++					 err);
++
++			vqpi = vqci->qpair;
++			in_msg = 0;
++		}
  	}
  
- 	q_map = vqs->tx_queues;
--	for_each_set_bit(vf_q_id, &q_map, ICE_MAX_RSS_QS_PER_VF) {
-+	for_each_set_bit(vf_q_id, &q_map, ICE_MAX_QS_PER_VF_VCV1) {
- 		if (!ice_vc_isvalid_q_id(vsi, vf_q_id)) {
- 			v_ret = VIRTCHNL_STATUS_ERR_PARAM;
- 			goto error_param;
-@@ -461,7 +461,7 @@ int ice_vc_dis_qs_msg(struct ice_vf *vf, u8 *msg)
- 	if (vqs->tx_queues) {
- 		q_map = vqs->tx_queues;
+ 	adapter->aq_required &= ~IAVF_FLAG_AQ_CONFIGURE_QUEUES;
+-	iavf_send_pf_msg(adapter, VIRTCHNL_OP_CONFIG_VSI_QUEUES,
+-			 (u8 *)vqci, len);
+ 	kfree(vqci);
+ }
  
--		for_each_set_bit(vf_q_id, &q_map, ICE_MAX_RSS_QS_PER_VF) {
-+		for_each_set_bit(vf_q_id, &q_map, ICE_MAX_QS_PER_VF_VCV1) {
- 			if (!ice_vc_isvalid_q_id(vsi, vf_q_id)) {
- 				v_ret = VIRTCHNL_STATUS_ERR_PARAM;
- 				goto error_param;
-@@ -476,7 +476,7 @@ int ice_vc_dis_qs_msg(struct ice_vf *vf, u8 *msg)
- 
- 	q_map = vqs->rx_queues;
- 	if (q_map) {
--		for_each_set_bit(vf_q_id, &q_map, ICE_MAX_RSS_QS_PER_VF) {
-+		for_each_set_bit(vf_q_id, &q_map, ICE_MAX_QS_PER_VF_VCV1) {
- 			if (!ice_vc_isvalid_q_id(vsi, vf_q_id)) {
- 				v_ret = VIRTCHNL_STATUS_ERR_PARAM;
- 				goto error_param;
-@@ -519,7 +519,7 @@ ice_cfg_interrupt(struct ice_vf *vf, struct ice_vsi *vsi,
- 	q_vector->num_ring_tx = 0;
- 
- 	qmap = map->rxq_map;
--	for_each_set_bit(vsi_q_id_idx, &qmap, ICE_MAX_RSS_QS_PER_VF) {
-+	for_each_set_bit(vsi_q_id_idx, &qmap, ICE_MAX_QS_PER_VF_VCV1) {
- 		vsi_q_id = vsi_q_id_idx;
- 
- 		if (!ice_vc_isvalid_q_id(vsi, vsi_q_id))
-@@ -534,7 +534,7 @@ ice_cfg_interrupt(struct ice_vf *vf, struct ice_vsi *vsi,
- 	}
- 
- 	qmap = map->txq_map;
--	for_each_set_bit(vsi_q_id_idx, &qmap, ICE_MAX_RSS_QS_PER_VF) {
-+	for_each_set_bit(vsi_q_id_idx, &qmap, ICE_MAX_QS_PER_VF_VCV1) {
- 		vsi_q_id = vsi_q_id_idx;
- 
- 		if (!ice_vc_isvalid_q_id(vsi, vsi_q_id))
-@@ -658,7 +658,7 @@ int ice_vc_cfg_q_bw(struct ice_vf *vf, u8 *msg)
- 		goto err;
- 	}
- 
--	if (qbw->num_queues > ICE_MAX_RSS_QS_PER_VF ||
-+	if (qbw->num_queues > ICE_MAX_QS_PER_VF_VCV1 ||
- 	    qbw->num_queues > min_t(u16, vsi->alloc_txq, vsi->alloc_rxq)) {
- 		dev_err(ice_pf_to_dev(vf->pf), "VF-%d trying to configure more than allocated number of queues: %d\n",
- 			vf->vf_id, min_t(u16, vsi->alloc_txq, vsi->alloc_rxq));
-@@ -750,7 +750,7 @@ int ice_vc_cfg_q_quanta(struct ice_vf *vf, u8 *msg)
- 		goto err;
- 	}
- 
--	if (end_qid > ICE_MAX_RSS_QS_PER_VF ||
-+	if (end_qid > ICE_MAX_QS_PER_VF_VCV1 ||
- 	    end_qid > min_t(u16, vsi->alloc_txq, vsi->alloc_rxq)) {
- 		dev_err(ice_pf_to_dev(vf->pf), "VF-%d trying to configure more than allocated number of queues: %d\n",
- 			vf->vf_id, min_t(u16, vsi->alloc_txq, vsi->alloc_rxq));
-@@ -818,7 +818,7 @@ int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8 *msg)
- 	if (!vsi)
- 		goto error_param;
- 
--	if (qci->num_queue_pairs > ICE_MAX_RSS_QS_PER_VF ||
-+	if (qci->num_queue_pairs > ICE_MAX_QS_PER_VF_VCV1 ||
- 	    qci->num_queue_pairs > min_t(u16, vsi->alloc_txq, vsi->alloc_rxq)) {
- 		dev_err(ice_pf_to_dev(pf), "VF-%d requesting more than supported number of queues: %d\n",
- 			vf->vf_id, min_t(u16, vsi->alloc_txq, vsi->alloc_rxq));
-@@ -996,16 +996,16 @@ int ice_vc_request_qs_msg(struct ice_vf *vf, u8 *msg)
- 	if (!req_queues) {
- 		dev_err(dev, "VF %d tried to request 0 queues. Ignoring.\n",
- 			vf->vf_id);
--	} else if (req_queues > ICE_MAX_RSS_QS_PER_VF) {
-+	} else if (req_queues > ICE_MAX_QS_PER_VF_VCV1) {
- 		dev_err(dev, "VF %d tried to request more than %d queues.\n",
--			vf->vf_id, ICE_MAX_RSS_QS_PER_VF);
--		vfres->num_queue_pairs = ICE_MAX_RSS_QS_PER_VF;
-+			vf->vf_id, ICE_MAX_QS_PER_VF_VCV1);
-+		vfres->num_queue_pairs = ICE_MAX_QS_PER_VF_VCV1;
- 	} else if (req_queues > cur_queues &&
- 		   req_queues - cur_queues > tx_rx_queue_left) {
- 		dev_warn(dev, "VF %d requested %u more queues, but only %u left.\n",
- 			 vf->vf_id, req_queues - cur_queues, tx_rx_queue_left);
- 		vfres->num_queue_pairs = min_t(u16, max_allowed_vf_queues,
--					       ICE_MAX_RSS_QS_PER_VF);
-+					       ICE_MAX_QS_PER_VF_VCV1);
- 	} else {
- 		/* request is successful, then reset VF */
- 		vf->num_req_qs = req_queues;
 -- 
 2.39.3
 
