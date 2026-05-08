@@ -4,70 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8148ACD3427
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  8 May 2026 03:12:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9B2B4CD343F
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  8 May 2026 03:12:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 57AD34144E;
-	Fri,  8 May 2026 03:12:44 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 6F4C74145E;
+	Fri,  8 May 2026 03:12:54 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ad8O3UcmNJkG; Fri,  8 May 2026 03:12:42 +0000 (UTC)
+ id 68lNRFhyPyTL; Fri,  8 May 2026 03:12:52 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C3EF641450
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5A7ED41455
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1778209962;
-	bh=ana1K21wqOyYBD38NqY4DLEEioCig1M2YENndvror/8=;
+	s=default; t=1778209972;
+	bh=2lffoAq7D9TpQl2j94UYYdfnBaIGN3VYqYE00+44220=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=orpk7hXFDrYnD3rDyth03/mWIxmIdjgB3bBKhivmF3w7I4RY24fBAuZxI0Wj1dc1H
-	 2/rBAOeYdHVaDCViFEg2fl/WW2UQA2+Jbq6gZdRvyk/XPilkGR94eO7Hq7Bv7kYprm
-	 K/BvObyembP8c9WIqYMKH6GlVv/b96N7n1kEPfmahHDpaxpcRV0Tmqz9YZEeFzYVzd
-	 h1F19Gzktd1hZ8oSubja2AaFHMmDhHySGo/PgmhnTT3vu7179Y1/irK8PkMRRHv0xm
-	 ufGVB++VesK6nanEaQzoTBsAAar1Dmafu/1aZ968bKdY2wLIfNTAul195PweKdcqkQ
-	 MmUK0Pe0NAYTA==
+	b=i5FTsm34SEeFtYjWt5ZSEtGjsEz/ziOM+Coyq+bHyEHYkLQIM8dT+swZBCXKvt1Vg
+	 CiIngqUD8Rsq4bSLlxZp4xP8eOO3s52PJAGHsk4dfW4Re6Z9lHpnE230G8Ul5OOiNm
+	 pInFo9oTIThgRSwHbPqmNMwq6aDZxq5rs39BRFWX22pGBQ+/SAsnmDV5yGYgq3Xp9e
+	 oE3deJZI9s2VDeTP/HjuHj6QF8pHaD66P9V+VlFFNgoKRVmSO18mXHr0R9dgkQmt26
+	 6KLDDg2gZPiO07EdvLyq0k4VIsQc1kQ000WlG7ab2TCCdkC07wmtLQF269BaZ3ZPds
+	 EmWLZERQUpfSA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C3EF641450;
-	Fri,  8 May 2026 03:12:42 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 4C64F272
- for <intel-wired-lan@lists.osuosl.org>; Fri,  8 May 2026 03:12:40 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 5A7ED41455;
+	Fri,  8 May 2026 03:12:52 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 199D7272
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  8 May 2026 03:12:51 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 3280A409B3
- for <intel-wired-lan@lists.osuosl.org>; Fri,  8 May 2026 03:12:40 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id F39286122A
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  8 May 2026 03:12:50 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Fw_2fiIauLLK for <intel-wired-lan@lists.osuosl.org>;
- Fri,  8 May 2026 03:12:39 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id MY24Nil8sIrI for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  8 May 2026 03:12:50 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.17;
  helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 899364030E
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 899364030E
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org CE9DD61224
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CE9DD61224
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 899364030E
- for <intel-wired-lan@lists.osuosl.org>; Fri,  8 May 2026 03:12:39 +0000 (UTC)
-X-CSE-ConnectionGUID: d1OTbJtGQSGYRffgIQR1yA==
-X-CSE-MsgGUID: gYXASs73S/CeKzecdfvTHw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11779"; a="79027520"
-X-IronPort-AV: E=Sophos;i="6.23,222,1770624000"; d="scan'208";a="79027520"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id CE9DD61224
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  8 May 2026 03:12:49 +0000 (UTC)
+X-CSE-ConnectionGUID: wR416kRNRjSJ/76EbsGipw==
+X-CSE-MsgGUID: 9+6tXP6sR/KN56XMWLMzGg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11779"; a="79027536"
+X-IronPort-AV: E=Sophos;i="6.23,222,1770624000"; d="scan'208";a="79027536"
 Received: from fmviesa005.fm.intel.com ([10.60.135.145])
  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 07 May 2026 20:12:39 -0700
-X-CSE-ConnectionGUID: OZ8l68wTRnSuHmKWn7WR2Q==
-X-CSE-MsgGUID: LfYGDbFNQwKeHE7SAfbYaw==
+ 07 May 2026 20:12:43 -0700
+X-CSE-ConnectionGUID: gRjQGLyDRxKV2To2vvy/2Q==
+X-CSE-MsgGUID: hGpeIGkfT8a06z9L6CP/0Q==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,222,1770624000"; d="scan'208";a="241623218"
+X-IronPort-AV: E=Sophos;i="6.23,222,1770624000"; d="scan'208";a="241623223"
 Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by fmviesa005.fm.intel.com with ESMTP; 07 May 2026 20:12:38 -0700
+ by fmviesa005.fm.intel.com with ESMTP; 07 May 2026 20:12:39 -0700
 From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 To: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
  aleksandr.loktionov@intel.com
 Cc: netdev@vger.kernel.org
-Date: Fri,  8 May 2026 05:12:25 +0200
-Message-ID: <20260508031226.3601800-8-aleksandr.loktionov@intel.com>
+Date: Fri,  8 May 2026 05:12:26 +0200
+Message-ID: <20260508031226.3601800-9-aleksandr.loktionov@intel.com>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <20260508031226.3601800-1-aleksandr.loktionov@intel.com>
 References: <20260508031226.3601800-1-aleksandr.loktionov@intel.com>
@@ -75,25 +75,26 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1778209960; x=1809745960;
+ t=1778209970; x=1809745970;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=eC/N+PKSldiwuiYBHXeNZDIr7XUuCPxaNishs9wb0RI=;
- b=mIsLoWxVSz9QcU3mG6A4QI926Z/H7je4EQd2m4D1Eb+O6iBQmpSLeA0R
- lIcjfyjMpuk5dLrBR9C4jvUszku8ewmQIj0cS0vHbGPAu0TB2YSR2bBH0
- FZy7SOImC/sRJcccGDEWA6HPrHI8V7vFj/+3a3mzu2ed6QVKlS6Cv3WUi
- 7G9zJfCDpivB2E6BnBcL7TAOuLPl0mSGoEmHPeqbo7z9ad6D9PYDQKCLN
- g022rW/5YpHgHPS7/xZbUrfIzCDoxGsw8s+CKikeljmNY6bADUDR+wSTV
- 7m0gM+SjV29LyhEHWDi/IRQikwyA4n9gAFkg/unmKqDH7Dnv4ltT9FRtJ
+ bh=h0VtJiL0CwKRWOzEUXZhkGSdQQXv3Rw/cI6v5v5qFec=;
+ b=YT/8NelFWg/AamKGh9yu4fgqCXFxLneURcdN2SFOj+iV60oh2nrNsh4l
+ K/t0hZ6QwasZoKlIjnq0+aYRW5xiBsWPhuU3Vs3d7r7PszzsQuaxCewt+
+ cnPkfN0tGXk7p5NMLuHfkIqQcZ5hkCnzitudsY65Td+Vy/ABr14B1nj8g
+ /GxB1RkpSZaym+73FFaEVGqNvVzMcfQ/oD0c9JBszb1LM6+YP74WYR6h+
+ 2qqdaZwtdy7dbFRUa7i9rr7lHa/LNYwylglvYVIIQUmXg2TLNOeRALfSn
+ Hr8wWt5CwF/algSdZgxW51uekTGJIptqpxWQXoptoUz46+6AX170GgFv4
  g==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=mIsLoWxV
-Subject: [Intel-wired-lan] [PATCH iwl-next 7/8] ixgbe: limit ITR decrease in
- latency mode to prevent ACK overdrive
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=YT/8NelF
+Subject: [Intel-wired-lan] [PATCH iwl-next 8/8] ixgbe: add
+ IXGBE_ITR_ADAPTIVE_MASK_USECS constant
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -111,48 +112,47 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-When operating in latency mode and the computed ITR is lower than the
-current setting, the algorithm can reduce the interrupt rate too
-aggressively in a single step.  For a TCP workload this means the ACK
-stream (a latency-sensitive, low-packet-rate workload) can drive the
-moderation down to very high interrupt rates, starving CPU time from
-the sender side.
+ixgbe_set_itr() clears the mode flag (IXGBE_ITR_ADAPTIVE_LATENCY, bit 7)
+with the open-coded complement expression ~IXGBE_ITR_ADAPTIVE_LATENCY.
+This is equivalent to keeping only bits [6:0], i.e. the usecs sub-field.
 
-After the speed-based ITR calculation is complete, check whether the
-result is in latency mode and would decrease below the current setting.
-If so, limit the decrease to at most IXGBE_ITR_ADAPTIVE_MIN_INC (2 us)
-per update.  This ensures the number of interrupts grows by no more
-than 2x per adjustment step for latency-class workloads, dialling in
-smoothly rather than overshooting.
+Add IXGBE_ITR_ADAPTIVE_MASK_USECS = IXGBE_ITR_ADAPTIVE_LATENCY - 1 =
+0x7F to name this mask explicitly and replace the open-coded AND-NOT
+operation with the cleaner AND form.  The two expressions are
+arithmetically identical; the change improves readability.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h      | 1 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 2 +-
+ 2 files changed, 2 insertions(+), 1 deletion(-)
 
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index cf2df18..20e2a97 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -478,6 +478,7 @@ static inline unsigned int ixgbe_rx_pg_order(struct ixgbe_ring *ring)
+ #define IXGBE_ITR_ADAPTIVE_MAX_USECS	126
+ #define IXGBE_ITR_ADAPTIVE_LATENCY	0x80
+ #define IXGBE_ITR_ADAPTIVE_BULK		0x00
++#define IXGBE_ITR_ADAPTIVE_MASK_USECS	(IXGBE_ITR_ADAPTIVE_LATENCY - 1)
+ 
+ struct ixgbe_ring_container {
+ 	struct ixgbe_ring *ring;	/* pointer to linked list of rings */
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index aea76b3..ba7b013 100644
+index ba7b013..be40655 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -2888,6 +2888,17 @@ static void ixgbe_update_itr(struct ixgbe_q_vector *q_vector,
- 		break;
- 	}
+@@ -2959,7 +2959,7 @@ static void ixgbe_set_itr(struct ixgbe_q_vector *q_vector)
+ 	new_itr = min(q_vector->rx.itr, q_vector->tx.itr);
  
-+	/* In the case of a latency specific workload only allow us to
-+	 * reduce the ITR by at most 2us. By doing this we should dial
-+	 * in so that our number of interrupts is no more than 2x the number
-+	 * of packets for the least busy workload. So for example in the case
-+	 * of a TCP workload the ACK packets being received would set the
-+	 * interrupt rate as they are a latency specific workload.
-+	 */
-+	if ((itr & IXGBE_ITR_ADAPTIVE_LATENCY) && itr < ring_container->itr)
-+		itr = max_t(unsigned int, itr,
-+			    ring_container->itr - IXGBE_ITR_ADAPTIVE_MIN_INC);
-+
- clear_counts:
- 	/* write back value */
- 	ring_container->itr = itr;
+ 	/* Clear latency flag if set, shift into correct position */
+-	new_itr &= ~IXGBE_ITR_ADAPTIVE_LATENCY;
++	new_itr &= IXGBE_ITR_ADAPTIVE_MASK_USECS;
+ 	new_itr <<= 2;
+ 
+ 	if (new_itr != q_vector->itr) {
 -- 
 2.52.0
 
