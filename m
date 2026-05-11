@@ -1,139 +1,129 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0CEACD37B5
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 11 May 2026 09:00:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A4C82CD37B5
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 11 May 2026 09:21:47 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 851026085D;
-	Mon, 11 May 2026 09:00:47 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 63DAA810A5;
+	Mon, 11 May 2026 09:21:47 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id AIFaie9pxKzq; Mon, 11 May 2026 09:00:46 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 8ykp6xm4skWR; Mon, 11 May 2026 09:21:46 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8F23B6085E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org F36028233F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1778490046;
-	bh=zA2t05MaP/podHX+JpTZXPs7rW/q4RVQKoAjNccx6WY=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=Zqsq48ehGuH4alWYRcfiNuCoeWFurd7Z9TUBOe1xbVayVwcNRGA6ofItAlVJ3/2pk
-	 pXxGoYFbDzq2XcnnfkerYwQycfan+I7/0iE6++LE0jSqibb5OD08zqnpnnIvr/+Sft
-	 K0roy0kgkYH6NZY8uzECaJR7VkyUANxL57x3fkADNWtrm+orgPoChA1wBaOVBKj0qW
-	 Xo/Iy1wPc7ce1iWyaH0Dk8VoeltWsqatSnfiC0F70ZyCpqXN9F5JKMETlgvgskExyQ
-	 wDg4x7H5yZbr9MDfVxKO6Hy/w+xf3ioYgw+6ZC8JcgCrRzpNTHswNhc348d43ZgDiu
-	 g199ZHqkcotZA==
+	s=default; t=1778491306;
+	bh=yTA3EfMFNqWtw4mwbSh1QoSBedE1rcjpYMGPIfcrLnU=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=y78sfYfCbcqHNNesvEW4x8WACHHg07btQIkgsQCm9nX7vOOMaAf1Y0yJGFU9b2lOk
+	 zG2MgBTLBUHKRAaWvkcu5ghwuLR7ZrxJQVGbCMsYbf/v7J8WNW+lD44RVzZOqhIfGl
+	 jI6ds8BpJgk1Lp0qjAYhsjqft5JUqqxgU19d4I2W4lSeJjpaC1VaMXRwXh6awb8Tr3
+	 91BQHX4wL/f2u+jt0+1iJBTWEd+SprOumVL9Es+NOQMlyuTBdaawZcGXYvUmnP5uFu
+	 LFcb+csib2dpPVZj2SyAqZI/idPBCZB0xFR9dS+ymgDDUNX2Ch3HBGw+Gd6e7n0YAO
+	 9tnzajCH/PYnA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 8F23B6085E;
-	Mon, 11 May 2026 09:00:46 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id F36028233F;
+	Mon, 11 May 2026 09:21:45 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 6549B223
- for <intel-wired-lan@lists.osuosl.org>; Mon, 11 May 2026 09:00:45 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 79B77223
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 11 May 2026 09:21:45 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 55CF440314
- for <intel-wired-lan@lists.osuosl.org>; Mon, 11 May 2026 09:00:45 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 6B1A940328
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 11 May 2026 09:21:45 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id sO52eAF7Bmje for <intel-wired-lan@lists.osuosl.org>;
- Mon, 11 May 2026 09:00:43 +0000 (UTC)
+ id Vw4VTmt-YVCE for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 11 May 2026 09:21:44 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a00:1450:4864:20::432; helo=mail-wr1-x432.google.com;
+ client-ip=2a00:1450:4864:20::329; helo=mail-wm1-x329.google.com;
  envelope-from=ukleinek@baylibre.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 6FCF74021E
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6FCF74021E
-Received: from mail-wr1-x432.google.com (mail-wr1-x432.google.com
- [IPv6:2a00:1450:4864:20::432])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 6FCF74021E
- for <intel-wired-lan@lists.osuosl.org>; Mon, 11 May 2026 09:00:41 +0000 (UTC)
-Received: by mail-wr1-x432.google.com with SMTP id
- ffacd0b85a97d-44ccbd3290aso3191801f8f.2
- for <intel-wired-lan@lists.osuosl.org>; Mon, 11 May 2026 02:00:41 -0700 (PDT)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org A5C034021E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A5C034021E
+Received: from mail-wm1-x329.google.com (mail-wm1-x329.google.com
+ [IPv6:2a00:1450:4864:20::329])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id A5C034021E
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 11 May 2026 09:21:43 +0000 (UTC)
+Received: by mail-wm1-x329.google.com with SMTP id
+ 5b1f17b1804b1-4896c22fcbaso35138295e9.0
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 11 May 2026 02:21:43 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1778490039; x=1779094839;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
- :message-id:reply-to;
- bh=zA2t05MaP/podHX+JpTZXPs7rW/q4RVQKoAjNccx6WY=;
- b=i6naWt0pcRRojpRGsAulySFCke0FHV4c/XrmicKsUwOXEXfOroHtPknahdf2rU9qbW
- T9SQ2kR4UWVmHGzdIfsGvqQhzici4/TrDm2sWNLXBLYdrz28HjAh/8aUwvuNZIiWG6HD
- q8F9KsC6lf/9TzOJ+I6bRhyFjkPKdXf61VCO9Z1HdYZNKsDHCf1N7cl4ccW1U5YrlCOI
- 87A2xrRbNSVtLTfsigFepsCFGJd7j/bMo30q0chHXKb6gXLbzwNcX0BhB7Fe5WYtBKF4
- MhqiPZDcpVZPlxbI6XalUC/IMRlP7BZ1tMeNljTA0Qtl+wKISykbYU3bHNsZttL2Yrcr
- qnmA==
+ d=1e100.net; s=20251104; t=1778491301; x=1779096101;
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=yTA3EfMFNqWtw4mwbSh1QoSBedE1rcjpYMGPIfcrLnU=;
+ b=oCuuHGTS/Pat7OYjZ2ZvCE0OcLictSgr1v+/cvunGOvMOz6TCUwwYT05vMqWoPOQY3
+ 90nTzsBluCfSqYivCn+wB9WRKW/HZk7wGjIBywfRqWV0QwHMDQbo011YpRc8rPy7ohUZ
+ XuS2M0Sm9QEMgyzgMRrPJaAzal4p/lQsKg3xMqEACEGw1s7RPBvU7UzO/3biL1CG30Ol
+ vlMZ1SU5qdNO+JZhKQ2LikaTrusAVt/M99C2R63X4pqigf0uXIoFucx4qFZWJLzWaWmG
+ fYfuXTiQu1vF44TDUEUMj5Z1t5QyR/N+I8j73IhMN0mgMUbgoTMzFAJfHnW8hf5IWsZy
+ /g+g==
 X-Forwarded-Encrypted: i=1;
- AFNElJ/FyA/2k9Wq9KbWo7zP5CvhNBViSCEzE5SCvb1veIopD9tQLRhO8JW2L8Q7ffyVP+C7pZve46JHHSsWiCBykwU=@lists.osuosl.org
-X-Gm-Message-State: AOJu0Yx84pTaPewZACD9d5EAhYUG7LfFmZqw9lgqj07JI2puaq0Ze2v0
- /IXJ50MwZUNONkuSIwcI48PNHo/eHurqjV+Z9tMUkIUpcX73OJYB+eTJm7+rdgBdfrk=
-X-Gm-Gg: Acq92OG8wxDdOR7FWqpsPxFf2tA7kt2eYdhBS4XXXU0JpErUK2x/SBEOnKbJWNIOPMK
- jy3cSz5o+GD0iAFvsnG+hdgX/iP1G/LZItzcVjI7CBawh9VzsBatkKndeSmxp+KCaKkEwSQi7Uk
- y95uPKE20nCCWdCYmi3X6zS9qXRBuV5QaYjB5ByuxZD0cEF3o7cJ+75JolLKpXKNvOaPahTsuFO
- fjoscF/MfYe3Lad7lKwDWpr0VRWE/pdfUGy4MCig1OkDANfx4+r0R7c6oWerHAO+RtbltnbqtoZ
- PNhd5VHN8cpm2rOPHfs3D/nGiJdkrCElWLp0A8+6ZaODE1zmpxELpre/AQoL+Y5TjA0cTYouOI9
- 87jZDj5mHbPn/jcejuZ8DO5E85ODM9/IK5LF0M9lKmdeSwyRujgKQAH6SZnr3i57WWCoY+IzPNv
- ZHzd4ZuBItAwB0fFgu4DZxP7QxLRvDVBOC25F4jT6DhY58BQWf/vXtAVfdwNETqA1MZdKPl+xzb
- GGdvhi04wFyjRNL6hf41h4Xpg==
-X-Received: by 2002:a5d:64e3:0:b0:449:cfea:ca91 with SMTP id
- ffacd0b85a97d-4515da96254mr34460937f8f.37.1778490037223; 
- Mon, 11 May 2026 02:00:37 -0700 (PDT)
+ AFNElJ9jKvRKnElvA87CJCCSuGmahes9Czy/O+58NLUJfINWbwZTr4cO7s/poyI+/BwgLL4/nu1D5FXnOQcndu2XhkQ=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YzkaLsKwBGoTff4a0ApOxXBLbNawdY4DcsHJjb0Loo8j8O8F7CH
+ LzJmEoLLdIwwo89YM2UZ8jpbg+oENzPIJCDrfGCelBpQdVCCCys7tfB3jYWCEYpVbhk=
+X-Gm-Gg: Acq92OH01apFLLNvBeCF6YlMLZbneUmXaOT9rbD6LFCWZ9FS8kDYuo6DFlGp1KhFFdd
+ zzkX46Oh4aPkAztyd0OF6Y38VgKai5yn3XrUw/7uE45Bq15c/3DVIOVe/RvtFmnziLfuy+vzq6i
+ ysNam5Gcz33mEJhlOLSas2H1X/ZOMqr6Bx2Y9wzv2MILaupoRLwUmg810F/uiN40louD/WPta6Z
+ WrXiw/C2OPzoC1VN686Sjl/6u/+jLHm9GfdRJELQ8z1A9wbbsCgVwaVrfFpxxjvldoows81mKMf
+ f4stc/Or8H9ompDfzoJnQ+ggIRKQ9IQCJDCr4RzeQyAR1doCgnwaJ3eH/mc8tzONlYVO1COVz6M
+ bUHNIJtBgsPimcCjaOABCyfHLBFoDcRdLtzYp3VJ6Kcfa63/0KalA8nBcxJwGwVGBzs1aNt8Hg7
+ lPCk0y7M4v9wg+hJarxPXgLwyK/XniblA1cL+8nBcuzVjQE4V+IdG5GEbcmosCiJ+ePyHx4lbV7
+ /9FOBWkwaYk9w0=
+X-Received: by 2002:a05:600c:b8d:b0:489:1fa5:997f with SMTP id
+ 5b1f17b1804b1-48e70691673mr134646165e9.9.1778491301044; 
+ Mon, 11 May 2026 02:21:41 -0700 (PDT)
 Received: from localhost
  (p200300f65f114e0841c796eda31a14b3.dip0.t-ipconnect.de.
  [2003:f6:5f11:4e08:41c7:96ed:a31a:14b3])
  by smtp.gmail.com with UTF8SMTPSA id
- ffacd0b85a97d-4548e6a5b65sm25209225f8f.8.2026.05.11.02.00.36
+ 5b1f17b1804b1-48e7041c4e8sm167443115e9.14.2026.05.11.02.21.40
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 11 May 2026 02:00:36 -0700 (PDT)
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig=20=28The=20Capable=20Hub=29?=
+ Mon, 11 May 2026 02:21:40 -0700 (PDT)
+Date: Mon, 11 May 2026 11:21:39 +0200
+From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig_=28The_Capable_Hub=29?=
  <u.kleine-koenig@baylibre.com>
-To: Michael Grzeschik <mgr@kernel.org>, Andrew Lunn <andrew+netdev@lunn.ch>,
- "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, Marc Kleine-Budde <mkl@pengutronix.de>,
- Vincent Mailhol <mailhol@kernel.org>,
- Johannes Berg <johannes@sipsolutions.net>
-Date: Mon, 11 May 2026 11:00:22 +0200
-Message-ID: <20260511090023.1634387-4-u.kleine-koenig@baylibre.com>
-X-Mailer: git-send-email 2.47.3
+To: Michael Grzeschik <mgr@kernel.org>, 
+ Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>, 
+ Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, 
+ Paolo Abeni <pabeni@redhat.com>, Marc Kleine-Budde <mkl@pengutronix.de>, 
+ Vincent Mailhol <mailhol@kernel.org>, Johannes Berg <johannes@sipsolutions.net>
+Message-ID: <agGfbyxlKC8WcEdm@monoceros>
+References: <20260511090023.1634387-4-u.kleine-koenig@baylibre.com>
+ <20260511090023.1634387-6-u.kleine-koenig@baylibre.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=4853;
- i=u.kleine-koenig@baylibre.com; h=from:subject;
- bh=ZYGinJLF1cDgGH/aGo4d1Hy0fwsOtdFNgDp8EWspf48=;
- b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBqAZqnnelkHiCtzmBC4y0fb7vJdPOE1eZ7YhPdE
- 2SrLv8jYlGJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCagGapwAKCRCPgPtYfRL+
- TjAaB/4oo4PlfsIbeG6MCk6KG/Z4+gxMxrSewie9L+e4GgVdrB4TOBKkquVHmIZGwKjcVZ4TTHb
- NefjSqaVMX4GAGFyvubu+IYDalSlSnAzan/1cuw698pTu8HJAZcUiXsULIZGAzyccgEjFzFRtOG
- 9zcX6kiJPNLHyc4KCm8r2nVxLqV6bD0Ra/lsh4CIqsXdKbNgT8R/zlx5qsBD4jv6XuZojWf/47T
- BGjl0kKv9jdWqI2IyZT+iFIbeMxYEcWSMZLzC6lnFeTSGLW7f1AVp8qVTep3xLTu5Qrh0AUeJ60
- G6q8VibpIILN8q4yuUlgLX0vBjjeLn9Q8sKtPvNkz+TLgLBC
-X-Developer-Key: i=u.kleine-koenig@baylibre.com; a=openpgp;
- fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature"; boundary="26wz6vcj2wzkdd5i"
+Content-Disposition: inline
+In-Reply-To: <20260511090023.1634387-6-u.kleine-koenig@baylibre.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=baylibre-com.20251104.gappssmtp.com; s=20251104; t=1778490039; x=1779094839;
+ d=baylibre-com.20251104.gappssmtp.com; s=20251104; t=1778491301; x=1779096101;
  darn=lists.osuosl.org; 
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:from:to:cc:subject:date:message-id:reply-to;
- bh=zA2t05MaP/podHX+JpTZXPs7rW/q4RVQKoAjNccx6WY=;
- b=fjh7Jpt4qAeheFnXA9gHnvHChLSncrm7ObCBCJnPOTE/+cqR5rg92BAgJDHULa2H8+
- 0pP4D3u1OV+6NlFfn8bEh726JkPVFaLhjRvUIgJCOs5Xw5dor+5yV/WkNxepSPnd6GGB
- kQ/euCvzIxD5HcbiwqlEgDfvu7VH6zzuTVhYHJA0s19x30Z/KnOgJbIO7VLa3UMvySA1
- julTiVu8rR/+gYy/2c/jLKtkuFylZcMq4HxQvjXJ6291AOqMzAusawtn4NLr5Vy9AdVY
- j/IEGu3/CKmKHmt1sPbsAnoak+UXJNk4TUEhhx+PSKKEsu+KdtF3TN8M/KEFrth5eHS+
- wF1Q==
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+ bh=yTA3EfMFNqWtw4mwbSh1QoSBedE1rcjpYMGPIfcrLnU=;
+ b=mlHCRfrE79Z4QtBG4i89UI3tSPFJPBIohxQ7K9oMLX2iyBV8sS5gFPEhDEnpdFtpSk
+ g23BasfOggQ2tPkDOmjESZ+5CtR9FAkwCjn3bHfQSZv4gAdqWkwCDftFeZu02nae6eL7
+ hF07P+fAMRARIlhrw+HgOjQURPzBlRBSduRR035HJXTuNtRMJ0rqK9S6mUE76zLcxAfG
+ LUb5gM46hjoCx21jytae+UAXcvH0VLerSMJ8zfGey/BSC6SNvjNpeORIEtMTx/Cce+E4
+ g+c0jIqTHkIKsQB78t6k6AbSOV+C25zCRGz9UJu/l6bfyLEJRPAG+yJsnUrccM47TXwa
+ HBog==
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=baylibre.com
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=baylibre-com.20251104.gappssmtp.com
+ dkim=pass (2048-bit key) header.d=baylibre-com.20251104.gappssmtp.com
  header.i=@baylibre-com.20251104.gappssmtp.com header.a=rsa-sha256
- header.s=20251104 header.b=fjh7Jpt4
-Subject: [Intel-wired-lan] [PATCH net-next v3 0/2] Rework pci_device_id
- initialisation
+ header.s=20251104 header.b=mlHCRfrE
+Subject: Re: [Intel-wired-lan] [PATCH net-next v3 2/2] net: Consistently
+ define pci_device_ids using named initializers
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -189,100 +179,39 @@ Cc: Richard Cochran <richardcochran@gmail.com>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Hello,
 
-the previous iteration of this series (v2) is available at
-https://lore.kernel.org/netdev/cover.1778149923.git.u.kleine-koenig@baylibre.com
+--26wz6vcj2wzkdd5i
+Content-Type: text/plain; protected-headers=v1; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH net-next v3 2/2] net: Consistently define pci_device_ids
+ using named initializers
+MIME-Version: 1.0
 
-Changes since v2:
+On Mon, May 11, 2026 at 11:00:24AM +0200, Uwe Kleine-K=F6nig (The Capable H=
+ub) wrote:
+> Forwarded: id:76da4f44d48bdde84580963862bf9616bee5c9e9.1778149923.git.u.k=
+leine-koenig@baylibre.com (v2)
 
- - swap patch order as Jakub Kicinski reported a build failure (that I
-   couldn't reproduce though)
- - drop the change to drivers/net/can/m_can/m_can_pci.c on Markus
-   Schneider-Pargmann's (non-public) request as this patch conflicts
-   with a cleanup he has in his queue that will prepare this driver
-   for my quest to add a union to pci_device_id in a differnt way.
- - drop a recipent from Cc: that bounced before (khc@pm.waw.pl).
+This is my internal marker for tracking mainline submissions. If someone
+applies this revision please drop this line.
 
 Best regards
 Uwe
 
-Uwe Kleine-König (The Capable Hub) (2):
-  net: nfp: Drop PCI class entries with .class_mask = 0
-  net: Consistently define pci_device_ids using named initializers
+--26wz6vcj2wzkdd5i
+Content-Type: application/pgp-signature; name="signature.asc"
 
- drivers/net/arcnet/com20020-pci.c             | 242 +++------
- drivers/net/can/sja1000/plx_pci.c             | 167 +++----
- drivers/net/ethernet/3com/3c59x.c             |  80 +--
- drivers/net/ethernet/3com/typhoon.c           |  75 ++-
- drivers/net/ethernet/8390/ne2k-pci.c          |  24 +-
- drivers/net/ethernet/adaptec/starfire.c       |   4 +-
- drivers/net/ethernet/agere/et131x.c           |   6 +-
- drivers/net/ethernet/broadcom/bnx2.c          |  62 ++-
- .../net/ethernet/broadcom/bnx2x/bnx2x_main.c  |  50 +-
- .../net/ethernet/cavium/liquidio/lio_main.c   |  10 +-
- .../ethernet/cavium/liquidio/lio_vf_main.c    |   7 +-
- drivers/net/ethernet/chelsio/cxgb/common.h    |   2 +-
- drivers/net/ethernet/chelsio/cxgb/subr.c      |   2 +-
- .../net/ethernet/chelsio/cxgb3/cxgb3_main.c   |   4 +-
- .../net/ethernet/chelsio/cxgb4/cxgb4_main.c   |   4 +-
- .../ethernet/chelsio/cxgb4vf/cxgb4vf_main.c   |   4 +-
- drivers/net/ethernet/dec/tulip/de2104x.c      |   6 +-
- drivers/net/ethernet/dec/tulip/dmfe.c         |  12 +-
- drivers/net/ethernet/dec/tulip/tulip_core.c   |  78 +--
- drivers/net/ethernet/dec/tulip/uli526x.c      |   6 +-
- drivers/net/ethernet/dec/tulip/winbond-840.c  |  13 +-
- drivers/net/ethernet/dlink/dl2k.h             |  12 +-
- drivers/net/ethernet/dlink/sundance.c         |  14 +-
- drivers/net/ethernet/fealnx.c                 |   8 +-
- .../net/ethernet/hisilicon/hibmcge/hbg_main.c |   2 +-
- .../net/ethernet/hisilicon/hns3/hns3_enet.c   |  50 +-
- .../hisilicon/hns3/hns3pf/hclge_main.c        |  18 +-
- .../hisilicon/hns3/hns3vf/hclgevf_main.c      |  12 +-
- .../net/ethernet/huawei/hinic/hinic_main.c    |  12 +-
- .../net/ethernet/huawei/hinic3/hinic3_lld.c   |   7 +-
- drivers/net/ethernet/intel/e100.c             |   9 +-
- drivers/net/ethernet/intel/e1000e/netdev.c    | 471 +++++++++++++-----
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c  |  10 +-
- drivers/net/ethernet/intel/i40e/i40e_main.c   |  59 +--
- drivers/net/ethernet/intel/iavf/iavf_main.c   |  10 +-
- drivers/net/ethernet/intel/igb/igb_main.c     |  66 +--
- drivers/net/ethernet/intel/igbvf/netdev.c     |   4 +-
- drivers/net/ethernet/intel/igc/igc_main.c     |  34 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 106 ++--
- .../net/ethernet/intel/ixgbevf/ixgbevf_main.c |  49 +-
- drivers/net/ethernet/mellanox/mlx4/main.c     |   6 +-
- .../net/ethernet/mellanox/mlx5/core/main.c    |  26 +-
- .../net/ethernet/mellanox/mlxsw/spectrum.c    |  16 +-
- drivers/net/ethernet/micrel/ksz884x.c         |   8 +-
- .../net/ethernet/mucse/rnpgbe/rnpgbe_main.c   |  10 +-
- drivers/net/ethernet/natsemi/natsemi.c        |   4 +-
- drivers/net/ethernet/netronome/nfp/nfp_main.c |  65 +--
- .../ethernet/netronome/nfp/nfp_netvf_main.c   |  33 +-
- drivers/net/ethernet/qlogic/qede/qede_main.c  |  20 +-
- drivers/net/ethernet/realtek/8139too.c        |  52 +-
- drivers/net/ethernet/realtek/r8169_main.c     |   8 +-
- drivers/net/ethernet/rocker/rocker_main.c     |   4 +-
- drivers/net/ethernet/sis/sis190.c             |   6 +-
- drivers/net/ethernet/sis/sis900.c             |  10 +-
- drivers/net/ethernet/smsc/epic100.c           |  18 +-
- drivers/net/ethernet/sun/cassini.c            |   8 +-
- drivers/net/ethernet/sun/sungem.c             |  26 +-
- drivers/net/ethernet/ti/tlan.c                |  41 +-
- drivers/net/ethernet/wangxun/ngbe/ngbe_main.c |  26 +-
- .../net/ethernet/wangxun/ngbevf/ngbevf_main.c |  26 +-
- .../net/ethernet/wangxun/txgbe/txgbe_main.c   |  18 +-
- .../ethernet/wangxun/txgbevf/txgbevf_main.c   |  18 +-
- drivers/net/wan/farsync.c                     |  24 +-
- drivers/net/wan/pc300too.c                    |  14 +-
- drivers/net/wan/pci200syn.c                   |   6 +-
- drivers/net/wan/wanxl.c                       |  11 +-
- .../broadcom/brcm80211/brcmfmac/pcie.c        |  17 +-
- drivers/net/wireless/intel/ipw2x00/ipw2200.c  |  52 +-
- 68 files changed, 1285 insertions(+), 1099 deletions(-)
+-----BEGIN PGP SIGNATURE-----
 
+iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmoBn6EACgkQj4D7WH0S
+/k4q9wgAnNsetoJQuSPdcsRqTfhJ3nvDxBsfxvsce6Raf4aiAs6sa5jJlBrTa5h3
+nEaIsI15hqOx2W/FeLUG3/e0pnGua3DO4qsTmtY+G74jweYDfLDdXlEHlt9zNS6x
+lDrxCXGPT97KmN2CifwJILefl8Lv7jTwROdpFGiVt85DXbiZtFIL/frdeU6leU+1
+FdE6JY7j/Qx1jjdXNf0bWzAYX8PJ8ocHv+b0BcV8ctfX7hsV/vxsLmUU0goDLYiO
+u683/fMBDCwmEtoIHKOODM7mPIJAndSocuWgR2Fn2xqlVyooDPuS9d0p0wTjl2qT
+eA7SLNWIZbT2fhIZM4FV8lAwHsMj+w==
+=qcwQ
+-----END PGP SIGNATURE-----
 
-base-commit: 254f49634ee16a731174d2ae34bc50bd5f45e731
--- 
-2.47.3
-
+--26wz6vcj2wzkdd5i--
