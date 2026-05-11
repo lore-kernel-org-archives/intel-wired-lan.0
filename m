@@ -1,94 +1,134 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5B31CD37BE
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 11 May 2026 16:28:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A30ECD4840
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 11 May 2026 17:33:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 4E497403FF;
-	Mon, 11 May 2026 16:28:19 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 1DD0D80D8D;
+	Mon, 11 May 2026 17:33:20 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id QHp-YCRvCu_C; Mon, 11 May 2026 16:28:17 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id rjaiIMMb_2y9; Mon, 11 May 2026 17:33:19 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 702A64032E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 62B20809BF
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1778516897;
-	bh=vJlSU8Uv4Mos+oyiqsIwa29218B2Wja/Xm7NhiwexR4=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1778520799;
+	bh=HEXQPr43bSHyCbZRi+CP6TzHe/9mn4IyWPnqB/ie+PE=;
+	h=Date:From:To:CC:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=BG3wySlt5CTW3rYuEta836pxB1Bl6w+vUqoUgVZJb2CTpfDyuG/K0wyuFmkknALPF
-	 4dF+wsvZ8IYCbEWSNz2G1KxtCPN0SsHO2+1J37zZKfCg6saRYkjbZbqYZb3/8iWBgn
-	 /YEmzZdgRGZvBwVOqQ1ELZTK9K+L7bnQAy6yh9N3zr8TcLW09ynPBLuOWxoAaW9UBL
-	 9s8BDSpIf95P7Mxf1E85Vpu3winQfHjy/7wCmGH6AxUeM6ItuGWYG3qOGyHBgRfV/k
-	 zKUqfzjr+TaXIbKZjUHxde8NG2pdymoIITICJPh/JWqZTH7H3oIc6XFJz/jZXlmNSI
-	 zh7B42LUh1wjQ==
+	b=I8FZZzWhbVQQVaBc8Zpqqh9OhQa4ldhfpdrLisvspKWeShGATw2wvsHVkrxSqec5j
+	 vbA0ZjcW8xh/FIKfRxYefCk5rPm3lXHgOyRmg/aBI+kdTd4CqAzIWvSm8kX/OYwhbT
+	 xMgQAJyZedgKs4UtJpE1RiujdCygpH19VpTc8Pm7lEgkC/N8mP4buCnDsAOb+9rZBj
+	 4VPEPPtCRpp/JKnrt0sUBE42mfl/IkYh/ee6tpiSb7XlygmxaF8gD0w3TNPVPBWQUg
+	 51TpAgHBnFAUXs0MJ57MKAoebMLQqR1n3xO+E6ktSV5llFIwk5Wt7e1Zv1NeEYHG+Y
+	 qTGCdxHe0KlsQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 702A64032E;
-	Mon, 11 May 2026 16:28:17 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id D8425223
- for <intel-wired-lan@lists.osuosl.org>; Mon, 11 May 2026 16:28:16 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 62B20809BF;
+	Mon, 11 May 2026 17:33:19 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 86398272
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 11 May 2026 02:25:50 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id CA1504032E
- for <intel-wired-lan@lists.osuosl.org>; Mon, 11 May 2026 16:28:16 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 63AA784439
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 11 May 2026 02:25:50 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id rwYOw3U8UkVK for <intel-wired-lan@lists.osuosl.org>;
- Mon, 11 May 2026 16:28:16 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
- envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 400144031B
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 400144031B
-Received: from sea.source.kernel.org (sea.source.kernel.org
- [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 400144031B
- for <intel-wired-lan@lists.osuosl.org>; Mon, 11 May 2026 16:28:16 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sea.source.kernel.org (Postfix) with ESMTP id 0D655403E9;
- Mon, 11 May 2026 16:28:15 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1FA99C2BCB0;
- Mon, 11 May 2026 16:28:11 +0000 (UTC)
-Date: Mon, 11 May 2026 17:28:09 +0100
-From: Simon Horman <horms@kernel.org>
-To: KhaiWenTan <khai.wen.tan@linux.intel.com>
-Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
- andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, faizal.abdul.rahim@intel.com,
- hong.aun.looi@intel.com, hector.blanco.alcaine@intel.com,
- khai.wen.tan@intel.com, Faizal Rahim <faizal.abdul.rahim@linux.intel.com>
-Message-ID: <20260511162809.GF27589@horms.kernel.org>
-References: <20260507214706.309984-1-khai.wen.tan@linux.intel.com>
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 8Zj_Mek4Eze3 for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 11 May 2026 02:25:49 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=67.231.148.174;
+ helo=mx0b-0016f401.pphosted.com;
+ envelope-from=prvs=6591f29198=rkannoth@marvell.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 942F584437
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 942F584437
+Received: from mx0b-0016f401.pphosted.com (mx0a-0016f401.pphosted.com
+ [67.231.148.174])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 942F584437
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 11 May 2026 02:25:49 +0000 (UTC)
+Received: from pps.filterd (m0045849.ppops.net [127.0.0.1])
+ by mx0a-0016f401.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id
+ 64ANe1DJ3060082; Sun, 10 May 2026 19:25:21 -0700
+Received: from dc6wp-exch02.marvell.com ([4.21.29.225])
+ by mx0a-0016f401.pphosted.com (PPS) with ESMTPS id 4e229jkea6-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Sun, 10 May 2026 19:25:20 -0700 (PDT)
+Received: from DC6WP-EXCH02.marvell.com (10.76.176.209) by
+ DC6WP-EXCH02.marvell.com (10.76.176.209) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.25; Sun, 10 May 2026 19:25:19 -0700
+Received: from maili.marvell.com (10.69.176.80) by DC6WP-EXCH02.marvell.com
+ (10.76.176.209) with Microsoft SMTP Server id 15.2.1544.25 via Frontend
+ Transport; Sun, 10 May 2026 19:25:19 -0700
+Received: from rkannoth-OptiPlex-7090 (unknown [10.28.36.165])
+ by maili.marvell.com (Postfix) with SMTP id 18C293F7088;
+ Sun, 10 May 2026 19:25:09 -0700 (PDT)
+Date: Mon, 11 May 2026 07:55:08 +0530
+From: Ratheesh Kannoth <rkannoth@marvell.com>
+To: <intel-wired-lan@lists.osuosl.org>, <linux-kernel@vger.kernel.org>,
+ <linux-rdma@vger.kernel.org>, <netdev@vger.kernel.org>,
+ <oss-drivers@corigine.com>
+CC: <akiyano@amazon.com>, <andrew+netdev@lunn.ch>,
+ <anthony.l.nguyen@intel.com>, <arkadiusz.kubalewski@intel.com>,
+ <brett.creeley@amd.com>, <darinzon@amazon.com>, <davem@davemloft.net>,
+ <donald.hunter@gmail.com>, <edumazet@google.com>, <horms@kernel.org>,
+ <idosch@nvidia.com>, <ivecera@redhat.com>, <jiri@resnulli.us>,
+ <kuba@kernel.org>, <leon@kernel.org>, <mbloch@nvidia.com>,
+ <michael.chan@broadcom.com>, <pabeni@redhat.com>,
+ <pavan.chebbi@broadcom.com>, <petrm@nvidia.com>,
+ <Prathosh.Satish@microchip.com>, <przemyslaw.kitszel@intel.com>,
+ <saeedm@nvidia.com>, <sgoutham@marvell.com>, <tariqt@nvidia.com>,
+ <vadim.fedorenko@linux.dev>
+Message-ID: <agE-BFxaNQk1QQAl@rkannoth-OptiPlex-7090>
+References: <20260508034912.4082520-1-rkannoth@marvell.com>
+ <20260508034912.4082520-2-rkannoth@marvell.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <20260507214706.309984-1-khai.wen.tan@linux.intel.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1778516894;
- bh=NniAWlMwg0MnR6VwlJuOsYihhqkKD5tw4Vf1zwmvhOQ=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=FdErAr2g44EhXnJtKEi7rHDBqfcWm0A5OWtbXe1WEibnye4I94d9KVuTYU34JKGWy
- IGXB3TEIxXv8Sv1tx7NbvltWUQHb43Orf8jMN7lU2Tw8JGmXDOn8AKPo8289yRITae
- tChraIzauoxsLjkZofATYli3oPIj6hfDzAI1q4Ld6Mq9PHFQar8Vh8dmBTEtsZ4QOm
- OQdV+DuR1bnzRA/v/6W1PUu9joKz3BbYGWlniw4DeKbNNFg01sWcukZ3q6BRBUZkBb
- pwq+mQ+q/O9aEZOgBWXX2r1hEoP5UOPQNA0N8Hg059Gb4xPMiAm/9XxHS2etI8f43O
- GB6wxhZXaRkfg==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=FdErAr2g
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v5 0/4] igc: add support for
- forcing link speed without autonegotiation
+In-Reply-To: <20260508034912.4082520-2-rkannoth@marvell.com>
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTExMDAyNSBTYWx0ZWRfX5L1/lLn/ICBU
+ bhBoraIq0d1+kZonQd+pZui59fbV6NvOHhn4uZNcLoam1RgPv2duxNnIrIQv+i9I1TWPAkWcSve
+ GyiIPJFGeVucOhUmTUZ+1lYtuNcC/6j3tUY0mHgzz4vIFesFmvCbP0W9YwPk6J3euAkb3C8DPZk
+ EkcTZFZenOHc2qp262Lb/+rPaXsGF4eY4NcLuHRWETZDeUPjmnA/vwiQE5G+ltNW6fr+kO9Iaex
+ t1XpKIiBL+oRePaeaKw7sZQq2j+aLfaIwBigZpD1Vo1jZGT4nNXDTx5oNmewPSMVWWMnpXkCSmn
+ HSrjiwyVxcfQsWbG/b9gjcwXi9MD7pIxHlori6vTndUo372/jM8zv51KVBwNPdQJeCew4RE/LSK
+ +20edk4Shglms9GELf3Ef+Ey73Dfqvcy8TVYgkEsKd2jJsueEP4bt6tVx6O9jnGLt8h3A+kFKuQ
+ fxJYkKoO69tXXYn2Htw==
+X-Proofpoint-GUID: NpbUxd_Gso3XUBF29nYphxGlrKK7WwEC
+X-Proofpoint-ORIG-GUID: NpbUxd_Gso3XUBF29nYphxGlrKK7WwEC
+X-Authority-Analysis: v=2.4 cv=LdAMLDfi c=1 sm=1 tr=0 ts=6a013e10 cx=c_pps
+ a=gIfcoYsirJbf48DBMSPrZA==:117 a=gIfcoYsirJbf48DBMSPrZA==:17
+ a=kj9zAlcOel0A:10 a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=l0iWHRpgs5sLHlkKQ1IR:22 a=EAYMVhzMl8SCOHhVQcBL:22 a=M5GUcnROAAAA:8
+ a=jt9vlcwtPs7hvUNDCZkA:9 a=CjuIK1q_8ugA:10 a=OBjm3rFKGHvpk9ecZwUJ:22
+ a=Oh551-UHZqmTy8JkqTUo:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-11_01,2026-05-08_02,2025-10-01_01
+X-Mailman-Approved-At: Mon, 11 May 2026 17:33:18 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=marvell.com; h=
+ cc:content-type:date:from:in-reply-to:message-id:mime-version
+ :references:subject:to; s=pfpt0220; bh=HEXQPr43bSHyCbZRi+CP6TzHe
+ /9mn4IyWPnqB/ie+PE=; b=dmOq99D8CbrHyG23rEgEOVCFtZWHGgGVWCyv41EHU
+ ZTvJA5ramOU+OupdyjKsqG8erApLuP8jW9TMHEKtnkcO726CmGPQXjh/DtLyaAMZ
+ Oj7rTcGHO44uX1nfKnE6J77PDLN/yozr6zBsmPBwP4elRWIL8WJREyhlp0wAZQia
+ PoJwvJvTxF8Bi5QQJ0mP3i+Py7Io9GQxa05GP3h228vjmhXNhm919voj09Pt99CH
+ jbjOXUR+6aYafisWmK5L2oZ8Z6vMP2WsrMKYDiRVMlCfOmtDl8OfHdOIbZ/XG6Kj
+ QQ1Bi3q4pAANE4doW+rD+0nBW5CCq4ra42guZBjhAh6SA==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=marvell.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=marvell.com header.i=@marvell.com header.a=rsa-sha256
+ header.s=pfpt0220 header.b=dmOq99D8
+Subject: Re: [Intel-wired-lan] [PATCH v12 net-next 1/9] octeontx2-af: npc:
+ cn20k: debugfs enhancements
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -104,40 +144,38 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Fri, May 08, 2026 at 05:47:02AM +0800, KhaiWenTan wrote:
-> From: Faizal Rahim <faizal.abdul.rahim@linux.intel.com>
-> 
-> This series adds support for forcing 10/100 Mb/s link speed via ethtool
-> when autonegotiation is disabled on the igc driver.
-> 
-> Changes in v5:
-> - add removal justification to include copper context in commit
->   description for igc: remove unused autoneg_failed field (Paul)
-> - check that cmd->base.duplex is either DUPLEX_HALF or DUPLEX_FULL
->   in igc_ethtool_set_link_ksettings() (Simon)
-> - dynamically override hw->fc.current_mode to igc_fc_none during
->   link configuration instead of mutating requested_mode (Simon)
-> 
-> Changes in v4:
-> - Validate that autoneg is AUTONEG_ENABLE or AUTONEG_DISABLE early
->   in igc_ethtool_set_link_ksettings() to avoid passing unexpected
->   values to igc_handle_autoneg_disabled(). (Simon Horman)
-> 
-> Changes in v3:
-> - Modify condition from "if (duplex == DUPLEX_HALF)" to
->   "if (duplex != DUPLEX_FULL)". (Simon Horman)
-> 
-> Changes in v2:
-> - When forcing half-duplex, set hw->fc.requested_mode = igc_fc_none,
->   since half-duplex cannot support flow control per IEEE 802.3.
->   (Simon Horman)
-> - Split the original single patch into three patches for clarity:
->   patches 1 and 2 are preparatory cleanups; patch 3 carries the
->   functional change.
+On 2026-05-08 at 09:19:04, Ratheesh Kannoth (rkannoth@marvell.com) wrote:
+> Improve MCAM visibility and field debugging for CN20K NPC.
+>
+> - Extend "mcam_layout" to show enabled (+) or disabled state per entry
+>   so status can be verified without parsing the full "mcam_entry" dump.
+> - Add "dstats" debugfs entry: reports recently hit MCAM indices with
+>   packet counts; stats are cleared on read so each read shows deltas.
+> - Add "mismatch" debugfs entry: lists MCAM entries that are enabled
+>   but not explicitly allocated, helping diagnose allocation/field issues.
+>
+> Signed-off-by: Ratheesh Kannoth <rkannoth@marvell.com>
 
-Thanks for your persistence.
-
-For the series:
-
-Reviewed-by: Simon Horman <horms@kernel.org>
-
+>+
+>> +			snprintf(buff, sizeof(buff), "%u\t%#04x\t%llu\n",
+>> +				 mcam_idx, pf, delta);
+>> +			seq_puts(s, buff);
+>> +
+>> +			dstats[bank][idx] = stats;
+>> +		}
+>> +	}
+>> +
+>> +	mutex_unlock(&stats_lock);
+>> +	return 0;
+>> +}
+>> +
+>> +/*  "%u\t%#04x\t%llu\n" needs less than 64 characters to print */
+>> +#define TOTAL_SZ (MAX_NUM_BANKS * MAX_NUM_SUB_BANKS * MAX_SUBBANK_DEPTH * 64)
+>> +DEFINE_OCTEONTX2_DEBUGFS_ATTRIBUTE_WITH_SIZE(npc_mcam_dstats, TOTAL_SZ);
+>Will this single_open_size() allocation reliably succeed on a running system?
+>Because single_open_size() uses kmalloc(), it requires a physically
+>contiguous memory block. TOTAL_SZ is the product of multiple maximum
+>hardware limits, which can be hundreds of kilobytes. This could result
+>in a high-order allocation that fails with an out of memory error due to
+>fragmentation.
+No. single_open_size() is calling seq_buf_alloc() which uses kvmalloc.
