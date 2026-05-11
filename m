@@ -1,73 +1,73 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 662DECD484D
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 11 May 2026 17:33:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5A8DFCD484E
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 11 May 2026 17:33:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 36FED80D99;
-	Mon, 11 May 2026 17:33:22 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 2741640647;
+	Mon, 11 May 2026 17:33:21 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ZLchxP19hnFm; Mon, 11 May 2026 17:33:21 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Rxz0h1cByBob; Mon, 11 May 2026 17:33:20 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9EAB280D9C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 97ACD4060C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1778520801;
-	bh=l6gfg54IftcEb6QLIMve9bgrhXIY6NVvWV2lujfC7xo=;
+	s=default; t=1778520800;
+	bh=E7k1SiMTgddEdvS+o9JlCHlnmx+uBEUCgdVe3wPU5FI=;
 	h=Date:From:To:CC:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=kq6zK1eEgnHZp9OBpUDs/TWeOotGx58mr2mjaH8XOnZnekneasX0t91uwGF33MPxd
-	 iMdPnIDTszPGjx9b/nFPVaGK2urvQn5klBu9q78CLKUj7+ayb1xgjN5MAu2rurxjHO
-	 JjMTFsIpbmCeGLZNL0zeZXuaMrV3oTb5Ew4v3YEA2AqKUvyN71H1TSgHvfQ2VM/dqO
-	 RzQAys5wWe7diU2h5nJplZBDP8uVMEO0UjsmJC5fD8+hFSQsuHFs3ULynBxAfDxaoF
-	 kYit5xsxfZ5tOaX+YzZ43m3ORoik77izQGZ1OX0YAP1xwRTvLeNYl7DHb8AHkMDHVd
-	 6sA1PzLYDcpQA==
+	b=yP+zX8IH1372O5spHvOR06H/2xjOo8dyvA9S0EJCWHqRBwpJN/oBY4lL0RY1JOQRQ
+	 zonbJeOu1hJjb9h3JDw0PIvUG3B3NLhfxS5uHLJlowFMM6yKyJndpgBCdLTfmPX+R5
+	 PAF+j7u7ioMT7sHjN/iWitqRu2oFYEnvdBbl0ZAY6XgjQwb3aHha4KvdhkgdmIrp8p
+	 haC3T04KKeVGiAk9UB036KvCmSxv5kWWicCwm0o86mnTylSLWX0n8aWrxF5kAsNnGn
+	 OYoNGk+GN7IA9fizfS7NU2Cwl/qzKtbZaYUFXz1TN6OdylgxBQRmpJPaMR2++1NFdh
+	 yiEcMDxT6wFqA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 9EAB280D9C;
-	Mon, 11 May 2026 17:33:21 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 86DFC272
- for <intel-wired-lan@lists.osuosl.org>; Mon, 11 May 2026 03:23:54 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 97ACD4060C;
+	Mon, 11 May 2026 17:33:20 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 826AC272
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 11 May 2026 02:33:32 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 842B9402D1
- for <intel-wired-lan@lists.osuosl.org>; Mon, 11 May 2026 03:23:54 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 6863F607C8
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 11 May 2026 02:33:32 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 20Js17mtukum for <intel-wired-lan@lists.osuosl.org>;
- Mon, 11 May 2026 03:23:54 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id GRdOG_SZi3e1 for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 11 May 2026 02:33:31 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=67.231.156.173;
  helo=mx0b-0016f401.pphosted.com;
  envelope-from=prvs=6591f29198=rkannoth@marvell.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org AF47B40087
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org AF47B40087
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 4FFCF607A0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4FFCF607A0
 Received: from mx0b-0016f401.pphosted.com (mx0b-0016f401.pphosted.com
  [67.231.156.173])
- by smtp2.osuosl.org (Postfix) with ESMTPS id AF47B40087
- for <intel-wired-lan@lists.osuosl.org>; Mon, 11 May 2026 03:23:53 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 4FFCF607A0
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 11 May 2026 02:33:31 +0000 (UTC)
 Received: from pps.filterd (m0431383.ppops.net [127.0.0.1])
  by mx0b-0016f401.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id
- 64B0uvZ02153582; Sun, 10 May 2026 20:23:33 -0700
-Received: from dc5-exch05.marvell.com ([199.233.59.128])
- by mx0b-0016f401.pphosted.com (PPS) with ESMTPS id 4e34kn87rb-1
+ 64B0TFmF2107588; Sun, 10 May 2026 19:33:10 -0700
+Received: from dc6wp-exch02.marvell.com ([4.21.29.225])
+ by mx0b-0016f401.pphosted.com (PPS) with ESMTPS id 4e34kn85hd-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Sun, 10 May 2026 20:23:33 -0700 (PDT)
-Received: from DC5-EXCH05.marvell.com (10.69.176.209) by
- DC5-EXCH05.marvell.com (10.69.176.209) with Microsoft SMTP Server
+ Sun, 10 May 2026 19:33:10 -0700 (PDT)
+Received: from DC6WP-EXCH02.marvell.com (10.76.176.209) by
+ DC6WP-EXCH02.marvell.com (10.76.176.209) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.25; Sun, 10 May 2026 20:23:32 -0700
-Received: from maili.marvell.com (10.69.176.80) by DC5-EXCH05.marvell.com
- (10.69.176.209) with Microsoft SMTP Server id 15.2.1544.25 via Frontend
- Transport; Sun, 10 May 2026 20:23:32 -0700
+ 15.2.1544.25; Sun, 10 May 2026 19:33:09 -0700
+Received: from maili.marvell.com (10.69.176.80) by DC6WP-EXCH02.marvell.com
+ (10.76.176.209) with Microsoft SMTP Server id 15.2.1544.25 via Frontend
+ Transport; Sun, 10 May 2026 19:33:09 -0700
 Received: from rkannoth-OptiPlex-7090 (unknown [10.28.36.165])
- by maili.marvell.com (Postfix) with SMTP id DF55A3F708D;
- Sun, 10 May 2026 20:23:23 -0700 (PDT)
-Date: Mon, 11 May 2026 08:53:22 +0530
+ by maili.marvell.com (Postfix) with SMTP id 7D0E03F7088;
+ Sun, 10 May 2026 19:33:00 -0700 (PDT)
+Date: Mon, 11 May 2026 08:02:59 +0530
 From: Ratheesh Kannoth <rkannoth@marvell.com>
 To: <intel-wired-lan@lists.osuosl.org>, <linux-kernel@vger.kernel.org>,
  <linux-rdma@vger.kernel.org>, <netdev@vger.kernel.org>,
@@ -83,29 +83,28 @@ CC: <akiyano@amazon.com>, <andrew+netdev@lunn.ch>,
  <Prathosh.Satish@microchip.com>, <przemyslaw.kitszel@intel.com>,
  <saeedm@nvidia.com>, <sgoutham@marvell.com>, <tariqt@nvidia.com>,
  <vadim.fedorenko@linux.dev>
-Message-ID: <agFLqlZCNOjhb2mW@rkannoth-OptiPlex-7090>
+Message-ID: <agE_2zKOIiAwE1JK@rkannoth-OptiPlex-7090>
 References: <20260508034912.4082520-1-rkannoth@marvell.com>
- <20260508034912.4082520-8-rkannoth@marvell.com>
+ <20260508034912.4082520-6-rkannoth@marvell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <20260508034912.4082520-8-rkannoth@marvell.com>
-X-Proofpoint-ORIG-GUID: _57bHlIqKkCet3bb_N40MVmAu_AE1zby
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTExMDAzNCBTYWx0ZWRfXwJmaH3Vy2nIQ
- Gc88x7OtcYVwqLUffFwEhtqMS/u//4p5/UX5DY2kGtzhgFn8L4bA50dVKAIe1ccnLyn+pI8cNyl
- H0gPMuKYLD62Z7/M2dlohYbLR+WtVvXa/ZUppOj0lz6uh1HnDNb0cv1uUAvR4lLRMrhHUSylzry
- 7KHHZeIBhI+KXgJWR5Rl4aCNvLVfA6+kNyntvvESGoZNYNfYMWxJUNVDgmJkWJ1o7Wci7x181ii
- aF2sRsRjPTI30kvU2dkg/UIx8MVmN8crKz2dYrrJzs6eq828JsTvtufIS9jVcmcHegAeoLtl3kq
- LYIpsPCy/+5FxR8jMEKcR07e6pK4P57wu8t2Q07kSBNbe1H7ROQcWa/9kOkfSpNu2AT72SyrD8W
- mT01VAxnDueEa9KImWHeZRabFp6YbeYxndIW5yOvnvM91Lyc5G6CB16QOIzLk1r05hg9zf4HTtO
- DUiuAYqaGOJMSY9SUdQ==
-X-Authority-Analysis: v=2.4 cv=cNfQdFeN c=1 sm=1 tr=0 ts=6a014bb5 cx=c_pps
- a=rEv8fa4AjpPjGxpoe8rlIQ==:117 a=rEv8fa4AjpPjGxpoe8rlIQ==:17
+In-Reply-To: <20260508034912.4082520-6-rkannoth@marvell.com>
+X-Proofpoint-ORIG-GUID: aqMU2B7iCyHO4pdckuR03Oh6pTHnF-Ks
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTExMDAyNiBTYWx0ZWRfX7dGaMBetBX3V
+ x9pMLFr5YvFpFreUEn3cPqPf7KQ+GMH1m9PeE7Q+xDc3SODdq6ZEzqApJunCFgP9WVF8keRWKqJ
+ +55s61oOxSo2/h9mnZ8V8+SERJB1S0ctL45W7m9TmSyyENyZL+1op4+MwHVSH1EGggLXwl8h4+i
+ DS4C1rlDYz6wV+mj195Fd5mnF0LejPW+5y1hgv1JzId81pa3z3YvyVVl1z9+U6PPFSqzX79OAZA
+ TF551jRAOtru6VVvOOv7cGzEKcOqdlRW1JyoKmx4yL2i7R+VH9CV9Xsc17QaEPwSRssW8VNE3y/
+ kurZPknaBF1qic4cob0elwssVTVqybHv4Ca3q8c/gO//rybJatfBNupuXQoWGdLNVSAj3Dq9NKB
+ CwEYC2mp6XlJpWgQ7iZE7O02huchsTPnOxcfZnvYU4lH38ygKjN488Xq3/qThUEigcYo/8IMU0D
+ kA1sqTD5Tk/fsnsmjsg==
+X-Authority-Analysis: v=2.4 cv=cNfQdFeN c=1 sm=1 tr=0 ts=6a013fe6 cx=c_pps
+ a=gIfcoYsirJbf48DBMSPrZA==:117 a=gIfcoYsirJbf48DBMSPrZA==:17
  a=kj9zAlcOel0A:10 a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22
  a=l0iWHRpgs5sLHlkKQ1IR:22 a=qit2iCtTFQkLgVSMPQTB:22 a=M5GUcnROAAAA:8
- a=6Uc7TgH-81yiOY1GMCsA:9 a=CjuIK1q_8ugA:10 a=OBjm3rFKGHvpk9ecZwUJ:22
- a=Oh551-UHZqmTy8JkqTUo:22
-X-Proofpoint-GUID: _57bHlIqKkCet3bb_N40MVmAu_AE1zby
+ a=DhIbuZXnhKx70xO1yFEA:9 a=CjuIK1q_8ugA:10 a=OBjm3rFKGHvpk9ecZwUJ:22
+X-Proofpoint-GUID: aqMU2B7iCyHO4pdckuR03Oh6pTHnF-Ks
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-05-11_01,2026-05-08_02,2025-10-01_01
@@ -113,22 +112,21 @@ X-Mailman-Approved-At: Mon, 11 May 2026 17:33:18 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=marvell.com; h=
  cc:content-type:date:from:in-reply-to:message-id:mime-version
- :references:subject:to; s=pfpt0220; bh=l6gfg54IftcEb6QLIMve9bgrh
- XIY6NVvWV2lujfC7xo=; b=bGieu43TqXXuAc4WLceNG1yoDZDQ1Wc6cHVbiZR/R
- 3pMI75N0df24gXovAEYMKW398HMQkiPAEGLkDzdYqu7ZhOgbO5qAKCaXldtapQlR
- Or6Zp7xx0m4ZsNGr/3FDHiqulmRl/qPMop1PRtoFAq127vKLMDJW7tI7iLhNbTmR
- Ma/wgZCxX+O1mH8UC0eHv0njP5DIW0SYl00VvBP5a5CwKrjcycz2gE+4MnEFs6ye
- nc4gPybiuB0PG3gSszwhBsLxWU6j/VcngApbVfPj7fWFryTJ6Jb5x5OBsVl8GBYF
- Si7NXiXbzdJuo45iwL1XuwjEggMdrgtxZ4ZSsrJZFRnTw==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ :references:subject:to; s=pfpt0220; bh=E7k1SiMTgddEdvS+o9JlCHlnm
+ x+uBEUCgdVe3wPU5FI=; b=cWnRH0+kcI9w0jTeTW3+dg3JAaIKVyvLFiT/JXkZv
+ 3zA1PpvDCnvkDWvZOXtd4OY2XnO2J+ODZA/d4qMhdIXPC3aZrgw2SYrQ8TmdwGxa
+ Xjfzw1ACUaAqFWEWQaMI+L/5uG/UgKgnL4mBLULq8LJT9iz3ZKYx2ODNfp0JAX8x
+ IxtLQYHiRemAKXhY1Ku6uaF20bYxpCMLeIP065j+ivW/9yleHo+49VqiJnqt5Z/S
+ w3Z0E+sJtdqdO9l/EjW1vpBlBnVwa7C96Q33Vw5i3RzuXpHsm1xHseWIPOwA/xdG
+ xfJlWiq9EOJKsHg7i87qw4fKRhgJHTWwM9iaEUfk1uuKQ==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=marvell.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=marvell.com header.i=@marvell.com header.a=rsa-sha256
- header.s=pfpt0220 header.b=bGieu43T
-Subject: Re: [Intel-wired-lan] [PATCH v12 net-next 7/9] octeontx2-af: npc:
- Support for custom KPU profile from filesystem
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=marvell.com header.i=@marvell.com
+ header.a=rsa-sha256 header.s=pfpt0220 header.b=cWnRH0+k
+Subject: Re: [Intel-wired-lan] [PATCH v12 net-next 5/9] octeontx2-af: npc:
+ cn20k: add subbank search order control
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -144,38 +142,61 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 2026-05-08 at 09:19:10, Ratheesh Kannoth (rkannoth@marvell.com) wrote:
-> Flashing updated firmware on deployed devices is cumbersome. Provide a
-> mechanism to load a custom KPU (Key Parse Unit) profile directly from
-> the filesystem at module load time.
->
-> When the rvu_af module is loaded with the kpu_profile parameter, the
-> specified profile is read from /lib/firmware/kpu and programmed into
-> the KPU registers. Add npc_kpu_profile_cam2 for the extended cam format
-> used by filesystem-loaded profiles and support ptype/ptype_mask in
-> npc_config_kpucam when profile->from_fs is set.
+On 2026-05-08 at 09:19:08, Ratheesh Kannoth (rkannoth@marvell.com) wrote:
+> CN20K NPC MCAM is split into 32 subbanks that are searched in a
+> predefined order during allocation. Lower-numbered subbanks have
+> higher priority than higher-numbered ones.
 pw-bot: changes-requested
 
->> -static int otx2_mcam_pfl_info_get(struct otx2_nic *pfvf, bool *is_x2,
->> -				  u16 *x4_slots)
->> +static int otx2_mcam_pfl_info_get(struct otx2_nic *pfvf, u16 *x4_slots, u8 *kw_type)
->>  {
->>  	struct npc_get_pfl_info_rsp *rsp;
->>  	struct msg_req *req;
->>  	static struct {
->>  		bool is_set;
->> -		bool is_x2;
->> +		u8 kw_type;
->>  		u16 x4_slots;
->>  	} pfl_info;
->Does caching this profile information in a static structure cause a data
->race across concurrent device instances?
->The accesses to this shared cache are protected by mutex_lock(&pfvf->mbox.lock).
->Since this is a per-device instance lock, multiple network devices could
->concurrently acquire their own independent locks and read or write the shared
->pfl_info structure.
->Could this lack of synchronization lead to torn reads, such as reading x4_slots
->as 0 if the compiler reorders the write to is_set before x4_slots?
+> +	for (sb_idx = 0; sb_idx < cnt; sb_idx++) {
+>> +		sb = &npc_priv.sb[sb_idx];
+>> +
+>> +		xa = &npc_priv.xa_sb_free;
+>> +		if (sb->flags & NPC_SUBBANK_FLAG_USED)
+>> +			xa = &npc_priv.xa_sb_used;
+>> +
+>> +		sb->arr_idx = narr[sb_idx];
+>> +
+>> +		rc = xa_err(xa_store(xa, sb->arr_idx,
+>> +				     xa_mk_value(sb_idx), GFP_KERNEL));
+>If the new index assignment swaps indices between a free subbank and a used
+>subbank, is the old index in the original xarray ever overwritten?
+>Since xa_erase() is not called on the old arr_idx, this might leave the
+>subbank mapped at both its old and new arr_idx if they don't overwrite each
+>other.
+>Can this result in stale duplicate entries?
+No. npc_cn20k_search_order_set() is only rearranging indexes in free and used subbank.
+indexes wont move from free subbank to used subbank.
 
-PF request as thru mbox, and mbox message handling is serialized in AF. So there is
-no scope for race.
+>If xa_store() fails (for example, due to -ENOMEM from GFP_KERNEL) and returns
+>an error, the code jumps to the fail label. Are the successful modifications
+>made to previously processed subbanks rolled back?
+>If not, could this leave the system in a torn state where restrict_valid is
+>false, and some subbanks have updated indices while others keep their old
+>ones?
+ACK, but, There is no way, we can gracefully rollback, as rollback can also fail due to memory
+pressurem while reinserting old index using xa_store. This is fatal error, will add
+a err print to alert user.
+
+>> +					     union devlink_param_value *val,
+>> +					     struct netlink_ext_ack *extack)
+>> +{
+>> +	struct rvu_devlink *rvu_dl = devlink_priv(devlink);
+>> +	struct rvu *rvu = rvu_dl->rvu;
+>> +	bool restricted_order;
+>> +	unsigned long w = 0;
+>> +	u64 *arr;
+>> +	u32 sz;
+>> +
+>> +	npc_cn20k_search_order_get(&restricted_order, &sz);
+>> +	if (sz != val->u64arr.size) {
+>> +		dev_err(rvu->dev,
+>> +			"Wrong size %llu, should be %u\n",
+>> +			val->u64arr.size, sz);
+>The size field in devlink array values is a 32-bit unsigned integer (u32),
+>but the error message uses the %llu format specifier.
+>On some architectures, could this cause printk to consume 8 bytes from the
+>arguments and read garbage from adjacent memory?
+>> +		return -EINVAL;
+>> +	}
+No. %llu is used for val->u64arr.size, which is 64bit.
