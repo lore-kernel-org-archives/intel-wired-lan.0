@@ -4,90 +4,96 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D16A9CD3447
-	for <intel-wired-lan@archiver.kernel.org>; Sun, 10 May 2026 15:32:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84BF2CD37B5
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 11 May 2026 07:35:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 6AABD60829;
-	Sun, 10 May 2026 15:32:27 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 4929260859;
+	Mon, 11 May 2026 07:35:03 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id gtuE8xnm8tnY; Sun, 10 May 2026 15:32:25 +0000 (UTC)
+ id Q_kMHFhPv07y; Mon, 11 May 2026 07:35:01 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5FCD860828
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 99B3860855
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1778427145;
-	bh=X8MCjomDKc3YbrPEOJhgqzctMGU9fxon0zN6o0Xni7Y=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=UfTpcYzS9mVs5KKiOgGLJUx+w4QUDvyr5P0XpXG/4e1SKhAJJ4fF7ktsflh+txDxL
-	 pgeiHhuXDLCi0tOPKM6HyY6nxZLmDl1n8kPM960VgEu7pN9AOD1cTQb4GagS/Dbk66
-	 oJnz9mBmNIVIThQqSNzdm1j64j5ANEV0cOgWJoezUBFPiiKNrDVjedM0OWT2WPKqcM
-	 Afo1GSzRNzo1bDKickvPKLikekAWUYMMBtKJMYFndFOZFp1Ljl3hpLCF3RuVq75GTP
-	 dtJYlJBFBBH1fxFhNa6hZm2YmARPRdcuZqS508GbK76zgYV2MsqyzSe7e4D3m10RiE
-	 52XVMVOrBDDBg==
+	s=default; t=1778484901;
+	bh=D+v+mpH5HXyLJyBkteipcWAQdRwFbrWSJc/6uXuUDAI=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=nsC5oxi2IStNClZJVno7CTFN4+xbaBkxtxVAKfVXfFDxlbKbmep6r/mSANYZ5mNvZ
+	 zToWSd8fu9bsw7HcBeVKwWa53gz9SQNK4UoGwaZ54DQOT7rEpOwvP8PFGYMKbVMp2o
+	 tRB2CISjGHc63Jxca5SMz4ZRpSyZ+1uTSQR6dh2ZBhZyyKtxAxoRExwmu1q7ksDOJ1
+	 uwp8H0bPUQshuJmtR39FRYKPhWi4iq2/LOmp6iKEGYSm4LGt1FLNQ1AD9yWVgpXVjR
+	 DqNE5CSmqGueG2p/ErgKcuxEAByGC8mYOmcW9a4S5xlBVthzjOC3rtJxCvh8skIDKG
+	 xX8OiMcoEhbzg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 5FCD860828;
-	Sun, 10 May 2026 15:32:25 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 56FA5272
- for <intel-wired-lan@lists.osuosl.org>; Sun, 10 May 2026 15:32:24 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 99B3860855;
+	Mon, 11 May 2026 07:35:01 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 65700272
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 11 May 2026 07:34:59 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 3CE5C41C3D
- for <intel-wired-lan@lists.osuosl.org>; Sun, 10 May 2026 15:32:24 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 4AC9C840C6
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 11 May 2026 07:34:59 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 3zA0WiJyHMzA for <intel-wired-lan@lists.osuosl.org>;
- Sun, 10 May 2026 15:32:23 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org; envelope-from=horms@kernel.org;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 58Ewn7U6KJ1k for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 11 May 2026 07:34:58 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.9;
+ helo=mgamail.intel.com; envelope-from=przemyslaw.korba@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 5447641BED
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5447641BED
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 5447641BED
- for <intel-wired-lan@lists.osuosl.org>; Sun, 10 May 2026 15:32:23 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by tor.source.kernel.org (Postfix) with ESMTP id C084D6001A;
- Sun, 10 May 2026 15:32:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C78E7C2BCB8;
- Sun, 10 May 2026 15:32:18 +0000 (UTC)
-Date: Sun, 10 May 2026 16:32:16 +0100
-From: Simon Horman <horms@kernel.org>
-To: Grzegorz Nitka <grzegorz.nitka@intel.com>
-Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
- andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com, richardcochran@gmail.com,
- jacob.e.keller@intel.com, linux-kernel@vger.kernel.org,
- stable@vger.kernel.org, Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Message-ID: <20260510153216.GU15617@horms.kernel.org>
-References: <20260507081653.1717172-1-grzegorz.nitka@intel.com>
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 5DB77840C5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5DB77840C5
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 5DB77840C5
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 11 May 2026 07:34:57 +0000 (UTC)
+X-CSE-ConnectionGUID: HgghhdaMSE2LgKazfUc+lQ==
+X-CSE-MsgGUID: 3GUMcPkCQhmwyc5Il6KAbg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11782"; a="102030054"
+X-IronPort-AV: E=Sophos;i="6.23,228,1770624000"; d="scan'208";a="102030054"
+Received: from orviesa004.jf.intel.com ([10.64.159.144])
+ by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 11 May 2026 00:34:57 -0700
+X-CSE-ConnectionGUID: zn7NNtibSluMa6GYVt0IrQ==
+X-CSE-MsgGUID: sE7shOsJSwi1A6usA1va/Q==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,228,1770624000"; d="scan'208";a="241735131"
+Received: from pae-d-dell-r7525-263.igk.intel.com ([172.28.191.240])
+ by orviesa004.jf.intel.com with ESMTP; 11 May 2026 00:34:56 -0700
+From: Przemyslaw Korba <przemyslaw.korba@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Cc: netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
+ przemyslaw.kitszel@intel.com, aleksandr.loktionov@intel.com,
+ arkadiusz.kubalewski@intel.com,
+ Przemyslaw Korba <przemyslaw.korba@intel.com>
+Date: Mon, 11 May 2026 09:36:34 +0200
+Message-ID: <20260511073657.1073780-1-przemyslaw.korba@intel.com>
+X-Mailer: git-send-email 2.43.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260507081653.1717172-1-grzegorz.nitka@intel.com>
+Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1778427141;
- bh=IP9ymPdhjEvlsXziBwpZgl3VeAVkIzU9wywqT4QOBtE=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=F67ppo9pcFhYGh5QQ+R/kDruLnCYONRpYIMakk04BzmRRzyGvDRzYpvPObfZYGyPM
- xkwrcKlLXL1U4LyEiqzK4mbmzJtOEyJV464lde8Ahl35J0Tdaj5l+SA8nvmI8TsMT4
- PffOXiNV7C3PuVzUen0IEDHSsFXsBfZ1PpvFzt749yUo5YbCOtAYZsY8k/17/wNUOR
- udpf1xuOV8namHBU2mcfOY5zHN87Fnm5NsAqtuU64UzDTxlFKbBpFeiPoK1tm4O4c4
- uc9aiqEj58jkVfzLO78PXLnTwQenuFb/exRSrr8F7i3PMwaTQMt8222R5nUK1RPEVk
- i0deBd1uPN43g==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1778484898; x=1810020898;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=V/FqnKuLf5ly7IGnIqtIrW8gjqh4B9YtBRmcrjcAOKg=;
+ b=lI8EAFcDD918fQJu9pgIWA7bAH3lv1ko7wvP+m8mepqvVlOpEZ8VMYgc
+ VBOuSWAfWLycZBR/HfQdAYPLihiWsA3DVktcdAgxXLwCm1xkdf+IB07EH
+ 1/fDoPlDCzPjtEdaQK6QaWAvj7hhqv3cKQoGx31x5jxInGCMqNiDJ1rPK
+ 3Cb5waMgyCHfydvBgNFlKCHrl5Grz0krg51RY667MpmREZTY5Zmhts2xk
+ 3jdzQViq+a5Ch35n93dhTLSKS86eEzBfhShOvHr4rl1eNmVnRqiN2Z9wW
+ 9EKHPE/QNeyiaRtHGJ/HixErp0L88OB5VD1m5QHRXcd6fVeIoK661fFdX
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=F67ppo9p
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net] ice: restore PTP Rx timestamp
- config after ethtool set-channels
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=lI8EAFcD
+Subject: [Intel-wired-lan] [PATCH iwl-next] ice: add rx timestamp tracepoint
+ for debugging
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -103,32 +109,64 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu, May 07, 2026 at 10:16:53AM +0200, Grzegorz Nitka wrote:
-> When ethtool -L changes queue counts, ice_vsi_recfg_qs() closes and
-> rebuilds the VSI, reallocating Rx rings. The newly allocated rings have
-> ptp_rx cleared, so RX hardware timestamps are no longer attached to skb
-> until hwtstamp configuration is applied again.
-> 
-> Restore timestamp mode after ice_vsi_open() in the queue reconfiguration
-> path, matching reset/rebuild behavior and ensuring newly rebuilt Rx rings
-> have PTP RX timestamping re-enabled.
-> 
-> Testing hints:
-> - run ptp4l application in client synchronization mode:
-> 	 ptp4l -i ethX -m -s
-> - run PTP traffic
-> - change queue number on ethX netdev interface:
-> 	ethtool -L ethX combined new_queue_size
-> - observe ptp4l output
-> - expected result: no "received DELAY_REQ without timestamp" messages
-> 
-> Fixes: 77a781155a65 ("ice: enable receive hardware timestamping")
-> Cc: stable@vger.kernel.org
-> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-> Signed-off-by: Grzegorz Nitka <grzegorz.nitka@intel.com>
+Add ice_rx_hwtstamp trace event to help debug PTP rx timestamp issues.
+The trace captures cached_time, ts_high, and the extended ts_ns value in
+ice_ptp_get_rx_hwts().
 
-Reviewed-by: Simon Horman <horms@kernel.org>
+Enable with:
+echo 1 > /sys/kernel/debug/tracing/events/ice/ice_rx_hwtstamp/enable
+cat /sys/kernel/debug/tracing/trace_pipe
 
-FTR: There is an AI-generated review of this patch available on sashiko.dev.
-     I do not believe any of the issues raised there should block progress
-     of this patch.
+Signed-off-by: Przemyslaw Korba <przemyslaw.korba@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_ptp.c   |  2 ++
+ drivers/net/ethernet/intel/ice/ice_trace.h | 18 ++++++++++++++++++
+ 2 files changed, 20 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
+index 691f05c62d4e..07e621813ff5 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+@@ -2333,6 +2333,8 @@ u64 ice_ptp_get_rx_hwts(const union ice_32b_rx_flex_desc *rx_desc,
+ 	ts_high = le32_to_cpu(rx_desc->wb.flex_ts.ts_high);
+ 	ts_ns = ice_ptp_extend_32b_ts(cached_time, ts_high);
+ 
++	ice_trace(rx_hwtstamp, cached_time, ts_high, ts_ns);
++
+ 	return ts_ns;
+ }
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_trace.h b/drivers/net/ethernet/intel/ice/ice_trace.h
+index 4f35ef8d6b29..3cb8c6ea03cf 100644
+--- a/drivers/net/ethernet/intel/ice/ice_trace.h
++++ b/drivers/net/ethernet/intel/ice/ice_trace.h
+@@ -241,6 +241,24 @@ DEFINE_TX_TSTAMP_OP_EVENT(ice_tx_tstamp_fw_req);
+ DEFINE_TX_TSTAMP_OP_EVENT(ice_tx_tstamp_fw_done);
+ DEFINE_TX_TSTAMP_OP_EVENT(ice_tx_tstamp_complete);
+ 
++/* Trace event for Rx timestamp */
++TRACE_EVENT(ice_rx_hwtstamp,
++	    TP_PROTO(u64 cached_time, u32 ts_high, u64 ts_ns),
++
++	    TP_ARGS(cached_time, ts_high, ts_ns),
++
++	    TP_STRUCT__entry(__field(u64, cached_time)
++			     __field(u32, ts_high)
++			     __field(u64, ts_ns)),
++
++	    TP_fast_assign(__entry->cached_time = cached_time;
++			   __entry->ts_high = ts_high;
++			   __entry->ts_ns = ts_ns;),
++
++	    TP_printk("cached_time=%llu ts_high=%u ts_ns=%llu",
++		      __entry->cached_time, __entry->ts_high, __entry->ts_ns)
++);
++
+ DECLARE_EVENT_CLASS(ice_esw_br_fdb_template,
+ 		    TP_PROTO(struct ice_esw_br_fdb_entry *fdb),
+ 		    TP_ARGS(fdb),
+
+base-commit: 5c0d2ac5900d689d422a31cd45073175150c0a39
+-- 
+2.43.0
+
