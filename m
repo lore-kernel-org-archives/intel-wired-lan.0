@@ -1,90 +1,91 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19BDECD37B2
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 11 May 2026 15:40:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27F00CD37BE
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 11 May 2026 15:47:52 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id D28A083E1E;
-	Mon, 11 May 2026 15:40:50 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id E61E241774;
+	Mon, 11 May 2026 15:47:51 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 57uRjZfTkK6E; Mon, 11 May 2026 15:40:49 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id un2SOdWtLMuM; Mon, 11 May 2026 15:47:50 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8439A83E0E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4DC0141775
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1778514049;
-	bh=jkrwhwC37i0Ghp7RxMj/GDPhvhLRktyCbFNOYn8wbUk=;
+	s=default; t=1778514470;
+	bh=D7+qEgtTQ0iuAj3dEc61XncdFBlw8sX6JHLFHJH/1Po=;
 	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=j2OjbLXMbqO1AbNFgvZiTdFVry4nVHuq8QlcMNfpzCwCcENDENd0+4Zszu+3F2O30
-	 fZqAz7FokUwa0aReOOYry99lMfoOCLGO+vwwOGMlAKsktq4bx5yn3ntzRm5ek3OazJ
-	 Wt8HccNET5UVHy86aXPKPjY33WSsuqXLKIJC4wuC4CYlRu6enyn3LhNHiu+FEwH6AW
-	 qoCA4BqoC/ND0+QBz3hYJU3aTCcIlmhkfEtip/huKjWhaa2P/hSFBF5D/+lKTSv9lX
-	 SoAuJxyzZ2olKP3uwD7C8/IOLbJTSfT9uTcyjZHS9TRA3hobY1S9xjYldq45g7iRLM
-	 G3CmhZ6lXESYg==
+	b=ci1t9bvdi6ajl7Q/1qnR5F3A6HsD7qygV4sBUThY3goXiVHSk1g/ThmNpVkFLd5Wt
+	 bPnEsuTVhY/QwxU8/7m8Ze+b6CYSHaJfmGReJtoUtZPeHpmE9958904OkBYmffdeVu
+	 4Qbh4rvS6J8NqnNwpGtWhlj/ynj4XjS3/UZnVxavOqFCPpTMqFuEZnWfuMq5S3tfnF
+	 YoTH2oQ1vyD8bAxM+X5SgzUqVOjyckQ00jRKFTVBGlfIYTbK35kqEM7CQzdiVLxtIr
+	 d+glg93qlNtCb/VWcdNvTJUoPgdG35RbGie89zOH1JkQp79aTcX+tIAbIyE4ot6Pln
+	 D3J3JnTC5qx4Q==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 8439A83E0E;
-	Mon, 11 May 2026 15:40:49 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 208E1223
- for <intel-wired-lan@lists.osuosl.org>; Mon, 11 May 2026 15:40:48 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 4DC0141775;
+	Mon, 11 May 2026 15:47:50 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id AEC07223
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 11 May 2026 15:47:49 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 0641983E0E
- for <intel-wired-lan@lists.osuosl.org>; Mon, 11 May 2026 15:40:48 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id A0C1B608CC
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 11 May 2026 15:47:49 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id W7B8eK0Ms3vs for <intel-wired-lan@lists.osuosl.org>;
- Mon, 11 May 2026 15:40:47 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id uNXIqNA9zMzt for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 11 May 2026 15:47:49 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
+ client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
  envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 6080583DD3
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6080583DD3
-Received: from sea.source.kernel.org (sea.source.kernel.org
- [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 6080583DD3
- for <intel-wired-lan@lists.osuosl.org>; Mon, 11 May 2026 15:40:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 07C6B608CA
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 07C6B608CA
+Received: from tor.source.kernel.org (tor.source.kernel.org
+ [IPv6:2600:3c04:e001:324:0:1991:8:25])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 07C6B608CA
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 11 May 2026 15:47:48 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sea.source.kernel.org (Postfix) with ESMTP id F403E42A3E;
- Mon, 11 May 2026 15:40:46 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EECEFC2BCB0;
- Mon, 11 May 2026 15:40:45 +0000 (UTC)
-Date: Mon, 11 May 2026 16:40:43 +0100
+ by tor.source.kernel.org (Postfix) with ESMTP id 82C70600CB;
+ Mon, 11 May 2026 15:47:47 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4EF42C2BCB0;
+ Mon, 11 May 2026 15:47:46 +0000 (UTC)
+Date: Mon, 11 May 2026 16:47:43 +0100
 From: Simon Horman <horms@kernel.org>
 To: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 Cc: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
  netdev@vger.kernel.org
-Message-ID: <20260511154043.GC27589@horms.kernel.org>
+Message-ID: <20260511154743.GD27589@horms.kernel.org>
 References: <20260508031226.3601800-1-aleksandr.loktionov@intel.com>
- <20260508031226.3601800-7-aleksandr.loktionov@intel.com>
+ <20260508031226.3601800-8-aleksandr.loktionov@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260508031226.3601800-7-aleksandr.loktionov@intel.com>
+In-Reply-To: <20260508031226.3601800-8-aleksandr.loktionov@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1778514046;
- bh=kMyxVFHBsTENAImGfysO/vdBf+qJS/bcyql+j8HczTY=;
+ d=kernel.org; s=k20201202; t=1778514467;
+ bh=wg3sj4YnE54AHzo71NUx2gXbPJJaa+jjk+3YhaTtn2k=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=A+chN3i9ViZ7leomzi38CgzYvReG407/tsMJ6BPiS5NrTI93fdTcUvW3Utxw63crK
- hLZ90JHMtJa7Tgb8bDPrsgvn3VVh827FJNz1LHHkPy07ii8h6KWsKimQN6SMP4kUcN
- 3qHuYbwdK3VrjzLz/3ZC/8DXzqEdldWhnapacgGOZ8BqXMhaQE9zMelYd+apSVjVzL
- HftwDDfk43tgLzRzWvct0D0VJa86uw9+MVUSNx+DCzvwACPNPm5xmmYgOmwc4wGY7a
- yLFlMQL9x2mqMciRTQw280fXeva/UYVK4QS1GKDMAYGWWZt+XaCwVSbiVmp3SntaFh
- ExBrQpgzyz+jg==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ b=BvNpoFXI3fi7jwGkY+pWzGB1wYn05cTBMtf2Kpj7RTyHJq6h1pPue8F7RwO173Ngr
+ 6m+0uZ3W3Jhh6O9cOYnEzxy16U8y0930otjA13SJtsp2NtE0ypnPQG/FoQn8jWsPtR
+ KpaMT5d1UWpJbbz86jxDsUPw+jiEmn/icj+xqoNKm1LVpvBr7lVZ3gP0aYQr13Qxjo
+ XiY8SaGpgfLwCDroE0/qJJWHdmPl4SxZYcRJK5APgHS7fNNJbf2+HAzi+s4aFRUcyU
+ GQTiCzqc48IPD0rhu89keicVmyV6tExe2QBPCdpAAeHvs30A98+RE1gP4qya7zfhnr
+ 99uBaZ7+MwEbw==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=A+chN3i9
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next 6/8] ixgbe: extract
- ixgbe_restart_auto_neg() to avoid code duplication
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=BvNpoFXI
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next 7/8] ixgbe: limit ITR
+ decrease in latency mode to prevent ACK overdrive
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -100,34 +101,57 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Fri, May 08, 2026 at 05:12:24AM +0200, Aleksandr Loktionov wrote:
-> From: Jakub Chylkowski <jakubx.chylkowski@intel.com>
+On Fri, May 08, 2026 at 05:12:25AM +0200, Aleksandr Loktionov wrote:
+> From: Alexander Duyck <alexander.h.duyck@intel.com>
 > 
-> Both ixgbe_setup_phy_link_generic() and ixgbe_setup_phy_link_tnx()
-> end with the same three-line sequence that reads MDIO_CTRL1, sets
-> the MDIO_AN_CTRL1_RESTART bit, and writes MDIO_CTRL1 back.
+> When operating in latency mode and the computed ITR is lower than the
+> current setting, the algorithm can reduce the interrupt rate too
+> aggressively in a single step.  For a TCP workload this means the ACK
+> stream (a latency-sensitive, low-packet-rate workload) can drive the
+> moderation down to very high interrupt rates, starving CPU time from
+> the sender side.
 > 
-> Factor it out into a static helper ixgbe_restart_auto_neg() and call
-> it from both sites.
+> After the speed-based ITR calculation is complete, check whether the
+> result is in latency mode and would decrease below the current setting.
+> If so, limit the decrease to at most IXGBE_ITR_ADAPTIVE_MIN_INC (2 us)
+> per update.  This ensures the number of interrupts grows by no more
+> than 2x per adjustment step for latency-class workloads, dialling in
+> smoothly rather than overshooting.
 > 
-> While at it, also check the return value of phy.ops.read_reg() in the
-> helper and skip the write on failure.  The original inlined code
-> ignored the read result and would OR MDIO_AN_CTRL1_RESTART into a
-> stale autoneg_reg value (left over from the prior MDIO_AN_ADVERTISE
-> write) and unconditionally write it back to MDIO_CTRL1 if the read
-> failed.  This is a small behavioral change: on read_reg() failure the
-> restart write is now skipped instead of being issued with a
-> potentially garbage value.
-> 
-> Signed-off-by: Jakub Chylkowski <jakubx.chylkowski@intel.com>
+> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 > Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 
 Reviewed-by: Simon Horman <horms@kernel.org>
 
-FWIIW, the AI-generated review of this patch available on sashiko.dev
-flags that similar problems wrt write on failre exist earlier on in
-ixgbe_setup_phy_link_generic(). It may be good to address this area
-more holistically as a follow-up. (I am not suggesting increasing
-the scope of this patch/patch-set.)
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 11 +++++++++++
+>  1 file changed, 11 insertions(+)
+> 
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> index aea76b3..ba7b013 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> @@ -2888,6 +2888,17 @@ static void ixgbe_update_itr(struct ixgbe_q_vector *q_vector,
+>  		break;
+>  	}
+>  
+> +	/* In the case of a latency specific workload only allow us to
+> +	 * reduce the ITR by at most 2us. By doing this we should dial
+> +	 * in so that our number of interrupts is no more than 2x the number
+> +	 * of packets for the least busy workload. So for example in the case
+> +	 * of a TCP workload the ACK packets being received would set the
+> +	 * interrupt rate as they are a latency specific workload.
+> +	 */
+> +	if ((itr & IXGBE_ITR_ADAPTIVE_LATENCY) && itr < ring_container->itr)
+> +		itr = max_t(unsigned int, itr,
+> +			    ring_container->itr - IXGBE_ITR_ADAPTIVE_MIN_INC);
 
-...
+nit: I expect this could be min(). And if it could, it should.
+
+> +
+>  clear_counts:
+>  	/* write back value */
+>  	ring_container->itr = itr;
+> -- 
+> 2.52.0
+> 
