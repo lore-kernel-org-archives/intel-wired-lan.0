@@ -4,97 +4,94 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40E6FCD4F3C
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 12 May 2026 14:09:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 515F7CD4851
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 12 May 2026 14:09:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 4439040AFB;
-	Tue, 12 May 2026 14:09:15 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1340F40BF2;
+	Tue, 12 May 2026 14:09:14 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id gUlhUiWuzdLB; Tue, 12 May 2026 14:09:14 +0000 (UTC)
+ id 9hqk_let6y18; Tue, 12 May 2026 14:09:12 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8061340B1C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EEE4640AE3
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1778594954;
-	bh=eyakVV3nLMre4SsKhAYSvPE3ucfYucdhjx44Uwls0CM=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=x+F+XDu9bEZd6ESmcgFVxb7FOKSXGqcJXl+SvknV81Tk63RsrFEJAndSyLs52Q5+m
-	 yVpZGN+0SsJagkf3j0E7UbzcHPsQL08scwBAoZ281I0T9m61hhhWyE/3knGxuGIEiz
-	 heIlVGtreRAtD/z28JIU2Izlpl0dO+43sDkUiVACCd8NN9iz6JBwy/jF6I3TRn+alL
-	 ocLm/HnJV2flLgfYYCMHdBe0O9FMalTlFnmFCEP5u/MRZaGaqIpZOc104uzvw65zub
-	 bY779SpA34Z6Cz+ecISPvfeyG6+qJiBgukQ5RqsDSmc+EEP18mWAVPY8OYvUF9mWlm
-	 3LAN+zg2Dgoxw==
+	s=default; t=1778594952;
+	bh=HByD7dRECT5FF6NNttPS3zeqlyEPWN1C+xuDMutMHpU=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=uSLOjc8Tf2OIfCaa1QLnsSsT8MJEUppXWSGD0IKK5H+TJaFnPezkRHv/Ob2cqpMzM
+	 sKiDFZRsajrhQxu9hGjdjNX/4MnUInVnaaF9d5S3Twe6npX9mHkGQ34AnCDGriXnWH
+	 bhcgxDZKW6vhkOVMDVyk8nWAUi7GxVTDGK9r9ljq6uyB4pLrniC08cCIf4/uy0lmqC
+	 8uKSPcg/dJWeu4WgjNCZ3I/1gJLsqgwpXc5oaNi8n11yoRTZ+A70k6wnWKq4Bmaks3
+	 KpRmxX6ieQfycm+c40eX5uJHd5ZorwXWDdyxYSGex8hmzsiyGECdjIum+eCujBEwYh
+	 hVtZKVS6cf8LQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 8061340B1C;
-	Tue, 12 May 2026 14:09:14 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 1252B223
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 May 2026 14:09:13 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id EEE4640AE3;
+	Tue, 12 May 2026 14:09:11 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 3D75015F
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 May 2026 14:09:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id EB21E60DAA
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 May 2026 14:09:11 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 3AE9C60DAD
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 May 2026 14:09:10 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id F6Hx3EiUSA7s for <intel-wired-lan@lists.osuosl.org>;
- Tue, 12 May 2026 14:09:11 +0000 (UTC)
+ id tnd6JXbYbGeP for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 12 May 2026 14:09:09 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.10;
  helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 3C9D460DA6
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3C9D460DA6
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org A7BAD60DA6
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A7BAD60DA6
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 3C9D460DA6
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 May 2026 14:09:11 +0000 (UTC)
-X-CSE-ConnectionGUID: NjlDeEgQT8W+nkEMZmkAbA==
-X-CSE-MsgGUID: hGKV5i5rSV6GoqcVMr186Q==
-X-IronPort-AV: E=McAfee;i="6800,10657,11784"; a="96929659"
-X-IronPort-AV: E=Sophos;i="6.23,231,1770624000"; d="scan'208";a="96929659"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id A7BAD60DA6
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 May 2026 14:09:08 +0000 (UTC)
+X-CSE-ConnectionGUID: BcBNqifuS9O3xrfneClwcA==
+X-CSE-MsgGUID: j4dXagSjRYCcStXdH5CWqw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11784"; a="96929651"
+X-IronPort-AV: E=Sophos;i="6.23,231,1770624000"; d="scan'208";a="96929651"
 Received: from orviesa001.jf.intel.com ([10.64.159.141])
  by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 May 2026 07:09:11 -0700
-X-CSE-ConnectionGUID: KgL3/3iSQkGYlc+F66Xv/Q==
-X-CSE-MsgGUID: d865mFggRPigOPSuUOJyUw==
+ 12 May 2026 07:09:07 -0700
+X-CSE-ConnectionGUID: pjX5sqaGQS2N5koXoX3fVg==
+X-CSE-MsgGUID: Aas4KuVwRAiDUOj5bV3lxw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,231,1770624000"; d="scan'208";a="275892474"
+X-IronPort-AV: E=Sophos;i="6.23,231,1770624000"; d="scan'208";a="275892466"
 Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by orviesa001.jf.intel.com with ESMTP; 12 May 2026 07:09:10 -0700
+ by orviesa001.jf.intel.com with ESMTP; 12 May 2026 07:09:06 -0700
 From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 To: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
  aleksandr.loktionov@intel.com
-Cc: netdev@vger.kernel.org,
-	Simon Horman <horms@kernel.org>
-Date: Tue, 12 May 2026 16:08:58 +0200
-Message-ID: <20260512140904.4105236-3-aleksandr.loktionov@intel.com>
+Cc: netdev@vger.kernel.org
+Date: Tue, 12 May 2026 16:08:56 +0200
+Message-ID: <20260512140904.4105236-1-aleksandr.loktionov@intel.com>
 X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260512140904.4105236-1-aleksandr.loktionov@intel.com>
-References: <20260512140904.4105236-1-aleksandr.loktionov@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1778594951; x=1810130951;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=NDXYRNxohjaR9SlsX7zQsn4ljQYIO2z6Y5cD8SIerPU=;
- b=cyDjtB1x6voBAmSBrNam+PZCcV124m2dY9WQa/ZFsUcFf6II+8qyRCDk
- oP1CuAqaZFHClXts2vdlRY1T35UebQlret+XQrWpdcGjnjEvA9Jdhfc3V
- GlFIIXjWcp4drvH79gFk7Br988aYYw0vZYAdlRcxDaQ0VMgO5WViG96YO
- 2nkBCTggD9hw8kYv4B3aVq3gzWcLbV8cu32bEYp87zBICOyr8bXOTNnIl
- GkHWdb6us+LxKcFz5DLUACUtCCdNcupUfL46TDb/HkxvCGMpphTeHKpaI
- Iv+50B+hpOUJjFGbxX1Ysj21KDhY8ERQWhKDLaJ3y+3YshrOP4cswSGgQ
- w==;
+ t=1778594948; x=1810130948;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=1QbhqWzNyRHVTuQ47MMCc6rfzXEtjyZgMK5EqjaYeKA=;
+ b=BsVr/nzBq3Ao4yI03hQfb6LTYrX8k7KcStOIQ37X0iEg6/kvThKIYwjU
+ TjiPl/OINAYM5ISzv1Oowyb4B5mkGAzdAnszIoiuUDbzRNo+ahHjUAYUd
+ ThP/KllHFEY0qgIxmf2q4B5yoapmPYbCiDNHdj3hD+jAmJLGjSCL3CUtx
+ y1gxBBTmYDY/izhOBnW4YtvSLiK5e4789p1ZGmMxa27ozyjjUTSiRjJKL
+ 9Ey4jKPgdu3fHw4b5yY5zRvCxn0Z1PJySR5wgDft0+aybvRukw810kHSZ
+ jUEXauHhVmjsfxHG+0gb1U8z8b6Pt9IXX6/eNFkH5oQ5xpp0RsjH7D+gi
+ A==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=cyDjtB1x
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 2/8] ixgbe: use int instead of
- u32 for error code variables
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=BsVr/nzB
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 0/8] ixgbe: small cleanups and
+ improvements
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -110,139 +107,111 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The variables used to store return values of kernel and driver functions
-throughout the ixgbe driver are declared as u32 in several places.  Such
-functions return negative errno values on error (e.g. -EIO, -EFAULT),
-which are sign-extended negative integers.  Storing them in an unsigned
-u32 silently wraps the value: -EIO (0xFFFFFFF7) stored in u32 becomes a
-large positive number, so any "if (status)" truthiness check still works
-by accident, but comparisons against specific negative error codes or
-propagation up the call stack produce wrong results.
+Eight independent cleanups and improvements for the ixgbe driver,
+grouped by theme:
 
-In the Linux kernel, u32 is reserved for fixed-width quantities used in
-hardware interfaces or protocol structures.  Using it for generic error
-codes misleads reviewers into thinking the value is hardware-constrained.
+Naming / type hygiene (patches 1-2):
+  Patch 1 renames ixgbe_q_vector::numa_node to ::node.  The field name
+  shadows the struct device numa_node accessor, causing a sparse warning.
+  The rename aligns with other Intel drivers (ice, igc).
 
-Change all such local variables from u32 to int driver-wide: one in
-ixgbe_main.c (ixgbe_resume), three in ixgbe_phy.c
-(ixgbe_identify_phy_generic, ixgbe_tn_check_overtemp,
-ixgbe_set_copper_phy_power), and six in ixgbe_x550.c
-(ixgbe_check_link_t_X550em, ixgbe_get_lasi_ext_t_x550em,
-ixgbe_enable_lasi_ext_t_x550em, ixgbe_handle_lasi_ext_t_x550em,
-ixgbe_ext_phy_t_x550em_get_link, ixgbe_setup_internal_phy_t_x550em).
+  Patch 2 changes local error-code variables from u32 to int in six
+  functions across ixgbe_main.c, ixgbe_phy.c and ixgbe_x550.c.  Storing
+  a signed errno in an unsigned type works by accident for truthiness
+  checks but breaks exact comparisons and proper propagation.
 
-No functional change.
+Bug fix (patch 3):
+  Patch 3 rejects duplicate FDIR perfect-filter rules before programming
+  hardware.  The same 5-tuple with a different sw_idx would silently
+  consume a second scarce FDIR slot and confuse rule deletion.
+  Returns -EEXIST to userspace on duplicate rather than -EINVAL.
 
-Reviewed-by: Simon Horman <horms@kernel.org>
-Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Performance (patch 4):
+  Patch 4 replaces the busy-wait udelay(1000) in the SECRX_RDY poll
+  loop with usleep_range(10, 20) and raises the iteration count from
+  40 to 4000.  Because usleep_range(min, max) is guaranteed to sleep
+  at least 'min' us, 4000 * 10 us preserves the original 40 ms
+  minimum-wait-before-timeout; worst-case grows to ~80 ms (acceptable
+  since SECRX_RDY failing to assert is non-fatal and only logged).
+  Typical stall on fast hardware drops from up to ~1 ms per iteration
+  to ~10-20 us.
+
+Code quality (patches 5-8):
+  Patch 5 replaces ktime_to_ns(ktime_get_real()) with the direct
+  ktime_get_real_ns() helper.
+
+  Patch 6 factors the three-line autoneg-restart sequence duplicated in
+  ixgbe_setup_phy_link_generic() and ixgbe_setup_phy_link_tnx() into a
+  static helper ixgbe_restart_auto_neg().  The helper checks the return
+  value of read_reg() and returns early on error to avoid writing
+  uninitialized data to the PHY register.
+
+  Patches 7-8 improve the adaptive-ITR algorithm in two steps:
+    7/8: Limit ITR decrease in latency mode to at most
+         IXGBE_ITR_ADAPTIVE_MIN_INC (2 us) per step so that ACK-driven
+         workloads do not overdrive interrupt rate.  Uses max_t() to
+         ensure the clamp never drives ITR below the algorithm's own
+         computation.
+    8/8: Add IXGBE_ITR_ADAPTIVE_MASK_USECS (= IXGBE_ITR_ADAPTIVE_LATENCY
+         - 1) to replace the open-coded ~IXGBE_ITR_ADAPTIVE_LATENCY
+         mask in ixgbe_set_itr() with the cleaner AND form.
+
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  2 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  |  6 +++---
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c | 12 ++++++------
- 3 files changed, 10 insertions(+), 10 deletions(-)
+Changes since v1:
+  - Collected Reviewed-by: Simon Horman <horms@kernel.org> on
+    patches 1, 4, 6, 7, 8.
+  - Patch 4 (SECRX_RDY): tightened commit message wording for the
+    worst-case bound to reflect that on a loaded system actual
+    scheduler wakeup latency may exceed the nominal 4000 * 20 us =
+    ~80 ms upper bound; clarified that the timeout is non-fatal (only
+    a debug message is logged, return is unconditionally 0).  No code
+    change.
+  - Patch 3 (prevent duplicate FDIR perfect filter rules):
+    * Dropped the e_warn() in ixgbe_match_ethtool_fdir_entry();
+      -EEXIST returned to userspace is sufficient.
+    * Reordered locals in ixgbe_add_ethtool_fdir_entry() for
+      reverse-Christmas-tree (`int err = -EINVAL;` moved above
+      `u8 queue;`).
+    The same-sw_idx skip in ixgbe_match_ethtool_fdir_entry() is
+    intentional and required: ixgbe_update_ethtool_fdir_entry() (the
+    caller of the add path) deletes any existing rule at the same
+    sw_idx and replaces it, implementing the standard ethtool
+    "set rule at location N" overwrite semantic.  Rejecting matching
+    sw_idx with -EEXIST would break idempotent re-application and the
+    legitimate replace-at-same-location path.
+  - Patches 2, 5: no review feedback received; no change.
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 65426a1..b6308c1 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -7528,7 +7528,7 @@ static int ixgbe_resume(struct device *dev_d)
- 	struct pci_dev *pdev = to_pci_dev(dev_d);
- 	struct ixgbe_adapter *adapter = pci_get_drvdata(pdev);
- 	struct net_device *netdev = adapter->netdev;
--	u32 err;
-+	int err;
- 
- 	adapter->hw.hw_addr = adapter->io_addr;
- 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-index ab733e7..de8f6c6 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-@@ -262,7 +262,7 @@ static bool ixgbe_probe_phy(struct ixgbe_hw *hw, u16 phy_addr)
-  **/
- int ixgbe_identify_phy_generic(struct ixgbe_hw *hw)
- {
--	u32 status = -EFAULT;
-+	int status = -EFAULT;
- 	u32 phy_addr;
- 
- 	if (!hw->phy.phy_semaphore_mask) {
-@@ -2811,7 +2811,7 @@ static void ixgbe_i2c_bus_clear(struct ixgbe_hw *hw)
- bool ixgbe_tn_check_overtemp(struct ixgbe_hw *hw)
- {
- 	u16 phy_data = 0;
--	u32 status;
-+	int status;
- 
- 	if (hw->device_id != IXGBE_DEV_ID_82599_T3_LOM)
- 		return false;
-@@ -2831,7 +2831,7 @@ bool ixgbe_tn_check_overtemp(struct ixgbe_hw *hw)
-  **/
- int ixgbe_set_copper_phy_power(struct ixgbe_hw *hw, bool on)
- {
--	u32 status;
-+	int status;
- 	u16 reg;
- 
- 	/* Bail if we don't have copper phy */
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index 76d2fa3..9b14f3b 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -1911,7 +1911,7 @@ static int ixgbe_check_link_t_X550em(struct ixgbe_hw *hw,
- 				     bool *link_up,
- 				     bool link_up_wait_to_complete)
- {
--	u32 status;
-+	int status;
- 	u16 i, autoneg_status;
- 
- 	if (hw->mac.ops.get_media_type(hw) != ixgbe_media_type_copper)
-@@ -2330,7 +2330,7 @@ static int ixgbe_get_link_capabilities_X550em(struct ixgbe_hw *hw,
- static int ixgbe_get_lasi_ext_t_x550em(struct ixgbe_hw *hw, bool *lsc,
- 				       bool *is_overtemp)
- {
--	u32 status;
-+	int status;
- 	u16 reg;
- 
- 	*is_overtemp = false;
-@@ -2418,7 +2418,7 @@ static int ixgbe_get_lasi_ext_t_x550em(struct ixgbe_hw *hw, bool *lsc,
- static int ixgbe_enable_lasi_ext_t_x550em(struct ixgbe_hw *hw)
- {
- 	bool lsc, overtemp;
--	u32 status;
-+	int status;
- 	u16 reg;
- 
- 	/* Clear interrupt flags */
-@@ -2512,7 +2512,7 @@ static int ixgbe_handle_lasi_ext_t_x550em(struct ixgbe_hw *hw,
- {
- 	struct ixgbe_phy_info *phy = &hw->phy;
- 	bool lsc;
--	u32 status;
-+	int status;
- 
- 	status = ixgbe_get_lasi_ext_t_x550em(hw, &lsc, is_overtemp);
- 	if (status)
-@@ -2606,7 +2606,7 @@ static int ixgbe_setup_kr_x550em(struct ixgbe_hw *hw)
-  **/
- static int ixgbe_ext_phy_t_x550em_get_link(struct ixgbe_hw *hw, bool *link_up)
- {
--	u32 ret;
-+	int ret;
- 	u16 autoneg_status;
- 
- 	*link_up = false;
-@@ -2642,7 +2642,7 @@ static int ixgbe_setup_internal_phy_t_x550em(struct ixgbe_hw *hw)
- {
- 	ixgbe_link_speed force_speed;
- 	bool link_up;
--	u32 status;
-+	int status;
- 	u16 speed;
- 
- 	if (hw->mac.ops.get_media_type(hw) != ixgbe_media_type_copper)
+Aleksandr Loktionov (1):
+  ixgbe: use int instead of u32 for error code variables
+
+Alexander Duyck (2):
+  ixgbe: limit ITR decrease in latency mode to prevent ACK overdrive
+  ixgbe: add IXGBE_ITR_ADAPTIVE_MASK_USECS constant
+
+Jacob Keller (2):
+  ixgbe: rename numa_node to node in struct ixgbe_q_vector
+  ixgbe: use ktime_get_real_ns() in ixgbe_ptp_reset()
+
+Jakub Chylkowski (1):
+  ixgbe: extract ixgbe_restart_auto_neg() to avoid code duplication
+
+Maciej Rabeda (1):
+  ixgbe: increase SECRX_RDY polling frequency in
+    ixgbe_disable_rx_buff_generic
+
+Piotr Skajewski (1):
+  ixgbe: prevent adding duplicate FDIR perfect filter rules
+
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h      |  3 +-
+ .../net/ethernet/intel/ixgbe/ixgbe_common.c   |  5 +--
+ .../net/ethernet/intel/ixgbe/ixgbe_ethtool.c  | 27 +++++++++++-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c  |  2 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 19 ++++++++--
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  | 42 +++++++++++--------
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c  |  2 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c | 12 +++---
+ 8 files changed, 77 insertions(+), 35 deletions(-)
+
 -- 
 2.52.0
 
