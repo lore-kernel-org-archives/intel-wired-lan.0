@@ -1,70 +1,68 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C38D4CD37AC
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 14 May 2026 00:11:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F921CD4F21
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 14 May 2026 00:37:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 5CDF7814C5;
-	Thu, 14 May 2026 00:11:00 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id AEE4C40BB7;
+	Thu, 14 May 2026 00:37:43 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id rvYbugQQp3gq; Thu, 14 May 2026 00:10:58 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 5Y1CU4IrWn21; Thu, 14 May 2026 00:37:43 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8889A814C4
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EA59A40BB1
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1778717458;
-	bh=XSoiNOSqRK5xwY5RdOy67y6sVw9Et2wfcOv6CmJq/6k=;
+	s=default; t=1778719063;
+	bh=Zyw5S7e80tZjT6K7eiv0YgjyNq4sB8EyFKPPSt3XNeM=;
 	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=XOgJdEefnAiRPdYt6TvHKwov96Camlgp5Yp8LTN/T6dp06lSdIUEeJL2ovD6w4yfn
-	 XOJnWT0FyrTY4+rBoTsND1A7vV7EmTBsxK5bNqY44saeX7d1vhkwsEyZv+S71gEDsB
-	 IIElDfPAKip+gBN/ZGU+z6EaPq05hhvjREdlspfes1l3aOiUEmN80IM5c4j4+d2rtr
-	 ZbYEp1eoYL4YhJLAoN+VNZI5jFgmVqCdXSq2g6ncbrjUJtEtUJeWtmSGBGHDRQImuM
-	 ESWYOGBuzKBuMO1L0YqNKbjg6pyKVfjFsA/YjKGPAlmJloJUCZZAJBYXq4rIThraxW
-	 eP95PZNtc7hMg==
+	b=lfE6Wv64HZjKL/ZJAkTUSC1kf/ZDEwBT3Fs+aGYFmwA6vQdazJ19WGaLcHCO6FRMm
+	 8iQSAM7ZXEMcUwwyaBP08cH9A5o9FTcUpoaQk0cZwalw2xc0l//EK9BW3E/Vr8IS/d
+	 /m39LMp78vuskwkGeIY8WF5gCFDaa3R7Bch2G2Ildm+RURjPXrExTx1p2bZQdkTOf2
+	 0ymTqqiIz3/UlewX1V5jNT35rllV/VkeyhDD+6HG7fsAdbDyDyyjHXGFFeiA/dsqKB
+	 yfvjMU3K3xT9T/c2lAcbrPhHCwURa2Bsm+r/n/rqA86Nw2SBYGvvc9UMeOZMPXUjAD
+	 49mVbsV2qjIzg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 8889A814C4;
-	Thu, 14 May 2026 00:10:58 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 5E97936F
- for <intel-wired-lan@lists.osuosl.org>; Thu, 14 May 2026 00:10:57 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id EA59A40BB1;
+	Thu, 14 May 2026 00:37:42 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id F37C2223
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 14 May 2026 00:37:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 3BE3A60AB1
- for <intel-wired-lan@lists.osuosl.org>; Thu, 14 May 2026 00:10:57 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id D93B640BB1
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 14 May 2026 00:37:40 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 7TslD0WMmXy1 for <intel-wired-lan@lists.osuosl.org>;
- Thu, 14 May 2026 00:10:56 +0000 (UTC)
-X-Greylist: delayed 468 seconds by postgrey-1.37 at util1.osuosl.org;
- Thu, 14 May 2026 00:10:55 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 9D0B160AB0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9D0B160AB0
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id M0nV_VAEXTwa for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 14 May 2026 00:37:40 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=202.36.163.20;
  helo=gate2.alliedtelesis.co.nz; envelope-from=chrisp@alliedtelesis.co.nz;
  receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org A665B40BAD
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A665B40BAD
 Received: from gate2.alliedtelesis.co.nz (gate2.alliedtelesis.co.nz
  [202.36.163.20])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 9D0B160AB0
- for <intel-wired-lan@lists.osuosl.org>; Thu, 14 May 2026 00:10:54 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTPS id A665B40BAD
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 14 May 2026 00:37:38 +0000 (UTC)
 Received: from svr-chch-seg1.atlnz.lc (mmarshal3.atlnz.lc [10.32.18.43])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
  (Client did not present a certificate)
- by gate2.alliedtelesis.co.nz (Postfix) with ESMTPS id 83C5E2C0613;
- Thu, 14 May 2026 12:03:00 +1200 (NZST)
+ by gate2.alliedtelesis.co.nz (Postfix) with ESMTPS id 5B93E2C0613;
+ Thu, 14 May 2026 12:37:35 +1200 (NZST)
 Received: from pat.atlnz.lc (Not Verified[10.32.16.33]) by
  svr-chch-seg1.atlnz.lc with Trustwave SEG (v8, 2, 6, 11305)
- id <B6a0511340000>; Thu, 14 May 2026 12:03:00 +1200
+ id <B6a05194f0000>; Thu, 14 May 2026 12:37:35 +1200
 Received: from chrisp-dl.ws.atlnz.lc (chrisp-dl.ws.atlnz.lc [10.33.22.12])
- by pat.atlnz.lc (Postfix) with ESMTP id 4F7FF13ED2A;
- Thu, 14 May 2026 12:03:00 +1200 (NZST)
+ by pat.atlnz.lc (Postfix) with ESMTP id 1AC4F13ED2A;
+ Thu, 14 May 2026 12:37:35 +1200 (NZST)
 Received: by chrisp-dl.ws.atlnz.lc (Postfix, from userid 1030)
- id 4D97A90022E; Thu, 14 May 2026 12:03:00 +1200 (NZST)
+ id 18C5790022D; Thu, 14 May 2026 12:37:35 +1200 (NZST)
 From: Chris Packham <chris.packham@alliedtelesis.co.nz>
 To: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
  andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
@@ -74,35 +72,36 @@ Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
  Blair Steven <blair.steven@alliedtelesis.co.nz>,
  Carl Smith <carl.smith@alliedtelesis.co.nz>,
  Chris Packham <chris.packham@alliedtelesis.co.nz>
-Date: Thu, 14 May 2026 12:02:58 +1200
-Message-ID: <20260514000258.1704618-1-chris.packham@alliedtelesis.co.nz>
+Date: Thu, 14 May 2026 12:37:33 +1200
+Message-ID: <20260514003733.1718771-1-chris.packham@alliedtelesis.co.nz>
 X-Mailer: git-send-email 2.54.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
-X-SEG-SpamProfiler-Analysis: v=2.4 cv=Es1xrjcA c=1 sm=1 tr=0 ts=6a051134
+X-SEG-SpamProfiler-Analysis: v=2.4 cv=Es1xrjcA c=1 sm=1 tr=0 ts=6a05194f
  a=KLBiSEs5mFS1a/PbTCJxuA==:117 a=NGcC8JguVDcA:10 a=ngL9nt1HdWMmO1MQNKYA:9
  a=3ZKOabzyN94A:10
 X-SEG-SpamProfiler-Score: 0
 x-atlnz-ls: pat
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=alliedtelesis.co.nz; 
- s=mail181024; t=1778716980;
- bh=XSoiNOSqRK5xwY5RdOy67y6sVw9Et2wfcOv6CmJq/6k=;
+ s=mail181024; t=1778719055;
+ bh=Zyw5S7e80tZjT6K7eiv0YgjyNq4sB8EyFKPPSt3XNeM=;
  h=From:To:Cc:Subject:Date:From;
- b=uBLw5Gt+rqvJbJrm8kMCNXWyIZAXmwZYV+VqHTpFv46P6HtA55pQkJTFfa45piVnF
- QWKyUp+6L8wmDStMY/s0V3mzsfCoJ0dvYveuRn3NgLH43j7LGy5nX0QnP/nKw5lKMm
- 95CE4vJZH+zUdbH8QV5aGfinc/BO3h8JeWf/Pq5c/ot14AVomSworc4g574tBuje5d
- DMQEakplO3WZXfa0FLFEDqzDZmnPwniyVfDRXu8oJ0Qrjum6ViaqbT+vcwG33d98EP
- TnTBEJsrbjhe+Ofuuu4Pgud+GUVnUHziQ+xzIxVOrqASm45m7O219tJCDnVAWSxWnb
- N/uYQreCt4AKw==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ b=zniNwZfDHR/nrVZt9jQhmY7DIDirrmseqwSMZck0bCbP7cBrSMWaxhXa0wxGZxWcH
+ QnAPjEnbRu5iXXkj0iBxwxGLqIws8zqJDQ/T8JahPa7jkgwDU7En64FeUId8SaWdzq
+ SXWSsAem3p8kMMfxeQlpbp9HZzCvJSPLAJGAVZ0uK1Y8fUcFqFfhGsJ64Xvqtkr8Nr
+ 8N6u9xhz7AadEuU1lE4kdvNN+YHrkmbvZfKsWtfWckj7eoZ3XTH2ePUiQJviCiQ5to
+ T3q6HyyaW2dJCirKvaPr3EprSsDzEb8Rkfg1vAed8HgaHs6IxYOvbgFXP/c/e2lHce
+ rlVnAaYiArh2A==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=alliedtelesis.co.nz
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=alliedtelesis.co.nz header.i=@alliedtelesis.co.nz
- header.a=rsa-sha256 header.s=mail181024 header.b=uBLw5Gt+
-Subject: [Intel-wired-lan] [PATCH] i40e: Avoid repeating RX filter warning
+ header.a=rsa-sha256 header.s=mail181024 header.b=zniNwZfD
+Subject: [Intel-wired-lan] [PATCH net-next] i40e: Avoid repeating RX filter
+ warning
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -149,6 +148,9 @@ filters.
 
 Signed-off-by: Chris Packham <chris.packham@alliedtelesis.co.nz>
 ---
+
+Resend with net-next tag
+
  drivers/net/ethernet/intel/i40e/i40e_main.c | 18 ++++++++++--------
  1 file changed, 10 insertions(+), 8 deletions(-)
 
