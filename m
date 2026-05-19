@@ -1,90 +1,92 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F65CCD4F3C
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 19 May 2026 16:56:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CEF8DCD4F54
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 19 May 2026 19:46:13 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C38EA40AD9;
-	Tue, 19 May 2026 16:56:53 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 526D481B6D;
+	Tue, 19 May 2026 19:46:13 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id pBIf3y704_ru; Tue, 19 May 2026 16:56:52 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id KMjTqgzf90Wc; Tue, 19 May 2026 19:46:11 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E81BC40ABE
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7011B81B69
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1779209812;
-	bh=wEKjA8JGPMPTEBLjfdzrjPvaeCkx+1hCUv3jyjBFUdc=;
+	s=default; t=1779219971;
+	bh=9/gISngu1YBPhlTCpjdF9NeYFRX29qtCBzl2K8u7rMA=;
 	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=fNBTygZGYTnUxER/zEMXSwi8nG9oRqXMP8/LpjibFt/mZrnER7wVXKXFGH1mBOjnG
-	 m6Lyam809gXLeXLIjP6SWqz/8fm0B4Zz/e/BtXxoddEC7R1vtEFPLKohJJUgBSi5dh
-	 FmHy/pDqPNqFNtzfq6xnHVWQ3Ojxfr4EYUpMo2olmKb0DJbBXbqZNOeCtRQgsRCteO
-	 l+9zH0RxIwAgV5xeNtGgiGpHyoP8PdW2VCzZPcLiBqJTptSZqxCl8XoQpdklWhJB1b
-	 ZPuS7vovl0cxJjML7LtShdfoEBM288NwGn0WJTNYZZwpOCdN+5qbCjS0BYFgGdBaXp
-	 w91AZvzyH8T8Q==
+	b=IEpaSThcxm0kf0oIIP0XjqL8aS3HsKiihkpXJFNGlvRk7bzJt0KBwF0aqODModnt+
+	 qEVDXdcZcemO2fg5wefsCqnXYYdsUTvQsftH+omOWv3yuIa68Xg/xpJgVJFF/Qp0Cr
+	 euIbeVdJBC02Ki0RmUiadyGC6tS7rd8t2+SO4ii2FI1QUUMnkTbYoCIvFU5gEQ7sR/
+	 FuMXBVThSzFTdUD3GCYNAl1GyLa6ZxSnkZCJJuHYuCnQ18eCMnptU6jnYQG/ujr4uq
+	 wkwGhhrJuGCPIwB4XO7m0H6FEdpOncVlJgvUivRWkIsNV7Xqmlax7hzYmbAqBmgw8J
+	 KMxD3a3ZCdjPQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id E81BC40ABE;
-	Tue, 19 May 2026 16:56:51 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id EDEAC265
- for <intel-wired-lan@lists.osuosl.org>; Tue, 19 May 2026 16:56:49 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 7011B81B69;
+	Tue, 19 May 2026 19:46:11 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id F2A211B2
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 19 May 2026 19:46:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id DF8064047B
- for <intel-wired-lan@lists.osuosl.org>; Tue, 19 May 2026 16:56:49 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id E3F1F404D3
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 19 May 2026 19:46:09 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id z31J0syIzqYv for <intel-wired-lan@lists.osuosl.org>;
- Tue, 19 May 2026 16:56:49 +0000 (UTC)
+ id 7aRYOtFLg-ih for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 19 May 2026 19:46:09 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
+ client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
  envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 32FC34046D
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 32FC34046D
-Received: from sea.source.kernel.org (sea.source.kernel.org
- [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 32FC34046D
- for <intel-wired-lan@lists.osuosl.org>; Tue, 19 May 2026 16:56:48 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sea.source.kernel.org (Postfix) with ESMTP id 0E3644371F;
- Tue, 19 May 2026 16:56:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A380AC2BCB3;
- Tue, 19 May 2026 16:56:46 +0000 (UTC)
-Date: Tue, 19 May 2026 17:56:44 +0100
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 330B14008E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 330B14008E
+Received: from tor.source.kernel.org (tor.source.kernel.org
+ [IPv6:2600:3c04:e001:324:0:1991:8:25])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 330B14008E
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 19 May 2026 19:46:08 +0000 (UTC)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+ by tor.source.kernel.org (Postfix) with ESMTP id E9AD460216;
+ Tue, 19 May 2026 19:46:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5D2281F000E9;
+ Tue, 19 May 2026 19:46:05 +0000 (UTC)
+Date: Tue, 19 May 2026 20:46:02 +0100
 From: Simon Horman <horms@kernel.org>
-To: Dawid Osuchowski <dawid.osuchowski@linux.intel.com>
-Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- stable@vger.kernel.org, Vladimir Medvedkin <vladimir.medvedkin@intel.com>,
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Message-ID: <20260519165644.GI98116@horms.kernel.org>
-References: <20260514163555.8243-1-dawid.osuchowski@linux.intel.com>
+To: Jacob Keller <jacob.e.keller@intel.com>
+Cc: Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Michal Wilczynski <michal.wilczynski@intel.com>,
+ intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org
+Message-ID: <20260519194602.GK98116@horms.kernel.org>
+References: <20260514-jk-fix-missing-xa-destroy-v1-1-de437bf52347@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260514163555.8243-1-dawid.osuchowski@linux.intel.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1779209807;
- bh=11ckrE4HiKyRcuenxRTtM43EpwAeL4simpAQt8lARiI=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=by40fzxPMi+9tYYRKgfw4EgSDYjRkus8L/nz2bjIbc2wr7jDxXvQb9oMKb7P5RIXG
- m9qCsqWriEqXaVOYLIXsoHEkiVCQNMSOwcHgqgYeyYW4u44jFvkjySKBKjjSGO2zNt
- jByNhknh7MyLNujcim9/kRAiZRcQ9Mb+GIHYxrneFiTRNcB8EeMlXjPVBOM8Xx27em
- wtDMi2WaSbaOGfaFJEtUK6qNmchu3SRXDx37DawJ85lJG4BjWh7aRTpf8tk8EKsKeb
- CuZfHdFBwcntFeG336gGDTVD/Ok76CIkmmjcxTr8nFXo0IePVfrMmGVFS+i/kfK1EX
- f1tgBX2kgiCtw==
+In-Reply-To: <20260514-jk-fix-missing-xa-destroy-v1-1-de437bf52347@intel.com>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=kernel.org; s=k20260515; t=1779219966;
+ bh=9/gISngu1YBPhlTCpjdF9NeYFRX29qtCBzl2K8u7rMA=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To;
+ b=B9as5wuaORLXiWK4cLkWHmh5uPzJYl+P8FtQ2E1SQffGs6a0SzEn6BHGjiRf65qif
+ lpj/RKDO+K/77WnitPgMAJMyTDPHgmUJh9ToHgZjjG7fDvYc/A7freDBX/NSuEi2LW
+ EMzcq4uma7zQLPsWsmdfw0OJOBZnNjQ7sHboJCjG0kn/Amk8eA40PERiCjsft5EEYh
+ LGmumH61snkjbrhri52tzT1wzyKMxwAwGA+w+URk1Lr3qhJj3gRe7y0FvSyaZZwjez
+ LlRkM6KA3fnZQdI84YA+LDbjGhWLr8qiy1lUAXgvf53Uns4JJcSc8Mi6x6GwAlUV34
+ ruD1Oc3TqNORQ==
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=by40fzxP
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net] ice: fix VF interrupts cleanup
+ header.s=k20260515 header.b=B9as5wua
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net] ice: add missing xa_destroy
+ for sched_node_ids
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -100,19 +102,23 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu, May 14, 2026 at 06:35:55PM +0200, Dawid Osuchowski wrote:
-> When a virtual function sends an IRQ map command, the PF will set up
-> interrupts according to that request. However, because these interrupts are
-> never reset, the next time Virtual Function initializes, the interrupts are
-> still enabled for a given VF, which leads to performance degradation in
-> certain cases (e.g. Data Plane Development Kit) due to interrupts being
-> unexpectedly enabled and thus causing interrupt floods.
+On Thu, May 14, 2026 at 09:55:21AM -0700, Jacob Keller wrote:
+> Commit 16dfa49406bc ("ice: Introduce new parameters in ice_sched_node")
+> added a sched_node_ids xarray to the port info structure, but never called
+> xa_destroy on it.
 > 
-> Cc: stable@vger.kernel.org
-> Fixes: 1071a8358a28 ("ice: Implement virtchnl commands for AVF support")
-> Suggested-by: Vladimir Medvedkin <vladimir.medvedkin@intel.com>
-> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-> Signed-off-by: Dawid Osuchowski <dawid.osuchowski@linux.intel.com>
+> Since xarrays can allocate internal memory, this can result in a memory
+> leak even if every element in the xarray has been removed.
+> 
+> Add a call to xa_destroy the structure during ice_deinit_hw(), and one to
+> the unrolling cleanup path during errors in ice_init_hw(). While here,
+> remove the overly verbose comment explaining the nature of the
+> sched_node_ids xarray.
+> 
+> This was caught by Sashiko during development of unrelated code.
+> 
+> Fixes: 16dfa49406bc ("ice: Introduce new parameters in ice_sched_node")
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 
 Reviewed-by: Simon Horman <horms@kernel.org>
 
