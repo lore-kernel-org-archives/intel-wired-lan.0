@@ -1,99 +1,103 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1DB1DCD4851
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 19 May 2026 10:57:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1F7F3CD4F57
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 19 May 2026 11:39:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id CE3188137C;
-	Tue, 19 May 2026 10:57:12 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 5YbSiHcBi7l3; Tue, 19 May 2026 10:57:10 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7558D8137A
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1779188230;
-	bh=on6tYByslKoSt61EqJFvpzpSGKm+agsrMmg8sYomQHE=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=cRWYggYIFd/lwmBb/60L9MKjM864Gr+NKfQlGkGUzStFGP+5FFx/NdJplun72dnXB
-	 wC6gO40401z3V2bQp5Suh5TPlqLTQnXq2C58hL+Rr9SrEZg/bIxKczJ2Vk8khtp/8M
-	 ZJiXuJa7/hTQtM96q79IFZAgdctNp8AnzAk7Dn3p+C8a3+jZlpbx94J5ZDgEOJ992b
-	 kz+jrlIC2YklefA17PtA8m2wN4W87PdwsT7vHiS12J9grP2IAYH3r+4Q5q5oM7Ygby
-	 8gdGSkFMawpXu9kg3ssj3RsOOScnQg7Hyi7DPldr7AJKXdFZvhfGyivrgjlLb914xE
-	 s3daQxH6UHDVQ==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 7558D8137A;
-	Tue, 19 May 2026 10:57:10 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 32E101B2
- for <intel-wired-lan@lists.osuosl.org>; Tue, 19 May 2026 10:57:09 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 1107E40B74
- for <intel-wired-lan@lists.osuosl.org>; Tue, 19 May 2026 10:57:09 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id D418E4055F;
+	Tue, 19 May 2026 11:39:01 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id PkS8BJGxy3ME for <intel-wired-lan@lists.osuosl.org>;
- Tue, 19 May 2026 10:57:08 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.13;
- helo=mgamail.intel.com; envelope-from=maciej.fijalkowski@intel.com;
+ id CfI-mfQcwLs6; Tue, 19 May 2026 11:39:00 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8D34A40561
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1779190740;
+	bh=5F1bMI17kRYHb8PJHmvShGbAFsiW30BzJ/xfYQz3Rh8=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=8hKtcFfY/6HPYhjN5NChG3+cpSQOzZ2sE3101ylOFMMeoRNLZYWi5sH33xTQxcYZR
+	 3V21wwP3yciQ1hYqrj8af6baFcSyDJ30XOugcqmVhWvK1h/zhfv746huYOsD/NImHY
+	 3c1mWyHfHWZzXnYGjc0cbB4wWpsWToHPgciO0NIBOZiZ6SXsi17D9eJvlkDv44xwjp
+	 IuAtcgkcp0BGsPy/KOy/NMoYRFteGUr96jtvD3qFzGljNbVjbxf2bYRWuxkMFXVUtS
+	 V9C/0qIBCYRVWpvrlpAxEVFvBE/WhEr1Lp+9bf7ZpPPu99zzqs1LFU/90ga14rUEx4
+	 yTyKZShfl4DCg==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 8D34A40561;
+	Tue, 19 May 2026 11:39:00 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id EDD24265
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 19 May 2026 11:38:58 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id DEF2681364
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 19 May 2026 11:38:58 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id NkT8PBk_2CgE for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 19 May 2026 11:38:57 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=pabeni@redhat.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 00C4640B64
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 00C4640B64
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 00C4640B64
- for <intel-wired-lan@lists.osuosl.org>; Tue, 19 May 2026 10:57:07 +0000 (UTC)
-X-CSE-ConnectionGUID: nmbJwHUhQCiTpBxXfNqJzg==
-X-CSE-MsgGUID: lBZj4eQmSPuXkIvSksd3LA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11790"; a="82626787"
-X-IronPort-AV: E=Sophos;i="6.23,243,1770624000"; d="scan'208";a="82626787"
-Received: from fmviesa004.fm.intel.com ([10.60.135.144])
- by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 19 May 2026 03:57:00 -0700
-X-CSE-ConnectionGUID: BaVOWXebSbS9DesvgV6Uyg==
-X-CSE-MsgGUID: KrVgaAA7SkmaoJajXSmd1g==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,243,1770624000"; d="scan'208";a="241568910"
-Received: from boxer.igk.intel.com ([10.102.20.173])
- by fmviesa004.fm.intel.com with ESMTP; 19 May 2026 03:56:58 -0700
-From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org, magnus.karlsson@intel.com, kuba@kernel.org,
- pabeni@redhat.com, horms@kernel.org, przemyslaw.kitszel@intel.com,
- jacob.e.keller@intel.com,
- Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
- Sunitha Mekala <sunithax.d.mekala@intel.com>
-Date: Tue, 19 May 2026 12:56:38 +0200
-Message-Id: <20260519105637.839438-1-maciej.fijalkowski@intel.com>
-X-Mailer: git-send-email 2.38.1
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 4B94581357
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4B94581357
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 4B94581357
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 19 May 2026 11:38:56 +0000 (UTC)
+Received: from mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-277-Hjcup8OwNNSenuDVpJeCIQ-1; Tue,
+ 19 May 2026 07:38:51 -0400
+X-MC-Unique: Hjcup8OwNNSenuDVpJeCIQ-1
+X-Mimecast-MFC-AGG-ID: Hjcup8OwNNSenuDVpJeCIQ_1779190728
+Received: from mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com
+ (mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.111])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
+ id B057C1800367; Tue, 19 May 2026 11:38:47 +0000 (UTC)
+Received: from gerbillo.redhat.com (unknown [10.44.33.47])
+ by mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
+ id E06531800352; Tue, 19 May 2026 11:38:40 +0000 (UTC)
+From: Paolo Abeni <pabeni@redhat.com>
+To: grzegorz.nitka@intel.com
+Date: Tue, 19 May 2026 13:38:31 +0200
+Message-ID: <20260519113831.152957-1-pabeni@redhat.com>
+In-Reply-To: <20260514225946.2885623-9-grzegorz.nitka@intel.com>
+References: <20260514225946.2885623-9-grzegorz.nitka@intel.com>
 MIME-Version: 1.0
+X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.111
+X-Mimecast-MFC-PROC-ID: UaO31GKUE1h1jUxFYbtxQ1iwvWtDk55B1_GWqtQ79xg_1779190728
+X-Mimecast-Originator: redhat.com
 Content-Transfer-Encoding: 8bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1779188228; x=1810724228;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=lsBVMREThc1wx/FRt7E+QCeVCwR4ZbEJEAKra/cO96g=;
- b=eybWjlsl6/aLww82hQ2pcmzxzWwWX2mf7N9NGabIcEg7eSYY12cmni07
- 5AHY1N7NJZoIPIsljNgXMRxCivuwENQo4yGMDSIngsV2S1Jey8jU0/abb
- AVh+LLi50bxF+5R9F8FFAmD0bFQVmIyTvvlfEvrhTrhVxU56JI5GSMLG8
- 8FREXHg1aut/9mW9+FUaM6migD987ZOuNE3HUAk0nYcFtkJk/2Utzu0VG
- KDC4FPkLdaLtAoqojGwB0Hixy/XUSWINPJGtrr8O+uiWMadWcrT7nnbJZ
- zRVwBARDExj7+mRwV/SjicY7USNWG/xniHFLVMnCkN9T3Fi/r+hRzIXtE
- w==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=eybWjlsl
-Subject: [Intel-wired-lan] [PATCH v3 iwl-net] i40e: keep q_vectors array in
- sync with channel count changes
+content-type: text/plain; charset="US-ASCII"; x-default=true
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=redhat.com; 
+ s=mimecast20190719; t=1779190734;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=5F1bMI17kRYHb8PJHmvShGbAFsiW30BzJ/xfYQz3Rh8=;
+ b=Rvm/v/MJfH/nP8P3PO3NZ0HC90M65n7q3qAKqfwZl9yDT3rmfrJwv5ZNqYmbjxEdYjyZo6
+ gYC4vK+jJ/3N8M4ZWODzBnZKG5Vicy0Qn7oiRQE8rsSQMLx9joJ3lj67KRcvXou81sMVmE
+ X+jcD03owxvHDhN63bIXmbWQ3O2IWVQ=
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=quarantine dis=none)
+ header.from=redhat.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=Rvm/v/MJ
+Subject: Re: [Intel-wired-lan] [PATCH v9 net-next 8/8] ice: implement E825
+ TX ref clock control and TXC hardware sync status
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -106,268 +110,560 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: ivecera@redhat.com, vadim.fedorenko@linux.dev, kuba@kernel.org,
+ jiri@resnulli.us, edumazet@google.com, netdev@vger.kernel.org,
+ richardcochran@gmail.com, donald.hunter@gmail.com,
+ linux-kernel@vger.kernel.org, arkadiusz.kubalewski@intel.com,
+ Prathosh.Satish@microchip.com, andrew+netdev@lunn.ch,
+ intel-wired-lan@lists.osuosl.org, horms@kernel.org,
+ przemyslaw.kitszel@intel.com, anthony.l.nguyen@intel.com, pabeni@redhat.com,
+ davem@davemloft.net
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-For the main VSI, i40e_set_num_rings_in_vsi() always derives
-num_q_vectors from pf->num_lan_msix. At the same time, ethtool -L stores
-the user requested channel count in vsi->req_queue_pairs and the queue
-setup path uses that value for the effective number of queue pairs.
+From: AI Reviewer <ai@example.com>
 
-This leaves queue and vector counts out of sync after shrinking channel
-count via ethtool -L. The active queue configuration is reduced, but the
-VSI still keeps the full PF-sized q_vector topology.
-
-That mismatch breaks reconfiguration flows which rely on vector/NAPI
-state matching the effective channel configuration. In particular,
-toggling /sys/class/net/<dev>/threaded after reducing the channel count
-can hang, and later channel-count changes can fail because VSI reinit
-does not rebuild q_vectors to match the new vector count.
-
-Fix this by making the main VSI num_q_vectors follow the effective
-requested channel count, capped by the available MSI-X vectors. Update
-i40e_vsi_reinit_setup() to rebuild q_vectors during VSI reinit so the
-vector topology is refreshed together with the ring arrays when channel
-count changes.
-
-Keep alloc_queue_pairs unchanged and based on pf->num_lan_qps so the VSI
-retains its full queue capacity.
-
-Selftest napi_threaded.py was originally used when Jakub reported hang
-on /sys/class/net/<dev>/threaded toggle. In order to make it pass on
-i40e, use persistent NAPI configuration for q_vector NAPIs so NAPI
-identity and threaded settings survive q_vector reallocation across
-channel-count changes. This is achieved by using netif_napi_add_config()
-when configuring q_vectors.
-
-$ export NETIF=ens259f1np1
-$ sudo -E env PATH="$PATH" ./tools/testing/selftests/drivers/net/napi_threaded.py
-TAP version 13
-1..3
-ok 1 napi_threaded.napi_init
-ok 2 napi_threaded.change_num_queues
-ok 3 napi_threaded.enable_dev_threaded_disable_napi_threaded
-Totals: pass:3 fail:0 xfail:0 xpass:0 skip:0 error:0
-
-Reported-by: Jakub Kicinski <kuba@kernel.org>
-Closes: https://lore.kernel.org/intel-wired-lan/20260316133100.6054a11f@kernel.org/
-Fixes: d2a69fefd756 ("i40e: Fix changing previously set num_queue_pairs for PFs")
-Reviewed-by: Simon Horman <horms@kernel.org>
-Tested-by: Sunitha Mekala <sunithax.d.mekala@intel.com>
-Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+This is an AI-generated review of your patch. The human sending this
+email has considered the AI review valid, or at least plausible.
+Full review at: https://netdev-ai.bots.linux.dev/sashiko/
 ---
-v3:
-- address UAF when ring arrays where freed before q_vector's ring
-  containers (Sashiko, Jacob)
-- remove bool params from alloc/free array routines (Simon)
-v2:
-- NULL vsi->tx_rings in i40e_vsi_alloc_arrays() (Sashiko)
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 73 +++++++++++++--------
- 1 file changed, 44 insertions(+), 29 deletions(-)
+ice: implement E825 TX ref clock control and TXC hardware sync status
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index a04683004a56..4e7cffb23d03 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -11406,10 +11406,14 @@ static void i40e_service_timer(struct timer_list *t)
- static int i40e_set_num_rings_in_vsi(struct i40e_vsi *vsi)
- {
- 	struct i40e_pf *pf = vsi->back;
-+	u16 qps;
- 
- 	switch (vsi->type) {
- 	case I40E_VSI_MAIN:
- 		vsi->alloc_queue_pairs = pf->num_lan_qps;
-+		qps = vsi->req_queue_pairs ?
-+		      min(vsi->req_queue_pairs, pf->num_lan_qps) :
-+		      pf->num_lan_qps;
- 		if (!vsi->num_tx_desc)
- 			vsi->num_tx_desc = ALIGN(I40E_DEFAULT_NUM_DESCRIPTORS,
- 						 I40E_REQ_DESCRIPTOR_MULTIPLE);
-@@ -11417,7 +11421,7 @@ static int i40e_set_num_rings_in_vsi(struct i40e_vsi *vsi)
- 			vsi->num_rx_desc = ALIGN(I40E_DEFAULT_NUM_DESCRIPTORS,
- 						 I40E_REQ_DESCRIPTOR_MULTIPLE);
- 		if (test_bit(I40E_FLAG_MSIX_ENA, pf->flags))
--			vsi->num_q_vectors = pf->num_lan_msix;
-+			vsi->num_q_vectors = clamp(qps, 1, pf->num_lan_msix);
- 		else
- 			vsi->num_q_vectors = 1;
- 
-@@ -11469,12 +11473,11 @@ static int i40e_set_num_rings_in_vsi(struct i40e_vsi *vsi)
- /**
-  * i40e_vsi_alloc_arrays - Allocate queue and vector pointer arrays for the vsi
-  * @vsi: VSI pointer
-- * @alloc_qvectors: a bool to specify if q_vectors need to be allocated.
-  *
-  * On error: returns error code (negative)
-  * On success: returns 0
-  **/
--static int i40e_vsi_alloc_arrays(struct i40e_vsi *vsi, bool alloc_qvectors)
-+static int i40e_vsi_alloc_arrays(struct i40e_vsi *vsi)
- {
- 	struct i40e_ring **next_rings;
- 	int size;
-@@ -11493,19 +11496,18 @@ static int i40e_vsi_alloc_arrays(struct i40e_vsi *vsi, bool alloc_qvectors)
- 	}
- 	vsi->rx_rings = next_rings;
- 
--	if (alloc_qvectors) {
--		/* allocate memory for q_vector pointers */
--		size = sizeof(struct i40e_q_vector *) * vsi->num_q_vectors;
--		vsi->q_vectors = kzalloc(size, GFP_KERNEL);
--		if (!vsi->q_vectors) {
--			ret = -ENOMEM;
--			goto err_vectors;
--		}
-+	/* allocate memory for q_vector pointers */
-+	size = sizeof(struct i40e_q_vector *) * vsi->num_q_vectors;
-+	vsi->q_vectors = kzalloc(size, GFP_KERNEL);
-+	if (!vsi->q_vectors) {
-+		ret = -ENOMEM;
-+		goto err_vectors;
- 	}
- 	return ret;
- 
- err_vectors:
- 	kfree(vsi->tx_rings);
-+	vsi->tx_rings = NULL;
- 	return ret;
- }
- 
-@@ -11578,7 +11580,7 @@ static int i40e_vsi_mem_alloc(struct i40e_pf *pf, enum i40e_vsi_type type)
- 	if (ret)
- 		goto err_rings;
- 
--	ret = i40e_vsi_alloc_arrays(vsi, true);
-+	ret = i40e_vsi_alloc_arrays(vsi);
- 	if (ret)
- 		goto err_rings;
- 
-@@ -11603,18 +11605,15 @@ static int i40e_vsi_mem_alloc(struct i40e_pf *pf, enum i40e_vsi_type type)
- /**
-  * i40e_vsi_free_arrays - Free queue and vector pointer arrays for the VSI
-  * @vsi: VSI pointer
-- * @free_qvectors: a bool to specify if q_vectors need to be freed.
-  *
-  * On error: returns error code (negative)
-  * On success: returns 0
-  **/
--static void i40e_vsi_free_arrays(struct i40e_vsi *vsi, bool free_qvectors)
-+static void i40e_vsi_free_arrays(struct i40e_vsi *vsi)
- {
- 	/* free the ring and vector containers */
--	if (free_qvectors) {
--		kfree(vsi->q_vectors);
--		vsi->q_vectors = NULL;
--	}
-+	kfree(vsi->q_vectors);
-+	vsi->q_vectors = NULL;
- 	kfree(vsi->tx_rings);
- 	vsi->tx_rings = NULL;
- 	vsi->rx_rings = NULL;
-@@ -11674,7 +11673,7 @@ static int i40e_vsi_clear(struct i40e_vsi *vsi)
- 	i40e_put_lump(pf->irq_pile, vsi->base_vector, vsi->idx);
- 
- 	bitmap_free(vsi->af_xdp_zc_qps);
--	i40e_vsi_free_arrays(vsi, true);
-+	i40e_vsi_free_arrays(vsi);
- 	i40e_clear_rss_config_user(vsi);
- 
- 	pf->vsi[vsi->idx] = NULL;
-@@ -12046,7 +12045,8 @@ static int i40e_vsi_alloc_q_vector(struct i40e_vsi *vsi, int v_idx)
- 	cpumask_copy(&q_vector->affinity_mask, cpu_possible_mask);
- 
- 	if (vsi->netdev)
--		netif_napi_add(vsi->netdev, &q_vector->napi, i40e_napi_poll);
-+		netif_napi_add_config(vsi->netdev, &q_vector->napi,
-+				      i40e_napi_poll, v_idx);
- 
- 	/* tie q_vector and vsi together */
- 	vsi->q_vectors[v_idx] = q_vector;
-@@ -14267,12 +14267,26 @@ static struct i40e_vsi *i40e_vsi_reinit_setup(struct i40e_vsi *vsi)
- 
- 	pf = vsi->back;
- 
-+	if (test_bit(I40E_FLAG_MSIX_ENA, pf->flags)) {
-+		i40e_put_lump(pf->irq_pile, vsi->base_vector, vsi->idx);
-+		vsi->base_vector = 0;
-+	}
-+
- 	i40e_put_lump(pf->qp_pile, vsi->base_queue, vsi->idx);
-+	i40e_vsi_free_q_vectors(vsi);
- 	i40e_vsi_clear_rings(vsi);
-+	i40e_vsi_free_arrays(vsi);
- 
--	i40e_vsi_free_arrays(vsi, false);
- 	i40e_set_num_rings_in_vsi(vsi);
--	ret = i40e_vsi_alloc_arrays(vsi, false);
-+	ret = i40e_vsi_alloc_arrays(vsi);
-+	if (ret)
-+		goto err_vsi;
-+
-+	/* Rebuild q_vectors during VSI reinit because the effective channel
-+	 * count may change num_q_vectors. Keep vector topology aligned with the
-+	 * queue configuration after ethtool's .set_channels() callback.
-+	 */
-+	ret = i40e_vsi_setup_vectors(vsi);
- 	if (ret)
- 		goto err_vsi;
- 
-@@ -14284,7 +14298,7 @@ static struct i40e_vsi *i40e_vsi_reinit_setup(struct i40e_vsi *vsi)
- 		dev_info(&pf->pdev->dev,
- 			 "failed to get tracking for %d queues for VSI %d err %d\n",
- 			 alloc_queue_pairs, vsi->seid, ret);
--		goto err_vsi;
-+		goto err_lump;
- 	}
- 	vsi->base_queue = ret;
- 
-@@ -14308,7 +14322,6 @@ static struct i40e_vsi *i40e_vsi_reinit_setup(struct i40e_vsi *vsi)
- 	return vsi;
- 
- err_rings:
--	i40e_vsi_free_q_vectors(vsi);
- 	if (vsi->netdev_registered) {
- 		vsi->netdev_registered = false;
- 		unregister_netdev(vsi->netdev);
-@@ -14318,6 +14331,8 @@ static struct i40e_vsi *i40e_vsi_reinit_setup(struct i40e_vsi *vsi)
- 	if (vsi->type == I40E_VSI_MAIN)
- 		i40e_devlink_destroy_port(pf);
- 	i40e_aq_delete_element(&pf->hw, vsi->seid, NULL);
-+err_lump:
-+	i40e_vsi_free_q_vectors(vsi);
- err_vsi:
- 	i40e_vsi_clear(vsi);
- 	return NULL;
-@@ -14459,12 +14474,12 @@ struct i40e_vsi *i40e_vsi_setup(struct i40e_pf *pf, u8 type,
- #endif /* CONFIG_I40E_DCB */
- 		fallthrough;
- 	case I40E_VSI_FDIR:
--		/* set up vectors and rings if needed */
--		ret = i40e_vsi_setup_vectors(vsi);
-+		ret = i40e_alloc_rings(vsi);
- 		if (ret)
- 			goto err_msix;
- 
--		ret = i40e_alloc_rings(vsi);
-+		/* set up vectors and rings if needed */
-+		ret = i40e_vsi_setup_vectors(vsi);
- 		if (ret)
- 			goto err_rings;
- 
-@@ -14487,9 +14502,9 @@ struct i40e_vsi *i40e_vsi_setup(struct i40e_pf *pf, u8 type,
- 	return vsi;
- 
- err_config:
--	i40e_vsi_clear_rings(vsi);
--err_rings:
- 	i40e_vsi_free_q_vectors(vsi);
-+err_rings:
-+	i40e_vsi_clear_rings(vsi);
- err_msix:
- 	if (vsi->netdev_registered) {
- 		vsi->netdev_registered = false;
+This change implements TX reference clock switching for E825 devices via
+a deferred worker triggered by DPLL TXCLK pin operations, and reconciles
+software state from hardware after link-up using a new TXC DPLL lock
+status indicator.
+
+A few questions inline below.
+
+> diff --git a/drivers/net/ethernet/intel/ice/ice_dpll.c b/drivers/net/ethernet/intel/ice/ice_dpll.c
+> index 1b193e0c35ab..c9b101613fbf 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_dpll.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_dpll.c
+
+[ ... ]
+
+> +static void ice_dpll_txclk_work(struct work_struct *work)
+> +{
+> +	struct ice_dplls *dplls =
+> +		container_of(work, struct ice_dplls, txclk_work);
+> +	struct ice_pf *pf = container_of(dplls, struct ice_pf, dplls);
+> +	enum ice_e825c_ref_clk clk;
+> +	bool do_switch;
+> +	int err;
+> +
+> +	mutex_lock(&pf->dplls.lock);
+> +	do_switch = pf->dplls.txclk_switch_requested;
+> +	clk = pf->ptp.port.tx_clk_req;
+> +	mutex_unlock(&pf->dplls.lock);
+> +
+> +	if (!do_switch)
+> +		return;
+> +
+> +	err = ice_txclk_set_clk(pf, clk);
+> +
+> +	mutex_lock(&pf->dplls.lock);
+> +	pf->dplls.txclk_switch_requested = false;
+
+[High]
+Can a request that arrives while the worker is running be silently
+dropped here?
+
+The worker samples tx_clk_req under the lock, drops the lock to call
+the slow ice_txclk_set_clk() (CPI commands plus an AN restart), then
+unconditionally clears txclk_switch_requested. Consider this
+interleaving:
+
+  CPU0 (callback A)         CPU1 (worker run #1)        CPU2 (callback B)
+  set tx_clk_req = A
+  set flag = true
+  queue_work
+                            sample do_switch=true,clk=A
+                            unlock
+                            ice_txclk_set_clk(A)...
+                                                        lock
+                                                        set tx_clk_req = B
+                                                        flag still true
+                                                        queue_work
+                                                        unlock
+                            lock
+                            flag = false  <-- B's flag cleared
+                            unlock
+                            (re-queued run #2)
+                            do_switch=false; return
+
+The hardware stays at A while pf->ptp.port.tx_clk_req == B, and the
+next link-up will misinterpret B as a failed switch and revert
+software state.
+
+Would clearing the flag before invoking ice_txclk_set_clk(), or only
+clearing it if pf->ptp.port.tx_clk_req still equals the snapshotted
+clk under the lock, address this?
+
+> +	if (err) {
+> +		/* Roll back the requested clock to match the current hardware
+> +		 * state so that ice_txclk_update_and_notify() does not
+> +		 * misinterpret a future link-up as a failed switch.
+> +		 */
+> +		dev_err(ice_pf_to_dev(pf),
+> +			"TX clock switch to %u failed, err=%d; reverting\n",
+> +			clk, err);
+> +		pf->ptp.port.tx_clk_req = pf->ptp.port.tx_clk;
+> +	}
+> +	mutex_unlock(&pf->dplls.lock);
+> +}
+> +
+
+[ ... ]
+
+> @@ -2635,11 +2690,29 @@ ice_dpll_txclk_state_on_dpll_set(const struct dpll_pin *pin, void *pin_priv,
+>  				 void *dpll_priv, enum dpll_pin_state state,
+>  				 struct netlink_ext_ack *extack)
+>  {
+> -	/*
+> -	 * TODO: set HW accordingly to selected TX reference clock.
+> -	 * To be added in the follow up patches.
+> -	 */
+> -	return -EOPNOTSUPP;
+> +	struct ice_dpll_pin *p = pin_priv;
+> +	struct ice_pf *pf = p->pf;
+> +	enum ice_e825c_ref_clk new_clk;
+> +
+> +	if (ice_dpll_is_reset(pf, extack))
+> +		return -EBUSY;
+> +
+> +	mutex_lock(&pf->dplls.lock);
+> +	if (state == DPLL_PIN_STATE_DISCONNECTED &&
+> +	    p->tx_ref_src != pf->ptp.port.tx_clk_req)
+> +		goto unlock;
+
+[Low]
+Should this early path return something other than 0? The kerneldoc
+update for this function says "0 - success / negative - failure", but
+this branch silently returns success for a DISCONNECT request that is
+ignored because the pin's tx_ref_src does not match the currently
+requested clock. Userspace cannot distinguish "request honored",
+"request ignored", and "no-op already in target state" via the return
+value.
+
+> +
+> +	new_clk = (state == DPLL_PIN_STATE_DISCONNECTED) ? ICE_REF_CLK_ENET :
+> +			p->tx_ref_src;
+
+[Low]
+Should non-DISCONNECTED values besides DPLL_PIN_STATE_CONNECTED also
+be accepted as a connect request? Any state value other than
+DPLL_PIN_STATE_DISCONNECTED (including DPLL_PIN_STATE_SELECTABLE) is
+silently treated as a connect here. Other pin-set callbacks in this
+file (ice_dpll_input_state_set, ice_dpll_pin_state_set_sma) explicitly
+reject unsupported states with -EINVAL.
+
+> +	if (new_clk == pf->ptp.port.tx_clk_req)
+> +		goto unlock;
+> +
+> +	pf->ptp.port.tx_clk_req = new_clk;
+> +	pf->dplls.txclk_switch_requested = true;
+> +	queue_work(pf->dplls.wq, &pf->dplls.txclk_work);
+> +unlock:
+> +	mutex_unlock(&pf->dplls.lock);
+> +	return 0;
+
+[Medium]
+Once the worker has been queued, this returns 0 unconditionally. If
+ice_txclk_set_clk() in the worker fails, the only feedback is a
+dev_err and a silent rollback of tx_clk_req to tx_clk in
+ice_dpll_txclk_work(). There is no extack message to userspace and no
+dpll_pin_change_ntf() emitted on the rollback. After failure the next
+pin-get can still report a different pin as CONNECTED because
+tx_clk_req was reverted.
+
+Would emitting a dpll_pin_change_ntf() from the worker's error path
+help userspace observe that the requested switch did not occur?
+
+>  }
+>  
+>  /**
+> @@ -2651,10 +2724,21 @@ ice_dpll_txclk_state_on_dpll_set(const struct dpll_pin *pin, void *pin_priv,
+
+[ ... ]
+
+>  static int
+>  ice_dpll_txclk_state_on_dpll_get(const struct dpll_pin *pin, void *pin_priv,
+> @@ -2663,11 +2747,18 @@ ice_dpll_txclk_state_on_dpll_get(const struct dpll_pin *pin, void *pin_priv,
+>  				 enum dpll_pin_state *state,
+>  				 struct netlink_ext_ack *extack)
+>  {
+> -	/*
+> -	 * TODO: query HW status to determine if the TX reference is selected.
+> -	 * To be added in the follow up patches.
+> -	 */
+> -	*state = DPLL_PIN_STATE_DISCONNECTED;
+> +	struct ice_dpll_pin *p = pin_priv;
+> +	struct ice_pf *pf = p->pf;
+> +
+> +	if (ice_dpll_is_reset(pf, extack))
+> +		return -EBUSY;
+> +
+> +	mutex_lock(&pf->dplls.lock);
+> +	if (pf->ptp.port.tx_clk_req == p->tx_ref_src)
+> +		*state = DPLL_PIN_STATE_CONNECTED;
+> +	else
+> +		*state = DPLL_PIN_STATE_DISCONNECTED;
+> +	mutex_unlock(&pf->dplls.lock);
+
+[Medium]
+The commit message says "TX reference selection and synchronization
+status must be observed from hardware rather than inferred from user
+intent", but this get callback derives state from tx_clk_req (the
+user-requested value) rather than from tx_clk (the
+hardware-reconciled value) or from ice_get_serdes_ref_sel_e825c().
+
+If a switch is requested but firmware/AN never accepts it (link never
+comes up, or AN restart fails after the worker rolls back tx_clk_req
+to tx_clk), how long can userspace keep observing the requested pin as
+CONNECTED?
+
+>  
+>  	return 0;
+>  }
+
+[ ... ]
+
+> @@ -4674,10 +4767,21 @@ void ice_dpll_deinit(struct ice_pf *pf)
+>  {
+>  	bool cgu = ice_is_feature_supported(pf, ICE_F_CGU);
+>  
+> +	/* Clear the flag under the lock so that concurrent callers of
+> +	 * ice_txclk_update_and_notify() either see the cleared flag and
+> +	 * return early, or are already past the check and will finish
+> +	 * before we proceed to free pins and DPLL devices below.
+> +	 */
+> +	mutex_lock(&pf->dplls.lock);
+>  	clear_bit(ICE_FLAG_DPLL, pf->flags);
+> +	mutex_unlock(&pf->dplls.lock);
+> +
+>  	if (cgu)
+>  		ice_dpll_deinit_worker(pf);
+>  
+> +	if (pf->hw.mac_type == ICE_MAC_GENERIC_3K_E825)
+> +		cancel_work_sync(&pf->dplls.txclk_work);
+> +
+
+[High]
+Is the comment above accurate? It claims concurrent callers "will
+finish before we proceed to free pins and DPLL devices", but
+ice_txclk_update_and_notify() drops pf->dplls.lock before invoking
+dpll_pin_change_ntf(old_pin), dpll_pin_change_ntf(new_pin), and
+dpll_device_change_ntf(pf->dplls.txc.dpll). Consider:
+
+  CPU0 (link-up)                        CPU1 (rmmod)
+  ice_txclk_update_and_notify()
+    lock; ICE_FLAG_DPLL set; capture
+    old_pin/new_pin/txc.dpll; unlock
+                                        ice_dpll_deinit()
+                                          lock; clear flag; unlock
+                                          cancel_work_sync (drains
+                                            worker only)
+                                          ice_dpll_deinit_pins()
+                                            -> dpll_pin_put on
+                                               txclks pins
+                                          ice_dpll_deinit_dpll()
+                                            -> dpll_device_put
+    dpll_pin_change_ntf(old_pin)  <-- UAF
+    dpll_device_change_ntf(...)   <-- UAF
+
+cancel_work_sync drains the txclk_work, but the link-change caller
+that invoked ice_txclk_update_and_notify() is not synchronized.
+
+[Medium]
+Separately, this teardown cancels the worker but never invokes
+ice_cpi_ena_dis_clk_ref(..., false) to undo the CPI enables performed
+by ice_txclk_set_clk()/ice_txclk_enable_peer() during the driver's
+lifetime. After unload, do external SyncE/EREF0 references stay
+enabled in hardware on both PHYs across rmmod/modprobe?
+ice_get_serdes_ref_sel_e825c() detects the currently selected clock on
+re-init but cannot detect clocks that were CPI-enabled but never
+AN-selected.
+
+>  	ice_dpll_deinit_pins(pf, cgu);
+>  	if (!IS_ERR_OR_NULL(pf->dplls.pps.dpll))
+>  		ice_dpll_deinit_dpll(pf, &pf->dplls.pps, cgu);
+
+[ ... ]
+
+> diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
+
+[ ... ]
+
+> @@ -3073,6 +3072,7 @@ static int ice_ptp_setup_pf(struct ice_pf *pf)
+>  {
+>  	struct ice_ptp *ctrl_ptp = ice_get_ctrl_ptp(pf);
+>  	struct ice_ptp *ptp = &pf->ptp;
+> +	u8 port_num, phy;
+>  
+>  	if (!ctrl_ptp) {
+>  		dev_info(ice_pf_to_dev(pf),
+> @@ -3090,6 +3090,10 @@ static int ice_ptp_setup_pf(struct ice_pf *pf)
+>  		 &pf->adapter->ports.ports);
+>  	mutex_unlock(&pf->adapter->ports.lock);
+>  
+> +	port_num = ptp->port.port_num;
+> +	phy = port_num / pf->hw.ptp.ports_per_phy;
+> +	set_bit(port_num, &ctrl_ptp->tx_refclks[phy][pf->ptp.port.tx_clk]);
+> +
+>  	return 0;
+>  }
+
+[Low]
+Should this set_bit be guarded by a mac_type check? The tx_refclks
+bitmap is sized as [ICE_E825_MAX_PHYS][ICE_REF_CLK_MAX] for the E825
+feature, but this runs unconditionally on every PF. Today phy <= 1
+and tx_clk == ICE_REF_CLK_ENET == 0 for non-E825 platforms, so the
+write stays in bounds, but any future change to ports_per_phy or
+num_lports could push phy beyond ICE_E825_MAX_PHYS.
+
+Would adding an "if (pf->hw.mac_type == ICE_MAC_GENERIC_3K_E825)"
+guard match the rest of the feature?
+
+[Medium]
+Also, is this write protected by any lock? Other writers in
+ice_txclk_update_and_notify() take pf->dplls.lock (which is a
+different mutex from ctrl_pf->dplls.lock when pf != ctrl_pf), and
+readers via ice_txclk_any_port_uses() take ctrl_pf->dplls.lock. The
+writer here holds neither. See related question on the writers below.
+
+>  
+> diff --git a/drivers/net/ethernet/intel/ice/ice_txclk.c b/drivers/net/ethernet/intel/ice/ice_txclk.c
+> new file mode 100644
+> index 000000000000..7b3cf8fc399e
+> --- /dev/null
+> +++ b/drivers/net/ethernet/intel/ice/ice_txclk.c
+
+[ ... ]
+
+> +int ice_txclk_set_clk(struct ice_pf *pf, enum ice_e825c_ref_clk clk)
+> +{
+> +	struct ice_pf *ctrl_pf = ice_get_ctrl_pf(pf);
+> +	struct ice_port_info *port_info;
+> +	bool clk_in_use;
+> +	u8 port_num, phy;
+> +	int err;
+> +
+> +	if (pf->ptp.port.tx_clk == clk)
+> +		return 0;
+
+[Medium]
+Should this read of pf->ptp.port.tx_clk be done under
+pf->dplls.lock? The field is written under that lock in
+ice_txclk_update_and_notify() and the worker's rollback path. The
+worker invokes ice_txclk_set_clk() after dropping pf->dplls.lock, so
+a concurrent link-up on another CPU may be updating tx_clk
+concurrently here.
+
+If a stale value matches clk and this returns 0, the worker proceeds
+to clear txclk_switch_requested unconditionally, silently abandoning
+the AN restart the request needed.
+
+> +
+> +	if (IS_ERR_OR_NULL(ctrl_pf)) {
+> +		dev_err(ice_pf_to_dev(pf),
+> +			"Can't set tx-clk: no controlling PF\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	port_num = pf->ptp.port.port_num;
+> +	phy = port_num / pf->hw.ptp.ports_per_phy;
+> +	port_info = pf->hw.port_info;
+> +	mutex_lock(&ctrl_pf->dplls.lock);
+> +	clk_in_use = ice_txclk_any_port_uses(ctrl_pf, phy, clk);
+> +	mutex_unlock(&ctrl_pf->dplls.lock);
+> +
+> +	/* Check if the TX clk is enabled for this PHY, if not - enable it */
+> +	if (!clk_in_use) {
+
+[Medium]
+Is this TOCTOU intentional? The lock is dropped between reading
+clk_in_use and acting on it. When pf != ctrl_pf and two PFs
+concurrently switch to the same clock on the same PHY, both observe
+clk_in_use == false (the tx_refclks bits are only set later by
+ice_txclk_update_and_notify() after link-up), and both proceed to
+call ice_cpi_ena_dis_clk_ref().
+
+> +		err = ice_cpi_ena_dis_clk_ref(&pf->hw, phy, clk, true);
+> +		if (err) {
+> +			dev_err(ice_pf_to_dev(pf), "Failed to enable the %u TX clock for the %u PHY\n",
+> +				clk, phy);
+> +			return err;
+> +		}
+> +		err = ice_txclk_enable_peer(pf, clk);
+> +		if (err)
+> +			return err;
+> +	}
+> +
+> +	/* We are ready to switch to the new TX clk. */
+> +	err = ice_aq_set_link_restart_an(port_info, true, NULL,
+> +					 ICE_REFCLK_USER_TO_AQ_IDX(clk));
+> +	if (err)
+> +		dev_err(ice_pf_to_dev(pf),
+> +			"AN restart AQ command failed with err %d\n",
+> +			err);
+> +
+> +	return err;
+
+[Medium]
+If ice_aq_set_link_restart_an() fails, the CPI enables performed
+above on both the local PHY and (for SYNCE/EREF0) the peer PHY are
+not undone. The worker's rollback only resets software state
+(tx_clk_req = tx_clk) and never invokes ice_cpi_ena_dis_clk_ref(...,
+false). tx_refclks for this port is also not yet updated, so
+subsequent code has no record that the clock was enabled in
+hardware.
+
+Would adding rollback of the CPI enables on the AN-restart error
+path keep driver state consistent with hardware?
+
+> +}
+> +
+> +/**
+> + * ice_txclk_update_and_notify - Validate TX reference clock switching
+
+[ ... ]
+
+> +void ice_txclk_update_and_notify(struct ice_pf *pf)
+> +{
+> +	struct ice_ptp_port *ptp_port = &pf->ptp.port;
+> +	struct ice_pf *ctrl_pf = ice_get_ctrl_pf(pf);
+> +	struct dpll_pin *old_pin = NULL;
+> +	struct dpll_pin *new_pin = NULL;
+
+[ ... ]
+
+> +	if (clk != pf->ptp.port.tx_clk_req) {
+> +		dev_warn(ice_pf_to_dev(pf),
+> +			 "Failed to switch tx-clk for phy %d and clk %u (current: %u)\n",
+> +			 phy, pf->ptp.port.tx_clk_req, clk);
+> +		old_pin = ice_txclk_get_pin(pf, pf->ptp.port.tx_clk_req);
+> +		new_pin = ice_txclk_get_pin(pf, clk);
+> +		pf->ptp.port.tx_clk = clk;
+> +		pf->ptp.port.tx_clk_req = clk;
+> +		/* Update the reference clock bitmap to match the hardware
+> +		 * clock that was actually accepted, so that
+> +		 * ice_txclk_any_port_uses() reflects reality even on failure.
+> +		 */
+> +		if (!IS_ERR_OR_NULL(ctrl_pf))
+> +			for (int i = 0; i < ICE_REF_CLK_MAX; i++)
+> +				(clk == i) ?
+> +				 set_bit(ptp_port->port_num,
+> +					 &ctrl_pf->ptp.tx_refclks[phy][i]) :
+> +				 clear_bit(ptp_port->port_num,
+> +					   &ctrl_pf->ptp.tx_refclks[phy][i]);
+> +		goto err_notify;
+> +	}
+
+[Medium]
+On the firmware-override branch, the bitmap is overwritten to
+reflect the accepted clock, but ice_cpi_ena_dis_clk_ref(..., false)
+is not invoked for the rejected clock that ice_txclk_set_clk() had
+just enabled. After this point, future ice_txclk_any_port_uses()
+checks will not see the rejected clock, so it will never be disabled
+by subsequent code. Is this a hardware-state leak in the cross-PHY
+clock-routing case?
+
+[Medium]
+Also, the writes to ctrl_pf->ptp.tx_refclks[phy][i] here happen under
+pf->dplls.lock, but ice_txclk_any_port_uses() in ice_txclk_set_clk()
+and ice_txclk_enable_peer() takes ctrl_pf->dplls.lock for reads.
+When pf != ctrl_pf those are different mutexes. The multi-iteration
+loop briefly clears the port bit in old slots before setting it in
+the new slot; can a concurrent reader on ctrl_pf observe a torn
+state and call ice_cpi_ena_dis_clk_ref redundantly?
+
+> +
+> +	old_pin = ice_txclk_get_pin(pf, pf->ptp.port.tx_clk);
+> +	pf->ptp.port.tx_clk = clk;
+> +	pf->ptp.port.tx_clk_req = clk;
+> +
+> +	if (IS_ERR_OR_NULL(ctrl_pf)) {
+> +		dev_err(ice_pf_to_dev(pf),
+> +			"Can't set tx-clk: no controlling PF\n");
+> +		goto err_notify;
+> +	}
+> +
+> +	/* update Tx reference clock usage map */
+> +	for (int i = 0; i < ICE_REF_CLK_MAX; i++)
+> +		(clk == i) ?
+> +		 set_bit(ptp_port->port_num,
+> +			 &ctrl_pf->ptp.tx_refclks[phy][i]) :
+> +		 clear_bit(ptp_port->port_num,
+> +			   &ctrl_pf->ptp.tx_refclks[phy][i]);
+> +
+> +err_notify:
+> +	/* Update TXC DPLL lock status based on effective TX clk, while still
+> +	 * holding the lock to prevent concurrent link-up events from racing
+> +	 * on dpll_state.
+> +	 */
+> +	if (!IS_ERR_OR_NULL(pf->dplls.txc.dpll)) {
+> +		enum dpll_lock_status new_lock = ice_txclk_lock_status(clk);
+> +
+> +		if (pf->dplls.txc.dpll_state != new_lock)
+> +			pf->dplls.txc.dpll_state = new_lock;
+> +		else
+> +			/* No change; suppress the notification below */
+> +			pf->dplls.txc.dpll = ERR_PTR(-ENODEV);
+> +	}
+
+[High]
+Is overwriting pf->dplls.txc.dpll with ERR_PTR(-ENODEV) here intended
+as a lasting state change?
+
+This is the only handle to the registered dpll_device returned by
+dpll_device_get() during ice_dpll_init_dpll(); it is never restored
+anywhere. After the first time this branch is taken:
+
+  - Every subsequent ice_txclk_update_and_notify() will see
+    IS_ERR_OR_NULL(pf->dplls.txc.dpll) true and skip the dpll_state
+    update and notification. The feature becomes a permanent no-op.
+
+  - ice_dpll_deinit() guards
+    "if (!IS_ERR_OR_NULL(pf->dplls.txc.dpll))
+        ice_dpll_deinit_dpll(pf, &pf->dplls.txc, false);"
+    so dpll_device_unregister() and dpll_device_put() are skipped on
+    unload, leaking the registered DPLL device.
+
+  - ice_dpll_deinit_pins() calls ice_dpll_deinit_txclk_pins() which
+    feeds dt->dpll into ice_dpll_unregister_pins(); that becomes
+    ERR_PTR(-ENODEV) passed into the dpll subsystem.
+
+The trigger is mundane: any TX-clk switch where the new effective
+clock has the same lock status as the old one (for example, both
+SYNCE and EREF0 are LOCKED).
+
+Would a local boolean ("emit_dpll_ntf") instead of mutating the
+long-lived txc.dpll pointer express the suppress-one-notification
+intent without these side effects?
+
+> +	mutex_unlock(&pf->dplls.lock);
+> +
+> +	/* Notify TX clk pins state transition */
+> +	if (old_pin)
+> +		dpll_pin_change_ntf(old_pin);
+> +	if (new_pin)
+> +		dpll_pin_change_ntf(new_pin);
+> +
+> +	if (!IS_ERR_OR_NULL(pf->dplls.txc.dpll))
+> +		dpll_device_change_ntf(pf->dplls.txc.dpll);
+> +}
+
+[High]
+These three notifications run after dropping pf->dplls.lock. The
+old_pin and new_pin pointers, and the txc.dpll pointer, were
+captured under the lock. If ice_dpll_deinit() runs concurrently
+between this unlock and the calls below, ice_dpll_deinit_pins() and
+ice_dpll_deinit_dpll() can free the underlying objects before these
+notification calls dereference them. cancel_work_sync() in
+ice_dpll_deinit() drains the worker but does not synchronize with
+the link-change caller of ice_txclk_update_and_notify(). Is some
+additional synchronization needed before issuing these notifications?
 -- 
-2.43.0
+This is an AI-generated review.
 
