@@ -1,106 +1,213 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D7CBCD5BAF
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 21 May 2026 15:46:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84DCACD5BAB
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 21 May 2026 20:52:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2C4FF61AD1;
-	Thu, 21 May 2026 15:46:42 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id XXiueWmV5E_g; Thu, 21 May 2026 15:46:40 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 43A4F61ACC
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1779378400;
-	bh=EQSpA4ZTPRnz9G9H3FIaLAkaSDGkNEul7L4Q8NT2ouo=;
-	h=Date:To:Cc:In-Reply-To:Subject:List-Id:List-Unsubscribe:
-	 List-Archive:List-Post:List-Help:List-Subscribe:From:Reply-To:
-	 From;
-	b=RVGV83x/cECTRUit0PAP8HkZtWHqYy6YpPCeq+yqIr2sConzhduiHfWUM5X0TfK/s
-	 Yp7nVmeimUN1eqE1fJPwKlXCQ5mJq9FDl8Jhx61m/B6zfHIQ+a1WnTlyrNMc+xe9ld
-	 DiPlWp2aI1JW9ixMtMcnybEKQbnrISFu5h2mdrSDn5S7lmd0ZyZSQrZn9PU2yXq4vG
-	 qm5kp9m/lKTbUVpBDVkVCbqlLkJuUqxV3v2lZLawQ0ei9QQ8GiDpPtm5o7esr/PplA
-	 tnsCn2QntaFDhFCPeXWEx5QW7DCgAK1Hw1dKqe3vxzcPOrXmPbVV4HXwvvn33uMnX+
-	 vQR+f95IP8VUA==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 43A4F61ACC;
-	Thu, 21 May 2026 15:46:40 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id C3A90282
- for <intel-wired-lan@lists.osuosl.org>; Thu, 21 May 2026 06:26:31 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id AD9D241DA8
- for <intel-wired-lan@lists.osuosl.org>; Thu, 21 May 2026 06:26:31 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 4C16D42419;
+	Thu, 21 May 2026 20:52:34 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id PVkGFdQbnG70 for <intel-wired-lan@lists.osuosl.org>;
- Thu, 21 May 2026 06:26:30 +0000 (UTC)
-X-Greylist: delayed 909 seconds by postgrey-1.37 at util1.osuosl.org;
- Thu, 21 May 2026 06:26:29 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org BB0BC41DA7
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BB0BC41DA7
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=103.117.158.93;
- helo=sender-pp-o93.zoho.in; envelope-from=linuxuser509@zohomail.in;
+ id jRGhRGVm7DWd; Thu, 21 May 2026 20:52:33 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 21DAF4241B
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1779396753;
+	bh=9G7Kk0thtC/AMEyHHs7K4cNl/aPExHEm/2Pq9MXcqUs=;
+	h=Date:From:To:CC:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=lKlsjWNJL8DUm7TsJcITDS1hdvLh/La2FKRUMjw6Kyx/76wQKfom7LgkKJ3UG1rvD
+	 NaBE0mbuUIPCB64/KzGecE/+yO3flRJen5JXhtz1KHWhz2oYRK+XfkDXiEJFEg9bIB
+	 OJus0aDoXA4FeVo1CLVU2u2pBx+WHBVgzyQAvs2E+gpfAiC5P/KD8afi9v7ZVwYF4h
+	 +grAIwQ67xsXpKFvAvcUXCwfmHKMesqHuLG0vzIvzU0o1lMw4JGAzAmNKQdqny3ewv
+	 chUECtjnNyrJPC5xaOK1DpfF+ELnKo2mwl+/pCnEIDeMcm+XPe+/RaTWpGPXtmm51E
+	 53SNJyLa2uJxg==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 21DAF4241B;
+	Thu, 21 May 2026 20:52:33 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 8747F265
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 21 May 2026 20:52:31 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id 6E03C41B15
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 21 May 2026 20:52:31 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id YoFlipr_U8lN for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 21 May 2026 20:52:30 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.12;
+ helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-Received: from sender-pp-o93.zoho.in (sender-pp-o93.zoho.in [103.117.158.93])
- by smtp4.osuosl.org (Postfix) with ESMTPS id BB0BC41DA7
- for <intel-wired-lan@lists.osuosl.org>; Thu, 21 May 2026 06:26:29 +0000 (UTC)
-ARC-Seal: i=1; a=rsa-sha256; t=1779343828; cv=none; d=zohomail.in; s=zohoarc; 
- b=ZdoHJQqyT/sdSj+9pX3W7UlwLWq3pRWl4FJ+eU7sXyDcujetypKNZ94IBJF2Wk31sHh69irhf41TvF+x/PM8Lc/A60htlIwn0vL4ke6S62kEHpxH/6XA33Aq8am6A8YUzzx1sA3Q/OSRysQHgIhKn4rVU5GRYDOIMma1PVu3eq4=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.in;
- s=zohoarc; t=1779343828;
- h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To;
- bh=EQSpA4ZTPRnz9G9H3FIaLAkaSDGkNEul7L4Q8NT2ouo=; 
- b=NhvT0EqPM3n/EBW56byQG2gdbTZaX7ZPDIsET/RXXbPedE2VZX16O3hV8CtVbRQK8QbKGFc7a8rFPTlHniFvuh/07Xxkhy0+BMEFJWjdu/7NIOz0Ad9FNY+lpzLkmOmRAluVDpCEXHY6xZ2y2S6e2WT+96uSfGNibkDMsuRuCJ8=
-ARC-Authentication-Results: i=1; mx.zohomail.in;
- dkim=pass  header.i=zohomail.in;
- spf=pass  smtp.mailfrom=linuxuser509@zohomail.in;
- dmarc=pass header.from=<linuxuser509@zohomail.in>
-Received: from mail.zoho.in by mx.zoho.in
- with SMTP id 1779343819672847.3911387241204;
- Thu, 21 May 2026 11:40:19 +0530 (IST)
-Received: from  [27.59.63.162] by mail.zoho.in
- with HTTP;Thu, 21 May 2026 11:40:19 +0530 (IST)
-Date: Thu, 21 May 2026 11:40:19 +0530
-To: "anthony.l.nguyen@intel.com" <przemyslaw.kitszel@intel.com>,
- "andrewnetdev" <andrew+netdev@lunn.ch>,
- "davem" <davem@davemloft.net>, "edumazet" <edumazet@google.com>,
- "kuba" <kuba@kernel.org>, "pabeni" <pabeni@redhat.com>
-Cc: "intel-wired-lan" <intel-wired-lan@lists.osuosl.org>,
- "netdev" <netdev@vger.kernel.org>,
- "linux-kernel" <linux-kernel@vger.kernel.org>
-Message-ID: <19e49280392.4757403170773.5767589851918809405@zohomail.in>
-In-Reply-To: 
-MIME-Version: 1.0
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 86105419EC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 86105419EC
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 86105419EC
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 21 May 2026 20:52:29 +0000 (UTC)
+X-CSE-ConnectionGUID: nyZybgnLTGiBLyVBSD4DCA==
+X-CSE-MsgGUID: 4+0Xa6iyQy60UMYFmbOJ4g==
+X-IronPort-AV: E=McAfee;i="6800,10657,11793"; a="84180532"
+X-IronPort-AV: E=Sophos;i="6.24,161,1774335600"; d="scan'208";a="84180532"
+Received: from orviesa005.jf.intel.com ([10.64.159.145])
+ by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 21 May 2026 13:52:29 -0700
+X-CSE-ConnectionGUID: FNSURwQkS4CXJ6GBqsQq2Q==
+X-CSE-MsgGUID: u2pPyZtrS2uUyV/+i0JkOQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.24,161,1774335600"; d="scan'208";a="245629680"
+Received: from fmsmsx901.amr.corp.intel.com ([10.18.126.90])
+ by orviesa005.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 21 May 2026 13:52:29 -0700
+Received: from FMSMSX901.amr.corp.intel.com (10.18.126.90) by
+ fmsmsx901.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37; Thu, 21 May 2026 13:52:27 -0700
+Received: from fmsedg901.ED.cps.intel.com (10.1.192.143) by
+ FMSMSX901.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37 via Frontend Transport; Thu, 21 May 2026 13:52:27 -0700
+Received: from CO1PR03CU002.outbound.protection.outlook.com (52.101.46.59) by
+ edgegateway.intel.com (192.55.55.81) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37; Thu, 21 May 2026 13:52:24 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=BPs3ARxXYZkWbdOIzBDJpS5oAIxBzCqIJCFWpmENMuxbe+Kt8k6EE/RONaoLY5SaaqK9Cpio5cbVSiE63hisbM4Lge18X5EzID3qzEtq0kP0ky70kOZ0MlmobXLiwjG5MSIPhClz5bcwuNgjtP7xZ1LfwVJrq75DX5inKD4l2WxTHlFJMXePsDp2QOgar2cgZO0sx000D5tU6mpbugmedL+kTX94ja4perWNHrgtsqsyN31xR+fLUH7v5LAPD8EII4WEsq4FcTdlGkV+1HkQIizBISo70YMgkANjlNd4jqlcS2DAM3UvVEE81CMP03awvW6+eoQvj3KFPrzLoXQWQw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=9G7Kk0thtC/AMEyHHs7K4cNl/aPExHEm/2Pq9MXcqUs=;
+ b=WXkDxPzOuxfM4lwROlg0T8j6PZDVZhh7eb+X5WcnHMYBJWxCpDOBhaO/WrYMOt8g942G9VstUv+xGT3j0IwZX6JBXtGLmB2noXt75f7KT0RWS3lvAHFIHRHYjK/qbau0K/+ENekQaR6B0rLxkx7snAk1G/UCnuig1WqNOdxYq+mZSynE8NqXXoZWgnxYLcrB/ILn09Qr54Jc/m4uFfr1Xu00C4W1r7ycrNDF8Phzzs52rU9c7DgSki/5WzGgqEdDlw2xj1ZmBWa/rt55brFe0HdrmZqQDchPjc8AAUdomjR1ASRH65ky7eF/ex7ipkWGB0gnbROsp3obpZCsu/8pSA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from DS0PR11MB7381.namprd11.prod.outlook.com (2603:10b6:8:134::14)
+ by BY1PR11MB8056.namprd11.prod.outlook.com (2603:10b6:a03:533::9) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.48.17; Thu, 21 May
+ 2026 20:52:21 +0000
+Received: from DS0PR11MB7381.namprd11.prod.outlook.com
+ ([fe80::4c39:dfe6:d6dc:6f58]) by DS0PR11MB7381.namprd11.prod.outlook.com
+ ([fe80::4c39:dfe6:d6dc:6f58%5]) with mapi id 15.21.0048.013; Thu, 21 May 2026
+ 20:52:21 +0000
+Message-ID: <7acdb0ce-1553-4d65-9b54-5c406963981d@intel.com>
+Date: Thu, 21 May 2026 13:52:18 -0700
+User-Agent: Mozilla Thunderbird
+From: Jacob Keller <jacob.e.keller@intel.com>
+To: Matt Fleming <matt@readmodwrite.com>, Anthony Nguyen
+ <anthony.l.nguyen@intel.com>
+CC: Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
+ <kernel-team@cloudflare.com>, Matt Fleming <mfleming@cloudflare.com>,
+ <stable@vger.kernel.org>, Simon Horman <horms@kernel.org>, Przemek Kitszel
+ <przemyslaw.kitszel@intel.com>, Andrew Lunn <andrew+netdev@lunn.ch>, "David
+ S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, "Jakub
+ Kicinski" <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Eric Joyner
+ <eric.joyner@intel.com>, Paul Greenwalt <paul.greenwalt@intel.com>, "Alice
+ Michael" <alice.michael@intel.com>, <intel-wired-lan@lists.osuosl.org>,
+ <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+References: <20260501095717.1032151-1-matt@readmodwrite.com>
+ <531aec13-c33f-4e77-ab48-de8861f9b6c6@intel.com>
+ <afxbZjldi1OC3HmS@matt-Precision-5490>
+ <a55c7754-43a5-4ad5-a429-61c428544b4e@intel.com>
+Content-Language: en-US
+In-Reply-To: <a55c7754-43a5-4ad5-a429-61c428544b4e@intel.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Importance: Medium
-User-Agent: Zoho Mail
-X-Mailer: Zoho Mail
-X-Mailman-Approved-At: Thu, 21 May 2026 15:46:39 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
- c=relaxed/relaxed; t=1779343828; 
- s=zoho; d=zohomail.in; i=linuxuser509@zohomail.in;
- h=Date:Date:From:From:To:To:Cc:Cc:Message-ID:In-Reply-To:Subject:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Reply-To;
- bh=EQSpA4ZTPRnz9G9H3FIaLAkaSDGkNEul7L4Q8NT2ouo=;
- b=p0LUN66tKJtnMqgbMoL3gcbNvX6Or5P1xY7lbeWoubjE5dyUK5IQshG+oRKzT97Q
- r9AqfLVIcKt8s42yb0da/rXqBED+Xvuqn0xcrdkxy/YIaKMxru5pG6UK1uLjwzg/w3v
- o5h13xDI3YzK+wIC1IxNo5u5DcsRxrLI3Aptl3SU=
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=reject dis=none)
- header.from=zohomail.in
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=zohomail.in header.i=linuxuser509@zohomail.in
- header.a=rsa-sha256 header.s=zoho header.b=p0LUN66t
-Subject: [Intel-wired-lan] [PATCH net-next] net: e100: replace silent 'hope
- for the best' with debug message
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: MW4P222CA0002.NAMP222.PROD.OUTLOOK.COM
+ (2603:10b6:303:114::7) To DS0PR11MB7381.namprd11.prod.outlook.com
+ (2603:10b6:8:134::14)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DS0PR11MB7381:EE_|BY1PR11MB8056:EE_
+X-MS-Office365-Filtering-Correlation-Id: 30cf2082-1fae-4f6a-b2dc-08deb77ada8e
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+ ARA:13230040|7416014|1800799024|366016|376014|6133799003|18002099003|22082099003|56012099003|4143699003|11063799006;
+X-Microsoft-Antispam-Message-Info: N6v0mXs8UFsUCDxqZksGhGofJ3NWNYb+UX71nX3vDS02e8puAY+r9+dyDIYx2o62pOx/YL/zgQcalJziQBH3U3YM8jP7RADFTP3uh8DUJVkIAztxgSdEXTuVYSr2ZmjAO4wyXysfmMZ+bI8fgsI3ICiUVnjj83qSahJuaTpdWvKcok9LF7keyqrbEWUWHXpqt+fWF6WUMtUQ9U4nuafW8jWwNzIthD0Jk9aB3odti1MGS4GAc22lEFcnPeZDAhAnpxJKBvty4JNDG9NZi3dwXAR0OvsHxxctaMUhjmGww/rCJR8STbYDGac1g25fwmAxJipP28s3vHdiLj9VlvrsvgXO4MWXUta1nP3ybsHtQ/sRom/z0R/tkZbeRjT+qjH9tfsp2A82eEef1p+hyNWxQi4J2eGnxNG48ekS0xZbTMAGihwoLg1wdnb5KlzDY0ZGreL+pswrrwS51J3aE8DMkOZl+EN3OsYcDqjxBazVI7JLz3/geH5ni1NDX8e9lX7E2fYkpytVjB+J3ScA5XouQCqZ/6oLvuiE+dcRrMepEuITGdZ+XVDJekOvVyoZ4epnJJdy9dYjA6RQTk5y0KvgsnAOAI4o7c9RI6d8yEj/ZMmmvBAJbnreeQ0AYSbaBPAu7gXXQkMrkmIAVVPEc9MLpO5oJ/lcvjVdJWLZJCdch2STcP4iAQ3Z6TV3suX/7j0N
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:DS0PR11MB7381.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230040)(7416014)(1800799024)(366016)(376014)(6133799003)(18002099003)(22082099003)(56012099003)(4143699003)(11063799006);
+ DIR:OUT; SFP:1101; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?aUszSDYxbHZ2NTBJNkJNWVFuRko0b0x5SUlRSTlJWVJjM1pqa3ZrdXJZSUha?=
+ =?utf-8?B?ZzA2dUdQbk4wb0hiWGZHR0M0OEVrWTVEU0czbFVGdjk2aml2WVNlaDUwUEhY?=
+ =?utf-8?B?eVBIZEZHd04wMDR5WVZEZUJEa3VjRFFDNFNmbUZ3NDQvQTk3U0lVYVlIMjNh?=
+ =?utf-8?B?d0lrNndWZHJDS2tJOTVRVTQ2MUZDTGFNTVJyNVUyTU1HT0Zib0llRSthdjFM?=
+ =?utf-8?B?K2U1ZUs3N3I1dDBNQ0wyY2dXSlpOWGU4WlU5WEVJYzJsUnkvbFp1QjhKSVVJ?=
+ =?utf-8?B?WTFiOEJTWDJCWmFvYnV5blNBb2x2emp5QlE2RkJEb0xoS0c3MlkyTkcwSVV0?=
+ =?utf-8?B?dHIvL3BXRVdZcVAwZURCYkNvaTB4TEsyUUlyeVVlV1ZxaXVyZGZlN3NlalFj?=
+ =?utf-8?B?Z00vQ2hnZENkSU5EdUdQazVzZklLUUJXczArdXV1dEx5WXJZdnR2NUc5OG0w?=
+ =?utf-8?B?ZEdnMlYvUE9TQWpnSnl5M2c3Sm5YUCs4M1dMMzg1U28waGwzNFJ0WkFJK1F6?=
+ =?utf-8?B?NzRzRFVUOStZclhYc1hLT1FZZWQyNm5JeEdSaEg0ZjdyLzZZZ01pTU83Sk5w?=
+ =?utf-8?B?VnY4WW4vWHdnQXNYandrdThuUVVoZW5LQnltUEFtU1B6SUZoREZrVzAyUnha?=
+ =?utf-8?B?N0RHUFZwazM4Zy93RTFpWGlFTHQ0dy8xSVllN3VzQmNnVHpCUlMvY1lKSFFy?=
+ =?utf-8?B?c0NDWTVhY2JlakZrY0NYc24walViUXNqZFlQL3ozblVqOWRhYjh3bDRmWS9R?=
+ =?utf-8?B?U1VPKy9qSlA3WWpwalk1L0xhY09kbnZtRnVTMHVBQ0tlaFBlcmdBVzNsc2xB?=
+ =?utf-8?B?Mk5ScjJjdFFDMHpPdDJ3ejRONUFmT1hzbkp0bHFUbC9UQ1c0MkJmTlJOalY1?=
+ =?utf-8?B?U2JrOVhXWURaakltSEpKZHFzd0p2R1B3VEI3Rm9CV2xpbnluNHRuOGEvbERp?=
+ =?utf-8?B?TkxtUnVPaHNQVmhwOXB3dTlZVzVyUXNsMndxYzBrRldZUCtaRURZT0NxSW5E?=
+ =?utf-8?B?RE44Uk1pdWh3aVBpV3JFK2UzbXFLTnN5OSs0UWVJdkhKTUpIUVdUQWtPZWpu?=
+ =?utf-8?B?SVc5ai9aMmdVajNlZUpOM3JtaGRqNDUybVQwMkZiMytuUWN3V25jY1d4NEVF?=
+ =?utf-8?B?YVdibmFqNTc0MU1LLzV2NjFNd3Z1eXdlalBVOWZOMXE5ZEI0Wld4SHI5TGto?=
+ =?utf-8?B?QXlDZ29ia1doOWs1Z0RjZWczdjZBWWxqaFdPeCtGQkxncFA4bzQwYmVaOEFr?=
+ =?utf-8?B?aXVoQXR2QW5MbU81dmlRYnFFUEdTeFJoTmZqRkZ4SDVPSzJKdm1wUE4wbHAv?=
+ =?utf-8?B?SHBUd0NMV1FSWjY4Uks4RDAxWFRBc2lua001QWJmTjZselZqdlhEb2l0aUc5?=
+ =?utf-8?B?Q0dtLzkzU1JxOEFkdzV3UmR0SjhjSWVnWEhseURzNlBtQnhHYWFTaGNqaWsv?=
+ =?utf-8?B?S0lXdEN1MWNWbFQzL3IrVVNSanEwTjZMNG9la29OV0ZZeXA3bVdJTTdYRkZ3?=
+ =?utf-8?B?Uy9JMmcySEc3RGV6YTV2MVpOVnhzUXRDeTlPcXhueTllOUVWbDYzMnM2MHlE?=
+ =?utf-8?B?aHZ3TjRtMVp4M0JLd2RVeHd4aE42Z3I5aXNnWEU3U2F5WWljaTVINmsvQnpF?=
+ =?utf-8?B?KzA5TTB2WHdCZjMrRDlwb29QcG14ZzJDZjQwRGlNbFU3Y0hCRzZTY0hjODVs?=
+ =?utf-8?B?czhOTWZsK3hXVGZUNlhzNDdTa3F2eTJXRVM5c1V6dUNrMEpGU0xYT0p2clBG?=
+ =?utf-8?B?SUpqUURSclkvcWtqYnBaL1VIcGJsWm10V3J1MFAwMS9QYk9mKzNxV0hJMFlo?=
+ =?utf-8?B?NHY0cDgvTUVaR2ZYbFlBbUJnQ1U1ZitReHhmZVcweTlBQisybEtFclhjdXV6?=
+ =?utf-8?B?a3F6RWgzdmt5MTJMc3MxR282aTZOWUJnWmZyWlVPbGFEbzRnNnR6dVdYbWQ3?=
+ =?utf-8?B?SDNFOTVsckFuYkpxdGdCZXNHckJkRXJjSWgyVExZdGtrZzJhZ1ZId3VtWER4?=
+ =?utf-8?B?VHdBdkxjUEZPS3J4N0NJWFZoQ3k1R2MvSTV0Rk9INTQyQm5FVkVIZ01CRWx0?=
+ =?utf-8?B?anU5T2w3TkNoOHBWVEQ1RUlwVmxjZ3pVU1laSVYwVU1YZ1NGUEp5Qm5jOXYx?=
+ =?utf-8?B?cVczYUc1VklrNUV1YTR3TW1pTE5yY095NW51ZUh0TEdxWEp6Z0J5K1hCVVZ4?=
+ =?utf-8?B?V29lSGtXUWU4enFQZVVvY1pqS29LVy9XTmNyZit2TUdBRW5vTWpHbEFVYm5m?=
+ =?utf-8?B?UVFENzc5Nk15REc2Y1gvb2YvUi9aSXBueXhTT082T0YrRDEzN0EzWnFUVXJO?=
+ =?utf-8?B?clUrcUcxN1lvbXo0R3JpQWszZXk1VWtPVEtQZXJTR0xuTzhGbENFUT09?=
+X-Exchange-RoutingPolicyChecked: j//b2fp0/GQAJm911NchwlkrEcXKbLn5lS/tofsrHEnxX1j+IWroeiqd9yF0EqihSYRO2JXglzDcPPNzi8OfogZiI293dE3pwuKDhGoKlryZ0OnzUqPRWNALZqpflTPvPwLzKpSQDsm73zdNglMgmnt7WbqJx2++yUtqotB2b5RC7nIOQVbfWiBxGexoiWFofQR3okXMU5VjZGiOVNC9bQPT6qxRnhuk1wzXDY7n7VzODVM/gUdX+mziUs7z/x6611DevP16yWzvGDiTFGN7Uhy1ni/ZF/1SMsbGUiwFKet3XFgwgnPjrbRuOJHk3lOp2sLQtmuS+fzF1a2esoNZzw==
+X-MS-Exchange-CrossTenant-Network-Message-Id: 30cf2082-1fae-4f6a-b2dc-08deb77ada8e
+X-MS-Exchange-CrossTenant-AuthSource: DS0PR11MB7381.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 May 2026 20:52:21.5960 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 7/NgeOIE0HaeVGbzEbPpQVlIoGpe8MyyYGssiR6+PolEv1v4/iTWYBBMAC/4bucDzaqGDedH9jT0ppef2s8iQsSJdtJcO8Us7FQMwbkaY6g=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BY1PR11MB8056
+X-OriginatorOrg: intel.com
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1779396751; x=1810932751;
+ h=message-id:date:subject:from:to:cc:references:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=PUKhIXa5/7ggWFQuSnLclbtw8sGrmq4lfZT6PUK+0bk=;
+ b=GYUd/HiNTpDhtdki91Jyi5MLqmc7xbDqIedgGDF1xf5TqHnnV/ZKD0hs
+ QKQyHd5gF0x80lt4+xSHnzWT4Uu1oQVxy7fcW5wjHHSWLlN7lP6txHh8n
+ yymqmNs1puT2lu8iuerYHwvm3l6m0TVhILVejrVnDsrBgu/L+fAp8nYfR
+ heTVNyLLPjbtJQNCzkVbeC+F7Snf1HH+yVQ6CPcpq8gxRxRvoCm99Ymy5
+ Jdhxp6S+SMtei76cO/f0svyZ5p0rkfMRA69zmoXABSLx4qM6wmRIsrnq0
+ AU4idVJjX3p4Z6L6daLbLqnjW1vlYLlpK4h0yidpSz9y4fPH1nreVOTFz
+ w==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=GYUd/HiN
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Subject: Re: [Intel-wired-lan] [PATCH net v2] ice: Fix missing 1's
+ complement negation in GCS raw checksum
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -113,41 +220,137 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-From: Ashwin Gundarapu via Intel-wired-lan <intel-wired-lan@osuosl.org>
-Reply-To: Ashwin Gundarapu <linuxuser509@zohomail.in>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Ashwin Gundarapu <linuxuser509@zohomail.in>
-Date: Sun, 10 May 2026 15:09:12 +0530
-Subject: [PATCH] net: e100: replace silent 'hope for the best' with debug
- message
+On 5/8/2026 5:22 PM, Jacob Keller wrote:
+> On 5/7/2026 2:34 AM, Matt Fleming wrote:
+>> On Mon, May 04, 2026 at 05:10:23PM -0700, Jacob Keller wrote:
+>>>
+>>> Hi,
+>>>
+>>> Based on your patch description, I assume that you've tested this on
+>>> real hardware.
+>>>
+>>> I dug a little through some of our internal changes history and sawe
+>>> that it looks like the hardware has a register setting in its
+>>> GL_RDPU_CNTRL register which determines whether the checksum value
+>>> reported is inverted or not. In E830 hardware, it is supposed to be off
+>>> (i.e. the checksum value reported already matches the expected setting.
+>>>
+>>> Perhaps your device somehow got the GL_RDPU_CNTRL register set to the
+>>> wrong mode and that results in the swap being necessary. Hmm.
+>>>
+>>> I'll ask the team to see if they can confirm this behavior.
+>>
+>> Hi Jake,
+>>
+>> Thanks for digging into this.
+>>
+>> I read GL_RDPU_CNTRL on our affected E830 and the value is the same on
+>> both ports of the NIC:
+>>
+>>   0000:c1:00.0: GL_RDPU_CNTRL = 0x0020a275
+>>   0000:c1:00.1: GL_RDPU_CNTRL = 0x0020a275
+>>
+>> Decoding bit 22 (E830_GL_RDPU_CNTRL_CHECKSUM_COMPLETE_INV) gives 0,
+>> i.e. the hardware is supposedly in "not inverted" mode, which matches
+>> the default you described.
+>>
+>> However, looking at the data on the wire I see:
+>>
+>>   - netdev_rx_csum_fault fires ~65 000 times/sec on this host.
+>>   - bpftrace at fexit:ice_process_skb_fields shows skb->csum =
+>>     swab16(raw_csum) directly (no negation), e.g. raw_csum=0xfb4f
+>>     -> skb->csum=0x4ffb.
+>>   - At fentry:__skb_checksum_complete the upper 16 bits of skb->csum
+>>     are 0xFFFF on every TCP/UDP packet -- the signature of nf_ip_checksum
+>>     adding the pseudo-header to a value that was the un-negated raw_csum.
+>>   - fold2(skb->csum_at_fentry + skb_checksum(skb,0,len,0)) ≈ 0xFFFF
+>>     for every packet, which means the two values are ones-complement
+>>     complements of each other, i.e. the driver stored S where the
+>>     stack expects ~S.
+>>
+>> Negating the checksum makes the failures go away.
+>>
+>> Thanks,
+>> Matt
+> 
+> Ok. This is getting strange. I checked a system I was able to borrow. In
+> our setup, we need the existing code (no negation), otherwise we see
+> checksum failures even for simple pings, including the initial
+> DO_ONCE_LITE stack dump, but I can see with ftrace that
+> netdev_rx_csum_fault is firing every packet.
+> 
+> I have the following on my system:
+> 
+>> $ lspci | grep Ethernet
+>> 17:00.0 Ethernet controller: Intel Corporation Ethernet Controller E830-CC for QSFP
+>> 17:00.1 Ethernet controller: Intel Corporation Ethernet Controller E830-CC for QSFP
+> 
+>>
+>> $ devlink dev info pci/0000:17:00.0
+>> pci/0000:17:00.0:
+>>   driver ice
+>>   serial_number 00-01-00-ff-ff-00-00-00
+>>   versions:
+>>       fixed:
+>>         board.id N31483-000
+>>       running:
+>>         fw.mgmt 7.9.5
+>>         fw.mgmt.api 1.7.11
+>>         fw.mgmt.build 0x2bbde9a9
+>>         fw.undi 1.3910.0
+>>         fw.psid.api 1.20
+>>         fw.bundle_id 0x80017eed
+>>         fw.app.name ICE OS Default Package
+>>         fw.app 1.3.43.0
+>>         fw.app.bundle_id 0xc0000001
+>>         fw.netlist 0.0.1100-2.53.0
+>>         fw.netlist.build 0xf77b1d74
+>>       stored:
+>>         fw.undi 1.3910.0
+>>         fw.psid.api 1.20
+>>         fw.bundle_id 0x80017eed
+>>         fw.netlist 0.0.1100-2.53.0
+>>         fw.netlist.build 0xf77b1d74
+> 
+> 
+> I checked the GL_RDPU_CNTRL register, and indeed the checksum invert bit
+> is clear, matching your report. Even so, I see the opposite behavior you
+> do: we need to avoid the invert otherwise the checksums are reported
+> invalid.
+> 
+> Interestingly, I tried writing to GL_RDPU_CNTRL to set the invert bit,
+> which appears to have stuck but it doesn't seem to affect the behavior.
+> 
+> I wonder if there is an NVM difference here. It is possible that our
+> boards have a pre-production image still installed, and that might be
+> impacting the results. I've asked to try and have the devices updated to
+> confirm the behavior...
+> 
+> 
+> I'm suspicious that somehow there is an NVM setting that toggles this
+> behavior and which doesn't seem to respect the actual register setting.
+> I haven't been able to track down more information in our internal
+> documentation yet :(
+> 
+> In the mean time, could you share the device ID and firmware data from
+> devlink info? Feel free to reach out to my Intel address directly if you
+> don't want to share something on the public list. It would be very
+> helpful to know the device and NVM data from your setup so that we can
+> try to replicate it here.
+> 
+> Thanks,
+> Jake
+> 
 
-Replace a silent return with a debug message when no MII PHY is
-detected on known variants. This gives users visibility into the
-failure instead of silently hoping for the best.
+Following up on this after further testing. With the information
+provided by Matt, we loaded the same NVM image and also made sure to
+load the same DDP package. In our systems, this still results in the 1s
+complement patches causing rather than fixing the bad checksums.
 
-Found by checkpatch.pl inspection.
-
-Signed-off-by: Ashwin Gundarapu <linuxuser509@zohomail.in>
----
- drivers/net/ethernet/intel/e100.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/e100.c b/drivers/net/ethernet/intel/e100.c
-index 9074b558de35..bfacf877ca40 100644
---- a/drivers/net/ethernet/intel/e100.c
-+++ b/drivers/net/ethernet/intel/e100.c
-@@ -1450,7 +1450,9 @@ static int e100_phy_init(struct nic *nic)
- 		 * But do this AFTER MII checking only, since this does
- 		 * lookup of EEPROM values which may easily be unreliable. */
- 		if (e100_phy_check_without_mii(nic))
--			return 0; /* simply return and hope for the best */
-+                        netif_dbg(nic, probe, nic->netdev,
-+                                  "No MII PHY detected, continuing anyway\n");
-+                        return 0;
- 		else {
- 			/* for unknown cases log a fatal error */
- 			netif_err(nic, hw, nic->netdev,
--- 
-2.43.0
+I'm at a loss currently, as it pretty much appears that the devices I
+have access to need to skip this 1s complement, but at least some
+devices in the field (Matt's, maybe others?) need to have the 1s
+complement or get bad checksums...
