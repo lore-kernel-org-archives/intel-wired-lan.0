@@ -4,96 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 98364CD5BBF
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 25 May 2026 08:42:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB0E1CD5BB1
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 25 May 2026 14:31:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 55E8983E88;
-	Mon, 25 May 2026 08:42:06 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 9256583DB1;
+	Mon, 25 May 2026 14:31:06 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id yHzNV0mC1clH; Mon, 25 May 2026 08:42:04 +0000 (UTC)
+ id YbdnVgaaLHsk; Mon, 25 May 2026 14:31:05 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 42B8D83E8A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D314883D9D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1779698524;
-	bh=Mztsxgm3+70KWI9oD7neGRLQCwIR9k6QwDyCZ+eFEms=;
+	s=default; t=1779719465;
+	bh=4+QbGEhEsquEoKxIhD2AqcM08oL+NVhQbtrM0BhEX14=;
 	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=oYdtpuHoFMgfztJXAR4cSXGKe4MPbIAPoFiUnmG/URi+xsZH1oPOSYRIIuv5MGAWg
-	 StyrDXDrZKEYYteuK5iB8gUjk6qCSTIZ4u7bRabhzoJuVPkancalQPmdfo4g6Oxso7
-	 GngPIw23SL57ahfDFwCOV4lHY8V3L0uZ/beiYxeuMvXtbaJENlHNd0yOxYI40lW2K8
-	 lQoHUJu7yKKQbtt/17AGm0nDKLM7JJSDIEDTru2QwBiLQ5auMzyhW0fL3Wn9dBrCXe
-	 UaBY6psET3AzYtOgex8CAjGj6FzlAJ6o4v7ZeDfoa+3K7BNQvsB7/OQy67fJQQQjjY
-	 42GzeQ05FBVDw==
+	b=qiKTiQBE2W3jFCAGi2COvJioMeSzLiDiJe5XZmELFQ8842HVxFJ9c6ZoFOCP/OYQ6
+	 HXgKPm+qCHK2KFzNZt0akdvDS7xyvJplWHG3RVnSvzZDX6j9lNwkHPDbAMcSUKwv+h
+	 O8tVtWf4ZGIMGwfg7c/5txuuAcmjJ6iXRmO32+rRaVVvAftJwfu5IYV1H8m09w7S2p
+	 TZggWBkI6BNpWxIVkgwuqwL89jL7GtGMptpzELB766K44wYXI7IsZRWFyfzEJXmvru
+	 DxzRvwIUkafcPJPRTMkbsoTjE4XpOiAsRzAgubkqzqoRBZFDb5oKLi+mvecAjk5GPZ
+	 AsBIYS83YWoSw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 42B8D83E8A;
-	Mon, 25 May 2026 08:42:04 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 09281265
- for <intel-wired-lan@lists.osuosl.org>; Mon, 25 May 2026 08:42:03 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id D314883D9D;
+	Mon, 25 May 2026 14:31:05 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id BE117265
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 25 May 2026 14:31:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id E175660F58
- for <intel-wired-lan@lists.osuosl.org>; Mon, 25 May 2026 08:42:01 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id B085F83DB1
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 25 May 2026 14:31:04 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id b49KoDbpquZM for <intel-wired-lan@lists.osuosl.org>;
- Mon, 25 May 2026 08:42:01 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 9rxARHRmpaQS for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 25 May 2026 14:31:04 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.18;
- helo=mgamail.intel.com; envelope-from=przemyslaw.korba@intel.com;
+ helo=mgamail.intel.com; envelope-from=sergey.temerkhanov@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 369CB60F57
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 369CB60F57
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org C658283506
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C658283506
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 369CB60F57
- for <intel-wired-lan@lists.osuosl.org>; Mon, 25 May 2026 08:42:01 +0000 (UTC)
-X-CSE-ConnectionGUID: 6W6h2S5PQGue5PDTQXGMxA==
-X-CSE-MsgGUID: XUYKIADbRCev0TZrr4Ix9w==
-X-IronPort-AV: E=McAfee;i="6800,10657,11796"; a="80573298"
-X-IronPort-AV: E=Sophos;i="6.24,167,1774335600"; d="scan'208";a="80573298"
-Received: from fmviesa008.fm.intel.com ([10.60.135.148])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id C658283506
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 25 May 2026 14:31:03 +0000 (UTC)
+X-CSE-ConnectionGUID: UFHDQyZhRFGUFLs3baZtRQ==
+X-CSE-MsgGUID: Hrhz1W4mQ/SDjiCfMBL/Kw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11797"; a="80596721"
+X-IronPort-AV: E=Sophos;i="6.24,168,1774335600"; d="scan'208";a="80596721"
+Received: from fmviesa006.fm.intel.com ([10.60.135.146])
  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 25 May 2026 01:42:01 -0700
-X-CSE-ConnectionGUID: kyp2uXDUTJ6ArQirl/1Tzw==
-X-CSE-MsgGUID: V03PED3bTZuB4SL2IOJGfQ==
+ 25 May 2026 07:31:02 -0700
+X-CSE-ConnectionGUID: nvL+cXkzQMGhns8v9KSxZA==
+X-CSE-MsgGUID: kZITJZNgR8CBwnc+tBgYew==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.24,167,1774335600"; d="scan'208";a="238968451"
-Received: from gklab-003-014.igk.intel.com ([10.91.173.44])
- by fmviesa008.fm.intel.com with ESMTP; 25 May 2026 01:41:58 -0700
-From: Przemyslaw Korba <przemyslaw.korba@intel.com>
+X-IronPort-AV: E=Sophos;i="6.24,168,1774335600"; d="scan'208";a="237189227"
+Received: from gnrd8.igk.intel.com (HELO GNRD8) ([10.123.232.137])
+ by fmviesa006.fm.intel.com with ESMTP; 25 May 2026 07:31:01 -0700
+From: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
- przemyslaw.kitszel@intel.com, konstantin.ilichev@intel.com,
- aleksander.lobakin@intel.com,
- Przemyslaw Korba <przemyslaw.korba@intel.com>, stable@vger.kernel.org,
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Date: Mon, 25 May 2026 10:38:03 +0200
-Message-ID: <20260525083835.481974-1-przemyslaw.korba@intel.com>
-X-Mailer: git-send-email 2.47.3
+Cc: netdev@vger.kernel.org
+Date: Mon, 25 May 2026 14:30:57 +0000
+Message-ID: <20260525143100.2758251-1-sergey.temerkhanov@intel.com>
+X-Mailer: git-send-email 2.53.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1779698521; x=1811234521;
+ t=1779719464; x=1811255464;
  h=from:to:cc:subject:date:message-id:mime-version:
  content-transfer-encoding;
- bh=rhZeCAfuClKv/Mu8IFHZ3hmztx6GzmMheK7IXKONEDg=;
- b=M2SmpWiwM0cva0+rg4A5dkAa2cbJj3/y/7i8Bp/Zft2MFu1Dgj58ZVPB
- ZzmXK+BJwKpqKVF8Xdv6oTTdT6PO/czOy54/JfrtCFI6u90NQrCCZXmIf
- zYLk6JsJFu5gL7D4YVJtJWNI7DA6VlnMHTUptf6cb6rh52WZhAkrlE6Js
- QVcu0vYCpViR4gJV+qsXNqvL+3sVWgVItGH4oOFzLqURDRtpKwxobUCmD
- ViP6CA8Y3p1zKSNUcJ3uFWVE2JV9kHTcHvNAEnQW+2Ibn+ATd7xXWbdRR
- b4q8/mUgysmxuKB2oj3xkLjQ15IhMv/f5hHLqRQxEubsxLltCpnGkw6UR
+ bh=WMTE157dD8g+v5naxxaBeOIvwYVp6WNe8lrymqYZFTI=;
+ b=FtsTyMLv1qEN10RfUBe2lUg8Tx+rZ/rRV0iqIgGy2kkagN5NbhvteeRV
+ IvCZYb+tVGsN2DAbPnWkGFPJrPCK7Kp5FXk+n+9uCpZH7q9wmV2m24dLQ
+ iA3Kff/R07fGgTQcHtGUDCTsqqQhYLVu0KdgeF6bjuO3JouTmGapmSOZT
+ b8sZik9VtvB21zm7S5v1wfItXMbuB6faXzkvz+gJw5yomqpPibV9D5nDl
+ 99sWm+s6ebQIn+TJJ2pCQoDkuiavwgHg2ZKFsgSA+GxmFINdOcUTKhzPs
+ Zph9QSHJ+Pr5SzDTDNNJThq+gEMIIBrjabP1fGvQsdPuV/T5wDuhfpbdJ
  Q==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=M2SmpWiw
-Subject: [Intel-wired-lan] [PATCH iwl-net] idpf: add padding to PTP virtchnl
- structures
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=FtsTyMLv
+Subject: [Intel-wired-lan] [RESEND PATCH iwl-net v2 0/3] Rework ctrl_pf
+ pointer usage in struct ice_adapter
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -109,86 +106,28 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Add padding to virtchnl2 PTP structures to match the Control Plane
-expected message sizes:
-* virtchnl2_ptp_get_dev_clk_time: 8 -> 16 bytes
-* virtchnl2_ptp_set_dev_clk_time: 8 -> 16 bytes
-* virtchnl2_ptp_get_cross_time: 16 -> 24 bytes
+Rework usage of the control PF pointer in struct ice_adapter, so that
+it is always has a consistent state, since it is global for an adapter.
+Utilize RCU for reading the pointer value and atomic operations for
+changing it. Zero out the ctrl_pf pointer when the control PF is removed.
 
-The FW expects the above sizes and PTP negotiation fails due to the
-mismatch. Previously neither the FW nor the driver checked message/reply
-sizes strictly, so the problem appeared only after recent validation
-improvements.
+Previous version:
+https://lists.osuosl.org/pipermail/intel-wired-lan/Week-of-Mon-20260504/054842.html
 
-reproduction steps:
-ptp4l -i <pf> -m
-Observe: failed to open /dev/ptp0: Permission denied
+v1->v2: Rebase onto the latest dev-queue branch:
+        297c032796ab ("igc: add support for forcing link speed without autonegotiation")
 
-Fixes: bf27283ba594 ("virtchnl: add PTP virtchnl definitions")
-Cc: stable@vger.kernel.org
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Reviewed-by: Alexander Lobakin <aleksander.lobakin@intel.com>
-Signed-off-by: Przemyslaw Korba <przemyslaw.korba@intel.com>
----
- drivers/net/ethernet/intel/idpf/virtchnl2.h | 12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
+Sergey Temerkhanov (3):
+  ice: Convert ctrl_pf pointer in struct ice_adapter to RCU
+  ice: Zero out the PTP control PF pointer at ice_adapter cleanup
+  ice: Cache struct ice_hw pointer for split register reads
 
-diff --git a/drivers/net/ethernet/intel/idpf/virtchnl2.h b/drivers/net/ethernet/intel/idpf/virtchnl2.h
-index 02ae447cc24a..39fea65c075c 100644
---- a/drivers/net/ethernet/intel/idpf/virtchnl2.h
-+++ b/drivers/net/ethernet/intel/idpf/virtchnl2.h
-@@ -1572,13 +1572,15 @@ VIRTCHNL2_CHECK_STRUCT_LEN(16, virtchnl2_ptp_get_vport_tx_tstamp_latches);
-  * struct virtchnl2_ptp_get_dev_clk_time - Associated with message
-  *					   VIRTCHNL2_OP_PTP_GET_DEV_CLK_TIME.
-  * @dev_time_ns: Device clock time value in nanoseconds
-+ * @pad: Padding for future extensions
-  *
-  * PF/VF sends this message to receive the time from the main timer.
-  */
- struct virtchnl2_ptp_get_dev_clk_time {
- 	__le64 dev_time_ns;
-+	u8 pad[8];
- };
--VIRTCHNL2_CHECK_STRUCT_LEN(8, virtchnl2_ptp_get_dev_clk_time);
-+VIRTCHNL2_CHECK_STRUCT_LEN(16, virtchnl2_ptp_get_dev_clk_time);
- 
- /**
-  * struct virtchnl2_ptp_get_cross_time: Associated with message
-@@ -1586,26 +1588,30 @@ VIRTCHNL2_CHECK_STRUCT_LEN(8, virtchnl2_ptp_get_dev_clk_time);
-  * @sys_time_ns: System counter value expressed in nanoseconds, read
-  *		 synchronously with device time
-  * @dev_time_ns: Device clock time value expressed in nanoseconds
-+ * @pad: Padding for future extensions
-  *
-  * PF/VF sends this message to receive the cross time.
-  */
- struct virtchnl2_ptp_get_cross_time {
- 	__le64 sys_time_ns;
- 	__le64 dev_time_ns;
-+	u8 pad[8];
- };
--VIRTCHNL2_CHECK_STRUCT_LEN(16, virtchnl2_ptp_get_cross_time);
-+VIRTCHNL2_CHECK_STRUCT_LEN(24, virtchnl2_ptp_get_cross_time);
- 
- /**
-  * struct virtchnl2_ptp_set_dev_clk_time: Associated with message
-  *					  VIRTCHNL2_OP_PTP_SET_DEV_CLK_TIME.
-  * @dev_time_ns: Device time value expressed in nanoseconds to set
-+ * @pad: Padding for future extensions
-  *
-  * PF/VF sends this message to set the time of the main timer.
-  */
- struct virtchnl2_ptp_set_dev_clk_time {
- 	__le64 dev_time_ns;
-+	u8 pad[8];
- };
--VIRTCHNL2_CHECK_STRUCT_LEN(8, virtchnl2_ptp_set_dev_clk_time);
-+VIRTCHNL2_CHECK_STRUCT_LEN(16, virtchnl2_ptp_set_dev_clk_time);
- 
- /**
-  * struct virtchnl2_ptp_adj_dev_clk_fine: Associated with message
+ drivers/net/ethernet/intel/ice/ice.h         | 10 ++-
+ drivers/net/ethernet/intel/ice/ice_adapter.h |  2 +-
+ drivers/net/ethernet/intel/ice/ice_ptp.c     | 66 +++++++++++++++++---
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c  | 26 ++++++--
+ 4 files changed, 89 insertions(+), 15 deletions(-)
 
-base-commit: 4548d565aa80aad80274e2f3bff4d7cd914c703e
 -- 
-2.47.3
+2.53.0
 
