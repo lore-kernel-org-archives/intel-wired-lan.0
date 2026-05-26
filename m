@@ -1,95 +1,91 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3B6FDCD5BD0
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 26 May 2026 15:27:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3B14CD5BB1
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 26 May 2026 17:06:51 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id ECF1560FB1;
-	Tue, 26 May 2026 15:27:18 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id L58MLrlvWn95; Tue, 26 May 2026 15:27:18 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 280D760FB2
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1779809238;
-	bh=RcYJkbepy0hFGDpKlaCDfg2/HYEIPKovcL1K3xETJ5c=;
-	h=To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From:Reply-To:From;
-	b=FmnHg9vXQvfkglAtUu+VIBOFa/akT6K/ZedB4bdddLjigTAx63mOeqp1EOu/B5J3a
-	 KaImj3NI8mUoMAArv+AKHFkHqm3ncKwG+mMsBAKOzX9de7H8MH/W9QZibRfiMPDpFm
-	 +y4GpTCTQPNYvfEdUzO3r35S8xU2afW2JeD3fLYY/VnFwMKmrk75zwnCznlWzPyPxF
-	 f3hR3YfwA6L9QvoU0IPdhIg3V8n2Tpd+0wE6HCflhpF+cYm9OL9ihbBO5J/WPO98sY
-	 OMMiVJQjrdBnlgjlzLcOQ5yphVANNDnjdqjSL/ol6RoWJ1seQvsjvW9NfeYBjlRIhE
-	 ZyMEDxY1QE00Q==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 280D760FB2;
-	Tue, 26 May 2026 15:27:18 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 6D47821F
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 May 2026 07:49:19 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 5EAA240277
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 May 2026 07:49:19 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 7C88140FA0;
+	Tue, 26 May 2026 17:06:51 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id GenrGgCnutjI for <intel-wired-lan@lists.osuosl.org>;
- Tue, 26 May 2026 07:49:18 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=103.117.158.93;
- helo=sender-pp-o93.zoho.in; envelope-from=kshitiz.bartariya@zohomail.in;
+ id duxoX3OOhsNg; Tue, 26 May 2026 17:06:50 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2812140FEB
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1779815210;
+	bh=n11Yvwqz+rqZT/ZKP/UpHkRhFhWQS/84ypYO7E9okBA=;
+	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=tYDY2faBx+Fw7JKiXjXIf1EzYENlsXAaTdvlIdpC5IT/IUKMAQCKkdExRKQ01757l
+	 54UED8MHWdZ8tLPlnBMS+mlN9/10D8lWSVqSxIoDLdH1rW/xwS60nH5J8nqpi+sLP7
+	 9aBZkGI6FEB9tpDeE28vCnfZKlbHtWVAxUt1PVoqucHdbLcFEfC1UOhpTtTxhngUJF
+	 vLrWxErXs1QFfudXVgWJq1ixldLk3ntWxorxR7FyeAmPz1rnso64B+Raa01WADILDK
+	 PU9kDu9V+VQGgxN705YUbzDE9/oNJ5Jel4uiZp80F8T5Q1zZveqAeEMp2HV/RixSHT
+	 xNlzB5gkEHTvQ==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 2812140FEB;
+	Tue, 26 May 2026 17:06:50 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id D47D6297
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 May 2026 17:06:48 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id BA05981E00
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 May 2026 17:06:48 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id NNG0lvr2yYV0 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 26 May 2026 17:06:48 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
+ helo=tor.source.kernel.org; envelope-from=horms@kernel.org;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org B239C40270
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B239C40270
-Received: from sender-pp-o93.zoho.in (sender-pp-o93.zoho.in [103.117.158.93])
- by smtp4.osuosl.org (Postfix) with ESMTPS id B239C40270
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 May 2026 07:49:17 +0000 (UTC)
-ARC-Seal: i=1; a=rsa-sha256; t=1779781706; cv=none; d=zohomail.in; s=zohoarc; 
- b=E+bI56Bum6oCmHw7eAeve/aOI2EJmToMGD4E3jijyvM0Q+5X2krhWIZ0VnrfGw+GJO6dLKk3yWyQ8f5aDsCufPRXcWDpZrmR6kYvaj1WwbCYwmF2luYf4dB1Z3cTY1d+4JfHk3L0ta6pFd8zVZjC8dyWJF/j5x5Wq5eT8ZSIye4=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.in;
- s=zohoarc; t=1779781706;
- h=Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To;
- bh=RcYJkbepy0hFGDpKlaCDfg2/HYEIPKovcL1K3xETJ5c=; 
- b=NRZloqY9nNnmyjjvT7tv2I05n9k4YaADsSMtPOTR4xYv4/PyZkUeO1ia+ltu50IYuL1Twyage0rLdGPXeqjViAAStCoXAY2oRuhXCsc6R6zb+iRIbd73Vz6Srz/Y8hY9Py3dl92sYBLnNz4D+pwYpSpPzyLsvvOwlmJWbx+y2Fc=
-ARC-Authentication-Results: i=1; mx.zohomail.in;
- dkim=pass  header.i=zohomail.in;
- spf=pass  smtp.mailfrom=kshitiz.bartariya@zohomail.in;
- dmarc=pass header.from=<kshitiz.bartariya@zohomail.in>
-Received: by mx.zoho.in with SMTPS id 1779781697849939.3097201310651;
- Tue, 26 May 2026 13:18:17 +0530 (IST)
-To: kuba@kernel.org, anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
- andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
- pabeni@redhat.com
-Cc: Kshitiz Bartariya <kshitiz.bartariya@zohomail.in>,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Date: Tue, 26 May 2026 13:17:38 +0530
-Message-ID: <20260526074744.36315-1-kshitiz.bartariya@zohomail.in>
-X-Mailer: git-send-email 2.50.1
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org DB1E881DFD
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DB1E881DFD
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id DB1E881DFD
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 May 2026 17:06:47 +0000 (UTC)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+ by tor.source.kernel.org (Postfix) with ESMTP id 60CA660018;
+ Tue, 26 May 2026 17:06:46 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A2B761F000E9;
+ Tue, 26 May 2026 17:06:44 +0000 (UTC)
+Date: Tue, 26 May 2026 18:06:42 +0100
+From: Simon Horman <horms@kernel.org>
+To: Przemyslaw Korba <przemyslaw.korba@intel.com>
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ aleksandr.loktionov@intel.com, arkadiusz.kubalewski@intel.com
+Message-ID: <20260526170642.GA2256768@horms.kernel.org>
+References: <20260520105311.5336-1-przemyslaw.korba@intel.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-ZohoMailClient: External
-X-Mailman-Approved-At: Tue, 26 May 2026 15:27:16 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
- c=relaxed/relaxed; t=1779781706; 
- s=zoho; d=zohomail.in; i=kshitiz.bartariya@zohomail.in;
- h=From:From:To:To:Cc:Cc:Subject:Subject:Date:Date:Message-ID:MIME-Version:Content-Transfer-Encoding:Message-Id:Reply-To;
- bh=RcYJkbepy0hFGDpKlaCDfg2/HYEIPKovcL1K3xETJ5c=;
- b=DF2BHMFbOPkHACvwB/z+p1lJvJtdXl0muPaoruDwgDeYY/1gKvFcZyRrPJN7bZs1
- jRabxM4g03HT6NGtkJKus497wGLwN76waZAEimtIxwpTRF04mfxHnGvYwRVpo7XQ4rj
- OGh88OXSLuxy41M/YOpnVD85QUxr9QltPz7XzTbU=
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=reject dis=none)
- header.from=zohomail.in
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=zohomail.in header.i=kshitiz.bartariya@zohomail.in
- header.a=rsa-sha256 header.s=zoho header.b=DF2BHMFb
-Subject: [Intel-wired-lan] [PATCH net v2] ixgbe: implement get_queue_stats_rx
+In-Reply-To: <20260520105311.5336-1-przemyslaw.korba@intel.com>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=kernel.org; s=k20260515; t=1779815206;
+ bh=n11Yvwqz+rqZT/ZKP/UpHkRhFhWQS/84ypYO7E9okBA=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To;
+ b=L74nACt4vDpTQ1KQExp061+LDxI5s2krwDeWN78xNPBref7J6thsPR6qAf/5kO7kt
+ aATz9hKovOTTaQ18g359htOPn+NvTMcKe5Zj7+Y4riJ69VD2G5Zj0I+y73i/kw4i/c
+ I1B7rE1i/SG/cTjLHasSy0Uzvlwvq2z4UY3abPM/aXqwNXeHtr2ju1RDb8oYLuPY7k
+ zZwRWW/x5tGsL/Zyr7yFBhWodkABOjqWKrcCAZNPHeww9UtJxMcygKVOv9u0ILCaeb
+ 9XlGnd7Nt8g5V8n8mUkISvrfIsxvK12QrFfWvhkw3c192PUHaABUUg1qxhUeOPH6DQ
+ 8iCfyYm8QmLWw==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20260515 header.b=L74nACt4
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net v3] ice: support SBQ posted
+ writes with non-posted support for CGU
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -102,69 +98,63 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-From: Kshitiz Bartariya via Intel-wired-lan <intel-wired-lan@osuosl.org>
-Reply-To: Kshitiz Bartariya <kshitiz.bartariya@zohomail.in>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Hook into the netdev_stat_ops interface to expose per RX queue
-statistics through the netdev generic netlink API.
+On Wed, May 20, 2026 at 12:52:03PM +0200, Przemyslaw Korba wrote:
+> From: Karol Kolacinski <karol.kolacinski@intel.com>
+> 
+> Sideband queue (SBQ) is a HW queue with very short completion time. All
+> SBQ writes were posted by default, which means that the driver did not
+> have to wait for completion from the neighbor device, because there was
+> none. This introduced unnecessary delays, where only those delays were
+> "ensuring" that the command is "completed" and this was a potential race
+> condition.
+> 
+> Add the possibility to perform non-posted writes where it's necessary to
+> wait for completion, instead of relying on fake completion from the FW,
+> where only the delays are guarding the writes.
+> 
+> Flush the SBQ by reading address 0 from the PHY 0 before issuing SYNC
+> command to ensure that writes to all PHYs were completed and skip SBQ
+> message completion if it's posted.
+> 
+> E810 only supports opcode 0x01, but its FW always sends completion
+> responses for this opcode, so the driver waits for each write to complete.
+> This makes E810 writes synchronous and eliminates the need for SBQ flush.
+> 
+> To analyze if delays are gone, look for and compare time spent in
+> ice_sq_send_cmd — posted writes should return immediately after the wr32.
+> That can be done for example by adjusting phc time with phc_ctl on E830
+> device, for less than 2 seconds to use this new mechanism. Without it,
+> command below will fail.
+> 
+> Reproduction steps:
+> phc_ctl eth13 adj 1
+> phc_ctl[4478170.994]: adjusted clock by 1.000000 seconds
+> 
+> Check trace for timing for comparisions:
+> echo ice_sbq_send_cmd > /sys/kernel/debug/tracing/set_ftrace_filter
+> echo function_graph > /sys/kernel/debug/tracing/current_tracer
+> cat /sys/kernel/debug/tracing/trace
+> 
+> Tested on:
+>   - Intel E830 NIC (FW version 1.00)
+>   - Kernel 6.19.0+
+> 
+> Fixes: 8f5ee3c477a8 ("ice: add support for sideband messages")
+> Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
+> Signed-off-by: Przemyslaw Korba <przemyslaw.korba@intel.com>
+> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+> Reviewed-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+> ---
+> v3:
+> - include information in comments and commit message about different
+> E810 behavior
+> v2:
+> https://lore.kernel.org/intel-wired-lan/20260508102247.826375-1-przemyslaw.korba@intel.com/
 
-The following counters are filled:
+Thanks for the update.
 
- - alloc_fail: sum of alloc_rx_page_failed and alloc_rx_buff_failed
-
- - csum_bad: maps directly to csum_err, which is incremented for both
-   IP header and L4 checksum errors in ixgbe_rx_checksum().
-
-Signed-off-by: Kshitiz Bartariya <kshitiz.bartariya@zohomail.in>
----
-v2:
- - Removed setting of hw_gro counters as ixgbe doesn't advertise it
- - Removed idx and ring checks as they are already checked against 
-   real_num_rx_queues
-Thanks Jakub Kicinski for the review comments.
-
-v1: https://lore.kernel.org/lkml/20260523144022.36484-1-kshitiz.bartariya@zohomail.in/
-
-
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 2646ee6f295f..2184213727c7 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -9740,6 +9740,21 @@ static void ixgbe_get_stats64(struct net_device *netdev,
- 	stats->rx_missed_errors	= netdev->stats.rx_missed_errors;
- }
- 
-+static void ixgbe_get_queue_stats_rx(struct net_device *dev, int idx,
-+				     struct netdev_queue_stats_rx *stats)
-+{
-+	struct ixgbe_adapter *adapter = ixgbe_from_netdev(dev);
-+	struct ixgbe_ring *ring = adapter->rx_ring[idx];
-+
-+	stats->alloc_fail = ring->rx_stats.alloc_rx_page_failed +
-+			    ring->rx_stats.alloc_rx_buff_failed;
-+	stats->csum_bad = ring->rx_stats.csum_err;
-+}
-+
-+static const struct netdev_stat_ops ixgbe_stat_ops = {
-+	.get_queue_stats_rx	= ixgbe_get_queue_stats_rx,
-+};
-+
- static int ixgbe_ndo_get_vf_stats(struct net_device *netdev, int vf,
- 				  struct ifla_vf_stats *vf_stats)
- {
-@@ -11643,6 +11658,7 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	hw->phy.mdio.mdio_write = ixgbe_mdio_write;
- 
- 	netdev->netdev_ops = &ixgbe_netdev_ops;
-+	netdev->stat_ops   = &ixgbe_stat_ops;
- 	ixgbe_set_ethtool_ops(netdev);
- 	netdev->watchdog_timeo = 5 * HZ;
- 	strscpy(netdev->name, pci_name(pdev), sizeof(netdev->name));
--- 
-2.50.1 (Apple Git-155)
+Reviewed-by: Simon Horman <horms@kernel.org>
 
