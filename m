@@ -1,91 +1,91 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3B14CD5BB1
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 26 May 2026 17:06:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3FC5CCD5BC8
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 26 May 2026 19:41:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 7C88140FA0;
-	Tue, 26 May 2026 17:06:51 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id duxoX3OOhsNg; Tue, 26 May 2026 17:06:50 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2812140FEB
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1779815210;
-	bh=n11Yvwqz+rqZT/ZKP/UpHkRhFhWQS/84ypYO7E9okBA=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=tYDY2faBx+Fw7JKiXjXIf1EzYENlsXAaTdvlIdpC5IT/IUKMAQCKkdExRKQ01757l
-	 54UED8MHWdZ8tLPlnBMS+mlN9/10D8lWSVqSxIoDLdH1rW/xwS60nH5J8nqpi+sLP7
-	 9aBZkGI6FEB9tpDeE28vCnfZKlbHtWVAxUt1PVoqucHdbLcFEfC1UOhpTtTxhngUJF
-	 vLrWxErXs1QFfudXVgWJq1ixldLk3ntWxorxR7FyeAmPz1rnso64B+Raa01WADILDK
-	 PU9kDu9V+VQGgxN705YUbzDE9/oNJ5Jel4uiZp80F8T5Q1zZveqAeEMp2HV/RixSHT
-	 xNlzB5gkEHTvQ==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 2812140FEB;
-	Tue, 26 May 2026 17:06:50 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id D47D6297
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 May 2026 17:06:48 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id BA05981E00
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 May 2026 17:06:48 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id F09418207C;
+	Tue, 26 May 2026 19:41:00 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id NNG0lvr2yYV0 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 26 May 2026 17:06:48 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org; envelope-from=horms@kernel.org;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org DB1E881DFD
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DB1E881DFD
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp1.osuosl.org (Postfix) with ESMTPS id DB1E881DFD
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 May 2026 17:06:47 +0000 (UTC)
+ id iVGpF36HyIU7; Tue, 26 May 2026 19:40:59 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 55A5E8207A
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1779824459;
+	bh=3dc3s5FcGv5TWeqnsXrMMOMRbRrCCsMuvBGziG/wGiQ=;
+	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=qPNO2XF/meKimPnOUGEFWjqS6NLBC1fwPe+hV80190GAA4qCVqFUZevjdrGNowkO/
+	 XB4xkQI/8vwFnG3eoQsTPFvWv44OpNeXljvOit+1hL0jHjt5iKLNsDt0WF7z1o3uXG
+	 2mgQq8m1cwStmD+/Eu6Iv2ixpDLNNDMKAJ7gzzkrRkrHGLpRFWF4newDaSS8oJyPbz
+	 cpJuCfxWo1yYwYEIJ889pzHuB5iT89luSrDMzVyV2a3518fnQi9k7SiyrkGsXxlQTi
+	 lwet5aRZWMkZC5S3l3xK2jnc0rwXq+hockj6XrKAy+2zc/yZUZPmbuKN/hvuRAvYSZ
+	 lNpzLbiFpvdeg==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp1.osuosl.org (Postfix) with ESMTP id 55A5E8207A;
+	Tue, 26 May 2026 19:40:59 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 59905297
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 May 2026 19:40:57 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id 3FA0640FC1
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 May 2026 19:40:57 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id eRfRS3ghg187 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 26 May 2026 19:40:56 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
+ envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 59D2340F79
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 59D2340F79
+Received: from tor.source.kernel.org (tor.source.kernel.org
+ [IPv6:2600:3c04:e001:324:0:1991:8:25])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 59D2340F79
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 May 2026 19:40:56 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id 60CA660018;
- Tue, 26 May 2026 17:06:46 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A2B761F000E9;
- Tue, 26 May 2026 17:06:44 +0000 (UTC)
-Date: Tue, 26 May 2026 18:06:42 +0100
+ by tor.source.kernel.org (Postfix) with ESMTP id DCF2D60018;
+ Tue, 26 May 2026 19:40:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A53231F000E9;
+ Tue, 26 May 2026 19:40:52 +0000 (UTC)
+Date: Tue, 26 May 2026 20:40:50 +0100
 From: Simon Horman <horms@kernel.org>
-To: Przemyslaw Korba <przemyslaw.korba@intel.com>
-Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
- aleksandr.loktionov@intel.com, arkadiusz.kubalewski@intel.com
-Message-ID: <20260526170642.GA2256768@horms.kernel.org>
-References: <20260520105311.5336-1-przemyslaw.korba@intel.com>
+To: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Cc: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
+ netdev@vger.kernel.org
+Message-ID: <20260526194050.GC2256768@horms.kernel.org>
+References: <20260522025702.1764129-1-aleksandr.loktionov@intel.com>
+ <20260522025702.1764129-2-aleksandr.loktionov@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260520105311.5336-1-przemyslaw.korba@intel.com>
+In-Reply-To: <20260522025702.1764129-2-aleksandr.loktionov@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=kernel.org; s=k20260515; t=1779815206;
- bh=n11Yvwqz+rqZT/ZKP/UpHkRhFhWQS/84ypYO7E9okBA=;
+ d=kernel.org; s=k20260515; t=1779824453;
+ bh=3dc3s5FcGv5TWeqnsXrMMOMRbRrCCsMuvBGziG/wGiQ=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To;
- b=L74nACt4vDpTQ1KQExp061+LDxI5s2krwDeWN78xNPBref7J6thsPR6qAf/5kO7kt
- aATz9hKovOTTaQ18g359htOPn+NvTMcKe5Zj7+Y4riJ69VD2G5Zj0I+y73i/kw4i/c
- I1B7rE1i/SG/cTjLHasSy0Uzvlwvq2z4UY3abPM/aXqwNXeHtr2ju1RDb8oYLuPY7k
- zZwRWW/x5tGsL/Zyr7yFBhWodkABOjqWKrcCAZNPHeww9UtJxMcygKVOv9u0ILCaeb
- 9XlGnd7Nt8g5V8n8mUkISvrfIsxvK12QrFfWvhkw3c192PUHaABUUg1qxhUeOPH6DQ
- 8iCfyYm8QmLWw==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ b=RInNDfHPD2F13iiBXuM2riLL4luuizpzpHuIIMCA+VQ5qip00sf7n+PbDrNZAfECb
+ XOzErwmPBYnRivhowJTiOrxIHHvy7qydP/OOsyJET/rRa6J6vXDv7iVQRiUTz3T2Lu
+ 5+zN1G+dl+DjtCFIJWRg3f7mHTMqU4s8t/47XPQPvwbojeAQNC4EYMMpU/cqmo7+B+
+ 2t4N70AmhbPelQtIYzFaTDB51lIAyDOqxXAwMsQpuft3J3JuaHMR28wyNckXNZ6D6Q
+ WBF9YHmX1VnZUpC093zsFGmqiCPZauViIpbpIP17jo7Kguz3+MFIHSi282jPgVQEST
+ Lu+9RtCOrq/3w==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=L74nACt4
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net v3] ice: support SBQ posted
- writes with non-posted support for CGU
+ header.s=k20260515 header.b=RInNDfHP
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next 1/2] iavf: log PF diagnostic
+ message on cloud filter add failure
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -101,60 +101,65 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Wed, May 20, 2026 at 12:52:03PM +0200, Przemyslaw Korba wrote:
-> From: Karol Kolacinski <karol.kolacinski@intel.com>
+On Fri, May 22, 2026 at 04:57:01AM +0200, Aleksandr Loktionov wrote:
+> When the PF rejects a cloud filter add request it may include a
+> diagnostic string in the virtchnl response. Use dev_info() to log it
+> so operators can diagnose offload failures without enabling verbose
+> tracing.
 > 
-> Sideband queue (SBQ) is a HW queue with very short completion time. All
-> SBQ writes were posted by default, which means that the driver did not
-> have to wait for completion from the neighbor device, because there was
-> none. This introduced unnecessary delays, where only those delays were
-> "ensuring" that the command is "completed" and this was a potential race
-> condition.
-> 
-> Add the possibility to perform non-posted writes where it's necessary to
-> wait for completion, instead of relying on fake completion from the FW,
-> where only the delays are guarding the writes.
-> 
-> Flush the SBQ by reading address 0 from the PHY 0 before issuing SYNC
-> command to ensure that writes to all PHYs were completed and skip SBQ
-> message completion if it's posted.
-> 
-> E810 only supports opcode 0x01, but its FW always sends completion
-> responses for this opcode, so the driver waits for each write to complete.
-> This makes E810 writes synchronous and eliminates the need for SBQ flush.
-> 
-> To analyze if delays are gone, look for and compare time spent in
-> ice_sq_send_cmd — posted writes should return immediately after the wr32.
-> That can be done for example by adjusting phc time with phc_ctl on E830
-> device, for less than 2 seconds to use this new mechanism. Without it,
-> command below will fail.
-> 
-> Reproduction steps:
-> phc_ctl eth13 adj 1
-> phc_ctl[4478170.994]: adjusted clock by 1.000000 seconds
-> 
-> Check trace for timing for comparisions:
-> echo ice_sbq_send_cmd > /sys/kernel/debug/tracing/set_ftrace_filter
-> echo function_graph > /sys/kernel/debug/tracing/current_tracer
-> cat /sys/kernel/debug/tracing/trace
-> 
-> Tested on:
->   - Intel E830 NIC (FW version 1.00)
->   - Kernel 6.19.0+
-> 
-> Fixes: 8f5ee3c477a8 ("ice: add support for sideband messages")
-> Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
-> Signed-off-by: Przemyslaw Korba <przemyslaw.korba@intel.com>
-> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-> Reviewed-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+> Use %.*s with an explicit length bound to avoid reading past the end of
+> the message buffer when the PF fills all 4096 bytes and leaves no NUL
+> terminator. Add the missing cloud_filter_list_lock around both the
+> VIRTCHNL_OP_ADD_CLOUD_FILTER and VIRTCHNL_OP_DEL_CLOUD_FILTER error
+> paths to close a pre-existing race against iavf_add_cloud_filter() and
+> iavf_del_cloud_filter(). Apply the same %.*s fix to the equivalent
+> VIRTCHNL_OP_ADD_FDIR_FILTER error path which carried the same bug.
+
+This seems to be doing several things. So I would suggest it warrants
+being split into several patches.
+
+And, if they are fixes, some consideration should be given
+to targeting iwl and including Fixes tags in the patches.
+
+Partially flagged by: https://netdev-ai.bots.linux.dev/sashiko/
+
+
+Also, the locking fix here is made to the error path,
+but not the non-error path (v_retval == 0) where
+the VIRTCHNL_OP_ADD_CLOUD_FILTER and VIRTCHNL_OP_DEL_CLOUD_FILTER cases
+traverse and update  cloud_filter_list.
+
+Flagged by https://sashiko.dev/
+
+
+> Suggested-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
+> Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 > ---
-> v3:
-> - include information in comments and commit message about different
-> E810 behavior
-> v2:
-> https://lore.kernel.org/intel-wired-lan/20260508102247.826375-1-przemyslaw.korba@intel.com/
+>  drivers/net/ethernet/intel/iavf/iavf_virtchnl.c | 15 +++++++++++++--
+>  1 file changed, 13 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
 
-Thanks for the update.
+...
 
-Reviewed-by: Simon Horman <horms@kernel.org>
+> @@ -2434,8 +2443,10 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+>  							       v_retval));
+>  					iavf_print_fdir_fltr(adapter, fdir);
+>  					if (msglen)
+> -						dev_err(&adapter->pdev->dev,
+> -							"%s\n", msg);
+> +						dev_info(&adapter->pdev->dev,
+> +							 "%.*s\n",
+> +							 (int)msglen,
+> +							 (const char *)msg);
 
+As well as addressing the length of msg, ad described in the commit
+message, this also changes the priority of the message from err to info.
+This seems to be a separate change that is not mentioned in the commit
+message.
+
+Also flagged by: https://sashiko.dev/
+
+>  					list_del(&fdir->list);
+>  					iavf_dec_fdir_active_fltr(adapter, fdir);
+>  					kfree(fdir);
