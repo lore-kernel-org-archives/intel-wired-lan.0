@@ -1,95 +1,107 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72BACCD5BD0
-	for <intel-wired-lan@archiver.kernel.org>; Sat, 30 May 2026 18:52:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A799ACD5BD1
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  1 Jun 2026 09:19:19 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id ED05C853DC;
-	Sat, 30 May 2026 18:52:19 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 6BF53412FF;
+	Mon,  1 Jun 2026 09:19:19 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id sttjjEuxs4rK; Sat, 30 May 2026 18:52:18 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id ImlmtmKPe0Rs; Mon,  1 Jun 2026 09:19:18 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org F08BE853D3
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org ACF60412D3
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1780167138;
-	bh=cfzX0X3837Iy1hvztbsFY8JGxzgZJ2UuNwnL9ER71DM=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1780305558;
+	bh=FRuJ/bTreyTUvoele0tt6dA2haaqR/nwmFpgSiNZgOE=;
+	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=TcAIpAJt9Tyu7TBoobIh653Wbep6i/gHIVlXlgf8631IGMtZur6G9GMpQY9be5JQb
-	 NdYwf7QRhFaF74iRQkzSdhKOgVzGPKLc1MRA/hVJhI74UBrKTomae3Q188ICEUBr/o
-	 POjzdkW+wqCVB8FGqrASpeGSMoJXwoIj4E/7HjSHwV38fiXRpJRKY4gYxM+89wHrMY
-	 bdmthLXoHArtO3XU2r8KZC/LvkGTfccjFuNUhUb4DcY2L3q9aWi34h0UVR9+JR8iLI
-	 G0zwHRpnHlKdzPAzqY2wYhrGKkhwPRbiELE1Jyb6tA9zYjDfDV6BX/mQiR8bJXYEUC
-	 h2GThUfGdwvlw==
+	b=A26A5ND6DO60tPIUWEHXeM8qX2Kv5QHpkvzZpPybjcoVSZPthxUhRYrR3OLa85RxY
+	 8vxyPd4kOIBScQGoaVkfsmiJGukVbCFySmvOCtj6ngvhHDsmCa0X2iFCuqM3g14IbZ
+	 1dNJzYa9ucbSMieO31kvPUZVs3fVk9joxXw2ooWPWfDD12ygJf1zwcMrDxqG/IgWpi
+	 bsr4MEqDjnjgrtWgO37esuNog2UJYvujoq0t9Qry2LRTM7GeOySvJZQo+PdY7mZxcm
+	 L0JROy1ov2fUUa9/gEE8q/HM4Ffad9coKnTADMj8Mu560aBR8zbQOsv67IW6vgLr+k
+	 HSckbP2ALUr2Q==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id F08BE853D3;
-	Sat, 30 May 2026 18:52:17 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id DABDE12F
- for <intel-wired-lan@lists.osuosl.org>; Sat, 30 May 2026 18:52:16 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id ACF60412D3;
+	Mon,  1 Jun 2026 09:19:18 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id A81552AA
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  1 Jun 2026 09:19:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id BFE70853D3
- for <intel-wired-lan@lists.osuosl.org>; Sat, 30 May 2026 18:52:16 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 9A2EC412CC
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  1 Jun 2026 09:19:17 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id KihkHPGofxtu for <intel-wired-lan@lists.osuosl.org>;
- Sat, 30 May 2026 18:52:16 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org; envelope-from=gregkh@linuxfoundation.org;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id HVvSJibaP26z for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  1 Jun 2026 09:19:17 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.14;
+ helo=mgamail.intel.com; envelope-from=marcin.szycik@linux.intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org A9ABC853D2
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A9ABC853D2
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp1.osuosl.org (Postfix) with ESMTPS id A9ABC853D2
- for <intel-wired-lan@lists.osuosl.org>; Sat, 30 May 2026 18:52:15 +0000 (UTC)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id 144776014C;
- Sat, 30 May 2026 18:52:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 275191F00893;
- Sat, 30 May 2026 18:52:12 +0000 (UTC)
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: stable@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, patches@lists.linux.dev,
- intel-wired-lan@lists.osuosl.org, Bart Van Assche <bvanassche@acm.org>,
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Arpana Arland <arpanax.arland@intel.com>,
- Jacob Keller <jacob.e.keller@intel.com>, Jakub Kicinski <kuba@kernel.org>,
- Sasha Levin <sashal@kernel.org>
-Date: Sat, 30 May 2026 18:07:33 +0200
-Message-ID: <20260530160239.650536505@linuxfoundation.org>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260530160224.570625122@linuxfoundation.org>
-References: <20260530160224.570625122@linuxfoundation.org>
-User-Agent: quilt/0.69
-X-stable: review
-X-Patchwork-Hint: ignore
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 89602412B7
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 89602412B7
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 89602412B7
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  1 Jun 2026 09:19:16 +0000 (UTC)
+X-CSE-ConnectionGUID: uBtPonIGQFCyfDKEnvuf6Q==
+X-CSE-MsgGUID: K2xq8wJeRiyC5mCRyFV6JQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11803"; a="84948307"
+X-IronPort-AV: E=Sophos;i="6.24,181,1774335600"; d="scan'208";a="84948307"
+Received: from orviesa009.jf.intel.com ([10.64.159.149])
+ by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 01 Jun 2026 02:19:15 -0700
+X-CSE-ConnectionGUID: yAwssWEbRYOo/Yw4Utq+IA==
+X-CSE-MsgGUID: 777dSKA9Q1moknFX8mAvDQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.24,181,1774335600"; d="scan'208";a="243619328"
+Received: from unknown (HELO [10.217.160.157]) ([10.217.160.157])
+ by orviesa009-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 01 Jun 2026 02:19:12 -0700
+Message-ID: <f8a922da-8463-48b1-8e4b-a6bda0767d32@linux.intel.com>
+Date: Mon, 1 Jun 2026 11:19:05 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linuxfoundation.org; 
- s=korg; t=1780167133;
- bh=cfzX0X3837Iy1hvztbsFY8JGxzgZJ2UuNwnL9ER71DM=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References;
- b=G/gN2dITft1FO1/F67Wm+X3ZqZ457DQchWIT1QPdO1BxwdDVfANmC6y+nhlkqCUb5
- Lvzy3jJR/InOPQXrRUI5ZSVSLWErDvhS5P45rkHYhSaPEf0gtH8OkULxnfVRq6x6Ei
- 7ZBcdZNeFfYnF+F2VJQn7KrQ8la72BunslTdgtc8=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=linuxfoundation.org
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org
- header.a=rsa-sha256 header.s=korg header.b=G/gN2dIT
-Subject: [Intel-wired-lan] [PATCH 5.10 572/589] ice: fix locking in
- ice_dcb_rebuild()
+User-Agent: Mozilla Thunderbird
+To: Dawei Feng <dawei.feng@seu.edu.cn>, anthony.l.nguyen@intel.com
+Cc: przemyslaw.kitszel@intel.com, andrew+netdev@lunn.ch, davem@davemloft.net, 
+ edumazet@google.com, kuba@kernel.org, pabeni@redhat.com,
+ jesse.brandeburg@intel.com, sln@onemain.com,
+ intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, jianhao.xu@seu.edu.cn, stable@vger.kernel.org,
+ Zilin Guan <zilin@seu.edu.cn>
+References: <20260527110205.1780595-1-dawei.feng@seu.edu.cn>
+Content-Language: en-US
+From: Marcin Szycik <marcin.szycik@linux.intel.com>
+In-Reply-To: <20260527110205.1780595-1-dawei.feng@seu.edu.cn>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1780305556; x=1811841556;
+ h=message-id:date:mime-version:subject:to:cc:references:
+ from:in-reply-to:content-transfer-encoding;
+ bh=wcQZubXFj92w5s2C5QPjxynJFvtcWsTj+RW8zM8eY3s=;
+ b=GtdnsfURuPQqFjeDaI4naPJc0x7logSVgd/qBVqjf6DIKSVeYCIMNlWn
+ NisyXHn++5Lx1EmfmpL0N6ir8I1Wfu4iiKWAb6v9Fu5WZcKIKrcdPnOt7
+ VmB1H2Sz2RQCEmbBIkRaJn2uLDu+OXyB01S+7i/XhBhGT+n3bg+apqi9E
+ RKFqrebwH2ZpyjY1sB8J7Q8UViU1u9TwcZqVccuMoJ8JytbrOpDTX+/fC
+ L21qOWCLXcF53G4TjweXNvr8mcmX7TVCGVKjHsSMz2zPRNzSMq/MAHy72
+ kMq5Ftr4Xj5aNCzhSq7PSHAzqcIMDGfCEzvosfOZZeMzKjFRCsOafzJfa
+ A==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=linux.intel.com
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=GtdnsfUR
+Subject: Re: [Intel-wired-lan] [PATCH net] i40e: fix netdev leak in
+ i40e_vsi_setup() error paths
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -105,61 +117,64 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-5.10-stable review patch.  If anyone has any objections, please let me know.
-
-------------------
-
-From: Bart Van Assche <bvanassche@acm.org>
-
-[ Upstream commit 0ded1f36ba4021cba50513e80be6b6e173710168 ]
-
-Move the mutex_lock() call up to prevent that DCB settings change after
-the first ice_query_port_ets() call. The second ice_query_port_ets()
-call in ice_dcb_rebuild() is already protected by pf->tc_mutex.
-
-This also fixes a bug in an error path, as before taking the first
-"goto dcb_error" in the function jumped over mutex_lock() to
-mutex_unlock().
-
-This bug has been detected by the clang thread-safety analyzer.
-
-Cc: intel-wired-lan@lists.osuosl.org
-Fixes: 242b5e068b25 ("ice: Fix DCB rebuild after reset")
-Signed-off-by: Bart Van Assche <bvanassche@acm.org>
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Tested-by: Arpana Arland <arpanax.arland@intel.com>
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Link: https://patch.msgid.link/20260506-jk-iwl-net-2026-05-04-v2-6-a5ea4dc837a9@intel.com
-Signed-off-by: Jakub Kicinski <kuba@kernel.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-index 1e8f71ffc8ce7..7fff700eab2b1 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-@@ -438,14 +438,14 @@ void ice_dcb_rebuild(struct ice_pf *pf)
- 	struct ice_dcbx_cfg *err_cfg;
- 	enum ice_status ret;
- 
-+	mutex_lock(&pf->tc_mutex);
-+
- 	ret = ice_query_port_ets(pf->hw.port_info, &buf, sizeof(buf), NULL);
- 	if (ret) {
- 		dev_err(dev, "Query Port ETS failed\n");
- 		goto dcb_error;
- 	}
- 
--	mutex_lock(&pf->tc_mutex);
--
- 	if (!pf->hw.port_info->qos_cfg.is_sw_lldp)
- 		ice_cfg_etsrec_defaults(pf->hw.port_info);
- 
--- 
-2.53.0
 
 
+On 27/05/2026 13:02, Dawei Feng wrote:
+> i40e_config_netdev() allocates vsi->netdev for main and VMDQ VSIs. If
+> i40e_netif_set_realnum_tx_rx_queues(), i40e_devlink_create_port(), or
+> register_netdev() fails, i40e_vsi_setup() goes to err_netdev without
+> releasing the netdev. The existing cleanup only frees the netdev after a
+> successful register_netdev(), so these error paths leak the allocation.
+> 
+> Reorder the error paths at err_netdev to ensure proper cleanup of the
+> allocated device.
+> 
+> The bug was first flagged by an experimental analysis tool we are
+> developing for kernel memory-management bugs while analyzing
+> v6.13-rc1. The tool is still under development and is not yet publicly
+> available. Manual inspection confirms that the bug is still
+> present in v7.1-rc5.
+> 
+> An x86_64 allyesconfig build showed no new warnings. As we do not have an
+> Intel Ethernet Controller XL710 family adapter to test with, no runtime
+> testing was able to be performed.
+> 
+> Fixes: 41c445ff0f48 ("i40e: main driver core")
+> Cc: stable@vger.kernel.org
+> 
+> Signed-off-by: Zilin Guan <zilin@seu.edu.cn>
+> Signed-off-by: Dawei Feng <dawei.feng@seu.edu.cn>
+
+We could introduce additional goto label for i40e_config_netdev() instead of
+if condition, but the latter is probably safer in this case (without splitting
+the different VSI types setup to functions).
+
+Reviewed-by: Marcin Szycik <marcin.szycik@linux.intel.com>
+
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> index 6d4f9218dc68..1ced01b0cc09 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> @@ -14491,13 +14491,15 @@ struct i40e_vsi *i40e_vsi_setup(struct i40e_pf *pf, u8 type,
+>  	if (vsi->netdev_registered) {
+>  		vsi->netdev_registered = false;
+>  		unregister_netdev(vsi->netdev);
+> -		free_netdev(vsi->netdev);
+> -		vsi->netdev = NULL;
+>  	}
+>  err_dl_port:
+>  	if (vsi->type == I40E_VSI_MAIN)
+>  		i40e_devlink_destroy_port(pf);
+>  err_netdev:
+> +	if (vsi->netdev) {
+> +		free_netdev(vsi->netdev);
+> +		vsi->netdev = NULL;
+> +	}
+>  	i40e_aq_delete_element(&pf->hw, vsi->seid, NULL);
+>  err_vsi:
+>  	i40e_vsi_clear(vsi);
 
