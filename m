@@ -4,73 +4,98 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A65CCD6E56
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  1 Jun 2026 09:23:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42086CD6E56
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  1 Jun 2026 09:45:26 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 0596542A3B;
-	Mon,  1 Jun 2026 09:23:58 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 07FA742A47;
+	Mon,  1 Jun 2026 09:45:26 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id EmITdznpenm0; Mon,  1 Jun 2026 09:23:57 +0000 (UTC)
+ id ITxCPD7Uej0U; Mon,  1 Jun 2026 09:45:24 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 378D842A3C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0D72D42A44
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1780305837;
-	bh=XvO6AWWbrytQKUaTglHDoblgZaWUr8G3OaM5lLPMVTo=;
-	h=Date:From:To:Cc:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=mIKJwBT1ImnmufXvXFZi2tL6RG6dlhMn9FMYadPo0YhMOPBKG8DdrxPsJfENfCp1Z
-	 yH51FgvGVSgyndcO+yc14SO8wpNeiONbeKiP+cEmBQ56unM6j759a0jvcJ9K9mRmUI
-	 +lUtruSfyfv2UbTuHUG1bw3z1enlQPbwbXPOc6gu3RpNyjPG7rB7kpd9otpMViI8mb
-	 uo5ojpLgVnesuGwEBRAVi3I0f+JAzQ9RVVQLXhjkLkbThg+vIfalDN4mbKl6k9Uh/K
-	 nqjTpBt6qVPgin1s4/13Biu4kXYmATTJixSnEgcCGS2pnSIR834Z25Y8oCAiVKAnbh
-	 MusZs70Q25nlQ==
+	s=default; t=1780307124;
+	bh=jZdzH2mt0j0Gi1mu/PuCl/BGUjh7MK1n/fFOwKUuyvE=;
+	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=60ADfXNbOADLiK36VjkHjnHmrIhnkNlQHrbHVtYnPBZsOLYbELdqKvlm6jt4qwCxy
+	 Vrbm9D3COoSAfYL7j9JSj/xh0YTsCCvDlZTgjrpsczhLeC/iiFpsJ2O2Phm+qM6cgQ
+	 agooBcr+6OXqYPXAP+yIhQebanITWl0phL4d5LomSR3qnR26vzVhkteqpBp/tKsD6F
+	 9BnTGvK7sKgdZIN87yDYYnq6tP62y/CEtVlvqoOfncUMNWJ7ccLBcaQnGxYhLYahWd
+	 yNbAUUXc/j4l0+xf6CsCZMw2ayX2KSy/n4An8JK5H+D5lLwz20Ha8ObtpqwQZHepOn
+	 ZWHdW6y3TOjKQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 378D842A3C;
-	Mon,  1 Jun 2026 09:23:57 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 76306257
- for <intel-wired-lan@lists.osuosl.org>; Mon,  1 Jun 2026 09:23:56 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 0D72D42A44;
+	Mon,  1 Jun 2026 09:45:24 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id D80B7257
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  1 Jun 2026 09:45:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 5C23B60B6E
- for <intel-wired-lan@lists.osuosl.org>; Mon,  1 Jun 2026 09:23:56 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id C970B4083C
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  1 Jun 2026 09:45:22 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id arzmraiWxMuF for <intel-wired-lan@lists.osuosl.org>;
- Mon,  1 Jun 2026 09:23:55 +0000 (UTC)
-X-Greylist: delayed 641 seconds by postgrey-1.37 at util1.osuosl.org;
- Mon, 01 Jun 2026 09:23:54 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 2767060B5F
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2767060B5F
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a0a:51c0:0:237:300::1; helo=chamillionaire.breakpoint.cc;
- envelope-from=fw@strlen.de; receiver=<UNKNOWN> 
-Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc
- [IPv6:2a0a:51c0:0:237:300::1])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 2767060B5F
- for <intel-wired-lan@lists.osuosl.org>; Mon,  1 Jun 2026 09:23:54 +0000 (UTC)
-Received: by Chamillionaire.breakpoint.cc (Postfix, from userid 1003)
- id CFCCC604DC; Mon, 01 Jun 2026 11:13:08 +0200 (CEST)
-Date: Mon, 1 Jun 2026 11:13:08 +0200
-From: Florian Westphal <fw@strlen.de>
-To: Lorenzo Bianconi <lorenzo@kernel.org>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Felix Fietkau <nbd@nbd.name>, Saeed Mahameed <saeedm@nvidia.com>,
- Leon Romanovsky <leon@kernel.org>, Tariq Toukan <tariqt@nvidia.com>,
- Mark Bloch <mbloch@nvidia.com>
-Cc: netdev@vger.kernel.org, linux-mediatek@lists.infradead.org,
- intel-wired-lan@lists.osuosl.org
-Message-ID: <ah1NJMrJ5rEkQlJG@strlen.de>
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id emTSuGEMZP_8 for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  1 Jun 2026 09:45:22 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.18;
+ helo=mgamail.intel.com; envelope-from=marcin.szycik@linux.intel.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org D8F1C40825
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D8F1C40825
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id D8F1C40825
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  1 Jun 2026 09:45:21 +0000 (UTC)
+X-CSE-ConnectionGUID: f5aFvZcwR2uZizkGB30ryQ==
+X-CSE-MsgGUID: bhUwNb1FSLem6x3bpZyvXw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11803"; a="80200920"
+X-IronPort-AV: E=Sophos;i="6.24,181,1774335600"; d="scan'208";a="80200920"
+Received: from fmviesa003.fm.intel.com ([10.60.135.143])
+ by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 01 Jun 2026 02:45:21 -0700
+X-CSE-ConnectionGUID: E6yG66ftRvi6/K+HeqJKCg==
+X-CSE-MsgGUID: BeD92rN9Tn6kVMq9VYNI5A==
+X-ExtLoop1: 1
+Received: from unknown (HELO [10.217.160.157]) ([10.217.160.157])
+ by fmviesa003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 01 Jun 2026 02:45:20 -0700
+Message-ID: <cf39b55c-f9f2-4944-9ca3-14c6a1bff7de@linux.intel.com>
+Date: Mon, 1 Jun 2026 11:45:18 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+User-Agent: Mozilla Thunderbird
+To: Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
+ intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com
+Cc: netdev@vger.kernel.org
+References: <20260527071842.11478-1-aleksandr.loktionov@intel.com>
+Content-Language: en-US
+From: Marcin Szycik <marcin.szycik@linux.intel.com>
+In-Reply-To: <20260527071842.11478-1-aleksandr.loktionov@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1780307122; x=1811843122;
+ h=message-id:date:mime-version:subject:to:cc:references:
+ from:in-reply-to:content-transfer-encoding;
+ bh=l0Picw4fs18nY9Kv0T1KHBRrF4f6NuQCKc3xyRlXbls=;
+ b=n1eo05PUO7xl5q8GAuWo/42ohkTRZG5qGRfSR1vN9lDE5D508SLQ+s/D
+ MZCKJt1IAthy9VlkxMJ8kc5phk/Nsb/E5HTkXEo4qvq8oT06JR0y3myI6
+ 8RkxkbmHZu99RSCBOjKb7vo5BrrSMsH0j35e3+84FwO3/1O/xLlK1Nw4h
+ lbtVGvCsGiZ+UY8t2QtXgR82blZ/yNoon7tjzLUGL7b0ZlxSXBxP0sxzx
+ wp4Q8UnmI6Y3j1nHPBKkYAigfmwRfVkEFXttZuRxXYjFoyGzpDQytYpLf
+ KHdUeEjm+6+FlkdP/PiJqROc7eOzXjcL3ly4E07hYYpOrj2AjlWlkc61j
+ w==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=none (p=none dis=none)
- header.from=strlen.de
-Subject: [Intel-wired-lan] Possible UaF bug in netdevice teardown path
+ header.from=linux.intel.com
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=n1eo05PU
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net] ice: reject out-of-range
+ ptype in ice_parser_profile_init
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -86,30 +111,63 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Another sashiko drive-by report. TL;DR, do you need to apply this
-pattern in your driver?
 
--       metadata_dst_free(priv->md);
-+       dst_release(&priv->md->dst);
 
-Affects:
-drivers/net/ethernet/airoha/airoha_eth.c
-drivers/net/ethernet/intel/ice/ice_eswitch.c
-drivers/net/ethernet/mediatek/mtk_eth_soc.c
-drivers/net/ethernet/mellanox/mlx5/core/en_accel/macsec.c
+On 27/05/2026 09:18, Aleksandr Loktionov wrote:
+> set_bit(rslt->ptype, prof->ptypes) operates on a DECLARE_BITMAP of
+> ICE_FLOW_PTYPE_MAX (1024) bits. Nothing prevents a malicious VF from
+> providing ptype >= 1024 through VIRTCHNL, resulting in a write past
+> the end of the bitmap and a kernel page fault.
+> 
+> Reproduced with a custom kernel module injecting a crafted
+> VIRTCHNL_OP_ADD_RSS_CFG on E810-C QSFP (8086:1592),
+> FW 4.91 0x800214af 1.3909.0, ICE COMMS DDP 1.3.53.0,
+> kernel 7.1.0-rc1.
+> 
+> crash_parser: ice_parser_profile_init @ ffffffffc0d61b60
+> crash_parser: setting ptype=0xffff (max valid=1023)
+> crash_parser: calling ice_parser_profile_init -- expect OOB crash!
+> BUG: kernel NULL pointer dereference, address: 0000000000000000
+> #PF: supervisor write access in kernel mode
+> #PF: error_code(0x0002) - not-present page
+> Oops: Oops: 0002 [#1] SMP NOPTI
+> CPU: 56 UID: 0 PID: 165011 Comm: insmod Kdump: loaded Tainted: G S U OE 7.1.0-rc1 #1
+> Hardware name: Intel Corporation S2600BPB/S2600BPB
+> RIP: 0010:ice_parser_profile_init+0x2d/0x1d0 [ice]
+> Call Trace:
+>  <TASK>
+>  ? __pfx_ice_parser_profile_init+0x10/0x10 [ice]
+>  crash_init+0x127/0xff0 [crash_parser]
+>  do_one_initcall+0x45/0x310
+>  do_init_module+0x64/0x270
+>  init_module_from_file+0xcc/0xf0
+>  idempotent_init_module+0x17b/0x280
+>  __x64_sys_finit_module+0x6e/0xe0
+> 
+> Bail out early with -EINVAL when ptype is out of range.
+> 
+> Fixes: e312b3a1e209 ("ice: add API for parser profile initialization")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 
-Long version:
-https://sashiko.dev/#/patchset/20260527135751.1031891-1-tristmd%40gmail.com
+Reviewed-by: Marcin Szycik <marcin.szycik@linux.intel.com>
 
-This isn't a bug introduced by this patch, but looking at this fix, do
-other callers of metadata_dst_free() suffer from the same use-after-free
-vulnerability?
-In drivers like ice_eswitch and mlx5 MACsec, a metadata_dst is allocated
-and references are taken on it via dst_hold() when packets are processed
-(for example, via skb_dst_set()).
-However, on their teardown paths, these drivers call metadata_dst_free(),
-which unconditionally frees the memory without checking the reference count.
-If packets holding these references are queued (like in a netem qdisc)
-during teardown, does the memory get freed prematurely, causing a
-use-after-free when the networking stack eventually calls dst_release()
-on the dequeued packets?
+> ---
+>  drivers/net/ethernet/intel/ice/ice_parser.c | 3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice_parser.c b/drivers/net/ethernet/intel/ice/ice_parser.c
+> index f8e6963..3ede4c1 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_parser.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_parser.c
+> @@ -2368,6 +2368,9 @@ int ice_parser_profile_init(struct ice_parser_result *rslt,
+>  	u16 proto_off = 0;
+>  	u16 off;
+>  
+> +	if (rslt->ptype >= ICE_FLOW_PTYPE_MAX)
+> +		return -EINVAL;
+> +
+>  	memset(prof, 0, sizeof(*prof));
+>  	set_bit(rslt->ptype, prof->ptypes);
+>  	if (blk == ICE_BLK_SW) {
+
