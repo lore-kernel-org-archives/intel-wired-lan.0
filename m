@@ -1,114 +1,196 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C1BECD6E61
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  2 Jun 2026 00:15:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B047C5DF71
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  2 Jun 2026 03:56:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 2977281445;
-	Tue,  2 Jun 2026 00:15:40 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ZFsM3F9AV5Om; Tue,  2 Jun 2026 00:15:39 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org F0EA481452
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1780359339;
-	bh=OIbU26znQX06Gff9S1viIn4KS3xlqJNl/FJmddX8S6k=;
-	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=jxG1O+yIpwpywUColHmH8n1VOQo3ZWJPYZZ+i/slCh7Psca/upNKXtSfmRz+80/6n
-	 wyg1fT+7p2jCopqeP3yurY4ZnU1GLFMNOHgfclg6XxcUgibt9MD7SRIvM53NFO2yCd
-	 mPd8AdhRV3jGAZBC2LpC25gl9dRKe81eZTO6iT9Hckd46s0CcrhhEKYJHNT+tWGk+l
-	 zU6kx7LrpmicufMitBbn+/gZlk5EOBOyAsVCxPZWzf+EYuCxZkiUFmXW5xH2OLlKFE
-	 7XM9L/wSjJgPyvs1H6N8tYKJHIiB9ifGu0cgnEsiTTF9iEfkS3h1OFhQizuMuXX4H5
-	 K853kzA4eZHOA==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id F0EA481452;
-	Tue,  2 Jun 2026 00:15:38 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 2AAB0F4
- for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Jun 2026 00:15:35 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 51A9940C17
- for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Jun 2026 00:15:33 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 2562740D7F;
+	Tue,  2 Jun 2026 03:56:01 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ijgRKpoXROma for <intel-wired-lan@lists.osuosl.org>;
- Tue,  2 Jun 2026 00:15:32 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.15;
- helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
+ id P23PbSS-hxau; Tue,  2 Jun 2026 03:56:00 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 53FD640D74
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1780372560;
+	bh=7TxBP3TDA7RG6bGQmS3LT/pSXEaHTne88Lno75m4BJI=;
+	h=From:To:CC:Date:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=xOje+Rj0Nf4kC1s1RjFNEE8x3ph9+lSHfTUUjN2626s/bknE7bgdCE0fgzHk+6ac7
+	 73GAvckQfULoz9NX3quv22QlXBLcwRrDEcXpnMVaC/3jgd7W3uHEVCN6v0yaX+Kfnu
+	 y3wCJCMix1RdmEgVJ3VkG5wXift0+2xD9XUEgIFgZv9NDb1bF5lVHwVZtaBjz38ejU
+	 TCUGWFeJXCGquiloN88B54z8Z3WZolIGeLfi6mMkPkxSvT07GQ2tO6rlKROfngmlLc
+	 i9DKGctag/YL351Ryv/ec97FBg6S7er8F+8okykl9SqZUa4ELqxeNLEqR2aTjIiNka
+	 n8qIhqLhf92HQ==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 53FD640D74;
+	Tue,  2 Jun 2026 03:56:00 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 5875B703
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Jun 2026 03:55:59 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id 3A7738191E
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Jun 2026 03:55:59 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 3bEtCmffZtm4 for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  2 Jun 2026 03:55:58 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.10;
+ helo=mgamail.intel.com; envelope-from=sx.rinitha@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 14D5D40C1A
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 14D5D40C1A
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 14D5D40C1A
- for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Jun 2026 00:15:32 +0000 (UTC)
-X-CSE-ConnectionGUID: MF0mw0faTeyu9IVLMdHqrA==
-X-CSE-MsgGUID: +6Lwoi0dR+iKu4A10P2DyA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11804"; a="84755428"
-X-IronPort-AV: E=Sophos;i="6.24,182,1774335600"; d="scan'208";a="84755428"
-Received: from fmviesa001.fm.intel.com ([10.60.135.141])
- by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 01 Jun 2026 17:15:31 -0700
-X-CSE-ConnectionGUID: aTXhE7LHQ2K0l+BzpvMttQ==
-X-CSE-MsgGUID: vKRJigqBR1e/2okXMlgFNQ==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org E616E81916
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E616E81916
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id E616E81916
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Jun 2026 03:55:57 +0000 (UTC)
+X-CSE-ConnectionGUID: Dn+I2tb3QWms0XXBvi2E6Q==
+X-CSE-MsgGUID: aWDvgyuqTle9LavtwBdnWw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11804"; a="98568837"
+X-IronPort-AV: E=Sophos;i="6.24,182,1774335600"; d="scan'208";a="98568837"
+Received: from orviesa001.jf.intel.com ([10.64.159.141])
+ by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 01 Jun 2026 20:55:57 -0700
+X-CSE-ConnectionGUID: oRMGTuFQQGmb7JUnQMA10w==
+X-CSE-MsgGUID: IxPGLO3kS+SiEai2YyEoIQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.24,182,1774335600"; d="scan'208";a="267598725"
-Received: from orcnseosdtjek.jf.intel.com (HELO [10.166.28.109])
- ([10.166.28.109])
- by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 01 Jun 2026 17:15:31 -0700
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Mon, 01 Jun 2026 17:14:21 -0700
+X-IronPort-AV: E=Sophos;i="6.24,182,1774335600"; d="scan'208";a="281896383"
+Received: from orsmsx902.amr.corp.intel.com ([10.22.229.24])
+ by orviesa001.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 01 Jun 2026 20:55:57 -0700
+Received: from ORSMSX902.amr.corp.intel.com (10.22.229.24) by
+ ORSMSX902.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37; Mon, 1 Jun 2026 20:55:56 -0700
+Received: from ORSEDG901.ED.cps.intel.com (10.7.248.11) by
+ ORSMSX902.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37 via Frontend Transport; Mon, 1 Jun 2026 20:55:56 -0700
+Received: from BN1PR04CU002.outbound.protection.outlook.com (52.101.56.56) by
+ edgegateway.intel.com (134.134.137.111) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37; Mon, 1 Jun 2026 20:55:55 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=IJloVASh/HJnvjmxlXIz4q67JA2ez19p/e1MAMMRoBO1uLAjPzGb9abYBgYM9Bclto95Iysk/q5HDmWY/TlxZ8a78EFg/IETIeFxSkW7SYRxUI6jgMNt51mUdL+jr22xUd0RfveF2x8rkOrj1nEtHVId5T1EurxapvS/2rZzi6LozcSLdZ0DgUbujEAeezMKCP20SQ7hwmpZ3zuQFFpgTSdCiZmWZNfMUTKAWFQHMuhzP4vV3e6Iah709DF1JAwgDK47ttaZnm/ioajQLW73FzkJHjxA+70AaOgO5xaKOzUmR32MR9KFPgQ/J8DNrnxwFOVj0vo2musNZdr+MG95NQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=7TxBP3TDA7RG6bGQmS3LT/pSXEaHTne88Lno75m4BJI=;
+ b=EVTvUQ0MhOEK/+IJIRRirC1vFrdzwEIKZQk1ow9xNDm58rci+boYsAX5+++oJ2rPa7rjrOgkE5XND/nz8G+IRGyPhRcPEfpUyKVW0ri6fd4wElWFlUT3Fqvu7xvfRJRqKZk99Mhswf4/XWX3fNDRul6uw9o7btnwPhxKy8A6DKX/5+QRVbQXBiWwi+7LD2h7Wd0UndLru/Snh8na6nsp7cI+Avfynx9zwMEZF3VDqQMnGT5nVGti56zos7UnMynfRzpM9QRE4zaVsSfWw7HqJVBSEDQINqlnFIhSjjwxSJX58tJhLA+roLjt2nBO/szF2kSne5z6PDnzKFVZJwMUQw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from IA1PR11MB6241.namprd11.prod.outlook.com (2603:10b6:208:3e9::5)
+ by PH7PR11MB6332.namprd11.prod.outlook.com (2603:10b6:510:1fc::7)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.71.16; Tue, 2 Jun 2026
+ 03:55:49 +0000
+Received: from IA1PR11MB6241.namprd11.prod.outlook.com
+ ([fe80::7ac8:884c:5d56:9919]) by IA1PR11MB6241.namprd11.prod.outlook.com
+ ([fe80::7ac8:884c:5d56:9919%5]) with mapi id 15.21.0071.014; Tue, 2 Jun 2026
+ 03:55:49 +0000
+From: "Rinitha, SX" <sx.rinitha@intel.com>
+To: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>,
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>
+CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "Loktionov, Aleksandr"
+ <aleksandr.loktionov@intel.com>
+Thread-Topic: [Intel-wired-lan] [PATCH iwl-next v2 2/4] i40e: pass the return
+ value of skb_checksum_help()
+Thread-Index: AQHc4fIgd9ineLDvJEK9/TbKyt3hX7YqwxSw
+Date: Tue, 2 Jun 2026 03:55:49 +0000
+Message-ID: <IA1PR11MB62416C926128714C40F8FDC88B122@IA1PR11MB6241.namprd11.prod.outlook.com>
+References: <20260512084729.1338557-1-michal.swiatkowski@linux.intel.com>
+ <20260512084729.1338557-3-michal.swiatkowski@linux.intel.com>
+In-Reply-To: <20260512084729.1338557-3-michal.swiatkowski@linux.intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: IA1PR11MB6241:EE_|PH7PR11MB6332:EE_
+x-ms-office365-filtering-correlation-id: 38b03c53-a425-4d0b-e6eb-08dec05ad5ae
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+ ARA:13230040|1800799024|366016|376014|18002099003|22082099003|4143699003|11063799006|56012099006|38070700021;
+x-microsoft-antispam-message-info: zi09wljJw22oNjEXmKMtTwROZiKlOC8tp5aTr8ChEY7xJlcOBfxayM8A21duyI9rP/lldzG49bVHR6Jkkz2TCypJTX2nJ/dhIOQs15YPny22/i5OnpGJLbCsBf/x2CspxDDkIG+ZAKeGjL+whoYMPH+GB72OTzY1G3UnEs+CH1oaD9LwkGMXtniFLTju5tbQ7TTyentCTXqlGNaAMeHGMLK6niRoZ31JhyEgkYrIDJRnuRM03VKbnD65S7iiEg4PXlEBx0sLRBALX5X9+rgpIvvhiUbmhvolwUSNl7ghladIDaXj5F9Hs/Y/xJSKo1gjj4XtuBSDxImsm5YlcvKyI+RmfReY4T1jM7Jn+IaU4fZZUg038KjgF0iWL6KsckJ3k6dP568ecpBV+69w//xaPXGLjNah9oUIttlSf7BB1TyrTjyh5TJB3pxjdJmGLDzXYITtqT5PZVUVJASsGw0CEg7kGn/iYDzUFFZi7HKQl8/uiBfEXHlN41EktXsqMVQWw7VndmTVxRwS1SgEtNYbiWrrCqLsQoOdB9vhkmuXXkqbyiuYTQxis3lruYzthjyS+QMKZNWe7b2oG9HShA4fRyFa1dTHMOUDPFrz0nnu2qDgr6/j7QywyAn+BFOJbqQtNU4Lqy1wkQSAvWfKaETOkibXrRR6cA5r6xefrBJHioDdr0vzg3iRidj8aQ2KCpysapRN9uBky9BgQ1yZ+igr1ep/xlBswLkuc6VLFA0Axyw=
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:IA1PR11MB6241.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230040)(1800799024)(366016)(376014)(18002099003)(22082099003)(4143699003)(11063799006)(56012099006)(38070700021);
+ DIR:OUT; SFP:1101; 
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?zRyaAv3m7pCFBaKada6f4sPKrNDbQjZzcOxJYEFYDR2MTJg3jRDNkrPbippk?=
+ =?us-ascii?Q?dDLFEsDFTdkN3gYKtqxj5dH4NLnvljO4Hpxs6OweYuIwFHCW2mKjFxlpgL+q?=
+ =?us-ascii?Q?nqgGnQO4bQXgE9EBJN/yk4wx4pw9XUtYFnuJyQd0sPZsrH3LmMAUpgmJfVl1?=
+ =?us-ascii?Q?PPUn9fuxr9SOy616CHZrPhQsAe8JhSrBasVTsr8r1pNOlJDG67BG2AfPD2dx?=
+ =?us-ascii?Q?Mv5L36n6V/xOhK2f2Zc/14l6kC3SFzCQDJhjQHwQ+jST7jIaPUjbwWZmnNUa?=
+ =?us-ascii?Q?IVKe3VU47Grq679ewWJDPbxsmW2M1I3Se1nPlWHAjsWOzUe8UQYWmWCu0MFr?=
+ =?us-ascii?Q?gPxxZy4nYbLhGmQ0AB0bKmhOSLNR++COUtCBXonL7OBTayeX1HXSF3r9DJsK?=
+ =?us-ascii?Q?JV8MUluLFDE2fSo6jkrzwqx+xOWdQAlBXHqauSqMdaZ3GeW8JdVGHhx4QBKU?=
+ =?us-ascii?Q?SIxca2o/poPrck2NwEN5HsYUp5fJziRgfyHbnXCsDhtbVZ6EqV6EWg9x7sfN?=
+ =?us-ascii?Q?pufZpggw3NnSX5XQxASPyPQH0GbDAAOvJ8SrPFazxJASLlL8buRY9WoX2SVF?=
+ =?us-ascii?Q?7cImB4MgWmT7MZI3zP1bGw2oEkZblNz10ojCE5HqSorh5eXtyEDDtNCVLZiA?=
+ =?us-ascii?Q?uodzruWuAwXg9B5hR8Hl/RTmkB3xa4pHREkQ09fuOgymjQLsEUn/+rjOud5x?=
+ =?us-ascii?Q?GgVcwpZEg/vgdf5yiyNkJlk83pJjF7vnCcFsiK9eQne14Ty6V5yzGFyX/BB6?=
+ =?us-ascii?Q?qlpT75MdWLGe2RY23V5d10bQJlM8MuzdZB7vNndRiePkuAlh3DkqEeTBC7Sh?=
+ =?us-ascii?Q?CXlZhoFlowNqqUwGa4Db6UOsLkVB+fqW+g8r+Tx6jZkr6d0mcgMjL9LHq5Ic?=
+ =?us-ascii?Q?80XJt6/pJ2Qf7ScEo8MuJgJCNFfT6fe7Wbc5Y/nWb6UlAcjLGDTBNvYCGsYM?=
+ =?us-ascii?Q?bN3kGv9ORO08DdG41bwh44RyDk8QEU85tyJmu47t/7wfDaE5/NOhaxwF9/Tj?=
+ =?us-ascii?Q?or9WIgTcqnAJ7Z0jYopZZJWg1p6YUuz/7+9uz7CmDcuG4aaG0aztdrUfJz2c?=
+ =?us-ascii?Q?ScgveqiEGJCXUk0VfpdXd8/VzvAhpEaG6MyKF7jE+s2pTiUjO6tntxO9QYOl?=
+ =?us-ascii?Q?Gk6KgshOgExoMbfgZJDBJZnkvmv5gyckn6bVLZ+skxdMKynykWE7pwe/kYF1?=
+ =?us-ascii?Q?W1RA5UU0Wd3WocZZ9LoxBdXib1MWaYGg4nM5BC517RLS8I6Dh5CnspN4yy+E?=
+ =?us-ascii?Q?ArfMW0P2wcv7vQfkR7JYlm12gUWiN0DByJSXVvQiRUPiDgst1W6jFEQ2eO54?=
+ =?us-ascii?Q?/mma9z+Mp7PCCIunp5/wYNeeSUXse5lN+fDA/flsb3RKt+4MnA2u9u5sstnv?=
+ =?us-ascii?Q?N1omAq0jrUOGtNDWLFgxPO7hMqzYMyX71UK6ZQrrmfNTeQnnhJlB/Lgarc2t?=
+ =?us-ascii?Q?Z7HbOFqyi6g3DlToAG6VEmFs6rc9zwTGZjZQQUdA+UDcMMm5e5vkj2OhUA5N?=
+ =?us-ascii?Q?bJVk01wAlQVVmUiYa3wy9/fh/3MvscqTsIMVRQ8hy7Wrdbakb7UT+8kqt1fr?=
+ =?us-ascii?Q?4x+qp/XMuLeUwZ2Ww6HTBb2a6bYH4FVCqS6dlE6H6uBvtnxSJPB6Y/YlMIbv?=
+ =?us-ascii?Q?sYMYSW05oytEvSDP2Xu4Yh9E65G6uFj7lAJ+eY2J0GcJaU/4KT7kc6DImXlw?=
+ =?us-ascii?Q?LSzm1BlrFZ4LHFJJ8iCKMVbUnSLUKuvNsN1Zb5IBNCNcEg2i?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260601-jk-cleanup-vsi-aggregator-nodes-v1-4-36d6ecbe5ede@intel.com>
-References: <20260601-jk-cleanup-vsi-aggregator-nodes-v1-0-36d6ecbe5ede@intel.com>
-In-Reply-To: <20260601-jk-cleanup-vsi-aggregator-nodes-v1-0-36d6ecbe5ede@intel.com>
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>, 
- netdev@vger.kernel.org, Anthony Nguyen <anthony.l.nguyen@intel.com>
-Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>, 
- Jacob Keller <jacob.e.keller@intel.com>, 
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-X-Mailer: b4 0.16-dev-3fed5
-X-Developer-Signature: v=1; a=openpgp-sha256; l=16957;
- i=jacob.e.keller@intel.com; h=from:subject:message-id;
- bh=d9XQyQ35K9p8eaSr47dp1IkPLS+hcVJFJAKjPB1O65M=;
- b=owGbwMvMwCWWNS3WLp9f4wXjabUkhiw5hQWmVxweZX+VnMv7mvfKQ/XtJind3VdLNnNtXj9T1
- ivl8iKRjlIWBjEuBlkxRRYFh5CV140nhGm9cZaDmcPKBDKEgYtTACYiJM3wT3ehxOHMU/XGGccO
- THrwISqxtelWoILvWtfo7jPaL/1+v2FkmC8j9Lcm++jD5FCeddJci568/Obi/+yI5PS+uysmthU
- v4AIA
-X-Developer-Key: i=jacob.e.keller@intel.com; a=openpgp;
- fpr=204054A9D73390562AEC431E6A965D3E6F0F28E8
+X-Exchange-RoutingPolicyChecked: czyuuep/7EQEKSUXGrUNdkjctWchH+WV64WKUUb2wrAZub8PKC8Ry18I85Lm/DrU/pKjrrpUwvTnAtyIggwZyfMl0MLb2mZxRzhdf8Ty3yEQyM2OTQ2/nHYqtIK+kjisgzmV9GVVkGrwqGoTVrD5xryEYQUkp6b0cUTQWRnq1aUS5IELA9w8I5/7kK42vOcXS7nCyfG38C2a1y+91T23G34I0yZItiAvUkuyN7FXwJaqOZ8Ch3NYMu9lyDiOjj28FuCPeKjy6Sloj+VInUC1OYUl4KDUs5a/R+qGq/v0kDsdN6hn47qeixtd50YdU7HSuOopdQhyBpZaGZ8nP3TI2Q==
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: IA1PR11MB6241.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 38b03c53-a425-4d0b-e6eb-08dec05ad5ae
+X-MS-Exchange-CrossTenant-originalarrivaltime: 02 Jun 2026 03:55:49.7338 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: ssaIbOs2KenzUUorK+A/YXeRZExOOXtc2OP2OtgNmE5tpJXP/uCi4iw+I6y8+dGXHVkgn86TLmHM1qboTo1tpg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR11MB6332
+X-OriginatorOrg: intel.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1780359332; x=1811895332;
- h=from:date:subject:mime-version:content-transfer-encoding:
- message-id:references:in-reply-to:to:cc;
- bh=d9XQyQ35K9p8eaSr47dp1IkPLS+hcVJFJAKjPB1O65M=;
- b=ceZM0zDrgz2n+hxhFlo2adj1m44PgH1kxy/f22nkx17segvvHtOoLTrB
- T03tzTaWbp0j2vAEsluddMt0pQ0797qKds1ZMEmvWW627RaKSmYIddtNo
- /XLsIy63cf4hLRfn4dvWXkIRyGKtyNGmE5c/PI4RlZJKjxABir7LsuUjB
- pI+rgy0I1S4NOncyQUhbjqxg/j7KTsksZ7LJEtHIbbyweAmiVV5S7R+/9
- 2Y4Zanbrxw+WBxUgTgYC10Zw6HmGF7LW9ftYEtJ8V6ebtFyR9CT9/vGc6
- D9Aa1L+MSmjqHYAKnrnzPubjAT5v9Y0meOvl9YsR3uqV1rJRNoE7SvRhh
+ t=1780372558; x=1811908558;
+ h=from:to:cc:subject:date:message-id:references:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=7TxBP3TDA7RG6bGQmS3LT/pSXEaHTne88Lno75m4BJI=;
+ b=bxo80GXFZ7YeJQ2kx+QpoS4bsUSBKB+PQocgP4e8zVSHzbw4gJq/BWH0
+ AgRb9GzXe6MtZv5fpoSL8B7eZGSsIVFFegrBTkyMBEv0xX7E1jtFs/LO0
+ SiFCYhON8DYhbZoTVRePa6cr8mRJlidVrznyuXq7UFoGwkNVavjtbNdH7
+ W1IKO0gaOfJ0dG/nbXwn2E4x4LCrp6Pj7hF0OeI0lrShI+atyZIMySp8S
+ aLxzA8AR/8uhJBn/MUptPUPkTdXCqkcJPqWL238yMcOFBiZYsQv4iYuMf
+ ymNKgkG4li2t1Y9clbzBGtn9PXZf9+AfE+fj7hcgS/+LotcR0MZV2a/R4
  A==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=ceZM0zDr
-Subject: [Intel-wired-lan] [PATCH iwl-next 4/6] ice: remove ice_agg_node
- wrapper structure
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=bxo80GXF
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v2 2/4] i40e: pass the return
+ value of skb_checksum_help()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -124,476 +206,27 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The ice_set_agg_vsi() function has bespoke logic for identifying a suitable
-aggregator node to use for a VSI. The main goal of the function is to
-ensure that various types of VSIs do not share aggregator nodes. It uses
-fixed size arrays of struct ice_agg_node in the PF structure to keep track
-of which aggregator nodes are currently used.
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of M=
+ichal Swiatkowski
+> Sent: 12 May 2026 14:17
+> To: intel-wired-lan@lists.osuosl.org
+> Cc: netdev@vger.kernel.org; Michal Swiatkowski <michal.swiatkowski@linux.=
+intel.com>; Loktionov, Aleksandr <aleksandr.loktionov@intel.com>
+> Subject: [Intel-wired-lan] [PATCH iwl-next v2 2/4] i40e: pass the return =
+value of skb_checksum_help()
+>
+> skb_checksum_help() can fail. Pass its return value back to the caller.
+>
+> Commonize this software path in goto.
+>
+> Try calculating in software instead of returning error.
+>
+> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+> Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+> ---
+> drivers/net/ethernet/intel/i40e/i40e_txrx.c | 18 ++++++++----------
+> 1 file changed, 8 insertions(+), 10 deletions(-)
+>
 
-The scheduler code already keeps track of almost all of this information
-via the ice_sched_agg_info structures. It doesn't make sense to store
-similar information in two places. Indeed, this leaves open the
-possibility that the two have conflicting data.
-
-The recent change to refactor the aggregator info to an xarray allows
-lookup via index. This enables reworking the logic in ice_set_agg_vsi() and
-removal of the ice_agg_node wrapper structure.
-
-Introduce ice_cfg_vsi_agg() in ice_sched.c. This function will locate a
-suitable aggregator node between the provided minimum and maximum ID. If no
-node exists, it will allocate a new one. It will then configure the node
-and move the VSI into the node immediately.
-
-We do not free a newly allocated node if the device fails to configure the
-scheduler. The node will continue to exist within the aggregator node
-xarray list, and be reused in the future when another VSI is configured.
-
-This is similar to the logic used before, but now integrated better into
-the scheduler code. It also occurs all in a single critical section of the
-scheduler lock, rather than being split between multiple lock/unlock
-rounds.
-
-Remove the ice_agg_node arrays and structure, and all of its related code
-including the bespoke logic in ice_set_agg_vsi() as well as the associated
-cleanup in ice_vsi_decfg() and ice_pf_dis_all_vsi(). The logic in
-ice_pf_dis_all_vsi() is questionable anyways, since it reset the num_vsis
-count without clearing the valid flag or the agg_node pointers in the VSI
-structures. With the refactor, the VSI count for each aggregator node now
-always matches with what the scheduler actually has configured.
-
-Only the VF logic actually uses the previously stored aggregator node data.
-To avoid use-after-free issues, don't store a pointer to the aggregator
-node. Instead, store just the ID of the associated node. Update
-ice_vf_rebuild_aggregator_node_cfg() to use ice_cfg_vsi_agg() instead of
-using ice_move_vsi_to_agg(). This ensures that the node will be created if
-it was ever removed for any reason. Store the agg_id in the VSI structure
-using a signed 64-bit value to allow storing -1 in the case where no
-aggregator node was configured.
-
-This refactor drops the arrays in the ice_pf structure, reducing its size
-by 1152 bytes, or ~5% of the structures size.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
----
- drivers/net/ethernet/intel/ice/ice.h        |  23 ++----
- drivers/net/ethernet/intel/ice/ice_sched.h  |   5 ++
- drivers/net/ethernet/intel/ice/ice_lib.c    | 114 +++++-----------------------
- drivers/net/ethernet/intel/ice/ice_main.c   |   7 --
- drivers/net/ethernet/intel/ice/ice_sched.c  | 102 +++++++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_vf_lib.c |  22 +++---
- 6 files changed, 140 insertions(+), 133 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index f9a43daf04fe..e5ccbf931502 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -448,10 +448,10 @@ struct ice_vsi {
- 	u8 old_numtc;
- 	u16 old_ena_tc;
- 
--	/* setup back reference, to which aggregator node this VSI
--	 * corresponds to
-+	/* ID of the aggregator node this VSI was configured with at setup, or
-+	 * negative if it was not configured with an aggregator node.
- 	 */
--	struct ice_agg_node *agg_node;
-+	s64 agg_id;
- 
- 	struct_group_tagged(ice_vsi_cfg_params, params,
- 		struct ice_port_info *port_info; /* back pointer to port_info */
-@@ -541,12 +541,10 @@ struct ice_eswitch {
- 	bool is_running;
- };
- 
--struct ice_agg_node {
--	u32 agg_id;
--#define ICE_MAX_VSIS_IN_AGG_NODE	64
--	u32 num_vsis;
--	u8 valid;
--};
-+#define ICE_PF_AGG_NODE_ID_START	1
-+#define ICE_PF_AGG_NODE_ID_END		32
-+#define ICE_VF_AGG_NODE_ID_START	65
-+#define ICE_VF_AGG_NODE_ID_END		96
- 
- struct ice_pf_msix {
- 	u32 cur;
-@@ -660,13 +658,6 @@ struct ice_pf {
- 	struct xarray dyn_ports;
- 	struct xarray sf_nums;
- 
--#define ICE_INVALID_AGG_NODE_ID		0
--#define ICE_PF_AGG_NODE_ID_START	1
--#define ICE_MAX_PF_AGG_NODES		32
--	struct ice_agg_node pf_agg_node[ICE_MAX_PF_AGG_NODES];
--#define ICE_VF_AGG_NODE_ID_START	65
--#define ICE_MAX_VF_AGG_NODES		32
--	struct ice_agg_node vf_agg_node[ICE_MAX_VF_AGG_NODES];
- 	struct ice_dplls dplls;
- 	struct device *hwmon_dev;
- 	struct ice_health health_reporters;
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.h b/drivers/net/ethernet/intel/ice/ice_sched.h
-index 992aafc4369d..b9ea9174f3d9 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.h
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.h
-@@ -65,6 +65,8 @@ struct ice_sched_agg_vsi_info {
- 	DECLARE_BITMAP(replay_tc_bitmap, ICE_MAX_TRAFFIC_CLASS);
- };
- 
-+#define ICE_MAX_VSIS_IN_AGG_NODE	64
-+
- struct ice_sched_agg_info {
- 	struct list_head agg_vsi_list;
- 	DECLARE_BITMAP(tc_bitmap, ICE_MAX_TRAFFIC_CLASS);
-@@ -134,6 +136,9 @@ int ice_rm_vsi_lan_cfg(struct ice_port_info *pi, u16 vsi_handle);
- int ice_rm_vsi_rdma_cfg(struct ice_port_info *pi, u16 vsi_handle);
- 
- /* Tx scheduler rate limiter functions */
-+int ice_cfg_vsi_agg(struct ice_port_info *pi, u16 vsi_handle,
-+		    u32 min_id, u32 max_id, u8 tc_bitmap,
-+		    u32 *configured_id);
- int
- ice_cfg_agg(struct ice_port_info *pi, u32 agg_id,
- 	    enum ice_agg_type agg_type, u8 tc_bitmap);
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index bf2ceaa49dec..f285e63cd641 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -2172,44 +2172,28 @@ void ice_cfg_sw_rx_lldp(struct ice_pf *pf, bool enable)
- static void ice_set_agg_vsi(struct ice_vsi *vsi)
- {
- 	struct device *dev = ice_pf_to_dev(vsi->back);
--	struct ice_agg_node *agg_node_iter = NULL;
--	u32 agg_id = ICE_INVALID_AGG_NODE_ID;
--	struct ice_agg_node *agg_node = NULL;
--	int node_offset, max_agg_nodes = 0;
--	struct ice_port_info *port_info;
--	struct ice_pf *pf = vsi->back;
--	u32 agg_node_id_start = 0;
--	int status;
-+	u32 min_id, max_id, agg_id;
-+	int err;
-+
-+	vsi->agg_id = -1;
- 
- 	/* create (as needed) scheduler aggregator node and move VSI into
- 	 * corresponding aggregator node
- 	 * - PF aggregator node to contains VSIs of type _PF and _CTRL
- 	 * - VF aggregator nodes will contain VF VSI
- 	 */
--	port_info = pf->hw.port_info;
--	if (!port_info)
--		return;
--
- 	switch (vsi->type) {
- 	case ICE_VSI_CTRL:
- 	case ICE_VSI_CHNL:
- 	case ICE_VSI_LB:
- 	case ICE_VSI_PF:
- 	case ICE_VSI_SF:
--		max_agg_nodes = ICE_MAX_PF_AGG_NODES;
--		agg_node_id_start = ICE_PF_AGG_NODE_ID_START;
--		agg_node_iter = &pf->pf_agg_node[0];
-+		min_id = ICE_PF_AGG_NODE_ID_START;
-+		max_id = ICE_PF_AGG_NODE_ID_END;
- 		break;
- 	case ICE_VSI_VF:
--		/* user can create 'n' VFs on a given PF, but since max children
--		 * per aggregator node can be only 64. Following code handles
--		 * aggregator(s) for VF VSIs, either selects a agg_node which
--		 * was already created provided num_vsis < 64, otherwise
--		 * select next available node, which will be created
--		 */
--		max_agg_nodes = ICE_MAX_VF_AGG_NODES;
--		agg_node_id_start = ICE_VF_AGG_NODE_ID_START;
--		agg_node_iter = &pf->vf_agg_node[0];
-+		min_id = ICE_VF_AGG_NODE_ID_START;
-+		max_id = ICE_VF_AGG_NODE_ID_END;
- 		break;
- 	default:
- 		/* other VSI type, handle later if needed */
-@@ -2218,70 +2202,17 @@ static void ice_set_agg_vsi(struct ice_vsi *vsi)
- 		return;
- 	}
- 
--	/* find the appropriate aggregator node */
--	for (node_offset = 0; node_offset < max_agg_nodes; node_offset++) {
--		/* see if we can find space in previously created
--		 * node if num_vsis < 64, otherwise skip
--		 */
--		if (agg_node_iter->num_vsis &&
--		    agg_node_iter->num_vsis == ICE_MAX_VSIS_IN_AGG_NODE) {
--			agg_node_iter++;
--			continue;
--		}
--
--		if (agg_node_iter->valid &&
--		    agg_node_iter->agg_id != ICE_INVALID_AGG_NODE_ID) {
--			agg_id = agg_node_iter->agg_id;
--			agg_node = agg_node_iter;
--			break;
--		}
--
--		/* find unclaimed agg_id */
--		if (agg_node_iter->agg_id == ICE_INVALID_AGG_NODE_ID) {
--			agg_id = node_offset + agg_node_id_start;
--			agg_node = agg_node_iter;
--			break;
--		}
--		/* move to next agg_node */
--		agg_node_iter++;
--	}
--
--	if (!agg_node)
--		return;
--
--	/* if selected aggregator node was not created, create it */
--	if (!agg_node->valid) {
--		status = ice_cfg_agg(port_info, agg_id, ICE_AGG_TYPE_AGG,
--				     (u8)vsi->tc_cfg.ena_tc);
--		if (status) {
--			dev_err(dev, "unable to create aggregator node with agg_id %u\n",
--				agg_id);
--			return;
--		}
--		/* aggregator node is created, store the needed info */
--		agg_node->valid = true;
--		agg_node->agg_id = agg_id;
--	}
--
--	/* move VSI to corresponding aggregator node */
--	status = ice_move_vsi_to_agg(port_info, agg_id, vsi->idx,
--				     (u8)vsi->tc_cfg.ena_tc);
--	if (status) {
--		dev_err(dev, "unable to move VSI idx %u into aggregator %u node",
--			vsi->idx, agg_id);
-+	err = ice_cfg_vsi_agg(vsi->back->hw.port_info, vsi->idx, min_id,
-+			      max_id, (u8)vsi->tc_cfg.ena_tc, &agg_id);
-+	if (err) {
-+		dev_err(dev, "Unable to associate VSI with an aggregator node, %pe\n",
-+			ERR_PTR(err));
- 		return;
- 	}
- 
--	/* keep active children count for aggregator node */
--	agg_node->num_vsis++;
--
--	/* cache the 'agg_id' in VSI, so that after reset - VSI will be moved
--	 * to aggregator node
--	 */
--	vsi->agg_node = agg_node;
--	dev_dbg(dev, "successfully moved VSI idx %u tc_bitmap 0x%x) into aggregator node %d which has num_vsis %u\n",
--		vsi->idx, vsi->tc_cfg.ena_tc, vsi->agg_node->agg_id,
--		vsi->agg_node->num_vsis);
-+	vsi->agg_id = agg_id;
-+	dev_dbg(dev, "successfully moved VSI idx %u tc_bitmap 0x%x into aggregator node %u\n",
-+		vsi->idx, vsi->tc_cfg.ena_tc, agg_id);
- }
- 
- static int ice_vsi_cfg_tc_lan(struct ice_pf *pf, struct ice_vsi *vsi)
-@@ -2538,16 +2469,6 @@ void ice_vsi_decfg(struct ice_vsi *vsi)
- 	ice_vsi_free_q_vectors(vsi);
- 	ice_vsi_put_qs(vsi);
- 	ice_vsi_free_arrays(vsi);
--
--	/* SR-IOV determines needed MSIX resources all at once instead of per
--	 * VSI since when VFs are spawned we know how many VFs there are and how
--	 * many interrupts each VF needs. SR-IOV MSIX resources are also
--	 * cleared in the same manner.
--	 */
--
--	if (vsi->type == ICE_VSI_VF &&
--	    vsi->agg_node && vsi->agg_node->valid)
--		vsi->agg_node->num_vsis--;
- }
- 
- /**
-@@ -2600,8 +2521,7 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_vsi_cfg_params *params)
- 		ice_vsi_cfg_sw_lldp(vsi, true, true);
- 	}
- 
--	if (!vsi->agg_node)
--		ice_set_agg_vsi(vsi);
-+	ice_set_agg_vsi(vsi);
- 
- 	return vsi;
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index c79125dca56b..21b4904aa541 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -512,18 +512,11 @@ static void ice_sync_fltr_subtask(struct ice_pf *pf)
-  */
- static void ice_pf_dis_all_vsi(struct ice_pf *pf, bool locked)
- {
--	int node;
- 	int v;
- 
- 	ice_for_each_vsi(pf, v)
- 		if (pf->vsi[v])
- 			ice_dis_vsi(pf->vsi[v], locked);
--
--	for (node = 0; node < ICE_MAX_PF_AGG_NODES; node++)
--		pf->pf_agg_node[node].num_vsis = 0;
--
--	for (node = 0; node < ICE_MAX_VF_AGG_NODES; node++)
--		pf->vf_agg_node[node].num_vsis = 0;
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
-index 88392ebf4454..a7f31e84ee14 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.c
-@@ -3099,6 +3099,108 @@ ice_move_vsi_to_agg(struct ice_port_info *pi, u32 agg_id, u16 vsi_handle,
- 	return status;
- }
- 
-+/**
-+ * ice_find_available_agg - Find or create aggregator node
-+ * @hw: pointer to the HW structure
-+ * @min_id: minimum aggregator node ID to use
-+ * @max_id: maximum aggregator node ID to use
-+ * @agg_type: The aggregator node type
-+ *
-+ * Check the existing xarray of aggregator nodes. Find the first one between
-+ * min_id and max_id which has fewer than ICE_MAX_VSIS_IN_AGG_NODE (64) VSIs
-+ * in use. If there is no aggregator node that fits this criteria, create
-+ * a new one between that range.
-+ *
-+ * Context: Must be called while holding the scheduler lock.
-+ *
-+ * Return: A pointer to the aggregator info structure, or an ERR_PTR on
-+ * failure.
-+ */
-+static struct ice_sched_agg_info *
-+ice_find_available_agg(struct ice_hw *hw, u32 min_id, u32 max_id,
-+		       enum ice_agg_type agg_type)
-+{
-+	struct ice_sched_agg_info *agg_info;
-+	unsigned long agg_id;
-+
-+	xa_for_each_range(&hw->agg_list, agg_id, agg_info, min_id, max_id) {
-+		if (agg_info->agg_type != agg_type)
-+			continue;
-+
-+		if (agg_info->num_vsis < ICE_MAX_VSIS_IN_AGG_NODE)
-+			return agg_info;
-+	}
-+
-+	/* No aggregator node exists with space */
-+	return ice_alloc_agg_info(hw, min_id, max_id, agg_type);
-+}
-+
-+/**
-+ * ice_cfg_vsi_agg - Configure a VSI to an aggregator node
-+ * @pi: port information structure
-+ * @vsi_handle: software VSI handle
-+ * @min_id: the minimum aggregator node ID to associate with
-+ * @max_id: the maximum aggregator node ID to associate with
-+ * @tc_bitmap: TC bitmap of enabled TC(s)
-+ * @configured_id: If non-NULL, contains the configured ID on return
-+ *
-+ * Locate a suitable aggregator node for this VSI, creating a new one if
-+ * necessary. Configure the aggregator node if necessary, and move the VSI
-+ * into it.
-+ *
-+ * Context: Acquires the scheduler lock.
-+ *
-+ * Return: zero on success, or a negative errno on failure.
-+ */
-+int ice_cfg_vsi_agg(struct ice_port_info *pi, u16 vsi_handle,
-+		    u32 min_id, u32 max_id, u8 tc_bitmap,
-+		    u32 *configured_id)
-+{
-+	struct ice_sched_agg_info *agg_info;
-+	unsigned long bitmap = tc_bitmap;
-+	struct ice_hw *hw = pi->hw;
-+	int status;
-+
-+	mutex_lock(&pi->sched_lock);
-+
-+	/* Locate an aggregator node to use */
-+	agg_info = ice_find_available_agg(hw, min_id, max_id, ICE_AGG_TYPE_AGG);
-+	if (IS_ERR(agg_info)) {
-+		status = PTR_ERR(agg_info);
-+		goto out_unlock;
-+	}
-+
-+	/* Configure the aggregator node */
-+	status = ice_sched_cfg_agg(pi, agg_info->agg_id, ICE_AGG_TYPE_AGG,
-+				   &bitmap);
-+	if (status)
-+		goto out_unlock;
-+
-+	/* Save the TC bitmap for this aggregator node */
-+	status = ice_save_agg_tc_bitmap(pi, agg_info->agg_id, &bitmap);
-+	if (status)
-+		goto out_unlock;
-+
-+	/* Associate the VSI with this aggregator node */
-+	status = ice_sched_assoc_vsi_to_agg(pi, agg_info->agg_id, vsi_handle,
-+					    &bitmap);
-+	if (status)
-+		goto out_unlock;
-+
-+	/* Save the VSI handle to the aggregator TC bitmap */
-+	status = ice_save_agg_vsi_tc_bitmap(pi, agg_info->agg_id, vsi_handle,
-+					    &bitmap);
-+	if (status)
-+		goto out_unlock;
-+
-+	if (configured_id)
-+		*configured_id = agg_info->agg_id;
-+
-+out_unlock:
-+	mutex_unlock(&pi->sched_lock);
-+	return status;
-+}
-+
- /**
-  * ice_set_clear_cir_bw - set or clear CIR BW
-  * @bw_t_info: bandwidth type information structure
-diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.c b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-index 47a30b255007..6b5c9be3a198 100644
---- a/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-@@ -467,24 +467,20 @@ static void ice_vf_rebuild_aggregator_node_cfg(struct ice_vsi *vsi)
- 	struct device *dev;
- 	int status;
- 
--	if (!vsi->agg_node)
--		return;
--
- 	dev = ice_pf_to_dev(pf);
--	if (vsi->agg_node->num_vsis == ICE_MAX_VSIS_IN_AGG_NODE) {
--		dev_dbg(dev,
--			"agg_id %u already has reached max_num_vsis %u\n",
--			vsi->agg_node->agg_id, vsi->agg_node->num_vsis);
-+
-+	if (vsi->agg_id < 0 || vsi->agg_id > U32_MAX) {
-+		dev_dbg(dev, "VSI idx %u does not have a valid aggregator node ID stored\n",
-+			vsi->idx);
- 		return;
- 	}
- 
--	status = ice_move_vsi_to_agg(pf->hw.port_info, vsi->agg_node->agg_id,
--				     vsi->idx, vsi->tc_cfg.ena_tc);
-+	status = ice_cfg_vsi_agg(pf->hw.port_info, vsi->idx,
-+				 (u32)vsi->agg_id, (u32)vsi->agg_id,
-+				 (u8)vsi->tc_cfg.ena_tc, NULL);
- 	if (status)
--		dev_dbg(dev, "unable to move VSI idx %u into aggregator %u node",
--			vsi->idx, vsi->agg_node->agg_id);
--	else
--		vsi->agg_node->num_vsis++;
-+		dev_dbg(dev, "unable to move VSI idx %u into aggregator node %lld\n",
-+			vsi->idx, vsi->agg_id);
- }
- 
- /**
-
--- 
-2.54.0.1064.gd145956f57df
-
+Tested-by: Rinitha S <sx.rinitha@intel.com> (A Contingent worker at Intel)
