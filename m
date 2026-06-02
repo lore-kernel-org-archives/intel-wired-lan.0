@@ -1,75 +1,75 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CBA61CD6E66
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  2 Jun 2026 00:15:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C814CD6E5D
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  2 Jun 2026 00:15:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id A3E9240C28;
-	Tue,  2 Jun 2026 00:15:36 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 1036760891;
+	Tue,  2 Jun 2026 00:15:39 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Xz8suq7Tw04l; Tue,  2 Jun 2026 00:15:35 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id SoTf933U6BPv; Tue,  2 Jun 2026 00:15:38 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C674C40C25
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6974860892
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1780359335;
-	bh=Qnl2h+08DxrkHK+1x8lG2snZdHu1zt3pMAMXoVS6Thc=;
+	s=default; t=1780359338;
+	bh=uQ2qDDGKAt7TSTGDrPNTHy3kc/HjfplMCdk9+vrP6qw=;
 	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=XzJfggpqSepRx0wHqh/19u+SQJJ0Qth8ZkFKPetsrDJRc1/+q5obyp6LCPhq+gNVQ
-	 /Q+TXmxKHByzRYjyTbDHgLhM5Cfu4nhy4av/ZVFWSqCMy8O+2ycaUqGkvGhxlWRuyi
-	 uK7afQr2eQj9gj4HHnKxrGDm4zs1uYIECWyK7UWsht2fve4kXQdjwDwckgN/amyL2w
-	 3ErQwKBGMGMZ3vOG6hl/r2lULyDIBHPaAgH5Bp2GTAeuPSnPvnb+Mj/pf99katyBY+
-	 g4HHj0m6l8A5buDCIx8HFdHZlcADy9zpU5Oks57q9C3asATfh7IrSwfd0o3+MHSpcK
-	 jtIfZ8U7PsoOg==
+	b=o8EJFgaQaSpjs63NKDFs9R8x5+BQzxmDXqsuD97V3j67CquUEwfbonVivJZ7qSzyS
+	 J0nNGN9eLpNZS39uw1aneS6sovdoTU8L3hoyzsdO6eIsn47F72yk9cVOL9OrQEJkb0
+	 ++0D7PsSLWq/dg3MTdP3werSv+8DQ1HV9ecaTw8BK/Vjk9id6RaOMr7lnJDFNskgTA
+	 G3Hn7p+YZsOhb4uoFSd54n0XmsU/umWVFgGuuTSW/xpsmBCCKlveYYGSpgCMsR7f88
+	 wq+m9AI9CRFMRomMfwQdN6QifeUqSTdDnuw3L5uTLKhmoYMtoFbkAf80lLyAOX4nQB
+	 GEFj3vtPL8wcA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C674C40C25;
-	Tue,  2 Jun 2026 00:15:35 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 25E8BF4
+	by smtp3.osuosl.org (Postfix) with ESMTP id 6974860892;
+	Tue,  2 Jun 2026 00:15:38 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id CBB56F4
  for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Jun 2026 00:15:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 4137440C22
- for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Jun 2026 00:15:33 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id DCC6140330
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Jun 2026 00:15:32 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id lKi9iqJFZxod for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id BndC_l7-QCtZ for <intel-wired-lan@lists.osuosl.org>;
  Tue,  2 Jun 2026 00:15:32 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.15;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 7FB6940C19
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7FB6940C19
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 255364032E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 255364032E
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 7FB6940C19
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 255364032E
  for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Jun 2026 00:15:32 +0000 (UTC)
-X-CSE-ConnectionGUID: gKI/3DXmQY25rhElT0Z++g==
-X-CSE-MsgGUID: xjcXJBP/Q0uu2XJF3HQRww==
-X-IronPort-AV: E=McAfee;i="6800,10657,11804"; a="84755432"
-X-IronPort-AV: E=Sophos;i="6.24,182,1774335600"; d="scan'208";a="84755432"
+X-CSE-ConnectionGUID: A2Oi0L6AQQiUlNiz50Fq3Q==
+X-CSE-MsgGUID: OaQo6hqwTHmw5jSQay+FcA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11804"; a="84755430"
+X-IronPort-AV: E=Sophos;i="6.24,182,1774335600"; d="scan'208";a="84755430"
 Received: from fmviesa001.fm.intel.com ([10.60.135.141])
  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  01 Jun 2026 17:15:31 -0700
-X-CSE-ConnectionGUID: 47O+y/BySUuW071iFwTveQ==
-X-CSE-MsgGUID: ibmO3pw4S9KI8Y9je1POVg==
+X-CSE-ConnectionGUID: bylcpzkUTGSFqH47nIGlHQ==
+X-CSE-MsgGUID: kKe+Gw4YQqG2og9RrFs4BQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.24,182,1774335600"; d="scan'208";a="267598732"
+X-IronPort-AV: E=Sophos;i="6.24,182,1774335600"; d="scan'208";a="267598728"
 Received: from orcnseosdtjek.jf.intel.com (HELO [10.166.28.109])
  ([10.166.28.109])
  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  01 Jun 2026 17:15:31 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Mon, 01 Jun 2026 17:14:23 -0700
+Date: Mon, 01 Jun 2026 17:14:22 -0700
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260601-jk-cleanup-vsi-aggregator-nodes-v1-6-36d6ecbe5ede@intel.com>
+Message-Id: <20260601-jk-cleanup-vsi-aggregator-nodes-v1-5-36d6ecbe5ede@intel.com>
 References: <20260601-jk-cleanup-vsi-aggregator-nodes-v1-0-36d6ecbe5ede@intel.com>
 In-Reply-To: <20260601-jk-cleanup-vsi-aggregator-nodes-v1-0-36d6ecbe5ede@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>, 
@@ -79,13 +79,13 @@ Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>,
  Jacob Keller <jacob.e.keller@intel.com>, 
  Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 X-Mailer: b4 0.16-dev-3fed5
-X-Developer-Signature: v=1; a=openpgp-sha256; l=5035;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3346;
  i=jacob.e.keller@intel.com; h=from:subject:message-id;
- bh=GZP7wObqvcHcDnE52zv1oLXYc2u0wYsJZ/Q1Qvdde2g=;
- b=owGbwMvMwCWWNS3WLp9f4wXjabUkhiw5hYX6dr5L562eEnHL9swlxsWGjgsPJXg63Yj49P/fB
- a7/7A/0O0pZGMS4GGTFFFkUHEJWXjeeEKb1xlkOZg4rE8gQBi5OAZiIui4jw54ZUxmT1Zfn/FiW
- 4nyOparjN2/ghH6jPctDEiXqQ2ar5DIyPLk+86NtTVKO3lz+ysJl5+KXJgevb1sRXhLxK8E8dmY
- 6OwA=
+ bh=2R5YQ5HwMWaPXShLbmuxsPxxykQE+hg8tNL3ARg9LyA=;
+ b=owGbwMvMwCWWNS3WLp9f4wXjabUkhiw5hYW3VrxeJsF4am50m8QRTV7Nk1Ym1p/K9j8/ZuN6x
+ ClIvPx6RykLgxgXg6yYIouCQ8jK68YTwrTeOMvBzGFlAhnCwMUpABOZL8nwP2uv/Od1opO+uLzZ
+ wvTpdEqH96/NjFIXNU675gVxzTVtCGVkmHppdTBbXLFr6dGEVz0GbxwKmS9P37Jp9zH/k4wCpS+
+ 0mQA=
 X-Developer-Key: i=jacob.e.keller@intel.com; a=openpgp;
  fpr=204054A9D73390562AEC431E6A965D3E6F0F28E8
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
@@ -93,22 +93,22 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1780359332; x=1811895332;
  h=from:date:subject:mime-version:content-transfer-encoding:
  message-id:references:in-reply-to:to:cc;
- bh=GZP7wObqvcHcDnE52zv1oLXYc2u0wYsJZ/Q1Qvdde2g=;
- b=ehiDyzgSsMXSw2+O9myPMk9oiWggRAhM7xHLLTRRMU8UqquGSciKXNCd
- f7XzCnFW/gD+c2CSMWj8rXZBedL12uLpxJ4Itn7Dxpr5QzAzLtvu293PH
- zkaE8coN4L2zGGleH4uOWeLt0tOfsuXi/uczgrxcHcZYSDwgnVYQZDoTR
- VB8g2Tulxi3LErjOuMd5DHQfE8KKtSdSAsHtMGhsR28pPmiwa7hegzggs
- YiEx5lDpsoVf5Ff2KwgSTD9qZVESa+a1fjzL87pAw3NY8mpy+tzpvOmYE
- hCxY/82iR9IwtWqhtlRYbZE6zjlZcFl5/SeNSCRymTbgCH2W2NPN89YMc
- w==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ bh=2R5YQ5HwMWaPXShLbmuxsPxxykQE+hg8tNL3ARg9LyA=;
+ b=V+xGXGIaRKR8tBnWlLIDqXDz9aSglIkIDEbdDTVZ5dCYhNJk8Kf9u77U
+ P91g2wLqHXyKiFya0aNCB2PhLbYQ5O9vK31/mNzNFywYNhpklFqoFpf3S
+ b498L37e74hey2eprRGefu1qi5b1mcoBLeE+vAaHP1NREicJu0h+wj0tP
+ tCjPIzAAur+dp9NP//Bql8QIaFa4L93g+W/NaI1uJEPC6vtGaPo9bgeDC
+ 58/EB+lYIJkYtKO6v9MkN0oQZG9zfj5peLUMkOfjDSYyoM8QN2aVBjOi4
+ fGiy5eyqiDQiBaC5ajM9vqSLMuFtmB+gRirEhFNpXMVOuxmLDfLpF8Tv7
+ g==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=ehiDyzgS
-Subject: [Intel-wired-lan] [PATCH iwl-next 6/6] ice: refactor
- ice_sched_cfg_agg to take agg_info pointer
+ header.a=rsa-sha256 header.s=Intel header.b=V+xGXGIa
+Subject: [Intel-wired-lan] [PATCH iwl-next 5/6] ice: remove unused
+ aggregator node functions
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -124,136 +124,101 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The ice_sched_cfg_agg() function is called with an aggregator ID and type.
-It performs a lookup of the aggregator info structure by ID. If the lookup
-fails, it calls ice_alloc_agg_info to allocate a new aggregator structure
-for that ID.
+With the introduction of ice_cfg_vsi_agg(), the ice_cfg_agg() and
+ice_move_vsi_to_agg() functions are no longer used. Remove them.
 
-This behavior used to make sense when ice_cfg_agg() was exported and
-intended to create a new aggregator node for a specific ID. This is no
-longer true, and all three callers of ice_sched_cfg_agg() already have a
-valid agg_info structure.
-
-Refactor the function to take the agg_info pointer directly, dropping the
-unnecessary lookup and allocation fallback. This simplifies the function,
-and keeps its scope targeted at traffic class configuration.
-
-This removes essentially dead code, and prevents the need for adding
-additional error cleanup for failures that are impossible.
-
-Suggested-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_sched.c | 49 ++++++++++--------------------
- 1 file changed, 16 insertions(+), 33 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_sched.h |  6 ----
+ drivers/net/ethernet/intel/ice/ice_sched.c | 50 ------------------------------
+ 2 files changed, 56 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice_sched.h b/drivers/net/ethernet/intel/ice/ice_sched.h
+index b9ea9174f3d9..30b55bab09d3 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sched.h
++++ b/drivers/net/ethernet/intel/ice/ice_sched.h
+@@ -140,12 +140,6 @@ int ice_cfg_vsi_agg(struct ice_port_info *pi, u16 vsi_handle,
+ 		    u32 min_id, u32 max_id, u8 tc_bitmap,
+ 		    u32 *configured_id);
+ int
+-ice_cfg_agg(struct ice_port_info *pi, u32 agg_id,
+-	    enum ice_agg_type agg_type, u8 tc_bitmap);
+-int
+-ice_move_vsi_to_agg(struct ice_port_info *pi, u32 agg_id, u16 vsi_handle,
+-		    u8 tc_bitmap);
+-int
+ ice_cfg_q_bw_lmt(struct ice_port_info *pi, u16 vsi_handle, u8 tc,
+ 		 u16 q_handle, enum ice_rl_type rl_type, u32 bw);
+ int
 diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
-index c45e9076518d..cb5f6120ad0c 100644
+index a7f31e84ee14..c45e9076518d 100644
 --- a/drivers/net/ethernet/intel/ice/ice_sched.c
 +++ b/drivers/net/ethernet/intel/ice/ice_sched.c
-@@ -2744,41 +2744,28 @@ ice_alloc_agg_info(struct ice_hw *hw, u32 min_id, u32 max_id,
- /**
-  * ice_sched_cfg_agg - configure aggregator node
-  * @pi: port information structure
-- * @agg_id: aggregator ID
-- * @agg_type: aggregator type queue, VSI, or aggregator group
-+ * @agg_info: pointer to aggregator node to configure
-  * @tc_bitmap: bits TC bitmap
-  *
-- * It registers a unique aggregator node into scheduler services. It
-- * allows a user to register with a unique ID to track it's resources.
-- * The aggregator type determines if this is a queue group, VSI group
-- * or aggregator group. It then creates the aggregator node(s) for requested
-- * TC(s) or removes an existing aggregator node including its configuration
-- * if indicated via tc_bitmap. Call ice_rm_agg_cfg to release aggregator
-- * resources and remove aggregator ID.
-- * This function needs to be called with scheduler lock held.
-+ * Configure an aggregator node's traffic classes according to the provided
-+ * tc_bitmap.
-+ *
-+ * Context: Must be called with scheduler lock held.
-  */
--static int
--ice_sched_cfg_agg(struct ice_port_info *pi, u32 agg_id,
--		  enum ice_agg_type agg_type, unsigned long *tc_bitmap)
-+static int ice_sched_cfg_agg(struct ice_port_info *pi,
-+			     struct ice_sched_agg_info *agg_info,
-+			     unsigned long *tc_bitmap)
- {
--	struct ice_sched_agg_info *agg_info;
--	struct ice_hw *hw = pi->hw;
--	int status = 0;
-+	int status;
- 	u8 tc;
- 
--	agg_info = xa_load(&hw->agg_list, agg_id);
--	if (!agg_info)
--		agg_info = ice_alloc_agg_info(hw, agg_id, agg_id, agg_type);
--	if (IS_ERR(agg_info))
--		return PTR_ERR(agg_info);
--
- 	/* Create aggregator node(s) for requested TC(s) */
- 	ice_for_each_traffic_class(tc) {
- 		if (!ice_is_tc_ena(*tc_bitmap, tc)) {
- 			/* Delete aggregator cfg TC if it exists previously */
- 			status = ice_rm_agg_cfg_tc(pi, agg_info, tc, false);
- 			if (status)
--				break;
-+				return status;
- 			continue;
- 		}
- 
-@@ -2787,15 +2774,15 @@ ice_sched_cfg_agg(struct ice_port_info *pi, u32 agg_id,
- 			continue;
- 
- 		/* Create new aggregator node for TC */
--		status = ice_sched_add_agg_cfg(pi, agg_id, tc);
-+		status = ice_sched_add_agg_cfg(pi, agg_info->agg_id, tc);
- 		if (status)
--			break;
-+			return status;
- 
- 		/* Save aggregator node's TC information */
- 		set_bit(tc, agg_info->tc_bitmap);
- 	}
- 
--	return status;
-+	return 0;
+@@ -2798,30 +2798,6 @@ ice_sched_cfg_agg(struct ice_port_info *pi, u32 agg_id,
+ 	return status;
  }
  
+-/**
+- * ice_cfg_agg - config aggregator node
+- * @pi: port information structure
+- * @agg_id: aggregator ID
+- * @agg_type: aggregator type queue, VSI, or aggregator group
+- * @tc_bitmap: bits TC bitmap
+- *
+- * This function configures aggregator node(s).
+- */
+-int
+-ice_cfg_agg(struct ice_port_info *pi, u32 agg_id, enum ice_agg_type agg_type,
+-	    u8 tc_bitmap)
+-{
+-	unsigned long bitmap = tc_bitmap;
+-	int status;
+-
+-	mutex_lock(&pi->sched_lock);
+-	status = ice_sched_cfg_agg(pi, agg_id, agg_type, &bitmap);
+-	if (!status)
+-		status = ice_save_agg_tc_bitmap(pi, agg_id, &bitmap);
+-	mutex_unlock(&pi->sched_lock);
+-	return status;
+-}
+-
  /**
-@@ -3121,8 +3108,7 @@ int ice_cfg_vsi_agg(struct ice_port_info *pi, u16 vsi_handle,
- 	}
+  * ice_get_agg_vsi_info - get the aggregator ID
+  * @agg_info: aggregator info
+@@ -3073,32 +3049,6 @@ ice_sched_cfg_node_bw_alloc(struct ice_hw *hw, struct ice_sched_node *node,
+ 	return ice_sched_update_elem(hw, node, &buf);
+ }
  
- 	/* Configure the aggregator node */
--	status = ice_sched_cfg_agg(pi, agg_info->agg_id, ICE_AGG_TYPE_AGG,
--				   &bitmap);
-+	status = ice_sched_cfg_agg(pi, agg_info, &bitmap);
- 	if (status)
- 		goto out_unlock;
- 
-@@ -4402,9 +4388,7 @@ void ice_sched_replay_agg(struct ice_hw *hw)
- 						    agg_info->replay_tc_bitmap,
- 						    replay_bitmap);
- 			status = ice_sched_cfg_agg(hw->port_info,
--						   agg_info->agg_id,
--						   ICE_AGG_TYPE_AGG,
--						   replay_bitmap);
-+						   agg_info, replay_bitmap);
- 			if (status) {
- 				dev_info(ice_hw_to_dev(hw),
- 					 "Replay agg id[%d] failed\n",
-@@ -4471,8 +4455,7 @@ static int ice_sched_replay_vsi_agg(struct ice_hw *hw, u16 vsi_handle)
- 	ice_sched_get_ena_tc_bitmap(pi, agg_info->replay_tc_bitmap,
- 				    replay_bitmap);
- 	/* Replay aggregator node associated to vsi_handle */
--	status = ice_sched_cfg_agg(hw->port_info, agg_info->agg_id,
--				   ICE_AGG_TYPE_AGG, replay_bitmap);
-+	status = ice_sched_cfg_agg(hw->port_info, agg_info, replay_bitmap);
- 	if (status)
- 		return status;
- 
+-/**
+- * ice_move_vsi_to_agg - moves VSI to new or default aggregator
+- * @pi: port information structure
+- * @agg_id: aggregator ID
+- * @vsi_handle: software VSI handle
+- * @tc_bitmap: TC bitmap of enabled TC(s)
+- *
+- * Move or associate VSI to a new or default aggregator node.
+- */
+-int
+-ice_move_vsi_to_agg(struct ice_port_info *pi, u32 agg_id, u16 vsi_handle,
+-		    u8 tc_bitmap)
+-{
+-	unsigned long bitmap = tc_bitmap;
+-	int status;
+-
+-	mutex_lock(&pi->sched_lock);
+-	status = ice_sched_assoc_vsi_to_agg(pi, agg_id, vsi_handle,
+-					    (unsigned long *)&bitmap);
+-	if (!status)
+-		status = ice_save_agg_vsi_tc_bitmap(pi, agg_id, vsi_handle,
+-						    (unsigned long *)&bitmap);
+-	mutex_unlock(&pi->sched_lock);
+-	return status;
+-}
+-
+ /**
+  * ice_find_available_agg - Find or create aggregator node
+  * @hw: pointer to the HW structure
 
 -- 
 2.54.0.1064.gd145956f57df
