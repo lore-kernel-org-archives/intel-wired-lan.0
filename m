@@ -1,75 +1,75 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 25A43CD5BD1
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  2 Jun 2026 00:15:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C2FDCD6E65
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  2 Jun 2026 00:15:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D09E840C2A;
-	Tue,  2 Jun 2026 00:15:34 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id DEF9D81443;
+	Tue,  2 Jun 2026 00:15:35 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id yfqaKwU4y2in; Tue,  2 Jun 2026 00:15:34 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 6GY8yU2jPDQN; Tue,  2 Jun 2026 00:15:35 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1A4B240C1A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 42EE98144A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1780359334;
-	bh=Hq46EE7V+KIYMIhS+eSaGPQxVbSNmIGIwHXgi0tkvx8=;
+	s=default; t=1780359335;
+	bh=Bv0HkjcVC/WoKID226Xr+Bo+g6n4/bKL9He2WoHQnyo=;
 	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=k80dplZ2JxJo7THb4jWFB4eqCgMY2kKfC/68LhKWPsgD043yLHAudgj6sHCqCoRIM
-	 OvKsv2TeV/NjTwj04PWqLnQVXF6oIvCbzeJ8FUreS+EgHf8iIcbye2aQHqegm1Tp/3
-	 G6WYwqgAQ58SpO4KZMfeUfKQQCfqKeoiXCVvddJa9Y+zwmxdtY0BNxomzFED9lB77W
-	 Y6bZQ0aaQnecau6P0gvKmk4fIRaXTd7MbkAQrSdspOb91W4aQ5ubymzfS9nY9sIAGG
-	 YTnxTF7BgpTi1TWvkZqFTY66DFOl1Tkrgfmw5c3RryZGyIlcXtfbrIpZi3iNs3ZFmJ
-	 aHaHKujggxqZg==
+	b=Z7o0DlM9LcH+9mkAqjYBW/7LSnPycmvHpGUUw7F5xb+EFFSKNkB26cM55WP0u7Y87
+	 M5LFXCyL6FnXjVbCFlDnKY2fIhKjIu+bip9CQc+8aNHyi1kt2Oatj2Ac0UuTpaIc7s
+	 HsYLZG8+UqZosEEshDg+p/twcFvY66Iia1fEqalQo5DjXjWb9DwfdFmmqnwojDsoQO
+	 fcmRQ/VfUgZwje756Zyo6KV8v04gxSEtdqa8XQHbV15Nqv5oKmGQp5bRtyeIjwbFIp
+	 8aXvgJKzwwPZ2OULowLFB6ax2F7KTmhA2yXaZsH04pm2UiuioadqR0GWSmpIFlmyTU
+	 Qse+d1iRMChHQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 1A4B240C1A;
-	Tue,  2 Jun 2026 00:15:34 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 8562AF4
- for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Jun 2026 00:15:32 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 42EE98144A;
+	Tue,  2 Jun 2026 00:15:35 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id A7543F4
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Jun 2026 00:15:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 777A440330
+ by smtp2.osuosl.org (Postfix) with ESMTP id 92CDB40058
  for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Jun 2026 00:15:32 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 7UbAPivNzstz for <intel-wired-lan@lists.osuosl.org>;
- Tue,  2 Jun 2026 00:15:31 +0000 (UTC)
+ id GzzTOsksy6Q1 for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  2 Jun 2026 00:15:32 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.15;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 90BC440058
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 90BC440058
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org E07174030F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E07174030F
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 90BC440058
+ by smtp2.osuosl.org (Postfix) with ESMTPS id E07174030F
  for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Jun 2026 00:15:31 +0000 (UTC)
-X-CSE-ConnectionGUID: SgWQ9l7JRba1ka5wfcrEtQ==
-X-CSE-MsgGUID: g9zZRHUTTjW8fxvu07J1Rw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11804"; a="84755420"
-X-IronPort-AV: E=Sophos;i="6.24,182,1774335600"; d="scan'208";a="84755420"
+X-CSE-ConnectionGUID: KSmDczMvQSuFv+BvPHZ1+Q==
+X-CSE-MsgGUID: oisSewgyRzqfSh3ZyjGskw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11804"; a="84755424"
+X-IronPort-AV: E=Sophos;i="6.24,182,1774335600"; d="scan'208";a="84755424"
 Received: from fmviesa001.fm.intel.com ([10.60.135.141])
  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  01 Jun 2026 17:15:30 -0700
-X-CSE-ConnectionGUID: n89E4oksTuSef5ElVwZ/UA==
-X-CSE-MsgGUID: 1lYpfoQ5Q3OA5dn1i+Se5w==
+X-CSE-ConnectionGUID: fbtR9wcRRsmpY7gj58MGsw==
+X-CSE-MsgGUID: tkRitGPIT9iEIxr7FCyRsA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.24,182,1774335600"; d="scan'208";a="267598716"
+X-IronPort-AV: E=Sophos;i="6.24,182,1774335600"; d="scan'208";a="267598722"
 Received: from orcnseosdtjek.jf.intel.com (HELO [10.166.28.109])
  ([10.166.28.109])
  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  01 Jun 2026 17:15:30 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Mon, 01 Jun 2026 17:14:18 -0700
+Date: Mon, 01 Jun 2026 17:14:20 -0700
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260601-jk-cleanup-vsi-aggregator-nodes-v1-1-36d6ecbe5ede@intel.com>
+Message-Id: <20260601-jk-cleanup-vsi-aggregator-nodes-v1-3-36d6ecbe5ede@intel.com>
 References: <20260601-jk-cleanup-vsi-aggregator-nodes-v1-0-36d6ecbe5ede@intel.com>
 In-Reply-To: <20260601-jk-cleanup-vsi-aggregator-nodes-v1-0-36d6ecbe5ede@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>, 
@@ -79,37 +79,36 @@ Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>,
  Jacob Keller <jacob.e.keller@intel.com>, 
  Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 X-Mailer: b4 0.16-dev-3fed5
-X-Developer-Signature: v=1; a=openpgp-sha256; l=9228;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3567;
  i=jacob.e.keller@intel.com; h=from:subject:message-id;
- bh=ksqg8j/fyMk5YEmjp5KGUMgaL2Fi4R1uhiVDs5nvGyY=;
- b=owGbwMvMwCWWNS3WLp9f4wXjabUkhiw5hQUu9a8vMst9Kc7fZdq/0WrXsVPJGtt2GB7ufGHBk
- 752nvuXjlIWBjEuBlkxRRYFh5CV140nhGm9cZaDmcPKBDKEgYtTACZyqY7hr1xbyn7FhXHVvMfc
- D0Wf63lUKHU2qbX0ZtiRado1F97oBzH8r/TlE9+XIXRnX1e8SlK0iNX08PlJhSsE37vv+ujL1/i
- XGwA=
+ bh=3dgMEJWOCpdkTidhqhCeFwMgeKYxmPG93+bJU5TqogE=;
+ b=owGbwMvMwCWWNS3WLp9f4wXjabUkhiw5hQU5341/vZt+V2jL98hkmajLufd6zizg4ihzPCL84
+ oTCTj7XjlIWBjEuBlkxRRYFh5CV140nhGm9cZaDmcPKBDKEgYtTACaSf4uR4cyGO2yreJs0dJ75
+ nlJy/Mpexa1SEcNsujDpxJrEZJ+Dzgx/5Ryzw70FtZ9furxRJXy9e82rDGeh4JhXReoPxM48zVH
+ gBgA=
 X-Developer-Key: i=jacob.e.keller@intel.com; a=openpgp;
  fpr=204054A9D73390562AEC431E6A965D3E6F0F28E8
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1780359331; x=1811895331;
+ t=1780359332; x=1811895332;
  h=from:date:subject:mime-version:content-transfer-encoding:
  message-id:references:in-reply-to:to:cc;
- bh=ksqg8j/fyMk5YEmjp5KGUMgaL2Fi4R1uhiVDs5nvGyY=;
- b=g3OJJuf3qAdFqC3ueh170lXncwWqPSW1VMxVeKPpX5taGwRu3SzDHxQL
- i2sHZdbbqWkPcuVEht1IFh5D75FNf7e8sDdRenQaTrraT3Egpk0pXEi49
- yl7AWuUVLpiFXlTaTymmPW3xYFYbG/8gwP/VA2Es0TBP/WYJ7bevP1z1f
- qacKPrpkPgqQKOhnHB4fqmJz/eHnEUdlp+I0weDxYTLZm8QjZtX0PKEvR
- r2Xad1xO7Y8PO5yUlVBvqVz8EJB/Dx1+UUj6RHbA/bB5942SaUGryzZdb
- 9sGyS+Xhf5QRZw04J5iLjKMGexVjxhm0a1qq/XRJFdnH5Tgy4uCH9+jzW
- Q==;
+ bh=3dgMEJWOCpdkTidhqhCeFwMgeKYxmPG93+bJU5TqogE=;
+ b=SsGahvJItn10X0+iaHSawc9BDg2CKpQzX5FZbJi+dyS+Bi8p4e4gJhXx
+ fffrM//N8V53JGUWzlfW30YyV/MXAJNbGKgkQjrXngGvNKMmgFwKISyCq
+ jtbYMzFzvBBE4r3uC9h+C6hw1jDRMK5ctNO6jKva7cOahelJRRVQEL9Hv
+ DQxvt2SRrqe2mJfcNku9Ai7vu0Wd6UG+PM9alDh6xBzN1jzhO5llIoLdC
+ 0qu22dwbuwimNMWz3qCKk6W8G4BjSONSJ7W/gJqVuHQ+roUfg8jQVlVDw
+ P7HgOqOdv9UnWhT5jJ8B6hMll4uLS+qihMhP+8PRj8nzQ8a3h/wm8aJiS
+ w==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=g3OJJuf3
-Subject: [Intel-wired-lan] [PATCH iwl-next 1/6] ice: convert hw->agg_list
- from linked list to xarray
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=SsGahvJI
+Subject: [Intel-wired-lan] [PATCH iwl-next 3/6] ice: extract function to
+ allocate aggregator info structure
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -125,249 +124,112 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The scheduler code saves information about the aggregator nodes in a linked
-list in the hw->agg_list structure. This choice of data structure is not
-ideal. Indeed, several places in the code iterate the list searching to see
-if a given ID is present.
+Add a new ice_alloc_agg_info() helper function which allocates an
+aggregator info structure with an ID between min_id and max_id, inserting
+it into the agg_list xarray. Use this function in ice_sched_cfg_agg().
 
-Convert the linked list into an xarray. Where possible, simplify aggregator
-info lookup to use xa_load instead of iterating over all the entries.
-
-Switching to xarray data structure better matches the existing usage
-pattern. In addition, it prepares the code to allow removal of the
-ice_agg_node wrapping structure used by ice_vsi, which will be completed in
-following changes.
+This is done in preparation of refactoring the aggregator node ID logic in
+ice_set_agg_vsi().
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_sched.h  |  1 -
- drivers/net/ethernet/intel/ice/ice_type.h   |  2 +-
- drivers/net/ethernet/intel/ice/ice_common.c |  4 +-
- drivers/net/ethernet/intel/ice/ice_sched.c  | 58 ++++++++++++-----------------
- 4 files changed, 27 insertions(+), 38 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_sched.c | 74 +++++++++++++++++++++---------
+ 1 file changed, 52 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.h b/drivers/net/ethernet/intel/ice/ice_sched.h
-index 7b668083be07..f2a619fcab8b 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.h
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.h
-@@ -67,7 +67,6 @@ struct ice_sched_agg_vsi_info {
- 
- struct ice_sched_agg_info {
- 	struct list_head agg_vsi_list;
--	struct list_head list_entry;
- 	DECLARE_BITMAP(tc_bitmap, ICE_MAX_TRAFFIC_CLASS);
- 	u32 agg_id;
- 	enum ice_agg_type agg_type;
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index b39be74b1d55..ab297b66ee16 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -948,7 +948,7 @@ struct ice_hw {
- 	u8 max_cgds;
- 	u8 sw_entry_point_layer;
- 	u16 max_children[ICE_AQC_TOPO_MAX_LEVEL_NUM];
--	struct list_head agg_list;	/* lists all aggregator */
-+	struct xarray agg_list; /* array of aggregator nodes */
- 
- 	struct ice_vsi_ctx *vsi_ctx[ICE_MAX_VSI];
- 	u8 evb_veb;		/* true for VEB, false for VEPA */
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 3c36f8a28a64..f6fa0a50e08f 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -1052,6 +1052,7 @@ int ice_init_hw(struct ice_hw *hw)
- 	hw->evb_veb = true;
- 
- 	xa_init_flags(&hw->port_info->sched_node_ids, XA_FLAGS_ALLOC);
-+	xa_init_flags(&hw->agg_list, XA_FLAGS_ALLOC);
- 
- 	/* Query the allocated resources for Tx scheduler */
- 	status = ice_sched_query_res_alloc(hw);
-@@ -1091,7 +1092,6 @@ int ice_init_hw(struct ice_hw *hw)
- 		status = -EIO;
- 		goto err_unroll_sched;
- 	}
--	INIT_LIST_HEAD(&hw->agg_list);
- 	/* Initialize max burst size */
- 	if (!hw->max_burst_size)
- 		ice_cfg_rl_burst_size(hw, ICE_SCHED_DFLT_BURST_SIZE);
-@@ -1147,6 +1147,7 @@ int ice_init_hw(struct ice_hw *hw)
- 	ice_sched_cleanup_all(hw);
- err_unroll_xarray:
- 	xa_destroy(&hw->port_info->sched_node_ids);
-+	xa_destroy(&hw->agg_list);
- err_unroll_alloc:
- 	devm_kfree(ice_hw_to_dev(hw), hw->port_info);
- err_unroll_cqinit:
-@@ -1189,6 +1190,7 @@ void ice_deinit_hw(struct ice_hw *hw)
- 	ice_clear_all_vsi_ctx(hw);
- 
- 	xa_destroy(&hw->port_info->sched_node_ids);
-+	xa_destroy(&hw->agg_list);
- }
- 
- /**
 diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
-index 8b005e4603eb..a74f840cba23 100644
+index bfca45f5c53c..88392ebf4454 100644
 --- a/drivers/net/ethernet/intel/ice/ice_sched.c
 +++ b/drivers/net/ethernet/intel/ice/ice_sched.c
-@@ -813,9 +813,9 @@ static void ice_sched_clear_rl_prof(struct ice_port_info *pi)
- void ice_sched_clear_agg(struct ice_hw *hw)
- {
- 	struct ice_sched_agg_info *agg_info;
--	struct ice_sched_agg_info *atmp;
-+	unsigned long index;
- 
--	list_for_each_entry_safe(agg_info, atmp, &hw->agg_list, list_entry) {
-+	xa_for_each(&hw->agg_list, index, agg_info) {
- 		struct ice_sched_agg_vsi_info *agg_vsi_info;
- 		struct ice_sched_agg_vsi_info *vtmp;
- 
-@@ -824,7 +824,7 @@ void ice_sched_clear_agg(struct ice_hw *hw)
- 			list_del(&agg_vsi_info->list_entry);
- 			devm_kfree(ice_hw_to_dev(hw), agg_vsi_info);
- 		}
--		list_del(&agg_info->list_entry);
-+		xa_erase(&hw->agg_list, index);
- 		devm_kfree(ice_hw_to_dev(hw), agg_info);
- 	}
- }
-@@ -2060,10 +2060,9 @@ ice_sched_cfg_vsi(struct ice_port_info *pi, u16 vsi_handle, u8 tc, u16 maxqs,
- static void ice_sched_rm_agg_vsi_info(struct ice_port_info *pi, u16 vsi_handle)
- {
- 	struct ice_sched_agg_info *agg_info;
--	struct ice_sched_agg_info *atmp;
-+	unsigned long index;
- 
--	list_for_each_entry_safe(agg_info, atmp, &pi->hw->agg_list,
--				 list_entry) {
-+	xa_for_each(&pi->hw->agg_list, index, agg_info) {
- 		struct ice_sched_agg_vsi_info *agg_vsi_info;
- 		struct ice_sched_agg_vsi_info *vtmp;
- 
-@@ -2226,26 +2225,6 @@ int ice_rm_vsi_rdma_cfg(struct ice_port_info *pi, u16 vsi_handle)
- 	return ice_sched_rm_vsi_cfg(pi, vsi_handle, ICE_SCHED_NODE_OWNER_RDMA);
+@@ -2693,6 +2693,54 @@ ice_sched_add_agg_cfg(struct ice_port_info *pi, u32 agg_id, u8 tc)
+ 	return 0;
  }
  
--/**
-- * ice_get_agg_info - get the aggregator ID
-- * @hw: pointer to the hardware structure
-- * @agg_id: aggregator ID
-- *
-- * This function validates aggregator ID. The function returns info if
-- * aggregator ID is present in list otherwise it returns null.
-- */
--static struct ice_sched_agg_info *
--ice_get_agg_info(struct ice_hw *hw, u32 agg_id)
--{
--	struct ice_sched_agg_info *agg_info;
--
--	list_for_each_entry(agg_info, &hw->agg_list, list_entry)
--		if (agg_info->agg_id == agg_id)
--			return agg_info;
--
--	return NULL;
--}
--
++/**
++ * ice_alloc_agg_info - Allocate aggregator info structure
++ * @hw: pointer to the HW structure
++ * @min_id: the minimum ID to allocate
++ * @max_id: the maximum ID to allocate
++ * @agg_type: the aggregator node type
++ *
++ * Allocates a new aggregator info structure with an ID between min_id and
++ * max_id, inserting it into the agg_list xarray. If an exact ID is required,
++ * use the same value for both min_id and max_id.
++ *
++ * Context: Must be called while holding the scheduler lock.
++ *
++ * Return: the allocated aggregator info structure pointer, or an ERR_PTR on
++ * failure.
++ */
++static struct ice_sched_agg_info *
++ice_alloc_agg_info(struct ice_hw *hw, u32 min_id, u32 max_id,
++		   enum ice_agg_type agg_type)
++{
++	struct ice_sched_agg_info *agg_info;
++	u32 agg_id;
++	int status;
++
++	/* Create new entry for new aggregator ID */
++	agg_info = devm_kzalloc(ice_hw_to_dev(hw), sizeof(*agg_info),
++				GFP_KERNEL);
++	if (!agg_info)
++		return ERR_PTR(-ENOMEM);
++
++	agg_info->agg_type = agg_type;
++	agg_info->tc_bitmap[0] = 0;
++
++	/* Initialize the aggregator VSI list head */
++	INIT_LIST_HEAD(&agg_info->agg_vsi_list);
++	agg_info->num_vsis = 0;
++
++	status = xa_alloc(&hw->agg_list, &agg_id, agg_info,
++			  XA_LIMIT(min_id, max_id), GFP_KERNEL);
++	if (status) {
++		devm_kfree(ice_hw_to_dev(hw), agg_info);
++		return ERR_PTR(status);
++	}
++	agg_info->agg_id = agg_id;
++
++	return agg_info;
++}
++
  /**
-  * ice_sched_get_free_vsi_parent - Find a free parent node in aggregator subtree
-  * @hw: pointer to the HW struct
-@@ -2619,7 +2598,7 @@ ice_save_agg_tc_bitmap(struct ice_port_info *pi, u32 agg_id,
- {
- 	struct ice_sched_agg_info *agg_info;
- 
--	agg_info = ice_get_agg_info(pi->hw, agg_id);
-+	agg_info = xa_load(&pi->hw->agg_list, agg_id);
- 	if (!agg_info)
- 		return -EINVAL;
- 	bitmap_copy(agg_info->replay_tc_bitmap, tc_bitmap,
-@@ -2735,7 +2714,7 @@ ice_sched_cfg_agg(struct ice_port_info *pi, u32 agg_id,
- 	int status = 0;
+  * ice_sched_cfg_agg - configure aggregator node
+  * @pi: port information structure
+@@ -2719,29 +2767,11 @@ ice_sched_cfg_agg(struct ice_port_info *pi, u32 agg_id,
  	u8 tc;
  
--	agg_info = ice_get_agg_info(hw, agg_id);
-+	agg_info = xa_load(&hw->agg_list, agg_id);
- 	if (!agg_info) {
- 		/* Create new entry for new aggregator ID */
- 		agg_info = devm_kzalloc(ice_hw_to_dev(hw), sizeof(*agg_info),
-@@ -2750,8 +2729,13 @@ ice_sched_cfg_agg(struct ice_port_info *pi, u32 agg_id,
- 		/* Initialize the aggregator VSI list head */
- 		INIT_LIST_HEAD(&agg_info->agg_vsi_list);
+ 	agg_info = xa_load(&hw->agg_list, agg_id);
+-	if (!agg_info) {
+-		/* Create new entry for new aggregator ID */
+-		agg_info = devm_kzalloc(ice_hw_to_dev(hw), sizeof(*agg_info),
+-					GFP_KERNEL);
+-		if (!agg_info)
+-			return -ENOMEM;
++	if (!agg_info)
++		agg_info = ice_alloc_agg_info(hw, agg_id, agg_id, agg_type);
++	if (IS_ERR(agg_info))
++		return PTR_ERR(agg_info);
  
--		/* Add new entry in aggregator list */
--		list_add(&agg_info->list_entry, &hw->agg_list);
-+		/* Add new entry in aggregator array */
-+		status = xa_insert(&hw->agg_list, agg_id, agg_info,
-+				   GFP_KERNEL);
-+		if (status) {
-+			devm_kfree(ice_hw_to_dev(hw), agg_info);
-+			return status;
-+		}
- 	}
+-		agg_info->agg_id = agg_id;
+-		agg_info->agg_type = agg_type;
+-		agg_info->tc_bitmap[0] = 0;
+-
+-		/* Initialize the aggregator VSI list head */
+-		INIT_LIST_HEAD(&agg_info->agg_vsi_list);
+-		agg_info->num_vsis = 0;
+-
+-		/* Add new entry in aggregator array */
+-		status = xa_insert(&hw->agg_list, agg_id, agg_info,
+-				   GFP_KERNEL);
+-		if (status) {
+-			devm_kfree(ice_hw_to_dev(hw), agg_info);
+-			return status;
+-		}
+-	}
  	/* Create aggregator node(s) for requested TC(s) */
  	ice_for_each_traffic_class(tc) {
-@@ -2836,8 +2820,9 @@ static struct ice_sched_agg_info *
- ice_get_vsi_agg_info(struct ice_hw *hw, u16 vsi_handle)
- {
- 	struct ice_sched_agg_info *agg_info;
-+	unsigned long index;
- 
--	list_for_each_entry(agg_info, &hw->agg_list, list_entry) {
-+	xa_for_each(&hw->agg_list, index, agg_info) {
- 		struct ice_sched_agg_vsi_info *agg_vsi_info;
- 
- 		agg_vsi_info = ice_get_agg_vsi_info(agg_info, vsi_handle);
-@@ -2864,7 +2849,7 @@ ice_save_agg_vsi_tc_bitmap(struct ice_port_info *pi, u32 agg_id, u16 vsi_handle,
- 	struct ice_sched_agg_vsi_info *agg_vsi_info;
- 	struct ice_sched_agg_info *agg_info;
- 
--	agg_info = ice_get_agg_info(pi->hw, agg_id);
-+	agg_info = xa_load(&pi->hw->agg_list, agg_id);
- 	if (!agg_info)
- 		return -EINVAL;
- 	/* check if entry already exist */
-@@ -2899,7 +2884,7 @@ ice_sched_assoc_vsi_to_agg(struct ice_port_info *pi, u32 agg_id,
- 
- 	if (!ice_is_vsi_valid(pi->hw, vsi_handle))
- 		return -EINVAL;
--	agg_info = ice_get_agg_info(hw, agg_id);
-+	agg_info = xa_load(&hw->agg_list, agg_id);
- 	if (!agg_info)
- 		return -EINVAL;
- 	/* If the VSI is already part of another aggregator then update
-@@ -4313,9 +4298,10 @@ void ice_sched_replay_agg(struct ice_hw *hw)
- {
- 	struct ice_port_info *pi = hw->port_info;
- 	struct ice_sched_agg_info *agg_info;
-+	unsigned long index;
- 
- 	mutex_lock(&pi->sched_lock);
--	list_for_each_entry(agg_info, &hw->agg_list, list_entry)
-+	xa_for_each(&hw->agg_list, index, agg_info) {
- 		/* replay aggregator (re-create aggregator node) */
- 		if (!bitmap_equal(agg_info->tc_bitmap, agg_info->replay_tc_bitmap,
- 				  ICE_MAX_TRAFFIC_CLASS)) {
-@@ -4338,6 +4324,7 @@ void ice_sched_replay_agg(struct ice_hw *hw)
- 				continue;
- 			}
- 		}
-+	}
- 	mutex_unlock(&pi->sched_lock);
- }
- 
-@@ -4352,9 +4339,10 @@ void ice_sched_replay_agg_vsi_preinit(struct ice_hw *hw)
- {
- 	struct ice_port_info *pi = hw->port_info;
- 	struct ice_sched_agg_info *agg_info;
-+	unsigned long index;
- 
- 	mutex_lock(&pi->sched_lock);
--	list_for_each_entry(agg_info, &hw->agg_list, list_entry) {
-+	xa_for_each(&hw->agg_list, index, agg_info) {
- 		struct ice_sched_agg_vsi_info *agg_vsi_info;
- 
- 		agg_info->tc_bitmap[0] = 0;
+ 		if (!ice_is_tc_ena(*tc_bitmap, tc)) {
 
 -- 
 2.54.0.1064.gd145956f57df
