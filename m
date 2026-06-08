@@ -1,70 +1,70 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 02CD3CD8CB2
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  8 Jun 2026 14:41:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 855F1CD8C9D
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  8 Jun 2026 14:41:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B993861BAC;
-	Mon,  8 Jun 2026 14:41:54 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 5423084A12;
+	Mon,  8 Jun 2026 14:41:57 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id EYaPB6K7DbPq; Mon,  8 Jun 2026 14:41:53 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 1VMnfCpM5OJc; Mon,  8 Jun 2026 14:41:56 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0206161BA8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8901D84C50
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1780929713;
-	bh=W4QhyDs+9mlffcH4tgAGSRxhWP1POyjAQYjXivM5A3k=;
+	s=default; t=1780929716;
+	bh=aqCeDp6+7EjMWQgTKr+spRwz2RW++aarwZ5DbsiAxCE=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=xgVbH2yQF9dHYSfgNN4R+DvTB1QNzZLGAL7j2skGWKvx0JFN5UNCKDuOpkYc43sy1
-	 ra9vYFgBGen69xMRZGIo8rqwz9xnohvgLtWdjoTD79e1+GWz+9nU7twV4qCkEMSF/z
-	 VU09tB3DkN4jq1g+2Eh3s8C+s1jHm/FHvD8VbJw2ePQNKFodee8WbXCgeceXxy35k7
-	 ww3KcLzDsJ5P7nQXGNeRj1WZlCfVWbg60PMLm+0C+3MP/2QugBKEqyEKYd+e3QYxvm
-	 McJsm9p9EOSvmRe8UURYoeG8FRm6qHBwR+MkUb53LByOCAJCzzhKjlLqpka8LdiApH
-	 c8cFf1c6p98PA==
+	b=CCRyxHHhxGuXwU3q9DbMpA3zNWOwaMD5hgB6r7wmB21zkkdIWmayD9c5FxXNfH3Xg
+	 mfNrq3HiYM626hsyKX3TTlXkjsdF8FRTL7feTLi0stNTza+rlk2YeBNK+Lkkua2w/v
+	 8XJ2jay6NPFkf3cmZWMYV/rWvy1H4/eCBGneX/lCx6HMEzk+JL1D+xB2M5WVxtiip2
+	 /f2yom7OYXcj0haAObSyM6ypb4HgCljQFP1J9nSXmNPh50Qvnu+LOCIRw9WHwiQa6P
+	 LZEfwSZLn5eD5hjqyCZBtQ03c1gpCYw6QgRaVBpwZ+fbwse1xJuT59odXtl2q5T8NU
+	 UA1QhbOsPKrhg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 0206161BA8;
-	Mon,  8 Jun 2026 14:41:53 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 8901D84C50;
+	Mon,  8 Jun 2026 14:41:56 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id CBEE3EC
- for <intel-wired-lan@lists.osuosl.org>; Mon,  8 Jun 2026 14:41:50 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 8965E187
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  8 Jun 2026 14:41:55 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id BEA4461BA2
- for <intel-wired-lan@lists.osuosl.org>; Mon,  8 Jun 2026 14:41:50 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 7A8AE61B9B
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  8 Jun 2026 14:41:55 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id v1lw3q1DxPuq for <intel-wired-lan@lists.osuosl.org>;
- Mon,  8 Jun 2026 14:41:49 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.19;
+ id A-68lIF6QzfD for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  8 Jun 2026 14:41:54 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.16;
  helo=mgamail.intel.com; envelope-from=larysa.zaremba@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 8CFF861B90
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8CFF861B90
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 8CFF861B90
- for <intel-wired-lan@lists.osuosl.org>; Mon,  8 Jun 2026 14:41:49 +0000 (UTC)
-X-CSE-ConnectionGUID: 7qC1D5CRTVirYuuCdz4Ktw==
-X-CSE-MsgGUID: BqbZXTjyQIiaHjCqWMPxLw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11811"; a="81642022"
-X-IronPort-AV: E=Sophos;i="6.24,194,1774335600"; d="scan'208";a="81642022"
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org A3FF261BAA
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A3FF261BAA
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id A3FF261BAA
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  8 Jun 2026 14:41:54 +0000 (UTC)
+X-CSE-ConnectionGUID: OwUbdvN+R7WufZoorOQ0Qg==
+X-CSE-MsgGUID: KO5IBCOTTniqPnGPMnCyqg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11811"; a="69198729"
+X-IronPort-AV: E=Sophos;i="6.24,194,1774335600"; d="scan'208";a="69198729"
 Received: from orviesa003.jf.intel.com ([10.64.159.143])
- by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 08 Jun 2026 07:41:48 -0700
-X-CSE-ConnectionGUID: MREiGR3rR1abFJRBNduanQ==
-X-CSE-MsgGUID: hU8RDQcUT269SCkQk6m4EA==
+ by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 08 Jun 2026 07:41:54 -0700
+X-CSE-ConnectionGUID: nbzy9H+gTV2VyvHkJRDtwQ==
+X-CSE-MsgGUID: 9/NPecQOQluVPCvWVDNF2A==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.24,194,1774335600"; d="scan'208";a="249489741"
+X-IronPort-AV: E=Sophos;i="6.24,194,1774335600"; d="scan'208";a="249489748"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by orviesa003.jf.intel.com with ESMTP; 08 Jun 2026 07:41:43 -0700
+ by orviesa003.jf.intel.com with ESMTP; 08 Jun 2026 07:41:49 -0700
 Received: from mglak.igk.intel.com (mglak.igk.intel.com [10.237.112.146])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 380F928795;
- Mon,  8 Jun 2026 15:41:41 +0100 (IST)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 460C42878C;
+ Mon,  8 Jun 2026 15:41:47 +0100 (IST)
 From: Larysa Zaremba <larysa.zaremba@intel.com>
 To: intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>
 Cc: aleksander.lobakin@intel.com, sridhar.samudrala@intel.com,
@@ -82,9 +82,10 @@ Cc: aleksander.lobakin@intel.com, sridhar.samudrala@intel.com,
  Richard Cochran <richardcochran@gmail.com>,
  Przemek Kitszel <przemyslaw.kitszel@intel.com>,
  Andrew Lunn <andrew+netdev@lunn.ch>, netdev@vger.kernel.org,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Mon,  8 Jun 2026 16:41:12 +0200
-Message-ID: <20260608144127.2751230-8-larysa.zaremba@intel.com>
+ linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Samuel Salin <Samuel.salin@intel.com>
+Date: Mon,  8 Jun 2026 16:41:15 +0200
+Message-ID: <20260608144127.2751230-11-larysa.zaremba@intel.com>
 X-Mailer: git-send-email 2.47.0
 In-Reply-To: <20260608144127.2751230-1-larysa.zaremba@intel.com>
 References: <20260608144127.2751230-1-larysa.zaremba@intel.com>
@@ -92,26 +93,26 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1780929710; x=1812465710;
+ t=1780929715; x=1812465715;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=mTbyhIholkZ30Z2A4J6bovHL49jLL3MFMRC/eEyAhis=;
- b=QvQGxPvzaRBAWyxFKTDVppBV2Njo+PFEnF2cqbjbOMYcHAh103DUyag9
- +ythIMIv2vxJbocSUGLGo56LL4crtPxTLxPgpefitLX63j9gxnAqVPy3+
- 4uhYFhN2iGAf/W86FNAUVxW7ZBVJ3ZNXAgJ6j9D8rQvX92LCYy3af9+gg
- wqu2rtS+443kuZH0wbiRdeF6UjWu5vFOeNXRCp9wybkiO82/AFYIWUVNs
- bgZDqty7kxdzwCFh2VLq5VANuwVWK+gCl1IDZg9HpvlYgkzRliNOZ8MG1
- TaLRwTuAdfDa/Uf1CKjA8HsKbY6Ua5DZZudE5vvGDYVpoyjx1BDOicxuV
- w==;
+ bh=+fAeNh2s/WaitPEsmIfXUAi20wewKzSyjsSuQfbG37k=;
+ b=fjGXVMPTtx+Yixa5Km3+A2Hak7AzgEQPtbRblCJMEm0/5jDjb5Q1y+CN
+ 2i7m8bTLNzoNK8d8s5cn+c8r2QmDm/w83PPVFOSqsLZFvWUTa14K6XIGj
+ GmgPdsg+ZF3w5H4NS5XBnkfUy6CZlLH4uRgwgNvB5y25t195xBj+5ddsb
+ bjI6PFvFpTilImynX+TJQDTNCmRbs8bCDKY2cGjBtyrefYkm1TQbTAt28
+ EH1IRJmctMjqTHq1qTMlUmdb/c5lduEgYe66bPu2oJJ8GbYHYo9BQQRKR
+ 9tDCQgpeDX8n27Hm+2dz6ERHM1WexeRfiOiF92AtmojiF0AI1SdibWpDx
+ g==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=QvQGxPvz
-Subject: [Intel-wired-lan] [PATCH iwl-next v8 07/15] idpf: remove unused
- code for getting RSS info from device
+ header.s=Intel header.b=fjGXVMPT
+Subject: [Intel-wired-lan] [PATCH iwl-next v8 10/15] idpf: make mbx_task
+ queueing and cancelling more consistent
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -127,236 +128,105 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-idpf_send_get_set_rss_lut_msg() and idpf_send_get_set_rss_key_msg() do not
-handle the get=true path properly. Response validation is insufficient,
-memcpy size is wrong, LE-to-CPU conversion is missing. Fortunately, those
-functions are never used with get=true. Given how broken this dead code is,
-it is unlikely to be useful in the future.
+As a consequence of refactoring idpf code to use libeth APIs,
+idpf_vc_xn_shutdown was merged with and replaced by idpf_deinit_dflt_mbx.
+This does not affect the Tx path, as it checked for a presence of an xn
+manager anyway. Rx processing is handled by the mbx_task that is not always
+cancelled before calling the new consolidated mailbox deinit function.
+Moreover, in the reset path idpf_intr_rel() reschedules it after the deinit
+is done. This leads to mbx_task referencing the freed mailbox and causing
+KASAN warnings.
 
-Rename idpf_send_get_set_rss_lut_msg() to idpf_send_set_rss_lut_msg(),
-idpf_send_get_set_rss_key_msg() to idpf_send_set_rss_key_msg(), remove the
-get parameter and remove all get=true cases from the function.
+To remedy this, in the init path, do the first queueing of mbx_task in
+idpf_init_dflt_mbx(), in deinit and reset, always cancel the task in
+idpf_deinit_dflt_mbx() and in every flow first call idpf_mb_intr_rel_irq().
 
-Reviewed-by: Alexander Lobakin <aleksander.lobakin@intel.com>
+Reviewed-by: Emil Tantilov <emil.s.tantilov@intel.com>
+Reviewed-by: Michal Kubiak <michal.kubiak@intel.com>
+Tested-by: Samuel Salin <Samuel.salin@intel.com>
 Signed-off-by: Larysa Zaremba <larysa.zaremba@intel.com>
 ---
- drivers/net/ethernet/intel/idpf/idpf_txrx.c   |   4 +-
- .../net/ethernet/intel/idpf/idpf_virtchnl.c   | 107 +++---------------
- .../net/ethernet/intel/idpf/idpf_virtchnl.h   |  10 +-
- 3 files changed, 22 insertions(+), 99 deletions(-)
+ drivers/net/ethernet/intel/idpf/idpf.h          | 1 +
+ drivers/net/ethernet/intel/idpf/idpf_lib.c      | 9 ++++-----
+ drivers/net/ethernet/intel/idpf/idpf_virtchnl.c | 6 +++++-
+ 3 files changed, 10 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-index f6b3b15364ff..d744db0efd3f 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-@@ -4679,11 +4679,11 @@ int idpf_config_rss(struct idpf_vport *vport, struct idpf_rss_data *rss_data)
- 	u32 vport_id = vport->vport_id;
- 	int err;
- 
--	err = idpf_send_get_set_rss_key_msg(adapter, rss_data, vport_id, false);
-+	err = idpf_send_set_rss_key_msg(adapter, rss_data, vport_id);
- 	if (err)
- 		return err;
- 
--	return idpf_send_get_set_rss_lut_msg(adapter, rss_data, vport_id, false);
-+	return idpf_send_set_rss_lut_msg(adapter, rss_data, vport_id);
+diff --git a/drivers/net/ethernet/intel/idpf/idpf.h b/drivers/net/ethernet/intel/idpf/idpf.h
+index d7d751e2a781..470bc23c844c 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf.h
++++ b/drivers/net/ethernet/intel/idpf/idpf.h
+@@ -984,6 +984,7 @@ void idpf_vc_event_task(struct work_struct *work);
+ void idpf_dev_ops_init(struct idpf_adapter *adapter);
+ void idpf_vf_dev_ops_init(struct idpf_adapter *adapter);
+ int idpf_intr_req(struct idpf_adapter *adapter);
++void idpf_mb_intr_rel_irq(struct idpf_adapter *adapter);
+ void idpf_intr_rel(struct idpf_adapter *adapter);
+ u16 idpf_get_max_tx_hdr_size(struct idpf_adapter *adapter);
+ int idpf_initiate_soft_reset(struct idpf_vport *vport,
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_lib.c b/drivers/net/ethernet/intel/idpf/idpf_lib.c
+index 0d131bf0993e..7988836fbae0 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_lib.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_lib.c
+@@ -68,9 +68,11 @@ static void idpf_deinit_vector_stack(struct idpf_adapter *adapter)
+  * This will also disable interrupt mode and queue up mailbox task. Mailbox
+  * task will reschedule itself if not in interrupt mode.
+  */
+-static void idpf_mb_intr_rel_irq(struct idpf_adapter *adapter)
++void idpf_mb_intr_rel_irq(struct idpf_adapter *adapter)
+ {
+-	clear_bit(IDPF_MB_INTR_MODE, adapter->flags);
++	if (!test_and_clear_bit(IDPF_MB_INTR_MODE, adapter->flags))
++		return;
++
+ 	kfree(free_irq(adapter->msix_entries[0].vector, adapter));
+ 	queue_delayed_work(adapter->mbx_wq, &adapter->mbx_task, 0);
  }
+@@ -1938,14 +1940,11 @@ static void idpf_init_hard_reset(struct idpf_adapter *adapter)
+ 		goto unlock_mutex;
+ 	}
  
- /**
+-	queue_delayed_work(adapter->mbx_wq, &adapter->mbx_task, 0);
+-
+ 	/* Initialize the state machine, also allocate memory and request
+ 	 * resources
+ 	 */
+ 	err = idpf_vc_core_init(adapter);
+ 	if (err) {
+-		cancel_delayed_work_sync(&adapter->mbx_task);
+ 		idpf_deinit_dflt_mbx(adapter);
+ 		goto unlock_mutex;
+ 	}
 diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-index d4546d62cca9..a3c17f0e14f3 100644
+index dff719c4b1a2..c6c036edb918 100644
 --- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
 +++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-@@ -2847,29 +2847,26 @@ int idpf_send_get_stats_msg(struct idpf_netdev_priv *np,
- }
+@@ -2910,6 +2910,8 @@ int idpf_init_dflt_mbx(struct idpf_adapter *adapter)
+ 	adapter->xnm = params.xnm;
+ 	adapter->state = __IDPF_VER_CHECK;
  
- /**
-- * idpf_send_get_set_rss_lut_msg - Send virtchnl get or set RSS lut message
-+ * idpf_send_set_rss_lut_msg - Send virtchnl set RSS lut message
-  * @adapter: adapter pointer used to send virtchnl message
-  * @rss_data: pointer to RSS key and lut info
-  * @vport_id: vport identifier used while preparing the virtchnl message
-- * @get: flag to set or get RSS look up table
-  *
-- * When rxhash is disabled, RSS LUT will be configured with zeros.  If rxhash
-+ * When rxhash is disabled, RSS LUT will be configured with zeros. If rxhash
-  * is enabled, the LUT values stored in driver's soft copy will be used to setup
-  * the HW.
-  *
-  * Return: 0 on success, negative on failure.
-  */
--int idpf_send_get_set_rss_lut_msg(struct idpf_adapter *adapter,
--				  struct idpf_rss_data *rss_data,
--				  u32 vport_id, bool get)
-+int idpf_send_set_rss_lut_msg(struct idpf_adapter *adapter,
-+			      struct idpf_rss_data *rss_data, u32 vport_id)
- {
--	struct virtchnl2_rss_lut *recv_rl __free(kfree) = NULL;
- 	struct virtchnl2_rss_lut *rl __free(kfree) = NULL;
- 	struct idpf_vc_xn_params xn_params = {};
--	int buf_size, lut_buf_size;
- 	struct idpf_vport *vport;
- 	ssize_t reply_sz;
- 	bool rxhash_ena;
-+	int buf_size;
- 	int i;
- 
- 	vport = idpf_vid_to_vport(adapter, vport_id);
-@@ -2888,72 +2885,34 @@ int idpf_send_get_set_rss_lut_msg(struct idpf_adapter *adapter,
- 	xn_params.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC;
- 	xn_params.send_buf.iov_base = rl;
- 	xn_params.send_buf.iov_len = buf_size;
-+	xn_params.vc_op = VIRTCHNL2_OP_SET_RSS_LUT;
- 
--	if (get) {
--		recv_rl = kzalloc(IDPF_CTLQ_MAX_BUF_LEN, GFP_KERNEL);
--		if (!recv_rl)
--			return -ENOMEM;
--		xn_params.vc_op = VIRTCHNL2_OP_GET_RSS_LUT;
--		xn_params.recv_buf.iov_base = recv_rl;
--		xn_params.recv_buf.iov_len = IDPF_CTLQ_MAX_BUF_LEN;
--	} else {
--		rl->lut_entries = cpu_to_le16(rss_data->rss_lut_size);
--		for (i = 0; i < rss_data->rss_lut_size; i++)
--			rl->lut[i] = rxhash_ena ?
--				cpu_to_le32(rss_data->rss_lut[i]) : 0;
-+	rl->lut_entries = cpu_to_le16(rss_data->rss_lut_size);
-+	for (i = 0; i < rss_data->rss_lut_size; i++)
-+		rl->lut[i] = rxhash_ena ? cpu_to_le32(rss_data->rss_lut[i]) : 0;
- 
--		xn_params.vc_op = VIRTCHNL2_OP_SET_RSS_LUT;
--	}
- 	reply_sz = idpf_vc_xn_exec(adapter, &xn_params);
- 	if (reply_sz < 0)
- 		return reply_sz;
--	if (!get)
--		return 0;
--	if (reply_sz < sizeof(struct virtchnl2_rss_lut))
--		return -EIO;
--
--	lut_buf_size = le16_to_cpu(recv_rl->lut_entries) * sizeof(u32);
--	if (reply_sz < lut_buf_size)
--		return -EIO;
--
--	/* size didn't change, we can reuse existing lut buf */
--	if (rss_data->rss_lut_size == le16_to_cpu(recv_rl->lut_entries))
--		goto do_memcpy;
--
--	rss_data->rss_lut_size = le16_to_cpu(recv_rl->lut_entries);
--	kfree(rss_data->rss_lut);
--
--	rss_data->rss_lut = kzalloc(lut_buf_size, GFP_KERNEL);
--	if (!rss_data->rss_lut) {
--		rss_data->rss_lut_size = 0;
--		return -ENOMEM;
--	}
--
--do_memcpy:
--	memcpy(rss_data->rss_lut, recv_rl->lut, rss_data->rss_lut_size);
- 
++	queue_delayed_work(adapter->mbx_wq, &adapter->mbx_task, 0);
++
  	return 0;
  }
  
- /**
-- * idpf_send_get_set_rss_key_msg - Send virtchnl get or set RSS key message
-+ * idpf_send_set_rss_key_msg - Send virtchnl set RSS key message
-  * @adapter: adapter pointer used to send virtchnl message
-  * @rss_data: pointer to RSS key and lut info
-  * @vport_id: vport identifier used while preparing the virtchnl message
-- * @get: flag to set or get RSS look up table
-  *
-  * Return: 0 on success, negative on failure
+@@ -2919,6 +2921,9 @@ int idpf_init_dflt_mbx(struct idpf_adapter *adapter)
   */
--int idpf_send_get_set_rss_key_msg(struct idpf_adapter *adapter,
--				  struct idpf_rss_data *rss_data,
--				  u32 vport_id, bool get)
-+int idpf_send_set_rss_key_msg(struct idpf_adapter *adapter,
-+			      struct idpf_rss_data *rss_data, u32 vport_id)
+ void idpf_deinit_dflt_mbx(struct idpf_adapter *adapter)
  {
--	struct virtchnl2_rss_key *recv_rk __free(kfree) = NULL;
- 	struct virtchnl2_rss_key *rk __free(kfree) = NULL;
- 	struct idpf_vc_xn_params xn_params = {};
- 	ssize_t reply_sz;
- 	int i, buf_size;
--	u16 key_size;
++	idpf_mb_intr_rel_irq(adapter);
++	cancel_delayed_work_sync(&adapter->mbx_task);
++
+ 	if (adapter->xnm) {
+ 		idpf_mb_clean(adapter, adapter->asq, true);
+ 		libie_ctlq_xn_deinit(adapter->xnm, &adapter->ctlq_ctx);
+@@ -3178,7 +3183,6 @@ void idpf_vc_core_deinit(struct idpf_adapter *adapter)
+ 		idpf_deinit_dflt_mbx(adapter);
  
- 	buf_size = struct_size(rk, key_flex, rss_data->rss_key_size);
- 	rk = kzalloc(buf_size, GFP_KERNEL);
-@@ -2964,49 +2923,15 @@ int idpf_send_get_set_rss_key_msg(struct idpf_adapter *adapter,
- 	xn_params.send_buf.iov_base = rk;
- 	xn_params.send_buf.iov_len = buf_size;
- 	xn_params.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC;
--	if (get) {
--		recv_rk = kzalloc(IDPF_CTLQ_MAX_BUF_LEN, GFP_KERNEL);
--		if (!recv_rk)
--			return -ENOMEM;
--
--		xn_params.vc_op = VIRTCHNL2_OP_GET_RSS_KEY;
--		xn_params.recv_buf.iov_base = recv_rk;
--		xn_params.recv_buf.iov_len = IDPF_CTLQ_MAX_BUF_LEN;
--	} else {
--		rk->key_len = cpu_to_le16(rss_data->rss_key_size);
--		for (i = 0; i < rss_data->rss_key_size; i++)
--			rk->key_flex[i] = rss_data->rss_key[i];
-+	xn_params.vc_op = VIRTCHNL2_OP_SET_RSS_KEY;
+ 	cancel_delayed_work_sync(&adapter->serv_task);
+-	cancel_delayed_work_sync(&adapter->mbx_task);
  
--		xn_params.vc_op = VIRTCHNL2_OP_SET_RSS_KEY;
--	}
-+	rk->key_len = cpu_to_le16(rss_data->rss_key_size);
-+	for (i = 0; i < rss_data->rss_key_size; i++)
-+		rk->key_flex[i] = rss_data->rss_key[i];
+ 	idpf_vport_params_buf_rel(adapter);
  
- 	reply_sz = idpf_vc_xn_exec(adapter, &xn_params);
- 	if (reply_sz < 0)
- 		return reply_sz;
--	if (!get)
--		return 0;
--	if (reply_sz < sizeof(struct virtchnl2_rss_key))
--		return -EIO;
--
--	key_size = min_t(u16, NETDEV_RSS_KEY_LEN,
--			 le16_to_cpu(recv_rk->key_len));
--	if (reply_sz < key_size)
--		return -EIO;
--
--	/* key len didn't change, reuse existing buf */
--	if (rss_data->rss_key_size == key_size)
--		goto do_memcpy;
--
--	rss_data->rss_key_size = key_size;
--	kfree(rss_data->rss_key);
--	rss_data->rss_key = kzalloc(key_size, GFP_KERNEL);
--	if (!rss_data->rss_key) {
--		rss_data->rss_key_size = 0;
--		return -ENOMEM;
--	}
--
--do_memcpy:
--	memcpy(rss_data->rss_key, recv_rk->key_flex, rss_data->rss_key_size);
- 
- 	return 0;
- }
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h
-index 972dd88cf3d2..7210dc7b426b 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h
-@@ -208,12 +208,10 @@ int idpf_send_ena_dis_loopback_msg(struct idpf_adapter *adapter, u32 vport_id,
- int idpf_send_get_stats_msg(struct idpf_netdev_priv *np,
- 			    struct idpf_port_stats *port_stats);
- int idpf_send_set_sriov_vfs_msg(struct idpf_adapter *adapter, u16 num_vfs);
--int idpf_send_get_set_rss_key_msg(struct idpf_adapter *adapter,
--				  struct idpf_rss_data *rss_data,
--				  u32 vport_id, bool get);
--int idpf_send_get_set_rss_lut_msg(struct idpf_adapter *adapter,
--				  struct idpf_rss_data *rss_data,
--				  u32 vport_id, bool get);
-+int idpf_send_set_rss_key_msg(struct idpf_adapter *adapter,
-+			      struct idpf_rss_data *rss_data, u32 vport_id);
-+int idpf_send_set_rss_lut_msg(struct idpf_adapter *adapter,
-+			      struct idpf_rss_data *rss_data, u32 vport_id);
- void idpf_vc_xn_shutdown(struct idpf_vc_xn_manager *vcxn_mngr);
- int idpf_idc_rdma_vc_send_sync(struct iidc_rdma_core_dev_info *cdev_info,
- 			       u8 *send_msg, u16 msg_size,
 -- 
 2.47.0
 
