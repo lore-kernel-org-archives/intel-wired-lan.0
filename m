@@ -1,95 +1,111 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC2FBCD98C5
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 11 Jun 2026 02:08:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A585CD8CB2
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 11 Jun 2026 06:06:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 53DBA4080C;
-	Thu, 11 Jun 2026 02:08:12 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id C302960752;
+	Thu, 11 Jun 2026 06:06:27 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id HhJRSeFlrWSk; Thu, 11 Jun 2026 02:08:09 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id X63cZhNfqFiQ; Thu, 11 Jun 2026 06:06:27 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A2B244080E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E47C860754
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1781143689;
-	bh=LsfLRl7OuI64QZa7FWNmdbCqTIV71pSU3+SydKKbDjw=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1781157986;
+	bh=r0Kg9efrQxEut61eww4Xt0pjV45uZm/MNUVicYS+0EA=;
+	h=Date:To:Cc:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=sY19lcr7YRYZbbgiDDwDTiTwURldkvRWuNrCvVru+7MtTJnPC5TPk0Cv6TzUM+GWd
-	 7EgI1ywFB0BgtY+Jlc2Eu6WIYjajC2c6lB8Wa/rsCYRM5TvtHJoKJSBGg9kiBvJZgP
-	 DX1NKbyIAlGs0FBhDhlz2Pg/MCuHEYfvpUtaCkcqfM5598sN8nfVObsOx2Zor5LFfG
-	 bBgcmQTdeYlRpTMwIqMF/MtBPFHJkj+caHyVa8w4OED6i7+HkFweuKWxmS+0lJ/7nT
-	 szLY+i4cl3NxyO73J18Wuqi9j2SPISd5ysJ+mFnQs7ZUzW5zuSvLmPmUayJo3rME7r
-	 zEbCiGK58Ruhw==
+	 From:Reply-To:From;
+	b=S8WRMuVrg2PzJTgz+fFjt+FOCrs2ct9YgWXcsONydZwJ4j46HT3OuBNLbPcbggN8+
+	 aergyHMU4hJRKxLk4TIkDEp4v3cQKWsfZ7ZtQ93QCGOctVJZbGPLPW76VQZRemSpey
+	 zk1vEYdFxLgsbtcB0IndHxt33pLMR4R4/2+zEa0mBkI4PbOhkSjvDsBrEgmScY2HhP
+	 GkO0aPe5ecAAjPUXExNtWN0yKg40pP78bTxVVUvyIRvqh6nAd7xdYGiuli1LUJ//qj
+	 NN5bu1z93hL6m5fcediclJUldFm4eoejhOQeKddOzwgxGuFrXLHIoLB8W+jjpPjO6u
+	 QPS7qerolj6Og==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id A2B244080E;
-	Thu, 11 Jun 2026 02:08:09 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 8A57B237
- for <intel-wired-lan@lists.osuosl.org>; Thu, 11 Jun 2026 02:08:08 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id E47C860754;
+	Thu, 11 Jun 2026 06:06:26 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 2B937192
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 11 Jun 2026 06:06:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 7BCE140119
- for <intel-wired-lan@lists.osuosl.org>; Thu, 11 Jun 2026 02:08:08 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 0CBF14013E
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 11 Jun 2026 06:06:25 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id S_us5bRwn4ry for <intel-wired-lan@lists.osuosl.org>;
- Thu, 11 Jun 2026 02:08:07 +0000 (UTC)
-X-Greylist: delayed 305 seconds by postgrey-1.37 at util1.osuosl.org;
- Thu, 11 Jun 2026 02:08:05 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 31B5A40108
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 31B5A40108
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=103.209.128.204;
- helo=mail-m128204.netease.com; envelope-from=dawei.feng@seu.edu.cn;
+ id pIdu6ecWbfCw for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 11 Jun 2026 06:06:24 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=103.117.158.93;
+ helo=sender-pp-o93.zoho.in; envelope-from=kshitiz.bartariya@zohomail.in;
  receiver=<UNKNOWN> 
-Received: from mail-m128204.netease.com (mail-m128204.netease.com
- [103.209.128.204])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 31B5A40108
- for <intel-wired-lan@lists.osuosl.org>; Thu, 11 Jun 2026 02:08:04 +0000 (UTC)
-Received: from DESKTOP-SUEFNF9.taila7e912.ts.net (unknown [221.228.238.82])
- by smtp.qiye.163.com (Hmail) with ESMTP id 41eb56573;
- Thu, 11 Jun 2026 10:02:53 +0800 (GMT+08:00)
-From: Dawei Feng <dawei.feng@seu.edu.cn>
-To: jacob.e.keller@intel.com
-Cc: andrew+netdev@lunn.ch, anthony.l.nguyen@intel.com, davem@davemloft.net,
- dawei.feng@seu.edu.cn, edumazet@google.com,
- intel-wired-lan@lists.osuosl.org, jianhao.xu@seu.edu.cn, kuba@kernel.org,
- linux-kernel@vger.kernel.org, marcin.szycik@linux.intel.com,
- netdev@vger.kernel.org, pabeni@redhat.com, przemyslaw.kitszel@intel.com,
- stable@vger.kernel.org, zilin@seu.edu.cn
-Date: Thu, 11 Jun 2026 10:02:54 +0800
-Message-Id: <20260611020254.308446-1-dawei.feng@seu.edu.cn>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <00f5f6e3-e80f-4c16-8d2f-f8148bcddfa8@intel.com>
-References: <00f5f6e3-e80f-4c16-8d2f-f8148bcddfa8@intel.com>
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 4947840136
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4947840136
+Received: from sender-pp-o93.zoho.in (sender-pp-o93.zoho.in [103.117.158.93])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 4947840136
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 11 Jun 2026 06:06:22 +0000 (UTC)
+ARC-Seal: i=1; a=rsa-sha256; t=1781157929; cv=none; d=zohomail.in; s=zohoarc; 
+ b=TMjTp3zeIK6uw/cbwKlAx9dyiBHjfSds/CzSqgab180ExLHIre1s8A+HFB8VnuwKsDvshzdbfuFaK4kyLlx4t7dvdywFYlvWc6T+ZiqnbRUH3P4EhxK/46W85oLlvvwc4Md8IMCp8FuQlBFBcGEp5lRfgwlx+iJLNfNuW70bers=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.in;
+ s=zohoarc; t=1781157929;
+ h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To;
+ bh=r0Kg9efrQxEut61eww4Xt0pjV45uZm/MNUVicYS+0EA=; 
+ b=RjKJnO48OGOMYNVV0etwQWOBm2VYI2P6oQqKE2YXkF3dLy/ek1OL3zyCQJxTZdZ6lv0b4P8m/WYqp0bbx1OEZKxGzTnmsV182W28GsuWVBXIYhREsOgSOpP4QHU3pnxE39a9f0yCBy36MU3ym2EQelIERdheJd+VYN+FT2/X1aY=
+ARC-Authentication-Results: i=1; mx.zohomail.in;
+ dkim=pass  header.i=zohomail.in;
+ spf=pass  smtp.mailfrom=kshitiz.bartariya@zohomail.in;
+ dmarc=pass header.from=<kshitiz.bartariya@zohomail.in>
+Received: from mail.zoho.in by mx.zoho.in
+ with SMTP id 1781157923106916.71298730993;
+ Thu, 11 Jun 2026 11:35:23 +0530 (IST)
+Received: from  [192.188.171.47] by mail.zoho.in
+ with HTTP;Thu, 11 Jun 2026 11:35:23 +0530 (IST)
+Date: Thu, 11 Jun 2026 11:35:23 +0530
+To: "Simon Horman" <horms@kernel.org>
+Cc: "anthony.l.nguyen" <anthony.l.nguyen@intel.com>,
+ "przemyslaw.kitszel" <przemyslaw.kitszel@intel.com>,
+ "andrew+netdev" <andrew+netdev@lunn.ch>,
+ "davem" <davem@davemloft.net>, "edumazet" <edumazet@google.com>,
+ "kuba" <kuba@kernel.org>, "pabeni" <pabeni@redhat.com>,
+ "aleksandr.loktionov" <aleksandr.loktionov@intel.com>,
+ "jacob.e.keller" <jacob.e.keller@intel.com>,
+ "jedrzej.jagielski" <jedrzej.jagielski@intel.com>,
+ "piotr.kwapulinski" <piotr.kwapulinski@intel.com>,
+ "intel-wired-lan" <intel-wired-lan@lists.osuosl.org>,
+ "netdev" <netdev@vger.kernel.org>,
+ "linux-kernel" <linux-kernel@vger.kernel.org>
+Message-ID: <19eb549091a.56e4a82b51051.8566636820791024878@zohomail.in>
+In-Reply-To: <20260608184733.GJ3920875@horms.kernel.org>
+References: <20260603174857.78666-1-kshitiz.bartariya@zohomail.in>
+ <20260608184733.GJ3920875@horms.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-HM-Tid: 0a9eb46b072103a2kunm4f921c24193a19
-X-HM-MType: 10
-X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
- tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVlDTkJKVh9NGkkZSE4aHRlJHlYeHw
- 5VEwETFhoSFyQUDg9ZV1kYEgtZQVlJSUpVSUlDVUlIQ1VDSVlXWRYaDxIVHRRZQVlPS0hVSktISk
- 9ITFVKS0tVSkJLS1kG
-X-Mailman-Original-DKIM-Signature: a=rsa-sha256;
- b=PUswkuEQxvP5C6A3S2B092O9Wh4MekFk1hfTk5VwxKgi1I6czgSuBzRYEDnO3wZPmVmONgPCZ4AGzHDYk1dfkYVv1DZD/mfu2tnfMqQIIfFJapZp5LsCaqa9M5WJ/fvP9OOLyNBoPWxn97LZswaohUtIGp3sHHY2AM5J88n9z2o=;
- c=relaxed/relaxed; s=default; d=seu.edu.cn; v=1; 
- bh=LsfLRl7OuI64QZa7FWNmdbCqTIV71pSU3+SydKKbDjw=;
- h=date:mime-version:subject:message-id:from;
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Importance: Medium
+User-Agent: Zoho Mail
+X-Mailer: Zoho Mail
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
+ c=relaxed/relaxed; t=1781157929; 
+ s=zoho; d=zohomail.in; i=kshitiz.bartariya@zohomail.in;
+ h=Date:Date:From:From:To:To:Cc:Cc:Message-ID:In-Reply-To:References:Subject:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Reply-To;
+ bh=r0Kg9efrQxEut61eww4Xt0pjV45uZm/MNUVicYS+0EA=;
+ b=QlDXpLstGe/4JNoSwERAFlqVNcO9c6+FWXLptBLMIzqNpdIwrZVfS//GFWjNKn99
+ IMERLDyvfvI6cDzEsy05CHuhdAjB/ym2hgZtI+NdPUMIFwwalCwBvVM1y54NGgz+eL9
+ CXUyRWEw0z08EYxoBa4cUM5RCFIAIhrLOTijPqwE=
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=seu.edu.cn
+ dmarc=pass (p=reject dis=none)
+ header.from=zohomail.in
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (1024-bit key,
- unprotected) header.d=seu.edu.cn header.i=@seu.edu.cn header.a=rsa-sha256
- header.s=default header.b=PUswkuEQ
-Subject: Re: [Intel-wired-lan] [PATCH net] ice: fix memory leak in
- ice_lbtest_prepare_rings()
+ unprotected) header.d=zohomail.in header.i=kshitiz.bartariya@zohomail.in
+ header.a=rsa-sha256 header.s=zoho header.b=QlDXpLst
+Subject: Re: [Intel-wired-lan] [PATCH net-next v2] ixgbe: implement
+ get_queue_stats_rx
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -102,36 +118,56 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+From: Kshitiz Bartariya via Intel-wired-lan <intel-wired-lan@osuosl.org>
+Reply-To: Kshitiz Bartariya <kshitiz.bartariya@zohomail.in>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Hi Marcin,
+Hi Simon,
 
-Thanks for your review.
+I was thinking of making these changes in a separate patch, as it could make a single patch big.
+I'll do the changes as suggested and will v3.
 
-On Tue, 9 Jun 2026 at 16:27:20 Marcin Szycik wrote:
-> IMO last two paragraphs should not be included in commit message,
-> rather after ---.
+Thanks,
+Kshitiz
 
-The reason the manual inspection and testing commentary was placed above
-the `---` line is that we were strictly following the example template
-provided in Documentation/process/researcher-guidelines.rst. 
 
-In the researcher-guidelines[1], the example explicitly places the build
-and hardware testing disclaimer before the Signed-off-by tags, which is
-why we included it directly in the commit message.
+From: Simon Horman <horms@kernel.org>
+To: "Kshitiz Bartariya"<kshitiz.bartariya@zohomail.in>
+Cc: <anthony.l.nguyen@intel.com>, <przemyslaw.kitszel@intel.com>, <andrew+netdev@lunn.ch>, <davem@davemloft.net>, <edumazet@google.com>, <kuba@kernel.org>, <pabeni@redhat.com>, <aleksandr.loktionov@intel.com>, <jacob.e.keller@intel.com>, <jedrzej.jagielski@intel.com>, <piotr.kwapulinski@intel.com>, <intel-wired-lan@lists.osuosl.org>, <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Date: Tue, 09 Jun 2026 00:17:33 +0530
+Subject: Re: [PATCH net-next v2] ixgbe: implement get_queue_stats_rx
 
-Please let me know if you would like a v2 to adjust the position of the
-mentioned commit log details.
+ > On Wed, Jun 03, 2026 at 11:18:51PM +0530, Kshitiz Bartariya wrote:
+ > > Hook into the netdev_stat_ops interface to expose per RX queue
+ > > statistics through the netdev generic netlink API.
+ > > 
+ > > The following counters are filled:
+ > > 
+ > >  - alloc_fail: sum of alloc_rx_page_failed and alloc_rx_buff_failed
+ > > 
+ > >  - csum_bad: maps directly to csum_err, which is incremented for both
+ > >    IP header and L4 checksum errors in ixgbe_rx_checksum().
+ > > 
+ > > The new per-queue stats can be observed with:
+ > >   $ ynltool qstats show scope queue
+ > > 
+ > > Signed-off-by: Kshitiz Bartariya <kshitiz.bartariya@zohomail.in>
+ > > ---
+ > > v2:
+ > >  Amended commit message with command to get RX queue stats as 
+ > > suggested by Jedrzej Jagielski.
+ > > 
+ > > v1: https://lore.kernel.org/lkml/20260602100932.21838-1-kshitiz.bartariya@zohomail.in/
+ > > 
+ > > 
+ > >  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 16 ++++++++++++++++
+ > >  1 file changed, 16 insertions(+)
+ > 
+ > Hi Kshitiz,
+ > 
+ > There is AI-generated review of this patch-set available on both
+ > https://sashiko.dev and https://netdev-ai.bots.linux.dev/sashiko/
+ > I would appreciate it if you could look over that.
+ > 
 
-> Correct me if I'm wrong, but looks like unroll order is reversed:
-> ice_vsi_stop_lan_tx_rings() unrolls ice_vsi_cfg_lan()
-> ice_vsi_free_rx_rings() unrolls ice_vsi_setup_rx_rings()
-> (was reversed before this patch too, but since we're fixing it, might as well)
-
-You are right. I'll update it in v2.
-
-[1] https://docs.kernel.org/process/researcher-guidelines.html
-
-Best regards,
-Dawei
