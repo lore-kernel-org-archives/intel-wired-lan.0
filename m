@@ -4,91 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 04C00CD98CF
-	for <intel-wired-lan@archiver.kernel.org>; Sat, 13 Jun 2026 20:27:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DDD43CD98CF
+	for <intel-wired-lan@archiver.kernel.org>; Sat, 13 Jun 2026 20:41:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 9957F41163;
-	Sat, 13 Jun 2026 20:27:59 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 9EDB040411;
+	Sat, 13 Jun 2026 20:41:03 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id oqruvu1rnzAw; Sat, 13 Jun 2026 20:27:57 +0000 (UTC)
+ id QVBMIYi6YSm7; Sat, 13 Jun 2026 20:41:02 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 78E2E410C8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C03A540521
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1781382477;
-	bh=QMmcuE8DSjrHYXf/QWms+/WUULv13ijGbv3LUEQ15xM=;
-	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1781383262;
+	bh=7KvCpdXomycTSlNZCr6JrFjKv4URbtC8VTq1VyYP0YE=;
+	h=From:Date:References:In-Reply-To:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=V9Cz8rJVLuloJ1nDDHXn4ChbpQEfXFUrBiu6uQZDhm1MdILsnJIma9OEWO+3TybQI
-	 YPg3e7j+mnj7acPw648kogwqWyXJJfwGg7h3CFXpg3VATUL+YaNUoR5Zpr+K8/fdOQ
-	 ujhiaEU5XzRXRQhQpaOr1t/kfS2KnsrFcjFxbFHA7FW1136MO7kPcCY2ZIiTiGV+yu
-	 MmSprbtZIxkRbse20YNdmdRiI+IBw4OF/gr+YAx3mCZKFwS7n6YgI7VpEaK0JURfs3
-	 T8ZhLil3NGMC2qGOese1Tba4aQ32A29JlTLrOGJUvyx2fiDGNASQl1+m9lYPHprKYF
-	 67ZVNY8CsUqUQ==
+	b=Ol3IsWNvOqWj1kWXbuhky8lYXvXexw6VlBcpIcfqM7twL0hv4RX85Gu1kopb3sxiR
+	 TdSRaAj3DXMO87BdCYLMsyMJq04uQ31dJZ5TjYIiepoHGiDQJNd8QCJQcrTmaq7WCQ
+	 WesD8vNMwcan32ew7e8LsJM+CAB/HlCKVQJ726zW7gnbtqQiiEWJlKXjLwTK8vJ9WE
+	 3YRJJS+wB2zHRKW8MyTxxGU0975bAiR9EaoEtMxd++/JqweegZHIoMJC4GPDS7lxvV
+	 0mkHjWjweW8Ut4KEI1ru9I4kV8HgSAAZ8UHCrkQEXGky6FEe/e/cdKuLXLnHHWyL9R
+	 NmcQ3tE2Rloqg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 78E2E410C8;
-	Sat, 13 Jun 2026 20:27:57 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 2248A322
- for <intel-wired-lan@lists.osuosl.org>; Sat, 13 Jun 2026 20:27:57 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id C03A540521;
+	Sat, 13 Jun 2026 20:41:02 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id DCC3DDE
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 13 Jun 2026 20:41:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 1375C841B9
- for <intel-wired-lan@lists.osuosl.org>; Sat, 13 Jun 2026 20:27:57 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id DACBF80DC1
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 13 Jun 2026 20:41:01 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id fRxHZVOqSqA9 for <intel-wired-lan@lists.osuosl.org>;
- Sat, 13 Jun 2026 20:27:56 +0000 (UTC)
+ id OsnjWojGgW1w for <intel-wired-lan@lists.osuosl.org>;
+ Sat, 13 Jun 2026 20:41:01 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
  client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
- envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 7343D8419A
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7343D8419A
+ envelope-from=patchwork-bot+netdevbpf@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org F345080D88
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org F345080D88
 Received: from sea.source.kernel.org (sea.source.kernel.org
  [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 7343D8419A
- for <intel-wired-lan@lists.osuosl.org>; Sat, 13 Jun 2026 20:27:56 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTPS id F345080D88
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 13 Jun 2026 20:41:00 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by sea.source.kernel.org (Postfix) with ESMTP id C5C3140412;
- Sat, 13 Jun 2026 20:27:55 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B4BE71F000E9;
- Sat, 13 Jun 2026 20:27:54 +0000 (UTC)
-Date: Sat, 13 Jun 2026 13:27:53 -0700
-From: Jakub Kicinski <kuba@kernel.org>
-To: "Nitka, Grzegorz" <grzegorz.nitka@intel.com>
-Message-ID: <20260613132753.2b3d1f07@kernel.org>
-In-Reply-To: <IA1PR11MB6219B836E61D44198B0FB5AF921B2@IA1PR11MB6219.namprd11.prod.outlook.com>
-References: <20260607183045.1213735-1-grzegorz.nitka@intel.com>
- <20260607183045.1213735-4-grzegorz.nitka@intel.com>
- <5ad977af-9bbb-4376-b0a6-2b1867223145@redhat.com>
- <IA1PR11MB6219E71E2581AE3A4C91F870921B2@IA1PR11MB6219.namprd11.prod.outlook.com>
- <20be8f49-4d85-430b-a651-c4aecd172a57@redhat.com>
- <20260611104109.34063873@kernel.org>
- <IA1PR11MB6219B836E61D44198B0FB5AF921B2@IA1PR11MB6219.namprd11.prod.outlook.com>
+ by sea.source.kernel.org (Postfix) with ESMTP id 1A7A8400CC;
+ Sat, 13 Jun 2026 20:41:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id ED9601F000E9;
+ Sat, 13 Jun 2026 20:40:59 +0000 (UTC)
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+ by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id
+ 568F83A54A32; Sat, 13 Jun 2026 20:40:57 +0000 (UTC)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+From: patchwork-bot+netdevbpf@kernel.org
+Message-Id: <178138325589.1587607.11012960354687352250.git-patchwork-notify@kernel.org>
+Date: Sat, 13 Jun 2026 20:40:55 +0000
+References: <20260607183045.1213735-1-grzegorz.nitka@intel.com>
+In-Reply-To: <20260607183045.1213735-1-grzegorz.nitka@intel.com>
+To: Nitka@aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org,
+ Grzegorz <grzegorz.nitka@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=kernel.org; s=k20260515; t=1781382475;
- bh=QMmcuE8DSjrHYXf/QWms+/WUULv13ijGbv3LUEQ15xM=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References;
- b=KgpB7cChLyT+d4tgCLbidRVA08Bl5Xk8A6GLm6ZX3WBxB84nWepw1vCNruS88uc2i
- 5JTozl6uSmI+wawmrlUPl3Q7atMO3ByVqIyugMdMhixTTwj89Oc7eyK/Y3Mn+b1+Gz
- c/zg7u8KYBkCdmTp8A3gVzbLylXWReQeq1YsuhBNnt1JrJ8lnjRksue+yAq4zTmCwU
- gG96+1C3qh+cV+ZO9O1S/Qd+OW1TKtb/DxWIAg4/v7OC0BQbe+25uhsY4pS0WF2khP
- 3fWnOH+VsU/IkteKUnMmnM1MRVJt1mf3SjyRm0e06sJkQueLmTjJ7Z/n4lBpr+2yy8
- iU2CjH56ZmNyw==
+ d=kernel.org; s=k20260515; t=1781383260;
+ bh=7KvCpdXomycTSlNZCr6JrFjKv4URbtC8VTq1VyYP0YE=;
+ h=Subject:From:Date:References:In-Reply-To:To:Cc;
+ b=ZZU1Vs6Wq2VR+A+giCsV4fvBNE98FEYmqEOamQGIwgpPERz0TMofOQerE/OuCuKnh
+ xpfqEZ9Cz77qb55Z5sPYA3I6vslXBt5hGTse1aiX5GN+E5yTLFPMSCAaggpqZxHwKE
+ JEsD96247qq7K45+qtHvVCOpI9Yjf9vsfjR06HmT8dt8U9k/ESR8KlcTMfS/N2HtWS
+ DDgpWaV1dDUuSj/Oqc+aU9ovSU8P7YSQ5FDttiabSWux/YVR+Kagn3rA2iDCNjwoyQ
+ 7sNFrdb9zlbm2LYvPXd+vnun4YcbAYcz9IZ2KnVxRBxF0Sk6SdG2r6Xxn0GFXyzdiz
+ YVaBWpmB9zLdg==
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=KgpB7cCh
-Subject: Re: [Intel-wired-lan] [PATCH v14 net-next 03/13] dpll: fix stale
- iteration in dpll_pin_on_pin_unregister()
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20260515 header.b=ZZU1Vs6W
+Subject: Re: [Intel-wired-lan] [PATCH v14 net-next 00/13] dpll/ice: Add
+ generic DPLL type and full TX reference clock control for E825
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -101,44 +98,64 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: "Vecera, Ivan" <ivecera@redhat.com>,
- "vadim.fedorenko@linux.dev" <vadim.fedorenko@linux.dev>,
- "jiri@resnulli.us" <jiri@resnulli.us>,
- "edumazet@google.com" <edumazet@google.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "richardcochran@gmail.com" <richardcochran@gmail.com>,
- "donald.hunter@gmail.com" <donald.hunter@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Kubalewski,
- Arkadiusz" <arkadiusz.kubalewski@intel.com>,
- "Prathosh.Satish@microchip.com" <Prathosh.Satish@microchip.com>,
- "andrew+netdev@lunn.ch" <andrew+netdev@lunn.ch>,
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- "horms@kernel.org" <horms@kernel.org>, "Kitszel,
- Przemyslaw" <przemyslaw.kitszel@intel.com>, "Nguyen,
- Anthony L" <anthony.l.nguyen@intel.com>, Paolo Abeni <pabeni@redhat.com>,
- "davem@davemloft.net" <davem@davemloft.net>
+Cc: ivecera@redhat.com, vadim.fedorenko@linux.dev, kuba@kernel.org,
+ jiri@resnulli.us, edumazet@google.com, netdev@vger.kernel.org,
+ richardcochran@gmail.com, donald.hunter@gmail.com,
+ linux-kernel@vger.kernel.org, arkadiusz.kubalewski@intel.com,
+ Prathosh.Satish@microchip.com, andrew+netdev@lunn.ch,
+ intel-wired-lan@lists.osuosl.org, horms@kernel.org,
+ przemyslaw.kitszel@intel.com, anthony.l.nguyen@intel.com, pabeni@redhat.com,
+ davem@davemloft.net
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu, 11 Jun 2026 18:36:14 +0000 Nitka, Grzegorz wrote:
-> For v14 patchset, I got only comments from Arek and Paolo.
-> In my opinion, after rethinking, Arek's concerns are not valid (explained in
-> the responses). Maybe I could squash some changes, but the final code would
-> remain the same as for v14.
+Hello:
+
+This series was applied to netdev/net-next.git (main)
+by Jakub Kicinski <kuba@kernel.org>:
+
+On Sun,  7 Jun 2026 20:30:32 +0200 you wrote:
+> NOTE: This series is intentionally submitted on net-next (not
+> intel-wired-lan) as early feedback of DPLL subsystem changes is
+> welcomed. In the past possible approaches were discussed in [1].
 > 
-> Paolo raised 'Fixes' tags which I added and critical divide-by-zero panic
-> Regarding 'Fixes' tag, It might be my fault or misunderstanding.
-> I can remove them if we want and re-send the series.
-> Regarding div-by-zero - see my comments about AI concern list below.
+> This series adds TX reference clock support for E825 devices and exposes
+> TX clock selection and synchronization status via the Linux DPLL
+> subsystem.
 > 
-> Also, what was raised by AI, I unintentionally changed WARN_ON to WARN_ON_ONCE
-> in patch 2. I'd restore it to WARN_ON.
+> [...]
 
-Alright, let me apply this.
+Here is the summary with links:
+  - [v14,net-next,01/13] dpll: add generic DPLL type
+    https://git.kernel.org/netdev/net-next/c/9375487c0c78
+  - [v14,net-next,02/13] dpll: allow registering FW-identified pin with a different DPLL
+    https://git.kernel.org/netdev/net-next/c/c191b319f208
+  - [v14,net-next,03/13] dpll: fix stale iteration in dpll_pin_on_pin_unregister()
+    https://git.kernel.org/netdev/net-next/c/32239d600236
+  - [v14,net-next,04/13] dpll: send delete notification before unregister in on-pin rollback
+    https://git.kernel.org/netdev/net-next/c/e83b403eb142
+  - [v14,net-next,05/13] dpll: emit per-dpll delete notifications in dpll_pin_on_pin_unregister()
+    https://git.kernel.org/netdev/net-next/c/df0ba51ccf87
+  - [v14,net-next,06/13] dpll: guard sync-pair removal on full pin unregister
+    https://git.kernel.org/netdev/net-next/c/0a5c720a7d57
+  - [v14,net-next,07/13] dpll: balance create/delete notifications in __dpll_pin_(un)register
+    https://git.kernel.org/netdev/net-next/c/1a2292101c0d
+  - [v14,net-next,08/13] dpll: extend pin notifier with notification source ID
+    https://git.kernel.org/netdev/net-next/c/0bf47f722fa9
+  - [v14,net-next,09/13] dpll: allow fwnode pins to attempt state change without capability bit
+    https://git.kernel.org/netdev/net-next/c/521b6d5de08d
+  - [v14,net-next,10/13] ice: introduce TXC DPLL device and TX ref clock pin framework for E825
+    https://git.kernel.org/netdev/net-next/c/5db36ee62849
+  - [v14,net-next,11/13] ice: implement CPI support for E825C
+    https://git.kernel.org/netdev/net-next/c/fff4ed70ca9b
+  - [v14,net-next,12/13] ice: add Tx reference clock index handling to AN restart command
+    https://git.kernel.org/netdev/net-next/c/4128bda8fc1d
+  - [v14,net-next,13/13] ice: implement E825 TX ref clock control and TXC hardware sync status
+    https://git.kernel.org/netdev/net-next/c/e075d7768386
 
-But please investigate the situation with the notifications.
-Maybe there are two create notifications because we add more info
-to the second one? If not we should drop the duplicates.. YNL can
-monitor the notifications during tests if you need a repro.
+You are awesome, thank you!
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
 
-You can follow up with the fixes during the merge window.
+
