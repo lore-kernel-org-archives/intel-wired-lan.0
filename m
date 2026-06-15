@@ -4,84 +4,119 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42A23CD98C5
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 15 Jun 2026 16:36:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5520BCD98E1
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 15 Jun 2026 16:36:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D1DC940732;
-	Mon, 15 Jun 2026 16:36:18 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 4384D40A71;
+	Mon, 15 Jun 2026 16:36:19 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id pqgcIWdFTp2i; Mon, 15 Jun 2026 16:36:18 +0000 (UTC)
+ id 62MUq8lKN60I; Mon, 15 Jun 2026 16:36:18 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BFF79407D6
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5DF4B40735
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1781541377;
-	bh=FOjtmSzT3RN4Tr1FeLf4o+G99sWvrsBZEtIXPtsCwyI=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	s=default; t=1781541378;
+	bh=cvAw1dsEWiSRXIXzLCtyB3OxbKLq8//WuTTzMwNXLh4=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=JR1AhhS48qLBokisFTB+tj0kgAW72DSPeIqBKj0+aPWuMWWCkOcjxQOoz34QzQlDp
-	 BCXWoC8rRB5QaYJpGikO0gRVQ1oa3X2UWr8QSmWt6h+7nT0ktPAerJo3VmBaFdXQtq
-	 PPKTsO8whF7xZOFLO6A1cP6z9GhRVq34VWgCr1gGtnh4RFhzBaZhXY/MEyFofanFdl
-	 4bTSwHjXeN4NiJRSCDcnQ4xXn0eAvhauw7SNxBCzhEpOosL1tobwkcYLnlU1cfwTBF
-	 dsePhEHGQDSMoAyjiCoInmJvHoQ4KFYvDqcoazCCosR5Im2JGrpcmTZlQZ7VxHToG5
-	 lxRm+cbVinPWg==
+	b=o7BiFDD97yxku8K6w1zkuMe8gauI4gNPPbPFzNm/j/ZDWK7KJKYecTuadeuvDGpfs
+	 aRm0begCKqB0rdXjwmqdaax2qQ1pq1Z2zqxDzkk6C5vmKzuxnRyqffpEJjejPNSVKE
+	 M2bOSxl36qz2iYsYTEYTXihotn2na6/JFcyltRnojpROsJgXTgOT07AWqnogtmbdTt
+	 QdUiGJoeqxcpw69cO+VY5ETqtlen9qXCmmzGDTyETn9mvJJcYNzxKlh9+SvCe+ChAM
+	 8IvU1xtactZ5SM/amulyqhKaTithRhArMLxZRiZsfPI/vpVTa1c1xU2vYTcYoRW2WF
+	 9S3/dw9+1tgSg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id BFF79407D6;
-	Mon, 15 Jun 2026 16:36:17 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id ACA50169
- for <intel-wired-lan@lists.osuosl.org>; Sun, 14 Jun 2026 21:48:15 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 5DF4B40735;
+	Mon, 15 Jun 2026 16:36:18 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 21D62DE
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 15 Jun 2026 14:05:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 9312B41172
- for <intel-wired-lan@lists.osuosl.org>; Sun, 14 Jun 2026 21:48:15 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 164D560F72
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 15 Jun 2026 14:05:38 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id XDuPDBdlKtdh for <intel-wired-lan@lists.osuosl.org>;
- Sun, 14 Jun 2026 21:48:14 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org; envelope-from=deller@kernel.org;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org AF57140137
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org AF57140137
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp2.osuosl.org (Postfix) with ESMTPS id AF57140137
- for <intel-wired-lan@lists.osuosl.org>; Sun, 14 Jun 2026 21:48:14 +0000 (UTC)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id F0AD86008A;
- Sun, 14 Jun 2026 21:48:12 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0B8111F000E9;
- Sun, 14 Jun 2026 21:48:10 +0000 (UTC)
-Date: Sun, 14 Jun 2026 23:48:08 +0200
-From: Helge Deller <deller@kernel.org>
-To: Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org
-Message-ID: <ai8hmGQmXQu64Ld3@carbonx1>
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id smTru1QF0ofz for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 15 Jun 2026 14:05:37 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2a00:1450:4864:20::32c; helo=mail-wm1-x32c.google.com;
+ envelope-from=doruk@0sec.ai; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 086B960E70
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 086B960E70
+Received: from mail-wm1-x32c.google.com (mail-wm1-x32c.google.com
+ [IPv6:2a00:1450:4864:20::32c])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 086B960E70
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 15 Jun 2026 14:05:36 +0000 (UTC)
+Received: by mail-wm1-x32c.google.com with SMTP id
+ 5b1f17b1804b1-490ae94a89eso30333825e9.1
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 15 Jun 2026 07:05:36 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20251104; t=1781532335; x=1782137135;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=cvAw1dsEWiSRXIXzLCtyB3OxbKLq8//WuTTzMwNXLh4=;
+ b=XQG4gGhcqJIiwp2S1KayLToaQ5LEyAJARZoeIYAGuRCFfVHGMAtTEx9Nj4I5wUmphr
+ OyXIs2oN8XEyxJe1huY30OGi5AMCXobsMtJ+3WhMDZtwUl60Y+q6heV4T/5MaHs7nBar
+ gOEe/23f8ynErhMbhM1S0yWeJQ2cCEmALeaulcPAFgk2b2mtxHQPiaFoMFVx6TJV3QGO
+ 3KIn6TdADjvvJPQcEUMB0z0bd5289fVe73pn3I5c3qTqRJnv0I4NkETZg8j6A//kPKtE
+ 2Eota9P4CkqA2sgtv4OjSxHQJjewEK0gXHU+DCIvRYtAYsitr4H4+B7E3SvVL0jYRNUt
+ u18w==
+X-Forwarded-Encrypted: i=1;
+ AFNElJ/OjqESsmGVyDdBov6b1GZOuuD+VzF8Y3f8GClVN9w1Gk6q4foJYq0mw7fbXB1RSgzZJKjVqwKvk5H/7AwEFec=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YwJ4FXQb6wBof8hHDVunwO59VV7OZSUcwCryBTpVqQvwjBjzHfa
+ oddQnYP20bKZ1ahmVk/EiaOgtDQCmSr10Wgrvi4kjo/7xikKAHM1QVAsHx2X9OiwhbJG
+X-Gm-Gg: Acq92OFOGNp1IoUUpn1GmO68kInIjTBUGIgSVHPzzSIi2kqq9nuzTPk8N/7VTZT/clQ
+ 96RZbJM06eRNNDTqwcBo6K4a4HEJorisSE79z7ByUJllmJSLbTJ7Ik0Cm7D2pZCVtIw8V13oq40
+ lz3Uegf6hrS/A93EICSO4A1eXM2iXT+cl0AMDZFr8GGrCgc9vjDSRHTtUj8270RJVc+864Dthfg
+ 6RPXDP46I189fJRG2S9M9V2tFIx5Ul/C1wqw0bq8h4h1XIIFUcxfjApZ13EYoFctY4v991NGN+B
+ x+EzNKbXg+nZ9Vs/GGyU1/cAyQYT6YPj+R7Ry4bWl3ViynTETfUkLM8Xv/JRtglZYRmNZAFnAgW
+ lxl27zOpKeA+iWsF2jUp9edi9fK9t7WYulRe64ydBeb0OpEdqSOoaxFpijYuuElJ6Xp1dSyMu5E
+ of3T+UleSFLu3pBXUxNwXHvOnl2BWWDB0jRaGGaFKyxnFCd/JDq++vO3mUpdiOn4peRxmxXDlY9
+ 4YDBOs5RQSTUidTpMMzjQVRnmcDIHzV5OZvfcnnwiD3Fw==
+X-Received: by 2002:a05:600c:47d3:b0:490:d354:bcf4 with SMTP id
+ 5b1f17b1804b1-492200e2409mr89495105e9.27.1781532334628; 
+ Mon, 15 Jun 2026 07:05:34 -0700 (PDT)
+Received: from PeakBook-Mini.tail8e484.ts.net ([178.197.218.209])
+ by smtp.gmail.com with ESMTPSA id
+ ffacd0b85a97d-4606f2c4240sm32087268f8f.27.2026.06.15.07.05.33
+ (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+ Mon, 15 Jun 2026 07:05:34 -0700 (PDT)
+From: Doruk Tan Ozturk <doruk@0sec.ai>
+To: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com
+Cc: piotr.raczynski@intel.com, michal.swiatkowski@linux.intel.com,
+ wojciech.drewek@intel.com, intel-wired-lan@lists.osuosl.org,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Doruk Tan Ozturk <doruk@0sec.ai>, stable@vger.kernel.org
+Date: Mon, 15 Jun 2026 16:05:32 +0200
+Message-ID: <20260615140532.52676-1-doruk@0sec.ai>
+X-Mailer: git-send-email 2.53.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Mon, 15 Jun 2026 16:36:15 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=kernel.org; s=k20260515; t=1781473692;
- bh=FOjtmSzT3RN4Tr1FeLf4o+G99sWvrsBZEtIXPtsCwyI=;
- h=Date:From:To:Subject;
- b=dGwdeafqB2XGev+98jQdMr4LsTswXNS9LJJf72QpuSlLhxCKcgV8V48AAFb8tSmJh
- +/fwe8R+lpUwsev+E6Qq8GT8WgMbFVhPKzQo7VD7GS2h/thZpELQOgTIymc7NR6t1s
- S4JISqkxlk1op6Z0Twn2eKkQj7uLpfE6oeW0ly9s59/RIL4TaOhMRiPHF3sL5OPRhm
- HQkdaWc1zdjsdb/V0AEMzK7f5LZ8sDlBTjGxLT5kLJ/eer0oLquFj7KInvX2B90GxM
- Qz+QhV/4V3Odoain4X/GJNoumtNlCtdt5cFNTW8CH1rgLKXE29/v+CFRGmZlljOl8E
- BglYFjQxkpP8g==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=dGwdeafq
-Subject: [Intel-wired-lan] e1000e: Report link down after "Detected Hardware
- Unit Hang" ?
+ d=0sec.ai; s=google; t=1781532335; x=1782137135; darn=lists.osuosl.org;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:from:to:cc:subject:date:message-id:reply-to;
+ bh=cvAw1dsEWiSRXIXzLCtyB3OxbKLq8//WuTTzMwNXLh4=;
+ b=kRehCaCQLmXpulJta3DX/xGEnNA1H7/EM6Uiw3a+gQ2SGCDzcmgHk41U5fUaPkJuQt
+ 8zNAkonz9sndc/QI6OpyGlylhAK2MVgCX/Ueja2h9wbfbDepdMgAgdI6y1mUORQ36JPs
+ d8TIJ/PsA3E1sSn315QH5g2PL7Kg/ToW0vTiMwyC5xMgnduTj4+5oykDVfuA+LAn4S8h
+ wnRP2iL88a8R/2sSHdJwrkhSI0FbCQNzkbjhOnLm8TaGYdL7pAICrcZPGi6MQDgzVcLA
+ xNC2Q/gxMEMc/c1cSPMdR+2YyTxdr/+oRsnjvLORShEbA3WJnpaT7Ee0BxQJQLzsOG9M
+ DCVA==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=0sec.ai
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=temperror header.d=0sec.ai header.i=@0sec.ai header.a=rsa-sha256
+ header.s=google header.b=kRehCaCQ
+Subject: [Intel-wired-lan] [PATCH net] ice: eswitch: fix use-after-free of
+ metadata_dst in repr release
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -97,38 +132,43 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-I'm regularily facing the known "eno1: Detected Hardware Unit Hang:"
-with my on-board intel e1000e NIC hardware.
-Since none of he various tips on the internet helped, I had the idea
-to setup a master/slave bond networking to fail over to another NIC when
-the Intel chip hangs.
+ice_eswitch_release_repr() frees the port representor metadata_dst via
+metadata_dst_free(), which directly kfree()s the object and ignores the
+dst_entry refcount. The eswitch slow-path TX routine
+ice_eswitch_port_start_xmit() takes a reference on this dst with
+dst_hold() and attaches it to the skb via skb_dst_set(). If such an skb
+is still in flight (e.g. queued in a qdisc) when the representor is torn
+down, the metadata_dst is freed while the skb still points at it. When
+the skb is later freed, dst_release() operates on already-freed memory.
 
-Sadly this doesn't work as intended, because the link of the intel NIC 
-isn't reported "down", so the failover never happens, unless I manually
-start "ifconfig eno1 down".
+Replace metadata_dst_free() with dst_release() so the metadata_dst is
+freed only after the last reference is dropped. The dst subsystem frees
+metadata_dst objects from dst_destroy() once the refcount reaches zero
+(DST_METADATA is set by metadata_dst_alloc()).
 
-My question: Shouldn't the intel NIC ideally report Link Down if we know
-it hangs? That way a fail-over should at least happen, right?
+Same class of bug and fix as commit c32b26aaa2f9 ("netfilter:
+nft_tunnel: fix use-after-free on object destroy").
 
-Below is a completely untested patch.
-Does it make sense that I try to test and/or develop such a patch, or
-are there things I miss?
+Fixes: fff292b47ac1 ("ice: add VF representors one by one")
+Cc: stable@vger.kernel.org
+Signed-off-by: Doruk Tan Ozturk <doruk@0sec.ai>
+---
+ drivers/net/ethernet/intel/ice/ice_eswitch.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Helge 
-
-
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 7ce0cc8ab8f4..c6edcf4ac032 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -1157,6 +1157,10 @@ static void e1000_print_hw_hang(struct work_struct *work)
+diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch.c b/drivers/net/ethernet/intel/ice/ice_eswitch.c
+index 2e4f0969035f..41b30a7ca4a9 100644
+--- a/drivers/net/ethernet/intel/ice/ice_eswitch.c
++++ b/drivers/net/ethernet/intel/ice/ice_eswitch.c
+@@ -95,7 +95,7 @@ ice_eswitch_release_repr(struct ice_pf *pf, struct ice_repr *repr)
+ 		return;
  
- 	e1000e_dump(adapter);
- 
-+	/* The NIC hangs. Force link down in e1000e_has_link() such that a
-+	 * failover can happen */
-+	hw->phy.media_type = e1000_media_type_unknown;
-+
- 	/* Suggest workaround for known h/w issue */
- 	if ((hw->mac.type == e1000_pchlan) && (er32(CTRL) & E1000_CTRL_TFCE))
- 		e_err("Try turning off Tx pause (flow control) via ethtool\n");
+ 	ice_vsi_update_security(vsi, ice_vsi_ctx_set_antispoof);
+-	metadata_dst_free(repr->dst);
++	dst_release(&repr->dst->dst);
+ 	repr->dst = NULL;
+ 	ice_fltr_add_mac_and_broadcast(vsi, repr->parent_mac,
+ 				       ICE_FWD_TO_VSI);
+-- 
+2.43.0
+
