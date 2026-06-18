@@ -4,81 +4,94 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 693BECD98F2
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 18 Jun 2026 10:12:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C086CD98F2
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 18 Jun 2026 14:22:19 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id DA96741358;
-	Thu, 18 Jun 2026 10:12:26 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id E1F0D41418;
+	Thu, 18 Jun 2026 14:22:18 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id DIaKaxdxIeEG; Thu, 18 Jun 2026 10:12:24 +0000 (UTC)
+ id otMULWy_gtrp; Thu, 18 Jun 2026 14:22:18 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B5B104134F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EF3734140C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1781777544;
-	bh=85ppLKVGJW40dGSGwyT9zJK+BiMuiKESQ/JsDwgk/u8=;
-	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=aJ3M2TCgxKqobY/DBQCK2Exk3hSHY6cY4nQp9jESUTIAFCyP7S8Nop2C/JaT38ECf
-	 KBJaEF4Wh2DZ83L22u5wAjQXarp8P8p+gcUlayd3wYXtxhiGwhGfyPiXVEw3JkIx4U
-	 /aVdZ4v0OciGTj/M+o9wqvDWjvKmdxQ1OzN/XQUR/UC+Vd/z+RrVH+P2c0HKpnW46x
-	 mbho6RFzX6jZmYRtrrn+88Ly4GKDwRwnKyeDysJY4UtAckxUfpe2dYrDX7COixkxDc
-	 HKRU6Gz+9hRVCZ+BTk+sgG/3H1bw618ra+tZkiO1ZKOiunRw9FCkvsbf+aqxa2M2e6
-	 nsKel9JF+ThUg==
+	s=default; t=1781792538;
+	bh=0a8Ji3Ohv29ElS8p0IfHeWjnVCGqMfxzFgJ9Xv/3xL4=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=qzT97Of7Fcflsqhjp1Z/7ffTnMzEpbPnWqLnGpPOh5DUuiD1bptpTQnYAKNNt0DWf
+	 xl2XLzNAlCqLGOyniSBFR/yyV9nNm/GjzQ7g7B1l8q4kyeDXvk5HGHKbYsxfyAFk27
+	 YkVShY+zb2ZCw/zWjqSYe/AJBuJ4ltwjarDJCyTruxapniuLboHl6MjilwBCxGFWnS
+	 oUHSfoj6/furdLAF2Y93JYP9wKgG4GSoEtGzMo4XwzkycNBv5TZkOiu9ghr0awGG4f
+	 IjkXHl461CdoO9hNkj4siG8dqO5fFuNZKGWRfVW3n93ec18sDkQN7yAE7JRHNsPhZn
+	 kunKCHkNul4rw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B5B104134F;
-	Thu, 18 Jun 2026 10:12:24 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 3D8EC1F3
- for <intel-wired-lan@lists.osuosl.org>; Thu, 18 Jun 2026 10:12:23 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id EF3734140C;
+	Thu, 18 Jun 2026 14:22:17 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 13E15131
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 18 Jun 2026 14:22:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 2A5B9839DB
- for <intel-wired-lan@lists.osuosl.org>; Thu, 18 Jun 2026 10:12:23 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id EE7A561167
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 18 Jun 2026 14:22:16 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id VffEToEfPz5R for <intel-wired-lan@lists.osuosl.org>;
- Thu, 18 Jun 2026 10:12:22 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=141.14.17.11;
- helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id YR7HTdiX2zjC for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 18 Jun 2026 14:22:16 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.17;
+ helo=mgamail.intel.com; envelope-from=sergey.temerkhanov@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org AA0F7839D8
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org AA0F7839D8
-Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
- by smtp1.osuosl.org (Postfix) with ESMTPS id AA0F7839D8
- for <intel-wired-lan@lists.osuosl.org>; Thu, 18 Jun 2026 10:12:21 +0000 (UTC)
-Received: from [141.14.13.172] (g427.RadioFreeInternet.molgen.mpg.de
- [141.14.13.172])
- (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested) (Authenticated sender: pmenzel)
- by mx.molgen.mpg.de (Postfix) with ESMTPSA id 78B684C2887192;
- Thu, 18 Jun 2026 12:11:41 +0200 (CEST)
-Message-ID: <a9f9da7b-d55f-4f8b-8db3-c33b623168d0@molgen.mpg.de>
-Date: Thu, 18 Jun 2026 12:11:40 +0200
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org B19006115B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B19006115B
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id B19006115B
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 18 Jun 2026 14:22:15 +0000 (UTC)
+X-CSE-ConnectionGUID: EnyFSJEMRzey/arS8Qfx3Q==
+X-CSE-MsgGUID: cRug6WNbSXeQz0ULUxRvNg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11820"; a="82629616"
+X-IronPort-AV: E=Sophos;i="6.24,211,1774335600"; d="scan'208";a="82629616"
+Received: from fmviesa010.fm.intel.com ([10.60.135.150])
+ by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 18 Jun 2026 07:22:14 -0700
+X-CSE-ConnectionGUID: sLWbe4QjT8eXL7UIu4bBjQ==
+X-CSE-MsgGUID: vBv+ppFORd+Xs4uDnzakJQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.24,211,1774335600"; d="scan'208";a="244214810"
+Received: from gnrd8.igk.intel.com (HELO GNRD8) ([10.123.232.137])
+ by fmviesa010.fm.intel.com with ESMTP; 18 Jun 2026 07:22:13 -0700
+From: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Cc: netdev@vger.kernel.org,
+	pmenzel@molgen.mpg.de
+Date: Thu, 18 Jun 2026 14:22:12 +0000
+Message-ID: <20260618142212.310475-1-sergey.temerkhanov@intel.com>
+X-Mailer: git-send-email 2.53.0
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: "Chia-Lin Kao (AceLan)" <acelan.kao@canonical.com>
-Cc: Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller"
- <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <20260618073324.1843310-1-acelan.kao@canonical.com>
-Content-Language: en-US
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-In-Reply-To: <20260618073324.1843310-1-acelan.kao@canonical.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=molgen.mpg.de
-Subject: Re: [Intel-wired-lan] [PATCH 1/2] igc: Wait for MAC passthrough
- after reset
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1781792536; x=1813328536;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=iq3Ezql0D49y86sPQaYvb4jHBq6U1dI1ce9k61tPxSI=;
+ b=LqbIHfFjYuZHZwK5/fWJndl7F+ewYHufXinRw0u7cNyeJ8tzJKSJoLE7
+ saoWiT2/Bhlam27Wf/pTi5zdnNcrsonEbCT1Ub6850H0V6zoZQdEMgdyL
+ uMlrKfPRj2LlpL7NQorVLILf+4rvGGykUvkB0pddjFQ3HqCGxeFeCtu1C
+ JSTn5xsd/gv7zautZrEB6NhB1WY/pjSLTPcFWWoYfAHR68AxxODXnrvpF
+ 7696FB4ydA+mnXbog0BcgSM0Za4tfCHYtKFooWLVd6e8gW16vCNjjItWk
+ bQ+IDiqNKwfeyqdYs9CyVpSH+fZc9RXlzru99xwg0kDliUf2afk4tqvIO
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=LqbIHfFj
+Subject: [Intel-wired-lan] [PATCH iwl-next v2] ixgbe: Implement PCI reset
+ handler
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -94,127 +107,136 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Dear Chia-Lin,
+Implement PCI device reset handler to allow the network device to
+get re-initialized and function after a PCI-level reset.
 
+This is necessary for the adapter to avoid TX queue timeouts
+occurring when the PCI reset is initiated via sysfs during
+the operation
 
-Thank you for your patch.
+Signed-off-by: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
+Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+---
 
-Am 18.06.26 um 09:33 schrieb Chia-Lin Kao (AceLan) via Intel-wired-lan:
-> Some systems support MAC passthrough for dock Ethernet controllers by
-> having firmware rewrite the receive address registers after the controller
-> reset completes.
+Previous version: https://lore.kernel.org/netdev/MW4PR11MB6864BC9CA84F060AF7E0248480E42@MW4PR11MB6864.namprd11.prod.outlook.com/
+v1->v2 changes: Rearranged the order of operations, switched to poll_timeout_us() macro
 
-Please give one example system.
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h      |  1 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 82 +++++++++++++++++++
+ 2 files changed, 83 insertions(+)
 
-> igc resets the controller before reading RAL0/RAH0, so that reset can
-> restore the controller native MAC address temporarily. If the driver reads
-> the registers immediately, it can race the firmware rewrite and keep the
-> native dock MAC instead of the host passthrough MAC.
-> 
-> For LMVP devices, poll RAL0/RAH0 after reset and before reading the MAC
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index 594ccb28da20..c4b0c5bb89c6 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -912,6 +912,7 @@ enum ixgbe_state_t {
+ 	__IXGBE_PTP_TX_IN_PROGRESS,
+ 	__IXGBE_RESET_REQUESTED,
+ 	__IXGBE_PHY_INIT_COMPLETE,
++	__IXGBE_PCIE_RESET_IN_PROGRESS,
+ };
+ 
+ struct ixgbe_cb {
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 2ac274c73d61..0fb64aef223e 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -12352,6 +12352,86 @@ static pci_ers_result_t ixgbe_io_slot_reset(struct pci_dev *pdev)
+ 	return result;
+ }
+ 
++/* 1500 us poll interval */
++#define IXGBE_RESET_PREP_POLL_INTERVAL_US 1500
++/* 2 second timeout to acquire reset lock before proceeding */
++#define IXGBE_RESET_PREP_TIMEOUT_US 2000000
++
++/**
++ * ixgbe_reset_prep - called before the pci bus is reset.
++ * @pdev: Pointer to PCI device
++ *
++ * Prepare the card for a reset, preventing the service task from running.
++ */
++static void ixgbe_reset_prep(struct pci_dev *pdev)
++{
++	struct ixgbe_adapter *adapter = pci_get_drvdata(pdev);
++
++	if (!adapter)
++		return;
++
++	if (poll_timeout_us(test_and_set_bit(__IXGBE_RESETTING, &adapter->state),
++			    test_bit(__IXGBE_RESETTING, &adapter->state),
++			    IXGBE_RESET_PREP_POLL_INTERVAL_US,
++			    IXGBE_RESET_PREP_TIMEOUT_US, false)) {
++		/* ixgbe_reset_done() will exit early if this happens.
++		 * A retry will be needed
++		 */
++		e_err(drv, "Timed out waiting for __IXGBE_RESETTING to be released. Reset is needed\n");
++		return;
++	}
++
++	/* Sync __IXGBE_RESETTING */
++	smp_mb__after_atomic();
++
++	if (test_bit(__IXGBE_SERVICE_INITED, &adapter->state)) {
++		/* Prevent the service task from being requeued in the timer callback */
++		timer_delete_sync(&adapter->service_timer);
++		/* Cancel any possibly queued service task */
++		cancel_work_sync(&adapter->service_task);
++	}
++
++	pci_clear_master(pdev);
++
++	set_bit(__IXGBE_PCIE_RESET_IN_PROGRESS, &adapter->state);
++}
++
++/**
++ * ixgbe_reset_done - called after the pci bus has been reset.
++ * @pdev: Pointer to PCI device
++ *
++ * Allow the service task to run and schedule re-initialization.
++ */
++static void ixgbe_reset_done(struct pci_dev *pdev)
++{
++	struct ixgbe_adapter *adapter = pci_get_drvdata(pdev);
++
++	if (!adapter)
++		return;
++
++	if (!test_and_clear_bit(__IXGBE_PCIE_RESET_IN_PROGRESS, &adapter->state)) {
++		/* Should never get here */
++		e_err(drv, "Reset done called without PCIe reset in progress\n");
++		return;
++	}
++
++	pci_set_master(pdev);
++
++	/* Allow the service task to run */
++	if (!test_bit(__IXGBE_REMOVING, &adapter->state)) {
++		clear_bit(__IXGBE_RESETTING, &adapter->state);
++		/* Sync __IXGBE_RESETTING */
++		smp_mb__after_atomic();
++	}
++
++	/* Schedule re-initialization */
++	if (!test_bit(__IXGBE_DOWN, &adapter->state)) {
++		set_bit(__IXGBE_RESET_REQUESTED, &adapter->state);
++		if (test_bit(__IXGBE_SERVICE_INITED, &adapter->state))
++			mod_timer(&adapter->service_timer, jiffies + 1);
++	}
++}
++
+ /**
+  * ixgbe_io_resume - called when traffic can start flowing again.
+  * @pdev: Pointer to PCI device
+@@ -12384,6 +12464,8 @@ static const struct pci_error_handlers ixgbe_err_handler = {
+ 	.error_detected = ixgbe_io_error_detected,
+ 	.slot_reset = ixgbe_io_slot_reset,
+ 	.resume = ixgbe_io_resume,
++	.reset_prepare = ixgbe_reset_prep,
++	.reset_done = ixgbe_reset_done,
+ };
+ 
+ static DEFINE_SIMPLE_DEV_PM_OPS(ixgbe_pm_ops, ixgbe_suspend, ixgbe_resume);
+-- 
+2.53.0
 
-What is LMVP?
-
-> address. Stop once the address registers change to another valid Ethernet
-> address, allowing firmware a bounded window to complete the passthrough
-> update.
-
-What are the downsides of this approach? Longer reset times?
-
-Please add instructions how to test this.
-
-> Signed-off-by: Chia-Lin Kao (AceLan) <acelan.kao@canonical.com>
-> ---
->   drivers/net/ethernet/intel/igc/igc_main.c | 48 +++++++++++++++++++++++
->   1 file changed, 48 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-> index 2c9e2dfd8499..fa9752ed8bc5 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_main.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-> @@ -11,6 +11,7 @@
->   #include <net/pkt_sched.h>
->   #include <linux/bpf_trace.h>
->   #include <net/xdp_sock_drv.h>
-> +#include <linux/etherdevice.h>
->   #include <linux/pci.h>
->   #include <linux/mdio.h>
->   
-> @@ -69,6 +70,52 @@ static const struct pci_device_id igc_pci_tbl[] = {
->   
->   MODULE_DEVICE_TABLE(pci, igc_pci_tbl);
->   
-> +static void igc_read_rar0(struct igc_hw *hw, u8 *addr, u32 *ral, u32 *rah)
-> +{
-> +	*ral = rd32(IGC_RAL(0));
-> +	*rah = rd32(IGC_RAH(0));
-> +
-> +	addr[0] = *ral & 0xff;
-> +	addr[1] = (*ral >> 8) & 0xff;
-> +	addr[2] = (*ral >> 16) & 0xff;
-> +	addr[3] = (*ral >> 24) & 0xff;
-> +	addr[4] = *rah & 0xff;
-> +	addr[5] = (*rah >> 8) & 0xff;
-
-This looks like a common pattern, but there does not seem to be a 
-generic Linux implementation. Maybe `igc_read_mac_addr()` in 
-`drivers/net/ethernet/intel/igc/igc_nvm.c` can be used?
-
-> +}
-> +
-> +static bool igc_is_lmvp_device(struct pci_dev *pdev)
-> +{
-> +	switch (pdev->device) {
-> +	case IGC_DEV_ID_I225_LMVP:
-> +	case IGC_DEV_ID_I226_LMVP:
-> +		return true;
-> +	default:
-> +		return false;
-> +	}
-> +}
-> +
-> +static void igc_wait_for_lmvp_mac_passthrough(struct pci_dev *pdev,
-> +					      struct igc_hw *hw)
-> +{
-> +	u8 addr[ETH_ALEN] __aligned(2);
-> +	u32 orig_ral, orig_rah;
-> +	u32 ral, rah;
-> +	int i;
-> +
-> +	if (!igc_is_lmvp_device(pdev))
-> +		return;
-> +
-> +	igc_read_rar0(hw, addr, &orig_ral, &orig_rah);
-> +
-> +	for (i = 0; i < 100; i++) {
-> +		msleep(100);
-
-Up to ten seconds delay(?) sounds excessive. Please elaborate in the 
-commit message.
-
-> +		igc_read_rar0(hw, addr, &ral, &rah);
-> +		if ((ral != orig_ral || rah != orig_rah) &&
-> +		    is_valid_ether_addr(addr))
-> +			return;
-> +	}
-
-No error in case this didn’t work?
-
-> +}
-> +
->   enum latency_range {
->   	lowest_latency = 0,
->   	low_latency = 1,
-> @@ -7259,6 +7306,7 @@ static int igc_probe(struct pci_dev *pdev,
->   	 * known good starting state
->   	 */
->   	hw->mac.ops.reset_hw(hw);
-> +	igc_wait_for_lmvp_mac_passthrough(pdev, hw);
->   
->   	if (igc_get_flash_presence_i225(hw)) {
->   		if (hw->nvm.ops.validate(hw) < 0) {
-
-
-Kind regards,
-
-Paul
