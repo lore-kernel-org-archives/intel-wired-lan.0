@@ -4,96 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95097CD98F8
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 18 Jun 2026 15:09:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0407FCD98F2
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 18 Jun 2026 15:20:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 4651761314;
-	Thu, 18 Jun 2026 15:09:46 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id C07496134C;
+	Thu, 18 Jun 2026 15:20:40 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id p5PD7yrdMUwZ; Thu, 18 Jun 2026 15:09:45 +0000 (UTC)
+ id h8jjEkFo8UQ8; Thu, 18 Jun 2026 15:20:38 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5BFF36117E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C07A26133B
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1781795385;
-	bh=8kwvym+FwOGhsUuGGMnEIFmKIYJtNtuISVIci+MTjJ8=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=MZq0bBip2M1xQLk4ekkWzHG63Z0eUXueQ9H/n+ektq+cdnJvhQSJORcnxdWyyg5Cs
-	 Fp1tBrqJkxI959YMJlypq//exDzg5Ls1VT2cwKfOSrm43oQybSpv8m/Psady6+6800
-	 J+qKB4B5adWhFVjuliHwKkXFSTY+OCEFOXg2V/E/ac7Z+PZuGJS7ZWhiMCSee8ZGk9
-	 fGAEeCxOACzu00jvVGAUP2I2fePjEAQsqkFUgld0djWAgixxnl19EiBsVkE81RHRrW
-	 hg2lChIifWN7B2chOn5b8QhFww3ETWEGYBurT4sgYWdAmsVMgCcD1QzX/0DVEAeDiv
-	 7pXZuf2Q2JvjA==
+	s=default; t=1781796038;
+	bh=iJKgupwTg5WwxEIjpjz5zSB35xMfokN/RkJan+N9JxU=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=0K5EtpUWgh1+DiG/7wOJsKuJ6M41oylwiizt8WjcXs3+JNlSrufu2BCSx34IQ0GA3
+	 JTJS0Qr1DwEu1EixuQrskPE4CuY9zVSS1GmzME0MQc7XYeSs6dCEUh4wPQOwO5hK3T
+	 UQ/cDYGQOI4aPrlxYnb3m5YtSD9GND/Ebg40OcMFTLniYdmRl/OJj2cSaaGmke3fvA
+	 9N4Com91GEpQZFek2Ebp/TjqedTozYdthBMFySBgqxJJ8xPEw3WUCSsfdTcTp/p1d/
+	 aeiNW29yFts6tx0pWxSJZr3EmCJgV6Uw2+w3NvzrFFpSbfQGgl8GWwIH3+kGRLqxFf
+	 j3MHXmIQvj53A==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 5BFF36117E;
-	Thu, 18 Jun 2026 15:09:45 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 04ECA131
- for <intel-wired-lan@lists.osuosl.org>; Thu, 18 Jun 2026 15:09:44 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id C07A26133B;
+	Thu, 18 Jun 2026 15:20:38 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 3D09E2BA
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 18 Jun 2026 15:20:37 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id DF1ED41212
- for <intel-wired-lan@lists.osuosl.org>; Thu, 18 Jun 2026 15:09:43 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 2A3D78426F
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 18 Jun 2026 15:20:37 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id jzj-i1UL3kX4 for <intel-wired-lan@lists.osuosl.org>;
- Thu, 18 Jun 2026 15:09:43 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
- helo=us-smtp-delivery-124.mimecast.com; envelope-from=poros@redhat.com;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id iBWD3clv8z2U for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 18 Jun 2026 15:20:35 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
+ helo=sea.source.kernel.org; envelope-from=horms@kernel.org;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 859BA4110D
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 859BA4110D
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 859BA4110D
- for <intel-wired-lan@lists.osuosl.org>; Thu, 18 Jun 2026 15:09:42 +0000 (UTC)
-Received: from mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-127-m3J3Hl3jPxeOh9tBvIrBbQ-1; Thu,
- 18 Jun 2026 11:09:31 -0400
-X-MC-Unique: m3J3Hl3jPxeOh9tBvIrBbQ-1
-X-Mimecast-MFC-AGG-ID: m3J3Hl3jPxeOh9tBvIrBbQ_1781795360
-Received: from mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com
- (mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.111])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
- id 6A5011800595; Thu, 18 Jun 2026 15:09:19 +0000 (UTC)
-Received: from ShadowPeak.redhat.com (unknown [10.44.32.243])
- by mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
- id B1ED91800664; Thu, 18 Jun 2026 15:09:14 +0000 (UTC)
-From: Petr Oros <poros@redhat.com>
-To: netdev@vger.kernel.org
-Date: Thu, 18 Jun 2026 17:09:09 +0200
-Message-ID: <cover.1781786935.git.poros@redhat.com>
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org B811E80D5C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B811E80D5C
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id B811E80D5C
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 18 Jun 2026 15:20:35 +0000 (UTC)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+ by sea.source.kernel.org (Postfix) with ESMTP id D86F043ECB;
+ Thu, 18 Jun 2026 15:20:34 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 792281F000E9;
+ Thu, 18 Jun 2026 15:20:33 +0000 (UTC)
+From: Simon Horman <horms@kernel.org>
+To: robert.malz@canonical.com
+Cc: Simon Horman <horms@kernel.org>, anthony.l.nguyen@intel.com,
+ przemyslaw.kitszel@intel.com, intel-wired-lan@lists.osuosl.org,
+ netdev@vger.kernel.org
+Date: Thu, 18 Jun 2026 16:20:03 +0100
+Message-ID: <20260618152003.909400-1-horms@kernel.org>
+X-Mailer: git-send-email 2.54.0
+In-Reply-To: <20260617120753.1785565-1-robert.malz@canonical.com>
+References: <20260617120753.1785565-1-robert.malz@canonical.com>
 MIME-Version: 1.0
-X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.111
-X-Mimecast-MFC-PROC-ID: sIT8Ig70QjgTOHiI2iT5F12qkNiNlDmGYK7mmQ5mQgI_1781795360
-X-Mimecast-Originator: redhat.com
 Content-Transfer-Encoding: 8bit
-content-type: text/plain; charset="US-ASCII"; x-default=true
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=redhat.com; 
- s=mimecast20190719; t=1781795380;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding;
- bh=8kwvym+FwOGhsUuGGMnEIFmKIYJtNtuISVIci+MTjJ8=;
- b=a1u7o17hKIgqTxkl6nZqKRAUGsFXjkUAXk+2P5hTcPRt5oeav9kTQI4f0V5E2rtP4EeSeo
- IZYzamBy6acb7YLGyMdqx4UFHfuLvnSYnodeC9WVPXUaFQgt3y7QXAFVkPqEhmLY6XfmlQ
- 8cP8erZDnAwwJxa/6EMV3Ut4ddHyZl0=
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ d=kernel.org; s=k20260515; t=1781796034;
+ bh=iJKgupwTg5WwxEIjpjz5zSB35xMfokN/RkJan+N9JxU=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References;
+ b=P5OD24O95OD4OIoSxLKZUCF1Lrcw//AApzFMAub/HL4F6TLp6pt6l0WuAyy8B4Z15
+ JOwN2IWMP/19DiHvnI5iL4kti87vzizOLgrc5/Dqy2NWN+FDFk2WXgCiiIojTsiCl9
+ s35V8aKkA4w4UEvnkgHs4bUYGtp5zdeI4pyvHGCymBJKQPKwURVSIhKwj/LXczULxO
+ DKE0RkmogEMiBgT4UwHeFa2R+Y3RbArBbZ3JUN4xzkWGoqNtrrzf9wQoptY9eLS4Kf
+ nLg768APq2KfVyzE6I3b3aeluls1oQpCp43O+EH64PrTsD9UFCyKucDYSAXEvoOKYB
+ 3yOtN16WRQ8XA==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
- header.from=redhat.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=a1u7o17h
-Subject: [Intel-wired-lan] [PATCH iwl-net 0/2] ice: fix DFLT Rx rule
- handling for promisc and switchdev
+ header.from=kernel.org
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20260515 header.b=P5OD24O9
+Subject: Re: [Intel-wired-lan] [PATCH iwl v3] ice: retry reading NVM if
+ admin queue returns EBUSY
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -106,39 +97,96 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Ivan Vecera <ivecera@redhat.com>, Alice Michael <alice.michael@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Eric Dumazet <edumazet@google.com>, linux-kernel@vger.kernel.org,
- Andrew Lunn <andrew+netdev@lunn.ch>, Tony Nguyen <anthony.l.nguyen@intel.com>,
- Michal Swiatkowski <michal.swiatkowski@linux.intel.com>,
- Jacob Keller <jacob.e.keller@intel.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>,
- intel-wired-lan@lists.osuosl.org
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Two fixes for the uplink default VSI Rx rule (DFLT) on E810 when the
-netdev is in IFF_PROMISC.
+This is an AI-generated review of your patch. The human sending this
+email has considered the AI review valid, or at least plausible.
+Full review at: https://sashiko.dev
+---
+ice: retry reading NVM if admin queue returns EBUSY
+    
+When the admin queue command to read NVM returns EBUSY, the driver
+currently treats it as a fatal error and aborts the entire read operation.
+This patch adds retry logic to handle this condition.
 
-Patch 1 drops the redundant per-VLAN promisc expansion that exhausts
-the FLU pool on a wide VLAN trunk across several PFs.
+> diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
+> --- a/drivers/net/ethernet/intel/ice/ice_nvm.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
 
-Patch 2 keeps the DFLT Rx rule across a switchdev teardown instead of
-clobbering the promisc state the operator asked for.
+[ ... ]
 
-Lab tested on E810-C: functional, VLAN isolation, IFF_ALLMULTI
-regression, stress/flap and switchdev-toggle suites pass with no AQ
-errors, and the FLU pool stays under its ceiling with all four PFs
-loaded.
+> @@ -96,11 +97,25 @@ ice_read_flat_nvm(struct ice_hw *hw, u32 offset, u32 *length, u8 *data,
+>  					 offset, read_size,
+>  					 data + bytes_read, last_cmd,
+>  					 read_shadow_ram, NULL);
+> -		if (status)
+> -			break;
+> -
+> -		bytes_read += read_size;
+> -		offset += read_size;
+> +		if (status) {
+> +			if (hw->adminq.sq_last_status != LIBIE_AQ_RC_EBUSY ||
+> +			    retry_cnt > ICE_SQ_SEND_MAX_EXECUTE)
 
-Petr Oros (2):
-  ice: skip per-VLAN promisc rules when default VSI Rx rule is set
-  ice: preserve uplink DFLT Rx rule on switchdev release
+[Severity: Low]
+Does this check allow an extra retry execution? Since retry_cnt starts at 0, 
+using a strictly greater-than check allows the loop to retry 4 times
+(5 total executions) instead of the 3 executions intended by
+ICE_SQ_SEND_MAX_EXECUTE.
 
- drivers/net/ethernet/intel/ice/ice_eswitch.c | 32 ++++++-
- drivers/net/ethernet/intel/ice/ice_main.c    | 90 +++++++++++++++-----
- 2 files changed, 98 insertions(+), 24 deletions(-)
+> +				break;
+> +			ice_debug(hw, ICE_DBG_NVM,
+> +				  "NVM read EBUSY error, retry %d\n",
+> +				  retry_cnt + 1);
+> +			last_cmd = false;
+> +			ice_release_nvm(hw);
+> +			msleep(ICE_SQ_SEND_DELAY_TIME_MS);
 
--- 
-2.53.0
+[Severity: High]
+Does dropping the NVM lock here violate the caller's assumption of mutual
+exclusion?
 
+Callers of ice_read_flat_nvm() typically acquire the NVM lock beforehand to
+ensure an atomic read of multiple sectors without interleaved writes. By
+explicitly dropping the lock during the msleep() window, another thread, VF,
+or PF could acquire the NVM lock and modify the NVM before the read resumes,
+potentially resulting in reading torn or inconsistent NVM data.
+
+> +			status = ice_acquire_nvm(hw, ICE_RES_READ);
+> +			if (status)
+> +				break;
+
+[Severity: High]
+Can this lead to an unbalanced NVM resource lock release and potential data
+corruption?
+
+If ice_acquire_nvm() fails here, the loop breaks and returns an error with the
+lock currently unheld. However, callers like ice_read_flash_module() are
+unaware of this internal lock state change and will unconditionally call
+ice_release_nvm() upon failure:
+
+drivers/net/ethernet/intel/ice/ice_nvm.c:ice_read_flash_module() {
+	status = ice_acquire_nvm(hw, ICE_RES_READ);
+	if (status)
+		return status;
+
+	status = ice_read_flat_nvm(hw, start + offset, &length, data, false);
+
+	ice_release_nvm(hw);
+    ...
+
+Because firmware tracks resource locks per-PF rather than per-OS-thread, this
+errant second release could forcefully strip the lock from another thread on
+the same PF that successfully acquired it, exposing the NVM to concurrent
+modification.
+
+> +			retry_cnt++;
+> +		} else {
+> +			bytes_read += read_size;
+> +			offset += read_size;
+> +			retry_cnt = 0;
+> +		}
+>  	} while (!last_cmd);
+>  
+>  	*length = bytes_read;
