@@ -1,108 +1,114 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 855D8CD98F2
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 22 Jun 2026 13:52:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C580CD98F2
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 22 Jun 2026 15:18:24 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 2C55E4EF92;
-	Mon, 22 Jun 2026 13:52:59 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 353FA865F9;
+	Mon, 22 Jun 2026 15:18:24 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id TpJaNmdoaY0I; Mon, 22 Jun 2026 13:52:58 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Qb183r2w-9-Y; Mon, 22 Jun 2026 15:18:23 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 59CE94EE1B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5E87786603
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1782136378;
-	bh=xzOoqAAxroPPZjBApkDwx0GEjpII3jjnrGM4r8kbMGs=;
-	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=S8eVdSJEZ2372YX6KCW1gfrTa02xdsZtulf4NW2PSDvm4PhD4Aa0CdY9xwE9zbD8O
-	 YINRjRIp4JP/9ymahfZ1Jj6a26xF2xi1VAHGuet05xj7DEOvt5hXmMsmLCAIKBqGvt
-	 Lj2a/Rd5wZGuBRQ/Yoiuj61Nd+h+W2fwAJXJrp+t5UYsDPiaPEH/EyE5Dx9wky4c9i
-	 5C2ZMHMoKpmiRCQiNb0dlGmvGb2yyG1Om1F6sdDDGS97fotIaV5/u8iooS+vcUhc3p
-	 Fhx7v3FhFSU4zAgdaq0yVyiYCH3nwkrIvJVt7fCZkHX7E13lvzL65Nz/xmSQAt7WNx
-	 QC1VsBnVQl/Zw==
+	s=default; t=1782141503;
+	bh=wR+EG8KcOf+TxbBZL9pbJkfZW4h3ISVf4q96cfpSBj4=;
+	h=From:Date:To:Cc:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Reply-To:From;
+	b=QHOtDzK5LFAarV92Gu8J2OKiz07yGdPihrXo2aKjn52q3t0Mff4b6N96DCT91qD87
+	 WZde1x+ARteY0Y1MuoH4Xe5yKzPVeb+k/jWeoNyHfBDI4IKZoYpn6AYIggBY+olAJp
+	 HAUMq1xzXPL2YjrakSfFJszHs/PD2CqiCJ7rpK9cVNgMDQiveEuVE2QI2MN4wxWDyj
+	 Pyt5EC1t2vFKXh1FTyo4DEfrNB98q5ry6J6LACYHAKN50HKaLxRDU3nU5IXLHtRRoj
+	 JHNx+Dl4i50DkueHuG18FkUZP85ajaCEKem8Ytgjn4ZTgU0jNJzDfLyMWGLGzLShNl
+	 fD5FYljv5n4Og==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 59CE94EE1B;
-	Mon, 22 Jun 2026 13:52:58 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 5E87786603;
+	Mon, 22 Jun 2026 15:18:23 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 50038F4
- for <intel-wired-lan@lists.osuosl.org>; Mon, 22 Jun 2026 13:52:56 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id F1D822D7
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 19 Jun 2026 07:14:50 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 2D312400B0
- for <intel-wired-lan@lists.osuosl.org>; Mon, 22 Jun 2026 13:52:56 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id D79B1422D1
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 19 Jun 2026 07:14:50 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id gxQsflpkXfTP for <intel-wired-lan@lists.osuosl.org>;
- Mon, 22 Jun 2026 13:52:55 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.19;
- helo=mgamail.intel.com; envelope-from=marcin.szycik@linux.intel.com;
+ id H7II65KmXVve for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 19 Jun 2026 07:14:50 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
+ helo=tor.source.kernel.org; envelope-from=devnull+tkusters.aweta.nl@kernel.org;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 0F19042E42
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0F19042E42
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 0F19042E42
- for <intel-wired-lan@lists.osuosl.org>; Mon, 22 Jun 2026 13:52:54 +0000 (UTC)
-X-CSE-ConnectionGUID: egldbWcNTl+ct7/w8mS/lA==
-X-CSE-MsgGUID: cAoaZY82ROqyFjw0quPuPg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11824"; a="82874532"
-X-IronPort-AV: E=Sophos;i="6.24,218,1774335600"; d="scan'208";a="82874532"
-Received: from orviesa003.jf.intel.com ([10.64.159.143])
- by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 22 Jun 2026 06:52:55 -0700
-X-CSE-ConnectionGUID: TorE0h44SyapVDUhwFe1qA==
-X-CSE-MsgGUID: Rlf3rkzbS+GNN13FUSGUJQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.24,218,1774335600"; d="scan'208";a="253133706"
-Received: from unknown (HELO [10.217.160.239]) ([10.217.160.239])
- by ORVIESA003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 22 Jun 2026 06:52:51 -0700
-Message-ID: <4dc1eb2d-e69f-4f13-ab08-ed0077305098@linux.intel.com>
-Date: Mon, 22 Jun 2026 15:52:45 +0200
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org F173541F22
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org F173541F22
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id F173541F22
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 19 Jun 2026 07:14:49 +0000 (UTC)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by tor.source.kernel.org (Postfix) with ESMTP id 1D9FD601E4;
+ Fri, 19 Jun 2026 07:14:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id C0865C2BCB4;
+ Fri, 19 Jun 2026 07:14:47 +0000 (UTC)
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org
+ (localhost.localdomain [127.0.0.1])
+ by smtp.lore.kernel.org (Postfix) with ESMTP id A504ACD98F8;
+ Fri, 19 Jun 2026 07:14:47 +0000 (UTC)
+From: Tjerk Kusters via B4 Relay <devnull+tkusters.aweta.nl@kernel.org>
+Date: Fri, 19 Jun 2026 09:14:44 +0200
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Petr Oros <poros@redhat.com>, netdev@vger.kernel.org
-Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Eric Dumazet <edumazet@google.com>, linux-kernel@vger.kernel.org,
- Andrew Lunn <andrew+netdev@lunn.ch>, Tony Nguyen
- <anthony.l.nguyen@intel.com>,
- Michal Swiatkowski <michal.swiatkowski@linux.intel.com>,
- Jacob Keller <jacob.e.keller@intel.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>,
- intel-wired-lan@lists.osuosl.org
-References: <20260622081030.2312129-1-poros@redhat.com>
-Content-Language: en-US
-From: Marcin Szycik <marcin.szycik@linux.intel.com>
-In-Reply-To: <20260622081030.2312129-1-poros@redhat.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <20260619-igb-rx-ts-fix-v2-1-d3b8d605ca62@aweta.nl>
+X-B4-Tracking: v=1; b=H4sIAGPsNGoC/yWMywrCMBQFf6WctRfSlMbHr4gLmx7rdRElN0qh9
+ N8bdTkDMwuMWWk4NQsyP2r6TBX8rkG8X9NE0bEyvPPBhfYoOg2SZykmN50ljnvXH3qyawNq88q
+ s+vc7I7Hg8pf2Hh6M5XvCum7/AMrddgAAAA==
+X-Change-ID: 20260619-igb-rx-ts-fix-cd70585ee316
+To: Tony Nguyen <anthony.l.nguyen@intel.com>, 
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
+ Andrew Lunn <andrew+netdev@lunn.ch>, 
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
+ Richard Cochran <richardcochran@gmail.com>, 
+ Jesper Dangaard Brouer <hawk@kernel.org>, 
+ Kurt Kanzenbach <kurt@linutronix.de>
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org, 
+ Tjerk Kusters <tkusters@aweta.nl>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1781853286; l=3623;
+ i=tkusters@aweta.nl; s=20260619; h=from:subject:message-id;
+ bh=pmAEYror60wCpEvmPM789DYVzXqwCNs6uz+fXRtY1nI=;
+ b=EPtIwt2TBPCz6NMGbTjzfttUjar17h7wguSFerhCZOC/fKnwEY4M0GEmdJgTBJ2nSlJGQA1Kv
+ yQfBwVYve/FA9DdCxq6hAH0LbuHDS8c62xJWNKPgNjGRpcC8A/HQMaU
+X-Developer-Key: i=tkusters@aweta.nl; a=ed25519;
+ pk=JYRpYQ3+LrphEabgnxcbiOUpwvNP8WDDMcLzz+cwKsk=
+X-Endpoint-Received: by B4 Relay for tkusters@aweta.nl/20260619 with
+ auth_id=831
+X-Original-From: Tjerk Kusters <tkusters@aweta.nl>
+X-Mailman-Approved-At: Mon, 22 Jun 2026 15:18:22 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1782136375; x=1813672375;
- h=message-id:date:mime-version:subject:to:cc:references:
- from:in-reply-to:content-transfer-encoding;
- bh=8IGxnFLIvHPA5eCvzWhuRYe0PBGao496jKdiz07JBDk=;
- b=ljGgCYc1YS8EI0a0lFB9FSanQiITbmj8bSsBv1mzD0acjCCi161mNltC
- V2WQRhm7B9ZWolO1/GCYugvsepzvd7ktQ3rojFZbA9FUtE7Xx1eEyLbAC
- MfeOoVL0Q2+CR2UNroqrs5IT5dRc7tNq6unnMjyaFFq2W27y60cv6otgf
- T2Q6byymInPuC/hGkRS5Id7u372rMeHCBRWKGIZqIxndOYbGiDyUGPZbV
- 4LVKQ74wxx2+KrHg7dyuwp0VXrfy1VpXGBcRJszhXgFcfGIkh5ptMj0pt
- Gy0KuAgROCcczAIfKlReVu+skR0SaI3b4SgALjwfzv59AKmE85NMduJJL
- Q==;
+ d=kernel.org; s=k20201202; t=1781853287;
+ bh=nKL6fTOWwY6Hg51AnU7XaHSMtjptIchNEHMyb2ZXzTk=;
+ h=From:Date:Subject:To:Cc:Reply-To:From;
+ b=ds5vPXkcqAhs3tK7398CUaBYYhJVO8S6p2m0lNFBB7nacTaIIEkQbidu1Cv3REnYv
+ GkAEmNWA01A17+O+X47UNz5mQ+0gXV8EtJdOPChciIkI+5708Bl7ZxpCEPNVAKelgG
+ 7pgneeKiasgTaMfPyZJ8IVeIIXg3B3EikHdHB0cLG1n1dx1gYidv75qCo3iYSfaYCF
+ V6mkD41gtXZTLF5rSy9rUys279tl9brwD1rJEYBJ7zKVBABd/b+F4L874yrtySmsfg
+ 700KfEqUsP9GupvbyeEiBQ96pBfIFF9Pak5BrSAAl1nG0kXRAp/CtcHq+3ekFwFdCD
+ zmPlEsew6Hzag==
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=linux.intel.com
+ dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=ljGgCYc1
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net] ice: clear the default
- forwarding VSI rule when releasing a VSI
+ dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=ds5vPXkc
+Subject: [Intel-wired-lan] [PATCH net v2] igb: only strip Rx timestamp
+ header on the first buffer of a frame
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -115,87 +121,89 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Reply-To: tkusters@aweta.nl
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
+From: Tjerk Kusters <tkusters@aweta.nl>
 
+When Rx hardware timestamping is enabled (e.g. ptp4l, which configures
+HWTSTAMP_FILTER_ALL), the NIC prepends a 16-byte timestamp header to the
+first Rx buffer of every received frame. igb_clean_rx_irq() strips this
+header inside its per-buffer loop:
 
-On 22/06/2026 10:10, Petr Oros wrote:
-> When a VSI is configured as the switch's default forwarding VSI
-> (ICE_SW_LKUP_DFLT) and is then torn down, the rule is left behind in
-> the switch. ice_vsi_release() no longer removes it, and the SR-IOV VF
-> free path (ice_free_vfs() -> ice_free_vf_res() -> ice_vf_vsi_release()
-> -> ice_vsi_release()) does not disable promiscuous mode either, which
-> only happens on VF reset in ice_vf_clear_all_promisc_modes().
-> 
-> A trusted VF that enters unicast promiscuous mode becomes the default
-> forwarding VSI (this is the default mode, when the PF does not have VF
-> true-promiscuous mode enabled). If the VFs are then destroyed without
-> the VF first leaving promiscuous mode, the ICE_SW_LKUP_DFLT rule for
-> the now-freed VSI is leaked. When VFs are recreated, a VSI reuses the
-> freed hw_vsi_id. If it is assigned a different VSI handle than the
-> leaked rule holds, ice_set_dflt_vsi() does not recognize it as
-> already-default, and ice_add_update_vsi_list() folds the dangling
-> (freed) handle into a VSI list, which the firmware rejects. The VSI
-> handle assigned on re-creation varies, so the failure is intermittent
-> rather than every cycle.
-> 
-> Reproduce by repeatedly running the cycle below on the two ports of the
-> same card, where $VF0 and $VF1 are the netdevs of vf 15 once they
-> appear. The VF must be brought up so iavf actually pushes the unicast
-> promiscuous request, and the rule must settle before the VFs are torn
-> down again:
-> 
->   echo 16 > /sys/class/net/$PF0/device/sriov_numvfs
->   echo 16 > /sys/class/net/$PF1/device/sriov_numvfs
->   ip link set $PF0 vf 15 trust on
->   ip link set $PF1 vf 15 trust on
->   ip link set $VF0 up
->   ip link set $VF1 up
->   ip link set $VF0 promisc on
->   ip link set $VF1 promisc on
->   sleep 1
->   echo 0 > /sys/class/net/$PF0/device/sriov_numvfs
->   echo 0 > /sys/class/net/$PF1/device/sriov_numvfs
-> 
-> Within a few cycles the ice PF and iavf VF log:
-> 
->   Failed to set VSI 25 as the default forwarding VSI, error -22
->   Turning on/off promiscuous mode for VF 63 failed, error: -22
->   PF returned error -53 (IAVF_ERR_ADMIN_QUEUE_ERROR) to our request 14
-> 
-> This cleanup used to live in ice_vsi_release() but was dropped by the
-> referenced refactor. Restore it. Clear the default forwarding VSI rule
-> in ice_vsi_release() when this VSI owns it, which covers every teardown
-> path.
-> 
-> Fixes: 6624e780a577 ("ice: split ice_vsi_setup into smaller functions")
-> Signed-off-by: Petr Oros <poros@redhat.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice_lib.c | 3 +++
->  1 file changed, 3 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-> index 2717cc31bff8fe..408464434506ef 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_lib.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-> @@ -2872,6 +2872,9 @@ int ice_vsi_release(struct ice_vsi *vsi)
->  		return -ENODEV;
->  	pf = vsi->back;
->  
-> +	if (ice_is_vsi_dflt_vsi(vsi))
-> +		ice_clear_dflt_vsi(vsi);
+	if (igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP)) {
+		ts_hdr_len = igb_ptp_rx_pktstamp(rx_ring->q_vector,
+						 pktbuf, &timestamp);
+		pkt_offset += ts_hdr_len;
+		size -= ts_hdr_len;
+	}
 
-In the referenced commit, the chunk of code that contained these missing 2 lines
-was moved to ice_vsi_decfg(). It also sounds like a good place for them and will
-be called from ice_vsi_release(). Are you sure we should place them directly in
-ice_vsi_release() instead?
+For a frame that spans more than one Rx buffer (e.g. a jumbo frame), this
+block runs once per buffer. The timestamp header only exists at the start
+of the first buffer, but igb_ptp_rx_pktstamp() is called for every buffer.
 
-Thanks,
-Marcin
+On a continuation buffer the data is packet payload, not a timestamp
+header. igb_ptp_rx_pktstamp() already has two guards against acting on a
+non-header buffer: it returns 0 if PTP is disabled, and returns 0 if the
+reserved dwords (the first 8 bytes) are non-zero. Neither is sufficient
+here: PTP is enabled, and a continuation buffer whose payload happens to
+begin with 8 zero bytes passes the reserved-dword check. In that case the
+payload is mistaken for a valid timestamp header and igb_ptp_rx_pktstamp()
+returns IGB_TS_HDR_LEN, so the caller strips 16 bytes of real data from
+that buffer. A frame spanning N buffers whose continuation buffers start
+with zero bytes therefore loses 16 * (N - 1) bytes from its tail.
 
-> +
->  	if (test_bit(ICE_FLAG_RSS_ENA, pf->flags))
->  		ice_rss_clean(vsi);
->  
+This is easily triggered by a GigE Vision camera streaming dark frames
+(mostly 0x00 pixel data) over jumbo UDP with PTP active on the receiver:
+the all-zero frames arrive truncated while frames with non-zero content
+are fine. There is no error indication.
+
+No content-based check can reliably tell a continuation buffer that begins
+with zero bytes from a real timestamp header, because both are all zero.
+Fix it structurally instead: only attempt the strip on the first buffer of
+a frame, which is the only buffer that can contain a timestamp header. In
+igb_clean_rx_irq() skb is NULL until the first buffer has been processed,
+so guarding the strip with !skb restricts it to the first buffer
+regardless of payload content.
+
+Fixes: 5379260852b0 ("igb: Fix XDP with PTP enabled")
+Cc: stable@vger.kernel.org
+Reviewed-by: Kurt Kanzenbach <kurt@linutronix.de>
+Signed-off-by: Tjerk Kusters <tkusters@aweta.nl>
+---
+Changes in v2:
+ - resend via b4 (v1 was sent with a mail client)
+ - use full author name "Tjerk Kusters" (Jacob Keller)
+ - add Reviewed-by from Kurt Kanzenbach
+ - no functional change
+
+Link to v1: https://lore.kernel.org/all/PAWPR05MB1069106D52F4E17F1EDB99C67B9182@PAWPR05MB10691.eurprd05.prod.outlook.com/
+---
+ drivers/net/ethernet/intel/igb/igb_main.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index ce91dda00ec0..abb55cd589a9 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -9061,7 +9061,8 @@ static int igb_clean_rx_irq(struct igb_q_vector *q_vector, const int budget)
+ 		pktbuf = page_address(rx_buffer->page) + rx_buffer->page_offset;
+ 
+ 		/* pull rx packet timestamp if available and valid */
+-		if (igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP)) {
++		if (!skb &&
++		    igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP)) {
+ 			int ts_hdr_len;
+ 
+ 			ts_hdr_len = igb_ptp_rx_pktstamp(rx_ring->q_vector,
+
+---
+base-commit: 2d3090a8aeb596a26935db0955d46c9a5db5c6ce
+change-id: 20260619-igb-rx-ts-fix-cd70585ee316
+
+Best regards,
+--  
+Tjerk Kusters <tkusters@aweta.nl>
+
 
