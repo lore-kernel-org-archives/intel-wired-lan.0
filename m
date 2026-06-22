@@ -4,154 +4,91 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79C2BCD98F0
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 22 Jun 2026 02:06:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73CD4CDB46B
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 22 Jun 2026 06:08:55 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 276916130B;
-	Mon, 22 Jun 2026 02:06:43 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 1290A6F72A;
+	Mon, 22 Jun 2026 06:08:55 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id D1SNEZ9qfBVA; Mon, 22 Jun 2026 02:06:42 +0000 (UTC)
+ id FvxXvWaLZKS1; Mon, 22 Jun 2026 06:08:54 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1E2356152C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3E6646F71C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1782094002;
-	bh=604Ftnw3RlYE7qLA16IHEAgduTmhXG06bpguMOrP5Do=;
-	h=Date:To:Cc:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From:Reply-To:From;
-	b=yvR037zU0CzkGOcyyG4rcLSAZGCCwEXXF/IpTbbQC6YecY3sc/wpssfmDipJkMJlG
-	 eLXqp8v0c58iQzvIRnAKuePiiQAUwKMCap9odsJg+kejMeanONcWA46U5YkipIBW6t
-	 m9Ki2+pXknsuLCwqJ2MBXgqkVNs/2WcquQMb0QQdE1+os7Wl6jZHw5L/+sC9PvNtiY
-	 kqahK6N3sXYrtK0lLR/mhRvuoo3QQTWuM6yagQDxzSF6s9Q1VSOOgMp0MGru18V012
-	 7Z3NI1QJxIoO79otNVSRsuSjwddb5oBVfErHDJH/I+qxl8ieRDduq4AIqU10z0bHMr
-	 oIzxC0I6IN/7w==
+	s=default; t=1782108534;
+	bh=z6Qy7NHeqLtglgQE9We9W3Msq/t+Lb/X+pyMy3qbPsw=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=0ekl0BWdf6c0pEyEsCuwBLLceXuUtTEiI+OGbw+4DZomBuYqS9Do9miUeZiwwIfej
+	 5TQofus81SjcfHUMzykvfv1YJC+L8u0piV9NXEmvaoeZNnDr7HTrIVwo4gP02asHCn
+	 0L8g2alITLLdmKiO+G6uPSpvDM9nVjasTOcbjw6XABfSpq1AUsBm42178oizoEfOrr
+	 OXyst/5i6pR96YSMaPpDJQwTrMisWAS+pJ4qvnTlpOj+owYvHqdG2CgFkn1F9khk2T
+	 cI9vMgr3DArL0XcZDNZ1oRQOALUs9pNWcD6/vocTTU/1fiJKuS7eknRkBzz9NrqUtG
+	 yJtLc34ZTG10w==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 1E2356152C;
-	Mon, 22 Jun 2026 02:06:42 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 9196C367
- for <intel-wired-lan@lists.osuosl.org>; Mon, 22 Jun 2026 02:06:40 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 3E6646F71C;
+	Mon, 22 Jun 2026 06:08:54 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 62A76F4
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 22 Jun 2026 06:08:53 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 7434C6152C
- for <intel-wired-lan@lists.osuosl.org>; Mon, 22 Jun 2026 02:06:40 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 48E428649E
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 22 Jun 2026 06:08:53 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id RzkWbX3oHHqu for <intel-wired-lan@lists.osuosl.org>;
- Mon, 22 Jun 2026 02:06:39 +0000 (UTC)
-X-Greylist: delayed 511 seconds by postgrey-1.37 at util1.osuosl.org;
- Mon, 22 Jun 2026 02:06:38 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 926916130B
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 926916130B
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=185.125.188.123;
- helo=smtp-relay-internal-1.canonical.com;
- envelope-from=acelan.kao@canonical.com; receiver=<UNKNOWN> 
-Received: from smtp-relay-internal-1.canonical.com
- (smtp-relay-internal-1.canonical.com [185.125.188.123])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 926916130B
- for <intel-wired-lan@lists.osuosl.org>; Mon, 22 Jun 2026 02:06:38 +0000 (UTC)
-Received: from mail-pl1-f198.google.com (mail-pl1-f198.google.com
- [209.85.214.198])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by smtp-relay-internal-1.canonical.com (Postfix) with ESMTPS id 466263F212
- for <intel-wired-lan@lists.osuosl.org>; Mon, 22 Jun 2026 01:58:04 +0000 (UTC)
-Received: by mail-pl1-f198.google.com with SMTP id
- d9443c01a7336-2c6cf1126cbso35061415ad.2
- for <intel-wired-lan@lists.osuosl.org>; Sun, 21 Jun 2026 18:58:04 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1782093482; x=1782698282;
- h=in-reply-to:content-disposition:mime-version:references
- :mail-followup-to:message-id:subject:cc:to:from:date:x-gm-gg
- :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
- bh=604Ftnw3RlYE7qLA16IHEAgduTmhXG06bpguMOrP5Do=;
- b=tOo4eUC94cD8JnDCD/MnOV3O1jG+KUQGc3JtRkHFLjGv/yORPJNoTdX79l2KXIraEy
- 9NnyfX77l+B5tIsbsL9R5T3kBW05XQ+flp+Mvd9aNdRzcAu16luea66VIZ5Dd8lVNlh2
- tZX4cayieRcNbnXuy3RfPHVvtzDHU65s+X5u7i+P9c0w3Tw/mD6x8BcQdlqUaKeenpbF
- O4gYCsnk2PdWct8xJvcS3i/uIesJPyytM1bvlnk1JFVy2FDrswiGycTF7qPGquGiNP9y
- fvxVQWIdpVYDAc7l5gmr0UOfRjAez3ddEmzwftfyX++kq6n+3lzLF8+gzgnew35d3Fu8
- 8bDA==
-X-Forwarded-Encrypted: i=1;
- AHgh+Ro7nw18QC6x+YthscN6cki6LQib8CaH9Ek7QZT+6xGHBYaASF8XUPsH8tySYY62YXHfg0ff18JV56L79Kpb0ys=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YxlQOzWTZPGwRd8z8hyIHOgYX8XaPixMxMus/Q1xfjSsGxYAeoX
- bd3Hts7NTVheloMCBesgL38y9tpwP7xe1wd/8hGg4rYd6UZ5kOXfau6VTZ8akEtEXWiEsnhXzns
- rwb64A79oxUyfCspoiVTFLo+fynPcLUhe1eDiAbo410AqaJBKlITivsL+bY2z1WYj++Oi7zc00o
- hj/awj1Bf+eyKVxeo9vr0=
-X-Gm-Gg: AfdE7cmD/sre1qED1fAcvCQqrx1ep1sOOk5JVzCtlxFJF0zobXhmN4iylv8W3iOFYwa
- XBeP18IcD59mSt1OAkFmmHuBKfdHi7RzA3xjXzpNhkgoWFlGEDM8I5g5WvO1lOvAmnSp3k3OpWg
- B2D+VpmBDSQUvn70spZo5UWKw3LHOXAyYPzEVA2mOLSZv1shgFl0xGqg386Wdgelt80IoOFjG1+
- loNHRNEkZh8ivT3YIQA3f+zJGx3EMpZtmybpqcTf+a5rnBiK1K+i0ZkTJNOeoTwVlDdQWBeBFjV
- t3pUKoFFouPELLSw7ws9Xo9eItjfo/lOkA+F4PovqftAgrrbLHUOohPIhFEPt/SALwGcm8nqlvi
- 7dbP47tx0hy9AD77JPulljYzwEISd8CsrOxRDvNtTPQ6gQdK58/Ru7cKyIYJlPMU+JZY=
-X-Received: by 2002:a17:902:ec92:b0:2be:3850:297e with SMTP id
- d9443c01a7336-2c71901d472mr129593165ad.31.1782093482427; 
- Sun, 21 Jun 2026 18:58:02 -0700 (PDT)
-X-Received: by 2002:a17:902:ec92:b0:2be:3850:297e with SMTP id
- d9443c01a7336-2c71901d472mr129592915ad.31.1782093482042; 
- Sun, 21 Jun 2026 18:58:02 -0700 (PDT)
-Received: from acelan-Precision-5480 (211-75-139-220.hinet-ip.hinet.net.
- [211.75.139.220]) by smtp.gmail.com with ESMTPSA id
- d9443c01a7336-2c7436af585sm61372645ad.5.2026.06.21.18.57.58
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sun, 21 Jun 2026 18:58:01 -0700 (PDT)
-Date: Mon, 22 Jun 2026 09:57:55 +0800
-To: "Ruinskiy, Dima" <dima.ruinskiy@intel.com>
-Cc: "Loktionov, Aleksandr" <aleksandr.loktionov@intel.com>, 
- "Nguyen, Anthony L" <anthony.l.nguyen@intel.com>, "Kitszel,
- Przemyslaw" <przemyslaw.kitszel@intel.com>, 
- Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>, 
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, 
- Paolo Abeni <pabeni@redhat.com>, 
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>, 
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Message-ID: <ajiHH-RaHUjgraMh@acelan-Precision-5480>
-Mail-Followup-To: "Chia-Lin Kao (AceLan)" <acelan.kao@canonical.com>, 
- "Ruinskiy, Dima" <dima.ruinskiy@intel.com>, "Loktionov,
- Aleksandr" <aleksandr.loktionov@intel.com>, 
- "Nguyen, Anthony L" <anthony.l.nguyen@intel.com>, "Kitszel,
- Przemyslaw" <przemyslaw.kitszel@intel.com>, 
- Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>, 
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, 
- Paolo Abeni <pabeni@redhat.com>, 
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>, 
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <20260618073324.1843310-1-acelan.kao@canonical.com>
- <IA3PR11MB8986B77F49DF672178FEE4BCE5E32@IA3PR11MB8986.namprd11.prod.outlook.com>
- <c3030882-55c8-486f-8ff3-571d001b99a1@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <c3030882-55c8-486f-8ff3-571d001b99a1@intel.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=canonical.com; s=20251003; t=1782093484;
- bh=604Ftnw3RlYE7qLA16IHEAgduTmhXG06bpguMOrP5Do=;
- h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
- Content-Type:In-Reply-To;
- b=g75IpVluHdVu8qwGAN3gl0sunEp9Aoo4nqD7raGrSkKthDNGsQMqhpq8ZcYl7z13n
- WXLWkLVyjL9AHFlOjySCgzApMam3CaY6lRBtcReU+q/NxAGCF6OryQ06yRidjNFkLQ
- OpO9HWFVAPPeMPpYFADe3hQTbNrO/IKvun0AuwqthhxfaErLNxYc1nimMvW/jBqeaD
- fdv7KvkoWI1OhyFXAH7JVsGV+I/ck3uRp7r3uh++aQW3S41JFXfa7gaTHFPFhjLWb0
- EKcv4VyByEkHLMbF4rGrdFnHgRaF7cvNFNAe8dgg+BpeGFBazsJnYtwDBg4nCYweJV
- uf8QxQEZc3V27oRebXdc32lxFzLO5Ghsqzy85QODC4lsvY2XAeyMdISXEtWpsVZMJC
- Ag+bW1J1t77qwCnUE1K+92YoZb7GQXm0La8xAHJ64W1UEy05OIPrqaAmBtxGL2+lI6
- ALV/qBqDdH4+TPo8QWgtChygckgKW6BlDzsJLjOe27E/PsGuSDwjVZZ13qUWLvQkCW
- QZr18QHwW7wkVNnsGyTW8uLybgSHVD/U+n2vf5eOUhNBJQnLqAmLg3Ni7afX3TIbl9
- YhFwhuG9yHNbro7mfqU8cKM2cUEj8A94DWk+0wwDsxh6A/1lgUwUysXB+dVyTN6yBZ
- knsCg3RNzagg2JXfuFYK+2Fo=
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=reject dis=none)
- header.from=canonical.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (4096-bit key,
- unprotected) header.d=canonical.com header.i=@canonical.com
- header.a=rsa-sha256 header.s=20251003 header.b=g75IpVlu
-Subject: Re: [Intel-wired-lan] [PATCH 1/2] igc: Wait for MAC passthrough
- after reset
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id i5Xx7iWBsadD for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 22 Jun 2026 06:08:52 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.11;
+ helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org E2BFB8649D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E2BFB8649D
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id E2BFB8649D
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 22 Jun 2026 06:08:51 +0000 (UTC)
+X-CSE-ConnectionGUID: fhcOQAUyQtWmXjwUiI6dzA==
+X-CSE-MsgGUID: bqppyKsHSlir1ESuXmzN9A==
+X-IronPort-AV: E=McAfee;i="6800,10657,11824"; a="93198488"
+X-IronPort-AV: E=Sophos;i="6.24,218,1774335600"; d="scan'208";a="93198488"
+Received: from orviesa008.jf.intel.com ([10.64.159.148])
+ by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 21 Jun 2026 23:08:52 -0700
+X-CSE-ConnectionGUID: GvdJNwgjQS6Amrr5P5MZMg==
+X-CSE-MsgGUID: Kc2HkvbRR26yEMAm/SDZOw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.24,218,1774335600"; d="scan'208";a="248988902"
+Received: from lkp-server02.sh.intel.com (HELO ea128546eb3d) ([10.239.97.151])
+ by orviesa008.jf.intel.com with ESMTP; 21 Jun 2026 23:08:50 -0700
+Received: from kbuild by ea128546eb3d with local (Exim 4.98.2)
+ (envelope-from <lkp@intel.com>) id 1wbXpf-000000000aB-3IGg;
+ Mon, 22 Jun 2026 06:08:36 +0000
+Date: Mon, 22 Jun 2026 14:00:34 +0800
+From: kernel test robot <lkp@intel.com>
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Message-ID: <202606221424.5BIRLS7u-lkp@intel.com>
+User-Agent: s-nail v14.9.25
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1782108533; x=1813644533;
+ h=date:from:to:subject:message-id;
+ bh=i+K7YTwAcF4YO/gDXj5iBeNRwQY/SgaRRsQovb+w4Nw=;
+ b=aZhDxUhtX4x9zHaZcueErX6b+cqZ2gED7HoQoD9AXQQZGiVSP4Z/H92J
+ 1GsMwzRXrWHjP57UG2hWZQVJcCzF5180RsP+9lXrgGutT6JV16GvNj2l5
+ XkDkIbZSVLenMOriRfci/KWseXHI9lArF1UF6F0yQPUJ2u7MHdk6itp9e
+ 3q6w38wf8TPfntTPdwrb7Q2EpxWf7WYwqEzfJmcQ9Z0whmPxYR4DYXrlw
+ D3cW5fnJVA/Ca2aoOnOHMXAEullCxvf2UrUgzX2+8N/EozQsAfWl5mh/l
+ XoL/tnr6qKdwdmNh7QwynpltQIdIeqar6ugNPNRASBssNqocDXtHYVMRU
+ g==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=aZhDxUht
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ d4952c8da4cd593a8a4747ddb40091793d5f495e
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -164,230 +101,182 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-From: "Chia-Lin Kao \(AceLan\) via Intel-wired-lan"
- <intel-wired-lan@osuosl.org>
-Reply-To: "Chia-Lin Kao \(AceLan\)" <acelan.kao@canonical.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu, Jun 18, 2026 at 11:51:35AM +0300, Ruinskiy, Dima wrote:
-> On 18/06/2026 10:55, Loktionov, Aleksandr wrote:
-> >
-> >
-> > > -----Original Message-----
-> > > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf
-> > > Of Chia-Lin Kao (AceLan) via Intel-wired-lan
-> > > Sent: Thursday, June 18, 2026 9:33 AM
-> > > To: Nguyen, Anthony L <anthony.l.nguyen@intel.com>; Kitszel,
-> > > Przemyslaw <przemyslaw.kitszel@intel.com>
-> > > Cc: Andrew Lunn <andrew+netdev@lunn.ch>; David S. Miller
-> > > <davem@davemloft.net>; Eric Dumazet <edumazet@google.com>; Jakub
-> > > Kicinski <kuba@kernel.org>; Paolo Abeni <pabeni@redhat.com>; intel-
-> > > wired-lan@lists.osuosl.org; netdev@vger.kernel.org; linux-
-> > > kernel@vger.kernel.org
-> > > Subject: [Intel-wired-lan] [PATCH 1/2] igc: Wait for MAC passthrough
-> > > after reset
-> > >
-> > > Some systems support MAC passthrough for dock Ethernet controllers by
-> > > having firmware rewrite the receive address registers after the
-> > > controller reset completes.
-> > >
-> > > igc resets the controller before reading RAL0/RAH0, so that reset can
-> > > restore the controller native MAC address temporarily. If the driver
-> > > reads the registers immediately, it can race the firmware rewrite and
-> > > keep the native dock MAC instead of the host passthrough MAC.
-> > >
-> > > For LMVP devices, poll RAL0/RAH0 after reset and before reading the
-> > > MAC address. Stop once the address registers change to another valid
-> > > Ethernet address, allowing firmware a bounded window to complete the
-> > > passthrough update.
-> > >
-Hi Aleksandr and Dima,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: d4952c8da4cd593a8a4747ddb40091793d5f495e  e1000: fix memory leak in e1000_probe()
 
-Let me answer your questions below.
+elapsed time: 6586m
 
-> > Good day, Chia-Lin
-> >
-> > It'd be great if you could share more details on how to reproduce the issue.
-> >
-> > What exact hardware setup is affected (dock model, NIC, system)?
-We've observed this issue for a long time, and encountered the issue on
-Lenovo's P15 Gen 2 (type 20YQ, 20YR) Laptops (ThinkPad) the first
-time at 2021 and added 600ms delay.
-Recently, we encountered the same issue on Dell, too, and then
-increased the delay to 1000ms.
-And now, the issue occurs again.
+configs tested: 160
+configs skipped: 10
 
-https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1942999
-https://lore.kernel.org/lkml/20210702045120.22855-2-aaron.ma@canonical.com/
-https://bugs.launchpad.net/ubuntu/+source/linux-oem-6.17/+bug/2143197
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-> > Which firmware/BIOS version?
-It doesn't happen on a single firmware or BIOS, and not a single
-hardware or a single brand.
+tested configs:
+alpha                             allnoconfig    gcc-16.1.0
+alpha                            allyesconfig    gcc-16.1.0
+alpha                               defconfig    gcc-16.1.0
+arc                              allmodconfig    gcc-16.1.0
+arc                               allnoconfig    gcc-16.1.0
+arc                              allyesconfig    gcc-16.1.0
+arc                                 defconfig    gcc-16.1.0
+arc                   randconfig-001-20260618    gcc-15.2.0
+arc                   randconfig-002-20260618    gcc-8.5.0
+arm                               allnoconfig    clang-23
+arm                              allyesconfig    gcc-16.1.0
+arm                                 defconfig    clang-23
+arm                   randconfig-001-20260618    gcc-10.5.0
+arm                   randconfig-002-20260618    clang-23
+arm                   randconfig-003-20260618    gcc-13.4.0
+arm                   randconfig-004-20260618    gcc-15.2.0
+arm64                            allmodconfig    clang-23
+arm64                             allnoconfig    gcc-16.1.0
+arm64                               defconfig    gcc-16.1.0
+arm64                 randconfig-001-20260618    gcc-11.5.0
+arm64                 randconfig-002-20260618    clang-23
+arm64                 randconfig-003-20260618    gcc-11.5.0
+arm64                 randconfig-004-20260618    gcc-8.5.0
+csky                             allmodconfig    gcc-16.1.0
+csky                              allnoconfig    gcc-16.1.0
+csky                                defconfig    gcc-16.1.0
+csky                  randconfig-001-20260618    gcc-16.1.0
+csky                  randconfig-002-20260618    gcc-15.2.0
+hexagon                          allmodconfig    clang-23
+hexagon                           allnoconfig    clang-23
+hexagon                             defconfig    clang-23
+hexagon               randconfig-001-20260618    clang-23
+hexagon               randconfig-002-20260618    clang-23
+i386                             allmodconfig    gcc-14
+i386                              allnoconfig    gcc-14
+i386                             allyesconfig    gcc-14
+i386        buildonly-randconfig-001-20260618    clang-22
+i386        buildonly-randconfig-002-20260618    gcc-14
+i386        buildonly-randconfig-003-20260618    gcc-14
+i386        buildonly-randconfig-004-20260618    gcc-14
+i386        buildonly-randconfig-005-20260618    gcc-14
+i386        buildonly-randconfig-006-20260618    gcc-14
+i386                                defconfig    clang-22
+i386                  randconfig-001-20260618    gcc-14
+i386                  randconfig-002-20260618    clang-22
+i386                  randconfig-003-20260618    gcc-14
+i386                  randconfig-004-20260618    clang-22
+i386                  randconfig-005-20260618    gcc-14
+i386                  randconfig-006-20260618    gcc-12
+i386                  randconfig-007-20260618    gcc-14
+i386                  randconfig-011-20260618    clang-22
+i386                  randconfig-012-20260618    clang-22
+i386                  randconfig-013-20260618    clang-22
+i386                  randconfig-014-20260618    gcc-14
+i386                  randconfig-015-20260618    clang-22
+i386                  randconfig-016-20260618    clang-22
+i386                  randconfig-017-20260618    clang-22
+loongarch                        allmodconfig    clang-19
+loongarch                         allnoconfig    clang-20
+loongarch                           defconfig    clang-23
+loongarch             randconfig-001-20260618    clang-23
+loongarch             randconfig-002-20260618    gcc-16.1.0
+m68k                             allmodconfig    gcc-16.1.0
+m68k                              allnoconfig    gcc-16.1.0
+m68k                             allyesconfig    gcc-16.1.0
+m68k                                defconfig    gcc-16.1.0
+microblaze                        allnoconfig    gcc-16.1.0
+microblaze                       allyesconfig    gcc-16.1.0
+microblaze                          defconfig    gcc-16.1.0
+mips                             allmodconfig    gcc-16.1.0
+mips                              allnoconfig    gcc-16.1.0
+mips                             allyesconfig    gcc-16.1.0
+nios2                            allmodconfig    gcc-11.5.0
+nios2                             allnoconfig    gcc-11.5.0
+nios2                               defconfig    gcc-11.5.0
+nios2                 randconfig-001-20260618    gcc-8.5.0
+nios2                 randconfig-002-20260618    gcc-11.5.0
+openrisc                         allmodconfig    gcc-16.1.0
+openrisc                          allnoconfig    gcc-16.1.0
+openrisc                            defconfig    gcc-16.1.0
+parisc                           allmodconfig    gcc-16.1.0
+parisc                            allnoconfig    gcc-16.1.0
+parisc                           allyesconfig    gcc-16.1.0
+parisc                              defconfig    gcc-16.1.0
+parisc                randconfig-001-20260618    gcc-14.3.0
+parisc                randconfig-002-20260618    gcc-16.1.0
+parisc64                            defconfig    gcc-16.1.0
+powerpc                          allmodconfig    gcc-16.1.0
+powerpc                           allnoconfig    gcc-16.1.0
+powerpc                 linkstation_defconfig    clang-23
+powerpc               randconfig-001-20260618    gcc-8.5.0
+powerpc               randconfig-002-20260618    gcc-11.5.0
+powerpc64             randconfig-001-20260618    gcc-8.5.0
+powerpc64             randconfig-002-20260618    clang-23
+riscv                            allmodconfig    clang-23
+riscv                             allnoconfig    gcc-16.1.0
+riscv                            allyesconfig    clang-23
+riscv                               defconfig    clang-23
+riscv                 randconfig-001-20260618    gcc-11.5.0
+riscv                 randconfig-002-20260618    clang-20
+s390                             allmodconfig    clang-23
+s390                              allnoconfig    clang-23
+s390                             allyesconfig    gcc-16.1.0
+s390                                defconfig    clang-18
+s390                  randconfig-001-20260618    clang-23
+s390                  randconfig-002-20260618    clang-23
+sh                               allmodconfig    gcc-16.1.0
+sh                                allnoconfig    gcc-16.1.0
+sh                               allyesconfig    gcc-16.1.0
+sh                                  defconfig    gcc-16.1.0
+sh                    randconfig-001-20260618    gcc-13.4.0
+sh                    randconfig-002-20260618    gcc-16.1.0
+sparc                             allnoconfig    gcc-16.1.0
+sparc                               defconfig    gcc-16.1.0
+sparc                          randconfig-001    gcc-16.1.0
+sparc                 randconfig-001-20260618    gcc-16.1.0
+sparc                          randconfig-002    gcc-11.5.0
+sparc                 randconfig-002-20260618    gcc-14.3.0
+sparc64                          allmodconfig    clang-20
+sparc64                             defconfig    clang-23
+sparc64                        randconfig-001    gcc-12.5.0
+sparc64               randconfig-001-20260618    clang-22
+sparc64                        randconfig-002    clang-20
+sparc64               randconfig-002-20260618    gcc-10.5.0
+um                               allmodconfig    clang-23
+um                                allnoconfig    clang-16
+um                               allyesconfig    gcc-14
+um                                  defconfig    clang-23
+um                             i386_defconfig    gcc-14
+um                             randconfig-001    clang-23
+um                    randconfig-001-20260618    gcc-14
+um                             randconfig-002    clang-23
+um                    randconfig-002-20260618    gcc-14
+um                           x86_64_defconfig    clang-23
+x86_64                           allmodconfig    clang-22
+x86_64                            allnoconfig    clang-22
+x86_64                           allyesconfig    clang-22
+x86_64      buildonly-randconfig-001-20260618    clang-22
+x86_64      buildonly-randconfig-002-20260618    clang-22
+x86_64      buildonly-randconfig-003-20260618    clang-22
+x86_64      buildonly-randconfig-004-20260618    gcc-14
+x86_64      buildonly-randconfig-005-20260618    clang-22
+x86_64      buildonly-randconfig-006-20260618    clang-22
+x86_64                              defconfig    gcc-14
+x86_64                randconfig-011-20260618    clang-22
+x86_64                randconfig-012-20260618    gcc-14
+x86_64                randconfig-013-20260618    gcc-14
+x86_64                randconfig-014-20260618    gcc-14
+x86_64                randconfig-015-20260618    clang-22
+x86_64                randconfig-016-20260618    gcc-14
+x86_64                randconfig-073-20260618    gcc-14
+x86_64                randconfig-075-20260618    gcc-14
+x86_64                randconfig-076-20260618    gcc-14
+x86_64                          rhel-9.4-rust    clang-22
+xtensa                            allnoconfig    gcc-16.1.0
+xtensa                           allyesconfig    gcc-16.1.0
+xtensa                         randconfig-001    gcc-8.5.0
+xtensa                randconfig-001-20260618    gcc-16.1.0
+xtensa                         randconfig-002    gcc-13.4.0
+xtensa                randconfig-002-20260618    gcc-8.5.0
 
-> > How often does the race trigger?
-It may happen when re-plug the dock cable.
-With the mainline kernel, it's easy to reproduce the issue by
-re-plugging the dock cable.
-
-> > Do you have a way to reliably reproduce it?
-Yes, I can find some machines to reproduce the issue reliably.
-
-> >
-> > Also, what is the observed behavior vs. expected behavior? For example,
-> > which MAC address is seen and which one should be used?
-Here is the debugging logs, fc:4c:ea:ae:a1:e3 is the MAC
-address of the machine, and c4:d6:d3:83:75:d1 is the MAC of the dock.
-
-It gets the correct passthrough MAC address after bootup and the
-first re-plug at 40s, and fails to update the MAC address in time
-after couple of re-plugs.
-
-[    0.689873] igc 0000:70:00.0: MAC debug before reset_hw: RAL0=0xaeea4cfc RAH0=0x8000e3a1 RAR0=fc:4c:ea:ae:a1:e3 valid=1
-[    0.755187] igc 0000:70:00.0: MAC debug after reset_hw: RAL0=0x83d3d6c4 RAH0=0x8000d175 RAR0=c4:d6:d3:83:75:d1 valid=1
-[    0.755576] igc 0000:70:00.0: MAC debug: eth_platform_get_mac_address ret=-19, reading RAR0/NVM fallback
-[    0.755582] igc 0000:70:00.0: MAC debug: read_mac_addr ret=0 addr=fc:4c:ea:ae:a1:e3 perm_addr=fc:4c:ea:ae:a1:e3
-[    4.687730] igc 0000:70:00.0: MAC debug firmware: fwnode=<none> props(mac=0 local=0 address=0) fwnode_ret=-19 fwnode_mac=00:00:00:00:00:00 device_ret=-2 device_mac=00:00:00:00:00:00 is_tbt=0 external=0 hotplug_bridge=0
-[    4.687739] igc 0000:70:00.0: MAC debug before reset_hw: RAL0=0xaeea4cfc RAH0=0x8000e3a1 RAR0=fc:4c:ea:ae:a1:e3 valid=1
-[    4.748545] igc 0000:70:00.0: MAC debug after reset_hw: RAL0=0x83d3d6c4 RAH0=0x8000d175 RAR0=c4:d6:d3:83:75:d1 valid=1
-[    4.748937] igc 0000:70:00.0: MAC debug: eth_platform_get_mac_address ret=-19, reading RAR0/NVM fallback
-[    4.748944] igc 0000:70:00.0: MAC debug: read_mac_addr ret=0 addr=fc:4c:ea:ae:a1:e3 perm_addr=fc:4c:ea:ae:a1:e3
-[   40.892715] igc 0000:70:00.0: MAC debug firmware: fwnode=<none> props(mac=0 local=0 address=0) fwnode_ret=-19 fwnode_mac=00:00:00:00:00:00 device_ret=-2 device_mac=00:00:00:00:00:00 is_tbt=0 external=0 hotplug_bridge=0
-[   40.892724] igc 0000:70:00.0: MAC debug before reset_hw: RAL0=0x83d3d6c4 RAH0=0x8000d175 RAR0=c4:d6:d3:83:75:d1 valid=1
-[   40.953524] igc 0000:70:00.0: MAC debug after reset_hw: RAL0=0x83d3d6c4 RAH0=0x8000d175 RAR0=c4:d6:d3:83:75:d1 valid=1
-[   40.953933] igc 0000:70:00.0: MAC debug: eth_platform_get_mac_address ret=-19, reading RAR0/NVM fallback
-[   40.953941] igc 0000:70:00.0: MAC debug: read_mac_addr ret=0 addr=c4:d6:d3:83:75:d1 perm_addr=c4:d6:d3:83:75:d1
-...
-[  307.387282] igc 0000:70:00.0: MAC poll change at 700ms: RAL0=0xaeea4cfc RAH0=0x8000e3a1 RAR0=fc:4c:ea:ae:a1:e3 valid=1 prev=c4:d6:d3:83:75:d1
-[  328.826084] igc 0000:38:00.0: MAC poll change at 1000ms: RAL0=0xaeea4cfc RAH0=0x8000e3a1 RAR0=fc:4c:ea:ae:a1:e3 valid=1 prev=c4:d6:d3:83:75:d1
-[  429.070519] igc 0000:38:00.0: MAC poll change at 1100ms: RAL0=0xaeea4cfc RAH0=0x8000e3a1 RAR0=fc:4c:ea:ae:a1:e3 valid=1 prev=c4:d6:d3:83:75:d1
-[  466.509571] igc 0000:70:00.0: MAC poll change at 1000ms: RAL0=0xaeea4cfc RAH0=0x8000e3a1 RAR0=fc:4c:ea:ae:a1:e3 valid=1 prev=c4:d6:d3:83:75:d1
-
-> >
-> In addition to that - I would ask - when the race triggers - how much wait
-> time do you need to reliably resolve it (i.e., for the FW to have completed
-> the MAC update)?
-We have tried to unconditionally wait for 1 second while probing, but
-it still not enough sometimes. In rare case, it might exceed 2
-seconds.
-
-https://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/noble/tree/drivers/net/ethernet/intel/igc/igc_main.c?h=hwe-7.0-next#n7205
-	if (pci_is_thunderbolt_attached(pdev))
-		msleep(1000);
-
->
-> Because 100 iterations of 100msec each - this translates to up-to 10
-> seconds, no?
-Yes, just in case it takes longer.
-I think 5 seconds should be enough if you feel this is feasible.
-
-> The weak spot here is what if you are on an LMvP system where MAC
-> passthrough has not been enabled. You will always wait for the full 10
-> seconds after every reset until you give up and just continue with the
-> default MAC. Hardly desirable behavior.
-Right, that is the case. But we won't re-plug the dock frequently, so
-it is not so bad to wait for a while for the Ethernet to get connected.
-
->
-> We've implemented something like this in another driver at one point, and
-> the default polling timeout there is 1 second (which does not affect the UX
-> too much).
->
-> A better way may be using a FW interrupt to notify the driver when the MAC
-> address has been updated. The usability of this approach depends on whether
-> it is possible to update the MAC address up the stack after the device has
-> already been initialized. Does the framework support this?
-I wish we can detect if the MAC passthrough is enabled, so that we
-know if we need to poll for the MAC address.
-For the FW interrupt mechanism also needs BIOS support, and we don't
-have the power to push this.
-
->
-> Thanks,
-> Dima.
->
-> >
-> > > Signed-off-by: Chia-Lin Kao (AceLan) <acelan.kao@canonical.com>
-> > > ---
-> > >   drivers/net/ethernet/intel/igc/igc_main.c | 48
-> > > +++++++++++++++++++++++
-> > >   1 file changed, 48 insertions(+)
-> > >
-> > > diff --git a/drivers/net/ethernet/intel/igc/igc_main.c
-> > > b/drivers/net/ethernet/intel/igc/igc_main.c
-> > > index 2c9e2dfd8499..fa9752ed8bc5 100644
-> > > --- a/drivers/net/ethernet/intel/igc/igc_main.c
-> > > +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-> > > @@ -11,6 +11,7 @@
-> > >   #include <net/pkt_sched.h>
-> > >   #include <linux/bpf_trace.h>
-> > >   #include <net/xdp_sock_drv.h>
-> > > +#include <linux/etherdevice.h>
-> > >   #include <linux/pci.h>
-> > >   #include <linux/mdio.h>
-> > >
-> > > @@ -69,6 +70,52 @@ static const struct pci_device_id igc_pci_tbl[] = {
-> > >
-> > >   MODULE_DEVICE_TABLE(pci, igc_pci_tbl);
-> > >
-> > > +static void igc_read_rar0(struct igc_hw *hw, u8 *addr, u32 *ral, u32
-> > > +*rah) {
-> > > +	*ral = rd32(IGC_RAL(0));
-> > > +	*rah = rd32(IGC_RAH(0));
-> > > +
-> > > +	addr[0] = *ral & 0xff;
-> > > +	addr[1] = (*ral >> 8) & 0xff;
-> > > +	addr[2] = (*ral >> 16) & 0xff;
-> > > +	addr[3] = (*ral >> 24) & 0xff;
-> > > +	addr[4] = *rah & 0xff;
-> > > +	addr[5] = (*rah >> 8) & 0xff;
-> > > +}
-> > > +
-> > > +static bool igc_is_lmvp_device(struct pci_dev *pdev) {
-> > > +	switch (pdev->device) {
-> > > +	case IGC_DEV_ID_I225_LMVP:
-> > > +	case IGC_DEV_ID_I226_LMVP:
-> > > +		return true;
-> > > +	default:
-> > > +		return false;
-> > > +	}
-> > > +}
-> > > +
-> > > +static void igc_wait_for_lmvp_mac_passthrough(struct pci_dev *pdev,
-> > > +					      struct igc_hw *hw)
-> > > +{
-> > > +	u8 addr[ETH_ALEN] __aligned(2);
-> > > +	u32 orig_ral, orig_rah;
-> > > +	u32 ral, rah;
-> > > +	int i;
-> > > +
-> > > +	if (!igc_is_lmvp_device(pdev))
-> > > +		return;
-> > > +
-> > > +	igc_read_rar0(hw, addr, &orig_ral, &orig_rah);
-> > > +
-> > > +	for (i = 0; i < 100; i++) {
-> > > +		msleep(100);
-> > > +		igc_read_rar0(hw, addr, &ral, &rah);
-> > > +		if ((ral != orig_ral || rah != orig_rah) &&
-> > > +		    is_valid_ether_addr(addr))
-> > > +			return;
-> > > +	}
-> > > +}
-> > > +
-> > >   enum latency_range {
-> > >   	lowest_latency = 0,
-> > >   	low_latency = 1,
-> > > @@ -7259,6 +7306,7 @@ static int igc_probe(struct pci_dev *pdev,
-> > >   	 * known good starting state
-> > >   	 */
-> > >   	hw->mac.ops.reset_hw(hw);
-> > > +	igc_wait_for_lmvp_mac_passthrough(pdev, hw);
-> > >
-> > >   	if (igc_get_flash_presence_i225(hw)) {
-> > >   		if (hw->nvm.ops.validate(hw) < 0) {
-> > > --
-> > > 2.53.0
-> >
->
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
