@@ -4,114 +4,94 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0DBB4CDE008
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 25 Jun 2026 11:07:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96AD2CDE001
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 25 Jun 2026 15:14:46 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id BB1B360FFA;
-	Thu, 25 Jun 2026 11:07:39 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 4BB0661030;
+	Thu, 25 Jun 2026 15:14:46 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id gINSk1loDLmq; Thu, 25 Jun 2026 11:07:39 +0000 (UTC)
+ id N6n5N5Mi3OWR; Thu, 25 Jun 2026 15:14:44 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E6E6260FF4
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BA0EB61029
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1782385658;
-	bh=LBJd4hckXEGhE1VzwzoaIqo8jZmiF3akNu/sLTNhBjU=;
-	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=fGR0zlbRtNf+L9DICLUyHNj1+sSX+34Sj/l2D6P0IF808SHnWLtbY+/lMWtFIaVwy
-	 hy+/Mcgx7lD0cYSkQ8fY9uC/3eoPcEOuHWe5nj4hw1njwCYRfcYGjdIV5ZjFFFMOKH
-	 ZFW05AZGjgMhMR+3laR2amLNz6wEiiriLzv6+LmTvfGPO2gaxWO3/Vvw9Psprv1FWs
-	 C7gKMXz/a6iOH0OPou+TNrqMj5pTNRTNvmwW0PZEUs/QE2U8fp4WnxAVDh8wTaiskx
-	 YBuH6hKy1pS9lfDGuPBt1Ev92rH/4n396+7FcmbM/fffrlkCgeYiS9UDLzM2v0Ja3h
-	 bt8TwO1Byb2+A==
+	s=default; t=1782400484;
+	bh=kOZWZLTwJKIdHT7jLyzTjV7Z/94vZkCMFP3r800w+mY=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=KnY8IRdge3BXRYsHJCdBePo7X269TCp5teQk3g/0e5krrfOXw2ntamWcS2frfQH4H
+	 eS9JKtTWz5zNkigW3oHBLsuT33yyYoDUvXwdkf68vX31U7zNN8QuC+4Gx3rp98k5tF
+	 NSvnYCn2UsDqx90SnbPdFLn+TcyisvE9tjTG7AA/ZUimm7Y/y+SypcSTR2+I6Yw6RO
+	 uzZD5DSUAbfIOahqIpeux+/HdS3hxBC4psONstZgfAFvlCsfaq3OH/eVD4zPfJyPk5
+	 2ZKvYm5tuo+qsBEOJHzDpnTPKbRpyZSEQgedEuOsycV9ISz2D7gPlkrQRTjbCKz61W
+	 vtzpiI0Kj7hJA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id E6E6260FF4;
-	Thu, 25 Jun 2026 11:07:38 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 4E33618F
- for <intel-wired-lan@lists.osuosl.org>; Thu, 25 Jun 2026 11:07:37 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id BA0EB61029;
+	Thu, 25 Jun 2026 15:14:44 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 5C9A0254
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 25 Jun 2026 15:14:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 33C4C4106A
- for <intel-wired-lan@lists.osuosl.org>; Thu, 25 Jun 2026 11:07:37 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 4228241110
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 25 Jun 2026 15:14:44 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 4BeWADg9pqtx for <intel-wired-lan@lists.osuosl.org>;
- Thu, 25 Jun 2026 11:07:36 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.11;
- helo=mgamail.intel.com; envelope-from=marcin.szycik@linux.intel.com;
+ id l0H2OSgUAGNm for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 25 Jun 2026 15:14:43 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.15;
+ helo=mgamail.intel.com; envelope-from=maciej.fijalkowski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 662594057B
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 662594057B
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 662594057B
- for <intel-wired-lan@lists.osuosl.org>; Thu, 25 Jun 2026 11:07:36 +0000 (UTC)
-X-CSE-ConnectionGUID: xITUixQ0Tz2IXG/ah0/AbQ==
-X-CSE-MsgGUID: Ubw1zD8jSkmXaFVs4qiPUw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11827"; a="93515288"
-X-IronPort-AV: E=Sophos;i="6.24,224,1774335600"; d="scan'208";a="93515288"
-Received: from orviesa007.jf.intel.com ([10.64.159.147])
- by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 25 Jun 2026 04:07:36 -0700
-X-CSE-ConnectionGUID: UBL7DbuESgmqSE+sM3lTCg==
-X-CSE-MsgGUID: 9cqH5KWLSAODmTeGA7j2lg==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 86E7E4110D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 86E7E4110D
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 86E7E4110D
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 25 Jun 2026 15:14:43 +0000 (UTC)
+X-CSE-ConnectionGUID: aRsiFtdYQcmzlMeCccHM6w==
+X-CSE-MsgGUID: obTjW/kNRP6dL51jqqV13A==
+X-IronPort-AV: E=McAfee;i="6800,10657,11827"; a="83304520"
+X-IronPort-AV: E=Sophos;i="6.24,224,1774335600"; d="scan'208";a="83304520"
+Received: from orviesa004.jf.intel.com ([10.64.159.144])
+ by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 25 Jun 2026 08:14:42 -0700
+X-CSE-ConnectionGUID: 3Js0l7x8Tk2OZU5axmxEfg==
+X-CSE-MsgGUID: zVX3tQDURWapNRg7P3Cvdw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.24,224,1774335600"; d="scan'208";a="250755331"
-Received: from mszycik-desk.igk.intel.com (HELO [10.217.160.239])
- ([10.217.160.239])
- by orviesa007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 25 Jun 2026 04:07:32 -0700
-Message-ID: <f9a090bd-08ea-47e6-8dee-cf4f828fdced@linux.intel.com>
-Date: Thu, 25 Jun 2026 13:07:26 +0200
+X-IronPort-AV: E=Sophos;i="6.24,224,1774335600"; d="scan'208";a="254866926"
+Received: from boxer.igk.intel.com ([10.102.20.173])
+ by orviesa004.jf.intel.com with ESMTP; 25 Jun 2026 08:14:40 -0700
+From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Cc: netdev@vger.kernel.org, magnus.karlsson@intel.com, kuba@kernel.org,
+ pabeni@redhat.com, horms@kernel.org, przemyslaw.kitszel@intel.com,
+ jacob.e.keller@intel.com, Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Date: Thu, 25 Jun 2026 17:14:28 +0200
+Message-Id: <20260625151431.1102838-1-maciej.fijalkowski@intel.com>
+X-Mailer: git-send-email 2.38.1
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Florian Bezdeka <florian.bezdeka@siemens.com>,
- "Kwapulinski, Piotr" <piotr.kwapulinski@intel.com>,
- Ding Meng <meng.ding@siemens.com>,
- "Nguyen, Anthony L" <anthony.l.nguyen@intel.com>,
- "Kitszel, Przemyslaw" <przemyslaw.kitszel@intel.com>,
- "andrew+netdev@lunn.ch" <andrew+netdev@lunn.ch>,
- "davem@davemloft.net" <davem@davemloft.net>,
- "edumazet@google.com" <edumazet@google.com>,
- "kuba@kernel.org" <kuba@kernel.org>, "pabeni@redhat.com"
- <pabeni@redhat.com>, "Kiszka, Jan" <jan.kiszka@siemens.com>
-Cc: "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "wq.wang@siemens.com" <wq.wang@siemens.com>
-References: <20260622041718.6106-1-meng.ding@siemens.com>
- <BL1PR11MB59796B99C5A7709B07000D68F3EE2@BL1PR11MB5979.namprd11.prod.outlook.com>
- <d058b0fa9ad923514084a44f51c78ae8355c4ebb.camel@siemens.com>
-Content-Language: en-US
-From: Marcin Szycik <marcin.szycik@linux.intel.com>
-In-Reply-To: <d058b0fa9ad923514084a44f51c78ae8355c4ebb.camel@siemens.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1782385657; x=1813921657;
- h=message-id:date:mime-version:subject:to:cc:references:
- from:in-reply-to:content-transfer-encoding;
- bh=1DKzcgPw0xfGQ3vVU4fzu+gAjQMxLf9uPhSMmZQA5UA=;
- b=J/Yw3+JwqtVQ8nchoez8ceYdz08Aslw/pgpLWlXPF1BjnAf/boEQQ4hQ
- d+sCceTskwc/PDRKksvm/xh5BbL2j6popwosgjmKsao2N7RPuSkJz9Q5e
- cx86M0D3OsdKoBpAY2yAXEGXZv40/lJ8ug+WcssKU5T3terUiGNKINB+A
- crO1Jgh7E644+2q7cSTvbTHuRWBPZtbHJwSUsCvLaP8SNQ7pcMiB8Vz0d
- jMErPi0bzIZBCeQYcaICWgghfTE1avOVTtekDuqa81lcuYW6uvPRoBTYa
- JLOfCRli5y3iC6yIWOdK9p2NuGZ6AC0YLARa+gpWT9OOqqGwKFJE/Http
+ t=1782400483; x=1813936483;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=qcsBNcZnHyQgCK+3BSI8JZB02DcVgc0h2SEbrwsRgh4=;
+ b=YHbHDMfSemQoPiLUPK8g6WIZgXJpAYLKWPnog/gowAts93+DBxi3FnQq
+ UuynlEtBw90BdCO9iDCuQADYv3akVRCg9OMGe5noqBWnSty1M7DXN86/M
+ eUWrqLHM6kEoUk2im/coDTWZIF4VZCCBKC+ZkE5k7/z3oIZLOczQ+XvMw
+ b5UOiwzPlaoWGnB/lvcO4pBCzwU5bYjPF0TunfuIjz1IUWdWkFzXlk40B
+ XPvi7V91iWBJUSBjXtM/qiCPxUqVqq06B45R9JW76X3nflN4jxsi8FEt9
+ MD2trUpz4DwsOgTvNJ4qcudSx7KJLWklvoHB5Q+wT8YT/PoyHIlstpwrv
  g==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=linux.intel.com
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=J/Yw3+Jw
-Subject: Re: [Intel-wired-lan] [PATCH net] igc: Fix RX HW timestamp
- reporting when NET_RX_BUSY_POLL is disabled
+ header.s=Intel header.b=YHbHDMfS
+Subject: [Intel-wired-lan] [PATCH v4 net 0/3] i40e: re-init and UAF fixes
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -127,78 +107,25 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
+v4:
+- add preceding patch that fixes a case when some of re-init allocations
+  failed and we missed de-registering netdev at failure path
+- pull out i40e_vsi_setup() changes onto separate patch
+v3:
+- address UAF when ring arrays were freed before q_vector's ring
+  containers (Sashiko, Jacob)
+- remove bool params from alloc/free array routines (Simon)
+v2:
+- NULL vsi->tx_rings in i40e_vsi_alloc_arrays() (Sashiko)
 
+Maciej Fijalkowski (3):
+  i40e: unregister netdev before clearing VSI on reinit failure
+  i40e: fix potential UAF in i40e_vsi_setup()'s error path
+  i40e: keep q_vectors array in sync with channel count changes
 
-On 24/06/2026 11:05, Florian Bezdeka via Intel-wired-lan wrote:
-> On Tue, 2026-06-23 at 09:46 +0000, Kwapulinski, Piotr wrote:
->>> -----Original Message-----
->>> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Ding Meng via Intel-wired-lan
->>> Sent: Monday, June 22, 2026 6:13 AM
->>> To: Nguyen, Anthony L <anthony.l.nguyen@intel.com>; Kitszel, Przemyslaw <przemyslaw.kitszel@intel.com>; andrew+netdev@lunn.ch; davem@davemloft.net; edumazet@google.com; kuba@kernel.org; pabeni@redhat.com; Kiszka, Jan <jan.kiszka@siemens.com>; Bezdeka, Florian <florian.bezdeka@siemens.com>
->>> Cc: intel-wired-lan@lists.osuosl.org; linux-kernel@vger.kernel.org; netdev@vger.kernel.org; meng.ding@siemens.com; wq.wang@siemens.com
->>> Subject: [Intel-wired-lan] [PATCH net] igc: Fix RX HW timestamp reporting when NET_RX_BUSY_POLL is disabled
->>>
->>> When CONFIG_NET_RX_BUSY_POLL is deactivated, fetching RX HW timestamps from the NIC no longer works as expected.
->>>
->>> This occurs because disabling CONFIG_NET_RX_BUSY_POLL disables the SKB NAPI mapping in __skb_mark_napi_id(). Consequently, get_timestamp() fails to perform its driver lookup, and the igc driver's struct net_device_ops::ndo_get_tstamp is never invoked.
->>>
->>> Instead, get_timestamp() falls back to use shhwtstamps(skb)->hwtstamp, a field that the driver has not populated.
->>>
->>> Fix this by populating the hwtstamp field with the correct timestamp in the default timer when CONFIG_NET_RX_BUSY_POLL is disabled.
->>>
->>> Fixes: 069b142f5819 ("igc: Add support for PTP .getcyclesx64()")
->>> Co-developed-by: Florian Bezdeka <florian.bezdeka@siemens.com>
->>> Signed-off-by: Florian Bezdeka <florian.bezdeka@siemens.com>
->>> Signed-off-by: Ding Meng <meng.ding@siemens.com>
->>> ---
->>> drivers/net/ethernet/intel/igc/igc_main.c | 38 ++++++++++++++++-------
->>> 1 file changed, 26 insertions(+), 12 deletions(-)
->>>
->>> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
->>> index 8ac16808023..1da8d7aa76d 100644
->>> --- a/drivers/net/ethernet/intel/igc/igc_main.c
->>> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
->>> @@ -1992,7 +1992,26 @@ static struct sk_buff *igc_build_skb(struct igc_ring *rx_ring,
->>> 	return skb;
->>> }
->>>
->>> -static struct sk_buff *igc_construct_skb(struct igc_ring *rx_ring,
->>> +static void igc_construct_skb_timestamps(struct igc_adapter *adapter,
->>> +					 struct sk_buff *skb,
->>> +					 struct igc_xdp_buff *ctx)
->>> +{
->>> +	if (!ctx->rx_ts)
->>> +		return;
->>> +#ifdef CONFIG_NET_RX_BUSY_POLL
->>> +	skb_shinfo(skb)->tx_flags |= SKBTX_HW_TSTAMP_NETDEV;
->>> +	skb_hwtstamps(skb)->netdev_data = ctx->rx_ts; #else
->>> +	struct igc_inline_rx_tstamps *tstamps;
->> Please move at the top of the function and add:
-> 
-> That would trigger a "unused variable" warning in the
-> CONFIG_NET_RX_BUSY_POLL case.
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 76 ++++++++++++---------
+ 1 file changed, 45 insertions(+), 31 deletions(-)
 
-Put it under #ifndef CONFIG_NET_RX_BUSY_POLL. Variable declarations
-need to be on top.
-
-Thanks,
-Marcin
-
-> Btw: I was really confused that the #else statement moved to the end of
-> the previous line. Might someone be using a wrongly configured mail
-> client here?
-> 
-> Florian
-> 
->> Reviewed-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com
->>
->>> +
->>> +	tstamps = ctx->rx_ts;
->>> +	skb_hwtstamps(skb)->hwtstamp = igc_ptp_rx_pktstamp(adapter,
->>> +							   tstamps->timer0);
->>> +#endif
->>> +}
->>> +
-> 
-> [snip]
+-- 
+2.43.0
 
