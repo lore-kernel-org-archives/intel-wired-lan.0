@@ -1,95 +1,207 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 344F5CDB479
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E917CDE001
 	for <intel-wired-lan@archiver.kernel.org>; Thu, 25 Jun 2026 15:52:29 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id F237382F2D;
-	Thu, 25 Jun 2026 15:52:28 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 315DF40F18;
+	Thu, 25 Jun 2026 15:52:29 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id A5vC3EpW5-As; Thu, 25 Jun 2026 15:52:27 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id K2WSf0rDAoRu; Thu, 25 Jun 2026 15:52:27 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0D40B82F0F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A0F1640F05
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
 	s=default; t=1782402747;
-	bh=RVen3klxLZe2oyF8yo1+zPb2IncUXG62A6hEtpzXXzU=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=oFju6UJPFtbm+OEENZmVkH1g1Z4IeuYxxRULTY8RBMQOETAULT8eRos2o9bnEKpc2
-	 SPczTAinskkHhHWy0XTw57dfjrs9kucq77eTlBSy8+eYWDOAnOIeQxj73aHoS4mVuM
-	 Xw90qEWG+7hL91EinlL8qxKYgwatkrCqX7/MDz0zi/V9FaBRBCzEYLFavyeQcTcMo5
-	 v83Haf2oDfP3tpSSD1K9igXSjNZ6UbKmINopgm+b3BZP4tOPOBC2ep9+yThjKDn6ZM
-	 OXqO5LqccvXlPl0AlsZdSYpk3dHjTYBzO1f57e3vkMaPEVg9SMaq7BLV7f0kz9lFZL
-	 dYdLeKA2W0Nzg==
+	bh=SufLLtY/EIFZ2fH8McQTuxnmm014y0toOaN8RJMBuDI=;
+	h=Date:To:CC:References:From:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=VGV8nUCAfWf2/0brKPkWrV/fWUlFI+SwanUGA+WF08xbPLsKVNV1M854A+C+eiT3F
+	 G9eV2MiVZ6pafFzJ97fY3DSDtWKhT0FFYxw6INaVMLs19VW7iywbfKoNAZrPjrzppO
+	 DXG9EmLyV6DCVvX/3FLsMX6lfK0jwkG0MIxadoOSmzRLh0dnUp5QgCYwm5glWBYBtl
+	 RSQ+RmaetyLmZp60toj76iiF1K5yjcZgtgrQHtwAt2PCrw36l8pd+IPdOzi++fveEB
+	 TtvcayVKIpwp4E25dM9oMveh8gmJ3l4nHcP/jQ98aKTwt6ZIVht4dsSLNbvypk6ots
+	 epyrExzKhMK/Q==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 0D40B82F0F;
+	by smtp4.osuosl.org (Postfix) with ESMTP id A0F1640F05;
 	Thu, 25 Jun 2026 15:52:27 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 139FE18F
- for <intel-wired-lan@lists.osuosl.org>; Thu, 25 Jun 2026 03:10:39 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id A0CCD2C7
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 25 Jun 2026 12:15:46 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id F1FD64065A
- for <intel-wired-lan@lists.osuosl.org>; Thu, 25 Jun 2026 03:10:38 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 86E1D60E24
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 25 Jun 2026 12:15:46 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id jwjT5_73lnaY for <intel-wired-lan@lists.osuosl.org>;
- Thu, 25 Jun 2026 03:10:38 +0000 (UTC)
-X-Greylist: delayed 439 seconds by postgrey-1.37 at util1.osuosl.org;
- Thu, 25 Jun 2026 03:10:35 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 450804012E
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 450804012E
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=159.226.251.21;
- helo=cstnet.cn; envelope-from=pengpeng@iscas.ac.cn; receiver=<UNKNOWN> 
-Received: from cstnet.cn (smtp21.cstnet.cn [159.226.251.21])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 450804012E
- for <intel-wired-lan@lists.osuosl.org>; Thu, 25 Jun 2026 03:10:35 +0000 (UTC)
-Received: from localhost.localdomain (unknown [111.196.245.140])
- by APP-01 (Coremail) with SMTP id qwCowACHLtdrmjxq6UokAw--.19452S2;
- Thu, 25 Jun 2026 11:03:07 +0800 (CST)
-From: Pengpeng Hou <pengpeng@iscas.ac.cn>
-To: Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Cc: Andrew Lunn <andrew+netdev@lunn.ch>, davem@davemloft.net,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>,
- Richard Cochran <richardcochran@gmail.com>,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, pengpeng@iscas.ac.cn
-Date: Thu, 25 Jun 2026 11:03:05 +0800
-Message-ID: <20260625030305.85304-1-pengpeng@iscas.ac.cn>
-X-Mailer: git-send-email 2.50.1
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id KZpfBRZsxmFo for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 25 Jun 2026 12:15:45 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.21;
+ helo=mgamail.intel.com; envelope-from=przemyslaw.kitszel@intel.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org DEF3660E0B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org DEF3660E0B
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id DEF3660E0B
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 25 Jun 2026 12:15:44 +0000 (UTC)
+X-CSE-ConnectionGUID: enhVMh0tQ5aC43oPw7HhrQ==
+X-CSE-MsgGUID: UxEOJQ8yTUeZNUYfIWAO3w==
+X-IronPort-AV: E=McAfee;i="6800,10657,11827"; a="83047635"
+X-IronPort-AV: E=Sophos;i="6.24,224,1774335600"; d="scan'208";a="83047635"
+Received: from orviesa009.jf.intel.com ([10.64.159.149])
+ by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 25 Jun 2026 05:15:43 -0700
+X-CSE-ConnectionGUID: to6ilUwYTVG35uGlEePTYw==
+X-CSE-MsgGUID: bT3YnCFRTHm0Exd1fkU5cw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.24,224,1774335600"; d="scan'208";a="251118563"
+Received: from fmsmsx901.amr.corp.intel.com ([10.18.126.90])
+ by orviesa009.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 25 Jun 2026 05:15:44 -0700
+Received: from FMSMSX901.amr.corp.intel.com (10.18.126.90) by
+ fmsmsx901.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37; Thu, 25 Jun 2026 05:15:42 -0700
+Received: from fmsedg903.ED.cps.intel.com (10.1.192.145) by
+ FMSMSX901.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37 via Frontend Transport; Thu, 25 Jun 2026 05:15:42 -0700
+Received: from DM1PR04CU001.outbound.protection.outlook.com (52.101.61.57) by
+ edgegateway.intel.com (192.55.55.83) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37; Thu, 25 Jun 2026 05:15:42 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=ZIhDdy8F4cQuoUhzMdlIqHa0odQwDYDdCk1NAq9RLSpiiE2/hYlghUlqDYnSSTay9oEkKlGfzSecBkI/yHH9wFWbYXx1RnwUWKb18sMeVnGVxAxXOzIYBArd8MuXDXqVJ5EmdEhLI38+l7MFst7IKzBMB4/aUdI52m/Gf5YRaIraP5ehHmuCYlDl9i9/Hf/CqG2ptyheRVwxLq9+1Ko66dQalEYlHjZ9qZSN+sSGEduidT6NiP7nsTZTDjNs/uvHI62se0Ow9iVJ+Ngs9f+rd+N2yA+OJDeO1OgF5gWU+TEnjlqQ/h6jyci1My4bKa/0sNZXUyqHfE8ZRlydKkp3og==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=SufLLtY/EIFZ2fH8McQTuxnmm014y0toOaN8RJMBuDI=;
+ b=dRK44Ikn8tz2shjs9lmWPON2XAMXUrB1U0WA5rOk62SY5dvef7lI4YQck3xGKKGS6BoUBiLoZARxa6hrfJSUm+IqMyOutE6Z6vQm84IdNqNY3rdI+ZF4IwzabTS3LlIUWsYj1tvDGgJFlE+K2F294+Y8juJzhee5jqSqiXmzr0bmBLwGURYaC2fIX1iiEEn83MtO9oYaoiOIexSd3ZaYr7RbQHtYixXMKjBxO95En7ltVE5V0wfo1LlzMCp/mfPAburznytK3e9WmRYcUBOAdSa2+JCJuPPXyNCaQsc3hUDImJXkR15JyKJ2KOsTtoyOvMcRJfn/Rvv7XTi2DEbh4w==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from LV3PR11MB8508.namprd11.prod.outlook.com (2603:10b6:408:1b4::8)
+ by DS7PR11MB7737.namprd11.prod.outlook.com (2603:10b6:8:e1::15) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.159.17; Thu, 25 Jun
+ 2026 12:15:39 +0000
+Received: from LV3PR11MB8508.namprd11.prod.outlook.com
+ ([fe80::a1e8:1786:e5d1:8e51]) by LV3PR11MB8508.namprd11.prod.outlook.com
+ ([fe80::a1e8:1786:e5d1:8e51%5]) with mapi id 15.21.0139.018; Thu, 25 Jun 2026
+ 12:15:38 +0000
+Message-ID: <1d226d1e-290d-4220-a1a6-9487c210329a@intel.com>
+Date: Thu, 25 Jun 2026 14:17:53 +0200
+User-Agent: Mozilla Thunderbird
+To: Simon Horman <horms@kernel.org>, <jtornosm@redhat.com>
+CC: <netdev@vger.kernel.org>, <intel-wired-lan@lists.osuosl.org>,
+ <aleksandr.loktionov@intel.com>, <jacob.e.keller@intel.com>,
+ <anthony.l.nguyen@intel.com>, <davem@davemloft.net>, <edumazet@google.com>,
+ <kuba@kernel.org>, <pabeni@redhat.com>
+References: <20260623101800.991293-3-jtornosm@redhat.com>
+ <20260624163050.1145761-1-horms@kernel.org>
+From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Content-Language: en-US
+In-Reply-To: <20260624163050.1145761-1-horms@kernel.org>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: TL0P290CA0002.ISRP290.PROD.OUTLOOK.COM
+ (2603:1096:950:5::10) To LV3PR11MB8508.namprd11.prod.outlook.com
+ (2603:10b6:408:1b4::8)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: qwCowACHLtdrmjxq6UokAw--.19452S2
-X-Coremail-Antispam: 1UD129KBjvJXoWxZw1Uuw1fZryktr1UKFWUXFb_yoW5CF17pF
- Z3KF9FyF1Fqw18WFZ7Xa12va15Ca12yrWDGws7Ka4vyFyDK34YqF40yFyxKa18K34kCFy7
- ZFnayF1xuFn2qF7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
- 9KBjDU0xBIdaVrnRJUUU9F14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
- rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
- 1l84ACjcxK6xIIjxv20xvE14v26w1j6s0DM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4U
- JVWxJr1l84ACjcxK6I8E87Iv67AKxVW0oVCq3wA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_Gc
- CE3s1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E
- 2Ix0cI8IcVAFwI0_Jrv_JF1lYx0Ex4A2jsIE14v26r4j6F4UMcvjeVCFs4IE7xkEbVWUJV
- W8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lFIxGxcIEc7CjxVA2
- Y2ka0xkIwI1lc7CjxVAaw2AFwI0_Jw0_GFyl42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x
- 0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2
- zVAF1VAY17CE14v26r1q6r43MIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF
- 4lIxAIcVC0I7IYx2IY6xkF7I0E14v26r4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWU
- CwCI42IY6I8E87Iv67AKxVW8JVWxJwCI42IY6I8E87Iv6xkF7I0E14v26r4UJVWxJrUvcS
- sGvfC2KfnxnUUI43ZEXa7VUbzpBDUUUUU==
-X-Originating-IP: [111.196.245.140]
-X-CM-SenderInfo: pshqw1xhqjqxpvfd2hldfou0/
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: LV3PR11MB8508:EE_|DS7PR11MB7737:EE_
+X-MS-Office365-Filtering-Correlation-Id: d7f3e61c-153e-45f3-300f-08ded2b377f3
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+ ARA:13230040|23010399003|376014|1800799024|366016|11063799006|5023799004|56012099006|4143699003|22082099003|18002099003;
+X-Microsoft-Antispam-Message-Info: NgSfXOA78RwtN5ZSsqeHj/JCFagxNNAk9XJjOP3gXh9t0G+ZPbq+4ZsKYY6tNtWQHGHBw2pkPGr3hgTrPfDsu9e/norBjg55KXZ1vj3MxbjEXZDCfuhlWNDZVjaB1fBOfHBo5FB/Suy4kpIfAK9Gi2Q+booaF5qgCr4sBi8LrTPLz5s5o8bnDZRprlCkcIdBGylAlblxyD28joDxcC7U7lGXx980ckMJH781U/hq86jEOr70cBDTubvd6uPbvgtm/maw6xWwgNz6EpX5GaeV4ywMgxnBMNXasV/LL4ww9H+OyTxAslnYYOxS6F2AO/SB3BUI5c6cIBKzQENVnXqsLPBAL4+52zf8r0F/1jhY2Cb6BtWlH66b7ujhO3Isu/OuBSsWq2NIuevogvksTufwCfKIbjPeklZeQOID1XULv7Rz9tB9Lc7Dx+VC8Bn8M1uBPayV3pQBKrny9ytbcLsRkzgGU8I2T/JhVRslm238bm/j4ODJyeJYjS4+N27vwVZr9fegDmVnYFURQ5Q9zoEK9iPtlSYUfQjTIwG+60QTHpkvODHhDY1o3FATLfsxu84HDFeSUc6a3zBOUn4Nzxk0LWDqHPkNhkIHrgFg61i++Y9YWBzN2kypVpYGuZNchhxn
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:LV3PR11MB8508.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230040)(23010399003)(376014)(1800799024)(366016)(11063799006)(5023799004)(56012099006)(4143699003)(22082099003)(18002099003);
+ DIR:OUT; SFP:1101; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?TTB2UkZkeEMzMXQydjdTK2RoZnFEVFZvL2pmRHkzY3BmR2cvcXNpaFd3NTEw?=
+ =?utf-8?B?MzZtR003TGw4amFlMzBmQWloU3hNMm9LWGU5NmdFM2FsUlQzVVNoWXQzQ2VN?=
+ =?utf-8?B?bkVvWmU5VE82Znp4eUlQUGt4QkFFM0RvaUpCY2M1RWVOTXhCZktBOENIdGhP?=
+ =?utf-8?B?YXhRWVhhU01sV3ltQmM5cldpZ0lhbHBuU3hKQWluTDRQdXMxUWZvOHZWU0tG?=
+ =?utf-8?B?dmY0MUtEQmNLQ2k1d1hQM2c0RncveVM2NE9udnM1dXg5YnRjVjlSSE9KUEpV?=
+ =?utf-8?B?TW5RYVNKNDBpYThFTk0wREdIdStKNSthRHpJU09EazlOa2Q3cUgvY1J5b2hu?=
+ =?utf-8?B?ZWtjS0FRVEdxZ0V3NU8rVStDbVAxTkUyT2dYczNuMW1jZ0RLbnJqSEdKTkR0?=
+ =?utf-8?B?UEtMbC9CRGZadll3U1pjblk2MTdCby9pc2JWNXlGaGFkNXpKYkF3VHgxSmFX?=
+ =?utf-8?B?bzkrUU1sL0ZqbTMzb0xzTW01eUQyOVg4Tjd0VzJZbmp2M0VadUFxTERFcUxz?=
+ =?utf-8?B?blNTVy9VWkdNdEZ0Vyt0VURObE9KRGdrVzE0VEVldkwvK0M4L2NZV0x0Q1Bu?=
+ =?utf-8?B?SG9aS1h3bzZlaDRHdUtpbG0wSTIxd1hJVk80UmRCVUVsSFlhTFdubyt5NkpP?=
+ =?utf-8?B?WWNZeDNrVHVMMGd4RC9xNDlEejZ1ZHNrNU5vNU5jeU1lWkdrRTlMVVM4T0lw?=
+ =?utf-8?B?L3dlMFRONGdrSFZCamt5NFJIclVyclRWWWZZZDZ5My9HaVg3eElPNHRCN2lx?=
+ =?utf-8?B?cVF1cnJGb1lZNnNDMmMxZE9lMFl6eXBBekNuV1ZUcWJSbnJtYXNUYUFGYzU3?=
+ =?utf-8?B?d2lqYnp2Y3ZKbFdKQU1ETzNSZ3U3NldQWmM5WUhhWHlSK3lzR0k4bXlpYTdW?=
+ =?utf-8?B?RUQrTktta3FmUG1Sd2tHQ0Nxdjg4b2NxNkZQZVJtWW1NK1pER2RPaE5nYmw2?=
+ =?utf-8?B?SmozaGVQQmE1ZHV3UDVWd1dXWVY2UVBHQ2d1UVQ3Y0NOdXJ4MGZkWjBYM3Rx?=
+ =?utf-8?B?ZTJlSUhKRUZKYktMRXMrOXgzc0g0b1pTc0FteXdRZnVFVWhFWEFwOUNnMk9n?=
+ =?utf-8?B?T3h2bUhWUGpZZ2lkbzdIRU1jOG11cUVyN3dHVnNrcFRCaHozZ0ZObVZLMEJR?=
+ =?utf-8?B?SG9RYzNQMmJZdTN1YlJxUm84ckU2U3BzNVBURVVhbEdwRFZkWFRNT01YTVhS?=
+ =?utf-8?B?Mzc5WkRYQkNQeUdaZTFFT05ORjVlM2NyTW5vQ1l0R1FQcFE5NStxZEVTcjd6?=
+ =?utf-8?B?OXZNL1Q1aGVpUml1d3l2Q0pEdDVKRnlFdHpWUUVZL3hIYVVmV0lneUxKWURW?=
+ =?utf-8?B?NUV0QVZkUStoQ2EvaFBvZzEwUjBsdnh1dnR4OVl4Qjdvb0FNSE5CVXZqSGdh?=
+ =?utf-8?B?U3p1YlV2dk5NWjRRRGlLTmRJd05wSlFtdy9KbytMOGV2MmVmU1RsSG1mbWdw?=
+ =?utf-8?B?NVZFYS9oNVNGcngxME9way9sWExFWkF3Y09qTy9KZVFIaERrZTA3Yk1EOHRj?=
+ =?utf-8?B?ZC9RQ0ZPaDE2WjY5SFBQLzdJOVpMNkNVOGJCNkpkMmZiTHY3TmZmNnNFamlW?=
+ =?utf-8?B?TGRBMFlwRXlXYW1qMWpSMjlQTnJyRnB5YW9LRC9OVjg2YmpMelZBeC82NGlC?=
+ =?utf-8?B?VVgwcDk4Q1RzemhKUVJzV2tXM0JLNUYwQm9wS2UrMnJOYzZYZ3J2L0Y2RGgv?=
+ =?utf-8?B?SFpyL3Z2NXU4M2RJQjd6Q0VleU5xK0NNNkMvYmNXOVhFVG96bVJwVEFCWDVy?=
+ =?utf-8?B?a2dGZFNrS2xoN2kvZC9udGpGd0tXV3VYSmtFcnF3STU2RmdDTmxOLzFHQUhR?=
+ =?utf-8?B?S0FQRU03ejQxd2o3L3NzSFByMUN5UUN4VUE3OGZ1bGxIVVpCU2tydldtQ3Uw?=
+ =?utf-8?B?U2JBNXBOaGthSG1yLzl5M2dydStLWU5PU0dadE8rSHZwd3YzbHgwVVE0TU04?=
+ =?utf-8?B?bWtLWlVYS1p1Q1dQQWJLNERKS2NPU0ZmbjE2VlczS3QvZ1R5Rk5uY3RpRVFw?=
+ =?utf-8?B?Q1ZoK2ZxNW92TFhYMkpleGFIZHY5aFlIc1YzL2h2SWRtcGpvNVdUV0l1MUox?=
+ =?utf-8?B?NktBZEV3U1pRL1lGZG5QSTljZkh5Q0FOaVlZVGErYzZ4a0dZdzhtVUNSTEhm?=
+ =?utf-8?B?bC82bU8wYnJ2a1RXZElPWE5vWFVSaXl2UFRFSVlEdUdiOEtzV3VrUkFnbXRW?=
+ =?utf-8?B?MXlpMnF1UEhUSmdya3RnaU1TNFNRQTFVbjg2S3B5YTk1RUlncFFVaVNlTzFt?=
+ =?utf-8?B?c2JvUVFDRUlyRUMycXd1SHdpaEVET1RWSUNXem00NlFQTVNJS3RZblJtakE5?=
+ =?utf-8?B?Mk5mZGh3UWlmMDRkZTF0ZjBtS3pHUkNjS3BSUWx2ejV1MVFCQyt6alZGeVJa?=
+ =?utf-8?Q?EBPcE6i8BauWtvqc=3D?=
+X-Exchange-RoutingPolicyChecked: jWXLfb1DrCpG2Wx0q+DS1u3OiQ2d86o4aw7tlgYhU403SievGqPF2PtFt1CCJJNjeBo9AOk/UM5KX7b69m0/8A5XGMR3Kf8Mk8Cq3PYovfd5DaxHFYdpe4iL/03eRSUSZSEniMkow5nh1JLzdkxLH6Bf/2bWLsHFg8V39jYPuIX/gFnqNnGFrfEU7JFexOyebujHHCwOf0Wt3WCh0Gyshw4TgL8iWCyI0qlAHqK1PhG/TMM8PP8gWitzYkYTW+zuM70whxJnGcNhPi8a19Un9NVsQ8p0Qjg6QxMIegKuOvUIMn4Uye6OeDximA0ckyLygoZJNGFvHMiG9WzagIYY1w==
+X-MS-Exchange-CrossTenant-Network-Message-Id: d7f3e61c-153e-45f3-300f-08ded2b377f3
+X-MS-Exchange-CrossTenant-AuthSource: LV3PR11MB8508.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Jun 2026 12:15:38.8547 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: c1Dwh1ElXoj0XZkYICLzmLJWuKtpWdq5RdlZw06RMUOsew4wXysiaMdXyJpeT+P6wU16CL7PbppCORwp1rLk2UOUuMqQ87ab0XgrN57irC4=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS7PR11MB7737
+X-OriginatorOrg: intel.com
 X-Mailman-Approved-At: Thu, 25 Jun 2026 15:52:25 +0000
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=iscas.ac.cn
-Subject: [Intel-wired-lan] [PATCH] ice: propagate ETH56G deskew read errors
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1782389745; x=1813925745;
+ h=message-id:date:subject:to:cc:references:from:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=oEU2blchPkcYMZXSGzdQu0t+BSA4+soI+xnhu3gsfqE=;
+ b=Lwf8mzoXlCw55MMmn1W6IFCN9GQcIObnEkMDWOrxKmfG4SQ3FepO6UH8
+ Jdm4wpy1I6gRFcWrrCD7c6Oh/q7Kz7lnYlfYoKo4sxNL9VhSkj4A9EkTK
+ jzWjiTvPgLtZofSCweB+RsnDwJLGKSz02jtnEhQRSIERgDFA4k/PSc1Em
+ XXCSWfXn3JfsgvnF2VOzsX77eTcOJihNRwYS59tm7q+o4HspmkamGx8x/
+ FD0KNB6/kaNhIwh7dMc4n+hILEhPafThZap7nplvgGm6B3v1ikI7sJrde
+ P4eWjfPtSl7u+Jzuh0ZSCxZFtG3mHHl/KC2gBEbniF+s68a3XiA3kY9ww
+ A==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=Lwf8mzoX
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Subject: Re: [Intel-wired-lan] [PATCH net v7 2/4] i40e: skip unnecessary VF
+ reset when setting trust
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -105,89 +217,59 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-ice_ptp_calc_deskew_eth56g() returns a u32 deskew value, but it also
-returns the negative read_poll_timeout() error when the DESKEW valid bit
-never appears. That converts the negative error into a large unsigned
-deskew contribution, which can then be folded into the RX timestamp
-offset and programmed into hardware.
+On 6/24/26 18:30, Simon Horman wrote:
+> This is an AI-generated review of your patch. The human sending this
+> email has considered the AI review valid, or at least plausible.
+> Full review at: https://netdev-ai.bots.linux.dev/sashiko/
+> ---
+> i40e: skip unnecessary VF reset when setting trust
+> 
+> This patch avoids the ~10 second VF reset delay on trust changes by
+> flipping the I40E_VIRTCHNL_VF_CAP_PRIVILEGE bit directly, and only
+> resorting to a full reset when revoking trust from a VF that has
+> advanced features (ADQ, cloud filters, UC/MC promisc) configured.
+> 
+>> diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+>> index a26c3d47ec15..0cc434b26eb8 100644
+>> --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+>> +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+>> @@ -4987,19 +5004,20 @@ int i40e_ndo_set_vf_trust(struct net_device *netdev, int vf_id, bool setting)
+>>   	set_bit(__I40E_MACVLAN_SYNC_PENDING, pf->state);
+>>   	pf->vsi[vf->lan_vsi_idx]->flags |= I40E_VSI_FLAG_FILTER_CHANGED;
+>>   
+>> -	i40e_vc_reset_vf(vf, true);
+>> +	/* Reset only if revoking trust and VF has advanced features configured */
+>> +	if (!setting &&
+>> +	    (vf->adq_enabled || vf->num_cloud_filters > 0 ||
+>> +	     test_bit(I40E_VF_STATE_UC_PROMISC, &vf->vf_states) ||
+>> +	     test_bit(I40E_VF_STATE_MC_PROMISC, &vf->vf_states))) {
+> 
+> [High]
+> Does this revoke-trust heuristic miss MAC/VLAN filters that were only
+> installable while the VF was trusted?
 
-Return the deskew value through an output parameter and propagate the
-read error from ice_phy_set_offsets_eth56g() instead of using it as
-offset data.
+No.
 
-Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
----
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 27 +++++++++++++++------
- 1 file changed, 19 insertions(+), 8 deletions(-)
+> 
+> A trusted VF is allowed to add many more MAC addresses than
+> I40E_VC_MAX_MAC_ADDR_PER_VF (i40e_check_vf_permission() uses
+> I40E_VC_MAX_MACVLAN_PER_TRUSTED_VF) and more than I40E_VC_MAX_VLAN_PER_VF
+> VLANs.  These quotas are enforced only at add-time.
+> 
+> The previous always-reset path went through i40e_vc_reset_vf() ->
+> i40e_cleanup_reset_vf() -> i40e_free_vf_res() -> i40e_vsi_release(),
+> which destroyed the VSI and its mac_filter_hash, and reset
+> vf->num_vlan = 0.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-index 8e5f97835954..bd2e31b816a8 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-@@ -1736,17 +1736,21 @@ static u32 ice_ptp_calc_bitslip_eth56g(struct ice_hw *hw, u8 port, u32 bs,
-  * @ds: deskew multiplier
-  * @rs: RS-FEC enabled
-  * @spd: link speed
-+ * @deskew: calculated deskew value
-  *
-- * Return: calculated deskew value
-+ * Return: 0 on success, negative error code otherwise
-  */
--static u32 ice_ptp_calc_deskew_eth56g(struct ice_hw *hw, u8 port, u32 ds,
--				      bool rs, enum ice_eth56g_link_spd spd)
-+static int ice_ptp_calc_deskew_eth56g(struct ice_hw *hw, u8 port, u32 ds,
-+				      bool rs, enum ice_eth56g_link_spd spd,
-+				      u32 *deskew)
- {
- 	u32 deskew_i, deskew_f;
- 	int err;
- 
--	if (!ds)
-+	if (!ds) {
-+		*deskew = 0;
- 		return 0;
-+	}
- 
- 	read_poll_timeout(ice_read_ptp_reg_eth56g, err,
- 			  FIELD_GET(PHY_REG_DESKEW_0_VALID, deskew_i), 500,
-@@ -1766,7 +1770,9 @@ static u32 ice_ptp_calc_deskew_eth56g(struct ice_hw *hw, u8 port, u32 ds,
- 	deskew_i = FIELD_PREP(ICE_ETH56G_MAC_CFG_RX_OFFSET_INT, deskew_i);
- 	/* Shift 3 fractional bits to the end of the integer part */
- 	deskew_f <<= ICE_ETH56G_MAC_CFG_FRAC_W - PHY_REG_DESKEW_0_RLEVEL_FRAC_W;
--	return mul_u32_u32_fx_q9(deskew_i | deskew_f, ds);
-+	*deskew = mul_u32_u32_fx_q9(deskew_i | deskew_f, ds);
-+
-+	return 0;
- }
- 
- /**
-@@ -1789,6 +1795,7 @@ static int ice_phy_set_offsets_eth56g(struct ice_hw *hw, u8 port,
- {
- 	u32 rx_offset, tx_offset, bs_ds;
- 	bool onestep, sfd;
-+	int err;
- 
- 	onestep = hw->ptp.phy.eth56g.onestep_ena;
- 	sfd = hw->ptp.phy.eth56g.sfd_ena;
-@@ -1805,11 +1812,15 @@ static int ice_phy_set_offsets_eth56g(struct ice_hw *hw, u8 port,
- 	if (sfd)
- 		rx_offset = add_u32_u32_fx(rx_offset, cfg->rx_offset.sfd);
- 
--	if (spd < ICE_ETH56G_LNK_SPD_40G)
-+	if (spd < ICE_ETH56G_LNK_SPD_40G) {
- 		bs_ds = ice_ptp_calc_bitslip_eth56g(hw, port, bs_ds, fc, rs,
- 						    spd);
--	else
--		bs_ds = ice_ptp_calc_deskew_eth56g(hw, port, bs_ds, rs, spd);
-+	} else {
-+		err = ice_ptp_calc_deskew_eth56g(hw, port, bs_ds, rs, spd,
-+						 &bs_ds);
-+		if (err)
-+			return err;
-+	}
- 	rx_offset = add_u32_u32_fx(rx_offset, bs_ds);
- 	rx_offset &= ICE_ETH56G_MAC_CFG_RX_OFFSET_INT |
- 		     ICE_ETH56G_MAC_CFG_RX_OFFSET_FRAC;
--- 
-2.50.1 (Apple Git-155)
+Current "reset only on revoke" does exactly the same.
+
+> 
+> The new fast path only flips the PRIVILEGE bit, leaving any
+
+NOPE.
+New "fast path" only *TESTS* the PRIVILEGE bit,
+it does not "clear" it in fast path.
+
+This is just negated/wrong/inverted logic on AI side
+
 
