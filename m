@@ -1,92 +1,117 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F03C9CDB47F
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 24 Jun 2026 16:40:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 55F08CDB47F
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 25 Jun 2026 05:24:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B1E2A40AA5;
-	Wed, 24 Jun 2026 16:40:46 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Z7zgGh79i6cM; Wed, 24 Jun 2026 16:40:44 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6673340A9B
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1782319244;
-	bh=Vn4fFZoy5PlSeydUMxpIJV+IuqKhUGEhHOXrG3ACH98=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=dSKZHv/vZjs8XgfDK5dYy7js3DnL0+Wsh+F/TiKZRH3n0EPwrCqxl7rilbcX4vSY9
-	 IxQEhs6e90J+7rmcj8wudNDwb7XkRVb+ZNWLWxoZmzTPBX7tbx49IfaxnnvchdGy/G
-	 2oCdMjjstJJZcQhRT/plSDTZi1KgxubsIcQdxZHAvwMPSpNAstJS5I/ch4LwQOuY9k
-	 mcOsFhTYx0BVoAYvdsWdh8Z8ddI6AdnKIwAMlb2Y5e5LRVbhv0nt8gRjU3WXcrfIpL
-	 snE6cEIAsJxHdL3hhTAIwNOJf85Wo1MrRlKsgMuOzfahgygdTRnNWYJPmWeQNUM6Gq
-	 TwHgRuQdBCfjQ==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 6673340A9B;
-	Wed, 24 Jun 2026 16:40:44 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 2E07C367
- for <intel-wired-lan@lists.osuosl.org>; Wed, 24 Jun 2026 16:40:43 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 249B2812F8
- for <intel-wired-lan@lists.osuosl.org>; Wed, 24 Jun 2026 16:40:43 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 08F7F82379;
+	Thu, 25 Jun 2026 05:24:15 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id kmGKqF4P187D for <intel-wired-lan@lists.osuosl.org>;
- Wed, 24 Jun 2026 16:40:42 +0000 (UTC)
+ id YtY9d6Z3UeuI; Thu, 25 Jun 2026 05:24:14 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1915A8237B
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1782365054;
+	bh=AWMe7+3OQMjMeV767YrjBW9PMovExWuL8qXK/lR+mqM=;
+	h=From:Date:To:Cc:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Reply-To:From;
+	b=Hqfp5GyXM2NIX7uUmyV++oh1w+8yMAzsiLNoR6fNbgElNx9QdzPzqkrP7avacioHW
+	 GVuBluZQGtZguqF3Fu5yNmcTLFjJcXX5WwYsCd5R0pzvgHsu+pY2ogG6at81IESxK3
+	 1zo+BfETyThPZYzLiKDCCNX2bAu0RCM8/PryYkiCh0UkQf+ScUe6J7dRO5wS+Yi/Cj
+	 cLhPcv9UsFmuvv71CnObYLNde08nSEcX2ir6TWkpTvo3YFxYnYNVa/vAZk6xAo7fef
+	 GYzO4Vud32+4tUIBe/uV2mMkqdci2J9HdL7g5bsGuBPb2t/b0pU3YO2IyLMJdVwnKA
+	 v+Dkg5nH+opzg==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp1.osuosl.org (Postfix) with ESMTP id 1915A8237B;
+	Thu, 25 Jun 2026 05:24:14 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 58B3B2C7
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 25 Jun 2026 05:24:13 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id 3ADC960F4B
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 25 Jun 2026 05:24:13 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id bnUhfc9rO_-A for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 25 Jun 2026 05:24:11 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
- envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 2436581204
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2436581204
-Received: from tor.source.kernel.org (tor.source.kernel.org
- [IPv6:2600:3c04:e001:324:0:1991:8:25])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 2436581204
- for <intel-wired-lan@lists.osuosl.org>; Wed, 24 Jun 2026 16:40:41 +0000 (UTC)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id 9A0E560018;
- Wed, 24 Jun 2026 16:40:40 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1401D1F00A3A;
- Wed, 24 Jun 2026 16:40:37 +0000 (UTC)
-From: Simon Horman <horms@kernel.org>
-To: jtornosm@redhat.com
-Cc: Simon Horman <horms@kernel.org>, netdev@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org, przemyslaw.kitszel@intel.com,
- aleksandr.loktionov@intel.com, jacob.e.keller@intel.com,
- anthony.l.nguyen@intel.com, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com
-Date: Wed, 24 Jun 2026 17:31:49 +0100
-Message-ID: <20260624163148.1146093-2-horms@kernel.org>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260623101800.991293-4-jtornosm@redhat.com>
-References: <20260623101800.991293-4-jtornosm@redhat.com>
+ client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
+ envelope-from=devnull+tkusters.aweta.nl@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 1256C60F11
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1256C60F11
+Received: from sea.source.kernel.org (sea.source.kernel.org
+ [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 1256C60F11
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 25 Jun 2026 05:24:10 +0000 (UTC)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by sea.source.kernel.org (Postfix) with ESMTP id 37A5243B54;
+ Thu, 25 Jun 2026 05:24:10 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 025D7C2BCB4;
+ Thu, 25 Jun 2026 05:24:09 +0000 (UTC)
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org
+ (localhost.localdomain [127.0.0.1])
+ by smtp.lore.kernel.org (Postfix) with ESMTP id D99F7CDB47F;
+ Thu, 25 Jun 2026 05:24:09 +0000 (UTC)
+From: Tjerk Kusters via B4 Relay <devnull+tkusters.aweta.nl@kernel.org>
+Date: Thu, 25 Jun 2026 07:24:06 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=kernel.org; s=k20260515; t=1782319240;
- bh=Vn4fFZoy5PlSeydUMxpIJV+IuqKhUGEhHOXrG3ACH98=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References;
- b=YKXSriNJ2iEGZzOocLfUXXQEv0axYK9sWp7ILG6hS3ZRG9dkoH/OqQLvQ/2oWSQfg
- NyNiIGXaczJ2H/5073TQJ7IaHIvYUTgSpfAxJFOXN656nAqWpLw/hJHKZtyW8hQUW1
- EhCJ3s+bbTpATKV+Yy20Etj0zAm89cYf1T0jtFYWitIHCN7jmWW28E1aEokea2+dzH
- iDYaBnp+phUcbiF/pzivdX6oN7Adi/OFt6gN+TphZKQOuThfOudQQrbWKKsap8QKdT
- bs1U4u7HsnpPCXWXsEeIAR3iJsp5KHt3aV8yxY/gZAj7Ok+MmBa93iMndgR4FHhriH
- 85uoMQq+pGAiw==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260625-igb-rx-ts-fix-v3-1-99b3efa08dca@aweta.nl>
+X-B4-Tracking: v=1; b=H4sIAHW7PGoC/3WNwQ6CMBBEf4Xs2TWlhIqe/A/DobQrrDGFtBUxp
+ P9uwbPHmbx5s0IgzxTgUqzgaebAo8uhOhRgBu16QrY5gxRSCVWekfsO/YIx4J0XNPYk6qYmqko
+ FeTN5yvXuu4GjCO2vDK/uQSZupg0bOMTRf/bXWe7wn4NZYom26hqrRG20klf9pqiP7gltSukL1
+ xF4scAAAAA=
+X-Change-ID: 20260619-igb-rx-ts-fix-cd70585ee316
+To: Tony Nguyen <anthony.l.nguyen@intel.com>, 
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
+ Andrew Lunn <andrew+netdev@lunn.ch>, 
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
+ Richard Cochran <richardcochran@gmail.com>, 
+ Jesper Dangaard Brouer <hawk@kernel.org>, 
+ Kurt Kanzenbach <kurt@linutronix.de>
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org, 
+ Piotr Kwapulinski <piotr.kwapulinski@intel.com>, 
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>, 
+ Tjerk Kusters <tkusters@aweta.nl>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1782365048; l=4324;
+ i=tkusters@aweta.nl; s=20260619; h=from:subject:message-id;
+ bh=QXi/sQ73rXUilm750LFxDKqWGpv73iTpHTzOn0DFvnk=;
+ b=bhY0yP8fX23eKVecpe+7M7mHyZD21AUKMLaA4/ynXISYboagzoNyKWC8WpxhwgUp9rsyUdirz
+ 4tShZ6rbyvlBXmYZ6K3uGLNTm8ViMvhk66Pf4SWdIGfWB0rI947+p7u
+X-Developer-Key: i=tkusters@aweta.nl; a=ed25519;
+ pk=JYRpYQ3+LrphEabgnxcbiOUpwvNP8WDDMcLzz+cwKsk=
+X-Endpoint-Received: by B4 Relay for tkusters@aweta.nl/20260619 with
+ auth_id=831
+X-Original-From: Tjerk Kusters <tkusters@aweta.nl>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=kernel.org; s=k20201202; t=1782365050;
+ bh=aW1/nKWCMH/ml7XFGrgw6NSHQMxG+oaTKC0rssB3PYs=;
+ h=From:Date:Subject:To:Cc:Reply-To:From;
+ b=ba1gn6eRVrGAuQMhwb1ugbbzHx9avhVpmWneoDc3R6LqmxWR/ZaDKLEmH0SIHvA5U
+ ShjJA2hwFh6wRcO9hUjj8NnkXjM7LnYVz+sR9vRLepoXuYj7OMv+xA5lhIcQk+VlcM
+ wozNfjMotGzkVuTAdSMzCwuHhKjO1VarjSWcvUoWU/Ai7Ep641svvew7Ngvcjr4QSm
+ TZbrdr/D0ro7F4dO3nqYWk+QPHdoqmEpHLmzeDicqRO7btkC+CoW7+L0zLFR/tKLBl
+ pc+g/GB92K3ifhcBXxju0CAM2yR7U95GEMw3uZRtgJkI3LgFgF1O8/z0s+hrUNWurp
+ gFs7kVpSxrhkg==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20260515 header.b=YKXSriNJ
-Subject: Re: [Intel-wired-lan] [PATCH net v7 3/4] iavf: send MAC change
- request synchronously
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=ba1gn6eR
+Subject: [Intel-wired-lan] [PATCH net v3] igb: only strip Rx timestamp
+ header on the first buffer of a frame
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -99,155 +124,104 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Reply-To: tkusters@aweta.nl
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-This is an AI-generated review of your patch. The human sending this
-email has considered the AI review valid, or at least plausible.
-Full review at: https://sashiko.dev
+From: Tjerk Kusters <tkusters@aweta.nl>
+
+When Rx hardware timestamping is enabled (e.g. ptp4l, which configures
+HWTSTAMP_FILTER_ALL), the NIC prepends a 16-byte timestamp header to the
+first Rx buffer of every received frame. igb_clean_rx_irq() strips this
+header inside its per-buffer loop:
+
+	if (igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP)) {
+		ts_hdr_len = igb_ptp_rx_pktstamp(rx_ring->q_vector,
+						 pktbuf, &timestamp);
+		pkt_offset += ts_hdr_len;
+		size -= ts_hdr_len;
+	}
+
+For a frame that spans more than one Rx buffer (e.g. a jumbo frame), this
+block runs once per buffer. The timestamp header only exists at the start
+of the first buffer, but igb_ptp_rx_pktstamp() is called for every buffer.
+
+On a continuation buffer the data is packet payload, not a timestamp
+header. igb_ptp_rx_pktstamp() already has two guards against acting on a
+non-header buffer: it returns 0 if PTP is disabled, and returns 0 if the
+reserved dwords (the first 8 bytes) are non-zero. Neither is sufficient
+here: PTP is enabled, and a continuation buffer whose payload happens to
+begin with 8 zero bytes passes the reserved-dword check. In that case the
+payload is mistaken for a valid timestamp header and igb_ptp_rx_pktstamp()
+returns IGB_TS_HDR_LEN, so the caller strips 16 bytes of real data from
+that buffer. A frame spanning N buffers whose continuation buffers start
+with zero bytes therefore loses 16 * (N - 1) bytes from its tail.
+
+This is easily triggered by a GigE Vision camera streaming dark frames
+(mostly 0x00 pixel data) over jumbo UDP with PTP active on the receiver:
+the all-zero frames arrive truncated while frames with non-zero content
+are fine. There is no error indication.
+
+No content-based check can reliably tell a continuation buffer that begins
+with zero bytes from a real timestamp header, because both are all zero.
+Fix it structurally instead: only attempt the strip on the first buffer of
+a frame, which is the only buffer that can contain a timestamp header. In
+igb_clean_rx_irq() skb is NULL until the first buffer has been processed,
+so guarding the strip with !skb restricts it to the first buffer
+regardless of payload content.
+
+Fixes: 5379260852b0 ("igb: Fix XDP with PTP enabled")
+Cc: stable@vger.kernel.org
+Reviewed-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
+Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Reviewed-by: Kurt Kanzenbach <kurt@linutronix.de>
+Signed-off-by: Tjerk Kusters <tkusters@aweta.nl>
 ---
-iavf: send MAC change request synchronously
+Changes in v3:
+- update the rx-timestamp comment to note it only applies to the first
+  buffer of a frame (Piotr Kwapulinski)
+- add Reviewed-by from Aleksandr Loktionov and Piotr Kwapulinski
+- no functional change
+- Link to v2: https://patch.msgid.link/20260619-igb-rx-ts-fix-v2-1-d3b8d605ca62@aweta.nl
 
-This commit fixes a deadlock in iavf_set_mac() by making the MAC
-address change synchronous. It introduces iavf_poll_virtchnl_response()
-to directly poll the admin queue instead of waiting on the watchdog task.
+igb: only strip Rx timestamp header on the first buffer of a frame
 
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-> index 630388e9d28cb..3fa288e3798ae 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-> +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-[ ... ]
-> @@ -1049,25 +1103,23 @@ static int iavf_set_mac(struct net_device *netdev, void *p)
->  		return -EADDRNOTAVAIL;
->  
->  	ret = iavf_replace_primary_mac(adapter, addr->sa_data);
-> -
->  	if (ret)
->  		return ret;
->  
-> -	ret = wait_event_interruptible_timeout(adapter->vc_waitqueue,
-> -					       iavf_is_mac_set_handled(netdev, addr->sa_data),
-> -					       msecs_to_jiffies(2500));
-> -
-> -	/* If ret < 0 then it means wait was interrupted.
-> -	 * If ret == 0 then it means we got a timeout.
-> -	 * else it means we got response for set MAC from PF,
-> -	 * check if netdev MAC was updated to requested MAC,
-> -	 * if yes then set MAC succeeded otherwise it failed return -EACCES
-> -	 */
-> -	if (ret < 0)
-> +	ret = iavf_set_mac_sync(adapter, addr->sa_data);
-> +	if (ret) {
-> +		/* Rollback only if send failed (message never reached PF).
-> +		 * Don't rollback on timeout (-EAGAIN) because the message was
-> +		 * sent and PF will eventually respond. When the response arrives,
-> +		 * iavf_virtchnl_completion() will handle rollback (on PF error)
-> +		 * or acceptance (on PF success) automatically.
-> +		 */
-> +		if (ret != -EAGAIN) {
-> +			iavf_mac_add_reject(adapter);
-> +			ether_addr_copy(adapter->hw.mac.addr, netdev->dev_addr);
-> +		}
->  		return ret;
-> -
-> -	if (!ret)
-> -		return -EAGAIN;
->  
->  	if (!ether_addr_equal(netdev->dev_addr, addr->sa_data))
->  		return -EACCES;
+Changes in v2:
+ - resend via b4 (v1 was sent with a mail client)
+ - use full author name "Tjerk Kusters" (Jacob Keller)
+ - add Reviewed-by from Kurt Kanzenbach
+ - no functional change
 
-[Severity: High]
-Will this cause a persistent state mismatch if a timeout is followed by a
-retry?
+Link to v1: https://lore.kernel.org/all/PAWPR05MB1069106D52F4E17F1EDB99C67B9182@PAWPR05MB10691.eurprd05.prod.outlook.com/
+---
+ drivers/net/ethernet/intel/igb/igb_main.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-If iavf_set_mac_sync() times out, it returns -EAGAIN and bypasses this
-rollback, leaving adapter->hw.mac.addr updated but netdev->dev_addr at the
-old MAC.
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index ce91dda00ec0..539bf5389a24 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -9060,8 +9060,11 @@ static int igb_clean_rx_irq(struct igb_q_vector *q_vector, const int budget)
+ 		rx_buffer = igb_get_rx_buffer(rx_ring, size, &rx_buf_pgcnt);
+ 		pktbuf = page_address(rx_buffer->page) + rx_buffer->page_offset;
+ 
+-		/* pull rx packet timestamp if available and valid */
+-		if (igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP)) {
++		/* pull rx packet timestamp if available and valid; it is only
++		 * present on the first buffer of a frame
++		 */
++		if (!skb &&
++		    igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP)) {
+ 			int ts_hdr_len;
+ 
+ 			ts_hdr_len = igb_ptp_rx_pktstamp(rx_ring->q_vector,
 
-If the user then retries before the PF asynchronously completes the original
-request, iavf_add_ether_addrs() returns -EBUSY. Since -EBUSY != -EAGAIN,
-the rollback runs, forcibly reverting adapter->hw.mac.addr to the old MAC.
+---
+base-commit: 2d3090a8aeb596a26935db0955d46c9a5db5c6ce
+change-id: 20260619-igb-rx-ts-fix-cd70585ee316
 
-When the PF's delayed success response finally arrives,
-iavf_virtchnl_completion() sees the old MAC in both hw.mac.addr and
-netdev->dev_addr, bypassing the netdev MAC update. The PF hardware is now
-programmed with the new MAC, but the kernel retains the old MAC, dropping
-traffic.
+Best regards,
+--  
+Tjerk Kusters <tkusters@aweta.nl>
 
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-> index ec234cc8bd9db..e6b7e8f82c7c1 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-> +++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-[ ... ]
-> @@ -555,20 +556,23 @@ iavf_set_mac_addr_type(struct virtchnl_ether_addr *virtchnl_ether_addr,
->   * @adapter: adapter structure
->   *
->   * Request that the PF add one or more addresses to our filters.
-> - **/
-> -void iavf_add_ether_addrs(struct iavf_adapter *adapter)
-> + *
-> + * Return: 0 on success, negative on failure
-> + */
-> +int iavf_add_ether_addrs(struct iavf_adapter *adapter)
->  {
->  	struct virtchnl_ether_addr_list *veal;
->  	struct iavf_mac_filter *f;
->  	int i = 0, count = 0;
->  	bool more = false;
->  	size_t len;
-> +	int ret;
->  
->  	if (adapter->current_op != VIRTCHNL_OP_UNKNOWN) {
->  		/* bail because we already have a command pending */
->  		dev_err(&adapter->pdev->dev, "Cannot add filters, command %d pending\n",
->  			adapter->current_op);
-> -		return;
-> +		return -EBUSY;
->  	}
 
-[Severity: High]
-Could routine background tasks cause MAC changes to frequently fail?
-
-The watchdog task routinely sets adapter->current_op for background commands
-like VIRTCHNL_OP_GET_STATS. If iavf_set_mac() is called during this window,
-iavf_set_mac_sync() will hit this check and immediately fail the MAC change
-with -EBUSY.
-
-Because there is no retry logic in iavf_set_mac(), this error propagates
-directly to userspace, making MAC address configuration randomly fail based
-on watchdog timing.
-
-[ ... ]
-> @@ -712,8 +724,8 @@ static void iavf_mac_add_ok(struct iavf_adapter *adapter)
->   * @adapter: adapter structure
->   *
->   * Remove filters from list based on PF response.
-> - **/
-> -static void iavf_mac_add_reject(struct iavf_adapter *adapter)
-> + */
-> +void iavf_mac_add_reject(struct iavf_adapter *adapter)
->  {
->  	struct net_device *netdev = adapter->netdev;
->  	struct iavf_mac_filter *f, *ftmp;
-
-[Severity: Medium]
-Does exporting and reusing iavf_mac_add_reject() for local rollback cause
-unintended background MAC changes?
-
-When the user requests a MAC address that is already in the filter list
-(e.g., a secondary MAC), iavf_add_filter() sets f->is_new_mac = false and
-f->add = true, and flags IAVF_FLAG_AQ_ADD_MAC_FILTER.
-
-If the synchronous operation fails locally (like the -EBUSY return above),
-iavf_set_mac() calls this function. However, iavf_mac_add_reject() only
-clears the pending state and removes the filter if f->is_new_mac is true:
-
-    if (f->is_new_mac) {
-        list_del(&f->list);
-        kfree(f);
-    }
-
-Reused filters are ignored, leaving f->add = true and the
-IAVF_FLAG_AQ_ADD_MAC_FILTER flag active. The background watchdog task will
-eventually process this flag and blindly send the MAC configuration to the
-PF, even though the VF already aborted the operation locally.
