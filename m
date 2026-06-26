@@ -1,92 +1,97 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B972CDE00B
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 26 Jun 2026 02:06:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 03547CDE008
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 26 Jun 2026 05:47:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id CD5FC410B0;
-	Fri, 26 Jun 2026 02:06:31 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 97EE6821BE;
+	Fri, 26 Jun 2026 05:47:36 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id UgIH7g9teD7p; Fri, 26 Jun 2026 02:06:29 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 7qclw9b-bwpW; Fri, 26 Jun 2026 05:47:35 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 96BD3410AF
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CE3A282119
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1782439589;
-	bh=d4tY6cLSmj5pQ3iTcSmFAglPnRm3lU+hsBD/90+HQrQ=;
-	h=Date:From:To:Cc:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=K7/NYWHZlZUV6NBM8uwNgGFpDsZvdhISGBlE8/O44vK6verjOHxnt8waveciK9MQ+
-	 66o4zOVLkLZdkHa7F5Au8a3ZS+VkAVf+nhUV9FixeGmnrUKUhUbRX9f+OUJJMH7o7v
-	 ymT4VqDjszW39TLicrfdcRp19VQyk9hxLu8NoL8jD9LW+fO+SLAPvHzUZADJ5hJvru
-	 2KVAhxjBq8oU0k8wJvTRw4/T0qGaCUBk/+wRdRf9WDT4mCkixGGXuVVcU0Sy2qNPm/
-	 81JMNQZmzAV3axUAwVehwlpj1qvjVS84jMZjtGfB7Bda9/AKD+MGmoXDdS32adulYY
-	 pQ0+6D1y0b30Q==
+	s=default; t=1782452855;
+	bh=H48cvs97Khlf4xvRcHC1E565UJSXN/21EEA5xFeq6Is=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=nqgcCogs2wD+qxdV/17TsryeUgAul04RnkyTQfutj0SU7TBmd0Xm8UPcx1oaRm0nL
+	 uLBqiW5U3Ft3I7s/IcPN0qs8ZcXxoozGjKpGK60KnEgpNJ3npK6ZnXltPgcvcM9g65
+	 CivI7t/qdEkGiYem7c4Rx7TCmaO60v7W+1ecc9v+Ec5OjGUjakQhALf8d3i1GIe1Y9
+	 VjHTVYlUwKntAERe6uZCFpJpJDX/Qpmvjao6XMwqRmf4HaSEXh3+Eue+V69ZYn7jxV
+	 99HF0+nUU2drpcCIzrOqzrn0QKtll4Kl2nwjf+qpPyomA/RkwlO0lck16jT++Xz4yv
+	 B8HMGmFLf5BdA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 96BD3410AF;
-	Fri, 26 Jun 2026 02:06:29 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id CE3A282119;
+	Fri, 26 Jun 2026 05:47:35 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 9A114369
- for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Jun 2026 02:06:28 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 5CA39231
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Jun 2026 05:47:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 96F17410AF
- for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Jun 2026 02:06:28 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 4E1C640C9D
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Jun 2026 05:47:34 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id YgNOd479C7_d for <intel-wired-lan@lists.osuosl.org>;
- Fri, 26 Jun 2026 02:06:27 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
- envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org BF4DA410AB
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BF4DA410AB
-Received: from tor.source.kernel.org (tor.source.kernel.org
- [IPv6:2600:3c04:e001:324:0:1991:8:25])
- by smtp4.osuosl.org (Postfix) with ESMTPS id BF4DA410AB
- for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Jun 2026 02:06:27 +0000 (UTC)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id 51AAA60141;
- Fri, 26 Jun 2026 02:06:26 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CD0CE1F000E9;
- Fri, 26 Jun 2026 02:06:25 +0000 (UTC)
-Date: Thu, 25 Jun 2026 19:06:25 -0700
-From: Jakub Kicinski <kuba@kernel.org>
-To: "Loktionov, Aleksandr" <aleksandr.loktionov@intel.com>
-Cc: "Pielech, Adrian" <adrian.pielech@intel.com>, "Kitszel, Przemyslaw"
- <przemyslaw.kitszel@intel.com>, "netdev@vger.kernel.org"
- <netdev@vger.kernel.org>, "intel-wired-lan@lists.osuosl.org"
- <intel-wired-lan@lists.osuosl.org>
-Message-ID: <20260625190625.0f5ffe01@kernel.org>
-In-Reply-To: <DS4PPF7551E65529A34C04A73F4287C2B4EE5EC2@DS4PPF7551E6552.namprd11.prod.outlook.com>
-References: <20260624083020.131a75fe@kernel.org>
- <DS4PPF7551E65529A34C04A73F4287C2B4EE5EC2@DS4PPF7551E6552.namprd11.prod.outlook.com>
+ id iTEq5PT7raGC for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 26 Jun 2026 05:47:33 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.13;
+ helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 7279040C7A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7279040C7A
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 7279040C7A
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Jun 2026 05:47:33 +0000 (UTC)
+X-CSE-ConnectionGUID: FDXmwLbzQJ61kZvIw/HprQ==
+X-CSE-MsgGUID: SCsFaze5TVuMFsCtgQnqXg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11828"; a="85798037"
+X-IronPort-AV: E=Sophos;i="6.24,225,1774335600"; d="scan'208";a="85798037"
+Received: from fmviesa001.fm.intel.com ([10.60.135.141])
+ by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 25 Jun 2026 22:47:33 -0700
+X-CSE-ConnectionGUID: Jlz4PYoUS2acI1/4QdazrQ==
+X-CSE-MsgGUID: 4YdA1x6CRP+uyuT9h4SJWg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.24,225,1774335600"; d="scan'208";a="275485693"
+Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
+ by fmviesa001.fm.intel.com with ESMTP; 25 Jun 2026 22:47:31 -0700
+From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+To: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
+ aleksandr.loktionov@intel.com
+Cc: netdev@vger.kernel.org
+Date: Fri, 26 Jun 2026 07:47:28 +0200
+Message-ID: <20260626054730.1126969-1-aleksandr.loktionov@intel.com>
+X-Mailer: git-send-email 2.52.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=kernel.org; s=k20260515; t=1782439586;
- bh=d4tY6cLSmj5pQ3iTcSmFAglPnRm3lU+hsBD/90+HQrQ=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References;
- b=YU2HsUhMffQf9G0WEH9VIETrTq9/dPVToRpIlremKJP9cpDHs0EzEpZGsB2cvrej7
- l9tghFvvbYh4uZ6+4Jzq9rurp2piQw+LXRPbrMertjH7Qypv87QTeelkF8ZWSaQl8m
- 9gNKXEJ9hnJ5gr9EPvQPNwZBdb+x8uOAEG03WC4R0cDcIjE5g6cZe34t4buGLPy27s
- Yvn3h2uV1dxFGfUnTWPb4nu3QrOCFHOUmysLiPXU80uaR+tGXEZM7/uC1Foy5gBJk9
- zG/DFdlAIWf3B/i1FhRCL6F+tz9NsyJGRTCH9e/OqM4BcFRn3R/JnYAdD42INh0j59
- xzpbLJwaCnhvg==
+Content-Transfer-Encoding: 8bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1782452854; x=1813988854;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=54qse0Zod1IPGDYwpG/5iToZX2jpx6R59l5KQJ9Nw7A=;
+ b=bTwlndly97szD3ruZ5WJr6N+vj95xT6vltmligaD27JTkat4/4RS7Cmi
+ KR2cxK969C+AGoV1Now2QbEENCJyKo2qhsvlzVCTBThUSZE8s3PcAUz52
+ MPYPBGpnd4MIFZQbMN+NESzV+N+WUtody+kkOPD1XiK+In0Gw2j65UT1i
+ 62muLRehIYUAtd7Rni39HB4Jo7rUvRz+fRu0RJ3wsWRTHF3B1VFfBKas+
+ LnZFOZOQY36T1T7Kb2bZ/YMPlabFEwoBx4qCEluaTdH2D4S0tEkyaH8qz
+ lucJM8LOtd1RHPw+rG+ZbIUgoVYkZnORGSNmyy/nQhMT3fThIah104+/n
+ g==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=YU2HsUhM
-Subject: Re: [Intel-wired-lan] [TEST] Weird RSS state on ice
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=bTwlndly
+Subject: [Intel-wired-lan] [PATCH iwl-next v5 0/2] ice: implement symmetric
+ RSS hash configuration
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -102,50 +107,69 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu, 25 Jun 2026 07:11:14 +0000 Loktionov, Aleksandr wrote:
-> The patchset didn't help? 
-> 
-> [PATCH iwl-next v5 2/2] ice: implement symmetric RSS hash configuration
+The ice driver has advertised symmetric RSS support via
+supported_input_xfrm since the capability was added, but ice_set_rxfh()
+ignored the input_xfrm parameter entirely, so enabling symmetric hashing
+had no actual effect.
 
-Not sure, it's not in tree, and lore doesn't want to point me at it
-either. What I don't get is how we get into the bad state in the first
-place.
+This series fixes that.  Patch 1 extends the ethtool core so that
+drivers hashing GTP flows on TEID can report it honestly without
+blocking symmetric-xor configuration.  Patch 2 wires up the ice driver.
 
-Looking at other tests today I spotted that rss flow label test is also
-behaving oddly. Most of the time the first case fails and the second
-passes:
+The need for patch 1 surfaced because GTP flow profiles in ice always
+include TEID in the hash.  ethtool_check_flow_types() calls
+get_rxfh_fields() for every hashable flow type before allowing
+symmetric-xor; ethtool_rxfh_config_is_sym() rejected any bitmap
+containing RXH_GTP_TEID since it has no src/dst counterpart.  TEID
+is the same value in both tunnel directions, so this rejection is
+incorrect: including it does not break symmetry.
 
-test	"rss-flow-label-py"
-group	"selftests-drivers-net-hw"
-result	"fail"
-link	"https://netdev-ci-results.intel.com/ice-results/net-next-hw-2026-06-26--00-00/ice-E810-XXV4/rss_flow_label.py/stdout"
-results	
-0	
-test	"rss-flow-label-test-rss-flow-label"
-result	"fail"
-1	
-test	"rss-flow-label-test-rss-flow-label-6only"
-result	"pass"
+Rather than hiding TEID from the reported fields (which would silently
+misrepresent hardware behaviour), patch 1 fixes the validator, and
+patch 2 reports TEID honestly.
 
+Tested with tools/testing/selftests/drivers/net/hw/rss_input_xfrm.py
+on an E810 card running kernel 6.19-rc8.
 
-But every now and then they skip:
+---
+v4 -> v5:
+ - remove redundant (u64) type conversion
 
-ok 1 rss_flow_label.test_rss_flow_label # SKIP Device doesn't support Flow Label for UDP6
-ok 2 rss_flow_label.test_rss_flow_label_6only # SKIP Device doesn't support Flow Label for UDP6
+v3 -> v4:
+ - Drop the ICE_HASH_INVALID fallback in ice_get_rxfh_fields() that
+   fabricated default L3+L4 hash fields when no hardware RSS config
+   exists for a flow type; returning zero fields is more honest and
+   avoids misrepresenting hardware state
+ - Drop the companion "if (!l3 && !l4)" special case in the
+   pair-completion block; it was only necessary to cover the synthetic
+   defaults added by the fallback, which is now gone
+ - No functional change to ice_set_rxfh() or the ethtool core patch
 
-test	"rss-flow-label-py"
-group	"selftests-drivers-net-hw"
-result	"skip"
-link	"https://netdev-ci-results.intel.com/ice-results/net-next-hw-2026-06-25--16-00/ice-E810-XXV4/rss_flow_label.py/stdout"
-results	
-0	
-test	"rss-flow-label-test-rss-flow-label"
-result	"skip"
-1	
-test	"rss-flow-label-test-rss-flow-label-6only"
-result	"skip"
+v2 -> v3:
+ - Split into 2 patches: ethtool core fix separate from driver change
+ - Drop the RXH_GTP_TEID stripping workaround from the driver; instead
+   fix ethtool_rxfh_config_is_sym() to accept TEID as intrinsically
+   symmetric (patch 1)
+ - Fix ice_get_rxfh_fields(): the v2 unconditional assignment
+   "nfc->data = ICE_RSS_ALLOWED_FIELDS" clobbered fields set earlier in
+   the same function; replaced with pair-completion using |= so only
+   the missing half of a partial pair is filled in
+ - Remove ICE_RSS_ALLOWED_FIELDS define (no longer needed)
+ - Report RXH_GTP_TEID honestly for GTP flow types
 
+v1 -> v2:
+ - Preserve valid symmetric RSS fields instead of overwriting nfc->data
+   unconditionally
 
-The devlink info is identical so it must be that the device 
-is in unclean state sometimes?? Do y'all power cycle these
-machines between runs?
+Aleksandr Loktionov (2):
+  ethtool: treat RXH_GTP_TEID as intrinsically symmetric
+  ice: implement symmetric RSS hash configuration
+
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 40 +++++++++++++---
+ drivers/net/ethernet/intel/ice/ice_lib.c     |  7 ++--
+ drivers/net/ethernet/intel/ice/ice_lib.h     |  1 +
+ net/ethtool/common.c                         |  3 +++
+ 4 files changed, 40 insertions(+), 11 deletions(-)
+
+-- 
+2.43.0
