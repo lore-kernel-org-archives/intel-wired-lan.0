@@ -1,151 +1,94 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D610CDE008
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 26 Jun 2026 08:15:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9AE0ACD4F26
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 26 Jun 2026 10:27:47 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B23CB40A6B;
-	Fri, 26 Jun 2026 08:15:50 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 514C9816E4;
+	Fri, 26 Jun 2026 10:27:47 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id BvR70GgefVA5; Fri, 26 Jun 2026 08:15:50 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id hAcVpa8lGdBR; Fri, 26 Jun 2026 10:27:46 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DB10240A53
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 74F13816EF
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1782461749;
-	bh=OgQYhnBPA9xSingLmEVDWnoZ9cbftBXdPmeGfHhGAH0=;
-	h=References:In-Reply-To:Date:To:Subject:List-Id:List-Unsubscribe:
-	 List-Archive:List-Post:List-Help:List-Subscribe:From:Reply-To:Cc:
-	 From;
-	b=fqOz1wtafJOX6l2/E8R/3OxDkxHWwNTxRzIm45UITeX9HQGDKRffjW5Z+D5dHyGnw
-	 HLjdS2k3fw9i8fPx9TfbHMbWRpdIY97+sSHf0MPgiOIJvZfvoiC75hkm8wrbQy8qOF
-	 z6R9AbE+7KttTYtKmTd+E7abm21ddm0H8SzNawTMiWXxgVR7i9gKp3V7o8EHLkWtGo
-	 v2HF+8O4R/yQUvmYoLT5wplAI6VDTed16nPokBEKefKsTIk25ycOnihWBPbMisytj+
-	 9ZxGDeLzsZQwWK9ulukdfidqe7vLNJEmcnLEU86HKZ7Jfc2HYCXey/6oEpraYxwf/5
-	 B+8NN30fB//lg==
+	s=default; t=1782469666;
+	bh=0Yd8XJijAv4IX0ShplWli0zWvz952vZmF/5pmjH8Mxs=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=FPYKmOsjJchlpFF4r4L2EA7uH7Y1DzLHOP3wH7ObKkGEugoij8znX261IwClE8cae
+	 PWjioaFpSbsgrJYxE8Hr1KmQx0HSev2QKSy6CbpNW5Q4Sb6MU2mZCBKHFvE3qVcjCu
+	 gfCzID05LUu/s70h/M1M/+tvnS24gb1y7ZxL8VjnyiF1AwoQvl4gceMGi1evyZkKrU
+	 vVjphp7RqFLyEcMGQt97Q2U1Z4FmHtwnpNnlGY/WjD7I/JnZBDkXmyL0zbQpDPoI6i
+	 nQrYsyG/FpUQfBfYNfvr1vwNbVXugZwJKpsjciYle3l+joQX4AKaYhqdFDlCW4cViP
+	 DvNAaVMleeODA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id DB10240A53;
-	Fri, 26 Jun 2026 08:15:49 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 1624B369
- for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Jun 2026 08:15:49 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 74F13816EF;
+	Fri, 26 Jun 2026 10:27:46 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 05197369
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Jun 2026 10:27:45 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id D108940519
- for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Jun 2026 08:15:48 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id EAAFE406E0
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Jun 2026 10:27:44 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id y2S2Wi3YrDqs for <intel-wired-lan@lists.osuosl.org>;
- Fri, 26 Jun 2026 08:15:47 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=185.125.188.123;
- helo=smtp-relay-internal-1.canonical.com;
- envelope-from=robert.malz@canonical.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 0FAD8403F1
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0FAD8403F1
-Received: from smtp-relay-internal-1.canonical.com
- (smtp-relay-internal-1.canonical.com [185.125.188.123])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 0FAD8403F1
- for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Jun 2026 08:15:46 +0000 (UTC)
-Received: from mail-lj1-f198.google.com (mail-lj1-f198.google.com
- [209.85.208.198])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by smtp-relay-internal-1.canonical.com (Postfix) with ESMTPS id 636EE3F983
- for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Jun 2026 08:15:43 +0000 (UTC)
-Received: by mail-lj1-f198.google.com with SMTP id
- 38308e7fff4ca-399c5ee9eeeso2247191fa.3
- for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Jun 2026 01:15:43 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1782461742; cv=none;
- d=google.com; s=arc-20260327;
- b=A8EZ/lOfWOFvUS4SodSGxzOwzqvboPA+8HvVBuKIxnbAemraTfItCH64xSqeJMsYmS
- 2CUnYXio609AokziitULs5N/Gs64AK1KYgApGQRgONECKC8UZVurTFGTLvJ4D+UOHCAN
- AvtlCOJroNwoa3v8mcuMJgqx01FJH5FsOUQT5XiNYFAE9kml0usoPP5A66n14WHD4UP9
- 47SIEDSRtlhpA2jkdO05Qriit7OGGiqC6zgkQ7Z33AALNrid1J6hq+w5ay6hs9UwQ9IJ
- 2jLJaxT1Z9SNq9mf0k6+KdFSZISV1IaamhzLBbCBsZCLO+4wqr6Rp36Q59V4+DMTDVcD
- 6g9A==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com;
- s=arc-20260327; 
- h=content-transfer-encoding:cc:to:subject:message-id:date:from
- :in-reply-to:references:mime-version;
- bh=OgQYhnBPA9xSingLmEVDWnoZ9cbftBXdPmeGfHhGAH0=;
- fh=Pv9KgD+NkU6KsZBSVEr4LpXJHrc7vrvgg00Xkm4xJ9c=;
- b=hFyR3cQ5PNqWeMmG6r0CG2mVO/dgqjdz96O4w2T/4LGNTOKtrxRfaxHXJEbr2BaakJ
- NiK2ZJjqVc6Y6bG5rt8m5UlmPebgy9CGSoBmJY4hqdY8wy4H15G3rHXeIY4dZuoEs4Fu
- b+VJs9V6leo+dwNiLIrfA2+uS88vkzHuekvvrUcqu9yI4eKnHqxzpYR16VxUDYAYXyeT
- VH+E8wDQf4Sgtx4JuY2+VC8evwTd9wbwI0/j0Ts3y4WOaYLprdJxPoFBgY6IDZmqDBKQ
- wnmghowWK0v0aYkl3jFJhDVmfoyjcWt6HM8OMu9AeMkh6ABMlfcfAGkzoVE8sTEhpSY+
- 8Cvw==; darn=lists.osuosl.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1782461742; x=1783066542;
- h=content-transfer-encoding:cc:to:subject:message-id:date:from
- :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
- :to:cc:subject:date:message-id:reply-to;
- bh=OgQYhnBPA9xSingLmEVDWnoZ9cbftBXdPmeGfHhGAH0=;
- b=gWedaFO/YfOsK5sPQBPLlJNdv7BhnTbTzXwLNVbikcC+ZV/oCzcHp0xLCUOLc9lj0l
- KE+rjJn0HY+thXFRY7D0U8dMbrFgQrx1V+2ybuBLTMs98p0Nx/E3mIWPJkXm1kTHlZDQ
- nkrR5h8DX+fmh2/24RB/Q1SVjCaRMUPZYCCrVGTxLFt7xarZHZkXgopPr8PGUccwMt7c
- FS1YqwcIXsLOF3M1rY5jKlc5MZhpYwJcrJQKXP0/PP5pl+WWkDRfXdQs/AjCyNMQglfr
- hc7PT7WXmjaHS7yfWHK+39EIL9dyDXkrO0XIeGMsLZ7hoBf9jbbrgtMmT9AjYMTWKPcp
- p+hw==
-X-Forwarded-Encrypted: i=1;
- AHgh+Rp8L7e9CW48ck1BjB2mhmAeZoCUEhY3yyRUNSUEV+Z6RTtapzPJOYqLs9/jGk/6+0cRtZthHUnx9XQdwbmBYYc=@lists.osuosl.org
-X-Gm-Message-State: AOJu0Yy8QeBs1RHVHQfRo1ZrhaTpfvBlMkKwLxnsNOsyVIAQDZfCbCRH
- OyjznSkwSGIF4yb8zgZ+iQVdKsjTg0bRVLwdg4Jqj2J/M3OLV4EEJNeVDiBBw0icd2NI+HfSf+F
- HMFyOz+GLLUrkegpBLxJWO5mGgHR+wnpNiyJFLNosy9JUxVhZAdWQcDEPWPym082CHkzNiOC/zd
- bQBeHjp9CDUk2Al4v32LTf7DMtJfelS3xcPMPj9jW9w08tTDTBIPCwMAm8sWyjbg==
-X-Gm-Gg: AfdE7clFac3eyhFwFbItkvdgGtJzL33BHpXlE9GwgvX1LYqPtd2ZB0VmJlVH6MsPlJY
- /W8dsLNKFAmAH2R1+MTV6DmnbTJjlE7HExrvEUYKcDp7MtdOYuLfwy2ruoSD7soLg+7rzm03mOu
- 4QHOIhRmz6Zymb18BFJ7i0mbMslUJsG+xHnK+tjNo7Mmxgu8znUd9+owZfi4s64iY0TQ==
-X-Received: by 2002:a05:651c:212a:b0:396:76f9:ac7e with SMTP id
- 38308e7fff4ca-39acb9235b0mr18271371fa.18.1782461742242; 
- Fri, 26 Jun 2026 01:15:42 -0700 (PDT)
-X-Received: by 2002:a05:651c:212a:b0:396:76f9:ac7e with SMTP id
- 38308e7fff4ca-39acb9235b0mr18271151fa.18.1782461741730; Fri, 26 Jun 2026
- 01:15:41 -0700 (PDT)
-MIME-Version: 1.0
-References: <20260617120753.1785565-1-robert.malz@canonical.com>
- <20260618152003.909400-1-horms@kernel.org>
- <CADcc-bydFL4KNDQEznStE41NFXuCey9S+kyXg0usbonwyWpiAQ@mail.gmail.com>
- <5658849b-0425-4132-ba32-5801e2907c60@intel.com>
- <CADcc-bwd2CcWJ1AFDm1GR1HBzo2OOh=Xr3moNS+-RVuai6yVBA@mail.gmail.com>
-In-Reply-To: <CADcc-bwd2CcWJ1AFDm1GR1HBzo2OOh=Xr3moNS+-RVuai6yVBA@mail.gmail.com>
-Date: Fri, 26 Jun 2026 10:15:30 +0200
-X-Gm-Features: AVVi8CdsJw9dyW9R50Ina3FFrRwP7Eb30UB2Bd0WBDmOtq6je4hSoJyp5G--v_4
-Message-ID: <CADcc-bwC4FGQSGyRcnj2ZpGT5+0Q6mjQd-FTCB-mCmmwYrC8Qw@mail.gmail.com>
-To: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=canonical.com; s=20251003; t=1782461743;
- bh=OgQYhnBPA9xSingLmEVDWnoZ9cbftBXdPmeGfHhGAH0=;
- h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
- To:Cc:Content-Type;
- b=RlPf++VJd/ixzaA2SQzpY8aiFX1GsRn/rDe+AFrWxZZRCV3BbaYaRAgPhI+GAnacv
- 70JTBaBCHv1uTXd0Ybcdbo98tCy0vhgOHAiAc1cBxp/+5S/rIY8wleDbCDrKhStE2G
- ouQdLSThEpYa/yIHAwefEuiqN3aUue+Xcp99O6hS7AKAt37+cVfpliyuFjYfWtnDtl
- YqcTAdm7suz+Z+B0TnTJlS+QTtCnoYCn+fD7/fBSkHCnzGy2OInbrOtLGoi2D6rsM3
- l3weTOctJUHuGrSuslzLIjwaLMfpHFCGQZo0sEAw1wjaBCT4M2UtaOr2FM5VtBqp+i
- ZIQPmm+APCogHMuK2vF0JI2sm89mRpadionM3EBneZvZwFvE1+qa6QG4L3DljwOerW
- kv2hSQ5k+BfC9EpaUZAadMVWUO6S15KzDcp7qixsNZIf7KuGyEeflomQi3wRKyxJxj
- 1t2DVO4fbB3uHy/ATJgVVEDu73XYmt/YDQiFiT4B/T+oyRq5vDbC2rEATY+qalTRQR
- WE0ztUZZsjeMnslbv5xo3nGmHFdE4IanV348PmXrHf5LxkSiNBC96h4+P/93bB7C1h
- XsmFy4LdfMTqNePQ3PJblHUe5XDel2yjnADjVuMK8k7zahHH+33BkN9C8ZAY+Ndjz3
- 9PLjUn3IYwVvOHQBxWJD+9Fc=
+ id pZDZ1lwx8-d1 for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 26 Jun 2026 10:27:44 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.16;
+ helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 8E16F406DC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8E16F406DC
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 8E16F406DC
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Jun 2026 10:27:43 +0000 (UTC)
+X-CSE-ConnectionGUID: +nxvRfR3RnCzobdeOjQzOw==
+X-CSE-MsgGUID: 56CVsmrGT1CB8SYiKIPjGg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11828"; a="83464004"
+X-IronPort-AV: E=Sophos;i="6.24,226,1774335600"; d="scan'208";a="83464004"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+ by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 26 Jun 2026 03:27:42 -0700
+X-CSE-ConnectionGUID: mCi3qq2SS3eJ4AB7M0YBsA==
+X-CSE-MsgGUID: pkGIdEphQPumDJyb7S/jpg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.24,226,1774335600"; d="scan'208";a="254905479"
+Received: from lkp-server02.sh.intel.com (HELO ea128546eb3d) ([10.239.97.151])
+ by orviesa003.jf.intel.com with ESMTP; 26 Jun 2026 03:27:42 -0700
+Received: from kbuild by ea128546eb3d with local (Exim 4.98.2)
+ (envelope-from <lkp@intel.com>) id 1wd3mc-000000004zN-3aVN;
+ Fri, 26 Jun 2026 10:27:38 +0000
+Date: Fri, 26 Jun 2026 18:27:36 +0800
+From: kernel test robot <lkp@intel.com>
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Message-ID: <202606261827.dUQJrOxv-lkp@intel.com>
+User-Agent: s-nail v14.9.25
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1782469663; x=1814005663;
+ h=date:from:to:subject:message-id;
+ bh=8sf/ojOC4OsHFY2Q8MLoO7/gb3Pv/jzlNo6CJc+5Z58=;
+ b=nkQ1dEVhnCmM734pcYS9fpG5b/5Vxp0blOCsRzX3Nj9R4ccbdiP1Il09
+ J9ZP8fD/9lc8+jQ9JfxZpUa6fMHx+RjGgbSOxU3pxhFnQ9+OpfGpn8vWX
+ /fmLtw/YSQzspq645FOdHnJ8nRZIf8KUTGQyj8fGL3WkkJ8ANQczYOxnR
+ BNGySo7knd9c1ZdmuxNlwPY/8h01RtVFlIJcHgsSjnff4ka1uIGYqdrI2
+ hO0HUByIeuKyBfknS8/2KrvokrMdGuA4RRYnHJCgfKxEeMmdDlnZ9UCbN
+ Bkl2IcBXwj30c18wugezTK86QuRy67Vn//yhVIrjD9yO1asszNTwt/7aW
+ A==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=reject dis=none)
- header.from=canonical.com
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (4096-bit key,
- unprotected) header.d=canonical.com header.i=@canonical.com
- header.a=rsa-sha256 header.s=20251003 header.b=RlPf++VJ
-Subject: Re: [Intel-wired-lan] [PATCH iwl v3] ice: retry reading NVM if
- admin queue returns EBUSY
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=nkQ1dEVh
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 5cca9023832afcdb4d8121797e52796bbbf94e2e
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -158,265 +101,171 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-From: Robert Malz via Intel-wired-lan <intel-wired-lan@osuosl.org>
-Reply-To: Robert Malz <robert.malz@canonical.com>
-Cc: anthony.l.nguyen@intel.com, intel-wired-lan@lists.osuosl.org,
- Simon Horman <horms@kernel.org>, netdev@vger.kernel.org
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Hey Przemek,
-I ran some tests and unfortunately, the following sentence from the
-datasheet is true:
-"For specific resources, such as Change Lock (0x0003) and Global Config Loc=
-k
-(0x0004), this field is used by software to override the default timeout fo=
-r the
-operation, and also to specify the timeout used for this operation."
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 5cca9023832afcdb4d8121797e52796bbbf94e2e  ice: refactor ice_sched_cfg_agg to take agg_info pointer
 
-This means we can only change a default timeout for 0x0003 and 0x0004
-but not for 0x0001 (NVM resource).
-Whatever timeout I provide FW defaults to 0xB88
-Input:
-[ 2209.656758] ice 0000:31:00.0: CQ CMD: opcode 0x0008, flags 0x2000,
-datalen 0x0000, retval 0x0000
-[ 2209.656760] ice 0000:31:00.0:        cookie (h,l) 0x00000000 0x00000000
-[ 2209.656761] ice 0000:31:00.0:        param (0,1)  0x00010001 0x00000BB9
-Output:
-[ 2209.656927] ice 0000:31:00.0: CQ CMD: opcode 0x0008, flags 0x2003,
-datalen 0x0000, retval 0x0000
-[ 2209.656929] ice 0000:31:00.0:        cookie (h,l) 0x00000000 0x00000000
-[ 2209.656931] ice 0000:31:00.0:        param (0,1)  0x00010001 0x00000BB8
+elapsed time: 803m
 
-Correct me If I'm wrong, but the only way to properly handle it is to
-ensure the resource is locked and released between every
-ice_acquire_nvm call.
-I'll start working on this.
+configs tested: 149
+configs skipped: 12
 
-Regards,
-Robert
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
+tested configs:
+alpha                             allnoconfig    gcc-16.1.0
+alpha                            allyesconfig    gcc-16.1.0
+alpha                               defconfig    gcc-16.1.0
+arc                              allmodconfig    gcc-16.1.0
+arc                               allnoconfig    gcc-16.1.0
+arc                              allyesconfig    gcc-16.1.0
+arc                                 defconfig    gcc-16.1.0
+arc                   randconfig-001-20260626    gcc-11.5.0
+arc                   randconfig-002-20260626    gcc-9.5.0
+arm                               allnoconfig    clang-17
+arm                              allyesconfig    gcc-16.1.0
+arm                   randconfig-001-20260626    gcc-13.4.0
+arm                   randconfig-002-20260626    clang-23
+arm                   randconfig-003-20260626    gcc-13.4.0
+arm                   randconfig-004-20260626    clang-21
+arm64                            allmodconfig    clang-23
+arm64                             allnoconfig    gcc-16.1.0
+csky                             allmodconfig    gcc-16.1.0
+csky                              allnoconfig    gcc-16.1.0
+hexagon                          allmodconfig    clang-23
+hexagon                           allnoconfig    clang-23
+hexagon               randconfig-001-20260626    clang-23
+hexagon               randconfig-002-20260626    clang-17
+i386                             allmodconfig    gcc-14
+i386                              allnoconfig    gcc-14
+i386                             allyesconfig    gcc-14
+i386        buildonly-randconfig-001-20260626    gcc-14
+i386        buildonly-randconfig-002-20260626    gcc-14
+i386        buildonly-randconfig-003-20260626    gcc-14
+i386        buildonly-randconfig-004-20260626    gcc-12
+i386        buildonly-randconfig-005-20260626    gcc-14
+i386        buildonly-randconfig-006-20260626    gcc-14
+i386                                defconfig    clang-22
+i386                  randconfig-001-20260626    clang-22
+i386                  randconfig-002-20260626    gcc-14
+i386                  randconfig-003-20260626    clang-22
+i386                  randconfig-004-20260626    clang-22
+i386                  randconfig-005-20260626    gcc-14
+i386                  randconfig-006-20260626    gcc-14
+i386                  randconfig-007-20260626    gcc-14
+i386                  randconfig-011-20260626    gcc-14
+i386                  randconfig-012-20260626    clang-22
+i386                  randconfig-013-20260626    clang-22
+i386                  randconfig-014-20260626    gcc-14
+i386                  randconfig-015-20260626    gcc-14
+i386                  randconfig-016-20260626    clang-22
+i386                  randconfig-017-20260626    clang-22
+loongarch                        allmodconfig    clang-19
+loongarch                         allnoconfig    clang-20
+loongarch                           defconfig    clang-23
+loongarch             randconfig-001-20260626    gcc-16.1.0
+loongarch             randconfig-002-20260626    clang-18
+m68k                             allmodconfig    gcc-16.1.0
+m68k                              allnoconfig    gcc-16.1.0
+m68k                             allyesconfig    gcc-16.1.0
+m68k                                defconfig    gcc-16.1.0
+microblaze                        allnoconfig    gcc-16.1.0
+microblaze                       allyesconfig    gcc-16.1.0
+microblaze                          defconfig    gcc-16.1.0
+mips                             allmodconfig    gcc-16.1.0
+mips                              allnoconfig    gcc-16.1.0
+mips                             allyesconfig    gcc-16.1.0
+mips                       rbtx49xx_defconfig    gcc-16.1.0
+nios2                             allnoconfig    gcc-11.5.0
+nios2                               defconfig    gcc-11.5.0
+nios2                 randconfig-001-20260626    gcc-11.5.0
+nios2                 randconfig-002-20260626    gcc-8.5.0
+openrisc                         allmodconfig    gcc-16.1.0
+openrisc                          allnoconfig    gcc-16.1.0
+openrisc                            defconfig    gcc-16.1.0
+parisc                           allmodconfig    gcc-16.1.0
+parisc                            allnoconfig    gcc-16.1.0
+parisc                           allyesconfig    gcc-16.1.0
+parisc                              defconfig    gcc-16.1.0
+parisc                randconfig-001-20260626    gcc-8.5.0
+parisc                randconfig-002-20260626    gcc-12.5.0
+parisc64                            defconfig    gcc-16.1.0
+powerpc                          allmodconfig    gcc-16.1.0
+powerpc                           allnoconfig    gcc-16.1.0
+powerpc               randconfig-001-20260626    clang-23
+powerpc               randconfig-002-20260626    gcc-11.5.0
+powerpc64             randconfig-001-20260626    clang-17
+powerpc64             randconfig-002-20260626    gcc-13.4.0
+riscv                            allmodconfig    clang-23
+riscv                             allnoconfig    gcc-16.1.0
+riscv                            allyesconfig    clang-23
+riscv                               defconfig    clang-23
+riscv                 randconfig-001-20260626    gcc-11.5.0
+riscv                 randconfig-002-20260626    clang-23
+s390                             allmodconfig    clang-23
+s390                              allnoconfig    clang-23
+s390                             allyesconfig    gcc-16.1.0
+s390                                defconfig    clang-18
+s390                  randconfig-001-20260626    clang-23
+s390                  randconfig-002-20260626    gcc-8.5.0
+sh                               allmodconfig    gcc-16.1.0
+sh                                allnoconfig    gcc-16.1.0
+sh                               allyesconfig    gcc-16.1.0
+sh                                  defconfig    gcc-16.1.0
+sh                    randconfig-001-20260626    gcc-9.5.0
+sh                    randconfig-002-20260626    gcc-16.1.0
+sparc                             allnoconfig    gcc-16.1.0
+sparc                               defconfig    gcc-16.1.0
+sparc                 randconfig-001-20260626    gcc-12.5.0
+sparc                 randconfig-002-20260626    gcc-8.5.0
+sparc64                          allmodconfig    clang-20
+sparc64                             defconfig    clang-23
+sparc64               randconfig-001-20260626    clang-20
+sparc64               randconfig-002-20260626    clang-20
+um                               allmodconfig    clang-17
+um                                allnoconfig    clang-17
+um                               allyesconfig    gcc-14
+um                                  defconfig    clang-23
+um                             i386_defconfig    gcc-14
+um                    randconfig-001-20260626    clang-18
+um                    randconfig-002-20260626    clang-23
+um                           x86_64_defconfig    clang-23
+x86_64                           allmodconfig    clang-22
+x86_64                            allnoconfig    clang-22
+x86_64                           allyesconfig    clang-22
+x86_64      buildonly-randconfig-001-20260626    clang-22
+x86_64      buildonly-randconfig-002-20260626    gcc-14
+x86_64      buildonly-randconfig-003-20260626    clang-22
+x86_64      buildonly-randconfig-004-20260626    gcc-14
+x86_64      buildonly-randconfig-005-20260626    clang-22
+x86_64      buildonly-randconfig-006-20260626    clang-22
+x86_64                              defconfig    gcc-14
+x86_64                randconfig-001-20260626    clang-22
+x86_64                randconfig-002-20260626    gcc-14
+x86_64                randconfig-003-20260626    clang-22
+x86_64                randconfig-004-20260626    clang-22
+x86_64                randconfig-005-20260626    gcc-13
+x86_64                randconfig-006-20260626    clang-22
+x86_64                randconfig-011-20260626    gcc-14
+x86_64                randconfig-012-20260626    gcc-14
+x86_64                randconfig-013-20260626    clang-22
+x86_64                randconfig-014-20260626    gcc-14
+x86_64                randconfig-015-20260626    gcc-14
+x86_64                randconfig-016-20260626    gcc-14
+x86_64                randconfig-071-20260626    gcc-14
+x86_64                randconfig-072-20260626    clang-22
+x86_64                randconfig-073-20260626    gcc-14
+x86_64                randconfig-074-20260626    gcc-14
+x86_64                randconfig-075-20260626    gcc-14
+x86_64                randconfig-076-20260626    gcc-14
+x86_64                          rhel-9.4-rust    clang-22
+xtensa                            allnoconfig    gcc-16.1.0
+xtensa                randconfig-001-20260626    gcc-12.5.0
+xtensa                randconfig-002-20260626    gcc-10.5.0
 
-On Thu, Jun 25, 2026 at 12:14=E2=80=AFPM Robert Malz <robert.malz@canonical=
-.com> wrote:
->
-> Hey Przemek,
-> Thanks a lot for the feedback.
-> I was sure that we use ICE_NVM_TIMEOUT (180s) as a timeout every time
-> (ice_acquire_nvm) but your proposal made me rethink it a little.
-> First of all, the datasheet for E810 specifies the timeout as: "As an
-> input, the software might specify timeout longer than the default
-> taken for this resource, and up to one minute."
-> 180s is greater than one minute so I took a look into AQC logs:
-> [  110.698471] ice 0000:05:00.0: CQ CMD: opcode 0x0008, flags 0x2000,
-> datalen 0x0000, retval 0x0000
-> [  110.698474] ice 0000:05:00.0:        cookie (h,l) 0x00000000 0x0000000=
-0
-> [  110.698477] ice 0000:05:00.0:        param (0,1)  0x00010001 0x0002BF2=
-0
-> [  110.698480] ice 0000:05:00.0:        addr (h,l)   0x00000000 0x0000000=
-0
-> [  110.698645] ice 0000:05:00.0: ATQ: desc and buffer writeback:
-> [  110.698648] ice 0000:05:00.0: CQ CMD: opcode 0x0008, flags 0x2003,
-> datalen 0x0000, retval 0x0000
-> [  110.698651] ice 0000:05:00.0:        cookie (h,l) 0x00000000 0x0000000=
-0
-> [  110.698654] ice 0000:05:00.0:        param (0,1)  0x00010001 0x00000BB=
-8
-> [  110.698657] ice 0000:05:00.0:        addr (h,l)   0x00000000 0x0000000=
-0
-> Based on the above, the driver requested a 0x0002BF20 timeout (180 000
-> ms) but the FW returned only 0x00000BB8 (3s).
-> I'm assuming this is expected behavior since the maximum timeout for
-> NVM read should be 60,000 ms.
->
-> If changing the timeout requested by the driver to 60s for read ops is
-> handled correctly by the FW and the FW respects that lock, the retry
-> patch submitted in this email thread might not be required at all.
-> Let me quickly prepare a new patch and test it. I'll update this
-> thread once I have a results.
->
-> Regards,
-> Robert
->
->
-> On Thu, Jun 25, 2026 at 9:51=E2=80=AFAM Przemek Kitszel
-> <przemyslaw.kitszel@intel.com> wrote:
-> >
-> > >> This is an AI-generated review of your patch. The human sending this
-> >
-> >
-> > >> [Severity: Low]
-> > >> Does this check allow an extra retry execution? Since retry_cnt star=
-ts at 0,
-> > >> using a strictly greater-than check allows the loop to retry 4 times
-> > >> (5 total executions) instead of the 3 executions intended by
-> > >> ICE_SQ_SEND_MAX_EXECUTE.
-> > >>
-> > >>> +                             break;
-> > >>> +                     ice_debug(hw, ICE_DBG_NVM,
-> > >>> +                               "NVM read EBUSY error, retry %d\n",
-> > >>> +                               retry_cnt + 1);
-> > >>> +                     last_cmd =3D false;
-> > >>> +                     ice_release_nvm(hw);
-> > >>> +                     msleep(ICE_SQ_SEND_DELAY_TIME_MS);
-> > >>
-> > > The review is correct that this allows one extra execution. However, =
-I
-> > > intentionally kept this verbatim from the OOT driver (1.15.4) to
-> >
-> > This OOT change was made entirely by Grzegorz, for E825C. Would be grea=
-t
-> > to acknowledge his authorship (+ SoB ofc, below).
-> > Signed-off-by: Grzegorz Nitka <grzegorz.nitka@intel.com>
-> >
-> > What was the platform that you have encountered the bug on?
-> >
-> > > retain the significant test exposure it has there. The absolute worst
-> > > case is one harmless extra retry before giving up. If you strongly
-> > > prefer strict adherence to ICE_SQ_SEND_MAX_EXECUTE, I can update the
-> > > condition in a v4.
-> >
-> > Please update (to have one attempt less).
-> >
-> > >
-> > >> [Severity: High]
-> > >> Does dropping the NVM lock here violate the caller's assumption of m=
-utual
-> > >> exclusion?
-> > >>
-> > >> Callers of ice_read_flat_nvm() typically acquire the NVM lock before=
-hand to
-> > >> ensure an atomic read of multiple sectors without interleaved writes=
-. By
-> > >> explicitly dropping the lock during the msleep() window, another thr=
-ead, VF,
-> > >> or PF could acquire the NVM lock and modify the NVM before the read =
-resumes,
-> > >> potentially resulting in reading torn or inconsistent NVM data.
-> > >>
-> > >>> +                     status =3D ice_acquire_nvm(hw, ICE_RES_READ);
-> > >>> +                     if (status)
-> > >>> +                             break;
-> > >>
-> > >
-> > > I don't think this is an issue. The NVM resource (req_res 0x0008) is
-> > > an ownership lease, not a content snapshot. The FW grants it with a
-> > > hold timeout (see the timeout field handling in ice_aq_req_res). It
-> > > never guaranteed a point-in-time view of the flash.
-> > > Very similar behavior already exists in ice_devlink_nvm_snapshot(),
-> > > which reads the NVM in chunks via ice_read_flat_nvm() and deliberatel=
-y
-> > > acquires/releases the lock between chunks (with a comment explaining
-> > > the FW reclaim).
-> > > Additionally, the lock is only dropped on the failure path, where
-> > > neither bytes_read nor offset have been advanced. The driver simply
-> > > re-reads the failed chunk after re-acquiring. So no data that is
-> > > returned to the caller is committed across the drop window.
-> > > Overall the lock drop does not weaken any guarantee callers actually
-> > > have. If we wanted to introduce a true snapshot guarantee, that would
-> > > probably require different approach and separate patch.
-> > >
-> > >
-> > >> [Severity: High]
-> > >> Can this lead to an unbalanced NVM resource lock release and potenti=
-al data
-> > >> corruption?
-> > >>
-> > >> If ice_acquire_nvm() fails here, the loop breaks and returns an erro=
-r with the
-> > >> lock currently unheld. However, callers like ice_read_flash_module()=
- are
-> > >> unaware of this internal lock state change and will unconditionally =
-call
-> > >> ice_release_nvm() upon failure:
-> > >>
-> > >> drivers/net/ethernet/intel/ice/ice_nvm.c:ice_read_flash_module() {
-> > >>          status =3D ice_acquire_nvm(hw, ICE_RES_READ);
-> > >>          if (status)
-> > >>                  return status;
-> > >>
-> > >>          status =3D ice_read_flat_nvm(hw, start + offset, &length, d=
-ata, false);
-> > >>
-> > >>          ice_release_nvm(hw);
-> > >>      ...
-> > >>
-> > >> Because firmware tracks resource locks per-PF rather than per-OS-thr=
-ead, this
-> > >> errant second release could forcefully strip the lock from another t=
-hread on
-> > >> the same PF that successfully acquired it, exposing the NVM to concu=
-rrent
-> > >> modification.
-> > >>
-> > >
-> > > Agreed, this might be a real bug, and the one of the three I think is
-> > > worth investigating.
-> > > If ice_acquire_nvm() fails after the drop, ice_read_flat_nvm() return=
-s
-> > > with the lock unheld while callers unconditionally call
-> > > ice_release_nvm(), so a stray release is issued.
-> > >
-> > > On probability, though, the window is very small. Reaching it require=
-s
-> > > sustained EBUSY across the retry budget plus a failed re-acquire
-> > > (which itself polls up to ICE_NVM_TIMEOUT), and concurrently another
-> > > requester taking the lock. Most reads happen during init (ice_probe,
-> > > and reset/rebuild via ice_init_nvm), and NVM writes only happen on an
-> > > already initialized driver. The devlink/ethtool nvm_read paths are
-> > > also exposed, but hitting this race would require precise timing
-> > > against a concurrent NVM owner on the device.
-> > >
-> > > I'd prefer to keep the scope of this patch limited to the EBUSY retry
-> > > path and not take on the unbalanced-release fix here. A proper fix
-> > > should change the lock-ownership contract of ice_read_flat_nvm() (on
-> > > error, the lock must be released by ice_read_flat_nvm(), callers
-> > > release only on success) and update all callers. Code change sould be
-> > > simple for all callers but ice_discover_flash_size(), it intentionall=
-y
-> > > holds one lease across a read loop and would need to re-acquire after
-> > > each expected boundary failure.
-> > >
-> > > Given how small the original window is, I'd rather not trade tested
-> > > OOT behavior for the risk of a complex unbalanced NVM lock fix. I
-> > > actually have a patch mostly ready that fixes the lock-ownership
-> > > contract, but I really don't like it. It changes the design of
-> > > ice_read_flat_nvm(), making it less intuitive for callers. More
-> > > importantly, I just don't have the resources or test coverage right
-> > > now to properly verify such change.
-> > >
-> > > However, I can modify the failure path for ice_acquire_nvm inside
-> > > ice_read_flat_nvm. Instead of bailing out immediately, we can just
-> > > retry it within the existing retry budget. In this case, the
-> > > probability of leaving ice_read_flat_nvm without holding the lock is
-> > > reduced even further without needing a refactor.
-> > >
-> > > Please let me know what you think about my thought process on this.
-> >
-> > I think that both AI-reported issues against the lock are valid
-> > concerns.
-> >
-> > I think that sleep was the actual fix, and re-locking were merely
-> > a necessity due to their expiration (as you said).
-> >
-> > A proper fix would be to just increase lock-timeout to accommodate all
-> > attempts (and still do the retries&sleep, but without unlocking).
-> >
-> >
-> > >
-> > >
-> > >
-> > >>> +                     retry_cnt++;
-> > >>> +             } else {
-> > >>> +                     bytes_read +=3D read_size;
-> > >>> +                     offset +=3D read_size;
-> > >>> +                     retry_cnt =3D 0;
-> > >>> +             }
-> > >>>        } while (!last_cmd);
-> > >>>
-> > >>>        *length =3D bytes_read;
-> > >
-> > > Thanks,
-> > > Robert
-> >
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
