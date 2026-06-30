@@ -1,99 +1,89 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CDD99C44503
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 30 Jun 2026 15:19:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC383C43327
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 30 Jun 2026 22:50:26 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id A4A3161064;
-	Tue, 30 Jun 2026 15:19:14 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 940B840802;
+	Tue, 30 Jun 2026 22:50:26 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id iVt73vrMiyyM; Tue, 30 Jun 2026 22:50:25 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org AEB5F40786
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1782859825;
+	bh=4/7TjGJiqZagTrJvi7kpMXuVrILhpW7k/6RtBUpwu6w=;
+	h=Date:From:To:Cc:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=6zV5HChCImxOVOWE7K6w23oxjmiYztgsH1rkA4y0F3GHsC86IQlgNpEiX2XgqFpXA
+	 gLBMmzxbkd/a06DKO4VP6d5sSBaMyRamQbWdaHuH+ejma5THBT9YYFDhcXavuFpK2C
+	 8hnoRKADuCg38s2bOPW/8f6UyunGESkZooyzoqmYynhRIivDQYwcWeUGw5t6/v6iJT
+	 ACRz+LmaZ7RZ80pSLTdtFiLeuvQ+xNoPaftgXh9bIMGGwCY1uyuVTe+YdHjQDS5FSY
+	 qMhSyznHl2rVF5/eep514DpDFOnkn3nn54VQoSZtzL1nHY6A/nmM/rT/y5uNAqtiqf
+	 9OaVO2rboNtyA==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id AEB5F40786;
+	Tue, 30 Jun 2026 22:50:25 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id D717F149
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jun 2026 22:50:24 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id B2BBF605EE
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jun 2026 22:50:24 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id PZdkk2H0Cg2S; Tue, 30 Jun 2026 15:19:13 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CF1716107A
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1782832753;
-	bh=qVNG6A0QrvVc3Q5VGETu2ZNN6OFwwV/HGShrasBWJk4=;
-	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=4vkOpdEppXI53ctRGw6/3YpM1R/CE5kS1taNfgNsLaMKakZ8yzTqwsQjhc8u7QlAk
-	 D76xGY3CXxfqVbDHRqcHmBKBVPCl8DlavSGn5lC4++s4XcyW6OVfVERErD4O0PDni8
-	 I3hELKK7dYKaP/3jlDmqr5YJWoKcPNtxD7gweIAU2AuPS4vsf4NW+k7SvmMBtoJ5Xl
-	 BmQWQ4bKQKJIc0AKFwwRBIaGliosR18mDNh02BCCfQA1xn1dqJqzm2b5g56tkjViDW
-	 IFXCgBEZ76vxa5CouZ9IND2A6kRwMc995NxSxZwZ7B7VrmvthMyLb/jj3/XoZaYX+V
-	 nokEV3x5hZlCw==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id CF1716107A;
-	Tue, 30 Jun 2026 15:19:13 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id D1EB21338
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jun 2026 11:00:04 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id CF56C40FAF
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jun 2026 11:00:04 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id VYk5fIu_P3eB for <intel-wired-lan@lists.osuosl.org>;
- Tue, 30 Jun 2026 11:00:04 +0000 (UTC)
+ id NvGJJfOG_4RP for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 30 Jun 2026 22:50:24 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
- helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org E4DCD40207
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E4DCD40207
+ helo=sea.source.kernel.org; envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org D796E605DF
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D796E605DF
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
- by smtp2.osuosl.org (Postfix) with ESMTPS id E4DCD40207
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jun 2026 11:00:03 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTPS id D796E605DF
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jun 2026 22:50:23 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by sea.source.kernel.org (Postfix) with ESMTP id 1412840E06;
- Tue, 30 Jun 2026 11:00:03 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6A1A51F000E9;
- Tue, 30 Jun 2026 10:59:58 +0000 (UTC)
-From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-Date: Tue, 30 Jun 2026 13:59:26 +0300
+ by sea.source.kernel.org (Postfix) with ESMTP id 28685413AA;
+ Tue, 30 Jun 2026 22:50:23 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DA26F1F000E9;
+ Tue, 30 Jun 2026 22:50:22 +0000 (UTC)
+Date: Tue, 30 Jun 2026 15:50:22 -0700
+From: Jakub Kicinski <kuba@kernel.org>
+To: "Pielech, Adrian" <adrian.pielech@intel.com>
+Cc: "Kitszel, Przemyslaw" <przemyslaw.kitszel@intel.com>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ <intel-wired-lan@lists.osuosl.org>, <leszek.pepiak@intel.com>
+Message-ID: <20260630155022.27c9a271@kernel.org>
+In-Reply-To: <35ccefb4-a588-4556-87c0-ade880eaa8d6@intel.com>
+References: <20260627095400.3c3d9f80@kernel.org>
+ <35ccefb4-a588-4556-87c0-ade880eaa8d6@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260630-b4-drivers-net-v1-7-672162a91f37@kernel.org>
-References: <20260630-b4-drivers-net-v1-0-672162a91f37@kernel.org>
-In-Reply-To: <20260630-b4-drivers-net-v1-0-672162a91f37@kernel.org>
-To: Andrew Lunn <andrew+netdev@lunn.ch>, 
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>
-Cc: Brian Norris <briannorris@chromium.org>, 
- Edward Cree <ecree.xilinx@gmail.com>, 
- Francesco Dolcini <francesco@dolcini.it>, 
- Manish Chopra <manishc@marvell.com>, Mike Rapoport <rppt@kernel.org>, 
- Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
- Sudarsana Kalluru <skalluru@marvell.com>, 
- Tony Nguyen <anthony.l.nguyen@intel.com>, b43-dev@lists.infradead.org, 
- intel-wired-lan@lists.osuosl.org, libertas-dev@lists.infradead.org, 
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-net-drivers@amd.com, 
- linux-wireless@vger.kernel.org, netdev@vger.kernel.org
-X-Mailer: b4 0.15.2
-X-Mailman-Approved-At: Tue, 30 Jun 2026 15:19:08 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=kernel.org; s=k20260515; t=1782817203;
- bh=qVNG6A0QrvVc3Q5VGETu2ZNN6OFwwV/HGShrasBWJk4=;
- h=From:Date:Subject:References:In-Reply-To:To:Cc;
- b=ZMVGaWI9VL4Ex4gSsvHRdpL8r28sBJeHwMEuL7+lauPlew2FTdOEsgs2ATl1+atca
- 5LYGcr4dixAyl65dQrx1zaB/Glfflj9NCXAqVLtCfj8sE2er5nqspknawJYfva0Chv
- vKRhkeVapVUnpfeuyh4J75IHXPeUUpy5UPveQh5Llp1phBnJX8oYOScCnmkcIBSI6q
- EkJvpcSINDcZQKSJ/otkSjIulmeOQfuTzYU9nqou8/TxgPQebt/GjHstOjzw9cPTO7
- WUMbUxdHMl15cDSi+gs3tI/IEI0Ne+cwtcQB5Ilb6oLY2SCNlfdksJjYyFL7tCxlDT
- rQgDawk1deirQ==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ d=kernel.org; s=k20260515; t=1782859823;
+ bh=4/7TjGJiqZagTrJvi7kpMXuVrILhpW7k/6RtBUpwu6w=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References;
+ b=nbS240E4fkTexZ4KVCGleDZ6Ui7AHYGBZBuASvkTzuaeSIbLK1nSTFFQ/yDpAjjZg
+ hj8N4tVcDPKDNeqKTPUPVyLv62PEEdI5l1fPkXhcumUuUlEzii30PgKS4JDe4/3hZB
+ Go6hwcMA2VWjQsfmQiPY6Jr+WT/Ud6sL15ntoANXHAdqm/MOoQvyV6520L/4xFqcgq
+ so4pbCqCnWcwgrBeUG777l9Wl2vwe2CD0nEEUNVoUxYXwHRtJTYuxCJ1LOPT8KH4HL
+ bnW3wkCkQfukIBzjLmqWjr9We7pKuBqWCBE7pCKz4QE6uBjqs+pBQdWAIWX3Q6Db5f
+ Vmkx8igg4Or6Q==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20260515 header.b=ZMVGaWI9
-Subject: [Intel-wired-lan] [PATCH net-next 7/8] sfc: use kmalloc() to
- allocate logging buffer
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20260515 header.b=nbS240E4
+Subject: Re: [Intel-wired-lan] [TEST] intel: low timeout
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -109,71 +99,29 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-efx_mcdi_init() allocates a logging buffer for MCDI firmware
-communication diagnostics.
+On Tue, 30 Jun 2026 14:56:02 +0200 Pielech, Adrian wrote:
+> On 6/27/2026 6:54 PM, Jakub Kicinski wrote:
+> > Hi!
+> > 
+> > Some of the tests need more than 5min, could you increase the timeout
+> > in the runner to 10 or 15min? Looks like it's hard-killing tests right
+> > now after 2min:
+> > 
+> > https://netdev-ci-results.intel.com/ice-results/net-next-hw-2026-06-27--16-00/ice-E810-XXV4/xdp.py/stdout
+> > 
+> > which leaks config across tests:
+> > 
+> > https://netdev-ci-results.intel.com/ice-results/net-next-hw-2026-06-27--16-00/ice-E810-XXV4/irq.py/stdout
+> > 
+> > BTW the JSON reports the timed out tests as pass.  
+> 
+> Hi Jakub,
+> 
+> I've increased timeout to 10 minutes per test run. It seems to help with 
+> XDP tests score.
 
-This buffer can be allocated with kmalloc() as there's nothing special
-about it to go directly to the page allocator.
+Great, thank you!
 
-kmalloc() provides a better API that does not require ugly casts and
-kfree() does not need to know the size of the freed object.
+> I'll later take a look on default behavior of runner in case of timeouts.
 
-Performance difference between kmalloc() and __get_free_pages() is not
-measurable as both allocators take an object/page from a per-CPU list for
-fast path allocations.
-
-For the slow path the performance is anyway determined by the amount of
-reclaim involved rather than by what allocator is used.
-
-Replace use of __get_free_page() with kmalloc() and free_page() with
-kfree().
-
-Link: https://lore.kernel.org/all/635405e4-9423-4a25-a6e7-e03c8ea0bcbe@redhat.com
-Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
----
- drivers/net/ethernet/sfc/mcdi.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/net/ethernet/sfc/mcdi.c b/drivers/net/ethernet/sfc/mcdi.c
-index e65db9b70724..b806d3d90c42 100644
---- a/drivers/net/ethernet/sfc/mcdi.c
-+++ b/drivers/net/ethernet/sfc/mcdi.c
-@@ -7,6 +7,7 @@
- #include <linux/delay.h>
- #include <linux/moduleparam.h>
- #include <linux/atomic.h>
-+#include <linux/slab.h>
- #include "net_driver.h"
- #include "nic.h"
- #include "io.h"
-@@ -71,7 +72,7 @@ int efx_mcdi_init(struct efx_nic *efx)
- 	mcdi->efx = efx;
- #ifdef CONFIG_SFC_MCDI_LOGGING
- 	/* consuming code assumes buffer is page-sized */
--	mcdi->logging_buffer = (char *)__get_free_page(GFP_KERNEL);
-+	mcdi->logging_buffer = kmalloc(PAGE_SIZE, GFP_KERNEL);
- 	if (!mcdi->logging_buffer)
- 		goto fail1;
- 	mcdi->logging_enabled = mcdi_logging_default;
-@@ -112,7 +113,7 @@ int efx_mcdi_init(struct efx_nic *efx)
- 	return 0;
- fail2:
- #ifdef CONFIG_SFC_MCDI_LOGGING
--	free_page((unsigned long)mcdi->logging_buffer);
-+	kfree(mcdi->logging_buffer);
- fail1:
- #endif
- 	kfree(efx->mcdi);
-@@ -138,7 +139,7 @@ void efx_mcdi_fini(struct efx_nic *efx)
- 		return;
- 
- #ifdef CONFIG_SFC_MCDI_LOGGING
--	free_page((unsigned long)efx->mcdi->iface.logging_buffer);
-+	kfree(efx->mcdi->iface.logging_buffer);
- #endif
- 
- 	kfree(efx->mcdi);
-
--- 
-2.53.0
-
+default behavior == pass/fail status for the test?
