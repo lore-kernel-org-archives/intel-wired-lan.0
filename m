@@ -1,65 +1,64 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 988D1C43327
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 30 Jun 2026 23:18:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 321B8C43602
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 30 Jun 2026 23:18:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 6940960DC4;
+	by smtp4.osuosl.org (Postfix) with ESMTP id EB97D41065;
 	Tue, 30 Jun 2026 23:18:53 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id GYYsVL8ag80B; Tue, 30 Jun 2026 23:18:53 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 391EA4113B
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1782861533;
+	bh=3P/yus8Hn1X81vQTrcoMk7cN9FObxvMT8+8azdH2OLI=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=FBWC2rMK8qSgAwxPuhVdx9qQ4VsENq0JHUXuaBD9H3e9PVBbar8AXZb+1iMJO+39G
+	 EM7y3gd1XMo2wYOoVdCAivXJwYj2e2X4pl+bjhaj5bR/SqougPpdfJZap1K8CFMSuP
+	 ZOIa45wJCX+bqrAtkvJoURPwAn4cgkFrF/f1bOdV/hYAM1MbI7DT+k5nWQFdEJ3yO4
+	 mTXENc8vnurEX1hWC599qHsh7yCyN4CUVaTR+979rUzV/HI2n+y6RwJFkj5yxPwtsM
+	 4pyaXyHwHpbdtsiJiVXPKB1O4TYcHLtMoZqXWAwVP3bCNkROjB2LghDvKl7oWyav6I
+	 dk62u8qCvLzgA==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 391EA4113B;
+	Tue, 30 Jun 2026 23:18:53 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 12244149
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jun 2026 23:18:51 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id 03E8560DC4
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jun 2026 23:18:51 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id EDk1WOKURgM9; Tue, 30 Jun 2026 23:18:52 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org AC3B46112E
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1782861532;
-	bh=Cpj+ZXPaPqtgebibN6r9KLNEWMAtKVdURrqLQxZgCo4=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=DQnviuxC5ZhMHnOmyAJtUxTaSSACzsGSyVSV5FghcS08wtBBHnFVP7TH6f4zrG8CS
-	 R7Ti35F2xo0IYg45qCbJ5HzdhMiBMsJKnyFVT+KlTzAq9jHJUXgsSw+jYg9/0t05il
-	 2f44ltCgyNOLzk0LYUoVHahuP3m1D2JFqCQMKBREJda3jgidQGE3guynOMq8Ex3RTf
-	 LyS/tlYhvVXUlsXngn0gUBF/fQv6hAI5+aN8rFg0DUmFz65lWnzj304Pv7+2Ve0W6X
-	 VrWzDrEj6nCjMJuR67fkKGM801ojGLF6KVB2KN7HeLGTQMhy57DTyjuwl/EXinARom
-	 vgVsZmrXnunhQ==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id AC3B46112E;
-	Tue, 30 Jun 2026 23:18:52 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id E2760149
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jun 2026 23:18:50 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id C877B83639
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jun 2026 23:18:50 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id lksHtPOlMCfN for <intel-wired-lan@lists.osuosl.org>;
- Tue, 30 Jun 2026 23:18:50 +0000 (UTC)
+ id vaDRy-vHkert for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 30 Jun 2026 23:18:49 +0000 (UTC)
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.13;
  helo=mgamail.intel.com; envelope-from=emil.s.tantilov@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org D67F283626
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D67F283626
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 2AA0760DC3
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2AA0760DC3
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
- by smtp1.osuosl.org (Postfix) with ESMTPS id D67F283626
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jun 2026 23:18:49 +0000 (UTC)
-X-CSE-ConnectionGUID: tyiVOIKVTouH2x+AWVUQag==
-X-CSE-MsgGUID: 4v6bsHIfQoGIXScJcGOzZg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11833"; a="86135273"
-X-IronPort-AV: E=Sophos;i="6.24,234,1774335600"; d="scan'208";a="86135273"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 2AA0760DC3
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jun 2026 23:18:48 +0000 (UTC)
+X-CSE-ConnectionGUID: 3XyRS5QNQnqH1XB8YOUE7Q==
+X-CSE-MsgGUID: iPqRL7pXR6OhU0i77kA0wA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11833"; a="86135258"
+X-IronPort-AV: E=Sophos;i="6.24,234,1774335600"; d="scan'208";a="86135258"
 Received: from orviesa008.jf.intel.com ([10.64.159.148])
  by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  30 Jun 2026 16:18:47 -0700
-X-CSE-ConnectionGUID: CxYeZMv+QqWMYotHj7eKrQ==
-X-CSE-MsgGUID: 8JxB16EySlOLHuL8lp0c8A==
+X-CSE-ConnectionGUID: 64BaQv3RRWCocNHekXedBw==
+X-CSE-MsgGUID: 8wDUs1oHQ5+ASvCYfZXpJQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.24,234,1774335600"; d="scan'208";a="251972110"
+X-IronPort-AV: E=Sophos;i="6.24,234,1774335600"; d="scan'208";a="251972105"
 Received: from estantil-desk.jf.intel.com ([10.166.241.24])
  by orviesa008.jf.intel.com with ESMTP; 30 Jun 2026 16:18:48 -0700
 From: Emil Tantilov <emil.s.tantilov@intel.com>
@@ -71,33 +70,30 @@ Cc: netdev@vger.kernel.org, przemyslaw.kitszel@intel.com, jay.bhat@intel.com,
  kuba@kernel.org, pabeni@redhat.com, aleksander.lobakin@intel.com,
  linux-pci@vger.kernel.org, madhu.chittim@intel.com, decot@google.com,
  willemb@google.com, sheenamo@google.com, lukas@wunner.de
-Date: Tue, 30 Jun 2026 16:18:54 -0700
-Message-Id: <20260630231854.11536-3-emil.s.tantilov@intel.com>
+Date: Tue, 30 Jun 2026 16:18:52 -0700
+Message-Id: <20260630231854.11536-1-emil.s.tantilov@intel.com>
 X-Mailer: git-send-email 2.17.2
-In-Reply-To: <20260630231854.11536-1-emil.s.tantilov@intel.com>
-References: <20260630231854.11536-1-emil.s.tantilov@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1782861530; x=1814397530;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references;
- bh=YX59OsC0UbD4E7dkcf3fLu0vydLhleMUl/5KrQV5rUI=;
- b=hFL7KEM+TLKM0G6oDFliZJK4hJuB4ESB+1Owr9xNT1N8zIhPriVAAojk
- 8SKdCGxl2Kk+/uJ4wNKYrNjKu20ZAlkY39gkK2eChGRDCCW7JUqPlPN+l
- LDbZ/o719HG+GiB8A+5x/cBe5IvIo/IVAszuKi+7lvrcjl/DMudpbfPR9
- pzJ9vVlqXyrAx2oxAgUdlEGuHmBIFhqhxGORXYXPTLAaUrD7b7VBAZos4
- dkmQm2RFEZ2gfdb0zH2D9MJypxptd1sax/86f+1Gm0BpexB1mVH5YebmE
- VS1IR8Eja6pElYRFkU9uTBh8m9TmcgqdxkkrR0z3/VDaq+dskv3cpLGIl
- A==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ t=1782861529; x=1814397529;
+ h=from:to:cc:subject:date:message-id;
+ bh=+eQ6M0K+eMeEG4XsANC9glVnlOlhJrlgi8sTZLZhzh4=;
+ b=ZQCAWZ+JFqHY7XuXfliRQJ3soYuvLPpgWNSE0aVzV0wS8WGZvLH4TWuO
+ vyeYGwJ5DWMDoNI4Vip49Ji+KbNwLMI1f+4wFUv2TcWx7f3lr/C5Me/fx
+ tznzUPzHm5M7VxWvLkX05CpgXDiToEiuEqBPSdROTvPbKh82+HldX+DBj
+ jYdyGBeCXpm5n4bOQFJ3Vsp9NKDiW7Ch/zPYeZ0tFsTNKQwyN1OaI631J
+ kKTMajZZIVGt+0g3QKqvCY355HPJrq/HPWoDrDZifYYWkTBfoir/0m50e
+ Lz/VmcMnm+fU5bkkO0ZrqjkB0RYJMh4tn0aU1UVGwY0Dn6NS2CUhX185f
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=hFL7KEM+
-Subject: [Intel-wired-lan] [PATCH iwl-next v3 2/2] idpf: implement pci error
- handlers
+ header.s=Intel header.b=ZQCAWZ+J
+Subject: [Intel-wired-lan] [PATCH iwl-next v3 0/2] Introduce IDPF PCI
+ callbacks
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -113,262 +109,82 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Add callbacks to handle PCI errors and FLR reset. When preparing to handle
-reset on the bus, the driver must stop all operations that can lead to MMIO
-access in order to prevent HW errors. To accomplish this, introduce helper
-idpf_reset_prepare() that gets called prior to FLR or when PCI error is
-detected. Upon resume the recovery is done through the existing reset path
-by starting the event task.
+This series implements PCI callbacks for the purpose of handling FLR and
+PCI errors in the IDPF driver.
 
-The following callbacks are implemented:
-.reset_prepare runs the first portion of the generic reset path leading up
-to the part where we wait for the reset to complete.
-.reset_done/resume runs the recovery part of the reset handling.
-.error_detected is the callback dealing with PCI errors, similar to the
-prepare call, we stop all operations, prior to attempting a recovery.
-.slot_reset is the callback attempting to restore the device, provided a
-PCI reset was initiated due to an error on the bus.
+The first patch removes the conditional deinitialization of the mailbox in
+the idpf_vc_core_deinit() function. Aside from being redundant, due to the
+shutdown of the mailbox after a reset is detected, the check was also
+preventing the driver from sending messages to stop and disable the vports
+and queues on FW side, which is needed for the prepare phase of the FLR
+handling.
 
-Whereas previously the init logic guaranteed netdevs during reset, the
-addition of idpf_detach_and_close() to the PCI callbacks flow makes it
-possible for the function to be called without netdevs. Add check to
-avoid NULL pointer dereference in that case.
+The second patch implements the PCI callbacks. The logic here follows
+the reset handling done in idpf_init_hard_reset(), but is split in
+prepare and resume phases, where idpf_reset_prepare() stops all driver
+operations and the resume callback attempt to recover following the
+reset or the PCI error event.
 
-Co-developed-by: Alan Brady <alan.brady@intel.com>
-Signed-off-by: Alan Brady <alan.brady@intel.com>
-Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
-Reviewed-by: Jay Bhat <jay.bhat@intel.com>
-Reviewed-by: Madhu Chittim <madhu.chittim@intel.com>
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
----
- drivers/net/ethernet/intel/idpf/idpf.h      |   3 +
- drivers/net/ethernet/intel/idpf/idpf_lib.c  |  13 ++-
- drivers/net/ethernet/intel/idpf/idpf_main.c | 122 ++++++++++++++++++++
- 3 files changed, 136 insertions(+), 2 deletions(-)
+NOTE: These changes depend on, and apply on top of the IXD series:
+https://lore.kernel.org/netdev/20260608144127.2751230-1-larysa.zaremba@intel.com/
 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf.h b/drivers/net/ethernet/intel/idpf/idpf.h
-index 470bc23c844c..a7fc850a4904 100644
---- a/drivers/net/ethernet/intel/idpf/idpf.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf.h
-@@ -88,6 +88,7 @@ enum idpf_state {
-  * @IDPF_REMOVE_IN_PROG: Driver remove in progress
-  * @IDPF_MB_INTR_MODE: Mailbox in interrupt mode
-  * @IDPF_VC_CORE_INIT: virtchnl core has been init
-+ * @IDPF_PCI_CB_RESET: Reset via the PCI callbacks
-  * @IDPF_FLAGS_NBITS: Must be last
-  */
- enum idpf_flags {
-@@ -97,6 +98,7 @@ enum idpf_flags {
- 	IDPF_REMOVE_IN_PROG,
- 	IDPF_MB_INTR_MODE,
- 	IDPF_VC_CORE_INIT,
-+	IDPF_PCI_CB_RESET,
- 	IDPF_FLAGS_NBITS,
- };
- 
-@@ -1012,4 +1014,5 @@ void idpf_idc_vdev_mtu_event(struct iidc_rdma_vport_dev_info *vdev_info,
- int idpf_add_del_fsteer_filters(struct idpf_adapter *adapter,
- 				struct virtchnl2_flow_rule_add_del *rule,
- 				enum virtchnl2_op opcode);
-+void idpf_detach_and_close(struct idpf_adapter *adapter);
- #endif /* !_IDPF_H_ */
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_lib.c b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-index 1c19cd1f9dd1..80d04e59e151 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_lib.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-@@ -758,13 +758,16 @@ static int idpf_init_mac_addr(struct idpf_vport *vport,
- 	return 0;
- }
- 
--static void idpf_detach_and_close(struct idpf_adapter *adapter)
-+void idpf_detach_and_close(struct idpf_adapter *adapter)
- {
- 	int max_vports = adapter->max_vports;
- 
- 	for (int i = 0; i < max_vports; i++) {
- 		struct net_device *netdev = adapter->netdevs[i];
- 
-+		if (!netdev)
-+			continue;
-+
- 		/* If the interface is in detached state, that means the
- 		 * previous reset was not handled successfully for this
- 		 * vport.
-@@ -1908,6 +1911,10 @@ static void idpf_init_hard_reset(struct idpf_adapter *adapter)
- 
- 	dev_info(dev, "Device HW Reset initiated\n");
- 
-+	/* Reset has already happened, skip to recovery. */
-+	if (test_and_clear_bit(IDPF_PCI_CB_RESET, adapter->flags))
-+		goto check_rst_complete;
-+
- 	/* Prepare for reset */
- 	if (test_bit(IDPF_HR_DRV_LOAD, adapter->flags)) {
- 		reg_ops->trigger_reset(adapter, IDPF_HR_DRV_LOAD);
-@@ -1926,6 +1933,7 @@ static void idpf_init_hard_reset(struct idpf_adapter *adapter)
- 		goto unlock_mutex;
- 	}
- 
-+check_rst_complete:
- 	/* Wait for reset to complete */
- 	err = idpf_check_reset_complete(adapter, &adapter->reset_reg);
- 	if (err) {
-@@ -1985,7 +1993,8 @@ void idpf_vc_event_task(struct work_struct *work)
- 	if (test_bit(IDPF_HR_FUNC_RESET, adapter->flags))
- 		goto func_reset;
- 
--	if (test_bit(IDPF_HR_DRV_LOAD, adapter->flags))
-+	if (test_bit(IDPF_HR_DRV_LOAD, adapter->flags) ||
-+	    test_bit(IDPF_PCI_CB_RESET, adapter->flags))
- 		goto drv_load;
- 
- 	return;
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_main.c b/drivers/net/ethernet/intel/idpf/idpf_main.c
-index 064bf3583824..1786a0dd026b 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_main.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_main.c
-@@ -238,6 +238,7 @@ static int idpf_cfg_device(struct idpf_adapter *adapter)
- 	if (err)
- 		pci_dbg(pdev, "PCIe PTM is not supported by PCIe bus/controller\n");
- 
-+	pci_save_state(pdev);
- 	pci_set_drvdata(pdev, adapter);
- 
- 	return 0;
-@@ -364,6 +365,126 @@ static int idpf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	return err;
- }
- 
-+static void idpf_reset_prepare(struct idpf_adapter *adapter)
-+{
-+	pci_dbg(adapter->pdev, "resetting\n");
-+	cancel_delayed_work_sync(&adapter->serv_task);
-+	cancel_delayed_work_sync(&adapter->vc_event_task);
-+	cancel_delayed_work_sync(&adapter->init_task);
-+	set_bit(IDPF_HR_RESET_IN_PROG, adapter->flags);
-+	idpf_detach_and_close(adapter);
-+	idpf_idc_issue_reset_event(adapter->cdev_info);
-+	mutex_lock(&adapter->vport_ctrl_lock);
-+	idpf_vc_core_deinit(adapter);
-+	idpf_deinit_dflt_mbx(adapter);
-+	mutex_unlock(&adapter->vport_ctrl_lock);
-+}
-+
-+/**
-+ * idpf_pci_err_detected - PCI error detected, about to attempt recovery
-+ * @pdev: PCI device struct
-+ * @state: PCI channel state
-+ *
-+ * Return: %PCI_ERS_RESULT_NEED_RESET to attempt recovery,
-+ * %PCI_ERS_RESULT_DISCONNECT if recovery is not possible.
-+ */
-+static pci_ers_result_t
-+idpf_pci_err_detected(struct pci_dev *pdev, pci_channel_state_t state)
-+{
-+	struct idpf_adapter *adapter = pci_get_drvdata(pdev);
-+
-+	/* Shutdown the mailbox if PCI I/O is in a bad state to avoid MBX
-+	 * timeouts during the prepare stage.
-+	 */
-+	if (pci_channel_offline(pdev) && adapter->xnm)
-+		libie_ctlq_xn_shutdown(adapter->xnm);
-+
-+	idpf_reset_prepare(adapter);
-+
-+	if (state == pci_channel_io_perm_failure)
-+		return PCI_ERS_RESULT_DISCONNECT;
-+
-+	/* When called due to PCI error, driver will have to force PFR on
-+	 * resume, in order to complete the recovery via the event task.
-+	 */
-+	set_bit(IDPF_PCI_CB_RESET, adapter->flags);
-+
-+	return PCI_ERS_RESULT_NEED_RESET;
-+}
-+
-+/**
-+ * idpf_pci_err_slot_reset - PCI undergoing reset
-+ * @pdev: PCI device struct
-+ *
-+ * Reset PCI state and use a register read to see if we're good.
-+ *
-+ * Return: %PCI_ERS_RESULT_RECOVERED on success,
-+ * %PCI_ERS_RESULT_DISCONNECT on failure.
-+ */
-+static pci_ers_result_t
-+idpf_pci_err_slot_reset(struct pci_dev *pdev)
-+{
-+	struct idpf_adapter *adapter = pci_get_drvdata(pdev);
-+
-+	pci_restore_state(pdev);
-+	pci_set_master(pdev);
-+	pci_wake_from_d3(pdev, false);
-+
-+	/* RSTAT register cannot have all bits set during normal operation
-+	 * on current HW.
-+	 */
-+	if (PCI_POSSIBLE_ERROR(readl(adapter->reset_reg.rstat)))
-+		return PCI_ERS_RESULT_DISCONNECT;
-+
-+	return PCI_ERS_RESULT_RECOVERED;
-+}
-+
-+/**
-+ * idpf_pci_err_resume - Resume operations after PCI error recovery
-+ * @pdev: PCI device struct
-+ */
-+static void idpf_pci_err_resume(struct pci_dev *pdev)
-+{
-+	struct idpf_adapter *adapter = pci_get_drvdata(pdev);
-+
-+	/* Trigger a reset, following PCI error, to allow recovery via the
-+	 * regular reset handling path.
-+	 */
-+	if (test_and_set_bit(IDPF_PCI_CB_RESET, adapter->flags))
-+		adapter->dev_ops.reg_ops.trigger_reset(adapter, IDPF_HR_FUNC_RESET);
-+
-+	queue_delayed_work(adapter->vc_event_wq,
-+			   &adapter->vc_event_task,
-+			   msecs_to_jiffies(300));
-+}
-+
-+/**
-+ * idpf_pci_err_reset_prepare - Prepare driver for PCI reset
-+ * @pdev: PCI device struct
-+ */
-+static void idpf_pci_err_reset_prepare(struct pci_dev *pdev)
-+{
-+	idpf_reset_prepare(pci_get_drvdata(pdev));
-+}
-+
-+/**
-+ * idpf_pci_err_reset_done - PCI err reset recovery complete
-+ * @pdev: PCI device struct
-+ */
-+static void idpf_pci_err_reset_done(struct pci_dev *pdev)
-+{
-+	pci_dbg(pdev, "reset done\n");
-+	idpf_pci_err_resume(pdev);
-+}
-+
-+static const struct pci_error_handlers idpf_pci_err_handler = {
-+	.error_detected = idpf_pci_err_detected,
-+	.slot_reset = idpf_pci_err_slot_reset,
-+	.reset_prepare = idpf_pci_err_reset_prepare,
-+	.reset_done = idpf_pci_err_reset_done,
-+	.resume = idpf_pci_err_resume,
-+};
-+
- /* idpf_pci_tbl - PCI Dev idpf ID Table
-  */
- static const struct pci_device_id idpf_pci_tbl[] = {
-@@ -381,5 +502,6 @@ static struct pci_driver idpf_driver = {
- 	.sriov_configure	= idpf_sriov_configure,
- 	.remove			= idpf_remove,
- 	.shutdown		= idpf_shutdown,
-+	.err_handler		= &idpf_pci_err_handler,
- };
- module_pci_driver(idpf_driver);
+Testing hints:
+1. FLR via sysfs:
+echo 1 > /sys/class/net/<ifname>/device/reset
+
+Previously this would have been handled by idpf_init_hard_reset() as the
+driver detects the reset. Now it will be done by the PCI err callbacks,
+so this is the easiest way to test the reset_prepare/resume path.
+
+2. PCI errors can be tested with aer-inject:
+./aer-inject -s 83:00.0 examples/<error_type>
+
+3. Stress testing can be done by combining various callbacks with the
+reset from step 1:
+echo 1 > /sys/class/net/<if>/device/reset& ethtool -L <if> combined 8
+ethtool -L <if> combined 16& echo 1 > /sys/class/net/<if>/device/reset
+
+Changelog:
+v2->v3:
+1/2:
+- Added call to libie_ctlq_xn_shutdown() in idpf_shutdown() to avoid
+possible regression when shutting down while FW is not responsive,
+causing long delays.
+- Fixed typo in the title s/conditonal/conditional/
+
+2/2:
+- Improved the logic in idpf_reset_prepare() to make sure the
+  RESET_IN_PROG bit is set after the init task.
+- Renamed the err parameter in idpf_pci_err_detected() with state
+  and updated the description to match.
+- Added check for adapter->xnm before calling libie_ctlq_xn_shutdown()
+  in idpf_pci_err_detected().
+- Corrected a comment to add some context on the reasoning behind
+  the reset triggered on resume, following a PCI error.
+- Corrected the description for slot_reset callback by removing
+  the mention of AER as it is not the only trigger for the reset.
+- Use PCI_POSSIBLE_ERROR() macro when checking RSTAT value.
+- Add vport_ctrl_lock when calling idpf_vc_core_deinit() in 
+  idpf_reset_prepare().
+
+v1->v2:
+- Removed the call to pci_save_state() from idpf_pci_err_slot_reset(),
+  as it is no longer needed after pci_restore_state(). Suggested by
+  Lukas Wunner.
+
+v1:
+https://lore.kernel.org/netdev/20260411003959.30959-1-emil.s.tantilov@intel.com/
+
+Emil Tantilov (2):
+  idpf: remove conditional MBX deinit from idpf_vc_core_deinit()
+  idpf: implement pci error handlers
+
+ drivers/net/ethernet/intel/idpf/idpf.h        |   3 +
+ drivers/net/ethernet/intel/idpf/idpf_lib.c    |  13 +-
+ drivers/net/ethernet/intel/idpf/idpf_main.c   | 124 ++++++++++++++++++
+ .../net/ethernet/intel/idpf/idpf_virtchnl.c   |  10 +-
+ 4 files changed, 139 insertions(+), 11 deletions(-)
+
 -- 
 2.37.3
 
