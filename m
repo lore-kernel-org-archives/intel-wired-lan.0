@@ -1,99 +1,95 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 321B8C43602
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 30 Jun 2026 23:18:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A8AE8C43458
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 30 Jun 2026 23:45:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id EB97D41065;
-	Tue, 30 Jun 2026 23:18:53 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id GYYsVL8ag80B; Tue, 30 Jun 2026 23:18:53 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 391EA4113B
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1782861533;
-	bh=3P/yus8Hn1X81vQTrcoMk7cN9FObxvMT8+8azdH2OLI=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=FBWC2rMK8qSgAwxPuhVdx9qQ4VsENq0JHUXuaBD9H3e9PVBbar8AXZb+1iMJO+39G
-	 EM7y3gd1XMo2wYOoVdCAivXJwYj2e2X4pl+bjhaj5bR/SqougPpdfJZap1K8CFMSuP
-	 ZOIa45wJCX+bqrAtkvJoURPwAn4cgkFrF/f1bOdV/hYAM1MbI7DT+k5nWQFdEJ3yO4
-	 mTXENc8vnurEX1hWC599qHsh7yCyN4CUVaTR+979rUzV/HI2n+y6RwJFkj5yxPwtsM
-	 4pyaXyHwHpbdtsiJiVXPKB1O4TYcHLtMoZqXWAwVP3bCNkROjB2LghDvKl7oWyav6I
-	 dk62u8qCvLzgA==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 391EA4113B;
-	Tue, 30 Jun 2026 23:18:53 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 12244149
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jun 2026 23:18:51 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 03E8560DC4
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jun 2026 23:18:51 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 5BA7E6076D;
+	Tue, 30 Jun 2026 23:45:33 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id vaDRy-vHkert for <intel-wired-lan@lists.osuosl.org>;
- Tue, 30 Jun 2026 23:18:49 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.13;
- helo=mgamail.intel.com; envelope-from=emil.s.tantilov@intel.com;
+ id Js8dNeVOYECz; Tue, 30 Jun 2026 23:45:32 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7CB27606BF
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1782863132;
+	bh=AdwzA6i19SzfrtJWdDEr0qnujjEHOEaYqCHFRSzvJjc=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=h28WoExC8TJDYAqyngrm+SGdlNEGrgs8fRCsEld0dsvP7ziffLR/tqKFZ9GSDEOXA
+	 OyIfUZCu9oL4a+Z+WMoeti9IL37iy9OEKj/UmoZd0s6IZoCK0pYTraGqPVkZq9TGBU
+	 rFSstX6kF4oeFVKDtgEGRojVlApcBZpsB1mV2HECWiioz5eI2IksOiTADBySE52VpM
+	 EmHWEa6w5uCLLkEC0w0Eoo/CyH7Exr8Xs0SONjT6zNge73pqq8ipy0i3AgQMbgmx/q
+	 9KxGpj9tDQLWtGnwVhM0F5HDQbcDV6u/v7xqYxLRftCaV74Y9hLYzx6c4/+SGXqFVI
+	 hFbPy44zWmZ/g==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp3.osuosl.org (Postfix) with ESMTP id 7CB27606BF;
+	Tue, 30 Jun 2026 23:45:32 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id EDE81316
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jun 2026 23:45:30 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id CFE3D83709
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jun 2026 23:45:30 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id qP9j53ioK9X1 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 30 Jun 2026 23:45:30 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.16;
+ helo=mgamail.intel.com; envelope-from=joshua.a.hay@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 2AA0760DC3
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2AA0760DC3
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 2AA0760DC3
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jun 2026 23:18:48 +0000 (UTC)
-X-CSE-ConnectionGUID: 3XyRS5QNQnqH1XB8YOUE7Q==
-X-CSE-MsgGUID: iPqRL7pXR6OhU0i77kA0wA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11833"; a="86135258"
-X-IronPort-AV: E=Sophos;i="6.24,234,1774335600"; d="scan'208";a="86135258"
-Received: from orviesa008.jf.intel.com ([10.64.159.148])
- by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 30 Jun 2026 16:18:47 -0700
-X-CSE-ConnectionGUID: 64BaQv3RRWCocNHekXedBw==
-X-CSE-MsgGUID: 8wDUs1oHQ5+ASvCYfZXpJQ==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 104BF8374F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 104BF8374F
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 104BF8374F
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jun 2026 23:45:29 +0000 (UTC)
+X-CSE-ConnectionGUID: WwTsMJQFQWKZQirUTznaFw==
+X-CSE-MsgGUID: 4B6qvi4RSyW8YkDPNopGhg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11833"; a="71111733"
+X-IronPort-AV: E=Sophos;i="6.24,234,1774335600"; d="scan'208";a="71111733"
+Received: from fmviesa009.fm.intel.com ([10.60.135.149])
+ by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 30 Jun 2026 16:45:29 -0700
+X-CSE-ConnectionGUID: 2jDqwQ7pTVSDiSUDqEDaPw==
+X-CSE-MsgGUID: 3mr3C2r+TA6fqJv4NmV1YA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.24,234,1774335600"; d="scan'208";a="251972105"
-Received: from estantil-desk.jf.intel.com ([10.166.241.24])
- by orviesa008.jf.intel.com with ESMTP; 30 Jun 2026 16:18:48 -0700
-From: Emil Tantilov <emil.s.tantilov@intel.com>
+X-IronPort-AV: E=Sophos;i="6.24,234,1774335600"; d="scan'208";a="246061748"
+Received: from dcskidmo-m40.jf.intel.com ([10.166.241.14])
+ by fmviesa009.fm.intel.com with ESMTP; 30 Jun 2026 16:45:27 -0700
+From: Joshua Hay <joshua.a.hay@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org, przemyslaw.kitszel@intel.com, jay.bhat@intel.com,
- ivan.d.barrera@intel.com, aleksandr.loktionov@intel.com,
- larysa.zaremba@intel.com, anthony.l.nguyen@intel.com,
- andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com, aleksander.lobakin@intel.com,
- linux-pci@vger.kernel.org, madhu.chittim@intel.com, decot@google.com,
- willemb@google.com, sheenamo@google.com, lukas@wunner.de
-Date: Tue, 30 Jun 2026 16:18:52 -0700
-Message-Id: <20260630231854.11536-1-emil.s.tantilov@intel.com>
-X-Mailer: git-send-email 2.17.2
+Cc: netdev@vger.kernel.org
+Date: Tue, 30 Jun 2026 16:56:19 -0700
+Message-Id: <20260630235619.756633-1-joshua.a.hay@intel.com>
+X-Mailer: git-send-email 2.39.2
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1782861529; x=1814397529;
- h=from:to:cc:subject:date:message-id;
- bh=+eQ6M0K+eMeEG4XsANC9glVnlOlhJrlgi8sTZLZhzh4=;
- b=ZQCAWZ+JFqHY7XuXfliRQJ3soYuvLPpgWNSE0aVzV0wS8WGZvLH4TWuO
- vyeYGwJ5DWMDoNI4Vip49Ji+KbNwLMI1f+4wFUv2TcWx7f3lr/C5Me/fx
- tznzUPzHm5M7VxWvLkX05CpgXDiToEiuEqBPSdROTvPbKh82+HldX+DBj
- jYdyGBeCXpm5n4bOQFJ3Vsp9NKDiW7Ch/zPYeZ0tFsTNKQwyN1OaI631J
- kKTMajZZIVGt+0g3QKqvCY355HPJrq/HPWoDrDZifYYWkTBfoir/0m50e
- Lz/VmcMnm+fU5bkkO0ZrqjkB0RYJMh4tn0aU1UVGwY0Dn6NS2CUhX185f
- Q==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ t=1782863130; x=1814399130;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=VVU1Aawok25MxGOIJ6dAsnFw5aNp2IWcF/0CXay64Sw=;
+ b=jbTiGrGRN4HAZQ312lTFC9vvilduxzEXuN2x0KVf5PwZIHbA3CCrd3GY
+ 00GQ/kll5wf18voXsknXBDBQOo+TYsBrqQcasx1T6/D7AMTHFDUp+oPxD
+ 8Op9CrxXj8sZ0xfnlzKh5XaFn+/C1dXAZ5IxNQBFAfwOp2H+rK071T7ng
+ ocDB4DeO+T35PqY79V5QygbypZCchixYTo1sOJk7AEAQj60NoHLrmcrmy
+ LGy9PbWaLbrZkFnRjI0ywDK7XCZCbmoXgGnLHR8YzLXZ/cOkqa15E1x/f
+ HqAeMH4p5sJSn0AuM3/7fy/N1+T4QNO2vSMVpTPvWSLD35KcfBsDtbvLM
+ A==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=ZQCAWZ+J
-Subject: [Intel-wired-lan] [PATCH iwl-next v3 0/2] Introduce IDPF PCI
- callbacks
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=jbTiGrGR
+Subject: [Intel-wired-lan] [PATCH iwl-net] idpf: adjust TxQ ring count
+ minimum
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -109,82 +105,63 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-This series implements PCI callbacks for the purpose of handling FLR and
-PCI errors in the IDPF driver.
+Set the TxQ ring count minimum to 128 descriptors. Any lower than this,
+and the queue will stall and trigger Tx timeouts in flow based
+scheduling mode. This is because next_to_clean might never be updated.
 
-The first patch removes the conditional deinitialization of the mailbox in
-the idpf_vc_core_deinit() function. Aside from being redundant, due to the
-shutdown of the mailbox after a reset is detected, the check was also
-preventing the driver from sending messages to stop and disable the vports
-and queues on FW side, which is needed for the prepare phase of the FLR
-handling.
+In flow based scheduling mode, next_to_clean is only updated after a
+descriptor completion is processed, i.e. after the RE bit is set in the
+last descriptor of a Tx packet. This will never happen with a ring size
+of 64 and an IDPF_TX_SPLITQ_RE_MIN_GAP of 64. No matter what the value
+of last_re is initialized/set to, the calculated gap will be at most 63
+and never trigger the RE bit.
 
-The second patch implements the PCI callbacks. The logic here follows
-the reset handling done in idpf_init_hard_reset(), but is split in
-prepare and resume phases, where idpf_reset_prepare() stops all driver
-operations and the resume callback attempt to recover following the
-reset or the PCI error event.
+Even a ring size of 96 does not solve this. Because of how infrequent
+next_to_clean is updated and how small the ring is, IDPF_DESC_UNUSED
+will be much smaller on average. This increases the chance the queue
+will be stopped because a multi-descriptor packet, e.g. a large LSO
+packet, does not see enough resources on the ring. In this case, the
+queue will trigger the stop logic. The queue permanently stalls because
+there is no chance for a descriptor completion to update next_to_clean
+since it is dependent on a packet being sent.
 
-NOTE: These changes depend on, and apply on top of the IXD series:
-https://lore.kernel.org/netdev/20260608144127.2751230-1-larysa.zaremba@intel.com/
+Fixes: 5f417d551324 ("idpf: replace flow scheduling buffer ring with buffer pool")
+Signed-off-by: Joshua Hay <joshua.a.hay@intel.com>
+Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+---
+ drivers/net/ethernet/intel/idpf/idpf_txrx.c | 5 +----
+ drivers/net/ethernet/intel/idpf/idpf_txrx.h | 2 +-
+ 2 files changed, 2 insertions(+), 5 deletions(-)
 
-Testing hints:
-1. FLR via sysfs:
-echo 1 > /sys/class/net/<ifname>/device/reset
-
-Previously this would have been handled by idpf_init_hard_reset() as the
-driver detects the reset. Now it will be done by the PCI err callbacks,
-so this is the easiest way to test the reset_prepare/resume path.
-
-2. PCI errors can be tested with aer-inject:
-./aer-inject -s 83:00.0 examples/<error_type>
-
-3. Stress testing can be done by combining various callbacks with the
-reset from step 1:
-echo 1 > /sys/class/net/<if>/device/reset& ethtool -L <if> combined 8
-ethtool -L <if> combined 16& echo 1 > /sys/class/net/<if>/device/reset
-
-Changelog:
-v2->v3:
-1/2:
-- Added call to libie_ctlq_xn_shutdown() in idpf_shutdown() to avoid
-possible regression when shutting down while FW is not responsive,
-causing long delays.
-- Fixed typo in the title s/conditonal/conditional/
-
-2/2:
-- Improved the logic in idpf_reset_prepare() to make sure the
-  RESET_IN_PROG bit is set after the init task.
-- Renamed the err parameter in idpf_pci_err_detected() with state
-  and updated the description to match.
-- Added check for adapter->xnm before calling libie_ctlq_xn_shutdown()
-  in idpf_pci_err_detected().
-- Corrected a comment to add some context on the reasoning behind
-  the reset triggered on resume, following a PCI error.
-- Corrected the description for slot_reset callback by removing
-  the mention of AER as it is not the only trigger for the reset.
-- Use PCI_POSSIBLE_ERROR() macro when checking RSTAT value.
-- Add vport_ctrl_lock when calling idpf_vc_core_deinit() in 
-  idpf_reset_prepare().
-
-v1->v2:
-- Removed the call to pci_save_state() from idpf_pci_err_slot_reset(),
-  as it is no longer needed after pci_restore_state(). Suggested by
-  Lukas Wunner.
-
-v1:
-https://lore.kernel.org/netdev/20260411003959.30959-1-emil.s.tantilov@intel.com/
-
-Emil Tantilov (2):
-  idpf: remove conditional MBX deinit from idpf_vc_core_deinit()
-  idpf: implement pci error handlers
-
- drivers/net/ethernet/intel/idpf/idpf.h        |   3 +
- drivers/net/ethernet/intel/idpf/idpf_lib.c    |  13 +-
- drivers/net/ethernet/intel/idpf/idpf_main.c   | 124 ++++++++++++++++++
- .../net/ethernet/intel/idpf/idpf_virtchnl.c   |  10 +-
- 4 files changed, 139 insertions(+), 11 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
+index 7f9056404f64..c724d429a7aa 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
+@@ -3097,10 +3097,7 @@ static netdev_tx_t idpf_tx_splitq_frame(struct sk_buff *skb,
+ 
+ 		tx_params.dtype = IDPF_TX_DESC_DTYPE_FLEX_FLOW_SCHE;
+ 		tx_params.eop_cmd = IDPF_TXD_FLEX_FLOW_CMD_EOP;
+-		/* Set the RE bit to periodically "clean" the descriptor ring.
+-		 * MIN_GAP is set to MIN_RING size to ensure it will be set at
+-		 * least once each time around the ring.
+-		 */
++		/* Set the RE bit periodically to "clean" the descriptor ring */
+ 		if (idpf_tx_splitq_need_re(tx_q)) {
+ 			tx_params.eop_cmd |= IDPF_TXD_FLEX_FLOW_CMD_RE;
+ 			tx_q->txq_grp->num_completions_pending++;
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.h b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
+index 4be5b3b6d3ed..908dfa28674e 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_txrx.h
++++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
+@@ -21,7 +21,7 @@
+ /* Mailbox Queue */
+ #define IDPF_MAX_MBXQ				1
+ 
+-#define IDPF_MIN_TXQ_DESC			64
++#define IDPF_MIN_TXQ_DESC			128
+ #define IDPF_MIN_RXQ_DESC			64
+ #define IDPF_MIN_TXQ_COMPLQ_DESC		256
+ #define IDPF_MAX_QIDS				256
 -- 
-2.37.3
+2.39.2
 
