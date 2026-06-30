@@ -1,99 +1,101 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6951BC44502
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EB554C43327
 	for <intel-wired-lan@archiver.kernel.org>; Tue, 30 Jun 2026 15:19:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 371EC61075;
+	by smtp1.osuosl.org (Postfix) with ESMTP id C103981A65;
 	Tue, 30 Jun 2026 15:19:15 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id heMuqvoLVJNo; Tue, 30 Jun 2026 15:19:14 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 4zoo7gC0ZYAp; Tue, 30 Jun 2026 15:19:15 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 69E596107D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0E1AA81E58
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1782832754;
-	bh=nCZadshr+DzQYVkCBh6cy/RM40zwNi0ZS4nnwSr8GpY=;
-	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
+	s=default; t=1782832755;
+	bh=dvgyW8X4QaOk9VN18ZFlTY30npYMh5LShKDCXGOsMxM=;
+	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=BTCjTxR0sQMFU19EpbsHAQKkqn8s0FTFTAedg9yMiuaozn8B4LZbByNSMWsyz3UJw
-	 6g3WH0uwJsK9UPhna+Rct0qV8caA5FlbP5BcS0zTXOrkMO9y6cp6IVTU4WbezR8Ohd
-	 ZhWiiyP8LsUF1/WaQC5r/sDU8c0bQYv91ty0Vsus3luj/BfpCyW5AWBEbo9bB7ztSW
-	 z8P5hqtdKWC8utZqCnUjXy/RL/8dNzL36o1Qlath85ToQsOpTutaFaUxHHebHzyeUT
-	 srQic44YCp0vPw2bjaUne0wBpLoF9khIZ0Qbq79DcSkTS3L7Yvyrhnj2dWcEUWrw0q
-	 3w/8UVhv5pC/w==
+	b=zkWfaKnRDUmipZjMjZG5YO2P6/GqEsGqBQM5LusQgSDrNihXChpyRjzwp2uxRaJGA
+	 Sltivi0zn4VeiJGd6iGjErlY86s7FATZIeae8b+QMW0XjoH95mWKpvRNtVFYt010gR
+	 AF6XIXtV/qFS9nLVxnbV8xfPsAh4QWJ/Q3gFDe7woPv6ctykebuqc2xogen9A5AhgR
+	 VXtTpXK44nHmb8o1SMm5mADz24JN65v7GwQn/kO5Ocvh6TNo/RZZlieHTFhW7ExUL/
+	 wosjc9iWp1I2VA8fOL2Y9+QRqs1095OPcwR5gmgNlqNWxOYz1z637FEMIhIUg1nbw8
+	 940AfMSg3WChg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 69E596107D;
-	Tue, 30 Jun 2026 15:19:14 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 688D3ED6
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jun 2026 11:00:09 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 0E1AA81E58;
+	Tue, 30 Jun 2026 15:19:15 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 42FAC149
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jun 2026 14:40:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 4EFEF60FC0
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jun 2026 11:00:09 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 2151482977
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jun 2026 14:40:44 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id bERsJuGJEvpe for <intel-wired-lan@lists.osuosl.org>;
- Tue, 30 Jun 2026 11:00:08 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
- helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 545F860B4A
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 545F860B4A
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 545F860B4A
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jun 2026 11:00:08 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id ZidQchkflgt6 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 30 Jun 2026 14:40:43 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
+ helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 8623480839
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8623480839
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 8623480839
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jun 2026 14:40:43 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by sea.source.kernel.org (Postfix) with ESMTP id 1F12B40E06;
- Tue, 30 Jun 2026 11:00:08 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 736051F00A3D;
- Tue, 30 Jun 2026 11:00:03 +0000 (UTC)
-From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-Date: Tue, 30 Jun 2026 13:59:27 +0300
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260630-b4-drivers-net-v1-8-672162a91f37@kernel.org>
-References: <20260630-b4-drivers-net-v1-0-672162a91f37@kernel.org>
-In-Reply-To: <20260630-b4-drivers-net-v1-0-672162a91f37@kernel.org>
-To: Andrew Lunn <andrew+netdev@lunn.ch>, 
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>
-Cc: Brian Norris <briannorris@chromium.org>, 
- Edward Cree <ecree.xilinx@gmail.com>, 
- Francesco Dolcini <francesco@dolcini.it>, 
- Manish Chopra <manishc@marvell.com>, Mike Rapoport <rppt@kernel.org>, 
- Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
- Sudarsana Kalluru <skalluru@marvell.com>, 
- Tony Nguyen <anthony.l.nguyen@intel.com>, b43-dev@lists.infradead.org, 
- intel-wired-lan@lists.osuosl.org, libertas-dev@lists.infradead.org, 
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-net-drivers@amd.com, 
+ by tor.source.kernel.org (Postfix) with ESMTP id D8F40601C1;
+ Tue, 30 Jun 2026 14:40:41 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 097601F000E9;
+ Tue, 30 Jun 2026 14:40:36 +0000 (UTC)
+Date: Tue, 30 Jun 2026 17:40:34 +0300
+From: Mike Rapoport <rppt@kernel.org>
+To: Jakub Kicinski <kuba@kernel.org>
+Cc: Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>,
+ Brian Norris <briannorris@chromium.org>,
+ Edward Cree <ecree.xilinx@gmail.com>,
+ Francesco Dolcini <francesco@dolcini.it>,
+ Manish Chopra <manishc@marvell.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Sudarsana Kalluru <skalluru@marvell.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ b43-dev@lists.infradead.org, intel-wired-lan@lists.osuosl.org,
+ libertas-dev@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, linux-net-drivers@amd.com,
  linux-wireless@vger.kernel.org, netdev@vger.kernel.org
-X-Mailer: b4 0.15.2
+Message-ID: <akPVYpzxwP8CIQxu@kernel.org>
+References: <20260630-b4-drivers-net-v1-0-672162a91f37@kernel.org>
+ <20260630072344.159b5d99@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260630072344.159b5d99@kernel.org>
 X-Mailman-Approved-At: Tue, 30 Jun 2026 15:19:08 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=kernel.org; s=k20260515; t=1782817208;
- bh=nCZadshr+DzQYVkCBh6cy/RM40zwNi0ZS4nnwSr8GpY=;
- h=From:Date:Subject:References:In-Reply-To:To:Cc;
- b=BHxEq6ExepayPqMVcba1gAOZBamGomKzGI5/5rbn4FkcDA6n30f9+6e3ho9P8OwWU
- 6+ENTujmQC9oE2fr15f3DfD685ltql5+ulTzniflHu/5xHjg8Eppf3qb9Hh+2qgUDA
- ME464175cHxtguWUsZhBztIo+dKhzs8PG5IC/96hm29yd4Z0iwNPkTO33p6idcdDp/
- FjithW/WlildOFWxaLjCMKyGZXhKmpBpkXf96s/l1exvCtkqBxQaNyn0n5UfWOeBNn
- SVmcV8YVyeBAmrNTxPQHtglqbphZVG5c+ST+4B2ZpMQqg9IQ18aRQQ7t+8J2hG1Npu
- aIQxG92cvPCBw==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ d=kernel.org; s=k20260515; t=1782830441;
+ bh=dvgyW8X4QaOk9VN18ZFlTY30npYMh5LShKDCXGOsMxM=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To;
+ b=UaRdoyQZ1fTRKLAcvtRM8pCPos/hNLQhMFDTOXBDrPIVVOLNJRA7cU6ka14RHMRFR
+ qWpfgLvKeAkf3XDjCuN2u6VoExWRrn+k9PHdw1xwsfaFYRW6apiRDH/bzW3S/vPXox
+ NDxnR8QhAiI/zPphXPkt1KolvI83eq3Oxp7pH6P8fycRjVpGLO0mOiNQvzLLw+uZ8w
+ WRnUBYhp2jcwsX+8wxOOiEB4mT754vZ1T4aD/zr4L6UdrtAvPeJdD/EC+QwUvwBkRC
+ yr2g0tFvuReybfsvjS3lYxCtUKPjJPqHyXPEmCx9cYMHhnzg+aQfCesR1JnXw5Gekk
+ GQ0tpKu3Pqrmg==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20260515 header.b=BHxEq6Ex
-Subject: [Intel-wired-lan] [PATCH net-next 8/8] wlcore: allocate aggregation
- and firmware log buffers with kzalloc()
+ header.a=rsa-sha256 header.s=k20260515 header.b=UaRdoyQZ
+Subject: Re: [Intel-wired-lan] [PATCH net-next 0/8] drivers/net: replace
+ __get_free_pages() with kmalloc()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -109,91 +111,30 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-wlcore_alloc_hw() uses __get_free_pages() to  allocate TX aggregation
-and firmware log buffers used for software data staging.
+On Tue, Jun 30, 2026 at 07:23:44AM -0700, Jakub Kicinski wrote:
+> On Tue, 30 Jun 2026 13:59:19 +0300 Mike Rapoport (Microsoft) wrote:
+> >  drivers/net/ethernet/broadcom/bnx2x/bnx2x_sp.c    |  6 +--
+> >  drivers/net/ethernet/intel/ice/ice_gnss.c         |  5 +-
+> >  drivers/net/ethernet/sfc/mcdi.c                   |  7 +--
+> >  drivers/net/ethernet/sfc/siena/mcdi.c             |  7 +--
+> >  drivers/net/wireless/broadcom/b43/debugfs.c       | 12 ++---
+> >  drivers/net/wireless/broadcom/b43legacy/debugfs.c | 11 ++--
+> >  drivers/net/wireless/marvell/libertas/debugfs.c   | 39 ++++++--------
+> >  drivers/net/wireless/marvell/mwifiex/debugfs.c    | 62 ++++++++++-------------
+> >  drivers/net/wireless/ti/wlcore/main.c             | 14 +++--
+> 
+> You gotta split this, wireless and ethernet go via separate trees.
 
-These buffer can be allocated with kmalloc() as there's nothing special
-about them to go directly to the page allocator.
+Sure.
 
-kmalloc() provides a better API that does not require ugly casts and
-kfree() does not need to know the size of the freed object.
+> BTW cocci also suggests folding in a memset, IDK if it's worth it.
 
-Performance difference between kmalloc() and __get_free_pages() is not
-measurable as both allocators take an object/page from a per-CPU list for
-fast path allocations.
-
-For the slow path the performance is anyway determined by the amount of
-reclaim involved rather than by what allocator is used.
-
-Replace use of __get_free_pages() with kzalloc() and free_pages() with
-kfree().
-
-Link: https://lore.kernel.org/all/635405e4-9423-4a25-a6e7-e03c8ea0bcbe@redhat.com
-Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
----
- drivers/net/wireless/ti/wlcore/main.c | 14 ++++++--------
- 1 file changed, 6 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/net/wireless/ti/wlcore/main.c b/drivers/net/wireless/ti/wlcore/main.c
-index be583ae331c0..5595f7a1fc0c 100644
---- a/drivers/net/wireless/ti/wlcore/main.c
-+++ b/drivers/net/wireless/ti/wlcore/main.c
-@@ -6354,7 +6354,6 @@ struct ieee80211_hw *wlcore_alloc_hw(size_t priv_size, u32 aggr_buf_size,
- 	struct ieee80211_hw *hw;
- 	struct wl1271 *wl;
- 	int i, j, ret;
--	unsigned int order;
+Same churn, less lines :)
  
- 	hw = ieee80211_alloc_hw(sizeof(*wl), &wl1271_ops);
- 	if (!hw) {
-@@ -6434,8 +6433,7 @@ struct ieee80211_hw *wlcore_alloc_hw(size_t priv_size, u32 aggr_buf_size,
- 	mutex_init(&wl->flush_mutex);
- 	init_completion(&wl->nvs_loading_complete);
- 
--	order = get_order(aggr_buf_size);
--	wl->aggr_buf = (u8 *)__get_free_pages(GFP_KERNEL, order);
-+	wl->aggr_buf = kmalloc(round_up(aggr_buf_size, PAGE_SIZE), GFP_KERNEL);
- 	if (!wl->aggr_buf) {
- 		ret = -ENOMEM;
- 		goto err_wq;
-@@ -6449,7 +6447,7 @@ struct ieee80211_hw *wlcore_alloc_hw(size_t priv_size, u32 aggr_buf_size,
- 	}
- 
- 	/* Allocate one page for the FW log */
--	wl->fwlog = (u8 *)get_zeroed_page(GFP_KERNEL);
-+	wl->fwlog = kzalloc(PAGE_SIZE, GFP_KERNEL);
- 	if (!wl->fwlog) {
- 		ret = -ENOMEM;
- 		goto err_dummy_packet;
-@@ -6474,13 +6472,13 @@ struct ieee80211_hw *wlcore_alloc_hw(size_t priv_size, u32 aggr_buf_size,
- 	kfree(wl->mbox);
- 
- err_fwlog:
--	free_page((unsigned long)wl->fwlog);
-+	kfree(wl->fwlog);
- 
- err_dummy_packet:
- 	dev_kfree_skb(wl->dummy_packet);
- 
- err_aggr:
--	free_pages((unsigned long)wl->aggr_buf, order);
-+	kfree(wl->aggr_buf);
- 
- err_wq:
- 	destroy_workqueue(wl->freezable_wq);
-@@ -6509,9 +6507,9 @@ int wlcore_free_hw(struct wl1271 *wl)
- 
- 	kfree(wl->buffer_32);
- 	kfree(wl->mbox);
--	free_page((unsigned long)wl->fwlog);
-+	kfree(wl->fwlog);
- 	dev_kfree_skb(wl->dummy_packet);
--	free_pages((unsigned long)wl->aggr_buf, get_order(wl->aggr_buf_size));
-+	kfree(wl->aggr_buf);
- 
- 	wl1271_debugfs_exit(wl);
- 
+> drivers/net/wireless/broadcom/b43legacy/debugfs.c:217:8-15: WARNING: kzalloc should be used for buf, instead of kmalloc/memset
+> -- 
+> pw-bot: cr
 
 -- 
-2.53.0
-
+Sincerely yours,
+Mike.
