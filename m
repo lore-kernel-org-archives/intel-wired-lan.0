@@ -4,89 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 579D6C43458
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 29 Jun 2026 22:53:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 77599C43458
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 30 Jun 2026 03:26:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id E2AB460EA8;
-	Mon, 29 Jun 2026 22:53:50 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 188FA60845;
+	Tue, 30 Jun 2026 03:26:12 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ZrbZNiYO3IgL; Mon, 29 Jun 2026 22:53:50 +0000 (UTC)
+ id fnWXx-frrH09; Tue, 30 Jun 2026 03:26:11 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1F14060D6E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 95421607E7
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1782773630;
-	bh=mQm2Cpdl7FUXTMgD3IZug5m2bpmaRdES+acA5DhlVW4=;
-	h=Date:From:To:Cc:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=V2Yym9ZUi34pVVvR6vYgsvtfQGlndvPRQ6Yh4vTb3VDbMl5AFYRZDK7dlFokEVwmI
-	 MuxnS4vur99h7klnjNOYg4h5WqCaJGit2aDSWvWRWPN+ObxbM4ijCQZ1I27cmrb+dt
-	 R/bdt85qWZ5U1hyLsBLkCxkKvm/yCGwXn1ED2FEVi++7F0ERFLKauS6u7fCQFHRCT2
-	 6tGy8yJLGHWiWFa91AkxCYZHceU+3dxnKnlyGWsa/cCd9VdskddvXXDod9qd4SD73m
-	 +joomAmpWMpEtACD10OPBdtzORyaixFsSUnZULlO1kvhy9sQSFf+DWxetzjlfbTYSQ
-	 3fFbpgaLheFtw==
+	s=default; t=1782789971;
+	bh=/SwNmCMjTxoLdqZnFpSJjNUEAyiVEzWIN9TdiRidF4U=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=ef3EQx1R/XK24kNYcwb/+1pYyS9NJB6fpITJ1U2x5aLXcjO+lPpRzBGihQdIkVdY4
+	 GlYbB8mb476uQRcNSxXJvLpUWl3vaFJ0+GTDqKEzXuGLoHN92e4CuZIB7SO3Vugo+O
+	 OFftjSsISA9OycsNcQuUa0/PxjoeCcYQbjWO8V7JKncSvTZn8SaebuCCFFtnDdmNAA
+	 xAYAGx1lW+N2As5pR2zkdz06kTqR2qYr0KGGHoX0WnsUzQAsDOwUGI2bNUvbG9ABZe
+	 RTqjBK5eK0sefSwdC2xwKII8Fq/9YkFem10S5ehTdEp3PX6XE65XVpcAE++NRvAEkE
+	 YXlDveJ2Twb6g==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 1F14060D6E;
-	Mon, 29 Jun 2026 22:53:50 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id CFFE42F3
- for <intel-wired-lan@lists.osuosl.org>; Mon, 29 Jun 2026 22:53:47 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 95421607E7;
+	Tue, 30 Jun 2026 03:26:11 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 9444B149
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jun 2026 03:26:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id BE36040B70
- for <intel-wired-lan@lists.osuosl.org>; Mon, 29 Jun 2026 22:53:47 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 8826981347
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jun 2026 03:26:09 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id uoHsz-Zc52s6 for <intel-wired-lan@lists.osuosl.org>;
- Mon, 29 Jun 2026 22:53:47 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org; envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org C843D40B37
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C843D40B37
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp4.osuosl.org (Postfix) with ESMTPS id C843D40B37
- for <intel-wired-lan@lists.osuosl.org>; Mon, 29 Jun 2026 22:53:46 +0000 (UTC)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id A444860008;
- Mon, 29 Jun 2026 22:53:44 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2F9011F000E9;
- Mon, 29 Jun 2026 22:53:44 +0000 (UTC)
-Date: Mon, 29 Jun 2026 15:53:43 -0700
-From: Jakub Kicinski <kuba@kernel.org>
-To: "Loktionov, Aleksandr" <aleksandr.loktionov@intel.com>
-Cc: "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- "Nguyen, Anthony L" <anthony.l.nguyen@intel.com>, "netdev@vger.kernel.org"
- <netdev@vger.kernel.org>
-Message-ID: <20260629155343.7fed8291@kernel.org>
-In-Reply-To: <IA3PR11MB8986053B156CBA043045A525E5E82@IA3PR11MB8986.namprd11.prod.outlook.com>
-References: <20260626054730.1126969-1-aleksandr.loktionov@intel.com>
- <20260626054730.1126969-3-aleksandr.loktionov@intel.com>
- <20260626152636.1e48330f@kernel.org>
- <IA3PR11MB8986053B156CBA043045A525E5E82@IA3PR11MB8986.namprd11.prod.outlook.com>
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Dh6Q92we1yy1 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 30 Jun 2026 03:26:08 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=220.197.31.5;
+ helo=m16.mail.163.com; envelope-from=clementwei90@163.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 851CC81301
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 851CC81301
+Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.5])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 851CC81301
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jun 2026 03:26:05 +0000 (UTC)
+Received: from localhost.localdomain (unknown [])
+ by gzga-smtp-mtada-g1-3 (Coremail) with SMTP id
+ _____wBHShoyN0Nq1ZWKFw--.30162S2; 
+ Tue, 30 Jun 2026 11:25:42 +0800 (CST)
+From: Rongguang Wei <clementwei90@163.com>
+To: netdev@vger.kernel.org,
+	intel-wired-lan@lists.osuosl.org
+Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ andrew+netdev@lunn.ch, Rongguang Wei <weirongguang@kylinos.cn>
+Date: Tue, 30 Jun 2026 11:25:37 +0800
+Message-Id: <20260630032537.42605-1-clementwei90@163.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID: _____wBHShoyN0Nq1ZWKFw--.30162S2
+X-Coremail-Antispam: 1Uf129KBjvJXoW7KF1rGrW3uFyfZrWUZrWUArb_yoW8Kr1DpF
+ WDAFy5Cr1kGr45W395WF4qyr9xK3ykta45KFWDA3Z2vrn8Ar4ktr9FyF4S9ryrJFZ3Kay3
+ XF1jvFWUCF4xXaUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+ 9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07jnhL8UUUUU=
+X-Originating-IP: [116.128.244.169]
+X-CM-SenderInfo: 5fohzv5qwzvxizq6il2tof0z/xtbC4hZGsWpDNzYhwAAA3K
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=kernel.org; s=k20260515; t=1782773624;
- bh=mQm2Cpdl7FUXTMgD3IZug5m2bpmaRdES+acA5DhlVW4=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References;
- b=cLrLjUsmPAx7ouea3DL7B/uiISyRyGu/yohUtSjZxm+ui87QxAUY07QcQjR5/9gQK
- yZdMROLg5kPBQJhSdl4yqRvOfTgS+gBLjaJeZ5ER22d9U23qA9ZkSsR3fXohvIgTkW
- isdMP3VY97vwVLQGF+uzHGwU5EDoJxZTedQL3THu2gb5hFquDeE5L7/hPG9mDpUy3p
- If0rZpIHe3iJrMjpfu2RHcGFf0UW2G1fTJZphfhglXBsWb3DT6Hd2R/4lxJMCBQo4I
- b8L2ejeIy8pSI20BTJ8CV9yH7TJdrk3bR8sBlMuUhZ41IuzP0orlrt0/VvA69SbZpD
- yfZtthA7mbVXA==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=cLrLjUsm
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v5 2/2] ice: implement
- symmetric RSS hash configuration
+ d=163.com; 
+ s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=/S
+ wNmCMjTxoLdqZnFpSJjNUEAyiVEzWIN9TdiRidF4U=; b=hBGaOmjbj7N6Dr/ioC
+ r+1TQ0YrYoKS3e2LsbPSMhMxIQwtv3w5AsEnnreGabPHTuc2GuSRyrJiUum6ELLW
+ 24yjn3y7d5kFUpj1j1jZhiTjlr6IvgLHCSP6KBU6HdLbSZdtjC4Otkr4olLyEHxa
+ fsbVZmKV2tgea0o+ES6ncQZrg=
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=163.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (1024-bit key,
+ unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256
+ header.s=s110527 header.b=hBGaOmjb
+Subject: [Intel-wired-lan] [PATCH net-next v1] ice: use dev_err_probe in all
+ appropriate places in ice_probe()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -102,33 +99,73 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Mon, 29 Jun 2026 14:10:08 +0000 Loktionov, Aleksandr wrote:
-> I understood on TEID; I will drop the ethtool core patch.
-> 
-> One question before respinning the ice feature patch: ice GTP RSS profiles
-> include TEID in the hardware hash fields. Since TEID is not generally
-> symmetric across UL/DL, should the driver:
-> 
->   1. report RXH_GTP_TEID honestly and let the core reject symmetric-xor
->      when GTP flow types are part of the preflight check;
-> 
->   2. hide RXH_GTP_TEID while symmetric-xor is enabled, even though that
->      misrepresents the hardware hash input;
-> 
->   3. reject symmetric-xor for configurations where GTP profiles include
->      TEID; or
-> 
->   4. change/program the ice GTP profile, if possible, to exclude TEID
->      under symmetric-xor?
-> 
-> My preference is (1) or (3), but I do not want to encode the wrong uAPI
-> semantics.
+From: Rongguang Wei <weirongguang@kylinos.cn>
 
-Do you have access to any GTP experts?
-If your customers want the TEID in the symmetric hash then they
-probably know better what makes sense than me after reading about it
-for 1 minute.
-We may just need a better commit message on the first patch "TEID is
-intrinsically symmetric" is not true.
-Or maybe the driver / profiles are not doing the right thing.
-Please dig deeper.
+Use dev_err_probe() can conveniently combines printing
+an error message with returning the errno and also
+simplify the code.
+
+Signed-off-by: Rongguang Wei <weirongguang@kylinos.cn>
+---
+ drivers/net/ethernet/intel/ice/ice_main.c | 24 ++++++++---------------
+ 1 file changed, 8 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index e2fbe111f849..81959eaec708 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -5167,10 +5167,8 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ 	struct ice_hw *hw;
+ 	int err;
+ 
+-	if (pdev->is_virtfn) {
+-		dev_err(dev, "can't probe a virtual function\n");
+-		return -EINVAL;
+-	}
++	if (pdev->is_virtfn)
++		return dev_err_probe(dev, -EINVAL, "can't probe a virtual function\n");
+ 
+ 	/* when under a kdump kernel initiate a reset before enabling the
+ 	 * device in order to clear out any pending DMA transactions. These
+@@ -5194,10 +5192,8 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ 		return err;
+ 
+ 	err = pcim_iomap_regions(pdev, BIT(ICE_BAR0), dev_driver_string(dev));
+-	if (err) {
+-		dev_err(dev, "BAR0 I/O map error %d\n", err);
+-		return err;
+-	}
++	if (err)
++		return dev_err_probe(dev, err, "BAR0 I/O map error %d\n", err);
+ 
+ 	pf = ice_allocate_pf(dev);
+ 	if (!pf)
+@@ -5208,10 +5204,8 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ 
+ 	/* set up for high or low DMA */
+ 	err = dma_set_mask_and_coherent(dev, DMA_BIT_MASK(64));
+-	if (err) {
+-		dev_err(dev, "DMA configuration failed: 0x%x\n", err);
+-		return err;
+-	}
++	if (err)
++		return dev_err_probe(dev, err, "DMA configuration failed: 0x%x\n", err);
+ 
+ 	pci_set_master(pdev);
+ 	pf->pdev = pdev;
+@@ -5246,10 +5240,8 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ 		return ice_probe_recovery_mode(pf);
+ 
+ 	err = ice_init_hw(hw);
+-	if (err) {
+-		dev_err(dev, "ice_init_hw failed: %d\n", err);
+-		return err;
+-	}
++	if (err)
++		return dev_err_probe(dev, err, "ice_init_hw failed: %d\n", err);
+ 
+ 	ice_init_dev_hw(pf);
+ 
+-- 
+2.25.1
+
