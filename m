@@ -1,64 +1,66 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9FB7CC43602
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  1 Jul 2026 13:57:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BDD86C43602
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  1 Jul 2026 13:57:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 642D760EF2;
-	Wed,  1 Jul 2026 13:57:41 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 8A01F410C7;
+	Wed,  1 Jul 2026 13:57:44 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id p2NF0zGo5xJm; Wed,  1 Jul 2026 13:57:39 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id FJMxwYaM0qUR; Wed,  1 Jul 2026 13:57:42 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 32A5B60EE1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C64E1410B1
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1782914259;
-	bh=uoX4qX+FZWfnshgsq0X7cWNdSoKNRRVi845f4JIWs1M=;
+	s=default; t=1782914262;
+	bh=qVNG6A0QrvVc3Q5VGETu2ZNN6OFwwV/HGShrasBWJk4=;
 	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=pP2joQOExz98WulUiqsnziw2ObJx3/Ze2UtzQBUzvK9l6PdHnjxXbLZQeAoC+ioR+
-	 TlS7uAYogBMXO+6to9c5DrTZLRuDHFM5ryhyprS0vSaTRVViInaCw/Kifna8jC2KCg
-	 exSngxU3aPe7QI1aD+/f37J6NHBWvYJnbXksgd76sa3rY8VlkQP0GkrdookserFJf4
-	 PXervAnp6eKzpG2eI07qvlzI9TCMWX00V5Ik5MAomvPgJNFFNcxc3ehb1UfupB3z2m
-	 0QdaSmNOvr9jZLHE0GtOUOt5b6Nh2tPynLHILRAVHvOmIblG3JhgOyMJDEGhIy9a1a
-	 0woWjLdUqQYrQ==
+	b=KligsW6naZtzTqNhw8oq9hH66S5ObWJaS/weHeY/XX1HpQqSeWtzIADXZxZtp0q9L
+	 /Cje6IxWeZiV6BdLAcoaDsZbZodV0W3VfVizAH1YD4hjjDTU1qCAg/R2RKRa++bfOf
+	 fI/VDVNXnyHAPH+9MLZU0fTCr/5ojWdQUNdkw8OrjT/sIfmtt30isJ1Y3tqw3SMM+g
+	 HdLmen/yr9l0Gemqr3TENV3ns7zcYCfzecBzIK2kBWgE0/orQyNz5+4O+W+4PuhDWb
+	 XsRG79z/sM+17PFkMgZSHv9A1v/irsYi5dbCDqPJK7XvPqUBez2gXvETHAbILoiePG
+	 2t5cvWUWdcnXQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 32A5B60EE1;
-	Wed,  1 Jul 2026 13:57:39 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 87455127
- for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Jul 2026 13:57:38 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id C64E1410B1;
+	Wed,  1 Jul 2026 13:57:42 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id BD9B92D5
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Jul 2026 13:57:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 6A0218242D
- for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Jul 2026 13:57:38 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id A2AAF60EE3
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Jul 2026 13:57:41 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Svuir6jF_XBC for <intel-wired-lan@lists.osuosl.org>;
- Wed,  1 Jul 2026 13:57:37 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 8A002823FB
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8A002823FB
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 8A002823FB
- for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Jul 2026 13:57:37 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id kmRyMX0-MZ7e for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  1 Jul 2026 13:57:40 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
+ envelope-from=rppt@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 894EA60EF1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 894EA60EF1
+Received: from sea.source.kernel.org (sea.source.kernel.org
+ [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 894EA60EF1
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Jul 2026 13:57:40 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id 7988860138;
+ by sea.source.kernel.org (Postfix) with ESMTP id 42CCA4022F;
+ Wed,  1 Jul 2026 13:57:40 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AB66B1F00A3A;
  Wed,  1 Jul 2026 13:57:36 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B746A1F000E9;
- Wed,  1 Jul 2026 13:57:32 +0000 (UTC)
 From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-Date: Wed, 01 Jul 2026 16:57:20 +0300
+Date: Wed, 01 Jul 2026 16:57:21 +0300
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260701-b4-drivers-ethernet-v1-3-58776615db6e@kernel.org>
+Message-Id: <20260701-b4-drivers-ethernet-v1-4-58776615db6e@kernel.org>
 References: <20260701-b4-drivers-ethernet-v1-0-58776615db6e@kernel.org>
 In-Reply-To: <20260701-b4-drivers-ethernet-v1-0-58776615db6e@kernel.org>
 To: Andrew Lunn <andrew+netdev@lunn.ch>, 
@@ -73,23 +75,22 @@ Cc: Edward Cree <ecree.xilinx@gmail.com>,
  linux-mm@kvack.org, linux-net-drivers@amd.com, netdev@vger.kernel.org
 X-Mailer: b4 0.16-dev
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=kernel.org; s=k20260515; t=1782914256;
- bh=uoX4qX+FZWfnshgsq0X7cWNdSoKNRRVi845f4JIWs1M=;
+ d=kernel.org; s=k20260515; t=1782914260;
+ bh=qVNG6A0QrvVc3Q5VGETu2ZNN6OFwwV/HGShrasBWJk4=;
  h=From:Date:Subject:References:In-Reply-To:To:Cc;
- b=DFCVs9FjGzaRNSAa2f1a1h0gJPO6FRHEot1s1/+N8MLtefzZWzIPhNKXXNKTvI0QC
- 5i4vtEYjUXS4y/9Z9spQOWdu1/iHPVMy+U4g4UKmRKo3ZVDp1Mr9VFjcdnWpizoUkS
- wwF1EWJXRIOsybH/gLAnfi5cXiAzGlOSH14EHsW12x3/fDSU2/iKsPeIDwHWaxrFFn
- /y6+C+DfA5q3hC9MxayMQGBR925K6WFRY/mlm7BZxj6D+tYhJZaw4s6uv7cRe+0uof
- DjqJiWCO1FJviCUXX1KEo4+CXbONILVJ0mFUWq7anN40+86ZhsSjVraOJnMtkkcQos
- myAlArQhMpOjQ==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ b=JjiUo+I1MUHxEgU3cQbZI86Y6WHaDCOxBbtbySGtgnRUKHqnTTFt5JN/+yZbEvPqb
+ BhROnNLTi+nMcez+8v1Nto6/1KuUqnMd3qAXMJe2sqM8PayfcKz0sjU9kLPVgKUl7g
+ zvtzpJwqFk+YJo/2kc6qaz+Cr8TE47gB8TD7KbFle63Z/yJvJeh61z7zwar0G+jPIp
+ bVXz0dHzWlX0v/ImjFLGHVpGMuKGgVPJyGugLUOiKm34jrgQaMQyUftl0SDvVjkXbb
+ 4wdni/3VNT2ldqBHT7XKnGSXy7AZ0k0+OLvP1JJn8yHLXktr+nMzN81mcn1K3TyjPH
+ ayilUm7MHnf9A==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=DFCVs9Fj
-Subject: [Intel-wired-lan] [PATCH 3/4] sfc/siena: use kmalloc() to allocate
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20260515 header.b=JjiUo+I1
+Subject: [Intel-wired-lan] [PATCH 4/4] sfc: use kmalloc() to allocate
  logging buffer
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
@@ -106,7 +107,7 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-efx_siena_mcdi_init() allocates a logging buffer for MCDI firmware
+efx_mcdi_init() allocates a logging buffer for MCDI firmware
 communication diagnostics.
 
 This buffer can be allocated with kmalloc() as there's nothing special
@@ -128,13 +129,13 @@ kfree().
 Link: https://lore.kernel.org/all/635405e4-9423-4a25-a6e7-e03c8ea0bcbe@redhat.com
 Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 ---
- drivers/net/ethernet/sfc/siena/mcdi.c | 7 ++++---
+ drivers/net/ethernet/sfc/mcdi.c | 7 ++++---
  1 file changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/sfc/siena/mcdi.c b/drivers/net/ethernet/sfc/siena/mcdi.c
-index 4d0d6bd5d3d1..048c1e6017c0 100644
---- a/drivers/net/ethernet/sfc/siena/mcdi.c
-+++ b/drivers/net/ethernet/sfc/siena/mcdi.c
+diff --git a/drivers/net/ethernet/sfc/mcdi.c b/drivers/net/ethernet/sfc/mcdi.c
+index e65db9b70724..b806d3d90c42 100644
+--- a/drivers/net/ethernet/sfc/mcdi.c
++++ b/drivers/net/ethernet/sfc/mcdi.c
 @@ -7,6 +7,7 @@
  #include <linux/delay.h>
  #include <linux/moduleparam.h>
@@ -143,28 +144,28 @@ index 4d0d6bd5d3d1..048c1e6017c0 100644
  #include "net_driver.h"
  #include "nic.h"
  #include "io.h"
-@@ -73,7 +74,7 @@ int efx_siena_mcdi_init(struct efx_nic *efx)
+@@ -71,7 +72,7 @@ int efx_mcdi_init(struct efx_nic *efx)
  	mcdi->efx = efx;
- #ifdef CONFIG_SFC_SIENA_MCDI_LOGGING
+ #ifdef CONFIG_SFC_MCDI_LOGGING
  	/* consuming code assumes buffer is page-sized */
 -	mcdi->logging_buffer = (char *)__get_free_page(GFP_KERNEL);
 +	mcdi->logging_buffer = kmalloc(PAGE_SIZE, GFP_KERNEL);
  	if (!mcdi->logging_buffer)
  		goto fail1;
- 	mcdi->logging_enabled = efx_siena_mcdi_logging_default;
-@@ -116,7 +117,7 @@ int efx_siena_mcdi_init(struct efx_nic *efx)
+ 	mcdi->logging_enabled = mcdi_logging_default;
+@@ -112,7 +113,7 @@ int efx_mcdi_init(struct efx_nic *efx)
  	return 0;
  fail2:
- #ifdef CONFIG_SFC_SIENA_MCDI_LOGGING
+ #ifdef CONFIG_SFC_MCDI_LOGGING
 -	free_page((unsigned long)mcdi->logging_buffer);
 +	kfree(mcdi->logging_buffer);
  fail1:
  #endif
  	kfree(efx->mcdi);
-@@ -142,7 +143,7 @@ void efx_siena_mcdi_fini(struct efx_nic *efx)
+@@ -138,7 +139,7 @@ void efx_mcdi_fini(struct efx_nic *efx)
  		return;
  
- #ifdef CONFIG_SFC_SIENA_MCDI_LOGGING
+ #ifdef CONFIG_SFC_MCDI_LOGGING
 -	free_page((unsigned long)efx->mcdi->iface.logging_buffer);
 +	kfree(efx->mcdi->iface.logging_buffer);
  #endif
