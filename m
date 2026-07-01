@@ -1,67 +1,67 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89D86C43458
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5945C44500
 	for <intel-wired-lan@archiver.kernel.org>; Wed,  1 Jul 2026 12:45:50 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 5D91784178;
+	by smtp3.osuosl.org (Postfix) with ESMTP id AECF86068F;
 	Wed,  1 Jul 2026 12:45:50 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id N0Sqbkml02xD; Wed,  1 Jul 2026 12:45:48 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id vfCY46hYL-73; Wed,  1 Jul 2026 12:45:48 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3307383C98
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BE36E60D78
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
 	s=default; t=1782909948;
-	bh=OLxxm9VU+0hsdpV+SJ9G111Ev2EF3q5Rpb4Dm8ss9Ic=;
+	bh=Ka0oLD/7tJn8uRojg6wAPwE24+85MTQ6ZFPbWVYhCs0=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=eNmkAG45kF8GEdTWXY58RIj18elVyHAMhpt0TAYUXPlHOgCl90y+Q9gMt3ATdeYIp
-	 qE0QslkNBIpHZsrLg0c69wyGCj9BniLgpTFWZmnQIC2XLN/VzaupWUUDv2SlC5ukx0
-	 OY9uHsuDaDfYP8KCzLOv8zzeEKHdWg/jlOucKnh9Fi3UB1Tk9Ih+zqs3XmP7dy6I4M
-	 Ml0u1w/Q1+9PIijUVJZnsW/anMAKocp6/hlJ2bzyNAj20FO47T4WpMctjiqiErqvzB
-	 LbhVgVBizm9XsHfwZROphNeSEDARHPNmaaNmY5Gerr1KltUfMwHYEE1RSpPsmKedY1
-	 zv6tcpUBAtROg==
+	b=dVmz/GqG/Q8FZR+zclgpnENgQU72JPs9EDfyeW/iQ4kJCbmnHq3nHIq8bP6LKJ7sB
+	 eCXx5O5+jGIe7FWtNWnhDDDxvdhrw0Pefg+7k5l2Fxrnfp9wS5ZW+3Rc8zFVMJml5q
+	 L7E/rBqLBi+Ze+1t2AozVBXulldVrVt1IPWQnqZfNfbfEDwI2JCRHtF5o2JYD4SWf0
+	 SWdayd3+aymw1ah9LYLxpjN3D/l9b9eE2bu+TgngUERlw9E9nFMVlCexD2C4eVFYZX
+	 7rFZ58WqmvS5zQg+QR24QMfztClwzwAxsbXJL7XSJEiHp+eSKK1G1HiuwZftnil3Qc
+	 2N/ULhF7JKDtA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 3307383C98;
+	by smtp3.osuosl.org (Postfix) with ESMTP id BE36E60D78;
 	Wed,  1 Jul 2026 12:45:48 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id E90132EB
- for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Jul 2026 12:45:45 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 275D02D5
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Jul 2026 12:45:46 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id CEE92403FF
- for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Jul 2026 12:45:45 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 18F1840508
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Jul 2026 12:45:46 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 0JqpvDHQ-MFb for <intel-wired-lan@lists.osuosl.org>;
+ id xJVBCSPNvCly for <intel-wired-lan@lists.osuosl.org>;
  Wed,  1 Jul 2026 12:45:45 +0000 (UTC)
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.16;
  helo=mgamail.intel.com; envelope-from=maciej.fijalkowski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 2C50040517
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2C50040517
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 70E954052B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 70E954052B
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 2C50040517
- for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Jul 2026 12:45:44 +0000 (UTC)
-X-CSE-ConnectionGUID: U4hnzzHCTGaN02T2ncgtFw==
-X-CSE-MsgGUID: x3lDDYA4SGywX+/dHiCCeg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11833"; a="83839230"
-X-IronPort-AV: E=Sophos;i="6.25,141,1779174000"; d="scan'208";a="83839230"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 70E954052B
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Jul 2026 12:45:45 +0000 (UTC)
+X-CSE-ConnectionGUID: JWwLRx7cTby1zcqSexFp+w==
+X-CSE-MsgGUID: tVuHKTWMRpuOgB4x2hGL8w==
+X-IronPort-AV: E=McAfee;i="6800,10657,11833"; a="83839243"
+X-IronPort-AV: E=Sophos;i="6.25,141,1779174000"; d="scan'208";a="83839243"
 Received: from fmviesa001.fm.intel.com ([10.60.135.141])
  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 01 Jul 2026 05:45:33 -0700
-X-CSE-ConnectionGUID: SYJ/FOJZT0ql9g0XrJ51jw==
-X-CSE-MsgGUID: zPZCRhowQVWeltK5uRG2Jw==
+ 01 Jul 2026 05:45:38 -0700
+X-CSE-ConnectionGUID: LS2XpwoSQtC3pq2UN3bcmg==
+X-CSE-MsgGUID: zuC5blPTRHinkJVHV7WTDw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,141,1779174000"; d="scan'208";a="276864896"
+X-IronPort-AV: E=Sophos;i="6.25,141,1779174000"; d="scan'208";a="276864918"
 Received: from boxer.igk.intel.com ([10.102.20.173])
- by fmviesa001.fm.intel.com with ESMTP; 01 Jul 2026 05:45:30 -0700
+ by fmviesa001.fm.intel.com with ESMTP; 01 Jul 2026 05:45:35 -0700
 From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org, magnus.karlsson@intel.com, kuba@kernel.org,
@@ -69,8 +69,8 @@ Cc: netdev@vger.kernel.org, magnus.karlsson@intel.com, kuba@kernel.org,
  jacob.e.keller@intel.com,
  Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
  Sashiko AI Review <sashiko-bot@kernel.org>
-Date: Wed,  1 Jul 2026 14:45:19 +0200
-Message-Id: <20260701124524.13644-3-maciej.fijalkowski@intel.com>
+Date: Wed,  1 Jul 2026 14:45:21 +0200
+Message-Id: <20260701124524.13644-5-maciej.fijalkowski@intel.com>
 X-Mailer: git-send-email 2.38.1
 In-Reply-To: <20260701124524.13644-1-maciej.fijalkowski@intel.com>
 References: <20260701124524.13644-1-maciej.fijalkowski@intel.com>
@@ -78,25 +78,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1782909945; x=1814445945;
+ t=1782909946; x=1814445946;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=MuMCGAKuSURSGZ99zUqZ6MIKOG38p+S2gkvkQ9ek3SE=;
- b=V12zXHNYAHzyhXuTGPikBgqRkqLCcYgIOZUtonhCL+/39/F9ks9Sde16
- 069JoXC/ETQrUuj48PDAU5TYizXQTZz+ghfk1mNcOAEFQyLTwVWzGOvQK
- jikQdknhiX9+EjlUYkGFlevmJtEsgZHYGv/y1Y2M3GDyelYExak9hvhUP
- Wi1rzp2eDFjk4pI09jQOODIONlA97FAnKJ/jBFQ5twRhPT1i7PN7lgKvY
- 4mtY3dnbm59oR5VLvFjmhJ1xkHfwClXmU35zS7Q7a4SmmTFrfBDXmzKpt
- MDzO0jKg4jzHmiyNkpjdT3RAPOqFb+lV25EBpR7JuvD29nrsKiXyKq9/d
- Q==;
+ bh=eRQgpL4qfxEAYee/aiq5vXUQEARM1LUI4g4CYk+FfSI=;
+ b=lUeQZVnCCROmlqJeoxvZG14KgV/p7oy6Y2kh8ks54H/noUyIpP8kcWqj
+ kqRBlcYASp2Y38lzIasALPUwLISpw/a+zgTE9E/EBKxgf/WIQBDeH54uw
+ cc8wKU6VQyn1lqJRB7aBdLuNNUvh6LUi6+NJqmu6735qQgeuW4kD5F/cD
+ lYOiG4smYD2Lchp+pztm+URKCHSvZGoXy/rQLgLpOPCZQ7ROnVPGeiuDj
+ UGpy2BPl7wHmPiH+x/7CAIBZfMi2zH6UQ1YpaMrH9C7bWBBtSyBSWwl+X
+ Cu3cwUHuD2Vcaw6dcuoMsYA6ZTIhX9FUyCDufeC76DWvVlWbKKGBgxLWL
+ g==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=V12zXHNY
-Subject: [Intel-wired-lan] [PATCH v5 net 2/7] i40e: avoid null ptr
- dereference in i40e_ptp_stop()
+ header.a=rsa-sha256 header.s=Intel header.b=lUeQZVnC
+Subject: [Intel-wired-lan] [PATCH v5 net 4/7] i40e: avoid deadlock when
+ calling unregister_netdev()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -114,50 +114,72 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 Sashiko reports:
 ***
-If an allocation fails here during i40e_rebuild(), i40e_vsi_clear()
-frees the
-main VSI and sets pf->vsi[vsi->idx] = NULL, and the rebuild will abort
-without
-stopping the PTP clock.
-Later, if the device is removed or unbound, i40e_remove()
-unconditionally
-calls i40e_ptp_stop(), which does:
-drivers/net/ethernet/intel/i40e/i40e_ptp.c:i40e_ptp_stop() {
+> +err_netdev:
+>  	if (vsi->netdev_registered) {
+>  		vsi->netdev_registered = false;
+>  		unregister_netdev(vsi->netdev);
+Could this result in a deadlock when called during a device rebuild?
+Looking at i40e_rebuild(), it explicitly acquires the RTNL lock before
+proceeding:
+drivers/net/ethernet/intel/i40e/i40e_main.c:i40e_rebuild() {
     ...
-	struct i40e_vsi *main_vsi = i40e_pf_get_main_vsi(pf);
-    ...
-	dev_info(&pf->pdev->dev, "%s: removed PHC on %s\n", __func__,
-		 main_vsi->netdev->name);
+	if (!lock_acquired)
+		rtnl_lock();
+	ret = i40e_setup_pf_switch(pf, reinit, true);
     ...
 }
-Would this cause a NULL pointer dereference since main_vsi is now NULL?
+If i40e_setup_pf_switch() calls i40e_vsi_reinit_setup() and takes this new
+err_netdev path, unregister_netdev() will unconditionally attempt to acquire
+rtnl_lock(), leading to a deadlock on the non-recursive mutex.
 ***
 
-Check if main_vsi is not null before calling dev_info().
+Use unregister_netdevice() when the rebuild path already holds RTNL, and
+keep unregister_netdev() for callers that do not. This avoids both
+recursive RTNL locking and dropping RTNL in the middle of the VSI unwind
+path.
 
-Fixes: beb0dff1251d ("i40e: enable PTP")
+Fixes: bc7d338fbb3f ("i40e: reinit flow for the main VSI")
 Reported-by: Sashiko AI Review <sashiko-bot@kernel.org>
 Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_ptp.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ptp.c b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-index ff62b5f2c815..ca93df4d6785 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-@@ -1556,8 +1556,9 @@ void i40e_ptp_stop(struct i40e_pf *pf)
- 	if (pf->ptp_clock) {
- 		ptp_clock_unregister(pf->ptp_clock);
- 		pf->ptp_clock = NULL;
--		dev_info(&pf->pdev->dev, "%s: removed PHC on %s\n", __func__,
--			 main_vsi->netdev->name);
-+		if (main_vsi)
-+			dev_info(&pf->pdev->dev, "%s: removed PHC on %s\n", __func__,
-+				 main_vsi->netdev->name);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index a29a89192a7a..e88cf7cfbd84 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -14257,7 +14257,8 @@ static int i40e_vsi_setup_vectors(struct i40e_vsi *vsi)
+  * Returns pointer to the successfully allocated and configured VSI sw struct
+  * on success, otherwise returns NULL on failure.
+  **/
+-static struct i40e_vsi *i40e_vsi_reinit_setup(struct i40e_vsi *vsi)
++static struct i40e_vsi *i40e_vsi_reinit_setup(struct i40e_vsi *vsi,
++					      bool lock_acquired)
+ {
+ 	struct i40e_vsi *main_vsi;
+ 	u16 alloc_queue_pairs;
+@@ -14314,7 +14315,10 @@ static struct i40e_vsi *i40e_vsi_reinit_setup(struct i40e_vsi *vsi)
+ err_netdev:
+ 	if (vsi->netdev_registered) {
+ 		vsi->netdev_registered = false;
+-		unregister_netdev(vsi->netdev);
++		if (lock_acquired)
++			unregister_netdevice(vsi->netdev);
++		else
++			unregister_netdev(vsi->netdev);
+ 		free_netdev(vsi->netdev);
+ 		vsi->netdev = NULL;
  	}
- 
- 	if (i40e_is_ptp_pin_dev(&pf->hw)) {
+@@ -15036,7 +15040,7 @@ static int i40e_setup_pf_switch(struct i40e_pf *pf, bool reinit, bool lock_acqui
+ 			main_vsi = i40e_vsi_setup(pf, I40E_VSI_MAIN,
+ 						  uplink_seid, 0);
+ 		else if (reinit)
+-			main_vsi = i40e_vsi_reinit_setup(main_vsi);
++			main_vsi = i40e_vsi_reinit_setup(main_vsi, lock_acquired);
+ 		if (!main_vsi) {
+ 			dev_info(&pf->pdev->dev, "setup of MAIN VSI failed\n");
+ 			i40e_cloud_filter_exit(pf);
 -- 
 2.43.0
 
