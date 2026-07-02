@@ -1,74 +1,74 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7F72C43327
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  2 Jul 2026 09:35:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F22C0C43458
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  2 Jul 2026 09:35:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 9EBB9822AA;
-	Thu,  2 Jul 2026 09:35:17 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 688274068C;
+	Thu,  2 Jul 2026 09:35:20 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id zWEoCVJz2Cvj; Thu,  2 Jul 2026 09:35:15 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id ymoR-CoqHUf3; Thu,  2 Jul 2026 09:35:18 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8022B81E6B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9BC4E413CD
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1782984915;
-	bh=AOiTf9eUGkAa3f8rKcY8M0hM5jAZbVEVnBAVbAJpEM4=;
+	s=default; t=1782984918;
+	bh=yFm8nHv+QdfY4ZLhsxHeM7h3kZ15+zgWsd2ozKgFu/8=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=utoxTTOkB+OMjgcgXAlFSnKnqjUmfzCgkTRBRakrlMHtkyXHKLkLR6GKNXaj1Tanm
-	 ZDFzyonp0B6yhpA1mM/UxMSjomS7+Sur8AQC6TvoLUc8dgqLmVm+1F5mrRt34orFHy
-	 LMb8ovwQNo84xp0FJDG+71v6wUUhCIYj5XvY5Nf8EmcLs43eZJ4Tj9zTRJ4AHsqG/H
-	 uTrii1GPJidOosCNVZufS3Y/IHts5coYdZV7amu1pW3wnirn9akSVk9givJwuA0zLK
-	 v0zvts62xzHsDZpeJQnt8nElAa1WCXMAMcNhRrAzW1Z7StpicjUgzGzxexjeCPN3in
-	 fuytkzpc9ivUg==
+	b=0ipWtVJiMQwqKJjQsLQ98XtzvCIvGl+wGt+eW6TGyhFnQV12SKNZ974RJLpLUCN9I
+	 uHp7nm7dwvrX7ns8kIwxmL37RsiOw4bqgFgotY9QSQO4c0vqnh9JWv3aBagdBSo8vJ
+	 6wb6se/dDouNXqlfNMyr3LZFnwv6DM4WgUcrnDoAwdnylx/rgCedhrkyAGD/sVPHIq
+	 UUyYmKwcpTQxwMfXFKj4teJxqaDhBBvk2GE4SPdbqOOJR8uCLQbfvDjfs3uGxWCkG7
+	 faZ/8QLOO8eQnGL0TI779gMVrxynMXHm1zfFx1vG9mUJiMZ9+F8PKgov6a+zH1geyY
+	 RSwHgz+QXglLg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 8022B81E6B;
-	Thu,  2 Jul 2026 09:35:15 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 9BC4E413CD;
+	Thu,  2 Jul 2026 09:35:18 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 21A6E127
- for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jul 2026 09:35:14 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 16ECA127
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jul 2026 09:35:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 0793381E6B
- for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jul 2026 09:35:14 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 10DA5822AA
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jul 2026 09:35:17 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 5Gu9Yr3r_iZJ for <intel-wired-lan@lists.osuosl.org>;
- Thu,  2 Jul 2026 09:35:13 +0000 (UTC)
+ id oqB5mNFnIrmF for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  2 Jul 2026 09:35:16 +0000 (UTC)
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.14;
  helo=mgamail.intel.com; envelope-from=jedrzej.jagielski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org E7D6381E37
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E7D6381E37
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org CF823822AB
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CF823822AB
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
- by smtp1.osuosl.org (Postfix) with ESMTPS id E7D6381E37
- for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jul 2026 09:35:12 +0000 (UTC)
-X-CSE-ConnectionGUID: Kr0nuVULQsmERkxo56XqOg==
-X-CSE-MsgGUID: mQMsqkenQ0uwKpHGlsuMUQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11834"; a="87649803"
-X-IronPort-AV: E=Sophos;i="6.25,143,1779174000"; d="scan'208";a="87649803"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id CF823822AB
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jul 2026 09:35:15 +0000 (UTC)
+X-CSE-ConnectionGUID: HliB9RcLQUaEzx2fe1C0SA==
+X-CSE-MsgGUID: UHUuXhTlRoaQMPk2Rs5Apg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11834"; a="87649808"
+X-IronPort-AV: E=Sophos;i="6.25,143,1779174000"; d="scan'208";a="87649808"
 Received: from orviesa009.jf.intel.com ([10.64.159.149])
  by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 02 Jul 2026 02:35:13 -0700
-X-CSE-ConnectionGUID: jn5wKI0QSae2XjIB7R2G4Q==
-X-CSE-MsgGUID: U9Aft8JYQwW7k4OajYLUig==
+ 02 Jul 2026 02:35:16 -0700
+X-CSE-ConnectionGUID: Mk5wkfk5RO232oFgLP7r4A==
+X-CSE-MsgGUID: KoWGWUTDS+OsTYK5YnRoQQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,143,1779174000"; d="scan'208";a="253476405"
+X-IronPort-AV: E=Sophos;i="6.25,143,1779174000"; d="scan'208";a="253476417"
 Received: from os-delivery.igk.intel.com ([10.102.18.218])
- by orviesa009.jf.intel.com with ESMTP; 02 Jul 2026 02:35:12 -0700
+ by orviesa009.jf.intel.com with ESMTP; 02 Jul 2026 02:35:15 -0700
 From: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: anthony.l.nguyen@intel.com, netdev@vger.kernel.org,
  Jedrzej Jagielski <jedrzej.jagielski@intel.com>,
  Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Date: Thu,  2 Jul 2026 11:15:48 +0200
-Message-Id: <20260702091553.57112-2-jedrzej.jagielski@intel.com>
+Date: Thu,  2 Jul 2026 11:15:50 +0200
+Message-Id: <20260702091553.57112-4-jedrzej.jagielski@intel.com>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20260702091553.57112-1-jedrzej.jagielski@intel.com>
 References: <20260702091553.57112-1-jedrzej.jagielski@intel.com>
@@ -76,25 +76,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1782984913; x=1814520913;
+ t=1782984916; x=1814520916;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=NoRhnNPu9yFlRsA8qdXk5V8zjS4iJyDdqtRGbyso1oQ=;
- b=cOAtX+0kHCr9bXT11Gqe0r6F26X7ZCFukLWJN8Hba0Z+E2nGngu2bI1c
- aS1cy2jubRJ6tVsAth5QlSwOS0tCBAtmMSpWU0e/aXpZI2A8aCUFtUG93
- MPRUOqjbyr4GX/d2HB3pe1n5EJgy1TaBADc0jaeSdJIk7+QjeLgmQmOTy
- SFZ5sZ7Vr+xPAOvlnb/HkZurGSIOfZ8YAegCxf88FBPvOSWukIKUiL9/Z
- 59cUzwyMxirZrhtM+JgIofVkT1NkgOjAMSzuutW7OQsWwPNQjyOPnKCTn
- Xie7By9kZlduYWuWYDtHOEwzesJDHrcfXkwr33COBazgPbh2LQlVlzmcU
+ bh=PNrdD3+JtONCzgOT6cHrmuc82I6MuBJsIXVQlfg3hy8=;
+ b=CV8Nz1Sq4KseuxMZP+95hN8JeqixU8sKzByWcQh01pwn5Ijowb1s96ph
+ DnC5TW8fmfo+seBsN8DCnBRjpDumpS2Yn4VPAoqEkGWpBEocOQPzC0Ps2
+ bfZLs311J6jpeLSe9KNHJxGp1jFjJkWJx/91AgSEWUreXFPFaZhz16hHU
+ t+dqHjdPtkvMLOvi1CbFunxpWfIztwaCuK2Gxm0gU5ufPgNXsN5g6BlGo
+ Q6jjlLi8e9+ZFIQ8VoPhAcZxHqS6y1rSnQ85Ed2uj4zqHwy7emH71dXIt
+ 5WTY5mPly0VZHOnIzkBbRF3NJuj9hIxTfJEDN95146kXTdtuODKyVhHBU
  w==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=cOAtX+0k
-Subject: [Intel-wired-lan] [PATCH iwl-next v1 1/6] ixgbe: E610: init Link
- Status Events mask just once
+ header.a=rsa-sha256 header.s=Intel header.b=CV8Nz1Sq
+Subject: [Intel-wired-lan] [PATCH iwl-next v1 3/6] ixgbe: E610: do not
+ disable LSE on driver down/remove
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -110,185 +110,64 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Current approach is that LSE mask is configured each time the LSE feature
-itself is toggled. The set of bits corresponding to LSE trigger causes
-remain the same for the whole ixgbe lifecycle. There's no support for
-enabling or disabling specific bits within LSE mask.
+For the first case:
+LSE especially shall remain enabled when interface is down and link watchdog
+cannot track status of the link. Then the only way for link update is by
+handling LSE.
 
-This is redundant; there's no need to configure LSE mask over and over.
-The mask persists in hardware and only needs to be set once so should
-be separated from the LSE toggling logic.
-
-Do it just once at the init phase.
+For the second case:
+There's no value in disabling LSE when the driver's unloading is about to be
+terminated.
 
 Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe.h      |  1 -
- drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c | 34 ++++++++++++-------
- drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h |  3 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 28 +++------------
- 4 files changed, 27 insertions(+), 39 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 18 ------------------
+ 1 file changed, 18 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index 30f62174acf2..17e0a9824777 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -821,7 +821,6 @@ struct ixgbe_adapter {
- 	struct ixgbe_mac_addr *mac_table;
- 	u8 tx_hang_count[IXGBE_MAX_TX_QUEUES];
- 	struct kobject *info_kobj;
--	u16 lse_mask;
- #ifdef CONFIG_IXGBE_HWMON
- 	struct hwmon_buff *ixgbe_hwmon_buff;
- #endif /* CONFIG_IXGBE_HWMON */
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
-index 831cfe9a4697..d451da68fd6d 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
-@@ -1536,7 +1536,7 @@ int ixgbe_aci_get_link_info(struct ixgbe_hw *hw, bool ena_lse,
-  *
-  * Return: the exit code of the operation.
-  */
--int ixgbe_aci_set_event_mask(struct ixgbe_hw *hw, u8 port_num, u16 mask)
-+static int ixgbe_aci_set_event_mask(struct ixgbe_hw *hw, u8 port_num, u16 mask)
- {
- 	struct ixgbe_aci_cmd_set_event_mask *cmd;
- 	struct libie_aq_desc desc;
-@@ -1551,25 +1551,25 @@ int ixgbe_aci_set_event_mask(struct ixgbe_hw *hw, u8 port_num, u16 mask)
- 	return ixgbe_aci_send_cmd(hw, &desc, NULL, 0);
- }
- 
-+static int ixgbe_aci_init_event_mask(struct ixgbe_hw *hw)
-+{
-+	u16 mask = ~((u16)(IXGBE_ACI_LINK_EVENT_UPDOWN |
-+			   IXGBE_ACI_LINK_EVENT_MEDIA_NA |
-+			   IXGBE_ACI_LINK_EVENT_MODULE_QUAL_FAIL |
-+			   IXGBE_ACI_LINK_EVENT_PHY_FW_LOAD_FAIL));
-+
-+	return ixgbe_aci_set_event_mask(hw, (u8)hw->bus.func, mask);
-+}
-+
- /**
-  * ixgbe_configure_lse - enable/disable link status events
-  * @hw: pointer to the HW struct
-  * @activate: true for enable lse, false otherwise
-- * @mask: event mask to be set; a set bit means deactivation of the
-- * corresponding event
-- *
-- * Set the event mask and then enable or disable link status events
-  *
-  * Return: the exit code of the operation.
-  */
--int ixgbe_configure_lse(struct ixgbe_hw *hw, bool activate, u16 mask)
-+int ixgbe_configure_lse(struct ixgbe_hw *hw, bool activate)
- {
--	int err;
--
--	err = ixgbe_aci_set_event_mask(hw, (u8)hw->bus.func, mask);
--	if (err)
--		return err;
--
- 	/* Enabling link status events generation by fw. */
- 	return ixgbe_aci_get_link_info(hw, activate, NULL);
- }
-@@ -1597,6 +1597,16 @@ static int ixgbe_start_hw_e610(struct ixgbe_hw *hw)
- 
- 	ixgbe_start_hw_gen2(hw);
- 
-+	err = ixgbe_aci_init_event_mask(hw);
-+	/* In case of error just log it, don't fail the whole init */
-+	if (err) {
-+		struct ixgbe_adapter *adapter =
-+				container_of(hw, struct ixgbe_adapter, hw);
-+
-+		e_dev_err("Cannot configure Link Status Event mask, err = %d\n",
-+			   err);
-+	}
-+
- 	return 0;
- }
- 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
-index 2cb76a3d30ae..ecda35a77adb 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
-@@ -34,8 +34,7 @@ int ixgbe_update_link_info(struct ixgbe_hw *hw);
- int ixgbe_get_link_status(struct ixgbe_hw *hw, bool *link_up);
- int ixgbe_aci_get_link_info(struct ixgbe_hw *hw, bool ena_lse,
- 			    struct ixgbe_link_status *link);
--int ixgbe_aci_set_event_mask(struct ixgbe_hw *hw, u8 port_num, u16 mask);
--int ixgbe_configure_lse(struct ixgbe_hw *hw, bool activate, u16 mask);
-+int ixgbe_configure_lse(struct ixgbe_hw *hw, bool activate);
- int ixgbe_aci_set_port_id_led(struct ixgbe_hw *hw, bool orig_mode);
- enum ixgbe_media_type ixgbe_get_media_type_e610(struct ixgbe_hw *hw);
- int ixgbe_setup_link_e610(struct ixgbe_hw *hw, ixgbe_link_speed speed,
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 7a0783c1abc1..2c8968b9b86c 100644
+index 2c8968b9b86c..f33a534490b5 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -5969,23 +5969,14 @@ static void ixgbe_configure(struct ixgbe_adapter *adapter)
+@@ -5979,19 +5979,6 @@ static int ixgbe_enable_link_status_events(struct ixgbe_adapter *adapter)
+ 	return ixgbe_configure_lse(&adapter->hw, true);
+ }
+ 
+-/**
+- * ixgbe_disable_link_status_events - disable link status events
+- * @adapter: pointer to the adapter structure
+- *
+- * Disables link status events by invoking ixgbe_configure_lse()
+- *
+- * Return: the exit code of the operation.
+- */
+-static int ixgbe_disable_link_status_events(struct ixgbe_adapter *adapter)
+-{
+-	return ixgbe_configure_lse(&adapter->hw, false);
+-}
+-
  /**
-  * ixgbe_enable_link_status_events - enable link status events
-  * @adapter: pointer to the adapter structure
-- * @mask: event mask to be set
-  *
-  * Enables link status events by invoking ixgbe_configure_lse()
-  *
-  * Return: the exit code of the operation.
-  */
--static int ixgbe_enable_link_status_events(struct ixgbe_adapter *adapter,
--					   u16 mask)
-+static int ixgbe_enable_link_status_events(struct ixgbe_adapter *adapter)
- {
--	int err;
--
--	err = ixgbe_configure_lse(&adapter->hw, true, mask);
--	if (err)
--		return err;
--
--	adapter->lse_mask = mask;
--	return 0;
-+	return ixgbe_configure_lse(&adapter->hw, true);
+  * ixgbe_sfp_link_config - set up SFP+ link
+  * @adapter: pointer to private adapter struct
+@@ -6775,8 +6762,6 @@ void ixgbe_down(struct ixgbe_adapter *adapter)
+ 
+ 	ixgbe_clean_all_tx_rings(adapter);
+ 	ixgbe_clean_all_rx_rings(adapter);
+-	if (adapter->hw.mac.type == ixgbe_mac_e610)
+-		ixgbe_disable_link_status_events(adapter);
  }
  
  /**
-@@ -5998,14 +5989,7 @@ static int ixgbe_enable_link_status_events(struct ixgbe_adapter *adapter,
-  */
- static int ixgbe_disable_link_status_events(struct ixgbe_adapter *adapter)
- {
--	int err;
--
--	err = ixgbe_configure_lse(&adapter->hw, false, adapter->lse_mask);
--	if (err)
--		return err;
--
--	adapter->lse_mask = 0;
--	return 0;
-+	return ixgbe_configure_lse(&adapter->hw, false);
- }
+@@ -12143,9 +12128,6 @@ static void ixgbe_remove(struct pci_dev *pdev)
+ 	set_bit(__IXGBE_REMOVING, &adapter->state);
+ 	cancel_work_sync(&adapter->service_task);
  
- /**
-@@ -6039,10 +6023,6 @@ static int ixgbe_non_sfp_link_config(struct ixgbe_hw *hw)
- {
- 	struct ixgbe_adapter *adapter = container_of(hw, struct ixgbe_adapter,
- 						     hw);
--	u16 mask = ~((u16)(IXGBE_ACI_LINK_EVENT_UPDOWN |
--			   IXGBE_ACI_LINK_EVENT_MEDIA_NA |
--			   IXGBE_ACI_LINK_EVENT_MODULE_QUAL_FAIL |
--			   IXGBE_ACI_LINK_EVENT_PHY_FW_LOAD_FAIL));
- 	bool autoneg, link_up = false;
- 	int ret = -EIO;
- 	u32 speed;
-@@ -6070,7 +6050,7 @@ static int ixgbe_non_sfp_link_config(struct ixgbe_hw *hw)
+-	if (adapter->hw.mac.type == ixgbe_mac_e610)
+-		ixgbe_disable_link_status_events(adapter);
+-
+ 	if (adapter->mii_bus)
+ 		mdiobus_unregister(adapter->mii_bus);
  
- 	if (hw->mac.ops.setup_link) {
- 		if (adapter->hw.mac.type == ixgbe_mac_e610) {
--			ret = ixgbe_enable_link_status_events(adapter, mask);
-+			ret = ixgbe_enable_link_status_events(adapter);
- 			if (ret)
- 				return ret;
- 		}
 -- 
 2.31.1
 
