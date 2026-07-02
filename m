@@ -1,77 +1,79 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B3FF7C44500
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A4390C43327
 	for <intel-wired-lan@archiver.kernel.org>; Thu,  2 Jul 2026 11:30:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 8FCD060F85;
+	by smtp4.osuosl.org (Postfix) with ESMTP id 7483E408B3;
 	Thu,  2 Jul 2026 11:30:54 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id VFXhy0tlv4sB; Thu,  2 Jul 2026 11:30:52 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id ZNmX0Gegqg6R; Thu,  2 Jul 2026 11:30:49 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7CAB160EB1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 58A4040B46
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1782991852;
-	bh=MgfhxGuP33Cvm74v/W3IGowaszZTu7hi3NeWNPMRV6Y=;
+	s=default; t=1782991849;
+	bh=HKRdkLVfBlFb3T13m7jn1JqzYWTzUWwlbWdk1ocOMQo=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=zdD+uKS8pHUfxPLGWVW6/G853CTEZzuumU1HarC8LXy94n9HJwKTD7Ybry2wGZ7yk
-	 YyxLUZi4khXVlyv+pv3PwRlb56CrPUeaAX9JANwfUOrRTf7djjs0UdJT56YzgCj7lf
-	 Rrbd+mn/z6C0Xe8L3J9FL0jm9JvjBxiYBlwkcBO019f+XI7aZ9fsP35nHfnyqMwFA8
-	 6/ZovOd8JQ5M6LrnEG0ZMt5ssRxriFpiTb8DP/fbgU3YglV+V4L6q7kM6DYsovlk1r
-	 A3Eb5oFnHEEyWvc0nYZgPSgOXy8CQ9IO8Hx4Gp4C6whaLJnaX43/hkytFpLLFQoSu2
-	 IucFBMbLPg8Dg==
+	b=Cq6u1H3keDCBQ8hWvft+xr18uBze3oiJztgWoHTSgSZKbSNahXZyajGdiGZHGNTKE
+	 k29wXDKxZvqkCZS2TxL3WYliP9X80rE6i+3oxR2Qk8o1KF4vK3nktXy0PplrQAlcrY
+	 0/wBV9V2pm3/HOjsokam8j3DgL9/9hUg/4N+SmwahsQgPB4CLwcGPX4zC3W2haoEw1
+	 l/AdLTHWKP29UtPQnDznA4jZd9jze6fB8LFjnSBC63/Kw62teyUmMUBHrl/QJYgsCp
+	 0io7DWvurxG3HMYWHXG/YskTQ9aCZzOcNn1FwjvrAPHXj+uCfWlx46+bkgL3yfsp6v
+	 U8m9XiSsIbPJg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 7CAB160EB1;
-	Thu,  2 Jul 2026 11:30:52 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id CB607316
- for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jul 2026 11:30:48 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 58A4040B46;
+	Thu,  2 Jul 2026 11:30:49 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 1BE0E316
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jul 2026 11:30:47 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id BD2BB82343
- for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jul 2026 11:30:48 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 0F9348235E
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jul 2026 11:30:47 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id F6gKXAyKEhM8 for <intel-wired-lan@lists.osuosl.org>;
- Thu,  2 Jul 2026 11:30:47 +0000 (UTC)
+ id 8u3xXoilqwBx for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  2 Jul 2026 11:30:45 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.21;
  helo=mgamail.intel.com; envelope-from=marcin.szycik@linux.intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 84C268235E
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 84C268235E
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org A673E82343
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A673E82343
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 84C268235E
- for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jul 2026 11:30:47 +0000 (UTC)
-X-CSE-ConnectionGUID: E5ev6VLART6GfcG5TM68GQ==
-X-CSE-MsgGUID: /9rzj9ruQSOzt6b1h9f4yA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11834"; a="83611766"
-X-IronPort-AV: E=Sophos;i="6.25,143,1779174000"; d="scan'208";a="83611766"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id A673E82343
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jul 2026 11:30:44 +0000 (UTC)
+X-CSE-ConnectionGUID: Sp8w9dhGTQS1sVNNiK+7cQ==
+X-CSE-MsgGUID: oUVdkAuPTdWn5y1Cq06ywA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11834"; a="83611746"
+X-IronPort-AV: E=Sophos;i="6.25,143,1779174000"; d="scan'208";a="83611746"
 Received: from orviesa010.jf.intel.com ([10.64.159.150])
  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 02 Jul 2026 04:30:47 -0700
-X-CSE-ConnectionGUID: juFCqkrbQ8mk4Fu4L7DTuw==
-X-CSE-MsgGUID: 4DgCusuBRiyGiYbHCsBSig==
+ 02 Jul 2026 04:30:44 -0700
+X-CSE-ConnectionGUID: /rw49mfYR1Cbvev1wmKvtQ==
+X-CSE-MsgGUID: zYUTgoxBTV2kOjHc8AW20g==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,143,1779174000"; d="scan'208";a="251788442"
+X-IronPort-AV: E=Sophos;i="6.25,143,1779174000"; d="scan'208";a="251788421"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by orviesa010.jf.intel.com with ESMTP; 02 Jul 2026 04:30:44 -0700
+ by orviesa010.jf.intel.com with ESMTP; 02 Jul 2026 04:30:40 -0700
 Received: from gond.igk.intel.com (gond.igk.intel.com [10.123.220.52])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 8619D28762;
- Thu,  2 Jul 2026 12:30:42 +0100 (IST)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 70ABC28765;
+ Thu,  2 Jul 2026 12:30:38 +0100 (IST)
 From: Marcin Szycik <marcin.szycik@linux.intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org, sandeep.penigalapati@intel.com, ananth.s@intel.com,
  alexander.duyck@gmail.com, anthony.l.nguyen@intel.com,
- Marcin Szycik <marcin.szycik@linux.intel.com>
-Date: Thu,  2 Jul 2026 12:30:04 +0200
-Message-ID: <20260702103007.97020-11-marcin.szycik@linux.intel.com>
+ Marcin Szycik <marcin.szycik@linux.intel.com>,
+ Chinh Cao <chinh.t.cao@intel.com>,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Date: Thu,  2 Jul 2026 12:29:59 +0200
+Message-ID: <20260702103007.97020-6-marcin.szycik@linux.intel.com>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20260702103007.97020-1-marcin.szycik@linux.intel.com>
 References: <20260702103007.97020-1-marcin.szycik@linux.intel.com>
@@ -79,25 +81,24 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1782991848; x=1814527848;
+ t=1782991845; x=1814527845;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=cK1MFHk/Cm7aMsNBWPA/KZowX6nQ6QIgVF28AkTWd6w=;
- b=JFSl/F3FhZ6six/akNTD3tGoiUs7yGXhAn/Yl59dM0wsu4vvPuwa9l95
- R4IxUi3Hs67Mqvo7In3o5koUiXA0DbcUSagqM4VhpAbPlk887B2XcFOfz
- pL5c1fw6TDIgJjEBSyzfzv9FcPOMl+JTG+qerYjivsoLsYaZJZKLznF0Q
- 0vGkpt9HB0KmhSLQCwJ0PJMQvzsIX7NpYh+06mZag1Gb403AKB4u9VVqC
- c18AUQcnGywvVZU1zgxxJdejSZ+LCcZAP9ajJNrELgHK5fLBcB+mtzLaB
- ANLPBXu97VYegSZKF4dCxPQa9aaT+C8E2wcBxjdREzVyyEFZybbXkT4Rp
- A==;
+ bh=VQJzgana+1F1KHI771niatg/KZU79hkVrkQd/h2M8lA=;
+ b=C44UNlQBBKyb59bLAARX+caGBzPsOqk9lu5V09WpSZf0+4hsWL5/FJSH
+ TMtDOffP7HSw00ZtXhviWCCGanczKHHmL6oquMxxzE925CHwoDCmGlcbZ
+ lymuxRygjsuUEtx1ZfkXDgwX2ikK82i5CbKX0QNNVYyNC+KV8IP5zVqv9
+ XxLJiGEcJaW1EOE/eE9oDqe1vWWjDWxOa7ZjqpHwuO3kyYUrnyfOTe91J
+ LWzIeRMn+sw8S8vuI+ox4azUP06RD6vMa1fGEL7magRvqDknNu0+WbNDy
+ fFuA9Nd0HxBbBvE8Xe9+vqn04Nm6Gwc4BIBDk6EQ2RMVv6keZC9kl9kIz
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=linux.intel.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=JFSl/F3F
-Subject: [Intel-wired-lan] [PATCH iwl-next v5 10/12] ice: add ACL reset
- recovery and NTUPLE feature toggle
+ header.a=rsa-sha256 header.s=Intel header.b=C44UNlQB
+Subject: [Intel-wired-lan] [PATCH iwl-next v5 05/12] ice: create flow profile
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -113,438 +114,1252 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Extend ACL support to survive PF resets. Add ice_acl_replay_flows() to
-rebuild HW flow profiles from preserved SW state, and
-ice_acl_replay_fltrs() to reprogram TCAM entries from the SW filter
-list. Wire both into ice_rebuild(). On failure, don't fail reset, rather
-delete all ACL filters from the SW list.
+From: Real Valiquette <real.valiquette@intel.com>
 
-Reset per-profile HW extraction sequences and range checkers for all
-profiles inside ice_acl_create_hw(). This state is separate from the
-TCAM entries and survives a PF reset. Explicitly clearing it ensures
-that the old configuration is erased.
+Implement the initial steps for creating an ACL filter to support ntuple
+masks. Create a flow profile based on a given mask rule and program it to
+the hardware. Though the profile is written to hardware, no actions are
+associated with the profile yet.
 
-Add the ICE_FLAG_ACL_ENA PF flag to track ACL status. ACL is always
-available, so set it unconditionally in driver initialization. Use the
-new flag to track the NTUPLE ethtool feature flag, alongside Flow
-Director, as both blocks are used to implement ethtool NTUPLE filters.
-Like with Flow Director, disabling the flag deletes all filters, but
-enabling it does not reprogram filters.
-
+Co-developed-by: Chinh Cao <chinh.t.cao@intel.com>
+Signed-off-by: Chinh Cao <chinh.t.cao@intel.com>
+Signed-off-by: Real Valiquette <real.valiquette@intel.com>
+Co-developed-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Co-developed-by: Marcin Szycik <marcin.szycik@linux.intel.com>
 Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
+Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 ---
 v5:
-* Add this patch
+* ice_{add,del}_ntuple_ethtool(): remove dependency on ICE_FLAG_FD_ENA.
+  ACL should not be blocked by fdir being disabled
+* ice_acl_prof_add_ethtool(): don't free and NULL hw_prof on existing
+  seg mismatch. This prevents deallocating an existing hw_prof, also
+  leaking its seg
+v4:
+* ice_acl_prof_add_ethtool(): add missing line
+  (hw_prof->prof_id = prof->id;). Without it, all flow entries are added
+  to profile 0, which wrongly uses old extraction sequence in case flow
+  type is different. To reproduce, add two filters with different input
+  sets and check if they forward to expected queues, e.g.:
+    ethtool -N $PF1 flow-type tcp4 src-port 1234 m 0x000f action 23
+    ethtool -N $PF1 flow-type udp4 src-port 1234 m 0x000f action 24
+* Adjust to using struct ice_acl_hw_prof instead of struct
+  ice_fd_hw_prof
+* ice_acl_prof_add_ethtool(): remove old_seg helper variable - after
+  above change, accessing old segment is straightforward, so it's not
+  needed
+v3:
+* ice_acl_prof_add_ethtool(): add a writeback to hw profile in error
+  path to prevent leaving a pointer to deallocated object
+* ice_deinit_acl(): exit early if hw->acl_prof is already NULL
+* ice_flow_acl_def_entry_frmt(): copy seg->match to variable instead of
+  reading it as unsigned long pointer in order to avoid potential type
+  mismatch
+v2:
+* Add ice_acl_main.h in order to not awkwardly add prototypes to ice.h.
+  This will also help avoid potential dependency issues for future
+  additions to ice_acl_main.c
+* Rename ice_acl_check_input_set() to a more fiting
+  ice_acl_prof_add_ethtool() as it adds a profile
+* Set hw->acl_prof = 0 in ice_acl_prof_add_ethtool() to avoid use after
+  free
+* Add ipv4 and port full mask defines in ice_ethtool_ntuple.c
+* Move hw->acl_prof allocation to ice_init_acl(). Previously, it was
+  being deallocated when hw->acl_prof[fltr_type] allocation failed,
+  possibly with already existing other elements. Extend array lifetime
+  to driver's lifetime
+* Change hw->acl_prof[fltr_type] alloc from devm_ to plain
+* Add hw->acl_prof[fltr_type] and hw->acl_prof deallocation in
+  ice_deinit_acl() - previously were only deallocated on failure
+* Tweak alloc/unroll logic in ice_acl_prof_add_ethtool()
 ---
- drivers/net/ethernet/intel/ice/ice.h          |  4 +
- drivers/net/ethernet/intel/ice/ice_acl.h      |  5 +-
- drivers/net/ethernet/intel/ice/ice_acl_main.h |  1 +
- drivers/net/ethernet/intel/ice/ice_acl_ctrl.c | 43 +++++-----
- drivers/net/ethernet/intel/ice/ice_acl_main.c | 47 +++++++++++
- .../ethernet/intel/ice/ice_ethtool_ntuple.c   | 79 +++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_main.c     | 47 +++++++++++
- 7 files changed, 201 insertions(+), 25 deletions(-)
+ drivers/net/ethernet/intel/ice/Makefile       |   1 +
+ drivers/net/ethernet/intel/ice/ice.h          |   6 +
+ drivers/net/ethernet/intel/ice/ice_acl_main.h |   9 +
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  39 +++
+ drivers/net/ethernet/intel/ice/ice_flow.h     |  17 +
+ drivers/net/ethernet/intel/ice/ice_acl_main.c | 227 +++++++++++++
+ .../ethernet/intel/ice/ice_ethtool_ntuple.c   | 307 +++++++++++++-----
+ .../net/ethernet/intel/ice/ice_flex_pipe.c    |   6 +
+ drivers/net/ethernet/intel/ice/ice_flow.c     | 173 ++++++++++
+ drivers/net/ethernet/intel/ice/ice_main.c     |  42 ++-
+ 10 files changed, 745 insertions(+), 82 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_acl_main.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_acl_main.c
 
+diff --git a/drivers/net/ethernet/intel/ice/Makefile b/drivers/net/ethernet/intel/ice/Makefile
+index 8f0a91296969..904d22e57d53 100644
+--- a/drivers/net/ethernet/intel/ice/Makefile
++++ b/drivers/net/ethernet/intel/ice/Makefile
+@@ -25,6 +25,7 @@ ice-y := ice_main.o	\
+ 	 ice_vsi_vlan_lib.o \
+ 	 ice_fdir.o	\
+ 	 ice_ethtool_ntuple.o \
++	 ice_acl_main.o	\
+ 	 ice_acl.o	\
+ 	 ice_acl_ctrl.o	\
+ 	 ice_vlan_mode.o \
 diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index b586645bed00..d4abd948bc9d 100644
+index f47266bb2cc4..2a6844e97f0e 100644
 --- a/drivers/net/ethernet/intel/ice/ice.h
 +++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -504,6 +504,7 @@ enum ice_pf_flags {
- 	ICE_FLAG_DCB_CAPABLE,
- 	ICE_FLAG_DCB_ENA,
- 	ICE_FLAG_FD_ENA,
-+	ICE_FLAG_ACL_ENA,
- 	ICE_FLAG_PTP_SUPPORTED,		/* PTP is supported by NVM */
- 	ICE_FLAG_ADV_FEATURES,
- 	ICE_FLAG_TC_MQPRIO,		/* support for Multi queue TC */
-@@ -1011,10 +1012,12 @@ int ice_init_rdma(struct ice_pf *pf);
- void ice_deinit_rdma(struct ice_pf *pf);
- bool ice_is_wol_supported(struct ice_hw *hw);
- void ice_fdir_del_all_fltrs(struct ice_vsi *vsi);
-+void ice_acl_del_all_fltrs(struct ice_vsi *vsi);
- int
- ice_fdir_write_fltr(struct ice_pf *pf, struct ice_ntuple_fltr *input, bool add,
- 		    bool is_tun);
- void ice_vsi_manage_fdir(struct ice_vsi *vsi, bool ena);
-+void ice_vsi_manage_acl(struct ice_vsi *vsi, bool ena);
- int ice_add_ntuple_ethtool(struct ice_vsi *vsi, struct ethtool_rxnfc *cmd);
+@@ -1019,6 +1019,11 @@ int ice_add_ntuple_ethtool(struct ice_vsi *vsi, struct ethtool_rxnfc *cmd);
  int ice_del_ntuple_ethtool(struct ice_vsi *vsi, struct ethtool_rxnfc *cmd);
  int ice_get_ethtool_fdir_entry(struct ice_hw *hw, struct ethtool_rxnfc *cmd);
-@@ -1032,6 +1035,7 @@ ice_get_fdir_fltr_ids(struct ice_hw *hw, struct ethtool_rxnfc *cmd,
+ u32 ice_ntuple_get_max_fltr_cnt(struct ice_hw *hw);
++int ice_ntuple_l4_proto_to_port(enum ice_flow_seg_hdr l4_proto,
++				enum ice_flow_field *src_port,
++				enum ice_flow_field *dst_port);
++int ice_ntuple_check_ip4_seg(struct ethtool_tcpip4_spec *tcp_ip4_spec);
++int ice_ntuple_check_ip4_usr_seg(struct ethtool_usrip4_spec *usr_ip4_spec);
+ int
+ ice_get_fdir_fltr_ids(struct ice_hw *hw, struct ethtool_rxnfc *cmd,
  		      u32 *rule_locs);
- void ice_fdir_rem_adq_chnl(struct ice_hw *hw, u16 vsi_idx);
- void ice_acl_rem_flows(struct ice_hw *hw);
-+void ice_acl_replay_flows(struct ice_hw *hw);
- void ice_fdir_release_flows(struct ice_hw *hw);
+@@ -1028,6 +1033,7 @@ void ice_fdir_release_flows(struct ice_hw *hw);
  void ice_fdir_replay_flows(struct ice_hw *hw);
  void ice_fdir_replay_fltrs(struct ice_pf *pf);
-diff --git a/drivers/net/ethernet/intel/ice/ice_acl.h b/drivers/net/ethernet/intel/ice/ice_acl.h
-index 0c8163e585d9..65e16ad1c783 100644
---- a/drivers/net/ethernet/intel/ice/ice_acl.h
-+++ b/drivers/net/ethernet/intel/ice/ice_acl.h
-@@ -6,6 +6,9 @@
+ int ice_fdir_create_dflt_rules(struct ice_pf *pf);
++enum ice_fltr_ptype ice_ethtool_flow_to_fltr(int eth);
  
- #include "ice_common.h"
- 
-+/* Maximum number of ACL HW profiles */
-+#define ICE_ACL_MAX_PROF		128
+ enum ice_aq_task_state {
+ 	ICE_AQ_TASK_NOT_PREPARED,
+diff --git a/drivers/net/ethernet/intel/ice/ice_acl_main.h b/drivers/net/ethernet/intel/ice/ice_acl_main.h
+new file mode 100644
+index 000000000000..6665af2e7053
+--- /dev/null
++++ b/drivers/net/ethernet/intel/ice/ice_acl_main.h
+@@ -0,0 +1,9 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/* Copyright (C) 2026, Intel Corporation. */
 +
- /* Marks a PF scenario slot as unused in the ACL profile extraction table */
- #define ICE_ACL_INVALID_SCEN		0x3f
- 
-@@ -124,7 +127,7 @@ struct ice_acl_cntrs {
++#ifndef _ICE_ACL_MAIN_H_
++#define _ICE_ACL_MAIN_H_
++#include "ice.h"
++#include <linux/ethtool.h>
++int ice_acl_add_rule_ethtool(struct ice_vsi *vsi, struct ethtool_rxnfc *cmd);
++#endif /* _ICE_ACL_MAIN_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index 646617d66549..29c0103ab5d4 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -172,6 +172,8 @@ struct ice_aqc_set_port_params {
+ #define ICE_AQC_RES_TYPE_FDIR_COUNTER_BLOCK		0x21
+ #define ICE_AQC_RES_TYPE_FDIR_GUARANTEED_ENTRIES	0x22
+ #define ICE_AQC_RES_TYPE_FDIR_SHARED_ENTRIES		0x23
++#define ICE_AQC_RES_TYPE_ACL_PROF_BLDR_PROFID		0x50
++#define ICE_AQC_RES_TYPE_ACL_PROF_BLDR_TCAM		0x51
+ #define ICE_AQC_RES_TYPE_FD_PROF_BLDR_PROFID		0x58
+ #define ICE_AQC_RES_TYPE_FD_PROF_BLDR_TCAM		0x59
+ #define ICE_AQC_RES_TYPE_HASH_PROF_BLDR_PROFID		0x60
+@@ -2179,6 +2181,43 @@ struct ice_aqc_actpair {
+ 	struct ice_acl_act_entry act[ICE_ACL_NUM_ACT_PER_ACT_PAIR];
  };
  
- int ice_acl_create_tbl(struct ice_hw *hw, struct ice_acl_tbl_params *params);
--int ice_acl_destroy_tbl(struct ice_hw *hw);
-+void ice_acl_destroy_tbl(struct ice_hw *hw);
- int ice_acl_create_scen(struct ice_hw *hw, u16 match_width, u16 num_entries,
- 			u16 *scen_id);
- int ice_aq_alloc_acl_tbl(struct ice_hw *hw, struct ice_acl_alloc_tbl *tbl,
-diff --git a/drivers/net/ethernet/intel/ice/ice_acl_main.h b/drivers/net/ethernet/intel/ice/ice_acl_main.h
-index 6665af2e7053..54053954b244 100644
---- a/drivers/net/ethernet/intel/ice/ice_acl_main.h
-+++ b/drivers/net/ethernet/intel/ice/ice_acl_main.h
-@@ -6,4 +6,5 @@
- #include "ice.h"
- #include <linux/ethtool.h>
- int ice_acl_add_rule_ethtool(struct ice_vsi *vsi, struct ethtool_rxnfc *cmd);
-+void ice_acl_replay_fltrs(struct ice_pf *pf);
- #endif /* _ICE_ACL_MAIN_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_acl_ctrl.c b/drivers/net/ethernet/intel/ice/ice_acl_ctrl.c
-index 32b05df88be3..a76762e3aa46 100644
---- a/drivers/net/ethernet/intel/ice/ice_acl_ctrl.c
-+++ b/drivers/net/ethernet/intel/ice/ice_acl_ctrl.c
-@@ -877,9 +877,10 @@ static int ice_acl_destroy_scen(struct ice_hw *hw, u16 scen_id)
-  * ice_acl_destroy_tbl - Destroy a previously created LEM table for ACL
-  * @hw: pointer to the HW struct
-  *
-- * Return: 0 on success, negative on error
-+ * Continue on AQ errors so SW state is always cleaned up - e.g. after a reset,
-+ * where the HW tables might be already gone.
-  */
--int ice_acl_destroy_tbl(struct ice_hw *hw)
-+void ice_acl_destroy_tbl(struct ice_hw *hw)
- {
- 	struct ice_acl_scen *pos_scen, *tmp_scen;
- 	struct ice_aqc_acl_generic resp_buf;
-@@ -887,7 +888,7 @@ int ice_acl_destroy_tbl(struct ice_hw *hw)
- 	int err;
- 
- 	if (!hw->acl_tbl)
--		return -ENOENT;
-+		return;
- 
- 	/* Mark all the created scenario's TCAM to stop the packet lookup and
- 	 * delete them afterward
-@@ -898,44 +899,38 @@ int ice_acl_destroy_tbl(struct ice_hw *hw)
- 		if (err) {
- 			ice_debug(hw, ICE_DBG_ACL, "ice_aq_query_acl_scen() failed. status: %d\n",
- 				  err);
--			return err;
--		}
--
--		for (int i = 0; i < ICE_AQC_ACL_SLICES; i++) {
--			buf.tcam_cfg[i].chnk_msk = 0;
--			buf.tcam_cfg[i].start_cmp_set =
--					ICE_AQC_ACL_ALLOC_SCE_START_CMP;
--		}
-+		} else {
-+			for (int i = 0; i < ICE_AQC_ACL_SLICES; i++) {
-+				buf.tcam_cfg[i].chnk_msk = 0;
-+				buf.tcam_cfg[i].start_cmp_set =
-+						ICE_AQC_ACL_ALLOC_SCE_START_CMP;
-+			}
- 
--		for (int i = 0; i < ICE_AQC_MAX_ACTION_MEMORIES; i++)
--			buf.act_mem_cfg[i] = 0;
-+			for (int i = 0; i < ICE_AQC_MAX_ACTION_MEMORIES; i++)
-+				buf.act_mem_cfg[i] = 0;
- 
--		err = ice_aq_update_acl_scen(hw, pos_scen->id, &buf, NULL);
--		if (err) {
--			ice_debug(hw, ICE_DBG_ACL, "ice_aq_update_acl_scen() failed. status: %d\n",
--				  err);
--			return err;
-+			err = ice_aq_update_acl_scen(hw, pos_scen->id, &buf,
-+						     NULL);
-+			if (err)
-+				ice_debug(hw, ICE_DBG_ACL, "scenario update failed, status: %d\n",
-+					  err);
- 		}
- 
- 		err = ice_acl_destroy_scen(hw, pos_scen->id);
- 		if (err) {
--			ice_debug(hw, ICE_DBG_ACL, "deletion of scenario failed. status: %d\n",
-+			ice_debug(hw, ICE_DBG_ACL, "deletion of scenario failed, status: %d\n",
- 				  err);
--			return err;
- 		}
- 	}
- 
- 	err = ice_aq_dealloc_acl_tbl(hw, hw->acl_tbl->id, &resp_buf, NULL);
- 	if (err) {
--		ice_debug(hw, ICE_DBG_ACL, "AQ de-allocation of ACL failed. status: %d\n",
-+		ice_debug(hw, ICE_DBG_ACL, "AQ de-allocation of ACL failed, status: %d\n",
- 			  err);
--		return err;
- 	}
- 
- 	kfree(hw->acl_tbl);
- 	hw->acl_tbl = NULL;
--
--	return 0;
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/ice/ice_acl_main.c b/drivers/net/ethernet/intel/ice/ice_acl_main.c
-index 92cabb0b685f..7c566077d55a 100644
---- a/drivers/net/ethernet/intel/ice/ice_acl_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_acl_main.c
-@@ -236,6 +236,53 @@ static void ice_acl_set_act_fwd_queue(struct ice_flow_action *action,
- 	action->data.acl_act.value = cpu_to_le16(queue_index);
- }
- 
-+/*
-+ * ice_acl_replay_fltrs - replay ACL filters from the SW filter list
-+ * @pf: board private structure
-+ *
-+ * Reprograms ACL TCAM entries after a reset using data preserved in the
-+ * SW filter list. Relies on ice_acl_replay_flows() having been called first
-+ * to restore the flow profiles.
++/* The first byte of the byte selection base is reserved to keep the
++ * first byte of the field vector where the packet direction info is
++ * available. Thus we should start at index 1 of the field vector to
++ * map its entries to the byte selection base.
 + */
-+void ice_acl_replay_fltrs(struct ice_pf *pf)
++#define ICE_AQC_ACL_PROF_BYTE_SEL_START_IDX	1
++#define ICE_AQC_ACL_PROF_BYTE_SEL_ELEMS		30
++
++/* Input buffer format for program profile extraction admin command and
++ * response buffer format for query profile admin command is as defined
++ * in struct ice_aqc_acl_prof_generic_frmt
++ */
++
++/* Input buffer format for program profile ranges and query profile ranges
++ * admin commands. Same format is used for response buffer in case of query
++ * profile ranges command
++ */
++struct ice_acl_rng_data {
++	/* The range checker output shall be sent when the value
++	 * related to this range checker is lower than low boundary
++	 */
++	__be16 low_boundary;
++	/* The range checker output shall be sent when the value
++	 * related to this range checker is higher than high boundary
++	 */
++	__be16 high_boundary;
++	/* A value of '0' in bit shall clear the relevant bit input
++	 * to the range checker
++	 */
++	__be16 mask;
++};
++
++#define ICE_AQC_ACL_PROF_RANGES_NUM_CFG 8
++struct ice_aqc_acl_profile_ranges {
++	struct ice_acl_rng_data checker_cfg[ICE_AQC_ACL_PROF_RANGES_NUM_CFG];
++};
++
+ /* Program ACL entry (indirect 0x0C20) */
+ struct ice_aqc_acl_entry {
+ 	u8 tcam_index;
+diff --git a/drivers/net/ethernet/intel/ice/ice_flow.h b/drivers/net/ethernet/intel/ice/ice_flow.h
+index b9b42592b84a..7357088091bd 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flow.h
++++ b/drivers/net/ethernet/intel/ice/ice_flow.h
+@@ -504,6 +504,23 @@ struct ice_rss_cfg {
+ 	struct ice_rss_hash_cfg hash;
+ };
+ 
++enum ice_flow_action_type {
++	ICE_FLOW_ACT_NOP,
++	ICE_FLOW_ACT_DROP,
++	ICE_FLOW_ACT_CNTR_PKT,
++	ICE_FLOW_ACT_FWD_QUEUE,
++	ICE_FLOW_ACT_CNTR_BYTES,
++	ICE_FLOW_ACT_CNTR_PKT_BYTES,
++};
++
++struct ice_flow_action {
++	enum ice_flow_action_type type;
++	union {
++		struct ice_acl_act_entry acl_act;
++		u32 dummy;
++	} data;
++};
++
+ int
+ ice_flow_add_prof(struct ice_hw *hw, enum ice_block blk, enum ice_flow_dir dir,
+ 		  struct ice_flow_seg_info *segs, u8 segs_cnt,
+diff --git a/drivers/net/ethernet/intel/ice/ice_acl_main.c b/drivers/net/ethernet/intel/ice/ice_acl_main.c
+new file mode 100644
+index 000000000000..db8137e6f870
+--- /dev/null
++++ b/drivers/net/ethernet/intel/ice/ice_acl_main.c
+@@ -0,0 +1,227 @@
++// SPDX-License-Identifier: GPL-2.0
++/* Copyright (C) 2018-2026, Intel Corporation. */
++
++#include "ice.h"
++#include "ice_lib.h"
++#include "ice_acl_main.h"
++
++/* Number of action */
++#define ICE_ACL_NUM_ACT		1
++
++/**
++ * ice_acl_set_ip4_addr_seg - set flow segment IPv4 addresses masks
++ * @seg: flow segment for programming
++ */
++static void ice_acl_set_ip4_addr_seg(struct ice_flow_seg_info *seg)
 +{
-+	struct ice_vsi *vsi = ice_get_main_vsi(pf);
-+	struct ice_hw *hw = &pf->hw;
-+	struct ice_ntuple_fltr *f_rule;
++	u16 val_loc, mask_loc;
 +
-+	if (!vsi)
-+		return;
++	/* IP source address */
++	val_loc = offsetof(struct ice_ntuple_fltr, ip.v4.src_ip);
++	mask_loc = offsetof(struct ice_ntuple_fltr, mask.v4.src_ip);
 +
-+	list_for_each_entry(f_rule, &hw->fdir_list_head, fltr_node) {
-+		struct ice_flow_action acts[ICE_ACL_NUM_ACT];
-+		struct ice_acl_hw_prof *hw_prof;
-+		u64 entry_h = 0;
-+		int err;
++	ice_flow_set_fld(seg, ICE_FLOW_FIELD_IDX_IPV4_SA, val_loc,
++			 mask_loc, ICE_FLOW_FLD_OFF_INVAL, false);
 +
-+		if (!f_rule->acl_fltr)
-+			continue;
++	/* IP destination address */
++	val_loc = offsetof(struct ice_ntuple_fltr, ip.v4.dst_ip);
++	mask_loc = offsetof(struct ice_ntuple_fltr, mask.v4.dst_ip);
 +
-+		if (!hw->acl_prof || !hw->acl_prof[f_rule->flow_type])
-+			continue;
-+
-+		hw_prof = hw->acl_prof[f_rule->flow_type];
-+
-+		memset(&acts, 0, sizeof(acts));
-+		if (f_rule->dest_ctl == ICE_FLTR_PRGM_DESC_DEST_DROP_PKT)
-+			ice_acl_set_act_drop(&acts[0]);
-+		else
-+			ice_acl_set_act_fwd_queue(&acts[0], f_rule->q_index);
-+
-+		err = ice_flow_add_entry(hw, ICE_BLK_ACL, hw_prof->prof_id,
-+					 f_rule->fltr_id, vsi->idx,
-+					 ICE_FLOW_PRIO_NORMAL, f_rule, acts,
-+					 ICE_ACL_NUM_ACT, &entry_h);
-+		if (err)
-+			dev_warn(ice_pf_to_dev(pf), "Could not reprogram filter %d, status %d\n",
-+				 f_rule->fltr_id, err);
-+	}
++	ice_flow_set_fld(seg, ICE_FLOW_FIELD_IDX_IPV4_DA, val_loc,
++			 mask_loc, ICE_FLOW_FLD_OFF_INVAL, false);
 +}
 +
- /**
-  * ice_acl_add_rule_ethtool - add an ACL rule
-  * @vsi: pointer to target VSI
++/**
++ * ice_acl_set_ip4_port_seg - set flow segment port masks based on L4 port
++ * @seg: flow segment for programming
++ * @l4_proto: Layer 4 protocol to program
++ *
++ * Return: 0 on success, negative on error
++ */
++static int ice_acl_set_ip4_port_seg(struct ice_flow_seg_info *seg,
++				    enum ice_flow_seg_hdr l4_proto)
++{
++	enum ice_flow_field src_port, dst_port;
++	u16 val_loc, mask_loc;
++	int err;
++
++	err = ice_ntuple_l4_proto_to_port(l4_proto, &src_port, &dst_port);
++	if (err)
++		return err;
++
++	/* Layer 4 source port */
++	val_loc = offsetof(struct ice_ntuple_fltr, ip.v4.src_port);
++	mask_loc = offsetof(struct ice_ntuple_fltr, mask.v4.src_port);
++
++	ice_flow_set_fld(seg, src_port, val_loc, mask_loc,
++			 ICE_FLOW_FLD_OFF_INVAL, false);
++
++	/* Layer 4 destination port */
++	val_loc = offsetof(struct ice_ntuple_fltr, ip.v4.dst_port);
++	mask_loc = offsetof(struct ice_ntuple_fltr, mask.v4.dst_port);
++
++	ice_flow_set_fld(seg, dst_port, val_loc, mask_loc,
++			 ICE_FLOW_FLD_OFF_INVAL, false);
++
++	return 0;
++}
++
++/**
++ * ice_acl_set_ip4_seg - set flow segment IPv4 and L4 masks
++ * @seg: flow segment for programming
++ * @tcp_ip4_spec: mask data from ethtool
++ * @l4_proto: Layer 4 protocol to program
++ *
++ * Set the mask data into the flow segment to be used to program HW
++ * table based on provided L4 protocol for IPv4
++ *
++ * Return: 0 on success, negative on error
++ */
++static int ice_acl_set_ip4_seg(struct ice_flow_seg_info *seg,
++			       struct ethtool_tcpip4_spec *tcp_ip4_spec,
++			       enum ice_flow_seg_hdr l4_proto)
++{
++	int err;
++
++	err = ice_ntuple_check_ip4_seg(tcp_ip4_spec);
++	if (err)
++		return err;
++
++	ICE_FLOW_SET_HDRS(seg, ICE_FLOW_SEG_HDR_IPV4 | l4_proto);
++	ice_acl_set_ip4_addr_seg(seg);
++
++	return ice_acl_set_ip4_port_seg(seg, l4_proto);
++}
++
++/**
++ * ice_acl_set_ip4_usr_seg - set flow segment IPv4 masks
++ * @seg: flow segment for programming
++ * @usr_ip4_spec: ethtool userdef packet offset
++ *
++ * Set the offset data into the flow segment to be used to program HW
++ * table for IPv4
++ *
++ * Return: 0 on success, negative on error
++ */
++static int ice_acl_set_ip4_usr_seg(struct ice_flow_seg_info *seg,
++				   struct ethtool_usrip4_spec *usr_ip4_spec)
++{
++	int err;
++
++	err = ice_ntuple_check_ip4_usr_seg(usr_ip4_spec);
++	if (err)
++		return err;
++
++	ICE_FLOW_SET_HDRS(seg, ICE_FLOW_SEG_HDR_IPV4);
++	ice_acl_set_ip4_addr_seg(seg);
++
++	return 0;
++}
++
++/**
++ * ice_acl_prof_add_ethtool - Check ethtool input set and add ACL profile
++ * @pf: ice PF structure
++ * @fsp: pointer to ethtool Rx flow specification
++ *
++ * Return: 0 on success and negative values for failure
++ */
++static int ice_acl_prof_add_ethtool(struct ice_pf *pf,
++				    struct ethtool_rx_flow_spec *fsp)
++{
++	struct ice_flow_prof *prof = NULL;
++	struct ice_acl_hw_prof *hw_prof;
++	struct ice_flow_seg_info *seg;
++	enum ice_fltr_ptype fltr_type;
++	struct ice_hw *hw = &pf->hw;
++	int err;
++
++	seg = kzalloc_obj(*seg);
++	if (!seg)
++		return -ENOMEM;
++
++	switch (fsp->flow_type & ~FLOW_EXT) {
++	case TCP_V4_FLOW:
++		err = ice_acl_set_ip4_seg(seg, &fsp->m_u.tcp_ip4_spec,
++					  ICE_FLOW_SEG_HDR_TCP);
++		break;
++	case UDP_V4_FLOW:
++		err = ice_acl_set_ip4_seg(seg, &fsp->m_u.tcp_ip4_spec,
++					  ICE_FLOW_SEG_HDR_UDP);
++		break;
++	case SCTP_V4_FLOW:
++		err = ice_acl_set_ip4_seg(seg, &fsp->m_u.tcp_ip4_spec,
++					  ICE_FLOW_SEG_HDR_SCTP);
++		break;
++	case IPV4_USER_FLOW:
++		err = ice_acl_set_ip4_usr_seg(seg, &fsp->m_u.usr_ip4_spec);
++		break;
++	default:
++		err = -EOPNOTSUPP;
++	}
++	if (err)
++		goto free_seg;
++
++	fltr_type = ice_ethtool_flow_to_fltr(fsp->flow_type & ~FLOW_EXT);
++
++	hw_prof = hw->acl_prof[fltr_type];
++	if (!hw_prof) {
++		hw_prof = kzalloc_obj(**hw->acl_prof);
++		if (!hw_prof) {
++			err = -ENOMEM;
++			goto free_seg;
++		}
++	}
++
++	if (hw_prof->seg) {
++		/* This flow_type already has an input set.
++		 * If it matches the requested input set then we are
++		 * done. If it's different then it's an error.
++		 */
++		if (!memcmp(hw_prof->seg, seg, sizeof(*seg))) {
++			kfree(seg);
++			return 0;
++		}
++
++		err = -EINVAL;
++		goto free_seg;
++	}
++
++	/* Adding a profile for the given flow specification with no
++	 * actions (NULL) and zero actions 0.
++	 */
++	err = ice_flow_add_prof(hw, ICE_BLK_ACL, ICE_FLOW_RX, seg, 1, false,
++				&prof);
++	if (err)
++		goto free_acl_prof;
++
++	hw_prof->seg = seg;
++	hw_prof->prof_id = prof->id;
++	hw->acl_prof[fltr_type] = hw_prof;
++	return 0;
++
++free_acl_prof:
++	kfree(hw_prof);
++free_seg:
++	kfree(seg);
++
++	return err;
++}
++
++/**
++ * ice_acl_add_rule_ethtool - add an ACL rule
++ * @vsi: pointer to target VSI
++ * @cmd: command to add or delete ACL rule
++ *
++ * Return: 0 on success and negative values for failure
++ */
++int ice_acl_add_rule_ethtool(struct ice_vsi *vsi, struct ethtool_rxnfc *cmd)
++{
++	struct ethtool_rx_flow_spec *fsp;
++	struct ice_pf *pf;
++
++	pf = vsi->back;
++
++	fsp = (struct ethtool_rx_flow_spec *)&cmd->fs;
++
++	return ice_acl_prof_add_ethtool(pf, fsp);
++}
 diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool_ntuple.c b/drivers/net/ethernet/intel/ice/ice_ethtool_ntuple.c
-index 21a3a6a2f283..be7bfee9e977 100644
+index 7cd158051840..87457e739e2a 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ethtool_ntuple.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ethtool_ntuple.c
-@@ -514,6 +514,37 @@ void ice_fdir_replay_flows(struct ice_hw *hw)
+@@ -7,12 +7,16 @@
+ #include "ice_lib.h"
+ #include "ice_fdir.h"
+ #include "ice_flow.h"
++#include "ice_acl_main.h"
+ 
+ static bool ice_ipv6_mask_full(const __be32 *a)
+ {
+ 	return (a[0] & a[1] & a[2] & a[3]) == cpu_to_be32(0xffffffff);
+ }
+ 
++#define ICE_FULL_IPV4_ADDR_MASK	0xFFFFFFFF
++#define ICE_FULL_PORT_MASK	0xFFFF
++
+ /* calls to ice_flow_add_prof require the number of segments in the array
+  * for segs_cnt. In this code that is one more than the index.
+  */
+@@ -58,7 +62,7 @@ static int ice_fltr_to_ethtool_flow(enum ice_fltr_ptype flow)
+  *
+  * Returns flow enum
+  */
+-static enum ice_fltr_ptype ice_ethtool_flow_to_fltr(int eth)
++enum ice_fltr_ptype ice_ethtool_flow_to_fltr(int eth)
+ {
+ 	switch (eth) {
+ 	case ETHER_FLOW:
+@@ -947,23 +951,13 @@ ice_create_init_fdir_rule(struct ice_pf *pf, enum ice_fltr_ptype flow)
+ }
+ 
+ /**
+- * ice_set_fdir_ip4_seg
+- * @seg: flow segment for programming
++ * ice_ntuple_check_ip4_seg - Check valid fields are provided for filter
+  * @tcp_ip4_spec: mask data from ethtool
+- * @l4_proto: Layer 4 protocol to program
+- * @perfect_fltr: only valid on success; returns true if perfect filter,
+- *		  false if not
+  *
+- * Set the mask data into the flow segment to be used to program HW
+- * table based on provided L4 protocol for IPv4
++ * Return: 0 if fields valid, negative otherwise
+  */
+-static int
+-ice_set_fdir_ip4_seg(struct ice_flow_seg_info *seg,
+-		     struct ethtool_tcpip4_spec *tcp_ip4_spec,
+-		     enum ice_flow_seg_hdr l4_proto, bool *perfect_fltr)
++int ice_ntuple_check_ip4_seg(struct ethtool_tcpip4_spec *tcp_ip4_spec)
+ {
+-	enum ice_flow_field src_port, dst_port;
+-
+ 	/* make sure we don't have any empty rule */
+ 	if (!tcp_ip4_spec->psrc && !tcp_ip4_spec->ip4src &&
+ 	    !tcp_ip4_spec->pdst && !tcp_ip4_spec->ip4dst)
+@@ -973,24 +967,71 @@ ice_set_fdir_ip4_seg(struct ice_flow_seg_info *seg,
+ 	if (tcp_ip4_spec->tos)
+ 		return -EOPNOTSUPP;
+ 
++	return 0;
++}
++
++/**
++ * ice_ntuple_l4_proto_to_port - set src and dst port for given L4 protocol
++ * @l4_proto: Layer 4 protocol to program
++ * @src_port: source flow field value for provided l4 protocol
++ * @dst_port: destination flow field value for provided l4 protocol
++ *
++ * Return: 0 on success, negative on error
++ */
++int ice_ntuple_l4_proto_to_port(enum ice_flow_seg_hdr l4_proto,
++				enum ice_flow_field *src_port,
++				enum ice_flow_field *dst_port)
++{
+ 	if (l4_proto == ICE_FLOW_SEG_HDR_TCP) {
+-		src_port = ICE_FLOW_FIELD_IDX_TCP_SRC_PORT;
+-		dst_port = ICE_FLOW_FIELD_IDX_TCP_DST_PORT;
++		*src_port = ICE_FLOW_FIELD_IDX_TCP_SRC_PORT;
++		*dst_port = ICE_FLOW_FIELD_IDX_TCP_DST_PORT;
+ 	} else if (l4_proto == ICE_FLOW_SEG_HDR_UDP) {
+-		src_port = ICE_FLOW_FIELD_IDX_UDP_SRC_PORT;
+-		dst_port = ICE_FLOW_FIELD_IDX_UDP_DST_PORT;
++		*src_port = ICE_FLOW_FIELD_IDX_UDP_SRC_PORT;
++		*dst_port = ICE_FLOW_FIELD_IDX_UDP_DST_PORT;
+ 	} else if (l4_proto == ICE_FLOW_SEG_HDR_SCTP) {
+-		src_port = ICE_FLOW_FIELD_IDX_SCTP_SRC_PORT;
+-		dst_port = ICE_FLOW_FIELD_IDX_SCTP_DST_PORT;
++		*src_port = ICE_FLOW_FIELD_IDX_SCTP_SRC_PORT;
++		*dst_port = ICE_FLOW_FIELD_IDX_SCTP_DST_PORT;
+ 	} else {
+ 		return -EOPNOTSUPP;
  	}
+ 
++	return 0;
++}
++
++/**
++ * ice_set_fdir_ip4_seg - setup flow segment based on IPv4 and L4 proto
++ * @seg: flow segment for programming
++ * @tcp_ip4_spec: mask data from ethtool
++ * @l4_proto: Layer 4 protocol to program
++ * @perfect_fltr: only valid on success; returns true if perfect filter,
++ *		  false if not
++ *
++ * Set the mask data into the flow segment to be used to program HW
++ * table based on provided L4 protocol for IPv4
++ *
++ * Return: 0 on success, negative on error
++ */
++static int ice_set_fdir_ip4_seg(struct ice_flow_seg_info *seg,
++				struct ethtool_tcpip4_spec *tcp_ip4_spec,
++				enum ice_flow_seg_hdr l4_proto,
++				bool *perfect_fltr)
++{
++	enum ice_flow_field src_port, dst_port;
++	int err;
++
++	err = ice_ntuple_check_ip4_seg(tcp_ip4_spec);
++	if (err)
++		return err;
++
++	err = ice_ntuple_l4_proto_to_port(l4_proto, &src_port, &dst_port);
++	if (err)
++		return err;
++
+ 	*perfect_fltr = true;
+ 	ICE_FLOW_SET_HDRS(seg, ICE_FLOW_SEG_HDR_IPV4 | l4_proto);
+ 
+ 	/* IP source address */
+-	if (tcp_ip4_spec->ip4src == htonl(0xFFFFFFFF))
++	if (tcp_ip4_spec->ip4src == htonl(ICE_FULL_IPV4_ADDR_MASK))
+ 		ice_flow_set_fld(seg, ICE_FLOW_FIELD_IDX_IPV4_SA,
+ 				 ICE_FLOW_FLD_OFF_INVAL, ICE_FLOW_FLD_OFF_INVAL,
+ 				 ICE_FLOW_FLD_OFF_INVAL, false);
+@@ -1000,7 +1041,7 @@ ice_set_fdir_ip4_seg(struct ice_flow_seg_info *seg,
+ 		return -EOPNOTSUPP;
+ 
+ 	/* IP destination address */
+-	if (tcp_ip4_spec->ip4dst == htonl(0xFFFFFFFF))
++	if (tcp_ip4_spec->ip4dst == htonl(ICE_FULL_IPV4_ADDR_MASK))
+ 		ice_flow_set_fld(seg, ICE_FLOW_FIELD_IDX_IPV4_DA,
+ 				 ICE_FLOW_FLD_OFF_INVAL, ICE_FLOW_FLD_OFF_INVAL,
+ 				 ICE_FLOW_FLD_OFF_INVAL, false);
+@@ -1010,7 +1051,7 @@ ice_set_fdir_ip4_seg(struct ice_flow_seg_info *seg,
+ 		return -EOPNOTSUPP;
+ 
+ 	/* Layer 4 source port */
+-	if (tcp_ip4_spec->psrc == htons(0xFFFF))
++	if (tcp_ip4_spec->psrc == htons(ICE_FULL_PORT_MASK))
+ 		ice_flow_set_fld(seg, src_port, ICE_FLOW_FLD_OFF_INVAL,
+ 				 ICE_FLOW_FLD_OFF_INVAL, ICE_FLOW_FLD_OFF_INVAL,
+ 				 false);
+@@ -1020,7 +1061,7 @@ ice_set_fdir_ip4_seg(struct ice_flow_seg_info *seg,
+ 		return -EOPNOTSUPP;
+ 
+ 	/* Layer 4 destination port */
+-	if (tcp_ip4_spec->pdst == htons(0xFFFF))
++	if (tcp_ip4_spec->pdst == htons(ICE_FULL_PORT_MASK))
+ 		ice_flow_set_fld(seg, dst_port, ICE_FLOW_FLD_OFF_INVAL,
+ 				 ICE_FLOW_FLD_OFF_INVAL, ICE_FLOW_FLD_OFF_INVAL,
+ 				 false);
+@@ -1033,19 +1074,12 @@ ice_set_fdir_ip4_seg(struct ice_flow_seg_info *seg,
+ }
+ 
+ /**
+- * ice_set_fdir_ip4_usr_seg
+- * @seg: flow segment for programming
++ * ice_ntuple_check_ip4_usr_seg - Check valid fields are provided for filter
+  * @usr_ip4_spec: ethtool userdef packet offset
+- * @perfect_fltr: only valid on success; returns true if perfect filter,
+- *		  false if not
+  *
+- * Set the offset data into the flow segment to be used to program HW
+- * table for IPv4
++ * Return: 0 if fields valid, negative otherwise
+  */
+-static int
+-ice_set_fdir_ip4_usr_seg(struct ice_flow_seg_info *seg,
+-			 struct ethtool_usrip4_spec *usr_ip4_spec,
+-			 bool *perfect_fltr)
++int ice_ntuple_check_ip4_usr_seg(struct ethtool_usrip4_spec *usr_ip4_spec)
+ {
+ 	/* first 4 bytes of Layer 4 header */
+ 	if (usr_ip4_spec->l4_4_bytes)
+@@ -1061,11 +1095,36 @@ ice_set_fdir_ip4_usr_seg(struct ice_flow_seg_info *seg,
+ 	if (!usr_ip4_spec->ip4src && !usr_ip4_spec->ip4dst)
+ 		return -EINVAL;
+ 
++	return 0;
++}
++
++/**
++ * ice_set_fdir_ip4_usr_seg - setup flow segment based on IPv4
++ * @seg: flow segment for programming
++ * @usr_ip4_spec: ethtool userdef packet offset
++ * @perfect_fltr: only set on success; returns true if perfect filter, false if
++ *		  not
++ *
++ * Set the offset data into the flow segment to be used to program HW
++ * table for IPv4
++ *
++ * Return: 0 on success, negative on error
++ */
++static int ice_set_fdir_ip4_usr_seg(struct ice_flow_seg_info *seg,
++				    struct ethtool_usrip4_spec *usr_ip4_spec,
++				    bool *perfect_fltr)
++{
++	int err;
++
++	err = ice_ntuple_check_ip4_usr_seg(usr_ip4_spec);
++	if (err)
++		return err;
++
+ 	*perfect_fltr = true;
+ 	ICE_FLOW_SET_HDRS(seg, ICE_FLOW_SEG_HDR_IPV4);
+ 
+ 	/* IP source address */
+-	if (usr_ip4_spec->ip4src == htonl(0xFFFFFFFF))
++	if (usr_ip4_spec->ip4src == htonl(ICE_FULL_IPV4_ADDR_MASK))
+ 		ice_flow_set_fld(seg, ICE_FLOW_FIELD_IDX_IPV4_SA,
+ 				 ICE_FLOW_FLD_OFF_INVAL, ICE_FLOW_FLD_OFF_INVAL,
+ 				 ICE_FLOW_FLD_OFF_INVAL, false);
+@@ -1075,7 +1134,7 @@ ice_set_fdir_ip4_usr_seg(struct ice_flow_seg_info *seg,
+ 		return -EOPNOTSUPP;
+ 
+ 	/* IP destination address */
+-	if (usr_ip4_spec->ip4dst == htonl(0xFFFFFFFF))
++	if (usr_ip4_spec->ip4dst == htonl(ICE_FULL_IPV4_ADDR_MASK))
+ 		ice_flow_set_fld(seg, ICE_FLOW_FIELD_IDX_IPV4_DA,
+ 				 ICE_FLOW_FLD_OFF_INVAL, ICE_FLOW_FLD_OFF_INVAL,
+ 				 ICE_FLOW_FLD_OFF_INVAL, false);
+@@ -1088,23 +1147,13 @@ ice_set_fdir_ip4_usr_seg(struct ice_flow_seg_info *seg,
+ }
+ 
+ /**
+- * ice_set_fdir_ip6_seg
+- * @seg: flow segment for programming
++ * ice_ntuple_check_ip6_seg - Check valid fields are provided for filter
+  * @tcp_ip6_spec: mask data from ethtool
+- * @l4_proto: Layer 4 protocol to program
+- * @perfect_fltr: only valid on success; returns true if perfect filter,
+- *		  false if not
+  *
+- * Set the mask data into the flow segment to be used to program HW
+- * table based on provided L4 protocol for IPv6
++ * Return: 0 if fields valid, negative otherwise
+  */
+-static int
+-ice_set_fdir_ip6_seg(struct ice_flow_seg_info *seg,
+-		     struct ethtool_tcpip6_spec *tcp_ip6_spec,
+-		     enum ice_flow_seg_hdr l4_proto, bool *perfect_fltr)
++static int ice_ntuple_check_ip6_seg(struct ethtool_tcpip6_spec *tcp_ip6_spec)
+ {
+-	enum ice_flow_field src_port, dst_port;
+-
+ 	/* make sure we don't have any empty rule */
+ 	if (ipv6_addr_any((struct in6_addr *)tcp_ip6_spec->ip6src) &&
+ 	    ipv6_addr_any((struct in6_addr *)tcp_ip6_spec->ip6dst) &&
+@@ -1115,18 +1164,37 @@ ice_set_fdir_ip6_seg(struct ice_flow_seg_info *seg,
+ 	if (tcp_ip6_spec->tclass)
+ 		return -EOPNOTSUPP;
+ 
+-	if (l4_proto == ICE_FLOW_SEG_HDR_TCP) {
+-		src_port = ICE_FLOW_FIELD_IDX_TCP_SRC_PORT;
+-		dst_port = ICE_FLOW_FIELD_IDX_TCP_DST_PORT;
+-	} else if (l4_proto == ICE_FLOW_SEG_HDR_UDP) {
+-		src_port = ICE_FLOW_FIELD_IDX_UDP_SRC_PORT;
+-		dst_port = ICE_FLOW_FIELD_IDX_UDP_DST_PORT;
+-	} else if (l4_proto == ICE_FLOW_SEG_HDR_SCTP) {
+-		src_port = ICE_FLOW_FIELD_IDX_SCTP_SRC_PORT;
+-		dst_port = ICE_FLOW_FIELD_IDX_SCTP_DST_PORT;
+-	} else {
+-		return -EINVAL;
+-	}
++	return 0;
++}
++
++/**
++ * ice_set_fdir_ip6_seg - setup flow segment based on IPv6 and L4 proto
++ * @seg: flow segment for programming
++ * @tcp_ip6_spec: mask data from ethtool
++ * @l4_proto: Layer 4 protocol to program
++ * @perfect_fltr: only valid on success; returns true if perfect filter,
++ *		  false if not
++ *
++ * Set the mask data into the flow segment to be used to program HW
++ * table based on provided L4 protocol for IPv6
++ *
++ * Return: 0 on success, negative on error
++ */
++static int ice_set_fdir_ip6_seg(struct ice_flow_seg_info *seg,
++				struct ethtool_tcpip6_spec *tcp_ip6_spec,
++				enum ice_flow_seg_hdr l4_proto,
++				bool *perfect_fltr)
++{
++	enum ice_flow_field src_port, dst_port;
++	int err;
++
++	err = ice_ntuple_check_ip6_seg(tcp_ip6_spec);
++	if (err)
++		return err;
++
++	err = ice_ntuple_l4_proto_to_port(l4_proto, &src_port, &dst_port);
++	if (err)
++		return err;
+ 
+ 	*perfect_fltr = true;
+ 	ICE_FLOW_SET_HDRS(seg, ICE_FLOW_SEG_HDR_IPV6 | l4_proto);
+@@ -1150,7 +1218,7 @@ ice_set_fdir_ip6_seg(struct ice_flow_seg_info *seg,
+ 		return -EOPNOTSUPP;
+ 
+ 	/* Layer 4 source port */
+-	if (tcp_ip6_spec->psrc == htons(0xFFFF))
++	if (tcp_ip6_spec->psrc == htons(ICE_FULL_PORT_MASK))
+ 		ice_flow_set_fld(seg, src_port, ICE_FLOW_FLD_OFF_INVAL,
+ 				 ICE_FLOW_FLD_OFF_INVAL, ICE_FLOW_FLD_OFF_INVAL,
+ 				 false);
+@@ -1160,7 +1228,7 @@ ice_set_fdir_ip6_seg(struct ice_flow_seg_info *seg,
+ 		return -EOPNOTSUPP;
+ 
+ 	/* Layer 4 destination port */
+-	if (tcp_ip6_spec->pdst == htons(0xFFFF))
++	if (tcp_ip6_spec->pdst == htons(ICE_FULL_PORT_MASK))
+ 		ice_flow_set_fld(seg, dst_port, ICE_FLOW_FLD_OFF_INVAL,
+ 				 ICE_FLOW_FLD_OFF_INVAL, ICE_FLOW_FLD_OFF_INVAL,
+ 				 false);
+@@ -1173,19 +1241,13 @@ ice_set_fdir_ip6_seg(struct ice_flow_seg_info *seg,
+ }
+ 
+ /**
+- * ice_set_fdir_ip6_usr_seg
+- * @seg: flow segment for programming
++ * ice_ntuple_check_ip6_usr_seg - Check valid fields are provided for filter
+  * @usr_ip6_spec: ethtool userdef packet offset
+- * @perfect_fltr: only valid on success; returns true if perfect filter,
+- *		  false if not
+  *
+- * Set the offset data into the flow segment to be used to program HW
+- * table for IPv6
++ * Return: 0 if fields valid, negative otherwise
+  */
+ static int
+-ice_set_fdir_ip6_usr_seg(struct ice_flow_seg_info *seg,
+-			 struct ethtool_usrip6_spec *usr_ip6_spec,
+-			 bool *perfect_fltr)
++ice_ntuple_check_ip6_usr_seg(struct ethtool_usrip6_spec *usr_ip6_spec)
+ {
+ 	/* filtering on Layer 4 bytes not supported */
+ 	if (usr_ip6_spec->l4_4_bytes)
+@@ -1201,6 +1263,31 @@ ice_set_fdir_ip6_usr_seg(struct ice_flow_seg_info *seg,
+ 	    ipv6_addr_any((struct in6_addr *)usr_ip6_spec->ip6dst))
+ 		return -EINVAL;
+ 
++	return 0;
++}
++
++/**
++ * ice_set_fdir_ip6_usr_seg - setup flow segment based on IPv6
++ * @seg: flow segment for programming
++ * @usr_ip6_spec: ethtool userdef packet offset
++ * @perfect_fltr: only set on success; returns true if perfect filter, false if
++ *		  not
++ *
++ * Set the offset data into the flow segment to be used to program HW
++ * table for IPv6
++ *
++ * Return: 0 on success, negative on error
++ */
++static int ice_set_fdir_ip6_usr_seg(struct ice_flow_seg_info *seg,
++				    struct ethtool_usrip6_spec *usr_ip6_spec,
++				    bool *perfect_fltr)
++{
++	int err;
++
++	err = ice_ntuple_check_ip6_usr_seg(usr_ip6_spec);
++	if (err)
++		return err;
++
+ 	*perfect_fltr = true;
+ 	ICE_FLOW_SET_HDRS(seg, ICE_FLOW_SEG_HDR_IPV6);
+ 
+@@ -1821,7 +1908,7 @@ int ice_del_ntuple_ethtool(struct ice_vsi *vsi, struct ethtool_rxnfc *cmd)
+ 	struct ice_hw *hw = &pf->hw;
+ 	int val;
+ 
+-	if (!test_bit(ICE_FLAG_FD_ENA, pf->flags))
++	if (!test_bit(ICE_FLAG_FD_ENA, pf->flags) && !pf->hw.acl_tbl)
+ 		return -EOPNOTSUPP;
+ 
+ 	/* Do not delete filters during reset */
+@@ -1837,6 +1924,60 @@ int ice_del_ntuple_ethtool(struct ice_vsi *vsi, struct ethtool_rxnfc *cmd)
+ 	return val;
  }
  
 +/**
-+ * ice_acl_replay_flows - replay HW ACL flow profiles
-+ * @hw: pointer to HW instance
++ * ice_is_acl_filter - Check if it's a FD or ACL filter
++ * @fsp: pointer to ethtool Rx flow specification
++ *
++ * If any field of the provided filter is using a partial mask then this is
++ * an ACL filter.
++ *
++ * Return: true if ACL filter, false otherwise
 + */
-+void ice_acl_replay_flows(struct ice_hw *hw)
++static bool ice_is_acl_filter(struct ethtool_rx_flow_spec *fsp)
 +{
++	struct ethtool_tcpip4_spec *tcp_ip4_spec;
++	struct ethtool_usrip4_spec *usr_ip4_spec;
++
++	switch (fsp->flow_type & ~FLOW_EXT) {
++	case TCP_V4_FLOW:
++	case UDP_V4_FLOW:
++	case SCTP_V4_FLOW:
++		tcp_ip4_spec = &fsp->m_u.tcp_ip4_spec;
++
++		if (tcp_ip4_spec->ip4src &&
++		    tcp_ip4_spec->ip4src != htonl(ICE_FULL_IPV4_ADDR_MASK))
++			return true;
++
++		if (tcp_ip4_spec->ip4dst &&
++		    tcp_ip4_spec->ip4dst != htonl(ICE_FULL_IPV4_ADDR_MASK))
++			return true;
++
++		if (tcp_ip4_spec->psrc &&
++		    tcp_ip4_spec->psrc != htons(ICE_FULL_PORT_MASK))
++			return true;
++
++		if (tcp_ip4_spec->pdst &&
++		    tcp_ip4_spec->pdst != htons(ICE_FULL_PORT_MASK))
++			return true;
++
++		break;
++	case IPV4_USER_FLOW:
++		usr_ip4_spec = &fsp->m_u.usr_ip4_spec;
++
++		if (usr_ip4_spec->ip4src &&
++		    usr_ip4_spec->ip4src != htonl(ICE_FULL_IPV4_ADDR_MASK))
++			return true;
++
++		if (usr_ip4_spec->ip4dst &&
++		    usr_ip4_spec->ip4dst != htonl(ICE_FULL_IPV4_ADDR_MASK))
++			return true;
++
++		break;
++	}
++
++	return false;
++}
++
+ /**
+  * ice_update_ring_dest_vsi - update dest ring and dest VSI
+  * @vsi: pointer to target VSI
+@@ -2049,12 +2190,12 @@ int ice_add_ntuple_ethtool(struct ice_vsi *vsi, struct ethtool_rxnfc *cmd)
+ 	hw = &pf->hw;
+ 	dev = ice_pf_to_dev(pf);
+ 
+-	if (!test_bit(ICE_FLAG_FD_ENA, pf->flags))
++	if (!test_bit(ICE_FLAG_FD_ENA, pf->flags) && !pf->hw.acl_tbl)
+ 		return -EOPNOTSUPP;
+ 
+ 	/* Do not program filters during reset */
+ 	if (ice_is_reset_in_progress(pf->state)) {
+-		dev_err(dev, "Device is resetting - adding Flow Director filters not supported during reset\n");
++		dev_err(dev, "Device is resetting - adding ntuple filters not supported during reset\n");
+ 		return -EBUSY;
+ 	}
+ 
+@@ -2066,10 +2207,6 @@ int ice_add_ntuple_ethtool(struct ice_vsi *vsi, struct ethtool_rxnfc *cmd)
+ 	if (fsp->flow_type & FLOW_MAC_EXT)
+ 		return -EINVAL;
+ 
+-	ret = ice_cfg_fdir_xtrct_seq(pf, fsp, &userdata);
+-	if (ret)
+-		return ret;
+-
+ 	max_location = ice_ntuple_get_max_fltr_cnt(hw);
+ 	if (fsp->location >= max_location) {
+ 		dev_err(dev, "Failed to add filter. The number of ntuple filters or provided location exceed max %d.\n",
+@@ -2077,6 +2214,18 @@ int ice_add_ntuple_ethtool(struct ice_vsi *vsi, struct ethtool_rxnfc *cmd)
+ 		return -ENOSPC;
+ 	}
+ 
++	/* ACL filter */
++	if (pf->hw.acl_tbl && ice_is_acl_filter(fsp))
++		return ice_acl_add_rule_ethtool(vsi, cmd);
++
++	/* Only fdir filters below */
++	if (!test_bit(ICE_FLAG_FD_ENA, pf->flags))
++		return -EOPNOTSUPP;
++
++	ret = ice_cfg_fdir_xtrct_seq(pf, fsp, &userdata);
++	if (ret)
++		return ret;
++
+ 	/* return error if not an update and no available filters */
+ 	fltrs_needed = ice_get_open_tunnel_port(hw, &tunnel_port, TNL_ALL) ? 2 : 1;
+ 	if (!ice_fdir_find_fltr_by_idx(hw, fsp->location) &&
+diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
+index bb1d12f952cf..d255ffcd5c86 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
++++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
+@@ -1259,6 +1259,9 @@ ice_find_prof_id_with_mask(struct ice_hw *hw, enum ice_block blk,
+ static bool ice_prof_id_rsrc_type(enum ice_block blk, u16 *rsrc_type)
+ {
+ 	switch (blk) {
++	case ICE_BLK_ACL:
++		*rsrc_type = ICE_AQC_RES_TYPE_ACL_PROF_BLDR_PROFID;
++		break;
+ 	case ICE_BLK_FD:
+ 		*rsrc_type = ICE_AQC_RES_TYPE_FD_PROF_BLDR_PROFID;
+ 		break;
+@@ -1279,6 +1282,9 @@ static bool ice_prof_id_rsrc_type(enum ice_block blk, u16 *rsrc_type)
+ static bool ice_tcam_ent_rsrc_type(enum ice_block blk, u16 *rsrc_type)
+ {
+ 	switch (blk) {
++	case ICE_BLK_ACL:
++		*rsrc_type = ICE_AQC_RES_TYPE_ACL_PROF_BLDR_TCAM;
++		break;
+ 	case ICE_BLK_FD:
+ 		*rsrc_type = ICE_AQC_RES_TYPE_FD_PROF_BLDR_TCAM;
+ 		break;
+diff --git a/drivers/net/ethernet/intel/ice/ice_flow.c b/drivers/net/ethernet/intel/ice/ice_flow.c
+index 121552c644cd..855d296aeed8 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flow.c
++++ b/drivers/net/ethernet/intel/ice/ice_flow.c
+@@ -3,6 +3,7 @@
+ 
+ #include "ice_common.h"
+ #include "ice_flow.h"
++#include "ice_acl.h"
+ #include <net/gre.h>
+ 
+ /* Size of known protocol header fields */
+@@ -989,6 +990,43 @@ static int ice_flow_proc_seg_hdrs(struct ice_flow_prof_params *params)
+ 	return 0;
+ }
+ 
++/**
++ * ice_flow_xtract_pkt_flags - Create an extr sequence entry for packet flags
++ * @hw: pointer to the HW struct
++ * @params: information about the flow to be processed
++ * @flags: The value of pkt_flags[x:x] in Rx/Tx MDID metadata.
++ *
++ * Allocate an extraction sequence entries for a DWORD size chunk of the packet
++ * flags.
++ *
++ * Return: 0 on success, negative on error
++ */
++static int ice_flow_xtract_pkt_flags(struct ice_hw *hw,
++				     struct ice_flow_prof_params *params,
++				     enum ice_flex_mdid_pkt_flags flags)
++{
++	u8 fv_words = hw->blk[params->blk].es.fvw;
++	u8 idx;
++
++	/* Make sure the number of extraction sequence entries required does not
++	 * exceed the block's capacity.
++	 */
++	if (params->es_cnt >= fv_words)
++		return -ENOSPC;
++
++	/* some blocks require a reversed field vector layout */
++	if (hw->blk[params->blk].es.reverse)
++		idx = fv_words - params->es_cnt - 1;
++	else
++		idx = params->es_cnt;
++
++	params->es[idx].prot_id = ICE_PROT_META_ID;
++	params->es[idx].off = flags;
++	params->es_cnt++;
++
++	return 0;
++}
++
+ /**
+  * ice_flow_xtract_fld - Create an extraction sequence entry for the given field
+  * @hw: pointer to the HW struct
+@@ -1287,6 +1325,16 @@ ice_flow_create_xtrct_seq(struct ice_hw *hw,
+ 	int status = 0;
+ 	u8 i;
+ 
++	/* For ACL, we also need to extract the direction bit (Rx,Tx) data from
++	 * packet flags
++	 */
++	if (params->blk == ICE_BLK_ACL) {
++		status = ice_flow_xtract_pkt_flags(hw, params,
++						   ICE_RX_MDID_PKT_FLAGS_15_0);
++		if (status)
++			return status;
++	}
++
+ 	for (i = 0; i < prof->segs_cnt; i++) {
+ 		u64 match = params->prof->segs[i].match;
+ 		enum ice_flow_field j;
+@@ -1308,6 +1356,123 @@ ice_flow_create_xtrct_seq(struct ice_hw *hw,
+ 	return status;
+ }
+ 
++/**
++ * ice_flow_sel_acl_scen - return specific scenario
++ * @hw: pointer to the hardware structure
++ * @params: information about the flow to be processed
++ *
++ * Return (through @params) the specific scenario based on params.
++ *
++ * Return: 0 on success, negative on error
++ */
++static int ice_flow_sel_acl_scen(struct ice_hw *hw,
++				 struct ice_flow_prof_params *params)
++{
++	/* Find the best-fit scenario for the provided match width */
++	struct ice_acl_scen *cand_scen = NULL, *scen;
++
++	if (!hw->acl_tbl)
++		return -ENOENT;
++
++	/* Loop through each scenario and match against the scenario width
++	 * to select the specific scenario
++	 */
++	list_for_each_entry(scen, &hw->acl_tbl->scens, list_entry)
++		if (scen->eff_width >= params->entry_length &&
++		    (!cand_scen || cand_scen->eff_width > scen->eff_width))
++			cand_scen = scen;
++	if (!cand_scen)
++		return -ENOENT;
++
++	params->prof->cfg.scen = cand_scen;
++
++	return 0;
++}
++
++/**
++ * ice_flow_acl_def_entry_frmt - Determine the layout of flow entries
++ * @params: information about the flow to be processed
++ *
++ * Return: 0 on success, negative on error
++ */
++static int
++ice_flow_acl_def_entry_frmt(struct ice_flow_prof_params *params)
++{
++	u16 index, range_idx = 0;
++
++	index = ICE_AQC_ACL_PROF_BYTE_SEL_START_IDX;
++
++	for (int i = 0; i < params->prof->segs_cnt; i++) {
++		struct ice_flow_seg_info *seg = &params->prof->segs[i];
++		unsigned long match = seg->match;
++		int j;
++
++		for_each_set_bit(j, &match, ICE_FLOW_FIELD_IDX_MAX) {
++			struct ice_flow_fld_info *fld = &seg->fields[j];
++
++			fld->entry.mask = ICE_FLOW_FLD_OFF_INVAL;
++
++			if (fld->type == ICE_FLOW_FLD_TYPE_RANGE) {
++				fld->entry.last = ICE_FLOW_FLD_OFF_INVAL;
++
++				/* Range checking only supported for single
++				 * words
++				 */
++				if (DIV_ROUND_UP(ice_flds_info[j].size +
++						 fld->xtrct.disp,
++						 BITS_PER_BYTE * 2) > 1)
++					return -EINVAL;
++
++				/* Ranges must define low and high values */
++				if (fld->src.val == ICE_FLOW_FLD_OFF_INVAL ||
++				    fld->src.last == ICE_FLOW_FLD_OFF_INVAL)
++					return -EINVAL;
++
++				fld->entry.val = range_idx++;
++			} else {
++				/* Store adjusted byte-length of field for later
++				 * use, taking into account potential
++				 * non-byte-aligned displacement
++				 */
++				fld->entry.last =
++					DIV_ROUND_UP(ice_flds_info[j].size +
++						     (fld->xtrct.disp %
++						      BITS_PER_BYTE),
++						     BITS_PER_BYTE);
++				fld->entry.val = index;
++				index += fld->entry.last;
++			}
++		}
++
++		for (j = 0; j < seg->raws_cnt; j++) {
++			struct ice_flow_seg_fld_raw *raw = &seg->raws[j];
++
++			raw->info.entry.mask = ICE_FLOW_FLD_OFF_INVAL;
++			raw->info.entry.val = index;
++			raw->info.entry.last = raw->info.src.last;
++			index += raw->info.entry.last;
++		}
++	}
++
++	/* Currently only support using the byte selection base, which only
++	 * allows for an effective entry size of 30 bytes. Reject anything
++	 * larger.
++	 */
++	if (index > ICE_AQC_ACL_PROF_BYTE_SEL_ELEMS)
++		return -EINVAL;
++
++	/* Only 8 range checkers per profile, reject anything trying to use
++	 * more
++	 */
++	if (range_idx > ICE_AQC_ACL_PROF_RANGES_NUM_CFG)
++		return -EINVAL;
++
++	/* Store # bytes required for entry for later use */
++	params->entry_length = index - ICE_AQC_ACL_PROF_BYTE_SEL_START_IDX;
++
++	return 0;
++}
++
+ /**
+  * ice_flow_proc_segs - process all packet segments associated with a profile
+  * @hw: pointer to the HW struct
+@@ -1331,6 +1496,14 @@ ice_flow_proc_segs(struct ice_hw *hw, struct ice_flow_prof_params *params)
+ 	case ICE_BLK_RSS:
+ 		status = 0;
+ 		break;
++	case ICE_BLK_ACL:
++		status = ice_flow_acl_def_entry_frmt(params);
++		if (status)
++			return status;
++		status = ice_flow_sel_acl_scen(hw, params);
++		if (status)
++			return status;
++		break;
+ 	default:
+ 		return -EOPNOTSUPP;
+ 	}
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 2f3e11459855..335f054285ba 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -4368,14 +4368,33 @@ static int ice_acl_create_hw(struct ice_pf *pf)
+ }
+ 
+ /**
+- * ice_init_acl - initialize the ACL block
++ * ice_init_acl - initialize the ACL block and allocate necessary structs
+  * @pf: ptr to PF device
+  *
+  * Return: 0 on success, negative on error
+  */
+ static int ice_init_acl(struct ice_pf *pf)
+ {
+-	return ice_acl_create_hw(pf);
++	struct device *dev = ice_pf_to_dev(pf);
++	struct ice_hw *hw = &pf->hw;
++	int err;
++
++	hw->acl_prof = devm_kcalloc(dev, ICE_FLTR_PTYPE_MAX,
++				    sizeof(*hw->acl_prof), GFP_KERNEL);
++	if (!hw->acl_prof)
++		return -ENOMEM;
++
++	err = ice_acl_create_hw(pf);
++	if (err)
++		goto free_acl_prof;
++
++	return 0;
++
++free_acl_prof:
++	devm_kfree(dev, hw->acl_prof);
++	hw->acl_prof = NULL;
++
++	return err;
+ }
+ 
+ /**
+@@ -4384,10 +4403,27 @@ static int ice_init_acl(struct ice_pf *pf)
+  */
+ static void ice_deinit_acl(struct ice_pf *pf)
+ {
++	struct device *dev = ice_pf_to_dev(pf);
+ 	struct ice_hw *hw = &pf->hw;
+ 
+ 	ice_acl_rem_flows(hw);
+-	ice_acl_destroy_tbl(&pf->hw);
++	ice_acl_destroy_tbl(hw);
++
 +	if (!hw->acl_prof)
 +		return;
 +
-+	for (enum ice_fltr_ptype flow = ICE_FLTR_PTYPE_NONF_NONE;
-+	     flow < ICE_FLTR_PTYPE_MAX; flow++) {
-+		struct ice_flow_prof *hw_prof;
-+		struct ice_acl_hw_prof *prof;
-+		int err;
++	for (int i = 0; i < ICE_FLTR_PTYPE_MAX; i++) {
++		struct ice_acl_hw_prof *hw_prof = hw->acl_prof[i];
 +
-+		flow &= ~FLOW_EXT;
-+		prof = hw->acl_prof[flow];
-+		if (!prof || !prof->seg)
++		if (!hw_prof)
 +			continue;
 +
-+		err = ice_flow_add_prof(hw, ICE_BLK_ACL, ICE_FLOW_RX,
-+					prof->seg, 1, false, &hw_prof);
-+		if (err) {
-+			dev_err(ice_hw_to_dev(hw), "Could not replay ACL, flow type %d\n",
-+				flow);
-+			continue;
-+		}
-+		prof->prof_id = hw_prof->id;
++		kfree(hw_prof->seg);
++		kfree(hw_prof);
 +	}
-+}
 +
- /**
-  * ice_parse_rx_flow_user_data - deconstruct user-defined data
-  * @fsp: pointer to ethtool Rx flow specification
-@@ -1800,6 +1831,28 @@ static int ice_del_acl_ethtool(struct ice_hw *hw, struct ice_ntuple_fltr *fltr)
- 	return ice_flow_rem_entry(hw, ICE_BLK_ACL, entry);
++	devm_kfree(dev, hw->acl_prof);
++	hw->acl_prof = NULL;
  }
  
-+/**
-+ * ice_acl_del_all_fltrs - Delete all ACL filters from the filter list
-+ * @vsi: the VSI being changed
-+ *
-+ * This function needs to be called while holding hw->fdir_fltr_lock
-+ */
-+void ice_acl_del_all_fltrs(struct ice_vsi *vsi)
-+{
-+	struct ice_ntuple_fltr *f_rule, *tmp;
-+	struct ice_hw *hw = &vsi->back->hw;
-+
-+	list_for_each_entry_safe(f_rule, tmp, &hw->fdir_list_head, fltr_node) {
-+		if (!f_rule->acl_fltr)
-+			continue;
-+
-+		ice_del_acl_ethtool(hw, f_rule);
-+		ice_ntuple_update_cntrs(hw, f_rule, false);
-+		list_del(&f_rule->fltr_node);
-+		kfree(f_rule);
-+	}
-+}
-+
  /**
-  * ice_vsi_manage_fdir - turn on/off flow director
-  * @vsi: the VSI being changed
-@@ -1833,6 +1886,32 @@ void ice_vsi_manage_fdir(struct ice_vsi *vsi, bool ena)
- 	mutex_unlock(&hw->fdir_fltr_lock);
- }
- 
-+/**
-+ * ice_vsi_manage_acl - turn on/off ACL
-+ * @vsi: the VSI being changed
-+ * @ena: boolean value indicating if this is an enable or disable request
-+ */
-+void ice_vsi_manage_acl(struct ice_vsi *vsi, bool ena)
-+{
-+	struct ice_pf *pf = vsi->back;
-+	struct ice_hw *hw = &pf->hw;
-+
-+	if (ena) {
-+		set_bit(ICE_FLAG_ACL_ENA, pf->flags);
-+		return;
-+	}
-+
-+	mutex_lock(&hw->fdir_fltr_lock);
-+	if (!test_and_clear_bit(ICE_FLAG_ACL_ENA, pf->flags))
-+		goto release_lock;
-+
-+	ice_acl_del_all_fltrs(vsi);
-+	ice_acl_rem_flows(hw);
-+
-+release_lock:
-+	mutex_unlock(&hw->fdir_fltr_lock);
-+}
-+
- /**
-  * ice_fdir_do_rem_flow - delete flow and possibly add perfect flow
-  * @pf: PF structure
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 22a7458d0560..5457b0ed78eb 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -18,6 +18,7 @@
- #include "ice_sf_eth.h"
- #include "ice_hwmon.h"
- #include "ice_acl.h"
-+#include "ice_acl_main.h"
- /* Including ice_trace.h with CREATE_TRACE_POINTS defined will generate the
-  * ice tracepoint functions. This must be done exactly once across the
-  * ice driver.
-@@ -3936,6 +3937,9 @@ static void ice_set_pf_caps(struct ice_pf *pf)
- 				       func_caps->fd_fltr_best_effort);
- 	}
- 
-+	/* ACL is always initially available */
-+	set_bit(ICE_FLAG_ACL_ENA, pf->flags);
-+
- 	clear_bit(ICE_FLAG_PTP_SUPPORTED, pf->flags);
- 	if (func_caps->common_cap.ieee_1588)
- 		set_bit(ICE_FLAG_PTP_SUPPORTED, pf->flags);
-@@ -4359,6 +4363,30 @@ static int ice_acl_create_hw(struct ice_pf *pf)
- 	if (err)
- 		goto destroy_table;
- 
-+	/* Reset profile extraction sequences and range checkers for all
-+	 * possible HW profile IDs. The TCAM entries are already zeroed by
-+	 * ice_acl_init_tbl() inside ice_acl_create_tbl(), but profile
-+	 * extraction and range checker state is separate per-profile HW state
-+	 * that survives PF reset, therefore must be brought back to default
-+	 * state.
-+	 */
-+	for (u8 prof_id = 0; prof_id < ICE_ACL_MAX_PROF; prof_id++) {
-+		struct ice_aqc_acl_prof_generic_frmt xtrct_buf = {};
-+		struct ice_aqc_acl_profile_ranges range_buf = {};
-+
-+		memset(xtrct_buf.pf_scenario_num, ICE_ACL_INVALID_SCEN,
-+		       sizeof(xtrct_buf.pf_scenario_num));
-+		err = ice_prgm_acl_prof_xtrct(hw, prof_id, &xtrct_buf, NULL);
-+		if (err)
-+			dev_warn(ice_pf_to_dev(pf), "Failed to reset profile extraction for profile %u\n",
-+				 prof_id);
-+
-+		ice_prog_acl_prof_ranges(hw, prof_id, &range_buf, NULL);
-+		if (err)
-+			dev_warn(ice_pf_to_dev(pf), "Failed to reset range checkers for profile %u\n",
-+				 prof_id);
-+	}
-+
- 	return 0;
- 
- destroy_table:
-@@ -6588,6 +6616,7 @@ ice_set_features(struct net_device *netdev, netdev_features_t features)
- 		bool ena = !!(features & NETIF_F_NTUPLE);
- 
- 		ice_vsi_manage_fdir(vsi, ena);
-+		ice_vsi_manage_acl(vsi, ena);
- 		ena ? ice_init_arfs(vsi) : ice_clear_arfs(vsi);
- 	}
- 
-@@ -7873,6 +7902,24 @@ static void ice_rebuild(struct ice_pf *pf, enum ice_reset_req reset_type)
- 		ice_rebuild_arfs(pf);
- 	}
- 
-+	if (test_bit(ICE_FLAG_ACL_ENA, pf->flags)) {
-+		/* Clean up the stale HW table SW state left by the reset,
-+		 * recreate the HW table and scenario, then replay flow profiles
-+		 * from preserved SW state.
-+		 */
-+		ice_acl_destroy_tbl(hw);
-+		if (!ice_acl_create_hw(pf)) {
-+			ice_acl_replay_flows(hw);
-+			ice_acl_replay_fltrs(pf);
-+		} else {
-+			dev_err(dev, "Failed to rebuild ACL\n");
-+			mutex_lock(&hw->fdir_fltr_lock);
-+			if (vsi)
-+				ice_acl_del_all_fltrs(vsi);
-+			mutex_unlock(&hw->fdir_fltr_lock);
-+		}
-+	}
-+
- 	if (vsi && vsi->netdev)
- 		netif_device_attach(vsi->netdev);
- 
 -- 
 2.49.0
 
