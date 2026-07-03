@@ -1,102 +1,122 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D13ADC43458
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  6 Jul 2026 14:43:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF4FFC43458
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  6 Jul 2026 15:23:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 8D4C6605F1;
-	Mon,  6 Jul 2026 14:43:47 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 9F882812E5;
+	Mon,  6 Jul 2026 15:23:34 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id klLAkyN-y4VP; Mon,  6 Jul 2026 14:43:47 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id t41s2h5Glh22; Mon,  6 Jul 2026 15:23:34 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 016246060C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DD751812B2
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1783349027;
-	bh=+TMBSS8SpFKzw7XdcNIFKVXZXq/0ktlktPgUCwIXPC8=;
+	s=default; t=1783351413;
+	bh=ZXaOhXKFNzha/+UZgRF1nlZyqJvtz4uRe3j6zG6TsZY=;
 	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=r1ld0u5FwkFfjHCtiqC0bso1SjcAKl9+yrY1NIVuWp5fjHgTzdi2qaIr3f2ws6a92
-	 iu2hWHuRcrxdw74VjQyx/mk8tzpzAfx2pjxN/2KGecqQR+tc16c8zsEhMC/HpZyBG2
-	 sBqw+UgHKVkoaFQfktdFf52B6XuRsKB+BkYTKz2KbrRkBq2pquSDATv6cP77JeJf5x
-	 X42unaa+BF+nzFGKPqAb76VSpEAT7qDR5kiNaHIU33o7/CqaOeY10jL6MQqnl5DEZ4
-	 HwPW11HaTeQMwU0cDoS38uTMXcmWaNzl5odx1ws3EbMSAgI2YPUo9pwHuG5ev9Yr0W
-	 USUK7oHJOWkDQ==
+	b=70lXagm2ygxKwX4FW2M5xogBdm3Qp9lE5kIT6v0Md5/S+4zi8HqQpggLKsWaF3IFz
+	 cuTFMTLEa6Tr2qiFtrYP4NYJ6CIHp2ZEqVEHhxK0FdcJeF4Az9iy1LRAMun5Wqo+X4
+	 skT38TXlUlfN/s00J5cm8kXWSIa5hNyNLNaqbQydhijd1MnY7x1NCOCjnHuwjFKudr
+	 D2d/bp2K/G/0bXA05U5CMxUWhY/fsK6ph8l+xXMVD0qAhmYG18ZrzqjnxjGfBjL8n1
+	 LRLTSW583KSwW5sq4ZM5PO77P/upgmP+cQV06CUJBBTdqL2VOeWRNZS1+hTfoZhHYG
+	 fnHi+yuvmvrUA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 016246060C;
-	Mon,  6 Jul 2026 14:43:47 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 2F604316
- for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Jul 2026 14:43:46 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id DD751812B2;
+	Mon,  6 Jul 2026 15:23:33 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 0D402316
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  3 Jul 2026 05:01:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 0DFEB6060C
- for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Jul 2026 14:43:46 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 01512843C6
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  3 Jul 2026 05:01:01 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id K_fkt876EBXJ for <intel-wired-lan@lists.osuosl.org>;
- Mon,  6 Jul 2026 14:43:45 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=159.226.251.25;
- helo=cstnet.cn; envelope-from=pengpeng@iscas.ac.cn; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 27444605F1
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 27444605F1
-Received: from cstnet.cn (smtp25.cstnet.cn [159.226.251.25])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 27444605F1
- for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Jul 2026 14:43:43 +0000 (UTC)
-Received: from localhost.localdomain (unknown [111.196.245.140])
- by APP-05 (Coremail) with SMTP id zQCowAAXoQQUv0tqcWs7Fw--.32970S2;
- Mon, 06 Jul 2026 22:43:33 +0800 (CST)
-From: Pengpeng Hou <pengpeng@iscas.ac.cn>
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id C2NBCyQM0FlH for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  3 Jul 2026 05:01:00 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2607:f8b0:4864:20::f35; helo=mail-qv1-xf35.google.com;
+ envelope-from=dbgh9129@gmail.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 2686D83DB7
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2686D83DB7
+Received: from mail-qv1-xf35.google.com (mail-qv1-xf35.google.com
+ [IPv6:2607:f8b0:4864:20::f35])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 2686D83DB7
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  3 Jul 2026 05:00:59 +0000 (UTC)
+Received: by mail-qv1-xf35.google.com with SMTP id
+ 6a1803df08f44-8ee88fce476so1196656d6.0
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 02 Jul 2026 22:00:59 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20251104; t=1783054859; x=1783659659;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=ZXaOhXKFNzha/+UZgRF1nlZyqJvtz4uRe3j6zG6TsZY=;
+ b=aHbLKloAVEY7QoerfcnVPsGaOm/bJYWroKXIo6sjs+7/Hf31oKoOgg+KYVemNa2dwi
+ LHot+ObtfX9pQdfori5oMxIcoELmrQZJBe1SYMnUoo6IrKnkuqtRadbmkjEH4yqVjPAD
+ /mh9A8EPjSEDNu2/aA4K3pFgxGTweKxI8YLQByXqr7o6yfMT9J19b8f3TflOGxkuGpgK
+ VLXKWiDQq/xDpyiJwsTawZzYk9pkIPj1Na/g8I+AhXqrYaDLkZsZBZs/XBHWeeqiGGbX
+ PCdklOVwNAXGP+YpGuEYAjon6TTYialsE/eGrZNzWnXKmNttWCNCTfpDsBdS8gwgytrx
+ tpdQ==
+X-Gm-Message-State: AOJu0YyZw60EypOryoBe6YPYkaX7C8pn62jRw5H3EhiKqEbmH8RcODnY
+ l4rJDVYcp8Vcszg0dYAJZm3UeBfdTV8U6P5oDF3rNNO3p2yLYL7W2+zm
+X-Gm-Gg: AfdE7cmDYs4P9eEt4hd/LHr/LhpQz4qzLptbKSEHtiNqIf61G5nmuw7ud1RyKwiiv1d
+ S7s05pO6yd+q30tteABoRdXo9cHiE100D/y36BJBwhwz9bGVmxopDKFst9Gy80uL2Or/WDaBvps
+ ieu61sGWl1ty4GsXLSEU58PRR2A4qmHr2JjtcYLbueG2VFQ9Tvztwscue6eEkYajgG/BWZzMqLo
+ +nekoK+n7D3OWrbEL9nKfBD9G8QZNr9BIv7qoW0+g5sWLov9jkzj3xw2YCLYObeqwAR5bewJmGM
+ Hf7J655Xem2QG4hTozZsWYGHP84inIMLVxMcozyDNuBpi2rWQrQIrHhNWn59EL9zKm8beA0eyqS
+ NezNafDS1i142OSxB9V8512LmfpHwU14AQIg1pRmJP8yyjlAGlVgXq+wUpHZu4T1kaEG375gnP6
+ t6YIRI+1YNJmJsMQge9E+Q9fAw8hXfsSp+aKHF/RPtEegCjTq0W+iDesEFQ1+rLBkW2329SmVyu
+ gB3siqCWKVVCn7GV0JSbx+otA==
+X-Received: by 2002:a05:6214:588f:b0:8e9:f5de:d636 with SMTP id
+ 6a1803df08f44-8f3c9cb3057mr119943406d6.55.1783054858547; 
+ Thu, 02 Jul 2026 22:00:58 -0700 (PDT)
+Received: from i4-gl-tmk5904.ad.psu.edu ([130.203.156.186])
+ by smtp.gmail.com with ESMTPSA id
+ 6a1803df08f44-8f46e27d54asm46420096d6.3.2026.07.02.22.00.57
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 02 Jul 2026 22:00:57 -0700 (PDT)
+From: Yuho Choi <dbgh9129@gmail.com>
 To: Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Cc: Pengpeng Hou <pengpeng@iscas.ac.cn>,
- Jedrzej Jagielski <jedrzej.jagielski@intel.com>,
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
  Andrew Lunn <andrew+netdev@lunn.ch>,
  "David S . Miller" <davem@davemloft.net>,
  Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>,
- Richard Cochran <richardcochran@gmail.com>,
- Jacob Keller <jacob.e.keller@intel.com>,
- Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>,
- Karol Kolacinski <karol.kolacinski@intel.com>,
- Sergey Temerkhanov <sergey.temerkhanov@intel.com>,
- Michal Michalik <michal.michalik@intel.com>,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Date: Mon,  6 Jul 2026 22:43:25 +0800
-Message-ID: <20260706144325.91320-1-pengpeng@iscas.ac.cn>
-X-Mailer: git-send-email 2.50.1
+ Paolo Abeni <pabeni@redhat.com>
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Yuho Choi <dbgh9129@gmail.com>
+Date: Fri,  3 Jul 2026 01:00:53 -0400
+Message-ID: <20260703050053.120851-1-dbgh9129@gmail.com>
+X-Mailer: git-send-email 2.43.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: zQCowAAXoQQUv0tqcWs7Fw--.32970S2
-X-Coremail-Antispam: 1UD129KBjvJXoWxZw1Uuw1fZrWUWr4DWr1xXwb_yoW5tr4DpF
- Z3KF9rtF1rtw18WFZ7Xa1Iva15Cay2yrWDGws3Ka4vyFyDG34FqF10yFyxt3WUK34kCF17
- ZFnayF1fuFnFqFUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
- 9KBjDU0xBIdaVrnRJUUU9014x267AKxVW5JVWrJwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
- rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
- 1l84ACjcxK6xIIjxv20xvE14v26r1I6r4UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
- 6F4UM28EF7xvwVC2z280aVAFwI0_GcCE3s1l84ACjcxK6I8E87Iv6xkF7I0E14v26rxl6s
- 0DM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xII
- jxv20xvE14v26r1j6r18McIj6I8E87Iv67AKxVW8JVWxJwAm72CE4IkC6x0Yz7v_Jr0_Gr
- 1lF7xvr2IYc2Ij64vIr41lF7I21c0EjII2zVCS5cI20VAGYxC7M4IIrI8v6xkF7I0E8cxa
- n2IY04v7MxkF7I0En4kS14v26r4a6rW5MxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4
- AY6r1j6r4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE
- 17CEb7AF67AKxVW8ZVWrXwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r1xMI
- IF0xvE2Ix0cI8IcVCY1x0267AKxVW8JVWxJwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4l
- IxAIcVC2z280aVAFwI0_Gr0_Cr1lIxAIcVC2z280aVCY1x0267AKxVW8Jr0_Cr1UYxBIda
- VFxhVjvjDU0xZFpf9x0pRx-BiUUUUU=
-X-Originating-IP: [111.196.245.140]
-X-CM-SenderInfo: pshqw1xhqjqxpvfd2hldfou0/
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=iscas.ac.cn
-Subject: [Intel-wired-lan] [PATCH net v2] ice: propagate ETH56G deskew read
- errors
+X-Mailman-Approved-At: Mon, 06 Jul 2026 15:23:32 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20251104; t=1783054859; x=1783659659; darn=lists.osuosl.org;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:from:to:cc:subject:date:message-id:reply-to;
+ bh=ZXaOhXKFNzha/+UZgRF1nlZyqJvtz4uRe3j6zG6TsZY=;
+ b=QT6YGMV3ahHB2w1bz59lcSGQLMdk8NY2tT849Ad7j200XDtudzGe7HrtQt7CfjUSKM
+ BeoBd9YmW3WVDodVr/w/tdXNl7Z0FUrW6RAQwHpjeDUHBpNsFTofP5E+qMSAwZcgpiyw
+ sg+qi0OCOhAVTFjGYlIl9vDF9T6s7zGRoLPQhGBMSxxIQB63Joayfi8j+VEB2Gh4ruqX
+ BGpIP+75b20EYCJiBBmu3gTTUao8OrvTLGFyZgI3NOtIrGMs6tgYb6+qZk5nIgBp2a2V
+ ZX/dJ/h6QWADuDrvnxCyqzJ19dSVAFyTFFSOW3q0y1UydAByqJH/3naWaTR7jCQV2nHF
+ gIIA==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=gmail.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20251104 header.b=QT6YGMV3
+Subject: [Intel-wired-lan] [PATCH v1] idpf: Fix mailbox IRQ name leak on
+ request failure
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -112,97 +132,31 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-ice_ptp_calc_deskew_eth56g() returns a u32 deskew value, but it also
-returns the negative read_poll_timeout() error when the DESKEW valid bit
-never appears. That converts the negative error into a large unsigned
-deskew contribution, which can then be folded into the RX timestamp
-offset and programmed into hardware.
+idpf_mb_intr_req_irq() allocates the mailbox IRQ name before calling
+request_irq(). On success, the name is released later through
+kfree(free_irq()), but request_irq() failure returns without freeing it.
 
-Return the deskew value through an output parameter and propagate the
-read error from ice_phy_set_offsets_eth56g() instead of using it as
-offset data.
+Free the allocated name on the request_irq() failure path.
 
-Fixes: 7cab44f1c35f ("ice: Introduce ETH56G PHY model for E825C products")
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
+Fixes: 4930fbf419a7 ("idpf: add core init and interrupt request")
+Signed-off-by: Yuho Choi <dbgh9129@gmail.com>
 ---
-Changes since v1:
-- add the Fixes tag requested by Jedrzej and Aleksandr
-- clarify that @deskew is an output parameter
-- target the patch at net as suggested by Aleksandr
+ drivers/net/ethernet/intel/idpf/idpf_lib.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 28 +++++++++++++++------
- 1 file changed, 20 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-index 8e5f97835954..cc424518a2a6 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-@@ -1736,17 +1736,21 @@ static u32 ice_ptp_calc_bitslip_eth56g(struct ice_hw *hw, u8 port, u32 bs,
-  * @ds: deskew multiplier
-  * @rs: RS-FEC enabled
-  * @spd: link speed
-+ * @deskew: output parameter for the calculated deskew value
-  *
-- * Return: calculated deskew value
-+ * Return: 0 on success, negative error code otherwise
-  */
--static u32 ice_ptp_calc_deskew_eth56g(struct ice_hw *hw, u8 port, u32 ds,
--				      bool rs, enum ice_eth56g_link_spd spd)
-+static int ice_ptp_calc_deskew_eth56g(struct ice_hw *hw, u8 port, u32 ds,
-+				      bool rs, enum ice_eth56g_link_spd spd,
-+				      u32 *deskew)
- {
- 	u32 deskew_i, deskew_f;
- 	int err;
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_lib.c b/drivers/net/ethernet/intel/idpf/idpf_lib.c
+index cf966fe6c759..bb81e620c5c8 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_lib.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_lib.c
+@@ -139,7 +139,7 @@ static int idpf_mb_intr_req_irq(struct idpf_adapter *adapter)
+ 	if (err) {
+ 		dev_err(&adapter->pdev->dev,
+ 			"IRQ request for mailbox failed, error: %d\n", err);
+-
++		kfree(name);
+ 		return err;
+ 	}
  
--	if (!ds)
-+	if (!ds) {
-+		*deskew = 0;
- 		return 0;
-+	}
- 
- 	read_poll_timeout(ice_read_ptp_reg_eth56g, err,
- 			  FIELD_GET(PHY_REG_DESKEW_0_VALID, deskew_i), 500,
-@@ -1766,7 +1770,9 @@ static u32 ice_ptp_calc_deskew_eth56g(struct ice_hw *hw, u8 port, u32 ds,
- 	deskew_i = FIELD_PREP(ICE_ETH56G_MAC_CFG_RX_OFFSET_INT, deskew_i);
- 	/* Shift 3 fractional bits to the end of the integer part */
- 	deskew_f <<= ICE_ETH56G_MAC_CFG_FRAC_W - PHY_REG_DESKEW_0_RLEVEL_FRAC_W;
--	return mul_u32_u32_fx_q9(deskew_i | deskew_f, ds);
-+	*deskew = mul_u32_u32_fx_q9(deskew_i | deskew_f, ds);
-+
-+	return 0;
- }
- 
- /**
-@@ -1789,6 +1795,7 @@ static int ice_phy_set_offsets_eth56g(struct ice_hw *hw, u8 port,
- {
- 	u32 rx_offset, tx_offset, bs_ds;
- 	bool onestep, sfd;
-+	int err;
- 
- 	onestep = hw->ptp.phy.eth56g.onestep_ena;
- 	sfd = hw->ptp.phy.eth56g.sfd_ena;
-@@ -1805,11 +1812,16 @@ static int ice_phy_set_offsets_eth56g(struct ice_hw *hw, u8 port,
- 	if (sfd)
- 		rx_offset = add_u32_u32_fx(rx_offset, cfg->rx_offset.sfd);
- 
--	if (spd < ICE_ETH56G_LNK_SPD_40G)
-+	if (spd < ICE_ETH56G_LNK_SPD_40G) {
- 		bs_ds = ice_ptp_calc_bitslip_eth56g(hw, port, bs_ds, fc, rs,
- 						    spd);
--	else
--		bs_ds = ice_ptp_calc_deskew_eth56g(hw, port, bs_ds, rs, spd);
-+	} else {
-+		err = ice_ptp_calc_deskew_eth56g(hw, port, bs_ds, rs, spd,
-+						 &bs_ds);
-+		if (err)
-+			return err;
-+	}
-+
- 	rx_offset = add_u32_u32_fx(rx_offset, bs_ds);
- 	rx_offset &= ICE_ETH56G_MAC_CFG_RX_OFFSET_INT |
- 		     ICE_ETH56G_MAC_CFG_RX_OFFSET_FRAC;
 -- 
 2.43.0
 
