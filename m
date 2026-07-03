@@ -1,139 +1,153 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B844C43458
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  3 Jul 2026 10:33:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F35EC43458
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  3 Jul 2026 10:46:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id CBBD0608C7;
-	Fri,  3 Jul 2026 10:33:44 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 3850040A73;
+	Fri,  3 Jul 2026 10:46:41 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 0p8p8pqrA2qp; Fri,  3 Jul 2026 10:33:44 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id cvqh2fumL4-x; Fri,  3 Jul 2026 10:46:40 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EA721607C3
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5E65B40A76
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1783074824;
-	bh=baVj67qvtniy6b+eW//3NKKeNSe13i7J3dl8qPlTepA=;
-	h=To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From:Reply-To:From;
-	b=1+HL1/+bckatjqXSQ74w804am8TsOctXkMQcfwpxnomobocgW05mPcuq4T449RvDg
-	 PHWW11RlaEb4gTzh50ohB2rtOpVRoHobbv/qoPbquwqpyS6FsnUrqMby+zmxPvGGLi
-	 VeOVx4pEsVb0qx2cNkFLx1gAzRrS/SGG2XfJ5ciXfZaABvXxJl9h0B7EH74iQNkv5y
-	 8QvEPLKAilIq4uihIEAoywTmI9iQ+uOIAQs8kVerihf24Iw10eYqFbLYNrOZfRgGov
-	 sWnLiYP9ArTrLAaCSmP3u2lnUlTSdXXfJsUK4hEVHwaF+NqccPQvAqJwcFB/cLYzyv
-	 vyF2q6h6ZDBFA==
+	s=default; t=1783075600;
+	bh=4epk5w1esZe4maLqLH3hcvb3jGEQbCU8XPkEVfv0wsQ=;
+	h=References:In-Reply-To:Date:To:Subject:List-Id:List-Unsubscribe:
+	 List-Archive:List-Post:List-Help:List-Subscribe:From:Reply-To:Cc:
+	 From;
+	b=7TJbi1+Q/nQwuErg0hHXJ49eiYLrxO0gfu9AhYzJ/dkWW0iimlpEZZ9ALo3k3FPwM
+	 jcn0nWuvDY3/BDQ0MoSgWYw66oL05Si/5ltt25/1tuxy75rAjCgfL2m40E/juPtNHg
+	 SROacoCI8dvE22Finm/0c3Pc9R0vI+BNL9f4VxyMb6PcelqNEPOXXXG+BQJnsmTA2S
+	 38XMyso3190htUjvLLJ/EaXnCqq+xqoKnUipEsK5UOdozAvsEIdKXLsdRF1UBhpRuv
+	 0hqscj+3D2trdhHgtyhZqOnPVcLGrRlmOEm/++C5JxHPM9rlfJC4yU6jSx0xiwCiDs
+	 MD1yScB+EhrXw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id EA721607C3;
-	Fri,  3 Jul 2026 10:33:43 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id E4805363
- for <intel-wired-lan@lists.osuosl.org>; Fri,  3 Jul 2026 10:33:42 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 5E65B40A76;
+	Fri,  3 Jul 2026 10:46:40 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id C3FC9316
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  3 Jul 2026 10:46:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id CDFE7401C2
- for <intel-wired-lan@lists.osuosl.org>; Fri,  3 Jul 2026 10:33:42 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id B609D40084
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  3 Jul 2026 10:46:38 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id X-zcHa2UVLzo for <intel-wired-lan@lists.osuosl.org>;
- Fri,  3 Jul 2026 10:33:41 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=185.125.188.122;
- helo=smtp-relay-internal-0.canonical.com;
+ id ceT59IudH1Vq for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  3 Jul 2026 10:46:37 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=185.125.188.123;
+ helo=smtp-relay-internal-1.canonical.com;
  envelope-from=robert.malz@canonical.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org D7BD740084
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D7BD740084
-Received: from smtp-relay-internal-0.canonical.com
- (smtp-relay-internal-0.canonical.com [185.125.188.122])
- by smtp2.osuosl.org (Postfix) with ESMTPS id D7BD740084
- for <intel-wired-lan@lists.osuosl.org>; Fri,  3 Jul 2026 10:33:40 +0000 (UTC)
-Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
- [209.85.221.72])
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 18EF1401C2
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 18EF1401C2
+Received: from smtp-relay-internal-1.canonical.com
+ (smtp-relay-internal-1.canonical.com [185.125.188.123])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 18EF1401C2
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  3 Jul 2026 10:46:36 +0000 (UTC)
+Received: from mail-ej1-f71.google.com (mail-ej1-f71.google.com
+ [209.85.218.71])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by smtp-relay-internal-0.canonical.com (Postfix) with ESMTPS id 57C143FB98
- for <intel-wired-lan@lists.osuosl.org>; Fri,  3 Jul 2026 10:33:37 +0000 (UTC)
-Received: by mail-wr1-f72.google.com with SMTP id
- ffacd0b85a97d-47248bd8bc0so403733f8f.1
- for <intel-wired-lan@lists.osuosl.org>; Fri, 03 Jul 2026 03:33:37 -0700 (PDT)
+ by smtp-relay-internal-1.canonical.com (Postfix) with ESMTPS id 901153F974
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  3 Jul 2026 10:46:33 +0000 (UTC)
+Received: by mail-ej1-f71.google.com with SMTP id
+ a640c23a62f3a-c1280d28bf5so48967166b.0
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 03 Jul 2026 03:46:33 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1783075593; cv=none;
+ d=google.com; s=arc-20260327;
+ b=o4ToJBBVdjw/xmy8Ji1ur9YclYqaCQ3dIeGmXwGpXNjfidQb6gGzaDoyFLxtVk0Cnr
+ LEBv4BnyDx4M3Dbq0SXxkBBdvtAVuUTMZviBMaFO0qu1rMo3nWK3X/AaPLx0QaQMUwhT
+ NczA7EhKf1IqRt+jlA4yQVomRl94xYxazSAvH1ZkDZ3Su+BBX76fnAy9re4OT9gC5HiI
+ 6GeZmaFtqlxcrIcKt6DU4f9TF00zWY6miY+sPBvfjeTkFgyU8K9DDTs0GZkdK+Nef6OK
+ WRQoILfsta4G0qARp/7QAwnqkyWVKNfYlxoPzQFhjQNonwVUL7yuPEyHd2yYB8YJZp3U
+ Fr7Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com;
+ s=arc-20260327; 
+ h=content-transfer-encoding:cc:to:subject:message-id:date:from
+ :in-reply-to:references:mime-version;
+ bh=4epk5w1esZe4maLqLH3hcvb3jGEQbCU8XPkEVfv0wsQ=;
+ fh=DUx+51XdVP3Hpz4AyrGWTIeQESPUBFd1XhFEuqaSZYY=;
+ b=jhSIyERvt88kd5tWLBITfCvG9vtf3ps1+vuM5nvOAy9cEyPiWj4aRwJMEu/En3J+t/
+ aB73vKUJIAqfmMIQDrVP9wJEG3593t8K3njUFBpupHgmYPUOY+dOGQ/iMMPhdkYrN6Gw
+ hETCeLd+mrnLCvsBilh9XuJPf+4dRRO46OQan5t9CnVDT64Ss6dsChYJuiSkYFJgseEI
+ nS/xqoPYpYtDsmMPn2WW0cL8sLlFEX0eFOh1IANg6J4UE6xATXEYYW6z1pHrZiCUF0Zq
+ U9oBKYRXO+kAl5c/V+r5hcqy3VJfddkCM+19T1gEd2RI9TGGW1aw5JdXYQn1q3n0l8+i
+ /4JQ==; darn=lists.osuosl.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1783074817; x=1783679617;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
- :message-id:reply-to:content-type;
- bh=baVj67qvtniy6b+eW//3NKKeNSe13i7J3dl8qPlTepA=;
- b=cXKS9TOlHEwyltC2L/zTPO3c0e1oJvJzlPoqA+N7saav+bwz6v0XGsihXX/RXAVT98
- DnxnqQC1fK31nZ8WhymiTyXv2UqZF/TqT3N6Agh5o3I5QkfVr6fjT45+wGtDHzZxndqG
- OuXuG9kgvOc/74L95m1QwBci+nAvxOG4MX9ayhv13ZmacdYTQIX+N17r2ETNXM8r8nCv
- hSqgO0ja+tsPveAIhzL0YG3OYa/boFd3LMGXeeKtOgnMsHAs56IegdfiFx2p6RyFjJEQ
- p0k1DpL0It+qmsh+kjNZ01TXgdF4w2lNaLJlso9V9LY162ZBRWywZ6NZ6/V5/v5mol1o
- qbSA==
+ d=1e100.net; s=20251104; t=1783075593; x=1783680393;
+ h=content-transfer-encoding:cc:to:subject:message-id:date:from
+ :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+ :to:cc:subject:date:message-id:reply-to;
+ bh=4epk5w1esZe4maLqLH3hcvb3jGEQbCU8XPkEVfv0wsQ=;
+ b=JBliGv0g+pnZq+9V3ZNyrDGXdkKYb7Dq70vdfIx8Ugw0Z8dLvnJCq3kWGHoMFkIBfF
+ Au/AOeG88jyS0pkol2eH8iasV2tmn19l3N2KbemUucYTRT/rJreFItVN4YJ8Q702L5Ev
+ iAtVlG2WRskOHfyWNH2NeJjiuEHwTD3jcmGF3GPSJFzH1Zi11aSF5UcUFwQbPBC6PvAl
+ NUMzwP2y8x4WX5G4A1L0UXWZ7IC+rI3rQDsfab1vzQAJyaiM4YfR5d9qlvzwZVjRJ6+D
+ DlSjGHVlk9RhAeUIi1hyJqM/ITOio7Vq5Qyv3pEDkB1w+PD1p/wkLbUaTeKOGQrPIjZy
+ rJfw==
 X-Forwarded-Encrypted: i=1;
- AHgh+RqSp3CUQz88XebxjvMgLma0KLTzpzWhya1aovjJfZ/hayuvCisrB5WnVc/QZnNQWlUggxY4H+n4eJHJDErGsdU=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YzvqgG/mdTGYax4oreetLBpiBoBUeaLyIKyF4VINOmenDsFMZml
- xvKwLK/UOQDfYeTVRmsguCZk2h1rTx7ajxAOttrhXB2M7gb+zvK+Oz3pRoEQeiL8IBzE3UyeMFp
- Mws2l9HBpALkqx30UT6uS9nxgDODj7npz3iKxOi+MgPj21KuXzS8HLJ39liTE3nyjl6Afo+uKpU
- CO2YVj/XQIsJc=
-X-Gm-Gg: AfdE7ckVRx3ssTW3Ng54+dRNg9BtwHNknuWe6TQ/6DsDLYxXXoTmh2KpnUhPvuEjd17
- WWVtAea+llK3MGbIP5FvsH2htbcKxiba7P8U60KxJPOMUJWC5V0yIlI36gOXBLEN5OfSm/FktDq
- PK0yebPqsKfQ/ulVySPTOS5Md3yo6iEpROxp/QX86NpGkoCzr6ZC8gob7wHb6Pdb6nOD3P0TvZ4
- a8Mevjn4DtVW00WXdwlfGGSy43uiR2iHYaYIBsqQsXjH6v2Io21Nuxw3wRamXhBr6Emnh/VH9kl
- rRmivHGQUT3o+kJih4gM/DrrlPCRj+scxgax0NGFfDJ35husf9iSjihDhZUMuHYUd7LHQD0tHTP
- Qa/Sue5sHcJTGrrkBwt/HMrU7MLE2Wqy7F+EnZ85X7qWF+fLMd+duHkEB
-X-Received: by 2002:a5d:4488:0:b0:461:cd9e:2368 with SMTP id
- ffacd0b85a97d-477afbcc1cbmr10672795f8f.27.1783074816724; 
- Fri, 03 Jul 2026 03:33:36 -0700 (PDT)
-X-Received: by 2002:a5d:4488:0:b0:461:cd9e:2368 with SMTP id
- ffacd0b85a97d-477afbcc1cbmr10672768f8f.27.1783074816185; 
- Fri, 03 Jul 2026 03:33:36 -0700 (PDT)
-Received: from localhost.localdomain (77-236-28-43.static.play.pl.
- [77.236.28.43]) by smtp.gmail.com with ESMTPSA id
- ffacd0b85a97d-477db3dbb79sm16482623f8f.2.2026.07.03.03.33.35
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 03 Jul 2026 03:33:35 -0700 (PDT)
-To: Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>,
- "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>,
- Alexander Lobakin <aleksander.lobakin@intel.com>,
- Jacob Keller <jacob.e.keller@intel.com>,
- Jesse Brandeburg <jbrandeb@kernel.org>
-Cc: Robert Malz <robert.malz@canonical.com>, intel-wired-lan@lists.osuosl.org,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Fri,  3 Jul 2026 12:32:44 +0200
-Message-Id: <20260703103245.374800-1-robert.malz@canonical.com>
-X-Mailer: git-send-email 2.34.1
+ AHgh+RqlTpulhOo1a2ImNp5tffmSBc0QQrC5CdAZD8t0in+4OqRvh5OqsIHD/NDjbZ+pg6g9t6xaVdvpAyMDJ3vegH4=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YxlEmJ7CT4KP9otsWJvW5RA+9aVwBsM13x+vMuHxhFbLAVePGiI
+ gctXBNuKS5BB6zf6bLHXBDEP3fK7n2kymzVczoQF3lPBE9+xYMqCzAaZqh2fRBXDpBse73l2Tbf
+ pcx+KdPOfVI5Avwi9j3qAbfnzTf07XKSH0AGw3uJTFCgIxWWylK8SjmYWAhyT2gk73AW09JgU+Q
+ XYtkD0238n8EonfwDbKd+dQy5p4pWNpl7fPKpmv1BvYllj0URDrxHbif2X5++QSQ==
+X-Gm-Gg: AfdE7cm53LpbGNjorwVzkN02njN5Bt9Jkv3tST3/g3NMp4nxHKvVMZFEKLAuUtPe7iT
+ mK/p5C4BT3jz2chGIxhoDsmnKAwwKz7X9E1F9ffM1UW2E81czq0hh+9k2nq5WMzBqc+yn/kBto6
+ WRoNuBnOq2N+J2s6qSS1vKufsynBLAS9W+y/vKBauVOvLwRToMv3O1PWjrYuQZLle2dg==
+X-Received: by 2002:a17:907:c205:b0:c12:15b5:876a with SMTP id
+ a640c23a62f3a-c12a9efd3b2mr412864466b.17.1783075592940; 
+ Fri, 03 Jul 2026 03:46:32 -0700 (PDT)
+X-Received: by 2002:a17:907:c205:b0:c12:15b5:876a with SMTP id
+ a640c23a62f3a-c12a9efd3b2mr412862966b.17.1783075592453; Fri, 03 Jul 2026
+ 03:46:32 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20260617120753.1785565-1-robert.malz@canonical.com>
+ <20260618152003.909400-1-horms@kernel.org>
+ <CADcc-bydFL4KNDQEznStE41NFXuCey9S+kyXg0usbonwyWpiAQ@mail.gmail.com>
+ <5658849b-0425-4132-ba32-5801e2907c60@intel.com>
+ <CADcc-bwd2CcWJ1AFDm1GR1HBzo2OOh=Xr3moNS+-RVuai6yVBA@mail.gmail.com>
+ <CADcc-bwC4FGQSGyRcnj2ZpGT5+0Q6mjQd-FTCB-mCmmwYrC8Qw@mail.gmail.com>
+ <abe7fbc3-522c-4eb4-989d-21270f1ef2af@intel.com>
+In-Reply-To: <abe7fbc3-522c-4eb4-989d-21270f1ef2af@intel.com>
+Date: Fri, 3 Jul 2026 12:46:20 +0200
+X-Gm-Features: AVVi8CdT0MhvGIVXGg5KjVEJtXlAzPLAX9gHi81brHAzWLdEyecittxMY28qi9o
+Message-ID: <CADcc-bysA531q2Wh=TD_oFqxivLLdnCRNY5jy7mkZuO0cwJwvg@mail.gmail.com>
+To: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=canonical.com; s=20251003; t=1783074817;
- bh=baVj67qvtniy6b+eW//3NKKeNSe13i7J3dl8qPlTepA=;
- h=From:To:Cc:Subject:Date:Message-Id:MIME-Version;
- b=Adr3wxXsfddLoio5iQhdR47jCXRJeV0zflnES7w9SkqH3r9R+DoJ4YTyYqXQW0bfT
- RwRDjIRAedd+hPbphkO/ahdLNtIAB1L331LrzHxKnio5QkyYoqdHFVkFPA/ZCqP+QE
- 9MR6RfRmkrVoV9AulesVCvVfeIkazxHll5Q4NOSDaLQ4WHrE+VX+IPpelL/TSSvq8m
- A//C9ZbK9HM/dZkxUnd68qjzKVhAxxrdrpKkJxuRsptrpHQxsgcpgGwyRZWLDUtesY
- n58QHYMJjQ2vC96xvoy6GjrZciwevWluSfWhAPQqJHwuQUrsuUuDI5rrs1nq2iYZqV
- gKVoqam3lHUaQeUSv27IFoumtdQ9OX4cTB5bLvfL7MdPCDyF89tbCZwR76x/yb4DN4
- hQji+tfLHOKEuW2KgmPIMcW1jVc6JYewWPH3pYtQTfAihuEjCW7m1YtWwECnc31R3V
- wYGZggyhJNmqIsmMONny6wTTl8vI++X742Aoaaz6UEwpLuD8JIEXPVtNQ2YgH3avW8
- mfnfqnikUIcrW82ecOMftJGM3vXjKeBOEKAGTFTd4sjYWOa1u7b8uPNyZsCQMadNnF
- XMyogMWbPVpED2PwhIz8YOpWjQVSFYQEhujyaQpu7nxswMOPSnYU99eN8mkgiW1pvQ
- +mqhjAvGU4AX2yZ8+0z3t5zU=
+ d=canonical.com; s=20251003; t=1783075593;
+ bh=4epk5w1esZe4maLqLH3hcvb3jGEQbCU8XPkEVfv0wsQ=;
+ h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+ To:Cc:Content-Type;
+ b=T8LbvGFwjHKUSZxCdMDTOlvPDMI9r0rne2vIL9tly7fpiLKjrOKi92OrHB3+KG+dE
+ 0uiaz+eL6Cb/z9jhaQf6fzAugrz/aRfTMlcMwG+OQ+DINogjdOZMux1bYiucyARZq4
+ JVhICpwCcZp4QsnO+eMsVBb46JcpgR6G+u0NQaETF5fORfSbV9Wt5HlTKpzfhV+5V5
+ OmKDwBqJkyJxDdSyXx9eIDDDUraU1AFDcA+KtosyyLchVklcVrYxrUhOba257ZiuXS
+ UlIv8VNSthXJcfSBjy6ChXeowcPUhwHLDyTfMnrTj6rWeHCfKUuG2rpFG50Y2MyvWX
+ hzrs0k+0DmEJGGsd8lpt3K0RFECwBbLGHp6qYRIplpDEjABpJ8LTcNoGF6WQLLgYlL
+ zaderGOHoAAU/TGG5ZVngjaRCqmVO6wbjdhl4j/5oq4WOCIxGZBmJQ8Fcd8D+CTCS5
+ X3hhLLHvOrAKLr5GUFp5Hd9T3dBRyzE+ovoWLoPLb88ltPRKpT9NVn4VOIX7hCgtOb
+ kY3Y70h7L/AMCQUNumzyPD4m/FG+2xkgC8m0OncLYJKUnjGk85uaf6l0mG8z31j6ix
+ D/f28iH2AH3+dLtRSgEzs+kc2HxA6kBSRtGrmHqzA6pWkhh44WayTYhedxv4fDET2N
+ ELSmJ15+X2/SgRMJjU9BAZfs=
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=reject dis=none)
  header.from=canonical.com
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (4096-bit key,
  unprotected) header.d=canonical.com header.i=@canonical.com
- header.a=rsa-sha256 header.s=20251003 header.b=Adr3wxXs
-Subject: [Intel-wired-lan] [PATCH iwl] ice: acquire NVM lock around each
- flash read
+ header.a=rsa-sha256 header.s=20251003 header.b=T8LbvGFw
+Subject: Re: [Intel-wired-lan] [PATCH iwl v3] ice: retry reading NVM if
+ admin queue returns EBUSY
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -148,253 +162,84 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 From: Robert Malz via Intel-wired-lan <intel-wired-lan@osuosl.org>
 Reply-To: Robert Malz <robert.malz@canonical.com>
+Cc: anthony.l.nguyen@intel.com, intel-wired-lan@lists.osuosl.org,
+ Simon Horman <horms@kernel.org>, netdev@vger.kernel.org
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-FW caps the NVM read lock at a maximum of 3000ms regardless of the timeout
-requested via ice_acquire_nvm(). ice_read_flat_nvm() splits a read into
-multiple ice_aq_read_nvm() commands, one per 4KB sector, all issued under a
-single lock taken by the caller. Reading a large region can exceed 3000ms,
-so FW reclaims the lock mid-read and the remaining commands might fail.
+Hey Przemek,
+I have submitted a new patch to solve the current issue:
+https://lists.osuosl.org/pipermail/intel-wired-lan/Week-of-Mon-20260629/055=
+891.html
+I ran numerous tests on it and also verified it against the setup
+which initially triggered the issue.
+This system had a problem where ice_discover_flash_size read time was
+greater that 3 seconds and as a result failed with EBUSY status (FW at
+asome point releases the lock).
+With new patch issue was not reproduced even when the read time was
+much higher than normally expected:
+[   75.999353] ice 0000:05:00.0: CQ CMD: opcode 0x0008, flags 0x2000,
+datalen 0x0000, retval 0x0000 <- First lock acquisition
+[   82.152231] ice 0000:05:00.0: Predicted flash size is 10485760
+bytes <- ice_discover_flash_size finished reading (7 seconds).
+In this case, the driver properly read the NVM contents without
+needing any retries.
 
-Move the lock acquire/release into ice_read_flat_nvm() so it brackets each
-individual ice_aq_read_nvm() command, ensuring the lock is never held
-across more than one FW read. ice_release_nvm() issues its own AQ command
-and would overwrite sq_last_status, so the read's AQ error is preserved
-across the release for callers such as ice_discover_flash_size() that
-inspect it.
+I also analyzed the overhead of adding an acquire/release lock between
+each 0x0701 call and based on my observations it did not negatively
+impact the driver in any way.
+Execution time for ice_discover_flash_size in normal scenario
+increased from around 0,02s to 0,05s which should still be acceptable.
 
-Callers that previously took the lock around ice_read_flat_nvm(),
-ice_read_sr_word() or ice_read_flash_module() now call them without it.
-The per-block locking in ice_devlink_nvm_snapshot() is now redundant
-and dropped.
+Regards,
+Robert
 
-Fixes: e94509906d6b ("ice: create function to read a section of the NVM and Shadow RAM")
-Signed-off-by: Robert Malz <robert.malz@canonical.com>
----
- .../net/ethernet/intel/ice/devlink/devlink.c  | 21 -------
- drivers/net/ethernet/intel/ice/ice_ethtool.c  | 11 +---
- drivers/net/ethernet/intel/ice/ice_nvm.c      | 58 ++++++++++---------
- 3 files changed, 32 insertions(+), 58 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/devlink/devlink.c b/drivers/net/ethernet/intel/ice/devlink/devlink.c
-index 22b7d8e6bd9e..7c7fe3d2e9d9 100644
---- a/drivers/net/ethernet/intel/ice/devlink/devlink.c
-+++ b/drivers/net/ethernet/intel/ice/devlink/devlink.c
-@@ -1891,26 +1891,15 @@ static int ice_devlink_nvm_snapshot(struct devlink *devlink,
- 	for (i = 0; i < num_blks; i++) {
- 		u32 read_sz = min_t(u32, ICE_DEVLINK_READ_BLK_SIZE, left);
- 
--		status = ice_acquire_nvm(hw, ICE_RES_READ);
--		if (status) {
--			dev_dbg(dev, "ice_acquire_nvm failed, err %d aq_err %d\n",
--				status, hw->adminq.sq_last_status);
--			NL_SET_ERR_MSG_MOD(extack, "Failed to acquire NVM semaphore");
--			vfree(nvm_data);
--			return -EIO;
--		}
--
- 		status = ice_read_flat_nvm(hw, i * ICE_DEVLINK_READ_BLK_SIZE,
- 					   &read_sz, tmp, read_shadow_ram);
- 		if (status) {
- 			dev_dbg(dev, "ice_read_flat_nvm failed after reading %u bytes, err %d aq_err %d\n",
- 				read_sz, status, hw->adminq.sq_last_status);
- 			NL_SET_ERR_MSG_MOD(extack, "Failed to read NVM contents");
--			ice_release_nvm(hw);
- 			vfree(nvm_data);
- 			return -EIO;
- 		}
--		ice_release_nvm(hw);
- 
- 		tmp += read_sz;
- 		left -= read_sz;
-@@ -1966,24 +1955,14 @@ static int ice_devlink_nvm_read(struct devlink *devlink,
- 		return -ERANGE;
- 	}
- 
--	status = ice_acquire_nvm(hw, ICE_RES_READ);
--	if (status) {
--		dev_dbg(dev, "ice_acquire_nvm failed, err %d aq_err %d\n",
--			status, hw->adminq.sq_last_status);
--		NL_SET_ERR_MSG_MOD(extack, "Failed to acquire NVM semaphore");
--		return -EIO;
--	}
--
- 	status = ice_read_flat_nvm(hw, (u32)offset, &size, data,
- 				   read_shadow_ram);
- 	if (status) {
- 		dev_dbg(dev, "ice_read_flat_nvm failed after reading %u bytes, err %d aq_err %d\n",
- 			size, status, hw->adminq.sq_last_status);
- 		NL_SET_ERR_MSG_MOD(extack, "Failed to read NVM contents");
--		ice_release_nvm(hw);
- 		return -EIO;
- 	}
--	ice_release_nvm(hw);
- 
- 	return 0;
- }
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 49371b065845..ddeca39d822b 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -869,24 +869,15 @@ ice_get_eeprom(struct net_device *netdev, struct ethtool_eeprom *eeprom,
- 	if (!buf)
- 		return -ENOMEM;
- 
--	ret = ice_acquire_nvm(hw, ICE_RES_READ);
--	if (ret) {
--		dev_err(dev, "ice_acquire_nvm failed, err %d aq_err %s\n",
--			ret, libie_aq_str(hw->adminq.sq_last_status));
--		goto out;
--	}
--
- 	ret = ice_read_flat_nvm(hw, eeprom->offset, &eeprom->len, buf,
- 				false);
- 	if (ret) {
- 		dev_err(dev, "ice_read_flat_nvm failed, err %d aq_err %s\n",
- 			ret, libie_aq_str(hw->adminq.sq_last_status));
--		goto release;
-+		goto out;
- 	}
- 
- 	memcpy(bytes, buf, eeprom->len);
--release:
--	ice_release_nvm(hw);
- out:
- 	kfree(buf);
- 	return ret;
-diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
-index 7e187a804dfa..cb1541844242 100644
---- a/drivers/net/ethernet/intel/ice/ice_nvm.c
-+++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
-@@ -58,6 +58,11 @@ int ice_aq_read_nvm(struct ice_hw *hw, u16 module_typeid, u32 offset,
-  * breaks read requests across Shadow RAM sectors and ensures that no single
-  * read request exceeds the maximum 4KB read for a single AdminQ command.
-  *
-+ * FW caps the read lock at a maximum of 3000ms, so a read spanning multiple
-+ * 4KB sectors cannot be done under a single lock without FW reclaiming it
-+ * mid-read. The NVM lock is therefore acquired and released around each AQ
-+ * read, so this function must be called without the lock held.
-+ *
-  * Returns a status code on failure. Note that the data pointer may be
-  * partially updated if some reads succeed before a failure.
-  */
-@@ -65,6 +70,7 @@ int
- ice_read_flat_nvm(struct ice_hw *hw, u32 offset, u32 *length, u8 *data,
- 		  bool read_shadow_ram)
- {
-+	enum libie_aq_err aq_err;
- 	u32 inlen = *length;
- 	u32 bytes_read = 0;
- 	bool last_cmd;
-@@ -92,12 +98,28 @@ ice_read_flat_nvm(struct ice_hw *hw, u32 offset, u32 *length, u8 *data,
- 
- 		last_cmd = !(bytes_read + read_size < inlen);
- 
-+		status = ice_acquire_nvm(hw, ICE_RES_READ);
-+		if (status)
-+			break;
-+
- 		status = ice_aq_read_nvm(hw, ICE_AQC_NVM_START_POINT,
- 					 offset, read_size,
- 					 data + bytes_read, last_cmd,
- 					 read_shadow_ram, NULL);
--		if (status)
-+		if (status) {
-+			/* ice_release_nvm() issues an AQ command that would
-+			 * overwrite sq_last_status, which some callers
-+			 * inspect after a failed read. Preserve the read's
-+			 * AQ error across the release.
-+			 */
-+			aq_err = hw->adminq.sq_last_status;
-+
-+			ice_release_nvm(hw);
-+			hw->adminq.sq_last_status = aq_err;
- 			break;
-+		}
-+
-+		ice_release_nvm(hw);
- 
- 		bytes_read += read_size;
- 		offset += read_size;
-@@ -330,14 +352,8 @@ ice_read_flash_module(struct ice_hw *hw, enum ice_bank_select bank, u16 module,
- 		return -EINVAL;
- 	}
- 
--	status = ice_acquire_nvm(hw, ICE_RES_READ);
--	if (status)
--		return status;
--
- 	status = ice_read_flat_nvm(hw, start + offset, &length, data, false);
- 
--	ice_release_nvm(hw);
--
- 	return status;
- }
- 
-@@ -419,24 +435,19 @@ ice_read_netlist_module(struct ice_hw *hw, enum ice_bank_select bank, u32 offset
- }
- 
- /**
-- * ice_read_sr_word - Reads Shadow RAM word and acquire NVM if necessary
-+ * ice_read_sr_word - Reads Shadow RAM word
-  * @hw: pointer to the HW structure
-  * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF)
-  * @data: word read from the Shadow RAM
-  *
-- * Reads one 16 bit word from the Shadow RAM using the ice_read_sr_word_aq.
-+ * Reads one 16 bit word from the Shadow RAM using ice_read_sr_word_aq.
-+ *
-+ * The NVM lock is acquired and released internally by ice_read_flat_nvm()
-+ * around the FW read, so this function must be called without the lock held.
-  */
- int ice_read_sr_word(struct ice_hw *hw, u16 offset, u16 *data)
- {
--	int status;
--
--	status = ice_acquire_nvm(hw, ICE_RES_READ);
--	if (!status) {
--		status = ice_read_sr_word_aq(hw, offset, data);
--		ice_release_nvm(hw);
--	}
--
--	return status;
-+	return ice_read_sr_word_aq(hw, offset, data);
- }
- 
- /**
-@@ -856,11 +867,7 @@ int ice_get_inactive_netlist_ver(struct ice_hw *hw, struct ice_netlist_info *net
- static int ice_discover_flash_size(struct ice_hw *hw)
- {
- 	u32 min_size = 0, max_size = ICE_AQC_NVM_MAX_OFFSET + 1;
--	int status;
--
--	status = ice_acquire_nvm(hw, ICE_RES_READ);
--	if (status)
--		return status;
-+	int status = 0;
- 
- 	while ((max_size - min_size) > 1) {
- 		u32 offset = (max_size + min_size) / 2;
-@@ -880,7 +887,7 @@ static int ice_discover_flash_size(struct ice_hw *hw)
- 			min_size = offset;
- 		} else {
- 			/* an unexpected error occurred */
--			goto err_read_flat_nvm;
-+			return status;
- 		}
- 	}
- 
-@@ -888,9 +895,6 @@ static int ice_discover_flash_size(struct ice_hw *hw)
- 
- 	hw->flash.flash_size = max_size;
- 
--err_read_flat_nvm:
--	ice_release_nvm(hw);
--
- 	return status;
- }
- 
--- 
-2.34.1
-
+On Fri, Jun 26, 2026 at 1:46=E2=80=AFPM Przemek Kitszel
+<przemyslaw.kitszel@intel.com> wrote:
+>
+> On 6/26/26 10:15, Robert Malz wrote:
+> > Hey Przemek,
+> > I ran some tests and unfortunately, the following sentence from the
+> > datasheet is true:
+> > "For specific resources, such as Change Lock (0x0003) and Global Config=
+ Lock
+> > (0x0004), this field is used by software to override the default timeou=
+t for the
+> > operation, and also to specify the timeout used for this operation."
+> >
+> > This means we can only change a default timeout for 0x0003 and 0x0004
+> > but not for 0x0001 (NVM resource).
+> > Whatever timeout I provide FW defaults to 0xB88
+> > Input:
+> > [ 2209.656758] ice 0000:31:00.0: CQ CMD: opcode 0x0008, flags 0x2000,
+> > datalen 0x0000, retval 0x0000
+> > [ 2209.656760] ice 0000:31:00.0:        cookie (h,l) 0x00000000 0x00000=
+000
+> > [ 2209.656761] ice 0000:31:00.0:        param (0,1)  0x00010001 0x00000=
+BB9
+> > Output:
+> > [ 2209.656927] ice 0000:31:00.0: CQ CMD: opcode 0x0008, flags 0x2003,
+> > datalen 0x0000, retval 0x0000
+> > [ 2209.656929] ice 0000:31:00.0:        cookie (h,l) 0x00000000 0x00000=
+000
+> > [ 2209.656931] ice 0000:31:00.0:        param (0,1)  0x00010001 0x00000=
+BB8
+> >
+> > Correct me If I'm wrong, but the only way to properly handle it is to
+> > ensure the resource is locked and released between every
+> > ice_acquire_nvm call.
+> > I'll start working on this.
+>
+> thank you for checking out!
+>
+> I agree that simple retries with improved (refactored) locking will be
+> good solution.
+> Failure to lock should count as an unsuccessful attempt, with possible
+> retry after a sleep.
+>
+> >
+> > Regards,
+> > Robert
+>
+>
