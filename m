@@ -4,96 +4,102 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5419C43458
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  6 Jul 2026 15:23:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 10166C43458
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  6 Jul 2026 15:28:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 76BDB608A4;
-	Mon,  6 Jul 2026 15:23:37 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id D3A3560824;
+	Mon,  6 Jul 2026 15:28:35 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id y-qWcUcVpVue; Mon,  6 Jul 2026 15:23:33 +0000 (UTC)
+ id i5HCneauvReE; Mon,  6 Jul 2026 15:28:35 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 53F34606BE
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org F1C18608FE
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1783351413;
-	bh=Bg6k/z786z45anJvadxqBVCBr371DrIfNJc1DkZIwjY=;
-	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1783351715;
+	bh=uFl/PFQUMEmFax6Jn9kVRcpgfbNJOYAZpQgC+AMH3Q0=;
+	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=OZayq41ou78KqG/+W1JG+rgchPAmvyZq56u7NgfGoaceHvr62tLaAtFAc/2QVSfUV
-	 n1faj5ukhGUt41PjZDQpvwIi4htBbpowi4daUuTQFPmP51LwZFPyI3SmzoKLYs40fB
-	 jiwRaIzgUBh6jwRhGxFTFlpIorYE8cVj3H92HksbFLpUMyv+xaHTBLw7wfbjQnKN80
-	 86oJBlyxsuzf4vh/Z8ZdzarrfZdKcmXeSfhcdKbT57wiTzXEHls/c+CHAE5vyVZOIY
-	 Ll9O0kCOF243/xo81iUEzAXfwYf9Dez7T9nFOuOVFhCcrP5IM88ztYBJMSOILsL88e
-	 yEprla6k/7zlg==
+	b=O6DuC+5vbuINoUO4jUcnncv1zGK9BvXRete66Kyb/kdtEnQYPEC6u5CUNtJ94dIwO
+	 9TRg9EczG6mTaqRiOq3qoJkNEpDutvMwlk3WmDFccf4IIO/9G0w3uzOFKDCdxw8l6E
+	 hOVEk6LRd0SUIbImcnrWGt4ZyHn3qWA903gaQMlwUZCnDZss1jt6C24QRICCf3+nN6
+	 Eqdl+SG27oLH4WCuZi5+pq9zOXHzGsWHvC7nMPwXSmoPPcGH3S7f+WTf+XbPcfGDUC
+	 zwANmZJycEZKYld0GpjcmMJ0wVO2rb4eJ/3PtTgoZ7eniu4SqDMsxg4DGPcyF2ph6p
+	 dNxF2yA9j3fxA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 53F34606BE;
-	Mon,  6 Jul 2026 15:23:33 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id D60F7CB1
- for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jul 2026 07:10:58 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id F1C18608FE;
+	Mon,  6 Jul 2026 15:28:34 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id C98CA316
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Jul 2026 15:28:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id BBE2783842
- for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jul 2026 07:10:58 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id BBB0140A7C
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Jul 2026 15:28:33 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id uHpdmfptSOxt for <intel-wired-lan@lists.osuosl.org>;
- Thu,  2 Jul 2026 07:10:55 +0000 (UTC)
-X-Greylist: delayed 310 seconds by postgrey-1.37 at util1.osuosl.org;
- Thu, 02 Jul 2026 07:10:52 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 18CA983806
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 18CA983806
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=124.126.103.232;
- helo=mailgw.kylinos.cn; envelope-from=weirongguang@kylinos.cn;
- receiver=<UNKNOWN> 
-Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 18CA983806
- for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jul 2026 07:10:48 +0000 (UTC)
-X-UUID: 684c998c75e411f1aa26b74ffac11d73-20260702
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.3.12, REQID:4bf09062-0d05-4400-b7f7-446d8884ad66, IP:0,
- U
- RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
- release,TS:0
-X-CID-META: VersionHash:e7bac3a, CLOUDID:26c9664204f3eb6a2b90aebe4cb1b8d5,
- BulkI
- D:nil,BulkQuantity:0,Recheck:0,SF:80|81|82|83|102|865|898,TC:nil,Content:0
- |15|52,EDM:-3,IP:nil,URL:1,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,O
- SI:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
-X-CID-BVR: 2,SSN|SDN
-X-CID-BAS: 2,SSN|SDN,0,_
-X-CID-FACTOR: TF_CID_SPAM_SNR,TF_CID_SPAM_ULS
-X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
-X-UUID: 684c998c75e411f1aa26b74ffac11d73-20260702
-X-User: weirongguang@kylinos.cn
-Received: from [10.42.20.136] [(10.44.16.150)] by mailgw.kylinos.cn
- (envelope-from <weirongguang@kylinos.cn>)
- (Generic MTA with TLSv1.3 TLS_AES_128_GCM_SHA256 128/128)
- with ESMTP id 1660990033; Thu, 02 Jul 2026 15:05:28 +0800
-Message-ID: <bc2c7b23-bcaf-4c10-adde-753ede92b7a7@kylinos.cn>
-Date: Thu, 2 Jul 2026 15:05:26 +0800
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id T_5cMa0QCG3t for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  6 Jul 2026 15:28:33 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.20;
+ helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 9EFD340A66
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9EFD340A66
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 9EFD340A66
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Jul 2026 15:28:32 +0000 (UTC)
+X-CSE-ConnectionGUID: dJJs60JiQJSx0r8HTz2SCg==
+X-CSE-MsgGUID: PbaF8xB8QIm03cf/C0gk2w==
+X-IronPort-AV: E=McAfee;i="6800,10657,11838"; a="83760413"
+X-IronPort-AV: E=Sophos;i="6.25,149,1779174000"; d="scan'208";a="83760413"
+Received: from orviesa002.jf.intel.com ([10.64.159.142])
+ by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 06 Jul 2026 08:28:32 -0700
+X-CSE-ConnectionGUID: qeSsvuFKQWW/DlBsmwRgrw==
+X-CSE-MsgGUID: Q8NX88hiSP+EOWE0QzcwWg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,149,1779174000"; d="scan'208";a="283833104"
+Received: from lkp-server02.sh.intel.com (HELO ea128546eb3d) ([10.239.97.151])
+ by orviesa002.jf.intel.com with ESMTP; 06 Jul 2026 08:28:30 -0700
+Received: from kbuild by ea128546eb3d with local (Exim 4.98.2)
+ (envelope-from <lkp@intel.com>) id 1wglEt-00000000EUV-1S9t;
+ Mon, 06 Jul 2026 15:28:07 +0000
+Date: Mon, 6 Jul 2026 23:27:09 +0800
+From: kernel test robot <lkp@intel.com>
+To: Jedrzej Jagielski <jedrzej.jagielski@intel.com>,
+ intel-wired-lan@lists.osuosl.org
+Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+ anthony.l.nguyen@intel.com, netdev@vger.kernel.org,
+ Jedrzej Jagielski <jedrzej.jagielski@intel.com>,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Message-ID: <202607062312.8lqgVLms-lkp@intel.com>
+References: <20260706094330.186341-1-jedrzej.jagielski@intel.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Content-Language: en-US
-To: Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
- Rongguang Wei <clementwei90@163.com>
-Cc: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
- aleksandr.loktionov@intel.com, przemyslaw.kitszel@intel.com,
- anthony.l.nguyen@intel.com, andrew+netdev@lunn.ch
-References: <20260701013618.29934-1-clementwei90@163.com>
- <akUmFsLra3VpRNPg@boxer>
-From: weirongguang <weirongguang@kylinos.cn>
-In-Reply-To: <akUmFsLra3VpRNPg@boxer>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Mon, 06 Jul 2026 15:23:32 +0000
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=kylinos.cn
-Subject: Re: [Intel-wired-lan] [PATCH net-next v2] ice: use dev_err_probe()
- in ice_probe()
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260706094330.186341-1-jedrzej.jagielski@intel.com>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1783351713; x=1814887713;
+ h=date:from:to:cc:subject:message-id:references:
+ mime-version:in-reply-to;
+ bh=Kx0R10CEtuT7dVwxzZnlGtk8d2BtAd7kwxR4Q9KdOp0=;
+ b=JIUHLqkqG5UjRrYpxSlZVkVQ8WCQPEXevxZV3+ux6HvyFbwG8KZ1X7OY
+ ctoWEk0XyFMEhgZnPscUW7D0PBB9T/uo+P3bvRPTQruB7kGbSoHsw8t2T
+ P+D2fVBJPJMDok/eRtdIrhva4CcLky6ACsg6VA2FZdmTJ9tI3tQ7M1Wzh
+ f9T2ttvRNcDoRS/rEdZg28+zw7UphBp0Sa0qbiLwQnziilVYyMELvz0l0
+ cJA7H02/M/pQZLVuwaSZyIRUlkMNw5vk9SBy5jSVjVPC+/I0E3XJbzsPh
+ fe/KDNVQ+a8u9a7p6T7FZmarnLaqJxIs0xh6Tn2HXV3dYPNj6GpMnYYfh
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=JIUHLqkq
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v2] ixgbe: E610: force phy
+ link to get down when interface is down
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -109,137 +115,147 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
+Hi Jedrzej,
+
+kernel test robot noticed the following build errors:
+
+[auto build test ERROR on tnguy-next-queue/dev-queue]
+
+url:    https://github.com/intel-lab-lkp/linux/commits/Jedrzej-Jagielski/ixgbe-E610-force-phy-link-to-get-down-when-interface-is-down/20260706-180351
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+patch link:    https://lore.kernel.org/r/20260706094330.186341-1-jedrzej.jagielski%40intel.com
+patch subject: [Intel-wired-lan] [PATCH iwl-next v2] ixgbe: E610: force phy link to get down when interface is down
+config: x86_64-rhel-9.4-rust (https://download.01.org/0day-ci/archive/20260706/202607062312.8lqgVLms-lkp@intel.com/config)
+compiler: clang version 22.1.3 (https://github.com/llvm/llvm-project e9846648fd6183ee6d8cbdb4502213fcf902a211)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260706/202607062312.8lqgVLms-lkp@intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202607062312.8lqgVLms-lkp@intel.com/
+
+All errors (new ones prefixed by >>):
+
+>> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:7572:4: error: call to undeclared function 'e_error'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+    7572 |                         e_error(drv, "Cannot set PHY link down\n");
+         |                         ^
+>> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:7572:12: error: use of undeclared identifier 'drv'
+    7572 |                         e_error(drv, "Cannot set PHY link down\n");
+         |                                 ^~~
+   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:8928:14: warning: division by zero is undefined [-Wdivision-by-zero]
+    8928 |         cmd_type |= IXGBE_SET_FLAG(tx_flags, IXGBE_TX_FLAGS_HW_VLAN,
+         |                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    8929 |                                    IXGBE_ADVTXD_DCMD_VLE);
+         |                                    ~~~~~~~~~~~~~~~~~~~~~~
+   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:8918:26: note: expanded from macro 'IXGBE_SET_FLAG'
+    8918 |          ((u32)(_input & _flag) / (_flag / _result)))
+         |                                 ^ ~~~~~~~~~~~~~~~~~
+   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:8932:14: warning: division by zero is undefined [-Wdivision-by-zero]
+    8932 |         cmd_type |= IXGBE_SET_FLAG(tx_flags, IXGBE_TX_FLAGS_TSO,
+         |                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    8933 |                                    IXGBE_ADVTXD_DCMD_TSE);
+         |                                    ~~~~~~~~~~~~~~~~~~~~~~
+   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:8918:26: note: expanded from macro 'IXGBE_SET_FLAG'
+    8918 |          ((u32)(_input & _flag) / (_flag / _result)))
+         |                                 ^ ~~~~~~~~~~~~~~~~~
+   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:8936:14: warning: division by zero is undefined [-Wdivision-by-zero]
+    8936 |         cmd_type |= IXGBE_SET_FLAG(tx_flags, IXGBE_TX_FLAGS_TSTAMP,
+         |                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    8937 |                                    IXGBE_ADVTXD_MAC_TSTAMP);
+         |                                    ~~~~~~~~~~~~~~~~~~~~~~~~
+   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:8918:26: note: expanded from macro 'IXGBE_SET_FLAG'
+    8918 |          ((u32)(_input & _flag) / (_flag / _result)))
+         |                                 ^ ~~~~~~~~~~~~~~~~~
+   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:8940:14: warning: division by zero is undefined [-Wdivision-by-zero]
+    8940 |         cmd_type ^= IXGBE_SET_FLAG(skb->no_fcs, 1, IXGBE_ADVTXD_DCMD_IFCS);
+         |                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:8918:26: note: expanded from macro 'IXGBE_SET_FLAG'
+    8918 |          ((u32)(_input & _flag) / (_flag / _result)))
+         |                                 ^ ~~~~~~~~~~~~~~~~~
+   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:8951:19: warning: division by zero is undefined [-Wdivision-by-zero]
+    8951 |         olinfo_status |= IXGBE_SET_FLAG(tx_flags,
+         |                          ^~~~~~~~~~~~~~~~~~~~~~~~
+    8952 |                                         IXGBE_TX_FLAGS_CSUM,
+         |                                         ~~~~~~~~~~~~~~~~~~~~
+    8953 |                                         IXGBE_ADVTXD_POPTS_TXSM);
+         |                                         ~~~~~~~~~~~~~~~~~~~~~~~~
+   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:8918:26: note: expanded from macro 'IXGBE_SET_FLAG'
+    8918 |          ((u32)(_input & _flag) / (_flag / _result)))
+         |                                 ^ ~~~~~~~~~~~~~~~~~
+   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:8956:19: warning: division by zero is undefined [-Wdivision-by-zero]
+    8956 |         olinfo_status |= IXGBE_SET_FLAG(tx_flags,
+         |                          ^~~~~~~~~~~~~~~~~~~~~~~~
+    8957 |                                         IXGBE_TX_FLAGS_IPV4,
+         |                                         ~~~~~~~~~~~~~~~~~~~~
+    8958 |                                         IXGBE_ADVTXD_POPTS_IXSM);
+         |                                         ~~~~~~~~~~~~~~~~~~~~~~~~
+   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:8918:26: note: expanded from macro 'IXGBE_SET_FLAG'
+    8918 |          ((u32)(_input & _flag) / (_flag / _result)))
+         |                                 ^ ~~~~~~~~~~~~~~~~~
+   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:8961:19: warning: division by zero is undefined [-Wdivision-by-zero]
+    8961 |         olinfo_status |= IXGBE_SET_FLAG(tx_flags,
+         |                          ^~~~~~~~~~~~~~~~~~~~~~~~
+    8962 |                                         IXGBE_TX_FLAGS_IPSEC,
+         |                                         ~~~~~~~~~~~~~~~~~~~~~
+    8963 |                                         IXGBE_ADVTXD_POPTS_IPSEC);
+         |                                         ~~~~~~~~~~~~~~~~~~~~~~~~~
+   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:8918:26: note: expanded from macro 'IXGBE_SET_FLAG'
+    8918 |          ((u32)(_input & _flag) / (_flag / _result)))
+         |                                 ^ ~~~~~~~~~~~~~~~~~
+   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:8969:19: warning: division by zero is undefined [-Wdivision-by-zero]
+    8969 |         olinfo_status |= IXGBE_SET_FLAG(tx_flags,
+         |                          ^~~~~~~~~~~~~~~~~~~~~~~~
+    8970 |                                         IXGBE_TX_FLAGS_CC,
+         |                                         ~~~~~~~~~~~~~~~~~~
+    8971 |                                         IXGBE_ADVTXD_CC);
+         |                                         ~~~~~~~~~~~~~~~~
+   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:8918:26: note: expanded from macro 'IXGBE_SET_FLAG'
+    8918 |          ((u32)(_input & _flag) / (_flag / _result)))
+         |                                 ^ ~~~~~~~~~~~~~~~~~
+   8 warnings and 2 errors generated.
 
 
-在 2026/7/1 22:37, Maciej Fijalkowski 写道:
-> On Wed, Jul 01, 2026 at 09:36:18AM +0800, Rongguang Wei wrote:
->> From: Rongguang Wei <weirongguang@kylinos.cn>
->>
->> dev_err_probe() logs the error and returns the supplied error code, which
->> allows probe error paths to be written more compactly.
->>
->> Use dev_err_probe() in ice_probe() for error paths that currently print an
->> error message and immediately return the same error code. This keeps the
->> existing error handling semantics while reducing open-coded logging and
->> return sequences.
->>
->> Signed-off-by: Rongguang Wei <weirongguang@kylinos.cn>
->> Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
->> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
->> ---
->> v2:
->>   - Fix commit message per Aleksandr Loktionov's recommendation.
->> v1: https://lore.kernel.org/netdev/20260630032537.42605-1-clementwei90@163.com/T/#t
->> ---
->>  drivers/net/ethernet/intel/ice/ice_main.c | 24 ++++++++---------------
->>  1 file changed, 8 insertions(+), 16 deletions(-)
-> 
-> Could we also address rest of sites within driver at this very same
-> commit?
-> 
-> drivers/net/ethernet/intel/ice/ice_dcb_lib.c-873-       dev_err(dev, "DCB init failed\n");
-> drivers/net/ethernet/intel/ice/ice_dcb_lib.c:874:       return err;
-> --
-> drivers/net/ethernet/intel/ice/ice_main.c-4482-         dev_warn(dev, "Failed to initialize hardware after applying Tx scheduling configuration.\n");
-> drivers/net/ethernet/intel/ice/ice_main.c:4483:         return err;
-> --
-> drivers/net/ethernet/intel/ice/ice_main.c-4543-         dev_err(dev, "Fail during requesting FW: %d\n", err);
-> drivers/net/ethernet/intel/ice/ice_main.c:4544:         return err;
-> --
-> drivers/net/ethernet/intel/ice/ice_main.c-4961-         dev_err(dev, "ice_init_pf failed: %d\n", err);
-> drivers/net/ethernet/intel/ice/ice_main.c:4962:         return err;
-> --
-> drivers/net/ethernet/intel/ice/ice_main.c-5192-         dev_err(dev, "BAR0 I/O map error %d\n", err);
-> drivers/net/ethernet/intel/ice/ice_main.c:5193:         return err;
-> --
-> drivers/net/ethernet/intel/ice/ice_main.c-5206-         dev_err(dev, "DMA configuration failed: 0x%x\n", err);
-> drivers/net/ethernet/intel/ice/ice_main.c:5207:         return err;
-> --
-> drivers/net/ethernet/intel/ice/ice_main.c-5244-         dev_err(dev, "ice_init_hw failed: %d\n", err);
-> drivers/net/ethernet/intel/ice/ice_main.c:5245:         return err;
-> --
-> drivers/net/ethernet/intel/ice/ice_main.c-9627-         netdev_err(netdev, "Failed to get link info, error %d\n", err);
-> drivers/net/ethernet/intel/ice/ice_main.c:9628:         return err;
-> --
-> drivers/net/ethernet/intel/ice/devlink/devlink.c-1244-          dev_err(dev, "ice_init_hw failed: %d\n", err);
-> drivers/net/ethernet/intel/ice/devlink/devlink.c:1245:          return err;
-> --
-> drivers/net/ethernet/intel/ice/ice_ptp.c-1935-          dev_err(ice_pf_to_dev(pf), "PTP failed to set time %d\n", err);
-> drivers/net/ethernet/intel/ice/ice_ptp.c:1936:          return err;
-> --
-> drivers/net/ethernet/intel/ice/ice_ptp.c-2000-          dev_err(dev, "PTP failed to adjust time, err %d\n", err);
-> drivers/net/ethernet/intel/ice/ice_ptp.c:2001:          return err;
-> --
-> drivers/net/ethernet/intel/ice/ice_sriov.c-829-         dev_err(dev, "Failed to enable SR-IOV: %d\n", err);
-> drivers/net/ethernet/intel/ice/ice_sriov.c:830:         return err;
-> --
-> drivers/net/ethernet/intel/ice/ice_eswitch_br.c-314-            dev_info(dev, "Bridge port lookup failed (vsi=%u)\n", vsi_idx);
-> drivers/net/ethernet/intel/ice/ice_eswitch_br.c:315:            return ERR_PTR(-EINVAL);
-> 
-Hi, 
-Per commit a787e5400a1c("driver core: add device probe log helper"), dev_err_probe was 
-originally designed for probe functions in device driver to handle -EPROBE_DEFER.
+vim +/e_error +7572 drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
 
-Using it elsewhere is not the common pattern in the kernel. I'm unsure whether this aligns
-with the intended usage if we also address the rest of the sites within the driver.
->>
->> diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
->> index e2fd2dab03e3..31aa42f8e6d3 100644
->> --- a/drivers/net/ethernet/intel/ice/ice_main.c
->> +++ b/drivers/net/ethernet/intel/ice/ice_main.c
->> @@ -5161,10 +5161,8 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
->>  	struct ice_hw *hw;
->>  	int err;
->>  
->> -	if (pdev->is_virtfn) {
->> -		dev_err(dev, "can't probe a virtual function\n");
->> -		return -EINVAL;
->> -	}
->> +	if (pdev->is_virtfn)
->> +		return dev_err_probe(dev, -EINVAL, "can't probe a virtual function\n");
->>  
->>  	/* when under a kdump kernel initiate a reset before enabling the
->>  	 * device in order to clear out any pending DMA transactions. These
->> @@ -5188,10 +5186,8 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
->>  		return err;
->>  
->>  	err = pcim_iomap_regions(pdev, BIT(ICE_BAR0), dev_driver_string(dev));
->> -	if (err) {
->> -		dev_err(dev, "BAR0 I/O map error %d\n", err);
->> -		return err;
->> -	}
->> +	if (err)
->> +		return dev_err_probe(dev, err, "BAR0 I/O map error %d\n", err);
->>  
->>  	pf = ice_allocate_pf(dev);
->>  	if (!pf)
->> @@ -5202,10 +5198,8 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
->>  
->>  	/* set up for high or low DMA */
->>  	err = dma_set_mask_and_coherent(dev, DMA_BIT_MASK(64));
->> -	if (err) {
->> -		dev_err(dev, "DMA configuration failed: 0x%x\n", err);
->> -		return err;
->> -	}
->> +	if (err)
->> +		return dev_err_probe(dev, err, "DMA configuration failed: 0x%x\n", err);
->>  
->>  	pci_set_master(pdev);
->>  	pf->pdev = pdev;
->> @@ -5240,10 +5234,8 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
->>  		return ice_probe_recovery_mode(pf);
->>  
->>  	err = ice_init_hw(hw);
->> -	if (err) {
->> -		dev_err(dev, "ice_init_hw failed: %d\n", err);
->> -		return err;
->> -	}
->> +	if (err)
->> +		return dev_err_probe(dev, err, "ice_init_hw failed: %d\n", err);
->>  
->>  	ice_init_dev_hw(pf);
->>  
->> -- 
->> 2.25.1
->>
->>
+  7544	
+  7545	/**
+  7546	 * ixgbe_close - Disables a network interface
+  7547	 * @netdev: network interface device structure
+  7548	 *
+  7549	 * Returns 0, this is not allowed to fail
+  7550	 *
+  7551	 * The close entry point is called when an interface is de-activated
+  7552	 * by the OS.  The hardware is still under the drivers control, but
+  7553	 * needs to be disabled.  A global MAC reset is issued to stop the
+  7554	 * hardware, and all transmit and receive resources are freed.
+  7555	 **/
+  7556	int ixgbe_close(struct net_device *netdev)
+  7557	{
+  7558		struct ixgbe_adapter *adapter = ixgbe_from_netdev(netdev);
+  7559	
+  7560		ixgbe_ptp_stop(adapter);
+  7561	
+  7562		if (netif_device_present(netdev))
+  7563			ixgbe_close_suspend(adapter);
+  7564	
+  7565		ixgbe_fdir_filter_exit(adapter);
+  7566	
+  7567		if (adapter->flags2 & IXGBE_FLAG2_LINK_DOWN_ON_CLOSE) {
+  7568			int err;
+  7569	
+  7570			err = ixgbe_disable_phy_link(&adapter->hw);
+  7571			if (err)
+> 7572				e_error(drv, "Cannot set PHY link down\n");
+  7573	
+  7574			ixgbe_handle_link_down(adapter);
+  7575		}
+  7576	
+  7577		ixgbe_release_hw_control(adapter);
+  7578	
+  7579		return 0;
+  7580	}
+  7581	
+
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
