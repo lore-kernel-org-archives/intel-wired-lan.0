@@ -4,89 +4,104 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6A47C43458
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  6 Jul 2026 09:25:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 367EFC43458
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  6 Jul 2026 09:51:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 2EF79402B3;
-	Mon,  6 Jul 2026 09:25:20 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id E387540A48;
+	Mon,  6 Jul 2026 09:51:15 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 5jPG-I39UC6G; Mon,  6 Jul 2026 09:25:19 +0000 (UTC)
+ id 71ZCWQNOnHJd; Mon,  6 Jul 2026 09:51:15 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8E37240A76
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1C3A940A50
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1783329919;
-	bh=krTz+Y1P84eScbryMKCxZic6Jvk4kHzG+oyEobkFsa0=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=u7/Gi0C0jADa1lNcKIMbgxJsVPMasBowjOKP6EbO0gvH29oNmrUDbT0PBMimy49y8
-	 8kKp/D7I7xS0HlXKtlUZU5HimHjDH7kbp1+A9/Vcwtnz5TGX+Sbm7m5TKYBvNQ1G0z
-	 YkRvSnLRvJIoozE/22LljTXxqhMztWIWR09zhKWSJaU4j54kicDMbyZD0phUxk13uv
-	 77OAV2puAV+uF4xHk/1utW5ZJMCohXlN/4EVCdACkefqoT/syT9ufSQyR5sTKoCslR
-	 1hpDKmZRaB/+VEr3xIfxujN1tnNATp59REq+lFAwe6iIEitNO1k1n6p7Q0HdpxnO/D
-	 oZq+AHXp1+rcA==
+	s=default; t=1783331475;
+	bh=BYBZhplRdudVjZ0tSfbfUivOx27YdDhCEs3BTVtXds4=;
+	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=4HvWkz0XhNo0IpusQp0sWGeFPuXtAu7rQ66KHiMu8rfE48y/GJL9OSRO3u/NP+c44
+	 S7L1sY9/tM+2YssozEtmfzk+IHwJXpQscxXzK6GoK5gIGFbG5KuQL5uTiEeB4J/TtK
+	 3Ih3jU4t0KVwwJEfZ5eN7Sv+9OyKiAYRtJ/SZA2DB9gCEnBYwM7K14IanAi0OZcbWg
+	 WajD6MmNxsjUSCRnQGwL+Sdzw70+mwgDkpVL8jgObDKyy4YoPsmU80KmIAlimbywEm
+	 foGCsHfLlbtevPYd6/QMlpf2aRw27ULsAS/AntamndZq0h03223x9FarKRKA76XRqY
+	 Ud/VRHt8dJqPA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 8E37240A76;
-	Mon,  6 Jul 2026 09:25:19 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id A925DF2
- for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Jul 2026 09:25:16 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1C3A940A50;
+	Mon,  6 Jul 2026 09:51:15 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id F1A71F2
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Jul 2026 09:51:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 9DE82608C6
- for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Jul 2026 09:25:16 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id CFF1A40142
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Jul 2026 09:51:12 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id EwPZQHc9lN2w for <intel-wired-lan@lists.osuosl.org>;
- Mon,  6 Jul 2026 09:25:15 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=159.226.251.21;
- helo=cstnet.cn; envelope-from=pengpeng@iscas.ac.cn; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 6E86E60635
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6E86E60635
-Received: from cstnet.cn (smtp21.cstnet.cn [159.226.251.21])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 6E86E60635
- for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Jul 2026 09:25:12 +0000 (UTC)
-Received: from localhost.localdomain (unknown [111.196.245.140])
- by APP-01 (Coremail) with SMTP id qwCowACHK9RudEtqxUvxBA--.35001S2;
- Mon, 06 Jul 2026 17:25:02 +0800 (CST)
-From: Pengpeng Hou <pengpeng@iscas.ac.cn>
-To: Tony Nguyen <anthony.l.nguyen@intel.com>
-Cc: Pengpeng Hou <pengpeng@iscas.ac.cn>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>,
- "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, intel-wired-lan@lists.osuosl.org,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Mon,  6 Jul 2026 17:25:00 +0800
-Message-ID: <20260706092500.79044-1-pengpeng@iscas.ac.cn>
-X-Mailer: git-send-email 2.50.1
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Q4GhUb1s6Wa3 for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  6 Jul 2026 09:51:12 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.21;
+ helo=mgamail.intel.com; envelope-from=marcin.szycik@linux.intel.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org F042C400AE
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org F042C400AE
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id F042C400AE
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Jul 2026 09:51:11 +0000 (UTC)
+X-CSE-ConnectionGUID: tXHQIeHsQH+EK0qvmQAFRg==
+X-CSE-MsgGUID: Hq0xcaDsQGiE32478Ehvsw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11838"; a="83824465"
+X-IronPort-AV: E=Sophos;i="6.25,149,1779174000"; d="scan'208";a="83824465"
+Received: from fmviesa002.fm.intel.com ([10.60.135.142])
+ by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 06 Jul 2026 02:51:11 -0700
+X-CSE-ConnectionGUID: z9CLoUOsTy2VFlZjUx6WyQ==
+X-CSE-MsgGUID: w0LGO3M/SGmg5pUekZArgA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,149,1779174000"; d="scan'208";a="276884555"
+Received: from unknown (HELO [10.217.160.239]) ([10.217.160.239])
+ by fmviesa002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 06 Jul 2026 02:51:08 -0700
+Message-ID: <a0fd140e-9c0a-4cee-a692-2e697bd4762f@linux.intel.com>
+Date: Mon, 6 Jul 2026 11:51:02 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: qwCowACHK9RudEtqxUvxBA--.35001S2
-X-Coremail-Antispam: 1UD129KBjvJXoW7Gw15Gry8Kw17JF18KryxGrg_yoW8JF18pF
- 48Ga4fWr45XrW3WF4xXw4rZFZxuayI9r4fWF9ayw4rAF4q9rWUCanxKa47tw1UAr4UWr1S
- vF15Aws5A3WfXFDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
- 9KBjDU0xBIdaVrnRJUUU9214x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
- rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
- 1l84ACjcxK6xIIjxv20xvE14v26ryj6F1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4U
- JVWxJr1l84ACjcxK6I8E87Iv67AKxVW0oVCq3wA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_Gc
- CE3s1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E
- 2Ix0cI8IcVAFwI0_Jw0_WrylYx0Ex4A2jsIE14v26r4j6F4UMcvjeVCFs4IE7xkEbVWUJV
- W8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lFIxGxcIEc7CjxVA2
- Y2ka0xkIwI1lc7CjxVAaw2AFwI0_Jw0_GFyl42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x
- 0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2
- zVAF1VAY17CE14v26r1q6r43MIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Gr0_Xr
- 1lIxAIcVC0I7IYx2IY6xkF7I0E14v26F4j6r4UJwCI42IY6xAIw20EY4v20xvaj40_Jr0_
- JF4lIxAIcVC2z280aVAFwI0_Gr0_Cr1lIxAIcVC2z280aVCY1x0267AKxVW8Jr0_Cr1UYx
- BIdaVFxhVjvjDU0xZFpf9x0JUDOz3UUUUU=
-X-Originating-IP: [111.196.245.140]
-X-CM-SenderInfo: pshqw1xhqjqxpvfd2hldfou0/
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+User-Agent: Mozilla Thunderbird
+To: xuanqiang.luo@linux.dev, intel-wired-lan@lists.osuosl.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>, Joshua Hay <joshua.a.hay@intel.com>,
+ Tatyana Nikolova <tatyana.e.nikolova@intel.com>,
+ Xuanqiang Luo <luoxuanqiang@kylinos.cn>
+References: <20260703104132.47419-1-xuanqiang.luo@linux.dev>
+Content-Language: en-US
+From: Marcin Szycik <marcin.szycik@linux.intel.com>
+In-Reply-To: <20260703104132.47419-1-xuanqiang.luo@linux.dev>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1783331473; x=1814867473;
+ h=message-id:date:mime-version:subject:to:cc:references:
+ from:in-reply-to:content-transfer-encoding;
+ bh=1cw2dtvKWTaAGRljDiJTLFfP1+KQjkYN/p7W+Z6InYo=;
+ b=UAyoKqrczH8LX1VNgx3ZLfD65VLgfeuHxuuA253cnHNCnz7sq5Z4f1yl
+ MitPolkHmNyzTrMQQ2zYxmIlj3yTYQr5ZvJvwFAPEjUXvK2/2VWuqfAO6
+ zpQPvGLPKCWRBKA103KADk/diipzg4OFqy3RtEdhJgmSDr6qPIwE0HfJk
+ 3vvOchl/u+7EcUvs8NHlAI2MBN7/SAChHrE1FycgeF3qPKZvqLPW3miu7
+ nCdRjTYaP0FTr4C64zsJRiFXF9TfS0ClHltHz21tf+7xSXK9fJ59+79+3
+ fl6emBdE933xnyszu86//D003TXLSnCYxeWJ1n5W83wx/x5ezpkz2QQHK
+ g==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=none (p=none dis=none)
- header.from=iscas.ac.cn
-Subject: [Intel-wired-lan] [PATCH] ixgbe: validate E610 PFA TLV bounds
+ header.from=linux.intel.com
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=UAyoKqrc
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net v1] idpf: fix lan_regs leak on
+ core init failure
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -102,41 +117,78 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-ixgbe_get_pfa_module_tlv() walks E610 PFA TLV records stored in
-EEPROM.
 
-Stop parsing malformed TLVs whose header or declared value length would
-exceed the PFA boundary.
 
-Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+On 03/07/2026 12:41, xuanqiang.luo@linux.dev wrote:
+> From: Xuanqiang Luo <luoxuanqiang@kylinos.cn>
+> 
+> idpf_vc_core_init() gets the LAN memory region layout before mapping the
+> regions and allocating vport resources. Both layout paths allocate
+> hw->lan_regs, but later error paths return without freeing it.
+> 
+> idpf_vc_core_deinit() does not cover these paths because it returns unless
+> IDPF_VC_CORE_INIT is set, and that bit is set only after core init
+> succeeds.
+> 
+> Free hw->lan_regs on the post-allocation error paths and clear the
+> pointer and region count.
+> 
+> Fixes: 6aa53e861c1a ("idpf: implement get LAN MMIO memory regions")
+> Signed-off-by: Xuanqiang Luo <luoxuanqiang@kylinos.cn>
+> ---
+>  drivers/net/ethernet/intel/idpf/idpf_virtchnl.c | 14 +++++++++++---
+>  1 file changed, 11 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
+> index be66f9b2e101c..da49bb7b7e671 100644
+> --- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
+> +++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
+> @@ -3479,6 +3479,7 @@ static int idpf_vport_params_buf_alloc(struct idpf_adapter *adapter)
+>   */
+>  int idpf_vc_core_init(struct idpf_adapter *adapter)
+>  {
+> +	struct idpf_hw *hw = &adapter->hw;
+>  	int task_delay = 30;
+>  	u16 num_max_vports;
+>  	int err = 0;
+> @@ -3550,15 +3551,18 @@ int idpf_vc_core_init(struct idpf_adapter *adapter)
+>  	if (err) {
+>  		dev_err(&adapter->pdev->dev, "Failed to map BAR0 region(s): %d\n",
+>  			err);
+> -		return -ENOMEM;
+> +		err = -ENOMEM;
+> +		goto err_lan_regs;
+>  	}
+>  
+>  	pci_sriov_set_totalvfs(adapter->pdev, idpf_get_max_vfs(adapter));
+>  	num_max_vports = idpf_get_max_vports(adapter);
+>  	adapter->max_vports = num_max_vports;
+>  	adapter->vports = kzalloc_objs(*adapter->vports, num_max_vports);
+> -	if (!adapter->vports)
+> -		return -ENOMEM;
+> +	if (!adapter->vports) {
+> +		err = -ENOMEM;
+> +		goto err_lan_regs;
+> +	}
+>  
+>  	if (!adapter->netdevs) {
+>  		adapter->netdevs = kzalloc_objs(struct net_device *,
+> @@ -3624,6 +3628,10 @@ int idpf_vc_core_init(struct idpf_adapter *adapter)
+>  err_netdev_alloc:
+>  	kfree(adapter->vports);
+>  	adapter->vports = NULL;
+> +err_lan_regs:
+> +	kfree(hw->lan_regs);
+> +	hw->lan_regs = NULL;
+> +	hw->num_lan_regs = 0;
+>  	return err;
+>  
+>  init_failed:
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
-index 4d8ae5b56145..03e88bdf5a43 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
-@@ -3895,6 +3895,9 @@ static int ixgbe_get_pfa_module_tlv(struct ixgbe_hw *hw, u16 *module_tlv,
- 	while (next_tlv < pfa_end_ptr) {
- 		u16 tlv_sub_module_type, tlv_len;
- 
-+		if (pfa_end_ptr - next_tlv < 2)
-+			break;
-+
- 		/* Read TLV type */
- 		err = ixgbe_read_ee_aci_e610(hw, next_tlv,
- 					     &tlv_sub_module_type);
-@@ -3917,6 +3920,9 @@ static int ixgbe_get_pfa_module_tlv(struct ixgbe_hw *hw, u16 *module_tlv,
- 		/* Check next TLV, i.e. current TLV pointer + length + 2 words
- 		 * (for current TLV's type and length).
- 		 */
-+		if (tlv_len > pfa_end_ptr - next_tlv - 2)
-+			break;
-+
- 		next_tlv = next_tlv + tlv_len + 2;
- 	}
- 	/* Module does not exist */
--- 
-2.43.0
+Does this apply? struct idpf_hw was removed in 9f4334ac4a5a ("idpf: refactor
+idpf to use libie control queues") [1].
 
+[1] https://lore.kernel.org/intel-wired-lan/20260608144127.2751230-10-larysa.zaremba@intel.com/
+
+Thanks,
+Marcin
