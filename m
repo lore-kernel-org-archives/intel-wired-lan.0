@@ -4,105 +4,112 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17175C44500
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  6 Jul 2026 23:03:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A292C43458
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  6 Jul 2026 23:32:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id ACD83407A2;
-	Mon,  6 Jul 2026 23:03:02 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id DEE5E407B2;
+	Mon,  6 Jul 2026 23:32:11 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id qgaA1O0pj353; Mon,  6 Jul 2026 23:03:00 +0000 (UTC)
+ id XghW_tPZjY6A; Mon,  6 Jul 2026 23:32:08 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 744CC406E0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BCE2140669
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1783378980;
-	bh=G5f+25hGd/5G5ZvbW2e/y0Wa2zZvaYWOwSJ03QnAHmc=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	s=default; t=1783380728;
+	bh=5eGWyU7F0CrMk/0J/3Xzw444IEEQHh5birdWaiQCWX8=;
+	h=From:Date:To:Cc:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=R8/n7DVYcYxXxgq2JMi+rIm0yzBylaqSte5hkw7BBos79JPmVMsJMsdf+kHOvwFbW
-	 R/ZuqK7iKfl6l8t6qJX3xUwGJGJzLiI+RpdGezlG8rId3orkKkKbuolpLafLcgS9+J
-	 mhGhY772G0nY/uN11bC/5YNNLhxo7sLCAGYr8sjoQ60GfA8wONRHd4rgnY7IenI1Sz
-	 jCgmegkiCfgs6FIQsT89FiPO5G/H3tkgnECPzFjyEUf7dgHY5t3qUL9I3pQ7sJcznF
-	 r1S8Zf5+uLoIvGtyfycDD4cTNfGZl04EMAXIOrixSsfJS8ndcuHAEtny8e8RgPXgF+
-	 EQQHb939kzOSQ==
+	b=tI57lBbJkaCnFoU836qGHImdNaLFFMC/8pwMtPdd2C+IYHaFNfya1xPqLkqQBw90a
+	 gvZZ8B3QkP20/vbZHjPjK5ZZ+VpA88ZOnGo0Dk5JMwFsmG2eVcdfCauLDBQqnytfCK
+	 mtRU9ILCZWxHh/4H3SixScRbuDHhUKlwiLOMe63PggcfQj/aqVu7gEmPN8Oxti1MKp
+	 ocNRx5AJWSVCf1PXVWPhYFtCKX3HCWmiMS2tOR7Vc5Qki8DJnIrjqHgw3umXHfjDCY
+	 aShic/gY8bZRJKtajXVgKkJj6aS7mSuCz8VOP+wS1AE8+YOXJUA/dchRHiyZ8H8LOF
+	 NoX9h9YZXhxbQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 744CC406E0;
-	Mon,  6 Jul 2026 23:03:00 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 070A533A
- for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Jul 2026 23:02:59 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id BCE2140669;
+	Mon,  6 Jul 2026 23:32:08 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id C2F1633A
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Jul 2026 23:32:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id E115340072
- for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Jul 2026 23:02:58 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id B4198400B8
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Jul 2026 23:32:07 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id gRisV3CqwgrX for <intel-wired-lan@lists.osuosl.org>;
- Mon,  6 Jul 2026 23:02:58 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.14;
- helo=mgamail.intel.com; envelope-from=przemyslaw.kitszel@intel.com;
+ id P7psl9kDiRaw for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  6 Jul 2026 23:32:06 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.18;
+ helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org EE36C40025
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org EE36C40025
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
- by smtp2.osuosl.org (Postfix) with ESMTPS id EE36C40025
- for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Jul 2026 23:02:57 +0000 (UTC)
-X-CSE-ConnectionGUID: 5eC90u3RRISW4+IkHf4BMQ==
-X-CSE-MsgGUID: Nyjmh26rReuoB1pxueBhDg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11839"; a="84071803"
-X-IronPort-AV: E=Sophos;i="6.25,151,1779174000"; d="scan'208";a="84071803"
-Received: from orviesa009.jf.intel.com ([10.64.159.149])
- by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 06 Jul 2026 16:02:57 -0700
-X-CSE-ConnectionGUID: 8t+YtnOVQ6GmpL2Nyy4cng==
-X-CSE-MsgGUID: mpX+D+ugSiug+NSEK3v3uQ==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org A94D840096
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A94D840096
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id A94D840096
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Jul 2026 23:32:06 +0000 (UTC)
+X-CSE-ConnectionGUID: F99F4CbwQfyoTNiWdcEgeQ==
+X-CSE-MsgGUID: 3Uqna4lXRNWfTICqnVTBPA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11839"; a="83131474"
+X-IronPort-AV: E=Sophos;i="6.25,151,1779174000"; d="scan'208";a="83131474"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+ by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 06 Jul 2026 16:32:06 -0700
+X-CSE-ConnectionGUID: +hC8/FiFSDuJn8kAbwqaTw==
+X-CSE-MsgGUID: vGYFV6DHRZK5V+bIq1p46g==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,151,1779174000"; d="scan'208";a="254482156"
-Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by orviesa009.jf.intel.com with ESMTP; 06 Jul 2026 16:02:54 -0700
-Received: from vecna.igk.intel.com (vecna.igk.intel.com [10.123.220.17])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 57DCE33BC0;
- Tue,  7 Jul 2026 00:02:52 +0100 (IST)
-From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-To: intel-wired-lan@lists.osuosl.org, Michal Schmidt <mschmidt@redhat.com>,
- Jakub Kicinski <kuba@kernel.org>
-Cc: netdev@vger.kernel.org, Tony Nguyen <anthony.l.nguyen@intel.com>,
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>,
- "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>,
- Jedrzej Jagielski <jedrzej.jagielski@intel.com>,
- Piotr Kwapulinski <piotr.kwapulinski@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Marcin Szycik <marcin.szycik@linux.intel.com>
-Date: Tue,  7 Jul 2026 00:43:30 +0200
-Message-ID: <20260706224346.22546-1-przemyslaw.kitszel@intel.com>
-X-Mailer: git-send-email 2.54.0
+X-IronPort-AV: E=Sophos;i="6.25,151,1779174000"; d="scan'208";a="257417221"
+Received: from orcnseosdtjek.jf.intel.com (HELO [10.166.28.109])
+ ([10.166.28.109])
+ by ORVIESA003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 06 Jul 2026 16:32:06 -0700
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Mon, 06 Jul 2026 16:31:17 -0700
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260706-jk-fix-missing-xa-destroy-v2-1-b83b0f02beef@intel.com>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/42OSw6CMBCGr0Jm7RjagkRX3sOw4DHAILSmrQgh3
+ N2CF3D55X+u4MgyObhFK1ia2LHRAeQpgqordEvIdWCQsbzEqUiwf2LDM47sHOsW5wJrct6aBWv
+ VXONGZUKUBCH/shScR/cD+DOgJg/5T3DvsqfK7827tWPnjV2OF5M4An8MTgJFgERlZZNKlWR31
+ p6Gc2VGyLdt+wKYFCdf3QAAAA==
+X-Change-ID: 20260514-jk-fix-missing-xa-destroy-d3f90f3711be
+To: Tony Nguyen <anthony.l.nguyen@intel.com>, 
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, 
+ Jacob Keller <jacob.e.keller@intel.com>
+X-Mailer: b4 0.16-dev-b9e00
+X-Developer-Signature: v=1; a=openpgp-sha256; l=5381;
+ i=jacob.e.keller@intel.com; h=from:subject:message-id;
+ bh=/bh8lpYnml96QzvIHIyqPoi635IHHu05+b27moIaExE=;
+ b=owGbwMvMwCWWNS3WLp9f4wXjabUkhiwfq3cbZU3e1ta4bq1v1O9dsV5t1cWVl8U/KFY+9Fm0S
+ EJOStO1o5SFQYyLQVZMkUXBIWTldeMJYVpvnOVg5rAygQxh4OIUgIlc+MLIMP/+hInno7cc7f4/
+ cd+y9ODDMRpz69YJRiyZMVmDr/hVWhAjw/eGa7Z3uSPiQxPl78879vR0ufcnGTs9w8n5c9pKeGU
+ YOAA=
+X-Developer-Key: i=jacob.e.keller@intel.com; a=openpgp;
+ fpr=204054A9D73390562AEC431E6A965D3E6F0F28E8
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1783378978; x=1814914978;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=oC8jt29NXkSPFD96mbTv5nD63+RCBk7CuQSSpqn2mJI=;
- b=kLY2pM6W+QVek1thV6mGNrl+WF/Qdf856ZxAgwODQQlk/a3KU84Ibhjg
- Vlf2efQEg2BfbKYxJoW/L0Rgz5r/znEr8LU8gPFUuuN8Zfk26ru2mNWWU
- qTgDLZ39NUY55W1zzxzJD49BLhUemmHPgnoysP7DE5MpDJS0xZLUbZdui
- sKeTv+DtH66g/XpjjIWR5N6ceq9S1UGLEFqU9lNuS1cvj0HPw5OUCOA23
- UxQNSclYk41RdJu/68vhx6iGDanoD4i1+X//79TNJUT8HAC4w3fMek68u
- Pa67Sc4GrPI8uoQ+B+IpQp9QnVuqPtB2LYcycYxhEzlDn9kfV6I+jL/jL
- Q==;
+ t=1783380726; x=1814916726;
+ h=from:date:subject:mime-version:content-transfer-encoding:
+ message-id:to:cc;
+ bh=/bh8lpYnml96QzvIHIyqPoi635IHHu05+b27moIaExE=;
+ b=lQO+/6XFfNXcrELb3ZRnvYKUF3omIz130VWYkoENWQQNVZ3lBKf3IAOs
+ LPPC2ptLzvYWp9GctwgK/gFRB92LeZYBzUXwOkH6InU7pDXCrNq7/cXT3
+ s3h+Q+5Jc/1+0wnSCBpVZpIHC7lDCbq+FEATb3u+oTXcMVosPhtASH+a+
+ 9Reo5+6JYBOT/apJ854M6veFFc9uho9pHu+eZ6ECiXPFFwuBRW4qu9kFj
+ eOSDp9VHddqo2WZz/y9Ru6f53ImlPLPrNhbnKj0U6FUUwdUC9mZtfZj21
+ EJJox+Jxnp1GdqEHgiYFXZc9T/GVtyc59aXgs5WPAokYJdaNbb75t97cG
+ A==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=kLY2pM6W
-Subject: [Intel-wired-lan] [PATCH iwl-net v2 1/2] ice: move
- ice_vsi_realloc_stat_arrays() up
+ header.s=Intel header.b=lQO+/6XF
+Subject: [Intel-wired-lan] [PATCH iwl-net v2] ice: add missing xa_destroy
+ for sched_node_ids
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -118,157 +125,138 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Move ice_vsi_realloc_stat_arrays() up, to allow calling it from
-ice_vsi_cfg_def() by the next commit.
+Commit 16dfa49406bc ("ice: Introduce new parameters in ice_sched_node")
+added a sched_node_ids xarray to the port info structure, but never called
+xa_destroy on it.
 
-Fix kdoc for touched code. One line break removed, "int i" scope
-minimized to the loop, no changes otherwise.
+Since xarrays can allocate internal memory, this can result in a memory
+leak even if every element in the xarray has been removed.
 
-Reviewed-by: Marcin Szycik <marcin.szycik@linux.intel.com>
-Signed-off-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+The xarray is currently embedded in the port_info structure. This appears
+to have been done because its use is within functions that take the
+port_info as a primary argument.
+
+However, this complicates managing the lifecycle of the field. The
+port_info structure is allocated in ice_init_hw() using devm, and it is
+not released until the devm cleanup when the driver is unloaded.
+
+The ice_init_hw() function is called in many places, including devlink
+reload, and possibly during DDP load after updating the Tx scheduler
+layout.
+
+Adding a call of xa_destroy to the ice_deinit_hw() causes Sashiko to raise
+multiple concerns due to potential ordering issues and possible ways that
+port_info could be a dangling reference.
+
+To handle this, move the sched_node_ids out of port_info and into the hw
+structure. All users of the array already have a pointer to hw anyways, and
+there is only one sched_node_ids per adapter. While here, remove the overly
+verbose comment explaining the nature of the sched_node_ids xarray.
+
+Add the missing xa_destroy to the cleanup path and to ice_deinit_hw(),
+ensuring that we properly release the xarray memory.
+
+This was caught by Sashiko during development of unrelated code.
+
+Fixes: 16dfa49406bc ("ice: Introduce new parameters in ice_sched_node")
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
-v2: no changes
+Changes in v2:
+- Move sched_node_ids out of port_into into hw.
+- Link to v1: https://patch.msgid.link/20260514-jk-fix-missing-xa-destroy-v1-1-de437bf52347@intel.com
 ---
- drivers/net/ethernet/intel/ice/ice_lib.c | 119 +++++++++++------------
- 1 file changed, 59 insertions(+), 60 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_type.h   | 2 +-
+ drivers/net/ethernet/intel/ice/ice_common.c | 9 ++++++---
+ drivers/net/ethernet/intel/ice/ice_sched.c  | 4 ++--
+ 3 files changed, 9 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 8cdc4fda89e9..e48ee5940f17 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -2303,6 +2303,65 @@ static int ice_vsi_cfg_tc_lan(struct ice_pf *pf, struct ice_vsi *vsi)
- 	return 0;
- }
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index d9a5c1aae7c2..cf147a212707 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -765,7 +765,6 @@ struct ice_port_info {
+ 	/* List contain profile ID(s) and other params per layer */
+ 	struct list_head rl_prof_list[ICE_AQC_TOPO_MAX_LEVEL_NUM];
+ 	struct ice_qos_cfg qos_cfg;
+-	struct xarray sched_node_ids;
+ 	u8 is_vf:1;
+ 	u8 is_custom_tx_enabled:1;
+ };
+@@ -930,6 +929,7 @@ struct ice_hw {
+ 	u8 sw_entry_point_layer;
+ 	u16 max_children[ICE_AQC_TOPO_MAX_LEVEL_NUM];
+ 	struct list_head agg_list;	/* lists all aggregator */
++	struct xarray sched_node_ids;
  
-+/**
-+ * ice_vsi_realloc_stat_arrays - Frees unused stat structures or alloc new ones
-+ * @vsi: VSI pointer
-+ * Return: 0 on success or -ENOMEM on allocation failure.
-+ */
-+static int ice_vsi_realloc_stat_arrays(struct ice_vsi *vsi)
-+{
-+	u16 req_txq = vsi->req_txq ? vsi->req_txq : vsi->alloc_txq;
-+	u16 req_rxq = vsi->req_rxq ? vsi->req_rxq : vsi->alloc_rxq;
-+	struct ice_ring_stats **tx_ring_stats;
-+	struct ice_ring_stats **rx_ring_stats;
-+	struct ice_vsi_stats *vsi_stat;
-+	struct ice_pf *pf = vsi->back;
-+	u16 prev_txq = vsi->alloc_txq;
-+	u16 prev_rxq = vsi->alloc_rxq;
-+
-+	vsi_stat = pf->vsi_stats[vsi->idx];
-+
-+	if (req_txq < prev_txq) {
-+		for (int i = req_txq; i < prev_txq; i++) {
-+			if (vsi_stat->tx_ring_stats[i]) {
-+				kfree_rcu(vsi_stat->tx_ring_stats[i], rcu);
-+				WRITE_ONCE(vsi_stat->tx_ring_stats[i], NULL);
-+			}
-+		}
-+	}
-+
-+	tx_ring_stats = vsi_stat->tx_ring_stats;
-+	vsi_stat->tx_ring_stats =
-+		krealloc_array(vsi_stat->tx_ring_stats, req_txq,
-+			       sizeof(*vsi_stat->tx_ring_stats),
-+			       GFP_KERNEL | __GFP_ZERO);
-+	if (!vsi_stat->tx_ring_stats) {
-+		vsi_stat->tx_ring_stats = tx_ring_stats;
-+		return -ENOMEM;
-+	}
-+
-+	if (req_rxq < prev_rxq) {
-+		for (int i = req_rxq; i < prev_rxq; i++) {
-+			if (vsi_stat->rx_ring_stats[i]) {
-+				kfree_rcu(vsi_stat->rx_ring_stats[i], rcu);
-+				WRITE_ONCE(vsi_stat->rx_ring_stats[i], NULL);
-+			}
-+		}
-+	}
-+
-+	rx_ring_stats = vsi_stat->rx_ring_stats;
-+	vsi_stat->rx_ring_stats =
-+		krealloc_array(vsi_stat->rx_ring_stats, req_rxq,
-+			       sizeof(*vsi_stat->rx_ring_stats),
-+			       GFP_KERNEL | __GFP_ZERO);
-+	if (!vsi_stat->rx_ring_stats) {
-+		vsi_stat->rx_ring_stats = rx_ring_stats;
-+		return -ENOMEM;
-+	}
-+
-+	return 0;
-+}
-+
- /**
-  * ice_vsi_cfg_def - configure default VSI based on the type
-  * @vsi: pointer to VSI
-@@ -3011,66 +3070,6 @@ ice_vsi_rebuild_set_coalesce(struct ice_vsi *vsi,
+ 	struct ice_vsi_ctx *vsi_ctx[ICE_MAX_VSI];
+ 	u8 evb_veb;		/* true for VEB, false for VEPA */
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index ef1ce106f81b..04633103e3e6 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -1051,14 +1051,13 @@ int ice_init_hw(struct ice_hw *hw)
+ 
+ 	hw->evb_veb = true;
+ 
+-	/* init xarray for identifying scheduling nodes uniquely */
+-	xa_init_flags(&hw->port_info->sched_node_ids, XA_FLAGS_ALLOC);
++	xa_init_flags(&hw->sched_node_ids, XA_FLAGS_ALLOC);
+ 
+ 	/* Query the allocated resources for Tx scheduler */
+ 	status = ice_sched_query_res_alloc(hw);
+ 	if (status) {
+ 		ice_debug(hw, ICE_DBG_SCHED, "Failed to get scheduler allocated resources\n");
+-		goto err_unroll_alloc;
++		goto err_unroll_xarray;
  	}
+ 	ice_sched_get_psm_clk_freq(hw);
+ 
+@@ -1146,6 +1145,8 @@ int ice_init_hw(struct ice_hw *hw)
+ 	ice_cleanup_fltr_mgmt_struct(hw);
+ err_unroll_sched:
+ 	ice_sched_cleanup_all(hw);
++err_unroll_xarray:
++	xa_destroy(&hw->sched_node_ids);
+ err_unroll_alloc:
+ 	devm_kfree(ice_hw_to_dev(hw), hw->port_info);
+ err_unroll_cqinit:
+@@ -1186,6 +1187,8 @@ void ice_deinit_hw(struct ice_hw *hw)
+ 
+ 	/* Clear VSI contexts if not already cleared */
+ 	ice_clear_all_vsi_ctx(hw);
++
++	xa_destroy(&hw->sched_node_ids);
  }
  
--/**
-- * ice_vsi_realloc_stat_arrays - Frees unused stat structures or alloc new ones
-- * @vsi: VSI pointer
-- */
--static int
--ice_vsi_realloc_stat_arrays(struct ice_vsi *vsi)
--{
--	u16 req_txq = vsi->req_txq ? vsi->req_txq : vsi->alloc_txq;
--	u16 req_rxq = vsi->req_rxq ? vsi->req_rxq : vsi->alloc_rxq;
--	struct ice_ring_stats **tx_ring_stats;
--	struct ice_ring_stats **rx_ring_stats;
--	struct ice_vsi_stats *vsi_stat;
--	struct ice_pf *pf = vsi->back;
--	u16 prev_txq = vsi->alloc_txq;
--	u16 prev_rxq = vsi->alloc_rxq;
--	int i;
--
--	vsi_stat = pf->vsi_stats[vsi->idx];
--
--	if (req_txq < prev_txq) {
--		for (i = req_txq; i < prev_txq; i++) {
--			if (vsi_stat->tx_ring_stats[i]) {
--				kfree_rcu(vsi_stat->tx_ring_stats[i], rcu);
--				WRITE_ONCE(vsi_stat->tx_ring_stats[i], NULL);
--			}
--		}
--	}
--
--	tx_ring_stats = vsi_stat->tx_ring_stats;
--	vsi_stat->tx_ring_stats =
--		krealloc_array(vsi_stat->tx_ring_stats, req_txq,
--			       sizeof(*vsi_stat->tx_ring_stats),
--			       GFP_KERNEL | __GFP_ZERO);
--	if (!vsi_stat->tx_ring_stats) {
--		vsi_stat->tx_ring_stats = tx_ring_stats;
--		return -ENOMEM;
--	}
--
--	if (req_rxq < prev_rxq) {
--		for (i = req_rxq; i < prev_rxq; i++) {
--			if (vsi_stat->rx_ring_stats[i]) {
--				kfree_rcu(vsi_stat->rx_ring_stats[i], rcu);
--				WRITE_ONCE(vsi_stat->rx_ring_stats[i], NULL);
--			}
--		}
--	}
--
--	rx_ring_stats = vsi_stat->rx_ring_stats;
--	vsi_stat->rx_ring_stats =
--		krealloc_array(vsi_stat->rx_ring_stats, req_rxq,
--			       sizeof(*vsi_stat->rx_ring_stats),
--			       GFP_KERNEL | __GFP_ZERO);
--	if (!vsi_stat->rx_ring_stats) {
--		vsi_stat->rx_ring_stats = rx_ring_stats;
--		return -ENOMEM;
--	}
--
--	return 0;
--}
--
  /**
-  * ice_vsi_rebuild - Rebuild VSI after reset
-  * @vsi: VSI to be rebuild
--- 
-2.54.0
+diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
+index fff0c1afdb41..ffa18d86729a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sched.c
++++ b/drivers/net/ethernet/intel/ice/ice_sched.c
+@@ -371,7 +371,7 @@ void ice_free_sched_node(struct ice_port_info *pi, struct ice_sched_node *node)
+ 
+ 	devm_kfree(ice_hw_to_dev(hw), node->children);
+ 	kfree(node->name);
+-	xa_erase(&pi->sched_node_ids, node->id);
++	xa_erase(&hw->sched_node_ids, node->id);
+ 	devm_kfree(ice_hw_to_dev(hw), node);
+ }
+ 
+@@ -977,7 +977,7 @@ ice_sched_add_elems(struct ice_port_info *pi, struct ice_sched_node *tc_node,
+ 		if (!new_node->name)
+ 			return -ENOMEM;
+ 
+-		status = xa_alloc(&pi->sched_node_ids, &new_node->id, NULL, XA_LIMIT(0, UINT_MAX),
++		status = xa_alloc(&hw->sched_node_ids, &new_node->id, NULL, XA_LIMIT(0, UINT_MAX),
+ 				  GFP_KERNEL);
+ 		if (status) {
+ 			ice_debug(hw, ICE_DBG_SCHED, "xa_alloc failed for sched node status =%d\n",
+
+---
+base-commit: 9e05e91a9a847ed57926414bd7c2c5e54d6c56c6
+change-id: 20260514-jk-fix-missing-xa-destroy-d3f90f3711be
+
+Best regards,
+--  
+Jacob Keller <jacob.e.keller@intel.com>
 
