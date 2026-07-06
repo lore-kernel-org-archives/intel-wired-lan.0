@@ -4,104 +4,95 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4EBE8C43458
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  6 Jul 2026 10:02:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79C91C43458
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  6 Jul 2026 10:02:52 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 0D036608D1;
-	Mon,  6 Jul 2026 10:02:43 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 4769C608D6;
+	Mon,  6 Jul 2026 10:02:52 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id f3RSsMV4BVTt; Mon,  6 Jul 2026 10:02:41 +0000 (UTC)
+ id MsClJf-ouGuq; Mon,  6 Jul 2026 10:02:50 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B737C608CC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A4520608D1
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1783332161;
-	bh=L3Jq0FfeffkUQzy5szPZvvw3VgtEVHTtS7CaQRHYrPQ=;
-	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=MI92KwQTs24pnDjLtgOKQo6y67QCy+57LvnUjuAv8BQf0T2X3cfXVZHvWGMDNHmbC
-	 dTFm7VhQMdxclqpRyqGqYF+e5pniWLIL+nGLKyICq8s0EsXM11JAHgtbD/g9qUdEV6
-	 CYewvH9d/zXQT5AChZ7Cfu3qpwIcQ4zxZvm5fiV61TLOLIdTlMyg82EgNRB7XZ0QSb
-	 eQi2li/d2gmRzYaOXQ7T90rjM50t6IiZoK5gtqdvbpo/0WO01X+88T1YzBkhlhSE0m
-	 pTfyGANJC1BJFYFNaIrqhE8z2vE7wBrm0Ss/Km87/n9YwKmbK/DVFSnlxTig2oe+fE
-	 /aF2zu3UHYKcg==
+	s=default; t=1783332170;
+	bh=n/pnLXlixpDFGremVEM5Ndqi7N2jYLu1n5EEizzeeNI=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=CHiNhKAo3PSxTHGWW6bviXk+O8dWEjg15WtHlW2+kuiWmxHG4INSPSR83UxLtnYyN
+	 MspoAXKzx+BuUBr2RUoDttxaIPqFcU/+D1qLFSKkS/z3oB8HCM80MpKyAceTsJcQ1Z
+	 2FcIz0EoOB42/fHfl6ZzSsp1rhzywLx1KO2KDrOmJvOdr+66BqjDEz5m8OQfatDDKn
+	 PnVhJBuY80OCXOp2BAcc58JUgStHZH5rAyf4X6cy6ZAN2qtEU6l0FrjXka30wC/yQG
+	 xRGiwmUTe16moYzEHug0u0tBCBWSbyyAcTP+UK56GzHgNp9Px7RNtkm0jLlXdOEFOW
+	 cTHKwTihB+Jxg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B737C608CC;
-	Mon,  6 Jul 2026 10:02:41 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 265AF316
- for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Jul 2026 10:02:40 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id A4520608D1;
+	Mon,  6 Jul 2026 10:02:50 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 2797C2A8
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Jul 2026 10:02:49 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 17FD5608CC
- for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Jul 2026 10:02:40 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 0DBE640386
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Jul 2026 10:02:49 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id a0fcCY2fLVOx for <intel-wired-lan@lists.osuosl.org>;
- Mon,  6 Jul 2026 10:02:39 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.18;
- helo=mgamail.intel.com; envelope-from=marcin.szycik@linux.intel.com;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id EU4cSFj2ihBB for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  6 Jul 2026 10:02:48 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.11;
+ helo=mgamail.intel.com; envelope-from=jedrzej.jagielski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 0F372608AE
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0F372608AE
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 0F372608AE
- for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Jul 2026 10:02:38 +0000 (UTC)
-X-CSE-ConnectionGUID: n5omv2kBQMKMNP0fKuiBxA==
-X-CSE-MsgGUID: mMYExahdSpmBzarcWYNKXQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11838"; a="84055366"
-X-IronPort-AV: E=Sophos;i="6.25,149,1779174000"; d="scan'208";a="84055366"
-Received: from orviesa002.jf.intel.com ([10.64.159.142])
- by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 06 Jul 2026 03:02:34 -0700
-X-CSE-ConnectionGUID: Afkzqs84QcGnajqTOJ2OWQ==
-X-CSE-MsgGUID: GcR4ICQ3T3eN2tYPofjV/g==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 47031400AE
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 47031400AE
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 47031400AE
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Jul 2026 10:02:48 +0000 (UTC)
+X-CSE-ConnectionGUID: ieorSVYMQKCapxBYAS8Pnw==
+X-CSE-MsgGUID: /VMAxHK+RyqLiMQTbBTOag==
+X-IronPort-AV: E=McAfee;i="6800,10657,11838"; a="94566406"
+X-IronPort-AV: E=Sophos;i="6.25,149,1779174000"; d="scan'208";a="94566406"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+ by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 06 Jul 2026 03:02:47 -0700
+X-CSE-ConnectionGUID: uUOeQ0LSSqCEQ38s38Xcmg==
+X-CSE-MsgGUID: ECgfHR/gQtupEWtSNd6oJA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,149,1779174000"; d="scan'208";a="283768848"
-Received: from unknown (HELO [10.217.160.239]) ([10.217.160.239])
- by orviesa002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 06 Jul 2026 03:02:31 -0700
-Message-ID: <9750092f-264e-45a1-af11-2f574ab67fa4@linux.intel.com>
-Date: Mon, 6 Jul 2026 12:02:28 +0200
+X-IronPort-AV: E=Sophos;i="6.25,149,1779174000"; d="scan'208";a="251930799"
+Received: from os-delivery.igk.intel.com ([10.102.18.218])
+ by orviesa006.jf.intel.com with ESMTP; 06 Jul 2026 03:02:47 -0700
+From: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Cc: anthony.l.nguyen@intel.com, netdev@vger.kernel.org,
+ Jedrzej Jagielski <jedrzej.jagielski@intel.com>,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Date: Mon,  6 Jul 2026 11:43:29 +0200
+Message-Id: <20260706094330.186341-1-jedrzej.jagielski@intel.com>
+X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Pengpeng Hou <pengpeng@iscas.ac.cn>,
- Tony Nguyen <anthony.l.nguyen@intel.com>
-Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller"
- <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <20260706092500.79044-1-pengpeng@iscas.ac.cn>
-Content-Language: en-US
-From: Marcin Szycik <marcin.szycik@linux.intel.com>
-In-Reply-To: <20260706092500.79044-1-pengpeng@iscas.ac.cn>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1783332160; x=1814868160;
- h=message-id:date:mime-version:subject:to:cc:references:
- from:in-reply-to:content-transfer-encoding;
- bh=9qm6US3OrG2rDjRIGBpWm7uNjbIkQkBQoEZAQyT/jcA=;
- b=XGuDcHErtSZxq709d4owrssM6GLmd9oNxNmY+JHzkjiFASekyY4ypEkH
- iEwCOLTHOIC/Y1SsM1OfYVjD42Sv+5k6xaLGHsssvx/TaFZItJise0PBO
- gXHy54K1VA8h5ee/4hkQoQf5qZj9XGSLsVNnBvTjATtExjdrK9BnHU0JT
- ij5sW1uiRYzJTi/w8xbdb0Vagi45YA8+4MHU6SsO/jvQ4fNM/GSJ4/eDa
- CeqF8kIzJBf0xG/3EKcusWkhHVnASRIEHhSQZr6RhTeLe2KH5q264GF3O
- acW5V+Zvyv0mQBW+WKG5t9FztvDgAMB706vhG/YFo2/YkYWnMb4/Cx72G
- Q==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=linux.intel.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ t=1783332168; x=1814868168;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=2yPPPI4sVPsogh1N8K42E/+yAXC8cm8D6ZakBHj/BSM=;
+ b=QepcjkmT0abBR7HoP3p/mDCO5UcV7mKQNxcWlBiPZ/EMaJgTCvd5LTr9
+ J6t5XJvxVi/NHL3T5KEmoBwxm7Uh0Bi5NRntMZQEhY79nhJnTXTbpr34L
+ BCwECeWcAQgXaTM7+AiTBZqg15++4ClfXMchdoqIXLCeMnrI0eVyJbF9r
+ wH08ALvzKvX7kkfBMPOm8gNyf4pgANHkqIwIlEbwHEfKRLssrfVhafWyI
+ zVGDxgmctRI9tgNsYlu8G4MlPWwXiaHCwIkaXLKZjzSXVeDntx2lddMX4
+ iMfZbIjhNqJ4F5Xnn2ZZbjMF4Ygwis8RkPP+hJiZfbJcJ4+erFAUNgkOE
+ g==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=XGuDcHEr
-Subject: Re: [Intel-wired-lan] [PATCH] ixgbe: validate E610 PFA TLV bounds
+ header.s=Intel header.b=QepcjkmT
+Subject: [Intel-wired-lan] [PATCH iwl-next v2] ixgbe: E610: force phy link
+ to get down when interface is down
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -117,50 +108,215 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
+For the E610 family, similarly to the E8xx adapters, the default behavior
+is for the PHY link to remain up even when the corresponding OS interface
+is down.
 
+Add function setting down the PHY config IXGBE_ACI_PHY_ENA_LINK bit
+what leads to disabling PHY link.
 
-On 06/07/2026 11:25, Pengpeng Hou wrote:
-> ixgbe_get_pfa_module_tlv() walks E610 PFA TLV records stored in
-> EEPROM.
-> 
-> Stop parsing malformed TLVs whose header or declared value length would
-> exceed the PFA boundary.
-> 
-> Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c | 6 ++++++
->  1 file changed, 6 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
-> index 4d8ae5b56145..03e88bdf5a43 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
-> @@ -3895,6 +3895,9 @@ static int ixgbe_get_pfa_module_tlv(struct ixgbe_hw *hw, u16 *module_tlv,
->  	while (next_tlv < pfa_end_ptr) {
->  		u16 tlv_sub_module_type, tlv_len;
->  
-> +		if (pfa_end_ptr - next_tlv < 2)
-> +			break;
+Now ixgbe_close() needs to share some of the ixgbe_watchdog_link_is_down
+code so move the common part into the separate function.
 
-This check could go in the while condition above.
+Align functionality with the implementation of the ice driver.
 
-> +
->  		/* Read TLV type */
->  		err = ixgbe_read_ee_aci_e610(hw, next_tlv,
->  					     &tlv_sub_module_type);
-> @@ -3917,6 +3920,9 @@ static int ixgbe_get_pfa_module_tlv(struct ixgbe_hw *hw, u16 *module_tlv,
->  		/* Check next TLV, i.e. current TLV pointer + length + 2 words
->  		 * (for current TLV's type and length).
->  		 */
-> +		if (tlv_len > pfa_end_ptr - next_tlv - 2)
-> +			break;
-> +
->  		next_tlv = next_tlv + tlv_len + 2;
+Let user to configure link-down-on-close enablement through ethtool.
 
-Would be nice to define the magic number (2), since we're reusing it now.
+Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+---
+v2: apply Paul's notes
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h      |  1 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c | 35 ++++++++++++++++++-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h |  1 +
+ .../net/ethernet/intel/ixgbe/ixgbe_ethtool.c  | 15 ++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 27 +++++++++++---
+ 5 files changed, 73 insertions(+), 6 deletions(-)
 
->  	}
->  	/* Module does not exist */
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index 30f62174acf2..7bbb82dd962c 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -685,6 +685,7 @@ struct ixgbe_adapter {
+ #define IXGBE_FLAG2_MOD_POWER_UNSUPPORTED	BIT(22)
+ #define IXGBE_FLAG2_API_MISMATCH		BIT(23)
+ #define IXGBE_FLAG2_FW_ROLLBACK			BIT(24)
++#define IXGBE_FLAG2_LINK_DOWN_ON_CLOSE		BIT(25)
+ 
+ 	/* Tx fast path data */
+ 	int num_tx_queues;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
+index 831cfe9a4697..02bc0dac5123 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
+@@ -1923,6 +1923,33 @@ void ixgbe_fc_autoneg_e610(struct ixgbe_hw *hw)
+ 	hw->fc.current_mode = hw->fc.requested_mode;
+ }
+ 
++/**
++ * ixgbe_disable_phy_link - force phy link to get down
++ * @hw: pointer to hardware structure
++ *
++ * Send 0x0601 with the IXGBE_ACI_PHY_ENA_LINK bit set down.
++ *
++ * Return: the exit code of the operation.
++ */
++int ixgbe_disable_phy_link(struct ixgbe_hw *hw)
++{
++	struct ixgbe_aci_cmd_get_phy_caps_data pcaps = {};
++	struct ixgbe_aci_cmd_set_phy_cfg_data pcfg = {};
++	int err;
++
++	err = ixgbe_aci_get_phy_caps(hw, false, IXGBE_ACI_REPORT_ACTIVE_CFG,
++				     &pcaps);
++	if (err)
++		return err;
++
++	ixgbe_copy_phy_caps_to_cfg(&pcaps, &pcfg);
++
++	pcfg.caps &= ~IXGBE_ACI_PHY_ENA_LINK;
++	pcfg.caps |= IXGBE_ACI_PHY_ENA_AUTO_LINK_UPDT;
++
++	return ixgbe_aci_set_phy_cfg(hw, &pcfg);
++}
++
+ /**
+  * ixgbe_disable_rx_e610 - Disable RX unit
+  * @hw: pointer to hardware structure
+@@ -2207,6 +2234,7 @@ int ixgbe_setup_phy_link_e610(struct ixgbe_hw *hw)
+ 	u8 rmode = IXGBE_ACI_REPORT_TOPO_CAP_MEDIA;
+ 	u64 sup_phy_type_low, sup_phy_type_high;
+ 	u64 phy_type_low = 0, phy_type_high = 0;
++	bool force_on_required;
+ 	int err;
+ 
+ 	err = ixgbe_aci_get_link_info(hw, false, NULL);
+@@ -2272,6 +2300,11 @@ int ixgbe_setup_phy_link_e610(struct ixgbe_hw *hw)
+ 		phy_type_high |= IXGBE_PHY_TYPE_HIGH_10G_USXGMII;
+ 	}
+ 
++	/* If IXGBE_ACI_PHY_ENA_LINK has been explicitly disabled that means
++	 * we need to force PHY link UP state during PHY link setup
++	 */
++	force_on_required = !(pcfg.caps & IXGBE_ACI_PHY_ENA_LINK);
++
+ 	/* Mask the set values to avoid requesting unsupported link types. */
+ 	phy_type_low &= sup_phy_type_low;
+ 	pcfg.phy_type_low = cpu_to_le64(phy_type_low);
+@@ -2280,7 +2313,7 @@ int ixgbe_setup_phy_link_e610(struct ixgbe_hw *hw)
+ 
+ 	if (pcfg.phy_type_high != pcaps.phy_type_high ||
+ 	    pcfg.phy_type_low != pcaps.phy_type_low ||
+-	    pcfg.caps != pcaps.caps) {
++	    pcfg.caps != pcaps.caps || force_on_required) {
+ 		pcfg.caps |= IXGBE_ACI_PHY_ENA_LINK;
+ 		pcfg.caps |= IXGBE_ACI_PHY_ENA_AUTO_LINK_UPDT;
+ 
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
+index 2cb76a3d30ae..59044d67ebeb 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
+@@ -50,6 +50,7 @@ int ixgbe_cfg_phy_fc(struct ixgbe_hw *hw,
+ 		     enum ixgbe_fc_mode req_mode);
+ int ixgbe_setup_fc_e610(struct ixgbe_hw *hw);
+ void ixgbe_fc_autoneg_e610(struct ixgbe_hw *hw);
++int ixgbe_disable_phy_link(struct ixgbe_hw *hw);
+ void ixgbe_disable_rx_e610(struct ixgbe_hw *hw);
+ int ixgbe_init_phy_ops_e610(struct ixgbe_hw *hw);
+ int ixgbe_identify_phy_e610(struct ixgbe_hw *hw);
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+index b8e85bc91a27..16e26d54f3be 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+@@ -139,6 +139,8 @@ static const char ixgbe_priv_flags_strings[][ETH_GSTRING_LEN] = {
+ 	"vf-ipsec",
+ #define IXGBE_PRIV_FLAGS_AUTO_DISABLE_VF	BIT(2)
+ 	"mdd-disable-vf",
++#define IXGBE_PRIV_LINK_DOWN_ON_CLOSE	BIT(3)
++	"link-down-on-close",
+ };
+ 
+ #define IXGBE_PRIV_FLAGS_STR_LEN ARRAY_SIZE(ixgbe_priv_flags_strings)
+@@ -3822,6 +3824,9 @@ static u32 ixgbe_get_priv_flags(struct net_device *netdev)
+ 	if (adapter->flags2 & IXGBE_FLAG2_AUTO_DISABLE_VF)
+ 		priv_flags |= IXGBE_PRIV_FLAGS_AUTO_DISABLE_VF;
+ 
++	if (adapter->flags2 & IXGBE_FLAG2_LINK_DOWN_ON_CLOSE)
++		priv_flags |= IXGBE_PRIV_LINK_DOWN_ON_CLOSE;
++
+ 	return priv_flags;
+ }
+ 
+@@ -3859,6 +3864,16 @@ static int ixgbe_set_priv_flags(struct net_device *netdev, u32 priv_flags)
+ 		}
+ 	}
+ 
++	flags2 &= ~IXGBE_FLAG2_LINK_DOWN_ON_CLOSE;
++	if (priv_flags & IXGBE_PRIV_LINK_DOWN_ON_CLOSE) {
++		if (adapter->hw.mac.type == ixgbe_mac_e610) {
++			flags2 |= IXGBE_FLAG2_LINK_DOWN_ON_CLOSE;
++		} else {
++			e_info(probe, "Cannot set private flags: Feature supported only for E610 devices\n");
++			return -EOPNOTSUPP;
++		}
++	}
++
+ 	if (flags2 != adapter->flags2) {
+ 		adapter->flags2 = flags2;
+ 
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 7a0783c1abc1..f650fa45b9ef 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -7551,6 +7551,17 @@ static void ixgbe_close_suspend(struct ixgbe_adapter *adapter)
+ 	ixgbe_free_all_rx_resources(adapter);
+ }
+ 
++static void ixgbe_handle_link_down(struct ixgbe_adapter *adapter)
++{
++	struct net_device *netdev = adapter->netdev;
++
++	if (test_bit(__IXGBE_PTP_RUNNING, &adapter->state))
++		ixgbe_ptp_start_cyclecounter(adapter);
++
++	e_info(drv, "NIC Link is Down\n");
++	netif_carrier_off(netdev);
++}
++
+ /**
+  * ixgbe_close - Disables a network interface
+  * @netdev: network interface device structure
+@@ -7573,6 +7584,16 @@ int ixgbe_close(struct net_device *netdev)
+ 
+ 	ixgbe_fdir_filter_exit(adapter);
+ 
++	if (adapter->flags2 & IXGBE_FLAG2_LINK_DOWN_ON_CLOSE) {
++		int err;
++
++		err = ixgbe_disable_phy_link(&adapter->hw);
++		if (err)
++			e_error(drv, "Cannot set PHY link down\n");
++
++		ixgbe_handle_link_down(adapter);
++	}
++
+ 	ixgbe_release_hw_control(adapter);
+ 
+ 	return 0;
+@@ -8251,11 +8272,7 @@ static void ixgbe_watchdog_link_is_down(struct ixgbe_adapter *adapter)
+ 	if (ixgbe_is_sfp(hw) && hw->mac.type == ixgbe_mac_82598EB)
+ 		adapter->flags2 |= IXGBE_FLAG2_SEARCH_FOR_SFP;
+ 
+-	if (test_bit(__IXGBE_PTP_RUNNING, &adapter->state))
+-		ixgbe_ptp_start_cyclecounter(adapter);
+-
+-	e_info(drv, "NIC Link is Down\n");
+-	netif_carrier_off(netdev);
++	ixgbe_handle_link_down(adapter);
+ }
+ 
+ static bool ixgbe_ring_tx_pending(struct ixgbe_adapter *adapter)
+-- 
+2.31.1
 
-Thanks,
-Marcin
