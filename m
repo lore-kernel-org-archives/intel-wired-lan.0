@@ -1,207 +1,110 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 46B63C43458
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  6 Jul 2026 20:56:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62918C43458
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  6 Jul 2026 23:03:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id DFFBB80E80;
-	Mon,  6 Jul 2026 20:56:41 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 0A475606CF;
+	Mon,  6 Jul 2026 23:03:02 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id nm6weIlrzok7; Mon,  6 Jul 2026 20:56:40 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id sD9R9nGuxUJE; Mon,  6 Jul 2026 23:03:01 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 691D980795
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 08264606DE
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1783371400;
-	bh=zDs8e1C/YuVjBLb1xhxCAEJ++jECD8scUUEFm9insqs=;
-	h=Date:To:CC:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1783378981;
+	bh=+HSedoNSuZgK1fMDsbrZb8M0FuSbKX1zUFCdlVAi0Rc=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=auRzRFfKSGEXUZeY0xN5Xmj0BEE0VYtIRGr8fifAVBTGvuRWGr/kjA3TsAxz/FeSv
-	 4arzaKeNiflIxXaUSfNFLXMTpW3lpN3MDqOVceb+YmWZe8nZ0nYw5w2//P5amEm2Vx
-	 hd2rbIT1xEGTlogKoU2B9fz3qzo9d9f7eWqka1FbW+22TpapyWdkH+aewpeD4WZV5X
-	 9YftOUaPlZRg72G2FHiCgnk+RCtLbGT9FDAW/1NIba8cnlasXsdUFf/bfV0f23timX
-	 fXIPTWFm4vJYkPRme20rpSIOAbk2dGco6SfL53giFfUOjVfXENzYjD1+YaQtFuFnyh
-	 64qvZHKFvHYfQ==
+	b=smQGA4Rm4htUajDH+y5WjGSg0hV6cBQq/R2z5b2nDcSVpqtmO1vuCBUk4ob5rTkhh
+	 R79lC+oPRPGjI2zxo20eElg2z8+M3SqNXLfgBb22Hmp9SmOO3icAd2DNRPiNzKs/2q
+	 rpxtT8YH3O5jCko9HvyJVXmHcI78Jxh7GRkle6D8hrh/Ps92yTnXflEgQGt0Hl45cy
+	 lOx33dXbbprBdMZ2w02eUcLRDtpvR2pTjwxEjRAZ0EcT9+G7qy6vTwqx49Ghxtlfxg
+	 DwMgQMHf0nHh/uAsN56BFsBvCI6v65VXzHA5ifQ54gfuOOiPcGAmh94ugACkvyAKhh
+	 eH70TzbI4aJgg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 691D980795;
-	Mon,  6 Jul 2026 20:56:40 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 08264606DE;
+	Mon,  6 Jul 2026 23:03:01 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 43CFA11B
- for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Jul 2026 20:56:39 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 7F1E933A
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Jul 2026 23:02:59 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 297E640134
- for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Jul 2026 20:56:39 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 6582D40025
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Jul 2026 23:02:59 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id dUwHWZp2iZ6o for <intel-wired-lan@lists.osuosl.org>;
- Mon,  6 Jul 2026 20:56:38 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.10;
- helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
+ id 0PtE1i2iABwX for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  6 Jul 2026 23:02:58 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.14;
+ helo=mgamail.intel.com; envelope-from=przemyslaw.kitszel@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 4433A40131
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4433A40131
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 4433A40131
- for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Jul 2026 20:56:37 +0000 (UTC)
-X-CSE-ConnectionGUID: QzZkLSfFTX2/b4pw0JU+TA==
-X-CSE-MsgGUID: dVfxAvJWTOC76xvi3KCkvA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11839"; a="101434575"
-X-IronPort-AV: E=Sophos;i="6.25,151,1779174000"; d="scan'208";a="101434575"
-Received: from orviesa005.jf.intel.com ([10.64.159.145])
- by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 06 Jul 2026 13:56:11 -0700
-X-CSE-ConnectionGUID: 7QgmnOeETp22xkRRjge/VA==
-X-CSE-MsgGUID: RNQ0pOQRQI2larg28CZxVQ==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 6517240065
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6517240065
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 6517240065
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Jul 2026 23:02:58 +0000 (UTC)
+X-CSE-ConnectionGUID: C68UWWgESBKVTkBPL0VGfg==
+X-CSE-MsgGUID: RGQBFpiWRFaDooOIivR/jQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11839"; a="84071810"
+X-IronPort-AV: E=Sophos;i="6.25,151,1779174000"; d="scan'208";a="84071810"
+Received: from orviesa009.jf.intel.com ([10.64.159.149])
+ by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 06 Jul 2026 16:02:58 -0700
+X-CSE-ConnectionGUID: mH2ClXUrSmOPLxhq7xWp6g==
+X-CSE-MsgGUID: MTAGTHptSpqW8zc7/PQO/w==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,151,1779174000"; d="scan'208";a="258131314"
-Received: from fmsmsx901.amr.corp.intel.com ([10.18.126.90])
- by orviesa005.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 06 Jul 2026 13:56:10 -0700
-Received: from FMSMSX901.amr.corp.intel.com (10.18.126.90) by
- fmsmsx901.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.43; Mon, 6 Jul 2026 13:56:09 -0700
-Received: from fmsedg902.ED.cps.intel.com (10.1.192.144) by
- FMSMSX901.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.43 via Frontend Transport; Mon, 6 Jul 2026 13:56:09 -0700
-Received: from CY3PR05CU001.outbound.protection.outlook.com (40.93.201.30) by
- edgegateway.intel.com (192.55.55.82) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.43; Mon, 6 Jul 2026 13:56:09 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=PFYlyFiAFyLgph2gJ82wIVeR7FQNe92IdTsJvcJ5yXepXHiHfbAFXf5bWcRiJapkMp/9e+2co1lOfxVY4QWAzvBkTy7mxd1RF9mM8PPeRNZW5aWAawLT6+l5isi7x0cuzpvVUue0OH8DpIKVnADxxevJAFzSfz4ARjUhuwUsXmsOeFmY6JRjqtaWogEDRQlIwBa+lGJ4fLSqHMyDXukW9Ll3jZ3sIpSpHMIQFLzRYkg4XfB+U5Z6BjhMEOQZbAu8Cjf+HYlpDzDryV+qUY3G5WVTOHyRlHnJdiZ9BOjIbAKsiFijzrWP45djktLKsDnln/4O6IUuLBiTysQmPf556w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=zDs8e1C/YuVjBLb1xhxCAEJ++jECD8scUUEFm9insqs=;
- b=hOXjIZlDlYHPiAdn6ajEmmxzaEKC+SD0xrXRaFvFaBr5snJZbahLsZegpnZxOvBrGS/a2dOMAp5jriXzTjWrFvPjT6e4VY9fNe5XX9fHWDBeDGIs+DOF9mpUBN6O2XH+JLVKUoxK5klTDmfgESkS8ImnuYZORWJs96UAxUDCus2hfqMjy3xM9WkwgoD09x9UeTJuth4ahW8ujkQClVQ8HeXsmJHmlZfNwi1hGxpodK34bHxLRGaYIn/oczv7PiMa1VjNv4YgjSgviqVEkFQW2yJe3eGYIONv1R3k9xp2JuK4D1n1SCEXiTnqtL6ZVcfjF7VkfwusLL4mTKPsyIQV2w==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from DS0PR11MB7381.namprd11.prod.outlook.com (2603:10b6:8:134::14)
- by DS0PR11MB7829.namprd11.prod.outlook.com (2603:10b6:8:f1::20) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.181.8; Mon, 6 Jul 2026
- 20:56:07 +0000
-Received: from DS0PR11MB7381.namprd11.prod.outlook.com
- ([fe80::4c39:dfe6:d6dc:6f58]) by DS0PR11MB7381.namprd11.prod.outlook.com
- ([fe80::4c39:dfe6:d6dc:6f58%6]) with mapi id 15.21.0181.010; Mon, 6 Jul 2026
- 20:56:07 +0000
-Message-ID: <84d1fa48-6bfb-4fed-aade-646731ccebb5@intel.com>
-Date: Mon, 6 Jul 2026 13:56:04 -0700
-User-Agent: Mozilla Thunderbird
-To: Przemek Kitszel <przemyslaw.kitszel@intel.com>, Robert Malz
- <robert.malz@canonical.com>
-CC: <intel-wired-lan@lists.osuosl.org>, <netdev@vger.kernel.org>,
- <linux-kernel@vger.kernel.org>, Tony Nguyen <anthony.l.nguyen@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>, 
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, "Paolo
- Abeni" <pabeni@redhat.com>, Alexander Lobakin <aleksander.lobakin@intel.com>, 
- Jesse Brandeburg <jbrandeb@kernel.org>
-References: <20260703103245.374800-1-robert.malz@canonical.com>
- <65001d57-9abf-4129-8c7e-e7a5136ba5b3@intel.com>
-From: Jacob Keller <jacob.e.keller@intel.com>
-Content-Language: en-US
-In-Reply-To: <65001d57-9abf-4129-8c7e-e7a5136ba5b3@intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: MW4PR03CA0270.namprd03.prod.outlook.com
- (2603:10b6:303:b4::35) To DS0PR11MB7381.namprd11.prod.outlook.com
- (2603:10b6:8:134::14)
+X-IronPort-AV: E=Sophos;i="6.25,151,1779174000"; d="scan'208";a="254482158"
+Received: from irvmail002.ir.intel.com ([10.43.11.120])
+ by orviesa009.jf.intel.com with ESMTP; 06 Jul 2026 16:02:55 -0700
+Received: from vecna.igk.intel.com (vecna.igk.intel.com [10.123.220.17])
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 4437233BC1;
+ Tue,  7 Jul 2026 00:02:53 +0100 (IST)
+From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+To: intel-wired-lan@lists.osuosl.org, Michal Schmidt <mschmidt@redhat.com>,
+ Jakub Kicinski <kuba@kernel.org>
+Cc: netdev@vger.kernel.org, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>,
+ Jedrzej Jagielski <jedrzej.jagielski@intel.com>,
+ Piotr Kwapulinski <piotr.kwapulinski@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Marcin Szycik <marcin.szycik@linux.intel.com>
+Date: Tue,  7 Jul 2026 00:43:31 +0200
+Message-ID: <20260706224346.22546-2-przemyslaw.kitszel@intel.com>
+X-Mailer: git-send-email 2.54.0
+In-Reply-To: <20260706224346.22546-1-przemyslaw.kitszel@intel.com>
+References: <20260706224346.22546-1-przemyslaw.kitszel@intel.com>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS0PR11MB7381:EE_|DS0PR11MB7829:EE_
-X-MS-Office365-Filtering-Correlation-Id: 4f54df15-7f74-4e78-e253-08dedba10004
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
- ARA:13230040|1800799024|23010399003|7416014|376014|366016|56012099006|4143699003|3023799007|22082099003|11063799006|18002099003|6133799003;
-X-Microsoft-Antispam-Message-Info: 7ev8QdSfG/BMbaCE+9QJso5sLrp1qJRNgQCZHk1zdiK3EHxZViku0VetahhgBTA8Z8ovW4QNeh8iOXWhCKl8esuQMbAYVzzxjGaUPbYgbSQD+GL2GPIZd0TLPFyeZAN3l3KiJKTjgPpilIUcsNTHXB5dETsMZvGclRnWFLeu0XqyYXE5s5bAKAq5LI6PzJ/5b+H8jBgEZZCPR556inpFO8b/PAAEDHgxlLLdwbCHKL2+sUOjJlAccprtyXEXecspG7gg1y9iEv5JFUH1aYyQhKpTBRdtO9m0KCbWCdwXcS7+0uANnLffxGzEBNHDUfcc6L3SvQQ4i/IRIwovf2SSCQiFVMO+CPg89BF1u/G1wW5fxjEIiO1Luh3nITfHJE1dm6s5jhji/TC0i3B/R1KpdbwuGcwDPSZUfSODFerGgmYokoLpTfL/0zAacQh4JqERy3xg7npaN/3wmoIvAvPx+9BjS2FN5nDW/lcjkLe+ojSCq96ahdTYpkW1QauGBEJR98noQMd23SjiSN6wOYvWyuaD+xPJLQasmfT1xPzuIDWC3nnT7LO63jQdsIqkqUApoODwpRIUiDOpkU0SE/Ur2ZKQ2X965uSylYuhdsoG6dRdpItSrWyymv9S7Jt3Z7rnToiq7DZ4TaKExPcH92E4c0sCCWROB+mo1/9TNZjmIqI=
-X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:DS0PR11MB7381.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230040)(1800799024)(23010399003)(7416014)(376014)(366016)(56012099006)(4143699003)(3023799007)(22082099003)(11063799006)(18002099003)(6133799003);
- DIR:OUT; SFP:1101; 
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?TnBlSmdvTjYydjdqdVBYbjlUZUovSnozYVpod2Jyb2NmMEhUMGVBQXowaWhB?=
- =?utf-8?B?VFpsdXQvNHJHWUxwNTlVcGpqRk1qTzlFVnNMb3dOWVF6QzU2dWY0b1IvQVpw?=
- =?utf-8?B?U0kwakNkSUpmZFN3Sk9hWW9qdTI0Z0VJekFIV2RUMk5QalZHV3duTTM3UG1K?=
- =?utf-8?B?RXEwZE5ub0dTTFNwaHRKdFJCV1J0ZGp6SkVnYWxQbnh1bEhDZXB5cGJtWW5w?=
- =?utf-8?B?cEZ2T21ZM0VMbVlMYWc0K3lIclBWSW1oRDNldStadG5oQnBwUkxKVWRwdDlw?=
- =?utf-8?B?Q3pzOXRNTGZGOSs3aHNRNmNtRWNIZjNKUTM3Q0tiMzNhbDdZSFp3UkYzRjVK?=
- =?utf-8?B?cEw1aHdTTVI0Z3lkTVFGMFVWQkZlOVFOQ2c3ckpGVWFSMEhjQy9Za3VnYTVQ?=
- =?utf-8?B?Q3JhL251TVl1VmhlSTRicTlIanFSUnNYRUdaS0FacXhrRXZ2K0F4VnF4L1BQ?=
- =?utf-8?B?TEpqVVU1WG9SME9Tc0hvcDlleGUwQ3BzdzlVZGtCTVNubmVPWjhqL1gzRnZQ?=
- =?utf-8?B?QzBjV3ZtUlI5RVMvS2JjZXk0dm5YbHJQMUM0SzEyS21YRjdGSkZGWVBIM0V0?=
- =?utf-8?B?dy9QV2lSWUMrZmFJbmxaMGNFMkp1UlFzODAyYS9rK1daZVh6Rk9MT3JqSUFP?=
- =?utf-8?B?M1lFTGdVUU1JOHNxeEZROEVPenlnRHRBbjN0L24rSHQ0OC9vQXRxeTdxTTJT?=
- =?utf-8?B?OFpmL21yb0x3SjlkejMrWXNBaElBU2J5SXZIOTMwenowMlZsUE1LTG1mUDFD?=
- =?utf-8?B?blpkNzdTU0I0ZFlXakQ0c2FMRERmODdCeldQcE9BSGExNERXR2U2UVlIeTli?=
- =?utf-8?B?NFd3SDVrS3NkT1NPQjBsdnozQU5XSWcwbFBLeE1mYUp1WTBaT2JvL1YwSkZP?=
- =?utf-8?B?WUw0WDJuWStGSExLOGUwSWRpSTVJM0RXT0tEM3hWaStEdW91dG1EQ2RpaGQw?=
- =?utf-8?B?alNHRGgrRW1NRzRsMVNvRzd6Y2xiejV1TjJveWl2bzdPdmNGek9ZYkdLekU3?=
- =?utf-8?B?T215bzMzVW9qNW9jMENBTlQxZUN1QWk4aTJZNWZJeWxGTFF4WUtuUEl1M1pM?=
- =?utf-8?B?NkVTc3VIWTM2MkpCTE1ZaER6dDVKM1ZDUFNXaUVIWDhlNkVrY2s1TThBYWtw?=
- =?utf-8?B?V2twRWtveWRRNnhvZEtta1VQYk1PZVNQY2FacEcwNHFCekZzNlpXR0lOMjdj?=
- =?utf-8?B?L3NiY3RtbGpiSHpCcXVZc2QzSDh3SHc1RFZEMlpockl0OXdMRkRTQmM3UmhV?=
- =?utf-8?B?RFVNNEdqc3dhdmxobXdXS3R6QmJObDlXbCs3WjV6K3ZXQmdBYnFmWXR5NmN2?=
- =?utf-8?B?MmxYWDNiK1R0QnZkYmt0d0QzUHZxWGdiRVljbzltdTcyRlhKUkFLQlRaNDFu?=
- =?utf-8?B?c25hcDkzN3lXTEkvVU9jV3VmYzlMTzRMY3AvTTQwbUNsM3ZUd3JKRzVoZkNZ?=
- =?utf-8?B?OWFFQ1dlTWFiaW1GdUJ5bnNwemxHV2tQb0hkSXF0eXBvTjcvUUpaa1hua2xI?=
- =?utf-8?B?aFN2MkE2d2hpaHVhb0tab0hvTjh5ZE5sYWhpTE9qSThqYUFhblRJYmxjLzI1?=
- =?utf-8?B?WjN2WWRweHNhZm8yRHhvQjNmSjk5bERoV2hUTURRdWFRRlR1a2RYY0M5cUtv?=
- =?utf-8?B?NVNFMTBMdElsemp3cnZwRHhHOW5GUklLc1htS1JnUXhnRWZ2Q1JzclprUTFs?=
- =?utf-8?B?RjNEekFLWUdCRUFpOW9RUU01Zjc2eEVOUHlmdHZFM3pjNHB6Y21HQXgzMXNy?=
- =?utf-8?B?aCtnMXNxQmt4dFdJRFRkblhuMktUSlY1NXFra2tmbUY0YXl4Z1RpQTF3d2x6?=
- =?utf-8?B?WGtXeFoxWDRyaVJSenlRdlR1T01BdHBJRnRYS1dIQXhLa2oweElzRXFxYWpH?=
- =?utf-8?B?Ym4vSjdJaEozVnFRSFVxTEQwYTFFU0RGU1JlamNibVk2eS9DN2lad0RPSUJv?=
- =?utf-8?B?S2JkYmdxeU1TTThPaHMvOUJDL0tYZUZGUjVtbnc5ZDdhT3I4d0txSmpDSzNr?=
- =?utf-8?B?TDJMcmsrU3BXSjUyRS82UDloNnp2anlHNXdpalNYd2dFSDI3YVdkOGhldEQ0?=
- =?utf-8?B?RTc1cTFDNzU1SVl5ZmluMkJJVTEzTDA1OUtDWjFiYkZNRjB2NmlSY1BqVXdN?=
- =?utf-8?B?NTltSE5tekMwNGRlV1hlKzNPayt5eFZVSEFkMzg3enRnTEcrdGtteTJWNHhD?=
- =?utf-8?B?VERTdGJ6TWpJajgyTlZvcWRWRVl2aitiTTdwL0VtTm1UeFlnVklnN0Z1bVpN?=
- =?utf-8?B?RkFtWTlnSUd1M3NLVFpmSUY5QXdoVThjZ2RCbXEwTEU5bTNLa3RsTWFwN1JT?=
- =?utf-8?B?R09CL3FDSzJzYXd1RU1NNjNyS29XTFVFOUdOVGZlUjN1TVovRkJYUT09?=
-X-Exchange-RoutingPolicyChecked: jLzq4T4BTxnFGW9gv6/IcPhFBqgVr4CJOz9VPhHUeFw1yd7/2grwGhSOyGMzn8uazPjahe16Q9mO0ttJ6DJbj1ilxC7O7B+LjPb3ML6hLVdhNwYnBkD7I9/yDq0FotKMF695MNwAZdseh7vkI/JbihI9KLYX8XnmV48S1R+Sfx2r+ImW+YRqmpaUW6VWN4vOJ/BntsmsR0291nsSvk0Zuy90fRrXxwvCT3S4DY33w71RILWSqy2f8rSRzW0a3Tz4EYEBHYJWBMvmR3mn/tRMASGeCHyYzUKwa8mMZB+7wmOeg4nXjyEgc0r3L9Xw1lnRD8iUg/211cvneTRNvQEXtw==
-X-MS-Exchange-CrossTenant-Network-Message-Id: 4f54df15-7f74-4e78-e253-08dedba10004
-X-MS-Exchange-CrossTenant-AuthSource: DS0PR11MB7381.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 06 Jul 2026 20:56:07.0925 (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: tinJJk3Psvwp2vWDTMZxRx1v5sW95Vguwm3RZi7FFTRU0a2PvrqoOnJ2SdUeBkEsm/oidIClS2CLhniMpnM9BsWyxUkORnCq/EuDQ1NxE+w=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR11MB7829
-X-OriginatorOrg: intel.com
+Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1783371399; x=1814907399;
- h=message-id:date:subject:to:cc:references:from:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=Jv/V9m2i9jmt7jPWhva91BARAmaq2xhV7kzZYYhlXJI=;
- b=BTs7SLucusR6iCpZntyLf58UpG4IUAHMlykGwA26EvSUR0UV14u6FtVA
- 02ylj46hO3vWCFwTBSpUrqVXuXL2PnWQGK3EHyPboIKfPeIkC0Tc08M3c
- rANZyEGQYw/PoyV43Dum5W6dNgIl33wZibjOoKQUHm9ysp+MhqWA5HuFv
- 6W7xSgkRsHhenIqvfB0VcfCACVj1cdmTWc9/5b87AoC58kKxqeaHoLme7
- 1VdckyRfmbtnpGCFfMLZPuDB3w9XhC/OXwoCH++sSHihqzyG34dEj5R4X
- EeWt30K7euppDIfPtsdL+HDhlmFBKMCwlXPej6J4lPpj6i63dH8hWVlh3
- g==;
+ t=1783378979; x=1814914979;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=I5oeYp8CKiLbEczOggXCh6v8Knf53nCclMdUkaK2Y1Y=;
+ b=m+9rVMQYWa+iGt1BQVHnGRkOM/rxgzJSCCpf/lB6teDtqwRxabEVGjAO
+ mbZhOAhvXNMMbqha1QcdY2s8wxplMbjvW03ZgFMW9qGNQDbSFXHgab/KI
+ KfgZqyn9cYlcu/kWAdw0TzBYoGnt+2DwJKQeVx4a5P41ekHMVkbkH/ehh
+ lM/gyrZbqiS7R4jgRyWDvzSsi6zxy95mDFNXg1tJDXeIqU0k5EaDSyrFU
+ VN68+Lq7qB9O+aRDIP7ZSpncjZjbMNc6sKTeLVv4XAp/bsKSQCzbtWS1q
+ /IPGY/IilmPiejiSU/4yrpoGfwYli+z+QPR3t3d/gBZc453ym9u+K2w8W
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=BTs7SLuc
-X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Subject: Re: [Intel-wired-lan] [PATCH iwl] ice: acquire NVM lock around each
- flash read
+ header.a=rsa-sha256 header.s=Intel header.b=m+9rVMQY
+Subject: [Intel-wired-lan] [PATCH iwl-net v2 2/2] ice: fix stats array
+ overflow via proper realloc
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -217,74 +120,257 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 7/3/2026 6:34 AM, Przemek Kitszel wrote:
-> On 7/3/26 12:32, Robert Malz wrote:
->> FW caps the NVM read lock at a maximum of 3000ms regardless of the
->> timeout
->> requested via ice_acquire_nvm(). ice_read_flat_nvm() splits a read into
->> multiple ice_aq_read_nvm() commands, one per 4KB sector, all issued
->> under a
->> single lock taken by the caller. Reading a large region can exceed
->> 3000ms,
->> so FW reclaims the lock mid-read and the remaining commands might fail.
->>
+Integrate ice_vsi_alloc_stat_arrays() with realloc variant.
 
-Yikes.
+Instead of keeping two functions for stat arrays allocation, change the
+ice_vsi_realloc_stat_arrays() to handle initial condition (no vsi_stat
+entry) and replace ice_vsi_alloc_stat_arrays() by the more generic
+ice_vsi_realloc_stat_arrays().
 
->> Move the lock acquire/release into ice_read_flat_nvm() so it brackets
->> each
->> individual ice_aq_read_nvm() command, ensuring the lock is never held
->> across more than one FW read. ice_release_nvm() issues its own AQ command
->> and would overwrite sq_last_status, so the read's AQ error is preserved
->> across the release for callers such as ice_discover_flash_size() that
->> inspect it.
->>
->> Callers that previously took the lock around ice_read_flat_nvm(),
->> ice_read_sr_word() or ice_read_flash_module() now call them without it.
->> The per-block locking in ice_devlink_nvm_snapshot() is now redundant
->> and dropped.
->>
+Note that VSIs of ICE_VSI_CHNL type are ignored in realloc variant as they
+were in the replaced ice_vsi_alloc_stat_arrays().
 
-Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
+This is a fix for stats array overflow that occurs when VF is given more
+queues (an operation that will be more frequent, and by bigger increase,
+when we will merge my "XLVF" series).
 
+Splat for increasing number of queues thanks to Michal Schmidt:
+KASAN detects the bug:
+ ==================================================================
+ BUG: KASAN: slab-out-of-bounds in ice_vsi_alloc_ring_stats+0x385/0x4a0 [ice]
+ Read of size 8 at addr ffff88810affea60 by task kworker/u131:7/221
 
->> Fixes: e94509906d6b ("ice: create function to read a section of the
->> NVM and Shadow RAM")
->> Signed-off-by: Robert Malz <robert.malz@canonical.com>
-> 
-> thank you for extra effort [1]
-> current fix looks elegant!
-> Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-> 
-> [1] for reference, this is previous attempt for the fix:
-> https://lore.kernel.org/intel-wired-lan/CADcc-
-> bysA531q2Wh=TD_oFqxivLLdnCRNY5jy7mkZuO0cwJwvg@mail.gmail.com
-> 
-> [...]
-> 
->>   /**
->> - * ice_read_sr_word - Reads Shadow RAM word and acquire NVM if necessary
->> + * ice_read_sr_word - Reads Shadow RAM word
->>    * @hw: pointer to the HW structure
->>    * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF)
->>    * @data: word read from the Shadow RAM
->>    *
->> - * Reads one 16 bit word from the Shadow RAM using the
->> ice_read_sr_word_aq.
->> + * Reads one 16 bit word from the Shadow RAM using ice_read_sr_word_aq.
->> + *
->> + * The NVM lock is acquired and released internally by
->> ice_read_flat_nvm()
->> + * around the FW read, so this function must be called without the
->> lock held.
->>    */
-> 
-> for future submissions would be great to "fix" kdoc warnings of touched
-> functions, here "Return: " section is missing.
-> I do not ask to fix this particular one (given there will be no ask for
-> v2 otherwise).
-> 
->>   int ice_read_sr_word(struct ice_hw *hw, u16 offset, u16 *data)
->>   {
-> 
+ CPU: 24 UID: 0 PID: 221 Comm: kworker/u131:7 Not tainted 7.1.0-rc1+ #1 PREEMPT(lazy)
+ ...
+ Workqueue: ice ice_service_task [ice]
+ Call Trace:
+  <TASK>
+  ...
+  kasan_report+0xd7/0x120
+  ice_vsi_alloc_ring_stats+0x385/0x4a0 [ice]
+  ice_vsi_cfg_def+0x12e2/0x2060 [ice]
+  ice_vsi_cfg+0xb5/0x3c0 [ice]
+  ice_reset_vf+0x858/0xf80 [ice]
+  ice_vc_request_qs_msg+0x1da/0x290 [ice]
+  ice_vc_process_vf_msg+0xb15/0x1430 [ice]
+  __ice_clean_ctrlq+0x70d/0x9d0 [ice]
+  ice_service_task+0x840/0xf20 [ice]
+  process_one_work+0x690/0xff0
+  worker_thread+0x4d9/0xd20
+  kthread+0x322/0x410
+  ret_from_fork+0x332/0x660
+  ret_from_fork_asm+0x1a/0x30
+  </TASK>
+
+ Allocated by task 2439:
+  kasan_save_stack+0x1c/0x40
+  kasan_save_track+0x10/0x30
+  __kasan_kmalloc+0x96/0xb0
+  __kmalloc_noprof+0x1d8/0x580
+  ice_vsi_cfg_def+0x115c/0x2060 [ice]
+  ice_vsi_cfg+0xb5/0x3c0 [ice]
+  ice_vsi_setup+0x180/0x320 [ice]
+  ice_start_vfs+0x1f3/0x590 [ice]
+  ice_ena_vfs+0x66d/0x798 [ice]
+  ice_sriov_configure.cold+0xe4/0x121 [ice]
+  sriov_numvfs_store+0x279/0x480
+  kernfs_fop_write_iter+0x331/0x4f0
+  vfs_write+0x4c4/0xe40
+  ksys_write+0x10c/0x240
+  do_syscall_64+0xd9/0x650
+  entry_SYSCALL_64_after_hwframe+0x76/0x7e
+
+ The buggy address belongs to the object at ffff88810affea40
+                which belongs to the cache kmalloc-32 of size 32
+ The buggy address is located 0 bytes to the right of
+                allocated 32-byte region [ffff88810affea40, ffff88810affea60)
+
+Fixes: 2a2cb4c6c181 ("ice: replace ice_vf_recreate_vsi() with ice_vf_reconfig_vsi()")
+Closes: https://redhat.atlassian.net/browse/RHEL-164321
+Reviewed-by: Marcin Szycik <marcin.szycik@linux.intel.com>
+Signed-off-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+---
+This is an alternative to the fix [1] by Michal Schmidt, which were
+blocked due to AI feedback. My fix was already developed before Michal's,
+just not public back then. We have agreed to go on with my version.
+
+[1] https://lore.kernel.org/netdev/20260520183501.3360810-3-anthony.l.nguyen@intel.com
+
+v1:
+https://lore.kernel.org/intel-wired-lan/20260701104141.9740-2-przemyslaw.kitszel@intel.com
+
+v2: Sashiko:
+ * defer pf->vsi_stats[vsi->idx] to be done only after successful Tx and Rx stats arrays
+      allocation - this avoids "half initialized" state processing in ice_vsi_free_stats().
+    The above was reported by both opus-4.6 and gemini-3.1-pro. All other errors reported by
+    just gemini were a mix between false-positives and too-cornercase'y. Gemini report for v1:
+    https://sashiko.dev/#/patchset/20260701104141.9740-1-przemyslaw.kitszel%40intel.com
+ * store also array lengths in separate variable for better tracking and proper freeing.
+---
+ drivers/net/ethernet/intel/ice/ice.h     |  2 +
+ drivers/net/ethernet/intel/ice/ice_lib.c | 80 ++++++++----------------
+ 2 files changed, 29 insertions(+), 53 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index f72bb1aa4067..b63b59f2d203 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -328,6 +328,8 @@ enum ice_vsi_state {
+ struct ice_vsi_stats {
+ 	struct ice_ring_stats **tx_ring_stats;  /* Tx ring stats array */
+ 	struct ice_ring_stats **rx_ring_stats;  /* Rx ring stats array */
++	u16 tx_ring_stats_len;
++	u16 rx_ring_stats_len;
+ };
+ 
+ /* struct that defines a VSI, associated with a dev */
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index e48ee5940f17..c71849119d04 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -338,7 +338,6 @@ static void ice_vsi_free_stats(struct ice_vsi *vsi)
+ {
+ 	struct ice_vsi_stats *vsi_stat;
+ 	struct ice_pf *pf = vsi->back;
+-	int i;
+ 
+ 	if (vsi->type == ICE_VSI_CHNL)
+ 		return;
+@@ -349,14 +348,14 @@ static void ice_vsi_free_stats(struct ice_vsi *vsi)
+ 	if (!vsi_stat)
+ 		return;
+ 
+-	ice_for_each_alloc_txq(vsi, i) {
++	for (int i = 0; i < vsi_stat->tx_ring_stats_len; i++) {
+ 		if (vsi_stat->tx_ring_stats[i]) {
+ 			kfree_rcu(vsi_stat->tx_ring_stats[i], rcu);
+ 			WRITE_ONCE(vsi_stat->tx_ring_stats[i], NULL);
+ 		}
+ 	}
+ 
+-	ice_for_each_alloc_rxq(vsi, i) {
++	for (int i = 0; i < vsi_stat->rx_ring_stats_len; i++) {
+ 		if (vsi_stat->rx_ring_stats[i]) {
+ 			kfree_rcu(vsi_stat->rx_ring_stats[i], rcu);
+ 			WRITE_ONCE(vsi_stat->rx_ring_stats[i], NULL);
+@@ -513,51 +512,6 @@ static irqreturn_t ice_msix_clean_rings(int __always_unused irq, void *data)
+ 	return IRQ_HANDLED;
+ }
+ 
+-/**
+- * ice_vsi_alloc_stat_arrays - Allocate statistics arrays
+- * @vsi: VSI pointer
+- */
+-static int ice_vsi_alloc_stat_arrays(struct ice_vsi *vsi)
+-{
+-	struct ice_vsi_stats *vsi_stat;
+-	struct ice_pf *pf = vsi->back;
+-
+-	if (vsi->type == ICE_VSI_CHNL)
+-		return 0;
+-	if (!pf->vsi_stats)
+-		return -ENOENT;
+-
+-	if (pf->vsi_stats[vsi->idx])
+-	/* realloc will happen in rebuild path */
+-		return 0;
+-
+-	vsi_stat = kzalloc_obj(*vsi_stat);
+-	if (!vsi_stat)
+-		return -ENOMEM;
+-
+-	vsi_stat->tx_ring_stats =
+-		kzalloc_objs(*vsi_stat->tx_ring_stats, vsi->alloc_txq);
+-	if (!vsi_stat->tx_ring_stats)
+-		goto err_alloc_tx;
+-
+-	vsi_stat->rx_ring_stats =
+-		kzalloc_objs(*vsi_stat->rx_ring_stats, vsi->alloc_rxq);
+-	if (!vsi_stat->rx_ring_stats)
+-		goto err_alloc_rx;
+-
+-	pf->vsi_stats[vsi->idx] = vsi_stat;
+-
+-	return 0;
+-
+-err_alloc_rx:
+-	kfree(vsi_stat->rx_ring_stats);
+-err_alloc_tx:
+-	kfree(vsi_stat->tx_ring_stats);
+-	kfree(vsi_stat);
+-	pf->vsi_stats[vsi->idx] = NULL;
+-	return -ENOMEM;
+-}
+-
+ /**
+  * ice_vsi_alloc_def - set default values for already allocated VSI
+  * @vsi: ptr to VSI
+@@ -2316,11 +2270,19 @@ static int ice_vsi_realloc_stat_arrays(struct ice_vsi *vsi)
+ 	struct ice_ring_stats **rx_ring_stats;
+ 	struct ice_vsi_stats *vsi_stat;
+ 	struct ice_pf *pf = vsi->back;
+-	u16 prev_txq = vsi->alloc_txq;
+-	u16 prev_rxq = vsi->alloc_rxq;
++	u16 prev_txq, prev_rxq;
++
++	if (vsi->type == ICE_VSI_CHNL)
++		return 0;
+ 
+ 	vsi_stat = pf->vsi_stats[vsi->idx];
++	if (!vsi_stat) {
++		vsi_stat = kzalloc_obj(*vsi_stat);
++		if (!vsi_stat)
++			return -ENOMEM;
++	}
+ 
++	prev_txq = vsi_stat->tx_ring_stats_len;
+ 	if (req_txq < prev_txq) {
+ 		for (int i = req_txq; i < prev_txq; i++) {
+ 			if (vsi_stat->tx_ring_stats[i]) {
+@@ -2337,9 +2299,11 @@ static int ice_vsi_realloc_stat_arrays(struct ice_vsi *vsi)
+ 			       GFP_KERNEL | __GFP_ZERO);
+ 	if (!vsi_stat->tx_ring_stats) {
+ 		vsi_stat->tx_ring_stats = tx_ring_stats;
+-		return -ENOMEM;
++		goto err_free_partial_vsi_stat;
+ 	}
++	vsi_stat->tx_ring_stats_len = req_txq;
+ 
++	prev_rxq = vsi_stat->rx_ring_stats_len;
+ 	if (req_rxq < prev_rxq) {
+ 		for (int i = req_rxq; i < prev_rxq; i++) {
+ 			if (vsi_stat->rx_ring_stats[i]) {
+@@ -2356,10 +2320,20 @@ static int ice_vsi_realloc_stat_arrays(struct ice_vsi *vsi)
+ 			       GFP_KERNEL | __GFP_ZERO);
+ 	if (!vsi_stat->rx_ring_stats) {
+ 		vsi_stat->rx_ring_stats = rx_ring_stats;
+-		return -ENOMEM;
++		goto err_free_partial_vsi_stat;
+ 	}
++	vsi_stat->rx_ring_stats_len = req_rxq;
+ 
++	pf->vsi_stats[vsi->idx] = vsi_stat;
+ 	return 0;
++
++err_free_partial_vsi_stat:
++	if (!pf->vsi_stats[vsi->idx]) {
++		/* vsi_stat was not visible before current alloc attempt */
++		kfree(vsi_stat->tx_ring_stats);
++		kfree(vsi_stat);
++	}
++	return -ENOMEM;
+ }
+ 
+ /**
+@@ -2379,7 +2353,7 @@ static int ice_vsi_cfg_def(struct ice_vsi *vsi)
+ 		return ret;
+ 
+ 	/* allocate memory for Tx/Rx ring stat pointers */
+-	ret = ice_vsi_alloc_stat_arrays(vsi);
++	ret = ice_vsi_realloc_stat_arrays(vsi);
+ 	if (ret)
+ 		goto unroll_vsi_alloc;
+ 
+-- 
+2.54.0
 
