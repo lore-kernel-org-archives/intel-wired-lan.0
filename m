@@ -4,63 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DA106C44503
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  8 Jul 2026 23:05:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D8B8C44501
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  8 Jul 2026 23:05:30 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B538C4080F;
-	Wed,  8 Jul 2026 23:05:29 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id B3221409B3;
+	Wed,  8 Jul 2026 23:05:30 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id aoqtLPfszm2s; Wed,  8 Jul 2026 23:05:28 +0000 (UTC)
+ id rTxcvN61kwHA; Wed,  8 Jul 2026 23:05:29 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B7398406AF
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 503834055C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1783551928;
-	bh=au4REDALGPbRd4qyDPkjSmLLWroBmZZ1WT6/m3cMYNs=;
+	s=default; t=1783551929;
+	bh=9qnLAUdw3PZEBWM4qb317DK5nF1B/uRKVs7vMdge6Y0=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=PUei3UTJDvme8ey614M9EvUxKjqfniSRt14FAr9DoXvL1oc8SH5Hd+wL5qywNuEig
-	 ZLVgL7arFfa9h8Tf45ASN0ZM8osAFWUbL87k781dnMZKF8UEj1p4XEvz2yxsBpZWIW
-	 hsZSqYODa93T2IsiQOaesaEAgRBs1P/gOkXCJJJEQU1ljVN4BzGmKHExCHByeBouCG
-	 VLFByIZBXf5ud+Gh3HJy5t/DUIJsSsQ7nRSzZMmz+blq3aHyKUroGQZ2TpkXrPuWKx
-	 Sb9Pxo+QIwTYh/KjqeZ14gyvHbXKZ8Q4W93DSU/JmCVJpgHifPvewgvjus+6qvIBx5
-	 Qw8WPY+ZgTvVA==
+	b=UWX4CtF5vH8d6eq+2mYrF5FdQB0USZogCBanjzB7AWn/4t5tQhi7uVLVW+irF88ag
+	 V9+UEOwumTgxXhJKJR4lwhjCW+TpJLiv/t+Co5DlbVx4kYjUanjhBny0wxEophGIWR
+	 Rc72cpcrPCqVv2Dis266NJkTCkLC9WIs7VjZigSzJ3ZqHj7r0+aVWa0tVWs+z9AJkQ
+	 rcKfucMF6I4pmQWZTYAHyVk2brmZDmTP17b/Ajg3qBYzJtdbRiATd013TDEksMrKdA
+	 4bxiHYHneJ3+ZwG8bnksnYDmvC6S4oAyQ2D744lv5iKgpwCiKEy4fWAtGMQT99rhhT
+	 S4wexFRe4XlCA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B7398406AF;
-	Wed,  8 Jul 2026 23:05:28 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 21B732FC
- for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Jul 2026 22:57:03 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 503834055C;
+	Wed,  8 Jul 2026 23:05:29 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id D3CDF3A8
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Jul 2026 22:57:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 1237780C97
- for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Jul 2026 22:57:03 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id D135880F40
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Jul 2026 22:57:04 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id AYGuGGnTD45S for <intel-wired-lan@lists.osuosl.org>;
- Wed,  8 Jul 2026 22:57:02 +0000 (UTC)
-X-Greylist: delayed 8509 seconds by postgrey-1.37 at util1.osuosl.org;
- Wed, 08 Jul 2026 22:57:01 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 7D21B80A70
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7D21B80A70
+ id 8vSQKip0e3cG for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  8 Jul 2026 22:57:04 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a01:b747:3006:205::11; helo=outbound.qs.icloud.com;
+ client-ip=2a01:b747:3006:205::3e; helo=outbound.qs.icloud.com;
  envelope-from=deliran@verdict.gg; receiver=<UNKNOWN> 
-Received: from outbound.qs.icloud.com (qs-2005b-snip6-4.eps.apple.com
- [IPv6:2a01:b747:3006:205::11])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 7D21B80A70
- for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Jul 2026 22:57:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 07ED380F15
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 07ED380F15
+Received: from outbound.qs.icloud.com (qs-2005f-snip6-10.eps.apple.com
+ [IPv6:2a01:b747:3006:205::3e])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 07ED380F15
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Jul 2026 22:57:03 +0000 (UTC)
 Received: from outbound.qs.icloud.com (unknown [127.0.0.2])
  by p00-icloudmta-asmtp-us-east-2d-10-percent-0 (Postfix) with ESMTPS id
- BC03030000A3; Wed, 08 Jul 2026 20:35:15 +0000 (UTC)
-X-ICL-RepId: 019f4371-226b-7a27-8744-4bf09211985f
-X-ICL-Out-Info: HUtFAUMHWwJACUgBTUQeDx5WFlZNRAJCTQhICkMGWQJeCEABQwVdEhVdRVcIWwJAEVc4RQhFD1sTTVZUChcNVk1PHUEJXghGXl4fEx9UVgFDGRBWAVhWXQVNGlwYWQ8cAUpWWg5bBEcUFxtcABcbRgIEIwJfAEUCXglWATAXD1ZNTx1BCV4IRl5eHxMAXg8PTAtIAVsHXAJIC0gAWQZbHEQMSQFcGlwfFFwUWh9WBXIGXApXBFQfHBdeRhMZThtXTVoNQBlYBm0UVhVSBFk=
+ 5C30330001DB; Wed, 08 Jul 2026 20:34:49 +0000 (UTC)
+X-ICL-RepId: 019f4370-bb51-7097-92a4-d2b694e5ff07
+X-ICL-Out-Info: HUtFAUMHWwJACUgBTUQeDx5WFlZNRAJCTQhICkMGWQJeCEABQwVdEhVdRVcIWwJAEVc4RQhFD1sTTVZUChcNVk1PHUEJXghGXl4fEx9UVgFDGRBWAVhWXQVNGlwYWQ8cAUpWWg5bBEcUFxtcABcbRgIEIwJfAEUCXglWATAXD1ZNTx1BCV4IRl5eHxMAXg8PTAtIAVsHXAJIC0gAWQZbHEQMSQFcGlkfFFwUWh9WBXIGXApXBFQfHBdeRhMZThtXTVoNQBlYBm0UVhVSBFk=
 mail-alias-created-date: 1621344842221
 Received: from DelNac.mail.msk (unknown [17.57.155.37])
  by p00-icloudmta-asmtp-us-east-2d-10-percent-0 (Postfix) with ESMTPSA id
- D6FB33001133; Wed, 08 Jul 2026 20:35:09 +0000 (UTC)
+ B62CA30001E8; Wed, 08 Jul 2026 20:34:43 +0000 (UTC)
 From: Vladimir Vdovin <deliran@verdict.gg>
 To: Lorenzo Bianconi <lorenzo@kernel.org>,
  Donald Hunter <donald.hunter@gmail.com>, Jakub Kicinski <kuba@kernel.org>,
@@ -86,36 +84,36 @@ Cc: Jakub Sitnicki <jakub@cloudflare.com>,
  netdev@vger.kernel.org, bpf@vger.kernel.org,
  intel-wired-lan@lists.osuosl.org, linux-kselftest@vger.kernel.org,
  Vladimir Vdovin <deliran@verdict.gg>
-Date: Wed,  8 Jul 2026 23:34:10 +0300
-Message-ID: <20260708203410.45121-7-deliran@verdict.gg>
+Date: Wed,  8 Jul 2026 23:34:05 +0300
+Message-ID: <20260708203410.45121-2-deliran@verdict.gg>
 X-Mailer: git-send-email 2.47.0
 In-Reply-To: <20260708203410.45121-1-deliran@verdict.gg>
 References: <20260708203410.45121-1-deliran@verdict.gg>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzA4MDIwMiBTYWx0ZWRfX5DLLJJfIo833
- mlI4XeWHxNp1CUh17CwXchncUfu5QCYc24ImhIyw8NZgQJ7219CRguKNXVbpQHPL3+OrL/K6O2+
- BhPfQtQR8MGoInIIqXlJ4Gpa0qEWkiRZ1dD2dm6hd/dsURY6ZLW4n4vRTf0OP8poMPaI9lY/iiV
- 0PJ+fDvGc4ukudW8zYTRSh14tS0wbikbpA6ROmD3k5gA7gugxI2HCT5yqL1Tv7GpNcaY/3gEQYO
- QM0uZtRk4poDbhETTcIg0qoMoHN3Ij4/tuGxcPbsWwrEZTc4oqyNDux6VOgoirUa8m0JDAM5mmZ
- Mg435n5jSuNgyoMXPdw
-X-Proofpoint-ORIG-GUID: sLYEc1WpMdFxjTRWa13G-6KjpVxsQjjP
-X-Proofpoint-GUID: sLYEc1WpMdFxjTRWa13G-6KjpVxsQjjP
+X-Proofpoint-ORIG-GUID: 4Mqo4vDqr1O9VHLhC0ahqjJ2yP2dzZUz
+X-Proofpoint-GUID: 4Mqo4vDqr1O9VHLhC0ahqjJ2yP2dzZUz
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzA4MDIwMiBTYWx0ZWRfXyut/mrNNuBW6
+ eaBwByxVOIq2v6+NsMeEbGyb3Ts72tRe4HM0muDe8hQs+46QDx5jx2YDKSHAnsJA7ueNJ2/xu+t
+ yRxuEgmsem8HZ7DUYK+QvrmocQRU8D2kTZHCAp56D7q1cXPoH6S0FbV1a55oezI77RD5cAVskI8
+ Lxv2OpBWz5PvnklhVnivdy+LqH1OMSxXIpKVzg1qabM5eMBMU8OOYVwSxqTM5uNCjV3A0jj13IO
+ iL/xA11N7WCBi5/ZThFHBO0gZoYmNKNeoeTvqltq1PcGFR0ABS3e6yZjwfvpv34hEkSOn6RJbZH
+ g8s7u71IfwG/wUkDqZD
 X-Mailman-Approved-At: Wed, 08 Jul 2026 23:05:25 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=verdict.gg; s=sig1; t=1783542919; x=1786134919;
- bh=au4REDALGPbRd4qyDPkjSmLLWroBmZZ1WT6/m3cMYNs=;
+ d=verdict.gg; s=sig1; t=1783542893; x=1786134893;
+ bh=9qnLAUdw3PZEBWM4qb317DK5nF1B/uRKVs7vMdge6Y0=;
  h=From:To:Subject:Date:Message-ID:MIME-Version:x-icloud-hme;
- b=il+CobxdjWqcBnKnWfjzAcHqy9/yEj6NeMoRZgrHoJ/veiQ/h8QeFIp7WCfOmkFwscUacm01Vux0cOJWlb/sMieaGfBvJtG5cgZnIChsfykUeBg4RoGWHfeCX3VBH1zqkx43FzGGcbNtVetC9jgo6Mz9iSTr4oaP6ZEj5xT528N9MvVd4pUVXbI463VVPi1g/a7TRzURTt4z/pSc7/YncTOKeYtaxTRc/tw0hwdNFf1BrgFDBrFBJiAKKoq8RunUxDP28OCGmkqF96QWF6/irHcbPONAOUj3/kKy+gbvtUlKfBmaVE+AL+TjeU1dXABaY2KjItrIqoOageghFEfL1w==
+ b=jo9P2YG5BqA67LQhcVhFNAZIDmPuJoYjLPxW5HSJUujZ8V2JRDfIkx02A0Lq7XdfNZ2CHGjmnp7Uy5ETv1KfUUPw6wJc0RxDTM5MEIa4CPVp2IMzdq34Ou6Wyc/2AC/46EwrhoGKoKqpvHT1MTHBWhV+3tmMHY4NlphGpxAQRZeuN1YcYXvdDlBqUq+frlgP6gS2zwlgr5vSNUzdW18iZmdKlkQDCD6JuGWcN8pAUjLyCWUmOCqMtOAXqUR5ByWf9QTyjQcZdmCSbkrXJJmMLbmRiLMX9RErJg4+7HMgu4y2WRyydYIDSi502vtcOq4oHzWHy2pZi1KRFoJd33cqig==
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=verdict.gg
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=verdict.gg header.i=@verdict.gg header.a=rsa-sha256
- header.s=sig1 header.b=il+Cobxd
-Subject: [Intel-wired-lan] [PATCH bpf-next v4 6/6] selftests: drv-net: add
- XDP RX checksum metadata tests
+ header.s=sig1 header.b=jo9P2YG5
+Subject: [Intel-wired-lan] [PATCH bpf-next v4 1/6] netlink: specs: Add XDP
+ RX checksum capability to XDP metadata specs
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -131,373 +129,164 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Extend the xdp_metadata.py driver test with coverage for
-bpf_xdp_metadata_rx_checksum().
+From: Lorenzo Bianconi <lorenzo@kernel.org>
 
-Add an xdp_rx_csum program to xdp_metadata.bpf.o that reads the RX
-checksum verdict and stores the ip_summed bitmask, the hw checksum
-value and the checksum level into a map.  The L4 port/protocol filter
-is the same as in the existing xdp_rss_hash program, so move it into a
-common helper.
+Introduce XDP RX checksum capability to XDP metadata specs. XDP RX
+checksum will be use by devices capable of exposing receive checksum
+result via bpf_xdp_metadata_rx_checksum().
+Moreover, introduce xmo_rx_checksum netdev callback in order to allow
+the eBPF program bound to the device to retrieve the RX checksum result
+computed by the hw NIC and reported via DMA descriptors.
 
-The new cases only run on devices whose driver implements the
-xmo_rx_checksum callback, detected through the "checksum" bit of the
-xdp-rx-metadata-features netlink attribute; on other devices they
-report SKIP:
-
- - xdp_rx_csum_valid (tcp/udp variants): traffic with a correct
-   checksum sent from the remote endpoint must be reported with a
-   usable verdict, i.e. CHECKSUM_UNNECESSARY and/or CHECKSUM_COMPLETE.
-   CHECKSUM_NONE is a legitimate verdict for a device that does not
-   verify the packets (e.g. veth reports it for locally generated
-   CHECKSUM_PARTIAL traffic), so it results in SKIP rather than in a
-   failure;
-
- - xdp_rx_csum_invalid: UDP packets with a corrupted L4 checksum
-   (sent with the net/lib csum tool) must not be reported as
-   CHECKSUM_UNNECESSARY.
-
+Signed-off-by: Lorenzo Bianconi <lorenzo@kernel.org>
 Signed-off-by: Vladimir Vdovin <deliran@verdict.gg>
 ---
- .../selftests/drivers/net/hw/xdp_metadata.py  | 110 +++++++++++++++++
- .../selftests/net/lib/xdp_metadata.bpf.c      | 112 ++++++++++++++++--
- 2 files changed, 209 insertions(+), 13 deletions(-)
+ Documentation/netlink/specs/netdev.yaml |  5 ++++
+ include/net/xdp.h                       | 18 ++++++++++++++
+ include/uapi/linux/netdev.h             |  3 +++
+ net/core/xdp.c                          | 32 +++++++++++++++++++++++++
+ tools/include/uapi/linux/netdev.h       |  3 +++
+ 5 files changed, 61 insertions(+)
 
-diff --git a/tools/testing/selftests/drivers/net/hw/xdp_metadata.py b/tools/testing/selftests/drivers/net/hw/xdp_metadata.py
-index 33a1985356d9..1a623771477b 100644
---- a/tools/testing/selftests/drivers/net/hw/xdp_metadata.py
-+++ b/tools/testing/selftests/drivers/net/hw/xdp_metadata.py
-@@ -8,6 +8,8 @@ These tests load device-bound XDP programs from xdp_metadata.bpf.o
- that call metadata kfuncs, send traffic, and verify the extracted
- metadata via BPF maps.
- """
-+import time
-+
- from lib.py import ksft_run, ksft_eq, ksft_exit, ksft_ge, ksft_ne, ksft_pr
- from lib.py import KsftNamedVariant, ksft_variants
- from lib.py import CmdExitFailure, KsftSkipEx, NetDrvEpEnv
-@@ -81,8 +83,22 @@ _RSS_KEY_TYPE = 1
- _RSS_KEY_PKT_CNT = 2
- _RSS_KEY_ERR_CNT = 3
+diff --git a/Documentation/netlink/specs/netdev.yaml b/Documentation/netlink/specs/netdev.yaml
+index 5f143da7458c..6d0d90d3a614 100644
+--- a/Documentation/netlink/specs/netdev.yaml
++++ b/Documentation/netlink/specs/netdev.yaml
+@@ -61,6 +61,11 @@ definitions:
+         doc: |
+           Device is capable of exposing receive packet VLAN tag via
+           bpf_xdp_metadata_rx_vlan_tag().
++      -
++        name: checksum
++        doc: |
++          Device is capable of exposing receive checksum result via
++          bpf_xdp_metadata_rx_checksum().
+   -
+     type: flags
+     name: xsk-flags
+diff --git a/include/net/xdp.h b/include/net/xdp.h
+index aa742f413c35..e255ff786131 100644
+--- a/include/net/xdp.h
++++ b/include/net/xdp.h
+@@ -586,6 +586,10 @@ void xdp_attachment_setup(struct xdp_attachment_info *info,
+ 			   NETDEV_XDP_RX_METADATA_VLAN_TAG, \
+ 			   bpf_xdp_metadata_rx_vlan_tag, \
+ 			   xmo_rx_vlan_tag) \
++	XDP_METADATA_KFUNC(XDP_METADATA_KFUNC_RX_CHECKSUM, \
++			   NETDEV_XDP_RX_METADATA_CHECKSUM, \
++			   bpf_xdp_metadata_rx_checksum, \
++			   xmo_rx_checksum)
  
-+_CSUM_KEY_IP_SUMMED = 0
-+_CSUM_KEY_CKSUM = 1
-+_CSUM_KEY_LEVEL = 2
-+_CSUM_KEY_PKT_CNT = 3
-+_CSUM_KEY_ERR_CNT = 4
-+
- XDP_RSS_L4 = 0x8  # BIT(3) from enum xdp_rss_hash_type
- 
-+# Mirror of enum xdp_checksum from include/net/xdp.h
-+XDP_CHECKSUM_NONE = 0x1
-+XDP_CHECKSUM_UNNECESSARY = 0x2
-+XDP_CHECKSUM_COMPLETE = 0x4
-+
-+# Fixed destination port of the net/lib csum tool
-+_CSUM_TOOL_PORT = 34000
-+
- 
- @ksft_variants([
-     KsftNamedVariant("tcp", "tcp"),
-@@ -130,6 +146,98 @@ def test_xdp_rss_hash(cfg, proto):
-             f"RSS hash type should include L4 for {proto.upper()} traffic")
- 
- 
-+def _require_rx_csum_meta(cfg):
-+    """Skip unless the device exposes XDP RX checksum metadata."""
-+    dev_info = cfg.netnl.dev_get({"ifindex": cfg.ifindex})
-+    rx_meta = dev_info.get("xdp-rx-metadata-features", [])
-+    if "checksum" not in rx_meta:
-+        raise KsftSkipEx("device does not support XDP rx checksum metadata")
-+
-+
-+@ksft_variants([
-+    KsftNamedVariant("tcp", "tcp"),
-+    KsftNamedVariant("udp", "udp"),
-+])
-+def test_xdp_rx_csum_valid(cfg, proto):
-+    """Test RX checksum metadata for packets with a correct checksum.
-+
-+    Loads the xdp_rx_csum program, sends traffic with a valid L4 checksum
-+    from the remote endpoint, and verifies that the checksum verdict
-+    reported via bpf_xdp_metadata_rx_checksum() is usable
-+    (CHECKSUM_UNNECESSARY and/or a CHECKSUM_COMPLETE value).
-+
-+    CHECKSUM_NONE is a valid verdict for a device that did not verify
-+    the packets (e.g. veth reports it for locally generated traffic,
-+    which is CHECKSUM_PARTIAL on the skb), so it results in SKIP, not
-+    in a failure.
-+    """
-+    _require_rx_csum_meta(cfg)
-+
-+    prog_info = _load_xdp_metadata_prog(cfg, "xdp_rx_csum")
-+
-+    port = rand_port()
-+    bpf_map_set("map_xdp_setup", _SETUP_KEY_PORT, port)
-+
-+    csum_map_id = prog_info["maps"]["map_csum"]
-+
-+    _send_probe(cfg, port, proto=proto)
-+
-+    csum = bpf_map_dump(csum_map_id)
-+
-+    pkt_cnt = csum.get(_CSUM_KEY_PKT_CNT, 0)
-+    err_cnt = csum.get(_CSUM_KEY_ERR_CNT, 0)
-+    ip_summed = csum.get(_CSUM_KEY_IP_SUMMED, 0)
-+
-+    ksft_ge(pkt_cnt, 1, comment="should have received at least one packet")
-+    ksft_eq(err_cnt, 0, comment=f"RX checksum error count: {err_cnt}")
-+
-+    ksft_pr(f"  ip_summed: {ip_summed:#x} cksum: "
-+            f"{csum.get(_CSUM_KEY_CKSUM, 0):#010x} "
-+            f"level: {csum.get(_CSUM_KEY_LEVEL, 0)}")
-+    ksft_ne(ip_summed, 0, "the program should have stored a checksum verdict")
-+    if not ip_summed & (XDP_CHECKSUM_UNNECESSARY | XDP_CHECKSUM_COMPLETE):
-+        raise KsftSkipEx("device did not verify the packet checksum "
-+                         "(CHECKSUM_NONE)")
-+
-+
-+def test_xdp_rx_csum_invalid(cfg):
-+    """Test RX checksum metadata for packets with a corrupted checksum.
-+
-+    Sends UDP packets with an intentionally bad L4 checksum using the
-+    net/lib csum tool and verifies the device does not claim it validated
-+    them: the CHECKSUM_UNNECESSARY bit must not be set.
-+    """
-+    _require_rx_csum_meta(cfg)
-+
-+    ipver = cfg.addr_ipver
-+    bin_remote = cfg.remote.deploy(cfg.net_lib_dir / "csum")
-+
-+    prog_info = _load_xdp_metadata_prog(cfg, "xdp_rx_csum")
-+
-+    bpf_map_set("map_xdp_setup", _SETUP_KEY_PORT, _CSUM_TOOL_PORT)
-+
-+    csum_map_id = prog_info["maps"]["map_csum"]
-+
-+    cmd(f"{bin_remote} -i {cfg.remote_ifname} -n 20 -{ipver} "
-+        f"-S {cfg.remote_addr} -D {cfg.addr} -r 1 -T -E",
-+        host=cfg.remote)
-+
-+    # no receiver to synchronize against; let NAPI drain the last packets
-+    time.sleep(1)
-+
-+    csum = bpf_map_dump(csum_map_id)
-+
-+    pkt_cnt = csum.get(_CSUM_KEY_PKT_CNT, 0)
-+    ip_summed = csum.get(_CSUM_KEY_IP_SUMMED, 0)
-+
-+    ksft_ge(pkt_cnt, 1, comment="should have received at least one packet")
-+
-+    ksft_pr(f"  ip_summed: {ip_summed:#x}")
-+    ksft_eq(ip_summed & XDP_CHECKSUM_UNNECESSARY, 0,
-+            "device must not report CHECKSUM_UNNECESSARY for a corrupted "
-+            "checksum")
-+
-+
- def main():
-     """Run XDP metadata kfunc tests against a real device."""
-     with NetDrvEpEnv(__file__) as cfg:
-@@ -137,6 +245,8 @@ def main():
-         ksft_run(
-             [
-                 test_xdp_rss_hash,
-+                test_xdp_rx_csum_valid,
-+                test_xdp_rx_csum_invalid,
-             ],
-             args=(cfg,))
-     ksft_exit()
-diff --git a/tools/testing/selftests/net/lib/xdp_metadata.bpf.c b/tools/testing/selftests/net/lib/xdp_metadata.bpf.c
-index f71f59215239..70decae0a663 100644
---- a/tools/testing/selftests/net/lib/xdp_metadata.bpf.c
-+++ b/tools/testing/selftests/net/lib/xdp_metadata.bpf.c
-@@ -1,6 +1,7 @@
- // SPDX-License-Identifier: GPL-2.0
- 
- #include <stddef.h>
-+#include <stdbool.h>
- #include <linux/bpf.h>
- #include <linux/in.h>
- #include <linux/if_ether.h>
-@@ -40,6 +41,24 @@ struct {
- 	__uint(max_entries, 4);
- } map_rss SEC(".maps");
- 
-+/* RX checksum results: key 0 = ip_summed bitmask, key 1 = hw cksum value,
-+ * key 2 = cksum level, key 3 = packet count, key 4 = error count.
-+ */
-+enum {
-+	CSUM_KEY_IP_SUMMED = 0,
-+	CSUM_KEY_CKSUM = 1,
-+	CSUM_KEY_LEVEL = 2,
-+	CSUM_KEY_PKT_CNT = 3,
-+	CSUM_KEY_ERR_CNT = 4,
-+};
-+
-+struct {
-+	__uint(type, BPF_MAP_TYPE_ARRAY);
-+	__type(key, __u32);
-+	__type(value, __u32);
-+	__uint(max_entries, 5);
-+} map_csum SEC(".maps");
-+
- /* Mirror of enum xdp_rss_hash_type from include/net/xdp.h.
-  * Needed because the enum is not part of UAPI headers.
-  */
-@@ -55,8 +74,20 @@ enum xdp_rss_hash_type {
- 	XDP_RSS_L4_ICMP = 1U << 8,
+ enum xdp_rx_metadata {
+ #define XDP_METADATA_KFUNC(name, _, __, ___) name,
+@@ -643,12 +647,26 @@ enum xdp_rss_hash_type {
+ 	XDP_RSS_TYPE_L4_IPV6_SCTP_EX = XDP_RSS_TYPE_L4_IPV6_SCTP | XDP_RSS_L3_DYNHDR,
  };
  
-+/* Mirror of enum xdp_checksum from include/net/xdp.h.
-+ * Needed because the enum is not part of UAPI headers.
++/* Please note the driver is required to invalidate the checksum if the NIC
++ * reports CHECKSUM_UNNECESSARY or CHECKSUM_COMPLETE and the eBPF program
++ * modifies the packet since it can change some fields validated by the
++ * checksum.
 + */
 +enum xdp_checksum {
-+	XDP_CHECKSUM_NONE = 1U << 0,
-+	XDP_CHECKSUM_UNNECESSARY = 1U << 1,
-+	XDP_CHECKSUM_COMPLETE = 1U << 2,
++	XDP_CHECKSUM_NONE		= BIT(CHECKSUM_NONE),
++	XDP_CHECKSUM_UNNECESSARY	= BIT(CHECKSUM_UNNECESSARY),
++	XDP_CHECKSUM_COMPLETE		= BIT(CHECKSUM_COMPLETE),
 +};
 +
- extern int bpf_xdp_metadata_rx_hash(const struct xdp_md *ctx, __u32 *hash,
- 				    enum xdp_rss_hash_type *rss_type) __ksym;
-+extern int bpf_xdp_metadata_rx_checksum(const struct xdp_md *ctx,
-+					enum xdp_checksum *ip_summed,
-+					__u32 *cksum, __u8 *cksum_level) __ksym;
+ struct xdp_metadata_ops {
+ 	int	(*xmo_rx_timestamp)(const struct xdp_md *ctx, u64 *timestamp);
+ 	int	(*xmo_rx_hash)(const struct xdp_md *ctx, u32 *hash,
+ 			       enum xdp_rss_hash_type *rss_type);
+ 	int	(*xmo_rx_vlan_tag)(const struct xdp_md *ctx, __be16 *vlan_proto,
+ 				   u16 *vlan_tci);
++	int	(*xmo_rx_checksum)(const struct xdp_md *ctx,
++				   enum xdp_checksum *ip_summed,
++				   u32 *cksum, u8 *cksum_level);
+ };
  
- static __always_inline __u16 get_dest_port(void *l4, void *data_end,
- 					   __u8 protocol)
-@@ -78,41 +109,39 @@ static __always_inline __u16 get_dest_port(void *l4, void *data_end,
- 	return 0;
+ #ifdef CONFIG_NET
+diff --git a/include/uapi/linux/netdev.h b/include/uapi/linux/netdev.h
+index 2f3ab75e8cc0..f8caade93c8c 100644
+--- a/include/uapi/linux/netdev.h
++++ b/include/uapi/linux/netdev.h
+@@ -47,11 +47,14 @@ enum netdev_xdp_act {
+  *   hash via bpf_xdp_metadata_rx_hash().
+  * @NETDEV_XDP_RX_METADATA_VLAN_TAG: Device is capable of exposing receive
+  *   packet VLAN tag via bpf_xdp_metadata_rx_vlan_tag().
++ * @NETDEV_XDP_RX_METADATA_CHECKSUM: Device is capable of exposing receive
++ *   checksum result via bpf_xdp_metadata_rx_checksum().
+  */
+ enum netdev_xdp_rx_metadata {
+ 	NETDEV_XDP_RX_METADATA_TIMESTAMP = 1,
+ 	NETDEV_XDP_RX_METADATA_HASH = 2,
+ 	NETDEV_XDP_RX_METADATA_VLAN_TAG = 4,
++	NETDEV_XDP_RX_METADATA_CHECKSUM = 8,
+ };
+ 
+ /**
+diff --git a/net/core/xdp.c b/net/core/xdp.c
+index 9890a30584ba..9bcaa423ad17 100644
+--- a/net/core/xdp.c
++++ b/net/core/xdp.c
+@@ -961,6 +961,38 @@ __bpf_kfunc int bpf_xdp_metadata_rx_vlan_tag(const struct xdp_md *ctx,
+ 	return -EOPNOTSUPP;
  }
  
--SEC("xdp")
--int xdp_rss_hash(struct xdp_md *ctx)
-+/* Return true when the packet matches the L4 protocol and destination
-+ * port configured in map_xdp_setup (zero/unset filters match anything).
++/**
++ * bpf_xdp_metadata_rx_checksum - Read XDP frame RX checksum.
++ * @ctx: XDP context pointer.
++ * @ip_summed: Return value pointer to a bitmask indicating available checksums.
++ * @cksum: Return value pointer indicating the hw checksum value.
++ * @cksum_level: Return value pointer indicating the checksum level result.
++ *
++ * In case of success, ``ip_summed`` is set to the RX checksum result. Possible
++ * values are:
++ * ``XDP_CHECKSUM_NONE``
++ * ``XDP_CHECKSUM_UNNECESSARY``
++ * ``XDP_CHECKSUM_COMPLETE``
++ * ``XDP_CHECKSUM_COMPLETE`` | ``XDP_CHECKSUM_UNNECESSARY``
++ *
++ * In case of success, ``cksum`` contains the checksum value calculated by the
++ * NIC. ``cksum`` is valid only if ``XDP_CHECKSUM_COMPLETE`` is set in
++ * ``ip_summed``. ``cksum_level`` contains the checksum level reported by the
++ * hw. ``cksum_level`` can be considered valid only if
++ * ``XDP_CHECKSUM_UNNECESSARY`` is set in ``ip_summed``.
++ *
++ * Return:
++ * * Returns 0 on success or ``-errno`` on error.
++ * * ``-EOPNOTSUPP`` : means device driver does not implement kfunc
++ * * ``-ENODATA``    : means no RX-checksum available for this frame
 + */
-+static __always_inline bool xdp_match_setup(struct xdp_md *ctx)
- {
- 	void *data_end = (void *)(long)ctx->data_end;
- 	void *data = (void *)(long)ctx->data;
--	enum xdp_rss_hash_type rss_type = 0;
- 	struct ethhdr *eth = data;
- 	__u8 l4_proto = 0;
--	__u32 hash = 0;
--	__u32 key, val;
- 	void *l4 = NULL;
--	__u32 *cnt;
--	int ret;
-+	__u32 key;
- 
- 	if ((void *)(eth + 1) > data_end)
--		return XDP_PASS;
-+		return false;
- 
- 	if (eth->h_proto == bpf_htons(ETH_P_IP)) {
- 		struct iphdr *iph = (void *)(eth + 1);
- 
- 		if ((void *)(iph + 1) > data_end)
--			return XDP_PASS;
-+			return false;
- 		l4_proto = iph->protocol;
- 		l4 = (void *)(iph + 1);
- 	} else if (eth->h_proto == bpf_htons(ETH_P_IPV6)) {
- 		struct ipv6hdr *ip6h = (void *)(eth + 1);
- 
- 		if ((void *)(ip6h + 1) > data_end)
--			return XDP_PASS;
-+			return false;
- 		l4_proto = ip6h->nexthdr;
- 		l4 = (void *)(ip6h + 1);
- 	}
- 
- 	if (!l4)
--		return XDP_PASS;
-+		return false;
- 
- 	/* Filter on the configured protocol (map_xdp_setup key XDP_PROTO).
- 	 * When set, only process packets matching the requested L4 protocol.
-@@ -121,7 +150,7 @@ int xdp_rss_hash(struct xdp_md *ctx)
- 	__s32 *proto_cfg = bpf_map_lookup_elem(&map_xdp_setup, &key);
- 
- 	if (proto_cfg && *proto_cfg != 0 && l4_proto != (__u8)*proto_cfg)
--		return XDP_PASS;
-+		return false;
- 
- 	/* Filter on the configured port (map_xdp_setup key XDP_PORT).
- 	 * Only applies to protocols with ports (UDP, TCP).
-@@ -133,9 +162,24 @@ int xdp_rss_hash(struct xdp_md *ctx)
- 		__u16 dest = get_dest_port(l4, data_end, l4_proto);
- 
- 		if (!dest || bpf_ntohs(dest) != (__u16)*port_cfg)
--			return XDP_PASS;
-+			return false;
- 	}
- 
-+	return true;
++__bpf_kfunc int bpf_xdp_metadata_rx_checksum(const struct xdp_md *ctx,
++					     enum xdp_checksum *ip_summed,
++					     u32 *cksum, u8 *cksum_level)
++{
++	return -EOPNOTSUPP;
 +}
 +
-+SEC("xdp")
-+int xdp_rss_hash(struct xdp_md *ctx)
-+{
-+	enum xdp_rss_hash_type rss_type = 0;
-+	__u32 hash = 0;
-+	__u32 key, val;
-+	__u32 *cnt;
-+	int ret;
-+
-+	if (!xdp_match_setup(ctx))
-+		return XDP_PASS;
-+
- 	ret = bpf_xdp_metadata_rx_hash(ctx, &hash, &rss_type);
- 	if (ret < 0) {
- 		key = RSS_KEY_ERR_CNT;
-@@ -160,4 +204,46 @@ int xdp_rss_hash(struct xdp_md *ctx)
- 	return XDP_PASS;
- }
+ __bpf_kfunc_end_defs();
  
-+SEC("xdp")
-+int xdp_rx_csum(struct xdp_md *ctx)
-+{
-+	enum xdp_checksum ip_summed = 0;
-+	__u8 cksum_level = 0;
-+	__u32 cksum = 0;
-+	__u32 key, val;
-+	__u32 *cnt;
-+	int ret;
-+
-+	if (!xdp_match_setup(ctx))
-+		return XDP_PASS;
-+
-+	ret = bpf_xdp_metadata_rx_checksum(ctx, &ip_summed, &cksum,
-+					   &cksum_level);
-+	if (ret < 0) {
-+		key = CSUM_KEY_ERR_CNT;
-+		cnt = bpf_map_lookup_elem(&map_csum, &key);
-+		if (cnt)
-+			__sync_fetch_and_add(cnt, 1);
-+		return XDP_PASS;
-+	}
-+
-+	key = CSUM_KEY_IP_SUMMED;
-+	val = (__u32)ip_summed;
-+	bpf_map_update_elem(&map_csum, &key, &val, BPF_ANY);
-+
-+	key = CSUM_KEY_CKSUM;
-+	bpf_map_update_elem(&map_csum, &key, &cksum, BPF_ANY);
-+
-+	key = CSUM_KEY_LEVEL;
-+	val = cksum_level;
-+	bpf_map_update_elem(&map_csum, &key, &val, BPF_ANY);
-+
-+	key = CSUM_KEY_PKT_CNT;
-+	cnt = bpf_map_lookup_elem(&map_csum, &key);
-+	if (cnt)
-+		__sync_fetch_and_add(cnt, 1);
-+
-+	return XDP_PASS;
-+}
-+
- char _license[] SEC("license") = "GPL";
+ BTF_KFUNCS_START(xdp_metadata_kfunc_ids)
+diff --git a/tools/include/uapi/linux/netdev.h b/tools/include/uapi/linux/netdev.h
+index 2f3ab75e8cc0..f8caade93c8c 100644
+--- a/tools/include/uapi/linux/netdev.h
++++ b/tools/include/uapi/linux/netdev.h
+@@ -47,11 +47,14 @@ enum netdev_xdp_act {
+  *   hash via bpf_xdp_metadata_rx_hash().
+  * @NETDEV_XDP_RX_METADATA_VLAN_TAG: Device is capable of exposing receive
+  *   packet VLAN tag via bpf_xdp_metadata_rx_vlan_tag().
++ * @NETDEV_XDP_RX_METADATA_CHECKSUM: Device is capable of exposing receive
++ *   checksum result via bpf_xdp_metadata_rx_checksum().
+  */
+ enum netdev_xdp_rx_metadata {
+ 	NETDEV_XDP_RX_METADATA_TIMESTAMP = 1,
+ 	NETDEV_XDP_RX_METADATA_HASH = 2,
+ 	NETDEV_XDP_RX_METADATA_VLAN_TAG = 4,
++	NETDEV_XDP_RX_METADATA_CHECKSUM = 8,
+ };
+ 
+ /**
 -- 
 2.47.0
 
