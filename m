@@ -4,89 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5944C43458
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  8 Jul 2026 14:37:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CBE68C43458
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  8 Jul 2026 15:09:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id A828C80D2B;
-	Wed,  8 Jul 2026 14:37:03 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id A2F5281F60;
+	Wed,  8 Jul 2026 15:09:03 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id jNit8KMRcZ99; Wed,  8 Jul 2026 14:37:01 +0000 (UTC)
+ id or4UtL_T5YeR; Wed,  8 Jul 2026 15:09:02 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 722B381373
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C35CB81F86
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1783521421;
-	bh=exnNu2I5aI5H24F1WtiUJW2O63f75UQrbEQvXGcBk5s=;
+	s=default; t=1783523342;
+	bh=1ZUa0blMBqAoJRKAtQ0QJv01MxVkhA4vbmrOiPcRiPw=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=EzU6EULYReSgxtZgRZt68EyoVXkgg/4Cs7w+PWyjMs95twuXmrGHkEebCbr55u8qA
-	 9rqNItRyTGOxEUK0lvAWyD9SAKkjLxNTerS1rkq6lQVZ//vmWiPdOXQ4NJB/YxBu7f
-	 R/EqsWUf37ym/z99ciJMNKhH61MfhVM192+aIFzdGJYzlyWBgrSITkMNPWycDtS6sc
-	 b42zyLzu/bwB5LNoyGjaOZ+7G8YJ26sZRk/uVRlR+1fi4/Dao/gZh8VoiHJf5wpak7
-	 HQ8G2kSYEGhQXZzk3DMQhNBkXAtANnNuBtazJ0AtdlvgqpjQ18eNEE//2F0zvnk1bc
-	 o3pRjfK5xX6Cg==
+	b=n7D/v6uKIHBE1TvARUyNFs6h+iNImBfQwiyKSEd3GBxl3vvbdztZU+DBSfYuBjWWc
+	 iwUVYCHsZ8w0fhVLZu4Fsl2D7nrn07vElfOqs07CHWUxDEjnt0Pf8N6U2gQwmVmYP8
+	 i8nLHq/dauFv41Vw/MtG0+ZehtyCi+RIsHLAIDR5mRlm22+Xt+2jaw8Q6LAHLGSNM0
+	 L7s71aPnAILY7Lu97L0sv/wkFO2Sv+jkiXkXiZxCDyh9Z5vZZWT0P8kyXAc/m/X51D
+	 LLU+Xzx5l4NPvzojUzoY7vn+j4wrFKzNDaiVKj+dZ5Yka9gG8OUbHJ7IKHQ9oS6/mj
+	 OTqz5g+0J2WFA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 722B381373;
-	Wed,  8 Jul 2026 14:37:01 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id D08DC315
- for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Jul 2026 14:37:00 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id C35CB81F86;
+	Wed,  8 Jul 2026 15:09:02 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 838BB15C
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Jul 2026 15:09:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id B69FE40E6D
- for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Jul 2026 14:37:00 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 7550360A90
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Jul 2026 15:09:01 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id qli1iT2pvZ5h for <intel-wired-lan@lists.osuosl.org>;
- Wed,  8 Jul 2026 14:36:59 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org; envelope-from=horms@kernel.org;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 9F74040E52
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9F74040E52
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 9F74040E52
- for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Jul 2026 14:36:59 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id FUGVqQAEUjJK for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  8 Jul 2026 15:09:00 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
+ envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 945516076F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 945516076F
+Received: from sea.source.kernel.org (sea.source.kernel.org
+ [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 945516076F
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Jul 2026 15:08:59 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id BE2C860008;
- Wed,  8 Jul 2026 14:36:57 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 072261F000E9;
- Wed,  8 Jul 2026 14:36:54 +0000 (UTC)
+ by sea.source.kernel.org (Postfix) with ESMTP id 2800743C7C;
+ Wed,  8 Jul 2026 15:08:59 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 375911F000E9;
+ Wed,  8 Jul 2026 15:08:57 +0000 (UTC)
 From: Simon Horman <horms@kernel.org>
-To: mheib@redhat.com
+To: maciej.fijalkowski@intel.com
 Cc: Simon Horman <horms@kernel.org>, intel-wired-lan@lists.osuosl.org,
- netdev@vger.kernel.org, jiri@resnulli.us, davem@davemloft.net,
- edumazet@google.com, kuba@kernel.org, pabeni@redhat.com, corbet@lwn.net,
- anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
- andrew+netdev@lunn.ch
-Date: Wed,  8 Jul 2026 15:36:51 +0100
-Message-ID: <20260708143651.1491857-1-horms@kernel.org>
+ netdev@vger.kernel.org, magnus.karlsson@intel.com, kuba@kernel.org,
+ pabeni@redhat.com, przemyslaw.kitszel@intel.com, jacob.e.keller@intel.com
+Date: Wed,  8 Jul 2026 16:04:56 +0100
+Message-ID: <20260708150455.1498611-2-horms@kernel.org>
 X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260701093830.948756-2-mheib@redhat.com>
-References: <20260701093830.948756-2-mheib@redhat.com>
+In-Reply-To: <20260701124524.13644-3-maciej.fijalkowski@intel.com>
+References: <20260701124524.13644-3-maciej.fijalkowski@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=kernel.org; s=k20260515; t=1783521417;
- bh=exnNu2I5aI5H24F1WtiUJW2O63f75UQrbEQvXGcBk5s=;
+ d=kernel.org; s=k20260515; t=1783523339;
+ bh=1ZUa0blMBqAoJRKAtQ0QJv01MxVkhA4vbmrOiPcRiPw=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References;
- b=bf0Y7f8LcK5njMeKKfJmq+s6ioYdgQLclm1vrgIVwKCC9dIAQv/DWPWNfgO/WLO6W
- CumTgWja4ZYeg2DRgEINH10R5BEwyG2Qal4dSILLMNpud5LoQWUfgE4BWpQ8o1xSiR
- fN4BPeU+dcpycQF3lCX+8o/Z1kJMATH5MdEAFzO866liybnj3pwTCewDNtoAFdl9Up
- CjntL4QoqsBvjeHhGjOW3NP0vyJ7sUZD7OY/MSJFb+XUz97jpQHqDZn/w2A82szYRR
- d90PaZhfzowdC3Ph4KHJrGpZyr8fWbnLCoviNrDL1MCRsVYdm7OyhMbpNj0jWHO7Pl
- eNvTxgDHXsF2w==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ b=KAWT8s6cTXJYENmK5oe51oLfS2bvFHJM8JZPRc18aHFD1/IIJYdcj5fx0+WrjZTZk
+ aVg5yLw/40Xdy6LXmof9wUB7qXTg16oHZhlU+ieI5OAfNMQvKn+JSmup2k6X7vU1wF
+ i/tuz6A6ObQvz2IYfhIhFt67L8Y1qJz+YZwViyTluicRIASDlxwvEm+Bo+wYflVpIl
+ USW+oDWBUF6l31lyfejsbszgn9hjJmJDrXaBCL2QvXesml7mX0qQFQmCIYo6MXMpDD
+ 1NjrlZwbXjhpBZH/GsJJ07m38G3XAD/Up/qyKH8Gda0WOtuYYtxt+tRBYYUDR+H4tb
+ +uQU96/pqhcnw==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=bf0Y7f8L
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v3 2/2] i40e: add devlink
- parameter for Flow Director ATR sample rate
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20260515 header.b=KAWT8s6c
+Subject: Re: [Intel-wired-lan] [PATCH v5 net 2/7] i40e: avoid null ptr
+ dereference in i40e_ptp_stop()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -106,57 +104,126 @@ This is an AI-generated review of your patch. The human sending this
 email has considered the AI review valid, or at least plausible.
 Full review at: https://sashiko.dev
 ---
-i40e: add devlink parameter for Flow Director ATR sample rate
+i40e: avoid null ptr dereference in i40e_ptp_stop()
+    
+Check if main_vsi is not null before calling dev_info() to avoid a null
+pointer dereference when i40e_vsi_clear() frees the main VSI during rebuild.
 
-This commit introduces a runtime devlink parameter to tune the Flow Director
-ATR sample rate. This allows dynamic adjustments to the sampling interval
-without rebuilding the driver, which can help reduce TCP packet reordering
-on systems with high-rate workloads.
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_ptp.c b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+> index ff62b5f2c8150..ca93df4d67859 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+> @@ -1556,8 +1556,9 @@ void i40e_ptp_stop(struct i40e_pf *pf)
+>  	if (pf->ptp_clock) {
+>  		ptp_clock_unregister(pf->ptp_clock);
+>  		pf->ptp_clock = NULL;
+> -		dev_info(&pf->pdev->dev, "%s: removed PHC on %s\n", __func__,
+> -			 main_vsi->netdev->name);
+> +		if (main_vsi)
+> +			dev_info(&pf->pdev->dev, "%s: removed PHC on %s\n", __func__,
+> +				 main_vsi->netdev->name);
 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_devlink.c b/drivers/net/ethernet/intel/i40e/i40e_devlink.c
-> index 229179ccc1319..cf487efdd803d 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_devlink.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_devlink.c
-[ ... ]
-> @@ -33,12 +33,48 @@ static int i40e_max_mac_per_vf_get(struct devlink *devlink,
->  	return 0;
->  }
+[Severity: High]
+This isn't a bug introduced by this patch, but this lockless check appears
+to introduce a time-of-check to time-of-use race condition.
+
+When i40e_remove() calls i40e_ptp_stop(pf), it does so unsynchronized from
+the background i40e_rebuild() task. If i40e_rebuild() fails during setup, it
+calls i40e_vsi_clear(main_vsi), which frees the VSI and its netdev.
+
+If i40e_ptp_stop() caches main_vsi right before it is cleared, couldn't the
+if (main_vsi) check pass, but the subsequent main_vsi->netdev->name access
+dereference freed memory, causing a use-after-free?
+
+[Severity: High]
+This is another pre-existing issue, but I noticed that i40e_ptp_stop() doesn't
+seem to cancel the background workqueue task ptp_extts0_work.
+
+During device removal, i40e_remove() calls i40e_ptp_stop() and then
+subsequently frees the i40e_pf structure. If the work executes after the PF
+is freed, will it access the deallocated i40e_pf structure and trigger a
+use-after-free?
+
+[Severity: High]
+This is also a pre-existing issue, but I am looking at how pf->ptp_tx_skb is
+cleared earlier in i40e_ptp_stop(). The teardown uses I40E_FLAG_PTP_ENA as a 
+gate guard:
+
+i40e_ptp_stop() clears I40E_FLAG_PTP_ENA, then locklessly checks and frees
+pf->ptp_tx_skb using dev_kfree_skb_any().
+
+The interrupt handler i40e_ptp_tx_hwtstamp() uses the same bit as a guard:
+
+    if (!test_bit(I40E_FLAG_PTP_ENA, pf->flags))
+            return;
+
+If the interrupt handler passes the test_bit check just before i40e_ptp_stop()
+executes clear_bit(), both contexts could concurrently read the same
+pf->ptp_tx_skb pointer into local variables before it is NULLed out. Could
+this result in a double free of the SKB?
+
+[Severity: High]
+There is a similar pre-existing issue related to the teardown of the
+timestamping state in i40e_ptp_stop() racing with the TX datapath.
+
+The TX datapath i40e_tstamp() protects the state using a bit lock:
+
+    if (pf->ptp_tx &&
+        !test_and_set_bit_lock(__I40E_PTP_TX_IN_PROGRESS, pf->state)) {
+            ...
+            pf->ptp_tx_skb = skb_get(skb);
+    }
+
+However, i40e_ptp_stop() checks pf->ptp_tx_skb locklessly and only clears
+the bit lock if the SKB was present. If the TX datapath acquires the lock
+and is preempted right before assigning pf->ptp_tx_skb, i40e_ptp_stop()
+might execute, see a NULL ptp_tx_skb, and skip the cleanup block.
+
+When the TX datapath resumes, it assigns the SKB pointer. Since the device
+is subsequently destroyed, does this cause the SKB to be permanently leaked?
+
+>  	}
 >  
-> +static int i40e_atr_sample_rate_set(struct devlink *devlink,
-> +				    u32 id,
-> +				    struct devlink_param_gset_ctx *ctx,
-> +				    struct netlink_ext_ack *extack)
-> +{
-> +	struct i40e_pf *pf = devlink_priv(devlink);
-> +	u32 sample_rate = ctx->val.vu32;
-> +
-> +	pf->atr_sample_rate = sample_rate;
+>  	if (i40e_is_ptp_pin_dev(&pf->hw)) {
 
-[Severity: Low]
-Does modifying pf->atr_sample_rate concurrently with the Tx fast path
-introduce a data race?
+[Severity: High]
+This isn't a bug introduced by this patch, but while reviewing the driver's
+cleanup paths, I noticed a potential leak in the i40e_probe() error handling:
 
-In the Tx fast path, i40e_atr() reads this value locklessly. If the devlink
-callback sets this to 0 between the two reads in i40e_atr():
-
-drivers/net/ethernet/intel/i40e/i40e_txrx.c:i40e_atr() {
-        if (!pf->atr_sample_rate)
-                return;
-        ...
-        if (tx_ring->atr_count < pf->atr_sample_rate)
-        ...
+drivers/net/ethernet/intel/i40e/i40e_main.c:i40e_probe() {
+...
+err_vsis:
+        set_bit(__I40E_DOWN, pf->state);
+        i40e_ptp_stop(pf);
+        i40e_clear_interrupt_scheme(pf);
+        kfree(pf->vsi);
+...
 }
 
-Could this race lead to a situation where the second check evaluates
-tx_ring->atr_count against 0, unintentionally programming an extra Flow
-Director filter?
+If initialization fails after VSIs are successfully created, this cleanup
+path calls kfree(pf->vsi) which frees the pointer array, but does not appear
+to unregister the netdev or free the actual VSI structs and hardware rings.
 
-While the functional impact might just be a single extra sampled packet,
-should we use READ_ONCE() in the fast path and WRITE_ONCE() here to avoid
-KCSAN data race warnings and ensure a consistent value is used throughout
-the function?
+Could this leave an active, registered netdev with dangling pointers to the
+subsequently freed PF, potentially triggering a use-after-free upon network
+traffic or userspace access?
 
-> +	return 0;
-> +}
+[Severity: High]
+This is a pre-existing issue, but I noticed an ad-hoc locking pattern in
+i40e_remove():
 
-[ ... ]
+drivers/net/ethernet/intel/i40e/i40e_main.c:i40e_remove() {
+...
+        while (test_and_set_bit(__I40E_RESET_RECOVERY_PENDING, pf->state))
+                usleep_range(1000, 2000);
+...
+}
+
+This attempts to synchronize with the background reset path by spinning on
+a bit flag, which acts as a sleepable lock without the standard fairness or
+deadlock detection guarantees. 
+
+Since this ad-hoc locking scheme fails to provide proper mutual exclusion
+earlier in the function, could this be the direct cause of why i40e_ptp_stop()
+executes unsynchronized from i40e_rebuild()? Should a proper mutex be used
+here instead?
