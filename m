@@ -1,112 +1,207 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1832CC43458
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  9 Jul 2026 08:57:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D112CC43458
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  9 Jul 2026 09:11:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id CC80960E2D;
-	Thu,  9 Jul 2026 08:57:04 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 1u25sxw4NnBh; Thu,  9 Jul 2026 08:57:03 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CFD6560E2E
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1783587423;
-	bh=S1+yy/gd7YMU7fv3ekMbZ9lG3UnAJb6KKGIYZA0P0io=;
-	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=A6nKWfVho9zMH/6tYcIYmW5tpr0TdOqmvy/tRA8PyyffIz7eY7MU9sVZftBLCMzBJ
-	 WXIU9xFWoiVETYpuHFomVUJxitUF/+svsLlysYaMRiuHcdPdkw3R7Us/e3RZmVQvBa
-	 R7SmuxBQHA9uSmLEAvXw2Aw+oUFKRH2d5bgeF6iEwubGTUrhOddz6FlKLkT5m29E0s
-	 w6OOI0MszQgy9U3nNaTCcKVOslhZt+kEk6EMTAHtOdN/V4gv8XN8diY5+kBlEG/VbK
-	 CFX1kmao3aGVEmSF9ySs/m+kouY+hv93LDfiGABSJv/FFESgonXZrwOVKmGZoLT8++
-	 1b9Lgu6FMbSYQ==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id CFD6560E2E;
-	Thu,  9 Jul 2026 08:57:03 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 223ED320
- for <intel-wired-lan@lists.osuosl.org>; Thu,  9 Jul 2026 08:57:02 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 13C8180DA8
- for <intel-wired-lan@lists.osuosl.org>; Thu,  9 Jul 2026 08:57:02 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 7C02A80DD2;
+	Thu,  9 Jul 2026 09:11:41 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id hgLfvDgjfLPh for <intel-wired-lan@lists.osuosl.org>;
- Thu,  9 Jul 2026 08:57:01 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.10;
- helo=mgamail.intel.com; envelope-from=marcin.szycik@linux.intel.com;
+ id oidFScklqtcr; Thu,  9 Jul 2026 09:11:40 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DC18580C3B
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1783588299;
+	bh=UhY8h4D3eU9VoRJC9Q67Zbxz487ln+nSdKKz/Lfd3G4=;
+	h=Date:To:CC:References:From:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=kBAHTzXUyyocq5/TFOIQfmC1qNG9MiQ5OegsMbCxckFBGpNS0XQkJWOm/hUKDXtmk
+	 R4qB2Fh6eYNwIIdbe6AkVswfYx5rq3qovrhj2q35QC9m4CequuBFMi/BUJ7sKF1Qbt
+	 /6unAw2oAlqNu7mLANu5lDMyjarKakpV3DhiTib+Ktk5+j0z3r3W6mYWNJlEx+lpp8
+	 vby1ErgCp0wtBReembrTP//NPK3VMmj0o7qBpnAFYMzEhRFKXeKD/oLKGvLCFm0Ntb
+	 9NvCOXON8z/Ui+olxPa3ZMSpSFZrVuoAix1dXKyi1OxuXRNTLPhIy8V47jG3gn3jio
+	 QljZ62HkaXadg==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp1.osuosl.org (Postfix) with ESMTP id DC18580C3B;
+	Thu,  9 Jul 2026 09:11:39 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id DBA122E5
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  9 Jul 2026 09:11:38 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id CDC0960E9E
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  9 Jul 2026 09:11:38 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id EtgpyLrW_4vb for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  9 Jul 2026 09:11:37 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.12;
+ helo=mgamail.intel.com; envelope-from=przemyslaw.kitszel@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 80FC280BCC
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 80FC280BCC
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 80FC280BCC
- for <intel-wired-lan@lists.osuosl.org>; Thu,  9 Jul 2026 08:57:00 +0000 (UTC)
-X-CSE-ConnectionGUID: XMY+E90QRFSkfoj9rC2jNQ==
-X-CSE-MsgGUID: UvhfewT/SsiQx5M8clZ1mw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11841"; a="95635555"
-X-IronPort-AV: E=Sophos;i="6.25,154,1779174000"; d="scan'208";a="95635555"
-Received: from orviesa010.jf.intel.com ([10.64.159.150])
- by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 09 Jul 2026 01:56:58 -0700
-X-CSE-ConnectionGUID: A3bHZUQ0Ru6ensSW7bzRNw==
-X-CSE-MsgGUID: OsAiCe0KTTS8kcqsM7afJQ==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 5145560E9F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5145560E9F
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 5145560E9F
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  9 Jul 2026 09:11:37 +0000 (UTC)
+X-CSE-ConnectionGUID: 3tbH5dnoQv2WntFhtI9H2A==
+X-CSE-MsgGUID: gO6Pb2w6S+KUCfdhZtLJCQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11841"; a="88091143"
+X-IronPort-AV: E=Sophos;i="6.25,154,1779174000"; d="scan'208";a="88091143"
+Received: from fmviesa008.fm.intel.com ([10.60.135.148])
+ by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 09 Jul 2026 02:11:36 -0700
+X-CSE-ConnectionGUID: DU5dH6ecSrGAjcpMz7VKOQ==
+X-CSE-MsgGUID: r9uGxxYzSzqAzRcf+bVDTg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,154,1779174000"; d="scan'208";a="253433070"
-Received: from mszycik-desk.igk.intel.com (HELO [10.217.160.239])
- ([10.217.160.239])
- by orviesa010-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 09 Jul 2026 01:56:55 -0700
-Message-ID: <95ce1e0a-125a-4688-a611-76e3731150a4@linux.intel.com>
-Date: Thu, 9 Jul 2026 10:56:49 +0200
-MIME-Version: 1.0
+X-IronPort-AV: E=Sophos;i="6.25,154,1779174000"; d="scan'208";a="251881620"
+Received: from orsmsx901.amr.corp.intel.com ([10.22.229.23])
+ by fmviesa008.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 09 Jul 2026 02:11:36 -0700
+Received: from ORSMSX903.amr.corp.intel.com (10.22.229.25) by
+ ORSMSX901.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.43; Thu, 9 Jul 2026 02:11:35 -0700
+Received: from ORSEDG901.ED.cps.intel.com (10.7.248.11) by
+ ORSMSX903.amr.corp.intel.com (10.22.229.25) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.43 via Frontend Transport; Thu, 9 Jul 2026 02:11:35 -0700
+Received: from BL2PR02CU003.outbound.protection.outlook.com (52.101.52.24) by
+ edgegateway.intel.com (134.134.137.111) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.43; Thu, 9 Jul 2026 02:11:35 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=JA2WfbrlO0Sn5HvBFYq36ZhmHFlE25XySrQCwgr0M6MO6RYO3NihfWUkgIh0LtDAanECHC2cQOVYmACqiDGv98iKUvHfbqFYf90SSUajEtkTJqHmIkOIjlVTOMsyl7VObSl9e3Mkd4Oe5ibXkq3TeYtOsxstCQ2uXcqCs+hKngITXosgIWnJrqPtvERJp4p1tfkLuEWDCGn1xdE9oKb0FQBOy+hp/dU1ZrPRR4pb3saHqI736BF/NhTcaUPi5hgI+mCtKURCpW1IjkhGMQzJYsM/s5gWo62PyVL391NQHprtqpAHN/Uwx0ZBPM3dze06d72WnjRZzNqi5GdttQLKXw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=UhY8h4D3eU9VoRJC9Q67Zbxz487ln+nSdKKz/Lfd3G4=;
+ b=Nuf/dQ0Izfe6DFKREbWgv5YpKctGqyKxMQlemBil0TDLPMVuR2KUWQZCrzKwx4Shv5FfFbJV5DBVEdEz/vlPvPWLkqRrUmjOrvTqYFpna1Yz74n02acBSxyCr8bCrEBugup2W6fMyUQXGOQq1b+uuALcra8HCFDSLPOgTzxgTFbSJiNMTt5GHG8SWncTVRqalY0YFD+46+IbB6eMledHUz0o8G+6PRP04JS8ePGCsxuoFd+FcrDctoicWrSKnpmHCEFt5n3Xb/RXGXf65LzxFthFcDK5BOhv5foW0VTF9zWDr3fJvO0qJrjHc6QBx9fDrL0lWT0tIQb4oea2FrTHLA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from LV3PR11MB8508.namprd11.prod.outlook.com (2603:10b6:408:1b4::8)
+ by CH3PR11MB8708.namprd11.prod.outlook.com (2603:10b6:610:1be::5)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.181.10; Thu, 9 Jul
+ 2026 09:11:28 +0000
+Received: from LV3PR11MB8508.namprd11.prod.outlook.com
+ ([fe80::a1e8:1786:e5d1:8e51]) by LV3PR11MB8508.namprd11.prod.outlook.com
+ ([fe80::a1e8:1786:e5d1:8e51%5]) with mapi id 15.21.0181.008; Thu, 9 Jul 2026
+ 09:11:28 +0000
+Message-ID: <df715ec7-1780-48aa-9b5b-24eeac942ef2@intel.com>
+Date: Thu, 9 Jul 2026 11:13:50 +0200
 User-Agent: Mozilla Thunderbird
-To: Petr Oros <poros@redhat.com>, netdev@vger.kernel.org
-Cc: Ivan Vecera <ivecera@redhat.com>, Alice Michael
- <alice.michael@intel.com>, Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Eric Dumazet <edumazet@google.com>, linux-kernel@vger.kernel.org,
- Martyna Szapar-Mudlaw <martyna.szapar-mudlaw@linux.intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>, Tony Nguyen
- <anthony.l.nguyen@intel.com>, Simon Horman <horms@kernel.org>,
- intel-wired-lan@lists.osuosl.org, Jacob Keller <jacob.e.keller@intel.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- "David S. Miller" <davem@davemloft.net>
-References: <20260708125755.706263-1-poros@redhat.com>
- <20260708125755.706263-2-poros@redhat.com>
+To: Alexander Lobakin <aleksander.lobakin@intel.com>
+CC: Tony Nguyen <anthony.l.nguyen@intel.com>,
+ <intel-wired-lan@lists.osuosl.org>, Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, "Simon
+ Horman" <horms@kernel.org>, <nxne.cnse.osdt.itp.upstreaming@intel.com>,
+ <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+References: <20260708151327.1091570-1-aleksander.lobakin@intel.com>
+From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Content-Language: en-US
-From: Marcin Szycik <marcin.szycik@linux.intel.com>
-In-Reply-To: <20260708125755.706263-2-poros@redhat.com>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <20260708151327.1091570-1-aleksander.lobakin@intel.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
 Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: VE1PR08CA0005.eurprd08.prod.outlook.com
+ (2603:10a6:803:104::18) To LV3PR11MB8508.namprd11.prod.outlook.com
+ (2603:10b6:408:1b4::8)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: LV3PR11MB8508:EE_|CH3PR11MB8708:EE_
+X-MS-Office365-Filtering-Correlation-Id: 7262f9a0-4f4d-46d1-eae0-08dedd9a0f27
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+ ARA:13230040|376014|1800799024|366016|23010399003|18002099003|11063799006|6133799003|56012099006|22082099003;
+X-Microsoft-Antispam-Message-Info: PTJV2K46JJLsdUkpaT128vM5q+FGF/l88MwQuEMeV739xlSmZJ5vy3ilT6+iuNtZ8rFQUrySL3Aim8Cgj5uh1r9ke3bv6/2ouqqQL9srqi9nrs57kafSk2VPWVMr6/myc0f2v+BdgtEyCyBbJjYXH1hndvSuAcLqJfQRPTfFnQ79/6JGuXcuL2vK6Or3/QYpJxFzFPPtQ2jbKaEL3ZCkwx+o8bdnYZ0AyrtYH75QBiSghSL2hRdoM426eYuO5wFqwEbhFGpx4pQHUHgBD0DLZQzkmTmthS05qhpzcJlaKLIc4ZIhDYbe00rvEPqpE5Ojg7CLVQ53BN5qckBY3zJP9Yvl8VxTQF9+CQLiXqa+azD5H81qduGOfVZEfQj/x66mLaazBh/ACVYja13kfwitT8r2bwaKtSYflvb2+GKRipTsZIr5GF6e6elQhJmUmN1+DnGhLiaf/jNbOfC+QBfuZKr/zz4JaYh8QIceEf0yUPGU0Uom6QNQD3/60kNUx0CZmAUrrqju5yARhvGXRj6V1GzIXFWHFbIjiP/QU2EXgzlZw29RlJn4JjTgrwQUjEV45ewP5nGDzaY4xRytc/DIpYY41+HBmZjVnzj6QwoeIFrFW29Csua06ByUK9PJazn/EmHHnOLG6FzWOJGwe6wZ45AqUgfo8KuAK9PuImis9EE=
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:LV3PR11MB8508.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230040)(376014)(1800799024)(366016)(23010399003)(18002099003)(11063799006)(6133799003)(56012099006)(22082099003);
+ DIR:OUT; SFP:1101; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?UkNZYkRueEtuUTQrZXhYc21oVkROZ0xZWWZHSHVENzRINVpZTHd5ZlR6SXFP?=
+ =?utf-8?B?K3c2S2FaMGVnazdBUGdxREdOY0dhRGRGNjAvNmtPN1RzWm1wQklVclFoZm5q?=
+ =?utf-8?B?bXBabVZjOHhmbm90N1JRbUk3aUtKWFBLcjdQdC81R0JCVWk3WlhKWHY1aHRp?=
+ =?utf-8?B?UGRPdzlzbHQzZFdsOEJjVFJ3RTlRRTloRUJ4eE44S3c5ZzdmWWdma1Q2N1c1?=
+ =?utf-8?B?QXlyQWw4eDZrSWEyZWFFdWp2cWh0b1hHS1lEVlJFOTB3dUZMQkd0YmdJUXEw?=
+ =?utf-8?B?enlSNm02NVZORVAwUlF2clZsUTdWZVJlUGN4ckpCR2JPMnJLRUxTWTRRZ3Za?=
+ =?utf-8?B?M01pUjc5ZmVxVnlPQU0wZmRnYXY1MVE4WlkvcUxlWGNkSmtEY0ErM2g4WFhG?=
+ =?utf-8?B?dUpFRmx2RTR4QWxlQVcydHdOaWZqcG8rTDBUb3F6QWdOSEgzZHR3MjE2bUlW?=
+ =?utf-8?B?bUFzcnlqek1ESkNWR2s1TnhndXQrZkZSSjc0RllpUDBNSkZwNVZUT0dxS0U0?=
+ =?utf-8?B?WGRFZmJVQ0tIUmJISEFvbFhKbnlJMnFRR1NjaFZwamgzK3FmcnNGR2pTUlVU?=
+ =?utf-8?B?MG5vNjRoeWY4b09ZV2NobEluOGFtUm03TnRKUUJhOXJ5NHBBR2NwYjVGTmhy?=
+ =?utf-8?B?VVBIbUdFcUNPUGFvM0s2VUppSTZVZVJUaDQwdktxdTlaQjFRamZianpWTUhy?=
+ =?utf-8?B?Z2drdG9pTE1UQmg5TytsR0pIKzFlOVBRQjk4NUFkNzl3Ry9QS3g3alo0cnph?=
+ =?utf-8?B?enlsbCt6cTF6NVhuVVp6dFM2czhBbVZCRmVuQ0JuN0c1d3JCZEpySTNNaHdq?=
+ =?utf-8?B?Q3JyRkppT0hCZkFJWmRFRGFiY0F4VVZGMWxGT1Q0NG5XS0RKSmczQVV4RnND?=
+ =?utf-8?B?eHBSWGo0L2tCTk5oV2l0c25NSVNRQTZuTWxuZ1krMTY4dHZsb2Jwa0w5aVhx?=
+ =?utf-8?B?eTdudWsvWkZPVEV5TnRIZ1hZS2gybzEvSlFCeHJPYmNQbjFDZFM3V3dpOHky?=
+ =?utf-8?B?aTNPZW5EZjNUNU5Oeko4UW9zK2hzejJUekhEODZYQjlJQUwydEx4SXZSZ0RQ?=
+ =?utf-8?B?dmZnZWk4Q1p1SjNLUWNrZ2I0NkN6SXdEVWV5eFRFSTM4NHMzKytJQVdSV2ZD?=
+ =?utf-8?B?bzZMM1Z4WllzWS9ZMk4wNW1OZ0RnRkVkYWZ0Q3ZEZWhtWkZUQWhxVGhtdHBi?=
+ =?utf-8?B?anRLZGViNGxMOVV2L0oxRnpzaFFFV3ZUMkd4T2xxWXdGbC9oTWNzRXI2UUMz?=
+ =?utf-8?B?eFdOMHZTNGJFcERXaDd2aWFoMGcrc1FST3g1bE5OWTlsNXdveGZZRE15bjlj?=
+ =?utf-8?B?SGVnQkV4ZVNEampiS3NFYXBOVlUwbWJrN0xIVUFjS1BZVTd1N0F3czZXaVFC?=
+ =?utf-8?B?bzdDVDJXbU9tdWd2Nm9IUHYyMlNHVm9JalBCMkdxeDRMaGN5cWwrT2libVd6?=
+ =?utf-8?B?ZVZ6aHJGNHU1UmhoMWJxa0NCZ3g3QkFoUkg0cnpSWGUxQ0lVWCs3T28ramFr?=
+ =?utf-8?B?Wk16bEg4VE0wa1FTOWVzZGxhK3V5RGVIaGV1NnR3aUN4U1JaU1V4Sy9PeW1Z?=
+ =?utf-8?B?Q2pmRSs4TDNpVWZVUHBXVFVFYmxtQTcybk55c1pNaWVPMnNENkZmTnJDWXJF?=
+ =?utf-8?B?UVQrYUdDS2xoeEMyS3RRMVlORTBZTlUzUDh4MDVJUjkzaktHZloxdUZYTDFr?=
+ =?utf-8?B?WTZoWURNY3lDSnpVNndKTlVwbnlOYXZncjFUYURRbXM1YUlWbjE1bEVydVUr?=
+ =?utf-8?B?NmIxeUc0ZUZlcjlIYWtaUmc3SzNtcm04UkhweElDV3F3cU1PdENNVDVmcUJJ?=
+ =?utf-8?B?V1BBZm52QkZhNnJKWUlqVzIzVUE2dGtXbElBRzhHL2p6TWxuU1dRUnI3Ylc5?=
+ =?utf-8?B?aWgzMVY4Rkl4MnBxb1pBam44d2E4dWxDRmxISmwyWDJra1I1YmlOS3UzaXNB?=
+ =?utf-8?B?UEJ4SFdjWnppZmNkMGdlVXhYRG1JNVducUxTL3hXWHN1QVN1TVd2cVA0bXB0?=
+ =?utf-8?B?SDltNi95R3R4cGlOd2hEOHBXTjlINWxkcTNaVlZKZndCRGpKOWoyZHlwdW1E?=
+ =?utf-8?B?aTVySC8vczlmK3k0NUlTUXZXTDJlOG1oU2xhR3JOQmlQOTZkd2lIczdjZTVX?=
+ =?utf-8?B?MWxydHF2cTZQYXpPdzdYRXFXcmN1SzNoQ21iVWp1YUVtZGh1NkVVUFlUNkxT?=
+ =?utf-8?B?SnVwMnlLd2FjOWRQd3R3YTFUNmZRdTZZbXFUU0trUTFBZHZTRWlsZDJjeUE1?=
+ =?utf-8?B?M3Z5YzQycm5sY3FvVkROcUpIdi8zVi95eUYzaDRBUy9vQ01Ec3lTSkRSV2oz?=
+ =?utf-8?B?V1d2bXpFV2Naay9qcmtHejdVSGM0WkFQQ25IejZvaFhxbnBLMFhWU1JRbmdm?=
+ =?utf-8?Q?kuLOonF5qZaKwdzE=3D?=
+X-Exchange-RoutingPolicyChecked: K8UFqlF0dnG/7gPWBNWTbIO8QjfC4CnNv6InqcRFhQvTk0dO+GIj+NTi8znHSBo+GQAeY7jrr8OIvn2N+BURtK6zdxeOST3t4nseuCPTIJYBXtQZCRPv5I8NYcEt9WOz8LRklxjctFyl6F3fvTPWPn4rOYQVfHZYmcFf4uiytF8Knf8ag3gc6kp1UHibb2NEUZiMqo+Ea1bx8MDXfdhH3qQxsDdHKeO1c5DkihK1e4mH+liI6hwheePhuleC7Xv4XPYr4gRE3skncddoM9mSLhgHHN9OWPEvq0NFiCqMljWvAySP/JojXScJQjUYqJVnjS7KVhSRGXZOV/kbajyiQw==
+X-MS-Exchange-CrossTenant-Network-Message-Id: 7262f9a0-4f4d-46d1-eae0-08dedd9a0f27
+X-MS-Exchange-CrossTenant-AuthSource: LV3PR11MB8508.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Jul 2026 09:11:28.4291 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 0y5AAroUq7FWdCtbpz+2hJ7aO49bx9B9ko6KvRq21K+mVkpvBcDEhSqGkhvUp2oQZQ5g5jPD/5QRf1nfcwqSaPUE45wa71Wg+HbG1NkM7mw=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH3PR11MB8708
+X-OriginatorOrg: intel.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1783587420; x=1815123420;
- h=message-id:date:mime-version:subject:to:cc:references:
- from:in-reply-to:content-transfer-encoding;
- bh=FBz5uQJLwd+dmQJk3GQgUqgAPz7OmVKJ4pojIYBkSmo=;
- b=gyONyuhjAC9BwCX3PBZ44RZfwawG17bE1yI7c07sL92QrblL6lGCdlop
- tSa2EnZymKZE1uxD0uAeemOqUW1lUwmbc7qy/4Y9RgVZSCXqP0OGSU5gw
- 9ofZ5tUz/kHv50odMPqCJGyIOZRPCFA5IjO6OW0t0U48Lu3azAyi881f9
- dl1VPhRX8OzqYR3uBZovOo7HcGuENpZCih4j+lgBtIssROwAnvIyhfxYa
- 5XIarY6xR8OjhYnx1HuCA1gLbKQrRaNXnyowE+A2jwYH9+l7wCLQVy31R
- lFoYI1L+n3JsUtXLVu6nCjxRrGkbey9WrU3ShyDxgWzpTMM5pd/YDEBiA
+ t=1783588297; x=1815124297;
+ h=message-id:date:subject:to:cc:references:from:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=pAQAZ1HcABShqCtHQ1Q09a3BJW9sst9T3HhJcioLJlQ=;
+ b=hIT7u+IDw42A/kAZnJyyXDQ6gTh7lMOScOcOb3eqpvNW22gF09WxA07O
+ T1yxYFGs7c9ZS3L+1dxaeDqT8bD4X2lT+XrfzqMK2g+4qBLSUqKP71oOT
+ 7FeW4JCj0jSFTfvORPOH7ky0TjvTjf8/82+GSNEG6O6B2R0/BcplIS5L6
+ +/4u5IPd3qn3G9lSGt1CqzMG+k0fVPSGcdWd0GYP63Rb9ZzbpEMjIKieS
+ 8yrO7stt0eAFAynJ5lmkz+qz6R8SO8g5igjDiJK6w57OnbOj8CHHFDYPG
+ Z6DGMSIX9UUsjSs0lM2/o20Yy00Z+mlQIk9QpLafg5sK3WI2GCTY9n2SB
  Q==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=linux.intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=gyONyuhj
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net v4 1/2] ice: skip per-VLAN
- promisc rules when default VSI Rx rule is set
+ header.s=Intel header.b=hIT7u+ID
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next] idpf: add flow-based XDP
+ fallback for FWs without Tx FIFO support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -122,222 +217,36 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
+On 7/8/26 17:13, Alexander Lobakin wrote:
+>  From the first days of XDP implementation in idpf, it relied and
+> worked solely on top of the queue-based scheduling Tx mode, which
+> basically means simple FIFO. However, turned out not every firmware
+> supports this mode and XDP doesn't work there at all.
+> 
+> Since the flow-based scheduling Tx mode is mandatory and supported
+> by every FW, introduce a simple fallback guarded by a static key
+> to not hurt the more performant mode. The FB mode generates a
+> completion for each Tx descriptor and never guarantees that there
+> won't be any out-of-order completions. Serialize that using a
+> bitmap of completed descriptors and report contiguous blocks of
+> free bits to match XDP and XSk expectations and avoid further
+> code complication.
+> 
+> The usage of a bitmap on hotpath might sound scary, but this
+> fallback is able to reach around 70% of the QB mode's performance,
+> which is comparable to what ice gives us. The main bottlenecks are
+> unlikely()s and one completion per each descriptor, while in the QB
+> mode we have one completion per batch (which might contain 64 or
+> even 128 frames), plus the size of the completion descriptor is
+> 8 bytes in this mode (4 bytes in the QB mode), which means a lot
+> of additional PCI traffic.
+> 
+> bloat-o-meter shows .text increase in about 2 Kb without adding new
+> functions or uninlining any of the existing ones. I played a bunch
+> with inlining and uninlining certain pieces or the whole fallback,
+> but the compiler collapses and optimizes libeth templates so hardly
+> so that each additional external call only makes things worse.
+> 
+> Signed-off-by: Alexander Lobakin <aleksander.lobakin@intel.com>
 
-
-On 08/07/2026 14:57, Petr Oros wrote:
-> When an ice port in a vlan-filtering bridge goes promiscuous (typical for
-> bond slaves), the driver installs a per-VLAN ICE_SW_LKUP_PROMISC_VLAN rule
-> for every VID on top of the broad ICE_SW_LKUP_DFLT VSI Rx rule. Each rule
-> consumes one of the ~32K Flow Lookup Unit (FLU) entries the device shares
-> across PFs, so a wide trunk (vid 2-4094) over several PFs overruns the
-> pool: firmware rejects further Add Switch Rules with ENOSPC (AQ 0x10) and
-> the DFLT Rx rule itself fails to install:
-> 
->   ice 0000:5c:00.1: Failed to set VSI 14 as the default forwarding
->                     VSI, error -5
->   ice 0000:5c:00.1 ens1f1: Error -5 setting default VSI 14 Rx rule
-> 
-> Once a switch context is overrun the retries can also come back as ENOENT
-> (AQ 0x2), which has misled triage toward a perceived recipe binding defect
-> rather than a capacity issue.
-> 
-> The DFLT rule already catches every packet on the port regardless of VLAN
-> tag, so the per-VLAN promisc expansion is redundant while it is installed.
-> Skip it at the two sites that drive it, ice_set_promisc() and
-> ice_vlan_rx_add_vid(), keyed on ice_is_vsi_dflt_vsi() rather than the
-> netdev IFF_PROMISC flag so a failed or LAG-suppressed DFLT install still
-> falls back to the per-VLAN rules.
-> 
-> IFF_ALLMULTI and IFF_PROMISC can reach ice_vsi_sync_fltr() in separate
-> passes (a bridge join sets them through separate calls), so the allmulti
-> pass may expand the per-VID rules before the DFLT rule exists. Drop those
-> now-redundant rules right after ice_set_dflt_vsi() installs the DFLT rule;
-> ice_vsi_exit_dflt_promisc() reinstates them when promisc is cleared.
-> 
-> ice_vsi_sync_fltr() subscribed multicast promiscuity only inside the
-> "default VSI not yet in use" branch, so a promiscuous VSI that finds the
-> default VSI rule already present (owned by another VSI, or preserved
-> across a switchdev session) ended up in unicast promisc with no multicast
-> subscription. Issue ice_set_promisc(ICE_MCAST_PROMISC_BITS) whenever the
-> netdev is promiscuous; it is idempotent and returns 0 if the rule is
-> already present.
-> 
-> Fixes: 1273f89578f2 ("ice: Fix broken IFF_ALLMULTI handling")
-> Signed-off-by: Petr Oros <poros@redhat.com>
-
-LGTM
-Reviewed-by: Marcin Szycik <marcin.szycik@linux.intel.com>
-> ---
-> v4 (review comments from Marcin Szycik):
-> - Reworded the ice_clear_promisc() and the per-VID cleanup comments.
-> - Flipped the ice_vsi_clear_vlan_mc_promisc() guard to an early return to
->   reduce indentation, and noted that the clear is best-effort.
-> No functional change.
-> 
-> v3: https://lore.kernel.org/all/20260701133601.2118382-2-poros@redhat.com/
-> v2: https://lore.kernel.org/all/20260622113428.2565255-2-poros@redhat.com/
-> v1: https://lore.kernel.org/all/89efbea9831175e6f57e9fe8557f7a0e48e050b7.1781786935.git.poros@redhat.com/
-> ---
->  drivers/net/ethernet/intel/ice/ice_main.c | 109 +++++++++++++++++-----
->  1 file changed, 88 insertions(+), 21 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-> index b43d420ece99ca..f1fef26eeadac9 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_main.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-> @@ -274,7 +274,8 @@ static int ice_set_promisc(struct ice_vsi *vsi, u8 promisc_m)
->  	if (vsi->type != ICE_VSI_PF)
->  		return 0;
->  
-> -	if (ice_vsi_has_non_zero_vlans(vsi)) {
-> +	/* skip per-VID expansion; the DFLT Rx rule already covers every VID */
-> +	if (ice_vsi_has_non_zero_vlans(vsi) && !ice_is_vsi_dflt_vsi(vsi)) {
->  		promisc_m |= (ICE_PROMISC_VLAN_RX | ICE_PROMISC_VLAN_TX);
->  		status = ice_fltr_set_vlan_vsi_promisc(&vsi->back->hw, vsi,
->  						       promisc_m);
-> @@ -304,9 +305,20 @@ static int ice_clear_promisc(struct ice_vsi *vsi, u8 promisc_m)
->  		return 0;
->  
->  	if (ice_vsi_has_non_zero_vlans(vsi)) {
-> -		promisc_m |= (ICE_PROMISC_VLAN_RX | ICE_PROMISC_VLAN_TX);
-> +		u8 vlan_promisc_m = promisc_m | ICE_PROMISC_VLAN_RX |
-> +				    ICE_PROMISC_VLAN_TX;
-> +		int vid0_status;
-> +
-> +		/* the vid=0 rule may be in either recipe (the recipe used to
-> +		 * set it is not recorded), so clear both; clearing an absent
-> +		 * rule returns 0
-> +		 */
->  		status = ice_fltr_clear_vlan_vsi_promisc(&vsi->back->hw, vsi,
-> -							 promisc_m);
-> +							 vlan_promisc_m);
-> +		vid0_status = ice_fltr_clear_vsi_promisc(&vsi->back->hw,
-> +							 vsi->idx, promisc_m, 0);
-> +		if (!status)
-> +			status = vid0_status;
->  	} else {
->  		status = ice_fltr_clear_vsi_promisc(&vsi->back->hw, vsi->idx,
->  						    promisc_m, 0);
-> @@ -317,6 +329,61 @@ static int ice_clear_promisc(struct ice_vsi *vsi, u8 promisc_m)
->  	return status;
->  }
->  
-> +/**
-> + * ice_vsi_exit_dflt_promisc - drop the default VSI Rx rule on promisc off
-> + * @vsi: the VSI leaving promiscuous mode
-> + *
-> + * For an IFF_ALLMULTI VSI with VLANs the per-VID multicast rules are
-> + * reinstated before the default rule is cleared so coverage never lapses;
-> + * the then redundant vid=0 rule is dropped best-effort. The callees log
-> + * their own failures, so error returns are not re-logged here.
-> + *
-> + * Return: 0 on success, negative on error with the default rule left in place.
-> + */
-> +static int ice_vsi_exit_dflt_promisc(struct ice_vsi *vsi)
-> +{
-> +	struct ice_vsi_vlan_ops *vlan_ops = ice_get_compat_vsi_vlan_ops(vsi);
-> +	struct net_device *netdev = vsi->netdev;
-> +	struct ice_hw *hw = &vsi->back->hw;
-> +	bool restore_mc;
-> +	int err;
-> +
-> +	restore_mc = (vsi->current_netdev_flags & IFF_ALLMULTI) &&
-> +		     ice_vsi_has_non_zero_vlans(vsi);
-> +
-> +	if (restore_mc) {
-> +		err = ice_fltr_set_vlan_vsi_promisc(hw, vsi,
-> +						    ICE_MCAST_VLAN_PROMISC_BITS);
-> +		if (err && err != -EEXIST)
-> +			return err;
-> +	}
-> +
-> +	err = ice_clear_dflt_vsi(vsi);
-> +	if (err)
-> +		return err;
-> +
-> +	if (netdev->features & NETIF_F_HW_VLAN_CTAG_FILTER)
-> +		vlan_ops->ena_rx_filtering(vsi);
-> +
-> +	if (restore_mc)
-> +		ice_fltr_clear_vsi_promisc(hw, vsi->idx, ICE_MCAST_PROMISC_BITS,
-> +					   0);
-> +
-> +	return 0;
-> +}
-> +
-> +/* Drop the per-VID multicast promisc rules made redundant by the default
-> + * VSI Rx rule; best-effort, a leftover is harmless while that rule stands.
-> + */
-> +static void ice_vsi_clear_vlan_mc_promisc(struct ice_vsi *vsi)
-> +{
-> +	if (!ice_vsi_has_non_zero_vlans(vsi))
-> +		return;
-> +
-> +	ice_fltr_clear_vlan_vsi_promisc(&vsi->back->hw, vsi,
-> +					ICE_MCAST_VLAN_PROMISC_BITS);
-> +}
-> +
->  /**
->   * ice_vsi_sync_fltr - Update the VSI filter list to the HW
->   * @vsi: ptr to the VSI
-> @@ -429,30 +496,31 @@ static int ice_vsi_sync_fltr(struct ice_vsi *vsi)
->  				err = 0;
->  				vlan_ops->dis_rx_filtering(vsi);
->  
-> -				/* promiscuous mode implies allmulticast so
-> -				 * that VSIs that are in promiscuous mode are
-> -				 * subscribed to multicast packets coming to
-> -				 * the port
-> +				/* a prior allmulti pass may have added per-VID
-> +				 * rules now covered by the DFLT rule
->  				 */
-> -				err = ice_set_promisc(vsi,
-> -						      ICE_MCAST_PROMISC_BITS);
-> -				if (err)
-> -					goto out_promisc;
-> +				ice_vsi_clear_vlan_mc_promisc(vsi);
->  			}
-> +
-> +			/* Promiscuous mode implies allmulticast. Subscribe
-> +			 * the VSI to all multicast even when the default VSI
-> +			 * rule is already in use and the block above is
-> +			 * skipped (it may be owned by another VSI, or
-> +			 * preserved across a switchdev session); the unicast
-> +			 * catch-all does not cover the multicast subscription.
-> +			 */
-> +			err = ice_set_promisc(vsi, ICE_MCAST_PROMISC_BITS);
-> +			if (err)
-> +				goto out_promisc;
->  		} else {
->  			/* Clear Rx filter to remove traffic from wire */
->  			if (ice_is_vsi_dflt_vsi(vsi)) {
-> -				err = ice_clear_dflt_vsi(vsi);
-> +				err = ice_vsi_exit_dflt_promisc(vsi);
->  				if (err) {
-> -					netdev_err(netdev, "Error %d clearing default VSI %i Rx rule\n",
-> -						   err, vsi->vsi_num);
->  					vsi->current_netdev_flags |=
->  						IFF_PROMISC;
->  					goto out_promisc;
->  				}
-> -				if (vsi->netdev->features &
-> -				    NETIF_F_HW_VLAN_CTAG_FILTER)
-> -					vlan_ops->ena_rx_filtering(vsi);
->  			}
->  
->  			/* disable allmulti here, but only if allmulti is not
-> @@ -3676,10 +3744,9 @@ int ice_vlan_rx_add_vid(struct net_device *netdev, __be16 proto, u16 vid)
->  	while (test_and_set_bit(ICE_CFG_BUSY, vsi->state))
->  		usleep_range(1000, 2000);
->  
-> -	/* Add multicast promisc rule for the VLAN ID to be added if
-> -	 * all-multicast is currently enabled.
-> -	 */
-> -	if (vsi->current_netdev_flags & IFF_ALLMULTI) {
-> +	/* skip the per-VID rule when the DFLT Rx rule already covers this VID */
-> +	if ((vsi->current_netdev_flags & IFF_ALLMULTI) &&
-> +	    !ice_is_vsi_dflt_vsi(vsi)) {
->  		ret = ice_fltr_set_vsi_promisc(&vsi->back->hw, vsi->idx,
->  					       ICE_MCAST_VLAN_PROMISC_BITS,
->  					       vid);
-
+Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
