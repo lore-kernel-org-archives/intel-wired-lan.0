@@ -1,231 +1,118 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 310F6C43458
-	for <intel-wired-lan@archiver.kernel.org>; Sun, 12 Jul 2026 11:11:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 438A7C43458
+	for <intel-wired-lan@archiver.kernel.org>; Sun, 12 Jul 2026 13:22:53 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id DF6128127B;
-	Sun, 12 Jul 2026 11:11:11 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 0179340A96;
+	Sun, 12 Jul 2026 13:22:53 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 4yKmzg1jAE5I; Sun, 12 Jul 2026 11:11:11 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id qxAQRfakwDoz; Sun, 12 Jul 2026 13:22:50 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2494B81549
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CEB6140A8C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1783854671;
-	bh=VmtnK3tqoDU1aIaol+aWaActTb6DTRuQA5S8IlUXC6U=;
-	h=Date:From:To:Cc:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=3drFScMKWu2v8F/OPYxaLXHv3F3eu0q/hORn8RAN7m4QfZd2ZpCjHI02zHqZlRXsN
-	 OZOE44JAZv5Ch2i70pen3aOgO/rYEnhOWS0sj19NLb7F9sG87J4fWI/ouDtVnktc6q
-	 Fhz21Tw44jfR/upSSW+6kOH1Cm+puSUaEHSgVAI8Dmmclw92XK2v4x/8+YBmRgvs8+
-	 M7LBlZCPNUS7/u54/X70x0sIWiZxZTRZGPIulM/OzpFvjBkrBvmcTECQ5IqvFohzGY
-	 6ZmUkw3AlmY6YKsNGe2JuYPEva1xeidBg0xKEcdmmKfZDpqmZ3ZwGSpXOj4FfD12tv
-	 UhJJB1Qif4JYg==
+	s=default; t=1783862570;
+	bh=f+YFzVviG3DzxMqpa6xeKwhT6SuFAN+/OdOMSnwiZgU=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=PFij0y/JTGJzIMGiZL0T4eD8OHrylRJi4ln5/GMJCQuAmvDeKRg88na3HTtvgJC8l
+	 +CqiCbe8vdYD1HtUeA7/ctx3K17S9wZM96VNgx0+fgBle4HYGP/zJIqjOMdyTKUdtx
+	 +S8G1AU0cRqO1nbXqpIdOYR10n93at2Z/7B+qRpdUqTRdvQh5XzJSO5Wy+VZZ+LXdv
+	 DdbZ0K8hCdkNPRdts5jQLss1+9QggXNmI//CIGB1/U6xXlSG217BIQgdyq7GvVlkP1
+	 i7HWDtRCF6YCgu1CR4YzcdsJ6wiuckDvEdqS1Gw3Ndb2qfA5hywKZtZ/mYwUBiByUC
+	 3u/ET0G+vySLQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 2494B81549;
-	Sun, 12 Jul 2026 11:11:11 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 18A58359
- for <intel-wired-lan@lists.osuosl.org>; Sun, 12 Jul 2026 11:11:10 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id CEB6140A8C;
+	Sun, 12 Jul 2026 13:22:50 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id BEA962EE
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 12 Jul 2026 13:22:49 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 0A87781549
- for <intel-wired-lan@lists.osuosl.org>; Sun, 12 Jul 2026 11:11:10 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id B03B140A8C
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 12 Jul 2026 13:22:49 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id E1OW_i5Iqh8k for <intel-wired-lan@lists.osuosl.org>;
- Sun, 12 Jul 2026 11:11:09 +0000 (UTC)
-X-Greylist: delayed 502 seconds by postgrey-1.37 at util1.osuosl.org;
- Sun, 12 Jul 2026 11:11:08 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org A8F088127B
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A8F088127B
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=103.168.172.139;
- helo=flow-a4-smtp.messagingengine.com; envelope-from=arnd@arndb.de;
- receiver=<UNKNOWN> 
-Received: from flow-a4-smtp.messagingengine.com
- (flow-a4-smtp.messagingengine.com [103.168.172.139])
- by smtp1.osuosl.org (Postfix) with ESMTPS id A8F088127B
- for <intel-wired-lan@lists.osuosl.org>; Sun, 12 Jul 2026 11:11:08 +0000 (UTC)
-Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
- by mailflow.phl.internal (Postfix) with ESMTP id 0B75A138025E;
- Sun, 12 Jul 2026 07:02:45 -0400 (EDT)
-Received: from phl-imap-05 ([10.202.2.95])
- by phl-compute-04.internal (MEProxy); Sun, 12 Jul 2026 07:02:45 -0400
-X-ME-Sender: <xms:SXRTagVsyQ8TX1iEIAxFTrUnBBvg3ouWIpLBpPooAqGRyR2NZALW9Q>
- <xme:SXRTavZP-nXVqS1pChO9GStBCMnL0eeMY-iAfuLUn6Dud2aygQe_POwJXvQ-rGkj1
- 899by3cZoizkZNHBE50WoNoIx-Ocnc8el2ENhnhSOyttQHye1fMY64>
-X-ME-Proxy-Cause: dmFkZTFFbWNFV8UtK7PJ0YbSmA1A6l1wZb8N5iMZiv4PmzggaXO+c+HZuMN5dbOW4/LwO4
- YrukvejgOijtkueKJtcp4wgn4EhO63TCyyzHULfYQ2kFzWvDfUC3HWcVgv98a9p3wmqOoP
- w4qayiqS0HMo3Jap3E4pumgiQ3lyrAKF9DlQo0/x7Vy2uECt+Jy4NACfXefBg4WHXnMK2A
- UENjemuL/g1YRCyXvDovMaGyHuMBa5JymL5nwjoOE3I2qwrEWoBlVH7JlrO1b+WcK48apy
- 0bh/8MaX95lIq8caXuYf9xgC2zt9vvdMfjxFmpJdLGcSI6sCp93t5lGDrR6djFw1SGbSH9
- DJwEGK6oflC0+CJsijysvViaYJFn3czJOJ8wT4taro4O3sdXQE4YW1tubTULU31gMU6HDI
- npWKA0QFVWKK3PC5QuzFhriKLeIyPk0XlEhysD/nSStZ7x0lKeUDYwnJvvSAIigLSn8nWf
- PyAidznJn1v5eQA/hAL2gj9KhOqesySOSlWonQ+mNx9JRj+A/jnejg8SlNlhLkce3uj5+O
- /r9MtC7Kknkp+lg03SNpnmqr8+d7VdpV/I/EEDURuqzaOT8bFhRzha5fO5kjgbTdv/NvEG
- LeDxahJFEmmzScN38liLw+1/3K9JakxlQk2CYCzd0cMpr9LXzeOrR/yxM4wA
-X-ME-Proxy: <xmx:UXRTaj0sSmZd0VqAg1Ab8vc217-LONz6IRtUmshppkUdvY60mSRlZw>
- <xmx:UXRTaork14UHHg7w8fqQyE86kpW_mANgES-srmAP6Z44K5DH5HjSwg>
- <xmx:UXRTahF3AcH9RhNQsb3uaMj_kkgPVZA8vLCVaaE8_vKD1PG-G4UdyA>
- <xmx:UXRTaq7ZeQ01Sj7O-hgfgLPJxURhNMS9O3pblaTcSMXqSYfUUfP1Rg>
- <xmx:VXRTajwxpExOzP0me6ntckPmhFUoyUd4EPzl75I2G2v1oTlEJtNxvefy>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.phl.internal (Postfix, from userid 501)
- id 29B00182007E; Sun, 12 Jul 2026 07:02:33 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id YSTKCQzC4eFm for <intel-wired-lan@lists.osuosl.org>;
+ Sun, 12 Jul 2026 13:22:49 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2a00:1450:4864:20::330; helo=mail-wm1-x330.google.com;
+ envelope-from=devnexen@gmail.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org BBE9240A8A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BBE9240A8A
+Received: from mail-wm1-x330.google.com (mail-wm1-x330.google.com
+ [IPv6:2a00:1450:4864:20::330])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id BBE9240A8A
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 12 Jul 2026 13:22:48 +0000 (UTC)
+Received: by mail-wm1-x330.google.com with SMTP id
+ 5b1f17b1804b1-490cf322ed0so16068005e9.1
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 12 Jul 2026 06:22:48 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20251104; t=1783862566; x=1784467366;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to:content-type;
+ bh=f+YFzVviG3DzxMqpa6xeKwhT6SuFAN+/OdOMSnwiZgU=;
+ b=RsgM1oB9L1PVZGJSGIMXKwKBw5PYf11IK3hBB1ydnp3NlWQgsHDQ50Q45bOHZ6ZeOX
+ GXjF3sEcBUPosyyGJ3hySQIxjC4ZBbTD4NTw5YVp0I2kRvHR0I1i2GeVZbDQvXF27VdD
+ BSY++DfBU0hHgSM6As7V9m5xGLRQUbB0dL9PVtlmAYEVw9NdykXQ6va0CLmklzw3rfNp
+ j0w9p6DJ3qE38kMrPvYVbYSCterk/OE1UA+Kxcq6UJ9GwfKal1RnZNFhHtr5mJ+qBBAg
+ NAygXl5mFP8+ULfDfwedLds8PQgVP7nIr9TLxltuniVmze58Tov2GXVfwPryDot2gMhr
+ 1SyA==
+X-Gm-Message-State: AOJu0Yy0kEgRpdWM53rx3YpAGHc3/BqhFU1W4QOFqsNluMQadIf2Nnao
+ 2uRKHbwcjgXVBbreeCzodxSPd3biSuAmOjb80liQub4LklT7jjZ8F9iydft/4Q==
+X-Gm-Gg: AfdE7cnt44/BIAmSoF1y6DxzzlAMLUIk7RWzzW1tXDgVLXnk+aMs3Okvor+fkowIzRA
+ fUuNuGDyF3qpHLWCiphK+3TWiKZJSB1w8b9vuf208/iL5BA4DgJ8j71Svlxh8bHYH4xl+TnTHBY
+ nQAduMyiEqhwqA8xCgs/dTf4Uaoxkpmk84hwP7z35KcC0zOEMMuAZ0uJtbuo4NhfiDA6KOSAXqa
+ E8x3oDnj3HZiUppEOpdcXsiXaTuTDfksL1vnCyhrdmruOQdXB/mdNa2qpNIpUQsg20Ya2HzRFtU
+ UrUr0M4R1AUBhd2VrQSLwifF+ZTcNUV8EvyI17guLTI7rGS5+sc6pqlb5jAHKOAHU8+ZGKmUCq0
+ KZgRFjtGIZgayEbELZ9Zr9gcDhxTTNj80AWiPnrouiYbZ2PAZ9Zz8EdGpzxi6xRkJNC6Y0QV3Jy
+ fRAaMGCdf5UFHrFqKwdwFFcvZpfwgbI3scA8YO5R9MXhJZLjjes31n0VhgpEWBBPVlNvSMzwxh
+X-Received: by 2002:a05:600c:8b52:b0:492:53e8:3bc1 with SMTP id
+ 5b1f17b1804b1-493f87f3cffmr58484955e9.17.1783862566268; 
+ Sun, 12 Jul 2026 06:22:46 -0700 (PDT)
+Received: from dohko.chello.ie (188-141-5-72.dynamic.upc.ie. [188.141.5.72])
+ by smtp.gmail.com with ESMTPSA id
+ 5b1f17b1804b1-493f4cbc620sm180883955e9.13.2026.07.12.06.22.44
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Sun, 12 Jul 2026 06:22:45 -0700 (PDT)
+From: David Carlier <devnexen@gmail.com>
+To: intel-wired-lan@lists.osuosl.org,
+	netdev@vger.kernel.org
+Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ maciej.fijalkowski@intel.com, aleksandr.loktionov@intel.com,
+ advoretsky@gmail.com, stable@vger.kernel.org,
+ David Carlier <devnexen@gmail.com>
+Date: Sun, 12 Jul 2026 14:22:42 +0100
+Message-ID: <20260712132242.223254-1-devnexen@gmail.com>
+X-Mailer: git-send-email 2.53.0
 MIME-Version: 1.0
-X-ThreadId: ARmmoW1aQeCk
-Date: Sun, 12 Jul 2026 13:01:52 +0200
-From: "Arnd Bergmann" <arnd@arndb.de>
-To: "Fernando Fernandez Mancera" <fmancera@suse.de>,
- Netdev <netdev@vger.kernel.org>
-Cc: "David S . Miller" <davem@davemloft.net>,
- "Eric Dumazet" <edumazet@google.com>, "Jakub Kicinski" <kuba@kernel.org>,
- "Paolo Abeni" <pabeni@redhat.com>, "David Ahern" <dsahern@kernel.org>,
- "Simon Horman" <horms@kernel.org>, "Ido Schimmel" <idosch@nvidia.com>,
- "Jason Gunthorpe" <jgg@ziepe.ca>, "Leon Romanovsky" <leon@kernel.org>,
- "Andrew Lunn" <andrew+netdev@lunn.ch>,
- "Anthony L Nguyen" <anthony.l.nguyen@intel.com>,
- "Przemek Kitszel" <przemyslaw.kitszel@intel.com>,
- "Elad Nachman" <enachman@marvell.com>,
- "Saeed Mahameed" <saeedm@nvidia.com>, "Tariq Toukan" <tariqt@nvidia.com>,
- "Mark Bloch" <mbloch@nvidia.com>, "Petr Machata" <petrm@nvidia.com>,
- "Edward Cree" <ecree.xilinx@gmail.com>,
- "Maxime Coquelin" <mcoquelin.stm32@gmail.com>,
- "Alexandre Torgue" <alexandre.torgue@foss.st.com>,
- "Arend van Spriel" <arend.vanspriel@broadcom.com>,
- "Miri Korenblit" <miriam.rachel.korenblit@intel.com>,
- "Keith Busch" <kbusch@kernel.org>, "Jens Axboe" <axboe@kernel.dk>,
- "Christoph Hellwig" <hch@lst.de>, "Sagi Grimberg" <sagi@grimberg.me>,
- "Chaitanya Kulkarni" <kch@nvidia.com>,
- "Saurav Kashyap" <skashyap@marvell.com>,
- "Javed Hasan" <jhasan@marvell.com>, GR-QLogic-Storage-Upstream@marvell.com,
- "James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- "Nilesh Javali" <njavali@marvell.com>,
- "Manish Rangankar" <mrangankar@marvell.com>,
- "Varun Prakash" <varun@chelsio.com>,
- "Alexander Viro" <viro@zeniv.linux.org.uk>,
- "Christian Brauner" <brauner@kernel.org>, "Jan Kara" <jack@suse.cz>,
- "David Howells" <dhowells@redhat.com>,
- "Marc Dionne" <marc.dionne@auristor.com>,
- "Trond Myklebust" <trondmy@kernel.org>,
- "Anna Schumaker" <anna@kernel.org>, "Chuck Lever" <cel@kernel.org>,
- "Jeff Layton" <jlayton@kernel.org>, NeilBrown <neil@brown.name>,
- "Olga Kornievskaia" <okorniev@redhat.com>,
- "Dai Ngo" <Dai.Ngo@oracle.com>, "Tom Talpey" <tom@talpey.com>,
- "Marek Lindner" <marek.lindner@mailbox.org>,
- "Simon Wunderlich" <sw@simonwunderlich.de>,
- "Antonio Quartulli" <antonio@mandelbit.com>,
- "Sven Eckelmann" <sven@narfation.org>,
- "Nikolay Aleksandrov" <razor@blackwall.org>,
- "Pablo Neira Ayuso" <pablo@netfilter.org>,
- "Florian Westphal" <fw@strlen.de>, "Phil Sutter" <phil@nwl.cc>,
- "Johannes Berg" <johannes@sipsolutions.net>,
- "Matthieu Baerts" <matttbe@kernel.org>,
- "Mat Martineau" <martineau@kernel.org>,
- "Geliang Tang" <geliang@kernel.org>, "Julian Anastasov" <ja@ssi.bg>,
- "Aaron Conole" <aconole@redhat.com>,
- "Eelco Chaudron" <echaudro@redhat.com>,
- "Ilya Maximets" <i.maximets@ovn.org>,
- "Allison Henderson" <achender@kernel.org>,
- "Jamal Hadi Salim" <jhs@mojatatu.com>, "Jiri Pirko" <jiri@resnulli.us>,
- "Marcelo Ricardo Leitner" <marcelo.leitner@gmail.com>,
- "Xin Long" <lucien.xin@gmail.com>, "D. Wythe" <alibuda@linux.alibaba.com>,
- "Dust Li" <dust.li@linux.alibaba.com>,
- "Sidraya Jayagond" <sidraya@linux.ibm.com>,
- "Wenjia Zhang" <wenjia@linux.ibm.com>,
- "Mahanta Jambigi" <mjambigi@linux.ibm.com>,
- "Tony Lu" <tonylu@linux.alibaba.com>, "Wen Gu" <guwen@linux.alibaba.com>,
- "Jon Maloy" <jmaloy@redhat.com>,
- "Steffen Klassert" <steffen.klassert@secunet.com>,
- "Herbert Xu" <herbert@gondor.apana.org.au>,
- "Vikas Gupta" <vikas.gupta@broadcom.com>,
- "Rajashekar Hudumula" <rajashekar.hudumula@broadcom.com>,
- "Justin Chen" <justin.chen@broadcom.com>,
- "Bhargava Marreddy" <bhargava.marreddy@broadcom.com>,
- "Nicolai Buchwitz" <nb@tipi-net.de>,
- "Florian Fainelli" <florian.fainelli@broadcom.com>,
- "Heiner Kallweit" <hkallweit1@gmail.com>,
- "Krzysztof Kozlowski" <krzk@kernel.org>,
- "Russell King" <rmk+kernel@armlinux.org.uk>, "Yao Zi" <me@ziyao.cc>,
- "Yanteng Si" <siyanteng@cqsoftware.com.cn>,
- "Maxime Chevallier" <maxime.chevallier@bootlin.com>,
- "Julian Braha" <julianbraha@gmail.com>, "Joey Lu" <a0987203069@gmail.com>,
- "Shangjuan Wei" <weishangjuan@eswincomputing.com>,
- "Chen-Yu Tsai" <wens@kernel.org>, "Inochi Amaoto" <inochiama@gmail.com>,
- "Lad, Prabhakar" <prabhakar.mahadev-lad.rj@bp.renesas.com>,
- "Qingfang Deng" <qingfang.deng@linux.dev>,
- "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
- "Eric Biggers" <ebiggers@kernel.org>,
- "Ethan Nelson-Moore" <enelsonmoore@gmail.com>,
- "Ard Biesheuvel" <ardb@kernel.org>,
- "Dmitry Safonov" <0x7f454c46@gmail.com>,
- "Kuniyuki Iwashima" <kuniyu@google.com>, "Alyssa Ross" <hi@alyssa.is>,
- linux-rdma@vger.kernel.org, linux-kernel@vger.kernel.org,
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- "open list:NETRONOME ETHERNET DRIVERS" <oss-drivers@corigine.com>,
- linux-net-drivers@amd.com, linux-stm32@st-md-mailman.stormreply.com,
- linux-arm-kernel@lists.infradead.org, linux-wireless@vger.kernel.org,
- brcm80211@lists.linux.dev, brcm80211-dev-list.pdl@broadcom.com,
- linux-nvme@lists.infradead.org, linux-scsi@vger.kernel.org,
- target-devel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- linux-afs@lists.infradead.org, linux-nfs@vger.kernel.org,
- b.a.t.m.a.n@lists.open-mesh.org,
- "open list:ETHERNET BRIDGE" <bridge@lists.linux.dev>,
- netfilter-devel@vger.kernel.org, coreteam@netfilter.org,
- mptcp@lists.linux.dev, lvs-devel@vger.kernel.org, dev@openvswitch.org,
- rds-devel@oss.oracle.com, linux-sctp@vger.kernel.org,
- linux-s390@vger.kernel.org,
- "open list:TIPC NETWORK LAYER" <tipc-discussion@lists.sourceforge.net>
-Message-Id: <12ffac6a-649a-4e4a-8d12-0b48171e1d95@app.fastmail.com>
-In-Reply-To: <20260712013941.4570-2-fmancera@suse.de>
-References: <20260712013941.4570-1-fmancera@suse.de>
- <20260712013941.4570-2-fmancera@suse.de>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=arndb.de; h=cc
- :cc:content-transfer-encoding:content-type:content-type:date
- :date:from:from:in-reply-to:in-reply-to:message-id:mime-version
- :references:reply-to:subject:subject:to:to; s=fm1; t=1783854165;
- x=1783861365; bh=VmtnK3tqoDU1aIaol+aWaActTb6DTRuQA5S8IlUXC6U=; b=
- WxzzMJFRBMefM70b/YtDS4TGQzae1Lt/rly/upptZh5fiBQ/fgL1t0EVfjBFGBN8
- y3oHExa9YWDQRMyr7UQAu8Svx/w4tjxqi8/PSOMY6DvjDwL0TZKwHwZA9Ozd2pYf
- s0ypipZNS8YGe2m4DOJe+38aDBHK+jcODlukRpagOVHD9KEJkdoQqgev21V8Bgb3
- TCdD201xrmKe4YIQ1qTBGr8mMYvetvHkQoCSb6jHBr01wyoKlmdhQmLjG7/Wa4aa
- rs8eKVjx7yIIkxGCiHi9M1kuHiEPyUx1LiHzPOCzYk3arkdLbjWPxJP8Byp5TUOQ
- GxF66xEjwQreUjXukLkCxg==
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
- messagingengine.com; h=cc:cc:content-transfer-encoding
- :content-type:content-type:date:date:feedback-id:feedback-id
- :from:from:in-reply-to:in-reply-to:message-id:mime-version
- :references:reply-to:subject:subject:to:to:x-me-proxy
- :x-me-sender:x-me-sender:x-sasl-enc; s=fm2; t=1783854165; x=
- 1783861365; bh=VmtnK3tqoDU1aIaol+aWaActTb6DTRuQA5S8IlUXC6U=; b=U
- jYqDSeLxMU5ePSUGPDE9I0O+Exrzvenmm34qVl7yGd9kO5OjZM4Nba5EIOkF9dv3
- xbKJusquIu/RrdrD6CtBzIv0EDEmxbAhThdwGvQHTnpo2TDIjQEKyKCx0zVgVG4v
- MwbaQlaY/YSKqvHcswOF7zPh5R8hrBjf645qkfqkcQmWRXgi/k7HA1iEQiok67Xm
- 69YEfw3juGlJftC0DsXryuUIhIaOjq2ddjeAdhPFtfFc045xVKuzffiJ8QKSF2UW
- O7Asl8sBFDCyqLasMb974+9PXhLP/sU+LeqELU777jCsaUXHy5EIQlONJRbvQD0l
- nsD4pCYVBIlHyFjN/7Jsw==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ d=gmail.com; s=20251104; t=1783862566; x=1784467366; darn=lists.osuosl.org;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+ bh=f+YFzVviG3DzxMqpa6xeKwhT6SuFAN+/OdOMSnwiZgU=;
+ b=THm0R2LxCB0Wu0COy1yKXnMziZTQFJYrq8X54phV+6xxE6yyTP0YFkvaxT8rQA83jF
+ rcBiAU2No/6C4JdEGGRH2tpM+9GBs044Ed/zbJx8caMM0UH7TydOwpSfsCEM9ZuCuXMH
+ Vk8H9GN8MoLEm8GXjkHrCl6uvaPYMGH8Mwmplhuu7P326JJmr08Qxp/fyDSyokewD9w/
+ YDimcNgrqtrliqLNzgQNDmRmTsxus/3zWjTSqpRMFcSvzYyaNKXAig7JHe4XIF2wNkgr
+ d4D1wjLBBk16gCb43wGgPF+ywTKBjZDFsxyVDpHEpMclbxmvV13ijNgVZdE4gRoAsxZw
+ 3prQ==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=arndb.de
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key, unprotected) header.d=arndb.de header.i=@arndb.de
- header.a=rsa-sha256 header.s=fm1 header.b=WxzzMJFR; 
+ header.from=gmail.com
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.a=rsa-sha256 header.s=fm2 header.b=UjYqDSeL
-Subject: Re: [Intel-wired-lan] [PATCH 01/13 RFC net-next] net: ipv4:
- introduce CONFIG_IPV4 to decouple the IPv4 stack
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20251104 header.b=THm0R2Lx
+Subject: [Intel-wired-lan] [PATCH net] igc: remove napi_synchronize() in
+ igc_down()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -241,33 +128,41 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Sun, Jul 12, 2026, at 03:38, Fernando Fernandez Mancera wrote:
-> Historically, the IPv4 protocol has been linked to the core INET
-> subsystem. Because shared infrastructure like the TCP/UDP engine,
-> routing or INET hashtables live inside net/ipv4/, it has been impossible
-> to compile a kernel with only IPv6 support.
->
-> This patch introduces the CONFIG_IPV4 Kconfig symbol, which is set to
-> 'def_bool y' for now. This does not allow to completely disable the
-> IPv4 stack yet but it lays the necessary build-system work for that
-> goal.
+When an AF_XDP zero-copy application is killed abruptly, the XSK pool is
+torn down but NAPI keeps polling. igc_clean_rx_irq_zc() then returns the
+full budget on every poll, so napi_complete_done() never clears
+NAPI_STATE_SCHED.
 
-I expect this will cause additional (trivial) build regression in the
-next step when randconfig builds run into obscure corner cases, either
-with INET=y IPV4=n IPV6=y or with INET=y IPV4=n IPV6=n.
+igc_down() calls napi_synchronize() before napi_disable(), so it spins
+forever waiting for that bit and the interface never goes down. Drop the
+napi_synchronize() and let napi_disable() do the job -- it sets
+NAPI_STATE_DISABLE, which forces the stuck poll to complete. Reorder it
+ahead of igc_set_queue_napi() so the NAPI mapping is cleared only after
+polling has stopped, matching the recent igb fix b1e067240379.
 
-I can probably give your patch (with IPV4 visible or disabled) an
-early go on the randconfig tree to find these more quickly.
-If I run into regressions, should I just add more 'depends on IPV4',
-or do you have other plans?
+Fixes: fc9df2a0b520 ("igc: Enable RX via AF_XDP zero-copy")
+Suggested-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Cc: stable@vger.kernel.org
+Signed-off-by: David Carlier <devnexen@gmail.com>
+---
+ drivers/net/ethernet/intel/igc/igc_main.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-Should we have some logic to ensure that at least one of IPV4 or
-IPV6 is enabled? I think this would work
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 2c9e2dfd8499..b3883a5a7d7a 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -5352,9 +5352,8 @@ void igc_down(struct igc_adapter *adapter)
+ 
+ 	for (i = 0; i < adapter->num_q_vectors; i++) {
+ 		if (adapter->q_vector[i]) {
+-			napi_synchronize(&adapter->q_vector[i]->napi);
+-			igc_set_queue_napi(adapter, i, NULL);
+ 			napi_disable(&adapter->q_vector[i]->napi);
++			igc_set_queue_napi(adapter, i, NULL);
+ 		}
+ 	}
+ 
+-- 
+2.53.0
 
-config IPV4
-      bool "The IPv4 protocol" if IPV6
-      default INET
-
-which only allows turning IPV4 off if IPV6 has enabled.
-
-       Arnd
