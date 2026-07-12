@@ -4,140 +4,173 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1CF48C43458
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 13 Jul 2026 15:16:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9955AC43458
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 13 Jul 2026 15:16:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C070B40906;
-	Mon, 13 Jul 2026 15:16:32 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 4CCCD40786;
+	Mon, 13 Jul 2026 15:16:35 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id b1MiXcczNLKI; Mon, 13 Jul 2026 15:16:32 +0000 (UTC)
+ id IVT43tHwolVH; Mon, 13 Jul 2026 15:16:33 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org F039F408E0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0856D408F9
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1783955792;
-	bh=VWBjaJanp528VpTu2TOH4GFEEplwcn9VXFowenlC8oo=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=C0VLPVwMeooo7t1yIAVnWT+5DvL1MQzJHaNu784l9jS/OPvYlRHaCgRhWijMgkvia
-	 yL6e/qZqOuHFc5K+XU3PLpRIUlusULxqAn6SZo+wJCjtj4zvdt8i4SfgspjRs2Fw4h
-	 dPPPGq+ivnyHPe/5ShkrZDU3lOAbn3rGj+56OZlOOenm6KgoZqm5oGGvNJo10Iadrh
-	 ck6Tgo1WXAz3nZlTg1bKbg7uqAnir+CY6+Mdo6Z4vMQJWoke2S6FavLumK/clyeORC
-	 T283PL9gkTB9t4AZphCq3LMyBZHxKQfwtoiGCnw60Jtk2u4smKbHEEoOzxKoQNoCmU
-	 hDpkfBofhPLHw==
+	s=default; t=1783955793;
+	bh=uOdMcUvqnDf9QymbkGi79gn/3pS0iSEbBfzDMkoE/TI=;
+	h=Date:To:Cc:From:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=GhFk0q/ktVs+KL6u2GN0DXn52K9Ed+RdcY3EEpTfQr5rkwA9z6yaqrdUwMWNmBEIt
+	 iBoeSxGGc24b6CMLTAKOU/mIXKqgO41ptWSnuJP49PdmywO3T2+3TGOnJYXVoEbAvY
+	 Urz703mUl6diWSglCKIUd1fKeRff2uZmOWGuEIHnVuDruycigaIUL1JuoIMY+yCzCU
+	 uZxKwzsALK/TjY2dhZefj8EfazqZBQIgWMCMcfdp+GTIlcVgWjEv8dmWHneIzI8Md6
+	 mTQWeDWxnKeHAiJm598JqA3a7dZa3uU6P3l/0nojvDQ7YxSApJfJ9yVAARgBhJJ+NA
+	 Tb2l0ZMZMy6HQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id F039F408E0;
-	Mon, 13 Jul 2026 15:16:31 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 7A01F2FE
- for <intel-wired-lan@lists.osuosl.org>; Fri, 10 Jul 2026 19:07:19 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 0856D408F9;
+	Mon, 13 Jul 2026 15:16:33 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 6A1E6359
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 12 Jul 2026 11:57:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 6309081024
- for <intel-wired-lan@lists.osuosl.org>; Fri, 10 Jul 2026 19:07:19 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 5BE1140176
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 12 Jul 2026 11:57:04 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id zMnu40BXI-re for <intel-wired-lan@lists.osuosl.org>;
- Fri, 10 Jul 2026 19:07:18 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2607:f8b0:4864:3b::;
- helo=mail-pz2-x00.google.com; envelope-from=sdf.kernel@gmail.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 7AAC680ED7
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7AAC680ED7
-Received: from mail-pz2-x00.google.com (mail-pz2-x00.google.com
- [IPv6:2607:f8b0:4864:3b::])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 7AAC680ED7
- for <intel-wired-lan@lists.osuosl.org>; Fri, 10 Jul 2026 19:07:18 +0000 (UTC)
-Received: by mail-pz2-x00.google.com with SMTP id
- 41be03b00d2f7-c95bd574471so512866a12.0
- for <intel-wired-lan@lists.osuosl.org>; Fri, 10 Jul 2026 12:07:18 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1783710437; x=1784315237;
- h=in-reply-to:content-disposition:content-type:mime-version
- :references:message-id:subject:cc:to:from:date:x-gm-gg
- :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
- :content-type;
- bh=VWBjaJanp528VpTu2TOH4GFEEplwcn9VXFowenlC8oo=;
- b=VGIBV3Cjj4/gbOzWqH/ERJRnfDAuexbkD+cbKXztwqggrumCjfc+Ok0IV1uGRl0wvI
- fno9+DhUtSZq2f7eZbeiZTnMZsJmXBAKzZ4J5q4DerNBKb7MtgSeAgKuSMBlrF11f31y
- DA23NEL3KAi42A0ZWJ6pHVADuh7C2DiMglVqR3MNHwpUjnUpcEKgIeViQwOl3aA6ClEm
- wiO/ONPxcs711+38WMD9ZlFdyPKH2tFPiRemHz29yKz5za3TqM3KXOuxrS9eh5tAq75u
- q3HWRJnaSAH/K2JVO+QPxLfmoO/Djv78t9odHUUfNb3kpPFnVggBhfQp6PqFyDXpBaig
- 3a4A==
-X-Forwarded-Encrypted: i=1;
- AHgh+RrHlfO5AByf+lji5ybwF6WCfy0VMTsVLZE9fs4dUXkL1DwoZw7o/DyHneCQZ96KZB8NDUqxNI+khcGnEXcOzXM=@lists.osuosl.org
-X-Gm-Message-State: AOJu0Yz0fDeK/gPKGkwap1yZ3nelW85QI45ao2EH2tt+rME3L0lYx6P8
- N6lzdHOAFma0fTMuoECa7ozstrHcS8swfSc173g2T1n9N49JYSeJ7keQ
-X-Gm-Gg: AfdE7cm9n5ubz85oapYlhT+serhU2QnOYQvdFKjDxQeRTgr+CxDUjf04N6hmMwZMYmS
- b8U48RRNUsix1iyAZ5Lix855V/EqK7GQeH2PFl+ohgyUl0H3Q8gxGMzlOtgASxDT6DV02itdTrB
- snFeur4riuq/3jSsQAyfGC1j4CkHWZkB005poLQbgmt4z8DdFOm9hi2fw58L63GnsCiWTXIGy+e
- nWD4/f+uveZ6HGgX9ha6Qrw7djSvlBt09f8/13XPd2eeisaW0HUIWvRBQIYLicsEdJJas/UiWdh
- ox06arQUvcL2FbhPuhYTyLeNJ55lWKKsLnvDTmkSnP9dJ2yIeSwoTOJaVrJwAJ6yPKXoovKb8x5
- 73q9eHZMqXPi9fZB+/kWKrcSPKj69vOfcndOsI+yWpGb/deTvuvwZ/FtPNAc7qUHUZl4ThG6Rtl
- 5jU5GnL5c22Kls9nm3
-X-Received: by 2002:a05:6a00:180b:b0:848:2eac:bfb2 with SMTP id
- d2e1a72fcca58-848895db4e2mr303610b3a.13.1783710437502; 
- Fri, 10 Jul 2026 12:07:17 -0700 (PDT)
-Received: from localhost ([2a03:2880:2ff:4f::])
- by smtp.gmail.com with ESMTPSA id
- d2e1a72fcca58-84856e7c8edsm3299574b3a.36.2026.07.10.12.07.16
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 10 Jul 2026 12:07:17 -0700 (PDT)
-Date: Fri, 10 Jul 2026 12:05:23 -0700
-From: Stanislav Fomichev <sdf.kernel@gmail.com>
-To: Vladimir Vdovin <deliran@verdict.gg>
-Cc: Lorenzo Bianconi <lorenzo@kernel.org>, 
- Donald Hunter <donald.hunter@gmail.com>, Jakub Kicinski <kuba@kernel.org>, 
- "David S . Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
- Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>, 
- Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
- Jesper Dangaard Brouer <hawk@kernel.org>,
- John Fastabend <john.fastabend@gmail.com>, 
- Stanislav Fomichev <sdf@fomichev.me>, Andrew Lunn <andrew+netdev@lunn.ch>, 
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
- Alexander Lobakin <aleksander.lobakin@intel.com>,
- Andrii Nakryiko <andrii@kernel.org>, 
- Martin KaFai Lau <martin.lau@linux.dev>, Eduard Zingerman <eddyz87@gmail.com>,
- Song Liu <song@kernel.org>, 
- Yonghong Song <yonghong.song@linux.dev>, KP Singh <kpsingh@kernel.org>,
- Hao Luo <haoluo@google.com>, 
- Jiri Olsa <jolsa@kernel.org>, Shuah Khan <shuah@kernel.org>, 
- Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
- Jakub Sitnicki <jakub@cloudflare.com>, 
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>, netdev@vger.kernel.org,
- bpf@vger.kernel.org, 
- intel-wired-lan@lists.osuosl.org, linux-kselftest@vger.kernel.org
-Message-ID: <alE8oBxkrak8n602@devvm7509.cco0.facebook.com>
-References: <20260708203410.45121-1-deliran@verdict.gg>
- <20260708203410.45121-2-deliran@verdict.gg>
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id qDOrcl04ua1C for <intel-wired-lan@lists.osuosl.org>;
+ Sun, 12 Jul 2026 11:57:02 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=212.227.17.22;
+ helo=mout.gmx.net; envelope-from=vikdon@gmx.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 8FB4840108
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8FB4840108
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 8FB4840108
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 12 Jul 2026 11:57:00 +0000 (UTC)
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from client.hidden.invalid by mail.gmx.net (mrgmx105
+ [212.227.17.174]) with ESMTPSA (Nemesis) id 1Mr9G2-1xMx3s2vG2-00kzB6; Sun, 12
+ Jul 2026 13:56:58 +0200
+Message-ID: <1dbf956a-e981-4b2a-ab5e-ddbd5905663c@gmx.com>
+Date: Sun, 12 Jul 2026 13:56:57 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20260708203410.45121-2-deliran@verdict.gg>
+User-Agent: Mozilla Thunderbird
+Content-Language: uk
+To: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com
+Cc: intel-wired-lan@lists.osuosl.org
+From: Viktor Donner <vikdon@gmx.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:C2XBNPJLzGUUTqsGmBeFCW3RHGTiEUXjhk82Ro6wGMXLjfXglBE
+ GQBkXoTaZwFR4uqXn8JVvN6FITw2xv10O7CiMM8SQI5Bken8F+VfQZkaWpVoYKCC5/lXQZD
+ a0VKVZ5Y2YE0ygTWE3HiVmjfmrrKdPrv+N9uAZI3nsalbbwz2MU3TlyKn1rt2KFZlrS28ht
+ rNwGDZHneboAif54Y6x6A==
+UI-OutboundReport: notjunk:1;M01:P0:5kuFpTWhhv8=;hKNrYKi0hU2JkYRc07MHmPqBWh9
+ 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
+ =
 X-Mailman-Approved-At: Mon, 13 Jul 2026 15:16:30 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20251104; t=1783710437; x=1784315237; darn=lists.osuosl.org;
- h=in-reply-to:content-disposition:content-type:mime-version
- :references:message-id:subject:cc:to:from:date:from:to:cc:subject
- :date:message-id:reply-to:content-type;
- bh=VWBjaJanp528VpTu2TOH4GFEEplwcn9VXFowenlC8oo=;
- b=StdM3qb36qmcL5fP9kPM9rtMVPGyYDFaB/NM8YWt8ZxhWJTJWYY5Oo9fTHdlnV4V0/
- O+LttcMKKTHLcKNRn0Ito3IRkbRIUEgk+JSGoPdhyOWyrFLcChKKvj0HYfJA9+J1ah/H
- ELgNvyBGnA2SK+GSpT80hc83CKaCHNqy/xWM6povR0h2nFlEfCXnRlIyQ8BqeI8CUqQ9
- wqdzEJ4Y0u47+2Uoxu/hRRLbDA9nwUSbkbHhqQ02yF3MSjN1JLZ2avY/gx+SkzXLv5BX
- KgHAzNDAIRlSvDRv5IjFgWGH8ewu3Uprcj2WS2VUaGJF9mZNySFkQ/QHDcPlSR+ac/2u
- +Hxg==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=gmail.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20251104 header.b=StdM3qb3
-Subject: Re: [Intel-wired-lan] [PATCH bpf-next v4 1/6] netlink: specs: Add
- XDP RX checksum capability to XDP metadata specs
+ d=gmx.com; 
+ s=s31663417; t=1783857418; x=1784462218; i=vikdon@gmx.com;
+ bh=uOdMcUvqnDf9QymbkGi79gn/3pS0iSEbBfzDMkoE/TI=;
+ h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:To:Cc:From:
+ Subject:Content-Type:Content-Transfer-Encoding:cc:
+ content-transfer-encoding:content-type:date:from:message-id:
+ mime-version:reply-to:subject:to;
+ b=fhPqriMW7Gr2xEowG29rru+9GXF+YdHMiYVoewUu/wyYYVpo6HfP3HhBqTGlpy8O
+ PlvZ+8793SqvG9TxUj+ZUGnLv0lMepJp3krY/VokcZrJSA4Jqp1R9YjYAk6yNcj3t
+ VJgAtyzzRQnTPY0PsEArOCE7ipokQkoMjIZSlqBioqdOxbLgKwB1OK3lP9VGDemAo
+ G5wJHN0/D7XmYd1Zxm4glLI7g4Gdbp/aAEHqTDpRSEh+w2UWDQVHqSoyRqIy9/FXM
+ t6rzt8mDBxWTlHHr+YllhjWLNmwWE8vLvquzgcRoZWH6d4FheYw9Z4HZS2CNmkrL+
+ sV+k1ywzfPF7K0xIPg==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=quarantine dis=none)
+ header.from=gmx.com
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=gmx.com header.i=vikdon@gmx.com header.a=rsa-sha256
+ header.s=s31663417 header.b=fhPqriMW
+Subject: [Intel-wired-lan] [e1000e] Intel I219-LM host becomes unreachable
+ under VM network load when AMT SOL/IDER is active
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -153,83 +186,82 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 07/08, Vladimir Vdovin wrote:
-> From: Lorenzo Bianconi <lorenzo@kernel.org>
-> 
-> Introduce XDP RX checksum capability to XDP metadata specs. XDP RX
-> checksum will be use by devices capable of exposing receive checksum
-> result via bpf_xdp_metadata_rx_checksum().
-> Moreover, introduce xmo_rx_checksum netdev callback in order to allow
-> the eBPF program bound to the device to retrieve the RX checksum result
-> computed by the hw NIC and reported via DMA descriptors.
-> 
-> Signed-off-by: Lorenzo Bianconi <lorenzo@kernel.org>
-> Signed-off-by: Vladimir Vdovin <deliran@verdict.gg>
-> ---
->  Documentation/netlink/specs/netdev.yaml |  5 ++++
->  include/net/xdp.h                       | 18 ++++++++++++++
->  include/uapi/linux/netdev.h             |  3 +++
->  net/core/xdp.c                          | 32 +++++++++++++++++++++++++
->  tools/include/uapi/linux/netdev.h       |  3 +++
->  5 files changed, 61 insertions(+)
-> 
-> diff --git a/Documentation/netlink/specs/netdev.yaml b/Documentation/netlink/specs/netdev.yaml
-> index 5f143da7458c..6d0d90d3a614 100644
-> --- a/Documentation/netlink/specs/netdev.yaml
-> +++ b/Documentation/netlink/specs/netdev.yaml
-> @@ -61,6 +61,11 @@ definitions:
->          doc: |
->            Device is capable of exposing receive packet VLAN tag via
->            bpf_xdp_metadata_rx_vlan_tag().
-> +      -
-> +        name: checksum
-> +        doc: |
-> +          Device is capable of exposing receive checksum result via
-> +          bpf_xdp_metadata_rx_checksum().
->    -
->      type: flags
->      name: xsk-flags
-> diff --git a/include/net/xdp.h b/include/net/xdp.h
-> index aa742f413c35..e255ff786131 100644
-> --- a/include/net/xdp.h
-> +++ b/include/net/xdp.h
-> @@ -586,6 +586,10 @@ void xdp_attachment_setup(struct xdp_attachment_info *info,
->  			   NETDEV_XDP_RX_METADATA_VLAN_TAG, \
->  			   bpf_xdp_metadata_rx_vlan_tag, \
->  			   xmo_rx_vlan_tag) \
-> +	XDP_METADATA_KFUNC(XDP_METADATA_KFUNC_RX_CHECKSUM, \
-> +			   NETDEV_XDP_RX_METADATA_CHECKSUM, \
-> +			   bpf_xdp_metadata_rx_checksum, \
-> +			   xmo_rx_checksum)
->  
->  enum xdp_rx_metadata {
->  #define XDP_METADATA_KFUNC(name, _, __, ___) name,
-> @@ -643,12 +647,26 @@ enum xdp_rss_hash_type {
->  	XDP_RSS_TYPE_L4_IPV6_SCTP_EX = XDP_RSS_TYPE_L4_IPV6_SCTP | XDP_RSS_L3_DYNHDR,
->  };
+Hello,
 
-[..]
- 
-> +/* Please note the driver is required to invalidate the checksum if the NIC
-> + * reports CHECKSUM_UNNECESSARY or CHECKSUM_COMPLETE and the eBPF program
-> + * modifies the packet since it can change some fields validated by the
-> + * checksum.
-> + */
+I am reporting an issue involving the e1000e driver, Intel I219-LM,
+network offload, and Intel AMT/ME remote-management state.
 
-Sorry, a bit confused about this part. IIUC this is in response to this
-discussion https://lore.kernel.org/bpf/aaLYfWnuuf_ne72u@lore-desk/ ?
+Environment:
+- Host: Proxmox VE 9.2.4
+- Kernel: 7.0.14-4-pve
+- NIC: Intel I219-LM
+- Driver: e1000e
+- Driver version: 7.0.14-4-pve
+- Firmware version: 0.4-4
+- PCI address: 0000:00:1f.6
+- Link: 1000 Mb/s, full duplex
+- Host bridge: Linux bridge vmbr0
+- Guest traffic: VirtIO VM network interface
 
-Looking at a few drivers:
-- bnxt (bnxt_rx_pkt) does UNNECESSARY - ok
-- mlx5 (mlx5e_handle_csum) does UNNECESSARY and skips COMPLETE if there is
-  bpf prog attached
-- fbnic (fbnic_rx_csum) - can do COMPLETE even with xdp attached?
-- gve (gve_rx) - can do COMPLETE even with xdp attached?
+Observed behavior:
+When running a speed test inside a VM, at approximately 600+ Mbit/s
+download traffic, the Proxmox host becomes completely unreachable over
+the network:
 
-So none of the drivers invalidate anything (and nether the bpf machinery), some
-choose to (correctly?) not report COMPLETE when there is XDP. So was the
-discussion about documenting this and giving some guidance? This probably
-belongs to that `DOC: skb checksums` section of include/linux/skbuff.h?
+- no ICMP response
+- no SSH access
+- no Proxmox web interface
+- the physical/vPro console initially remains available
+- a normal reboot may hang, requiring an AMT hardware reset/power cycle
 
-Also, can you add your new rx_checksum to
-Documentation/networking/xdp-rx-metadata.rst's list of supported kfuncs?
+The NIC still appears administratively UP and LOWER_UP, and the bridge
+configuration and IP address remain present.
+
+With TSO/GSO/GRO disabled using:
+
+ =C2=A0 =C2=A0 ethtool -K eno1 tso off gso off gro off
+
+the problem does not occur, but network performance decreases to
+approximately 440/239 Mbit/s.
+
+Relevant boot messages while MeshCommander / AMT remote management was
+active:
+
+ =C2=A0 =C2=A0 e1000e 0000:00:1f.6 (uninitialized): Reset blocked by ME
+ =C2=A0 =C2=A0 e1000e 0000:00:1f.6: PHY reset is blocked due to SOL/IDER s=
+ession.
+
+After completely closing MeshCommander and rebooting, these messages
+disappeared. TSO/GSO/GRO were enabled again, and repeated speed tests
+did not reproduce the host lockup.
+
+Current clean boot state:
+- TSO: on
+- GSO: on
+- GRO: on
+- tx_timeout_count: 0
+- rx_errors: 0
+- tx_errors: 0
+- CRC errors: 0
+- no failed systemd units
+
+This suggests a possible interaction between e1000e recovery/reset,
+Intel ME ownership of the I219-LM PHY, active AMT SOL/IDER sessions,
+and high network load/offload processing.
+
+Please advise:
+1. Is this a known e1000e/I219-LM issue?
+2. Is blocking PHY reset during SOL/IDER expected to prevent recovery
+ =C2=A0 =C2=A0from a TX/RX hang?
+3. Are there recommended driver parameters or mitigations other than
+ =C2=A0 =C2=A0disabling TSO/GSO/GRO?
+4. What additional traces or register dumps would be useful?
+
+Hardware:
+- Motherboard: Gigabyte Q370M D3H GSM PLUS rev. 1.0
+- Primary NIC: Intel I219-LM
+- Secondary NIC: Intel I211 using the igb driver, currently not cabled
+
+Regards,
+Viktor D
+vikdon@gmx.com
