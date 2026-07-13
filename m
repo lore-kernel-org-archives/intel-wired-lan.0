@@ -1,194 +1,95 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A457CC43458
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 13 Jul 2026 06:39:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2666DC44501
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 13 Jul 2026 09:16:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 655C540879;
-	Mon, 13 Jul 2026 06:39:08 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id C33AE606E7;
+	Mon, 13 Jul 2026 09:16:37 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id CtO1wGYz1ILG; Mon, 13 Jul 2026 09:16:37 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E581B606F1
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1783934196;
+	bh=5siJLG0LOwXZuo10jBFt4fMZPIUJHqjzh+luwyjmAXI=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=z3u9QRUmIqvVMhsNdNAI0RihWKQflIcDyRNTS3p76LkGr/3XHDMbJmXNT4wvkEVJ9
+	 HsSs8RPQMXb/kMS2LeUBKzAUoC2oeK6Wq2zA7nOZuWJVT1aydn0Vi6A3ZKFFcdfYFt
+	 y5d6E7AcTukLwL5NlCX6OwpP4JX58H9ln/K7Ru4Zljk31Sy8s8dKm02oN6VOtghyKd
+	 gKQLWH94Ny0u9cJD8rwDcQ1ZycaGuJCUx5FuXrXeNFBjEYW7DgmgBn7N6uj0RM3KxI
+	 GmzHFvkzXUNJJ3IJ/j2ZlSx2R1seD7Z2A/alsZsStliACvn3XVdFLr4noFX+CDXJoY
+	 W8D7f/VRk4sqA==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp3.osuosl.org (Postfix) with ESMTP id E581B606F1;
+	Mon, 13 Jul 2026 09:16:36 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 3E13F128
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Jul 2026 09:16:35 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id 2404340817
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Jul 2026 09:16:35 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id pwZuKMmOZMmJ; Mon, 13 Jul 2026 06:39:06 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B1A4440863
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1783924746;
-	bh=MFvT4AEfqEXEZURR30oWgnSeJGTmHiLhlV/Zr+AJMaU=;
-	h=From:To:CC:Date:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=LhPDuVFNGLyDox6yZYcBv87NrYwg0EwrI0DICiEct6b3sUQhqnWtC/nJjjIJoqCKn
-	 Q3zcru09yHhfgu4jkgVWHEl9g0mIr0mIC67Zc1tItD8tEh0R7RMdudV2XnPpnUn/Nr
-	 JHXETw0aK5tSOjNW7r6Z+yBOnGT4YpIXuupCQv9rOae07aeTVYGAmUXJgoLynST/OE
-	 9Kp/sUJmGw2AW/88d+FihXDzKfpKa5UCufuzjRwVy4qayrEx9kl0NC8jbfKlNNaLCx
-	 gwkKXfuH7x32o+1RKRUz7XZcqTLqIwzfF8tcAlkVJr2KncwFJ1SenIrqiPUd3yJny/
-	 84BHob6+lGAkA==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B1A4440863;
-	Mon, 13 Jul 2026 06:39:06 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id C54732EE
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Jul 2026 06:39:04 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id AB66040079
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Jul 2026 06:39:04 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id U2R7f1FwCxpF for <intel-wired-lan@lists.osuosl.org>;
- Mon, 13 Jul 2026 06:39:03 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.9;
- helo=mgamail.intel.com; envelope-from=sx.rinitha@intel.com;
+ id 1Bb272EpawAp for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 13 Jul 2026 09:16:34 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
+ helo=sea.source.kernel.org; envelope-from=horms@kernel.org;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org A5D1C4009E
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A5D1C4009E
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
- by smtp2.osuosl.org (Postfix) with ESMTPS id A5D1C4009E
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Jul 2026 06:39:01 +0000 (UTC)
-X-CSE-ConnectionGUID: 8o5Z5ydcTlmiDd1FYYOhUQ==
-X-CSE-MsgGUID: dQddaA+gQQuvCpgiXEEVUQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11841"; a="107326558"
-X-IronPort-AV: E=Sophos;i="6.25,154,1779174000"; d="scan'208";a="107326558"
-Received: from fmviesa005.fm.intel.com ([10.60.135.145])
- by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Jul 2026 23:39:01 -0700
-X-CSE-ConnectionGUID: 2Yt53mgbTI68qHpSl+XLxg==
-X-CSE-MsgGUID: +TvSZRcoRSqhtdyiZZMhJQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,154,1779174000"; d="scan'208";a="260347523"
-Received: from fmsmsx903.amr.corp.intel.com ([10.18.126.92])
- by fmviesa005.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Jul 2026 23:39:01 -0700
-Received: from FMSMSX902.amr.corp.intel.com (10.18.126.91) by
- fmsmsx903.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.43; Sun, 12 Jul 2026 23:39:00 -0700
-Received: from fmsedg902.ED.cps.intel.com (10.1.192.144) by
- FMSMSX902.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.43 via Frontend Transport; Sun, 12 Jul 2026 23:39:00 -0700
-Received: from BL0PR03CU003.outbound.protection.outlook.com (52.101.53.70) by
- edgegateway.intel.com (192.55.55.82) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.43; Sun, 12 Jul 2026 23:38:59 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Xg1bAFgXWaryKPOO5AMO/hcXEeuR8cv32cG1CiytfDG2v6LqpT4R53oXI9bnrrHNAFUyOm5WWGiNOfmXYOStHYdtrDa9pm1Ep+4b+3TPi+vEKmGEtQh+CYGKPhvds2brBNKsllx8As+JLEk0WxOnG6A0YUMO6FX87Ke0rSArcxtVA2roF+sXSLwtqkMCW8AlRiPRs1UgcbFBARs+uei3C3Z8liNyulHw3+oQrXgYNoXNN44zpTjPB7h/YaMlhqXQdw1n82XM+sfKmGiCo+FP0gmZvV2WxAjlLpKx0Kx8ptL2+7QQ3OHcDQ+1hcODIsxPQgPBatWUmC9DCIZtGq07oQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=MFvT4AEfqEXEZURR30oWgnSeJGTmHiLhlV/Zr+AJMaU=;
- b=NjgBIWmyb0CwSIiu6vPA3SfWu0e2wXuNAvII1gPt6V24tR6xndP51ixxYEI2OLIgX/f5AvnkihYp9FEQPoEwDAy/QfQnv6HS9XdZWI7fVaDOuMTNTMLUxZMIzYjc0P3Fz7Pkf9dblXlmeTGyRANXuId3t61ho600FQgZOousu7+9nEGgjnOPngsjj9RKra8Y6E9tPXBy+Z3VLe9Ra6+IC7Sv6JDzY4NvepLxCURkL1VlT+VEAJumVFUxFkt5pkTSwdKorEuu9cxPuEGKpHqU+gwJifeG/Ldm9K4B0cMF9ytmrFclt4wrPkNfk08R+zCkUfngGHN0IL4SSf/6CLlPwA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from IA1PR11MB6241.namprd11.prod.outlook.com (2603:10b6:208:3e9::5)
- by SA1PR11MB6709.namprd11.prod.outlook.com (2603:10b6:806:259::20)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.202.18; Mon, 13 Jul
- 2026 06:38:52 +0000
-Received: from IA1PR11MB6241.namprd11.prod.outlook.com
- ([fe80::7ac8:884c:5d56:9919]) by IA1PR11MB6241.namprd11.prod.outlook.com
- ([fe80::7ac8:884c:5d56:9919%3]) with mapi id 15.21.0202.014; Mon, 13 Jul 2026
- 06:38:51 +0000
-From: "Rinitha, SX" <sx.rinitha@intel.com>
-To: "Temerkhanov, Sergey" <sergey.temerkhanov@intel.com>,
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>
-CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-Thread-Topic: [Intel-wired-lan] [PATCH iwl-net v3 2/3] ice: Zero out the PTP
- control PF pointer at ice_adapter cleanup
-Thread-Index: AQHc8afkKMxrisvsm0aAGzG+Nc2u+LZrPyUQ
-Date: Mon, 13 Jul 2026 06:38:51 +0000
-Message-ID: <IA1PR11MB62410F0190AF27A784EC276B8BFA2@IA1PR11MB6241.namprd11.prod.outlook.com>
-References: <20260601091951.3017848-1-sergey.temerkhanov@intel.com>
- <20260601091951.3017848-3-sergey.temerkhanov@intel.com>
-In-Reply-To: <20260601091951.3017848-3-sergey.temerkhanov@intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: IA1PR11MB6241:EE_|SA1PR11MB6709:EE_
-x-ms-office365-filtering-correlation-id: 79add1a6-e244-45d5-2f95-08dee0a96737
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
- ARA:13230040|366016|1800799024|23010399003|376014|38070700021|18002099003|22082099003|56012099006|4143699003|11063799006;
-x-microsoft-antispam-message-info: roxsyTrs+H3aBB0+50T8gFMkvI1ZI2DAkH1bJQGWnhiSj8OzlN/pSR/cXyI+rAHfQs6brbmYIn3qL1sVhnta7v/Kp/51Ad0mBI58T4PdCAIvR32h0sGX0c1E7wrfD9ocEpuexU32wDevLRIYN2hr4ACBurLYlxwooQOXh+SJmCHsMBDpj3v3Xgxb1c/HF7ivBxRN//+1UcEG3FW9Ywvxc417LR4vIBK1HPIJDEeDptRWmRtakkywLgQQyWN0JPKJ2g9EGRLWuhr3Bl+AZmg6tDAt3C+imanknA2gn4Sud9KBms5Aq9iLeh7D0h64hRqSAGOL1Mwk2JnoPk5oD6e2IYsx1vX3zD9TKXIS6lPjgCOECwQ3W32yu+tz5WVYwj/4wWuxA4Vj6gIO1nT8K+apA8h87GezRbHm8VYNyKR9aofvmdjLQTFcsNx9UTapyAoE8fjSgNc4tl9y8lJ3gaR5mUXS+36ONf9VJJB4QaqnhNyYLorpKO38dFh1zGi3k5DkOEsbkkK05FBA4+2jeRWwqB5jycCFYy6hv95G2SicSaB4pvZH/aUNbYUyrgddSlDZe/fpc6tyBA41NySEJq2MVvhbdQ7mjdcW1kcqYRdpNLiyd7ghH4+fsbnqYAi+9VnNaQGPdy0ooEj/ulcrrxFIgnoq5rNtpbq6ytQcB8YvgRtSdEOrk+s3Hf1J7cmJFIvQyhLHNig/8iunjdWHfcrXL6MVYkBinemRnqah35B4Sug=
-x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:IA1PR11MB6241.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230040)(366016)(1800799024)(23010399003)(376014)(38070700021)(18002099003)(22082099003)(56012099006)(4143699003)(11063799006);
- DIR:OUT; SFP:1101; 
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?e/xz1HRpvrb++Df7zieJKod/wa5CPG8RmvnCiwVt0KynG3M7w2/PxXb3191D?=
- =?us-ascii?Q?w08MqjiCoIYK0i5Whl+QTm8tdUQTDPbraF94cpgDTaXYNcEZngEK0hwh0ssQ?=
- =?us-ascii?Q?tEnE+Tmqs6uJ1uMPsc/JUrD3/asDAH1hBpD4cP9wdN4/YtEshboCtUcvj82f?=
- =?us-ascii?Q?nEqSHyH8p2HJh3DZ2xt8kbA0qHbOmgs6Ki8Sm6EnInQt82VjCkP4/bNeCLm1?=
- =?us-ascii?Q?AhcfODl6DajA758zTa7BR0Q0eG7JmSZFfIYER7q3pAIthSV72pcALTc3oyfa?=
- =?us-ascii?Q?76uuFk56miF0QQKU4mQ6xH5ci0XABIXO84HT4iwQlq/l623fDPzDMunXQNxY?=
- =?us-ascii?Q?7Uup829CgGevMtvmKGVdOO2X5Kz8XpkJBd17lO8GccBuIdgP9vWp+G/hodRK?=
- =?us-ascii?Q?Oav5izln3gsU3P4VUghyCpRV4l5xSunKr+T0IzRNVvfuA5xOMl5KPYHdhqhw?=
- =?us-ascii?Q?IE6ap9varC10pJ/Wieg37wAsgp6nI604ktMAxDUSgVJmqhKUxEZNbNqqauHS?=
- =?us-ascii?Q?KIrPCjt+sKo+hlUrAlwap6fb4UXDemvheLer9AtR5OcEvaA2Dz8TPb+l9Nvl?=
- =?us-ascii?Q?HKseK53+6Y8AJURDKb9bg23/bXNpKoLjAm8KtPu+N2X8rT9l86VXRYc3XLhB?=
- =?us-ascii?Q?Tz66SAsc52DJkR1ZGH1zwFCtmlqmvietZV4ZaL/nIJ/KbRLa9XKkULnMOaSB?=
- =?us-ascii?Q?p+7hjk0x38402jo6zjYsN3HKA+Zme0C3GBcvXEy8VxjdFMcCrNWESAgxSnrF?=
- =?us-ascii?Q?uNmPd4CH3F62HTJF/iiPgaOdgH3f2ZVUdpfvXB/tSnrHtOAxFJg31vIT/cY+?=
- =?us-ascii?Q?u2Kx8L6iAiSGpOpStnYKyfopVGRxgzndgjj5acpGcZ47VeQ1jCsyS10yjKDH?=
- =?us-ascii?Q?0dQj2PbhlC3fFj0eTHBq3QcYRMLa70qy3DNzypjF2XTTfBK4La5Dp1Uw+/Qc?=
- =?us-ascii?Q?vay5hMVX72rny4LmGqfjWWiYxcMKJJHhGcc1DoOmyrOeQj/970hMcOaxQ2lQ?=
- =?us-ascii?Q?2afuKgJlGQT35B6GvRM+xACwQlpZNZuegYrzN8CZPkjD+r4O4Ufk2Pj9RklM?=
- =?us-ascii?Q?KK2znACwdOIVnM4IX0oJDyHMXlntZZjnB2htpSfNIu7vLr3N7pknF8hkHsae?=
- =?us-ascii?Q?u6EHV4o2D7vl0U9ZhIZRh/+kj1SP5m8bMlNTr9uugogV2rzl7ETBP7165ZBB?=
- =?us-ascii?Q?K16OMaUVS5ZA17Lk17oSUPqiDxxsJnKB2uwvhohtGXCcPZD90tO5qBaNcrNG?=
- =?us-ascii?Q?BAPv/V32fwEDAsMcoCiuCIhL6Vpqi2N8ehgCHnPlg/WtS4WXZZyj9Y57h43U?=
- =?us-ascii?Q?hNrWKwMoSb6ZUa/GHXucvfAhHzTCeLJjeHjwcuIgELuniytOT47rKpexogt2?=
- =?us-ascii?Q?lRIhxIaIffIF8uhLn8I+PH63E9FgBhhKqd0/W8nYe7r/YUvAZMvItR+P9htX?=
- =?us-ascii?Q?zgqWE8sToWkNGVvdDzutlMS9VDWL75Nl1EnTGpdeDlU13ctri6ECB4yPnwQY?=
- =?us-ascii?Q?x5kbnXe90OxSO2IjRpvyXf/xkP4lMgnsaepY6SJboLjnalVPmDvBfoQZlkC+?=
- =?us-ascii?Q?+kmB/Vjuc4mtEbtaZGFoyc2Rea91siFEE//sNkVyP1kW3zH1O6KlOoZQ46um?=
- =?us-ascii?Q?Mc8utCs5DySJGc0zufMgvsVapD127fWEmo1ryoKBBd/Y9PsakUls1tZ8iQoP?=
- =?us-ascii?Q?9jpyzZVZvEVPmG+5h99aRu5olbhahrfTMBiIvnQB4mkzPe4m?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 65A3340806
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 65A3340806
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 65A3340806
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Jul 2026 09:16:34 +0000 (UTC)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+ by sea.source.kernel.org (Postfix) with ESMTP id B27D340A74;
+ Mon, 13 Jul 2026 09:16:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 48A721F000E9;
+ Mon, 13 Jul 2026 09:16:30 +0000 (UTC)
+From: Simon Horman <horms@kernel.org>
+To: pengpeng@iscas.ac.cn
+Cc: Simon Horman <horms@kernel.org>, anthony.l.nguyen@intel.com,
+ przemyslaw.kitszel@intel.com, jedrzej.jagielski@intel.com,
+ aleksandr.loktionov@intel.com, andrew+netdev@lunn.ch, davem@davemloft.net,
+ edumazet@google.com, kuba@kernel.org, pabeni@redhat.com,
+ richardcochran@gmail.com, jacob.e.keller@intel.com,
+ arkadiusz.kubalewski@intel.com, karol.kolacinski@intel.com,
+ sergey.temerkhanov@intel.com, michal.michalik@intel.com,
+ intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Date: Mon, 13 Jul 2026 10:16:06 +0100
+Message-ID: <20260713091605.1756659-2-horms@kernel.org>
+X-Mailer: git-send-email 2.54.0
+In-Reply-To: <20260706144325.91320-1-pengpeng@iscas.ac.cn>
+References: <20260706144325.91320-1-pengpeng@iscas.ac.cn>
 MIME-Version: 1.0
-X-Exchange-RoutingPolicyChecked: tOPEX2CIGRvGjsXxjYSSZqATsGtKYM2B4o4ij7aAgsV6ornoqWB1X/j/HIW9w7oIG+/okbtAEpy7W5Or0YS4M/M9Y9ehGKVenNMWWmHenj3u2ZYlzXhrQLdy+xki3IZQUX1Pzx2oBrZ/6JwtR4YNpU+gSxD/yPWPqlxVLNm8RsY8iASD1XMQrQe+qcUVObrvvp5mb+hbEqq9m7I0t7ryT5EYr50im5PpIDKwmBUt4uk0UpXVGDHF92NybVjMvfZoBDP58O0xsg7n1lPLSR3m7QUmXu3AwgWJ+2RMKS+0NGgtgpZRLoOPF5CSvnN91TIugxgOXQND9uM9SVaTDmrqDA==
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: IA1PR11MB6241.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 79add1a6-e244-45d5-2f95-08dee0a96737
-X-MS-Exchange-CrossTenant-originalarrivaltime: 13 Jul 2026 06:38:51.8703 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: egnS3RQM14SjrZsqSb5EwBMnhlxnRcGNPKT1moySLDtPqNpKVAn6sXjhio4hwUFJyBH+nhTsJcejf6qpmzsaBQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR11MB6709
-X-OriginatorOrg: intel.com
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1783924744; x=1815460744;
- h=from:to:cc:subject:date:message-id:references:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=MFvT4AEfqEXEZURR30oWgnSeJGTmHiLhlV/Zr+AJMaU=;
- b=IQ71LpGX8D4uQs21ohveB3LyigVeQ0UZVdwZI/1tMUWN0ZynCaTLLNR2
- TANUg0Fkydx3OmftgLOxdaPSaxDOf4Hoyw3fClauYlCQ6uHOqF9k7scL/
- hnxXZO3YEVdkh3SiHs26xlr9xQ026SAdPfMGzjUcao54hpPylRcDESFzL
- kMC31glX3JO3R9n0ZLdRI0eVk85AFQyBhvaUtTgDtIPWP5Rpric0TZ7Al
- u1JbIb/A++bNfeB2R013lBevvouRac3FVO78EOh5MkIcyoEB/HhRnwrIH
- p2s7XRhaq5+FHLZYJB13GnRJFEu3JfJWcrE+x98BHu9wIom6VXT3zMEaL
- A==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=IQ71LpGX
-X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net v3 2/3] ice: Zero out the PTP
- control PF pointer at ice_adapter cleanup
+Content-Transfer-Encoding: 8bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=kernel.org; s=k20260515; t=1783934193;
+ bh=5siJLG0LOwXZuo10jBFt4fMZPIUJHqjzh+luwyjmAXI=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References;
+ b=l28QzEYuqIxm8425yFC4+/OlfyHCjpMbHkVM4n55jZRRNGraF61E6PUfOfjMvqNPg
+ 1PRV8ZsrPmGGWCkKBfzGi8f+WGh9hFpAk2CWiHQFs+MojCfDBavqzPRn5GEKtIzhKK
+ cdXTO51kUqUWY0Q++mhZVX8qtwMjBV6olzEXrvXL5kOsJrPAXb4qB12rViEdtgkbxW
+ /+OAjpUoW0E36npC8mWza+l8SpD+l/1Aw2WObkjoSuvrr+HMxCjnec1fghFzPJRwjC
+ g9gQSByClPjI/7FS6jGUzP7MJ6kOnJkReQG/JF/gJ52hYLheFM6/F1zcrgMLDlXPBx
+ zkxOiTwRjE0Vg==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20260515 header.b=l28QzEYu
+Subject: Re: [Intel-wired-lan] [PATCH net v2] ice: propagate ETH56G deskew
+ read errors
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -204,31 +105,85 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of S=
-ergey Temerkhanov
-> Sent: 01 June 2026 14:50
-> To: intel-wired-lan@lists.osuosl.org
-> Cc: netdev@vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH iwl-net v3 2/3] ice: Zero out the PTP c=
-ontrol PF pointer at ice_adapter cleanup
->
-> Zero out the ctrl_pf pointer in ice_adapter when the control PF is remove=
-d.
-> This prevents potential dangling pointer dereference when accessing PTP-r=
-elated structures from other PFs of the same adapter.
->
-> Fixes: e800654e85b5b ("ice: Use ice_adapter for PTP shared data instead o=
-f auxdev")
-> Signed-off-by: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
-> Reported-by: Frederick Lawler <fred@cloudflare.com>
-> Closes: https://lkml.indiana.edu/2507.3/01388.html
-> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-> Reviewed-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-> Tested-by: Frederick Lawler <fred@cloudflare.com>
-> ---
-> drivers/net/ethernet/intel/ice/ice_ptp.c | 17 +++++++++++++++++
-> 1 file changed, 17 insertions(+)
->
+This is an AI-generated review of your patch. The human sending this
+email has considered the AI review valid, or at least plausible.
+Full review at: https://sashiko.dev
+---
+ice: propagate ETH56G deskew read errors
 
-Tested-by: Rinitha S <sx.rinitha@intel.com> (A Contingent worker at Intel)
+ice_ptp_calc_deskew_eth56g() returns a u32 deskew value, but it also
+returns the negative read_poll_timeout() error when the DESKEW valid bit
+never appears. That converts the negative error into a large unsigned
+deskew contribution, which can then be folded into the RX timestamp
+offset and programmed into hardware.
+
+Return the deskew value through an output parameter and propagate the
+read error from ice_phy_set_offsets_eth56g() instead of using it as
+offset data.
+
+> diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+> index 8e5f97835954c..cc424518a2a67 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+
+[ ... ]
+
+> @@ -1736,17 +1736,21 @@ static u32 ice_ptp_calc_bitslip_eth56g(struct ice_hw *hw, u8 port, u32 bs,
+>   * @ds: deskew multiplier
+>   * @rs: RS-FEC enabled
+>   * @spd: link speed
+> + * @deskew: output parameter for the calculated deskew value
+>   *
+> - * Return: calculated deskew value
+> + * Return: 0 on success, negative error code otherwise
+>   */
+> -static u32 ice_ptp_calc_deskew_eth56g(struct ice_hw *hw, u8 port, u32 ds,
+> -				      bool rs, enum ice_eth56g_link_spd spd)
+> +static int ice_ptp_calc_deskew_eth56g(struct ice_hw *hw, u8 port, u32 ds,
+> +				      bool rs, enum ice_eth56g_link_spd spd,
+> +				      u32 *deskew)
+>  {
+>  	u32 deskew_i, deskew_f;
+>  	int err;
+>  
+> -	if (!ds)
+> +	if (!ds) {
+> +		*deskew = 0;
+>  		return 0;
+> +	}
+>  
+>  	read_poll_timeout(ice_read_ptp_reg_eth56g, err,
+>  			  FIELD_GET(PHY_REG_DESKEW_0_VALID, deskew_i), 500,
+>  			  50 * USEC_PER_MSEC, false, hw, port, PHY_REG_DESKEW_0,
+>  			  &deskew_i);
+
+[Severity: High]
+This is a pre-existing issue, but is the return value of read_poll_timeout()
+supposed to be checked here?
+
+The read_poll_timeout() macro returns -ETIMEDOUT if the condition is never
+met, but this return value doesn't appear to be assigned to any variable.
+
+The err variable will only hold the result of the inner function
+ice_read_ptp_reg_eth56g(), which might be 0 if the read succeeds but the
+VALID bit is not set.
+
+Will this cause the function to proceed as if successful, ignoring the timeout?
+
+[Severity: Medium]
+This is a pre-existing issue, but could deskew_i be read uninitialized if
+ice_read_ptp_reg_eth56g() fails?
+
+If the read fails, err receives the error code, but deskew_i may remain
+uninitialized. The loop condition in read_poll_timeout():
+
+    FIELD_GET(PHY_REG_DESKEW_0_VALID, deskew_i)
+
+will evaluate this uninitialized memory.
+
+Additionally, since the loop condition doesn't check if err == 0, won't
+this pointlessly spin for 50ms on hard read failures instead of aborting
+early?
+
+>  	if (err)
+>  		return err;
