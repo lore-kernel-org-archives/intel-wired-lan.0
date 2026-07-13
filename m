@@ -4,72 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38C85C44501
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4C8DC44508
 	for <intel-wired-lan@archiver.kernel.org>; Mon, 13 Jul 2026 15:16:37 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 0B085408FD;
+	by smtp4.osuosl.org (Postfix) with ESMTP id 789AD4090D;
 	Mon, 13 Jul 2026 15:16:37 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id oKPWUX_jvvH3; Mon, 13 Jul 2026 15:16:35 +0000 (UTC)
+ id lZdAtqLYKoD9; Mon, 13 Jul 2026 15:16:35 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org ABA844090D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3DC944091C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1783955793;
-	bh=vcWXpKMSq59reI46D3PoMFlhf4bMsFOmDLO8bdkAy90=;
+	s=default; t=1783955794;
+	bh=w87g+D5SReWeuPg85I2R5REzG6jyR6WyeIEK7Oxt9Lo=;
 	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=nZtd4OKMhiooNCSXSgviZJD0ujgRi+pbm+TfjwIcg0oq7EQQpCx1VcHzxL5cVRVox
-	 Kmo3spUKj9RzSbvSVCbjovmBCRuxzw0Mj76vMh/7He+7Clr3p7JbwtkunfULp0bDdD
-	 LJtLBxK6rchy/yJhxt2k7WwIS4YfX/3NFyvLrRdAx0YpFDggmjCjSLfIrJdV6XuSFL
-	 pUnlDlAb5PbMFy28I4KiBXXO6JDtXVsiN7pmxybWF0310CjEtzkuWorbGAeny1/11G
-	 wDXo4JJpIGV09MrJSHTbk0pcpzMwdZ9P1kUZDB2DdoKK7e/EkuNbqjvMeX6Au6XZYj
-	 dd0mBGtHpCgLA==
+	b=ujVf1YN5P8MMT0Jnw23B5sJ43BEdPS0Im0K6ZAbMcP3FIG0BBbPB2aHrNh9Gh9kjk
+	 aWkmnGx4J9ITKz9dWQTwo3WaRNib40IEzBG5oB8448y0lh3s7whkWzdar34To559mg
+	 kajpsgAgIxZy4azgqnAAGzaPasl/VRByxL0jmrfrcrCTJcZxH8/XG5wgM2CPi74+6Q
+	 QAdJMXmDGJqQojQ9FO+HWFbzEWfeoH+M5nQEd3B3+GAexdxG5t0hdb1b9KGyXJlv4K
+	 Bl5XpHEEWVWwXzlF/Iq4mRa05nC/Auic+gpgp8sBt0JoI4urxJU6TwMX70OeUXULLV
+	 /Yr2TMTY5LJHQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id ABA844090D;
-	Mon, 13 Jul 2026 15:16:33 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 3DC944091C;
+	Mon, 13 Jul 2026 15:16:34 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 632922EE
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Jul 2026 14:01:00 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id E705F128
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Jul 2026 14:57:26 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 4E99A80E82
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Jul 2026 14:01:00 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id D903D80BBE
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Jul 2026 14:57:26 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 1hLCEuGgpcSA for <intel-wired-lan@lists.osuosl.org>;
- Mon, 13 Jul 2026 14:00:59 +0000 (UTC)
-X-Greylist: delayed 130838 seconds by postgrey-1.37 at util1.osuosl.org;
- Mon, 13 Jul 2026 14:00:58 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 18DC580E7A
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 18DC580E7A
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de;
- envelope-from=fmancera@suse.de; receiver=<UNKNOWN> 
-Received: from smtp-out2.suse.de (smtp-out2.suse.de
- [IPv6:2a07:de40:b251:101:10:150:64:2])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 18DC580E7A
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Jul 2026 14:00:58 +0000 (UTC)
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org
- [IPv6:2a07:de40:b281:104:10:150:64:97])
+ id 3sztZ0qgqC7K for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 13 Jul 2026 14:57:26 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=195.135.223.130;
+ helo=smtp-out1.suse.de; envelope-from=fmancera@suse.de; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org F206880BD3
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org F206880BD3
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id F206880BD3
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Jul 2026 14:57:25 +0000 (UTC)
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
  (No client certificate requested)
- by smtp-out2.suse.de (Postfix) with ESMTPS id 83FB63E12;
- Mon, 13 Jul 2026 14:00:56 +0000 (UTC)
+ by smtp-out1.suse.de (Postfix) with ESMTPS id 8F44377943;
+ Mon, 13 Jul 2026 14:57:22 +0000 (UTC)
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
  (No client certificate requested)
- by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 40CF3779AE;
- Mon, 13 Jul 2026 14:00:51 +0000 (UTC)
+ by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 9F73A779AE;
+ Mon, 13 Jul 2026 14:57:09 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
- by imap1.dmz-prg2.suse.org with ESMTPSA id RWCfDZPvVGoTEQAAD6G6ig
- (envelope-from <fmancera@suse.de>); Mon, 13 Jul 2026 14:00:51 +0000
-Message-ID: <2256daf4-d03c-4a57-9d72-7a388d823f18@suse.de>
-Date: Mon, 13 Jul 2026 16:00:37 +0200
+ by imap1.dmz-prg2.suse.org with ESMTPSA id jkEmIMX8VGogSgAAD6G6ig
+ (envelope-from <fmancera@suse.de>); Mon, 13 Jul 2026 14:57:09 +0000
+Message-ID: <d126eb95-4f57-43f7-8cde-31f201d3dad0@suse.de>
+Date: Mon, 13 Jul 2026 16:57:02 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 To: Arnd Bergmann <arnd@arndb.de>, Netdev <netdev@vger.kernel.org>
@@ -163,13 +158,14 @@ Cc: "David S . Miller" <davem@davemloft.net>,
 References: <20260712013941.4570-1-fmancera@suse.de>
  <20260712013941.4570-2-fmancera@suse.de>
  <12ffac6a-649a-4e4a-8d12-0b48171e1d95@app.fastmail.com>
+ <2256daf4-d03c-4a57-9d72-7a388d823f18@suse.de>
+ <713178ff-0fb2-4f1b-90bc-9841cd42c20e@app.fastmail.com>
 Content-Language: en-US
 From: Fernando Fernandez Mancera <fmancera@suse.de>
-In-Reply-To: <12ffac6a-649a-4e4a-8d12-0b48171e1d95@app.fastmail.com>
+In-Reply-To: <713178ff-0fb2-4f1b-90bc-9841cd42c20e@app.fastmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-1.01 / 50.00]; BAYES_HAM(-3.00)[100.00%];
+X-Spamd-Result: default: False [-0.80 / 50.00]; BAYES_HAM(-3.00)[100.00%];
  FORGED_RECIPIENTS(2.00)[m:arnd@arndb.de, m:netdev@vger.kernel.org,
  m:davem@davemloft.net, m:edumazet@google.com, m:pabeni@redhat.com,
  m:jgg@ziepe.ca, m:anthony.l.nguyen@intel.com, m:przemyslaw.kitszel@intel.com,
@@ -188,84 +184,72 @@ X-Spamd-Result: default: False [-1.01 / 50.00]; BAYES_HAM(-3.00)[100.00%];
  m:justin.chen@broadc
  om.com,m:bhargava.marreddy@broadcom.com,m:nb@tipi-net.de,m:florian.fainelli@broadcom.com,m:hkallweit1@gmail.com,m:rmk+kernel@armlinux.org.uk,m:me@ziyao.cc,m:siyanteng@cqsoftware.com.cn,m:maxime.chevallier@bootlin.com,m:julianbraha@gmail.com,m:a0987203069@gmail.com,m:weishangjuan@eswincomputing.com,m:inochiama@gmail.com,m:prabhakar.mahadev-lad.rj@bp.renesas.com,s:qingfang.deng@linux.dev,s:gregkh@linuxfoundation.org,s:linux-afs@lists.infradead.org,s:linux-arm-kernel@lists.infradead.org,s:linux-nvme@lists.infradead.org,s:brcm80211@lists.linux.dev,s:bridge@lists.linux.dev,s:mptcp@lists.linux.dev,s:b.a.t.m.a.n@lists.open-mesh.org,s:intel-wired-lan@lists.osuosl.org,s:tipc-discussion@lists.sourceforge.net,s:coreteam@netfilter.org,s:dev@openvswitch.org];
  SUSPICIOUS_RECIPS(1.50)[]; NEURAL_HAM_LONG(-1.00)[-1.000];
- R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
  NEURAL_HAM_SHORT(-0.20)[-1.000]; MIME_GOOD(-0.10)[text/plain];
- MX_GOOD(-0.01)[];
  DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
- FROM_HAS_DN(0.00)[]; FUZZY_RATELIMITED(0.00)[rspamd.com];
- MIME_TRACE(0.00)[0:+];
- FREEMAIL_CC(0.00)[davemloft.net,google.com,kernel.org,redhat.com,nvidia.com,ziepe.ca,lunn.ch,intel.com,marvell.com,gmail.com,foss.st.com,broadcom.com,kernel.dk,lst.de,grimberg.me,hansenpartnership.com,oracle.com,chelsio.com,zeniv.linux.org.uk,suse.cz,auristor.com,brown.name,talpey.com,mailbox.org,simonwunderlich.de,mandelbit.com,narfation.org,blackwall.org,netfilter.org,strlen.de,nwl.cc,sipsolutions.net,ssi.bg,ovn.org,mojatatu.com,resnulli.us,linux.alibaba.com,linux.ibm.com,secunet.com,gondor.apana.org.au,tipi-net.de,armlinux.org.uk,ziyao.cc,cqsoftware.com.cn,bootlin.com,eswincomputing.com,bp.renesas.com,linux.dev,linuxfoundation.org,alyssa.is,vger.kernel.org,lists.osuosl.org,corigine.com,amd.com,st-md-mailman.stormreply.com,lists.infradead.org,lists.linux.dev,lists.open-mesh.org,openvswitch.org,oss.oracle.com,lists.sourceforge.net];
+ FROM_HAS_DN(0.00)[]; ARC_NA(0.00)[];
+ FUZZY_RATELIMITED(0.00)[rspamd.com]; MIME_TRACE(0.00)[0:+];
  TO_DN_EQ_ADDR_SOME(0.00)[];
- RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from]; 
- ARC_NA(0.00)[]; RCVD_TLS_ALL(0.00)[];
- DKIM_TRACE(0.00)[suse.de:+];
- R_RATELIMIT(0.00)[to_ip_from(RLot4zeipb4y6kxqkujfrfqztj)];
- TO_MATCH_ENVRCPT_SOME(0.00)[];
- DNSWL_BLOCKED(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+ FREEMAIL_CC(0.00)[davemloft.net,google.com,kernel.org,redhat.com,nvidia.com,ziepe.ca,lunn.ch,intel.com,marvell.com,gmail.com,foss.st.com,broadcom.com,kernel.dk,lst.de,grimberg.me,hansenpartnership.com,oracle.com,chelsio.com,zeniv.linux.org.uk,suse.cz,auristor.com,brown.name,talpey.com,mailbox.org,simonwunderlich.de,mandelbit.com,narfation.org,blackwall.org,netfilter.org,strlen.de,nwl.cc,sipsolutions.net,ssi.bg,ovn.org,mojatatu.com,resnulli.us,linux.alibaba.com,linux.ibm.com,secunet.com,gondor.apana.org.au,tipi-net.de,armlinux.org.uk,ziyao.cc,cqsoftware.com.cn,bootlin.com,eswincomputing.com,bp.renesas.com,linux.dev,linuxfoundation.org,alyssa.is,vger.kernel.org,lists.osuosl.org,corigine.com,amd.com,st-md-mailman.stormreply.com,lists.infradead.org,lists.linux.dev,lists.open-mesh.org,openvswitch.org,oss.oracle.com,lists.sourceforge.net];
+ R_RATELIMIT(0.00)[to_ip_from(RLia5ypi6o74f53pwuwffz64nb)];
+ TO_DN_SOME(0.00)[]; TO_MATCH_ENVRCPT_SOME(0.00)[];
  RCVD_COUNT_TWO(0.00)[2]; FROM_EQ_ENVFROM(0.00)[];
- TO_DN_SOME(0.00)[]; RCPT_COUNT_GT_50(0.00)[134];
- DWL_DNSWL_BLOCKED(0.00)[suse.de:dkim];
- RCVD_VIA_SMTP_AUTH(0.00)[]; MID_RHS_MATCH_FROM(0.00)[];
- TAGGED_RCPT(0.00)[netdev,kernel];
- RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
- DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,
- imap1.dmz-prg2.suse.org:rdns, suse.de:mid, suse.de:dkim]
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Rspamd-Queue-Id: 83FB63E12
+ RCVD_TLS_ALL(0.00)[]; RCPT_COUNT_GT_50(0.00)[134];
+ TAGGED_RCPT(0.00)[netdev,kernel]; MID_RHS_MATCH_FROM(0.00)[];
+ RCVD_VIA_SMTP_AUTH(0.00)[];
+ DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.de:mid]
 X-Mailman-Approved-At: Mon, 13 Jul 2026 15:16:30 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=suse.de; s=susede2_rsa; 
- t=1783951256; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+ t=1783954643; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
  mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=vcWXpKMSq59reI46D3PoMFlhf4bMsFOmDLO8bdkAy90=;
- b=H4n/nlOzSbC6kEf08Mt5PCFch2SnG8tyBuOt05AtDFm3Sezfdg5yX593HaKA6aTuamPcwD
- htbNFckzP54JbOfP4QSOBVCw/FrvgILSk8fo38hIutmTDtgGvUw8lBAOJFoO8skDLsbz9y
- 32wqjJELZLybOJ5KxnKomeAhyZCck9E=
+ bh=w87g+D5SReWeuPg85I2R5REzG6jyR6WyeIEK7Oxt9Lo=;
+ b=mUOJSinalmE2ffsIONe157EXkZKLQiaoGJH7cUzcDCHJsvyT/YUW6QuDQdlluxQU5zFHak
+ 5uHtBuxO+EDEO3tY/uW/kT0Q+9CKaedFem3BYOwQZylEsnA3ROaZTnHJoDU9pP31T7KNua
+ FLhrxB64E1UoSdV30u6p/XQXxmFjXAE=
 X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
- d=suse.de; s=susede2_ed25519; t=1783951256;
+ d=suse.de; s=susede2_ed25519; t=1783954643;
  h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
  mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=vcWXpKMSq59reI46D3PoMFlhf4bMsFOmDLO8bdkAy90=;
- b=UDB1CXcHnCErcMegyp3uKFCagjRC+Png4e+SXpAjIKzmoie60e4uuOQZJlcwnWORqsY78F
- 7F2WW9VZXXdIhlCw==
+ bh=w87g+D5SReWeuPg85I2R5REzG6jyR6WyeIEK7Oxt9Lo=;
+ b=soR5R82MF+Mu62i1L4HAbEIJ6vWZYBeWi31SZE979/ua2yD3lsy6IUUD318V2ruAhjzKga
+ HyBGeXDFxDaXaiAQ==
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=suse.de; s=susede2_rsa; 
- t=1783951256; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+ t=1783954642; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
  mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=vcWXpKMSq59reI46D3PoMFlhf4bMsFOmDLO8bdkAy90=;
- b=H4n/nlOzSbC6kEf08Mt5PCFch2SnG8tyBuOt05AtDFm3Sezfdg5yX593HaKA6aTuamPcwD
- htbNFckzP54JbOfP4QSOBVCw/FrvgILSk8fo38hIutmTDtgGvUw8lBAOJFoO8skDLsbz9y
- 32wqjJELZLybOJ5KxnKomeAhyZCck9E=
+ bh=w87g+D5SReWeuPg85I2R5REzG6jyR6WyeIEK7Oxt9Lo=;
+ b=QCgcM+Km5SZY8NOHjlCw3HosC8zS+PF0scHR2IwLdplL87Eaem5ybUMwG87hdA1rjngrmv
+ jfc2mqfXpfb9US5KoGmzJi4CuAqmiNBxt9mvN6apbKj7smPvowzdTcGXq+YNh7slMzW9Ry
+ eebKIgGCE6urB9kYpA+nMZpQoDQl6tw=
 X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
- d=suse.de; s=susede2_ed25519; t=1783951256;
+ d=suse.de; s=susede2_ed25519; t=1783954642;
  h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
  mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=vcWXpKMSq59reI46D3PoMFlhf4bMsFOmDLO8bdkAy90=;
- b=UDB1CXcHnCErcMegyp3uKFCagjRC+Png4e+SXpAjIKzmoie60e4uuOQZJlcwnWORqsY78F
- 7F2WW9VZXXdIhlCw==
+ bh=w87g+D5SReWeuPg85I2R5REzG6jyR6WyeIEK7Oxt9Lo=;
+ b=Qj912vQywvUs7wBqJ2BfrXiTmJvI4xAWx3e/pTEHECGFv+xcUxTb2o5xyu7np2AqVZnxUQ
+ B7mpilofPRlrSBAw==
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=suse.de
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (1024-bit key, unprotected) header.d=suse.de header.i=@suse.de
- header.a=rsa-sha256 header.s=susede2_rsa header.b=H4n/nlOz; 
- dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256
- header.s=susede2_ed25519 header.b=UDB1CXcH; 
  dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de
- header.a=rsa-sha256 header.s=susede2_rsa header.b=H4n/nlOz; 
+ header.a=rsa-sha256 header.s=susede2_rsa header.b=mUOJSina; 
+ dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256
+ header.s=susede2_ed25519 header.b=soR5R82M; 
+ dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de
+ header.a=rsa-sha256 header.s=susede2_rsa header.b=QCgcM+Km; 
  dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256
- header.s=susede2_ed25519 header.b=UDB1CXcH
-X-Mailman-Original-Authentication-Results: smtp-out2.suse.de;
- dkim=pass header.d=suse.de header.s=susede2_rsa header.b="H4n/nlOz";
- dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=UDB1CXcH
+ header.s=susede2_ed25519 header.b=Qj912vQy
+X-Mailman-Original-Authentication-Results: smtp-out1.suse.de;
+	none
 Subject: Re: [Intel-wired-lan] [PATCH 01/13 RFC net-next] net: ipv4:
  introduce CONFIG_IPV4 to decouple the IPv4 stack
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -283,47 +267,61 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 7/12/26 1:01 PM, Arnd Bergmann wrote:
-> On Sun, Jul 12, 2026, at 03:38, Fernando Fernandez Mancera wrote:
->> Historically, the IPv4 protocol has been linked to the core INET
->> subsystem. Because shared infrastructure like the TCP/UDP engine,
->> routing or INET hashtables live inside net/ipv4/, it has been impossible
->> to compile a kernel with only IPv6 support.
+On 7/13/26 4:22 PM, Arnd Bergmann wrote:
+> On Mon, Jul 13, 2026, at 16:00, Fernando Fernandez Mancera wrote:
+>> On 7/12/26 1:01 PM, Arnd Bergmann wrote:
+>>> On Sun, Jul 12, 2026, at 03:38, Fernando Fernandez Mancera wrote:
+>>>> Historically, the IPv4 protocol has been linked to the core INET
+>>>> subsystem. Because shared infrastructure like the TCP/UDP engine,
+>>>> routing or INET hashtables live inside net/ipv4/, it has been impossible
+>>>> to compile a kernel with only IPv6 support.
+>>>>
+>>>> This patch introduces the CONFIG_IPV4 Kconfig symbol, which is set to
+>>>> 'def_bool y' for now. This does not allow to completely disable the
+>>>> IPv4 stack yet but it lays the necessary build-system work for that
+>>>> goal.
+>>>
+>>> I expect this will cause additional (trivial) build regression in the
+>>> next step when randconfig builds run into obscure corner cases, either
+>>> with INET=y IPV4=n IPV6=y or with INET=y IPV4=n IPV6=n.
+>>>
+>>> I can probably give your patch (with IPV4 visible or disabled) an
+>>> early go on the randconfig tree to find these more quickly.
+>>> If I run into regressions, should I just add more 'depends on IPV4',
+>>> or do you have other plans?
+>>>
 >>
->> This patch introduces the CONFIG_IPV4 Kconfig symbol, which is set to
->> 'def_bool y' for now. This does not allow to completely disable the
->> IPv4 stack yet but it lays the necessary build-system work for that
->> goal.
+>> Yes, I have a job running randconfig and verifying nothing breaks. If
+>> something breaks and it isn't core networking stack I would just make
+>> the Kconfig symbol depend on IPv4.
+>>
+>> Then later we will have more time to write a dedicate patch so it does
+>> not depend on IPv4.
 > 
-> I expect this will cause additional (trivial) build regression in the
-> next step when randconfig builds run into obscure corner cases, either
-> with INET=y IPV4=n IPV6=y or with INET=y IPV4=n IPV6=n.
+> Ok
 > 
-> I can probably give your patch (with IPV4 visible or disabled) an
-> early go on the randconfig tree to find these more quickly.
-> If I run into regressions, should I just add more 'depends on IPV4',
-> or do you have other plans?
+>>> Should we have some logic to ensure that at least one of IPV4 or
+>>> IPV6 is enabled? I think this would work
+>>>
+>>> config IPV4
+>>>         bool "The IPv4 protocol" if IPV6
+>>>         default INET
+>>>
+>>> which only allows turning IPV4 off if IPV6 has enabled.
+>>>
+>>
+>> I do wonder, should we? I mean, I didn't try it off but I don't see why
+>> we should not allow a pure L2 system..
 > 
-
-Yes, I have a job running randconfig and verifying nothing breaks. If 
-something breaks and it isn't core networking stack I would just make 
-the Kconfig symbol depend on IPv4.
-
-Then later we will have more time to write a dedicate patch so it does 
-not depend on IPv4.
-
-> Should we have some logic to ensure that at least one of IPV4 or
-> IPV6 is enabled? I think this would work
+> I expected a pure L2 system to be CONFIG_ETHERNET=y CONFIG_INET=n.
 > 
-> config IPV4
->        bool "The IPv4 protocol" if IPV6
->        default INET
-> 
-> which only allows turning IPV4 off if IPV6 has enabled.
+> Which user-visible parts of CONFIG_INET would you want keep working
+> when both v4 and v6 are disabled?
 > 
 
-I do wonder, should we? I mean, I didn't try it off but I don't see why 
-we should not allow a pure L2 system..
+Yes, you are right. So I think introducing something as you proposed 
+makes sense. Right now I cannot think about something needed from INET 
+for pure L2.
 
-Thanks,
+Thank you!
 Fernando.
