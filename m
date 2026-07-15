@@ -4,62 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37F10C44507
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 15 Jul 2026 21:41:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97F26C44507
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 15 Jul 2026 21:41:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 0211C40867;
-	Wed, 15 Jul 2026 21:41:18 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 657E9408B0;
+	Wed, 15 Jul 2026 21:41:21 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id V-QzQy86-6gG; Wed, 15 Jul 2026 21:41:17 +0000 (UTC)
+ id 6_SMM3JmxqQo; Wed, 15 Jul 2026 21:41:19 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 361B540842
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C663840844
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1784151677;
-	bh=wcL5Jyyc2LCR42Fchxsyy0ZYCYQvT9Y2EynlDJ3nTmM=;
+	s=default; t=1784151679;
+	bh=3UpMsD8XOoD4Z4HhPClQN9erIi/Ae2Mgk4+JNrwqu08=;
 	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=OVE7ja89SR9ZdT/+4HY02/CpGaKOSQ0suHZbwK7Fq2kDNuYhI2aoYKy1PekeMJCIA
-	 Q5jtyNPgv+xcduf1N4WhcVtzG3ocIwtAdPyqZ7B7nrV7/NlsokQF6Xx/EQbzcSnu1n
-	 l3lLrVPxeQdxgUOtBkAqc20l/mU09Eeyd+Iej+82NFCIgjgxLiLtnRNDsLj6uNpqik
-	 5hQVIENGfPYgFHbRQK/ZL81+geFUJ4/BlJLEBcrNS24TBclul2t0//z7QZzUq1AGOj
-	 H65ISlDcc6x/5/bq7RZp6YnjCvAJUz13flmf0rF1xNG+s/AIxPbeYiCWLtRV5kJ2Ee
-	 emXZVXL9VkVfA==
+	b=NjwtVRU5cSlafSn+w/HnKvrAhXzdSZJtnBeofqriOIoB1GZqPZlUjtNVvab2vU1cV
+	 zcMY1nZ9w2U0Xyn2N1iLXbHAgIr36ln4BePahIWsczRVC/XrAOmkyGsT6kvByQvmNu
+	 TudbwtOs+T8Fs8K5K9hb/krCuAzjuqfyIlKYPVbSIkLQ2fP0USFzp3FpHzDeJrpZ7d
+	 qKJMVaQA9vH8XNM7sVAT2Oi+WMkdaGBgRB/FYBuBOfCaaSi/jr2pOYLyXKeIGxmdLz
+	 8T66dLDfaAXQwbCKnQJAfthyJhwxqhydP1CGOWBizetFC23GvJCBGPdO2AFMp+S/bA
+	 WHv722yQ8dviA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 361B540842;
-	Wed, 15 Jul 2026 21:41:17 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id C663840844;
+	Wed, 15 Jul 2026 21:41:19 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id E4D0C203
- for <intel-wired-lan@lists.osuosl.org>; Wed, 15 Jul 2026 21:41:15 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id B3309203
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 15 Jul 2026 21:41:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id CAB6F6069A
- for <intel-wired-lan@lists.osuosl.org>; Wed, 15 Jul 2026 21:41:15 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id A500B605EF
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 15 Jul 2026 21:41:18 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id F1DZBqm173P7 for <intel-wired-lan@lists.osuosl.org>;
- Wed, 15 Jul 2026 21:41:15 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
- helo=sea.source.kernel.org; envelope-from=lorenzo@kernel.org;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org D17FE605EF
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D17FE605EF
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
- by smtp3.osuosl.org (Postfix) with ESMTPS id D17FE605EF
- for <intel-wired-lan@lists.osuosl.org>; Wed, 15 Jul 2026 21:41:14 +0000 (UTC)
+ id 16Vk10WgC_9u for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 15 Jul 2026 21:41:17 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
+ envelope-from=lorenzo@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org A42546069A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A42546069A
+Received: from tor.source.kernel.org (tor.source.kernel.org
+ [IPv6:2600:3c04:e001:324:0:1991:8:25])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id A42546069A
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 15 Jul 2026 21:41:17 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by sea.source.kernel.org (Postfix) with ESMTP id 27FC743AFE;
- Wed, 15 Jul 2026 21:41:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 567711F00A3A;
- Wed, 15 Jul 2026 21:41:13 +0000 (UTC)
+ by tor.source.kernel.org (Postfix) with ESMTP id D25D760054;
+ Wed, 15 Jul 2026 21:41:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D35F01F00A3A;
+ Wed, 15 Jul 2026 21:41:15 +0000 (UTC)
 From: Lorenzo Bianconi <lorenzo@kernel.org>
-Date: Wed, 15 Jul 2026 23:39:46 +0200
+Date: Wed, 15 Jul 2026 23:39:47 +0200
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260715-bpf-xdp-meta-rxcksum-v5-6-623d5c0d0ab7@kernel.org>
+Message-Id: <20260715-bpf-xdp-meta-rxcksum-v5-7-623d5c0d0ab7@kernel.org>
 References: <20260715-bpf-xdp-meta-rxcksum-v5-0-623d5c0d0ab7@kernel.org>
 In-Reply-To: <20260715-bpf-xdp-meta-rxcksum-v5-0-623d5c0d0ab7@kernel.org>
 To: Donald Hunter <donald.hunter@gmail.com>, 
@@ -90,23 +91,23 @@ Cc: Vladimir Vdovin <deliran@verdict.gg>,
  Lorenzo Bianconi <lorenzo@kernel.org>
 X-Mailer: b4 0.14.3
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=kernel.org; s=k20260515; t=1784151674;
- bh=wcL5Jyyc2LCR42Fchxsyy0ZYCYQvT9Y2EynlDJ3nTmM=;
+ d=kernel.org; s=k20260515; t=1784151676;
+ bh=3UpMsD8XOoD4Z4HhPClQN9erIi/Ae2Mgk4+JNrwqu08=;
  h=From:Date:Subject:References:In-Reply-To:To:Cc;
- b=j4Y0KYpGYqBa+wfiFihFc08yijSPHZzLWZXhaqiuZIK43KVvpza8+tUKXeOgg+uXh
- 5EtB8hwgSg0lvmcXc13OySOH0CW88udpylDUSFf6mbhTtTxfkp0ZTfMiYZeVTXR9rR
- WZzRbpHawdTyoImSBGi+qaEg5hu1p4OYk8OufUn5VFuQcmtFTnStaXHZocVZ4MfSgi
- 39KE3l+Qta6KS+qI87eEyxVqRyMa4v+CYOsaXTLB7s7Bz1JUbLldYQiTz9CXJK1Eqp
- IwiIPhgWbpmx35dzc1OCItpVEArjewyYL7YZxqRDnfXAqk00czNAdniy1aro3pwpU8
- SWDJusgruN2jg==
+ b=Od3r5g3IbTurvkBpiqHU4K2v8l2oIX7E5cbBpnZyri1tZWoi0asmo5JojXttAD4MM
+ eGK0QFcQ4/O1LhSzgZuaeQGUSdMTHB24lJQwumXb6nauPnv/5DkZ+1OX01tfTSpOZ2
+ J1JQ0ngHZ4fOKiQikmg88cis23t3LJXtoX5TTcj5Y3WPdeTknMgUt3aCpQtGTcCV6I
+ Yte/tvdmU856wRwF0dbeBIHVVcwVc9k/9/LWrek3rqi5VX6F+lRa4DVeRub7AGXaeH
+ Mkeb9kWkEqVqkOh9OPXy54t3rVB+sFchiktrEwvH7a00I0YQubJqo/JMOe5But3yiH
+ l4jf6MvKTTpzg==
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20260515 header.b=j4Y0KYpG
-Subject: [Intel-wired-lan] [PATCH bpf-next v5 6/8] net: add
- bpf_skb_rx_checksum kfunc to read skb checksum metadata
+ header.a=rsa-sha256 header.s=k20260515 header.b=Od3r5g3I
+Subject: [Intel-wired-lan] [PATCH bpf-next v5 7/8] selftests/bpf: Add test
+ for bpf_skb_rx_checksum kfunc
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -122,76 +123,152 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Add a new BPF kfunc, bpf_skb_rx_checksum(), that allows TC and other
-skb-attached BPF programs to read the skb->ip_summed field and
-associated checksum metadata. This is needed because the existing
-bpf_csum_level() helper only distinguishes CHECKSUM_UNNECESSARY
-from all other states, making it unsuitable when the caller needs
-to differentiate CHECKSUM_NONE from CHECKSUM_COMPLETE (e.g. after
-XDP_PASS where the driver may have set either).
+Add a selftest for the newly added bpf_skb_rx_checksum() kfunc.
+The test consists of a TC BPF program that calls the kfunc and
+records which checksum type each packet has in a per-type counter
+map, and a userspace test runner that exercises two scenarios:
 
-The kfunc writes two output values:
-  - ip_summed: the raw skb->ip_summed value
-               (CHECKSUM_NONE=0, CHECKSUM_UNNECESSARY=1,
-                CHECKSUM_COMPLETE=2, CHECKSUM_PARTIAL=3)
-  - csum_meta: CHECKSUM_COMPLETE -> hardware checksum (skb->csum)
-               CHECKSUM_UNNECESSARY -> checksum level (skb->csum_level)
-               otherwise -> 0
+- csum_none: runs with bpf_prog_test_run_opts (no special flags),
+  verifies all packets are reported as CHECKSUM_NONE.
+- csum_complete: runs with BPF_F_TEST_SKB_CHECKSUM_COMPLETE flag,
+  verifies all packets are reported as CHECKSUM_COMPLETE.
 
 Signed-off-by: Lorenzo Bianconi <lorenzo@kernel.org>
 ---
- net/core/filter.c | 31 +++++++++++++++++++++++++++++++
- 1 file changed, 31 insertions(+)
+ tools/testing/selftests/bpf/bpf_kfuncs.h           |  8 ++++
+ .../selftests/bpf/prog_tests/skb_rx_checksum.c     | 50 ++++++++++++++++++++++
+ .../testing/selftests/bpf/progs/skb_rx_checksum.c  | 33 ++++++++++++++
+ tools/testing/selftests/bpf/skb_rx_checksum.h      |  8 ++++
+ 4 files changed, 99 insertions(+)
 
-diff --git a/net/core/filter.c b/net/core/filter.c
-index b446aa8be5c3..71d58ea53512 100644
---- a/net/core/filter.c
-+++ b/net/core/filter.c
-@@ -12546,6 +12546,36 @@ __bpf_kfunc int bpf_xdp_pull_data(struct xdp_md *x, u32 len)
- 	return 0;
- }
+diff --git a/tools/testing/selftests/bpf/bpf_kfuncs.h b/tools/testing/selftests/bpf/bpf_kfuncs.h
+index ae71e9b69051..d03572e26df2 100644
+--- a/tools/testing/selftests/bpf/bpf_kfuncs.h
++++ b/tools/testing/selftests/bpf/bpf_kfuncs.h
+@@ -64,6 +64,14 @@ struct bpf_tcp_req_attrs;
+ extern int bpf_sk_assign_tcp_reqsk(struct __sk_buff *skb, struct sock *sk,
+ 				   struct bpf_tcp_req_attrs *attrs, int attrs__sz) __ksym;
  
-+/**
-+ * bpf_skb_rx_checksum() - Read skb RX checksum info.
-+ * @skb_: socket buffer to read from
-+ * @ip_summed: return value for skb->ip_summed
-+ * @csum_meta: checksum metadata
-+ *
-+ * Reads the checksum-related fields from a socket buffer. For
-+ * %CHECKSUM_COMPLETE, csum_meta reports the hardware checksum value.
-+ * For %CHECKSUM_UNNECESSARY, csum_meta reports the checksum level.
-+ * For %CHECKSUM_NONE, csum_meta is zero.
-+ *
-+ * Return:
-+ * * %0 - success
++/* Description
++ *  Read skb RX checksum info (ip_summed and csum_meta).
++ * Returns
++ *  0 on success
 + */
-+__bpf_kfunc int bpf_skb_rx_checksum(struct __sk_buff *skb_, u32 *ip_summed,
-+				    u32 *csum_meta)
++extern int bpf_skb_rx_checksum(struct __sk_buff *skb, __u32 *ip_summed,
++			       __u32 *csum_meta) __ksym;
++
+ void *bpf_cast_to_kern_ctx(void *) __ksym;
+ 
+ extern void *bpf_rdonly_cast(const void *obj, __u32 btf_id) __ksym __weak;
+diff --git a/tools/testing/selftests/bpf/prog_tests/skb_rx_checksum.c b/tools/testing/selftests/bpf/prog_tests/skb_rx_checksum.c
+new file mode 100644
+index 000000000000..d71ab7c70b68
+--- /dev/null
++++ b/tools/testing/selftests/bpf/prog_tests/skb_rx_checksum.c
+@@ -0,0 +1,50 @@
++// SPDX-License-Identifier: GPL-2.0
++#include <test_progs.h>
++#include <network_helpers.h>
++#include "skb_rx_checksum.skel.h"
++#include "skb_rx_checksum.h"
++
++#define TX_PACKETS 3
++
++static int run_test(__u32 flags, enum skb_csum expected_csum)
 +{
-+	struct sk_buff *skb = (struct sk_buff *)skb_;
++	LIBBPF_OPTS(bpf_test_run_opts, topts,
++		.data_in = &pkt_v4,
++		.data_size_in = sizeof(pkt_v4),
++		.repeat = TX_PACKETS,
++		.flags = flags,
++	);
++	int prog_fd, err, key = expected_csum;
++	struct skb_rx_checksum *skel;
++	__u64 cnt;
 +
-+	*ip_summed = skb->ip_summed;
-+	if (skb->ip_summed == CHECKSUM_COMPLETE)
-+		*csum_meta = skb->csum;
-+	else if (skb->ip_summed == CHECKSUM_UNNECESSARY)
-+		*csum_meta = skb->csum_level;
-+	else
-+		*csum_meta = 0;
++	skel = skb_rx_checksum__open_and_load();
++	if (!ASSERT_OK_PTR(skel, "skel_open_and_load"))
++		return -1;
 +
++	prog_fd = bpf_program__fd(skel->progs.tc_rx_csum);
++	err = bpf_prog_test_run_opts(prog_fd, &topts);
++	if (!ASSERT_OK(err, "test_run"))
++		goto cleanup;
++
++	if (!ASSERT_EQ(topts.retval, 0, "retval"))
++		goto cleanup;
++
++	err = bpf_map_lookup_elem(bpf_map__fd(skel->maps.csum_cnt), &key, &cnt);
++	if (!ASSERT_OK(err, "map_lookup"))
++		goto cleanup;
++
++	ASSERT_EQ(cnt, TX_PACKETS, "csum_cnt");
++cleanup:
++	skb_rx_checksum__destroy(skel);
 +	return 0;
 +}
 +
- __bpf_kfunc_end_defs();
- 
- int bpf_dynptr_from_skb_rdonly(struct __sk_buff *skb, u64 flags,
-@@ -12565,6 +12595,7 @@ int bpf_dynptr_from_skb_rdonly(struct __sk_buff *skb, u64 flags,
- 
- BTF_KFUNCS_START(bpf_kfunc_check_set_skb)
- BTF_ID_FLAGS(func, bpf_dynptr_from_skb)
-+BTF_ID_FLAGS(func, bpf_skb_rx_checksum)
- BTF_KFUNCS_END(bpf_kfunc_check_set_skb)
- 
- BTF_KFUNCS_START(bpf_kfunc_check_set_skb_meta)
++void test_skb_rx_checksum(void)
++{
++	if (test__start_subtest("csum_none"))
++		run_test(0, SKB_CSUM_NONE);
++
++	if (test__start_subtest("csum_complete"))
++		run_test(BPF_F_TEST_SKB_CHECKSUM_COMPLETE, SKB_CSUM_COMPLETE);
++}
+diff --git a/tools/testing/selftests/bpf/progs/skb_rx_checksum.c b/tools/testing/selftests/bpf/progs/skb_rx_checksum.c
+new file mode 100644
+index 000000000000..dc4e192905d5
+--- /dev/null
++++ b/tools/testing/selftests/bpf/progs/skb_rx_checksum.c
+@@ -0,0 +1,33 @@
++// SPDX-License-Identifier: GPL-2.0
++
++#include <linux/bpf.h>
++#include <linux/pkt_cls.h>
++#include <bpf/bpf_helpers.h>
++#include "bpf_kfuncs.h"
++#include "skb_rx_checksum.h"
++
++struct {
++	__uint(type, BPF_MAP_TYPE_ARRAY);
++	__uint(max_entries, SKB_CSUM_PARTIAL);
++	__type(key, __u32);
++	__type(value, __u64);
++} csum_cnt SEC(".maps");
++
++SEC("tc")
++int tc_rx_csum(struct __sk_buff *skb)
++{
++	enum skb_csum ip_summed;
++	__u32 csum_meta;
++	__u64 *cnt;
++
++	bpf_skb_rx_checksum(skb, &ip_summed, &csum_meta);
++	if (ip_summed < SKB_CSUM_PARTIAL) {
++		cnt = bpf_map_lookup_elem(&csum_cnt, &ip_summed);
++		if (cnt)
++			__sync_fetch_and_add(cnt, 1);
++	}
++
++	return TC_ACT_OK;
++}
++
++char _license[] SEC("license") = "GPL";
+diff --git a/tools/testing/selftests/bpf/skb_rx_checksum.h b/tools/testing/selftests/bpf/skb_rx_checksum.h
+new file mode 100644
+index 000000000000..60aad3561843
+--- /dev/null
++++ b/tools/testing/selftests/bpf/skb_rx_checksum.h
+@@ -0,0 +1,8 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++
++enum skb_csum {
++	SKB_CSUM_NONE		= 0,
++	SKB_CSUM_UNNECESSARY	= 1,
++	SKB_CSUM_COMPLETE	= 2,
++	SKB_CSUM_PARTIAL	= 3,
++};
 
 -- 
 2.55.0
