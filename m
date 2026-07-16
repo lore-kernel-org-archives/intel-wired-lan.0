@@ -4,87 +4,199 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB64EC4450A
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 16 Jul 2026 10:42:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F14E0C44501
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 16 Jul 2026 11:04:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 86E47407A9;
-	Thu, 16 Jul 2026 10:42:41 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 9590740655;
+	Thu, 16 Jul 2026 11:04:04 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id SYs7YCFxjstw; Thu, 16 Jul 2026 10:42:39 +0000 (UTC)
+ id 2tDn1n85qhB4; Thu, 16 Jul 2026 11:04:02 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C4BEB40692
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A1B26407A9
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1784198559;
-	bh=BLp9vfm76Yd/0vFs3+TtMxXwa8V/xVY/MTryj+uNLVw=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1784199842;
+	bh=xBB9oxqzDqygeRrwCB2qkvTGOy9MRw6gz2pK3nsn1MU=;
+	h=Date:To:CC:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=QFw9gKoBdHi1A+7zN1IMiQi/Ec8NeAiwwhVTBRlZb3ZdK/8NP52pHhvbgAaLLJUkM
-	 rNasQfUtU2IVxg+Gus5yNfF/pzdEmS/tssglW4l86zKiJ2P1rfSY4YA3z1oDGgYwPT
-	 Yeal+x0g2+kyO3TX+3LRK88BaAStWJE/7Co5kNtSX6lUcZye7xQh3VSOWaXSLZ4KAZ
-	 PzA7CGg+iw0XRGH9hHs7pQaaNhU9cclIzZOsXa9oTgtKwTuH0WNi8tG7ED3AV/oaJy
-	 1MjazGJvP8WEayso0HrBSYEbni+V2NGY7ydkesg28i0JY939KHSqFx8iNCdTAWluSh
-	 pwF2o8NMRJ3sw==
+	b=8k2TbbBv4/2JE8dSwN3jE/CgSkaXhmwG5o7zi8K+6wHA1RTuVKdVrpibD5UgyUW0k
+	 odV4g/W9dW6BBECrjASH0JqwMq4btgHp0iQP6v34Km5USQ86F0YLIJYF3yuDYzMgT2
+	 LGvqEz2VAe7PaKEtDxjdz7RMIzhgrDR+KP3fDkmgscoUHUBEqq54xTYQvZ3FM5n1dZ
+	 rVndyeqK3YE/C7Xrti+0efeAfIWUbGVg86SY7QOPJ3hs9iIba8yHnJklUFJuqSlufZ
+	 PWVxNX+IH2xZK9VFQMn0PZSp+jMXeUN48pyJbwQFyo16PmA2U7hc0SqUGHLwNwzxEq
+	 O70BOfUFHwkag==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C4BEB40692;
-	Thu, 16 Jul 2026 10:42:39 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id B46E2426
- for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Jul 2026 10:42:37 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id A1B26407A9;
+	Thu, 16 Jul 2026 11:04:02 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id E3828426
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Jul 2026 11:04:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 9CFEC4025A
- for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Jul 2026 10:42:37 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id C974480E55
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Jul 2026 11:04:01 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id lQ3z7QGgkCMx for <intel-wired-lan@lists.osuosl.org>;
- Thu, 16 Jul 2026 10:42:37 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
- envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org C64C440084
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C64C440084
-Received: from tor.source.kernel.org (tor.source.kernel.org
- [IPv6:2600:3c04:e001:324:0:1991:8:25])
- by smtp2.osuosl.org (Postfix) with ESMTPS id C64C440084
- for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Jul 2026 10:42:36 +0000 (UTC)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id 381EB600B0;
- Thu, 16 Jul 2026 10:42:35 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C30771F000E9;
- Thu, 16 Jul 2026 10:42:33 +0000 (UTC)
-From: Simon Horman <horms@kernel.org>
-To: aleksandr.loktionov@intel.com
-Cc: Simon Horman <horms@kernel.org>, intel-wired-lan@lists.osuosl.org,
- anthony.l.nguyen@intel.com, netdev@vger.kernel.org
-Date: Thu, 16 Jul 2026 11:42:17 +0100
-Message-ID: <20260716104217.268158-1-horms@kernel.org>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260710065530.4138116-1-aleksandr.loktionov@intel.com>
-References: <20260710065530.4138116-1-aleksandr.loktionov@intel.com>
-MIME-Version: 1.0
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 6PVB4Zfx3qOk for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 16 Jul 2026 11:04:01 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.13;
+ helo=mgamail.intel.com; envelope-from=dima.ruinskiy@intel.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org D938C80E4E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D938C80E4E
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id D938C80E4E
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Jul 2026 11:03:59 +0000 (UTC)
+X-CSE-ConnectionGUID: E+2LddrjQvO2J0B/JulvVQ==
+X-CSE-MsgGUID: uF4Pk6E9SeieRRoHqzZDSA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11847"; a="87399927"
+X-IronPort-AV: E=Sophos;i="6.25,167,1779174000"; d="scan'208";a="87399927"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+ by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 16 Jul 2026 04:03:59 -0700
+X-CSE-ConnectionGUID: taOjNlMUQ+mN2w8HillRaw==
+X-CSE-MsgGUID: GG2P2+lFRYeQVhJOiWL5yg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,167,1779174000"; d="scan'208";a="254720275"
+Received: from fmsmsx902.amr.corp.intel.com ([10.18.126.91])
+ by orviesa006.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 16 Jul 2026 04:03:59 -0700
+Received: from FMSMSX903.amr.corp.intel.com (10.18.126.92) by
+ fmsmsx902.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.43; Thu, 16 Jul 2026 04:03:58 -0700
+Received: from fmsedg901.ED.cps.intel.com (10.1.192.143) by
+ FMSMSX903.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.43 via Frontend Transport; Thu, 16 Jul 2026 04:03:58 -0700
+Received: from DM1PR04CU001.outbound.protection.outlook.com (52.101.61.24) by
+ edgegateway.intel.com (192.55.55.81) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.43; Thu, 16 Jul 2026 04:03:57 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=BudUln5qsZ/DSXDbZF7IUXkHAraJdygB0N7XBuDFr4AdYXPpb4AZN0L4c9goXYQtusb8ZLfJI4suZrfItYvWurxP5w17FDF2UOBYRydO5qpomJTjH0bCfWHJSrOP/ZIjneKo7+oQayOtkqw9LTvyaWIt5ioOsjvkbak7n5kcthbwWxMM7maRqUbvREpoBJ34OG0Ly0WYfqt/80uA5dsz5LZCdfmIdUW2Q29pNDUZ9gtljFhQq1m2mq9b5WkBY1ks7H6iqgpX6sVOXIyFS/MekVIWCWzoGE+0HUnOmi56opoL4Zfvd246n7U6xj2Cko2jp4lj2XKQJJA4a6xKQ6HM5w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=xBB9oxqzDqygeRrwCB2qkvTGOy9MRw6gz2pK3nsn1MU=;
+ b=IduXsaRmk4nNHz11ZPKWekrU5o/3JMnedvsjFizRKj9oMn7lvve1rVbMfwfWiBGZnCcEElXRFCXpzQpyp/dy0TkRhwhVtMCNPeqywDQwMVTF1Qzf5TL2RyWNkK6BLeKimIJx7i0h8B+taZramZKk9pV9LyffBqOOgyHYSEYZOiIkY28HD/hWOFGOokMl+NaBDC9llDEbqrPXsDQGlNx5nwRmbPlCFsU4XNIXStfc0Yx9EyI1ezFP8jzy20f8hLrt3ah2cXTgDlrDJP4l5dXzJeFQDtp515VF4OIGJsMzbAN584LMFpyZl7OrAASIR5gTk4zyza2zCpjAqFadE0+Ugg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from SA3PR11MB9509.namprd11.prod.outlook.com (2603:10b6:806:47e::18)
+ by SJ1PR11MB6249.namprd11.prod.outlook.com (2603:10b6:a03:45a::12)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.223.12; Thu, 16 Jul
+ 2026 11:03:47 +0000
+Received: from SA3PR11MB9509.namprd11.prod.outlook.com
+ ([fe80::5c18:b82:4518:e09e]) by SA3PR11MB9509.namprd11.prod.outlook.com
+ ([fe80::5c18:b82:4518:e09e%6]) with mapi id 15.21.0223.011; Thu, 16 Jul 2026
+ 11:03:47 +0000
+Message-ID: <46dde8c9-1d39-40d1-b1d0-973d274fffc8@intel.com>
+Date: Thu, 16 Jul 2026 14:03:43 +0300
+User-Agent: Mozilla Thunderbird
+To: Viktor Donner <vikdon@gmx.com>, <anthony.l.nguyen@intel.com>,
+ <przemyslaw.kitszel@intel.com>
+CC: <intel-wired-lan@lists.osuosl.org>
+References: <1dbf956a-e981-4b2a-ab5e-ddbd5905663c@gmx.com>
+Content-Language: en-US
+From: "Ruinskiy, Dima" <dima.ruinskiy@intel.com>
+In-Reply-To: <1dbf956a-e981-4b2a-ab5e-ddbd5905663c@gmx.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=kernel.org; s=k20260515; t=1784198554;
- bh=BLp9vfm76Yd/0vFs3+TtMxXwa8V/xVY/MTryj+uNLVw=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References;
- b=obGFhfJ9oWEVKxGxNts3U7Gft+Tp1IFs+rEf07M7CXM2C9S96HHPGe7AnZHX0UDpP
- dA6oFNUyRM990GhyePFibuRnjAifAtBHEAWpk/Vyy6itr87p45w8MSasYRaKAoBQ0m
- +cajaUqQcexF47r7BZkUlmPah466HiXHyZoacsuhXdnXjAHKCcpdTwsA63C9BFUcNZ
- T9GJAGiq7eADOWv0xFqoMoeM/p+YffERastf0h2AACwSHmimjoWWVbJ8DxDMljcMSc
- wOalf0WpQdumBVHXIPZk/FY0NSnbWKRrB36Dj1T8m17/wty0gXbCOySGqqKqvw29f7
- 0MKnOwRUbwC5A==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-ClientProxiedBy: TL2P290CA0022.ISRP290.PROD.OUTLOOK.COM (2603:1096:950:3::6)
+ To SA3PR11MB9509.namprd11.prod.outlook.com
+ (2603:10b6:806:47e::18)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SA3PR11MB9509:EE_|SJ1PR11MB6249:EE_
+X-MS-Office365-Filtering-Correlation-Id: 3bd91e2b-47f1-4349-1f39-08dee329e921
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+ ARA:13230040|23010399003|376014|1800799024|366016|6133799003|11063799006|56012099006|10067099003|18002099003|22082099003|3023799007;
+X-Microsoft-Antispam-Message-Info: yKtEM9V9+REwzHXqbPpuGGUW0RtwRhW+4RFvyfsEyvXJeLfAakrtTs7Bp46ICs2xqNF5Rm7JT7j7ZWIZYXpXt2vgFq06g9PMJOuhnZWvDpmUeP9K4aOJ4djWX1FwZhlUi5nabcjuUeQYIdDWz8oCwdM6Qu+peCf9uNw9eZyMXEk5laILqVbLy5IXOpBlalAc3BZhsZmS18tv6H8GRigiTmesCV21/PDdxXEPCpfbhAy9qNCO8sH57UrOucJuSatESoGwahoMHfQnwbKaeoo6Gb9qaKfTLMlC+K0J9sfb/oKsb6CI/j7V6/IyL2qLAOziM9R6ZCfGSNquKVoaw8vlS+YQH946LqYAeNMwKOetSks+6q1p+2+PBRAjqCocOQdbCgfLQEYV2CexrtPlt5pH2yBWYBSzmAuCGhUrvL6qo1Ie3mYzDPXWWs52WEzY3eFzfFcw4bblYOjx/qnbSET7vhE8MeafUSReOShNL/8a/1aAL4xl+3/tBBGcTMpeQ+t7cnGsgH104CBthaYPD5tQOfFommLRCqhMGCc1OkjEcx5o2AZIqgX1J43zZc3SvyjQuf09pkdQfaxvhDARSDXLXxBLjNwbtGP3W5tGabz4+0iI+4kAqTB2KpEwW1xs9mOm8l+OlDfgd2rSALe+tzRhAPOVOJpLFBfNio6bnpNKoDs=
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:SA3PR11MB9509.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230040)(23010399003)(376014)(1800799024)(366016)(6133799003)(11063799006)(56012099006)(10067099003)(18002099003)(22082099003)(3023799007);
+ DIR:OUT; SFP:1101; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?dFpRNkJPZ1p0OE95dEZqN3BoKy8yemlESTZOeC9WTFFpek5Fd05lbTc2VVBH?=
+ =?utf-8?B?MUNwMlFkNUg0a2xwV1Nwajc4djBIdGNGLzduRURZY0p4QS9qMS9HUWYyREhz?=
+ =?utf-8?B?WmJEV3dnOFJ4bXRrd0ZDL0Q0NGhOUEJ5MzlKTGFtZDQyd2JiOHlOVkJkaVFR?=
+ =?utf-8?B?Z2tlS3pLRDM1dU9SRnRNem05U0JJS0RncXgyaWllNnQ2d01OeGNaYmRXTS9v?=
+ =?utf-8?B?emNQSWdJUUtWNWtrODlzS0NlL056OS9SUENRNXE1Wi9xMDZMTWp4SGFJUkRI?=
+ =?utf-8?B?M2tXa2FENWE2aThGYWlyU1p1UWJrcENCcWRyRVNKdnZSNXFaZnV5Zzd6YVhG?=
+ =?utf-8?B?U25QYW1DeEJ3Nkg5aUR3dzV5bmhYUzBReCttN0JzNjdmT3ZrQUwrK2ozekRr?=
+ =?utf-8?B?ZnkwMXpEd2h3SFNDdDZKMHRUOXlGRDlBMnBSdHd1YzhISDd5SGc5QjFRaWFJ?=
+ =?utf-8?B?S3NoUDRvT1ZZYkNqT09oSnpxdCtkVkRSVXNJOTkvQXVjY2x0UktTZEZIV3JT?=
+ =?utf-8?B?c2FBcmdrZ1l6NFJDNUpORkg5WTd5bS9wY092TERLYTMzUnMwMTJDMHVvR2pr?=
+ =?utf-8?B?VGVxZE5rUmhLbjNjSEFUMitvcXIrZDVLMVpmSURnemEzZm1BaTdQdlk3RUw4?=
+ =?utf-8?B?RDJnT2xkeEZmZmRiTDc2R1NiRkkxdXg0Z0xlUUs3akxRVjIrY0crZWhzNzNs?=
+ =?utf-8?B?NDF0OEIyUWdiQnJabWZhMGErL3dwR1R0c0RLY2UwVWVDR0NHYjE5OGZ4OC9L?=
+ =?utf-8?B?a1F3U0Z5QzJNZUpCWFFPdFpVN3BNalJnWjlKdXExQTIyZ3dXZGlERk9Zc1NS?=
+ =?utf-8?B?Zk9IcnJYNUdpbWtHUG0zVEswN2Z5NUhQNkFDd1VEK0NOR1VnYllPWkY2aEZj?=
+ =?utf-8?B?UzM5M0UycVFpWDl2a2NHTjdYR3lIUU14ajN1cUViSFNmM2lXSzI2cFFkenZS?=
+ =?utf-8?B?K21wNmFsbHVPQ0tMVnAvYi9hN09PZDhDcHFySE1aWGg1R25RckJBSmU3TFlh?=
+ =?utf-8?B?RW5ZVGQ0TjB2OGVocEpLMU5IMmVpWWtzMUZDaDVOVVVCenkxQ0E4OWFWU0V2?=
+ =?utf-8?B?ZE1jUEVFdGQzUlBVa1I3SllaTFJwUHUvQlY1YzdCOVUyK3VMVTJ5R1NIbE9E?=
+ =?utf-8?B?VjJzRXRlSjFWcWVBandDb0twWnN1K2pJTUtuREtYWU5JT2p5VE9oNTRpMjlH?=
+ =?utf-8?B?U2NYemNWNmJTb0VHSXRRZW80QnRrQUFqWlZJVjhzL0ltdmVSYVVDeXFqSEtR?=
+ =?utf-8?B?b2d0M0JLblBtUmltV1FMSE1PN0QzVTU0UjlXNERVU2hIUmhObWVweVBYRFln?=
+ =?utf-8?B?cDNiM2hZTU1xUk5QcDVqMllNNEhnREo5NmRyLzFMdndyWkVqeTRtNTFONFZT?=
+ =?utf-8?B?bVlTNXpvSXJRL1BNUmpzR2t1UFBqK0wzQ1ZjWG4xbklsbW5xN1QvSmovSTVa?=
+ =?utf-8?B?cXlheUFaY3RCN3laaHhvdUhzR0pZdW5tWXZDVkRmVXJ1NHMyZmJXdy82bVdM?=
+ =?utf-8?B?WE5aZmVab283YkRZN3Zkby92eWlJZFcyanRVUkxlc0QxcU9oUm1qZEdrc0ZF?=
+ =?utf-8?B?U1l2b0pkdERQMlJhbGZJN3JLT2NSR1JzVmpPU0MxUC9xeFROSXZlVVBXZ2xh?=
+ =?utf-8?B?UisxSUc4UElIZHBjS2xvMWIyWGUzTktENENHejhFSmtRUHRZU3dyWE8vU3VE?=
+ =?utf-8?B?RTdyQmNHTFhYWm9WaXhSREpqZFNxOFRaTDBtTEsyN1JtQ1QweGN0dkJqWlJa?=
+ =?utf-8?B?dnpNN2dXNXFkZi9tTG9pOExnQjNqcXZpcEVIVnZLUzF1a2VqVlpyUEVicUJh?=
+ =?utf-8?B?SE5DbWJKendjdFNKYk1ZMTNFU2ZUaVBlbGNqbzlJLzlpOHFpemZkb2h3OVZZ?=
+ =?utf-8?B?TU56V05oUHhDd1FBdFJTLy9meHl0WW5UQmVuODhyeW5nekdNeWFqS1pvRHJ1?=
+ =?utf-8?B?MTQxTnJma1hCdjlCNjRGYkpUN3ZzaUdYWG91bmxYbXJYemF6a3FDaThWTngz?=
+ =?utf-8?B?QTNLVUs2SjdJSGdYSWlJYW1WQXZBcFcvQ3pXQVhaaU9IbTcrWnlESXYxcHFm?=
+ =?utf-8?B?U0lydFFjcHFodHRLbm15UzVJcS9mMENlSWtTTFN0SW1XN1JQWllTaGx1SWpD?=
+ =?utf-8?B?RmE5VkNXa2dVdVlScUFXZzRaeUxFSjBxbDFhSEpmakc1T0tnU2VXU0VtNWxK?=
+ =?utf-8?B?eDVpQnR1SFE0QUVKQkt4dm40REljRlU1R0tjQUNlbElhNlNoV0JxaWl3UW0x?=
+ =?utf-8?B?RlFEc01qcDNkWGI2dEdIcXR1c2ZTOVU0b3BZQ0Y3NkNuMEFSRmFTUTFIT2xF?=
+ =?utf-8?B?M3lPNzhIUWRKOGJpUnBZY3ltSUJXUUNCQ0FpVTgvYXFQQkNKSEUzdz09?=
+X-Exchange-RoutingPolicyChecked: MbUi/IeLHjLVcoztZLY6RgVfZ7XqHpZSXWFLJB0Th13BdJySCnw7gl5a7kPeKNuzPhcm/Nkkx8ap9eVK6c7xkhDpkUeYLe2ZEZBh3BeKhvV5H3QAJASfrICzEL2nOQlFeTCLiXlsKYy0rRu03yJ4qn/vFMgXDR4/BFKEu8yBUNrVFHlI550sUJiPpRfZoNCJCoBVTjsrTbT8hhzqxA1FaT+LScdJKF0p5r8ix+ZBfWkOG2NIRzTGfsrlBgHWHWxuqMqhBMkvkXKFFjrSCTwRqdR/YF4la3SZcMO7KQ5l73a/v9oU+YDA3H/VlJ2iPxNx4uLUPAdBttPGNxkn5kJtKw==
+X-MS-Exchange-CrossTenant-Network-Message-Id: 3bd91e2b-47f1-4349-1f39-08dee329e921
+X-MS-Exchange-CrossTenant-AuthSource: SA3PR11MB9509.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Jul 2026 11:03:47.8457 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: waeasG18yD4Ni1g43H09R8MTflPe+5K2LrGofn/76ZECAJz9KthH+cJSL5HNmqlW6y5DHxDj5umluY6fpq10hw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ1PR11MB6249
+X-OriginatorOrg: intel.com
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1784199840; x=1815735840;
+ h=message-id:date:subject:to:cc:references:from:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=cJtFAf8OtLa2ObTQq937KWrRQAgJ4m7Acnxxoq+tKWg=;
+ b=CAsL9MZ3D003vI7z5wRbrPK8byWf9H1Rz6RXJ19hTlKgyMXu/TjEGjKT
+ WVBYM+GAgA0BFFZeN9buZUdIEH8O7YKl5cpUKjQjNGiI4BQDS3rmkhoHj
+ mpUDzXjoiGOQ1t8HhOrxtkUvN1NZ/ECwxImSnPp8FXLsEIAPBiNkOKLFL
+ AoV7XmrwKLDz/V83LsDAQM0qgFJi4LDLfdBcKV8PqIVPusoluvmEpcpps
+ SI/Mbr9imRIYOqZ9IfOXV/nQPberbOm6CHuLZqsxiDU4oLpruK1Oqn5Wg
+ RKrKK4C21iISaRKoz1r2fSwJXsBUQRXjd9eFawfYzQ/6or3ufd/gfNcA5
+ A==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=obGFhfJ9
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net v1] i40e: fix set_ringparam
- error path freeing live Tx rings
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=CAsL9MZ3
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Subject: Re: [Intel-wired-lan] [e1000e] Intel I219-LM host becomes
+ unreachable under VM network load when AMT SOL/IDER is active
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -100,56 +212,86 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-This is an AI-generated review of your patch. The human sending this
-email has considered the AI review valid, or at least plausible.
-Full review at: https://sashiko.dev
----
---- Patch [1]: [PATCH iwl-net v1] i40e: fix set_ringparam error path freeing live Tx rings ---
-commit 7042e7b9f58a75bdb26437aed842a7b6780df035
-Author: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+On 12/07/2026 14:56, Viktor Donner wrote:
+> Hello,
+> 
+> I am reporting an issue involving the e1000e driver, Intel I219-LM,
+> network offload, and Intel AMT/ME remote-management state.
+> 
+> Environment:
+> - Host: Proxmox VE 9.2.4
+> - Kernel: 7.0.14-4-pve
+> - NIC: Intel I219-LM
+> - Driver: e1000e
+> - Driver version: 7.0.14-4-pve
+> - Firmware version: 0.4-4
+> - PCI address: 0000:00:1f.6
+> - Link: 1000 Mb/s, full duplex
+> - Host bridge: Linux bridge vmbr0
+> - Guest traffic: VirtIO VM network interface
+> 
+> Observed behavior:
+> When running a speed test inside a VM, at approximately 600+ Mbit/s
+> download traffic, the Proxmox host becomes completely unreachable over
+> the network:
+>
+> - no ICMP response
+> - no SSH access
+> - no Proxmox web interface
+> - the physical/vPro console initially remains available
+> - a normal reboot may hang, requiring an AMT hardware reset/power cycle
+> 
+> The NIC still appears administratively UP and LOWER_UP, and the bridge
+> configuration and IP address remain present.
+>
 
-i40e: fix set_ringparam error path freeing live Tx rings
+Hi Viktor,
+I'm not very familiar with Proxmox, so just to make sure I understand 
+the setup - 7.0.14-4-pve is the host kernel, and the e1000e drives the 
+I219-LM device on the host, whereas the VM is running VirtIO which is 
+bridged over vmbr0 to the host?
 
-This commit fixes an issue in the i40e_set_ringparam() error path where it
-mistakenly frees live, NAPI-active TX rings instead of the temporary rings
-allocated for a configuration change. It does this by passing the address of
-the temporary rings instead of the live ring pointer.
+And eventually after the speed test has been running for some time - the 
+host NIC hangs with all the above symptoms?
+> Relevant boot messages while MeshCommander / AMT remote management was
+> active:
+> 
+>     e1000e 0000:00:1f.6 (uninitialized): Reset blocked by ME
+>     e1000e 0000:00:1f.6: PHY reset is blocked due to SOL/IDER session. 
+ > > After completely closing MeshCommander and rebooting, these messages
+> disappeared. TSO/GSO/GRO were enabled again, and repeated speed tests
+> did not reproduce the host lockup.
 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> index 3da9ec49cc745..6d2b076049f7e 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> @@ -2249,7 +2249,7 @@ static int i40e_set_ringparam(struct net_device *netdev,
->  	if (tx_rings) {
->  		for (i = 0; i < tx_alloc_queue_pairs; i++) {
->  			if (i40e_active_tx_ring_index(vsi, i))
-> -				i40e_free_tx_resources(vsi->tx_rings[i]);
-> +				i40e_free_tx_resources(&tx_rings[i]);
+So the issue only occurs if MeshCommander is active at the same time 
+that the speed test is running in the VM, and TSO/GSO are enabled?
 
-[Severity: High]
-This is a pre-existing issue, but does calling i40e_free_tx_resources() on
-the cloned &tx_rings[i] inadvertently reset the Byte Queue Limits (BQL)
-state on the live TX queues?
+> Please advise:
+> 1. Is this a known e1000e/I219-LM issue?
+We get various reports of I219-LM hangs related to TSO/GSO from time to 
+time (GRO specifically is not supported by I219). Not sure whether I 
+have seen one mentioning the specific scenario you are running.
 
-Because the temporary rings are shallow copies of the live rings, they
-inherit the netdev and queue_index fields. When i40e_free_tx_resources()
-cleans up the temporary rings, it calls i40e_clean_tx_ring():
+> 2. Is blocking PHY reset during SOL/IDER expected to prevent recovery
+>     from a TX/RX hang?
+This depends on the cause of the hang. If it is the part of the data 
+path that is specific to the host - then it should not prevent recovery, 
+but if it is somewhere in the PHY - it might.
 
-drivers/net/ethernet/intel/i40e/i40e_txrx.c:i40e_clean_tx_ring() {
-    ...
-    netdev_tx_reset_queue(txring_txq(tx_ring));
-    ...
-}
+> 3. Are there recommended driver parameters or mitigations other than
+>     disabling TSO/GSO/GRO?
+> 4. What additional traces or register dumps would be useful?
+A dmesg dump from the host at the time of the failure may help. Were the 
+above two messages the only ones from e1000e? Normally, if there is a Tx 
+hang in the data path of the e1000e driver - it will show in the log 
+with a dump of some registers.
 
-Since i40e_down() has not yet been called on this error path, the live
-queue is still actively transmitting. Locklessly resetting BQL here
-zeroes num_queued. When the hardware subsequently completes the
-already-queued packets, won't dql_completed() underflow and trigger
-a BUG_ON()?
+> 
+> Hardware:
+> - Motherboard: Gigabyte Q370M D3H GSM PLUS rev. 1.0
+> - Primary NIC: Intel I219-LM
+> - Secondary NIC: Intel I211 using the igb driver, currently not cabled
+> 
+> Regards,
+> Viktor D
+> vikdon@gmx.com
 
-The same issue also seems to be present in the earlier error path if
-i40e_setup_tx_descriptors() fails.
-
->  		}
->  		kfree(tx_rings);
->  		tx_rings = NULL;
