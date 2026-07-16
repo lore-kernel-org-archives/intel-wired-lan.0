@@ -4,143 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 07D3DC44501
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 16 Jul 2026 12:30:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 330F2C4450A
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 16 Jul 2026 13:03:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 89FB1408DB;
-	Thu, 16 Jul 2026 12:30:43 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id DBCBD408FF;
+	Thu, 16 Jul 2026 13:03:17 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id f68puZwmjH9P; Thu, 16 Jul 2026 12:30:40 +0000 (UTC)
+ id YhZTo9f3thTQ; Thu, 16 Jul 2026 13:03:16 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org AD37D408C0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E9638405A3
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1784205040;
-	bh=mmvRkk+7hLp/TwLQ/myCqZjT/o4rdVb5i1bmgc1547s=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1784206996;
+	bh=O9aVvhnwq9WKul5Dkcq9CyjN9SBNgRa/ma0xPwkkGkE=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=RDygGKpKe8fLkg+3fotkk60jJZlv2uCqR8XclKqCn6TkFQOXhe2J/aiY5sE4Jf3F+
-	 1VhyZIi+plpLR73VUSeT4Dylwm1ESI+Em7R647EOtLfNpPDeMT064kTQW9ZgN0KZG+
-	 HIqWYkgbJ/pH9bv8q53UmA8H2Y5wxXo3USroKSGS+LbvGM3UIWeTQt7tN0NKk+DvBf
-	 JWF2ecafg50vW5J9elBiCDXp9/wgq0T4CJ5M1cS2EUjhjyTbclUl4dHTBB8GED8Fsb
-	 nQrwW26sdQwn3TuYyCdVn9WpWsMsTSvz2spfV760JyHP0GZBRoKwlkO0ZuxmDnu2qx
-	 vz9tcIIoPXsjA==
+	b=J7a6aFNMtBWqWPbh88A2Rpq21aNF9uuEXpnRqyhPgxNg+/lUuu9p8YHEAOvR8PgvU
+	 MFtbHg68qWtzMbHRpLOnsBtXHf6u12HrS8iRTEa0/NZphB3BP/wtQMGMZSuVlmISnc
+	 oDMeRah0SMywOVWGfGnRNhCdUVRVOdrym5lSgWqgXhTt8J2467f85ziwIdxsQ5Fnpm
+	 0/01MR0pV6gXmpYXww4+2UUPJr1d5WJLCw2sKHK1ZOeCEYc1BHmJlCP0W+jE/v5Z2T
+	 2meK+lHVVrDaOi0h7LPQJ/2tZ0g4+DdgQK1ghkQJdVLDW+x5iHB+ve1NByvGwPUGD1
+	 axRmHojFis+vQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id AD37D408C0;
-	Thu, 16 Jul 2026 12:30:40 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 234431F6
- for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Jul 2026 12:30:40 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id E9638405A3;
+	Thu, 16 Jul 2026 13:03:15 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 4D346426
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Jul 2026 13:03:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 1485980E88
- for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Jul 2026 12:30:40 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 3EC4B60872
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Jul 2026 13:03:14 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id j9mkiuY1eRHv for <intel-wired-lan@lists.osuosl.org>;
- Thu, 16 Jul 2026 12:30:38 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2607:f8b0:4864:3b::1;
- helo=mail-pz2-x01.google.com; envelope-from=sdf.kernel@gmail.com;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 4G4sih2I4fOr for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 16 Jul 2026 13:03:13 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
+ helo=tor.source.kernel.org; envelope-from=horms@kernel.org;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 9536A80E86
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9536A80E86
-Received: from mail-pz2-x01.google.com (mail-pz2-x01.google.com
- [IPv6:2607:f8b0:4864:3b::1])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 9536A80E86
- for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Jul 2026 12:30:38 +0000 (UTC)
-Received: by mail-pz2-x01.google.com with SMTP id
- 41be03b00d2f7-ca8758e7e94so268646a12.0
- for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Jul 2026 05:30:38 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1784205038; x=1784809838;
- h=in-reply-to:content-disposition:content-type:mime-version
- :references:message-id:subject:cc:to:from:date:x-gm-gg
- :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
- :content-type;
- bh=mmvRkk+7hLp/TwLQ/myCqZjT/o4rdVb5i1bmgc1547s=;
- b=EdP+YfOaKL8m8a7fW+nnkMCcTnFhKKHwfkbX59x04zpJOaoFeMM4agIF3URGNQnafW
- JeiWyVBpyCSE4m/2gl8T1dkRqjlZ94XwzJsjWcV3T+3Ov1va74N++FhIa73XZKrFetLr
- bJ0Ma6ZqFNhPbqYY5zt2Pqjcqx27xI/YUEYv3Bm+N9GMOnzPaw2uuLa8dmP2WRxref6G
- wIe+lVBDmQOfq+g7f3Oi/GTcJ8m6XuDaud6p8BIP34M9SquBIsTSAkAczCgXTshOJ5hY
- SkWME764hiKJsHGP4rBTNDYe9a21CTJKBC9yrTmRnheiatam5X81c0qvo2Zo6iXMPaUz
- Ja0w==
-X-Forwarded-Encrypted: i=1;
- AHgh+RrJJUy44DYKejCLqYHMf+9oX+z4wOTCxix9WF11s/DFwuYNWIHUfb/nUnGK8PeDsI6qMXLCpzXOniiQu6ucVmo=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YxqzNJzPY5L3Bo8LkjVNYBZuwADnSip4GuXZeuOP1kuSuzD0ch+
- 1CBJmqxfUVnKZg5vvQ1Wuqa8uFWegtobsbA1LmVyQRl94WsT1XyQhzWn
-X-Gm-Gg: AfdE7cnzt9FGyDn0uEt7y791vEMyf0xlr8LweXTU6GXf4S4o4/EVMhOxhKzFXzhc+pc
- PoTeZ5j8cga0EjiCVg9WFrbrPQ2l6qZPbBMv97ESWZdVazgSSapbVU6z9Lz+922DgbvS5FbiYu6
- xkA0T+pU0a/9Wb1hOia9cM/kRtxQ0FSJNGINv6j2I+56w1C8qQiNn53JnEgCFBdYJSolnaGP0rF
- PBG3aVoG8iIHUOWfVjUIBhh9CTnHY3pys2Hb1gZNbnMvZLLKXQ9FjFLWR5AZV0BbATzp8e2E3Mv
- cxgM5CtPj5Wczdy780xdNrouhFx74Jn8CCg2JCewK7Ww+SXBIr34WpjWPSxu9b3Y2fN1Ma0ztuJ
- iwm5NizTe3uKlwZf7/Y0Pu/1RjUSRuk+QVpUaDcdexzWk0rHKYc6CMpZECkhpf9URf4QtrIG0d9
- spMuNtQw==
-X-Received: by 2002:a05:6a00:a0a:b0:829:b08f:7353 with SMTP id
- d2e1a72fcca58-84beb0767c5mr2200864b3a.7.1784205037593; 
- Thu, 16 Jul 2026 05:30:37 -0700 (PDT)
-Received: from localhost ([2a03:2880:2ff:49::])
- by smtp.gmail.com with ESMTPSA id
- d2e1a72fcca58-84a4f81a5absm4902337b3a.54.2026.07.16.05.30.36
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 16 Jul 2026 05:30:37 -0700 (PDT)
-Date: Thu, 16 Jul 2026 05:30:31 -0700
-From: Stanislav Fomichev <sdf.kernel@gmail.com>
-To: Lorenzo Bianconi <lorenzo@kernel.org>
-Cc: Donald Hunter <donald.hunter@gmail.com>, 
- Jakub Kicinski <kuba@kernel.org>, "David S. Miller" <davem@davemloft.net>, 
- Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>,
- Simon Horman <horms@kernel.org>, 
- Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
- Jesper Dangaard Brouer <hawk@kernel.org>,
- John Fastabend <john.fastabend@gmail.com>, 
- Stanislav Fomichev <sdf@fomichev.me>, Andrew Lunn <andrew+netdev@lunn.ch>, 
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
- Alexander Lobakin <aleksander.lobakin@intel.com>,
- Andrii Nakryiko <andrii@kernel.org>, 
- Martin KaFai Lau <martin.lau@linux.dev>, Eduard Zingerman <eddyz87@gmail.com>,
- Song Liu <song@kernel.org>, 
- Yonghong Song <yonghong.song@linux.dev>, KP Singh <kpsingh@kernel.org>,
- Hao Luo <haoluo@google.com>, 
- Jiri Olsa <jolsa@kernel.org>, Shuah Khan <shuah@kernel.org>, 
- Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
- Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>,
- Kumar Kartikeya Dwivedi <memxor@gmail.com>, 
- Emil Tsalapatis <emil@etsalapatis.com>, Vladimir Vdovin <deliran@verdict.gg>, 
- Jakub Sitnicki <jakub@cloudflare.com>, netdev@vger.kernel.org,
- bpf@vger.kernel.org, 
- intel-wired-lan@lists.osuosl.org, linux-kselftest@vger.kernel.org,
- linux-doc@vger.kernel.org
-Message-ID: <aljNR2sf8qJVKFgb@devvm7509.cco0.facebook.com>
-References: <20260715-bpf-xdp-meta-rxcksum-v5-0-623d5c0d0ab7@kernel.org>
- <20260715-bpf-xdp-meta-rxcksum-v5-8-623d5c0d0ab7@kernel.org>
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 6DFFC60871
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6DFFC60871
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 6DFFC60871
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Jul 2026 13:03:13 +0000 (UTC)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+ by tor.source.kernel.org (Postfix) with ESMTP id B8BC4600B0;
+ Thu, 16 Jul 2026 13:03:11 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 78EA11F00A3A;
+ Thu, 16 Jul 2026 13:03:10 +0000 (UTC)
+From: Simon Horman <horms@kernel.org>
+To: sergey.temerkhanov@intel.com
+Cc: Simon Horman <horms@kernel.org>, intel-wired-lan@lists.osuosl.org,
+ netdev@vger.kernel.org
+Date: Thu, 16 Jul 2026 14:02:55 +0100
+Message-ID: <20260716130254.309674-2-horms@kernel.org>
+X-Mailer: git-send-email 2.55.0
+In-Reply-To: <20260710105403.1050025-2-sergey.temerkhanov@intel.com>
+References: <20260710105403.1050025-2-sergey.temerkhanov@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20260715-bpf-xdp-meta-rxcksum-v5-8-623d5c0d0ab7@kernel.org>
+Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20251104; t=1784205038; x=1784809838; darn=lists.osuosl.org;
- h=in-reply-to:content-disposition:content-type:mime-version
- :references:message-id:subject:cc:to:from:date:from:to:cc:subject
- :date:message-id:reply-to:content-type;
- bh=mmvRkk+7hLp/TwLQ/myCqZjT/o4rdVb5i1bmgc1547s=;
- b=XlYG+UCaouBMSrJGqp43GoECEIvl7smkFxec/KmY5v7QHb0Bc4HtYq+Omsi5ZQEURn
- jyMLBCll5ez0eXPZ0LBHZiSxScA/iLtRRvbzBoSszQ1hWhm3oESA8lZc5vlgh/jUOaZu
- eArqxjko+0JG+q3+5SoLCTkxo77H3hsh0m1ytTB1tyZtNIm4GIDvgukoetKRnkG5LQvp
- FY5mq3S/DwBZ2jQpbelsGJaO3WtGgmA/Pf1KH2rCR1BMVEU1Xl5RmydyxidIZ3OlmTOb
- KG3T1llsrSHdsgJ9q/PWH4MEQdnY5BWw6e82dPeh6WOUlhgO9I5/LxY60+lBUcKpU8vl
- XT1w==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=gmail.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20251104 header.b=XlYG+UCa
-Subject: Re: [Intel-wired-lan] [PATCH bpf-next v5 8/8] selftests: net: add
- test for XDP_PASS skb checksum invalidation
+ d=kernel.org; s=k20260515; t=1784206991;
+ bh=O9aVvhnwq9WKul5Dkcq9CyjN9SBNgRa/ma0xPwkkGkE=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References;
+ b=JdMwkirZk3C46KYBxGoYkNhody/IT9qCqvP+ckPuTxsUxopWdv6ySzDjk128eXzwT
+ R93Ao5AbCA2/zT+7F7OJkOnAdaJjkkRSfzksWAFO4FV3FXsqVdiZgnIhcgCiooe+Xb
+ 79tzIsFheA+UWrk2b2DdcNzZ1L4NH6Hbmq1iyPSLopkkYLVU4bHtc4mkefReAEhvQL
+ h21OkZaSrUOVQZh1cx3Mf/sYVg0A/EPV5zIQIopJ8ob+TOkZdeXoMebC7Kd9NzC01J
+ jG33hAJVkyJj5xZiSKuobny6xg2ptBOQcRAGnl06FzFE8lNZqsHM2U3Q9k9HUrAVaA
+ uxixwtiv7gC0w==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20260515 header.b=JdMwkirZ
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v1 1/2] ixgbe: Refactor
+ device operations to check whether netdev is available
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -156,62 +98,69 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 07/15, Lorenzo Bianconi wrote:
-> Add a test that verifies skb->ip_summed is set to CHECKSUM_NONE
-> when a device running in XDP mode creates an skb from a xdp_buff
-> if the attached ebpf program returns an XDP_PASS.
-> The test attaches an XDP program returning XDP_PASS, and a TC
-> ingress program that runs the bpf_skb_rx_checksum() kfunc to
-> inspect the resulting skb. After XDP_PASS the driver must invalidate
-> any previously computed hardware RX checksum since XDP may have
-> modified the packet data.
-> The BPF program counts packets per checksum type in a map, and the
-> test runner verifies that after sending traffic the CHECKSUM_NONE
-> counter is non-zero while CHECKSUM_UNNECESSARY and CHECKSUM_COMPLETE
-> counters are zero.
-> 
-> Signed-off-by: Lorenzo Bianconi <lorenzo@kernel.org>
-> ---
->  Documentation/networking/xdp-rx-metadata.rst       |  5 ++
->  .../selftests/drivers/net/hw/xdp_metadata.py       | 55 +++++++++++++++-
->  .../selftests/net/lib/skb_metadata_csum.bpf.c      | 73 ++++++++++++++++++++++
->  3 files changed, 132 insertions(+), 1 deletion(-)
-> 
-> diff --git a/Documentation/networking/xdp-rx-metadata.rst b/Documentation/networking/xdp-rx-metadata.rst
-> index 93918b3769a3..7434ac98242a 100644
-> --- a/Documentation/networking/xdp-rx-metadata.rst
-> +++ b/Documentation/networking/xdp-rx-metadata.rst
-> @@ -90,6 +90,11 @@ conversion, and the XDP metadata is not used by the kernel when building
->  ``skbs``. However, TC-BPF programs can access the XDP metadata area using
->  the ``data_meta`` pointer.
+This is an AI-generated review of your patch. The human sending this
+email has considered the AI review valid, or at least plausible.
+https://netdev-ai.bots.linux.dev/sashiko/
+---
+ixgbe: Refactor device operations to check whether netdev is available
 
-[..]
+This commit refactors several ixgbe driver operations to check whether
+the netdev they operate on is enabled by introducing an ixgbe_netif_running()
+helper and adding netif_device_present() guards across the ethtool, DCB,
+FCoE and XDP code paths.
 
-> +If a driver is running in XDP mode, any existing hardware RX checksum
-> +(``CHECKSUM_UNNECESSARY`` or ``CHECKSUM_COMPLETE``) must be invalidated
-> +by setting ``skb->ip_summed`` to ``CHECKSUM_NONE`` before passing the
-> +skb to the kernel, since XDP may have modified the packet data.
-> +
->  In the future, we'd like to support a case where an XDP program
->  can override some of the metadata used for building ``skbs``.
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> index 8873a8cc4a18..12361ed58a0f 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
 
-Sorry for keeping nitpicking on this, but I'm still not convinced that
-it is what we currently do. From my previous reply:
+[ ... ]
 
-> > Looking at a few drivers:
-> > - bnxt (bnxt_rx_pkt) does UNNECESSARY - ok
-> > - mlx5 (mlx5e_handle_csum) does UNNECESSARY and skips COMPLETE if there is
-> >   bpf prog attached
-> > - fbnic (fbnic_rx_csum) - can do COMPLETE even with xdp attached?
-> > - gve (gve_rx) - can do COMPLETE even with xdp attached?
+> @@ -10954,8 +10958,10 @@ static int ixgbe_xdp_setup(struct net_device *dev, struct bpf_prog *prog)
+>  			synchronize_rcu();
+>  		err = ixgbe_setup_tc(dev, adapter->hw_tcs);
+>  
+> -		if (err)
+> +		if (err) {
+> +			xchg(&adapter->xdp_prog, old_prog);
+>  			return -EINVAL;
+> +		}
+>  		if (!prog)
+>  			xdp_features_clear_redirect_target(dev);
+>  	} else {
 
-(although for gve I might be wrong, there is also gve_rx_skb_csum that only
-does UNNECESSARY).
+[Medium]
+The xchg(&adapter->xdp_prog, old_prog) rollback on the ixgbe_setup_tc()
+error path looks like a semantic fix rather than a refactor.
 
-I'd wait for Jakub to chime in, but it feels like we should just document
-what we currently do as a recommended approach: for the drivers
-that support COMPLETE, do not report it when the bpf program is attached.
-Both NONE and UNNECESSARY are ok.
+Before this patch the error path left adapter->xdp_prog pointing at prog:
 
-Also, did you run this test on real HW? NIPA now has HW tests, maybe it
-makes sense to route this series via net-next to get the real coverage?
+    old_prog = xchg(&adapter->xdp_prog, prog);
+    ...
+    err = ixgbe_setup_tc(dev, adapter->hw_tcs);
+    if (err)
+        return -EINVAL;
+
+while the ndo_bpf caller dev_xdp_install() drops its reference on prog
+when the driver returns an error:
+
+    if (err) {
+        if (prog)
+            bpf_prog_put(prog);
+        return err;
+    }
+
+Can this leave adapter->xdp_prog as a dangling pointer to a freed
+bpf_prog on the pre-patch code, which is what the new xchg() restores?
+
+The commit message describes only a refactor and does not mention this
+change.
+
+Should the xdp_prog rollback be split into its own patch with a Fixes:
+tag pointing at the commit that introduced the missing rollback, per
+Documentation/process/submitting-patches.rst which asks for one logical
+change per patch?
+
+The new behavior also skips the subsequent if (old_prog) bpf_prog_put(old_prog)
+in the failure path, which is a separate semantic worth calling out in the
+commit log.
