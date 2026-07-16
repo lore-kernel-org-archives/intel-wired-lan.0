@@ -1,72 +1,72 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72CEAC44514
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B25EC4450A
 	for <intel-wired-lan@archiver.kernel.org>; Thu, 16 Jul 2026 09:49:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 27C3580E57;
-	Thu, 16 Jul 2026 09:49:20 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id B5E3B4078F;
+	Thu, 16 Jul 2026 09:49:19 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id V0EwNvxAkkVe; Thu, 16 Jul 2026 09:49:19 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id foeKEB_DTDtX; Thu, 16 Jul 2026 09:49:18 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9D25380E59
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 110B74076A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1784195359;
-	bh=jXweELGXYxg+IHvmbYYs5xZ2sUMFDdufewypqFwzVh4=;
+	s=default; t=1784195358;
+	bh=Gn/AxoCcNKACd1cROnZENqmJ9AVZ241U+LPa/BLB7qU=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=FQiGOvBIxtLPcC8Nkcn3cgg+0D3Ghi25BFusrpp63PhYJr98Ql26P5HFJ3Yyb9DgS
-	 cL9b68W6nxuoQ/bJeL+lwd6cz/ZW8VsVkmhbvv2VVAMAmH7Z+v5Puy4KtNv7VFjToG
-	 8YgxbWoANpcmTz9PS96ZnoFm/dcUVjPky47H4+JE8d1Pc4zljP+9rfK7lFmUlhlDp9
-	 M/aEDDaW6x+Me66yW2L61SQfFwiDfNaF/D4Dp60dNsdmAaoz4WQj3E/oRBroW2m20/
-	 mCS/jhk3T63s6Vmix1cpLWyntS2PCnnuFB43N7FQ8Vai3UXpC/zdChmQ/zdgCtTuct
-	 dBi7+0NQy+A0Q==
+	b=rO4QrttT2Dhw55TtaoWwsbQu2U/kZuZiju+md926GbtHotrIv6ZCgXThRP6BQFNQa
+	 Jc+/VYrAuquiJePEvxIi1TXRAwYghs4V9usAjlrgc+/PJQCsD5m3hzLqc9tRvIfqly
+	 QWhVkLrEmR80sAHMscA/62oVlROYsNHK2dNeUtAuVWscgFUVX6E5faTHYceAYICFmx
+	 /aR87JxoKWZvwGY1Nt5DfqNG3527Ho04ONCkR25Jy3UyfAElmznbT9o73X3K3WSeHY
+	 PzzHs0IpYJHlJtbk9/luK8J22n6LFfonkZ5yTmYbEmDI+VhYX96eihNTiZS5sK3xUh
+	 Jp7HC0WTWE39Q==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 9D25380E59;
-	Thu, 16 Jul 2026 09:49:19 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 110B74076A;
+	Thu, 16 Jul 2026 09:49:18 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id CDA84426
- for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Jul 2026 09:49:17 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 77E43426
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Jul 2026 09:49:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id B420680E57
- for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Jul 2026 09:49:17 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 69ADB80E59
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Jul 2026 09:49:16 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id af8Dqa5VU1uj for <intel-wired-lan@lists.osuosl.org>;
- Thu, 16 Jul 2026 09:49:16 +0000 (UTC)
+ id R3zU0yWWkWXQ for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 16 Jul 2026 09:49:15 +0000 (UTC)
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.15;
  helo=mgamail.intel.com; envelope-from=sergey.temerkhanov@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org C72E880E58
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C72E880E58
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 2052980E58
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2052980E58
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
- by smtp1.osuosl.org (Postfix) with ESMTPS id C72E880E58
- for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Jul 2026 09:49:16 +0000 (UTC)
-X-CSE-ConnectionGUID: Dh6Hds11SGCssOyM5ttjaA==
-X-CSE-MsgGUID: n2PyvWv6TkGMhy/J00RniA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11847"; a="84963882"
-X-IronPort-AV: E=Sophos;i="6.25,167,1779174000"; d="scan'208";a="84963882"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 2052980E58
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Jul 2026 09:49:15 +0000 (UTC)
+X-CSE-ConnectionGUID: cSkQrbQKTHSBwRvFahRwtA==
+X-CSE-MsgGUID: wZ3E3k7qR7Wkq3ULmwvESw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11847"; a="84963876"
+X-IronPort-AV: E=Sophos;i="6.25,167,1779174000"; d="scan'208";a="84963876"
 Received: from orviesa007.jf.intel.com ([10.64.159.147])
  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 16 Jul 2026 02:49:17 -0700
-X-CSE-ConnectionGUID: rTSjzYjkR++uQI6VWc7qdg==
-X-CSE-MsgGUID: 4ZkwPuwEQ026n7b5ZXd+Hg==
+ 16 Jul 2026 02:49:15 -0700
+X-CSE-ConnectionGUID: YykEGDFwS2Kt8cdkT04uqQ==
+X-CSE-MsgGUID: IhT8kgY3QU6iJSOMLpmelA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,167,1779174000"; d="scan'208";a="256501630"
+X-IronPort-AV: E=Sophos;i="6.25,167,1779174000"; d="scan'208";a="256501623"
 Received: from gnrd8.igk.intel.com (HELO GNRD8) ([10.123.232.137])
- by orviesa007.jf.intel.com with ESMTP; 16 Jul 2026 02:49:16 -0700
+ by orviesa007.jf.intel.com with ESMTP; 16 Jul 2026 02:49:14 -0700
 From: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org
-Date: Thu, 16 Jul 2026 09:49:10 +0000
-Message-ID: <20260716094912.1210865-4-sergey.temerkhanov@intel.com>
+Date: Thu, 16 Jul 2026 09:49:08 +0000
+Message-ID: <20260716094912.1210865-2-sergey.temerkhanov@intel.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260716094912.1210865-1-sergey.temerkhanov@intel.com>
 References: <20260716094912.1210865-1-sergey.temerkhanov@intel.com>
@@ -74,25 +74,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1784195357; x=1815731357;
+ t=1784195355; x=1815731355;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=SksVPDM8MtMFs/A4NjrOmOmXL+uWqXN/8PvffGz9b+8=;
- b=do53zE/dgpbLagVDTJZEb1OFdUTHjSmGt8jMxBTIyHH+0apF1oWxyuFL
- lSDzuXiPwE4U7CIhGimWyEtczdgLNiqIRCIuabsoFj/BFJLsYYO3m2Pl9
- 8LEWhpdtH0PzfsPCLaXbWUmWqNTq0q0XlWiPIIxlj/Q7opxIGAUZuAMcS
- TQooVwM373a6fNOoY0TL7z9YdZT6qAYs5t30Zb0S4lgqzIXCnGrg8Eze8
- cDm0sNn+kRVGZ+4ED2KhI7cmVW+WCX8Q2tf/5StFkEHJUISpMsxxfxG5f
- YkbMBs4mo5Ac/8qdrxy9dDxlr+45IFHiTCIINyHmyC1S3kL0Gmme1VSC6
+ bh=w0QiPrSSbSxJPJWdLNfgBVxrpdJJbxJ/8HRKxXozyGk=;
+ b=F8fF4hqpxYFol8U5iGbhAGkB61rZowtBZVrwygGwwouvim0iSeftdUh6
+ yyoRrfyJTF/1dGXcP+dcF0HjHCDZAuykOhOY5xvRHpz2mzK1xlhymotgM
+ bX2k/WCyiziwOeSt5UbeaL7qetEd6pw6jzSgmF2idX6B31sAql8Ml+9//
+ phrB3XWd3h/wW+wkRRvFWCzO6TeVrkSH/dEnOCrL6AoJwqrk4NQPUl9kn
+ XWpmp3KbPEHTTMEQ++ix3W0TcI0XhhXteGHSnEdePvkneSicz3A2ISwGB
+ PmmBDuSwTfS3mo+yFWHIjEym9d6a7CcHKGMvHrgyVuDgE8FQmhi4tLiFn
  Q==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=do53zE/d
-Subject: [Intel-wired-lan] [PATCH iwl-next v1 3/4] ice: dpll: Rework U.FL
- muxed pin (SMA) control
+ header.a=rsa-sha256 header.s=Intel header.b=F8fF4hqp
+Subject: [Intel-wired-lan] [PATCH iwl-next v1 1/4] ice: dpll: Rework
+ multiplexed pin notifications
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -108,64 +108,149 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Rework multiplexed pin control to match the state change listed in
-the design requirements.
+Use a pointer to the struct ice_dpll_pin to link multiplexed
+pins. This allows to simplify the selection logic.
 
 Signed-off-by: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
 Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 Reviewed-by: Przemyslaw Korba <przemyslaw.korba@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_dpll.c | 35 ++++++++++++++++++++---
- 1 file changed, 31 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_dpll.c | 60 +++++++++++------------
+ drivers/net/ethernet/intel/ice/ice_dpll.h |  1 +
+ 2 files changed, 31 insertions(+), 30 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_dpll.c b/drivers/net/ethernet/intel/ice/ice_dpll.c
-index 54958e17713b..cb14621b3aef 100644
+index 1ca137f67dd4..fed7c9fea953 100644
 --- a/drivers/net/ethernet/intel/ice/ice_dpll.c
 +++ b/drivers/net/ethernet/intel/ice/ice_dpll.c
-@@ -1381,12 +1381,39 @@ ice_dpll_ufl_pin_state_set(const struct dpll_pin *pin, void *pin_priv,
- 	if (ret)
- 		goto unlock;
+@@ -544,6 +544,29 @@ ice_dpll_pin_disable(struct ice_hw *hw, struct ice_dpll_pin *pin,
+ 	return ret;
+ }
  
--	if (enable)
-+	if (enable) {
- 		ret = ice_dpll_pin_enable(hw, target, d->dpll_idx, type, extack);
--	else
-+		if (!ret)
-+			ret = ice_dpll_pin_state_update(pf, target, type, extack);
-+		if (!ret && p->muxed->active) {
-+			struct ice_dpll_pin *peer = p->muxed;
-+			struct ice_dpll_pin *peer_target;
-+			enum ice_dpll_pin_type peer_type;
-+			int peer_ret;
++/**
++ * ice_dpll_sw_pin_notify_peer - notify the paired SW pin after a state change
++ * @changed: the SW pin that was explicitly changed (already notified by dpll core)
++ *
++ * SMA and U.FL pins share physical signal paths in pairs (SMA1/U.FL1 and
++ * SMA2/U.FL2).  When one pin's routing changes via the PCA9575 GPIO
++ * expander, the paired pin's state may also change.  Send a change
++ * notification for the peer pin so userspace consumers monitoring the
++ * peer via dpll netlink learn about the update.
++ *
++ * Context: Called from dpll_pin_ops callbacks after pf->dplls.lock is
++ *          released.  Uses __dpll_pin_change_ntf() because dpll_lock is
++ *          still held by the dpll netlink layer.
++ */
++static void ice_dpll_sw_pin_notify_peer(struct ice_dpll_pin *changed)
++{
++	struct ice_dpll_pin *peer;
 +
-+			if (peer->direction == DPLL_PIN_DIRECTION_OUTPUT) {
-+				peer_target = peer->output;
-+				peer_type = ICE_DPLL_PIN_TYPE_OUTPUT;
-+			} else {
-+				peer_target = peer->input;
-+				peer_type = ICE_DPLL_PIN_TYPE_INPUT;
-+			}
-+			peer_ret = ice_dpll_pin_enable(&pf->hw, peer_target,
-+						       pf->dplls.eec.dpll_idx,
-+						       peer_type, NULL);
-+			if (!peer_ret)
-+				peer_ret = ice_dpll_pin_state_update(pf, peer_target,
-+							     peer_type, NULL);
-+			if (peer_ret)
-+				dev_warn(ice_pf_to_dev(pf),
-+					 "Failed to sync peer pin %u after enabling U.FL pin %u, err %d\n",
-+					 peer_target->idx, target->idx, peer_ret);
-+		}
-+	} else {
- 		ret = ice_dpll_pin_disable(hw, target, type, extack);
--	if (!ret)
--		ret = ice_dpll_pin_state_update(pf, target, type, extack);
-+		if (!ret)
-+			ret = ice_dpll_pin_state_update(pf, target, type, extack);
-+	}
++	peer = changed->muxed;
++	if (peer->pin)
++		__dpll_pin_change_ntf(peer->pin);
++}
++
+ /**
+  * ice_dpll_pin_store_state - updates the state of pin in SW bookkeeping
+  * @pin: pointer to a pin
+@@ -1171,32 +1194,6 @@ ice_dpll_input_state_get(const struct dpll_pin *pin, void *pin_priv,
+ 				      extack, ICE_DPLL_PIN_TYPE_INPUT);
+ }
  
+-/**
+- * ice_dpll_sw_pin_notify_peer - notify the paired SW pin after a state change
+- * @d: pointer to dplls struct
+- * @changed: the SW pin that was explicitly changed (already notified by dpll core)
+- *
+- * SMA and U.FL pins share physical signal paths in pairs (SMA1/U.FL1 and
+- * SMA2/U.FL2).  When one pin's routing changes via the PCA9575 GPIO
+- * expander, the paired pin's state may also change.  Send a change
+- * notification for the peer pin so userspace consumers monitoring the
+- * peer via dpll netlink learn about the update.
+- *
+- * Context: Called from dpll_pin_ops callbacks after pf->dplls.lock is
+- *          released.  Uses __dpll_pin_change_ntf() because dpll_lock is
+- *          still held by the dpll netlink layer.
+- */
+-static void ice_dpll_sw_pin_notify_peer(struct ice_dplls *d,
+-					struct ice_dpll_pin *changed)
+-{
+-	struct ice_dpll_pin *peer;
+-
+-	peer = (changed >= d->sma && changed < d->sma + ICE_DPLL_PIN_SW_NUM) ?
+-		&d->ufl[changed->idx] : &d->sma[changed->idx];
+-	if (peer->pin)
+-		__dpll_pin_change_ntf(peer->pin);
+-}
+-
+ /**
+  * ice_dpll_sma_direction_set - set direction of SMA pin
+  * @p: pointer to a pin
+@@ -1258,7 +1255,7 @@ static int ice_dpll_sma_direction_set(struct ice_dpll_pin *p,
+ 	 * backing pin when U.FL becomes inactive because the SMA pin may
+ 	 * still be using it.
+ 	 */
+-	peer = &d->ufl[p->idx];
++	peer = p->muxed;
+ 	if (peer->active) {
+ 		struct ice_dpll_pin *target;
+ 		enum ice_dpll_pin_type type;
+@@ -1388,7 +1385,7 @@ ice_dpll_ufl_pin_state_set(const struct dpll_pin *pin, void *pin_priv,
  unlock:
  	mutex_unlock(&pf->dplls.lock);
+ 	if (!ret)
+-		ice_dpll_sw_pin_notify_peer(&pf->dplls, p);
++		ice_dpll_sw_pin_notify_peer(p);
+ 
+ 	return ret;
+ }
+@@ -1508,7 +1505,7 @@ ice_dpll_sma_pin_state_set(const struct dpll_pin *pin, void *pin_priv,
+ unlock:
+ 	mutex_unlock(&pf->dplls.lock);
+ 	if (!ret)
+-		ice_dpll_sw_pin_notify_peer(&pf->dplls, sma);
++		ice_dpll_sw_pin_notify_peer(sma);
+ 
+ 	return ret;
+ }
+@@ -1705,7 +1702,7 @@ ice_dpll_pin_sma_direction_set(const struct dpll_pin *pin, void *pin_priv,
+ 	ret = ice_dpll_sma_direction_set(p, direction, extack);
+ 	mutex_unlock(&pf->dplls.lock);
+ 	if (!ret)
+-		ice_dpll_sw_pin_notify_peer(&pf->dplls, p);
++		ice_dpll_sw_pin_notify_peer(p);
+ 
+ 	return ret;
+ }
+@@ -4623,6 +4620,8 @@ static int ice_dpll_init_info_sw_pins(struct ice_pf *pf)
+ 		if (pin->input->ref_sync)
+ 			pin->ref_sync = pin->input->ref_sync - pin_abs_idx;
+ 		pin->output = &d->outputs[ICE_DPLL_PIN_SW_OUTPUT_ABS(i)];
++		pin->muxed = &d->ufl[i];
++
+ 		ice_dpll_phase_range_set(&pin->prop.phase_range, phase_adj_max);
+ 	}
+ 	for (i = 0; i < ICE_DPLL_PIN_SW_NUM; i++) {
+@@ -4656,6 +4655,7 @@ static int ice_dpll_init_info_sw_pins(struct ice_pf *pf)
+ 				(DPLL_PIN_CAPABILITIES_PRIORITY_CAN_CHANGE |
+ 				 caps);
+ 		}
++		pin->muxed = &d->sma[i];
+ 		ice_dpll_phase_range_set(&pin->prop.phase_range, phase_adj_max);
+ 	}
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_dpll.h b/drivers/net/ethernet/intel/ice/ice_dpll.h
+index c59d746a8567..c102ff2649d9 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dpll.h
++++ b/drivers/net/ethernet/intel/ice/ice_dpll.h
+@@ -78,6 +78,7 @@ struct ice_dpll_pin {
+ 	s32 phase_adjust;
+ 	struct ice_dpll_pin *input;
+ 	struct ice_dpll_pin *output;
++	struct ice_dpll_pin *muxed;
+ 	enum dpll_pin_direction direction;
+ 	s64 phase_offset;
+ 	u8 status;
 -- 
 2.53.0
 
