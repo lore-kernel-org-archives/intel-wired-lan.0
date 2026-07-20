@@ -4,142 +4,123 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CF3EC4452B
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 20 Jul 2026 14:09:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E95B4C44515
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 20 Jul 2026 14:35:23 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C96CD606DB;
-	Mon, 20 Jul 2026 14:09:06 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 7E166606DB;
+	Mon, 20 Jul 2026 14:35:23 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 66DrZdHqecTe; Mon, 20 Jul 2026 14:09:06 +0000 (UTC)
+ id Ld0y6OsDBzV0; Mon, 20 Jul 2026 14:35:22 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1331D606C8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9D2E96067D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1784556546;
-	bh=a0WHbbtZjdUGCOVhaSfhJTsOarehv1PQGNc28148fV4=;
-	h=References:In-Reply-To:From:Date:To:Cc:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=JUMrruXUpsCZp2il9eLCr87JudDUJAggdPa5fw1qmpZiWlICbASohTUWmFmGi8WlK
-	 Y/JcNFXSH+Pn2p4Dxh5XaIwRWAfOe/NXj8NwexIcLtdJ4mLax/5g6eghXAVmreQDuT
-	 Pev2C5ZAJwVnaFwwo4xmLJYEqAQyts57FPuLh0npIBDe38DM/745H2ntCPdtFGzyHm
-	 kfAykNyNbU5WTLXCHL2MGVW2n5+jXzQjllFhC3UjN8EBmp+QEaqste5AetcU+jaFy+
-	 tf+Lk9geKkhLcJ9jNhiiDf3NixwMbZszRvpsQ2TGDMeb+5cQdrTvejbLkubespPLrC
-	 ipM8yPrtk2Fiw==
+	s=default; t=1784558122;
+	bh=Z3VaPip/rhZHQR85NvyPs/zlByfwCUa6xlhWOu76l9g=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=xQ4zT3S+rWWSzvJzTacpT2OvDQBZZ4LHORUfAtdwTz9qiM0hvFZ7P4ZYeQg6XF6Sc
+	 736g6fhRHzv1cPK0cir9gkpjxyXPyfJ8ObbXCklo3qdDe8O3lFw8CtIm6NXzrkO/SI
+	 m9qfueFYd7BS0FNigLtDQj2COuTV5JH8RI5YQj9IgMyVEdOrxPo+GhgKV5UEQXvz/D
+	 Z6/wxEW+x6OyOYdaYY/S1uwK8pRU51cPeNpzglDQ2abfahA4c5fqllUs7w3xPNJ/K5
+	 fcnNn4CZu5AM2qPIi0tLc5i+qODTxicvW6tHcZWNtQw9riqFE6TwErbht1GepiRD5k
+	 NPr/2MDauyEIA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 1331D606C8;
-	Mon, 20 Jul 2026 14:09:06 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 1F941206
- for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Jul 2026 14:09:04 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 9D2E96067D;
+	Mon, 20 Jul 2026 14:35:22 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id A2DBC206
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Jul 2026 14:35:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id F312B606C8
- for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Jul 2026 14:09:03 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 797F180C81
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Jul 2026 14:35:20 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id SvTUI5tCIQh5 for <intel-wired-lan@lists.osuosl.org>;
- Mon, 20 Jul 2026 14:09:03 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id ekS6wNOmZZ5v for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 20 Jul 2026 14:35:19 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a00:1450:4864:20::62f; helo=mail-ej1-x62f.google.com;
+ client-ip=2607:f8b0:4864:20::630; helo=mail-pl1-x630.google.com;
  envelope-from=mhun512@gmail.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org E2C3A606B4
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E2C3A606B4
-Received: from mail-ej1-x62f.google.com (mail-ej1-x62f.google.com
- [IPv6:2a00:1450:4864:20::62f])
- by smtp3.osuosl.org (Postfix) with ESMTPS id E2C3A606B4
- for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Jul 2026 14:09:02 +0000 (UTC)
-Received: by mail-ej1-x62f.google.com with SMTP id
- a640c23a62f3a-c167bda216fso840497866b.2
- for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Jul 2026 07:09:02 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1784556540; cv=none;
- d=google.com; s=arc-20260327;
- b=rjP+on9tmxcFajdvPKVugg3N5KnE2Kkxi/noQ0E7a1MHc6ksMK1ADFzLBuEseZJ6hI
- xV910jvSANK6IgDKE5hGXifeg4DNlZg/+2KUeu1FJ2ihG1K3j/qaVKLEuoYXs2U81xzW
- PQQJP7k306X62/vSA2d9spFN5Lipi/gyGfDVCKbU2Om8WbHBZnQ2e9ik1fNbaEkaLxee
- kzLPBEhbOd17IpTQDfZiV5hbWXcdI7JBjsTnDOpw3KW4Qv4lMLKz2ycfZ4Ywd6oZzDcK
- nts5eRdTYfXP4AM+TImGpkuMrRjO3Gywd58J//L0epR36AZu0yWkq9DcJL6wYfPzoKB+
- kgPA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com;
- s=arc-20260327; 
- h=content-transfer-encoding:cc:to:subject:message-id:date:from
- :in-reply-to:references:mime-version:dkim-signature;
- bh=a0WHbbtZjdUGCOVhaSfhJTsOarehv1PQGNc28148fV4=;
- fh=9UL4gFTa8OBTXOyaohB8oMVjFGCO7Rjd4F5LYezoFZ0=;
- b=guZBWjnUjWkVYN/PInJsY+oVV1ny7eOYBqmR+mEaKVwN9lKhIo91t7ifz1Eht6lyAG
- GrIEUxu/Q3swbKZ/A4tzTeevmK7xdVsUdBhZgBIwMPCUTyZvYwBcvHSPd8yqItWXIhp1
- BZEdffMkCxhbfNFJD3jeRBHNAyVcyCLm+mAix75lgh1dTBdpLXuAkiw5wZK6X7B3GCiT
- PaLhgshBASgj9WRH3ImiJPDKGkv0srbM3hODhV6XO4dz0oEGi69D0lO4P+dmvLkAwr3s
- z0uWKD8/qNKb3J0dDgYVhFocAa7GSk0CzVeiSpvzAhJm5Q97eHL8c3Ha5DPcKuP/tM9B
- yYsQ==; darn=lists.osuosl.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org D176480C80
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D176480C80
+Received: from mail-pl1-x630.google.com (mail-pl1-x630.google.com
+ [IPv6:2607:f8b0:4864:20::630])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id D176480C80
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Jul 2026 14:35:19 +0000 (UTC)
+Received: by mail-pl1-x630.google.com with SMTP id
+ d9443c01a7336-2cca0c5799eso78168005ad.0
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Jul 2026 07:35:19 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1784556540; x=1785161340;
- h=content-transfer-encoding:content-type:cc:to:subject:message-id
- :date:from:in-reply-to:references:mime-version:x-gm-gg
- :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
- :content-type;
- bh=a0WHbbtZjdUGCOVhaSfhJTsOarehv1PQGNc28148fV4=;
- b=aEQF3FiQfOkJITatHmutPxhYAzKIJc5l0AxV4Tny7KduHWgUPTQl98ddzUttuGXnth
- Y0IH5DlCIdsuS9KiYuL3gyjdNHHbOoXvuPa66m1Mj2Z5Bbhlgr+3xuejRpfsFK1Y7MQI
- MLHGMU/3tdAJWFVnqJeXDqGF7rijr/0FmJpXcokHIvU0Ks/UuhiBu5cBee3patuD0Eg6
- r7dxXGhCtdn72nW9W8rjyzQ19WF8XasN1EP5CfmysJrDoMfbzhTmVLn/ufmypZY/fpFu
- l0IdpbJjvNTW/3Bk+QzqFqaWfFnYdkRK+wwh6JJanWaoTPHVi40p5gJu6tdwJ9jP0RHo
- d6dw==
+ d=1e100.net; s=20251104; t=1784558119; x=1785162919;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to:content-type;
+ bh=Z3VaPip/rhZHQR85NvyPs/zlByfwCUa6xlhWOu76l9g=;
+ b=IqcE6M6yYHp5HGpItkIU4WowGnki3E4EHXcZG5FTfPfjmsVXTIqvw61Q+YuWTH3Thk
+ UDebPPzE6N436RfW2FU2FE8VYcSGA8v1ulPa3dEI4Buzhcm7Rch6c9NZrPup5+3W1H3w
+ 3Gd2wTR0Wjwa3tcZdJTH6yYEm87iaxKGwg9GCB7WPiGnHSHivgBbJShapMv4Ut0DN8EU
+ ivOhAlP/e8IKlT2DSO2h0Ya3NbAnESXcE+2HbrnLL6pH5ZeWH56n3qyGvrE/5xz02Uc8
+ /M3exlBAB5S159I3DJf4utwFrcNSZPU88ynjHIRh60ijtj7cGIBZ2P1pkPadWx2G8TUx
+ uTXA==
 X-Forwarded-Encrypted: i=1;
- AHgh+RoxtlFfryOsyr7Zo5v2fIc/TLflctAYli1sO9yEwSiJ3megNu8dNTjnRzKroTP5XG3r8mxL0V7xWGmoYqRcXD8=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YxDBsZdca802R+5npPL060sLE+KXOYyizoKq8nuaiNWn9g0OCox
- blGW+dR5fne6AAmbT2cKys/cC4VoeJzTlo65B80251NKFWnzkuconEhdYFsZM6Z/SPn7WKy5SDu
- y0CpWTl6LybU9BQoR9H4fHCIcmwHBGw==
-X-Gm-Gg: AfdE7cnJYf5XCpH9hkqL3Zhl0A6wH3TbcB5ynWOFIYJlstxTtUjTQSF//hsU0q9uEeS
- y5JtuWaApiPY4Gm5c9QXzqRIp3nY3ZMY35D2aK9+fxZ/2Dh3pczXBqUaf+/hzUH8pLWX6TZS0qq
- eqh/YA2dkpp5mMmeDZwa3rLah7Tst8Ka0RWJXYZsFp1w834lOOuXKietWzei2eGY2JI5rdIteBk
- DD+UmWLFwL9yUmXBzOwllw2fXYxmM3FFyxwG/njq9nTJxSLCxrQXWFb9qO3TrcEUjhPM+jWoGox
- PoJZR/Yb/IBFpJL+od8er71F09WSE9i8yZxVOJhjaOXRvigzFkeTOp/dBWOD4a6PKTI/mbY=
-X-Received: by 2002:a17:907:c50e:b0:c15:e193:14ad with SMTP id
- a640c23a62f3a-c16b47289d2mr581296966b.13.1784556540095; Mon, 20 Jul 2026
- 07:09:00 -0700 (PDT)
-MIME-Version: 1.0
-References: <20260715074342.49281-1-mhun512@gmail.com>
- <37756e55-5feb-4f5c-9400-55a9762f9a77@intel.com>
-In-Reply-To: <37756e55-5feb-4f5c-9400-55a9762f9a77@intel.com>
+ AHgh+RqYR5tXi63ffzueotZHhpcNLiVcVMSIxmMYR1tOanrlMh8zB1qVXe+1vaCV+Ywpe4nTa2lGMlzK7CdR4no0OTU=@lists.osuosl.org
+X-Gm-Message-State: AOJu0Yz8dk9Dau7nRgnrZOzDncc295wE4KEKo6FLr7wRhakjmKeBpZCa
+ NGWCLaEri7yTI2dXYWJBFqI2sEjWxndhMzt/LuL0P2bUwcC7ZXNUBIk=
+X-Gm-Gg: AR+sD13LM2EtUC8ccejCIFxtW9li0GPZuGGSlHSYMyvG0UfVL/S+vAqfOdZ91xmJZRi
+ q3yYtBALoLFMAbPPoe3jQ2pLwkWH1Hlt1smOfX72P7F98zogISH0LXlPcZruMr+9Ao2QvFJttcD
+ i/FjW8ZKJ2U6I8v/FHlHGSzVVVyCl6UUi/PHE2l7FuJE/Hjn6HINpuKHpkg8lpetbIUghBY7ZWg
+ pbFaDTbkhdMnUnTW3JKHqTmd7rpNoVcqH2w1E5HT9nCI8Hd8ZyqaR8nkkA5Sh1vvCp5Zds72a6E
+ dgpE/e2FZwHmbu3XWY+sEU3QfODbigFTil8xG/jQL6RqXvX21acDF71B06JMtEASpoNGYe9rHf/
+ OvVF1XAlgJmPt3idgW7fZxbhy5SLRIWN4tfJuUaUkIZq4X2kcB391bjHtKPjVlu9KEVqmf+c2oj
+ NoWkNJZp/1LLWIwfotHDA7YTm/13Wo9KiflO6Q978bFhdHiusZZKRlmy2rpCZh2/W/HFiFEBM/W
+ FDF+j2Ypx0SN6UEzpHuLYVxlsdL/rACTI6evjbj
+X-Received: by 2002:a17:902:d4c5:b0:2c9:2ee6:693e with SMTP id
+ d9443c01a7336-2cf34873ddfmr172634965ad.18.1784558118851; 
+ Mon, 20 Jul 2026 07:35:18 -0700 (PDT)
+Received: from localhost.localdomain ([14.5.152.27])
+ by smtp.gmail.com with ESMTPSA id
+ d9443c01a7336-2cf347166e6sm57973575ad.59.2026.07.20.07.35.14
+ (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+ Mon, 20 Jul 2026 07:35:18 -0700 (PDT)
 From: Myeonghun Pak <mhun512@gmail.com>
-Date: Mon, 20 Jul 2026 23:08:48 +0900
-X-Gm-Features: AUfX_mxtVoqkdqPhiDiY7yGDPj-pWoFyQNJiWjpvvKZjBhKCfwEI-uuXWEFQe7I
-Message-ID: <CAGEsz8HUg5yApfwtdHK4CAX7wfpBoyvrC2K8Pe1JZGu+G7hZ1A@mail.gmail.com>
-To: Tony Nguyen <anthony.l.nguyen@intel.com>
-Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- intel-wired-lan@lists.osuosl.org, Milena Olech <milena.olech@intel.com>,
- Emil Tantilov <emil.s.tantilov@intel.com>, 
- Andrew Lunn <andrew+netdev@lunn.ch>, "David S . Miller" <davem@davemloft.net>, 
+To: Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ intel-wired-lan@lists.osuosl.org
+Cc: Milena Olech <milena.olech@intel.com>,
+ Emil Tantilov <emil.s.tantilov@intel.com>,
+ Mina Almasry <almasrymina@google.com>, Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S . Miller" <davem@davemloft.net>,
  Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, 
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Paolo Abeni <pabeni@redhat.com>, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Myeonghun Pak <mhun512@gmail.com>,
  Ijae Kim <ae878000@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Date: Mon, 20 Jul 2026 23:35:10 +0900
+Message-Id: <20260720143511.43408-1-mhun512@gmail.com>
+X-Mailer: git-send-email 2.39.5 (Apple Git-154)
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20251104; t=1784556540; x=1785161340; darn=lists.osuosl.org;
- h=content-transfer-encoding:content-type:cc:to:subject:message-id
- :date:from:in-reply-to:references:mime-version:from:to:cc:subject
- :date:message-id:reply-to:content-type;
- bh=a0WHbbtZjdUGCOVhaSfhJTsOarehv1PQGNc28148fV4=;
- b=FyooQ6ns4UIOS7KLZTOT56tu+ceZkGTf4fmyTr9w5xVODJp+0L5bOEKBFRlIuJ6kNn
- 3z82cVJUSCtK9QDvl1iMphx5IyCwwimYx1MNl524pWyMV7ESjF/K5hdYmrG4nWeL6Q7D
- a1ZaaSDMQU59LcS+11ax3rZhQdUan7St2v26lIOMgRDqGIiKbf4M3AoECsid5HNMvHCe
- 18qSCcR/1WKbBNzKwmFje9W0+ZbILhDk1+drhx6WkT+xHmWrJYg7sWNsh3GDX0Qibi2U
- iZMhphAUslEbyXimPTclTj5Q60/NsQ7w4i1bUD9xd3vQL5UGNkji/3yL1oaOrdciYTd7
- QOmg==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ d=gmail.com; s=20251104; t=1784558119; x=1785162919; darn=lists.osuosl.org;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+ bh=Z3VaPip/rhZHQR85NvyPs/zlByfwCUa6xlhWOu76l9g=;
+ b=TxOSAS1h/rwsvOUeAt3G59I3rD1/xnjGe4FH2RkbYTl5GUNeZoR/dfyRy2x9wIDcMB
+ MIgrr3taGixXu6YJbHOszulCMgjbpLOYIdVEoTR/i+Z5K57hMM5wqlo8VNI3rXa1PxCf
+ IJmiB3yyzQ6lEv0StfZ4zTOTkxCL7UqXFwZrK0fxfi4sHeVz4aT3aTLRp0ZZS4LJCTgE
+ xa+6m0gt/Bc/bU2AfGrBMCCij34fcvhaf7o7h9QPHYKs11yWvY4BrP0xcFc2AcIrOqeu
+ jZ9lyJnSXNApyrTDLRPqnfpbnmRi8guDTfQ7tBBT2+6AH5cH4T8A9g+epfebFV8zd0hm
+ Qr3A==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=gmail.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20251104 header.b=FyooQ6ns
-Subject: Re: [Intel-wired-lan] [PATCH v2] idpf: disable PCIe PTM on probe
- failure and removal
+ header.s=20251104 header.b=TxOSAS1h
+Subject: [Intel-wired-lan] [PATCH v3 net] idpf: disable PTM on probe failure
+ and on remove
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -155,123 +136,88 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-You are right, thanks for catching this. I missed that pci_disable_ptm()
-now decrements dev->ptm_enable_cnt unconditionally and recurses upstream,
-so calling it after a failed enable would corrupt the counts of parents
-shared with other endpoints.
+idpf_probe() enables PCIe Precision Time Measurement with
+pci_enable_ptm(), which takes a reference on the device and on every
+PTM-capable device up the path to the PTM Root.
 
-v3 will guard both call sites with pcie_ptm_enabled(), which idpf already
-uses in idpf_ptp_set_caps(), so no new adapter field is needed. v2 also
-needs a rebase since pci_enable_ptm() lost its granularity argument.
+Neither the probe error path nor idpf_remove() drops that reference, so
+the PTM enable counts of this device and of its upstream path stay
+elevated with no bound driver, and the device's PTM control bits remain
+set.  pcim_enable_device() only arranges for pci_disable_device() and
+does not undo the PTM enable.
 
-Thanks,
-Myeonghun
+Add the matching pci_disable_ptm() to the common probe unwind and to
+idpf_remove().  pci_enable_ptm() failure is not fatal here, so guard both
+calls with pcie_ptm_enabled(): pci_disable_ptm() decrements
+dev->ptm_enable_cnt unconditionally and then recurses upstream, so
+calling it after a failed enable would drive this device's count negative
+and wrongly decrement parents shared with other endpoints.
 
-2026=EB=85=84 7=EC=9B=94 18=EC=9D=BC (=ED=86=A0) =EC=98=A4=EC=A0=84 5:21, T=
-ony Nguyen <anthony.l.nguyen@intel.com>=EB=8B=98=EC=9D=B4 =EC=9E=91=EC=84=
-=B1:
->
->
->
-> On 7/15/2026 12:43 AM, Myeonghun Pak wrote:
-> > idpf_probe() enables PCIe Precision Time Measurement with
-> > pci_enable_ptm(pdev, NULL), which programs the PTM control bits and set=
-s
-> > pdev->ptm_enabled when the bus/controller supports it.
-> >
-> > If a later probe step fails, the error path releases the allocated
-> > workqueues and adapter memory without disabling PTM.  The remove path h=
-as
-> > the same imbalance when a successfully probed device is detached.  In
-> > both cases, the PCI core's software PTM state and the device's PTM cont=
-rol
-> > bits remain set with no bound driver.
-> >
-> > Add pci_disable_ptm() to the common probe unwind after the PTM enable a=
-nd
-> > to idpf_remove().  pci_disable_ptm() is a no-op when PTM was not enable=
-d,
-> > so the non-fatal pci_enable_ptm() failure remains safe.
-> > pcim_enable_device() only arranges for pci_disable_device() and does no=
-t
-> > undo the PTM enable.
-> >
-> > Fixes: 8d5e12c5921c ("idpf: add initial PTP support")
-> > Co-developed-by: Ijae Kim <ae878000@gmail.com>
-> > Signed-off-by: Ijae Kim <ae878000@gmail.com>
-> > Signed-off-by: Myeonghun Pak <mhun512@gmail.com>
-> > ---
-> > Changes in v2:
-> > - Disable PTM in the probe error path, as requested by Emil Tantilov.
-> >
-> >   drivers/net/ethernet/intel/idpf/idpf_main.c | 7 +++++--
-> >   1 file changed, 5 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/drivers/net/ethernet/intel/idpf/idpf_main.c b/drivers/net/=
-ethernet/intel/idpf/idpf_main.c
-> > index 0dd741dcfc..f08ce13c20 100644
-> > --- a/drivers/net/ethernet/intel/idpf/idpf_main.c
-> > +++ b/drivers/net/ethernet/intel/idpf/idpf_main.c
-> > @@ -159,6 +159,7 @@ static void idpf_remove(struct pci_dev *pdev)
-> >       mutex_destroy(&adapter->queue_lock);
-> >       mutex_destroy(&adapter->vc_buf_lock);
-> >
-> > +     pci_disable_ptm(pdev);
->
-> Sashiko says:
->
-> If pci_enable_ptm() failed earlier during idpf_probe() because it was
-> unsupported by the bus or controller, does this unconditional call to
-> pci_disable_ptm() corrupt the upstream PTM enable counts?
-> Looking at pci_disable_ptm(), it does not check if the local device was
-> successfully enabled. It climbs the PCIe tree and erroneously decrements
-> atomic counters like ptm_enable_cnt on parent switches.
-> Could this eventually break PTM for other downstream devices sharing the
-> same
-> switch if a parent's count is incorrectly decremented to -1?
->
-> >       pci_set_drvdata(pdev, NULL);
-> >       kfree(adapter);
-> >   }
-> > @@ -266,7 +267,7 @@ static int idpf_probe(struct pci_dev *pdev, const s=
-truct pci_device_id *ent)
-> >       if (err) {
-> >               pci_err(pdev, "DMA configuration failed: %pe\n", ERR_PTR(=
-err));
-> >
-> > -             goto err_free;
-> > +             goto err_disable_ptm;
-> >       }
-> >
-> >       pci_set_master(pdev);
-> > @@ -279,7 +280,7 @@ static int idpf_probe(struct pci_dev *pdev, const s=
-truct pci_device_id *ent)
-> >       if (!adapter->init_wq) {
-> >               dev_err(dev, "Failed to allocate init workqueue\n");
-> >               err =3D -ENOMEM;
-> > -             goto err_free;
-> > +             goto err_disable_ptm;
-> >       }
-> >
-> >       adapter->serv_wq =3D alloc_workqueue("%s-%s-service",
-> > @@ -366,6 +367,8 @@ err_mbx_wq_alloc:
-> >       destroy_workqueue(adapter->serv_wq);
-> >   err_serv_wq_alloc:
-> >       destroy_workqueue(adapter->init_wq);
-> > +err_disable_ptm:
-> > +     pci_disable_ptm(pdev);
->
-> Like the issue in idpf_remove(), does this error path unconditionally
-> disable
-> PTM even if the earlier enable attempt failed?
-> If a subsequent probe step fails (such as dma_set_mask_and_coherent or
-> workqueue allocation), this path is taken regardless of whether
-> pci_enable_ptm() succeeded.
-> Would it make sense to track the PTM state in the adapter struct, and onl=
-y
-> call pci_disable_ptm() when it was successfully enabled?
->
-> >   err_free:
-> >       kfree(adapter);
-> >       return err;
->
+This issue was identified during our ongoing static-analysis research
+while reviewing kernel code.
+
+Fixes: 8d5e12c5921c ("idpf: add initial PTP support")
+Co-developed-by: Ijae Kim <ae878000@gmail.com>
+Signed-off-by: Ijae Kim <ae878000@gmail.com>
+Signed-off-by: Myeonghun Pak <mhun512@gmail.com>
+---
+Changes in v3:
+- Rebased; aa8671af0c38 ("PCI/PTM: Drop pci_enable_ptm() granularity
+  parameter") changed the call signature, so v2 no longer applied.
+- Guard both pci_disable_ptm() calls with pcie_ptm_enabled(), as
+  pci_disable_ptm() is refcounted and recurses upstream since
+  e1092d5e15e6 ("PCI/PTM: Do not enable PTM automatically for Root and
+  Switch Upstream Ports").  Raised by Tony Nguyen.
+- Dropped the v2 claim that pci_disable_ptm() is a no-op when PTM was not
+  enabled; that is no longer true.
+
+Changes in v2:
+- Disable PTM in the probe error path, as requested by Emil Tantilov.
+
+ drivers/net/ethernet/intel/idpf/idpf_main.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_main.c b/drivers/net/ethernet/intel/idpf/idpf_main.c
+index ab3c409..97bafeb 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_main.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_main.c
+@@ -159,6 +159,8 @@ destroy_wqs:
+ 	mutex_destroy(&adapter->queue_lock);
+ 	mutex_destroy(&adapter->vc_buf_lock);
+ 
++	if (pcie_ptm_enabled(pdev))
++		pci_disable_ptm(pdev);
+ 	pci_set_drvdata(pdev, NULL);
+ 	kfree(adapter);
+ }
+@@ -266,7 +268,7 @@ static int idpf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	if (err) {
+ 		pci_err(pdev, "DMA configuration failed: %pe\n", ERR_PTR(err));
+ 
+-		goto err_free;
++		goto err_disable_ptm;
+ 	}
+ 
+ 	pci_set_master(pdev);
+@@ -279,7 +281,7 @@ static int idpf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	if (!adapter->init_wq) {
+ 		dev_err(dev, "Failed to allocate init workqueue\n");
+ 		err = -ENOMEM;
+-		goto err_free;
++		goto err_disable_ptm;
+ 	}
+ 
+ 	adapter->serv_wq = alloc_workqueue("%s-%s-service",
+@@ -366,6 +368,9 @@ err_mbx_wq_alloc:
+ 	destroy_workqueue(adapter->serv_wq);
+ err_serv_wq_alloc:
+ 	destroy_workqueue(adapter->init_wq);
++err_disable_ptm:
++	if (pcie_ptm_enabled(pdev))
++		pci_disable_ptm(pdev);
+ err_free:
+ 	kfree(adapter);
+ 	return err;
+-- 
+2.47.1
+
