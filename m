@@ -1,94 +1,118 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F641C44536
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 22 Jul 2026 12:31:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A2F24C44536
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 22 Jul 2026 15:47:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 626D780EEF;
-	Wed, 22 Jul 2026 12:31:18 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id VV3C0WoHFbxe; Wed, 22 Jul 2026 12:31:17 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 770D280EF2
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1784723477;
-	bh=Ni8v8tsPkLcEatQPmSgD6nUXuOQEPncsU/xalKrrQmo=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=UNh0OwlCFhy0jGxTObMdHc+vw/0mi6Tk1QT4ndDNi9C4BcMqykTf/eadZ4Vpnw+1D
-	 DHMJ3UbBUVtQvecqg8p9c9I1dtviMGjf71KkVqWq+UnDeQEVZkVGMG9ikQTs2OcMg5
-	 J61+4YxnW9micBPfYWQZTn0uROvPKmJ4R9nvWhBNEGaksWgtkUveExOGJSVrbldOvh
-	 Siv8FkqbsGlpNXp8Bvx6/Aa3oHqvOAP5rgri/G2ZPgXdgYtU21sxHg+kWdrPryK82U
-	 H2ZHSkeXoFzNgZTsJ52vNuH4hX+CpRNtuf4pQ9/5J+ZkAp17CA9rOhVRpf6zVPWBFF
-	 pgqxYdIdkiKjQ==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 770D280EF2;
-	Wed, 22 Jul 2026 12:31:17 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id D7BC742A
- for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Jul 2026 12:31:15 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id BE56E40692
- for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Jul 2026 12:31:15 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 40D4F403D6;
+	Wed, 22 Jul 2026 15:47:06 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id OflzDlvBUj-f for <intel-wired-lan@lists.osuosl.org>;
- Wed, 22 Jul 2026 12:31:14 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.7;
- helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org B963B4067B
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B963B4067B
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
- by smtp4.osuosl.org (Postfix) with ESMTPS id B963B4067B
- for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Jul 2026 12:31:14 +0000 (UTC)
-X-CSE-ConnectionGUID: 8+LTkK8LQdCXMLkmboG5dw==
-X-CSE-MsgGUID: KQ/pRznXTgqm8rpUgnJO/g==
-X-IronPort-AV: E=McAfee;i="6800,10657,11853"; a="110898841"
-X-IronPort-AV: E=Sophos;i="6.25,178,1779174000"; d="scan'208";a="110898841"
-Received: from orviesa002.jf.intel.com ([10.64.159.142])
- by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 22 Jul 2026 05:31:14 -0700
-X-CSE-ConnectionGUID: bYMxh8NgS8OYpmOPjJuZzA==
-X-CSE-MsgGUID: YCf+IHfnQIumaoMOkhWqZg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,178,1779174000"; d="scan'208";a="288080175"
-Received: from lkp-server02.sh.intel.com (HELO ea128546eb3d) ([10.239.97.151])
- by orviesa002.jf.intel.com with ESMTP; 22 Jul 2026 05:31:13 -0700
-Received: from kbuild by ea128546eb3d with local (Exim 4.98.2)
- (envelope-from <lkp@intel.com>) id 1wmW6Q-00000000Yix-0j4k;
- Wed, 22 Jul 2026 12:31:10 +0000
-Date: Wed, 22 Jul 2026 20:30:36 +0800
-From: kernel test robot <lkp@intel.com>
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Message-ID: <202607222023.Qn5ibikv-lkp@intel.com>
-User-Agent: s-nail v14.9.25
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1784723475; x=1816259475;
- h=date:from:to:subject:message-id;
- bh=f9PET1yfQvzotdpQ06dPxWkVHzCNsXAZfqh+pLEsEDQ=;
- b=irGSCFciuGnMl+zlFv4MpdzxOQ7Y0HeiT1APsgn7aWbtpy3rSZG6u/d1
- gsdl2EPNNOz1vHJ8Cde0pAJBS7Oq5YRqg/DIer10MNeGemxdgzN6b2o+K
- 3U/z81DjoX0n+uCYbZPae9Suq3Zm1DsVEOCuOHr2q6oio12QHt1k9qpVb
- HKGs6wkbBhXRzN2gDBmjB5bSXZeSuzL+q204+CirWgvValb/Gu0qy/mF6
- mhKqPOTFZYo5hHWvalyb1Drxw1/WJ1uYnQ5QckPOPMwLGTDSEvyO22qsD
- YIbIo8q4QdqPaf0V988A6i4FGigP7sxQTMlbjIgCBrOYqCYp+9e23/wed
- w==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ id oFMRgzVtiQCp; Wed, 22 Jul 2026 15:47:05 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3127C40793
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1784735225;
+	bh=rOQtYMvADZ9GLCsvMLq3axtJoWiekLX/s0A7KPeUo5A=;
+	h=Date:From:To:Cc:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=pJuc1yF7X80fpHZXDmwST9BvQ/zYmyV/j6+gVOq19ZSuZZrEuLLvULW2gJFr4sUI1
+	 ooJmae9rif/Qp2t8o2SqtmESmdxZ1ddBgFOGhswdavUHI+o/LMLu9rPuUbuUHml4k4
+	 3dZqQQQjF8ZtTSMr1Ql6Bh5VNcNS/N8N0rmTk+l/cEDBJYN5mnAsXP6jW4EYtuTW6H
+	 FjbYCPtQNnPj2zMtCVMTFw4a1Z6/fc7/oA2AQKxXmuXYoTSyCQ8BBOA+iLSAGIe0d/
+	 p+AcMNwQBj93dIbTfuuNn4mx4YVflpjBXIjegf8f8M7WurVYCAe1TmxrEQ5zbKOhRq
+	 JGYthBdndPj7A==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 3127C40793;
+	Wed, 22 Jul 2026 15:47:05 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id C4B58313
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Jul 2026 15:47:03 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id AAB8860602
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Jul 2026 15:47:03 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id e9JDKI3JwRVK for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 22 Jul 2026 15:47:02 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2607:f8b0:4864:20::62b; helo=mail-pl1-x62b.google.com;
+ envelope-from=stephen@networkplumber.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 0F214605CF
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0F214605CF
+Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com
+ [IPv6:2607:f8b0:4864:20::62b])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 0F214605CF
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Jul 2026 15:47:01 +0000 (UTC)
+Received: by mail-pl1-x62b.google.com with SMTP id
+ d9443c01a7336-2cae1a3a744so95462585ad.3
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Jul 2026 08:47:01 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20251104; t=1784735221; x=1785340021;
+ h=content-transfer-encoding:content-type:mime-version:message-id
+ :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to:content-type;
+ bh=rOQtYMvADZ9GLCsvMLq3axtJoWiekLX/s0A7KPeUo5A=;
+ b=jhzFV+jHnWtpZvzNXj2Ua1OnvlVo6z+GIbiQx0TbcrLBNuPMdPV8Aa7wvTlPkjTz2J
+ prpyDZgH7rJ2fBYXuGahKxPbEA1b7RB28F6QDto85FJxNDiQ2hXg3bXj3HeYNTujF7po
+ UaprX6JCoD9NJssmyjPW9O4igK8cW1cjbV3FwUVVcR6km8mf9/XN4/U0ijxsr6Ih6SRr
+ qaQJoPzxRX6q+2RJxpv4kb3hYwdCgh/j0Kjh4UlNviu5tYJJTcZOadIBI2SJ+KAQhkqb
+ RWXhu4Ct3U2nK0LBrwJY/vqrjwdLX/TBkVzecA1qB4ULSUNqJ8IGWN/8ZnyIdX8DnNKZ
+ WJ4Q==
+X-Gm-Message-State: AOJu0Yw+Lp90vIddyy+sSTz1p3a1AJqNfZ++nui1hN4RjE0TEpxMv3k4
+ dJwEc4M4FzwfRnJUMTHPZyPQNaQavhCNDJni/56brwFtPnp2DHeMJRDStI4x5J6TN3Hx5YCpi/K
+ j+DSD
+X-Gm-Gg: AR+sD12bjqHEUEYNZ3N7rcDT0Ek/DpTfHjtUC5oU/Ac+lVO2neZnD4U8y6rBEITnMDO
+ j/+7EAmCQ3F7FZ22ZphOCKqfo10BZwGCL3oyTta4DSqaWsrytfPiMmDXena/GFmMtk5UuzVWYBF
+ oMzzAb5ETAS+/iPlBhdqgBke6ERDsqTavNfmOJk9gYOw6KnDR3F+Cjp8WhbuNg5cwo5uKlvR6Vw
+ WbiE3n8Du3zwu/OC/6n0Mi11jnVdcFz3gf98HPlEQhoIH3Pl2ivjS781qSiKFcvydXQLammfWvM
+ Drzw3QkgSwPIT2kzQ7WmLoQwbY/4SLyblKIazk7v/NHg7jng152uEKJTUJfJvLlvgXTS+rbOzLt
+ XAu1IRXBlRmNW9F7N1O8zNneMNpR2JwW2oOkGhHYS92g6I7ZfxooYY319frnS+xHNtA30IrGh/x
+ W8kxC7vp6ebW9cfvS4K6jWCO7sj+ODN3YnT5Y2C2QxdMI=
+X-Received: by 2002:a17:903:2986:b0:2c9:deec:f564 with SMTP id
+ d9443c01a7336-2cf3485ebf1mr274192575ad.13.1784735221019; 
+ Wed, 22 Jul 2026 08:47:01 -0700 (PDT)
+Received: from phoenix.local (204-195-96-226.wavecable.com. [204.195.96.226])
+ by smtp.gmail.com with ESMTPSA id
+ 5a478bee46e88-3147e1ca3efsm12881928eec.30.2026.07.22.08.47.00
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 22 Jul 2026 08:47:00 -0700 (PDT)
+Date: Wed, 22 Jul 2026 08:46:55 -0700
+From: Stephen Hemminger <stephen@networkplumber.org>
+To: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com
+Cc: intel-wired-lan@lists.osuosl.org
+Message-ID: <20260722084655.2d190adf@phoenix.local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=networkplumber-org.20251104.gappssmtp.com; s=20251104; t=1784735221;
+ x=1785340021; darn=lists.osuosl.org; 
+ h=content-transfer-encoding:content-type:mime-version:message-id
+ :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to
+ :content-type;
+ bh=rOQtYMvADZ9GLCsvMLq3axtJoWiekLX/s0A7KPeUo5A=;
+ b=tELW+jzhQDU473CVjmQuUd2jgBzq08oC9kJYasN0J1fIN4p2lCkJ5M6IKW//udCw+K
+ wz7KfTNr+RNh+NaMFEug1AQz4V8AvT/PuiA/HnZGWcYY9AzTQCSJojZ/UScJDfH9eomd
+ sT78RexDIHPgsveKnXgDs299kp7hjTVVQXJeGUO47ulJ20l8iVd84iTsaU5Hs4HS2+Db
+ P7qyiHu1NidOB54H6GKGE57XPwMl07LL+iXfsmrep0EkpjZWfZN3mxlGOOxgzf0vSLyn
+ hHlL6kQJ5KKG+4bqQkJTXZCUleH8tVGovOFKhCnrKFW1nCMDbTWYr9mDOCnBATf17vvN
+ R8sw==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dmarc=pass (p=quarantine dis=none)
+ header.from=networkplumber.org
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=irGSCFci
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD REGRESSION
- 534ae9d0d70cd9fd4879bb853e62cf8947ea01be
+ unprotected) header.d=networkplumber-org.20251104.gappssmtp.com
+ header.i=@networkplumber-org.20251104.gappssmtp.com header.a=rsa-sha256
+ header.s=20251104 header.b=tELW+jzh
+Subject: [Intel-wired-lan] Fw: [Bug 221750] New: igc: Intel I225 silently
+ drops UDP broadcast to port 68 (DHCP) when interface is a bridge member
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -104,97 +128,125 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: 534ae9d0d70cd9fd4879bb853e62cf8947ea01be  ice: rephrase LLDP filter fallback message
+Linux networking does not really use bugzilla, instead use email.
 
-Error/Warning ids grouped by kconfigs:
+$ ./scripts/get_maintainer.pl drivers/net/ethernet/intel/igc
+Tony Nguyen <anthony.l.nguyen@intel.com> (maintainer:INTEL ETHERNET DRIVERS)
+Przemek Kitszel <przemyslaw.kitszel@intel.com> (maintainer:INTEL ETHERNET DRIVERS)
+Andrew Lunn <andrew+netdev@lunn.ch> (maintainer:NETWORKING DRIVERS)
+"David S. Miller" <davem@davemloft.net> (maintainer:NETWORKING DRIVERS)
+Eric Dumazet <edumazet@google.com> (maintainer:NETWORKING DRIVERS)
+Jakub Kicinski <kuba@kernel.org> (maintainer:NETWORKING DRIVERS)
+Paolo Abeni <pabeni@redhat.com> (maintainer:NETWORKING DRIVERS)
+intel-wired-lan@lists.osuosl.org (moderated list:INTEL ETHERNET DRIVERS)
+netdev@vger.kernel.org (open list:NETWORKING DRIVERS)
 
-recent_errors
-`-- csky-allmodconfig
-    |-- drivers-net-ethernet-intel-idpf-idpf_virtchnl.c:internal-compiler-error:in-final_scan_insn_1-at-final.cc
-    `-- drivers-net-ethernet-intel-idpf-idpf_virtchnl_ptp.c:internal-compiler-error:in-final_scan_insn_1-at-final.cc
 
-elapsed time: 777m
+Begin forwarded message:
 
-configs tested: 74
-configs skipped: 1
+Date: Mon, 13 Jul 2026 16:20:22 +0000
+From: bugzilla-daemon@kernel.org
+To: stephen@networkplumber.org
+Subject: [Bug 221750] New: igc: Intel I225 silently drops UDP broadcast to port 68 (DHCP) when interface is a bridge member
 
-tested configs:
-alpha                            allnoconfig    gcc-16.1.0
-alpha                           allyesconfig    gcc-16.1.0
-alpha                              defconfig    gcc-16.1.0
-arc                             allmodconfig    gcc-16.1.0
-arc                             allyesconfig    gcc-16.1.0
-arc                  randconfig-001-20260722    gcc-12.5.0
-arc                  randconfig-002-20260722    gcc-14.3.0
-arm                  randconfig-001-20260722    clang-19
-arm                  randconfig-002-20260722    clang-24
-arm                  randconfig-003-20260722    clang-24
-arm                  randconfig-004-20260722    clang-24
-arm                        s3c6400_defconfig    gcc-16.1.0
-arm64                randconfig-001-20260722    clang-18
-arm64                randconfig-002-20260722    clang-18
-arm64                randconfig-003-20260722    gcc-16.1.0
-arm64                randconfig-004-20260722    clang-17
-csky                            allmodconfig    gcc-16.1.0
-csky                 randconfig-001-20260722    gcc-10.5.0
-csky                 randconfig-002-20260722    gcc-16.1.0
-hexagon              randconfig-001-20260722    clang-24
-hexagon              randconfig-002-20260722    clang-24
-i386                            allmodconfig    gcc-14
-i386                 randconfig-001-20260722    gcc-14
-i386                 randconfig-002-20260722    gcc-14
-i386                 randconfig-005-20260722    gcc-14
-loongarch                          defconfig    clang-24
-loongarch            randconfig-001-20260722    gcc-16.1.0
-loongarch            randconfig-002-20260722    clang-24
-nios2                           allmodconfig    gcc-11.5.0
-nios2                            allnoconfig    gcc-11.5.0
-nios2                randconfig-001-20260722    gcc-8.5.0
-nios2                randconfig-002-20260722    gcc-8.5.0
-parisc                          allmodconfig    gcc-16.1.0
-parisc                          allyesconfig    gcc-16.1.0
-parisc                             defconfig    gcc-16.1.0
-parisc                        randconfig-001    gcc-8.5.0
-parisc               randconfig-001-20260722    gcc-9.5.0
-parisc               randconfig-002-20260722    gcc-8.5.0
-powerpc              randconfig-001-20260722    gcc-8.5.0
-powerpc              randconfig-002-20260722    clang-18
-powerpc64            randconfig-001-20260722    gcc-8.5.0
-powerpc64            randconfig-002-20260722    clang-24
-riscv                randconfig-002-20260722    gcc-10.5.0
-s390                 randconfig-001-20260722    gcc-13.4.0
-s390                 randconfig-002-20260722    gcc-11.5.0
-sh                                 defconfig    gcc-16.1.0
-sh                   randconfig-001-20260722    gcc-16.1.0
-sh                   randconfig-002-20260722    gcc-16.1.0
-sparc                randconfig-001-20260722    gcc-15.2.0
-sparc                randconfig-002-20260722    gcc-16.1.0
-sparc64              randconfig-001-20260722    gcc-11.5.0
-sparc64              randconfig-002-20260722    gcc-9.5.0
-um                   randconfig-001-20260722    gcc-14
-um                   randconfig-002-20260722    clang-24
-x86_64     buildonly-randconfig-001-20260722    clang-22
-x86_64     buildonly-randconfig-002-20260722    gcc-14
-x86_64     buildonly-randconfig-003-20260722    gcc-14
-x86_64     buildonly-randconfig-004-20260722    clang-22
-x86_64     buildonly-randconfig-005-20260722    gcc-14
-x86_64     buildonly-randconfig-006-20260722    clang-22
-x86_64               randconfig-011-20260722    clang-22
-x86_64               randconfig-012-20260722    clang-22
-x86_64               randconfig-013-20260722    gcc-14
-x86_64               randconfig-014-20260722    clang-22
-x86_64               randconfig-015-20260722    gcc-14
-x86_64               randconfig-016-20260722    clang-22
-x86_64               randconfig-071-20260722    clang-22
-x86_64               randconfig-072-20260722    clang-22
-x86_64               randconfig-073-20260722    clang-22
-x86_64               randconfig-074-20260722    clang-22
-x86_64               randconfig-075-20260722    clang-22
-x86_64               randconfig-076-20260722    clang-22
-xtensa               randconfig-001-20260722    gcc-8.5.0
-xtensa               randconfig-002-20260722    gcc-9.5.0
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+https://bugzilla.kernel.org/show_bug.cgi?id=221750
+
+            Bug ID: 221750
+           Summary: igc: Intel I225 silently drops UDP broadcast to port
+                    68 (DHCP) when interface is a bridge member
+           Product: Networking
+           Version: 2.5
+          Hardware: Intel
+                OS: Linux
+            Status: NEW
+          Severity: normal
+          Priority: P3
+         Component: Other
+          Assignee: stephen@networkplumber.org
+          Reporter: eslopez92@gmail.com
+        Regression: No
+
+## Description
+
+When an Intel I225-LM NIC using the igc driver is added as a member of a Linux
+bridge, UDP broadcast packets with destination port 68 (DHCP client port) are
+silently dropped at the TX path. The kernel queues the packet for transmission
+(visible via AF_PACKET capture on the interface showing PACKET_OUTGOING), but
+the frame never appears on the physical wire.
+
+All other UDP broadcast ports (e.g., port 9998) transmit correctly through the
+same bridge, same interface, same code path. Only destination port 67/68 (DHCP)
+is affected.
+
+This breaks any DHCP server (e.g., dnsmasq) running on the bridge host, as DHCP
+offers never reach clients.
+
+### Keywords
+
+igc, I225, bridge, DHCP, broadcast, TX drop, dnsmasq
+
+### Kernel version
+
+    Linux version 6.8.0-134-generic (Ubuntu 24.04)
+    Also tested: 6.17.0-35-generic (Ubuntu 24.04 HWE) - same behavior
+
+### How to reproduce
+
+1. System: Supermicro X13SAZ-F with Intel I225-LM (PCI 8086:15f2), igc driver
+2. Create a Linux bridge and enslave the igc interface:
+
+        ip link add br-fvn type bridge
+        ip link set eno1 master br-fvn
+        ip addr add 172.31.0.3/16 dev br-fvn
+        ip link set br-fvn up
+
+3. Run dnsmasq as DHCP server on br-fvn:
+
+        dnsmasq --interface=br-fvn
+--dhcp-range=172.31.100.1,172.31.254.255,255.255.0.0,12h --dhcp-authoritative
+
+4. Connect a DHCP client to eno1 (directly or via switch)
+5. Observe: dnsmasq logs show DHCPDISCOVER received and DHCPOFFER sent, but the
+client never receives the offer
+
+### Verification that the bug is interface-specific
+
+- Replacing eno1 (igc, I225-LM) with a USB ethernet adapter (r8152, RTL8153) in
+the same bridge: DHCP works immediately
+- Using an Intel I210 NIC (igb driver) in the same bridge on identical kernel:
+DHCP works
+- Sending UDP broadcast to port 9998 from the same bridge via the same igc
+interface: packets arrive at client
+- Sending UDP broadcast to port 68 from the same bridge via the same igc
+interface: packets never arrive
+- AF_PACKET raw capture on eno1 (host side) shows the DHCP offer as
+PACKET_OUTGOING (type=4), confirming the kernel hands it to the driver, but the
+frame never hits the wire
+- Wireshark/tcpdump on the client confirms zero DHCP offers received
+
+### Environment
+
+    Processor: Intel Core i9-14900K
+    Board: Supermicro X13SAZ-F
+    NIC: Intel I225-LM (8086:15f2, subsystem 15d9:15f2)
+    Driver: igc
+    Firmware: 1073:8754
+    Bus: 0000:01:00.0 (PCIe x1, 5.0 GT/s)
+    OS: Ubuntu Core 24 (snap-based)
+
+### Other notes
+
+- ethtool -K br-fvn tx-checksum-ip-generic off was tested - no change
+- bridge-nf-call-iptables=0 was tested - no change
+- br_netfilter module unloaded - no change
+- net.ipv4.ip_forward=1 was tested - no change
+- No iptables, nftables, or ebtables rules present
+- No eBPF/XDP programs attached
+- The igb driver (Intel I210) does NOT exhibit this behavior on the same kernel
+
+-- 
+You may reply to this email to add a comment.
+
+You are receiving this mail because:
+You are the assignee for the bug.
