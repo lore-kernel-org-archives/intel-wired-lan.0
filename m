@@ -1,87 +1,87 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24234C531CD
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 23 Jul 2026 09:18:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5AC15C531C7
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 23 Jul 2026 09:19:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id E276D60704;
-	Thu, 23 Jul 2026 09:17:59 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 0887B80EF8;
+	Thu, 23 Jul 2026 09:19:02 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id sITeFCyTwhSe; Thu, 23 Jul 2026 09:17:58 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id vITWz0el2kZr; Thu, 23 Jul 2026 09:19:01 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 37EFD6071E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 35EE480ED9
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1784798278;
-	bh=q7JYpC1cu/pp0vmiOPnBHmvoTB7ZJscBA/NaKYQiaiU=;
+	s=default; t=1784798341;
+	bh=Tfhedul19UdoLLHPY0jCaxTuGO3DPtL1AMjmf8stYDM=;
 	h=From:To:CC:Date:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=1gG95Dp58jWshUMLvsmYG8wZkq7+Eb42MV+rmGcj/KgX/bBZd0m3doGhmmQ4XgKEn
-	 EQkWNQNiZxn+m7ybGKBMBVj5A+UopTuv7chmwN99Wc4byKWCh6FfnTiYtc36kbofrk
-	 8DXfP408rOY1eurUUp2+TGWTNfUJP0/9ndjC+sCxd0iBA3u/Z6veyDPzjpvom513BU
-	 254AklVOOGUIi0pplM8fI58zNFM3E2EJq3mVPyXIABZEgp6p1TLgVkJLaX5lXmZVQd
-	 Zh6ghGkB9j9xw6KndDCVSFldtHoYgm9I2FPXXP8KKUM4LnaKXA0bLjQAi7U6zdc/UD
-	 hJg62NCXPeXCQ==
+	b=S1FhX5xxj2HEYvJ1/ET+zF9s2wypssNUs8bB3drJq9/kElaBgmeKY+O/p7rDCsPw8
+	 T0lfBKMZbg4LRDvjs/zi474SQKLPF52pzHbY6p1P/hyqalz2pE6C+jOHzASXyNkQoM
+	 Er5P3Tsrr8DfAgUaVu4lsmAOig7QuLZOCrFTLV+a9BR2nNyXgcxYsSyg1fp1ZiAPU6
+	 6A5sfEOZ/t7sWvl8xBcVQRMlrug8kTc0Qqs9ukcD5bTkcnLeqEZn6/QTyfXWB2n7Uu
+	 6OTeWB3avhJfABT0929JRyupndlLdfFQdkxFHEoUdAR6DQllSabBZ5X08BrKnXoHn3
+	 VFNQCTXDciPCw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 37EFD6071E;
-	Thu, 23 Jul 2026 09:17:58 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 54FC73B1
- for <intel-wired-lan@lists.osuosl.org>; Thu, 23 Jul 2026 09:17:57 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 35EE480ED9;
+	Thu, 23 Jul 2026 09:19:01 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id C611D3B1
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 23 Jul 2026 09:18:59 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 3B18840243
- for <intel-wired-lan@lists.osuosl.org>; Thu, 23 Jul 2026 09:17:57 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id B87644081F
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 23 Jul 2026 09:18:59 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 7u7-Nqvzthsj for <intel-wired-lan@lists.osuosl.org>;
- Thu, 23 Jul 2026 09:17:56 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.18;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 5p7qBNJMhf8M for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 23 Jul 2026 09:18:58 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.12;
  helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 64F7540026
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 64F7540026
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 64F7540026
- for <intel-wired-lan@lists.osuosl.org>; Thu, 23 Jul 2026 09:17:56 +0000 (UTC)
-X-CSE-ConnectionGUID: ncUH81ulQEOd8+yqDgLsFg==
-X-CSE-MsgGUID: reXFbuA9QIGhaO26dfcaOA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11854"; a="84575397"
-X-IronPort-AV: E=Sophos;i="6.25,180,1779174000"; d="scan'208";a="84575397"
-Received: from orviesa006.jf.intel.com ([10.64.159.146])
- by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 23 Jul 2026 02:17:55 -0700
-X-CSE-ConnectionGUID: wHHS72oYTF6nMvU9GgGYoQ==
-X-CSE-MsgGUID: DIQkO//yQfGI596ejaBpJg==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org C052A40815
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C052A40815
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id C052A40815
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 23 Jul 2026 09:18:58 +0000 (UTC)
+X-CSE-ConnectionGUID: Ho3Au91kSWuOWgHfiDVfUw==
+X-CSE-MsgGUID: jk0hCok0RYGIabIRz0kupw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11854"; a="96963880"
+X-IronPort-AV: E=Sophos;i="6.25,180,1779174000"; d="scan'208";a="96963880"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+ by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 23 Jul 2026 02:18:58 -0700
+X-CSE-ConnectionGUID: dDkfv1vFSaakxR0piNVjOw==
+X-CSE-MsgGUID: 7fJDGTYXRa2CPomv6NkXnQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,180,1779174000"; d="scan'208";a="256557604"
-Received: from fmsmsx902.amr.corp.intel.com ([10.18.126.91])
- by orviesa006.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 23 Jul 2026 02:17:55 -0700
-Received: from FMSMSX901.amr.corp.intel.com (10.18.126.90) by
- fmsmsx902.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
+X-IronPort-AV: E=Sophos;i="6.25,180,1779174000"; d="scan'208";a="263326584"
+Received: from fmsmsx903.amr.corp.intel.com ([10.18.126.92])
+ by fmviesa005.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 23 Jul 2026 02:18:58 -0700
+Received: from FMSMSX903.amr.corp.intel.com (10.18.126.92) by
+ fmsmsx903.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.43; Thu, 23 Jul 2026 02:17:54 -0700
+ 15.2.2562.43; Thu, 23 Jul 2026 02:18:57 -0700
 Received: from fmsedg901.ED.cps.intel.com (10.1.192.143) by
- FMSMSX901.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ FMSMSX903.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.43 via Frontend Transport; Thu, 23 Jul 2026 02:17:54 -0700
-Received: from SN4PR2101CU001.outbound.protection.outlook.com (40.93.195.11)
- by edgegateway.intel.com (192.55.55.81) with Microsoft SMTP Server
+ 15.2.2562.43 via Frontend Transport; Thu, 23 Jul 2026 02:18:57 -0700
+Received: from SN4PR0501CU005.outbound.protection.outlook.com (40.93.194.6) by
+ edgegateway.intel.com (192.55.55.81) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.43; Thu, 23 Jul 2026 02:17:54 -0700
+ 15.2.2562.43; Thu, 23 Jul 2026 02:18:57 -0700
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=w8F63GyiykJw7bvZRi+FRp5RTepxhSghNNjJnDmnYwuqv8tVSwSpl5/m4bw/sY4YFuqbOyjlcMKc+m3bbdJJqhp2UCqDwOEyAsL9VZIIxxdaRIUwFyu0DmVOh3Mf8pUyAvAL3js29z+Nj6oQWG1EKMAF2hkJ3lNm6p6PqD3Yqt7wqb1oQq26yTbHp2B76sspY2Kgt5YiVK+xDyQiqLKNva3fiKww49R283H3abpnp3/iKyBlbhUUjz2+PWYyp/wZBpU7FdeK/s47hy6ulQBFCHpFNg2nNmxH+uNTOMurMG0CVWcbQnVMlBIx7IsN9ANuIYTyoj/gqW3MDGsCF/m4GA==
+ b=Xj2UBIm6vulieD/zXXndLiIzROsIG3PFSV7ZEprLISHDFZGk3/EnYSNhFVMLfQs2k8ogeDBSAiSeWBuZpqLQ8yEnztUx8EXxjm1RofadS51OSKDFco4mcp1UpD3Dh2hIno9Avgmo3yR+KlcJ34/7WVkVAh9GrpCcrlOOlV88VaT+ffSI/Le759gE2+Xoa/NHsjBAeOox7J3fYqMwyCVKUd4/AxskAhXBUxNj061q03TIgRJjqW5mXXKYfrvrY0YqCIgeQRLyUf3NWVAAmHRcMwKb2mPe+B6MYQQDcUQgycKquuwdK9EPhnchb0NlJmq3IXqyGgapK+WK8PvAIJVMPg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=q7JYpC1cu/pp0vmiOPnBHmvoTB7ZJscBA/NaKYQiaiU=;
- b=Oss4o4sqHjddu2m9W3Ebu5hSteQgzoNWSg4kqPBRw/EnVekwTPxsx1iGLW8MPThGfBMAwVkbvqp12ACLJ7awJyvm99pe27BqJAAqPEr/1yDm+eaVpoaLBSy5IxlSqmV1xK2ZrOyc134OzwedPhw32/eIylPA+LvNTXl0YnV4PXUqjbAUueJn5r7TybBIUuhcINxgyrkBYMFbuYVkhYXvUlL8XyOlZava3jxnalKwQhSaQZiC+PNgnAgJmWbJq0vDuWS//Jld0N7S3TGXYbUGWMPONKcDq9Efr7eebm4nMD4beGb91K9OvfL7SRsOdBHnWjxBNFvBV3ea51Yyuozg1w==
+ bh=Tfhedul19UdoLLHPY0jCaxTuGO3DPtL1AMjmf8stYDM=;
+ b=I1qRSvUWOdkEHekoP6w6v/2Z/UgdoKU8xgKspX4aJ4iCUe+FVXyHKGOj+yGK3Q/VHpg50dQFURcY1V1JsOH+ss+/zF+q/esEkAIeNQpYoFVxnOrRzZGZROnEWQ8UYFIom4GwzpmwXAGhKyq9ClrcWXQhSdxbUqzVaSiFFRACgtI3+ZJJT38q3tE7CYN85VbQqwqB3jirssGrS5hBN9FCMimHQDFdPf62LukiENdomyyAJURQSkri369i6PdZijuaaLo6kiy8jKc8moVrOs3UajC/5plTTcFHxJoVLqMCynb2C505QKesvfUds0bp5lh7gCHUig2gs3wS+wLP4ahklg==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
  dkim=pass header.d=intel.com; arc=none
@@ -89,114 +89,111 @@ Received: from IA3PR11MB8986.namprd11.prod.outlook.com (2603:10b6:208:577::21)
  by SA1PR11MB9633.namprd11.prod.outlook.com (2603:10b6:806:4dc::19)
  with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.245.10; Thu, 23 Jul
- 2026 09:17:52 +0000
+ 2026 09:18:50 +0000
 Received: from IA3PR11MB8986.namprd11.prod.outlook.com
  ([fe80::e6f0:6afb:6ef9:ab5c]) by IA3PR11MB8986.namprd11.prod.outlook.com
  ([fe80::e6f0:6afb:6ef9:ab5c%6]) with mapi id 15.21.0223.017; Thu, 23 Jul 2026
- 09:17:52 +0000
+ 09:18:50 +0000
 From: "Loktionov, Aleksandr" <aleksandr.loktionov@intel.com>
-To: Myeonghun Pak <mhun512@gmail.com>, "Nguyen, Anthony L"
- <anthony.l.nguyen@intel.com>, "Kitszel, Przemyslaw"
- <przemyslaw.kitszel@intel.com>, "intel-wired-lan@lists.osuosl.org"
- <intel-wired-lan@lists.osuosl.org>
-CC: "Olech, Milena" <milena.olech@intel.com>, "Tantilov, Emil S"
- <emil.s.tantilov@intel.com>, Mina Almasry <almasrymina@google.com>, "Andrew
- Lunn" <andrew+netdev@lunn.ch>, "David S . Miller" <davem@davemloft.net>, Eric
- Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, "Paolo
- Abeni" <pabeni@redhat.com>, "netdev@vger.kernel.org"
- <netdev@vger.kernel.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, Ijae Kim <ae878000@gmail.com>
-Thread-Topic: [Intel-wired-lan] [PATCH v3 net] idpf: disable PTM on probe
- failure and on remove
-Thread-Index: AQHdGFUo82Q5g1f+FEWNcwA3GK5R5rZ614ug
-Date: Thu, 23 Jul 2026 09:17:52 +0000
-Message-ID: <IA3PR11MB8986986280690863E016ACA0E5C02@IA3PR11MB8986.namprd11.prod.outlook.com>
-References: <20260720143511.43408-1-mhun512@gmail.com>
-In-Reply-To: <20260720143511.43408-1-mhun512@gmail.com>
+To: Philipp David <pd-lkml@3b.pm>, "intel-wired-lan@lists.osuosl.org"
+ <intel-wired-lan@lists.osuosl.org>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>
+CC: "Nguyen, Anthony L" <anthony.l.nguyen@intel.com>, "Kitszel, Przemyslaw"
+ <przemyslaw.kitszel@intel.com>, Andrew Lunn <andrew+netdev@lunn.ch>, "David S
+ . Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, "Jakub
+ Kicinski" <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ "stable@vger.kernel.org" <stable@vger.kernel.org>
+Thread-Topic: [Intel-wired-lan] [PATCH] igc: fix netdev not re-attached after
+ resume if interface is down
+Thread-Index: AQHdFf9cU8EawxtZsEauVsUMZulIsLZ63H4Q
+Date: Thu, 23 Jul 2026 09:18:50 +0000
+Message-ID: <IA3PR11MB8986D164F76EFE059EF2EA23E5C02@IA3PR11MB8986.namprd11.prod.outlook.com>
+References: <20260717092159.35496-2-pd-lkml@3b.pm>
+In-Reply-To: <20260717092159.35496-2-pd-lkml@3b.pm>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
 x-ms-publictraffictype: Email
 x-ms-traffictypediagnostic: IA3PR11MB8986:EE_|SA1PR11MB9633:EE_
-x-ms-office365-filtering-correlation-id: 4ed7ed38-ffda-483b-2e1f-08dee89b45f7
+x-ms-office365-filtering-correlation-id: 4e2236cb-784c-47ff-b18e-08dee89b68af
 x-ms-exchange-senderadcheck: 1
 x-ms-exchange-antispam-relay: 0
 x-microsoft-antispam: BCL:0;
- ARA:13230040|1800799024|366016|23010399003|376014|7416014|10067099003|11063799006|5023799004|6133799003|56012099006|18002099003|22082099003|38070700021;
-x-microsoft-antispam-message-info: j0fg79l7yTl/oEaFj5F76zWRL8YdF3bM+prEnjnlcTrCNXEtuIQ2448mRqVbNr3Xjd//FAdP2IzOzEVTHYdD3v4GF3iBePgKme/DScxuq+DgwLpR3cNQa3JDtq4Ndu4vUnoOx0iGTP3H6cMzki93Ebc2tZt+P9/hOc0ZhwB7yrJTDDDrLQ3a1ubjrpT7jTz95Jty+1oeq9+k4PXYj3kSVj9ncTX/ooS7ChzCqa8vnJTX7JXfj4zttxkBplNZVEMpH+UfXe3P8POdvleGKg0RK04bHS+S94nLZbpwbzr9MWQeZZ7zP9rGShaS4cs63epDCMLsdVVaacMTDuLNC2nJwIHKxtSwJmQe0tl3QgBkHMFtkrglkzQVj4zEZV6paMuT5y7LIPaPvCeJsLZ91xseQKcslC07y/CFW3t8K7m1HWvf6DAZiy5FgJKdR00vQg/vpsNwcM2f6EIFhxpJY4LAiEya+X8Q8f0XEoUU1nJHe7d/df9ftZGAhDd5j0v3V0tOmK/gvTmqPJ4qUVsJUEiEqWQ+ilVwBeWH6DTq1nDOlNN6FbF1LULpAwMqxYA48/jegAXKwCLLs7SN7VyhLZnb7WgUJL7VqFZyKCqAvojUUd/IdjP2IZp8gIAfhiAQBvwXSSHFLSKkIUHLXI/AfYFtCSi6ikmCO/MA0uOJ4A5623EPKnRFcEGGyNHpJtFPXuewTw+5K5kV56lKNxFH7hsYeNaYfzXqdYKNGF8darssZFA=
+ ARA:13230040|1800799024|366016|23010399003|376014|10067099003|11063799006|56012099006|18002099003|22082099003|38070700021;
+x-microsoft-antispam-message-info: CgIU3NQuW7icQL6RIy39n66w4uIa++YkD1c1VedDr5irUXOK1cbo47k+jUYHAF0khN569kSluiD/8+WnWufbHLeBGAE0UCr87pkcf4QNozQczt0I66IvfXM2GgDEbIden8wGEYlyU7zcdhmJNqkYPxsphH5GBAHNxDil5B6GTu7TE5VTfFFGMAHW4eD4mVaF7YiMu7z/KJkSXkZesHdmofAaT1nPrKpMlKuYCQWxAaHUO9Qc3H4IqYrMzIdWjT3unYDCpBP2rB6sq/WHdLXPWRDWCbckeM204A4ZcBhx/RsuTqZ/uPNIzOOAQiTC+QN34yH64UmQ3jyWWM4xU954L2KJzULbPyGfYt4QOuDOwIO6wz98dfVQIYNiOkRVWYvznwpztsMz0tXpmmEgyffww0NSS06ZfTqcSzjVtPfJ7/E/cyjJC/TGEXDHLo7gprGBQTOeCke3MxbR5fu/2ry2CwrZ4mkGdP1gaBfRvR24hyrg2a8UusPNKY5Tmxfjqqfh6Xh3cZtlLwbuYMAKQG4MUy90VzZwYS41A709rGZbQAIu/SLn63RlSEOaez3Mxu393vlrvlUmesp9OMV593D2iY9GbRX4BthGXVsocYxGUwmYjjjppedLFIk7vh3fu1Snh+3H9TmzO2mDhMZIpWsjlXQehZLVxrquvmnYlgC0WFXd8qEqa0WYI7og8s07ieZ+dAP75jA1xxytPZ22MKXNN/P94RndPTO5hahwT7rX5QA=
 x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
  IPV:NLI; SFV:NSPM; H:IA3PR11MB8986.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230040)(1800799024)(366016)(23010399003)(376014)(7416014)(10067099003)(11063799006)(5023799004)(6133799003)(56012099006)(18002099003)(22082099003)(38070700021);
+ SFS:(13230040)(1800799024)(366016)(23010399003)(376014)(10067099003)(11063799006)(56012099006)(18002099003)(22082099003)(38070700021);
  DIR:OUT; SFP:1101; 
 x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?Wm9Rg0MqtIWxHvlUjhUK8l0wjIRDzch+Iqe4cVPnkMbE62soUJ/DV6HLyChD?=
- =?us-ascii?Q?YA4BWmDPzVRKRO5/Yv8k0klHPdhocawFyRxe/OqLeHCGAHAwN1FSnKcsYVlC?=
- =?us-ascii?Q?RDiA/Il4OfbPLg5JzA5k0fsfNhqG4iGykjym9mwPhzr3/63wErXH0IrlBEQF?=
- =?us-ascii?Q?jNpMTi+AdJLHBPEZvwf31hZSPSB0UU3NcIDXQxoB3ngwK6+Qk9zL2k6/qpby?=
- =?us-ascii?Q?MPaP7D/iczxAUlm7R85tLY42c3NEjg5EbNQXtGvVL/a4dxY99RJIPME/IMIe?=
- =?us-ascii?Q?xLCLOkjUm5+kVYwW30j9bhNnon/qIN6JqgJPAGiLiYkclkBFNflMEpSXnZy/?=
- =?us-ascii?Q?VMADNIY52wc4hMUTTAM7cqFsM4iutU6igx81r8eYO1iccSrfLy3Q1b46RqSY?=
- =?us-ascii?Q?NKxG6YEBI3aT8X4fmYEvdgsMAb+JioCn90rcSXGoJQyj6M2BqIQ3/6a1nlWU?=
- =?us-ascii?Q?++Qo8VMzW5amPrTM3L3h8Fm9fXGQpJ1yZA5ndJ5pptGvhdr+VOuM8jxBEZcP?=
- =?us-ascii?Q?gHF7RdfCSZsUczpVzIvklgKX+fy0tONW9cBbahOZOnW1ncbM2ZPFW5/zjkj7?=
- =?us-ascii?Q?laMJrFJxKgPMycOxiaJy4T1yt3y340C4nJWsOXF9ToSL7xXGBFsTrnReKLn+?=
- =?us-ascii?Q?gEiFw8RByaSeSPpYAdhDJf45+QkpNDFcN9Fd6t5yAHt4m2090Rh2jSHaSkiV?=
- =?us-ascii?Q?mTrkIJ9yItiyQgJVdijdxo7jmLUP/cR+TkW2St2IZcXBIdkH51p/Iy6/OdB/?=
- =?us-ascii?Q?VGjtMsptnxcyU6p2krBTIb5Q1cHCFvr09LSAtAZGjwFQLoJeU/G05E460IMl?=
- =?us-ascii?Q?jXo152xepJmiEab6Kt33f4UIqdtCXDVIcj+qYyUtDigjOtHPznecla4b52C7?=
- =?us-ascii?Q?2SsLWVMhGtfG5ZpgYaZjAtQBbC4y2LL3MioTvkyah0RA1osjgkbMks1mcKXJ?=
- =?us-ascii?Q?dQyP8YVGmMnDXbywX+rF4MclQwZbiq9/kvtN7FVYWmUJMXBfoofjpXI0UyNi?=
- =?us-ascii?Q?q0JD682MVCEbzSs8StRezg2tvAPdUu6S39SvOScIWKU7++W79femxJE7jmrY?=
- =?us-ascii?Q?Jwh7AQ10AGd0ZelfaLXt3tAscdhkdiQ/+g3bYRRY/qIqKBOPf3ezhtwkETCu?=
- =?us-ascii?Q?cxrWEbpoKntnqkfrQHvLUdR/Ox9vg5PYY2+hOd69qBM3zjHR6Q+of99r4ycy?=
- =?us-ascii?Q?LpQTJCwEf0xFYvcCowMwmgN7cRILAOILdIT99NwRA19pu5yeZWHjpZUiimnj?=
- =?us-ascii?Q?myoSFbdBklQHhRZ1ofrL2A9OSJcciDFUl6xv1cTeGoqZWjGPiM14Ige32wsB?=
- =?us-ascii?Q?O4myPB6cFzFB3RFKrjH0ridCTiZ/DqJNOioS7IhjvXS+lPmWsbkdsuesSW/J?=
- =?us-ascii?Q?BNzuKUe1kDUeYs3pgRgr6x+z4U10BFfJOnMLd16t21dDsg4rfmZuBUKNM/9x?=
- =?us-ascii?Q?eg5ApFFIIqNw6KsP5TJzQ8sJrX61Jpg7zyw0WcK7SNMpjkhymYOMe49VUZUL?=
- =?us-ascii?Q?Y+XEvriY++U9U7RgdfqdRzxqZWVN3rx2SbiFsIXK9niCgTJ1+luahG6SW1n/?=
- =?us-ascii?Q?VtljDwMkDFr54D7rpO1DJic1Dva7kLL3ObfVkO+EXZ+qR/2yT/SvJ3SiYLZm?=
- =?us-ascii?Q?ZLOr72SiVEefLlQqz5KhmfvmEPtFUWrg+dHuiVNG8CrY8+ZNM4wkw/fndzJR?=
- =?us-ascii?Q?AP6eK6DefYe2AeKlIQOnUUk9dGyf3wl0c5mDeAfdy3SeckOms9anaBp/n8Wn?=
- =?us-ascii?Q?t6K73zt1MdGOIbRWu3+nLXDkmXN3y3k=3D?=
+x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?J/VilK61YEcM9oJeX69wClk6u3qtciNSapkwcft08aCqLOTCkVgbXjDlfQHt?=
+ =?us-ascii?Q?qTpmXFWIiMvyBveHEiZxLXrIYoOKrjFmXSIqsRiabBhmyqy/QcinOUfDpPNU?=
+ =?us-ascii?Q?n9LdYk0t5wIainpBWm7LWlqV62EPddN3+4cuf6UhOdPHPYte8ThMeFpORsUg?=
+ =?us-ascii?Q?bsYu2Si/MxsmyCqDNz8Brjb3bDVCZUkDaM0TuCtPCFMwZYCswYzzH+VQfPM8?=
+ =?us-ascii?Q?AoJPelykS5G0k2tvTh+ZP/WYHLRvS6mYYaP8OdaI4hgbjgpFWI5C9saWjZSz?=
+ =?us-ascii?Q?hvdVkpTyr6m7tmvCEcofpu1JKbFUSUPAb0+WZFlR18bZ9FbTBXV6jfGOmOHL?=
+ =?us-ascii?Q?UzMp8U+AKo1iiOFNVTKUg9uosLgdXv9qkYrB9a0M0uWYJsC6WMVwLZhZ2xd1?=
+ =?us-ascii?Q?dvs1B6zMQ1Zykvwy4Ltg5CIuv/LhXwxUCD7/AKflpTt6BqLMDmZB68YUelJN?=
+ =?us-ascii?Q?KjmxVtGNglA851VxxwGv/Cy3iy/BKmL74mHviAN4ksdVwBU7F76GvqGVLGqE?=
+ =?us-ascii?Q?5U8Ofj0iZLrFZfyNOtk9AN9gv4g35loisyVA0MaOj9TiQCfZQ9vEW07ySbeE?=
+ =?us-ascii?Q?rhBo/rzQ/ftIMa4WZQN2dgrzLl1reHVPdYZ/RHWQFXu+aDrEbiZrBT7MjSi8?=
+ =?us-ascii?Q?DPTyUGru3uITqmpcGGmvM4LgDUlQSvvxEphtYtm3AgDhuF2443XKbzIW/Fgg?=
+ =?us-ascii?Q?XuQ5rviW0+edeY2Bn09sxqFjQOE1aMtmW6mxx1GjoIRJJbRz8EcSF8F32ri2?=
+ =?us-ascii?Q?cthKSnseUMu6bMfojV7KtedVDM4Ig2fWu6JPq50bKtuMKPrQdCmUyzgORiN8?=
+ =?us-ascii?Q?xrRqp2GWaqYx53NcV+pOUxhOfOps5Y7gJkeDq01W/I6EKt5UrPsJcOND5Y1B?=
+ =?us-ascii?Q?vWsklukEiNV/TuFcNnAhavzzED33cnCplzlchckbBpP3RxYRx/SRmqlvGq5/?=
+ =?us-ascii?Q?K6QleRD9eIIH8ZrbLSJ+0QQJTUWLL4TdoHDvkzxDD4u7E2JIpWfuo/82hU2w?=
+ =?us-ascii?Q?6sZ/42dXmU3+2+R5+2qIGHMbrDgXEsQbLEykLW33wNN2rz1dLeoFXYgc+Kvr?=
+ =?us-ascii?Q?Jdr4J6ZZifa1KNUHv4njlbHlzwYQpugsHm5NjvU86Gu5mztYlYOWsU01Vo3h?=
+ =?us-ascii?Q?/miBygek0p7LrvdZJZ7ImUz7UT5TBQczPulyWUzyTAztNUcDjKNqm4co0yG3?=
+ =?us-ascii?Q?nQjpNWshDtm2wGub7DqfCggvmOd2T6tx9WjP4t4qucKKLNb3KN40m1s3RJxG?=
+ =?us-ascii?Q?+ScCJBS+CzjcccoV4LD5QHXzu0ZLDMTXIwu5Uk91SB+AcHe9zWJDJylUH7wu?=
+ =?us-ascii?Q?fTq8OufFLZ0LahdjQMfgMfaDRWmWI0vlYwEY6377gSBzbNHkmj20he+TgXTE?=
+ =?us-ascii?Q?T5yrTxunxWGMUtwAmNIczNFObC5qWWri8lwxvLL1t8JG+tlR1ODsZZ2j7rst?=
+ =?us-ascii?Q?H4mY+WqukbkCGn94to9TIfxxYnaieeBjnGimIvx2WimY9E9cn/8VEimgavsi?=
+ =?us-ascii?Q?KhmuMWX+c7BrOee4uqpIxXtnMWXxL3yRXAabKcJBt4og0asOZgSHTpLfU9jF?=
+ =?us-ascii?Q?qMhAdzjaiNBwyzcuL11QJ3JpCOauKAEiBnBxnWQYw6CWdDydXBJPltl3bCTV?=
+ =?us-ascii?Q?KDbram++LSManPNGhJx0up443aItJT20PAVpOzAB3x6cvuJlyoJxWN+M/ebG?=
+ =?us-ascii?Q?DL4W4YUKTwoDjuMbwQKo79OVcXE8h0K8VxO/sTkEfPaXuvn0dlhwEo+jHfgR?=
+ =?us-ascii?Q?uvn1WmUjV/1c99JXF9yKKDc/EaF9HQI=3D?=
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-X-Exchange-RoutingPolicyChecked: G2ccyzY1oRS1Ogf8lofJoRYhHkPr17uctz8nytvzEQz5ga0mHRxnGQBHirk98M1qWrQJi99R/a8pBTHNpDmbCPFY51MXYF1PgvBFppHfR+vzj8VI2Kt8kVmuuWlVU6AruggsVZ+QLECC7495inR/GXqRCOtAt1tXdmHcluo+Q3R5rawfmqKzTTn7eEpWtCNv8FWOJmvOFoAYnFKggleRZg/pBSFR7CX9BxRH6gmM2dv8AUyzyP/gS1n33NP0fN9iFm6ZBW7cLSKUXJHzdIACsJDQ/1sB3EkKgQJ4JsrnDk1L3AER0DdGzVY/X2ZZBS7s759RryLnbjVHLGlGJQbtkQ==
+X-Exchange-RoutingPolicyChecked: m7N4kh9GFvokONLOgSO0Pinq1qxhScbI9rEBI9kFpo+0vHAsdMNCKgCrbA3lfKkLTuCs9aSM6aYR8MUCdVr/z/8Hax6l/NU6K3kge5Xd9Yi9TBuDEck4dgziNcX28v41lp1k3uxwMdYf9bOwdZyFEFgFsy9GMBb+Z+FXIC+a5xN7n5iVNMdk+6e833xXZI2OSnesbwHOIium+xBronjd8U2juGOoL18MQfrxpfhlv30YSlf35aKXoEbz3tKjRXxhBqo5j1WYu6IH8/HPlMT9hZO/ybLXfDFx0gTAgRRSyJQD0Sn1pJzViU79fN/UFMuyEWeAB/Q8CT8YM2YO5lFdTg==
 X-MS-Exchange-CrossTenant-AuthAs: Internal
 X-MS-Exchange-CrossTenant-AuthSource: IA3PR11MB8986.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 4ed7ed38-ffda-483b-2e1f-08dee89b45f7
-X-MS-Exchange-CrossTenant-originalarrivaltime: 23 Jul 2026 09:17:52.3835 (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 4e2236cb-784c-47ff-b18e-08dee89b68af
+X-MS-Exchange-CrossTenant-originalarrivaltime: 23 Jul 2026 09:18:50.6578 (UTC)
 X-MS-Exchange-CrossTenant-fromentityheader: Hosted
 X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
 X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: Obil8s/UHYcW2HtYmpxEjbGeGZBkqqcerjIMyV1ikFqFSF89Z+zg3gYW/iUeQuqQtSs2LoRP+WB60IC0lXCZGoXk4+WjKGcBOBDrRSo2Sn8=
+X-MS-Exchange-CrossTenant-userprincipalname: EXtxy7SD1QXZ9nmtrNcCWcPNAd3zIUl0d8v47YYUDv8Xuwl/oyHXMnjm8T04m/xOYJpTH4ondxvmb8GAExjp1vDdpGSiNJkd4HS0scGNo5g=
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR11MB9633
 X-OriginatorOrg: intel.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1784798276; x=1816334276;
+ t=1784798339; x=1816334339;
  h=from:to:cc:subject:date:message-id:references:
  in-reply-to:content-transfer-encoding:mime-version;
- bh=n1fWsRTPm4Mhb4cImE4lMNm5/anyrm63/0W7KHyh38I=;
- b=TQ0Wjo+d5iGecfqKAzfMIjEaA7ulefffsPk6BHrBFaulLxJEtukF5zmi
- uIzlTfyxoHd4Dt03rmLjdRYvEpRsdxEcg4QQ8ciFp4K10ifiTRbCxQcRE
- CEC5O2HHMRKXfrejHiNRemqf9jA2+gPAp0OTIn2V0H67v+jwafv1/sVQw
- yHUlr04myUPq0Y0JHaDNquQ0zE9G0oUYnzrbUGb2fdfq+2on3EBJX/gAB
- cZycpt9VweM9ZNhBb3EzoZuAfEMAjW5/AoQJpby7aygkCtkYxYyd3lu9D
- PAgMdX3TF1947v4GoIaYThfnnX/xOGp8icPh2W08xyRVodle0zMgrx1NV
- A==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ bh=PMnamTQgDQa12PMv75u9npfAo3+qnke2lmCl5UD94DA=;
+ b=WSbNs7lY4kiRKPUnQts9VpASEBkdX/0FRwVLIRjRz432FMteWPjPs0A6
+ +HxTWU83ID1uwnHca6Za9lsP41wG5X9Wg+b6T7Abt5okgBy/ua5wMyzXV
+ mA9K4xnM18hcnA5Uo3/YslGJxgMspO2MC0wnptsdOffNjqWD7xqlj6DaN
+ Ra49k+GueqSkRtHsCoPFvL6mm4DWCLJOF89WWOYuPieSQnVt3EXYgbwV6
+ n8mqwtHl9C8bAiX0YzEoZ1A3viOPwfPHJpyXClqXgGTyxYK41G6Z/9ucY
+ N7B/j6u/Do6Pj+CBgefFkIz4JbUQ62B2QmDvLBfWCk6cHnFf7iEBxav11
+ g==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=TQ0Wjo+d
+ header.a=rsa-sha256 header.s=Intel header.b=WSbNs7lY
 X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=intel.com;
-Subject: Re: [Intel-wired-lan] [PATCH v3 net] idpf: disable PTM on probe
- failure and on remove
+Subject: Re: [Intel-wired-lan] [PATCH] igc: fix netdev not re-attached after
+ resume if interface is down
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -216,109 +213,65 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf
-> Of Myeonghun Pak
-> Sent: Monday, July 20, 2026 4:35 PM
-> To: Nguyen, Anthony L <anthony.l.nguyen@intel.com>; Kitszel,
-> Przemyslaw <przemyslaw.kitszel@intel.com>; intel-wired-
-> lan@lists.osuosl.org
-> Cc: Olech, Milena <milena.olech@intel.com>; Tantilov, Emil S
-> <emil.s.tantilov@intel.com>; Mina Almasry <almasrymina@google.com>;
-> Andrew Lunn <andrew+netdev@lunn.ch>; David S . Miller
-> <davem@davemloft.net>; Eric Dumazet <edumazet@google.com>; Jakub
-> Kicinski <kuba@kernel.org>; Paolo Abeni <pabeni@redhat.com>;
-> netdev@vger.kernel.org; linux-kernel@vger.kernel.org; Myeonghun Pak
-> <mhun512@gmail.com>; Ijae Kim <ae878000@gmail.com>
-> Subject: [Intel-wired-lan] [PATCH v3 net] idpf: disable PTM on probe
-> failure and on remove
+> Of Philipp David via Intel-wired-lan
+> Sent: Friday, July 17, 2026 11:22 AM
+> To: intel-wired-lan@lists.osuosl.org; netdev@vger.kernel.org
+> Cc: Nguyen, Anthony L <anthony.l.nguyen@intel.com>; Kitszel,
+> Przemyslaw <przemyslaw.kitszel@intel.com>; Andrew Lunn
+> <andrew+netdev@lunn.ch>; David S . Miller <davem@davemloft.net>; Eric
+> Dumazet <edumazet@google.com>; Jakub Kicinski <kuba@kernel.org>; Paolo
+> Abeni <pabeni@redhat.com>; Philipp David <pd-lkml@3b.pm>;
+> stable@vger.kernel.org
+> Subject: [Intel-wired-lan] [PATCH] igc: fix netdev not re-attached
+> after resume if interface is down
 >=20
-> idpf_probe() enables PCIe Precision Time Measurement with
-> pci_enable_ptm(), which takes a reference on the device and on every
-> PTM-capable device up the path to the PTM Root.
+> __igc_resume() calls netif_device_attach() only inside the
+> netif_running() branch, so an interface that was down during suspend
+> is never re-attached on resume. It then stays in the not-present state
+> that __igc_shutdown() set via netif_device_detach(): ethtool reports
+> ENODEV and every attempt to bring the interface up fails the
+> netif_device_present() check in __dev_open() with -ENODEV, silently,
+> since __igc_resume() returns 0. Only reloading the driver recovers the
+> device.
 >=20
-> Neither the probe error path nor idpf_remove() drops that reference,
-> so the PTM enable counts of this device and of its upstream path stay
-> elevated with no bound driver, and the device's PTM control bits
-> remain set.  pcim_enable_device() only arranges for
-> pci_disable_device() and does not undo the PTM enable.
+> This is easy to hit in practice because NetworkManager brings managed
+> interfaces down before sleep unless Wake-on-LAN is configured, making
+> the adapter unusable after every suspend/resume cycle with WoL
+> disabled.
 >=20
-> Add the matching pci_disable_ptm() to the common probe unwind and to
-> idpf_remove().  pci_enable_ptm() failure is not fatal here, so guard
-> both calls with pcie_ptm_enabled(): pci_disable_ptm() decrements
-> dev->ptm_enable_cnt unconditionally and then recurses upstream, so
-> calling it after a failed enable would drive this device's count
-> negative and wrongly decrement parents shared with other endpoints.
+> Re-attach the netdev on every successful resume, as igb and e1000e do.
 >=20
-> This issue was identified during our ongoing static-analysis research
-> while reviewing kernel code.
->=20
-> Fixes: 8d5e12c5921c ("idpf: add initial PTP support")
-> Co-developed-by: Ijae Kim <ae878000@gmail.com>
-> Signed-off-by: Ijae Kim <ae878000@gmail.com>
-> Signed-off-by: Myeonghun Pak <mhun512@gmail.com>
+> Fixes: 6f31d6b643a3 ("igc: Refactor runtime power management flow")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Philipp David <pd-lkml@3b.pm>
 > ---
-> Changes in v3:
-> - Rebased; aa8671af0c38 ("PCI/PTM: Drop pci_enable_ptm() granularity
->   parameter") changed the call signature, so v2 no longer applied.
-> - Guard both pci_disable_ptm() calls with pcie_ptm_enabled(), as
->   pci_disable_ptm() is refcounted and recurses upstream since
->   e1092d5e15e6 ("PCI/PTM: Do not enable PTM automatically for Root and
->   Switch Upstream Ports").  Raised by Tony Nguyen.
-> - Dropped the v2 claim that pci_disable_ptm() is a no-op when PTM was
-> not
->   enabled; that is no longer true.
+>  drivers/net/ethernet/intel/igc/igc_main.c | 8 +++++---
+>  1 file changed, 5 insertions(+), 3 deletions(-)
 >=20
-> Changes in v2:
-> - Disable PTM in the probe error path, as requested by Emil Tantilov.
+> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c
+> b/drivers/net/ethernet/intel/igc/igc_main.c
+> index 2c9e2dfd8499..e777c2df0b73 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_main.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+> @@ -7586,11 +7586,13 @@ static int __igc_resume(struct device *dev,
+> bool rpm)
+>  		err =3D __igc_open(netdev, true);
+>  		if (!rpm)
+>  			rtnl_unlock();
+> -		if (!err)
+> -			netif_device_attach(netdev);
+> +		if (err)
+> +			return err;
+>  	}
 >=20
->  drivers/net/ethernet/intel/idpf/idpf_main.c | 9 +++++++--
->  1 file changed, 7 insertions(+), 2 deletions(-)
->=20
-> diff --git a/drivers/net/ethernet/intel/idpf/idpf_main.c
-> b/drivers/net/ethernet/intel/idpf/idpf_main.c
-> index ab3c409..97bafeb 100644
-> --- a/drivers/net/ethernet/intel/idpf/idpf_main.c
-> +++ b/drivers/net/ethernet/intel/idpf/idpf_main.c
-> @@ -159,6 +159,8 @@ destroy_wqs:
->  	mutex_destroy(&adapter->queue_lock);
->  	mutex_destroy(&adapter->vc_buf_lock);
->=20
-> +	if (pcie_ptm_enabled(pdev))
-> +		pci_disable_ptm(pdev);
->  	pci_set_drvdata(pdev, NULL);
->  	kfree(adapter);
+> -	return err;
+> +	netif_device_attach(netdev);
+> +
+> +	return 0;
 >  }
-> @@ -266,7 +268,7 @@ static int idpf_probe(struct pci_dev *pdev, const
-> struct pci_device_id *ent)
->  	if (err) {
->  		pci_err(pdev, "DMA configuration failed: %pe\n",
-> ERR_PTR(err));
 >=20
-> -		goto err_free;
-> +		goto err_disable_ptm;
->  	}
->=20
->  	pci_set_master(pdev);
-> @@ -279,7 +281,7 @@ static int idpf_probe(struct pci_dev *pdev, const
-> struct pci_device_id *ent)
->  	if (!adapter->init_wq) {
->  		dev_err(dev, "Failed to allocate init workqueue\n");
->  		err =3D -ENOMEM;
-> -		goto err_free;
-> +		goto err_disable_ptm;
->  	}
->=20
->  	adapter->serv_wq =3D alloc_workqueue("%s-%s-service", @@ -366,6
-> +368,9 @@ err_mbx_wq_alloc:
->  	destroy_workqueue(adapter->serv_wq);
->  err_serv_wq_alloc:
->  	destroy_workqueue(adapter->init_wq);
-> +err_disable_ptm:
-> +	if (pcie_ptm_enabled(pdev))
-> +		pci_disable_ptm(pdev);
->  err_free:
->  	kfree(adapter);
->  	return err;
+>  static int igc_resume(struct device *dev)
 > --
-> 2.47.1
+> 2.54.0
 
 Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
