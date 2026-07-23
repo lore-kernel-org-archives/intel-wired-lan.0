@@ -1,138 +1,202 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5407C44524
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 23 Jul 2026 08:27:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6ED86C531CB
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 23 Jul 2026 09:15:45 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 5A78860635;
-	Thu, 23 Jul 2026 08:27:06 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id E424780EBF;
+	Thu, 23 Jul 2026 09:15:44 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id VGlfkbia2vTW; Thu, 23 Jul 2026 08:27:05 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id qsflIeB9-6Mx; Thu, 23 Jul 2026 09:15:43 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2CBB360646
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 231A780EA3
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1784795225;
-	bh=dctZDlC2XJVQXTcTGVVfbpBQOnBh4QfJjhWU5Wge13Y=;
-	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1784798143;
+	bh=3BH6rJlasZaIf0pY9FKHcGh35sYGLi4B2quqoyVU6Is=;
+	h=From:To:CC:Date:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=HiIur9B33MEOu+HHuBjQHxyWP7k3hfu6lflZBvKY9UOiWomDJaj656zNDJJoNc05Q
-	 /IDpMSMSFN1XlDPaYy3QCuZXAkgWtpEjJeuy7mm8rQSLcURRckxmeeeL9PBVCAmaZV
-	 PFUQgHRNQ0gt5FoAqnD3nozZp75qbvUAON4xOZpErMcDJ8Ge0hPh8IYnjWCrRWwfHw
-	 42vHwQFQ7kwI2PFbw414Eiy9M32135fuJrnK5N77FYw1EysXr3MiutMxKR2spgP5+U
-	 avGgfmKhWO4vsF3MI05NGx2oHDfKq0Gw97eX47mQlxN5phbmOUSLDk6773N2GNVVFs
-	 dWWby9ckhWL3A==
+	b=lO2To0pTSzrvinngDNkKgG56ow2NlmnrL56acfktoaqCq80GpsRZ4UyjU9eBQt3oO
+	 qQ3otS3hK58EjbgDtzcdPvRqAJgjdiNf5uBdhd5cvJThgJWuBiA1bcr/ITN99WsTvg
+	 rpMOpgoCWBdxWhP4PqAAvO2NVqv6UmhAWpGiAlYVlCgkTG3AQQjeqOatNstF+D21ud
+	 hijeWXHNLcjCfPubKKrMKoPep7Zs6WnVjNM7Jk07MCyM6js1acdxwamC6i3graTJp0
+	 NOY8ZYlLRpOTgCRziNRrA4l7tSBP2kdty58wbW6OaqoiDYuEB9ocHpQTIhaXKZejEk
+	 SM3Jif3ozGpcA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2CBB360646;
-	Thu, 23 Jul 2026 08:27:05 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 08EAB429
- for <intel-wired-lan@lists.osuosl.org>; Thu, 23 Jul 2026 08:27:04 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 231A780EA3;
+	Thu, 23 Jul 2026 09:15:43 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id DD6A9347
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 23 Jul 2026 09:15:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id EECCB60646
- for <intel-wired-lan@lists.osuosl.org>; Thu, 23 Jul 2026 08:27:03 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id C32B980E7F
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 23 Jul 2026 09:15:41 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id r-9XxDl4dh8k for <intel-wired-lan@lists.osuosl.org>;
- Thu, 23 Jul 2026 08:27:02 +0000 (UTC)
-Received-SPF: Permerror (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
- helo=us-smtp-delivery-124.mimecast.com; envelope-from=poros@redhat.com;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id xVyS_Vb41Yje for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 23 Jul 2026 09:15:41 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.12;
+ helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 7541360635
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7541360635
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 7541360635
- for <intel-wired-lan@lists.osuosl.org>; Thu, 23 Jul 2026 08:27:01 +0000 (UTC)
-Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
- [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-445-IVK4FyoLPRWjQH5WMrJ3Pw-1; Thu, 23 Jul 2026 04:26:58 -0400
-X-MC-Unique: IVK4FyoLPRWjQH5WMrJ3Pw-1
-X-Mimecast-MFC-AGG-ID: IVK4FyoLPRWjQH5WMrJ3Pw_1784795217
-Received: by mail-wm1-f69.google.com with SMTP id
- 5b1f17b1804b1-4956b4cfe19so3081265e9.0
- for <intel-wired-lan@lists.osuosl.org>; Thu, 23 Jul 2026 01:26:58 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1784795217; x=1785400017;
- h=content-transfer-encoding:content-type:in-reply-to:from
- :content-language:references:cc:to:subject:user-agent:mime-version
- :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
- :message-id:reply-to:content-type;
- bh=dctZDlC2XJVQXTcTGVVfbpBQOnBh4QfJjhWU5Wge13Y=;
- b=ab3A9DUf0SDK0WgllHr1D4uoreZY/1ii3H5lUM9dolg1ydF+Vj4j8palxV1nR9ndba
- Q/0JYnz1P0Jgp9Xv3msuBGj5xwlBY1IDuHAt1JWxHWyg2+BCjSiBxelMkt1rtLWE7zK9
- mJJUabJIa+nVKvu0bNiS74K64r7IuHI08nrDlY1VsdIzze7/ckW3QScjeWXWmtQMCGLg
- /SPrUtStRwrYAcK9q3VMnbTqrFDUkKDdF35L9/IVUo3w7SbDtVrDPVz3Lt5t09NQA508
- UnJecWWfKgbnka6ojWHzE1WMfpQ98o0DNRI3udMQwVFyxKbn5CE22YbhCsgslbETBMFm
- qlGw==
-X-Forwarded-Encrypted: i=1;
- AHgh+Ro7WHgTbXlr/6wPQzbw9G83ZlPcG/zRLEh5EK/o6JUaft9JKpushndmcQ/9Y1NYTMKbiAqz0rck6jJJzofq2io=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YyLqx6WAMGw1uZ9lTZSeweHXG1FGlEPlq2SWCFX5fHyPXRbZ2FY
- xPNPBLem7IxO3HiZv+0UuzrrJtbyW+TkpVjswA7O4QaRyX2Qd3Vaey6sDjhlO+mOlDI9U5qOh6I
- PIZvz/O26rJpAiRqKJtJnglQ1fYw51jBWk71CKYcRcJhU4T3zIdN6RZreeqf9iuEM158J0kY=
-X-Gm-Gg: AR+sD11d9QtTtzGaMknAsrr65/GocwX9oyjdt8F+cTZsRvI1/0VIOVY2PxHj/vAxFLw
- gzPCwIo0z2F9RPft7oClmeLkT3PQAd8QvKSkjnYqzlaMvetavPBIOWouvlEhmY5OF6bVzJlHJmN
- Q+/ZQAyGhQVa5VwuouWsTZfkFCvMAlunMDx0nwPVHMBofB1BHx37Etlvw0brpdaBvNtQr6Byixa
- WmTbtAPCDomNnohvdh3ona3t3w8TIdByFYLCjELfIXXn7n9jRR6XfPoTfoZp+Dg9Aqs1Kc/UH5Q
- iiHY4+MpatPyTMj1+bK6+Dlo6O4hPoGLevcJbrxe295efqT0QPJpyykUP4cqheopSUaHF97vEZ0
- =
-X-Received: by 2002:a05:600c:1395:b0:495:4487:61af with SMTP id
- 5b1f17b1804b1-49573d36fddmr21981465e9.36.1784795216760; 
- Thu, 23 Jul 2026 01:26:56 -0700 (PDT)
-X-Received: by 2002:a05:600c:1395:b0:495:4487:61af with SMTP id
- 5b1f17b1804b1-49573d36fddmr21980795e9.36.1784795216029; 
- Thu, 23 Jul 2026 01:26:56 -0700 (PDT)
-Received: from [192.168.2.83] ([46.175.183.46])
- by smtp.gmail.com with ESMTPSA id
- 5b1f17b1804b1-4956b72fac1sm105603625e9.1.2026.07.23.01.26.54
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Thu, 23 Jul 2026 01:26:55 -0700 (PDT)
-Message-ID: <eea8692e-f8e9-4bae-beb8-e33f7508aa9b@redhat.com>
-Date: Thu, 23 Jul 2026 10:26:53 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Przemyslaw Korba <przemyslaw.korba@intel.com>,
- intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org, arkadiusz.kubalewski@intel.com,
- aleksandr.loktionov@intel.com, anthony.l.nguyen@intel.com,
- przemyslaw.kitszel@intel.com, konstantin.ilichev@intel.com
-References: <20260720120151.2675206-1-przemyslaw.korba@intel.com>
- <20260720120151.2675206-3-przemyslaw.korba@intel.com>
-From: Petr Oros <poros@redhat.com>
-In-Reply-To: <20260720120151.2675206-3-przemyslaw.korba@intel.com>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: 2-hbQhxrbKNwqabots6iZl5dDApt_0rVk46ocWJdYKE_1784795217
-X-Mimecast-Originator: redhat.com
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org D5A6280E67
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D5A6280E67
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id D5A6280E67
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 23 Jul 2026 09:15:40 +0000 (UTC)
+X-CSE-ConnectionGUID: FxtbKrJDRAS1ht4Cg2LFZg==
+X-CSE-MsgGUID: 7pj6e5Z0RjqxFF2xMLgvZw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11854"; a="96963398"
+X-IronPort-AV: E=Sophos;i="6.25,180,1779174000"; d="scan'208";a="96963398"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+ by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 23 Jul 2026 02:15:37 -0700
+X-CSE-ConnectionGUID: jRkrRpSFRx6A/IBJoMQPAA==
+X-CSE-MsgGUID: 1QI0FOl7TPixjgwxrL5aoA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,180,1779174000"; d="scan'208";a="263325369"
+Received: from fmsmsx903.amr.corp.intel.com ([10.18.126.92])
+ by fmviesa005.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 23 Jul 2026 02:15:35 -0700
+Received: from FMSMSX902.amr.corp.intel.com (10.18.126.91) by
+ fmsmsx903.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.43; Thu, 23 Jul 2026 02:15:35 -0700
+Received: from fmsedg902.ED.cps.intel.com (10.1.192.144) by
+ FMSMSX902.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.43 via Frontend Transport; Thu, 23 Jul 2026 02:15:35 -0700
+Received: from SN4PR0501CU005.outbound.protection.outlook.com (40.93.194.33)
+ by edgegateway.intel.com (192.55.55.82) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.43; Thu, 23 Jul 2026 02:15:34 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=de8u6SSeKeYQv4OJBJZN7hZkkPeV0Lul8Wk/H7yRROyo4GeGLpIyhuP1GZOvnwod85MFYE0t+wnmecSpQIiRKc6fWqZpkyQ4Mx1AfAs+C8Iv4GH7ZWC081ZswXhrn+jcSJCj1hsv5tO6Oy9vM90TpsI9d76ZnCOsAA+zYbP/43LjHyjcY4kXZEA8nFROcLooe3ALqVflD7B0QLp6qpaphy184Q7gEPDS5DNfU8iuX6/uPhe4t2jxBbc6AO2mUPi8VvBzYrfz7P0sMuVpqWjb+/KJSOxsgsmpPnevdZLlaUmSiy/Wt4GBFvY6M9a6dXZRW2dohhAEQPesE6wNsaKOSA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=3BH6rJlasZaIf0pY9FKHcGh35sYGLi4B2quqoyVU6Is=;
+ b=RQdyG/8qrznl4uyy4vbROmYMdnsN5bib0zQKQ/oGymo3a0/Y8CJ+h+GEcN3mJgJmTlBid5LCCvlBUN76XgTtCF76zkJcPoIsCUr/dNqNLNMP1dyivWgQI4oP1fDglg6+l3FFJYvVsFnK+tWH5sGAw9EPRL6K4tlgk+CeN2UyP/fRReprOHXUUEck0Bh5DVttHCiP98r55Ho6VuGVHcmw4yNyWVRRayXEujmMObeNLF8QEuHJ2Q2wn6TOgQYQfGDyWL6nj781K1SIFCxSNntKmgpIKkm4/tRuIHFcp1dnnZxnWxdWCya9pOWoONC11/oPxk18MkHyN4cLmbitUFFqDQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from IA3PR11MB8986.namprd11.prod.outlook.com (2603:10b6:208:577::21)
+ by SA1PR11MB9633.namprd11.prod.outlook.com (2603:10b6:806:4dc::19)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.245.10; Thu, 23 Jul
+ 2026 09:15:27 +0000
+Received: from IA3PR11MB8986.namprd11.prod.outlook.com
+ ([fe80::e6f0:6afb:6ef9:ab5c]) by IA3PR11MB8986.namprd11.prod.outlook.com
+ ([fe80::e6f0:6afb:6ef9:ab5c%6]) with mapi id 15.21.0223.017; Thu, 23 Jul 2026
+ 09:15:27 +0000
+From: "Loktionov, Aleksandr" <aleksandr.loktionov@intel.com>
+To: "xuanqiang.luo@linux.dev" <xuanqiang.luo@linux.dev>,
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>
+CC: "Nguyen, Anthony L" <anthony.l.nguyen@intel.com>, "Kitszel, Przemyslaw"
+ <przemyslaw.kitszel@intel.com>, "andrew+netdev@lunn.ch"
+ <andrew+netdev@lunn.ch>, "davem@davemloft.net" <davem@davemloft.net>,
+ "edumazet@google.com" <edumazet@google.com>, "kuba@kernel.org"
+ <kuba@kernel.org>, "pabeni@redhat.com" <pabeni@redhat.com>, "tj@kernel.org"
+ <tj@kernel.org>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, Xuanqiang
+ Luo <luoxuanqiang@kylinos.cn>, "stable@vger.kernel.org"
+ <stable@vger.kernel.org>
+Thread-Topic: [Intel-wired-lan] [PATCH iwl-net v1] igb/igbvf: disable work
+ items before device removal
+Thread-Index: AQHdGPzjuMMsL7rm2EyjeVwPzIIi9LZ61Yug
+Date: Thu, 23 Jul 2026 09:15:27 +0000
+Message-ID: <IA3PR11MB8986FB1EAD0AD7D9EAD17F9FE5C02@IA3PR11MB8986.namprd11.prod.outlook.com>
+References: <20260721103539.57990-1-xuanqiang.luo@linux.dev>
+In-Reply-To: <20260721103539.57990-1-xuanqiang.luo@linux.dev>
+Accept-Language: en-US
 Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=redhat.com; 
- s=mimecast20190719; t=1784795220;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=dctZDlC2XJVQXTcTGVVfbpBQOnBh4QfJjhWU5Wge13Y=;
- b=XPF0QAgcv8HQFa6nRTS75ztvMqpv0HXuK57eLUVAmKMEAUdoavDX5SB9sgeuFC4njNza/x
- Ar05BJEov+DrEcMOaDmwonSdE89LfF0M0zFPdgyCoiW4jUnV1qPaAv/TZhg1GWXlFsCqTG
- /okgIxWX2S2WFHIwwreai6OKQNJFPS4=
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=redhat.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=XPF0QAgc
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net 2/4] ice: clear unexpected Tx
- timestamp ready bits to prevent stuck PHY
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: IA3PR11MB8986:EE_|SA1PR11MB9633:EE_
+x-ms-office365-filtering-correlation-id: b5717b97-611d-40da-952a-08dee89aef5e
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+ ARA:13230040|1800799024|366016|23010399003|376014|7416014|10067099003|11063799006|56012099006|18002099003|22082099003|38070700021;
+x-microsoft-antispam-message-info: YHxxK3tWsGoFn8c1EDAhcNm9Mpqn+qTI3TX1mMDgmpTeyM8QD9WoCb8uyuWz2kDu+an2oV8WvmfubmrzJiVbC2CRozCLLhRIY+s7BChwO66RhYVDQyqLuRtzlS/b7YkbP19qGcALSpKWkdLGLqH8mHJOUUsbuBiF0RadEKL4PN5Is708VrjZSXVjnQxo4UIZT8vISl1s3Il6a5pXgj7VGNLO1j07wkA0JoNhibeOIx8lC11J8XBOZdqdAFpmtBE47ogEfHTEH5MKMrf4iL2nd2hm2/qkJTSyGtgEH+djNRe19SPhj2MijaBWZNgzLJXVL2hQxABtTf0jR2qvMv00aT/fqekrMmNXbc1O9cvD9UaXFhnnYH0I8abtpaajPQic+ej89xfZY/bx6gLTFG5AvY50ry7jeY5IkuBj/dhwmCh0/zoyp/KBlI4e3t6YoHvU+CWqi/PTFJKvLGRJszPsc7bPzF0j/XLetW9FSSSu2Y2T3FraUxpvhT5wOHQKL/nqWYJPWbkbuHQXvuQ/wwwHgVNMghGB/86bZ26trelTFDvbXFrUxbYaZOiR/HIH/gTGhk6MmiVi8IJxxh9XLchduBpum1fZm2mHaGFsbqqisQ1kSykqvBTcNqGaornjRCE6uOEnRwjy8mmqDntr0wgZ3CvBGNbOHUQ39nSZH0eqdzaA4qToXC02sUkKiXg9n/qSOtYDVp1q/+1U1rCXx1J8vTf6EbEdnbqIl1+Txurf5fc=
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:IA3PR11MB8986.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230040)(1800799024)(366016)(23010399003)(376014)(7416014)(10067099003)(11063799006)(56012099006)(18002099003)(22082099003)(38070700021);
+ DIR:OUT; SFP:1101; 
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?acKrZ6dqVG5H9FbBbK5QWuQc7f5rR1lBRBIap5OqfSEnubqyM5b6ap3DrZDU?=
+ =?us-ascii?Q?6SBCsBBvzEGp/UH42ULA9vegosrzSOWmWxtwKUiHu1zuu8WhYBxfet+lcdsd?=
+ =?us-ascii?Q?S65Ela4e0uuY08F6Xof9K7WQzYhB0qsedghSrlyJP5jx2KNm0yvf0CMi1fOn?=
+ =?us-ascii?Q?zBNn7rSXQKACPhlUtwY+zp/NC+/C6kQLfpAdqkGwz3P4d85z4oIOZ+4puZKX?=
+ =?us-ascii?Q?8TYGVJOraz+7XP4mFsP8tD7Ws+OnIn6ZeacBNcU5d4wT9zIBmApKbf28MYcV?=
+ =?us-ascii?Q?vq/jKzIum7034NJbzom2UxAtP2P9PkkHBl0AyNNibGkAOnkD9waoWLA/JazX?=
+ =?us-ascii?Q?fbuQPW4VTtmrM5gBxF+ED07tPWknWmLzjSt9mgl4mC1hpcLj90PnY8LiGcDw?=
+ =?us-ascii?Q?zCkOAdxo8YahXTdWcFB4YickxBz79pad2QGoL/Q2y6RkfBLOjmHS3Y314UEo?=
+ =?us-ascii?Q?qYQQDTIw6OUv1ZE5qtto36j7t2c2jd6hPxlpaLp3lEflYjPpDawxtWcUAzmA?=
+ =?us-ascii?Q?T8QfQ1eoqx+iAOUqEcohmYMsMpJnM8eqpIElQ4WirEWzfGbg/qpIwN4ESzig?=
+ =?us-ascii?Q?9sVxr19temUJj1wr4xmQaDh4/uPpGHExnt7lYn9zzAz+NkDRqclf1VdgyhSs?=
+ =?us-ascii?Q?wWG8bx8YW7zC+BJ1rvWiOfdLcYEltveYisbMAcmfddA/c5RlDG9vapjOpD+K?=
+ =?us-ascii?Q?zqJOVvoz1gQvV16Z/yDtnhVuF+ZpSjKCBCJa0Ju19ELiNTM+adZzU0HE2gco?=
+ =?us-ascii?Q?9p6rHYC5o1S2JqBEiFY+mcxyq/cnuDh9dWEuTXvG6KgiibaZTIPzTuhUEya6?=
+ =?us-ascii?Q?W+99hP8+Tqm2UmaSe3nYMyTvlKHl7HHDjFVNmrkSz+2mRNAMZtaHRM6wIUXO?=
+ =?us-ascii?Q?2F80hHRTg4q1f2dr2gyYo8Kn/9IFyC6F0hcqQfxlEt9V55UVHTcZ3Xmc20RK?=
+ =?us-ascii?Q?sVHGGAUV01kpOpqXPUBh40Gmo7h7hr76eWn2hX7j5jf13NOWIEGYHDe55sXp?=
+ =?us-ascii?Q?tiMGdNJUgvtSvI0Lc+HGNLZwAhtZTrKdb3xG0Ptox7lvNg1oCo23jNd/IDvk?=
+ =?us-ascii?Q?zfoEsaw5GeJVcAyXFyFut8Hgu+gn0BCpGMYoSPySLrfwwDeDLQy3+5Ey3dph?=
+ =?us-ascii?Q?YnI1+wGy2WxGXEeIOD1Ofb7KatfUYoi4GTUbLQiPExUONQDlJleIwQ7ZJr4l?=
+ =?us-ascii?Q?abM5qZ212gDoRYjl7wUcSqHsltSVVlH8W8AH4lb/2VnxgeN8CwbZltpL4jYz?=
+ =?us-ascii?Q?bDZbOX9jmaWIYQEcC+St4uirz5nIfSpAkbV8AVLN2/8e7uUKZ/Bf+Lcvj1te?=
+ =?us-ascii?Q?olyHTp17+z5ueZCfRfkZhvRNNM0kP071809ybA5LPn/llUShK0kK5OuGsRFs?=
+ =?us-ascii?Q?nplDR2e5B9Fa3aSvTAsZVPGaMNe+SgtYcRZYhvhckQQgUSybGqpKYkN34guU?=
+ =?us-ascii?Q?4PdDriN40VZUaS2V6kgPEknQKIkH05CSYUXHDDIwlgJ4hI2BZCQR6hMxop79?=
+ =?us-ascii?Q?1bLRa+cUiyO6DhAkE1B86hMl7MeBnH1NPUQdU28HAtQtTcHqc4B7I4Qr9M2Z?=
+ =?us-ascii?Q?BgENznGulaWCUiUAIFHl/fpVgPwC0YmY9XKIfvnjKkKgkcuY5JCzb3VLNsnL?=
+ =?us-ascii?Q?BVyIRczR6l7lC+juW2AIw4qjPJdBFVPvEe33Zkk3AzvMYRa7klox3EtW2Fjp?=
+ =?us-ascii?Q?FBE0dgUKoWkVkD0sHmdzwX0XTXJ+Z+qqgJhv58sSFxzHU6piC8HLmQItt8N2?=
+ =?us-ascii?Q?0YLO7JcSLIo8wj8icr6f3s4nBuDa2WU=3D?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+X-Exchange-RoutingPolicyChecked: FurneZcQmHjZPI+3R77bAZ0Efy9Y6LDRcMa9oS3MkraC5oYjSUX3UJmULwt98PGRfvZA0CwdB4uRfhK4XbMySDwwjc6Z267ReuBnE90X7DAJ72iJOrE/f3YmloCwx0Df7KcxnMtB8oNcuOZMV6MDlzWblfmYhVL9idXPzbnljkJbQWbrEPOJNcd/m6CsWaTYsRloSkW/WG4SFZYZAqCl9JJpF6TCFst38BPfPBpstzjL+PilLZxBwwsZXdI3t5C5BVS7tFNz6mB11srDRhpjrSPv2SqYuhRbyIbA08QvGSfeGPaz+94t0ezLD2irP64Tcamil+6YtnTWYQKgjbYJNg==
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: IA3PR11MB8986.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: b5717b97-611d-40da-952a-08dee89aef5e
+X-MS-Exchange-CrossTenant-originalarrivaltime: 23 Jul 2026 09:15:27.1624 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: k0lf4BbDfSERpqObjzr8SDPvqzSAbOvfQVRjBxp/Zkaoj/KOiWwQIAr2N61tRyCT4BlLCpi2pVbCu7uZbfysi7Eahokb3/Yj/ukkGdbKwAg=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR11MB9633
+X-OriginatorOrg: intel.com
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1784798141; x=1816334141;
+ h=from:to:cc:subject:date:message-id:references:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=ZkWBwR9j0LiElHK7MKBb9IsGhKz7gUycGkLCkUBJZZc=;
+ b=iueMQi8WgGygolQyIfXFTI5s3HsbaQiiCvUqmxPbFJlD5L/eLeDgrXj9
+ YVb7mKPvt6hU9xDF3S2SKQZQkZwKNIXvBKkeIfXCqKZIamvDhrCwoBwlu
+ 5hcPnLzf4co0UJStEOcrZk4qtwv3GelbshlhcxSLq3OhHQ/8xNvAlfDa6
+ 3PB04H2LYTkriKqF32vQvlaqO5RWiMSWOofBiDc79jk/TIIB+uvu8nZRC
+ 4Wg9/VSBPzFMZvOn2yxjl8cDOCnKtZmAexcMpIdGd+jov6hdw5hY6Yg3V
+ VBRN3EiSK4CMq4bY8NusVU+JVFZZ3u/ERPIIvjj0Dnxoct9fINFOlR6Os
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=iueMQi8W
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net v1] igb/igbvf: disable work
+ items before device removal
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -149,385 +213,80 @@ Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 
-On 7/20/26 14:01, Przemyslaw Korba wrote:
-> From: Jacob Keller <jacob.e.keller@intel.com>
->
-> Clear orphaned timestamp ready bits left in the PHY when a packet is
-> timestamped just as the link goes down. The driver clears its software
-> in_use bits during link-down cleanup, but the PHY has already latched
-> the timestamp, so on the next link-up a stale ready bit from the
-> previous link cycle remains set with no matching in_use entry.
->
-> The PHY timestamp interrupt logic will not generate a new interrupt
-> until ALL outstanding ready bits have been read. ice_ptp_process_tx_
-> tstamp() only iterates slots set in the software in_use bitmap, so it
-> never reads these orphaned slots. The result is a permanent interrupt
-> deadlock:
->
-> 1. The PHY has ready bits set for slots with no in_use tracker entry
-> 2. The driver never reads those slots because in_use is clear
-> 3. The PHY refuses to generate new timestamp interrupts
-> 4. All future Tx timestamps permanently fail
-> 5. Only a power-on reset can recover the device
->
-> Clear these stale ready bits on link-up, in ice_ptp_link_change(),
-> before any new timestamp requests arrive, scoped to the affected port
-> only so timestamps still pending on other ports are left untouched. For
-> every affected MAC the clearing iterates the not-in_use slots with
-> for_each_clear_bit(), so a pending software request is never discarded
-> and tx->lock need not be held across the PHY access:
->
->    - E810 is skipped (guarded by tx->has_ready_bitmap) because
->      ice_get_phy_tx_tstamp_ready_e810() returns an all-ones bitmap rather
->      than a real ready status.
->    - E830 and E825/eth56g read the real Tx timestamp ready bitmap and
->      clear only the slots the PHY actually latched, via
->      ice_clear_phy_tstamp(). If the ready bitmap cannot be read, the
->      clear is skipped and a rate-limited warning is logged.
->
-> On every MAC the ready bit is cleared by reading the slot's timestamp
-> memory; the orphaned bits linger only because the normal processing path
-> never reads those not-in_use slots. The link-up recovery clears them by
-> reading the timestamp memory via ice_clear_phy_tstamp():
->
->    - E830: add ice_clear_phy_tstamp_e830(), which reads the
->      PRTTSYN_TXTIME_H/L registers to clear the entry, and add an
->      ICE_MAC_E830 case to the ice_clear_phy_tstamp() dispatch.
->    - eth56g: ice_clear_ptp_tstamp_eth56g() reads the timestamp memory
->      location, which per the PHY spec is the operation that clears the
->      entry's valid bit and its corresponding (read-only) ts_memory_status
->      bit. The ts_memory_status registers cannot be written to clear a
->      bit, so only reading the timestamp memory has any effect.
->
-> The new for_each_clear_bit() loop runs from the service task via link
-> events. During device removal, tx->in_use is freed before the service
-> task is stopped. Fix by stopping the service task at the start of
-> ice_unload(), before ice_ptp_release() frees tx->in_use.
->
-> Reviewed-by: Grzegorz Nitka <grzegorz.nitka@intel.com>
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-> Signed-off-by: Przemyslaw Korba <przemyslaw.korba@intel.com>
+
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf
+> Of xuanqiang.luo@linux.dev
+> Sent: Tuesday, July 21, 2026 12:36 PM
+> To: intel-wired-lan@lists.osuosl.org
+> Cc: Nguyen, Anthony L <anthony.l.nguyen@intel.com>; Kitszel,
+> Przemyslaw <przemyslaw.kitszel@intel.com>; andrew+netdev@lunn.ch;
+> davem@davemloft.net; edumazet@google.com; kuba@kernel.org;
+> pabeni@redhat.com; tj@kernel.org; netdev@vger.kernel.org; Xuanqiang
+> Luo <luoxuanqiang@kylinos.cn>; stable@vger.kernel.org
+> Subject: [Intel-wired-lan] [PATCH iwl-net v1] igb/igbvf: disable work
+> items before device removal
+>=20
+> From: Xuanqiang Luo <luoxuanqiang@kylinos.cn>
+>=20
+> A watchdog work item that is already running can queue the reset work
+> after the remove path has canceled it. The netdev Tx timeout handler
+> can also queue the reset work until unregister_netdev() shuts the
+> interface down.
+> In igb, device reset interrupts provide another enqueue path. The
+> reset work may then run after free_netdev(), resulting in access to
+> the freed adapter memory.
+>=20
+> Although igb_reset_task() checks __IGB_DOWN, checking the bit already
+> dereferences the adapter and therefore cannot protect its lifetime.
+>=20
+> Disable the watchdog work first and the reset work second in both
+> drivers.
+> Disabling the work items also prevents racing attempts to queue them
+> during device removal.
+>=20
+> Fixes: 760141a53e5d ("igb[v],ixgbe: don't use flush_scheduled_work()")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Xuanqiang Luo <luoxuanqiang@kylinos.cn>
 > ---
->   drivers/net/ethernet/intel/ice/ice_main.c   |  1 +
->   drivers/net/ethernet/intel/ice/ice_ptp.c    | 72 +++++++++++++++--
->   drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 89 +++++++++++++++++----
->   drivers/net/ethernet/intel/ice/ice_ptp_hw.h |  1 +
->   drivers/net/ethernet/intel/ice/ice_type.h   |  7 ++
->   5 files changed, 149 insertions(+), 21 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-> index e3d3810c791f..231d533309cb 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_main.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-> @@ -5169,6 +5169,7 @@ void ice_unload(struct ice_pf *pf)
->   
->   	devl_assert_locked(priv_to_devlink(pf));
->   
-> +	ice_service_task_stop(pf);
->   	ice_unplug_aux_dev(pf);
->   	ice_deinit_rdma(pf);
->   	ice_deinit_features(pf);
-> diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-> index 1aa440b0639f..9d9d9958fe5c 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-> @@ -1372,15 +1372,73 @@ void ice_ptp_link_change(struct ice_pf *pf, bool linkup)
->   	switch (hw->mac_type) {
->   	case ICE_MAC_E810:
->   	case ICE_MAC_E830:
-> -		/* Do not reconfigure E810 or E830 PHY */
-> +	case ICE_MAC_GENERIC_3K_E825:
-> +		/* Do not reconfigure E810 or E830 PHY, but on link-up clear
-> +		 * any stale timestamp ready bits left over from a previous
-> +		 * link cycle. The PHY may have latched timestamps for packets
-> +		 * in flight when the link went down; these must be cleared
-> +		 * before new timestamp requests arrive.
-> +		 *
-> +		 * E810 does not have a real ready bitmap
-> +		 * (ice_get_phy_tx_tstamp_ready_e810 returns all-ones), so
-> +		 * skip clearing on E810 to avoid unnecessary sideband queue
-> +		 * operations for every not-in-use slot on each link-up.
-> +		 */
-> +		if (linkup && ptp_port->tx.has_ready_bitmap) {
-> +			struct ice_ptp_tx *tx = &ptp_port->tx;
-> +			u64 tstamp_ready;
-> +			int i;
-> +
-> +			if (ice_get_phy_tx_tstamp_ready(hw, tx->block,
-> +							&tstamp_ready)) {
-> +				dev_warn_ratelimited(ice_pf_to_dev(pf),
-> +						     "PTP failed to read Tx timestamp ready bitmap on link-up; stale PHY timestamps may remain and stall Tx timestamping\n");
-> +			} else {
-> +				/* Only clear stale ready bits for slots that
-> +				 * have no in-flight software request. Iterating
-> +				 * the not-in-use slots skips any concurrent
-> +				 * ice_ptp_request_ts() allocation without
-> +				 * holding tx->lock across the PHY access. E830
-> +				 * and E825 reach this clear; E810 is filtered
-> +				 * out above by has_ready_bitmap.
-> +				 */
-> +				for_each_clear_bit(i, tx->in_use, tx->len) {
-> +					u8 phy_idx = i + tx->offset;
-> +
-> +					if (tstamp_ready & BIT_ULL(phy_idx))
-> +						ice_clear_phy_tstamp(hw,
-> +								     tx->block,
-> +								     phy_idx);
-> +				}
-> +			}
-> +		}
-> +
-> +		/* E810 and E830 need no further PHY reconfiguration */
-> +		if (hw->mac_type != ICE_MAC_GENERIC_3K_E825)
-> +			return;
-> +
-> +		/* E825 recovers its Tx path by soft resetting the PHY
-> +		 * timestamp block and restarting the port, but only on
-> +		 * link-up. The reset is a three-step register toggle; if it
-> +		 * fails partway through, the port can be left held in reset,
-> +		 * and programming a PHY that is stuck in reset via
-> +		 * ice_ptp_port_phy_restart() would leave Tx timestamping
-> +		 * permanently broken. So warn and skip the restart on
-> +		 * failure; the sequence is retried on the next link-up event.
-> +		 */
-> +		if (!linkup)
-> +			return;
-> +
-> +		if (ice_ptp_phy_soft_reset_eth56g(hw, ptp_port->port_num))
-> +			dev_warn(ice_pf_to_dev(pf),
-> +				 "PTP failed to soft reset PHY port %u on link-up; skipping restart, Tx timestamping may be stuck, try toggle a link to recover\n",
-> +				 ptp_port->port_num);
-> +		else
-> +			ice_ptp_port_phy_restart(ptp_port);
+>  drivers/net/ethernet/intel/igb/igb_main.c | 4 ++--
+> drivers/net/ethernet/intel/igbvf/netdev.c | 4 ++--
+>  2 files changed, 4 insertions(+), 4 deletions(-)
+>=20
+> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c
+> b/drivers/net/ethernet/intel/igb/igb_main.c
+> index a1e89a375744c..5ffc0ad318914 100644
+> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+> @@ -3887,8 +3887,8 @@ static void igb_remove(struct pci_dev *pdev)
+>  	timer_delete_sync(&adapter->watchdog_timer);
+>  	timer_delete_sync(&adapter->phy_info_timer);
+>=20
+> -	cancel_work_sync(&adapter->reset_task);
+> -	cancel_work_sync(&adapter->watchdog_task);
+> +	disable_work_sync(&adapter->watchdog_task);
+> +	disable_work_sync(&adapter->reset_task);
+>=20
+>  #ifdef CONFIG_IGB_DCA
+>  	if (adapter->flags & IGB_FLAG_DCA_ENABLED) { diff --git
+> a/drivers/net/ethernet/intel/igbvf/netdev.c
+> b/drivers/net/ethernet/intel/igbvf/netdev.c
+> index ec308a5f5302a..c5ae15fcdca75 100644
+> --- a/drivers/net/ethernet/intel/igbvf/netdev.c
+> +++ b/drivers/net/ethernet/intel/igbvf/netdev.c
+> @@ -2906,8 +2906,8 @@ static void igbvf_remove(struct pci_dev *pdev)
+>  	set_bit(__IGBVF_DOWN, &adapter->state);
+>  	timer_delete_sync(&adapter->watchdog_timer);
+>=20
+> -	cancel_work_sync(&adapter->reset_task);
+> -	cancel_work_sync(&adapter->watchdog_task);
+> +	disable_work_sync(&adapter->watchdog_task);
+> +	disable_work_sync(&adapter->reset_task);
+>=20
+>  	unregister_netdev(netdev);
+>=20
+> --
+> 2.43.0
 
-We hit a regression from this hunk while testing the series on an
-E825 T-BC system: after the soft reset the port no longer signals
-latched Tx timestamps. Nothing re-enables the port interrupt
-configuration (PHY_REG_TS_INT_CONFIG) afterwards, the only writers
-are the clock owner init and rebuild paths via
-ice_ptp_cfg_phy_interrupt(), and ice_ptp_port_phy_restart() does not
-touch it. So the first link-up that takes this path leaves the port
-without Tx timestamp interrupts until the next reset of the clock
-owner PF or a driver reload.
-
-Regards,
-
-Petr
-
->   		return;
->   	case ICE_MAC_GENERIC:
->   		ice_ptp_port_phy_restart(ptp_port);
->   		return;
-> -	case ICE_MAC_GENERIC_3K_E825:
-> -		if (linkup)
-> -			ice_ptp_port_phy_restart(ptp_port);
-> -		return;
->   	default:
->   		dev_warn(ice_pf_to_dev(pf), "%s: Unknown PHY type\n", __func__);
->   	}
-> @@ -3380,6 +3438,7 @@ void ice_ptp_init(struct ice_pf *pf)
->   
->   	ptp->state = ICE_PTP_INITIALIZING;
->   
-> +	mutex_init(&hw->ptp.tx_tstamp_lock);
->   	if (hw->lane_num < 0) {
->   		err = hw->lane_num;
->   		goto err_exit;
-> @@ -3443,6 +3502,7 @@ void ice_ptp_init(struct ice_pf *pf)
->   
->   	ice_ptp_cleanup_adapter(pf);
->   err_exit:
-> +	mutex_destroy(&hw->ptp.tx_tstamp_lock);
->   	/* If we registered a PTP clock, release it */
->   	if (pf->ptp.clock) {
->   		ptp_clock_unregister(ptp->clock);
-> @@ -3469,6 +3529,7 @@ void ice_ptp_release(struct ice_pf *pf)
->   
->   	if (pf->ptp.state != ICE_PTP_READY) {
->   		mutex_destroy(&pf->ptp.port.ps_lock);
-> +		mutex_destroy(&pf->hw.ptp.tx_tstamp_lock);
->   		ice_ptp_cleanup_pf(pf);
->   		ice_ptp_cleanup_adapter(pf);
->   		if (pf->ptp.clock) {
-> @@ -3495,6 +3556,7 @@ void ice_ptp_release(struct ice_pf *pf)
->   
->   	ice_ptp_port_phy_stop(&pf->ptp.port);
->   	mutex_destroy(&pf->ptp.port.ps_lock);
-> +	mutex_destroy(&pf->hw.ptp.tx_tstamp_lock);
->   	if (pf->ptp.kworker) {
->   		kthread_destroy_worker(pf->ptp.kworker);
->   		pf->ptp.kworker = NULL;
-> diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-> index a1970a887c38..b23b68cd18ee 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-> @@ -1160,11 +1160,15 @@ static int ice_read_ptp_tstamp_eth56g(struct ice_hw *hw, u8 port, u8 idx,
->    *
->    * To directly clear the contents of the timestamp block entirely, discarding
->    * all timestamp data at once, software should instead use
-> - * ice_ptp_reset_ts_memory_quad_eth56g().
-> + * ice_ptp_reset_ts_memory_eth56g().
->    *
->    * This function should only be called on an idx whose bit is set according to
->    * ice_get_phy_tx_tstamp_ready().
->    *
-> + * Serialized against ice_ptp_clear_tx_memory_status_eth56g() via
-> + * tx_tstamp_lock so the two paths do not interleave their reads of the same
-> + * port's Tx timestamp memory.
-> + *
->    * Return:
->    * * %0     - success
->    * * %other - failed to write to PHY
-> @@ -1175,25 +1179,62 @@ static int ice_clear_ptp_tstamp_eth56g(struct ice_hw *hw, u8 port, u8 idx)
->   	u16 lo_addr;
->   	int err;
->   
-> -	/* Read the timestamp register to ensure the timestamp status bit is
-> -	 * cleared.
-> +	lo_addr = (u16)PHY_TSTAMP_L(idx);
-> +
-> +	mutex_lock(&hw->ptp.tx_tstamp_lock);
-> +
-> +	/* Per the PHY spec, reading the timestamp memory location is what
-> +	 * clears the entry's valid bit and its corresponding (read-only)
-> +	 * ts_memory_status bit. This clears only this index, leaving any
-> +	 * other in-flight timestamps on the port untouched.
->   	 */
->   	err = ice_read_ptp_tstamp_eth56g(hw, port, idx, &unused_tstamp);
-> -	if (err) {
-> +	if (err)
->   		ice_debug(hw, ICE_DBG_PTP, "Failed to read the PHY timestamp register for port %u, idx %u, err %d\n",
->   			  port, idx, err);
-> -	}
-> -
-> -	lo_addr = (u16)PHY_TSTAMP_L(idx);
->   
->   	err = ice_write_port_mem_eth56g(hw, port, lo_addr, 0);
-> -	if (err) {
-> +	if (err)
->   		ice_debug(hw, ICE_DBG_PTP, "Failed to clear low PTP timestamp register for port %u, idx %u, err %d\n",
->   			  port, idx, err);
-> -		return err;
-> +
-> +	mutex_unlock(&hw->ptp.tx_tstamp_lock);
-> +
-> +	return err;
-> +}
-> +
-> +/**
-> + * ice_ptp_clear_tx_memory_status_eth56g - Reset one port's Tx timestamp memory
-> + * @hw: pointer to the HW struct
-> + * @port: port number to clear
-> + *
-> + * Fully reset a single PHY port's Tx timestamp memory. Per the PHY spec, the
-> + * only way to clear a timestamp valid bit (and its read-only ts_memory_status
-> + * bit) is to read the timestamp memory location, so read every entry for the
-> + * port (two 32-bit reads each). This discards all timestamp data on the port,
-> + * so it must only be used for a full reset; callers that must preserve
-> + * in-flight timestamps clear individual indices via ice_clear_phy_tstamp().
-> + *
-> + * Holds tx_tstamp_lock so this full-port sweep does not interleave with the
-> + * per-index reads in ice_clear_ptp_tstamp_eth56g() on the same port.
-> + *
-> + * Return: 0 on success, negative error code on failure to read the PHY.
-> + */
-> +int ice_ptp_clear_tx_memory_status_eth56g(struct ice_hw *hw, u8 port)
-> +{
-> +	u64 unused_tstamp;
-> +	int err = 0;
-> +	u8 idx;
-> +
-> +	mutex_lock(&hw->ptp.tx_tstamp_lock);
-> +	for (idx = 0; idx < INDEX_PER_PORT; idx++) {
-> +		err = ice_read_ptp_tstamp_eth56g(hw, port, idx, &unused_tstamp);
-> +		if (err)
-> +			break;
->   	}
-> +	mutex_unlock(&hw->ptp.tx_tstamp_lock);
->   
-> -	return 0;
-> +	return err;
->   }
->   
->   /**
-> @@ -1204,12 +1245,8 @@ static void ice_ptp_reset_ts_memory_eth56g(struct ice_hw *hw)
->   {
->   	unsigned int port;
->   
-> -	for (port = 0; port < hw->ptp.num_lports; port++) {
-> -		ice_write_ptp_reg_eth56g(hw, port, PHY_REG_TX_MEMORY_STATUS_L,
-> -					 0);
-> -		ice_write_ptp_reg_eth56g(hw, port, PHY_REG_TX_MEMORY_STATUS_U,
-> -					 0);
-> -	}
-> +	for (port = 0; port < hw->ptp.num_lports; port++)
-> +		ice_ptp_clear_tx_memory_status_eth56g(hw, port);
->   }
->   
->   /**
-> @@ -5277,6 +5314,23 @@ static void ice_read_phy_tstamp_e830(const struct ice_hw *hw, u8 idx,
->   		  FIELD_PREP(PHY_EXT_40B_LOW_M, lo);
->   }
->   
-> +/**
-> + * ice_clear_phy_tstamp_e830 - Clear a timestamp from the E830 PHY
-> + * @hw: pointer to the HW struct
-> + * @idx: the timestamp index to clear
-> + *
-> + * Clear the valid bit for the given timestamp index in the Tx memory (TS_MEM).
-> + * On E830 devices the PRTMAC_TS_TX_MEM_VALID_L/H registers are read-only
-> + * mirrors of the per-entry TX_VALID bits and cannot be written. The actual
-> + * TS_MEM entry's TX_VALID bit is cleared by reading the corresponding
-> + * PRTTSYN_TXTIME_L/H registers (read-to-clear).
-> + */
-> +static void ice_clear_phy_tstamp_e830(const struct ice_hw *hw, u8 idx)
-> +{
-> +	rd32(hw, E830_PRTTSYN_TXTIME_H(idx));
-> +	rd32(hw, E830_PRTTSYN_TXTIME_L(idx));
-> +}
-> +
->   /**
->    * ice_get_phy_tx_tstamp_ready_e830 - Read Tx memory status register
->    * @hw: pointer to the HW struct
-> @@ -5772,6 +5826,9 @@ int ice_clear_phy_tstamp(struct ice_hw *hw, u8 block, u8 idx)
->   	switch (hw->mac_type) {
->   	case ICE_MAC_E810:
->   		return ice_clear_phy_tstamp_e810(hw, block, idx);
-> +	case ICE_MAC_E830:
-> +		ice_clear_phy_tstamp_e830(hw, idx);
-> +		return 0;
->   	case ICE_MAC_GENERIC:
->   		return ice_clear_phy_tstamp_e82x(hw, block, idx);
->   	case ICE_MAC_GENERIC_3K_E825:
-> diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-> index 16b1988e993d..b003e0aae8b1 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-> +++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-> @@ -304,6 +304,7 @@ int ice_ptp_clear_phy_offset_ready_e82x(struct ice_hw *hw);
->   int ice_read_phy_tstamp(struct ice_hw *hw, u8 block, u8 idx, u64 *tstamp);
->   int ice_clear_phy_tstamp(struct ice_hw *hw, u8 block, u8 idx);
->   void ice_ptp_reset_ts_memory(struct ice_hw *hw);
-> +int ice_ptp_clear_tx_memory_status_eth56g(struct ice_hw *hw, u8 port);
->   int ice_ptp_init_phc(struct ice_hw *hw);
->   void ice_ptp_init_hw(struct ice_hw *hw);
->   int ice_get_phy_tx_tstamp_ready(struct ice_hw *hw, u8 block, u64 *tstamp_ready);
-> diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-> index 710c519d670d..d8c73fcafc25 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_type.h
-> +++ b/drivers/net/ethernet/intel/ice/ice_type.h
-> @@ -888,6 +888,13 @@ enum ice_global_link_topo {
->   
->   struct ice_ptp_hw {
->   	union ice_phy_params phy;
-> +	/* Serializes eth56g Tx timestamp-memory reads (the per-index
-> +	 * timestamp entries, not the TX_MEMORY_STATUS registers). Reading an
-> +	 * entry auto-clears its ts_memory_status bit as a side effect, so the
-> +	 * per-index and full-port clear paths must not interleave on the same
-> +	 * port or a bit could re-latch the interrupt.
-> +	 */
-> +	struct mutex tx_tstamp_lock;
->   	u8 num_lports;
->   	u8 ports_per_phy;
->   };
+Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 
