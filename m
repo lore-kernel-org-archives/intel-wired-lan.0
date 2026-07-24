@@ -4,84 +4,96 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A7FBC531FA
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 24 Jul 2026 09:36:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D3F8C531C9
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 24 Jul 2026 10:45:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2F4DF60B24;
-	Fri, 24 Jul 2026 09:36:13 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id ABA3360B07;
+	Fri, 24 Jul 2026 10:45:41 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 5aSTbt9Ud8vh; Fri, 24 Jul 2026 09:36:11 +0000 (UTC)
+ id hYNKLh7ZpyXD; Fri, 24 Jul 2026 10:45:40 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4D094608F0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org ED08B607A8
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1784885771;
-	bh=Ivn5Gk6yE8DxTWuC/EZlIOFn8HhK0+HKO/FrtWqoBWA=;
+	s=default; t=1784889940;
+	bh=BfWcbGLYGCaUmIqhTC9w9sO4m26WSxdm9a2VlpBYvhg=;
 	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=LV8FXfwoTM3JyruylqdV/qqABaUQwanoFXLP39uALyu13VMEW7Nnebp0NAowIhqe1
-	 LtFEEdcHLNmDNQDd8PXfy2IN4YfeGJX2rwrO9mUIA1cn510NvHGb9yYPVb4YhRQehw
-	 sNSSL/gPDYgV62Qas5qNptXzpKFesyy88A0Z2h8fr8xgOIQfIbmvc7b11A15rfA3E/
-	 re+RjPkzAIpIC76lF9YA0dg1W6JKln2AQic9tMWPZATYJrleGvExwpwb2oS4E0++L4
-	 I/5/fIrvd01r5U7aIwETBxD+KIJF+065tcjMx9yFT1grRG91L/veYC5FTwkr86sTNF
-	 0MZaJt148Ccig==
+	b=PDX2CWzQG1SuPyWHc46LSfhLS2YNjPtzQQfWonAHt1aUPRLvOVMtlVevIo5d1wsoA
+	 WaDkDh5yiy9rsQJcjeKPKZKyQD6I0+RxCKgbcARse8FYDPs7VK6mWUR4OBpDk5+GfD
+	 pTga5mKhYQTqmyLObDyklrGsWAYssFiGf7OUGL49o8clmP7lmLK+iKAj5QDnfQHsKJ
+	 gs92AkgxLQNjhwRZXGvl7dhnW1Eekw3mnWpUCKDlU8RBj9IdwzuUy8DRY6bKGYIvso
+	 W/858juqzf8kCH543giHABqwhZfadWMRbm1FNjlxj4cYntTNt4W9OyuyzY7njpTrTn
+	 N2fxoWiV6/vHg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 4D094608F0;
-	Fri, 24 Jul 2026 09:36:11 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 49F6A224
- for <intel-wired-lan@lists.osuosl.org>; Fri, 24 Jul 2026 09:36:10 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id ED08B607A8;
+	Fri, 24 Jul 2026 10:45:39 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id E64CB3B1
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 24 Jul 2026 10:45:37 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 2FEE581113
- for <intel-wired-lan@lists.osuosl.org>; Fri, 24 Jul 2026 09:36:10 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id D832840392
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 24 Jul 2026 10:45:37 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id mPvqGpmkaqdt for <intel-wired-lan@lists.osuosl.org>;
- Fri, 24 Jul 2026 09:36:09 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=95.215.58.186;
- helo=out-186.mta1.migadu.com; envelope-from=xuanqiang.luo@linux.dev;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id aTrd8gycx17h for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 24 Jul 2026 10:45:37 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.11;
+ helo=mgamail.intel.com; envelope-from=marcin.szycik@linux.intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org C295381152
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C295381152
-Received: from out-186.mta1.migadu.com (out-186.mta1.migadu.com
- [95.215.58.186])
- by smtp1.osuosl.org (Postfix) with ESMTPS id C295381152
- for <intel-wired-lan@lists.osuosl.org>; Fri, 24 Jul 2026 09:36:08 +0000 (UTC)
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and
- include these headers.
-From: xuanqiang.luo@linux.dev
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org C5721402E7
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C5721402E7
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id C5721402E7
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 24 Jul 2026 10:45:36 +0000 (UTC)
+X-CSE-ConnectionGUID: p/xJtf5vTwKp4MHcCk69xw==
+X-CSE-MsgGUID: XH0LCPqzSMmltZgtvnGwHw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11854"; a="96147910"
+X-IronPort-AV: E=Sophos;i="6.25,182,1779174000"; d="scan'208";a="96147910"
+Received: from fmviesa010.fm.intel.com ([10.60.135.150])
+ by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 24 Jul 2026 03:45:36 -0700
+X-CSE-ConnectionGUID: boER7GEIQJ6dKdjn68JlBQ==
+X-CSE-MsgGUID: dE37CkzqSjuUpuZZZUvUFA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,182,1779174000"; d="scan'208";a="254737982"
+Received: from irvmail002.ir.intel.com ([10.43.11.120])
+ by fmviesa010.fm.intel.com with ESMTP; 24 Jul 2026 03:45:34 -0700
+Received: from gond.igk.intel.com (gond.igk.intel.com [10.123.220.52])
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 659C828763;
+ Fri, 24 Jul 2026 11:45:33 +0100 (IST)
+From: Marcin Szycik <marcin.szycik@linux.intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
- richardcochran@gmail.com, piotr.kwapulinski@intel.com,
- arkadiusz.kubalewski@intel.com, aleksandr.loktionov@intel.com,
- andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com, netdev@vger.kernel.org,
- Xuanqiang Luo <luoxuanqiang@kylinos.cn>
-Date: Fri, 24 Jul 2026 17:34:48 +0800
-Message-ID: <20260724093448.63154-1-xuanqiang.luo@linux.dev>
+Cc: netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
+ Marcin Szycik <marcin.szycik@linux.intel.com>
+Date: Fri, 24 Jul 2026 11:44:54 +0200
+Message-ID: <20260724094454.16079-1-marcin.szycik@linux.intel.com>
+X-Mailer: git-send-email 2.49.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Migadu-Flow: FLOW_OUT
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linux.dev; s=key1; t=1784885765;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding;
- bh=Ivn5Gk6yE8DxTWuC/EZlIOFn8HhK0+HKO/FrtWqoBWA=;
- b=O8AgvNUOx/WX+OWHPpXPAXxRf4p/GeXtHh8se90E6t4x/wZiFC9mh9OigkIjqtTW5kTBhw
- 8t8G6M2S9xIX4wiNAA+MgrN0tgpga8Wkv0J732rpaqdbqnTwmgtgUzBKLTXgYVKStddKqC
- /A3EMcQJ7XaUTUiy39RO0Xkp/oW1JcQ=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=linux.dev
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256
- header.s=key1 header.b=O8AgvNUO
-Subject: [Intel-wired-lan] [PATCH iwl-net v1] i40e: fix races in PTP
- external timestamp work handling
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1784889937; x=1816425937;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=42qq2mzSR5oQOgXgBny4rWUjHkADJbz8UNxSJimHz8o=;
+ b=i7bvCL7ZjdRZX1rZV0dN2UPGWnFb+j0N1Ad7OZcL3RMYoWwYzgVmCXNJ
+ 52y+I4SoMSRmxMS1wmdCDaOkbqm8oNiNFEYmfcY0Ew5zP2GgbfENeY6M3
+ sIJmWARRqbzGbxxztWTvVUc+miB9tKbBsT9fwDgdlbrVERTHJFqu2kjpv
+ Fy/Rx9YPoynIHOnWoVQycE1xa8kXzzoY/fhLk17VrO1pPuIafy//jfwa0
+ J3mr8qJ1oBkhAfW/uOexuP7k8VlGWH039Zcahr8l0K/ec3CGinMKPknkP
+ Q0ApyYkMHr5gZGCZwE9zYvMMwKSpzFoq5muNCUTftaZ4P2O3aFw5TTlLA
+ w==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=linux.intel.com
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=i7bvCL7Z
+Subject: [Intel-wired-lan] [PATCH iwl-next] ice: detect duplicates in ACL
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -97,144 +109,139 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Xuanqiang Luo <luoxuanqiang@kylinos.cn>
+Prevent duplicate rules from being added to ACL.
+Also skip checking ACL rules in ice_fdir_is_dup_fltr(), as it's only
+used for fdir.
 
-The time sync interrupt queues ptp_extts0_work, which reads device
-registers and reports events through pf->ptp_clock.
-
-i40e_ptp_stop() unregisters the PHC without first disabling the event
-source or draining the work. The worker can therefore access the clock or
-PF after either has been freed, causing a use-after-free. Disable external
-timestamp events and call disable_work_sync() before unregistering the PHC.
-Disabling the work also prevents an interrupt already in progress from
-queuing it after the drain.
-
-INIT_WORK() is called from i40e_ptp_set_timestamp_mode(), which runs on
-reset and whenever timestamping is reconfigured. Reinitializing pending or
-running work can corrupt its workqueue state. Initialize the work once from
-i40e_sw_init() instead.
-
-Also exclude reset recovery before stopping PTP so a concurrent rebuild
-cannot re-enable timestamp events or recreate the PHC during removal.
-
-Fixes: 1050713026a0 ("i40e: add support for PTP external synchronization clock")
-Signed-off-by: Xuanqiang Luo <luoxuanqiang@kylinos.cn>
+Fixes: fe9b91ade50e ("ice: create ACL entry")
+Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e.h      |  1 +
- drivers/net/ethernet/intel/i40e/i40e_main.c | 17 +++++++-------
- drivers/net/ethernet/intel/i40e/i40e_ptp.c  | 25 +++++++++++++++------
- 3 files changed, 28 insertions(+), 15 deletions(-)
+Not sending to net because the fixed code is on dev-queue.
+Tony, please squash this with the offending commit.
+---
+ drivers/net/ethernet/intel/ice/ice_acl_main.c | 87 +++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_fdir.c     |  3 +
+ 2 files changed, 90 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 83e780919ac97..e2ae61bc38786 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -1315,6 +1315,7 @@ int i40e_ptp_hwtstamp_set(struct net_device *netdev,
- 			  struct netlink_ext_ack *extack);
- void i40e_ptp_save_hw_time(struct i40e_pf *pf);
- void i40e_ptp_restore_hw_time(struct i40e_pf *pf);
-+void i40e_ptp_init_work(struct i40e_pf *pf);
- void i40e_ptp_init(struct i40e_pf *pf);
- void i40e_ptp_stop(struct i40e_pf *pf);
- int i40e_ptp_alloc_pins(struct i40e_pf *pf);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index a04683004a567..2909a58d57562 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -12819,6 +12819,7 @@ static int i40e_sw_init(struct i40e_pf *pf)
- 			 "total-port-shutdown was enabled, link-down-on-close is forced on\n");
+diff --git a/drivers/net/ethernet/intel/ice/ice_acl_main.c b/drivers/net/ethernet/intel/ice/ice_acl_main.c
+index 7c566077d55a..473b329b37bb 100644
+--- a/drivers/net/ethernet/intel/ice/ice_acl_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_acl_main.c
+@@ -283,6 +283,85 @@ void ice_acl_replay_fltrs(struct ice_pf *pf)
  	}
- 	mutex_init(&pf->switch_mutex);
-+	i40e_ptp_init_work(pf);
- 
- sw_init_done:
- 	return err;
-@@ -16157,14 +16158,6 @@ static void i40e_remove(struct pci_dev *pdev)
- 
- 	i40e_devlink_unregister(pf);
- 
--	i40e_dbg_pf_exit(pf);
--
--	i40e_ptp_stop(pf);
--
--	/* Disable RSS in hw */
--	i40e_write_rx_ctl(hw, I40E_PFQF_HENA(0), 0);
--	i40e_write_rx_ctl(hw, I40E_PFQF_HENA(1), 0);
--
- 	/* Grab __I40E_RESET_RECOVERY_PENDING and set __I40E_IN_REMOVE
- 	 * flags, once they are set, i40e_rebuild should not be called as
- 	 * i40e_prep_for_reset always returns early.
-@@ -16173,6 +16166,14 @@ static void i40e_remove(struct pci_dev *pdev)
- 		usleep_range(1000, 2000);
- 	set_bit(__I40E_IN_REMOVE, pf->state);
- 
-+	i40e_dbg_pf_exit(pf);
-+
-+	i40e_ptp_stop(pf);
-+
-+	/* Disable RSS in hw */
-+	i40e_write_rx_ctl(hw, I40E_PFQF_HENA(0), 0);
-+	i40e_write_rx_ctl(hw, I40E_PFQF_HENA(1), 0);
-+
- 	if (test_bit(I40E_FLAG_SRIOV_ENA, pf->flags)) {
- 		set_bit(__I40E_VF_RESETS_DISABLED, pf->state);
- 		i40e_free_vfs(pf);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ptp.c b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-index ff62b5f2c8150..fd51ab8c10c20 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-@@ -169,6 +169,17 @@ static void i40e_ptp_extts0_work(struct work_struct *work)
- 	ptp_clock_event(pf->ptp_clock, &event);
  }
  
 +/**
-+ * i40e_ptp_init_work - Initialize PTP work for a PF
-+ * @pf: Board private structure
++ * ice_acl_comp_rules - compare two ACL filters
++ * @a: first ACL filter
++ * @b: second ACL filter
 + *
-+ * Initialize work which must remain valid for the lifetime of the PF.
++ * Return: true if a and b values and masks are identical, false otherwise
 + */
-+void i40e_ptp_init_work(struct i40e_pf *pf)
++static bool
++ice_acl_comp_rules(struct ice_ntuple_fltr *a, struct ice_ntuple_fltr *b)
 +{
-+	INIT_WORK(&pf->ptp_extts0_work, i40e_ptp_extts0_work);
++	bool ipv4_equal;
++
++	if (a->flow_type != b->flow_type)
++		return false;
++
++	ipv4_equal = a->ip.v4.dst_ip == b->ip.v4.dst_ip &&
++		     a->ip.v4.src_ip == b->ip.v4.src_ip &&
++		     a->mask.v4.dst_ip == b->mask.v4.dst_ip &&
++		     a->mask.v4.src_ip == b->mask.v4.src_ip;
++
++	switch (a->flow_type) {
++	case ICE_FLTR_PTYPE_NONF_IPV4_TCP:
++	case ICE_FLTR_PTYPE_NONF_IPV4_UDP:
++	case ICE_FLTR_PTYPE_NONF_IPV4_SCTP:
++		return ipv4_equal &&
++		       a->ip.v4.dst_port == b->ip.v4.dst_port &&
++		       a->ip.v4.src_port == b->ip.v4.src_port &&
++		       a->mask.v4.dst_port == b->mask.v4.dst_port &&
++		       a->mask.v4.src_port == b->mask.v4.src_port;
++	case ICE_FLTR_PTYPE_NONF_IPV4_OTHER:
++		return ipv4_equal &&
++		       a->ip.v4.l4_header == b->ip.v4.l4_header &&
++		       a->ip.v4.proto == b->ip.v4.proto &&
++		       a->ip.v4.ip_ver == b->ip.v4.ip_ver &&
++		       a->ip.v4.tos == b->ip.v4.tos &&
++		       a->mask.v4.l4_header == b->mask.v4.l4_header &&
++		       a->mask.v4.proto == b->mask.v4.proto &&
++		       a->mask.v4.ip_ver == b->mask.v4.ip_ver &&
++		       a->mask.v4.tos == b->mask.v4.tos;
++	default:
++		return false;
++	}
++}
++
++/**
++ * ice_acl_is_dup_fltr - test if an ACL filter is already in the list
++ * @hw: hardware data structure
++ * @input: ACL filter to check
++ *
++ * Return: true if an identical filter (same flow type, values, and masks)
++ * already exists at a different location
++ */
++static bool
++ice_acl_is_dup_fltr(struct ice_hw *hw, struct ice_ntuple_fltr *input)
++{
++	struct ice_ntuple_fltr *rule;
++
++	list_for_each_entry(rule, &hw->fdir_list_head, fltr_node) {
++		if (!rule->acl_fltr)
++			continue;
++
++		if (!ice_acl_comp_rules(rule, input))
++			continue;
++
++		/* At this point rule and input have same match criteria.
++		 * Different location is a duplicate.
++		 * Same location with a different queue is an update (not a
++		 * duplicate).
++		 */
++		if (rule->fltr_id == input->fltr_id &&
++		    rule->q_index != input->q_index)
++			continue;
++
++		return true;
++	}
++
++	return false;
 +}
 +
  /**
-  * i40e_is_ptp_pin_dev - check if device supports PTP pins
-  * @hw: pointer to the hardware structure
-@@ -1186,8 +1197,6 @@ static int i40e_ptp_set_timestamp_mode(struct i40e_pf *pf,
- 	regval |= 1 << I40E_PRTTSYN_CTL0_EVENT_INT_ENA_SHIFT;
- 	wr32(hw, I40E_PRTTSYN_CTL0, regval);
+  * ice_acl_add_rule_ethtool - add an ACL rule
+  * @vsi: pointer to target VSI
+@@ -322,6 +401,14 @@ int ice_acl_add_rule_ethtool(struct ice_vsi *vsi, struct ethtool_rxnfc *cmd)
+ 	if (err)
+ 		goto free_input;
  
--	INIT_WORK(&pf->ptp_extts0_work, i40e_ptp_extts0_work);
--
- 	switch (config->tx_type) {
- 	case HWTSTAMP_TX_OFF:
- 		pf->ptp_tx = false;
-@@ -1541,6 +1550,13 @@ void i40e_ptp_stop(struct i40e_pf *pf)
- 	struct i40e_hw *hw = &pf->hw;
- 	u32 regval;
- 
-+	/* Stop external timestamp events before unregistering the clock. */
-+	regval = rd32(hw, I40E_PRTTSYN_CTL0);
-+	regval &= ~I40E_PRTTSYN_CTL0_EVENT_INT_ENA_MASK;
-+	wr32(hw, I40E_PRTTSYN_CTL0, regval);
++	mutex_lock(&hw->fdir_fltr_lock);
++	if (ice_acl_is_dup_fltr(hw, input)) {
++		mutex_unlock(&hw->fdir_fltr_lock);
++		err = -EINVAL;
++		goto free_input;
++	}
++	mutex_unlock(&hw->fdir_fltr_lock);
 +
-+	disable_work_sync(&pf->ptp_extts0_work);
-+
- 	clear_bit(I40E_FLAG_PTP_ENA, pf->flags);
- 	pf->ptp_tx = false;
- 	pf->ptp_rx = false;
-@@ -1570,10 +1586,5 @@ void i40e_ptp_stop(struct i40e_pf *pf)
- 	regval &= ~I40E_PRTTSYN_AUX_0_PTPFLAG_MASK;
- 	wr32(hw, I40E_PRTTSYN_AUX_0(0), regval);
+ 	memset(&acts, 0, sizeof(acts));
+ 	if (fsp->ring_cookie == RX_CLS_FLOW_DISC)
+ 		ice_acl_set_act_drop(&acts[0]);
+diff --git a/drivers/net/ethernet/intel/ice/ice_fdir.c b/drivers/net/ethernet/intel/ice/ice_fdir.c
+index 1bc91cb41769..1d79138683b0 100644
+--- a/drivers/net/ethernet/intel/ice/ice_fdir.c
++++ b/drivers/net/ethernet/intel/ice/ice_fdir.c
+@@ -1261,6 +1261,9 @@ bool ice_fdir_is_dup_fltr(struct ice_hw *hw, struct ice_ntuple_fltr *input)
+ 	bool ret = false;
  
--	/* Disable interrupts */
--	regval = rd32(hw, I40E_PRTTSYN_CTL0);
--	regval &= ~I40E_PRTTSYN_CTL0_EVENT_INT_ENA_MASK;
--	wr32(hw, I40E_PRTTSYN_CTL0, regval);
--
- 	i40e_ptp_free_pins(pf);
- }
+ 	list_for_each_entry(rule, &hw->fdir_list_head, fltr_node) {
++		if (rule->acl_fltr)
++			continue;
++
+ 		if (rule->flow_type != input->flow_type)
+ 			continue;
+ 
 -- 
-2.43.0
+2.49.0
 
