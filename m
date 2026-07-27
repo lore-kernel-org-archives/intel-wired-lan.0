@@ -4,130 +4,126 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 749F2C53209
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 27 Jul 2026 16:20:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F741C531D0
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 27 Jul 2026 17:39:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 4ABFC40729;
-	Mon, 27 Jul 2026 16:20:12 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 4071E40729;
+	Mon, 27 Jul 2026 17:39:22 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id e4AnaQ9bYfuJ; Mon, 27 Jul 2026 16:20:10 +0000 (UTC)
+ id uAW1cOWzLMJ4; Mon, 27 Jul 2026 17:39:20 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8F0AA40761
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BEB7F40608
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1785169210;
-	bh=7nQzsLqBl8zE6x57DDhN2FKu5g/8XVApDzbXi1A1P1w=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1785173960;
+	bh=ZxVdhROmsZCB22C0ul9NS5T6lEUR3SmKQdrqPP+L6gg=;
+	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=9uMYLH8CG6Q3lD7sk2UoQX/ZwJZGl0spKg/iw28EgOnNMFl3GEEEmmpO7VIqIfbr5
-	 yIO5RhfomxC9m6OOVqPZicbQowUXCABO35bQqeTtbMjaIBCu8TTrltmT+nbg3VPJkN
-	 WkwseCWx2455Tzmhd75/3KDKBfSj/81tkLfHvQXFa2Gn0wr/LCe7RNMECzcC5RTfu+
-	 YlzVcpcsNMuXZxQXxGoMWx4v/SjTUeeLBbCO4+8yid2JJw0qZB4U2pgx7dW2LisZ9q
-	 xZ+1bvI1eTC2F+VvQjYLHEne3a9lqgYVR7PU17WSrqxLBQQ3zR5WmxAB6hwvAd9IOD
-	 Avg0SoNAmEDIA==
+	b=loZUenI9XJe5qhHYn7vT4x+0D22xixNfL2ML201m79QRA5AD1nkrBaYqa/glc2jQ6
+	 UPbdrPHPNBhqW+N/Vx0MIkVtNS5tFLaU8nFQ1y5trj7wYPPLShOgSNUr7w/58c/DOh
+	 uNdXXwXyurpCiJax2uPuq5ZqZAjEdgVRJlHnP7I7xK6rf2A5c5Kfjnk0P0W1pjmPpX
+	 aST2RL6rFF5GYKJYUyFuHcgxs0xwAyeKljpkZ1HWW4/xBgMtz6AZTuzSMcasAZC7ys
+	 8eoMwqP/8DXWT5IvYbYDI/U/hbDKZjGkHNlA9Y4Yu6fba7tvpe3M3wN1L59eDl7m/f
+	 OVcza9/i6283Q==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 8F0AA40761;
-	Mon, 27 Jul 2026 16:20:10 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id F02503B1
- for <intel-wired-lan@lists.osuosl.org>; Mon, 27 Jul 2026 16:20:07 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id BEB7F40608;
+	Mon, 27 Jul 2026 17:39:20 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id BFB5D4C4
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 27 Jul 2026 17:39:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id D62CB60725
- for <intel-wired-lan@lists.osuosl.org>; Mon, 27 Jul 2026 16:20:07 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id A61A74009A
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 27 Jul 2026 17:39:18 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id pvPIUV8HQBcT for <intel-wired-lan@lists.osuosl.org>;
- Mon, 27 Jul 2026 16:20:07 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2607:f8b0:4864:3b::;
- helo=mail-pz2-x00.google.com; envelope-from=sdf.kernel@gmail.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 08B9960632
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 08B9960632
-Received: from mail-pz2-x00.google.com (mail-pz2-x00.google.com
- [IPv6:2607:f8b0:4864:3b::])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 08B9960632
- for <intel-wired-lan@lists.osuosl.org>; Mon, 27 Jul 2026 16:20:06 +0000 (UTC)
-Received: by mail-pz2-x00.google.com with SMTP id
- 41be03b00d2f7-c888c001628so1740920a12.0
- for <intel-wired-lan@lists.osuosl.org>; Mon, 27 Jul 2026 09:20:06 -0700 (PDT)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id GlGEI_lyr3Hf for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 27 Jul 2026 17:39:18 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom;
+ client-ip=2607:f8b0:4864:20::52d; helo=mail-pg1-x52d.google.com;
+ envelope-from=joe@dama.to; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 723A44007B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 723A44007B
+Received: from mail-pg1-x52d.google.com (mail-pg1-x52d.google.com
+ [IPv6:2607:f8b0:4864:20::52d])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 723A44007B
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 27 Jul 2026 17:39:17 +0000 (UTC)
+Received: by mail-pg1-x52d.google.com with SMTP id
+ 41be03b00d2f7-cbb973e6749so3370939a12.1
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 27 Jul 2026 10:39:17 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1785169206; x=1785774006;
- h=content-transfer-encoding:mime-version:references:in-reply-to
- :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
- :to:cc:subject:date:message-id:reply-to:content-type;
- bh=7nQzsLqBl8zE6x57DDhN2FKu5g/8XVApDzbXi1A1P1w=;
- b=iL4yjlEokqGvgshOzuB9ZxJCBuR6WcF6O0D94Ch3wlZ3cl0B0PKevXWjkWEKcKafo6
- bNxDjVwyxx5WdZuHuRuqLbVbO68ktbgbCrIFg16tM2/kuq5e0Du+8t6hwsGOmbdHPbeb
- H0cI6UIAY91cpOy4Q12OuFmLCdgFJZpeRrVPyApFqQCx8x5vAeCYps325TLVQG78S9lT
- LvmCKGM2f5cws+aUkzzu106ju5mBvNREHeNHxCAlAwDPi75ANGyO2PZmfal2OA3GWPQo
- C45lp6+5RQWTrFVzJAJeIVOSu7MJyzwta4CxDG0OCQKPu05ZazfB6jnj7BsN7N97MstB
- TJhg==
-X-Forwarded-Encrypted: i=1;
- AHgh+RqXa8dTBgmRcOqrbA04UilHjZZIO/C3cIX+mnOWa839subg+XhrLf1o4gR90vya5or1bTjCuc/+qHbSzel+XpI=@lists.osuosl.org
-X-Gm-Message-State: AOJu0Yy/AyfTT0dTIXa4m9Vq+zSRqECwU44/fAQ2nMhBfhsRwkeIK0UK
- /e9ZSfQFtcVFRZ6zxvl3Tq0PTyy6mu2uprRIYbhHXIOjxW/1DQ5gdfeo
-X-Gm-Gg: AR+sD11kIGjdGx1avO65fWLxHG/YA+Z/SPfrMb6kHLYSKQt1c7W6pXu0GufwfXIICKX
- dcZ1qaf83/W1KbbZjP5GVYr4MCQWmwcvxrbKFS1+8BxjEHtNWzZNuKNTI4eeipqoi6jzxo+x6Qz
- vu9ZNEzfCaCzNygaIkOe1Lu8YYXuras1j6xZcgcoOiyamjDTLlyhXko+LHYOVBopZC7lL1gXB6O
- EoQ9MaGy/Fd+amOL88hDK5nrUcXsD1bN9pjVxlu/J5eD4t0mQkW8mLutJh1bYvL80FqXLE6rB//
- Ji2GuXxJBUeNbJIas78TJgfksQViaQ7biI0Z/FsWmsI3F5z6P31lPDxxWRAPe6q9XR60KAqAnxy
- kysNZumia/D5MTQZGfSgKb9hjN31f681rKlRZUaLn48N5yzgbsO5hGZEaiok+ySo2w6ah3Yg=
-X-Received: by 2002:a05:6a00:340b:b0:845:d286:1fa2 with SMTP id
- d2e1a72fcca58-84e5955e7c8mr7301859b3a.49.1785169206009; 
- Mon, 27 Jul 2026 09:20:06 -0700 (PDT)
-Received: from localhost ([2a03:2880:2ff:72::])
+ d=1e100.net; s=20251104; t=1785173956; x=1785778756;
+ h=in-reply-to:content-disposition:content-type:mime-version
+ :references:mail-followup-to:message-id:subject:cc:to:from:date
+ :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+ :reply-to:content-type;
+ bh=ZxVdhROmsZCB22C0ul9NS5T6lEUR3SmKQdrqPP+L6gg=;
+ b=Wd0l9XTB51hH/1PMR+c4Tch4qq3PP7hZSkBnT/0yjQOdS5uFWZwCx/LmTNbsL4lm80
+ /ODGPEpQyzJBD+68ljHPnh1MI5FXfDcZr+VbjbKc1m5aFSmZG/UvXHXLHpiimp1yTg47
+ wwfuXWz3yyGwknZ9AeIpsnpDzkb8e8qnShLh8NteJLFNvT/7fxi8jBGnruLSAZ2CIQbl
+ m5ZrasRFT/0TXJEI7/LhUEQVmorEZEXw2crJrpL0+PWHwvYvPHyYCIXP62I64bGuSdP1
+ xShEBINL8aNUhFVOfYAuFppz8jZoE6rNK9bhvUDqzUTv2SzFh7GVgPb9fhj/A9PnyeBI
+ 6BFg==
+X-Gm-Message-State: AOJu0YzWbQPZlFP4pgBJEnQ3I8jHQ4/+2++fii9UFDrOjVzNyYwgld3r
+ xn0yQgwj7UrYtIKynGgg40DPnWCcDmzhmgjXsyefPTuUMy4k9uPOiGRtQvT4ruxIUl0=
+X-Gm-Gg: AR+sD12TS7y4ixG5oO4u9E8veJXhBHXDKG40Mhv0fh+B1GpwkKojI9BnC4SO4nTvdny
+ SjpiCRlSjYyBNOsq+VB5uRo5ToJMMETG55Jhr5huge7cLlXR1pzJdVFpp4nz1LvI1f55GCSfBX/
+ v0WR/kJVqQZXAHQ0C7aIyYMiUO8dl0jmrY12BWzD/3IqSqycFdunZP2gCsXopkdkZBm/KvleVTl
+ OKuTIM2x07O8uyZPgqnvvEZpT9kq5BagW02T3g/IgAQ/7P3ZY9iIL4QCIt4uMWu6EB3Hn9a7Om8
+ OqWbkDJMvx4L+piP9+twRkfh8reSb0YaKmLvKaM9HFHH+loc9PQ6cItF4iXwuWMtU+rEi5ejSvp
+ B4f7qEA99ukJAL+S7jusnNlUPlauY1zfYUXFJyfHPXGdbIX7qIv/tfkqR9c8=
+X-Received: by 2002:a05:6a20:6a09:b0:3c3:935a:af2c with SMTP id
+ adf61e73a8af0-3c67d9b3f83mr8904886637.3.1785173956413; 
+ Mon, 27 Jul 2026 10:39:16 -0700 (PDT)
+Received: from localhost ([2a03:2880:2ff:5e::])
  by smtp.gmail.com with ESMTPSA id
- d2e1a72fcca58-84e532acee2sm3273714b3a.27.2026.07.27.09.20.05
+ 41be03b00d2f7-cbbb660daf6sm3541156a12.2.2026.07.27.10.39.15
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 27 Jul 2026 09:20:05 -0700 (PDT)
-From: Stanislav Fomichev <sdf.kernel@gmail.com>
-X-Google-Original-From: Stanislav Fomichev <sdf@fomichev.me>
-To: netdev@vger.kernel.org
-Cc: davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
- pabeni@redhat.com, anthony.l.nguyen@intel.com,
- przemyslaw.kitszel@intel.com, andrew+netdev@lunn.ch, saeedm@nvidia.com,
- tariqt@nvidia.com, mbloch@nvidia.com, ast@kernel.org, daniel@iogearbox.net,
- hawk@kernel.org, john.fastabend@gmail.com, sdf@fomichev.me,
- maxime.chevallier@bootlin.com, mcoquelin.stm32@gmail.com,
- alexandre.torgue@foss.st.com, aleksander.lobakin@intel.com,
- horms@kernel.org, magnus.karlsson@intel.com, maciej.fijalkowski@intel.com,
- witu@nvidia.com, alice.kernel@fastmail.im, dtatulea@nvidia.com,
- yoong.siang.song@intel.com, martin.lau@kernel.org,
- intel-wired-lan@lists.osuosl.org, linux-kernel@vger.kernel.org,
- linux-rdma@vger.kernel.org, bpf@vger.kernel.org,
- linux-stm32@st-md-mailman.stormreply.com,
- linux-arm-kernel@lists.infradead.org, leon@kernel.org,
- "Cen Zhang (Microsoft)" <blbllhy@gmail.com>
-Date: Mon, 27 Jul 2026 09:19:59 -0700
-Message-ID: <20260727161959.885642-7-sdf@fomichev.me>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260727161959.885642-1-sdf@fomichev.me>
-References: <20260727161959.885642-1-sdf@fomichev.me>
+ Mon, 27 Jul 2026 10:39:15 -0700 (PDT)
+Date: Mon, 27 Jul 2026 10:39:15 -0700
+From: Joe Damato <joe@dama.to>
+To: mheib@redhat.com
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com, sln@onemain.com, jbrandeb@kernel.org
+Message-ID: <ameXw+HOp25Q68R5@devvm20253.cco0.facebook.com>
+Mail-Followup-To: Joe Damato <joe@dama.to>, mheib@redhat.com,
+ intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com, sln@onemain.com,
+ jbrandeb@kernel.org
+References: <20260727115756.105038-1-mheib@redhat.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260727115756.105038-1-mheib@redhat.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20251104; t=1785169206; x=1785774006; darn=lists.osuosl.org;
- h=content-transfer-encoding:mime-version:references:in-reply-to
- :message-id:date:subject:cc:to:from:from:to:cc:subject:date
- :message-id:reply-to:content-type;
- bh=7nQzsLqBl8zE6x57DDhN2FKu5g/8XVApDzbXi1A1P1w=;
- b=LL7b0O2kCRDvvROVH/bPWBkjDdw7PCk/jJoehZQBXkfLlZDBgVKbt0ubLOun6JLLxX
- I8s6sjKYNMnjqYVLhKyfP3rtZAWeJl9Q+TWUSEiizcIiXtM4ssV16gsbYsXHS62v+hlw
- bmgozmXkVtfnA4h6+JGv+ci6OPuui6CYCK3FGjDYQ6d2tBsOI4B76YcTAyGubrntTQ+E
- FuvxmogonXGHckqOnyX7C5HK8G+fSl7jRRZ6jlmlS6MQslkUUQ3SqTgvN1OMN4pI3TTO
- wpicP2GVz/WxRAWNKciF79AUAf1hXNYcREBu0Sh0kmJJd2qiHXZotE471/kPAfETwm2z
- KsJg==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=gmail.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20251104 header.b=LL7b0O2k
-Subject: [Intel-wired-lan] [PATCH net 6/6] xsk: validate metadata when
- processing requests
+ d=dama-to.20251104.gappssmtp.com; s=20251104; t=1785173956; x=1785778756;
+ darn=lists.osuosl.org; 
+ h=in-reply-to:content-disposition:content-type:mime-version
+ :references:mail-followup-to:message-id:subject:cc:to:from:date:from
+ :to:cc:subject:date:message-id:reply-to:content-type;
+ bh=ZxVdhROmsZCB22C0ul9NS5T6lEUR3SmKQdrqPP+L6gg=;
+ b=TPC/TLlSmSqQ5OvZUhoBaYEE0xQIWMzJ/T3MuWe7PL7Sz8Y5Pe2uWMNvaVnYZgx12j
+ 6jdJEReYWxx7aOM2QLDCIV6Fy82qeKBEMnJnbuidO6xOk7LKGYaBlEjidPKnnLFv4b2d
+ 7LO4Fo9q9GvOu4ekfMLcSnfVCihnt/7bXVPtArUzUFdOG6vz7RbT4p62Vxle4NBzYAvU
+ n2JoTgZeowaXbmjpsTA6zBR+8RViPpOHsL+uJufZ9/To3BmZwHr2sJJVrRTH7CzrzHfn
+ gi/aTvLcKIOHL1pjHqnod+MaHh1AYiC8gq/gi3QYW9f0CqYjadBCHYAZnw/8BFuBLK7i
+ eTcQ==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=dama.to
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=dama-to.20251104.gappssmtp.com
+ header.i=@dama-to.20251104.gappssmtp.com header.a=rsa-sha256
+ header.s=20251104 header.b=TPC/TLlS
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net] i40e: fix napi_disable hang
+ in i40e_down() during firmware update
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -143,215 +139,32 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The zero-copy path validates TX metadata while obtaining the descriptor
-context, then reads it again later when preparing the hardware request.
-User space can change the metadata between those operations and bypass the
-original validation.
+On Mon, Jul 27, 2026 at 02:57:56PM +0300, mheib@redhat.com wrote:
+> From: Mohammad Heib <mheib@redhat.com>
+> 
+> i40e_down() expects its caller to set __I40E_VSI_DOWN before calling it,
+> as noted in the comment at the top of the function. All callers do this
+> except i40e_vsi_reinit_locked(), which calls i40e_down() directly
+> without setting the flag.
+> 
+> Normally this doesn't cause problems because NAPI drains cleanly on its
+> own. But when the hardware is in a bad state, like during an NVM
+> firmware update, the ring descriptors can contain garbage that
+> i40e_napi_poll() sees as real work. Since __I40E_VSI_DOWN isn't set, the
+> poll function has no reason to bail out. It keeps returning budget,
+> napi_disable() keeps waiting, and the whole thing hangs. The thread
+> stuck in napi_disable() is usually NetworkManager, and because it holds
+> the RTNL lock, the system can end up completely frozen.
+> 
+> Set __I40E_VSI_DOWN in i40e_vsi_reinit_locked() before calling
+> i40e_down(). i40e_up_complete() already clears the flag when the VSI
+> comes back up, so no additional cleanup is needed.
+> 
+> Fixes: 41c445ff0f48 ("i40e: main driver core")
+> Signed-off-by: Mohammad Heib <mheib@redhat.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
 
-Validate the metadata in xsk_tx_metadata_request() and use the resulting
-flags snapshot for every feature check. Read request fields once so all
-zero-copy drivers process only values observed after successful
-validation.
-
-Fixes: ca4419f15abd ("xsk: Add launch time hardware offload support to XDP Tx metadata")
-Cc: Cen Zhang (Microsoft) <blbllhy@gmail.com>
-Signed-off-by: Stanislav Fomichev <sdf@fomichev.me>
----
- drivers/net/ethernet/intel/igc/igc_main.c     |  2 +-
- .../net/ethernet/mellanox/mlx5/core/en/xdp.c  |  5 +-
- .../net/ethernet/stmicro/stmmac/stmmac_main.c |  4 +-
- include/net/libeth/xsk.h                      |  2 +-
- include/net/xdp_sock_drv.h                    | 51 ++++++++++---------
- net/xdp/xsk_buff_pool.c                       |  6 +--
- 6 files changed, 37 insertions(+), 33 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 5a18d00deb4f..7b6cdc037c00 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -3082,7 +3082,7 @@ static void igc_xdp_xmit_zc(struct igc_ring *ring)
- 		meta_req.tx_buffer = bi;
- 		meta_req.meta = meta;
- 		meta_req.used_desc = 0;
--		xsk_tx_metadata_request(&meta, &igc_xsk_tx_metadata_ops,
-+		xsk_tx_metadata_request(pool, &meta, &igc_xsk_tx_metadata_ops,
- 					&meta_req);
- 
- 		/* xsk_tx_metadata_request() may have updated next_to_use */
-diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en/xdp.c b/drivers/net/ethernet/mellanox/mlx5/core/en/xdp.c
-index dac5e9d4c8bd..77ea51bfbaae 100644
---- a/drivers/net/ethernet/mellanox/mlx5/core/en/xdp.c
-+++ b/drivers/net/ethernet/mellanox/mlx5/core/en/xdp.c
-@@ -505,7 +505,7 @@ mlx5e_xmit_xdp_frame_mpwqe(struct mlx5e_xdpsq *sq, struct mlx5e_xmit_data *xdptx
- 		 */
- 		mlx5e_xdp_mpwqe_session_start(sq);
- 		if (meta)
--			xsk_tx_metadata_request(meta,
-+			xsk_tx_metadata_request(sq->xsk_pool, meta,
- 						&mlx5e_xsk_tx_metadata_ops,
- 						&session->wqe->eth);
- 	}
-@@ -653,7 +653,8 @@ mlx5e_xmit_xdp_frame(struct mlx5e_xdpsq *sq, struct mlx5e_xmit_data *xdptxd,
- 	sq->pc += num_wqebbs;
- 
- 	if (meta)
--		xsk_tx_metadata_request(meta, &mlx5e_xsk_tx_metadata_ops, eseg);
-+		xsk_tx_metadata_request(sq->xsk_pool, meta,
-+					&mlx5e_xsk_tx_metadata_ops, eseg);
- 
- 	sq->doorbell_cseg = cseg;
- 
-diff --git a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
-index 3f5111969c41..eb666b0bcdd2 100644
---- a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
-+++ b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
-@@ -2747,8 +2747,8 @@ static bool stmmac_xdp_xmit_zc(struct stmmac_priv *priv, u32 queue, u32 budget)
- 		meta_req.set_ic = &set_ic;
- 		meta_req.tbs = tx_q->tbs;
- 		meta_req.edesc = &tx_q->dma_entx[entry];
--		xsk_tx_metadata_request(&meta, &stmmac_xsk_tx_metadata_ops,
--					&meta_req);
-+		xsk_tx_metadata_request(pool, &meta,
-+					&stmmac_xsk_tx_metadata_ops, &meta_req);
- 		if (set_ic) {
- 			tx_q->tx_count_frames = 0;
- 			stmmac_set_tx_ic(priv, tx_desc);
-diff --git a/include/net/libeth/xsk.h b/include/net/libeth/xsk.h
-index e2fa6bf6b1b3..5dcc0d7f65b7 100644
---- a/include/net/libeth/xsk.h
-+++ b/include/net/libeth/xsk.h
-@@ -205,7 +205,7 @@ __libeth_xsk_xmit_fill_buf_md(const struct xdp_desc *xdesc,
- 	BUILD_BUG_ON(!__builtin_constant_p(tmo == libeth_xsktmo));
- 	tmo = tmo == libeth_xsktmo ? &__libeth_xsktmo : tmo;
- 
--	xsk_tx_metadata_request(&ctx.meta, tmo, &desc);
-+	xsk_tx_metadata_request(sq->pool, &ctx.meta, tmo, &desc);
- 
- 	return desc;
- }
-diff --git a/include/net/xdp_sock_drv.h b/include/net/xdp_sock_drv.h
-index f87c4215673e..b344789f5df8 100644
---- a/include/net/xdp_sock_drv.h
-+++ b/include/net/xdp_sock_drv.h
-@@ -245,7 +245,7 @@ static inline void *xsk_buff_raw_get_data(struct xsk_buff_pool *pool, u64 addr)
-  * details.
-  *
-  * Return: new &xdp_desc_ctx struct containing desc's DMA address and metadata
-- * pointer, if it is present and valid (initialized to %NULL otherwise).
-+ * pointer, if it is present (initialized to %NULL otherwise).
-  */
- static inline struct xdp_desc_ctx
- xsk_buff_raw_get_ctx(const struct xsk_buff_pool *pool, u64 addr)
-@@ -274,54 +274,56 @@ xsk_buff_valid_tx_metadata(const struct xsk_buff_pool *pool,
- /**
-  *  xsk_tx_metadata_request - Evaluate AF_XDP TX metadata at submission
-  *  and call appropriate xsk_tx_metadata_ops operation.
-+ *  @pool: pointer to AF_XDP buffer pool, used to validate the metadata
-  *  @pmeta: pointer to pointer to AF_XDP metadata area
-  *  @ops: pointer to struct xsk_tx_metadata_ops
-- *  @priv: pointer to driver-private aread
-+ *  @priv: pointer to driver-private area
-  *
-  *  This function should be called by the networking device when
-  *  it prepares AF_XDP egress packet.
-  */
--static inline void xsk_tx_metadata_request(struct xsk_tx_metadata **pmeta,
--					   const struct xsk_tx_metadata_ops *ops,
--					   void *priv)
-+static inline void
-+xsk_tx_metadata_request(const struct xsk_buff_pool *pool,
-+			struct xsk_tx_metadata **pmeta,
-+			const struct xsk_tx_metadata_ops *ops, void *priv)
- {
- 	const struct xsk_tx_metadata *meta = *pmeta;
-+	u64 flags;
- 
- 	if (!meta)
- 		return;
- 
-+	if (unlikely(!xsk_buff_valid_tx_metadata(pool, meta, &flags))) {
-+		*pmeta = NULL;
-+		return; /* no way to signal the error to the user */
-+	}
-+
- 	if (ops->tmo_request_launch_time)
--		if (meta->flags & XDP_TXMD_FLAGS_LAUNCH_TIME)
--			ops->tmo_request_launch_time(meta->request.launch_time,
--						     priv);
-+		if (flags & XDP_TXMD_FLAGS_LAUNCH_TIME)
-+			ops->tmo_request_launch_time(
-+				READ_ONCE(meta->request.launch_time), priv);
- 
- 	if (ops->tmo_request_timestamp)
--		if (meta->flags & XDP_TXMD_FLAGS_TIMESTAMP)
-+		if (flags & XDP_TXMD_FLAGS_TIMESTAMP)
- 			ops->tmo_request_timestamp(priv);
- 
- 	if (ops->tmo_request_checksum)
--		if (meta->flags & XDP_TXMD_FLAGS_CHECKSUM)
--			ops->tmo_request_checksum(meta->request.csum_start,
--						  meta->request.csum_offset, priv);
-+		if (flags & XDP_TXMD_FLAGS_CHECKSUM)
-+			ops->tmo_request_checksum(
-+				READ_ONCE(meta->request.csum_start),
-+				READ_ONCE(meta->request.csum_offset), priv);
- 
--	if (!(meta->flags & XDP_TXMD_FLAGS_TIMESTAMP))
-+	if (!(flags & XDP_TXMD_FLAGS_TIMESTAMP))
- 		*pmeta = NULL;
- }
- 
- static inline struct xsk_tx_metadata *
- __xsk_buff_get_metadata(const struct xsk_buff_pool *pool, void *data)
- {
--	struct xsk_tx_metadata *meta;
--	u64 flags;
--
- 	if (!pool->tx_metadata_len)
- 		return NULL;
- 
--	meta = data - pool->tx_metadata_len;
--	if (unlikely(!xsk_buff_valid_tx_metadata(pool, meta, &flags)))
--		return NULL; /* no way to signal the error to the user */
--
--	return meta;
-+	return data - pool->tx_metadata_len;
- }
- 
- static inline struct xsk_tx_metadata *
-@@ -520,9 +522,10 @@ xsk_buff_valid_tx_metadata(const struct xsk_buff_pool *pool,
- 	return false;
- }
- 
--static inline void xsk_tx_metadata_request(struct xsk_tx_metadata **pmeta,
--					   const struct xsk_tx_metadata_ops *ops,
--					   void *priv)
-+static inline void
-+xsk_tx_metadata_request(const struct xsk_buff_pool *pool,
-+			struct xsk_tx_metadata **pmeta,
-+			const struct xsk_tx_metadata_ops *ops, void *priv)
- {
- }
- 
-diff --git a/net/xdp/xsk_buff_pool.c b/net/xdp/xsk_buff_pool.c
-index a4089480b22b..78c14f106395 100644
---- a/net/xdp/xsk_buff_pool.c
-+++ b/net/xdp/xsk_buff_pool.c
-@@ -765,11 +765,11 @@ EXPORT_SYMBOL(xp_raw_get_dma);
-  * @addr: desc address (from userspace)
-  *
-  * Helper for getting desc's DMA address and metadata pointer, if present.
-- * Saves one call on hotpath, double calculation of the actual address,
-- * and inline checks for metadata presence and sanity.
-+ * Saves one call on hotpath and double calculation of the actual address.
-+ * Metadata is validated later by xsk_tx_metadata_request().
-  *
-  * Return: new &xdp_desc_ctx struct containing desc's DMA address and metadata
-- * pointer, if it is present and valid (initialized to %NULL otherwise).
-+ * pointer, if it is present (initialized to %NULL otherwise).
-  */
- struct xdp_desc_ctx xp_raw_get_ctx(const struct xsk_buff_pool *pool, u64 addr)
- {
--- 
-2.53.0-Meta
-
+Reviewed-by: Joe Damato <joe@dama.to>
