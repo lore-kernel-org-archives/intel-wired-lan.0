@@ -1,76 +1,75 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0D84C53219
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 Jul 2026 22:17:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37550C54F51
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 Jul 2026 22:17:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 4CFA860A59;
+	by smtp4.osuosl.org (Postfix) with ESMTP id E51A040A49;
 	Tue, 28 Jul 2026 22:17:57 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id DJ8NoNOexfZQ; Tue, 28 Jul 2026 22:17:56 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id mPTCRVnnwoPn; Tue, 28 Jul 2026 22:17:56 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4ADAE60A5D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CE17A40A54
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
 	s=default; t=1785277076;
-	bh=XeP9Lf086Qpa7hiP4yPnaaOL5tn9gjD47rZM7s4qxMM=;
+	bh=Rph2h3dE8sb+UJdXEnVycWrs9s4Lm7LfpmQXzCBdBQc=;
 	h=From:To:CC:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=OHBgV5/5ukM2rxJcXZThqVQ9vhgUc9szjhCSliH0r7wN8m1rXwe3H58tYZzJsiHEz
-	 X1q0tAFtZdM2/gh+PBQJJk++ax5Ib7Mb3vrnfk0vIP6tTbx2Poxa+XQP2WXoAcMQ1X
-	 6Kq3HohRZQVEHXwIvNkfiCdsBF21OXADKtdM4Na1NWMjOcLc1+F3vTpH6oFw8VKe6U
-	 S6f38Vw9rtGrW+8Q3Dv9hBV6Yy8zASNr5BGVyNHhqIWnFqBaSsrWpSTnqWwscwN4hO
-	 J6JS0UWlWRTdAgmQ650Z91z0QkBVu3A/tY1fd3Ows3/ZGJJOahjDtC3WbEjFAsE4U+
-	 BO5VH7T/KKI0w==
+	b=RNyVY/ayardcW4K+1T9o4ew4QHErTpxM0k6KYhi1l73fsKlnF/FwM5mEa0QvWUQQK
+	 8aptsdbtmnGMlRVeKBuDgvHcsn0I02PajYc1e5rgJ0OjFgLMxZRlafbcbhC11TNo2H
+	 a/c5yvAqgPYR3BGWDIbqMPLoAbUdTQejhX6Ggd27ME05+8ebQub8i66IlDOA7HAjKu
+	 6mkg3opETn4jIi7RFlA2DAf0Ihi4Ah62OXmGXw+g6GEYLAGSoR5xe67Ar9vM75RSfL
+	 tY5U952C5tLLBpFe++KIQsYR6YvjTMyDdPxaJyOrTnj96L/iiIzFdNvg6IXUA9vp1w
+	 AoeTlacdTh5kQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 4ADAE60A5D;
+	by smtp4.osuosl.org (Postfix) with ESMTP id CE17A40A54;
 	Tue, 28 Jul 2026 22:17:56 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 4767D350
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Jul 2026 21:07:19 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id CDB9845B
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Jul 2026 21:21:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 30BFB8136B
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Jul 2026 21:07:19 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 74ED040181
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Jul 2026 21:21:15 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id SzRiJS9l3iFX for <intel-wired-lan@lists.osuosl.org>;
- Tue, 28 Jul 2026 21:07:18 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=52.13.214.179;
- helo=pdx-out-005.esa.us-west-2.outbound.mail-perimeter.amazon.com;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id mf7eyGj2CQZG for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 28 Jul 2026 21:21:14 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=52.12.53.23;
+ helo=pdx-out-010.esa.us-west-2.outbound.mail-perimeter.amazon.com;
  envelope-from=prvs=662859186=wanjay@amazon.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 037A581367
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 037A581367
-Received: from pdx-out-005.esa.us-west-2.outbound.mail-perimeter.amazon.com
- (pdx-out-005.esa.us-west-2.outbound.mail-perimeter.amazon.com
- [52.13.214.179])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 037A581367
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Jul 2026 21:07:17 +0000 (UTC)
-X-CSE-ConnectionGUID: yFpT2An+RZCt8VcLhT1NxA==
-X-CSE-MsgGUID: msVhqUAbQvGI0Dr6J+XyWg==
-X-IronPort-AV: E=Sophos;i="6.25,191,1779148800"; d="scan'208";a="24503714"
-Received: from ip-10-5-0-115.us-west-2.compute.internal (HELO
- smtpout.naws.us-west-2.prod.farcaster.email.amazon.dev) ([10.5.0.115])
- by internal-pdx-out-005.esa.us-west-2.outbound.mail-perimeter.amazon.com with
- ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Jul 2026 21:07:16 +0000
-Received: from EX19MTAUWA001.ant.amazon.com [205.251.233.236:2127]
- by smtpin.naws.us-west-2.prod.farcaster.email.amazon.dev [10.0.38.8:2525] with
- esmtp (Farcaster)
- id e7cd67fb-9b26-4640-93a6-d6fdfde29a93; Tue, 28 Jul 2026 21:07:16 +0000 (UTC)
-X-Farcaster-Flow-ID: e7cd67fb-9b26-4640-93a6-d6fdfde29a93
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 4285F40173
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4285F40173
+Received: from pdx-out-010.esa.us-west-2.outbound.mail-perimeter.amazon.com
+ (pdx-out-010.esa.us-west-2.outbound.mail-perimeter.amazon.com [52.12.53.23])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 4285F40173
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Jul 2026 21:21:13 +0000 (UTC)
+X-CSE-ConnectionGUID: idheG03mRY+LhvN+EIAPfg==
+X-CSE-MsgGUID: 14Rk5fhGQ6mwrdt3wJZ5jQ==
+X-IronPort-AV: E=Sophos;i="6.25,191,1779148800"; d="scan'208";a="24401549"
+Received: from ip-10-5-6-203.us-west-2.compute.internal (HELO
+ smtpout.naws.us-west-2.prod.farcaster.email.amazon.dev) ([10.5.6.203])
+ by internal-pdx-out-010.esa.us-west-2.outbound.mail-perimeter.amazon.com with
+ ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Jul 2026 21:21:13 +0000
+Received: from EX19MTAUWC001.ant.amazon.com [205.251.233.53:6950]
+ by smtpin.naws.us-west-2.prod.farcaster.email.amazon.dev [10.0.32.26:2525]
+ with esmtp (Farcaster)
+ id a466488d-2184-44ba-833f-c4bd70da0407; Tue, 28 Jul 2026 21:21:13 +0000 (UTC)
+X-Farcaster-Flow-ID: a466488d-2184-44ba-833f-c4bd70da0407
 Received: from EX19D001UWA001.ant.amazon.com (10.13.138.214) by
- EX19MTAUWA001.ant.amazon.com (10.250.64.217) with Microsoft SMTP Server
+ EX19MTAUWC001.ant.amazon.com (10.250.64.174) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.2562.45;
- Tue, 28 Jul 2026 21:07:16 +0000
+ Tue, 28 Jul 2026 21:21:12 +0000
 Received: from dev-dsk-wanjay-2c-d25651b4.us-west-2.amazon.com (172.19.198.4)
  by EX19D001UWA001.ant.amazon.com (10.13.138.214) with Microsoft SMTP
  Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.2562.45;
- Tue, 28 Jul 2026 21:07:15 +0000
+ Tue, 28 Jul 2026 21:21:12 +0000
 From: Jay Wang <wanjay@amazon.com>
 To: <stable@vger.kernel.org>
 CC: <gregkh@linuxfoundation.org>, <sashal@kernel.org>,
@@ -81,37 +80,37 @@ CC: <gregkh@linuxfoundation.org>, <sashal@kernel.org>,
  <dawid.osuchowski@linux.intel.com>, Aleksandr Loktionov
  <aleksandr.loktionov@intel.com>, Simon Horman <horms@kernel.org>, Kunwu Chan
  <kunwu.chan@linux.dev>, Rinitha S <sx.rinitha@intel.com>
-Date: Tue, 28 Jul 2026 21:07:15 +0000
-Message-ID: <20260728210715.10700-1-wanjay@amazon.com>
+Date: Tue, 28 Jul 2026 21:21:11 +0000
+Message-ID: <20260728212111.30972-1-wanjay@amazon.com>
 X-Mailer: git-send-email 2.47.3
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 X-Originating-IP: [172.19.198.4]
-X-ClientProxiedBy: EX19D036UWB002.ant.amazon.com (10.13.139.139) To
+X-ClientProxiedBy: EX19D046UWB002.ant.amazon.com (10.13.139.181) To
  EX19D001UWA001.ant.amazon.com (10.13.138.214)
 X-Mailman-Approved-At: Tue, 28 Jul 2026 22:17:55 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=amazon.com; i=@amazon.com; q=dns/txt; s=amazoncorp2;
- t=1785272838; x=1816808838;
+ t=1785273674; x=1816809674;
  h=from:to:cc:subject:date:message-id:mime-version:
  content-transfer-encoding;
- bh=XeP9Lf086Qpa7hiP4yPnaaOL5tn9gjD47rZM7s4qxMM=;
- b=PlLrEgRtOpdb+VQbtRr1Rv7oGef4otYsHjqV+tWMQBLWxdObv2a/HKAJ
- etcqq4O3xYW6Vp91UZHnC2bt9E7XjXHKEUGKz0V80khakY4IFCJiBPbla
- Alf7N1h1yWjjp77R3Zs1YJG5OU64M33C81qahCKzXDL0/F74Dr1cWljJx
- +KG3E9kTEABSMqK44GJ0uYNUDzONVw3/K8jJQ+nSB5Iw+XE/OULP0jPpi
- 9BhOc47dJ93vEjSQgQQOJ2f2O4W5IHZVCBvrt5lKe1NIsUGce/1s0bsLb
- +fFdKqRPp3Le0j3BQK42RLnvdkF8Vhj4jqFojpscmV/iPyvo8Q7opQ4UX
- A==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ bh=Rph2h3dE8sb+UJdXEnVycWrs9s4Lm7LfpmQXzCBdBQc=;
+ b=G3L/ml6iUER1J84JhFA9q/cXr6Nas2jhkQ/Lb6DDrtGvCYgGA23sqwTn
+ EB8UXgosWX6sqvAYmS1CvDKWAc8Y7gtnyws3rvCSv2Qy0UYLjv6aPOjNT
+ MZ31ILlZhW+H8+ezLUacdIWAA7uxkwvX0CMUoSfsaST3EcxnqounY2raw
+ qsh4c8oPfog2ZY5ImB38dI0GC66TfbHhWM8YBZ//XsZoGdQCHl07nQAf2
+ i9sR6PyZMhsyers0ykRQnuJf/WLPUVurD0QvizsEgfn0WDtKr6pR2BYVc
+ LUZeJ5wDwPcR9eST0OBIASZb5gII2fUy+YDTKznjgpjVbmh1qQuXnBZC5
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=amazon.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=amazon.com header.i=@amazon.com header.a=rsa-sha256
- header.s=amazoncorp2 header.b=PlLrEgRt
-Subject: [Intel-wired-lan] [PATCH 6.6.y] i40e: remove read access to debugfs
+ header.s=amazoncorp2 header.b=G3L/ml6i
+Subject: [Intel-wired-lan] [PATCH 6.1.y] i40e: remove read access to debugfs
  files
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
@@ -196,19 +195,19 @@ Reviewed-by: Simon Horman <horms@kernel.org>
 Reviewed-by: Kunwu Chan <kunwu.chan@linux.dev>
 Tested-by: Rinitha S <sx.rinitha@intel.com> (A Contingent worker at Intel)
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
-[Adapted to 6.6: context conflict due to 6.6 using pf->vsi[pf->lan_vsi]
+[Adapted to 6.1: context conflict due to 6.1 using pf->vsi[pf->lan_vsi]
  vs i40e_pf_get_main_vsi(pf) in the removed read functions; resolution
- is simply to delete the 6.6 version of those functions.]
+ is simply to delete the 6.1 version of those functions.]
 Signed-off-by: Jay Wang <wanjay@amazon.com>
 ---
  .../net/ethernet/intel/i40e/i40e_debugfs.c    | 121 +++---------------
  1 file changed, 19 insertions(+), 102 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-index a2fca58a91c33..35ce578dd6f35 100644
+index b438cf846c41b..5b59db6a5439c 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-@@ -58,47 +58,6 @@ static struct i40e_veb *i40e_dbg_find_veb(struct i40e_pf *pf, int seid)
+@@ -57,47 +57,6 @@ static struct i40e_veb *i40e_dbg_find_veb(struct i40e_pf *pf, int seid)
   * setup, adding or removing filters, or other things.  Many of
   * these will be useful for some forms of unit testing.
   **************************************************************/
@@ -256,7 +255,7 @@ index a2fca58a91c33..35ce578dd6f35 100644
  
  static char *i40e_filter_state_string[] = {
  	"INVALID",
-@@ -1637,7 +1596,6 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
+@@ -1636,7 +1595,6 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
  static const struct file_operations i40e_dbg_command_fops = {
  	.owner = THIS_MODULE,
  	.open =  simple_open,
@@ -264,7 +263,7 @@ index a2fca58a91c33..35ce578dd6f35 100644
  	.write = i40e_dbg_command_write,
  };
  
-@@ -1646,47 +1604,6 @@ static const struct file_operations i40e_dbg_command_fops = {
+@@ -1645,47 +1603,6 @@ static const struct file_operations i40e_dbg_command_fops = {
   * The netdev_ops entry in debugfs is for giving the driver commands
   * to be executed from the netdev operations.
   **************************************************************/
@@ -312,7 +311,7 @@ index a2fca58a91c33..35ce578dd6f35 100644
  
  /**
   * i40e_dbg_netdev_ops_write - write into netdev_ops datum
-@@ -1700,35 +1617,36 @@ static ssize_t i40e_dbg_netdev_ops_write(struct file *filp,
+@@ -1699,35 +1616,36 @@ static ssize_t i40e_dbg_netdev_ops_write(struct file *filp,
  					 size_t count, loff_t *ppos)
  {
  	struct i40e_pf *pf = filp->private_data;
@@ -361,7 +360,7 @@ index a2fca58a91c33..35ce578dd6f35 100644
  			     &vsi_seid, &mtu);
  		if (cnt != 2) {
  			dev_info(&pf->pdev->dev, "change_mtu <vsi_seid> <mtu>\n");
-@@ -1750,8 +1668,8 @@ static ssize_t i40e_dbg_netdev_ops_write(struct file *filp,
+@@ -1749,8 +1667,8 @@ static ssize_t i40e_dbg_netdev_ops_write(struct file *filp,
  			dev_info(&pf->pdev->dev, "Could not acquire RTNL - please try again\n");
  		}
  
@@ -372,7 +371,7 @@ index a2fca58a91c33..35ce578dd6f35 100644
  		if (cnt != 1) {
  			dev_info(&pf->pdev->dev, "set_rx_mode <vsi_seid>\n");
  			goto netdev_ops_write_done;
-@@ -1771,8 +1689,8 @@ static ssize_t i40e_dbg_netdev_ops_write(struct file *filp,
+@@ -1770,8 +1688,8 @@ static ssize_t i40e_dbg_netdev_ops_write(struct file *filp,
  			dev_info(&pf->pdev->dev, "Could not acquire RTNL - please try again\n");
  		}
  
@@ -383,7 +382,7 @@ index a2fca58a91c33..35ce578dd6f35 100644
  		if (cnt != 1) {
  			dev_info(&pf->pdev->dev, "napi <vsi_seid>\n");
  			goto netdev_ops_write_done;
-@@ -1790,21 +1708,20 @@ static ssize_t i40e_dbg_netdev_ops_write(struct file *filp,
+@@ -1789,21 +1707,20 @@ static ssize_t i40e_dbg_netdev_ops_write(struct file *filp,
  			dev_info(&pf->pdev->dev, "napi called\n");
  		}
  	} else {
