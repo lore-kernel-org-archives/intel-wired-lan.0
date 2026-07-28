@@ -1,95 +1,94 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4EEDDC531D0
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 27 Jul 2026 22:58:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F148C54EFC
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 Jul 2026 09:18:24 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 05568607A0;
-	Mon, 27 Jul 2026 22:58:00 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id E4DF881326;
+	Tue, 28 Jul 2026 09:18:23 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ZEuGlFhjjBZV; Mon, 27 Jul 2026 22:57:59 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id BUF6jgpmwgTS; Tue, 28 Jul 2026 09:18:23 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2D43C605DB
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1F6A18131C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1785193079;
-	bh=6oUxK478sjBYqL8c8TkrkURsFQVIz72WZ22ccJ9dswc=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=7EKoabyjBMBHOXpPyPtTqxZ1VDHA471k9IEDnNjykQARnVYao6QoZcbUvDF6ZBn3l
-	 ViiMebqUj5zuokMzEP2NwjCT1QYOtKZHOZuQcD79XqtdpPzls8mm/PdiJsOKMUnWMa
-	 6zB06NqHn1V8fGfKYiwSKG2KUkcY36tQpiHofYHzZUQbkRFV7AqssCDC6hYH2WDVto
-	 eqJoDcRTrUcoe+IXjqOUvAMFp9lqmJyFXYGlAc1n3iW0dN1X4KqwYj9S0LJDVeNHH+
-	 UZR/l3V2wUqF29LWLQqd6dJsHr46mry7ioSKwQ/A95FwjiLQMnPkdb5lq7ZuhX9Tw/
-	 9jrCBLhsDNqww==
+	s=default; t=1785230303;
+	bh=UtpYFD5P1Jv/mn1CkBg6sVi07EREEvWmatU4rt9gT9k=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=2ebyb15RvRcnnEPQ8nRpys91WxovW66aZAhYg4C0w5Uy/Zaxyxk72x5ODNhnuvGrp
+	 ETBgji8TTMkIpYbCYZ5g5K5apnSxgLkbQX7icr1V2Ls9EkLoGXMQhLo9PFUZcrZ4LA
+	 N2zDvFpov5HnGejtgi7AE3XpQxv6Djgufwdc8u4CdfC+SoWOJeMFfpf1OW2kkZrgEY
+	 qTqOpogzEHDQo0xjczd6YA4waDn0B7B7EZVB2jcRKqJm3CJ7MzQM4sdW/Z9xbeidME
+	 lOdvjcc6mB9fSZ0Y+NZpKODwcIcasIfXBsRpDm5iaFPKvIngaeQUxnhhtQ6b3WGIQP
+	 AcJGnCLZGC1GQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2D43C605DB;
-	Mon, 27 Jul 2026 22:57:59 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id D1032350
- for <intel-wired-lan@lists.osuosl.org>; Mon, 27 Jul 2026 22:57:57 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 1F6A18131C;
+	Tue, 28 Jul 2026 09:18:23 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 10C2D788
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Jul 2026 09:18:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id BA66F40098
- for <intel-wired-lan@lists.osuosl.org>; Mon, 27 Jul 2026 22:57:57 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id EB8644092B
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Jul 2026 09:18:21 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ZIK-L0MLiawU for <intel-wired-lan@lists.osuosl.org>;
- Mon, 27 Jul 2026 22:57:57 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.19;
- helo=mgamail.intel.com; envelope-from=joshua.a.hay@intel.com;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id HvGFto5vzk6X for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 28 Jul 2026 09:18:21 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.17;
+ helo=mgamail.intel.com; envelope-from=grzegorz.nitka@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 1BF674005F
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1BF674005F
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 1BF674005F
- for <intel-wired-lan@lists.osuosl.org>; Mon, 27 Jul 2026 22:57:56 +0000 (UTC)
-X-CSE-ConnectionGUID: HcMixHDVTwqNB/9dMO15tg==
-X-CSE-MsgGUID: +RCZdB9KTVOSqdWzLDPEBg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11858"; a="84748871"
-X-IronPort-AV: E=Sophos;i="6.25,189,1779174000"; d="scan'208";a="84748871"
-Received: from orviesa003.jf.intel.com ([10.64.159.143])
- by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 27 Jul 2026 15:57:55 -0700
-X-CSE-ConnectionGUID: uMBtnQtwTD+sp4H48NcDDg==
-X-CSE-MsgGUID: pVfpCCTWQFCcUIhAVVwrJg==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 5249D40929
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5249D40929
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 5249D40929
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Jul 2026 09:18:21 +0000 (UTC)
+X-CSE-ConnectionGUID: 4IDdvuw5TWm8Lsqn+THeWw==
+X-CSE-MsgGUID: oh79ql4aRy2N3sFE0G2a6w==
+X-IronPort-AV: E=McAfee;i="6800,10657,11858"; a="85677235"
+X-IronPort-AV: E=Sophos;i="6.25,190,1779174000"; d="scan'208";a="85677235"
+Received: from orviesa010.jf.intel.com ([10.64.159.150])
+ by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 28 Jul 2026 02:18:20 -0700
+X-CSE-ConnectionGUID: 0/6CBofXSVGzYMsPPqvEsA==
+X-CSE-MsgGUID: DM08+b4SRJGVolx4ShI3hw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,189,1779174000"; d="scan'208";a="263027552"
-Received: from dcskidmo-m40.jf.intel.com ([10.166.241.14])
- by orviesa003.jf.intel.com with ESMTP; 27 Jul 2026 15:57:55 -0700
-From: Joshua Hay <joshua.a.hay@intel.com>
+X-IronPort-AV: E=Sophos;i="6.25,190,1779174000"; d="scan'208";a="258378411"
+Received: from gklab-003-001.igk.intel.com ([10.91.173.48])
+ by orviesa010.jf.intel.com with ESMTP; 28 Jul 2026 02:18:17 -0700
+From: Grzegorz Nitka <grzegorz.nitka@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org
-Date: Mon, 27 Jul 2026 16:08:48 -0700
-Message-Id: <20260727230848.1557452-1-joshua.a.hay@intel.com>
-X-Mailer: git-send-email 2.39.2
+Date: Tue, 28 Jul 2026 11:13:11 +0200
+Message-Id: <20260728091314.1420656-1-grzegorz.nitka@intel.com>
+X-Mailer: git-send-email 2.39.3
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1785193077; x=1816729077;
+ t=1785230301; x=1816766301;
  h=from:to:cc:subject:date:message-id:mime-version:
  content-transfer-encoding;
- bh=kzyWPv/hp3S8PU5Rn9lNwBnknhfersTVkI2IzpEKj1E=;
- b=nEU3mMkHeARpSV+STjrPeagMyICpZB3wnXoiLSaVKVoTQIdbI+a5+7bu
- mUB48DIBZgASzf/S6jVhlraxYWEhkLoI22AlkxLEywbshg78sjn1h+2v5
- ppInJAZe17tb4U6mLGvt3BH3lkAAxUF50XcjpeYVihxpLW1ZvjK4nTrw1
- Lyrvm6w9msKIjQdibzJ0YovAzc5ajM4aDKNqk+JoWK+7eCJNoivqLeIav
- n2GIXKvqvW6ofVHAyiERMCT5CuDy7xim8qxxqBs9F6s5WYM7aI5q7vES7
- 1r8IYcWhx3U42ImR6k5cr2Oq03f3LUoWHfbpYktKBguFJXn6cAfvECCEI
+ bh=SWxZG5+sOL0eaYnnUUqJ1958bHVxM3Dc0x29DZMl+zk=;
+ b=ewXu2k6foc9E8KdtjP167I1/CZoaVccMqFqYLksTvQwUfqD2DexOdS1A
+ TtFBN+q0ntPX1cOF0zG/VuZIR9lhupwel4k+CnyIqDdAEaV6Czs9jAue0
+ Obkkr1INnm3CtSWcDYE0+l2kwRaYflK5mA7c4g2PicAnBsxfgkcy4Znc3
+ p6Ds3Jo3uPHkeEITxtpIhDsWhCSpW6bwdep4Dj1xaKkFi5mUYeXio8Wp4
+ gFiqOvRIqKT1O5DthrvLFLPflWPFFNg3jrNE3y2sc91K4j1g6XXksdfKt
+ 4xN4HfiJbUUJNQxqHFuwif9WsC5axojUaFtFKQjwAMywpx4OW41CUxkLf
  g==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=nEU3mMkH
-Subject: [Intel-wired-lan] [PATCH iwl-net] idpf: account for VLAN header
- when parsing RSC packet header
+ header.a=rsa-sha256 header.s=Intel header.b=ewXu2k6f
+Subject: [Intel-wired-lan] [PATCH iwl-next 0/3] ice: expose TSPLL state on
+ E825 through dpll subsystem
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -102,66 +101,55 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: przemyslaw.kitszel@intel.com, richardcochran@gmail.com,
+ linux-kernel@vger.kernel.org, arkadiusz.kubalewski@intel.com,
+ andrew+netdev@lunn.ch, edumazet@google.com, anthony.l.nguyen@intel.com,
+ netdev@vger.kernel.org, kuba@kernel.org, pabeni@redhat.com,
+ davem@davemloft.net
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-While parsing the header of a Receive Side Coalesced (RSC) packet, check
-if a VLAN tag is present and adjust the header parsing accordingly.
-Otherwise, Rx TCP traffic is completely broken for any VLAN interface
-whose underlying interface has RSC (rx-gro-hw) enabled.
+On E825 devices that own the source timer, the TSPLL can lose lock when
+the TCXO or TIME_REF signal is disrupted. This series adds monitoring
+and recovery for that condition, then surfaces the lock status and clock
+source selection through the dpll subsystem. It also fixes the clock_id
+generation for E825 generic DPLL devices so userspace can unambiguously
+map each DPLL device to its owning interface.
 
-We only need to worry about one VLAN header since Rx packets with
-multiple VLAN headers are not candidates for RSC.
+Patch 1 adds TSPLL lock monitoring to ice_ptp_periodic_work(). Placing it
+there ensures recovery runs regardless of whether DPLL init succeeded or
+CONFIG_DPLL is enabled. Lock state is cached in pf->ptp.tspll_locked via
+WRITE_ONCE()/READ_ONCE() for consumption by the DPLL worker.
 
-Fixes: 3a8845af66edb ("idpf: add RX splitq napi poll support")
-Signed-off-by: Joshua Hay <joshua.a.hay@intel.com>
-Reviewed-by: Emil Tantilov <emil.s.tantilov@intel.com>
----
- drivers/net/ethernet/intel/idpf/idpf_txrx.c | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+Patch 2 registers the TSPLL as a DPLL_TYPE_GENERIC device for E825 owner
+PFs, with a fwnode-backed "time_ref" input pin. The pin state_on_dpll_set
+callback switches the clock source between TIME_REF and TCXO. Lock status
+is read from pf->ptp.tspll_locked; UNLOCKED is reported unconditionally
+when the clock source is TCXO to reflect the free-running oscillator state.
 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-index c724d429a7aa..70553f64f770 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-@@ -3299,6 +3299,7 @@ static int idpf_rx_rsc(struct idpf_rx_queue *rxq, struct sk_buff *skb,
- 		       struct libeth_rx_pt decoded)
- {
- 	u16 rsc_segments, rsc_seg_len;
-+	u16 l3_start = 0;
- 	bool ipv4, ipv6;
- 	int len;
- 
-@@ -3321,7 +3322,10 @@ static int idpf_rx_rsc(struct idpf_rx_queue *rxq, struct sk_buff *skb,
- 	NAPI_GRO_CB(skb)->count = rsc_segments;
- 	skb_shinfo(skb)->gso_size = rsc_seg_len;
- 
--	skb_reset_network_header(skb);
-+	if (unlikely(eth_type_vlan(skb->protocol)))
-+		l3_start = VLAN_HLEN;
-+
-+	skb_set_network_header(skb, l3_start);
- 
- 	if (ipv4) {
- 		struct iphdr *ipv4h = ip_hdr(skb);
-@@ -3329,7 +3333,7 @@ static int idpf_rx_rsc(struct idpf_rx_queue *rxq, struct sk_buff *skb,
- 		skb_shinfo(skb)->gso_type = SKB_GSO_TCPV4;
- 
- 		/* Reset and set transport header offset in skb */
--		skb_set_transport_header(skb, sizeof(struct iphdr));
-+		skb_set_transport_header(skb, l3_start + sizeof(struct iphdr));
- 		len = skb->len - skb_transport_offset(skb);
- 
- 		/* Compute the TCP pseudo header checksum*/
-@@ -3339,7 +3343,7 @@ static int idpf_rx_rsc(struct idpf_rx_queue *rxq, struct sk_buff *skb,
- 		struct ipv6hdr *ipv6h = ipv6_hdr(skb);
- 
- 		skb_shinfo(skb)->gso_type = SKB_GSO_TCPV6;
--		skb_set_transport_header(skb, sizeof(struct ipv6hdr));
-+		skb_set_transport_header(skb, l3_start + sizeof(struct ipv6hdr));
- 		len = skb->len - skb_transport_offset(skb);
- 		tcp_hdr(skb)->check =
- 			~tcp_v6_check(len, &ipv6h->saddr, &ipv6h->daddr, 0);
+Patch 3 changes the clock_id generation for E825 TX-CLK and TSPLL DPLLs.
+Previously they used the board-level PCIe DSN, which is identical for
+all interfaces sharing the same NAC/quad, so userspace could not tell
+them apart. The new scheme derives the clock_id from the permanent port
+MAC (with a dedicated tag bit distinguishing TSPLL from TX-CLK), while
+other DPLL objects (EEC/PPS and non-E825 paths) keep the board-level
+DSN-derived clock_id.
+
+Grzegorz Nitka (3):
+  ice: monitor TSPLL lock from PTP periodic worker
+  ice: add TSPLL DPLL device and TIME_REF pin for E825
+  ice: use per-interface clock_id for E825 generic DPLLs
+
+ drivers/net/ethernet/intel/ice/ice_dpll.c  | 479 +++++++++++++++++++--
+ drivers/net/ethernet/intel/ice/ice_dpll.h  |   4 +
+ drivers/net/ethernet/intel/ice/ice_ptp.c   |  80 ++++
+ drivers/net/ethernet/intel/ice/ice_ptp.h   |  11 +
+ drivers/net/ethernet/intel/ice/ice_tspll.c | 122 +++++-
+ drivers/net/ethernet/intel/ice/ice_tspll.h |   6 +
+ 6 files changed, 657 insertions(+), 45 deletions(-)
+
+
+base-commit: d621cef13189b54ee67019d170a6d8ec727785aa
 -- 
-2.39.2
+2.39.3
 
