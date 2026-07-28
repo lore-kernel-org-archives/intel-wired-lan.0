@@ -1,117 +1,138 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37550C54F51
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 Jul 2026 22:17:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93B28C53219
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 Jul 2026 23:57:59 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id E51A040A49;
-	Tue, 28 Jul 2026 22:17:57 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 30D84814DB;
+	Tue, 28 Jul 2026 23:57:59 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id mPTCRVnnwoPn; Tue, 28 Jul 2026 22:17:56 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id dwr0cPncHWl3; Tue, 28 Jul 2026 23:57:56 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CE17A40A54
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3B7C5812B6
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1785277076;
-	bh=Rph2h3dE8sb+UJdXEnVycWrs9s4Lm7LfpmQXzCBdBQc=;
-	h=From:To:CC:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=RNyVY/ayardcW4K+1T9o4ew4QHErTpxM0k6KYhi1l73fsKlnF/FwM5mEa0QvWUQQK
-	 8aptsdbtmnGMlRVeKBuDgvHcsn0I02PajYc1e5rgJ0OjFgLMxZRlafbcbhC11TNo2H
-	 a/c5yvAqgPYR3BGWDIbqMPLoAbUdTQejhX6Ggd27ME05+8ebQub8i66IlDOA7HAjKu
-	 6mkg3opETn4jIi7RFlA2DAf0Ihi4Ah62OXmGXw+g6GEYLAGSoR5xe67Ar9vM75RSfL
-	 tY5U952C5tLLBpFe++KIQsYR6YvjTMyDdPxaJyOrTnj96L/iiIzFdNvg6IXUA9vp1w
-	 AoeTlacdTh5kQ==
+	s=default; t=1785283076;
+	bh=1wlVOLDwkm+KngM9k3/RIa39XUDDC8PS7ruQW4Z1o+Y=;
+	h=References:In-Reply-To:Date:To:Cc:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From:Reply-To:From;
+	b=1DAH29By7+KkiE7DOTNLe//2Gx3rVU0PHQH/LOEiI4/+VxdoI+C4hC9Iq9U8i8MhG
+	 Vip+xa5jSzpPYHwQ37AQLE0UrzxWpnsL5XGucF3AaTjP70vvDTkygT005mmhmS17mt
+	 K4MkBo7CbpNKHo6XKav7GZtjehQK6d9QQwNVr7l1Ixd7wVdCTHjKpRToBGydtrVZ74
+	 bQPAGY44Dz2AKzOT+hV/j7fCoqF5QKLeMFe1g35SmEyYZrH7Y+t79oHT4UxxpikbfD
+	 r0ruN/1LQAvfy5AuH7gM0IBhTIOogj5UdqEaURhFLeTzadbJzWe3XnFiaJoXDM727k
+	 8i8wdnKk4OrEg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id CE17A40A54;
-	Tue, 28 Jul 2026 22:17:56 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id CDB9845B
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Jul 2026 21:21:16 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 3B7C5812B6;
+	Tue, 28 Jul 2026 23:57:56 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 71F2B45B
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Jul 2026 23:57:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 74ED040181
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Jul 2026 21:21:15 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 4FB27607AB
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Jul 2026 23:57:54 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id mf7eyGj2CQZG for <intel-wired-lan@lists.osuosl.org>;
- Tue, 28 Jul 2026 21:21:14 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=52.12.53.23;
- helo=pdx-out-010.esa.us-west-2.outbound.mail-perimeter.amazon.com;
- envelope-from=prvs=662859186=wanjay@amazon.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 4285F40173
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4285F40173
-Received: from pdx-out-010.esa.us-west-2.outbound.mail-perimeter.amazon.com
- (pdx-out-010.esa.us-west-2.outbound.mail-perimeter.amazon.com [52.12.53.23])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 4285F40173
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Jul 2026 21:21:13 +0000 (UTC)
-X-CSE-ConnectionGUID: idheG03mRY+LhvN+EIAPfg==
-X-CSE-MsgGUID: 14Rk5fhGQ6mwrdt3wJZ5jQ==
-X-IronPort-AV: E=Sophos;i="6.25,191,1779148800"; d="scan'208";a="24401549"
-Received: from ip-10-5-6-203.us-west-2.compute.internal (HELO
- smtpout.naws.us-west-2.prod.farcaster.email.amazon.dev) ([10.5.6.203])
- by internal-pdx-out-010.esa.us-west-2.outbound.mail-perimeter.amazon.com with
- ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Jul 2026 21:21:13 +0000
-Received: from EX19MTAUWC001.ant.amazon.com [205.251.233.53:6950]
- by smtpin.naws.us-west-2.prod.farcaster.email.amazon.dev [10.0.32.26:2525]
- with esmtp (Farcaster)
- id a466488d-2184-44ba-833f-c4bd70da0407; Tue, 28 Jul 2026 21:21:13 +0000 (UTC)
-X-Farcaster-Flow-ID: a466488d-2184-44ba-833f-c4bd70da0407
-Received: from EX19D001UWA001.ant.amazon.com (10.13.138.214) by
- EX19MTAUWC001.ant.amazon.com (10.250.64.174) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.2562.45;
- Tue, 28 Jul 2026 21:21:12 +0000
-Received: from dev-dsk-wanjay-2c-d25651b4.us-west-2.amazon.com (172.19.198.4)
- by EX19D001UWA001.ant.amazon.com (10.13.138.214) with Microsoft SMTP
- Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.2562.45;
- Tue, 28 Jul 2026 21:21:12 +0000
-From: Jay Wang <wanjay@amazon.com>
-To: <stable@vger.kernel.org>
-CC: <gregkh@linuxfoundation.org>, <sashal@kernel.org>,
- <jacob.e.keller@intel.com>, <anthony.l.nguyen@intel.com>,
- <intel-wired-lan@lists.osuosl.org>, <netdev@vger.kernel.org>, Kunwu Chan
- <chentao@kylinos.cn>, Wang Haoran <haoranwangsec@gmail.com>, "Amir Mohammad
- Jahangirzad" <a.jahangirzad@gmail.com>, Dawid Osuchowski
- <dawid.osuchowski@linux.intel.com>, Aleksandr Loktionov
- <aleksandr.loktionov@intel.com>, Simon Horman <horms@kernel.org>, Kunwu Chan
- <kunwu.chan@linux.dev>, Rinitha S <sx.rinitha@intel.com>
-Date: Tue, 28 Jul 2026 21:21:11 +0000
-Message-ID: <20260728212111.30972-1-wanjay@amazon.com>
-X-Mailer: git-send-email 2.47.3
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id BpMVLV0YO44P for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 28 Jul 2026 23:57:52 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2a00:1450:4864:20::32c; helo=mail-wm1-x32c.google.com;
+ envelope-from=namangulati@google.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 410AC607A1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 410AC607A1
+Received: from mail-wm1-x32c.google.com (mail-wm1-x32c.google.com
+ [IPv6:2a00:1450:4864:20::32c])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 410AC607A1
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Jul 2026 23:57:51 +0000 (UTC)
+Received: by mail-wm1-x32c.google.com with SMTP id
+ 5b1f17b1804b1-495509b08ebso12115e9.1
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Jul 2026 16:57:51 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1785283070; cv=none;
+ d=google.com; s=arc-20260327;
+ b=EbozgGPiQOmVow/xrUluQaPir+mGZnvn0cNh5ZkoN3E6GXc7wYBZs0o8ThsdpkUIIB
+ Nold016ZMK/+1V0fpoMriFVU+wXRO8yAL0A3M9ZBOvuckhCXXjRJeRQ1fC9E72Go2lCr
+ cs9avKHhKYTQKubphiPnePr4P9M78/Ytci6Z3Ge7zRfkOYbzLHavhazwziUgSfeaZcHq
+ b8acftFpPH2qLaW7hvnv3EuKdO5nRbJb5q+elzVqCt1KJkNU4pTAQzu6X7AvW8BWyXyE
+ VifzR4pMqMEMLp8LW0VnPRsQKlMfk5nBEf4/dx/+KnOD5na3H9UpoOPCmNC8/HlK5euX
+ qaOg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com;
+ s=arc-20260327; 
+ h=content-transfer-encoding:cc:to:subject:message-id:date:from
+ :in-reply-to:references:mime-version:dkim-signature;
+ bh=1wlVOLDwkm+KngM9k3/RIa39XUDDC8PS7ruQW4Z1o+Y=;
+ fh=+nhwm1GTZ5SwM94DXvWyc3E6aITIF8JhJ7VEeeNM1iI=;
+ b=Hz4hiN+DP4063kh4t2Fitoi8NRBJg3nMrnqwxTlFZ5hM72Jk9JASRmRxIV1/aGXESD
+ CtmiotGpBiAGAn4Q2vr8vnezpw2wf6dB/xjUyrEeDa6JhfESUtNyPuEkuiK4C76B+t3g
+ 2cNqWz0yyE41353BZNyuM1R17O5CHIpDA75/da5UvU8A5kKzQzLNtzn4CWcZG2G/WfnA
+ PZad8kASB+SVTyWU7iZnfu2zfvIammXm7a50EEstpNvvARS9fAluszCYBOiHBq/3B3F1
+ U3n9tf2QrWnwjrNpWdgmyMKMEwn11sFBhBe26B8GmCWXo5i/+0AhM/ooQ3mcPzEU4TMd
+ W8Jg==; darn=lists.osuosl.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20251104; t=1785283070; x=1785887870;
+ h=content-transfer-encoding:content-type:cc:to:subject:message-id
+ :date:from:in-reply-to:references:mime-version:x-gm-gg
+ :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+ :content-type;
+ bh=1wlVOLDwkm+KngM9k3/RIa39XUDDC8PS7ruQW4Z1o+Y=;
+ b=gQxTOqey0ZcvlEIYCigQc69bBopU3S8GPLJx1mGbi7CG7GWYpjod8RamiB3LQhblJo
+ suW27PJkq0zhrhYaMbGMSclkaq0onXShPc3ICBPhDBCbXtuUw/c47ltdu+F0bKwTU5Zb
+ cAmtJzGa9DR5HjkhQdpRflcoZSBUq2biDNkY229yQJ41Vi6xhRUl4CtDmIpkiPEIEYXU
+ pz59vDu/mNwmaPuI5uzjh29Ok1hu0BgQ5XlwcL3XzBBuExiwWjjH3CuXxzjcccbk7Ri5
+ PoQNie0Z29vJPVreMfiqzJCaHwiqbik9gjKP0qAI23CKAmGZdYnDFw6ROxH/lRZyEvp3
+ lp7g==
+X-Gm-Message-State: AOJu0Yz7p0LAslz/AFFzUKEc1eJLplpx6zLWuYZeR1gBUABvP88fhnWV
+ ur3nKBwKDOzkYriIpumaTmx/2Ra/DjmNTesptxjGg03N3tYOEBGqJYXunQbgg9gYrd/vzPqUpGp
+ 6NplAsDNd1K6kIX3HpBAxmtmKcdS1+xa18Y/GM92F
+X-Gm-Gg: AR+sD13qJVqcQUVda4aAwKOBGLlheFnzt9Y4pWQzrwRxyerDIY7Lr1ynv7370/MXV0o
+ UBmrNS4dBlRcGdDBBTGw9Hxr7m2tOWo8XY8HeuYgnU6s4wQtvpfufSj38T7EEevO77GbZQSrdeZ
+ XDMCRebDnw7f0tdiAWy4vGfpy+3XN0vmiaCgcQ50rrryZ4j0r922rgQHCVwMT+PfZQ57sz15Rk0
+ IROPt3LgEvi6MmQjhkj8UdTTaBAlXS3FxbfXY0dUQmMWcMiZ84a/OTPYozt+VBJltiyMAHWX2zL
+ MZqX4tKNUoNrkUvq2zQ8cWlzoXaEfI+ZLruzN/s6kMuhdIdIJed3LpsWzi0Itsj/ej9ns7rJn4R
+ lRqCSPIk61w==
+X-Received: by 2002:a05:600c:2d56:b0:495:51b1:3b7c with SMTP id
+ 5b1f17b1804b1-496b4d31667mr3638045e9.8.1785283069282; Tue, 28 Jul 2026
+ 16:57:49 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [172.19.198.4]
-X-ClientProxiedBy: EX19D046UWB002.ant.amazon.com (10.13.139.181) To
- EX19D001UWA001.ant.amazon.com (10.13.138.214)
-X-Mailman-Approved-At: Tue, 28 Jul 2026 22:17:55 +0000
+References: <20260728111157.1793073-1-konstantin.ilichev@intel.com>
+In-Reply-To: <20260728111157.1793073-1-konstantin.ilichev@intel.com>
+Date: Tue, 28 Jul 2026 16:57:35 -0700
+X-Gm-Features: AUfX_mxbt0KD_gvvzhkklKoRnTI_eWfVs5RVlyY6LvZXNK1lN6t9L2mYqs0vntw
+Message-ID: <CAMP57yUmhk2W8VzB00KPoqLDpmiAM2B8dOP2XGXg15yno+6YNA@mail.gmail.com>
+To: Konstantin Ilichev <konstantin.ilichev@intel.com>
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, 
+ anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com, 
+ aleksander.lobakin@intel.com, przemyslaw.korba@intel.com, 
+ aleksandr.loktionov@intel.com, stable@vger.kernel.org, samuel.salin@intel.com, 
+ Milena Olech <milena.olech@intel.com>, Joshua Hay <joshua.a.hay@intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=amazon.com; i=@amazon.com; q=dns/txt; s=amazoncorp2;
- t=1785273674; x=1816809674;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=Rph2h3dE8sb+UJdXEnVycWrs9s4Lm7LfpmQXzCBdBQc=;
- b=G3L/ml6iUER1J84JhFA9q/cXr6Nas2jhkQ/Lb6DDrtGvCYgGA23sqwTn
- EB8UXgosWX6sqvAYmS1CvDKWAc8Y7gtnyws3rvCSv2Qy0UYLjv6aPOjNT
- MZ31ILlZhW+H8+ezLUacdIWAA7uxkwvX0CMUoSfsaST3EcxnqounY2raw
- qsh4c8oPfog2ZY5ImB38dI0GC66TfbHhWM8YBZ//XsZoGdQCHl07nQAf2
- i9sR6PyZMhsyers0ykRQnuJf/WLPUVurD0QvizsEgfn0WDtKr6pR2BYVc
- LUZeJ5wDwPcR9eST0OBIASZb5gII2fUy+YDTKznjgpjVbmh1qQuXnBZC5
- Q==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=amazon.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=amazon.com header.i=@amazon.com header.a=rsa-sha256
- header.s=amazoncorp2 header.b=G3L/ml6i
-Subject: [Intel-wired-lan] [PATCH 6.1.y] i40e: remove read access to debugfs
- files
+ d=google.com; s=20251104; t=1785283070; x=1785887870; darn=lists.osuosl.org;
+ h=content-transfer-encoding:content-type:cc:to:subject:message-id
+ :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+ :date:message-id:reply-to:content-type;
+ bh=1wlVOLDwkm+KngM9k3/RIa39XUDDC8PS7ruQW4Z1o+Y=;
+ b=Roxu/dHOKiDYohsS05g1CLY1IUV1fzoWgLvAL8ttxSAYnmbkgSf5L39LKyfxI6HBVq
+ h+7FLSmECV9zjU00amQu8KVD9gvwoVBrlzkgnQ2Wqt4DtKR1Ddz48R8fMWr5Lq5OObCP
+ 4BaO2uxhIzdzi8IX4n8kJ9cK1i0M/C1K+jn/sEx/SSvvYz4JdVchwAPT5dXYKKNzFmEk
+ 3LI13tehXF9v8FVF0Ub0TX9qsdVxFCOdI9N1zCzSBEBLByrXpj4CJJ4J8a8Hj7EbdP9u
+ h/kD30SyhSJ0bwKX0djnb3KZ0oa0Xyz0ilmRtxv4PiPmHO3OXWk001m67l7DrLOGF8zE
+ wsIg==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dmarc=pass (p=reject dis=none)
+ header.from=google.com
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
+ header.a=rsa-sha256 header.s=20251104 header.b=Roxu/dHO
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next] idpf: add Packet Builder
+ (PKB) timestamping
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -124,288 +145,989 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+From: Naman Gulati via Intel-wired-lan <intel-wired-lan@osuosl.org>
+Reply-To: Naman Gulati <namangulati@google.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+ On Tue, Jul 28, 2026 at 4:12=E2=80=AFAM Konstantin Ilichev
+<konstantin.ilichev@intel.com> wrote:
+>
+> From: Milena Olech <milena.olech@intel.com>
+>
+> PKB timestamping is generated for each packet on the transmit queue, and
+> the PKB timestamp value can be read directly from the completion
+> descriptor. There is no need to enable PKB-based timestamping on the
+> Data Plane side. The only condition that needs to be fulfilled is to have
+> VIRTCHNL2_CAP_TX_CMPL_TSTMP capability negotiated with Control Plane.
+>
+> PKB timestamps are less precise than the PHY timestamping, so if the
+> PHY-based timestamping is enabled, PKB-based is not handled.
+> PKB-based timestamp value has a given granularity. Granularity value is
+> negotiated with the CP and represents a left shift applied to the raw
+> 23-bit counter to obtain nanoseconds (one hardware tick equals 2^gran ns)=
+.
+> The CP signals PKB timestamping is unavailable by setting the granularity
+> field to 0. Based on the negotiated granularity, the Tx timestamp is
+> extended to 64 bit - similarly to PHY-based timestamping - and provided
+> back to the skb.
+>
+> Extending PKB timestamp value to 64 bit requires PTP support.
+> Add unit tests to cover PKB timestamp extension to 64 bits.
+>
+> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+> Signed-off-by: Milena Olech <milena.olech@intel.com>
+> Co-developed-by: Joshua Hay <joshua.a.hay@intel.com>
+> Signed-off-by: Joshua Hay <joshua.a.hay@intel.com>
+> Co-developed-by: Konstantin Ilichev <konstantin.ilichev@intel.com>
+> Signed-off-by: Konstantin Ilichev <konstantin.ilichev@intel.com>
+> ---
+>  drivers/net/ethernet/intel/idpf/.kunitconfig  |  10 +
+>  drivers/net/ethernet/intel/idpf/Kconfig       |  13 +
+>  drivers/net/ethernet/intel/idpf/Makefile      |   2 +
+>  drivers/net/ethernet/intel/idpf/idpf_kunit.c  | 312 ++++++++++++++++++
+>  drivers/net/ethernet/intel/idpf/idpf_ptp.c    |  84 +++++
+>  drivers/net/ethernet/intel/idpf/idpf_ptp.h    |  22 +-
+>  drivers/net/ethernet/intel/idpf/idpf_txrx.c   |  68 +++-
+>  drivers/net/ethernet/intel/idpf/idpf_txrx.h   |   9 +-
+>  .../net/ethernet/intel/idpf/idpf_virtchnl.c   |  21 +-
+>  include/linux/net/intel/virtchnl2.h           |   6 +-
+>  10 files changed, 528 insertions(+), 19 deletions(-)
+>  create mode 100644 drivers/net/ethernet/intel/idpf/.kunitconfig
+>  create mode 100644 drivers/net/ethernet/intel/idpf/idpf_kunit.c
+>
+> diff --git a/drivers/net/ethernet/intel/idpf/.kunitconfig b/drivers/net/e=
+thernet/intel/idpf/.kunitconfig
+> new file mode 100644
+> index 000000000000..35a1ae4ef449
+> --- /dev/null
+> +++ b/drivers/net/ethernet/intel/idpf/.kunitconfig
+> @@ -0,0 +1,10 @@
+> +CONFIG_KUNIT=3Dy
+> +CONFIG_NET=3Dy
+> +CONFIG_ETHERNET=3Dy
+> +CONFIG_NETDEVICES=3Dy
+> +CONFIG_NET_VENDOR_INTEL=3Dy
+> +CONFIG_PCI=3Dy
+> +CONFIG_PCI_MSI=3Dy
+> +CONFIG_PTP_1588_CLOCK=3Dy
+> +CONFIG_IDPF=3Dy
+> +CONFIG_IDPF_KUNIT_TEST=3Dy
+> diff --git a/drivers/net/ethernet/intel/idpf/Kconfig b/drivers/net/ethern=
+et/intel/idpf/Kconfig
+> index 586df3a4afe9..fb9ca41eab1e 100644
+> --- a/drivers/net/ethernet/intel/idpf/Kconfig
+> +++ b/drivers/net/ethernet/intel/idpf/Kconfig
+> @@ -25,4 +25,17 @@ config IDPF_SINGLEQ
+>           wants to work in this mode as it increases the driver size and =
+adds
+>           runtme checks on hotpath.
+>
+> +config IDPF_KUNIT_TEST
+> +       tristate "KUnit tests for the IDPF driver" if !KUNIT_ALL_TESTS
+> +       depends on KUNIT
+> +       default KUNIT_ALL_TESTS
+> +       help
+> +         Enable KUnit-based unit tests for the Intel IDPF driver.
+> +         This builds the idpf_kunit test module used to validate interna=
+l
+> +         helper logic and edge-case behavior in a controlled environment=
+.
+> +         The tests are intended to run without physical hardware and can=
+ be
+> +         executed under KUnit test runners (for example in QEMU).
+> +
+> +         If unsure, say N.
+> +
+>  endif # IDPF
+> diff --git a/drivers/net/ethernet/intel/idpf/Makefile b/drivers/net/ether=
+net/intel/idpf/Makefile
+> index 4aaafa175ec3..68c6485ae079 100644
+> --- a/drivers/net/ethernet/intel/idpf/Makefile
+> +++ b/drivers/net/ethernet/intel/idpf/Makefile
+> @@ -22,3 +22,5 @@ idpf-$(CONFIG_PTP_1588_CLOCK) +=3D idpf_virtchnl_ptp.o
+>
+>  idpf-y                         +=3D xdp.o
+>  idpf-y                         +=3D xsk.o
+> +
+> +obj-$(CONFIG_IDPF_KUNIT_TEST)  +=3D idpf_kunit.o
+> diff --git a/drivers/net/ethernet/intel/idpf/idpf_kunit.c b/drivers/net/e=
+thernet/intel/idpf/idpf_kunit.c
+> new file mode 100644
+> index 000000000000..676ed1ab6819
+> --- /dev/null
+> +++ b/drivers/net/ethernet/intel/idpf/idpf_kunit.c
+> @@ -0,0 +1,312 @@
+> +// SPDX-License-Identifier: GPL-2.0-only
+> +/* Copyright (C) 2026 Intel Corporation */
+> +
+> +#include <kunit/test.h>
+> +
+> +#include "idpf.h"
+> +#include "idpf_ptp.h"
+> +
+> +#if IS_ENABLED(CONFIG_PTP_1588_CLOCK)
+> +
+> +struct pkb_tstamp_test_case {
+> +       const char *desc;
+> +       u64 cached_phc_time;
+> +       u32 in_timestamp;
+> +       u8  gran;
+> +       u64 expected;
+> +};
+> +
+> +struct pkb_tstamp_negative_case {
+> +       const char *desc;
+> +       u64 cached_phc_time;
+> +       u64 current_phc_time;
+> +       u8 gran;
+> +       u64 expected;
+> +};
+> +
+> +/*
+> + * KUnit tests for idpf_pkb_tstamp_extend_23b_to_64b().
+> + *
+> + * The function extends a raw 23-bit Packet Builder (PKB) timestamp to a
+> + * full 64-bit nanosecond value using the cached PHC time.  @gran is a
+> + * left-shift that converts the 23-bit raw counter value to nanoseconds:
+> + * one hardware tick equals 2^gran nanoseconds (e.g. gran=3D7 - 128 ns/t=
+ick,
+> + * gran=3D12 - 4096 ns/tick).
+> + */
+> +static const struct pkb_tstamp_test_case pkb_tstamp_cases[] =3D {
+> +       {
+> +               .desc            =3D "gran =3D 7: same bucket rounds down=
+",
+> +               .gran            =3D 7,
+> +               .cached_phc_time =3D 0x25,
+> +               .in_timestamp    =3D 0x0,
+> +               .expected        =3D 0x0,
+> +       },
+> +       {
+> +               .desc            =3D "gran =3D 7: reverse small delta",
+> +               .gran            =3D 7,
+> +               .cached_phc_time =3D 0x85,
+> +               .in_timestamp    =3D 0x1,
+> +               .expected        =3D 0x80,
+> +       },
+> +       {
+> +               .desc            =3D "gran =3D 7: forward small delta",
+> +               .gran            =3D 7,
+> +               .cached_phc_time =3D 0x80,
+> +               .in_timestamp    =3D 0x2,
+> +               .expected        =3D 0x100,
+> +       },
+> +       {
+> +               .desc            =3D "gran =3D 7: forward wrap across 30-=
+bit ring",
+> +               .gran            =3D 7,
+> +               .cached_phc_time =3D 0x123fffff80,
+> +               .in_timestamp    =3D 0x0,
+> +               .expected        =3D 0x1240000000,
+> +       },
+> +       {
+> +               .desc            =3D "gran =3D 7: reverse wrap across 30-=
+bit ring",
+> +               .gran            =3D 7,
+> +               .cached_phc_time =3D 0x1240000000,
+> +               .in_timestamp    =3D 0x7fffff,
+> +               .expected        =3D 0x123fffff80,
+> +       },
+> +       {
+> +               .desc            =3D "gran =3D 7: delta =3D=3D half-range=
+ boundary",
+> +               .gran            =3D 7,
+> +               .cached_phc_time =3D 0x1220000080,
+> +               .in_timestamp    =3D 0x1,
+> +               .expected        =3D 0x1200000080,
+> +       },
+> +       {
+> +               .desc            =3D "gran =3D 9: reverse small delta",
+> +               .gran            =3D 9,
+> +               .cached_phc_time =3D 0x255,
+> +               .in_timestamp    =3D 0x1,
+> +               .expected        =3D 0x200,
+> +       },
+> +       {
+> +               .desc            =3D "gran =3D 9: upper raw bits are mask=
+ed",
+> +               .gran            =3D 9,
+> +               .cached_phc_time =3D 0x255,
+> +               .in_timestamp    =3D 0xFF800001,
+> +               .expected        =3D 0x200,
+> +       },
+> +       {
+> +               .desc            =3D "gran =3D 9: forward wrap across 32-=
+bit ring",
+> +               .gran            =3D 9,
+> +               .cached_phc_time =3D 0x00000001fffffff0,
+> +               .in_timestamp    =3D 0x1,
+> +               .expected        =3D 0x0000000200000200,
+> +       },
+> +       {
+> +               .desc            =3D "gran =3D 9: reverse wrap across 32-=
+bit ring",
+> +               .gran            =3D 9,
+> +               .cached_phc_time =3D 0x0000000200000200,
+> +               .in_timestamp    =3D 0x7fffff,
+> +               .expected        =3D 0x00000001fffffe00,
+> +       },
+> +       {
+> +               .desc            =3D "gran =3D 9: delta =3D=3D half-range=
+ boundary",
+> +               .gran            =3D 9,
+> +               .cached_phc_time =3D 0x0000000280000200,
+> +               .in_timestamp    =3D 0x1,
+> +               .expected        =3D 0x0000000200000200,
+> +       },
+> +       {
+> +               .desc            =3D "gran =3D 12: same bucket rounds dow=
+n",
+> +               .gran            =3D 12,
+> +               .cached_phc_time =3D 0x2555,
+> +               .in_timestamp    =3D 0x2,
+> +               .expected        =3D 0x2000,
+> +       },
+> +       {
+> +               .desc            =3D "gran =3D 12: forward small delta",
+> +               .gran            =3D 12,
+> +               .cached_phc_time =3D 0x12345000,
+> +               .in_timestamp    =3D 0x12346,
+> +               .expected        =3D 0x12346000,
+> +       },
+> +       {
+> +               .desc            =3D "gran =3D 12: reverse small delta",
+> +               .gran            =3D 12,
+> +               .cached_phc_time =3D 0x12346010,
+> +               .in_timestamp    =3D 0x12346,
+> +               .expected        =3D 0x12346000,
+> +       },
+> +       {
+> +               .desc            =3D "gran =3D 12: forward wrap across 35=
+-bit ring",
+> +               .gran            =3D 12,
+> +               .cached_phc_time =3D 0x00000017fffff000,
+> +               .in_timestamp    =3D 0x1,
+> +               .expected        =3D 0x0000001800001000,
+> +       },
+> +       {
+> +               .desc            =3D "gran =3D 12: reverse wrap across 35=
+-bit ring",
+> +               .gran            =3D 12,
+> +               .cached_phc_time =3D 0x0000001800001000,
+> +               .in_timestamp    =3D 0x7fffff,
+> +               .expected        =3D 0x00000017fffff000,
+> +       },
+> +       {
+> +               .desc            =3D "gran =3D 12: delta =3D=3D half-rang=
+e boundary",
+> +               .gran            =3D 12,
+> +               .cached_phc_time =3D 0x0000000500001000,
+> +               .in_timestamp    =3D 0x100001,
+> +               .expected        =3D 0x0000000100001000,
+> +       },
+> +};
+> +
+> +/*
+> + * Negative tests document expected aliasing when the cached PHC is too =
+old:
+> + * if |delta| exceeds half of the modular range, extension cannot be uni=
+que.
+> + */
+> +static const struct pkb_tstamp_negative_case pkb_tstamp_negative_cases[]=
+ =3D {
+> +       /* gran =3D 7: |delta| =3D half_range + quantum (closest ambiguou=
+s cases). */
+> +       {
+> +               .desc             =3D "gran =3D 7: stale cache near-bound=
+ary far-forward (half + q)",
+> +               .gran             =3D 7,
+> +               .cached_phc_time  =3D 0x1234000000,
+> +               .current_phc_time =3D 0x1254000080,
+> +               .expected         =3D 0x1214000080,
+> +       },
+> +       {
+> +               .desc             =3D "gran =3D 7: stale cache near-bound=
+ary far-backward (half + q)",
+> +               .gran             =3D 7,
+> +               .cached_phc_time  =3D 0x1234000000,
+> +               .current_phc_time =3D 0x1213ffff80,
+> +               .expected         =3D 0x1253ffff80,
+> +       },
+> +       /* gran =3D 7: |delta| is well beyond half_range. */
+> +       {
+> +               .desc             =3D "gran =3D 7: stale cache aliases fa=
+r-forward time",
+> +               .gran             =3D 7,
+> +               .cached_phc_time  =3D 0x123fffff81,
+> +               .current_phc_time =3D 0x126011ff89,
+> +               .expected         =3D 0x122011ff80,
+> +       },
+> +       {
+> +               .desc             =3D "gran =3D 7: stale cache aliases fa=
+r-backward time",
+> +               .gran             =3D 7,
+> +               .cached_phc_time  =3D 0x123fffff81,
+> +               .current_phc_time =3D 0x121fffff01,
+> +               .expected         =3D 0x125fffff00,
+> +       },
+> +       /* gran =3D 9: |delta| =3D half_range + quantum (closest ambiguou=
+s cases). */
+> +       {
+> +               .desc             =3D "gran =3D 9: stale cache near-bound=
+ary far-forward (half + q)",
+> +               .gran             =3D 9,
+> +               .cached_phc_time  =3D 0x1234000000,
+> +               .current_phc_time =3D 0x12b4000200,
+> +               .expected         =3D 0x11b4000200,
+> +       },
+> +       {
+> +               .desc             =3D "gran =3D 9: stale cache near-bound=
+ary far-backward (half + q)",
+> +               .gran             =3D 9,
+> +               .cached_phc_time  =3D 0x1234000000,
+> +               .current_phc_time =3D 0x11b3fffe00,
+> +               .expected         =3D 0x12b3fffe00,
+> +       },
+> +       /* gran =3D 9: |delta| is well beyond half_range. */
+> +       {
+> +               .desc             =3D "gran =3D 9: stale cache aliases fa=
+r-forward time",
+> +               .gran             =3D 9,
+> +               .cached_phc_time  =3D 0x0000000100000000,
+> +               .current_phc_time =3D 0x0000000180000200,
+> +               .expected         =3D 0x0000000080000200,
+> +       },
+> +       {
+> +               .desc             =3D "gran =3D 9: stale cache aliases fa=
+r-backward time",
+> +               .gran             =3D 9,
+> +               .cached_phc_time  =3D 0x0000000100000000,
+> +               .current_phc_time =3D 0x000000007ffffe00,
+> +               .expected         =3D 0x000000017ffffe00,
+> +       },
+> +       /* gran =3D 12: |delta| =3D half_range + quantum (closest ambiguo=
+us cases). */
+> +       {
+> +               .desc             =3D "gran =3D 12: stale cache near-boun=
+dary far-forward (half + q)",
+> +               .gran             =3D 12,
+> +               .cached_phc_time  =3D 0x1234000000,
+> +               .current_phc_time =3D 0x1634001000,
+> +               .expected         =3D 0x0e34001000,
+> +       },
+> +       {
+> +               .desc             =3D "gran =3D 12: stale cache near-boun=
+dary far-backward (half + q)",
+> +               .gran             =3D 12,
+> +               .cached_phc_time  =3D 0x1234000000,
+> +               .current_phc_time =3D 0x0e33fff000,
+> +               .expected         =3D 0x1633fff000,
+> +       },
+> +       /* gran =3D 12: |delta| is well beyond half_range. */
+> +       {
+> +               .desc             =3D "gran =3D 12: stale cache aliases f=
+ar-forward time",
+> +               .gran             =3D 12,
+> +               .cached_phc_time  =3D 0x0000000500001000,
+> +               .current_phc_time =3D 0x0000000900002000,
+> +               .expected         =3D 0x0000000100002000,
+> +       },
+> +       {
+> +               .desc             =3D "gran =3D 12: stale cache aliases f=
+ar-backward time",
+> +               .gran             =3D 12,
+> +               .cached_phc_time  =3D 0x0000000500001000,
+> +               .current_phc_time =3D 0x0000000100000000,
+> +               .expected         =3D 0x0000000900000000,
+> +       },
+> +};
+> +
+> +KUNIT_ARRAY_PARAM_DESC(pkb_tstamp, pkb_tstamp_cases, desc)
+> +
+> +static void test_pkb_tstamp_extend_23b_to_64b(struct kunit *test)
+> +{
+> +       const struct pkb_tstamp_test_case *tc =3D test->param_value;
+> +       u64 result;
+> +
+> +       result =3D idpf_pkb_tstamp_extend_23b_to_64b(tc->cached_phc_time,
+> +                                                  tc->in_timestamp,
+> +                                                  tc->gran);
+> +       KUNIT_EXPECT_EQ(test, result, tc->expected);
+> +}
+> +
+> +KUNIT_ARRAY_PARAM_DESC(pkb_tstamp_negative, pkb_tstamp_negative_cases, d=
+esc)
+> +
+> +static void test_pkb_tstamp_extend_23b_to_64b_negative(struct kunit *tes=
+t)
+> +{
+> +       const struct pkb_tstamp_negative_case *tc =3D test->param_value;
+> +       u64 true_time, result;
+> +       u32 in_timestamp;
+> +
+> +       in_timestamp =3D (tc->current_phc_time >> tc->gran) & GENMASK(22,=
+ 0);
+> +       true_time =3D tc->current_phc_time & ~(BIT_ULL(tc->gran) - 1);
+> +
+> +       result =3D idpf_pkb_tstamp_extend_23b_to_64b(tc->cached_phc_time,
+> +                                                  in_timestamp,
+> +                                                  tc->gran);
+> +
+> +       /*
+> +        * Result is expected to differ from the true quantized time when=
+ stale
+> +        * cache makes the extension ambiguous (> half modular range).
+> +        */
+> +       KUNIT_EXPECT_NE(test, result, true_time);
+> +       KUNIT_EXPECT_EQ(test, result, tc->expected);
+> +}
+> +
+> +#endif /* CONFIG_PTP_1588_CLOCK */
+> +
+> +static struct kunit_case idpf_kunit_test_cases[] =3D {
+> +#if IS_ENABLED(CONFIG_PTP_1588_CLOCK)
+> +       KUNIT_CASE_PARAM(test_pkb_tstamp_extend_23b_to_64b,
+> +                        pkb_tstamp_gen_params),
+> +       KUNIT_CASE_PARAM(test_pkb_tstamp_extend_23b_to_64b_negative,
+> +                        pkb_tstamp_negative_gen_params),
+> +#endif /* CONFIG_PTP_1588_CLOCK */
+> +       {}
+> +};
+> +
+> +static struct kunit_suite idpf_kunit_test_suite =3D {
+> +       .name =3D "idpf-kunit",
+> +       .test_cases =3D idpf_kunit_test_cases,
+> +};
+> +
+> +kunit_test_suite(idpf_kunit_test_suite);
+> +
+> +MODULE_IMPORT_NS("EXPORTED_FOR_KUNIT_TESTING");
+> +MODULE_DESCRIPTION("KUnit tests for IDPF driver");
+> +MODULE_LICENSE("GPL");
+> diff --git a/drivers/net/ethernet/intel/idpf/idpf_ptp.c b/drivers/net/eth=
+ernet/intel/idpf/idpf_ptp.c
+> index 71fe8b2a8b4e..e9da88a4a19e 100644
+> --- a/drivers/net/ethernet/intel/idpf/idpf_ptp.c
+> +++ b/drivers/net/ethernet/intel/idpf/idpf_ptp.c
+> @@ -1,6 +1,7 @@
+>  // SPDX-License-Identifier: GPL-2.0-only
+>  /* Copyright (C) 2024 Intel Corporation */
+>
+> +#include <kunit/visibility.h>
+>  #include "idpf.h"
+>  #include "idpf_ptp.h"
+>
+> @@ -326,6 +327,23 @@ static int idpf_ptp_gettimex64(struct ptp_clock_info=
+ *info,
+>         return 0;
+>  }
+>
+> +/**
+> + * idpf_ptp_update_phctime_txq_grp - Update the cached PHC time for a gi=
+ven Tx
+> + *                                  queue group.
+> + * @grp: transmit queue group in which Tx timestamp is enabled
+> + * @systime: cached system time
+> + */
+> +static void
+> +idpf_ptp_update_phctime_txq_grp(const struct idpf_txq_group *grp, u64 sy=
+stime)
+> +{
+> +       for (u16 i =3D 0; i < grp->num_txq; i++) {
+> +               struct idpf_tx_queue *txq =3D grp->txqs[i];
+> +
+> +               if (txq)
+> +                       WRITE_ONCE(txq->cached_phc, systime);
+> +       }
+> +}
+> +
+>  /**
+>   * idpf_ptp_update_phctime_rxq_grp - Update the cached PHC time for a gi=
+ven Rx
+>   *                                  queue group.
+> @@ -369,6 +387,7 @@ idpf_ptp_update_phctime_rxq_grp(const struct idpf_rxq=
+_group *grp, bool split,
+>   */
+>  static int idpf_ptp_update_cached_phctime(struct idpf_adapter *adapter)
+>  {
+> +       bool pkb_ena =3D adapter->ptp->pkb_tstamp_ena;
+>         u64 systime;
+>         int err;
+>
+> @@ -398,6 +417,15 @@ static int idpf_ptp_update_cached_phctime(struct idp=
+f_adapter *adapter)
+>
+>                         idpf_ptp_update_phctime_rxq_grp(grp, split, systi=
+me);
+>                 }
+> +
+> +               if (!pkb_ena)
+> +                       continue;
+> +
+> +               for (u16 i =3D 0; i < rsrc->num_txq_grp; i++) {
+> +                       struct idpf_txq_group *grp =3D &rsrc->txq_grps[i]=
+;
 
-[ Upstream commit 9fcdb1c3c4ba134434694c001dbff343f1ffa319 ]
+idpf_txq_group_rel can free txq_grps and set it to NULL without
+clearing num_txq_grp. If this aux worker runs after (or while)
+idpf_txq_group_rel has been called this can lead to a NULL
+dereference. Does this need to operate with vport_ctrl_lock?
 
-The 'command' and 'netdev_ops' debugfs files are a legacy debugging
-interface supported by the i40e driver since its early days by commit
-02e9c290814c ("i40e: debugfs interface").
+> +
+> +                       idpf_ptp_update_phctime_txq_grp(grp, systime);
+> +               }
+>         }
+>
+>         return 0;
+> @@ -599,6 +627,62 @@ u64 idpf_ptp_tstamp_extend_32b_to_64b(u64 cached_phc=
+_time, u32 in_timestamp)
+>         return ns;
+>  }
+>
+> +/**
+> + * idpf_pkb_tstamp_extend_23b_to_64b - Convert a 23b raw packet builder =
+(PKB)
+> + * timestamp value to 64b nanoseconds.
+> + * @cached_phc_time: recently cached copy of PHC time
+> + * @in_timestamp: raw packet builder timestamp value (at most 23 bits)
+> + * @gran: granularity shift, number of left shifts to convert
+> + *       @in_timestamp to nanoseconds
+> + *
+> + * Hardware captures PKB timestamps with at most 23 significant bits, wi=
+th
+> + * upper bits being zero. The @gran parameter specifies the granularity =
+shift
+> + * needed to express the raw value in nanoseconds. The resulting nanosec=
+ond
+> + * value is then extended to 64 bits using the cached PHC time.
+> + *
+> + * Return: PKB timestamp value extended to 64 bits based on cached PHC t=
+ime.
+> + */
+> +u64 idpf_pkb_tstamp_extend_23b_to_64b(u64 cached_phc_time, u32 in_timest=
+amp,
+> +                                     u8 gran)
+> +{
+> +       u64 in_tstamp_ns, delta, phc_time_lo, tstamp_mask, ns;
+> +
+> +       /*
+> +        * Convert the raw timestamp to nanoseconds. Mask to 23 bits firs=
+t,
+> +        * then cast to u64 before shifting to avoid truncation when the =
+result
+> +        * exceeds 32 bits.
+> +        */
+> +       in_tstamp_ns =3D (u64)(in_timestamp & GENMASK(IDPF_PKB_TS_BITS - =
+1, 0));
+> +       in_tstamp_ns <<=3D gran;
+> +
+> +       /*
+> +        * Mask covering all (23 + gran) significant bits of the timestam=
+p.
+> +        * Used to extract the matching low bits from the PHC time and to
+> +        * keep delta arithmetic within the same modular range.
+> +        */
+> +       tstamp_mask =3D GENMASK_ULL(IDPF_PKB_TS_BITS - 1 + gran, 0);
+> +
+> +       /* Extract the lower (23 + gran) bits of the PHC time */
+> +       phc_time_lo =3D cached_phc_time & tstamp_mask;
+> +
+> +       /*
+> +        * Calculate the delta between the lower bits of the cached PHC
+> +        * time and the in_tstamp_ns value.
+> +        */
+> +       delta =3D (in_tstamp_ns - phc_time_lo) & tstamp_mask;
+> +
+> +       if (delta > tstamp_mask / 2) {
+> +               /* Reverse the delta calculation here */
+> +               delta =3D (phc_time_lo - in_tstamp_ns) & tstamp_mask;
+> +               ns =3D cached_phc_time - delta;
+> +       } else {
+> +               ns =3D cached_phc_time + delta;
+> +       }
+> +
+> +       return ns;
+> +}
+> +EXPORT_SYMBOL_IF_KUNIT(idpf_pkb_tstamp_extend_23b_to_64b);
+> +
+>  /**
+>   * idpf_ptp_extend_ts - Convert a 40b timestamp to 64b nanoseconds
+>   * @vport: Virtual port structure
+> diff --git a/drivers/net/ethernet/intel/idpf/idpf_ptp.h b/drivers/net/eth=
+ernet/intel/idpf/idpf_ptp.h
+> index 785da03e4cf5..0a01f9b6da67 100644
+> --- a/drivers/net/ethernet/intel/idpf/idpf_ptp.h
+> +++ b/drivers/net/ethernet/intel/idpf/idpf_ptp.h
+> @@ -6,6 +6,11 @@
+>
+>  #include <linux/ptp_clock_kernel.h>
+>
+> +/* Number of significant bits in a raw PKB timestamp */
+> +#define IDPF_PKB_TS_BITS 23
+> +/* Maximum supported granularity shift for PKB timestamp extension */
+> +#define IDPF_PKB_GRAN_MAX ((u8)(sizeof(u64) * 8 - IDPF_PKB_TS_BITS))
+> +
+>  /**
+>   * struct idpf_ptp_cmd - PTP command masks
+>   * @exec_cmd_mask: mask to trigger command execution
+> @@ -172,7 +177,9 @@ struct idpf_ptp_vport_tx_tstamp_caps {
+>   * @set_dev_clk_time_access: access type for setting the device clock ti=
+me
+>   * @adj_dev_clk_time_access: access type for the adjusting the device cl=
+ock
+>   * @tx_tstamp_access: access type for the Tx timestamp value read
+> - * @rsv: reserved bits
+> + * @pkb_tstamp_ena: packet builder (PKB) timestamping enabled
+> + * @tx_compl_tstamp_gran_s: number of left shifts to convert Tx completi=
+on
+> + *                         descriptor timestamp in nanoseconds
+>   * @secondary_mbx: parameters for using dedicated PTP mailbox
+>   * @read_dev_clk_lock: spinlock protecting access to the device clock re=
+ad
+>   *                    operation executed by the HW latch
+> @@ -193,7 +200,8 @@ struct idpf_ptp {
+>         enum idpf_ptp_access set_dev_clk_time_access:2;
+>         enum idpf_ptp_access adj_dev_clk_time_access:2;
+>         enum idpf_ptp_access tx_tstamp_access:2;
+> -       u8 rsv;
+> +       bool pkb_tstamp_ena:1;
+> +       u8 tx_compl_tstamp_gran_s;
+>         struct idpf_ptp_secondary_mbx secondary_mbx;
+>         spinlock_t read_dev_clk_lock;
+>  };
+> @@ -283,13 +291,15 @@ int idpf_ptp_set_timestamp_mode(struct idpf_vport *=
+vport,
+>                                 struct kernel_hwtstamp_config *config);
+>  u64 idpf_ptp_extend_ts(struct idpf_vport *vport, u64 in_tstamp);
+>  u64 idpf_ptp_tstamp_extend_32b_to_64b(u64 cached_phc_time, u32 in_timest=
+amp);
+> +u64 idpf_pkb_tstamp_extend_23b_to_64b(u64 cached_phc_time, u32 in_timest=
+amp,
+> +                                     u8 gran);
+>  int idpf_ptp_request_ts(struct idpf_tx_queue *tx_q, struct sk_buff *skb,
+>                         u32 *idx);
+>  void idpf_tstamp_task(struct work_struct *work);
+>  #else /* CONFIG_PTP_1588_CLOCK */
+>  static inline int idpf_ptp_init(struct idpf_adapter *adapter)
+>  {
+> -       return 0;
+> +       return -EOPNOTSUPP;
+>  }
+>
+>  static inline void idpf_ptp_release(struct idpf_adapter *adapter) { }
+> @@ -368,6 +378,12 @@ static inline u64 idpf_ptp_tstamp_extend_32b_to_64b(=
+u64 cached_phc_time,
+>         return 0;
+>  }
+>
+> +static inline u64 idpf_pkb_tstamp_extend_23b_to_64b(u64 cached_phc_time,
+> +                                                   u32 in_timestamp, u8 =
+gran)
+> +{
+> +       return 0;
+> +}
+> +
+>  static inline int idpf_ptp_request_ts(struct idpf_tx_queue *tx_q,
+>                                       struct sk_buff *skb, u32 *idx)
+>  {
+> diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/et=
+hernet/intel/idpf/idpf_txrx.c
+> index 9d9448cfd68b..24135013e256 100644
+> --- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
+> +++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
+> @@ -1441,12 +1441,21 @@ static int idpf_vport_init_fast_path_txqs(struct =
+idpf_vport *vport,
+>  {
+>         struct idpf_ptp_vport_tx_tstamp_caps *caps =3D vport->tx_tstamp_c=
+aps;
+>         struct work_struct *tstamp_task =3D &vport->tstamp_task;
+> +       struct idpf_ptp *ptp =3D vport->adapter->ptp;
+> +       bool pkb_ena =3D false;
+> +       u8 tstamp_gran;
+>         int k =3D 0;
+>
+>         vport->txqs =3D kzalloc_objs(*vport->txqs, rsrc->num_txq);
+>         if (!vport->txqs)
+>                 return -ENOMEM;
+>
+> +       if (ptp) {
+> +               pkb_ena =3D ptp->pkb_tstamp_ena;
+> +               if (pkb_ena)
+> +                       tstamp_gran =3D ptp->tx_compl_tstamp_gran_s;
+> +       }
+> +
+>         vport->num_txq =3D rsrc->num_txq;
+>         for (unsigned int i =3D 0; i < rsrc->num_txq_grp; i++) {
+>                 struct idpf_txq_group *tx_grp =3D &rsrc->txq_grps[i];
+> @@ -1458,6 +1467,13 @@ static int idpf_vport_init_fast_path_txqs(struct i=
+dpf_vport *vport,
+>                         if (!caps)
+>                                 continue;
+>
+> +                       /*
+> +                        * For PKB timestamping assign granularity negoti=
+ated
+> +                        * with the Control Plane.
+> +                        */
+> +                       if (pkb_ena)
+> +                               vport->txqs[k]->compl_tstamp_ns_s =3D tst=
+amp_gran;
 
-Both of these debugfs files provide a read handler which is mostly useless,
-and which is implemented with questionable logic. They both use a static
-256 byte buffer which is initialized to the empty string. In the case of
-the 'command' file this buffer is literally never used and simply wastes
-space. In the case of the 'netdev_ops' file, the last command written is
-saved here.
+As the commit message says, PKB timestamps only require the
+VIRTCHNL2_CAP_TX_CMPL_TSTMP. Here afaict, caps would be NULL if
+ptp->tx_tstamp_access is IDPF_PTP_NONE (meaning its neither DIRECT or
+MAILBOX) and as a result we would not set compl_tstamp_ns_s either.
+Does this contradict the "The only condition that needs to be
+fulfilled is to have VIRTCHNL2_CAP_TX_CMPL_TSTMP capability negotiated
+with Control Plane"? It might be valid to require that we still
+require the control plane to advertise VIRTCHNL2_CAP_PTP_TX_TSTAMPS or
+VIRTCHNL2_CAP_PTP_TX_TSTAMPS_MB, but would be good to call this out
+explicitly then.
 
-On read, the files contents are presented as the name of the device
-followed by a colon and then the contents of their respective static
-buffer. For 'command' this will always be "<device>: ". For 'netdev_ops',
-this will be "<device>: <last command written>". But note the buffer is
-shared between all devices operated by this module. At best, it is mostly
-meaningless information, and at worse it could be accessed simultaneously
-as there doesn't appear to be any locking mechanism.
-
-We have also recently received multiple reports for both read functions
-about their use of snprintf and potential overflow that could result in
-reading arbitrary kernel memory. For the 'command' file, this is
-definitely impossible, since the static buffer is always zero and never
-written to. For the 'netdev_ops' file, it does appear to be possible, if
-the user carefully crafts the command input, it will be copied into the
-buffer, which could be large enough to cause snprintf to truncate, which
-then causes the copy_to_user to read beyond the length of the buffer
-allocated by kzalloc.
-
-A minimal fix would be to replace snprintf() with scnprintf() which would
-cap the return to the number of bytes written, preventing an overflow. A
-more involved fix would be to drop the mostly useless static buffers,
-saving 512 bytes and modifying the read functions to stop needing those as
-input.
-
-Instead, lets just completely drop the read access to these files. These
-are debug interfaces exposed as part of debugfs, and I don't believe that
-dropping read access will break any script, as the provided output is
-pretty useless. You can find the netdev name through other more standard
-interfaces, and the 'netdev_ops' interface can easily result in garbage if
-you issue simultaneous writes to multiple devices at once.
-
-In order to properly remove the i40e_dbg_netdev_ops_buf, we need to
-refactor its write function to avoid using the static buffer. Instead, use
-the same logic as the i40e_dbg_command_write, with an allocated buffer.
-Update the code to use this instead of the static buffer, and ensure we
-free the buffer on exit. This fixes simultaneous writes to 'netdev_ops' on
-multiple devices, and allows us to remove the now unused static buffer
-along with removing the read access.
-
-Fixes: 02e9c290814c ("i40e: debugfs interface")
-Reported-by: Kunwu Chan <chentao@kylinos.cn>
-Closes: https://lore.kernel.org/intel-wired-lan/20231208031950.47410-1-chentao@kylinos.cn/
-Reported-by: Wang Haoran <haoranwangsec@gmail.com>
-Closes: https://lore.kernel.org/all/CANZ3JQRRiOdtfQJoP9QM=6LS1Jto8PGBGw6y7-TL=BcnzHQn1Q@mail.gmail.com/
-Reported-by: Amir Mohammad Jahangirzad <a.jahangirzad@gmail.com>
-Closes: https://lore.kernel.org/all/20250722115017.206969-1-a.jahangirzad@gmail.com/
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Reviewed-by: Dawid Osuchowski <dawid.osuchowski@linux.intel.com>
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Reviewed-by: Simon Horman <horms@kernel.org>
-Reviewed-by: Kunwu Chan <kunwu.chan@linux.dev>
-Tested-by: Rinitha S <sx.rinitha@intel.com> (A Contingent worker at Intel)
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
-[Adapted to 6.1: context conflict due to 6.1 using pf->vsi[pf->lan_vsi]
- vs i40e_pf_get_main_vsi(pf) in the removed read functions; resolution
- is simply to delete the 6.1 version of those functions.]
-Signed-off-by: Jay Wang <wanjay@amazon.com>
----
- .../net/ethernet/intel/i40e/i40e_debugfs.c    | 121 +++---------------
- 1 file changed, 19 insertions(+), 102 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-index b438cf846c41b..5b59db6a5439c 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-@@ -57,47 +57,6 @@ static struct i40e_veb *i40e_dbg_find_veb(struct i40e_pf *pf, int seid)
-  * setup, adding or removing filters, or other things.  Many of
-  * these will be useful for some forms of unit testing.
-  **************************************************************/
--static char i40e_dbg_command_buf[256] = "";
--
--/**
-- * i40e_dbg_command_read - read for command datum
-- * @filp: the opened file
-- * @buffer: where to write the data for the user to read
-- * @count: the size of the user's buffer
-- * @ppos: file position offset
-- **/
--static ssize_t i40e_dbg_command_read(struct file *filp, char __user *buffer,
--				     size_t count, loff_t *ppos)
--{
--	struct i40e_pf *pf = filp->private_data;
--	int bytes_not_copied;
--	int buf_size = 256;
--	char *buf;
--	int len;
--
--	/* don't allow partial reads */
--	if (*ppos != 0)
--		return 0;
--	if (count < buf_size)
--		return -ENOSPC;
--
--	buf = kzalloc(buf_size, GFP_KERNEL);
--	if (!buf)
--		return -ENOSPC;
--
--	len = snprintf(buf, buf_size, "%s: %s\n",
--		       pf->vsi[pf->lan_vsi]->netdev->name,
--		       i40e_dbg_command_buf);
--
--	bytes_not_copied = copy_to_user(buffer, buf, len);
--	kfree(buf);
--
--	if (bytes_not_copied)
--		return -EFAULT;
--
--	*ppos = len;
--	return len;
--}
- 
- static char *i40e_filter_state_string[] = {
- 	"INVALID",
-@@ -1636,7 +1595,6 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
- static const struct file_operations i40e_dbg_command_fops = {
- 	.owner = THIS_MODULE,
- 	.open =  simple_open,
--	.read =  i40e_dbg_command_read,
- 	.write = i40e_dbg_command_write,
- };
- 
-@@ -1645,47 +1603,6 @@ static const struct file_operations i40e_dbg_command_fops = {
-  * The netdev_ops entry in debugfs is for giving the driver commands
-  * to be executed from the netdev operations.
-  **************************************************************/
--static char i40e_dbg_netdev_ops_buf[256] = "";
--
--/**
-- * i40e_dbg_netdev_ops_read - read for netdev_ops datum
-- * @filp: the opened file
-- * @buffer: where to write the data for the user to read
-- * @count: the size of the user's buffer
-- * @ppos: file position offset
-- **/
--static ssize_t i40e_dbg_netdev_ops_read(struct file *filp, char __user *buffer,
--					size_t count, loff_t *ppos)
--{
--	struct i40e_pf *pf = filp->private_data;
--	int bytes_not_copied;
--	int buf_size = 256;
--	char *buf;
--	int len;
--
--	/* don't allow partal reads */
--	if (*ppos != 0)
--		return 0;
--	if (count < buf_size)
--		return -ENOSPC;
--
--	buf = kzalloc(buf_size, GFP_KERNEL);
--	if (!buf)
--		return -ENOSPC;
--
--	len = snprintf(buf, buf_size, "%s: %s\n",
--		       pf->vsi[pf->lan_vsi]->netdev->name,
--		       i40e_dbg_netdev_ops_buf);
--
--	bytes_not_copied = copy_to_user(buffer, buf, len);
--	kfree(buf);
--
--	if (bytes_not_copied)
--		return -EFAULT;
--
--	*ppos = len;
--	return len;
--}
- 
- /**
-  * i40e_dbg_netdev_ops_write - write into netdev_ops datum
-@@ -1699,35 +1616,36 @@ static ssize_t i40e_dbg_netdev_ops_write(struct file *filp,
- 					 size_t count, loff_t *ppos)
- {
- 	struct i40e_pf *pf = filp->private_data;
-+	char *cmd_buf, *buf_tmp;
- 	int bytes_not_copied;
- 	struct i40e_vsi *vsi;
--	char *buf_tmp;
- 	int vsi_seid;
- 	int i, cnt;
- 
- 	/* don't allow partial writes */
- 	if (*ppos != 0)
- 		return 0;
--	if (count >= sizeof(i40e_dbg_netdev_ops_buf))
--		return -ENOSPC;
- 
--	memset(i40e_dbg_netdev_ops_buf, 0, sizeof(i40e_dbg_netdev_ops_buf));
--	bytes_not_copied = copy_from_user(i40e_dbg_netdev_ops_buf,
--					  buffer, count);
--	if (bytes_not_copied)
-+	cmd_buf = kzalloc(count + 1, GFP_KERNEL);
-+	if (!cmd_buf)
-+		return count;
-+	bytes_not_copied = copy_from_user(cmd_buf, buffer, count);
-+	if (bytes_not_copied) {
-+		kfree(cmd_buf);
- 		return -EFAULT;
--	i40e_dbg_netdev_ops_buf[count] = '\0';
-+	}
-+	cmd_buf[count] = '\0';
- 
--	buf_tmp = strchr(i40e_dbg_netdev_ops_buf, '\n');
-+	buf_tmp = strchr(cmd_buf, '\n');
- 	if (buf_tmp) {
- 		*buf_tmp = '\0';
--		count = buf_tmp - i40e_dbg_netdev_ops_buf + 1;
-+		count = buf_tmp - cmd_buf + 1;
- 	}
- 
--	if (strncmp(i40e_dbg_netdev_ops_buf, "change_mtu", 10) == 0) {
-+	if (strncmp(cmd_buf, "change_mtu", 10) == 0) {
- 		int mtu;
- 
--		cnt = sscanf(&i40e_dbg_netdev_ops_buf[11], "%i %i",
-+		cnt = sscanf(&cmd_buf[11], "%i %i",
- 			     &vsi_seid, &mtu);
- 		if (cnt != 2) {
- 			dev_info(&pf->pdev->dev, "change_mtu <vsi_seid> <mtu>\n");
-@@ -1749,8 +1667,8 @@ static ssize_t i40e_dbg_netdev_ops_write(struct file *filp,
- 			dev_info(&pf->pdev->dev, "Could not acquire RTNL - please try again\n");
- 		}
- 
--	} else if (strncmp(i40e_dbg_netdev_ops_buf, "set_rx_mode", 11) == 0) {
--		cnt = sscanf(&i40e_dbg_netdev_ops_buf[11], "%i", &vsi_seid);
-+	} else if (strncmp(cmd_buf, "set_rx_mode", 11) == 0) {
-+		cnt = sscanf(&cmd_buf[11], "%i", &vsi_seid);
- 		if (cnt != 1) {
- 			dev_info(&pf->pdev->dev, "set_rx_mode <vsi_seid>\n");
- 			goto netdev_ops_write_done;
-@@ -1770,8 +1688,8 @@ static ssize_t i40e_dbg_netdev_ops_write(struct file *filp,
- 			dev_info(&pf->pdev->dev, "Could not acquire RTNL - please try again\n");
- 		}
- 
--	} else if (strncmp(i40e_dbg_netdev_ops_buf, "napi", 4) == 0) {
--		cnt = sscanf(&i40e_dbg_netdev_ops_buf[4], "%i", &vsi_seid);
-+	} else if (strncmp(cmd_buf, "napi", 4) == 0) {
-+		cnt = sscanf(&cmd_buf[4], "%i", &vsi_seid);
- 		if (cnt != 1) {
- 			dev_info(&pf->pdev->dev, "napi <vsi_seid>\n");
- 			goto netdev_ops_write_done;
-@@ -1789,21 +1707,20 @@ static ssize_t i40e_dbg_netdev_ops_write(struct file *filp,
- 			dev_info(&pf->pdev->dev, "napi called\n");
- 		}
- 	} else {
--		dev_info(&pf->pdev->dev, "unknown command '%s'\n",
--			 i40e_dbg_netdev_ops_buf);
-+		dev_info(&pf->pdev->dev, "unknown command '%s'\n", cmd_buf);
- 		dev_info(&pf->pdev->dev, "available commands\n");
- 		dev_info(&pf->pdev->dev, "  change_mtu <vsi_seid> <mtu>\n");
- 		dev_info(&pf->pdev->dev, "  set_rx_mode <vsi_seid>\n");
- 		dev_info(&pf->pdev->dev, "  napi <vsi_seid>\n");
- 	}
- netdev_ops_write_done:
-+	kfree(cmd_buf);
- 	return count;
- }
- 
- static const struct file_operations i40e_dbg_netdev_ops_fops = {
- 	.owner = THIS_MODULE,
- 	.open = simple_open,
--	.read = i40e_dbg_netdev_ops_read,
- 	.write = i40e_dbg_netdev_ops_write,
- };
- 
--- 
-2.47.3
-
+> +
+>                         vport->txqs[k]->cached_tstamp_caps =3D caps;
+>                         vport->txqs[k]->tstamp_task =3D tstamp_task;
+>                 }
+> @@ -1995,6 +2011,39 @@ int idpf_vport_queues_alloc(struct idpf_vport *vpo=
+rt,
+>         return err;
+>  }
+>
+> +/**
+> + * idpf_tx_pkb_hwtstamp - report HW timestamp generated by packet builde=
+r from
+> + * completion descriptor to the stack.
+> + * @txq: pointer to txq struct
+> + * @skb: original skb
+> + * @desc_ts: pointer to 3-byte timestamp from descriptor
+> + */
+> +static void idpf_tx_pkb_hwtstamp(const struct idpf_tx_queue *txq,
+> +                                struct sk_buff *skb, const u8 *desc_ts)
+> +{
+> +       struct skb_shared_hwtstamps hwtstamps;
+> +       u64 ext_tstamp;
+> +       u32 tstamp;
+> +
+> +       /* Return if PKB timestamping is disabled */
+> +       if (unlikely(!txq->compl_tstamp_ns_s))
+> +               return;
+> +
+> +       /* Read Tx timestamp value generated by the PKB from the descript=
+or */
+> +       tstamp =3D (desc_ts[0] | (desc_ts[1] << 8) | (desc_ts[2] << 16));
+> +
+> +       /* Extend value to 64 bits required by the skb */
+> +       ext_tstamp =3D idpf_pkb_tstamp_extend_23b_to_64b(READ_ONCE(txq->c=
+ached_phc),
+> +                                                      tstamp,
+> +                                                      txq->compl_tstamp_=
+ns_s);
+> +
+> +       hwtstamps =3D (struct skb_shared_hwtstamps) {
+> +               .hwtstamp =3D ns_to_ktime(ext_tstamp),
+> +       };
+> +
+> +       skb_tstamp_tx(skb, &hwtstamps);
+> +}
+> +
+>  /**
+>   * idpf_tx_read_tstamp - schedule a work to read Tx timestamp value
+>   * @txq: queue to read the timestamp from
+> @@ -2119,6 +2168,7 @@ static void idpf_tx_splitq_clean(struct idpf_tx_que=
+ue *tx_q, u16 end,
+>   * @txq: queue to clean
+>   * @buf_id: packet's starting buffer ID, from completion descriptor
+>   * @cleaned: pointer to stats struct to track cleaned packets/bytes
+> + * @desc_ts: pointer to 3-byte timestamp from descriptor
+>   * @budget: Used to determine if we are in netpoll
+>   *
+>   * Clean all buffers associated with the packet starting at buf_id. Retu=
+rns the
+> @@ -2126,7 +2176,7 @@ static void idpf_tx_splitq_clean(struct idpf_tx_que=
+ue *tx_q, u16 end,
+>   */
+>  static void idpf_tx_clean_bufs(struct idpf_tx_queue *txq, u32 buf_id,
+>                                struct libeth_sq_napi_stats *cleaned,
+> -                              int budget)
+> +                              u8 *desc_ts, int budget)
+>  {
+>         struct idpf_tx_buf *tx_buf =3D NULL;
+>         struct libeth_cq_pp cp =3D {
+> @@ -2136,13 +2186,13 @@ static void idpf_tx_clean_bufs(struct idpf_tx_que=
+ue *txq, u32 buf_id,
+>         };
+>
+>         tx_buf =3D &txq->tx_buf[buf_id];
+> -       if (tx_buf->type =3D=3D LIBETH_SQE_SKB) {
+> -               if (skb_shinfo(tx_buf->skb)->tx_flags & SKBTX_IN_PROGRESS=
+)
+> -                       idpf_tx_read_tstamp(txq, tx_buf->skb);
+> +       if (unlikely(skb_shinfo(tx_buf->skb)->tx_flags & SKBTX_IN_PROGRES=
+S))
+> +               idpf_tx_read_tstamp(txq, tx_buf->skb);
+> +       else if (unlikely(skb_shinfo(tx_buf->skb)->tx_flags & SKBTX_HW_TS=
+TAMP))
+> +               idpf_tx_pkb_hwtstamp(txq, tx_buf->skb, desc_ts);
+>
+> -               libeth_tx_complete(tx_buf, &cp);
+> -               idpf_post_buf_refill(txq->refillq, buf_id);
+> -       }
+> +       libeth_tx_complete(tx_buf, &cp);
+> +       idpf_post_buf_refill(txq->refillq, buf_id);
+>
+>         while (idpf_tx_buf_next(tx_buf) !=3D IDPF_TXBUF_NULL) {
+>                 buf_id =3D idpf_tx_buf_next(tx_buf);
+> @@ -2179,7 +2229,7 @@ static void idpf_tx_handle_rs_completion(struct idp=
+f_tx_queue *txq,
+>                 return;
+>         }
+>
+> -       idpf_tx_clean_bufs(txq, rs_compl_val, cleaned, budget);
+> +       idpf_tx_clean_bufs(txq, rs_compl_val, cleaned, desc->ts, budget);
+>  }
+>
+>  /**
+> @@ -2964,8 +3014,6 @@ static int idpf_tx_tstamp(struct idpf_tx_queue *tx_=
+q, struct sk_buff *skb,
+>                 return -1;
+>         }
+>
+> -       off->tx_flags |=3D IDPF_TX_FLAGS_TSYN;
+> -
+>         return idx;
+>  }
+>
+> diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.h b/drivers/net/et=
+hernet/intel/idpf/idpf_txrx.h
+> index 93547597efd2..985101c2e823 100644
+> --- a/drivers/net/ethernet/intel/idpf/idpf_txrx.h
+> +++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
+> @@ -140,7 +140,6 @@ do {                                                 =
+               \
+>  #define IDPF_TX_FLAGS_IPV4             BIT(1)
+>  #define IDPF_TX_FLAGS_IPV6             BIT(2)
+>  #define IDPF_TX_FLAGS_TUNNEL           BIT(3)
+> -#define IDPF_TX_FLAGS_TSYN             BIT(4)
+>
+>  struct libeth_rq_napi_stats;
+>
+> @@ -629,8 +628,11 @@ libeth_cacheline_set_assert(struct idpf_rx_queue,
+>   * @xdp_tx: number of pending &xdp_buff or &xdp_frame buffers
+>   * @timer: timer for XDP Tx queue cleanup
+>   * @xdp_lock: lock for XDP Tx queues sharing
+> + * @compl_tstamp_ns_s: Number of left shifts to convert Tx completion
+> + *                    descriptor timestamp in nanoseconds
+>   * @cached_tstamp_caps: Tx timestamp capabilities negotiated with the CP
+>   * @tstamp_task: Work that handles Tx timestamp read
+> + * @cached_phc: Cached PHC time for the Tx queue
+>   * @stats_sync: See struct u64_stats_sync
+>   * @q_stats: See union idpf_tx_queue_stats
+>   * @q_id: Queue id
+> @@ -704,6 +706,9 @@ struct idpf_tx_queue {
+>
+>         struct u64_stats_sync stats_sync;
+>         struct idpf_tx_queue_stats q_stats;
+> +
+> +       u64 cached_phc;
+> +       u8 compl_tstamp_ns_s;
+>         __cacheline_group_end_aligned(read_write);
+>
+>         __cacheline_group_begin_aligned(cold);
+> @@ -718,7 +723,7 @@ struct idpf_tx_queue {
+>         __cacheline_group_end_aligned(cold);
+>  };
+>  libeth_cacheline_set_assert(struct idpf_tx_queue, 64,
+> -                           104 +
+> +                           120 +
+>                             offsetof(struct idpf_tx_queue, cached_tstamp_=
+caps) -
+>                             offsetofend(struct idpf_tx_queue, timer) +
+>                             offsetof(struct idpf_tx_queue, q_stats) -
+> diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c b/drivers/ne=
+t/ethernet/intel/idpf/idpf_virtchnl.c
+> index cc5aeec3d00b..f1c268261f7a 100644
+> --- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
+> +++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
+> @@ -562,7 +562,8 @@ static int idpf_send_get_caps_msg(struct idpf_adapter=
+ *adapter)
+>                             VIRTCHNL2_CAP_SPLITQ_QSCHED         |
+>                             VIRTCHNL2_CAP_PROMISC               |
+>                             VIRTCHNL2_CAP_LOOPBACK              |
+> -                           VIRTCHNL2_CAP_PTP);
+> +                           VIRTCHNL2_CAP_PTP                   |
+> +                           VIRTCHNL2_CAP_TX_CMPL_TSTMP);
+>
+>         err =3D idpf_send_mb_msg(adapter, &xn_params, &caps, sizeof(caps)=
+);
+>         if (err)
+> @@ -3136,10 +3137,24 @@ int idpf_vc_core_init(struct idpf_adapter *adapte=
+r)
+>         }
+>
+>         err =3D idpf_ptp_init(adapter);
+> -       if (err)
+> +       if (err =3D=3D -EOPNOTSUPP) {
+> +               pci_dbg(adapter->pdev, "PTP is not supported\n");
+> +       } else if (err) {
+>                 pci_err(adapter->pdev, "PTP init failed, err=3D%pe\n",
+>                         ERR_PTR(err));
+> -
+> +       } else if (idpf_is_cap_ena(adapter, IDPF_OTHER_CAPS,
+> +                                  VIRTCHNL2_CAP_TX_CMPL_TSTMP)) {
+> +               if (adapter->caps.tx_cmpl_tstamp_ns_s > IDPF_PKB_GRAN_MAX=
+)
+> +                       pci_err(adapter->pdev,
+> +                               "Invalid PKB timestamp granularity shift =
+%u (max %u), disabling PKB timestamping\n",
+> +                               adapter->caps.tx_cmpl_tstamp_ns_s,
+> +                               IDPF_PKB_GRAN_MAX);
+> +               else if (adapter->caps.tx_cmpl_tstamp_ns_s > 0) {
+> +                       adapter->ptp->pkb_tstamp_ena =3D true;
+> +                       adapter->ptp->tx_compl_tstamp_gran_s =3D
+> +                               adapter->caps.tx_cmpl_tstamp_ns_s;
+> +               }
+> +       }
+>         idpf_init_avail_queues(adapter);
+>
+>         /* Skew the delay for init tasks for each function based on fn nu=
+mber
+> diff --git a/include/linux/net/intel/virtchnl2.h b/include/linux/net/inte=
+l/virtchnl2.h
+> index 39fea65c075c..bf79f82f2257 100644
+> --- a/include/linux/net/intel/virtchnl2.h
+> +++ b/include/linux/net/intel/virtchnl2.h
+> @@ -221,6 +221,7 @@ enum virtchnl2_cap_other {
+>         /* Other capability 20 is reserved */
+>         VIRTCHNL2_CAP_FLOW_STEER                =3D BIT_ULL(21),
+>         VIRTCHNL2_CAP_LAN_MEMORY_REGIONS        =3D BIT_ULL(22),
+> +       VIRTCHNL2_CAP_TX_CMPL_TSTMP             =3D BIT_ULL(23),
+>
+>         /* this must be the last capability */
+>         VIRTCHNL2_CAP_OEM                       =3D BIT_ULL(63),
+> @@ -513,6 +514,8 @@ VIRTCHNL2_CHECK_STRUCT_LEN(8, virtchnl2_version_info)=
+;
+>   *                      an LSO.
+>   * @num_rdma_allocated_vectors: Maximum number of allocated RDMA vectors=
+ for
+>   *                             the device.
+> + * @tx_cmpl_tstamp_ns_s: Number of left shifts to convert Tx completion
+> + *                      descriptor timestamp in nanoseconds.
+>   * @pad1: Padding for future extensions.
+>   *
+>   * Dataplane driver sends this message to CP to negotiate capabilities a=
+nd
+> @@ -561,7 +564,8 @@ struct virtchnl2_get_capabilities {
+>         u8 min_sso_packet_len;
+>         u8 max_hdr_buf_per_lso;
+>         __le16 num_rdma_allocated_vectors;
+> -       u8 pad1[8];
+> +       u8 tx_cmpl_tstamp_ns_s;
+> +       u8 pad1[7];
+>  };
+>  VIRTCHNL2_CHECK_STRUCT_LEN(80, virtchnl2_get_capabilities);
+>
+> --
+> 2.47.3
+>
+>
