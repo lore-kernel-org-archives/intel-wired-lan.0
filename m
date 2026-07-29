@@ -4,91 +4,97 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AFD80C54F51
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 29 Jul 2026 12:21:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1005DC54F51
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 29 Jul 2026 14:06:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 4DF7F81165;
-	Wed, 29 Jul 2026 12:21:38 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 9F61E8121A;
+	Wed, 29 Jul 2026 14:06:22 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id RTJuKrLnBVGu; Wed, 29 Jul 2026 12:21:37 +0000 (UTC)
+ id Cn9jo0UtPtne; Wed, 29 Jul 2026 14:06:20 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5D10F81174
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B133E811B6
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1785327697;
-	bh=SnTOilX4WjSJnn8GFLfri1a5zC8cV8CG/D39OEZ/fpg=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	s=default; t=1785333980;
+	bh=6H7GJEs/cZstsDO5BfQ9ipynrk5UXDT/Vwf4/cBlAwQ=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=idJGS9mBn61yWDN+OefFVMZAXXswodaSAGa3uUeT0Jr5MMh1jaP5L7HBUQlc1lcsj
-	 sfv60GBR9ZqIaW0KXbwgGkH144qCAgvRBVs1ihoON3UIx9y94FVifRMHeBClD8sWwv
-	 Jk3qe/8sXAefraH9TYgdKj99jjAHd2lceg0Uqga82ZCX/DzuWmjxL02roZTCNhLnGc
-	 atecZUwpqXs/5gWdczraO/xdSO1xkpN7uAeMCLR6pOc7MnHoEiJynl9Z4l1yv3RcnZ
-	 tDttU8v0BNwDm6486jNRT8zpj8DiMM6aaUuMSnQ+Z9SmH/Pu6EXr4/s23/pN8BEDVZ
-	 YvbFJhoyEWpWw==
+	b=Rrq7YL1N7iB7mCfnFTi3AEhV0OHglOUlRE64vyhjBlBy8roRXrTZwG+l/m2mVgo8R
+	 RvteBAWQItJs7bZ2AvhAGLvmz5x9dz6MhZQx13T2I/C/AFt3VOowwj1D1sfX87ocHA
+	 SbCgBZjyUKSGkhV1jyRDl/kJw1sIJLEsSu3WxNSc4mE8vz1AaYH/2V5/PF21hUX0IT
+	 leiBGwUJURw+M6447O3l1/QCKf1msbV2lM8B4COzULiq2dISDJoy7xsRzF1+bdqIdF
+	 jfVcLjvLZOn81ubS+VkIjLmk0AsfPDZzdcOxC4MumTeV97Z553dAQ/wFvE3WkdsIwy
+	 e2PSI8NxlT0uQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 5D10F81174;
-	Wed, 29 Jul 2026 12:21:37 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id BEBD2194
- for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jul 2026 12:21:35 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id B133E811B6;
+	Wed, 29 Jul 2026 14:06:20 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 6D50C2E5
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jul 2026 14:06:19 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id BC08340B83
- for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jul 2026 12:21:35 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 6ABCB40267
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jul 2026 14:06:19 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id MBCwPLK5uH5z for <intel-wired-lan@lists.osuosl.org>;
- Wed, 29 Jul 2026 12:21:35 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.21;
- helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org ACFC940B32
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org ACFC940B32
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
- by smtp4.osuosl.org (Postfix) with ESMTPS id ACFC940B32
- for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jul 2026 12:21:34 +0000 (UTC)
-X-CSE-ConnectionGUID: xi/tw2xySoeZ/RewI9rj5g==
-X-CSE-MsgGUID: Efq16W1pR7q3P3weNHhh/w==
-X-IronPort-AV: E=McAfee;i="6800,10657,11859"; a="85783740"
-X-IronPort-AV: E=Sophos;i="6.25,192,1779174000"; d="scan'208";a="85783740"
-Received: from orviesa003.jf.intel.com ([10.64.159.143])
- by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 29 Jul 2026 05:21:35 -0700
-X-CSE-ConnectionGUID: Wkzp/yPUROuy+gJOCVrnqg==
-X-CSE-MsgGUID: f1a5D8nwTKOOfzADBZDhXQ==
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id IlMSNAMSIksg for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 29 Jul 2026 14:06:18 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.15;
+ helo=mgamail.intel.com; envelope-from=marcin.szycik@linux.intel.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 4D7D540074
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4D7D540074
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 4D7D540074
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jul 2026 14:06:17 +0000 (UTC)
+X-CSE-ConnectionGUID: NyVftkV1RX+ce1wYPwvbKw==
+X-CSE-MsgGUID: viAU+Pf6Ssmsc8jw78Ie8g==
+X-IronPort-AV: E=McAfee;i="6800,10657,11859"; a="89617556"
+X-IronPort-AV: E=Sophos;i="6.25,192,1779174000"; d="scan'208";a="89617556"
+Received: from orviesa007.jf.intel.com ([10.64.159.147])
+ by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 29 Jul 2026 07:06:17 -0700
+X-CSE-ConnectionGUID: 7G1aELTOTzOMXyEwHqnIdQ==
+X-CSE-MsgGUID: t8LS+BrKRO2Z+ZmwEMgATg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,192,1779174000"; d="scan'208";a="263492444"
-Received: from lkp-server02.sh.intel.com (HELO ea128546eb3d) ([10.239.97.151])
- by orviesa003.jf.intel.com with ESMTP; 29 Jul 2026 05:21:33 -0700
-Received: from kbuild by ea128546eb3d with local (Exim 4.98.2)
- (envelope-from <lkp@intel.com>) id 1wp3Hu-00000000fLF-3dqq;
- Wed, 29 Jul 2026 12:21:30 +0000
-Date: Wed, 29 Jul 2026 20:21:06 +0800
-From: kernel test robot <lkp@intel.com>
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Message-ID: <202607292042.qnzORLlf-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+X-IronPort-AV: E=Sophos;i="6.25,192,1779174000"; d="scan'208";a="260072634"
+Received: from irvmail002.ir.intel.com ([10.43.11.120])
+ by orviesa007.jf.intel.com with ESMTP; 29 Jul 2026 07:06:16 -0700
+Received: from gond.igk.intel.com (gond.igk.intel.com [10.123.220.52])
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id B115D2FC47;
+ Wed, 29 Jul 2026 15:06:14 +0100 (IST)
+From: Marcin Szycik <marcin.szycik@linux.intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Cc: netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
+ aleksandr.loktionov@intel.com,
+ Marcin Szycik <marcin.szycik@linux.intel.com>,
+ Alexander Nowlin <alexander.nowlin@intel.com>
+Date: Wed, 29 Jul 2026 15:05:10 +0200
+Message-ID: <20260729130510.220222-1-marcin.szycik@linux.intel.com>
+X-Mailer: git-send-email 2.49.0
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1785327696; x=1816863696;
- h=date:from:to:subject:message-id;
- bh=OmQvbz0o17RiJSSrB28bCzsGqq4/TVGWGnPdFpqXDDg=;
- b=N2+MjsO/vFqsZFPSz3PxkkN/aSFZ1Y6QCWV0n17bffi1jU0J0V1rr+DN
- AREh/26wUYCrDxCrHOjeT0ykNxFi+pddiLkGfTaQHpDxQaIa4pd7ppa7d
- RqgaN8VQRc/m2Q0fGpeXcPlPyWcpoUvACoJn4qc/vhhAndrkeO84cfJAE
- GVg4rZ+sE+gdpIg2XwipPehlJa1Yl7b0tPcDjsIHY4SO90nn2O4FnJHpc
- GoJ0wC3MuTpqgiT9VmSw0v0/HWH29alsUHPgJCbUY0+YDFjU3fy42wPuc
- 6icdbokeIAKIm1q5VutRRKCQ+ZRl40R7qyWr1mOkIp9SOsztUlwEvGiq/
+ t=1785333978; x=1816869978;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=1TeedpNf4se513fr5NdVyRJ/Tisrwdz3DUQxuoWnRKc=;
+ b=HOJ6fti4wCNjTkNJhC2f6cE7sq6Vqa0Puan1lN2EN+6pyYaM9tKE38wz
+ ARoWMqJZH8yNUOdecCK0bBd7AmsFAowI3+8rRkCHn1ZgzELCFWy50/7Q1
+ Pq6rVpFu3qPG7Nv3gnCqpCYV/gSDx1E1UTZib6bv1vZRrONslFpX/ibBS
+ WLHCL9jTYUbBKccQrZnCN3+VVI1GBtckqdsfx2gFhMDA2rkPIRDU57dsw
+ KgBSj0HjuAvoasXNvJ2ki1gYb/xQ2kwrGcog0k+5eTmkDOoud1gNGCywD
+ dvMBIn4j1xVZe4jTFUF2sRovjG/0+AtkV/4P9S9hOlBHcmnk0dfpvrcxb
  Q==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=N2+MjsO/
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- f49afff90964a0df43cffc3175380d614341be2f
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=linux.intel.com
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=HOJ6fti4
+Subject: [Intel-wired-lan] [PATCH iwl-next v2] ice: detect duplicates in ACL
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -104,124 +110,170 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: f49afff90964a0df43cffc3175380d614341be2f  ice: Fix "Unknown bps" during link events
+ntuple filters without masks (fdir) disallow duplicate entries. Extend
+this behaviour to rules with masks (ACL).
+Also skip checking ACL rules in ice_fdir_is_dup_fltr(), as it's only
+used for fdir.
 
-elapsed time: 935m
+Keep the naming convention consistent with ice_fdir_is_dup_fltr() and
+ice_fdir_comp_rules(). ice_fdir_is_dup_fltr() cannot be reused directly,
+as it ignores masks.
 
-configs tested: 105
-configs skipped: 2
+Before fix: duplicate rules with masks are allowed to be created and the
+duplicate rule cannot be removed:
+  sudo ethtool -N eth0 flow-type udp4 src-port 9000 m 0xff00 action 18
+    Added rule with ID 31231
+  sudo ethtool -N eth0 flow-type udp4 src-port 9000 m 0xff00 action 18
+    Added rule with ID 31230
+  sudo ethtool -N eth0 delete 31230
+  sudo ethtool -N eth0 delete 31231
+    rmgr: Cannot delete RX class rule: Invalid argument
+    Cannot delete classification rule
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+After fix: duplicate rule is correctly detected:
+  sudo ethtool -N eth0 flow-type udp4 src-port 9000 m 0xff00 action 18
+    Added rule with ID 31231
+  sudo ethtool -N eth0 flow-type udp4 src-port 9000 m 0xff00 action 18
+    rmgr: Cannot insert RX class rule: Invalid argument
+    Cannot insert classification rule
 
-tested configs:
-alpha                            allnoconfig    gcc-16.1.0
-alpha                           allyesconfig    gcc-16.1.0
-alpha                              defconfig    gcc-16.1.0
-arc                             allmodconfig    gcc-16.1.0
-arc                             allyesconfig    gcc-16.1.0
-arc                  randconfig-001-20260729    gcc-8.5.0
-arc                  randconfig-002-20260729    gcc-8.5.0
-arm                  randconfig-001-20260729    gcc-8.5.0
-arm                  randconfig-002-20260729    gcc-8.5.0
-arm                  randconfig-003-20260729    gcc-8.5.0
-arm                  randconfig-004-20260729    gcc-8.5.0
-arm64                randconfig-001-20260729    clang-17
-arm64                randconfig-002-20260729    clang-17
-arm64                randconfig-003-20260729    clang-17
-arm64                randconfig-004-20260729    clang-17
-csky                            allmodconfig    gcc-16.1.0
-csky                 randconfig-001-20260729    clang-17
-csky                 randconfig-002-20260729    clang-17
-hexagon              randconfig-001-20260729    gcc-9.5.0
-hexagon              randconfig-002-20260729    gcc-9.5.0
-i386                            allmodconfig    gcc-14
-i386       buildonly-randconfig-001-20260729    gcc-14
-i386       buildonly-randconfig-002-20260729    clang-22
-i386       buildonly-randconfig-002-20260729    gcc-14
-i386       buildonly-randconfig-003-20260729    gcc-14
-i386       buildonly-randconfig-004-20260729    clang-22
-i386       buildonly-randconfig-004-20260729    gcc-14
-i386       buildonly-randconfig-005-20260729    clang-22
-i386       buildonly-randconfig-005-20260729    gcc-14
-i386       buildonly-randconfig-006-20260729    gcc-14
-i386                 randconfig-001-20260729    clang-22
-i386                 randconfig-001-20260729    gcc-14
-i386                 randconfig-002-20260729    clang-22
-i386                 randconfig-003-20260729    clang-22
-i386                 randconfig-004-20260729    clang-22
-i386                 randconfig-005-20260729    clang-22
-i386                 randconfig-006-20260729    clang-22
-i386                 randconfig-006-20260729    gcc-14
-i386                 randconfig-007-20260729    clang-22
-i386                 randconfig-011-20260729    gcc-14
-i386                 randconfig-012-20260729    gcc-14
-i386                 randconfig-013-20260729    gcc-14
-i386                 randconfig-014-20260729    gcc-14
-i386                 randconfig-015-20260729    gcc-14
-i386                 randconfig-016-20260729    gcc-14
-i386                 randconfig-017-20260729    gcc-14
-loongarch                          defconfig    clang-24
-loongarch            randconfig-001-20260729    gcc-9.5.0
-loongarch            randconfig-002-20260729    gcc-9.5.0
-nios2                           allmodconfig    gcc-11.5.0
-nios2                            allnoconfig    gcc-11.5.0
-nios2                randconfig-001-20260729    gcc-9.5.0
-nios2                randconfig-002-20260729    gcc-9.5.0
-parisc                          allmodconfig    gcc-16.1.0
-parisc                          allyesconfig    gcc-16.1.0
-parisc                             defconfig    gcc-16.1.0
-parisc               randconfig-001-20260729    clang-24
-parisc               randconfig-002-20260729    clang-24
-powerpc              randconfig-001-20260729    clang-24
-powerpc              randconfig-002-20260729    clang-24
-powerpc64            randconfig-001-20260729    clang-24
-powerpc64            randconfig-002-20260729    clang-24
-riscv            nommu_k210_sdcard_defconfig    gcc-16.1.0
-riscv                randconfig-001-20260729    gcc-15.2.0
-riscv                randconfig-002-20260729    gcc-15.2.0
-s390                 randconfig-001-20260729    gcc-15.2.0
-s390                 randconfig-002-20260729    gcc-15.2.0
-sh                                 defconfig    gcc-16.1.0
-sh                   randconfig-001-20260729    gcc-15.2.0
-sh                   randconfig-002-20260729    gcc-15.2.0
-sparc                randconfig-001-20260729    gcc-10.5.0
-sparc                randconfig-002-20260729    gcc-10.5.0
-sparc64              randconfig-001-20260729    gcc-10.5.0
-sparc64              randconfig-002-20260729    gcc-10.5.0
-um                   randconfig-001-20260729    gcc-10.5.0
-um                   randconfig-002-20260729    gcc-10.5.0
-x86_64     buildonly-randconfig-001-20260729    clang-22
-x86_64     buildonly-randconfig-002-20260729    clang-22
-x86_64     buildonly-randconfig-003-20260729    clang-22
-x86_64     buildonly-randconfig-004-20260729    clang-22
-x86_64     buildonly-randconfig-005-20260729    clang-22
-x86_64     buildonly-randconfig-006-20260729    clang-22
-x86_64                                 kexec    clang-22
-x86_64                        randconfig-001    clang-22
-x86_64               randconfig-001-20260729    clang-22
-x86_64               randconfig-002-20260729    clang-22
-x86_64               randconfig-003-20260729    clang-22
-x86_64               randconfig-004-20260729    clang-22
-x86_64               randconfig-005-20260729    clang-22
-x86_64               randconfig-006-20260729    clang-22
-x86_64               randconfig-011-20260729    gcc-14
-x86_64               randconfig-012-20260729    gcc-14
-x86_64               randconfig-013-20260729    gcc-14
-x86_64               randconfig-014-20260729    gcc-14
-x86_64               randconfig-015-20260729    gcc-14
-x86_64               randconfig-016-20260729    gcc-14
-x86_64               randconfig-071-20260729    gcc-12
-x86_64               randconfig-072-20260729    gcc-12
-x86_64               randconfig-073-20260729    gcc-12
-x86_64               randconfig-074-20260729    gcc-12
-x86_64               randconfig-075-20260729    gcc-12
-x86_64               randconfig-076-20260729    gcc-12
-x86_64                          rhel-9.4-bpf    gcc-14
-xtensa               randconfig-001-20260729    gcc-10.5.0
-xtensa               randconfig-002-20260729    gcc-10.5.0
+Fixes: 3272c00a1247 ("ice: create ACL entry")
+Reported-by: Alexander Nowlin <alexander.nowlin@intel.com>
+Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
+---
+v2:
+* Tweak ice_acl_is_dup_fltr() function doc and comments to accurately
+  reflect what is actually happening in the function
+* Add repro steps and expected behaviour to commit msg
+* ice_acl_comp_rules(): rename ipv4_equal -> base_equal in expectation
+  of future changes that might introduce more fields
+---
+Not sending to net because the fixed code is on dev-queue.
+Tony, please squash this with the offending commit.
+---
+ drivers/net/ethernet/intel/ice/ice_acl_main.c | 87 +++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_fdir.c     |  3 +
+ 2 files changed, 90 insertions(+)
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+diff --git a/drivers/net/ethernet/intel/ice/ice_acl_main.c b/drivers/net/ethernet/intel/ice/ice_acl_main.c
+index 7c566077d55a..d13e8bc1b701 100644
+--- a/drivers/net/ethernet/intel/ice/ice_acl_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_acl_main.c
+@@ -283,6 +283,85 @@ void ice_acl_replay_fltrs(struct ice_pf *pf)
+ 	}
+ }
+ 
++/**
++ * ice_acl_comp_rules - compare two ACL filters
++ * @a: first ACL filter
++ * @b: second ACL filter
++ *
++ * Return: true if a and b values and masks are identical, false otherwise
++ */
++static bool
++ice_acl_comp_rules(struct ice_ntuple_fltr *a, struct ice_ntuple_fltr *b)
++{
++	bool base_equal;
++
++	if (a->flow_type != b->flow_type)
++		return false;
++
++	base_equal = a->ip.v4.dst_ip == b->ip.v4.dst_ip &&
++		     a->ip.v4.src_ip == b->ip.v4.src_ip &&
++		     a->mask.v4.dst_ip == b->mask.v4.dst_ip &&
++		     a->mask.v4.src_ip == b->mask.v4.src_ip;
++
++	switch (a->flow_type) {
++	case ICE_FLTR_PTYPE_NONF_IPV4_TCP:
++	case ICE_FLTR_PTYPE_NONF_IPV4_UDP:
++	case ICE_FLTR_PTYPE_NONF_IPV4_SCTP:
++		return base_equal &&
++		       a->ip.v4.dst_port == b->ip.v4.dst_port &&
++		       a->ip.v4.src_port == b->ip.v4.src_port &&
++		       a->mask.v4.dst_port == b->mask.v4.dst_port &&
++		       a->mask.v4.src_port == b->mask.v4.src_port;
++	case ICE_FLTR_PTYPE_NONF_IPV4_OTHER:
++		return base_equal &&
++		       a->ip.v4.l4_header == b->ip.v4.l4_header &&
++		       a->ip.v4.proto == b->ip.v4.proto &&
++		       a->ip.v4.ip_ver == b->ip.v4.ip_ver &&
++		       a->ip.v4.tos == b->ip.v4.tos &&
++		       a->mask.v4.l4_header == b->mask.v4.l4_header &&
++		       a->mask.v4.proto == b->mask.v4.proto &&
++		       a->mask.v4.ip_ver == b->mask.v4.ip_ver &&
++		       a->mask.v4.tos == b->mask.v4.tos;
++	default:
++		return false;
++	}
++}
++
++/**
++ * ice_acl_is_dup_fltr - test if an ACL filter is already in the list
++ * @hw: hardware data structure
++ * @input: ACL filter to check
++ *
++ * Return: true if a filter with identical match criteria (same flow type,
++ * values, and masks) already exists, unless it is at the same location with a
++ * different queue (an update)
++ */
++static bool
++ice_acl_is_dup_fltr(struct ice_hw *hw, struct ice_ntuple_fltr *input)
++{
++	struct ice_ntuple_fltr *rule;
++
++	list_for_each_entry(rule, &hw->fdir_list_head, fltr_node) {
++		if (!rule->acl_fltr)
++			continue;
++
++		if (!ice_acl_comp_rules(rule, input))
++			continue;
++
++		/* At this point rule and input have same match criteria.
++		 * Same location with a different queue is an update, not a
++		 * duplicate - skip it. Everything else is a duplicate.
++		 */
++		if (rule->fltr_id == input->fltr_id &&
++		    rule->q_index != input->q_index)
++			continue;
++
++		return true;
++	}
++
++	return false;
++}
++
+ /**
+  * ice_acl_add_rule_ethtool - add an ACL rule
+  * @vsi: pointer to target VSI
+@@ -322,6 +401,14 @@ int ice_acl_add_rule_ethtool(struct ice_vsi *vsi, struct ethtool_rxnfc *cmd)
+ 	if (err)
+ 		goto free_input;
+ 
++	mutex_lock(&hw->fdir_fltr_lock);
++	if (ice_acl_is_dup_fltr(hw, input)) {
++		mutex_unlock(&hw->fdir_fltr_lock);
++		err = -EINVAL;
++		goto free_input;
++	}
++	mutex_unlock(&hw->fdir_fltr_lock);
++
+ 	memset(&acts, 0, sizeof(acts));
+ 	if (fsp->ring_cookie == RX_CLS_FLOW_DISC)
+ 		ice_acl_set_act_drop(&acts[0]);
+diff --git a/drivers/net/ethernet/intel/ice/ice_fdir.c b/drivers/net/ethernet/intel/ice/ice_fdir.c
+index 1bc91cb41769..1d79138683b0 100644
+--- a/drivers/net/ethernet/intel/ice/ice_fdir.c
++++ b/drivers/net/ethernet/intel/ice/ice_fdir.c
+@@ -1261,6 +1261,9 @@ bool ice_fdir_is_dup_fltr(struct ice_hw *hw, struct ice_ntuple_fltr *input)
+ 	bool ret = false;
+ 
+ 	list_for_each_entry(rule, &hw->fdir_list_head, fltr_node) {
++		if (rule->acl_fltr)
++			continue;
++
+ 		if (rule->flow_type != input->flow_type)
+ 			continue;
+ 
+-- 
+2.49.0
+
