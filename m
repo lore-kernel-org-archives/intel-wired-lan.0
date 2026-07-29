@@ -4,91 +4,83 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 59E50C53200
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 29 Jul 2026 03:33:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89B87C53200
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 29 Jul 2026 05:50:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 0879540A77;
-	Wed, 29 Jul 2026 03:33:13 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 35F9540A80;
+	Wed, 29 Jul 2026 05:50:43 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 6BsK9suQDww1; Wed, 29 Jul 2026 03:33:10 +0000 (UTC)
+ id 7gA_04QPqyAq; Wed, 29 Jul 2026 05:50:41 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C8EC240981
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 07A1D40A6F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1785295990;
-	bh=uCfxwMg7tw+BQqrbJbHJIMyYuDuMkLZkgIiHcKLguuo=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	s=default; t=1785304241;
+	bh=0bZ169YdbqXKNleo9UtpL+ygZkIM/xnq5Ot5tib0OmI=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=Kx3HCVMb6pNUQ3+x57Z4ZY1w6Q+yNS5Y67Tjs+NTvE2nECQxWAUaunTUK/bJgatAZ
-	 EyBfsoDq0MeexZlJe2eXuBs7a2k/3NlRae1N03d4p09vBimZd7ZzXLPutRAzNSyUFz
-	 dPEMCIbCG016d1neRBmYYtkKtGM3bzTAGWminarYQcFvBF32PSY3XIvpPAqQFZCJh6
-	 WFc9yQmFqN8w+bU1Ezv4c6E9e5/AWIxnDVaHk97cCwCGa3Tyv4ojSRC4Mjt1dNTzGY
-	 xD8JW+0yXwxfDYtS2uRJ5DxCMfhIqZ4HyWNgY6AuElKCPKnDPgoE/Ogr22Le2hcyKn
-	 1BwSS15ggAAXQ==
+	b=kuh1c7GHEewWoBuoZfBiGmO6OlvRSvUTS+oheCSH7FGBMzcl8vxWuaUDSZvH1Gkdy
+	 Buun5cPz0m9mcVCRqlXHg/ZBRlR/lV2AjH4KNXiLeB4snDRdkrLipmq9L4lwEuFbLU
+	 J+qGeMFQKJzzQ0+OuC6oUtqSZJaBsskXLBuRpQBanVmRoT5Day7kO7p28qelOmt/PR
+	 CkShnzcMyfgvclvK/pVzs6h7sAG7SQPqqJ2kOPU+/ky8EfdKdQgO3LpkJcMDui7diC
+	 sYl9Au7M709oPhuOk9FKAlvGLBlXPsvdDNPct5eJtWgsCvzp9552vlxfz98DNKuVq3
+	 HegAqTEIE+4Gg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C8EC240981;
-	Wed, 29 Jul 2026 03:33:10 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 001E44BF
- for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jul 2026 03:33:09 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 07A1D40A6F;
+	Wed, 29 Jul 2026 05:50:41 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id C9D5726C
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jul 2026 05:50:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id D252780FB4
- for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jul 2026 03:33:09 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id A73B180FAB
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jul 2026 05:50:39 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id FWfNkctB3W3k for <intel-wired-lan@lists.osuosl.org>;
- Wed, 29 Jul 2026 03:33:09 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.16;
- helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org E0A4B80FB3
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E0A4B80FB3
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
- by smtp1.osuosl.org (Postfix) with ESMTPS id E0A4B80FB3
- for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jul 2026 03:33:08 +0000 (UTC)
-X-CSE-ConnectionGUID: Yt32W5o0RD6sLkQgJFkFfA==
-X-CSE-MsgGUID: ojYnqgY+T8ua4xaN0J97Tw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11859"; a="86086315"
-X-IronPort-AV: E=Sophos;i="6.25,191,1779174000"; d="scan'208";a="86086315"
-Received: from orviesa006.jf.intel.com ([10.64.159.146])
- by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 28 Jul 2026 20:33:08 -0700
-X-CSE-ConnectionGUID: 1HPq5slJR8+XG4hV36XGlw==
-X-CSE-MsgGUID: xSC8/sNqRBa9SsBN71IsyA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,191,1779174000"; d="scan'208";a="258106321"
-Received: from lkp-server02.sh.intel.com (HELO ea128546eb3d) ([10.239.97.151])
- by orviesa006.jf.intel.com with ESMTP; 28 Jul 2026 20:33:07 -0700
-Received: from kbuild by ea128546eb3d with local (Exim 4.98.2)
- (envelope-from <lkp@intel.com>) id 1wov2R-00000000f0V-0mzA;
- Wed, 29 Jul 2026 03:32:59 +0000
-Date: Wed, 29 Jul 2026 11:32:31 +0800
-From: kernel test robot <lkp@intel.com>
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Message-ID: <202607291119.gBXiN1oz-lkp@intel.com>
-User-Agent: s-nail v14.9.25
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1785295989; x=1816831989;
- h=date:from:to:subject:message-id;
- bh=fSYitj8XxKP7fZnHIr1hpRxfAk38rq6mzu78BR/7PT8=;
- b=QuR/2LrjAUvaPUdPwvEaTua0KmZwhI01ErjXgDeldVMeARM8nsGOOAYQ
- J16mjNRqOhdn24JLAZc3QqSoOiTusBCoPLPSAh+nNKM2dnZE//UK+i33C
- JDjAFkDK5Zo4/BV9tAbs6WyYctMxZ7K791s4WIbATW1yYbRYpj33oRNY8
- V9s8u2LHkIHEAyjsQx+grIpRgLnUJpww3r6wdCsp3TOlC23ftSFkQ1+im
- JGCJT6RXY+0rj70Zfd/FWyFy0/azWJISh6VUTpwG4qnIECZycBC95Nqw/
- c2/Q0Vl4zVgYJWD6VPMoshsEZyVisCU38Y8ghCRaPLuigZ/mGaa/kyyPz
- Q==;
+ id Ls9-C1YOkXke for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 29 Jul 2026 05:50:37 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=95.215.58.183;
+ helo=out-183.mta1.migadu.com; envelope-from=chenguang.zhao@linux.dev;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org C108D80FA7
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C108D80FA7
+Received: from out-183.mta1.migadu.com (out-183.mta1.migadu.com
+ [95.215.58.183])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id C108D80FA7
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jul 2026 05:50:36 +0000 (UTC)
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and
+ include these headers.
+From: Chenguang Zhao <chenguang.zhao@linux.dev>
+To: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ chenguang.zhao@linux.dev, kerneljasonxing@gmail.com,
+ Chenguang Zhao <zhaochenguang@kylinos.cn>
+Date: Wed, 29 Jul 2026 13:49:16 +0800
+Message-Id: <20260729054916.720750-1-chenguang.zhao@linux.dev>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=linux.dev; s=key1; t=1785304233;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:
+ content-transfer-encoding:content-transfer-encoding;
+ bh=0bZ169YdbqXKNleo9UtpL+ygZkIM/xnq5Ot5tib0OmI=;
+ b=RIfHixTpVWQn/Rq6tIx31VvRQXojsHnwHU3Z113+j83zuqBLMvxLjnISJurZXgImARBZyD
+ 4FUNqnDsmajM/OLAhC2gD1Cg5zNC2FeFNaO/eKohM+04BjGxPw1p8KpjFheXlb9lxInad/
+ TAErrd6yn7c6AKl1Av5iDNAneZKMwoc=
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=intel.com
+ header.from=linux.dev
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=QuR/2Lrj
-Subject: [Intel-wired-lan] [tnguy-next-queue:main] BUILD SUCCESS
- b515dc54795ef370be3cb396e7c12ad91686b6d1
+ dkim=pass (1024-bit key,
+ unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256
+ header.s=key1 header.b=RIfHixTp
+Subject: [Intel-wired-lan] [PATCH net-next v2] i40e: xsk: use
+ xdp_build_skb_from_zc() for XDP_PASS
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -104,87 +96,223 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git main
-branch HEAD: b515dc54795ef370be3cb396e7c12ad91686b6d1  net: ip6_tunnel: use tunnel parameters for fill_forward_path route lookup
+From: Chenguang Zhao <zhaochenguang@kylinos.cn>
 
-elapsed time: 805m
+Replace the driver-local i40e_construct_skb_zc() with the common
+helper xdp_build_skb_from_zc(). On failure, free the xdp buff in
+the caller.
 
-configs tested: 68
-configs skipped: 1
+xdp_build_skb_from_zc() already calls skb_record_rx_queue() and
+eth_type_trans(), so pull the remaining descriptor field setup into
+__i40e_process_skb_fields() and use that on the XDP_PASS path.
+Briefly restore the Ethernet header around eth_skb_pad() so padding
+sees the full L2 frame length.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Signed-off-by: Chenguang Zhao <zhaochenguang@kylinos.cn>
+---
+v2:
+- Extract descriptor field setup into __i40e_process_skb_fields() and
+  use it on the XDP_PASS path, so skb_record_rx_queue()/eth_type_trans()
+  are not repeated after xdp_build_skb_from_zc().
+- Keep a brief __skb_push()/__skb_pull() around eth_skb_pad() so padding
+  still sees the full L2 frame length.
 
-tested configs:
-alpha                            allnoconfig    gcc-16.1.0
-alpha                           allyesconfig    gcc-16.1.0
-alpha                              defconfig    gcc-16.1.0
-arc                             allmodconfig    gcc-16.1.0
-arc                             allyesconfig    gcc-16.1.0
-arm64                randconfig-001-20260729    clang-17
-arm64                randconfig-002-20260729    clang-17
-arm64                randconfig-003-20260729    clang-17
-arm64                randconfig-004-20260729    clang-17
-csky                            allmodconfig    gcc-16.1.0
-csky                 randconfig-001-20260729    clang-17
-csky                 randconfig-002-20260729    clang-17
-hexagon              randconfig-001-20260729    gcc-9.5.0
-hexagon              randconfig-002-20260729    gcc-9.5.0
-i386                            allmodconfig    gcc-14
-i386       buildonly-randconfig-001-20260729    gcc-14
-i386       buildonly-randconfig-002-20260729    gcc-14
-i386       buildonly-randconfig-003-20260729    gcc-14
-i386       buildonly-randconfig-004-20260729    gcc-14
-i386       buildonly-randconfig-005-20260729    gcc-14
-i386       buildonly-randconfig-006-20260729    gcc-14
-loongarch                          defconfig    clang-24
-loongarch            randconfig-001-20260729    gcc-9.5.0
-loongarch            randconfig-002-20260729    gcc-9.5.0
-mips                       bcm63xx_defconfig    clang-24
-nios2                           allmodconfig    gcc-11.5.0
-nios2                            allnoconfig    gcc-11.5.0
-nios2                randconfig-001-20260729    gcc-9.5.0
-nios2                randconfig-002-20260729    gcc-9.5.0
-parisc                          alldefconfig    gcc-16.1.0
-parisc                          allmodconfig    gcc-16.1.0
-parisc                          allyesconfig    gcc-16.1.0
-parisc                             defconfig    gcc-16.1.0
-parisc               randconfig-001-20260729    clang-24
-parisc               randconfig-002-20260729    clang-24
-powerpc                mpc8313_rdb_defconfig    gcc-16.1.0
-powerpc              randconfig-001-20260729    clang-24
-powerpc              randconfig-002-20260729    clang-24
-powerpc64            randconfig-001-20260729    clang-24
-powerpc64            randconfig-002-20260729    clang-24
-riscv                randconfig-001-20260729    gcc-15.2.0
-riscv                randconfig-002-20260729    gcc-15.2.0
-s390                 randconfig-001-20260729    gcc-15.2.0
-s390                 randconfig-002-20260729    gcc-15.2.0
-sh                                 defconfig    gcc-16.1.0
-sh                   randconfig-001-20260729    gcc-15.2.0
-sh                   randconfig-002-20260729    gcc-15.2.0
-sh                  sh7724_generic_defconfig    gcc-16.1.0
-x86_64     buildonly-randconfig-001-20260729    clang-22
-x86_64     buildonly-randconfig-002-20260729    clang-22
-x86_64     buildonly-randconfig-003-20260729    clang-22
-x86_64     buildonly-randconfig-004-20260729    clang-22
-x86_64     buildonly-randconfig-005-20260729    clang-22
-x86_64     buildonly-randconfig-006-20260729    clang-22
-x86_64                                 kexec    clang-22
-x86_64               randconfig-001-20260729    clang-22
-x86_64               randconfig-002-20260729    clang-22
-x86_64               randconfig-003-20260729    clang-22
-x86_64               randconfig-004-20260729    clang-22
-x86_64               randconfig-005-20260729    clang-22
-x86_64               randconfig-006-20260729    clang-22
-x86_64               randconfig-011-20260729    gcc-14
-x86_64               randconfig-012-20260729    gcc-14
-x86_64               randconfig-013-20260729    gcc-14
-x86_64               randconfig-014-20260729    gcc-14
-x86_64               randconfig-015-20260729    gcc-14
-x86_64               randconfig-016-20260729    gcc-14
-x86_64                          rhel-9.4-bpf    gcc-14
+v1:
+ - https://lore.kernel.org/all/20260724020125.246333-1-chenguang.zhao@linux.dev/
+---
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 32 ++++++--
+ .../ethernet/intel/i40e/i40e_txrx_common.h    |  2 +
+ drivers/net/ethernet/intel/i40e/i40e_xsk.c    | 76 +++----------------
+ 3 files changed, 36 insertions(+), 74 deletions(-)
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index ef5e657816f0..87553b14d34a 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -1833,17 +1833,17 @@ static inline void i40e_rx_hash(struct i40e_ring *ring,
+ }
+ 
+ /**
+- * i40e_process_skb_fields - Populate skb header fields from Rx descriptor
++ * __i40e_process_skb_fields - Populate skb fields from Rx descriptor
+  * @rx_ring: rx descriptor ring packet is being transacted on
+  * @rx_desc: pointer to the EOP Rx descriptor
+  * @skb: pointer to current skb being populated
+  *
+- * This function checks the ring, descriptor, and packet information in
+- * order to populate the hash, checksum, VLAN, protocol, and
+- * other fields within the skb.
++ * Populate hash, checksum, PTP timestamp and VLAN from @rx_desc. Does not
++ * call skb_record_rx_queue() or eth_type_trans(); callers that already got
++ * those from xdp_build_skb_from_zc() should use this helper.
+  **/
+-void i40e_process_skb_fields(struct i40e_ring *rx_ring,
+-			     union i40e_rx_desc *rx_desc, struct sk_buff *skb)
++void __i40e_process_skb_fields(struct i40e_ring *rx_ring,
++			       union i40e_rx_desc *rx_desc, struct sk_buff *skb)
+ {
+ 	u64 qword = le64_to_cpu(rx_desc->wb.qword1.status_error_len);
+ 	u32 rx_status = FIELD_GET(I40E_RXD_QW1_STATUS_MASK, qword);
+@@ -1858,14 +1858,30 @@ void i40e_process_skb_fields(struct i40e_ring *rx_ring,
+ 
+ 	i40e_rx_checksum(rx_ring->vsi, skb, rx_desc);
+ 
+-	skb_record_rx_queue(skb, rx_ring->queue_index);
+-
+ 	if (qword & BIT(I40E_RX_DESC_STATUS_L2TAG1P_SHIFT)) {
+ 		__le16 vlan_tag = rx_desc->wb.qword0.lo_dword.l2tag1;
+ 
+ 		__vlan_hwaccel_put_tag(skb, htons(ETH_P_8021Q),
+ 				       le16_to_cpu(vlan_tag));
+ 	}
++}
++
++/**
++ * i40e_process_skb_fields - Populate skb header fields from Rx descriptor
++ * @rx_ring: rx descriptor ring packet is being transacted on
++ * @rx_desc: pointer to the EOP Rx descriptor
++ * @skb: pointer to current skb being populated
++ *
++ * This function checks the ring, descriptor, and packet information in
++ * order to populate the hash, checksum, VLAN, protocol, and
++ * other fields within the skb.
++ **/
++void i40e_process_skb_fields(struct i40e_ring *rx_ring,
++			     union i40e_rx_desc *rx_desc, struct sk_buff *skb)
++{
++	__i40e_process_skb_fields(rx_ring, rx_desc, skb);
++
++	skb_record_rx_queue(skb, rx_ring->queue_index);
+ 
+ 	/* modifies the skb - consumes the enet header */
+ 	skb->protocol = eth_type_trans(skb, rx_ring->netdev);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h b/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h
+index e26807fd2123..3c52e0e60487 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h
+@@ -9,6 +9,8 @@
+ int i40e_xmit_xdp_tx_ring(struct xdp_buff *xdp, struct i40e_ring *xdp_ring);
+ void i40e_clean_programming_status(struct i40e_ring *rx_ring, u64 qword0_raw,
+ 				   u64 qword1);
++void __i40e_process_skb_fields(struct i40e_ring *rx_ring,
++			       union i40e_rx_desc *rx_desc, struct sk_buff *skb);
+ void i40e_process_skb_fields(struct i40e_ring *rx_ring,
+ 			     union i40e_rx_desc *rx_desc, struct sk_buff *skb);
+ void i40e_xdp_ring_update_tail(struct i40e_ring *xdp_ring);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+index 9f47388eaba5..8741dff82bd1 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+@@ -3,6 +3,7 @@
+ 
+ #include <linux/bpf_trace.h>
+ #include <linux/unroll.h>
++#include <net/xdp.h>
+ #include <net/xdp_sock_drv.h>
+ #include "i40e_txrx_common.h"
+ #include "i40e_xsk.h"
+@@ -277,70 +278,6 @@ bool i40e_alloc_rx_buffers_zc(struct i40e_ring *rx_ring, u16 count)
+ 	return count == nb_buffs;
+ }
+ 
+-/**
+- * i40e_construct_skb_zc - Create skbuff from zero-copy Rx buffer
+- * @rx_ring: Rx ring
+- * @xdp: xdp_buff
+- *
+- * This functions allocates a new skb from a zero-copy Rx buffer.
+- *
+- * Returns the skb, or NULL on failure.
+- **/
+-static struct sk_buff *i40e_construct_skb_zc(struct i40e_ring *rx_ring,
+-					     struct xdp_buff *xdp)
+-{
+-	unsigned int totalsize = xdp->data_end - xdp->data_meta;
+-	unsigned int metasize = xdp->data - xdp->data_meta;
+-	struct skb_shared_info *sinfo = NULL;
+-	struct sk_buff *skb;
+-	u32 nr_frags = 0;
+-
+-	if (unlikely(xdp_buff_has_frags(xdp))) {
+-		sinfo = xdp_get_shared_info_from_buff(xdp);
+-		nr_frags = sinfo->nr_frags;
+-	}
+-	net_prefetch(xdp->data_meta);
+-
+-	/* allocate a skb to store the frags */
+-	skb = napi_alloc_skb(&rx_ring->q_vector->napi, totalsize);
+-	if (unlikely(!skb))
+-		goto out;
+-
+-	memcpy(__skb_put(skb, totalsize), xdp->data_meta,
+-	       ALIGN(totalsize, sizeof(long)));
+-
+-	if (metasize) {
+-		skb_metadata_set(skb, metasize);
+-		__skb_pull(skb, metasize);
+-	}
+-
+-	if (likely(!xdp_buff_has_frags(xdp)))
+-		goto out;
+-
+-	for (int i = 0; i < nr_frags; i++) {
+-		struct skb_shared_info *skinfo = skb_shinfo(skb);
+-		skb_frag_t *frag = &sinfo->frags[i];
+-		struct page *page;
+-		void *addr;
+-
+-		page = dev_alloc_page();
+-		if (!page) {
+-			dev_kfree_skb(skb);
+-			return NULL;
+-		}
+-		addr = page_to_virt(page);
+-
+-		memcpy(addr, skb_frag_page(frag), skb_frag_size(frag));
+-
+-		__skb_fill_page_desc_noacc(skinfo, skinfo->nr_frags++,
+-					   addr, 0, skb_frag_size(frag));
+-	}
+-
+-out:
+-	xsk_buff_free(xdp);
+-	return skb;
+-}
+-
+ static void i40e_handle_xdp_result_zc(struct i40e_ring *rx_ring,
+ 				      struct xdp_buff *xdp_buff,
+ 				      union i40e_rx_desc *rx_desc,
+@@ -372,21 +309,28 @@ static void i40e_handle_xdp_result_zc(struct i40e_ring *rx_ring,
+ 		 * BIT(I40E_RXD_QW1_ERROR_SHIFT). This is due to that
+ 		 * SBP is *not* set in PRT_SBPVSI (default not set).
+ 		 */
+-		skb = i40e_construct_skb_zc(rx_ring, xdp_buff);
++		skb = xdp_build_skb_from_zc(xdp_buff);
+ 		if (!skb) {
++			xsk_buff_free(xdp_buff);
+ 			rx_ring->rx_stats.alloc_buff_failed++;
+ 			*rx_packets = 0;
+ 			*rx_bytes = 0;
+ 			return;
+ 		}
+ 
++		/* xdp_build_skb_from_zc() already ran eth_type_trans() and
++		 * skb_record_rx_queue(). Restore the Ethernet header only for
++		 * eth_skb_pad(), then pull it back.
++		 */
++		__skb_push(skb, ETH_HLEN);
+ 		if (eth_skb_pad(skb)) {
+ 			*rx_packets = 0;
+ 			*rx_bytes = 0;
+ 			return;
+ 		}
++		__skb_pull(skb, ETH_HLEN);
+ 
+-		i40e_process_skb_fields(rx_ring, rx_desc, skb);
++		__i40e_process_skb_fields(rx_ring, rx_desc, skb);
+ 		napi_gro_receive(&rx_ring->q_vector->napi, skb);
+ 		return;
+ 	}
+-- 
+2.25.1
+
