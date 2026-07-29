@@ -4,83 +4,202 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89B87C53200
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 29 Jul 2026 05:50:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6CD55C54F51
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 29 Jul 2026 09:40:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 35F9540A80;
-	Wed, 29 Jul 2026 05:50:43 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 2008B40AE0;
+	Wed, 29 Jul 2026 09:40:04 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 7gA_04QPqyAq; Wed, 29 Jul 2026 05:50:41 +0000 (UTC)
+ id gamqsPFrfD6O; Wed, 29 Jul 2026 09:40:03 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 07A1D40A6F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3DFA540B41
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1785304241;
-	bh=0bZ169YdbqXKNleo9UtpL+ygZkIM/xnq5Ot5tib0OmI=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=kuh1c7GHEewWoBuoZfBiGmO6OlvRSvUTS+oheCSH7FGBMzcl8vxWuaUDSZvH1Gkdy
-	 Buun5cPz0m9mcVCRqlXHg/ZBRlR/lV2AjH4KNXiLeB4snDRdkrLipmq9L4lwEuFbLU
-	 J+qGeMFQKJzzQ0+OuC6oUtqSZJaBsskXLBuRpQBanVmRoT5Day7kO7p28qelOmt/PR
-	 CkShnzcMyfgvclvK/pVzs6h7sAG7SQPqqJ2kOPU+/ky8EfdKdQgO3LpkJcMDui7diC
-	 sYl9Au7M709oPhuOk9FKAlvGLBlXPsvdDNPct5eJtWgsCvzp9552vlxfz98DNKuVq3
-	 HegAqTEIE+4Gg==
+	s=default; t=1785318003;
+	bh=E+T7Dh8wxtclVtc8wNRLSkb99WORRhJjE0G1UNSidtY=;
+	h=Date:From:To:CC:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=XOVt8H56iDPGL3AqMrLJo6h6q8zgyRblo4xHHniQ3nZgzOK8VCpQpy3DjVnngfnoN
+	 3/tOgjDmtl3ZYTFwyOLPq1hNmW7dp4LgfHvHjCmDYYgXhIPxXXtY4zHg9aXwnXqgR8
+	 gcYD1KdT2EM6oV370hTCJaE9LuJAZf/9FmWWGAsc/YLeCO2iaXQvTt+WkT1H1s7mpx
+	 vf181+Azmw3q9ZjZ0WpKzIqPyKYUnb6K5zt1Y1Zqx1+IYnxll3LqQoFjBrq5iZJdwr
+	 jQ9u12ZZllMfBj20ArnjD0ii/ejNqRVzutVHoLSdGT8+jjW3BM9vefphd4WEQte7lW
+	 tPmj2qNtedtcg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 07A1D40A6F;
-	Wed, 29 Jul 2026 05:50:41 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id C9D5726C
- for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jul 2026 05:50:39 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 3DFA540B41;
+	Wed, 29 Jul 2026 09:40:03 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 9F9C3490
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jul 2026 09:40:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id A73B180FAB
- for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jul 2026 05:50:39 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 919C960841
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jul 2026 09:40:01 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Ls9-C1YOkXke for <intel-wired-lan@lists.osuosl.org>;
- Wed, 29 Jul 2026 05:50:37 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=95.215.58.183;
- helo=out-183.mta1.migadu.com; envelope-from=chenguang.zhao@linux.dev;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id y5hVQNWDAsYq for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 29 Jul 2026 09:40:00 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.11;
+ helo=mgamail.intel.com; envelope-from=maciej.fijalkowski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org C108D80FA7
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C108D80FA7
-Received: from out-183.mta1.migadu.com (out-183.mta1.migadu.com
- [95.215.58.183])
- by smtp1.osuosl.org (Postfix) with ESMTPS id C108D80FA7
- for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jul 2026 05:50:36 +0000 (UTC)
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and
- include these headers.
-From: Chenguang Zhao <chenguang.zhao@linux.dev>
-To: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
- andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com
-Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- chenguang.zhao@linux.dev, kerneljasonxing@gmail.com,
- Chenguang Zhao <zhaochenguang@kylinos.cn>
-Date: Wed, 29 Jul 2026 13:49:16 +0800
-Message-Id: <20260729054916.720750-1-chenguang.zhao@linux.dev>
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 8143B605E4
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8143B605E4
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 8143B605E4
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jul 2026 09:40:00 +0000 (UTC)
+X-CSE-ConnectionGUID: CiRHqzwdQi6fU/77NCRjjQ==
+X-CSE-MsgGUID: SVAZ7DquSQqk8oDttLmfAg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11859"; a="96503578"
+X-IronPort-AV: E=Sophos;i="6.25,192,1779174000"; d="scan'208";a="96503578"
+Received: from fmviesa004.fm.intel.com ([10.60.135.144])
+ by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 29 Jul 2026 02:39:59 -0700
+X-CSE-ConnectionGUID: bpQB9rrcQEapPyzaHynIkA==
+X-CSE-MsgGUID: StsPL+wLRre792/j4bKhjw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,192,1779174000"; d="scan'208";a="261919529"
+Received: from fmsmsx901.amr.corp.intel.com ([10.18.126.90])
+ by fmviesa004.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 29 Jul 2026 02:39:59 -0700
+Received: from FMSMSX903.amr.corp.intel.com (10.18.126.92) by
+ fmsmsx901.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.45; Wed, 29 Jul 2026 02:39:59 -0700
+Received: from fmsedg901.ED.cps.intel.com (10.1.192.143) by
+ FMSMSX903.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.45 via Frontend Transport; Wed, 29 Jul 2026 02:39:59 -0700
+Received: from PH0PR06CU001.outbound.protection.outlook.com (40.107.208.25) by
+ edgegateway.intel.com (192.55.55.81) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.45; Wed, 29 Jul 2026 02:39:58 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=ffaXgFKKdQPGSDI5GafVzbE0cmx2fV73MnXqYQ8gB44EuBV8Un+0oLYyaysdxLLa3BumDC/uVEF5DZ2Y2HBsGXwwT9dkPnJtQHIUDvPbquAzNaCMX11LssXwdqEoK2ujdY9v4PwoJDE//nN6qLfW3GrpV4yLPa+KnltxXz1oQ3H3LlUrJqRvupTzNJfDeLax/F0hBHHDEaaGkHijIyp1izvaDwDBtTJgRPTxZ37dgswLn5JVwHJShhmZHpVgs4l+YxyAMEnh/IEAnebhoJvji3GXpVMlo7AXkhDr/ar2tFAeDFA7xN2mF0XOfSJLvvqdc6nzNFHcB+j5l6xsnxm/cw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=E+T7Dh8wxtclVtc8wNRLSkb99WORRhJjE0G1UNSidtY=;
+ b=KS3JFANBA++HMAhC9YttIjqI9TcClvmVK/+QF2lJo+SenVgHrD/8faLuKuIUp9GKpnWpydFCUoPadIVtCzRk2knEFzKNWPWfMupwfCWH1V0xhcVpx+FuwgmqRHd2fCKLGdPKMrjM13hsFkLkgFxqD4EEnvb/uY9tIQ6aU7QkFUmbSaIvt7AJ/J4PBKD4Oj/BsKOpzl2hN9umpUzuP9F60HpiUraZAawQPdX8ZRlGipqQCJseUYm7sV5zlEKZPXWj5UcQIS9eGjTotrzoXtM1q3ASwZDYQxwC/fkWH/qQmNq1UApuhJC55DgJJMeuI7xCQ2fOFJx37VrtyUx9dmlgqQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from DM4PR11MB6117.namprd11.prod.outlook.com (2603:10b6:8:b3::19) by
+ PH0PR11MB5014.namprd11.prod.outlook.com (2603:10b6:510:31::17) with
+ Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.270.12; Wed, 29 Jul 2026 09:39:44 +0000
+Received: from DM4PR11MB6117.namprd11.prod.outlook.com
+ ([fe80::d9b3:e942:2686:3cdd]) by DM4PR11MB6117.namprd11.prod.outlook.com
+ ([fe80::d9b3:e942:2686:3cdd%6]) with mapi id 15.21.0270.009; Wed, 29 Jul 2026
+ 09:39:44 +0000
+Date: Wed, 29 Jul 2026 11:39:34 +0200
+From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+To: Stanislav Fomichev <sdf.kernel@gmail.com>
+CC: <netdev@vger.kernel.org>, <davem@davemloft.net>, <edumazet@google.com>,
+ <kuba@kernel.org>, <pabeni@redhat.com>, <anthony.l.nguyen@intel.com>,
+ <przemyslaw.kitszel@intel.com>, <andrew+netdev@lunn.ch>, <saeedm@nvidia.com>, 
+ <tariqt@nvidia.com>, <mbloch@nvidia.com>, <ast@kernel.org>,
+ <daniel@iogearbox.net>, <hawk@kernel.org>, <john.fastabend@gmail.com>,
+ <sdf@fomichev.me>, <maxime.chevallier@bootlin.com>,
+ <mcoquelin.stm32@gmail.com>, <alexandre.torgue@foss.st.com>,
+ <aleksander.lobakin@intel.com>, <horms@kernel.org>,
+ <magnus.karlsson@intel.com>, <witu@nvidia.com>, <alice.kernel@fastmail.im>,
+ <dtatulea@nvidia.com>, <yoong.siang.song@intel.com>, <martin.lau@kernel.org>, 
+ <intel-wired-lan@lists.osuosl.org>, <linux-kernel@vger.kernel.org>,
+ <linux-rdma@vger.kernel.org>, <bpf@vger.kernel.org>,
+ <linux-stm32@st-md-mailman.stormreply.com>,
+ <linux-arm-kernel@lists.infradead.org>, <leon@kernel.org>,
+ <AutonomousCodeSecurity@microsoft.com>, "Cen Zhang (Microsoft)"
+ <blbllhy@gmail.com>
+Message-ID: <amnKVlHTITILY8H8@boxer>
+References: <20260727161959.885642-1-sdf@fomichev.me>
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20260727161959.885642-1-sdf@fomichev.me>
+X-ClientProxiedBy: DUZPR01CA0009.eurprd01.prod.exchangelabs.com
+ (2603:10a6:10:3c3::16) To DM4PR11MB6117.namprd11.prod.outlook.com
+ (2603:10b6:8:b3::19)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Migadu-Flow: FLOW_OUT
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linux.dev; s=key1; t=1785304233;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding;
- bh=0bZ169YdbqXKNleo9UtpL+ygZkIM/xnq5Ot5tib0OmI=;
- b=RIfHixTpVWQn/Rq6tIx31VvRQXojsHnwHU3Z113+j83zuqBLMvxLjnISJurZXgImARBZyD
- 4FUNqnDsmajM/OLAhC2gD1Cg5zNC2FeFNaO/eKohM+04BjGxPw1p8KpjFheXlb9lxInad/
- TAErrd6yn7c6AKl1Av5iDNAneZKMwoc=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DM4PR11MB6117:EE_|PH0PR11MB5014:EE_
+X-MS-Office365-Filtering-Correlation-Id: 4c8b8649-0ad1-47cc-3153-08deed555241
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+ ARA:13230040|1800799024|376014|23010399003|7416014|366016|11063799006|5023799004|10067099003|6133799003|56012099006|22082099003|18002099003;
+X-Microsoft-Antispam-Message-Info: bI8aaNyS2HknuvlkGjLCMdFDJH3yy7fNaIJ8EWOW8kOq47LEwvphT/HRG4mK0sO8K+/SstQJ00x/a1hzTGT0p41Vgq7dDodr/y9OeA+lRPB9VVM4+IWJqCdcLtb+1hX42f38O6DvsIBvc3nmtYHLqFy9qHWpKr5TlazBcYSwl8yMwv6UCG5cpVFPM7OpH089cyo+pWUUoO7YYW/GW+2R4i+xKT9hqQcZMhDrN3Ncc5b1wR2v7IkcIoaaCRrizM6S08ab/OXiDl3EUThRfwLbuUaUqbW/VAv0rKJCIi/vCp4jKQahpj9iMXjn49RR9A7dPIqwfPVm3FSFOcyWRLcSdScYqui4y5QjYjtuVhRj43Dpa5jjjrRKIbVBlL5vy6hvU6csHVda8CBneEYNj+7yJCOkNkwgfXaoquIguwBM+RtNFN+6CahKMooGniGgNYvLTB9P8IsP5e2ZfE04nsh0V06AI86ycwboNGN8U5KPXkuA6NGy7/gj+WNx7g7vbskWRsRJ89Yo7PmSlFoSxiDE/QJ6pCDvlSoHm6FRhn4UoSA2hx9mSOxMSovbKvJq65wHIA1OhoGfQAaH7G5WneK2K+G5SwLh5EmiyAUUhvGsnVbKcgu1AQMEHms8UnlGygACFnm137XOIocHZpoIRWOSeHov3spwH7WCdbxbgHcZQy8=
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:DM4PR11MB6117.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230040)(1800799024)(376014)(23010399003)(7416014)(366016)(11063799006)(5023799004)(10067099003)(6133799003)(56012099006)(22082099003)(18002099003);
+ DIR:OUT; SFP:1101; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?umbx1rrXT3S5tzieLzELpi+NjE77u2icGpJF+jUgbIaK+8VfxXDRLFazkL1F?=
+ =?us-ascii?Q?es0dSgTRbTThldoDntjhBmT1I2BnfeiXQlveqfObnX26GAaBKeA7nqI4HMti?=
+ =?us-ascii?Q?MpLbL8OmgpFRaoWy7lkDG/I4M1W80guKFkvrMU8xQSmxK1yOS/EXmm3gowrO?=
+ =?us-ascii?Q?QRl4kjrKweTgXWR4+97jyJlcjUhj1EfnxTOFa6vL7xNSJe/KE5NW726VOCaN?=
+ =?us-ascii?Q?Ywi4GGcBcYZthTAIDdxnXBwru1NG8Agdna0C2Xi/ZmyqpyYCwZ8k37BFucND?=
+ =?us-ascii?Q?3MjLLYPIS8QwcraUMr7KtB+qrWL9OXHBZ41gW35MxJ/YsT6TZs49+EGjQI3b?=
+ =?us-ascii?Q?TO13/v8mDpV1vd/NzizIU37B4pqgW/iP6jn6T57bncG1+NhabjXWVe7HnNu5?=
+ =?us-ascii?Q?ka5w9UsKR6RmDncYbbYMUsCohdpGYRvTuEbWC1s7KOSdKiRwqROm+dALlf8M?=
+ =?us-ascii?Q?A9JAPPLTUk5YD4t8KHLATfz4VZ0Qh1NptIJrkwJckALem9Xbr2RvP4Cph+Ml?=
+ =?us-ascii?Q?TfxjIZ1VIsd29E+BFCGt8gE8+PM/riTSi+u8qm7PWmjMAkiHAL/LNOm4g9JD?=
+ =?us-ascii?Q?XaGArJhquO5mKPfPb7uGuF594D8zgMUNfBK2iFC99fiqQWTjuT3gyHwcOgzm?=
+ =?us-ascii?Q?22VP+0RyloNfd0GkhqGNV9hXUgrHueWkfWRQXsBTa4jnsIawHNGjWtZSVWLQ?=
+ =?us-ascii?Q?D41EQxpS4sj2AEG06ykIkMm64sUDrxli0AvX7vcPwwhrHA8bsTAl9RdAYZXW?=
+ =?us-ascii?Q?6bPmyATYUWLMU03wHMYmUx9ByxHKwq08BPfEjvqmRmpGNMw2kt6IlxeY3wYh?=
+ =?us-ascii?Q?lkRgwaMx6dxSAGbbooGlIykcWbGMo0ynfbUXbBB6QCvIlX8ZiKSBKLYQJFTU?=
+ =?us-ascii?Q?6hrn55rufvF7IyvLacj551RzATtdvTNXG9KmlBz692yq48PQVuZwI4Dfc2S7?=
+ =?us-ascii?Q?DTE9tNb5tnYM7g3AC4/t6hmnrw+BRx+HVy/1hj4RiA4l/nU3oiprod4uNa/7?=
+ =?us-ascii?Q?zZnLPdTemAwtbQp36VtA01wUzb4ZeRMr56CwGUfLEMy4KCZjO8HnwpbSa5LD?=
+ =?us-ascii?Q?QjXdOZ/4P5MTyrNO2ttkwZqGW1qoOjMXusDGLPOyChBNi76cgcXrNEkeM+fD?=
+ =?us-ascii?Q?9niLXc03W00z6eMJBYbon1gLDepfPOm7n6QHYnBwI51UVBerr2caodgH+ZwN?=
+ =?us-ascii?Q?Kl8WPNxYROLLnMDH9ReFVpeqZeh9IAJDQx2dSx9VxBcT3TFgpKT/W/kcRp7j?=
+ =?us-ascii?Q?h6xvK5nSvRnSC6k+RlZz2SQ4XZFEFri0yXIAxQuP/55jwSraiZla1R7rtUKI?=
+ =?us-ascii?Q?2oolzxeGlEDZlozjLbLCtjhAWC71Ii59jFJZREo9t1k9s66v7mDp/vJSgt16?=
+ =?us-ascii?Q?y+gnyRzok/YvFEEt5+OtXTp9WUAdoFEUNvvBM72mTAr7vHtXsQ75ELkuPMOb?=
+ =?us-ascii?Q?tKeQF0/zQdS8gQUpRg8mzOYS+yg/psZG7pSfPOco+RLb/pSh/E4EUKo1AoQ9?=
+ =?us-ascii?Q?fo8uBWvhWwv3sDARjAjEYRoRfoxF3j2u2lKnLuoVAcr3UFrU7Ac9lF+LZFam?=
+ =?us-ascii?Q?xXfUuItz7x6iA5/oc5Fte2VhfEzuU9mqoNhKr72rrLy7Qrh7nmsjChxtgjAl?=
+ =?us-ascii?Q?vWU0jgequFQGykIZEE4kF37Ek3s6138JJJIQ7gQxz8oVYipcqNLnJxOOQbgs?=
+ =?us-ascii?Q?4L3KC5UYXQidn95py8qmkgknYMy2NMbZ7yNweyUVYQ4BJxQSRfBWExfcu2jv?=
+ =?us-ascii?Q?F+1T2f+RqFMk1y4vKvVQNET6NpjqWGQ=3D?=
+X-Exchange-RoutingPolicyChecked: eEG41J4P+N2GnPPvlwxX/lh+Dln40bHSO0If5/VgFzNnskckUJJxALGYaYXrf+g4TyHgqANLeSnZLHvsgC3NXp3bxkshJmNyEeE48qOGQGAU19KHvweNiyXTdFMqYVZqMX92amb0ZDvz0e4X7cFPXMw51TvSi86N+YnUEsxL/j72bxoikJBSECtpsolVnKo165x6kWCtC3SLwceviPTSuVlyeYmL/DUIZuWjnGG7oCadtpHM9EB7aLeeLf6cx9EIJJaLUH5dCFX3dLwwCd4v4L9OjV57DYZ36f2FomcToQv+PMxSLEEsi8lpuG4Dst7nsrFZz4sb2B+Jke//vTHWBQ==
+X-MS-Exchange-CrossTenant-Network-Message-Id: 4c8b8649-0ad1-47cc-3153-08deed555241
+X-MS-Exchange-CrossTenant-AuthSource: DM4PR11MB6117.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 29 Jul 2026 09:39:44.2869 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: r98VAw1HDppREjVhInNFScpQXT7E4d4tZoLqqnnWnRHMOgQHMj/bgOnKSKMALGPoBciEz8G2EeIFT6WgSQzz0SjcZZkLrPq4cxEKLH5kZMg=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR11MB5014
+X-OriginatorOrg: intel.com
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1785318001; x=1816854001;
+ h=date:from:to:cc:subject:message-id:references:
+ in-reply-to:mime-version;
+ bh=BvPhVEx0mFUD+Te3nvqyyLxZn6wsO0rO+5vWMSPB4sk=;
+ b=HS0DaU4AeiA6e4K8sV+fFslaIY5pRFWFluRxarZ0YqS3739vFKaqXtfM
+ EMrPTnML8fm6hBox+RWX7jI62f/DsV9U3mG0fZ0/c+d5U52SEDY04esCN
+ OLRXmEifnpNGTr3BsTwB2svd5WBV6m82n7IrBOZB9Zgk++Qp/3STGB8xl
+ 72JOTbtb7Te8BTCUZ+t0o1ET1m+Tm9Ntacj1nEtQVUr0ZXcNZmtb84rw5
+ hCgU504dQIou2mFDRHaHkqfeiBySzsldsUzQOoJlcRrdaq+h02Bci80bW
+ mql9rflEKx+bQA/kwtUOPRKJso1A6jQd6tCrpgMBnhUBv0m6LDRvluG3s
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=linux.dev
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256
- header.s=key1 header.b=RIfHixTp
-Subject: [Intel-wired-lan] [PATCH net-next v2] i40e: xsk: use
- xdp_build_skb_from_zc() for XDP_PASS
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=HS0DaU4A
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Subject: Re: [Intel-wired-lan] [PATCH net 0/6] xsk: harden TX metadata
+ validation against races
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -96,223 +215,81 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Chenguang Zhao <zhaochenguang@kylinos.cn>
+On Mon, Jul 27, 2026 at 09:19:53AM -0700, Stanislav Fomichev wrote:
+> Cen Zhang reported a KASAN out-of-bounds read when AF_XDP is configured
+> with a TX metadata area smaller than struct xsk_tx_metadata. The metadata
+> is also shared with user space, so reading its flags more than once can
+> produce inconsistent validation and processing decisions.
+> 
+> Require enough space for the flags and one request field, validate the
+> launch-time field against the configured metadata length, and use one
+> snapshot of the flags while processing each request. Carry the validated
+> decision through completion handling so later user-space changes cannot
+> enable an unrequested completion timestamp.
 
-Replace the driver-local i40e_construct_skb_zc() with the common
-helper xdp_build_skb_from_zc(). On failure, free the xdp buff in
-the caller.
+Stan,
 
-xdp_build_skb_from_zc() already calls skb_record_rx_queue() and
-eth_type_trans(), so pull the remaining descriptor field setup into
-__i40e_process_skb_fields() and use that on the XDP_PASS path.
-Briefly restore the Ethernet header around eth_skb_pad() so padding
-sees the full L2 frame length.
+I'm taking week off and I see one sashiko-reported issue which is not a
+pre-existing one. Hope you could clarify it and unless no one picks the
+review of this set i'll get back at it next week.
 
-Signed-off-by: Chenguang Zhao <zhaochenguang@kylinos.cn>
----
-v2:
-- Extract descriptor field setup into __i40e_process_skb_fields() and
-  use it on the XDP_PASS path, so skb_record_rx_queue()/eth_type_trans()
-  are not repeated after xdp_build_skb_from_zc().
-- Keep a brief __skb_push()/__skb_pull() around eth_skb_pad() so padding
-  still sees the full L2 frame length.
+>  static inline struct xsk_tx_metadata *
+>  __xsk_buff_get_metadata(const struct xsk_buff_pool *pool, void *data)
+>  {
+>  	struct xsk_tx_metadata *meta;
+> +	u64 flags;
+>  
+>  	if (!pool->tx_metadata_len)
+>  		return NULL;
+>  
+>  	meta = data - pool->tx_metadata_len;
+> -	if (unlikely(!xsk_buff_valid_tx_metadata(meta)))
+> +	if (unlikely(!xsk_buff_valid_tx_metadata(pool, meta, &flags)))
+>  		return NULL; /* no way to signal the error to the user */
+>  
+>  	return meta;
+The snapshotted flags are validated for size compliance in
+xsk_buff_valid_tx_metadata() but then discarded, returning the
+un-snapshotted user memory pointer (meta) to the driver.
+Later in the zero-copy driver path, xsk_tx_metadata_request() re-reads
+meta->flags directly from user memory:
+include/net/xdp_sock.h:xsk_tx_metadata_request() {
+    ...
+    if (meta->flags & XDP_TXMD_FLAGS_LAUNCH_TIME)
+        ops->tmo_request_launch_time(meta->request.launch_time, priv);
+    ...
+}
+Does this create a Time-of-Check to Time-of-Use (TOCTOU) race condition in
+the zero-copy TX metadata validation where userspace can concurrently enable
+launch time after the size validation?
 
-v1:
- - https://lore.kernel.org/all/20260724020125.246333-1-chenguang.zhao@linux.dev/
----
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 32 ++++++--
- .../ethernet/intel/i40e/i40e_txrx_common.h    |  2 +
- drivers/net/ethernet/intel/i40e/i40e_xsk.c    | 76 +++----------------
- 3 files changed, 36 insertions(+), 74 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index ef5e657816f0..87553b14d34a 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -1833,17 +1833,17 @@ static inline void i40e_rx_hash(struct i40e_ring *ring,
- }
- 
- /**
-- * i40e_process_skb_fields - Populate skb header fields from Rx descriptor
-+ * __i40e_process_skb_fields - Populate skb fields from Rx descriptor
-  * @rx_ring: rx descriptor ring packet is being transacted on
-  * @rx_desc: pointer to the EOP Rx descriptor
-  * @skb: pointer to current skb being populated
-  *
-- * This function checks the ring, descriptor, and packet information in
-- * order to populate the hash, checksum, VLAN, protocol, and
-- * other fields within the skb.
-+ * Populate hash, checksum, PTP timestamp and VLAN from @rx_desc. Does not
-+ * call skb_record_rx_queue() or eth_type_trans(); callers that already got
-+ * those from xdp_build_skb_from_zc() should use this helper.
-  **/
--void i40e_process_skb_fields(struct i40e_ring *rx_ring,
--			     union i40e_rx_desc *rx_desc, struct sk_buff *skb)
-+void __i40e_process_skb_fields(struct i40e_ring *rx_ring,
-+			       union i40e_rx_desc *rx_desc, struct sk_buff *skb)
- {
- 	u64 qword = le64_to_cpu(rx_desc->wb.qword1.status_error_len);
- 	u32 rx_status = FIELD_GET(I40E_RXD_QW1_STATUS_MASK, qword);
-@@ -1858,14 +1858,30 @@ void i40e_process_skb_fields(struct i40e_ring *rx_ring,
- 
- 	i40e_rx_checksum(rx_ring->vsi, skb, rx_desc);
- 
--	skb_record_rx_queue(skb, rx_ring->queue_index);
--
- 	if (qword & BIT(I40E_RX_DESC_STATUS_L2TAG1P_SHIFT)) {
- 		__le16 vlan_tag = rx_desc->wb.qword0.lo_dword.l2tag1;
- 
- 		__vlan_hwaccel_put_tag(skb, htons(ETH_P_8021Q),
- 				       le16_to_cpu(vlan_tag));
- 	}
-+}
-+
-+/**
-+ * i40e_process_skb_fields - Populate skb header fields from Rx descriptor
-+ * @rx_ring: rx descriptor ring packet is being transacted on
-+ * @rx_desc: pointer to the EOP Rx descriptor
-+ * @skb: pointer to current skb being populated
-+ *
-+ * This function checks the ring, descriptor, and packet information in
-+ * order to populate the hash, checksum, VLAN, protocol, and
-+ * other fields within the skb.
-+ **/
-+void i40e_process_skb_fields(struct i40e_ring *rx_ring,
-+			     union i40e_rx_desc *rx_desc, struct sk_buff *skb)
-+{
-+	__i40e_process_skb_fields(rx_ring, rx_desc, skb);
-+
-+	skb_record_rx_queue(skb, rx_ring->queue_index);
- 
- 	/* modifies the skb - consumes the enet header */
- 	skb->protocol = eth_type_trans(skb, rx_ring->netdev);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h b/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h
-index e26807fd2123..3c52e0e60487 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h
-@@ -9,6 +9,8 @@
- int i40e_xmit_xdp_tx_ring(struct xdp_buff *xdp, struct i40e_ring *xdp_ring);
- void i40e_clean_programming_status(struct i40e_ring *rx_ring, u64 qword0_raw,
- 				   u64 qword1);
-+void __i40e_process_skb_fields(struct i40e_ring *rx_ring,
-+			       union i40e_rx_desc *rx_desc, struct sk_buff *skb);
- void i40e_process_skb_fields(struct i40e_ring *rx_ring,
- 			     union i40e_rx_desc *rx_desc, struct sk_buff *skb);
- void i40e_xdp_ring_update_tail(struct i40e_ring *xdp_ring);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-index 9f47388eaba5..8741dff82bd1 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-@@ -3,6 +3,7 @@
- 
- #include <linux/bpf_trace.h>
- #include <linux/unroll.h>
-+#include <net/xdp.h>
- #include <net/xdp_sock_drv.h>
- #include "i40e_txrx_common.h"
- #include "i40e_xsk.h"
-@@ -277,70 +278,6 @@ bool i40e_alloc_rx_buffers_zc(struct i40e_ring *rx_ring, u16 count)
- 	return count == nb_buffs;
- }
- 
--/**
-- * i40e_construct_skb_zc - Create skbuff from zero-copy Rx buffer
-- * @rx_ring: Rx ring
-- * @xdp: xdp_buff
-- *
-- * This functions allocates a new skb from a zero-copy Rx buffer.
-- *
-- * Returns the skb, or NULL on failure.
-- **/
--static struct sk_buff *i40e_construct_skb_zc(struct i40e_ring *rx_ring,
--					     struct xdp_buff *xdp)
--{
--	unsigned int totalsize = xdp->data_end - xdp->data_meta;
--	unsigned int metasize = xdp->data - xdp->data_meta;
--	struct skb_shared_info *sinfo = NULL;
--	struct sk_buff *skb;
--	u32 nr_frags = 0;
--
--	if (unlikely(xdp_buff_has_frags(xdp))) {
--		sinfo = xdp_get_shared_info_from_buff(xdp);
--		nr_frags = sinfo->nr_frags;
--	}
--	net_prefetch(xdp->data_meta);
--
--	/* allocate a skb to store the frags */
--	skb = napi_alloc_skb(&rx_ring->q_vector->napi, totalsize);
--	if (unlikely(!skb))
--		goto out;
--
--	memcpy(__skb_put(skb, totalsize), xdp->data_meta,
--	       ALIGN(totalsize, sizeof(long)));
--
--	if (metasize) {
--		skb_metadata_set(skb, metasize);
--		__skb_pull(skb, metasize);
--	}
--
--	if (likely(!xdp_buff_has_frags(xdp)))
--		goto out;
--
--	for (int i = 0; i < nr_frags; i++) {
--		struct skb_shared_info *skinfo = skb_shinfo(skb);
--		skb_frag_t *frag = &sinfo->frags[i];
--		struct page *page;
--		void *addr;
--
--		page = dev_alloc_page();
--		if (!page) {
--			dev_kfree_skb(skb);
--			return NULL;
--		}
--		addr = page_to_virt(page);
--
--		memcpy(addr, skb_frag_page(frag), skb_frag_size(frag));
--
--		__skb_fill_page_desc_noacc(skinfo, skinfo->nr_frags++,
--					   addr, 0, skb_frag_size(frag));
--	}
--
--out:
--	xsk_buff_free(xdp);
--	return skb;
--}
--
- static void i40e_handle_xdp_result_zc(struct i40e_ring *rx_ring,
- 				      struct xdp_buff *xdp_buff,
- 				      union i40e_rx_desc *rx_desc,
-@@ -372,21 +309,28 @@ static void i40e_handle_xdp_result_zc(struct i40e_ring *rx_ring,
- 		 * BIT(I40E_RXD_QW1_ERROR_SHIFT). This is due to that
- 		 * SBP is *not* set in PRT_SBPVSI (default not set).
- 		 */
--		skb = i40e_construct_skb_zc(rx_ring, xdp_buff);
-+		skb = xdp_build_skb_from_zc(xdp_buff);
- 		if (!skb) {
-+			xsk_buff_free(xdp_buff);
- 			rx_ring->rx_stats.alloc_buff_failed++;
- 			*rx_packets = 0;
- 			*rx_bytes = 0;
- 			return;
- 		}
- 
-+		/* xdp_build_skb_from_zc() already ran eth_type_trans() and
-+		 * skb_record_rx_queue(). Restore the Ethernet header only for
-+		 * eth_skb_pad(), then pull it back.
-+		 */
-+		__skb_push(skb, ETH_HLEN);
- 		if (eth_skb_pad(skb)) {
- 			*rx_packets = 0;
- 			*rx_bytes = 0;
- 			return;
- 		}
-+		__skb_pull(skb, ETH_HLEN);
- 
--		i40e_process_skb_fields(rx_ring, rx_desc, skb);
-+		__i40e_process_skb_fields(rx_ring, rx_desc, skb);
- 		napi_gro_receive(&rx_ring->q_vector->napi, skb);
- 		return;
- 	}
--- 
-2.25.1
-
+> 
+> Reported-by: AutonomousCodeSecurity@microsoft.com
+> Reported-by: Cen Zhang (Microsoft) <blbllhy@gmail.com>
+> Link: https://lore.kernel.org/netdev/20260720155210.34229-1-blbllhy@gmail.com/
+> 
+> Stanislav Fomichev (6):
+>   xsk: require at least 16 bytes of TX metadata
+>   xsk: pass TX metadata pointer by reference
+>   xsk: clear metadata pointer when no timestamp is requested
+>   xsk: validate launch-time metadata size
+>   xsk: move xsk_tx_metadata_request() to xdp_sock_drv.h
+>   xsk: validate metadata when processing requests
+> 
+>  drivers/net/ethernet/intel/igc/igc_main.c     |  2 +-
+>  drivers/net/ethernet/mellanox/mlx5/core/en.h  |  2 +-
+>  .../net/ethernet/mellanox/mlx5/core/en/xdp.c  | 15 ++--
+>  .../net/ethernet/mellanox/mlx5/core/en/xdp.h  |  4 +-
+>  .../ethernet/mellanox/mlx5/core/en/xsk/tx.c   |  2 +-
+>  .../net/ethernet/stmicro/stmmac/stmmac_main.c |  4 +-
+>  include/net/libeth/xsk.h                      |  2 +-
+>  include/net/xdp_sock.h                        | 45 ++---------
+>  include/net/xdp_sock_drv.h                    | 77 ++++++++++++++++---
+>  net/xdp/xdp_umem.c                            |  2 +
+>  net/xdp/xsk.c                                 | 11 ++-
+>  net/xdp/xsk_buff_pool.c                       |  6 +-
+>  12 files changed, 101 insertions(+), 71 deletions(-)
+> 
+> -- 
+> 2.53.0-Meta
+> 
