@@ -4,94 +4,118 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B95BEC5516F
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 31 Jul 2026 12:17:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40E4BC54F54
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 31 Jul 2026 12:49:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 7838A60B2E;
-	Fri, 31 Jul 2026 12:17:40 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id E5B1F60B52;
+	Fri, 31 Jul 2026 12:49:37 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 6d6A32BRc9PF; Fri, 31 Jul 2026 12:17:39 +0000 (UTC)
+ id Ms2ITlSZE0k7; Fri, 31 Jul 2026 12:49:36 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C634460B3E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1666360AD0
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1785500259;
-	bh=zlv0xaHtp5DUv7t9x+pa+96DfmJ009LBERJaiHhFru4=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=YBNQD+PwVFEXFaY4aWpqZg6Qw5m7wLWNvQRbjYGv3QZhsLRIwc+rMuq5XIQaYnTxz
-	 qCz2u1923Qhy6Bn9bpKnc0AmY4YMuntBmFQX6iiPyuP3mJ0acFX33ExKIVHmv6UPUM
-	 jpO2xlGnIOqwvnhpmS5JpsjsbJhHiRbb8UF4ygl3i4XHzeJTIJA8UraU/oFwxsK5Uz
-	 5wdZi8FjZZwOwgdUCpJ9V8hfLHgY+SSERboZvAtnmlhqAme1jdUgn8Cd0spNA1yJqp
-	 8+m81HPurPESPxc9K2GcYS3Jbg1YhuT40C8UCpwrXJbJ9yp8ed1/GLYoSkK0oHyOjn
-	 6BHVGqUe+FqsQ==
+	s=default; t=1785502176;
+	bh=VtdjD1e/vpmmj2husgdgiPdzsCCitvPPyPIwmj8O8Ws=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=KgkKDpru9e9Lkg5WZVu0bQenF0/i8jNszbBV3GwAsZHVC+kIYPWBff7aBZHeKOegY
+	 U0Hl2pGKo2/y2uYRs3UCx2HXy/zJqvHMm+ENVR0cvV+crVIfdZfyDqibUtjxaTVWTy
+	 lUzd/OCQ35gTY3Whnq5Vb/Uq2DydrfpbBqhumzFVY202aUgumt4P91BBV/Dfepj6M+
+	 hC/OFm6DUHabStN8UEF5BE+A2ob/kMr+rTo77Kzhx9Yxp6sgJB22a1bapbF/ao7/kl
+	 ItbyiNkVsNsug1faqZHFdLCa6qkjUeMD2GP1ij/8qXFG6tOqoh1+Xoxpm4TCBUQNKT
+	 wIt+tzvuhSOFw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C634460B3E;
-	Fri, 31 Jul 2026 12:17:39 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 599FA26E
- for <intel-wired-lan@lists.osuosl.org>; Fri, 31 Jul 2026 12:17:37 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 1666360AD0;
+	Fri, 31 Jul 2026 12:49:36 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 6D5DE37F
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 31 Jul 2026 12:49:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 3FDEF40471
- for <intel-wired-lan@lists.osuosl.org>; Fri, 31 Jul 2026 12:17:37 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 5482541109
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 31 Jul 2026 12:49:34 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id PbypC2V3CJH2 for <intel-wired-lan@lists.osuosl.org>;
- Fri, 31 Jul 2026 12:17:36 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.16;
- helo=mgamail.intel.com; envelope-from=grzegorz.nitka@intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 3409F40470
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3409F40470
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 3409F40470
- for <intel-wired-lan@lists.osuosl.org>; Fri, 31 Jul 2026 12:17:36 +0000 (UTC)
-X-CSE-ConnectionGUID: PwTRTL0FSnarzEqFVCDYpA==
-X-CSE-MsgGUID: wc9oZ2BlQFqLC4dnSXorEw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11860"; a="73662908"
-X-IronPort-AV: E=Sophos;i="6.25,196,1779174000"; d="scan'208";a="73662908"
-Received: from orviesa001.jf.intel.com ([10.64.159.141])
- by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 31 Jul 2026 05:17:36 -0700
-X-CSE-ConnectionGUID: yOhh+XZ+S2uWzRYRv1OC5g==
-X-CSE-MsgGUID: S2dVrox6RR+v+Iu9JFhcOA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,196,1779174000"; d="scan'208";a="298766014"
-Received: from gklab-003-001.igk.intel.com ([10.91.173.48])
- by orviesa001.jf.intel.com with ESMTP; 31 Jul 2026 05:17:33 -0700
-From: Grzegorz Nitka <grzegorz.nitka@intel.com>
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id R4f5AFfTFhZz for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 31 Jul 2026 12:49:33 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2607:f8b0:4864:20::112b; helo=mail-yw1-x112b.google.com;
+ envelope-from=tactii@gmail.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 89E9F410E7
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 89E9F410E7
+Received: from mail-yw1-x112b.google.com (mail-yw1-x112b.google.com
+ [IPv6:2607:f8b0:4864:20::112b])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 89E9F410E7
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 31 Jul 2026 12:49:33 +0000 (UTC)
+Received: by mail-yw1-x112b.google.com with SMTP id
+ 00721157ae682-81f64e8dfbcso12475707b3.2
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 31 Jul 2026 05:49:33 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20251104; t=1785502172; x=1786106972;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to:content-type;
+ bh=VtdjD1e/vpmmj2husgdgiPdzsCCitvPPyPIwmj8O8Ws=;
+ b=kUaHBJuOgOB9jsj4noZwat34OpAvea1GsKXFL0cUWzNneT7lBgNMMgsQsK4OkkzLEJ
+ aREWYxejD79G+/9bfVVczi6j0JO9YEzTGiciDNuIBBZPceYKY1dLUBXC8seiNz3j8bbb
+ 9ez9HXHKMvrNH/d84UYw8WGaQignRffivTvo6nuAOMrWzNMT209EHHGUX7N0ZEDIyLOV
+ Fp1CJ4TpUVeWQProAkczcasN45eyc0q2i5/V1J8TSjqiWmlDCx8+cie/JttzVOKBxYgo
+ Eoxh7iln3XMhTQakM7bKVGEgnJwmvNJ25lj+SBtOoGd0HecFuWGM8dzdq0lHZRDixB3X
+ GeSw==
+X-Gm-Message-State: AOJu0YxPyte7MD+WrTMLACzLHCJympqK+HFOldRbU4bn+gkrKyGLWcQm
+ 51VMYVsSfwEPcMjhbP13MIBF1FbO86ZB/4Wz8v/J+Zr5l7XnSiy4At0AUyGjQ9GM
+X-Gm-Gg: AR+sD12nQ2XzQXGWKJJEj5ILktLuPIWQqePp3WkFLAWjmcqIwhBcUj1HQsEahjgDTO/
+ cFi250U1dPcpXuOPyrLlBKrFS3c89K1Q8CEU/CDmIZPIr0TGJd23fo6CT41VxB8mWF7+JtqAGmJ
+ 2N+Ycg3m6Vux5oj/GbyyEy+Ulsh40gwKl4L3Pp+DbrUyENWxFUId4OP3FknepbYtswoAJBzFxGx
+ QTRVEeCSMJp7gngzFNRIg2cO4wSXrU5o5w+BK4MstQJLAwbFNrytqRd+MumdEapF7hDGJkWpRqt
+ 8/Uczshz/ARLm0z0Lags3cSE/R/aRxJSucZ/WLv7CAibugp9iUSGP1Xl7fmwuYHDpnGz9CxO0M2
+ 7vBo60wkC/9BA9k9FfFF3nKE4b2h6whB+jzjTaYnqHbdSl1JD3BGEKM5gZ83cYI4h+663SypAgf
+ e4ApLsaEcOYaWHXSK5tlI4Qi6u0v8Q0JymJI1bYkk3
+X-Received: by 2002:a05:690c:4b85:b0:81e:98d3:cac7 with SMTP id
+ 00721157ae682-81fcbfb5b1fmr14136117b3.12.1785502172163; 
+ Fri, 31 Jul 2026 05:49:32 -0700 (PDT)
+Received: from devobuntu.lan ([2600:6c5c:6b00:316::23])
+ by smtp.gmail.com with ESMTPSA id
+ 00721157ae682-81fcd108f0bsm5695367b3.35.2026.07.31.05.49.31
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Fri, 31 Jul 2026 05:49:31 -0700 (PDT)
+From: Matt Vollrath <tactii@gmail.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Fri, 31 Jul 2026 14:12:16 +0200
-Message-Id: <20260731121216.1841413-4-grzegorz.nitka@intel.com>
-X-Mailer: git-send-email 2.39.3
-In-Reply-To: <20260731121216.1841413-1-grzegorz.nitka@intel.com>
-References: <20260731121216.1841413-1-grzegorz.nitka@intel.com>
+Cc: netdev@vger.kernel.org, Alexander Lobakin <aleksander.lobakin@intel.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S . Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>,
+ Matt Vollrath <tactii@gmail.com>
+Date: Fri, 31 Jul 2026 08:41:06 -0400
+Message-ID: <20260731124109.99065-1-tactii@gmail.com>
+X-Mailer: git-send-email 2.43.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1785500256; x=1817036256;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=/iggnVjgpaFGwqI5cIkXo98VRyelZ/wU2wksNuzzt0Q=;
- b=TFtyw6sw0WpxIDccTo3UACGFsoGM3oD/WCVp+H10iYmP0cAQWsZE5gg1
- OLpvbm48CcN/1k6orAAGHrSnk8P7m3n4xOhifcLULUl+zZVgUrw2SOiVX
- cxA1Ccg3n6eca28RaFqTFkKSYGSojiJdy04U9pZd7bG+YT2HhJqys70Fg
- Nkg+RVDQ0ic7aZZYnd++M8obvewLeKLxNgMT3MKgpiWNanGLIENibNi1c
- H3mioxWAqe7zeEhPHd1BJ1o1Wy15w1rxp6HSqILHiApeKBSkJiZqy2JLK
- KuLc8Y40BwM4GzHsFiTB0PJ+0Ou2YaRpFXgWubQb1Dh+ZlGVKxEbnCxZb
- g==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20251104; t=1785502172; x=1786106972; darn=lists.osuosl.org;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+ bh=VtdjD1e/vpmmj2husgdgiPdzsCCitvPPyPIwmj8O8Ws=;
+ b=IS4w0E89cFz7fKbQfWcxaqxOBj4ywPJVWfmJnNPGVaKwDKw00xMxjEPVDMiLxjdXYY
+ 9mGRtS6yP7EcsRAbCz+dgxBFJ8KcRJei1cCI4E5JsXzUuEiQXsXqKRdUjUobiMHbsaqa
+ RXvpU0kPmzj76bxNn0rOtpKFem6hr2ubVnxsUjHLwXmnp3OIgcZjpOx6+wUaKxF2SjKr
+ nkHKK1f0kZfznXxYP88286OptcrctVFVBvln0Bgl+X21mzJRImKzlJnEVpio/XhQUzZa
+ Mt1kb+4AY+KHO+jyFMS3ZZkT8NBVFb01hRoi3NCynprrf5mEBQI/BxrOzeUz+yT9R37V
+ kNCg==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=TFtyw6sw
-Subject: [Intel-wired-lan] [PATCH v2 iwl-next 3/3] ice: use per-interface
- clock_id for E825 generic DPLLs
+ header.from=gmail.com
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20251104 header.b=IS4w0E89
+Subject: [Intel-wired-lan] [PATCH iwl-next 0/3] iavf: defer loading
+ netmem_desc
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -104,157 +128,37 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: przemyslaw.kitszel@intel.com, richardcochran@gmail.com,
- linux-kernel@vger.kernel.org, arkadiusz.kubalewski@intel.com,
- Przemyslaw Korba <przemyslaw.korba@intel.com>, andrew+netdev@lunn.ch,
- edumazet@google.com, anthony.l.nguyen@intel.com, netdev@vger.kernel.org,
- kuba@kernel.org, pabeni@redhat.com, davem@davemloft.net
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On E825, the TX-CLK and TSPLL DPLL devices are registered as
-DPLL_TYPE_GENERIC. Their clock_id was derived from the board-level
-PCIe DSN, which is identical for all interfaces sharing the same
-NAC/quad. As a result, userspace (e.g. 'dpll device show') reports
-several DPLL devices with the same clock_id and no board or signal
-label, making it impossible to unambiguously map a DPLL device to
-the interface it belongs to.
+In a few places libeth and the iavf driver inspect which page pool is
+attached to a netmem_ref. This forces an immediate load of the
+netmem_desc struct for each buffer in the Rx loop.
 
-Since these DPLLs are per-interface, use the permanent port MAC as
-the clock_id basis for E825 generic DPLLs:
+Defer or eliminate these loads of netmem_desc from the driver fast path
+by using the page_pool ref in the first cache line of iavf_ring instead.
 
-  * TX-CLK uses the plain MAC-derived value.
-  * TSPLL on the source-timer owner PF uses the same MAC-derived
-    value with a dedicated tag bit, so it stays distinct from
-    TX-CLK while remaining stable per interface.
+There are only two paths out of the Rx loop where netmem_desc needs to
+be consumed:
+* The "very rare" case of libeth_rx_sync_for_cpu calling
+  libeth_rx_recycle_slow and indicating that there was no data. This
+  could be similarly factored out, but not by this series.
+* GRO merging a frame into an existing aggregate stream. In this case,
+  the cold load of netmem_desc may overlap the payload prefetch started
+  by iavf_build_skb, which is now no longer dependent on netmem_desc to
+  start.
 
-Other DPLL objects (EEC/PPS and non-E825 paths) keep the board
-DSN-derived clock_id. When the permanent MAC is not yet valid, fall
-back to the existing board-level clock_id to preserve init behavior.
+Matt Vollrath (3):
+  libeth: add __libeth_rx_sync_for_cpu
+  iavf: use __libeth_rx_sync_for_cpu
+  iavf: use cached page_pool ref in skb helpers
 
-Reviewed-by: Przemyslaw Korba <przemyslaw.korba@intel.com>
-Signed-off-by: Grzegorz Nitka <grzegorz.nitka@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_dpll.c | 81 +++++++++++++++++++++--
- 1 file changed, 76 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/iavf/iavf_txrx.c | 18 ++++++----
+ include/net/libeth/rx.h                     | 37 +++++++++++++++------
+ 2 files changed, 37 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dpll.c b/drivers/net/ethernet/intel/ice/ice_dpll.c
-index 21b8d3f797e1..ebe8b5a27134 100644
---- a/drivers/net/ethernet/intel/ice/ice_dpll.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dpll.c
-@@ -3051,6 +3051,68 @@ static u64 ice_generate_clock_id(struct ice_pf *pf)
- 	return pci_get_dsn(pf->pdev);
- }
- 
-+/**
-+ * ice_generate_dpll_clock_id - generate clock_id for a specific dpll device
-+ * @pf: board private structure
-+ * @d: dpll device context
-+ * @type: dpll type being registered
-+ *
-+ * For E825 generic DPLLs, use per-interface permanent MAC as the clock_id
-+ * basis so userspace can unambiguously map DPLL devices to interfaces.
-+ * TX-CLK keeps plain MAC-derived ID, while TSPLL uses the same basis with
-+ * a dedicated tag bit to remain distinct on source-timer owner PFs.
-+ * Other DPLL objects keep board-level DSN-derived clock_id.
-+ *
-+ * Return: generated clock id for a dpll device
-+ */
-+static u64 ice_generate_dpll_clock_id(struct ice_pf *pf, struct ice_dpll *d,
-+				      enum dpll_type type)
-+{
-+	struct ice_hw *hw = &pf->hw;
-+	u64 mac_clock_id;
-+
-+	if (hw->mac_type == ICE_MAC_GENERIC_3K_E825 &&
-+	    type == DPLL_TYPE_GENERIC &&
-+	    hw->port_info &&
-+	    is_valid_ether_addr(hw->port_info->mac.perm_addr)) {
-+		mac_clock_id = ether_addr_to_u64(hw->port_info->mac.perm_addr);
-+
-+		if (d->dpll_idx >= E825_DPLL_TXCLK_BASE_IDX)
-+			return mac_clock_id;
-+
-+		if (d->dpll_idx == E825_DPLL_TSPLL_BASE_IDX)
-+			return mac_clock_id | BIT_ULL(63);
-+	}
-+
-+	return pf->dplls.clock_id;
-+}
-+
-+/**
-+ * ice_dpll_is_own_dpll_clock_id - check if clock_id belongs to this pf's DPLLs
-+ * @pf: board private structure
-+ * @clock_id: clock_id from a DPLL notification
-+ *
-+ * Match info->src_clock_id from a DPLL pin notification against any DPLL
-+ * device this PF has registered. Used to suppress self-notifications
-+ * generated as a side effect of our own dpll_pin_register() and
-+ * dpll_pin_unregister() calls on the fwnode-backed SYNCE and TIME_REF pins,
-+ * whose DPLLs (TXC and TSPLL) use MAC-derived clock_ids on E825.
-+ *
-+ * Return: true if clock_id matches one of this PF's registered DPLL devices.
-+ */
-+static bool ice_dpll_is_own_dpll_clock_id(struct ice_pf *pf, u64 clock_id)
-+{
-+	if (clock_id == pf->dplls.clock_id)
-+		return true;
-+	if (pf->hw.mac_type != ICE_MAC_GENERIC_3K_E825)
-+		return false;
-+	if (clock_id == ice_generate_dpll_clock_id(pf, &pf->dplls.txc,
-+						   DPLL_TYPE_GENERIC))
-+		return true;
-+	return clock_id == ice_generate_dpll_clock_id(pf, &pf->dplls.tspll,
-+						      DPLL_TYPE_GENERIC);
-+}
-+
- /**
-  * ice_dpll_tspll_lock_status_get - derive TSPLL state for dpll subsystem
-  * @pf: board private structure
-@@ -3887,10 +3949,12 @@ static int ice_dpll_pin_notify(struct notifier_block *nb, unsigned long action,
- 	if (pin->fwnode != info->fwnode)
- 		return NOTIFY_DONE; /* Not this pin */
- 
--	/* Ignore notification which are the outcome of internal pin
--	 * registration/unregistration calls - synce pin case.
-+	/* Ignore notifications that are a side effect of internal pin
-+	 * registration/unregistration calls. E825 uses per-device
-+	 * MAC-derived clock_ids for the TXC and TSPLL generic DPLLs, so
-+	 * info->src_clock_id may not equal pf->dplls.clock_id.
- 	 */
--	if (info->src_clock_id == pin->pf->dplls.clock_id)
-+	if (ice_dpll_is_own_dpll_clock_id(pin->pf, info->src_clock_id))
- 		return NOTIFY_DONE;
- 
- 	work = kzalloc_obj(*work);
-@@ -4247,10 +4311,17 @@ static int ice_dpll_init_txclk_pins(struct ice_pf *pf, int start_idx)
- {
- 	struct ice_dpll_pin *ref_pin = pf->dplls.txclks;
- 	struct ice_dpll *txc = &pf->dplls.txc;
-+	u64 clock_id;
- 	int ret;
- 
-+	/*
-+	 * EXT_EREF0 is a non-fwnode pin; its clock_id must match the TX-CLK
-+	 * DPLL device clock_id (see dpll_pin_register()).
-+	 */
-+	clock_id = ice_generate_dpll_clock_id(pf, txc, DPLL_TYPE_GENERIC);
-+
- 	/* Configure EXT_EREF0 pin */
--	ret = ice_dpll_get_pins(pf, ref_pin, start_idx, 1, pf->dplls.clock_id);
-+	ret = ice_dpll_get_pins(pf, ref_pin, start_idx, 1, clock_id);
- 	if (ret)
- 		return ret;
- 	ret = dpll_pin_register(txc->dpll, ref_pin->pin, &ice_dpll_txclk_ops,
-@@ -4535,7 +4606,7 @@ static int
- ice_dpll_init_dpll(struct ice_pf *pf, struct ice_dpll *d, bool cgu,
- 		   enum dpll_type type)
- {
--	u64 clock_id = pf->dplls.clock_id;
-+	u64 clock_id = ice_generate_dpll_clock_id(pf, d, type);
- 	int ret;
- 
- 	d->dpll = dpll_device_get(clock_id, d->dpll_idx, THIS_MODULE,
+
+base-commit: 5c458073553f0ef74f5c8db1bd459c87c722a299
 -- 
-2.39.3
+2.43.0
 
