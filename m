@@ -4,123 +4,125 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F103C54F54
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 31 Jul 2026 15:22:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DA2EFC5516F
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 31 Jul 2026 19:27:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id A624E4105D;
-	Fri, 31 Jul 2026 15:22:40 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 81D6341083;
+	Fri, 31 Jul 2026 19:27:43 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id G2LKPcfTrJ5l; Fri, 31 Jul 2026 15:22:39 +0000 (UTC)
+ id qy0Ktvk_I87s; Fri, 31 Jul 2026 19:27:41 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B0B91410F8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D44AA41002
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1785511359;
-	bh=jfQPKQUvEhVM07DV/Ae6sTs9WmmayzZHa3H3lJ+JhOc=;
-	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1785526061;
+	bh=P/71Eqm6eZkyzzsysSAa7b8sFQPr1CSpNZAPUkARlTM=;
+	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=oA0vSk/uxo2zTwp1+x9Esj1u3Ssa0PWFHBf4w3i9GDV2R4f157/5r08pmLR35kjG5
-	 9mllsLxm6cYcV1FuEA67ZNrNN3LX8ZcT2ajV5luVGYwqqOc7M5xF6ZQJcbFeepPQYd
-	 vYi5hdLXz//hGYBb9nOnIYrjSudswgKzolXx9TQCTO31okUyUzb9lsJ1jcxNx4Pa+d
-	 eKA+ZnVxYH6xdE+rWbNG2fzh4LwpcN64vz/T/ZAXnuwpsOByOSVNT1ijMc5WDfuc7O
-	 UEeaKJz2dHOz7gIB30ZY1chi+bSH9QSEwjrJCbjUzYfYgUfCsFeSqPGqdtBtGlczFj
-	 BxCCz0wSz6jwA==
+	b=mb01N4CSVZVYA0pjrqHVJZ23TU9zOiaelfw8IfDo6wF7cWdxrIredRmyAxjdo8otG
+	 aBA4uBOZDv7he4Tx03oCDp4RyW/cC9t9Qx96az+VRKa7jqYdLAEqWYwivdT8JzsIOi
+	 P4ZK8TeoXYA9ygujSPkn9GRt6Hoda5p51K16FRmc7nkwoDU2IYa/+1T1D/9YvfjpKk
+	 oDijt/J72GCJ+ala3u8XXJzhfjvPjU2+rD0hSi9fJy5xwzK0AcdsMZctnXTB7B7Vpx
+	 MD87CvDvnAVcWzt0Yf+O8FXmhAyztQFyYGeEE5l/P2V78ueEvk9/I0Tj2L89hts36e
+	 pTtw2rD1ItRfQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B0B91410F8;
-	Fri, 31 Jul 2026 15:22:39 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 3D4592E9
- for <intel-wired-lan@lists.osuosl.org>; Fri, 31 Jul 2026 15:22:38 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id D44AA41002;
+	Fri, 31 Jul 2026 19:27:41 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id C6AF326F
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 31 Jul 2026 19:27:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 2389360816
- for <intel-wired-lan@lists.osuosl.org>; Fri, 31 Jul 2026 15:22:38 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id B8B0660644
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 31 Jul 2026 19:27:40 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id BOaD1zDKSP9c for <intel-wired-lan@lists.osuosl.org>;
- Fri, 31 Jul 2026 15:22:37 +0000 (UTC)
+ id HravtzS8MMeZ for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 31 Jul 2026 19:27:40 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::1036; helo=mail-pj1-x1036.google.com;
- envelope-from=mohsin.bashr@gmail.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 1AE26607C5
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1AE26607C5
-Received: from mail-pj1-x1036.google.com (mail-pj1-x1036.google.com
- [IPv6:2607:f8b0:4864:20::1036])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 1AE26607C5
- for <intel-wired-lan@lists.osuosl.org>; Fri, 31 Jul 2026 15:22:36 +0000 (UTC)
-Received: by mail-pj1-x1036.google.com with SMTP id
- 98e67ed59e1d1-383cb94f742so1137917a91.3
- for <intel-wired-lan@lists.osuosl.org>; Fri, 31 Jul 2026 08:22:36 -0700 (PDT)
+ client-ip=2607:f8b0:4864:20::112a; helo=mail-yw1-x112a.google.com;
+ envelope-from=tactii@gmail.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org DF9C660641
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org DF9C660641
+Received: from mail-yw1-x112a.google.com (mail-yw1-x112a.google.com
+ [IPv6:2607:f8b0:4864:20::112a])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id DF9C660641
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 31 Jul 2026 19:27:39 +0000 (UTC)
+Received: by mail-yw1-x112a.google.com with SMTP id
+ 00721157ae682-81062fdeaf5so34431157b3.0
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 31 Jul 2026 12:27:39 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1785511356; x=1786116156;
- h=content-transfer-encoding:content-type:in-reply-to:from
- :content-language:references:cc:to:subject:user-agent:mime-version
- :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+ d=1e100.net; s=20251104; t=1785526059; x=1786130859;
+ h=content-transfer-encoding:content-type:in-reply-to:content-language
+ :references:cc:to:subject:from:user-agent:mime-version:date
+ :message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
  :message-id:reply-to:content-type;
- bh=jfQPKQUvEhVM07DV/Ae6sTs9WmmayzZHa3H3lJ+JhOc=;
- b=QsVqRovwM3bpoc0E3DrESp+MHoDiWozhsx6o+nwuINbU3C1uHiddKsXPdQ8Oq83Fj1
- IQuh6oCZ2URex3Jq/uY7W4sPep27hVMfhbnnlnDMvASvU5VJinhMVB56KNc2IYibqRZ7
- r3pJ3P+s/fsGJppuvvK97NREjbyxRpVQs8hORpDOfcEy/TZXULsxbtXlHMYHnUhdk5uX
- 1IKvf2eRa3l+6ZIKjwiRVRUtZCO5QYW5keU5+Ej61iru9tyuSlJeS7gLOt7ln7aMu0pE
- HvVagbk6wib3ShLaymg1ovj/oM4GBscaaDGGbfdOTek2M+SYHV3nou/+5EWFF6bTLhhc
- ASsA==
-X-Gm-Message-State: AOJu0Yxplh+xQfEoOj4+4NwmR54u9RwoqvhT95vO9v1PqJWnBbQIh6ow
- QHhF5A+6Np47Lw6NulOsmWBJAMB/ocOhZgCn2UFduNrt8SFUxzJJjPS50PV+Kg2h
-X-Gm-Gg: AR+sD13va1x6pnYtfdGcGNaPPiXoeCBzdbsG50+Weq3bZukZyMnsvEJoAAn2KchimqR
- tjX+vqIXnO3O2yjscLyXeIwBfFtDs1NckOfLNKk2bB6JadUYJFE5ODuuM4f2yaGxliEGx2Y7cfZ
- 1/ImOMxoaSoxxbCgcJJGMJMMVRJSNV92YQLYpfRIsBGJ2Sr7o7zq9OA1wrDa6mg+/shiYENVsSm
- OMHpfXKmMT1E6tniE+7gFSQjx57Dl3YjuvcEoFzSxMtN/hY9htWYn1fivB8hcQc7c9snpD+gD44
- KcO+jUG2UA3+455uiZ/pmX9GakT2zsIa7/u5TjVy03v9H2Qv3RGygfmdDHLAZFm6tUOuHq/egLw
- AfR0drmfgC4Iz9vEwZeNV0F83mSI3jwFgkyzIZ2K5yq4ipE78mXFHUuIr8hmLcE4Z7P4zKhQQIe
- M6Z7gFA/6VjMILvrY6AC8DQPOomnrjqguzPYQ2XCcQPZoMPcH1lDRs/Ke9gl8y8rNhVrhL+9gX6
- TVYnMZKiSaEpjp8D+jCI0LkpeTUdtOFwFwYrWGcy1xEm2LebrZr7Y3JZxk=
-X-Received: by 2002:a17:90b:5648:b0:38e:76f8:fcbf with SMTP id
- 98e67ed59e1d1-38fbc55256bmr286165a91.31.1785511356037; 
- Fri, 31 Jul 2026 08:22:36 -0700 (PDT)
-Received: from ?IPV6:2601:646:8f02:5350:ce4:701d:f6e3:3a6b?
- ([2601:646:8f02:5350:ce4:701d:f6e3:3a6b])
+ bh=P/71Eqm6eZkyzzsysSAa7b8sFQPr1CSpNZAPUkARlTM=;
+ b=SIWnfJ0l6F6Ipq9DYofU8oqP1/MdmO+qP547YW11+4ACazuShxqLZniycSWiQtY2Kr
+ myUmvmH0QoG9MZRQFajnlmxAJQXohH2dKXOMY9Vf0xXTdjND8IQmvSLRl5mLHzA62Oaq
+ lZyp+f/0EhfWJExQwCp+7BOm6r210vRQmLoq6bR+CRXr4e7Ox+8C07rZR1kM5c+RFXbc
+ R4RNk+7UrSPRKxBN/iSmDjzHSuSG3s16ODPAAQTM7gTtRq5uaoLk9R7vYzZ3MZqF8/ll
+ AExxi8O37nBtOzlUiGwmkV6d2rn3O2y4PZMYNKh0oGMAo8MQtni83aU/vD/0YqeR1s2g
+ nYNQ==
+X-Gm-Message-State: AOJu0YzX8aiF9MKGzhRsz54zCDaco5pzspFZ40TR/4CBSALsoq29M2e5
+ GwMHOfcI99luTk1Tu7sT5zAVeyyYcoQ7qoKsN8eaC5ha79uy7bHENkNY
+X-Gm-Gg: AR+sD10B8YGVKE+DyIH3uqW+GqzMJJNJHuLp6YenAU/ZnZffWlTIeX9AGZd/2zt0ASf
+ USaH1B8hDmyZGxTDvg09QmvIHEL1Ot9n4hL7jdWGPFsZyaYXHVrhhhA+QydWGWGMQYqUkZuMguN
+ +k2aS7LbC9DAD7F+0FOvDqdKPhtf5rL3F9Kjpi9UgAmCrOJDo9D8RKL1L45Q86Eem6Yx9c6q+9i
+ 1E3PMyAbLchLZ4a7krRic0MtYsS8NgYzT4RzZVXBD6+3OeW/01PjBHxsXAiH/NXUGBccGb0zfOu
+ HLSaX0FsWaUOr4K5fsFm9CxEM1C1u6cjG2qUz9nCedHdAQOgNaAEMU1ZM1NWx04wP9Z8bkc3CX2
+ YeLWz0HCK3DU1s467rCJmS36BtFc9bUs8MQGpStbYSJdLAGLFtqLvSxQKgDrU+JQHl/Y4H0Pe6d
+ iRRVQzJmbbG755PndN855NuxjTQTSmU3pNcvXaDWNN1IxyyDQEuIyFGgOuqLRmkA==
+X-Received: by 2002:a05:690c:b86:b0:81e:4acb:c0a with SMTP id
+ 00721157ae682-81fd4d31d4bmr14405067b3.2.1785526058615; 
+ Fri, 31 Jul 2026 12:27:38 -0700 (PDT)
+Received: from ?IPV6:2600:6c5c:6b00:316::23? ([2600:6c5c:6b00:316::23])
  by smtp.gmail.com with ESMTPSA id
- 5a478bee46e88-3153e044912sm8250572eec.15.2026.07.31.08.22.34
+ 00721157ae682-81fcd164474sm13204967b3.48.2026.07.31.12.27.37
  (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Fri, 31 Jul 2026 08:22:35 -0700 (PDT)
-Message-ID: <34c8d95f-3897-498a-921c-df7c6868af61@gmail.com>
-Date: Fri, 31 Jul 2026 08:22:33 -0700
+ Fri, 31 Jul 2026 12:27:38 -0700 (PDT)
+Message-ID: <e62e8603-a61d-489c-8df0-2c9ff98a1c02@gmail.com>
+Date: Fri, 31 Jul 2026 15:27:37 -0400
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-To: Chenguang Zhao <chenguang.zhao@linux.dev>, anthony.l.nguyen@intel.com,
- przemyslaw.kitszel@intel.com, andrew+netdev@lunn.ch, davem@davemloft.net,
- edumazet@google.com, kuba@kernel.org, pabeni@redhat.com
+From: Matt Vollrath <tactii@gmail.com>
+To: Alexander Lobakin <aleksander.lobakin@intel.com>
 Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- kerneljasonxing@gmail.com, Chenguang Zhao <zhaochenguang@kylinos.cn>
-References: <20260731020736.170485-1-chenguang.zhao@linux.dev>
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>, "David S . Miller"
+ <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ Simon Horman <horms@kernel.org>
+References: <20260731124109.99065-1-tactii@gmail.com>
+ <7e9a5228-d257-4adb-b472-b110f60e3618@intel.com>
 Content-Language: en-US
-From: Mohsin Bashir <mohsin.bashr@gmail.com>
-In-Reply-To: <20260731020736.170485-1-chenguang.zhao@linux.dev>
+In-Reply-To: <7e9a5228-d257-4adb-b472-b110f60e3618@intel.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20251104; t=1785511356; x=1786116156; darn=lists.osuosl.org;
- h=content-transfer-encoding:content-type:in-reply-to:from
- :content-language:references:cc:to:subject:user-agent:mime-version
- :date:message-id:from:to:cc:subject:date:message-id:reply-to
- :content-type;
- bh=jfQPKQUvEhVM07DV/Ae6sTs9WmmayzZHa3H3lJ+JhOc=;
- b=snUXTJflOisQuU2vTd05RpbrdzZVH8S59yzg7IHt96bBIY9whh8IjylpOtnrxmsmbv
- V7bmub1+u6xt2NS4752dODez5moi/oETFa0WoAtQioyOy3nGpb0cKWmeP7USyOlgKjGh
- nT4GGfTkwzK2i3tI33W6muVo7NKz9gL1J4o0RhmbNeAlt322k1IRSsnTd3Ms7xio3oxY
- uJFOPUX4d89SBBeN8PFY77IrvfoDUaIH3+OOO20GU+2IzF7ZpBsr8nn8hTZwYLAGJlxc
- D/P/wd5LU6lGwUik/FG4+RSxG6vQAMK6895mIa2LxslkrXq0yTwR2QGKYNUI7Kp0vBYx
- nUpQ==
+ d=gmail.com; s=20251104; t=1785526058; x=1786130858; darn=lists.osuosl.org;
+ h=content-transfer-encoding:content-type:in-reply-to:content-language
+ :references:cc:to:subject:from:user-agent:mime-version:date
+ :message-id:from:to:cc:subject:date:message-id:reply-to:content-type;
+ bh=P/71Eqm6eZkyzzsysSAa7b8sFQPr1CSpNZAPUkARlTM=;
+ b=kwb1Co1lX66BSHFbY0gBXszblZgF/FmqBMJzOw6t6FiuiX/MApcpGXrvGWvMxU/1hH
+ DYgkzmkdhZ5EDBZ3D4dIDv7cGKO/V8dfLXMWkjFSTCLYvOyUkMQjVcdygHQ/YRmo74Yv
+ tjpZyt2/TAN1RMnRaJPEV6O+AimmYegKzceK9etEPS5mcC8EHF3c6XQjOW83e3Ynf0PT
+ g+n4Fe+7FgYr9tmDyM4DXDnkQntayMH1rN8Gh/LAeq/SNLry53XAYuMZfe+cBT3wQUCe
+ 6WnEj+uIpx3SjJU8I6/eqsLucRWbEA59FlexpPBk6+0jVHyJZt9tdnUuVEe4UUZSCS3p
+ TjCw==
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=gmail.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20251104 header.b=snUXTJfl
-Subject: Re: [Intel-wired-lan] [PATCH net-next v3] i40e: xsk: use
- xdp_build_skb_from_zc() for XDP_PASS
+ dkim=pass (2048-bit key,
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20251104 header.b=kwb1Co1l
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next 0/3] iavf: defer loading
+ netmem_desc
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -136,228 +138,61 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
+On 7/31/26 11:13, Alexander Lobakin wrote:
+> From: Matt Vollrath <tactii@gmail.com>
+> Date: Fri, 31 Jul 2026 08:41:06 -0400
+> 
+>> In a few places libeth and the iavf driver inspect which page pool is
+>> attached to a netmem_ref. This forces an immediate load of the
+>> netmem_desc struct for each buffer in the Rx loop.
+>>
+>> Defer or eliminate these loads of netmem_desc from the driver fast path
+>> by using the page_pool ref in the first cache line of iavf_ring instead.
+> 
+> I was thinking of this when implementing the current design, but:
+> 
+> Do you have any data to prove this actually helps performance?
 
+The optimization was profile-driven, but not on an iavf. I was working on
+a libeth port of e1000e, because I'm an obsessive optimizer, and this quirk
+of the interface fell out. I'm working with a Xeon E3-1240 v3 and I218-V.
 
-On 7/30/26 7:07 PM, Chenguang Zhao wrote:
-> From: Chenguang Zhao <zhaochenguang@kylinos.cn>
-> 
-> Replace the driver-local i40e_construct_skb_zc() with the common
-> helper xdp_build_skb_from_zc(). On failure, free the xdp buff in
-> the caller.
-> 
-> xdp_build_skb_from_zc() already calls skb_record_rx_queue() and
-> eth_type_trans(), so pull the remaining descriptor field setup into
-> __i40e_process_skb_fields() and use that on the XDP_PASS path.
-> 
-> Signed-off-by: Chenguang Zhao <zhaochenguang@kylinos.cn>
-> ---
-> v3:
->   As suggested by Larysa:
->   - Drop eth_skb_pad() on the XDP_PASS path, along with the
->     temporary __skb_push()/__skb_pull() around it. The stack
->     handles short skbs and other vendors do not pad on Rx.
-> 
-> v2:
->   - https://lore.kernel.org/all/20260729054916.720750-1-chenguang.zhao@linux.dev/
-> 
-> v1:
->   - https://lore.kernel.org/all/20260724020125.246333-1-chenguang.zhao@linux.dev/
-> ---
->   drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 32 ++++++--
->   .../ethernet/intel/i40e/i40e_txrx_common.h    |  2 +
->   drivers/net/ethernet/intel/i40e/i40e_xsk.c    | 79 ++-----------------
->   3 files changed, 33 insertions(+), 80 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-> index ef5e657816f0..87553b14d34a 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-> @@ -1833,17 +1833,17 @@ static inline void i40e_rx_hash(struct i40e_ring *ring,
->   }
->   
->   /**
-> - * i40e_process_skb_fields - Populate skb header fields from Rx descriptor
-> + * __i40e_process_skb_fields - Populate skb fields from Rx descriptor
->    * @rx_ring: rx descriptor ring packet is being transacted on
->    * @rx_desc: pointer to the EOP Rx descriptor
->    * @skb: pointer to current skb being populated
->    *
-> - * This function checks the ring, descriptor, and packet information in
-> - * order to populate the hash, checksum, VLAN, protocol, and
-> - * other fields within the skb.
-> + * Populate hash, checksum, PTP timestamp and VLAN from @rx_desc. Does not
-> + * call skb_record_rx_queue() or eth_type_trans(); callers that already got
-> + * those from xdp_build_skb_from_zc() should use this helper.
->    **/
-> -void i40e_process_skb_fields(struct i40e_ring *rx_ring,
-> -			     union i40e_rx_desc *rx_desc, struct sk_buff *skb)
-> +void __i40e_process_skb_fields(struct i40e_ring *rx_ring,
-> +			       union i40e_rx_desc *rx_desc, struct sk_buff *skb)
->   {
->   	u64 qword = le64_to_cpu(rx_desc->wb.qword1.status_error_len);
->   	u32 rx_status = FIELD_GET(I40E_RXD_QW1_STATUS_MASK, qword);
-> @@ -1858,14 +1858,30 @@ void i40e_process_skb_fields(struct i40e_ring *rx_ring,
->   
->   	i40e_rx_checksum(rx_ring->vsi, skb, rx_desc);
->   
-> -	skb_record_rx_queue(skb, rx_ring->queue_index);
-> -
->   	if (qword & BIT(I40E_RX_DESC_STATUS_L2TAG1P_SHIFT)) {
->   		__le16 vlan_tag = rx_desc->wb.qword0.lo_dword.l2tag1;
->   
->   		__vlan_hwaccel_put_tag(skb, htons(ETH_P_8021Q),
->   				       le16_to_cpu(vlan_tag));
->   	}
-> +}
-> +
-> +/**
-> + * i40e_process_skb_fields - Populate skb header fields from Rx descriptor
-> + * @rx_ring: rx descriptor ring packet is being transacted on
-> + * @rx_desc: pointer to the EOP Rx descriptor
-> + * @skb: pointer to current skb being populated
-> + *
-> + * This function checks the ring, descriptor, and packet information in
-> + * order to populate the hash, checksum, VLAN, protocol, and
-> + * other fields within the skb.
-> + **/
-> +void i40e_process_skb_fields(struct i40e_ring *rx_ring,
-> +			     union i40e_rx_desc *rx_desc, struct sk_buff *skb)
-> +{
-> +	__i40e_process_skb_fields(rx_ring, rx_desc, skb);
-> +
-> +	skb_record_rx_queue(skb, rx_ring->queue_index);
->   
->   	/* modifies the skb - consumes the enet header */
->   	skb->protocol = eth_type_trans(skb, rx_ring->netdev);
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h b/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h
-> index e26807fd2123..3c52e0e60487 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h
-> @@ -9,6 +9,8 @@
->   int i40e_xmit_xdp_tx_ring(struct xdp_buff *xdp, struct i40e_ring *xdp_ring);
->   void i40e_clean_programming_status(struct i40e_ring *rx_ring, u64 qword0_raw,
->   				   u64 qword1);
-> +void __i40e_process_skb_fields(struct i40e_ring *rx_ring,
-> +			       union i40e_rx_desc *rx_desc, struct sk_buff *skb);
->   void i40e_process_skb_fields(struct i40e_ring *rx_ring,
->   			     union i40e_rx_desc *rx_desc, struct sk_buff *skb);
->   void i40e_xdp_ring_update_tail(struct i40e_ring *xdp_ring);
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-> index 9f47388eaba5..dfa519c30a0d 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-> @@ -3,6 +3,7 @@
->   
->   #include <linux/bpf_trace.h>
->   #include <linux/unroll.h>
-> +#include <net/xdp.h>
->   #include <net/xdp_sock_drv.h>
->   #include "i40e_txrx_common.h"
->   #include "i40e_xsk.h"
-> @@ -277,70 +278,6 @@ bool i40e_alloc_rx_buffers_zc(struct i40e_ring *rx_ring, u16 count)
->   	return count == nb_buffs;
->   }
->   
-> -/**
-> - * i40e_construct_skb_zc - Create skbuff from zero-copy Rx buffer
-> - * @rx_ring: Rx ring
-> - * @xdp: xdp_buff
-> - *
-> - * This functions allocates a new skb from a zero-copy Rx buffer.
-> - *
-> - * Returns the skb, or NULL on failure.
-> - **/
-> -static struct sk_buff *i40e_construct_skb_zc(struct i40e_ring *rx_ring,
-> -					     struct xdp_buff *xdp)
-> -{
-> -	unsigned int totalsize = xdp->data_end - xdp->data_meta;
-> -	unsigned int metasize = xdp->data - xdp->data_meta;
-> -	struct skb_shared_info *sinfo = NULL;
-> -	struct sk_buff *skb;
-> -	u32 nr_frags = 0;
-> -
-> -	if (unlikely(xdp_buff_has_frags(xdp))) {
-> -		sinfo = xdp_get_shared_info_from_buff(xdp);
-> -		nr_frags = sinfo->nr_frags;
-> -	}
-> -	net_prefetch(xdp->data_meta);
-> -
-> -	/* allocate a skb to store the frags */
-> -	skb = napi_alloc_skb(&rx_ring->q_vector->napi, totalsize);
-> -	if (unlikely(!skb))
-> -		goto out;
-> -
-> -	memcpy(__skb_put(skb, totalsize), xdp->data_meta,
-> -	       ALIGN(totalsize, sizeof(long)));
-> -
-> -	if (metasize) {
-> -		skb_metadata_set(skb, metasize);
-> -		__skb_pull(skb, metasize);
-> -	}
-> -
-> -	if (likely(!xdp_buff_has_frags(xdp)))
-> -		goto out;
-> -
-> -	for (int i = 0; i < nr_frags; i++) {
-> -		struct skb_shared_info *skinfo = skb_shinfo(skb);
-> -		skb_frag_t *frag = &sinfo->frags[i];
-> -		struct page *page;
-> -		void *addr;
-> -
-> -		page = dev_alloc_page();
-> -		if (!page) {
-> -			dev_kfree_skb(skb);
-> -			return NULL;
-> -		}
-> -		addr = page_to_virt(page);
-> -
-> -		memcpy(addr, skb_frag_page(frag), skb_frag_size(frag));
-> -
-> -		__skb_fill_page_desc_noacc(skinfo, skinfo->nr_frags++,
-> -					   addr, 0, skb_frag_size(frag));
-> -	}
-> -
-> -out:
-> -	xsk_buff_free(xdp);
-> -	return skb;
-> -}
-> -
->   static void i40e_handle_xdp_result_zc(struct i40e_ring *rx_ring,
->   				      struct xdp_buff *xdp_buff,
->   				      union i40e_rx_desc *rx_desc,
-> @@ -372,21 +309,19 @@ static void i40e_handle_xdp_result_zc(struct i40e_ring *rx_ring,
->   		 * BIT(I40E_RXD_QW1_ERROR_SHIFT). This is due to that
->   		 * SBP is *not* set in PRT_SBPVSI (default not set).
->   		 */
-> -		skb = i40e_construct_skb_zc(rx_ring, xdp_buff);
-> +		skb = xdp_build_skb_from_zc(xdp_buff);
->   		if (!skb) {
-> +			xsk_buff_free(xdp_buff);
->   			rx_ring->rx_stats.alloc_buff_failed++;
->   			*rx_packets = 0;
->   			*rx_bytes = 0;
->   			return;
->   		}
->   
-> -		if (eth_skb_pad(skb)) {
-> -			*rx_packets = 0;
-> -			*rx_bytes = 0;
-> -			return;
-> -		}
-> -
-> -		i40e_process_skb_fields(rx_ring, rx_desc, skb);
-> +		/* xdp_build_skb_from_zc() already ran eth_type_trans() and
-> +		 * skb_record_rx_queue().
-> +		 */
-> +		__i40e_process_skb_fields(rx_ring, rx_desc, skb);
->   		napi_gro_receive(&rx_ring->q_vector->napi, skb);
->   		return;
->   	}
+With a mirror of the changes in this patch series, on my platform, it's a
+net zero overall change in Rx performance. This is not surprising, because
+the cold read is just deferred until later. The time saved in
+eth_type_trans (where the payload is first read) is instead spent in
+skb_gro_receive and pool puts.
 
-The cleanup makes sense. I think you would also need to update kconfig. 
-xdp_build_skb_from_zc() verifies page pool support and if 
-CONFIG_PAGE_POOL=n, it would return NULL. In that case, we would end-up 
-dropping packets in XDP_PASS.
+The additional thing that does make an improvement, which was omitted from
+this series, is prefetching netmem_desc early in the loop. This makes about
+22 cycles/packet, 3% difference.
 
-With that addressed:
-Reviewed-by: Mohsin Bashir <hmohsin@meta.com>
+I left it where it is because I don't have hardware to perf this on, and
+didn't know if anyone would even be interested in looking at something that
+I can't produce data for on the actual hardware. For iavf the prefetch
+would be conditional, only when the EOP flag is set, because in this case
+netmem_desc will always be needed either for GRO merge or pool put.
+
+I can't guarantee that this will be worth 3% on an iavf platform. In any
+case, it'll be a couple weeks before I can work on this again.
+
+> 
+>>
+>> There are only two paths out of the Rx loop where netmem_desc needs to
+>> be consumed:
+>> * The "very rare" case of libeth_rx_sync_for_cpu calling
+>>    libeth_rx_recycle_slow and indicating that there was no data. This
+>>    could be similarly factored out, but not by this series.
+>> * GRO merging a frame into an existing aggregate stream. In this case,
+>>    the cold load of netmem_desc may overlap the payload prefetch started
+>>    by iavf_build_skb, which is now no longer dependent on netmem_desc to
+>>    start.
+
+I see now this isn't right, anything going to GRO will end up back in the
+pool in the same iteration, and netmem_desc will be loaded. It just
+happens later.
+
+> 
+> Thanks,
+> Olek
+
