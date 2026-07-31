@@ -1,94 +1,97 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CD12CC54F54
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 31 Jul 2026 12:17:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A59FC54F54
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 31 Jul 2026 12:17:37 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 7521D60B31;
-	Fri, 31 Jul 2026 12:17:19 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 2B76041051;
+	Fri, 31 Jul 2026 12:17:37 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id CAr_oGxigjrs; Fri, 31 Jul 2026 12:17:17 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Ic3FmD0Xp-eZ; Fri, 31 Jul 2026 12:17:36 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CE9C160B2C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 59EF24104C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1785500237;
-	bh=AlEUlpXwASb0MspfNLaBpLsaA1aFKUbWNLoQT8LPvfA=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=4Jc1NPS7KZYkQTVU+xSQNNrX07LEruN9YNHNl+23yaLAU3zJpg5FyPSGZaXi6JHtc
-	 QDomIjNVcgagHRpVMK+Djn/ukOClIhfOLk2vkmNe1JfeRnTWg0t7oLpEPSH4/aB/D7
-	 Kg903klRb9ssg3ZVxUj8nls5YEemYLnplCiN/IjdocT5N3JOt7H/WWRsTE/svnArYk
-	 WrvT+cVQKMimBxUiFgiP3d8dcGKPpSnpo3frcvsKBBkljsn7bsR6skt6KvBu8uCN1e
-	 kEeCTMaS/zPkK0JkHfMaJNohrPUHQqt0v1HIWWYGo7vSqgN4d7VBEEVE9UJGViI7CP
-	 z+Vz/On8I54HA==
+	s=default; t=1785500256;
+	bh=olZ/9aK4J48rrRGq3Rh4GqiXWbqC7G/K+6X+LpeLwWw=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=A2eRQcBTaxK436rjZ6EYIIQjEgWbdwCayV+i+RcpdeGxmFndzXKxtPtS69TGNIfGA
+	 86eMg1STqVrP3FFqyJaKSDUTjxpzC8GF8LotVObPhTgxWxWjwJ4cGVrZqrSUqg/hqE
+	 1YL2x5M2STylu8YKZcBsCuL1MTdW3lgCk1rhNhzFTwEAQ1RgCvI3ocMVPNhDYcpF/h
+	 BUfWNVUfxQ0iOIwbxwRnJ3ZFnSfMipnb91uM/SXsIP+1DmT7bDuuZ0ogeH/9DsEiUS
+	 KnUJK6V20XJ0lEZpJYxlZb2133rsck/+XOA0FCO1TyA34osLAjrxhpE9SdJH83cKIF
+	 CDqsTlT+xJttQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id CE9C160B2C;
-	Fri, 31 Jul 2026 12:17:17 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 59EF24104C;
+	Fri, 31 Jul 2026 12:17:36 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 3015536E
- for <intel-wired-lan@lists.osuosl.org>; Fri, 31 Jul 2026 12:17:17 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 9DFD736E
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 31 Jul 2026 12:17:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 1F94340463
- for <intel-wired-lan@lists.osuosl.org>; Fri, 31 Jul 2026 12:17:17 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 906FD40471
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 31 Jul 2026 12:17:34 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 0G-mic53NMib for <intel-wired-lan@lists.osuosl.org>;
- Fri, 31 Jul 2026 12:17:16 +0000 (UTC)
+ id UlaH-fPYjJOz for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 31 Jul 2026 12:17:33 +0000 (UTC)
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.16;
  helo=mgamail.intel.com; envelope-from=grzegorz.nitka@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 4829D40467
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4829D40467
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 8FF3540467
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8FF3540467
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 4829D40467
- for <intel-wired-lan@lists.osuosl.org>; Fri, 31 Jul 2026 12:17:15 +0000 (UTC)
-X-CSE-ConnectionGUID: w3S3M5FeTaa4BQX4bt5nCA==
-X-CSE-MsgGUID: 2mVD9R/UQieFghV2G14Y8w==
-X-IronPort-AV: E=McAfee;i="6800,10657,11860"; a="73662866"
-X-IronPort-AV: E=Sophos;i="6.25,196,1779174000"; d="scan'208";a="73662866"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 8FF3540467
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 31 Jul 2026 12:17:33 +0000 (UTC)
+X-CSE-ConnectionGUID: 3FbBnhm0TbCja9XVnC7qxQ==
+X-CSE-MsgGUID: Q6Et3M+pStexx1PvlHh48A==
+X-IronPort-AV: E=McAfee;i="6800,10657,11860"; a="73662887"
+X-IronPort-AV: E=Sophos;i="6.25,196,1779174000"; d="scan'208";a="73662887"
 Received: from orviesa001.jf.intel.com ([10.64.159.141])
  by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 31 Jul 2026 05:17:14 -0700
-X-CSE-ConnectionGUID: 2z4qQXnHR0GHDmW/q5u9EQ==
-X-CSE-MsgGUID: d6BkuRy0QlK1snsQin/BRg==
+ 31 Jul 2026 05:17:21 -0700
+X-CSE-ConnectionGUID: QK6JRyc+SlyxnlC7nNgpyg==
+X-CSE-MsgGUID: daWepN+CRDmI5ZOqpz8kcg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,196,1779174000"; d="scan'208";a="298765972"
+X-IronPort-AV: E=Sophos;i="6.25,196,1779174000"; d="scan'208";a="298765985"
 Received: from gklab-003-001.igk.intel.com ([10.91.173.48])
- by orviesa001.jf.intel.com with ESMTP; 31 Jul 2026 05:17:12 -0700
+ by orviesa001.jf.intel.com with ESMTP; 31 Jul 2026 05:17:19 -0700
 From: Grzegorz Nitka <grzegorz.nitka@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Fri, 31 Jul 2026 14:12:13 +0200
-Message-Id: <20260731121216.1841413-1-grzegorz.nitka@intel.com>
+Date: Fri, 31 Jul 2026 14:12:14 +0200
+Message-Id: <20260731121216.1841413-2-grzegorz.nitka@intel.com>
 X-Mailer: git-send-email 2.39.3
+In-Reply-To: <20260731121216.1841413-1-grzegorz.nitka@intel.com>
+References: <20260731121216.1841413-1-grzegorz.nitka@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1785500236; x=1817036236;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=rf1mFh7h5zJUZKuy5tZZW2jUDW4ugjsSwKQ7RQgLP5s=;
- b=eA99R1mRZILE+DDAYeQ3z0+MKXgMKifUyBIS1WZvsFwQ3RWXob4tz7xr
- TIyRa2bW1FzZoq/GQo7nhz2BPMdWDrXtDB9WQ7swxTl0pPLISCSYwaASd
- qXWdQoXcb5S0uUs76rLlNHSv4bal5LMpP0x6YoKLzwG9YkHCqCVGkQ77g
- omPS6o8RTBopLzlBlEXAEBPjfVCU3ZlzxbDHqzpXQufawIwYXPbL3kwtD
- 3QTzBIKG4aPxeccgQLp+xQ9EQK+BW/hHrbSYtaGILTO/7Z63o+UFTK4zF
- n5Wru3fX6dztc6qSrXgQEk9tjXoJiOpsQlls8X2PO6YvdKImCvVzbOZQY
- g==;
+ t=1785500253; x=1817036253;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=3VHs14ctbdCHZHJmw79Nv6gyfdb/VhIja/1/P1uZIWk=;
+ b=RXrVyNTOzamHuVR4pWEXBjWVxKELALazb8iv30vzI6YYb3skN8VbtqrN
+ VgPxhpfkObhnrsJacpX4rCEDmRRCOYrj+0hBW0QmJ+YNawkfT03s5My9W
+ sSCbd9BsaVpKeCBV+dR/uTr3mUiI8wdkE8/2epeorDBDHc6JL7SumlE0s
+ bg4nZtGspJxMH0KdSg2QQVirdPss0KGDVnCCUGg7tZxwW5dzEFt5/6AJx
+ y5kuNOv4dA+vvt7jiq8v5B+q+Faa6w2jx6zutXdB+hxfUAKHKUnKJQVk3
+ pbKzkJFuFczInGKiBPI3H/ltfrFwOsj8OnqWaCgQRVnSXlMFebnoMveGe
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=eA99R1mR
-Subject: [Intel-wired-lan] [PATCH v2 iwl-next 0/3] ice: expose TSPLL state
- on E825 through dpll subsystem
+ header.a=rsa-sha256 header.s=Intel header.b=RXrVyNTO
+Subject: [Intel-wired-lan] [PATCH v2 iwl-next 1/3] ice: monitor TSPLL lock
+ from PTP periodic worker
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -103,64 +106,322 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Cc: przemyslaw.kitszel@intel.com, richardcochran@gmail.com,
  linux-kernel@vger.kernel.org, arkadiusz.kubalewski@intel.com,
- andrew+netdev@lunn.ch, edumazet@google.com, anthony.l.nguyen@intel.com,
- netdev@vger.kernel.org, kuba@kernel.org, pabeni@redhat.com,
- davem@davemloft.net
+ Przemyslaw Korba <przemyslaw.korba@intel.com>, andrew+netdev@lunn.ch,
+ edumazet@google.com, anthony.l.nguyen@intel.com, netdev@vger.kernel.org,
+ kuba@kernel.org, pabeni@redhat.com, davem@davemloft.net
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 On E825 devices that own the source timer, the TSPLL can lose lock when
-the TCXO or TIME_REF signal is disrupted. This series adds monitoring
-and recovery for that condition, then surfaces the lock status and clock
-source selection through the dpll subsystem. It also fixes the clock_id
-generation for E825 generic DPLL devices so userspace can unambiguously
-map each DPLL device to its owning interface.
+the TCXO or TIME_REF signal is disrupted. Recovery requires re-enabling
+the TSPLL via CGU register writes; without it, the PHC keeps running on
+a degraded reference indefinitely.
 
-Patch 1 adds TSPLL lock monitoring to ice_ptp_periodic_work(). Placing it
-there ensures recovery runs regardless of whether DPLL init succeeded or
-CONFIG_DPLL is enabled. Lock state is cached in pf->ptp.tspll_locked via
-WRITE_ONCE()/READ_ONCE() for consumption by the DPLL worker.
+The DPLL periodic worker (ice_dpll_periodic_work()) would be a natural
+home for this monitoring, but placing it there has two problems:
 
-Patch 2 registers the TSPLL as a DPLL_TYPE_GENERIC device for E825 owner
-PFs, with a fwnode-backed "time_ref" input pin. The pin state_on_dpll_set
-callback switches the clock source between TIME_REF and TCXO. Lock status
-is read from pf->ptp.tspll_locked; UNLOCKED is reported unconditionally
-when the clock source is TCXO to reflect the free-running oscillator state.
+  1. ice_dpll_init_e825() sets ICE_FLAG_DPLL only after all initialization
+     steps succeed. If any earlier step fails, the driver would run
+     without any TSPLL recovery mechanism.
 
-Patch 3 changes the clock_id generation for E825 TX-CLK and TSPLL DPLLs.
-Previously they used the board-level PCIe DSN, which is identical for
-all interfaces sharing the same NAC/quad, so userspace could not tell
-them apart. The new scheme derives the clock_id from the permanent port
-MAC (with a dedicated tag bit distinguishing TSPLL from TX-CLK), while
-other DPLL objects (EEC/PPS and non-E825 paths) keep the board-level
-DSN-derived clock_id.
+  2. When CONFIG_DPLL=n, the DPLL worker is compiled out and TSPLL
+     recovery would be silently absent.
 
-Changes in v2:
-- rebased
-- Patch 2: Fix TOCTOU race between DPLL state_on_dpll_set and PTP
-  TSPLL monitor by serializing both paths on pf->dplls.lock. Lift
-  pf->dplls.lock lifetime to ice_init_features()/ice_deinit_features()
-  so ice_ptp_tspll_monitor() can take it unconditionally. Remove the
-  now-redundant ICE_FLAG_DPLL gate in the monitor. Update kernel-doc
-  Context: notes to reflect the new lifetime. (Addresses review from
-  https://sashiko.dev/#/patchset/20260728091314.1420656-1-grzegorz.nitka%40intel.com)
+Add the monitor to ice_ptp_periodic_work() instead, which always runs on
+E825 owner PFs regardless of DPLL init state or config. Introduce two
+small helpers, ice_tspll_lost_lock_e825c() and ice_tspll_restart_e825c(),
+which encapsulate the CGU register reads/writes required to observe and
+recover the TSPLL.
 
-Grzegorz Nitka (3):
-  ice: monitor TSPLL lock from PTP periodic worker
-  ice: add TSPLL DPLL device and TIME_REF pin for E825
-  ice: use per-interface clock_id for E825 generic DPLLs
+Cache the observed lock state in pf->ptp.tspll_locked using
+WRITE_ONCE()/READ_ONCE() so a follow-up change can consume it from the
+DPLL periodic worker (for user-space notification via
+dpll_device_change_ntf()) and drop the redundant poll+recovery from
+that path. Precise synchronization is not required: both workers converge
+on the same value within one poll period.
 
- drivers/net/ethernet/intel/ice/ice_dpll.c  | 497 ++++++++++++++++++---
- drivers/net/ethernet/intel/ice/ice_dpll.h  |   4 +
- drivers/net/ethernet/intel/ice/ice_main.c  |   9 +
- drivers/net/ethernet/intel/ice/ice_ptp.c   |  79 ++++
- drivers/net/ethernet/intel/ice/ice_ptp.h   |  11 +
- drivers/net/ethernet/intel/ice/ice_tspll.c | 122 ++++-
- drivers/net/ethernet/intel/ice/ice_tspll.h |   6 +
- 7 files changed, 667 insertions(+), 61 deletions(-)
+Reviewed-by: Przemyslaw Korba <przemyslaw.korba@intel.com>
+Signed-off-by: Grzegorz Nitka <grzegorz.nitka@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_ptp.c   | 70 +++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_ptp.h   | 11 +++
+ drivers/net/ethernet/intel/ice/ice_tspll.c | 88 +++++++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_tspll.h |  4 +
+ 4 files changed, 172 insertions(+), 1 deletion(-)
 
-
-base-commit: 6e41d29c60deeb29a88debd2540dab757674834d
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
+index 4df3d83b5066..a997be5f7d8f 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+@@ -5,8 +5,11 @@
+ #include "ice.h"
+ #include "ice_lib.h"
+ #include "ice_trace.h"
++#include "ice_tspll.h"
+ #include "ice_txclk.h"
+ 
++#define ICE_TSPLL_LOG_INTERVAL		120
++
+ static const char ice_pin_names[][64] = {
+ 	"SDP0",
+ 	"SDP1",
+@@ -2875,6 +2878,67 @@ static void ice_ptp_maybe_trigger_tx_interrupt(struct ice_pf *pf)
+ 	}
+ }
+ 
++/**
++ * ice_ptp_tspll_monitor - poll and recover TSPLL lock on E825 owner PFs
++ * @pf: Board private structure
++ *
++ * Called from the PTP periodic worker. On E825 devices that own the source
++ * timer, poll the TSPLL lock status via CGU registers and trigger a restart
++ * if the lock has been lost. The result is cached in @pf->ptp.tspll_locked
++ * so it can be consumed by the DPLL periodic worker via READ_ONCE().
++ *
++ * TSPLL lock is critical for PHC operation and must be monitored regardless
++ * of whether DPLL init succeeded or CONFIG_DPLL is enabled. Placing the
++ * monitor here makes recovery independent of the dpll subsystem.
++ *
++ * AQ read errors are rate-limited and do not stop monitoring. Lock-lost
++ * events are logged every 120 retries (~60 s at normal poll rate) to
++ * surface persistent failures without flooding the log.
++ */
++static void ice_ptp_tspll_monitor(struct ice_pf *pf)
++{
++	bool lock_lost;
++	int err;
++
++	if (pf->hw.mac_type != ICE_MAC_GENERIC_3K_E825 ||
++	    !ice_pf_src_tmr_owned(pf))
++		return;
++
++	err = ice_tspll_lost_lock_e825c(&pf->hw, &lock_lost);
++	if (err) {
++		dev_err_ratelimited(ice_pf_to_dev(pf),
++				    "Failed reading TimeSync PLL lock status (err: %d). Retrying.\n",
++				    err);
++		return;
++	}
++
++	if (lock_lost) {
++		WRITE_ONCE(pf->ptp.tspll_locked, false);
++		if (!(pf->ptp.tspll_lock_retries % ICE_TSPLL_LOG_INTERVAL))
++			dev_warn(ice_pf_to_dev(pf),
++				 "TimeSync PLL lock lost. Retrying to acquire lock.\n");
++		err = ice_tspll_restart_e825c(&pf->hw);
++		if (err)
++			dev_err_ratelimited(ice_pf_to_dev(pf),
++					    "Failed to restart TimeSync PLL (err: %d).\n",
++					    err);
++		pf->ptp.tspll_lock_retries++;
++	} else {
++		if (pf->ptp.tspll_lock_retries) {
++			enum ice_clk_src clk_src;
++			const char *src_str = "unknown";
++
++			if (!ice_tspll_get_clk_src(&pf->hw, &clk_src))
++				src_str = ice_tspll_clk_src_str(clk_src);
++			dev_info(ice_pf_to_dev(pf),
++				 "TimeSync PLL lock acquired with %s clock source after %u retries.\n",
++				 src_str, pf->ptp.tspll_lock_retries);
++		}
++		WRITE_ONCE(pf->ptp.tspll_locked, true);
++		pf->ptp.tspll_lock_retries = 0;
++	}
++}
++
+ static void ice_ptp_periodic_work(struct kthread_work *work)
+ {
+ 	struct ice_ptp *ptp = container_of(work, struct ice_ptp, work.work);
+@@ -2884,6 +2948,8 @@ static void ice_ptp_periodic_work(struct kthread_work *work)
+ 	if (pf->ptp.state != ICE_PTP_READY)
+ 		return;
+ 
++	ice_ptp_tspll_monitor(pf);
++
+ 	err = ice_ptp_update_cached_phctime(pf);
+ 
+ 	ice_ptp_maybe_trigger_tx_interrupt(pf);
+@@ -3001,6 +3067,9 @@ static int ice_ptp_rebuild_owner(struct ice_pf *pf)
+ 	err = ice_tspll_init(hw);
+ 	if (err)
+ 		return err;
++	/* Rebuild reinitialized TSPLL, so reset monitor retry state. */
++	WRITE_ONCE(ptp->tspll_locked, true);
++	ptp->tspll_lock_retries = 0;
+ 
+ 	/* Acquire the global hardware lock */
+ 	if (!ice_ptp_lock(hw)) {
+@@ -3364,6 +3433,7 @@ void ice_ptp_init(struct ice_pf *pf)
+ 	}
+ 	ptp->port.port_num = hw->lane_num;
+ 
++	ptp->tspll_locked = true;
+ 	ice_ptp_init_hw(hw);
+ 
+ 	ice_ptp_init_tx_interrupt_mode(pf);
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.h b/drivers/net/ethernet/intel/ice/ice_ptp.h
+index c4b0da7ce20e..0e40fef3b4e8 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.h
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.h
+@@ -249,6 +249,15 @@ struct ice_ptp_pin_desc {
+  * @tx_hwtstamp_discarded: number of Tx skbs discarded due to cached PHC time
+  *                         being too old to correctly extend timestamp
+  * @late_cached_phc_updates: number of times cached PHC update is late
++ * @tspll_locked: last observed TSPLL lock state on E825 owner PFs.
++ *	Written by the PTP periodic worker after polling the TSPLL and
++ *	intended to be read (without pf->dplls.lock) by the DPLL periodic
++ *	worker in a follow-up change. Access via READ_ONCE()/WRITE_ONCE();
++ *	precise synchronization is not required because both workers
++ *	converge on the same value within one poll period.
++ * @tspll_lock_retries: counts consecutive poll cycles in which the TSPLL
++ *	was found unlocked. Reset to zero when lock is re-acquired. Used to
++ *	rate-limit the lock-lost log message (~every 120 retries / ~60 s).
+  */
+ struct ice_ptp {
+ 	enum ice_ptp_state state;
+@@ -274,6 +283,8 @@ struct ice_ptp {
+ 	u32 tx_hwtstamp_flushed;
+ 	u32 tx_hwtstamp_discarded;
+ 	u32 late_cached_phc_updates;
++	bool tspll_locked;
++	u32 tspll_lock_retries;
+ };
+ 
+ #define __ptp_port_to_ptp(p) \
+diff --git a/drivers/net/ethernet/intel/ice/ice_tspll.c b/drivers/net/ethernet/intel/ice/ice_tspll.c
+index fd4b58eb9bc0..be8e2da21dd6 100644
+--- a/drivers/net/ethernet/intel/ice/ice_tspll.c
++++ b/drivers/net/ethernet/intel/ice/ice_tspll.c
+@@ -129,7 +129,7 @@ static bool ice_tspll_check_params(struct ice_hw *hw,
+  *
+  * Return: specified clock source converted to its string name
+  */
+-static const char *ice_tspll_clk_src_str(enum ice_clk_src clk_src)
++const char *ice_tspll_clk_src_str(enum ice_clk_src clk_src)
+ {
+ 	switch (clk_src) {
+ 	case ICE_CLK_SRC_TCXO:
+@@ -531,6 +531,64 @@ int ice_tspll_cfg_pps_out_e825c(struct ice_hw *hw, bool enable)
+ 	return ice_write_cgu_reg(hw, ICE_CGU_R9, val);
+ }
+ 
++/**
++ * ice_tspll_lost_lock_e825c - check if TSPLL lost lock
++ * @hw: Pointer to the HW struct
++ * @lost_lock: Output flag for reporting lost lock
++ *
++ * Get E825 device TSPLL DPLL lock status.
++ *
++ * Return:
++ * * 0 - OK
++ * * negative - error
++ */
++int ice_tspll_lost_lock_e825c(struct ice_hw *hw, bool *lost_lock)
++{
++	u32 val;
++	int err;
++
++	err = ice_read_cgu_reg(hw, ICE_CGU_RO_LOCK, &val);
++	if (err)
++		return err;
++
++	*lost_lock = !FIELD_GET(ICE_CGU_RO_LOCK_TRUE_LOCK, val);
++
++	return 0;
++}
++
++/**
++ * ice_tspll_restart_e825c - trigger TSPLL restart
++ * @hw: Pointer to the HW struct
++ *
++ * Re-enable TSPLL for E825 device.
++ *
++ * Return:
++ * * 0 - OK
++ * * negative - error
++ */
++int ice_tspll_restart_e825c(struct ice_hw *hw)
++{
++	u32 val;
++	int err;
++
++	/* Read the initial values of r23 and disable the PLL */
++	err = ice_read_cgu_reg(hw, ICE_CGU_R23, &val);
++	if (err)
++		return err;
++
++	val &= ~ICE_CGU_R23_R24_TSPLL_ENABLE;
++	err = ice_write_cgu_reg(hw, ICE_CGU_R23, val);
++	if (err)
++		return err;
++
++	/* Wait at least 1 ms before reenabling PLL */
++	usleep_range(USEC_PER_MSEC, 2 * USEC_PER_MSEC);
++	val |= ICE_CGU_R23_R24_TSPLL_ENABLE;
++	err = ice_write_cgu_reg(hw, ICE_CGU_R23, val);
++
++	return err;
++}
++
+ /**
+  * ice_tspll_cfg - Configure the Clock Generation Unit TSPLL
+  * @hw: Pointer to the HW struct
+@@ -577,6 +635,34 @@ static int ice_tspll_dis_sticky_bits(struct ice_hw *hw)
+ 	}
+ }
+ 
++/**
++ * ice_tspll_get_clk_src - get current TSPLL clock source
++ * @hw: board private hw structure
++ * @clk_src: pointer to store clk_src value
++ *
++ * Get current TSPLL clock source settings.
++ *
++ * Return:
++ * * 0 - OK
++ * * negative - error
++ */
++int ice_tspll_get_clk_src(struct ice_hw *hw, enum ice_clk_src *clk_src)
++{
++	u32 val;
++	int err;
++
++	err = (hw->mac_type == ICE_MAC_GENERIC_3K_E825) ?
++		ice_read_cgu_reg(hw, ICE_CGU_R23, &val) :
++		ice_read_cgu_reg(hw, ICE_CGU_R24, &val);
++	if (err)
++		return err;
++
++	*clk_src = (enum ice_clk_src)FIELD_GET(ICE_CGU_R23_R24_TIME_REF_SEL,
++					       val);
++
++	return 0;
++}
++
+ /**
+  * ice_tspll_init - Initialize TSPLL with settings from firmware
+  * @hw: Pointer to the HW structure
+diff --git a/drivers/net/ethernet/intel/ice/ice_tspll.h b/drivers/net/ethernet/intel/ice/ice_tspll.h
+index d650867004d1..05917ae51ded 100644
+--- a/drivers/net/ethernet/intel/ice/ice_tspll.h
++++ b/drivers/net/ethernet/intel/ice/ice_tspll.h
+@@ -32,6 +32,9 @@ struct ice_tspll_params_e82x {
+ #define ICE_TSPLL_FBDIV_INTGR_E825		256
+ 
+ int ice_tspll_cfg_pps_out_e825c(struct ice_hw *hw, bool enable);
++int ice_tspll_lost_lock_e825c(struct ice_hw *hw, bool *lost_lock);
++int ice_tspll_restart_e825c(struct ice_hw *hw);
++int ice_tspll_get_clk_src(struct ice_hw *hw, enum ice_clk_src *clk_src);
+ int ice_tspll_init(struct ice_hw *hw);
+ int ice_tspll_bypass_mux_active_e825c(struct ice_hw *hw, u8 port, bool *active,
+ 				      enum ice_synce_clk output);
+@@ -39,4 +42,5 @@ int ice_tspll_cfg_bypass_mux_e825c(struct ice_hw *hw, bool ena, u32 port_num,
+ 				   enum ice_synce_clk output);
+ int ice_tspll_cfg_synce_ethdiv_e825c(struct ice_hw *hw,
+ 				     enum ice_synce_clk output);
++const char *ice_tspll_clk_src_str(enum ice_clk_src clk_src);
+ #endif /* _ICE_TSPLL_H_ */
 -- 
 2.39.3
 
