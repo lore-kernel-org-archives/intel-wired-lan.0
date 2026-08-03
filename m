@@ -1,204 +1,110 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E412C5518E
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  3 Aug 2026 09:43:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8D75C55175
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  3 Aug 2026 10:05:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id DC8E8405C9;
-	Mon,  3 Aug 2026 09:43:39 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 8994B80994;
+	Mon,  3 Aug 2026 10:05:28 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id B1FG0zin5rHg; Mon,  3 Aug 2026 09:43:38 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id utcxXISb8KSH; Mon,  3 Aug 2026 10:05:26 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1A1DA4057A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 74A3080C7B
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1785750218;
-	bh=WJNce2c83ivd+3dKJacaxw4Rd7SHUVjLhoai2cBOfa8=;
-	h=From:To:CC:Date:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1785751526;
+	bh=/gLI2r/8rG5B5WpQpSPdr1tHhab1yUbjiwP7lX1ro2M=;
+	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=ZJBlMn17HqnthmzIxlVwmQeyGrnvnCZ3AW4OU0GUWfmjOXCAG+7Txp17LKOf4+C3K
-	 /PSD10usRnCd9LfnV2zerXC2m/1pO5jtGx8oltH1/9gw9SACRPW7gJWmn7ECz9l0Cr
-	 5yLzTrZT0sMruNUx1YAkGuYVbyukSJxteeHnTHR84Q17m7xBpdcOZjsftAUjtfz5SV
-	 zOasu7kfqkgUJ3Jb9YYntfWtajuDq76xo0T97UC6UXwEC5UVNhg8I/i7DFU4ATUZAw
-	 etJyPXBr7IQ5FgsLEwg1C82iddplOyDVv8q2O4s3nS0pA1yWZL0bwUwfzxoeY6cdDT
-	 ACfBPVFY++Aiw==
+	b=tjHhPxqG1mjqG+4mKNzF5ief/aVqAnZXwegvUCwvu1rmZkoz6qJCY2wuMaakdYH5e
+	 vfIQwksNy6TIEGT7Vo+DZhj8lvHgno2LUHVINRAFsLVRm31xT8qs7FO2HBdELAHWq9
+	 lWjtRw2oCN85N22QtCGRZn8l8LJZNPk4c8B63b3PjcQWu4ojIvwNfvf63ytvUADmLB
+	 JlTn0bkIHyRwEJPdOJIfs2A3TZO2UtFZrdnu67wjI8F8nACY2mRpK3WJ8hkvlYAmmN
+	 eLcYhOZHWR31kJxeVAuLQMwzoTmB6mvduSrwva3uYyBduC8VNIhxle8M+zqVxN/FDt
+	 0lvpX4oSi63VA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 1A1DA4057A;
-	Mon,  3 Aug 2026 09:43:38 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 2533F350
- for <intel-wired-lan@lists.osuosl.org>; Mon,  3 Aug 2026 09:43:37 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 74A3080C7B;
+	Mon,  3 Aug 2026 10:05:26 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 0988B36E
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  3 Aug 2026 10:05:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 0BA1860648
- for <intel-wired-lan@lists.osuosl.org>; Mon,  3 Aug 2026 09:43:37 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 070F080C7B
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  3 Aug 2026 10:05:25 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id cPEnwLIwJw42 for <intel-wired-lan@lists.osuosl.org>;
- Mon,  3 Aug 2026 09:43:36 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.10;
- helo=mgamail.intel.com; envelope-from=grzegorz.nitka@intel.com;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id EaUmbvpUXyjv for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  3 Aug 2026 10:05:24 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.10;
+ helo=mgamail.intel.com; envelope-from=marcin.szycik@linux.intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org CE7D860625
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CE7D860625
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
- by smtp3.osuosl.org (Postfix) with ESMTPS id CE7D860625
- for <intel-wired-lan@lists.osuosl.org>; Mon,  3 Aug 2026 09:43:35 +0000 (UTC)
-X-CSE-ConnectionGUID: 4BXQDsGnRwWyVoJ9D0+W5g==
-X-CSE-MsgGUID: oISwSNLMQmyDE9B6ujxeFg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11863"; a="97655843"
-X-IronPort-AV: E=Sophos;i="6.25,202,1779174000"; d="scan'208";a="97655843"
-Received: from fmviesa006.fm.intel.com ([10.60.135.146])
- by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 03 Aug 2026 02:43:35 -0700
-X-CSE-ConnectionGUID: neOQ3JurR/uU8bQilD9wig==
-X-CSE-MsgGUID: 3uuPguFwRxe+F+Qa+0oHdw==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 1DA5880C45
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1DA5880C45
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 1DA5880C45
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  3 Aug 2026 10:05:22 +0000 (UTC)
+X-CSE-ConnectionGUID: 2z4UJtiZR1aSvPERc534nQ==
+X-CSE-MsgGUID: fkOk6QLMSuOPzIexfNji7w==
+X-IronPort-AV: E=McAfee;i="6800,10657,11863"; a="103684279"
+X-IronPort-AV: E=Sophos;i="6.25,202,1779174000"; d="scan'208";a="103684279"
+Received: from fmviesa003.fm.intel.com ([10.60.135.143])
+ by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 03 Aug 2026 03:05:22 -0700
+X-CSE-ConnectionGUID: gXCx4fPeR6SQAAJBmo+avA==
+X-CSE-MsgGUID: zFixKgjkQnWDHIypS/VPUg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,202,1779174000"; d="scan'208";a="256849957"
-Received: from orsmsx901.amr.corp.intel.com ([10.22.229.23])
- by fmviesa006.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 03 Aug 2026 02:43:34 -0700
-Received: from ORSMSX901.amr.corp.intel.com (10.22.229.23) by
- ORSMSX901.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.45; Mon, 3 Aug 2026 02:43:34 -0700
-Received: from ORSEDG901.ED.cps.intel.com (10.7.248.11) by
- ORSMSX901.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.45 via Frontend Transport; Mon, 3 Aug 2026 02:43:34 -0700
-Received: from SN4PR0501CU005.outbound.protection.outlook.com (40.93.194.19)
- by edgegateway.intel.com (134.134.137.111) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.45; Mon, 3 Aug 2026 02:43:33 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=VHwRx7GmdcqWCuDPC3JAbwiw4CS3088O1a69WNQFa2YxELE8kN7qmCe+kjZOUpQRPudUcNhkbcsW2GkHwpC2FzOWGFWraCGEUeUQ05uz3DideKz4SWD+MJIfPEoFiiq8O9RnqKnaYm5jDAN272kOU/+QtX6vlPLxtFVygT6gvlrAgvQKJTsfme3syHFTw/bE/3s8hAd9QI9ZZBkwTztHXM/Izdn8H/RYZMQIw9hkzJA5lhE1Ax9FDlerndr1eupt35XPmXyj4aJmxEAt0TXirMnQQWrWJfxIDSL2IgTyfyGyCNMRM0LNFPeUCFZLRJVxrAxvBLY8AshgpElw1mEYVg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=WJNce2c83ivd+3dKJacaxw4Rd7SHUVjLhoai2cBOfa8=;
- b=PORL1zsIz0zLJoNPHBlK2gq9yvyjh5IikTdjz71nkGS5Zry+n41Stwv0CHByoZmwiiH7n0eOBEod9PNlkBDRJU2tgHfl75Tgw38C32gPp0cRPRgsC5wWiUtz8d5D+kw9thP/ffkMaaHw2StbtagZcWDCDywNh1+9uBIi3SCz5JnIdG7T+3udgtEqc5yKV6gxUnR3vacW76PXfM4vJGyz96Z/o3NY3Pjl0xhyNt4y4KI9znt8+2c6kBmueLEn9clKh94ZcjhYi9J8814FwuHvCzUF6JndUzBWTBOLRoY3oWe5cUlGlpZoVBFnX2zticbYNCYW0plk3r1eTgeihLO4kQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from IA1PR11MB6219.namprd11.prod.outlook.com (2603:10b6:208:3e9::15)
- by SA0PR11MB4574.namprd11.prod.outlook.com (2603:10b6:806:71::11)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.270.15; Mon, 3 Aug
- 2026 09:43:26 +0000
-Received: from IA1PR11MB6219.namprd11.prod.outlook.com
- ([fe80::a2b9:8e8:c48b:ea31]) by IA1PR11MB6219.namprd11.prod.outlook.com
- ([fe80::a2b9:8e8:c48b:ea31%4]) with mapi id 15.21.0270.016; Mon, 3 Aug 2026
- 09:43:25 +0000
-From: "Nitka, Grzegorz" <grzegorz.nitka@intel.com>
-To: "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>
-CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "richardcochran@gmail.com" <richardcochran@gmail.com>,
- "andrew+netdev@lunn.ch" <andrew+netdev@lunn.ch>, "Kitszel, Przemyslaw"
- <przemyslaw.kitszel@intel.com>, "Nguyen, Anthony L"
- <anthony.l.nguyen@intel.com>, "Kubalewski, Arkadiusz"
- <arkadiusz.kubalewski@intel.com>, "pabeni@redhat.com" <pabeni@redhat.com>,
- "kuba@kernel.org" <kuba@kernel.org>, "davem@davemloft.net"
- <davem@davemloft.net>, "edumazet@google.com" <edumazet@google.com>, "Korba,
- Przemyslaw" <przemyslaw.korba@intel.com>
-Thread-Topic: [PATCH v2 iwl-next 2/3] ice: add TSPLL DPLL device and TIME_REF
- pin for E825
-Thread-Index: AQHdIOaWfeIpF3RIw0uifaBgnWGBjraMFImg
-Date: Mon, 3 Aug 2026 09:43:25 +0000
-Message-ID: <IA1PR11MB6219D6278D446431875B4AE092D52@IA1PR11MB6219.namprd11.prod.outlook.com>
-References: <20260731121216.1841413-1-grzegorz.nitka@intel.com>
- <20260731121216.1841413-3-grzegorz.nitka@intel.com>
-In-Reply-To: <20260731121216.1841413-3-grzegorz.nitka@intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: IA1PR11MB6219:EE_|SA0PR11MB4574:EE_
-x-ms-office365-filtering-correlation-id: 160bd766-f7d6-43c6-1ea4-08def143aa75
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
- ARA:13230040|376014|23010399003|366016|1800799024|38070700021|10067099003|56012099006|6133799003|11063799006|5023799004|4143699003|22082099003|18002099003;
-x-microsoft-antispam-message-info: WYh3wEqx4KNJyhSreUH3SY0SAey+axwPtOYpMct+c8WhWqn4L4QGuBU4WJacfi7pFJq1R/LJA8zhUIqJsqwlbUeQ2DUEwKprRxKt5rs15QnaqzFlplwdCoSH1i1I1SFRSY9f81R1a/f1RfsG/KIdWI8/9j7PW//HUL9pqtIcf3gBISpYELBXx5FG3/fPenbx/Ux+g3N1mqunoxMQ8agfJKwtw1wo7f+JqQvYjM2QSHwbBtf8eQT87xzHq3ZMTXINDh7ViFdrfOLIPJbrfoc6syEvyaJL7Wgg2iFYZ+Sbz0BGGKNj9bMZG8Mtr7SsFyelvb7P9u2vNz9tBUXhxT6GQ16yG1ULWtJix8bZcN1mhDOxBWh8zaL2YmvfKaEzKKeAXchEAxVkzyXOM/4qSWczPvrQvYyCkIGVqezTfV9xuwB3g5j8ww/8hzIKarfmlcKj4oQ144iQHf1CfpoNNhhhoCPy4Pkz50UN1sa0OeXinj9NUrNA3nZXmSHdrfhHZFv1+zf6rHVLd996EZtKplDAVUf6HZM/8kyv43Hyihh7PNK3T5/6kGktZ4/oE7RFm7X4mh2fBC/34pme93Zu6qSes6suRB8UyaBPjeeoasYb0q/yC6Bn5Pqni9GB28Hp5cElM9t0Ly+KKOe9V6rro1HHH0P68ZI9soVBNF0UE3s63DywJB3w8Do4K731z2+lvhWRIQhYv8PGhWeVpOyakN0LGepa+b4/iMUHZ2WH3I+i1UE=
-x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:IA1PR11MB6219.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230040)(376014)(23010399003)(366016)(1800799024)(38070700021)(10067099003)(56012099006)(6133799003)(11063799006)(5023799004)(4143699003)(22082099003)(18002099003);
- DIR:OUT; SFP:1101; 
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?MfM22NyeGg3+sDuhmiVVVfsPtpn6UeHqyqBzrbV3DGj8We1iJxn929Uxu6Oq?=
- =?us-ascii?Q?LMav64S6QFJY8XVotybJns0+dZqC2D2vhZIXuc/z2A/uGG78lLjONhnrgTFl?=
- =?us-ascii?Q?Z2ivWhH3r5O7eGuH272h47esU18px6ZXuAsroNS9tjfyIprf3FPzgxsMbYRT?=
- =?us-ascii?Q?9cqGwtHk0F/X98gTizUYzajiQuhJ5p3U1ZU+1oR5UXNsIUiMZOTwzC+vMZtF?=
- =?us-ascii?Q?xFT0rbde1OrT6JmIgOLnX+wzjMoIqkGxgIDT8Hu0ehH1fbdttFarSMeXnvmk?=
- =?us-ascii?Q?OivGwOPreHJPb5NBGH/3VyglWLjNZADN5Rg+xOipna8PTCzkzkbnWM9NnXYR?=
- =?us-ascii?Q?d5GbslDkLRDpOqqJB81Q8nT6Tczk7hlDZPu1KfbkIonxkqXBS88cGcrlL+JL?=
- =?us-ascii?Q?BnDrIWZnDjhfvusZSGIJsRz4a1Bwv3JlB+if752FVrr1yLBKluOBsGetDUXL?=
- =?us-ascii?Q?RwaSo3ilciXf9fy6k9F6TlvfNkkEpy+eE8el1snuhnSqLlqIzN4TwKg74gUg?=
- =?us-ascii?Q?wnif8twO70S94tL4pi2/7mH2rDVBVsARua45pfNdekGFY7qAnEiPRhFvKLah?=
- =?us-ascii?Q?0LxygX8PsSH7Qz+SCUo8jomCuV9QvA1jtobApfKT6atFT7WUYq/zeI62t55v?=
- =?us-ascii?Q?r54aTf3lL1tqYBIbX0Chw/ct58jjX/QQdXd4wEkY3MSlgrDvpejGXRuclCr1?=
- =?us-ascii?Q?QhAely10InlvYWii62u9SJNlyUFLZH15VdTL9KUdbI+Gv6BRoVWbKwpzq4S1?=
- =?us-ascii?Q?O3RtREekyYY9TdJZ4GmCUaksJ3tRiMiIV1H0rw4yYe8UROsRSx7Dsn6dzVjw?=
- =?us-ascii?Q?XfIxQlaO1z3hnUzRPITbSP8gptKiL+dDDuAKJDh46YH9kXAR3emq3ruiGkrY?=
- =?us-ascii?Q?JLrKA5r1YJRPKstWqSEK1xtcjZ/O/UleCH9wrezavFux5lUoPXOBI5HAcOB4?=
- =?us-ascii?Q?xi58+P2Z73iklVhGES1TVehSj0oTYbhb6BnEtArSsRxL5hgg+tFXRpMMxJuu?=
- =?us-ascii?Q?TSHpkGsBbSdzpP3kw+2BK+tyk7XQ6QOlLu8/8BosDDQ/rQmgcWx+sAV36SrT?=
- =?us-ascii?Q?DV4Y6oMrgxmvUWZx36Ox6ohZfj1fuWSLerBj3CnzcqSgppQbXv7LeLx3oXOA?=
- =?us-ascii?Q?MyCAB2VEXEHwGCh/8sKGV1VP6zPnEXX0ETvJOC/tNl3oKtUOOoY93on+82Hi?=
- =?us-ascii?Q?z2sXG5x/FitbVFJQjo02oZSqBQ6eLYI9TiY4u5QzUhqe/urbUXqntSOiQ+jw?=
- =?us-ascii?Q?ZLZCwmNtkdjTiO6HIPSXqaF78gzFKUQ4YjgMtDM74+Z081/lOhma58qVUj9Q?=
- =?us-ascii?Q?2znRQd9qMQqJAtxZ7eShgpnRqO3nl22YfBLQUvRE//M2pNM70VBbXteFBtE9?=
- =?us-ascii?Q?7D/6QuOZ70b37wsFwIiGKIfwwjPxZOcaq4ML5MceW2nHN9/s6oqVxxAfRuli?=
- =?us-ascii?Q?O6A7abUYNA0k7H6+ITSbFrHK0TMDz5oErF3L64bpTj+Qt0z08orKNRBRQN4H?=
- =?us-ascii?Q?S6eaakrSWmI3e3O+3hj2WO+WkhJKzFYJTWmlBlZ/f1zGnWQwxzaPiiTmqW2v?=
- =?us-ascii?Q?d7YyAYJu6Ru0hhONtgp3edt2rJv6ZEESBCvVWMwcHJNuNhFS9vnMpoWrpXIZ?=
- =?us-ascii?Q?frlUQCdyv0h4fBdOUf7KFBWEWmW2OxZr5V+/yavKBGJkd8wOGQ2CaywNiYql?=
- =?us-ascii?Q?2yM7HU9aaqBaze+Ux0Sd8X+c+n8UloucKAxGatgOmODu9tqJgLtjrchQMKKT?=
- =?us-ascii?Q?cKG/8+Niuw=3D=3D?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Received: from unknown (HELO [10.217.160.239]) ([10.217.160.239])
+ by fmviesa003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 03 Aug 2026 03:05:19 -0700
+Message-ID: <2e3101ea-13ab-4c9a-913c-999eb15207be@linux.intel.com>
+Date: Mon, 3 Aug 2026 12:05:17 +0200
 MIME-Version: 1.0
-X-Exchange-RoutingPolicyChecked: ofHoEkHj/yrDofiM4732+pkDXfdOGuS9OQC4pOocV1/xqbgyYeD/e8q139LLEq2lR7PBj5GJQHPuS74NfVsjybQJ3rr8iIPoitxdhgdjVEWQobGgcD1ZUdugGYt2I1v7tsL/XIVGVEcOGh6xwSSmLlHN9qXkgV8fNwYox4ZRI35HaIoghqVIX/CJjfs/5GmWc6BfYbVi+7BUkClBtMlORtD7nfB56gVV6GmuG+mBxmT8+mXe+H4gW0Te1soB2LqfIEenMVRsw1SQFgAcJNnt+JRwQvvzZTBRUdcF8mDnMCjMBt7b/WCtJ/bTScHaZrUvtx9Wcl8kNCAVWlje5nT70g==
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: IA1PR11MB6219.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 160bd766-f7d6-43c6-1ea4-08def143aa75
-X-MS-Exchange-CrossTenant-originalarrivaltime: 03 Aug 2026 09:43:25.7942 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: 0OfLbG2KVgbnrMsahuO73dNoteDKvzcj2YBrAn+SrbnmeM7wcPoWHLV/EVj1dflzu2I8jT+fY7ohXnIGhQpGWd4YXvZAppBZ1Ao7YGEEyxQ=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA0PR11MB4574
-X-OriginatorOrg: intel.com
+User-Agent: Mozilla Thunderbird
+To: Robert Malz <robert.malz@canonical.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller"
+ <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ Alexander Lobakin <aleksander.lobakin@intel.com>,
+ Jesse Brandeburg <jbrandeb@kernel.org>,
+ Jacob Keller <jacob.e.keller@intel.com>
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <20260731111008.1266444-1-robert.malz@canonical.com>
+Content-Language: en-US
+From: Marcin Szycik <marcin.szycik@linux.intel.com>
+In-Reply-To: <20260731111008.1266444-1-robert.malz@canonical.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1785750216; x=1817286216;
- h=from:to:cc:subject:date:message-id:references:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=RNR7XesRPR/WJVWkPIVVdfKkqeFuEkNxo6jXgqPn+eA=;
- b=mtFbUGPs2LXu8jjlwDSgCqbT9AeVuqtNK1Q1+IBseU6gOcpcYmCSqKfW
- Zzttv4lHDXcOgMrgbBjTA5okVX6+XL+GQWOtyJESlhhe7BwFqZTbqhZeM
- Pd1nnhPZ1wn1Sd2C6NptkasTKG3TT0F+oAm1GmZ0fRbhjWz9ysYzUd6w4
- XmIr88N08th0N/uLVhdXgPscx9fk2lzq1ferayFfNI+iHrlI3rPu9BICZ
- Uvftizd1WwmidLNg/m2XbyJd4T4dvtwcrYzSLSzHa6kYhkqr0i7UAFc9e
- xfEuQcBxz8RU8RtHFJBUZOgfl9rsQU1czRodPKMPtJwveXhLJXIeRDd6M
- g==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ t=1785751524; x=1817287524;
+ h=message-id:date:mime-version:subject:to:cc:references:
+ from:in-reply-to:content-transfer-encoding;
+ bh=XAo4DAYZzBUe3nOpgZa+4cRRLUuo1rQA/pZfXkcJujs=;
+ b=CeO/pBWYFfa+X2ZN5vPvH+uP79aP8AnJGPFr8wv56bjmqRymYuPh2mjy
+ AQy3fqrRqhA53xVb/d+8UX+AQaIZ9LqOgpndmBV3w+kocdy/JXeCLrawv
+ tfEfBiyO6g4J6WMk4olL8g1QSilWuePQeDzORWZDNR36ndAB9MLUfR+Rd
+ 0XImVWNkf50B59/+FvnaLV+qmeKSdTTFNf44vPyeCkLDmCnQr+iX1BLfK
+ lNiPfX7DFA9t0eLzvSV0AOcGZilIr8HKxfwCxVTK/8+fdI5qheLWChYpu
+ kXQaiEZt2Yelg+2oiXrIqHB4ylFTNkaBUK/yxtPiW8Y5z+OpTuyVKnLM0
+ w==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=linux.intel.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=mtFbUGPs
-X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Subject: Re: [Intel-wired-lan] [PATCH v2 iwl-next 2/3] ice: add TSPLL DPLL
- device and TIME_REF pin for E825
+ header.s=Intel header.b=CeO/pBWY
+Subject: Re: [Intel-wired-lan] [PATCH iwl v3] ice: acquire NVM lock around
+ each flash read
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -216,217 +122,162 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 
 
-> -----Original Message-----
-> From: Nitka, Grzegorz <grzegorz.nitka@intel.com>
-> Sent: Friday, July 31, 2026 2:12 PM
-> To: intel-wired-lan@lists.osuosl.org
-> Cc: netdev@vger.kernel.org; linux-kernel@vger.kernel.org;
-> richardcochran@gmail.com; andrew+netdev@lunn.ch; Kitszel, Przemyslaw
-> <przemyslaw.kitszel@intel.com>; Nguyen, Anthony L
-> <anthony.l.nguyen@intel.com>; Kubalewski, Arkadiusz
-> <arkadiusz.kubalewski@intel.com>; pabeni@redhat.com; kuba@kernel.org;
-> davem@davemloft.net; edumazet@google.com; Nitka, Grzegorz
-> <grzegorz.nitka@intel.com>; Korba, Przemyslaw
-> <przemyslaw.korba@intel.com>
-> Subject: [PATCH v2 iwl-next 2/3] ice: add TSPLL DPLL device and TIME_REF =
-pin
-> for E825
->=20
-> This extends the E825 advanced sync-timing support introduced by the
-> tx-clk series, which added the TXC DPLL device for TX reference clock
-> control. The TSPLL, the source timer PLL, is now also exposed through
-> the dpll subsystem so that its lock status and clock source selection
-> are visible and controllable from userspace.
->=20
-> On E825 devices the TSPLL is the source timer PLL, distinct from the
-> EEC and PPS DPLLs used on E810. Register it as a DPLL_TYPE_GENERIC
-> device for owner PFs.
->=20
-> Add struct ice_dplls::tspll_in, a fwnode-backed input pin named
-> "time_ref". The state_on_dpll_get callback queries ICE_CGU_R23 via
-> ice_tspll_get_clk_src() and returns CONNECTED when TIME_REF is
-> selected as clock source, DISCONNECTED otherwise. The state_on_dpll_set
-> callback switches the source between TIME_REF and TCXO via the new
-> ice_tspll_set_cfg() helper. Registration is deferred via the dpll
-> notifier path if the pin is not yet visible in the subsystem at probe
-> time.
->=20
-> Initialize TSPLL DPLL state from direct clock-source/lock reads so the
-> first published state reflects hardware and prev_dpll_state matches.
-> During periodic polling, the DPLL worker consumes
-> READ_ONCE(pf->ptp.tspll_locked), maintained and recovered by the PTP
-> periodic worker. When the TSPLL clock source is TCXO (TIME_REF pin not
-> selected), UNLOCKED is reported unconditionally to reflect the
-> free-running state of the oscillator regardless of the raw lock bit.
-> To avoid stale lock-status reads after synchronous source changes, the
-> set callback now refreshes tspll.dpll_state immediately and emits a DPLL
-> change notification when the cached state changed.
->=20
-> If a TSPLL reconfiguration is applied but the PLL has not yet
-> re-acquired lock, treat the internal -EAGAIN result as success so the
-> PTP periodic worker can complete recovery, while real -EBUSY failures
-> from reset/SBQ paths still propagate to userspace.
->=20
-> The TSPLL userspace reconfiguration path (state_on_dpll_set) and the
-> PTP periodic worker's TSPLL restart on lost lock both access CGU
-> registers, so serialize them with pf->dplls.lock. The mutex lifetime
-> is lifted to PF-features scope (initialized in ice_init_features()
-> before ice_ptp_init(), destroyed in ice_deinit_features() after
-> ice_ptp_release()) so the PTP monitor can take it unconditionally
-> regardless of DPLL init state.
->=20
-> Extend ice_dpll_deinit_txclk_pins() with a "flush" parameter so the
-> E825 init error path for the TSPLL fwnode pin can tear down TXCLK
-> pins without flushing pf->dplls.wq. If the flush ran here, notifier
-> work items queued during earlier init steps would be blocked on
-> pf->dplls.dpll_init, which is only completed at the unregister_pins
-> label reached after this teardown. destroy_workqueue() at that label
-> drains the queued items safely. Existing full-teardown callers pass
-> flush=3Dtrue and keep current behavior.
->=20
-> Reviewed-by: Przemyslaw Korba <przemyslaw.korba@intel.com>
-> Signed-off-by: Grzegorz Nitka <grzegorz.nitka@intel.com>
+On 31/07/2026 13:10, Robert Malz via Intel-wired-lan wrote:
+> FW caps the NVM read lock at a maximum of 3000ms regardless of the timeout
+> requested via ice_acquire_nvm(). ice_read_flat_nvm() splits a read into
+> multiple ice_aq_read_nvm() commands, one per 4KB sector, all issued under a
+> single lock taken by the caller. Reading a large region can exceed 3000ms,
+> so FW reclaims the lock mid-read and the remaining commands might fail.
+> 
+> Move the lock acquire/release into ice_read_flat_nvm() so it brackets each
+> individual ice_aq_read_nvm() command, ensuring the lock is never held
+> across more than one FW read.
+> 
+> ice_release_nvm() issues its own AQ command and overwrites
+> hw->adminq.sq_last_status, which some callers inspect after a failed read.
+> Add an optional read_aq_err output parameter to ice_read_flat_nvm() to
+> capture the failing read's AQ error before the release; callers that need
+> it (ice_discover_flash_size() and the ethtool/devlink log paths) use it
+> instead of sq_last_status, others pass NULL.
+> 
+> Callers that previously took the lock around ice_read_flat_nvm(),
+> ice_read_sr_word() or ice_read_flash_module() now call them without it.
+> The now-redundant per-block locking in ice_devlink_nvm_snapshot() is
+> dropped.
+> 
+> Fixes: e94509906d6b ("ice: create function to read a section of the NVM and Shadow RAM")
+> Signed-off-by: Robert Malz <robert.malz@canonical.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_dpll.c  | 416 ++++++++++++++++++---
->  drivers/net/ethernet/intel/ice/ice_dpll.h  |   4 +
->  drivers/net/ethernet/intel/ice/ice_main.c  |   9 +
->  drivers/net/ethernet/intel/ice/ice_ptp.c   |   9 +
->  drivers/net/ethernet/intel/ice/ice_tspll.c |  34 +-
->  drivers/net/ethernet/intel/ice/ice_tspll.h |   2 +
->  6 files changed, 419 insertions(+), 55 deletions(-)
->=20
+> v3:
+> - Log the failure via ice_debug() when ice_acquire_nvm() fails inside
+>   ice_read_flat_nvm(), rather than silently aborting the read.
+> v2:
+> - Replace the save/restore of sq_last_status across ice_release_nvm(),
+>   which could race with a concurrent AdminQ command, with a new optional
+>   read_aq_err output parameter.
+> - Add missing "Return:" kdoc to ice_read_sr_word().
+> ---
+>  .../net/ethernet/intel/ice/devlink/devlink.c  | 32 ++------
+>  drivers/net/ethernet/intel/ice/ice_ethtool.c  | 16 +---
+>  drivers/net/ethernet/intel/ice/ice_nvm.c      | 79 +++++++++++--------
+>  drivers/net/ethernet/intel/ice/ice_nvm.h      |  2 +-
+>  4 files changed, 59 insertions(+), 70 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/devlink/devlink.c b/drivers/net/ethernet/intel/ice/devlink/devlink.c
+> index 22b7d8e6bd9e..5a1ab9654fb8 100644
+> --- a/drivers/net/ethernet/intel/ice/devlink/devlink.c
+> +++ b/drivers/net/ethernet/intel/ice/devlink/devlink.c
+> @@ -1856,6 +1856,7 @@ static int ice_devlink_nvm_snapshot(struct devlink *devlink,
+>  {
+>  	struct ice_pf *pf = devlink_priv(devlink);
+>  	struct device *dev = ice_pf_to_dev(pf);
+> +	enum libie_aq_err read_aq_err = LIBIE_AQ_RC_OK;
 
-Sashiko says:
-> @@ -2891,6 +3000,43 @@ static int
-> +ice_dpll_tspll_state_on_dpll_set(const struct dpll_pin *pin, void *pin_p=
-riv,
-> +				 const struct dpll_device *dpll,
-> +				 void *dpll_priv, enum dpll_pin_state state,
-> +				 struct netlink_ext_ack *extack)
-> +{
-[ ... ]
-> +	/* Serialize multi-register TSPLL reconfiguration with restart path. */
-> +	mutex_lock(&pf->dplls.lock);
-> +	ret =3D ice_tspll_set_cfg(&pf->hw, ICE_TSPLL_FREQ_156_250, clk_src);
-> +	if (!ret || ret =3D=3D -EAGAIN) {
-> +		enum dpll_lock_status new_state;
-> +
-> +		/* Reconfiguration can transiently drop lock; clear cached lock
-> +		 * before PTP monitor refresh to avoid spurious LOCKED reports.
-> +		 */
-> +		WRITE_ONCE(pf->ptp.tspll_locked, false);
-Will unconditionally invalidating the cached state cause spurious flapping =
-if
-the lock is successfully acquired synchronously?
-If ice_tspll_set_cfg() returns 0, the lock has been acquired and new_state
-will be DPLL_LOCK_STATUS_LOCKED. However, we still set tspll_locked to fals=
-e.
-When ice_dpll_periodic_work_e825() runs next, it will read this false value
-and report the state as unlocked to userspace, until the PTP monitor runs a=
-nd
-corrects it.
-> +
-> +		new_state =3D ice_dpll_tspll_lock_status_get(pf, false);
-> +		if (tp->prev_dpll_state !=3D new_state) {
-> +			tp->dpll_state =3D new_state;
-> +			tp->prev_dpll_state =3D new_state;
-> +			changed =3D true;
-> +		}
-> +	}
-> +	mutex_unlock(&pf->dplls.lock);
+RCT
+Also scope can be reduced.
 
-It's a valid concern. To be fixed in v3.
+>  	struct ice_hw *hw = &pf->hw;
+>  	bool read_shadow_ram;
+>  	u8 *nvm_data, *tmp, i;
+> @@ -1891,26 +1892,16 @@ static int ice_devlink_nvm_snapshot(struct devlink *devlink,
+>  	for (i = 0; i < num_blks; i++) {
+>  		u32 read_sz = min_t(u32, ICE_DEVLINK_READ_BLK_SIZE, left);
+>  
+> -		status = ice_acquire_nvm(hw, ICE_RES_READ);
+> -		if (status) {
+> -			dev_dbg(dev, "ice_acquire_nvm failed, err %d aq_err %d\n",
+> -				status, hw->adminq.sq_last_status);
+> -			NL_SET_ERR_MSG_MOD(extack, "Failed to acquire NVM semaphore");
+> -			vfree(nvm_data);
+> -			return -EIO;
+> -		}
+> -
+>  		status = ice_read_flat_nvm(hw, i * ICE_DEVLINK_READ_BLK_SIZE,
+> -					   &read_sz, tmp, read_shadow_ram);
+> +					   &read_sz, tmp, read_shadow_ram,
+> +					   &read_aq_err);
+>  		if (status) {
+>  			dev_dbg(dev, "ice_read_flat_nvm failed after reading %u bytes, err %d aq_err %d\n",
+> -				read_sz, status, hw->adminq.sq_last_status);
+> +				read_sz, status, read_aq_err);
+>  			NL_SET_ERR_MSG_MOD(extack, "Failed to read NVM contents");
+> -			ice_release_nvm(hw);
+>  			vfree(nvm_data);
+>  			return -EIO;
+>  		}
+> -		ice_release_nvm(hw);
+>  
+>  		tmp += read_sz;
+>  		left -= read_sz;
+> @@ -1945,6 +1936,7 @@ static int ice_devlink_nvm_read(struct devlink *devlink,
+>  {
+>  	struct ice_pf *pf = devlink_priv(devlink);
+>  	struct device *dev = ice_pf_to_dev(pf);
+> +	enum libie_aq_err read_aq_err = LIBIE_AQ_RC_OK;
 
-Sashiko says:
-> @@ -4093,8 +4367,25 @@ static int ice_dpll_init_pins_e825(struct ice_pf *=
-pf)
->  		goto unregister_pins;
-> =20
->  	ret =3D ice_dpll_init_txclk_pins(pf, 0);
-> -	if (ret)
-> +	if (ret) {
->  		ice_dpll_deinit_rclk_pin(pf);
-> +		goto unregister_pins;
-> +	}
-> +
-> +	if (ice_pf_src_tmr_owned(pf) &&
-> +	    test_bit(ICE_FLAG_PTP_SUPPORTED, pf->flags)) {
-> +		ret =3D ice_dpll_init_tspll_pins(pf);
-> +		if (ret) {
-> +			/*
-> +			 * Avoid flushing pf->dplls.wq here: notifier work
-> +			 * items block on pf->dplls.dpll_init which is
-> +			 * completed by the unregister_pins path below.
-> +			 * destroy_workqueue() there drains queued items.
-> +			 */
-This is a pre-existing issue, but does this error path lead to a deadlock
-during driver initialization?
-The comment here mentions that notifier work items are blocked on
-pf->dplls.dpll_init, and expects the completion to happen in the
-unregister_pins path before destroy_workqueue() is called.
-However, if an error occurs and we jump to unregister_pins, we call
-ice_dpll_deinit_fwnode_pins(), which calls destroy_workqueue(pf->dplls.wq).
-Because complete_all(&pf->dplls.dpll_init) is never called on this error
-path, destroy_workqueue() will wait forever for the blocked workers to
-finish.
-> +			ice_dpll_deinit_txclk_pins(pf, false);
-> +			ice_dpll_deinit_rclk_pin(pf);
-> +		}
-> +	}
+RCT
 
-This isn't a deadlock - complete_all(&pf->dplls.dpll_init) is called at
-the unregister_pins: label immediately before ice_dpll_deinit_fwnode_pins()=
-,
-which is what wakes the blocked notifier workers so destroy_workqueue()
-(invoked at the tail of ice_dpll_deinit_fwnode_pins()) can drain them.
+>  	struct ice_hw *hw = &pf->hw;
+>  	bool read_shadow_ram;
+>  	u64 nvm_size;
 
-The flush=3Dfalse argument to ice_dpll_deinit_txclk_pins() is precisely to =
-avoid
-flushing before the completion is signalled; deferring the flush to the sha=
-red
-flush_workqueue() inside ice_dpll_deinit_fwnode_pins() - which runs after
-complete_all() - drains all queued notifier work safely.
+...
 
-Sashiko says:
-> --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-> @@ -2917,7 +2917,16 @@ static void ice_ptp_tspll_monitor(struct ice_pf *p=
-f)
->  		if (!(pf->ptp.tspll_lock_retries % ICE_TSPLL_LOG_INTERVAL))
->  			dev_warn(ice_pf_to_dev(pf),
->  				 "TimeSync PLL lock lost. Retrying to acquire lock.\n");
-> +		/* Serialize R23 restart against TSPLL userspace reconfig
-> +		 * (ice_dpll_tspll_state_on_dpll_set()). pf->dplls.lock is
-> +		 * initialized in ice_init_features() before the PTP kworker
-> +		 * starts and destroyed in ice_deinit_features() only after
-> +		 * ice_ptp_release() has drained the kworker, so it is always
-> +		 * valid to take here regardless of DPLL init state.
-> +		 */
-> +		mutex_lock(&pf->dplls.lock);
-Is there a race condition here between the PTP monitor and the DPLL set
-callback?
-Looking at ice_ptp_tspll_monitor(), the hardware lock status is checked
-without holding pf->dplls.lock:
-	err =3D ice_tspll_lost_lock_e825c(&pf->hw, &lock_lost);
-If this thread is preempted after reading a false (no loss of lock) status,
-and userspace concurrently requests a DPLL state change via
-ice_dpll_tspll_state_on_dpll_set(), the DPLL callback writes false to
-pf->ptp.tspll_locked while holding the lock.
-Once the DPLL callback finishes, if this thread resumes in the else branch,
-it will unconditionally write true to pf->ptp.tspll_locked:
-	} else {
-		...
-		WRITE_ONCE(pf->ptp.tspll_locked, true);
-	}
-Could this overwrite the accurately-set unlocked state and cause the
-periodic worker to report a spurious locked state to userspace?
->  		err =3D ice_tspll_restart_e825c(&pf->hw);
-> +		mutex_unlock(&pf->dplls.lock);
->  		if (err)
->  			dev_err_ratelimited(ice_pf_to_dev(pf),
->  					    "Failed to restart TimeSync PLL (err: %d).\n",
+>  /**
+> - * ice_read_sr_word - Reads Shadow RAM word and acquire NVM if necessary
+> + * ice_read_sr_word - Reads Shadow RAM word
+>   * @hw: pointer to the HW structure
+>   * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF)
+>   * @data: word read from the Shadow RAM
+>   *
+> - * Reads one 16 bit word from the Shadow RAM using the ice_read_sr_word_aq.
+> + * Reads one 16 bit word from the Shadow RAM using ice_read_sr_word_aq.
+> + *
+> + * The NVM lock is acquired and released internally by ice_read_flat_nvm()
+> + * around the FW read, so this function must be called without the lock held.
+> + *
+> + * Return: zero on success, or a negative error code on failure.
+>   */
+>  int ice_read_sr_word(struct ice_hw *hw, u16 offset, u16 *data)
+>  {
+> -	int status;
+> -
+> -	status = ice_acquire_nvm(hw, ICE_RES_READ);
+> -	if (!status) {
+> -		status = ice_read_sr_word_aq(hw, offset, data);
+> -		ice_release_nvm(hw);
+> -	}
+> -
+> -	return status;
+> +	return ice_read_sr_word_aq(hw, offset, data);
 
-It's a valid concern. To be fixed in v3.
-> --
-> 2.39.3
+ice_read_sr_word() is now a wrapper - can we remove it and use
+ice_read_sr_word_aq() directly?
 
+>  }
+>  
+>  /**
+> @@ -856,20 +876,18 @@ int ice_get_inactive_netlist_ver(struct ice_hw *hw, struct ice_netlist_info *net
+>  static int ice_discover_flash_size(struct ice_hw *hw)
+>  {
+>  	u32 min_size = 0, max_size = ICE_AQC_NVM_MAX_OFFSET + 1;
+> -	int status;
+> -
+> -	status = ice_acquire_nvm(hw, ICE_RES_READ);
+> -	if (status)
+> -		return status;
+> +	int status = 0;
+>  
+>  	while ((max_size - min_size) > 1) {
+>  		u32 offset = (max_size + min_size) / 2;
+> +		enum libie_aq_err read_aq_err = LIBIE_AQ_RC_OK;
+
+RCT
+
+>  		u32 len = 1;
+>  		u8 data;
+
+---8<---
+
+Thanks,
+Marcin
