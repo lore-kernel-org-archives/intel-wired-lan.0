@@ -1,95 +1,183 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43EC9C55822
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  4 Aug 2026 21:39:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9BF9BC55822
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  4 Aug 2026 22:55:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C378160618;
-	Tue,  4 Aug 2026 21:39:54 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1E84240533;
+	Tue,  4 Aug 2026 22:55:03 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 87jhPsPaY4fe; Tue,  4 Aug 2026 22:55:02 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4193A40545
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1785884102;
+	bh=BiBfYk+ikLNkmDTePEHZK/NFlqks+onn7zyzt1bvM/M=;
+	h=Date:To:Cc:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From:Reply-To:From;
+	b=YTdXpsSiEq/cGAUxduw8np/NsiylUQ/hVB0G5Win6ZPKnVTlENldbRoE/hWp0VJGt
+	 ESz5p0UucZBIavA4mz8yVVSY6fJrtU2NduTr31UeB0LWo0cArJ3QkEwH3aupvwlOK2
+	 f7Djlr5NR1kd2O7N0o9K9zYsNNhmHIw7IrWJFZJahe5rOB3A5yuEcHLxD/VLEEClu8
+	 rUsmDM5LK2Fqbl4IGH5q49iK1RlIrgK5K3K4lin+L8giP5Asdhpn2aeFQ+fZ63C7HA
+	 gAiTTGcrzDM9JUgh8Pptc0PiaBu8ne2T3GvwndsXnODu51BjD0tNSIstnGKxwbgcra
+	 QsODE48o2K7GQ==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 4193A40545;
+	Tue,  4 Aug 2026 22:55:02 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 8874B2BF
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Aug 2026 22:55:01 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id 7A6D5605DA
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Aug 2026 22:55:01 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id v0xrRC7dWQ9R; Tue,  4 Aug 2026 21:39:53 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E6DD7605EC
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1785879592;
-	bh=M/YdfITwA2i5MXUEvTL9egSEPZBECQ60NxmAon/pChQ=;
-	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=zF5UkUEpZaUJgS4njZUfGcr3s0bNVbGlnx6h+QzOPDllSxOFBhcO7XdqjddOcKhL5
-	 i4ExvBFpCpuxaltwNXmCycEcajxkkjxJMr7PBCyuPCSfukU1BTavi8waI77svM0WXB
-	 Y0BAsYWa0Q03pkrECS6Tnw6bfVczkM/Wui79BffESfv6qrTOjt0tCx6L1UGtcD3a6y
-	 X/sGFBAemXr6hCfKmdaSNJRDoq2gWQl04fYvq4Ouk9sp7p0kpNqkfDmdujhVxon/8g
-	 aHTOoNfuflpXBy/rP+2iF7thjJfwk/9KKDGKQxJksx/FIGXlrsi2zj9kiKBX3oqODZ
-	 TJsF14kCLar4Q==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id E6DD7605EC;
-	Tue,  4 Aug 2026 21:39:52 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 936A12FA
- for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Aug 2026 21:39:51 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 7C9C9401DF
- for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Aug 2026 21:39:51 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id xH6l8c2CBv5H for <intel-wired-lan@lists.osuosl.org>;
- Tue,  4 Aug 2026 21:39:50 +0000 (UTC)
-X-Greylist: delayed 343 seconds by postgrey-1.37 at util1.osuosl.org;
- Tue, 04 Aug 2026 21:39:48 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 4946D40029
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4946D40029
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=91.218.175.189;
- helo=out-189.mta0.migadu.com; envelope-from=vadim.fedorenko@linux.dev;
+ id CB0mP6Rh68ng for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  4 Aug 2026 22:55:00 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=205.220.168.131;
+ helo=mx0a-0031df01.pphosted.com; envelope-from=jeff.johnson@oss.qualcomm.com;
  receiver=<UNKNOWN> 
-Received: from out-189.mta0.migadu.com (out-189.mta0.migadu.com
- [91.218.175.189])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 4946D40029
- for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Aug 2026 21:39:48 +0000 (UTC)
-Message-ID: <dce23bb6-138b-4a53-9447-26e81c86c292@linux.dev>
-Date: Tue, 4 Aug 2026 22:33:39 +0100
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 82986605AF
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 82986605AF
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com
+ [205.220.168.131])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 82986605AF
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Aug 2026 22:55:00 +0000 (UTC)
+Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
+ by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id
+ 674Jlktk428808
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 4 Aug 2026 22:54:59 GMT
+Received: from mail-pg1-f200.google.com (mail-pg1-f200.google.com
+ [209.85.215.200])
+ by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fugmgjpb9-1
+ (version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 04 Aug 2026 22:54:59 +0000 (GMT)
+Received: by mail-pg1-f200.google.com with SMTP id
+ 41be03b00d2f7-cb733fc5024so357378a12.2
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 04 Aug 2026 15:54:59 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20251104; t=1785884099; x=1786488899;
+ h=content-transfer-encoding:content-type:in-reply-to:from
+ :content-language:references:cc:to:subject:user-agent:mime-version
+ :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to:content-type;
+ bh=BiBfYk+ikLNkmDTePEHZK/NFlqks+onn7zyzt1bvM/M=;
+ b=tPxxeUfWXPN0KBfRbqMctiM7EzmjeJYRv/BpiSef9u/PpRkEmVCPyYNylVF7ooYLjC
+ jKa6yDuCTM9b/ltIiJCqr21jWAZXSdh7M+sioNouR6owx5Rc3FLKFPfiWClbh9giLLyF
+ YwLoqoqou3/J98D7BmuMVqIi7X/0zgVxeS9xDyZEEtcK9ZSRNh1sWgAYgA9Alfz0vM9Z
+ Bs+649Sgxzwri9KKw8qpWSh17Cs5Ws/bV8dU5FlM21xijU/cjpNQ6YiQ1ULRmEX8c3ZE
+ sPMtJEGaesvev8hQGiSob3YrFeg2ms3AN4nScxLEawpwOEmdn7ljkJRihsa15Tn7x7is
+ eu/Q==
+X-Gm-Message-State: AOJu0YwgiJhlgBdaFaHuSojrtOXwiS7G6wD3VLcHGdgul1p/V/+1rSVu
+ yYsJgPFQbe7oGTILP5vC2liVJ4500OzBGkpyFdO1lOSNDFVLbkOpkmMcZfb8VtYubEeBAipg740
+ wpISgtwwhEUAJCYbWUz/odfnpny/BEmBy9NRfQJxN29bPdYex62y1b2XCtwe0kWoNJbXjoKJo
+X-Gm-Gg: AR+sD12N2THwBJznTTVMSPE/DtDDwOLgSR/3vTWThtdd8YhFg9VQBjO9u35BPwy/hjM
+ upABoIUhoXIEsPd4YDDnOH5A/Ewtv4Zw8132pkdAQCRoLH5UsuGUa9dns+Qxua/nA0KLJlTc0A2
+ p1suEsg9v1Xb/DcnGHztc7FNFal8lam0s+N050lDI6tqWY8uY95RYn9nmOHWV0fzz/z4U7z9l77
+ 58vPz3pF//h/bugYFVpOEwZr3/c/ZNSP5RRVKordNlldcfXmnHM7x/783cZj8v2opyxkOskRsyp
+ OM8xZ8L7phrMYRMIjtiLMhnGRVMBgAkV0JDrlu3XHsgUnNCg2l9NDnBWEE8FY5Y8OKT1THMpwmR
+ Ib0SG7NbCCdVbh9EzVkuM1ocfr7VdCBhYNjnePZFszm0/HuMkEyUeX554riwl
+X-Received: by 2002:a05:6a20:4321:b0:3c3:b57b:6291 with SMTP id
+ adf61e73a8af0-3cb85e6689fmr2180334637.18.1785884098711; 
+ Tue, 04 Aug 2026 15:54:58 -0700 (PDT)
+X-Received: by 2002:a05:6a20:4321:b0:3c3:b57b:6291 with SMTP id
+ adf61e73a8af0-3cb85e6689fmr2180295637.18.1785884098318; 
+ Tue, 04 Aug 2026 15:54:58 -0700 (PDT)
+Received: from [192.168.1.20] (103.sub-97-215-187.myvzw.com. [97.215.187.103])
+ by smtp.gmail.com with ESMTPSA id
+ 5a478bee46e88-3158673a9e4sm10073999eec.18.2026.08.04.15.54.56
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Tue, 04 Aug 2026 15:54:57 -0700 (PDT)
+Message-ID: <72754805-575c-4568-9dab-514e1b758847@oss.qualcomm.com>
+Date: Tue, 4 Aug 2026 15:54:55 -0700
 MIME-Version: 1.0
-To: xuanqiang.luo@linux.dev, intel-wired-lan@lists.osuosl.org
-Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
- richardcochran@gmail.com, piotr.kwapulinski@intel.com,
- arkadiusz.kubalewski@intel.com, aleksandr.loktionov@intel.com,
- andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com, netdev@vger.kernel.org,
- Xuanqiang Luo <luoxuanqiang@kylinos.cn>
-References: <20260724093448.63154-1-xuanqiang.luo@linux.dev>
+User-Agent: Mozilla Thunderbird
+To: Ally Heev <allyheev@gmail.com>, Tony Nguyen <anthony.l.nguyen@intel.com>, 
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller"
+ <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Simon Horman <horms@kernel.org>,
+ Dan Carpenter <dan.carpenter@linaro.org>
+References: <20251116-aheev-fix-free-uninitialized-ptrs-ethernet-intel-v1-0-0ddc81be6a4c@gmail.com>
+ <20251116-aheev-fix-free-uninitialized-ptrs-ethernet-intel-v1-2-0ddc81be6a4c@gmail.com>
 Content-Language: en-US
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and
- include these headers.
-From: Vadim Fedorenko <vadim.fedorenko@linux.dev>
-In-Reply-To: <20260724093448.63154-1-xuanqiang.luo@linux.dev>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+In-Reply-To: <20251116-aheev-fix-free-uninitialized-ptrs-ethernet-intel-v1-2-0ddc81be6a4c@gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Migadu-Flow: FLOW_OUT
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA0MDE4NiBTYWx0ZWRfX72EhQzj6XFpk
+ KLeUnmKgd9uhzJR009F+O/Uklq+ahLRLCSByP///LJDYk5bd6fYcoqjiuY8CR98fplkdIW/EFVc
+ WSireanUjZEXMf8Loc42BHe3eA4wmolYGDV/Tsa47oEgcemK4A4FH4mL4N1fKUqsCaORybKLmf+
+ GcLAe1w5FbL/wCt9DEeTV+yo8skk+pK7xfJIQ+Fx+QYoDIEJx4s5i4T7pQf9a5GVxn/msxWqzd1
+ /ByOLDUfdqF3f944T0JtarVQu34Ze/GOvqD+Xd3y40rY3SdwrqeuxWJDB6KvqeU9r0rahMjxDCT
+ gP0EHVxAPVYUQ1qwZqIvVTSI6Dkm0Taie6dNN0pa0WpVEP/ZPUvbE+A1khJsINKK6IYeXOBrsSD
+ 9ubSMHrSxyu0VRq97FxPQ09qA0ad1a6ixbWGh/yF27qR1gOArwbl4tYJycjKpeTk5jS1+WgtClc
+ zq/uqJAHX9L8ii3KHSQ==
+X-Proofpoint-GUID: gEq8KEHZoUaP2eou_HaDJSKtm0sPNQ5q
+X-Proofpoint-ORIG-GUID: gEq8KEHZoUaP2eou_HaDJSKtm0sPNQ5q
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODA0MDE4NiBTYWx0ZWRfXyS8LYpi5FxZp
+ KQLQ5awJdrEqQfquW05H46HsS3tt6AOqpl1jeymQtAeI+iXBJgmeRK40wwX7MmoULftA9Ang1ym
+ 4ZlZRJVxuOvC9QWZoYzFhuhlby3EITc=
+X-Authority-Analysis: v=2.4 cv=XYC5Co55 c=1 sm=1 tr=0 ts=6a726dc3 cx=c_pps
+ a=oF/VQ+ItUULfLr/lQ2/icg==:117 a=UaEkX0D7FlC0tWE/LoNF7Q==:17
+ a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22
+ a=VwQbUJbxAAAA:8 a=KKAkSRfTAAAA:8 a=pGLkceISAAAA:8 a=SN6AwQ4lagRrp0K9xQIA:9
+ a=QEXdDO2ut3YA:10 a=O8hF6Hzn-FEA:10 a=3WC7DwWrALyhR5TkjVHa:22
+ a=cvBusfyB2V15izCimMoJ:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-04_05,2026-08-04_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 lowpriorityscore=0 adultscore=0 malwarescore=0 spamscore=0
+ clxscore=1011 bulkscore=0 impostorscore=0 priorityscore=1501 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608040186
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linux.dev; s=key1; t=1785879239;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=M/YdfITwA2i5MXUEvTL9egSEPZBECQ60NxmAon/pChQ=;
- b=f1CG7/8TCMnSiDNWVJMl17/vQSwYBLADVFt/u9bg7lanyoo0mO/1WUAhuQMgAV0tRH2mgM
- La7qWZRyisA5xunqxbdZPKurkPTOILucvVXVw8BRDBcQVEZbdqaRpDCMRoBjAwr2g0Ho1L
- cnDxFkOhDtwaIMJaeP0vrLFK4WEI6wA=
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=linux.dev
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256
- header.s=key1 header.b=f1CG7/8T
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net v1] i40e: fix races in PTP
- external timestamp work handling
+ d=qualcomm.com; h=
+ cc:content-transfer-encoding:content-type:date:from:in-reply-to
+ :message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+ BiBfYk+ikLNkmDTePEHZK/NFlqks+onn7zyzt1bvM/M=; b=J6pCMjA/9UJDNJRo
+ VZQTZztpJ6ly5GLfzHWJxCBb2QiXV14QgaZyienmOvFWr3RmOlaLgTzVrtLXsuu+
+ zUvdKwTlu/o2Dhgcr4m0xvb9xevP0yqMOxiNs8wo9EFPmgrLDsOcXBUp5fMUb0lC
+ 2+0LxVsJOf/tMc1H1ztMiXW+I1uAvjrhz7KnYTFDc+jcPQoZoh/dldD6E7bod7Lx
+ guG1dghAELXaWSnBpNcX6vNLp859XRoAC8anGPfbj46Yq7XnLAkvtax6NS8EUUYa
+ iiBRqbbMaX08jHqmI5JWxGgUiGzUT5KlIKFSTRsZp+uycJqzIGBpIZLYAMoLwJIs
+ fKdxgA==
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=oss.qualcomm.com; s=google; t=1785884099; x=1786488899; darn=lists.osuosl.org;
+ h=content-transfer-encoding:content-type:in-reply-to:from
+ :content-language:references:cc:to:subject:user-agent:mime-version
+ :date:message-id:from:to:cc:subject:date:message-id:reply-to
+ :content-type;
+ bh=BiBfYk+ikLNkmDTePEHZK/NFlqks+onn7zyzt1bvM/M=;
+ b=dlBqGCDljGckPcOWjgwa8CQTfCyXypquHSuqHz9yEBvnEIH41pU8K/3Fm/P4zi6Y9Y
+ Cjo2FNf0H5qkBxel1Hdr15i7pZ2RYY2gj5Pd99N8MR+sHkNdx6VeFkPqthnqUo4jQey5
+ p5HAaft0UPLO0ePphNUzLd84/SX8gvovOAewKP1QG7Fbql2f5UbygyF54DJ02dj2c/vP
+ 91+sF0mfF+FlznFmHwwXGmwplwqoofTRKP9aV5utXrXsJk8NJQrD7xddlGaaEMV+w2gz
+ 3lJhi3BhfbO6Ah4itgjYqNDT7vwvbVnZ+NtLgqVF2vYJTJ7dFsGimeoqrq3Tk4+UX+Yu
+ y0GA==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=oss.qualcomm.com
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com
+ header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1
+ header.b=J6pCMjA/; 
+ dkim=pass (2048-bit key,
+ unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com
+ header.a=rsa-sha256 header.s=google header.b=dlBqGCDl
+Subject: Re: [Intel-wired-lan] [PATCH RFT net-next 2/2] idpf: remove __free
+ usage in idpf_virtchnl
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -102,125 +190,101 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+From: Jeff Johnson via Intel-wired-lan <intel-wired-lan@osuosl.org>
+Reply-To: Jeff Johnson <jeff.johnson@oss.qualcomm.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 24/07/2026 10:34, xuanqiang.luo@linux.dev wrote:
-> From: Xuanqiang Luo <luoxuanqiang@kylinos.cn>
+On 11/16/2025 7:56 AM, Ally Heev wrote:
+> usage of cleanup attributes is discouraged in net [1], achieve cleanup
+> using goto. In this patch though, only uninitialized pointers with __free
+> attribute are cleaned as they can cause undefined behavior when they
+> go out of scope
 > 
-> The time sync interrupt queues ptp_extts0_work, which reads device
-> registers and reports events through pf->ptp_clock.
+> Suggested-by: Simon Horman <horms@kernel.org>
+> Reported-by: Dan Carpenter <dan.carpenter@linaro.org>
+> Closes: https://lore.kernel.org/all/aPiG_F5EBQUjZqsl@stanley.mountain/
+> Signed-off-by: Ally Heev <allyheev@gmail.com>
 > 
-> i40e_ptp_stop() unregisters the PHC without first disabling the event
-> source or draining the work. The worker can therefore access the clock or
-> PF after either has been freed, causing a use-after-free. Disable external
-> timestamp events and call disable_work_sync() before unregistering the PHC.
-> Disabling the work also prevents an interrupt already in progress from
-> queuing it after the drain.
+> [1] https://docs.kernel.org/process/maintainer-netdev.html#using-device-managed-and-cleanup-h-constructs
+
+<SMH>
+
+If using __free() *correctly* gives more readable code, why wouldn't we do it?
+
+The only problem with this function is that it doesn't follow the guidance
+from cleanup.h:
+
+ * the recommendation is to always define and assign variables in one
+ * statement and not group variable definitions at the top of the
+ * function when __free() is used.
+
+
 > 
-> INIT_WORK() is called from i40e_ptp_set_timestamp_mode(), which runs on
-> reset and whenever timestamping is reconfigured. Reinitializing pending or
-> running work can corrupt its workqueue state. Initialize the work once from
-> i40e_sw_init() instead.
-> 
-> Also exclude reset recovery before stopping PTP so a concurrent rebuild
-> cannot re-enable timestamp events or recreate the PHC during removal.
-> 
-> Fixes: 1050713026a0 ("i40e: add support for PTP external synchronization clock")
-> Signed-off-by: Xuanqiang Luo <luoxuanqiang@kylinos.cn>
+> Signed-off-by: Ally Heev <allyheev@gmail.com>
 > ---
->   drivers/net/ethernet/intel/i40e/i40e.h      |  1 +
->   drivers/net/ethernet/intel/i40e/i40e_main.c | 17 +++++++-------
->   drivers/net/ethernet/intel/i40e/i40e_ptp.c  | 25 +++++++++++++++------
->   3 files changed, 28 insertions(+), 15 deletions(-)
+>  drivers/net/ethernet/intel/idpf/idpf_virtchnl.c | 28 +++++++++++++++++--------
+>  1 file changed, 19 insertions(+), 9 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-> index 83e780919ac97..e2ae61bc38786 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e.h
-> +++ b/drivers/net/ethernet/intel/i40e/i40e.h
-> @@ -1315,6 +1315,7 @@ int i40e_ptp_hwtstamp_set(struct net_device *netdev,
->   			  struct netlink_ext_ack *extack);
->   void i40e_ptp_save_hw_time(struct i40e_pf *pf);
->   void i40e_ptp_restore_hw_time(struct i40e_pf *pf);
-> +void i40e_ptp_init_work(struct i40e_pf *pf);
->   void i40e_ptp_init(struct i40e_pf *pf);
->   void i40e_ptp_stop(struct i40e_pf *pf);
->   int i40e_ptp_alloc_pins(struct i40e_pf *pf);
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> index a04683004a567..2909a58d57562 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> @@ -12819,6 +12819,7 @@ static int i40e_sw_init(struct i40e_pf *pf)
->   			 "total-port-shutdown was enabled, link-down-on-close is forced on\n");
->   	}
->   	mutex_init(&pf->switch_mutex);
-> +	i40e_ptp_init_work(pf);
->   
->   sw_init_done:
->   	return err;
-> @@ -16157,14 +16158,6 @@ static void i40e_remove(struct pci_dev *pdev)
->   
->   	i40e_devlink_unregister(pf);
->   
-> -	i40e_dbg_pf_exit(pf);
-> -
-> -	i40e_ptp_stop(pf);
-> -
-> -	/* Disable RSS in hw */
-> -	i40e_write_rx_ctl(hw, I40E_PFQF_HENA(0), 0);
-> -	i40e_write_rx_ctl(hw, I40E_PFQF_HENA(1), 0);
-> -
->   	/* Grab __I40E_RESET_RECOVERY_PENDING and set __I40E_IN_REMOVE
->   	 * flags, once they are set, i40e_rebuild should not be called as
->   	 * i40e_prep_for_reset always returns early.
-> @@ -16173,6 +16166,14 @@ static void i40e_remove(struct pci_dev *pdev)
->   		usleep_range(1000, 2000);
->   	set_bit(__I40E_IN_REMOVE, pf->state);
->   
-> +	i40e_dbg_pf_exit(pf);
-> +
-> +	i40e_ptp_stop(pf);
-> +
-> +	/* Disable RSS in hw */
-> +	i40e_write_rx_ctl(hw, I40E_PFQF_HENA(0), 0);
-> +	i40e_write_rx_ctl(hw, I40E_PFQF_HENA(1), 0);
-> +
->   	if (test_bit(I40E_FLAG_SRIOV_ENA, pf->flags)) {
->   		set_bit(__I40E_VF_RESETS_DISABLED, pf->state);
->   		i40e_free_vfs(pf);
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_ptp.c b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-> index ff62b5f2c8150..fd51ab8c10c20 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-> @@ -169,6 +169,17 @@ static void i40e_ptp_extts0_work(struct work_struct *work)
->   	ptp_clock_event(pf->ptp_clock, &event);
->   }
->   
-> +/**
-> + * i40e_ptp_init_work - Initialize PTP work for a PF
-> + * @pf: Board private structure
-> + *
-> + * Initialize work which must remain valid for the lifetime of the PF.
-> + */
-> +void i40e_ptp_init_work(struct i40e_pf *pf)
-> +{
-> +	INIT_WORK(&pf->ptp_extts0_work, i40e_ptp_extts0_work);
-> +}
-> +
-
-why do you need extra function for a single line of code? why cannot you 
-put it into i40e_ptp_init?
-
->   /**
->    * i40e_is_ptp_pin_dev - check if device supports PTP pins
->    * @hw: pointer to the hardware structure
-> @@ -1186,8 +1197,6 @@ static int i40e_ptp_set_timestamp_mode(struct i40e_pf *pf,
->   	regval |= 1 << I40E_PRTTSYN_CTL0_EVENT_INT_ENA_SHIFT;
->   	wr32(hw, I40E_PRTTSYN_CTL0, regval);
->   
-> -	INIT_WORK(&pf->ptp_extts0_work, i40e_ptp_extts0_work);
-> -
->   	switch (config->tx_type) {
->   	case HWTSTAMP_TX_OFF:
->   		pf->ptp_tx = false;
+> diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
+> index cbb5fa30f5a0ec778c1ee30470da3ca21cc1af24..5b2bf8c3205bc1ea0746f78afa2a24f3f8ad2a8c 100644
+> --- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
+> +++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
+> @@ -1012,7 +1012,7 @@ static int idpf_send_get_caps_msg(struct idpf_adapter *adapter)
+>   */
+>  static int idpf_send_get_lan_memory_regions(struct idpf_adapter *adapter)
+>  {
+> -	struct virtchnl2_get_lan_memory_regions *rcvd_regions __free(kfree);
+> +	struct virtchnl2_get_lan_memory_regions *rcvd_regions = NULL;
+>  	struct idpf_vc_xn_params xn_params = {
+>  		.vc_op = VIRTCHNL2_OP_GET_LAN_MEMORY_REGIONS,
+>  		.recv_buf.iov_len = IDPF_CTLQ_MAX_BUF_LEN,
+> @@ -1029,21 +1029,29 @@ static int idpf_send_get_lan_memory_regions(struct idpf_adapter *adapter)
+>  
+>  	xn_params.recv_buf.iov_base = rcvd_regions;
+>  	reply_sz = idpf_vc_xn_exec(adapter, &xn_params);
+> -	if (reply_sz < 0)
+> -		return reply_sz;
+> +	if (reply_sz < 0) {
+> +		err = reply_sz;
+> +		goto out;
+> +	}
+>  
+>  	num_regions = le16_to_cpu(rcvd_regions->num_memory_regions);
+>  	size = struct_size(rcvd_regions, mem_reg, num_regions);
+> -	if (reply_sz < size)
+> -		return -EIO;
+> +	if (reply_sz < size) {
+> +		err = -EIO;
+> +		goto out;
+> +	}
+>  
+> -	if (size > IDPF_CTLQ_MAX_BUF_LEN)
+> -		return -EINVAL;
+> +	if (size > IDPF_CTLQ_MAX_BUF_LEN) {
+> +		err = -EINVAL;
+> +		goto out;
+> +	}
+>  
+>  	hw = &adapter->hw;
+>  	hw->lan_regs = kcalloc(num_regions, sizeof(*hw->lan_regs), GFP_KERNEL);
+> -	if (!hw->lan_regs)
+> -		return -ENOMEM;
+> +	if (!hw->lan_regs) {
+> +		err = -ENOMEM;
+> +		goto out;
+> +	}
+>  
+>  	for (int i = 0; i < num_regions; i++) {
+>  		hw->lan_regs[i].addr_len =
+> @@ -1053,6 +1061,8 @@ static int idpf_send_get_lan_memory_regions(struct idpf_adapter *adapter)
+>  	}
+>  	hw->num_lan_regs = num_regions;
+>  
+> +out:
+> +	kfree(rcvd_regions);
+>  	return err;
+>  }
+>  
+> 
 
