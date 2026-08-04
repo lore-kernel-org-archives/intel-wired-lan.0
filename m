@@ -1,112 +1,95 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E7FBC55184
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  4 Aug 2026 16:05:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43EC9C55822
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  4 Aug 2026 21:39:55 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 4AFCE4060E;
-	Tue,  4 Aug 2026 16:05:14 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id C378160618;
+	Tue,  4 Aug 2026 21:39:54 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id XYM0vQsKMFtD; Tue,  4 Aug 2026 16:05:12 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id v0xrRC7dWQ9R; Tue,  4 Aug 2026 21:39:53 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BD9BE40611
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E6DD7605EC
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1785859512;
-	bh=F9+e6trDnS5dzVVgfLPEalTMb10U0a6DgjtMxIqEZcI=;
+	s=default; t=1785879592;
+	bh=M/YdfITwA2i5MXUEvTL9egSEPZBECQ60NxmAon/pChQ=;
 	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=168jjH5jvm1Ur/fhxjHMjjzhq4GcD6vl2CMdMwg6sAwqZgkg/xRknETYUgNESJgar
-	 fhuvXCBnfp93uxz1BnkYDbFXnx+M6WD95mCMy901+IYGC5A0FuvnCkpRToqBhsGHW2
-	 Xi2011JN/GcFOuwQaCqmazWK1weVH4zslM+Zq1vz8CYRExXF9MyS5zcnCbHpndEVU0
-	 M3DMMzk1XJJFoS3/ODkS5xeK8u9xJMOjKvspVRJUrsGy12+RPmdGMkN5FGD3WS/W4o
-	 e6nNOqiz43cvnuKMjFA9hdKrw0Rx45XGwY3P2yLzS57ULBXHMe/D9QjN/HclvrpHvm
-	 YZVJuB+atKsJw==
+	b=zF5UkUEpZaUJgS4njZUfGcr3s0bNVbGlnx6h+QzOPDllSxOFBhcO7XdqjddOcKhL5
+	 i4ExvBFpCpuxaltwNXmCycEcajxkkjxJMr7PBCyuPCSfukU1BTavi8waI77svM0WXB
+	 Y0BAsYWa0Q03pkrECS6Tnw6bfVczkM/Wui79BffESfv6qrTOjt0tCx6L1UGtcD3a6y
+	 X/sGFBAemXr6hCfKmdaSNJRDoq2gWQl04fYvq4Ouk9sp7p0kpNqkfDmdujhVxon/8g
+	 aHTOoNfuflpXBy/rP+2iF7thjJfwk/9KKDGKQxJksx/FIGXlrsi2zj9kiKBX3oqODZ
+	 TJsF14kCLar4Q==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id BD9BE40611;
-	Tue,  4 Aug 2026 16:05:12 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id AD2FD2AA
- for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Aug 2026 16:05:11 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id E6DD7605EC;
+	Tue,  4 Aug 2026 21:39:52 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 936A12FA
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Aug 2026 21:39:51 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 93BE180B59
- for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Aug 2026 16:05:11 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 7C9C9401DF
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Aug 2026 21:39:51 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id wPxbfTpNM_Vs for <intel-wired-lan@lists.osuosl.org>;
- Tue,  4 Aug 2026 16:05:11 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.8;
- helo=mgamail.intel.com; envelope-from=marcin.szycik@linux.intel.com;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id xH6l8c2CBv5H for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  4 Aug 2026 21:39:50 +0000 (UTC)
+X-Greylist: delayed 343 seconds by postgrey-1.37 at util1.osuosl.org;
+ Tue, 04 Aug 2026 21:39:48 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 4946D40029
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4946D40029
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=91.218.175.189;
+ helo=out-189.mta0.migadu.com; envelope-from=vadim.fedorenko@linux.dev;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 5EE2180B42
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5EE2180B42
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 5EE2180B42
- for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Aug 2026 16:05:09 +0000 (UTC)
-X-CSE-ConnectionGUID: I2Ngy/24SfG0pfcoWhPLFA==
-X-CSE-MsgGUID: u+QTXcOCTNWaB7yoUki8sw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11865"; a="103955493"
-X-IronPort-AV: E=Sophos;i="6.25,204,1779174000"; d="scan'208";a="103955493"
-Received: from fmviesa009.fm.intel.com ([10.60.135.149])
- by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 04 Aug 2026 09:05:03 -0700
-X-CSE-ConnectionGUID: 6OWvW/zEQlamFuZ/OHC/ow==
-X-CSE-MsgGUID: qmjsC0YGS3aGztoeLNJPPQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,204,1779174000"; d="scan'208";a="255252961"
-Received: from mszycik-mobl1.ger.corp.intel.com (HELO [10.94.248.216])
- ([10.94.248.216])
- by fmviesa009-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 04 Aug 2026 09:04:59 -0700
-Message-ID: <0e4bdc1a-48ce-4860-a0f0-201bebf6d716@linux.intel.com>
-Date: Tue, 4 Aug 2026 18:04:53 +0200
+Received: from out-189.mta0.migadu.com (out-189.mta0.migadu.com
+ [91.218.175.189])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 4946D40029
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Aug 2026 21:39:48 +0000 (UTC)
+Message-ID: <dce23bb6-138b-4a53-9447-26e81c86c292@linux.dev>
+Date: Tue, 4 Aug 2026 22:33:39 +0100
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Robert Malz <robert.malz@canonical.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller"
- <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Alexander Lobakin <aleksander.lobakin@intel.com>,
- Jesse Brandeburg <jbrandeb@kernel.org>,
- Jacob Keller <jacob.e.keller@intel.com>
-Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <20260804083537.3997889-1-robert.malz@canonical.com>
+To: xuanqiang.luo@linux.dev, intel-wired-lan@lists.osuosl.org
+Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ richardcochran@gmail.com, piotr.kwapulinski@intel.com,
+ arkadiusz.kubalewski@intel.com, aleksandr.loktionov@intel.com,
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com, netdev@vger.kernel.org,
+ Xuanqiang Luo <luoxuanqiang@kylinos.cn>
+References: <20260724093448.63154-1-xuanqiang.luo@linux.dev>
 Content-Language: en-US
-From: Marcin Szycik <marcin.szycik@linux.intel.com>
-In-Reply-To: <20260804083537.3997889-1-robert.malz@canonical.com>
-Content-Type: text/plain; charset=UTF-8
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and
+ include these headers.
+From: Vadim Fedorenko <vadim.fedorenko@linux.dev>
+In-Reply-To: <20260724093448.63154-1-xuanqiang.luo@linux.dev>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1785859510; x=1817395510;
- h=message-id:date:mime-version:subject:to:cc:references:
- from:in-reply-to:content-transfer-encoding;
- bh=ayczpbs10IRaGQSyxSkR7xRoVkbToh4EoscVg0eS5dk=;
- b=YBaW9rtVvdyHBId2Mo/qnt4eQTOfBibPFj2gyA/h+Treb6ekPfN07UoH
- fgNcUWTxhNcZSADzPS9DLQS8dvj7BXz/wYGLBEe6I4TJ0g7Am+RILGVdb
- mhvdiHZKe9R0YiMs3ACNN2VMQXPIWHyBla+NcgzDEOTrs7Cvftg7Kx5IV
- jZfVeODQDcGEWdFI6XJHC+owrmi+OpHQRsRbzwFs2SlXydjJIkc1X+lf8
- muYtXkTGVEljVExu4bMMvPHrCH97F+qdn47IezUazPrzBiRL7fHFt5D36
- eKjs9ACGjkKqcPWmhuK5br2XFI9Nu0W+EWZb5y3AK7CXvWB6BwVQYLy/z
- w==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=linux.intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=YBaW9rtV
-Subject: Re: [Intel-wired-lan] [PATCH iwl v4] ice: acquire NVM lock around
- each flash read
+X-Migadu-Flow: FLOW_OUT
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=linux.dev; s=key1; t=1785879239;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=M/YdfITwA2i5MXUEvTL9egSEPZBECQ60NxmAon/pChQ=;
+ b=f1CG7/8TCMnSiDNWVJMl17/vQSwYBLADVFt/u9bg7lanyoo0mO/1WUAhuQMgAV0tRH2mgM
+ La7qWZRyisA5xunqxbdZPKurkPTOILucvVXVw8BRDBcQVEZbdqaRpDCMRoBjAwr2g0Ho1L
+ cnDxFkOhDtwaIMJaeP0vrLFK4WEI6wA=
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=linux.dev
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (1024-bit key,
+ unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256
+ header.s=key1 header.b=f1CG7/8T
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net v1] i40e: fix races in PTP
+ external timestamp work handling
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -122,35 +105,122 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-
-
-On 04.08.2026 10:35, Robert Malz via Intel-wired-lan wrote:
-> FW caps the NVM read lock at a maximum of 3000ms regardless of the timeout
-> requested via ice_acquire_nvm(). ice_read_flat_nvm() splits a read into
-> multiple ice_aq_read_nvm() commands, one per 4KB sector, all issued under a
-> single lock taken by the caller. Reading a large region can exceed 3000ms,
-> so FW reclaims the lock mid-read and the remaining commands might fail.
+On 24/07/2026 10:34, xuanqiang.luo@linux.dev wrote:
+> From: Xuanqiang Luo <luoxuanqiang@kylinos.cn>
 > 
-> Move the lock acquire/release into ice_read_flat_nvm() so it brackets each
-> individual ice_aq_read_nvm() command, ensuring the lock is never held
-> across more than one FW read.
+> The time sync interrupt queues ptp_extts0_work, which reads device
+> registers and reports events through pf->ptp_clock.
 > 
-> ice_release_nvm() issues its own AQ command and overwrites
-> hw->adminq.sq_last_status, which some callers inspect after a failed read.
-> Add an optional read_aq_err output parameter to ice_read_flat_nvm() to
-> capture the failing read's AQ error before the release; callers that need
-> it (ice_discover_flash_size() and the ethtool/devlink log paths) use it
-> instead of sq_last_status, others pass NULL.
+> i40e_ptp_stop() unregisters the PHC without first disabling the event
+> source or draining the work. The worker can therefore access the clock or
+> PF after either has been freed, causing a use-after-free. Disable external
+> timestamp events and call disable_work_sync() before unregistering the PHC.
+> Disabling the work also prevents an interrupt already in progress from
+> queuing it after the drain.
 > 
-> Callers that previously took the lock around ice_read_flat_nvm(),
-> ice_read_sr_word() or ice_read_flash_module() now call them without it.
-> The now-redundant per-block locking in ice_devlink_nvm_snapshot() is
-> dropped. ice_read_sr_word() is now a thin wrapper, so ice_read_sr_word_aq()
-> is folded into it.
+> INIT_WORK() is called from i40e_ptp_set_timestamp_mode(), which runs on
+> reset and whenever timestamping is reconfigured. Reinitializing pending or
+> running work can corrupt its workqueue state. Initialize the work once from
+> i40e_sw_init() instead.
 > 
-> Fixes: e94509906d6b ("ice: create function to read a section of the NVM and Shadow RAM")
-> Signed-off-by: Robert Malz <robert.malz@canonical.com>
+> Also exclude reset recovery before stopping PTP so a concurrent rebuild
+> cannot re-enable timestamp events or recreate the PHC during removal.
+> 
+> Fixes: 1050713026a0 ("i40e: add support for PTP external synchronization clock")
+> Signed-off-by: Xuanqiang Luo <luoxuanqiang@kylinos.cn>
+> ---
+>   drivers/net/ethernet/intel/i40e/i40e.h      |  1 +
+>   drivers/net/ethernet/intel/i40e/i40e_main.c | 17 +++++++-------
+>   drivers/net/ethernet/intel/i40e/i40e_ptp.c  | 25 +++++++++++++++------
+>   3 files changed, 28 insertions(+), 15 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+> index 83e780919ac97..e2ae61bc38786 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e.h
+> +++ b/drivers/net/ethernet/intel/i40e/i40e.h
+> @@ -1315,6 +1315,7 @@ int i40e_ptp_hwtstamp_set(struct net_device *netdev,
+>   			  struct netlink_ext_ack *extack);
+>   void i40e_ptp_save_hw_time(struct i40e_pf *pf);
+>   void i40e_ptp_restore_hw_time(struct i40e_pf *pf);
+> +void i40e_ptp_init_work(struct i40e_pf *pf);
+>   void i40e_ptp_init(struct i40e_pf *pf);
+>   void i40e_ptp_stop(struct i40e_pf *pf);
+>   int i40e_ptp_alloc_pins(struct i40e_pf *pf);
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> index a04683004a567..2909a58d57562 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> @@ -12819,6 +12819,7 @@ static int i40e_sw_init(struct i40e_pf *pf)
+>   			 "total-port-shutdown was enabled, link-down-on-close is forced on\n");
+>   	}
+>   	mutex_init(&pf->switch_mutex);
+> +	i40e_ptp_init_work(pf);
+>   
+>   sw_init_done:
+>   	return err;
+> @@ -16157,14 +16158,6 @@ static void i40e_remove(struct pci_dev *pdev)
+>   
+>   	i40e_devlink_unregister(pf);
+>   
+> -	i40e_dbg_pf_exit(pf);
+> -
+> -	i40e_ptp_stop(pf);
+> -
+> -	/* Disable RSS in hw */
+> -	i40e_write_rx_ctl(hw, I40E_PFQF_HENA(0), 0);
+> -	i40e_write_rx_ctl(hw, I40E_PFQF_HENA(1), 0);
+> -
+>   	/* Grab __I40E_RESET_RECOVERY_PENDING and set __I40E_IN_REMOVE
+>   	 * flags, once they are set, i40e_rebuild should not be called as
+>   	 * i40e_prep_for_reset always returns early.
+> @@ -16173,6 +16166,14 @@ static void i40e_remove(struct pci_dev *pdev)
+>   		usleep_range(1000, 2000);
+>   	set_bit(__I40E_IN_REMOVE, pf->state);
+>   
+> +	i40e_dbg_pf_exit(pf);
+> +
+> +	i40e_ptp_stop(pf);
+> +
+> +	/* Disable RSS in hw */
+> +	i40e_write_rx_ctl(hw, I40E_PFQF_HENA(0), 0);
+> +	i40e_write_rx_ctl(hw, I40E_PFQF_HENA(1), 0);
+> +
+>   	if (test_bit(I40E_FLAG_SRIOV_ENA, pf->flags)) {
+>   		set_bit(__I40E_VF_RESETS_DISABLED, pf->state);
+>   		i40e_free_vfs(pf);
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_ptp.c b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+> index ff62b5f2c8150..fd51ab8c10c20 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+> @@ -169,6 +169,17 @@ static void i40e_ptp_extts0_work(struct work_struct *work)
+>   	ptp_clock_event(pf->ptp_clock, &event);
+>   }
+>   
+> +/**
+> + * i40e_ptp_init_work - Initialize PTP work for a PF
+> + * @pf: Board private structure
+> + *
+> + * Initialize work which must remain valid for the lifetime of the PF.
+> + */
+> +void i40e_ptp_init_work(struct i40e_pf *pf)
+> +{
+> +	INIT_WORK(&pf->ptp_extts0_work, i40e_ptp_extts0_work);
+> +}
+> +
 
-Reviewed-by: Marcin Szycik <marcin.szycik@linux.intel.com>
+why do you need extra function for a single line of code? why cannot you 
+put it into i40e_ptp_init?
 
----8<---
+>   /**
+>    * i40e_is_ptp_pin_dev - check if device supports PTP pins
+>    * @hw: pointer to the hardware structure
+> @@ -1186,8 +1197,6 @@ static int i40e_ptp_set_timestamp_mode(struct i40e_pf *pf,
+>   	regval |= 1 << I40E_PRTTSYN_CTL0_EVENT_INT_ENA_SHIFT;
+>   	wr32(hw, I40E_PRTTSYN_CTL0, regval);
+>   
+> -	INIT_WORK(&pf->ptp_extts0_work, i40e_ptp_extts0_work);
+> -
+>   	switch (config->tx_type) {
+>   	case HWTSTAMP_TX_OFF:
+>   		pf->ptp_tx = false;
+
