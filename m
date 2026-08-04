@@ -1,160 +1,134 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8E010C55172
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  4 Aug 2026 05:59:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99DF8C55822
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  4 Aug 2026 06:04:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 1F87660633;
-	Tue,  4 Aug 2026 05:59:57 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 4E64D80C23;
+	Tue,  4 Aug 2026 06:04:58 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Sw5p6HPqeRJu; Tue,  4 Aug 2026 05:59:56 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id J3E9S4eIfEup; Tue,  4 Aug 2026 06:04:56 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4E2136065E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1C64A80AEF
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1785823196;
-	bh=W8JyDBWkDjCNqLnmCkyzKGxOBYAxowX6GpPeWx4YIb0=;
+	s=default; t=1785823496;
+	bh=OToM6UP9f/Ux/DqRKNF67jZiev40CWayyioMQcItMHM=;
 	h=Date:To:Cc:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From:Reply-To:From;
-	b=lfQWYkVOeT61veXEswFsp+q5wPTR1FIPB+sXhS3qdplqFUU/ydwidRvlZD9eMH9Ap
-	 nBB7D2XFa8t9tf0EY3QRePSWvs3PuzCqCX8ESZXwBm1W5aeADhDOhLd2vGcxo0Jjkx
-	 B8QSlS/lpGdFSF+q0YPoFgxQnwBD7zEutWC+wPs1EHkb+1Bd9vArZYkIMc4VPSMIXF
-	 FEHqtJBBkDSOLAkJ0IQj3g63Ku1lOMQNM/IREChp6FuS4yd0x929h595Tx1Vg2Xr1e
-	 w6CcEi3RmDIh9GNhVNSdbvr1AT2OwYxwQNLKV9cjIhpHzfsY21345Fg4u2QMpkmzP9
-	 Ehen+9Y4xPPPQ==
+	b=CqC3ee+GEk6w7rKoT80fFpO5hDZj6wcaG3wmj0Ls4GjEve4+dX0XmHHfqBkF9uE5F
+	 GRSP/e6F7tvAojjt+/HbujCqbsWBTQkf0n1NGhn4Rspfk/AmZbejAhyFwS7P7al2Ye
+	 wVKt/K7BqJwqhcmRfX6NTQpZ/RPQwb3mlegZcjSVL0u2yoC32qQ4ojOtIZ0ci2YEtd
+	 0KvYaaO/0++EdHcgdAGXQL/eE0isxrkeYN/K4ggbNcmQ8v1z07LSrlGQnpowCvbUUU
+	 ohb2ENFlGiyK/dNr/6QRzCqu5gPjxVSUPAJE0QI25HT7qIsy9JhzJsxO/D/qhcOjvj
+	 n5iiz3O37TnHg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 4E2136065E;
-	Tue,  4 Aug 2026 05:59:56 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 6DEA923F
- for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Aug 2026 05:59:54 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 1C64A80AEF;
+	Tue,  4 Aug 2026 06:04:56 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 702CF198
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Aug 2026 06:04:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 5FD786065E
- for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Aug 2026 05:59:54 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 6D5464009E
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Aug 2026 06:04:54 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id zptDRlC-eD0o for <intel-wired-lan@lists.osuosl.org>;
- Tue,  4 Aug 2026 05:59:53 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=185.125.188.122;
- helo=smtp-relay-internal-0.canonical.com;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id R5vwkf0kOg2r for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  4 Aug 2026 06:04:53 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=185.125.188.123;
+ helo=smtp-relay-internal-1.canonical.com;
  envelope-from=acelan.kao@canonical.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 5ED4960633
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5ED4960633
-Received: from smtp-relay-internal-0.canonical.com
- (smtp-relay-internal-0.canonical.com [185.125.188.122])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 5ED4960633
- for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Aug 2026 05:59:51 +0000 (UTC)
-Received: from mail-pf1-f197.google.com (mail-pf1-f197.google.com
- [209.85.210.197])
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 6F3474002B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6F3474002B
+Received: from smtp-relay-internal-1.canonical.com
+ (smtp-relay-internal-1.canonical.com [185.125.188.123])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 6F3474002B
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Aug 2026 06:04:52 +0000 (UTC)
+Received: from mail-pl1-f197.google.com (mail-pl1-f197.google.com
+ [209.85.214.197])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by smtp-relay-internal-0.canonical.com (Postfix) with ESMTPS id E8BE63FBBF
- for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Aug 2026 05:59:48 +0000 (UTC)
-Received: by mail-pf1-f197.google.com with SMTP id
- d2e1a72fcca58-84e4ef9a74aso8741825b3a.1
- for <intel-wired-lan@lists.osuosl.org>; Mon, 03 Aug 2026 22:59:48 -0700 (PDT)
+ by smtp-relay-internal-1.canonical.com (Postfix) with ESMTPS id 3793E3F82A
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Aug 2026 06:04:51 +0000 (UTC)
+Received: by mail-pl1-f197.google.com with SMTP id
+ d9443c01a7336-2ce7dfd33ffso55443795ad.0
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 03 Aug 2026 23:04:51 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1785823187; x=1786427987;
+ d=1e100.net; s=20251104; t=1785823490; x=1786428290;
  h=in-reply-to:content-disposition:content-type:mime-version
- :references:mail-followup-to:message-id:subject:cc:to:from:date
- :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
- :reply-to:content-type;
- bh=W8JyDBWkDjCNqLnmCkyzKGxOBYAxowX6GpPeWx4YIb0=;
- b=KvyrxhAEMzcj34YFdd+IDswNbYwOI2psvA+3xj8v85oYmhoem4bpOPRzp7BPXU6c0D
- vazKi6p3DaxY4jRyecAH+GXnXT62n/m4no6CXO1smPfJhBhv4f37Cj+M+obCfs9KfpnJ
- bKAb0ZUf91VWzVmXTfDCtf06vIEcSVgbdKHosYQAljSZ97dFauo052iZNNr0iv6mwqth
- pz8JQnbVduxkB3B8LNdHZSJFT3fgZJYYOk6/yKUJbmg3SO4lh+phz0TAdP9e3mp6/l7+
- GStCap0YezC+WUEUE+nlXyXxQ3Qmw+wD/IjcKtGOKvLgR6QrL/UbZaL47Y5vpXmlkt20
- m9ow==
-X-Forwarded-Encrypted: i=1;
- AHgh+RpCE7BSBKH0do2UtJ9r/vW2Sv1i1+3GhPdElMeJZMksRLtVn4oVRJPLrlX/jV4F3a6DRo4TgkJyNN+NU6yAyks=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YyA1NLPUQ4ARTx8mXYPuyrX2wTSEX7mXS/5VwEjDDzdf+7JxAbA
- eyQH5VAYV6uGXWdVzgkK6IBb0vhpnAfL8Bx9y7Y0X0/gYhI/Hy2aQXOKQG+sp0ZfveCvczai1Ix
- uBmTeRfZNjt0514mPX5QTV9bcqzcDOKtXIcLR2pKTO1HB8JqDgMEn76eJuJyFarQzU2r/Fd/c4D
- /xZWVuNPA7yl0=
-X-Gm-Gg: AR+sD13WZNVV4xSzat/GAiSWbHVk92RHKvpsy/pl4uuvE9l3EqUEtGYHv0bgndhJ5zg
- 6S8OgH/Q6716bLBXT0Va92Z+CapKbaGSlzOztne0yJabA3x1DIriNhFZLfvQhZRtDGwHej2wMpw
- 0soAnYgxSoGp6u3Tm/11HbNXxiqtNBCpVzjqMflG9MBumYMw3+3yunARjNhaaocRsMElT4rlfbd
- oVMfjJC+mlwC0gxSujs/59f+ECX/MrEPE4vaFLyq+NPgJ86KlGQZxXZU73hspPKCKyM1lsoumn8
- vcswg6Eae0FZIcnes4vytCPxCqgqPWHnVMaHJ2Nlpiue5nJCXw/75YUOaOZdji9+z/ZGsiuJEmN
- K7OtjoXxX7GlRZC7TuiKsek02pUjyteQ6asnqjFqVN3eF+QcRXps6weT2
-X-Received: by 2002:a05:6a00:f07:b0:84e:2d5d:5e4d with SMTP id
- d2e1a72fcca58-84ee4998f2emr12535444b3a.68.1785823186950; 
- Mon, 03 Aug 2026 22:59:46 -0700 (PDT)
-X-Received: by 2002:a05:6a00:f07:b0:84e:2d5d:5e4d with SMTP id
- d2e1a72fcca58-84ee4998f2emr12535425b3a.68.1785823186626; 
- Mon, 03 Aug 2026 22:59:46 -0700 (PDT)
+ :references:message-id:subject:cc:to:from:date:x-gm-gg
+ :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+ :content-type;
+ bh=OToM6UP9f/Ux/DqRKNF67jZiev40CWayyioMQcItMHM=;
+ b=dot0StBbLkgupgJD5T6dez4+tja2b2g3jRPXbe/xvZlUb38A88Gm2wgCwDxIAni5kM
+ 9jrUmpaAHItrUF+BHtQVwAap6NjfbCj2kMU3QfQFQy07tLtQBXn/o8F9EpRTLttRRh3p
+ nfOkCGeuPCSQwJFDBZl0iZ6k7VUspARnZcAGZGxW8PmhDbJvDBXaqnKxq4fbX60NSr9E
+ +K8k5iCi+J3jYgx97piZR+FXK1nS9t+46SXys22/LUsrcdojKlXix0vjMMah+FeU8HjD
+ xAewVBKok05LmWmpbLkKTYWtmRX4AsL1dspQVpqTuPxj+gGhnAs7lHL4IaCQBDruxGQC
+ VSew==
+X-Gm-Message-State: AOJu0YyO9c0YpUeLRl9GV9/PoMjnW4qpzjjmOxRYeJIwuBMjcEMeaOSp
+ cBd33XadIzlPX2lF7abbrS+HSEZ/SdGGYUwnze+zKY5E+RyPrqfU46lk3e7qpi86canhMfVlRNo
+ SHvDqv2xD3MvKdW37lZKyqWUnCd8Ci5kHF2AdoHqmPZv1FWfldOGF6HZHAa0u6VqAqnrnWf/9Jv
+ Grk63uiQrSTbOEEW3tckk=
+X-Gm-Gg: AR+sD11xhNO4YlRayYpShYk4DJjcomzHAAkHwGcrWyB1cXisT/BwA1YRZ3PJoGsA77E
+ PjgLqPxRE+AQc05Se1xzTRgwZF9j29ixBXl28jqxqblcQkaZhNnzEKKFOIbLrRHqphNtXawY7Bz
+ RuoieBiT9l322U/hW1yCA/NrnXzJFq0saMz/PWJ96J0SyAKLT0zbrU6C8JrLyicg/tAqXW7ivXz
+ 61ZLDCPq8f5i16tos1WZGWwlDwR6CLKVXrCZkWg7cJUFJt0KODMmU9LDXLtR8CH7AIn0mJ9kUon
+ BHVKdYIfPMURCyp17pJVavBYzS7Gt31LviaTHOi3hPNjA7Tx5bVr827vqOB+Txy8/uF/ZyElDQw
+ 2kLqzDsp9DI/k0I4OuKPLimEx88XCKVMUdNPOtkmbzbi3GrQ5Zf6pyplh
+X-Received: by 2002:a17:903:1b46:b0:2c7:f4bd:91b5 with SMTP id
+ d9443c01a7336-2d052088a93mr110902545ad.0.1785823489696; 
+ Mon, 03 Aug 2026 23:04:49 -0700 (PDT)
+X-Received: by 2002:a17:903:1b46:b0:2c7:f4bd:91b5 with SMTP id
+ d9443c01a7336-2d052088a93mr110902395ad.0.1785823489313; 
+ Mon, 03 Aug 2026 23:04:49 -0700 (PDT)
 Received: from acelan-Precision-5480 (211-75-139-220.hinet-ip.hinet.net.
  [211.75.139.220]) by smtp.gmail.com with ESMTPSA id
- d2e1a72fcca58-84eecf81b08sm3430742b3a.22.2026.08.03.22.59.42
+ d9443c01a7336-2d0a9ff4f33sm401735ad.25.2026.08.03.23.04.44
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 03 Aug 2026 22:59:45 -0700 (PDT)
-Date: Tue, 4 Aug 2026 13:59:39 +0800
-To: "Ruinskiy, Dima" <dima.ruinskiy@intel.com>
-Cc: "Loktionov, Aleksandr" <aleksandr.loktionov@intel.com>, 
- "Nguyen, Anthony L" <anthony.l.nguyen@intel.com>, "Kitszel,
- Przemyslaw" <przemyslaw.kitszel@intel.com>, 
- Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>, 
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, 
- Paolo Abeni <pabeni@redhat.com>, 
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>, 
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Message-ID: <anF_hoO57nh2363f@acelan-Precision-5480>
-Mail-Followup-To: "Chia-Lin Kao (AceLan)" <acelan.kao@canonical.com>, 
- "Ruinskiy, Dima" <dima.ruinskiy@intel.com>, "Loktionov,
- Aleksandr" <aleksandr.loktionov@intel.com>, 
- "Nguyen, Anthony L" <anthony.l.nguyen@intel.com>, "Kitszel,
- Przemyslaw" <przemyslaw.kitszel@intel.com>, 
- Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>, 
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, 
- Paolo Abeni <pabeni@redhat.com>, 
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>, 
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <20260618073324.1843310-1-acelan.kao@canonical.com>
- <IA3PR11MB8986B77F49DF672178FEE4BCE5E32@IA3PR11MB8986.namprd11.prod.outlook.com>
- <c3030882-55c8-486f-8ff3-571d001b99a1@intel.com>
- <ajiHH-RaHUjgraMh@acelan-Precision-5480>
- <1d6c3aae-c9b1-42da-b5fa-6f8ee9ebcae1@intel.com>
- <alcd_FnUdrQug5cm@acelan-Precision-5480>
- <0e28b9d1-ab9e-4934-b939-81557f6495b5@intel.com>
+ Mon, 03 Aug 2026 23:04:47 -0700 (PDT)
+Date: Tue, 4 Aug 2026 14:04:41 +0800
+To: Dima Ruinskiy <dima.ruinskiy@intel.com>
+Cc: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com, 
+ allen.lan@intel.com
+Message-ID: <anGApbcat6ka_LyS@acelan-Precision-5480>
+References: <20260708134424.3289011-1-dima.ruinskiy@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <0e28b9d1-ab9e-4934-b939-81557f6495b5@intel.com>
+In-Reply-To: <20260708134424.3289011-1-dima.ruinskiy@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=canonical.com; s=20251003; t=1785823188;
- bh=W8JyDBWkDjCNqLnmCkyzKGxOBYAxowX6GpPeWx4YIb0=;
+ d=canonical.com; s=20251003; t=1785823491;
+ bh=OToM6UP9f/Ux/DqRKNF67jZiev40CWayyioMQcItMHM=;
  h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
  Content-Type:In-Reply-To;
- b=Obpa3LDPcf/4q9N/O5KxNmaUiZ5Xp5yU5x93sQktTSEx7toBWnp3I9CfGo8vYj5FC
- U33jyNpBHpM5WbhwBxiNg+gS3u6CKTvM/D28Dy85BjkVgMTmRB/FlxJ+dacfeyz+8N
- KwzQK06m/tHB29teg1xnvNOjBgIvgagqq8a9dyV01gJTSh6RXcdtzutfL8D4fgqDXQ
- NDYaAGMTiXM3ZX0PU0fbI8zYlh0JxC83AXuffwZUhkoY+e04wb1ywXX0C8+SorezDL
- rnluQn4w/mFgRuubj/nFb74tzcGy7TnV4K5m2bPk0UkaMkqHY5bui5BJcEQfptOOSQ
- vA3SetW3Ty5cL5MW8pM3w6BKJq0TQSAJQpRTdJNVCU3yT1FrI9kkitXRTkA/Ms2MNK
- WOqs1t34lD7K//OoBvWyLWHpgldc85ujrrM780N+yNtzckGeZzB1CLuB2E/dgmgKe2
- PdlrMfViFa2O2JkxSLJVfn9Yhbkp5tP1ht/aOePdvEPBlXWR2+Ard6IbjTnHZConNa
- +UXP1igxOnB/MS2xNtyN4aBGL6cMwSgCXT3sYPA345z+UwEcOaFSIsi8rdms7Ns5th
- nz8v5yj2pPJoIYZeJ6Tb9lI+fPUxOMNrC4M6jmWhy5BHXAGv95dc5u1embfcCnlxvg
- aZ3xodEghcSkEWuBfkf3aDvQ=
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ b=W9KVmX2BMEo7W+XmQHUFHphdrFaV8xGDm/WOfJpbEjy2FAO64OMeErxMp0+eEKKMr
+ 9EvfxD3nePfPv0KbX6FWGKAf+9MPzeCBx3bYl9zStxz6Nqro8o3fY7IdVbefRZa9C0
+ 2V1P6eR56wsyYd36tlijeT+rqxE+/Sq+n/o07ELhQFltOf049iKE7YVC+r7vkWKg4L
+ 2OEZzZO4YsUm8e3PFxa40mbrP+GF2tewDWSfp0SPV9+5TC/60OMnsRmqHmCwNVPGXN
+ gkiS3lE5n+GD87JS10Jnz0qX2X7K4H3PHQDH+t6An34Gfx3db+MMNM0CgRQU2i+ep1
+ RQk9DGlPQywtaUFs/hfpugqNibXM3CgY5H7FwNEftc4OavETz07MhzaSiCcyZErcM2
+ iH9VLPiNfXkIvULpfOHYxJo1z0yXSF8HEpebx6BQY3Xu0mPRikubn6VgNCG8d6cwtS
+ W5leqMT9pavsxtgSFZ1v59g6mUUe7z/DuxJpCmTNSd57Nl3yyYx2wEmUN3Oe3ZwtbU
+ qw43Rjd0utGX27XbAwpIR9XrGaABouyQSEHj/HLTcgiaztpvABGZQFlJkWQfal1ZZf
+ b8MVfe2WQ31cl9k8CrNJ+kuAZHL7nt8bfjIT6VNHjRZN87zI52l2KWjkuKKQNsLpHi
+ LOP49fjvETd+4KCGUMAfW3/Y=
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=reject dis=none)
  header.from=canonical.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (4096-bit key,
  unprotected) header.d=canonical.com header.i=@canonical.com
- header.a=rsa-sha256 header.s=20251003 header.b=Obpa3LDP
-Subject: Re: [Intel-wired-lan] [PATCH 1/2] igc: Wait for MAC passthrough
- after reset
+ header.a=rsa-sha256 header.s=20251003 header.b=W9KVmX2B
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next] igc: Support ACPI-based MAC
+ passthrough
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -173,40 +147,119 @@ Reply-To: "Chia-Lin Kao \(AceLan\)" <acelan.kao@canonical.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Wed, Jul 15, 2026 at 10:57:04AM +0300, Ruinskiy, Dima wrote:
-> Hi AceLan,
+On Wed, Jul 08, 2026 at 04:44:24PM +0300, Dima Ruinskiy wrote:
+> Some systems implement a system MAC address object in the ACPI table,
+> using either \\_SB.AMAC or \\MACA object names. This system MAC address,
+> when enabled, is intended to override the permanent MAC address of the
+> network controller.
 >
-> > > > I wish we can detect if the MAC passthrough is enabled, so that we
-> > > > know if we need to poll for the MAC address.
-> > > Unfortunately, like you I am not aware of any way for the driver to know
-> > > whether MAC passthrough via FW is enabled. Because of this we have been
-> > > exploring a simpler way to support this feature via ACPI objects (which are
-> > > set by the BIOS when MAC passthrough is enabled and are easy for the driver
-> > > to query). I know some vendors have already implemented it, and I am
-> > > currently drafting a patch to send.
-> > Any good news about this patch?
-> The patch is here: https://lists.osuosl.org/pipermail/intel-wired-lan/Week-of-Mon-20260706/055944.html
+> Implement lookup of the relevant ACPI object names and use them to
+> initialize the MAC address.
 >
-> I tested it on my setup with MAC passthrough enabled in the BIOS, with good
-> results; no community feedback yet. I encourage you to try it. Lenovo and
-> Dell laptops should have the capability.
-Yes, the patch works for me.
-Verified with both enable and disable of MAC passthrough, and it works
-as expected.
+> On systems where the feature is disabled or unsupported, the ACPI objects
+> do not exist or do not contain a valid Ethernet MAC, causing a fallback
+> to the existing MAC address initialization path.
+This patch works as expected and solves the connection issue when the
+MAC passthrough feature is enabled.
 
-Looking forward to see this patch merged.
-Thanks.
+Tested-by: Chia-Lin Kao (AceLan) <acelan.kao@canonical.com>
 >
-> > > The mechanism I have in mind does not require BIOS support - the I225/I226
-> > > FW already supports the required interrupt, AFAIK - it merely needs to be
-> > > enabled in the igc driver. With that said, there still remains the question
-> > > of how to notify the network stack above us that the MAC address has changed
-> > > post-probe - and whether it is even supported.
-> Looking at it again, this may not be as big of a deal as I feared. If we can
-> call eth_hw_addr_set at any point in time to change the address, then we
-> should be able to do this in a response to a FW interrupt. I can try to
-> draft a patch for that, in parallel to collecting feedback on the ACPI
-> approach. These are two different means to the same end, and some solutions
-> may implement one but not the other.
+> Assisted-by: GitHub-Copilot:claude-opus-4.7
+> Signed-off-by: Dima Ruinskiy <dima.ruinskiy@intel.com>
+> ---
+>  drivers/net/ethernet/intel/igc/igc_main.c | 64 ++++++++++++++++++++++-
+>  1 file changed, 62 insertions(+), 2 deletions(-)
 >
-> --Dima
+> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+> index 82800a4a6d6c..83eb8953e954 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_main.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+> @@ -11,6 +11,8 @@
+>  #include <net/pkt_sched.h>
+>  #include <linux/bpf_trace.h>
+>  #include <net/xdp_sock_drv.h>
+> +#include <linux/acpi.h>
+> +#include <linux/hex.h>
+>  #include <linux/pci.h>
+>  #include <linux/mdio.h>
+>
+> @@ -7116,6 +7118,57 @@ static enum hrtimer_restart igc_qbv_scheduling_timer(struct hrtimer *timer)
+>  	return HRTIMER_NORESTART;
+>  }
+>
+> +static bool igc_get_acpi_mac_passthru(u8 *mac)
+> +{
+> +	static const struct {
+> +		const char *name;
+> +		acpi_object_type type;
+> +		u32 length;
+> +	} sources[] = {
+> +		{ "\\_SB.AMAC", ACPI_TYPE_BUFFER, 23 },
+> +		{ "\\MACA",     ACPI_TYPE_STRING, 22 },
+> +	};
+> +	struct acpi_buffer buffer;
+> +	union acpi_object *obj;
+> +	bool mac_found = false;
+> +	acpi_status status;
+> +	u8 buf[ETH_ALEN];
+> +	int i;
+> +
+> +	if (!IS_ENABLED(CONFIG_ACPI))
+> +		return false;
+> +
+> +	for (i = 0; i < ARRAY_SIZE(sources) && !mac_found; i++) {
+> +		buffer.length = ACPI_ALLOCATE_BUFFER;
+> +		buffer.pointer = NULL;
+> +
+> +		status = acpi_evaluate_object(NULL, (char *)sources[i].name,
+> +					      NULL, &buffer);
+> +		if (ACPI_FAILURE(status))
+> +			continue;
+> +
+> +		obj = buffer.pointer;
+> +		if (!obj || obj->type != sources[i].type ||
+> +		    obj->string.length != sources[i].length)
+> +			goto free_obj;
+> +
+> +		if (strncmp(obj->string.pointer, "_AUXMAC_#", 9) ||
+> +		    obj->string.pointer[21] != '#')
+> +			goto free_obj;
+> +
+> +		if (hex2bin(buf, obj->string.pointer + 9, ETH_ALEN) ||
+> +		    !is_valid_ether_addr(buf))
+> +			goto free_obj;
+> +
+> +		ether_addr_copy(mac, buf);
+> +		mac_found = true;
+> +free_obj:
+> +		kfree(obj);
+> +	}
+> +
+> +	return mac_found;
+> +}
+> +
+>  /**
+>   * igc_probe - Device Initialization Routine
+>   * @pdev: PCI device information struct
+> @@ -7279,9 +7332,16 @@ static int igc_probe(struct pci_dev *pdev,
+>  	}
+>
+>  	if (eth_platform_get_mac_address(&pdev->dev, hw->mac.addr)) {
+> -		/* copy the MAC address out of the NVM */
+> -		if (hw->mac.ops.read_mac_addr(hw))
+> +		/* Look for a system-provided MAC in the ACPI table before
+> +		 * falling back to reading the address from the NVM.
+> +		 */
+> +		if (igc_get_acpi_mac_passthru(hw->mac.addr)) {
+> +			netdev->addr_assign_type = NET_ADDR_STOLEN;
+> +			dev_info(&pdev->dev, "Using ACPI pass-thru MAC addr %pM\n",
+> +				 hw->mac.addr);
+> +		} else if (hw->mac.ops.read_mac_addr(hw)) {
+>  			dev_err(&pdev->dev, "NVM Read Error\n");
+> +		}
+>  	}
+>
+>  	eth_hw_addr_set(netdev, hw->mac.addr);
+> --
+> 2.44.0
+>
