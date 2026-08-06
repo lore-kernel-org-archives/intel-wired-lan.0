@@ -1,95 +1,98 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 04B67C5AC80
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  6 Aug 2026 16:02:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C5D07C56208
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  6 Aug 2026 16:25:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id BBCAE80E93;
-	Thu,  6 Aug 2026 16:02:42 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 8C319407C2;
+	Thu,  6 Aug 2026 16:25:20 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id zakNKUPRS77k; Thu,  6 Aug 2026 16:02:41 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id VLxAE81yhtlK; Thu,  6 Aug 2026 16:25:19 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 235E280E91
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3A8D9407BA
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1786032161;
-	bh=4ltjwKw9xsNgldC8Auz2dE7yQ7zTtgu0hAxcZDOb6FA=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	s=default; t=1786033519;
+	bh=W8msDT7eNvhDc1IB697hW+Yt+pYyziSs+AvP4aM/IR8=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=zVEEu6jaP9H6xl12vc1Of+VzggjjXhhSD9BU8J+EceU+O1mBqQj8ovda/bTEL/Cbm
-	 EPWzyk9kVHFOErFfOUuguD/57WPyzwxYnp1ppyWQ1LnEbprp+IbP/sMlhNUHjwyRvn
-	 uhrClwlPHe4BPy4RRQhHXRcp/nG89zE6dOEMbAHKgnPiJpVvCBqzRPqv38o9C4Q/ob
-	 Rn6WYrOdXqW4XAwHAmZB7aXetRV94MBusafCwBF+5Z3SFq+vx6Nvz3ZdnHEoNL3Lf4
-	 xwFwbkFZ32LKNxtfnXB4Q/CUhKtLcj4tH1TN2CbHmpgLfTHH1gvCAenpCv06St/HnD
-	 LmvBgdQVi+Eiw==
+	b=jQyHqFxDby31rhE+l2uJFpkA4hKwtilhHlBdqgDgg6F1ODyzRhK6wGGUCSzJV60Z3
+	 48wVUdypNr977FAsIKUcHQEJ2LjbJYsiMHt9SieWsLRwr1LLV96DZMXdQGt0v81O5K
+	 HUp87LwbqM90WvgrmOSdCEO6Q7+/ZG7hmoapLE/ALHfDR8Qc/4qJ5Lo9u9/UsIenL4
+	 Ngqgn6oceXCmu24X6VQXAE9HkZk2oIWtnDpUXxSF7DG0nmoX3I5VHvXMTv33zy40wH
+	 9pphE0Fcr6WxLtuA/XFOdFFZnQ8J2IqNMyUZiV9wfSEi5HgF+0420XSupdGEAggCOd
+	 rUuatZcV04CnQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 235E280E91;
-	Thu,  6 Aug 2026 16:02:41 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 549FB218
- for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Aug 2026 15:36:39 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 3A8D9407BA;
+	Thu,  6 Aug 2026 16:25:19 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id D594D392
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Aug 2026 16:25:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 52946605E0
- for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Aug 2026 15:36:39 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id BB65E407BA
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Aug 2026 16:25:17 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id EUPd5ctCdmPg for <intel-wired-lan@lists.osuosl.org>;
- Thu,  6 Aug 2026 15:36:38 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=209.85.161.79;
- helo=mail-oo1-f79.google.com;
- envelope-from=3bap0agkbaiy289ukvvo1kzzsn.qyyqvo42o1myx3ox3.myw@m3kw2wvrgufz5godrsrytgd7.apphosting.bounces.google.com;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id jaz086c1TWta for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  6 Aug 2026 16:25:17 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.15;
+ helo=mgamail.intel.com; envelope-from=lukasz.czapnik@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 4099B60802
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4099B60802
-Received: from mail-oo1-f79.google.com (mail-oo1-f79.google.com
- [209.85.161.79])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 4099B60802
- for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Aug 2026 15:36:38 +0000 (UTC)
-Received: by mail-oo1-f79.google.com with SMTP id
- 006d021491bc7-6ae41d2af58so1721121eaf.0
- for <intel-wired-lan@lists.osuosl.org>; Thu, 06 Aug 2026 08:36:38 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1786030597; x=1786635397;
- h=content-type:to:from:subject:message-id:date:mime-version
- :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
- :content-type;
- bh=4ltjwKw9xsNgldC8Auz2dE7yQ7zTtgu0hAxcZDOb6FA=;
- b=hrYCmszufENvetxEg0AEyg63x5vgBgdZLu78Cv3qL28b10tiQkzUr00RCvs0eZslyi
- 65jJBWI3KcrX0fLrfYAXYsBh+kK3RidTuehe8tWo9+4LGy216rYS8RNTepf59flOaKth
- 6Nm6zCs9auxOPGTJ7+/kKOnykyRYwYQ56KvJxJyKa48wDMJyY6dI8EW2SV4p5VAmQ9aG
- l4flZDVG+Em10ljp128u+pCVIMK+tNoMJixafjRoXh3iEDqEFnmUvHbXhHb6cCYi42yx
- DJpU6pDcLZg7sPi7eI9H7f0rkXVMD930fLrEhJ/B5b8+RyNwoSMab3beiusxOyJ/T6EK
- JwMA==
-X-Forwarded-Encrypted: i=1;
- AHgh+RpdK0h7jJtN39x9DCSbYQ+bdgbp/ap8DmtNRfbphGfZ3xFa0XlEdYUm4/OPgEgVVjfP4qMCuNBWGLpBqd2KPxU=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YxDepgEK0UIvxugptQGnaKbACwRg0HbNEIBFinUvSzAjuaVnIpo
- SOJzOLSnoh0Uxu03U6TOtLCfl4ziK25Cc8k421WhP2uMm0hOH9716V56WkSg86MMEPHEL4gAcHB
- YpcxkGzx+/wTgGK34+i3ViuxK5XVjNw3LUSsxluyZOP0wraZFC2KRC1s7nug=
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org E0650407B0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E0650407B0
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id E0650407B0
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Aug 2026 16:25:16 +0000 (UTC)
+X-CSE-ConnectionGUID: q+eGrzBOSBy8zAIBm2xb/w==
+X-CSE-MsgGUID: 9URRBCqdS1WJReFLvh5/NA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11867"; a="90308338"
+X-IronPort-AV: E=Sophos;i="6.25,208,1779174000"; d="scan'208";a="90308338"
+Received: from fmviesa008.fm.intel.com ([10.60.135.148])
+ by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 06 Aug 2026 09:25:15 -0700
+X-CSE-ConnectionGUID: a9GOIrb2RJakJ0c7eZoehQ==
+X-CSE-MsgGUID: nQjtUUevSK6tPemc796stA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,208,1779174000"; d="scan'208";a="259540526"
+Received: from os-delivery.igk.intel.com ([10.123.220.24])
+ by fmviesa008.fm.intel.com with ESMTP; 06 Aug 2026 09:25:14 -0700
+From: Lukasz Czapnik <lukasz.czapnik@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Cc: netdev@vger.kernel.org, Jakub Kaminski <jakub.kaminski@intel.com>,
+ Lukasz Czapnik <lukasz.czapnik@intel.com>,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
+ Tomasz Lichwala <tomasz.lichwala@intel.com>
+Date: Thu,  6 Aug 2026 18:24:58 +0200
+Message-ID: <20260806162458.2384818-1-lukasz.czapnik@intel.com>
+X-Mailer: git-send-email 2.50.1
 MIME-Version: 1.0
-X-Received: by 2002:a05:6820:1792:b0:6a3:a335:1ccd with SMTP id
- 006d021491bc7-6ae96c7e7c5mr7984217eaf.8.1786030597180; Thu, 06 Aug 2026
- 08:36:37 -0700 (PDT)
-Date: Thu, 06 Aug 2026 08:36:37 -0700
-X-Google-Appengine-App-Id: s~syzkaller
-X-Google-Appengine-App-Id-Alias: syzkaller
-Message-ID: <6a74aa05.01d0871a.3a0d52.0026.GAE@google.com>
-From: syzbot <syzbot+0ddf1022b4d5c391c09b@syzkaller.appspotmail.com>
-To: andrew+netdev@lunn.ch, anthony.l.nguyen@intel.com, davem@davemloft.net, 
- edumazet@google.com, intel-wired-lan@lists.osuosl.org, kuba@kernel.org, 
- linux-kernel@vger.kernel.org, netdev@vger.kernel.org, pabeni@redhat.com, 
- przemyslaw.kitszel@intel.com, syzkaller-bugs@googlegroups.com
-Content-Type: text/plain; charset="UTF-8"
-X-Mailman-Approved-At: Thu, 06 Aug 2026 16:02:38 +0000
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=syzkaller.appspotmail.com
-Subject: [Intel-wired-lan] [syzbot] [intel-wired-lan?] BUG: unable to handle
- kernel paging request in e1000_get_variants_82571
+Content-Transfer-Encoding: 8bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1786033517; x=1817569517;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=UHRfMQbjLWBkx3tHNc2RKv40AQfZ76LxxAOE4XPfZ+M=;
+ b=lcTFbeJH9suizRKbf46B70i8qn5I22qJxWhxiBsMrUPPvLMFM+49/Svi
+ 7t/CewGjJpsNWfpphFfCRU4kxVGkNzeopaipYVEQnHcuF5gAc6el2Zmd4
+ GlyHHwu9gZMuyx76XInMsyfE4/zn2F8fhysGxNaJ0k4jD9MmSEQl74qaF
+ rU8Imz3DnLJcK/5vasxxMyBiCF21ZXALmkvA/FID3rA+1ZqaCwooV4XXk
+ ePZRCsHFea0sqvbT/FgmBB+jSbOwS/3rdXSS5U0BCr3ZR5NZGVu7cNT2p
+ bwmUqukF/o9XiGTooOxw5OpRNnlzAGh2ah/fB8VQjE7PG1yEWMv8s72KF
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=lcTFbeJH
+Subject: [Intel-wired-lan] [PATCH iwl-net v2] ice: Fix "Unknown bps" during
+ link events
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -105,123 +108,130 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Hello,
+From: Jakub Kaminski <jakub.kaminski@intel.com>
 
-syzbot found the following issue on:
+The driver may display "NIC Link is up Unknown bps" messages during
+link state changes. This occurs when link status and link speed are
+read from different points in time.
 
-HEAD commit:    848acc8ffe1b Merge tag 'fsverity-for-linus' of git://git.k..
-git tree:       upstream
-console output: https://syzkaller.appspot.com/x/log.txt?x=15ae93b9580000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=145fa60d73086782
-dashboard link: https://syzkaller.appspot.com/bug?extid=0ddf1022b4d5c391c09b
-compiler:       gcc (Debian 14.2.0-19) 14.2.0, GNU ld (GNU Binutils for Debian) 2.44
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=178b7649580000
-C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=117c6cc6580000
+The driver processes link events by receiving an asynchronous ARQ event
+from firmware containing link_up and link_speed values, then performing
+a synchronous AQ query via ice_update_link_info() which overwrites the
+phy.link_info structure, and finally calling ice_link_event() with a
+link_speed parameter while ice_print_link_msg() read link_speed from
+phy.link_info directly.
 
-Downloadable assets:
-disk image: https://storage.googleapis.com/syzbot-assets/32c9dc084aaa/disk-848acc8f.raw.xz
-vmlinux: https://storage.googleapis.com/syzbot-assets/b7604244b0a9/vmlinux-848acc8f.xz
-kernel image: https://storage.googleapis.com/syzbot-assets/4cd321f6fe47/bzImage-848acc8f.xz
+ice_print_link_msg() always read link_speed from the phy.link_info
+structure. This caused link status from the ARQ event to be combined
+with link_speed from the later AQ query, mixing information from two
+different points in time. When firmware state changed between these
+moments, inconsistent messages like "Link is up Unknown bps" appeared.
 
-IMPORTANT: if you fix the issue, please add the following tag to the commit:
-Reported-by: syzbot+0ddf1022b4d5c391c09b@syzkaller.appspotmail.com
-
-e1000e 0000:00:03.0: Interrupt Throttling Rate (ints/sec) set to dynamic conservative mode
-e1000e 0000:00:03.0 0000:00:03.0 (uninitialized): Failed to initialize MSI interrupts.  Falling back to legacy interrupts.
-BUG: unable to handle page fault for address: ffffc900035b4b58
-#PF: supervisor read access in kernel mode
-#PF: error_code(0x0000) - not-present page
-PGD 13fe5c067 P4D 13fe5c067 PUD 1cae3067 PMD 22725067 PTE 0
-Oops: Oops: 0000 [#1] SMP KASAN NOPTI
-CPU: 0 UID: 0 PID: 10 Comm: kworker/0:1 Not tainted syzkaller #0 PREEMPT(full) 
-Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 07/16/2026
-Workqueue: sync_wq local_pci_probe_callback
-RIP: 0010:readl arch/x86/include/asm/io.h:59 [inline]
-RIP: 0010:__er32 drivers/net/ethernet/intel/e1000e/e1000.h:604 [inline]
-RIP: 0010:e1000_init_mac_params_82571 drivers/net/ethernet/intel/e1000e/82571.c:278 [inline]
-RIP: 0010:e1000_get_variants_82571+0xe08/0x1c30 drivers/net/ethernet/intel/e1000e/82571.c:320
-Code: f6 ff ff e8 da 1f 0f fb 4c 89 ea 48 b8 00 00 00 00 00 fc ff df 48 c1 ea 03 80 3c 02 00 0f 85 f7 0b 00 00 49 8b 87 00 07 00 00 <8b> a8 58 5b 00 00 89 e8 31 ff 83 e0 02 89 c6 89 44 24 10 e8 10 1a
-RSP: 0018:ffffc900000f7a00 EFLAGS: 00010246
-RAX: ffffc900035af000 RBX: ffff88807ed91694 RCX: ffffffff86fb44f8
-RDX: 1ffff1100fdb22b8 RSI: ffffffff86fb4506 RDI: ffff88801eaa2540
-RBP: 0000000000000000 R08: 0000000000000005 R09: 0000000000000001
-R10: 0000000000000000 R11: 0000000000000000 R12: 1ffff9200001ef45
-R13: ffff88807ed915c0 R14: ffff88807ed915b8 R15: ffff88807ed90ec0
-FS:  0000000000000000(0000) GS:ffff888123dd8000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: ffffc900035b4b58 CR3: 0000000073af9000 CR4: 00000000003526f0
-Call Trace:
- <TASK>
- e1000_probe+0x1123/0x36b0 drivers/net/ethernet/intel/e1000e/netdev.c:7494
- local_pci_probe+0xdd/0x1b0 drivers/pci/pci-driver.c:332
- local_pci_probe_callback+0x35/0x80 drivers/pci/pci-driver.c:361
- process_one_work+0xa23/0x1940 kernel/workqueue.c:3322
- process_scheduled_works kernel/workqueue.c:3405 [inline]
- worker_thread+0x5ef/0xe50 kernel/workqueue.c:3486
- kthread+0x370/0x450 kernel/kthread.c:436
- ret_from_fork+0x72b/0xd50 arch/x86/kernel/process.c:158
- ret_from_fork_asm+0x1a/0x30 arch/x86/entry/entry_64.S:245
- </TASK>
-Modules linked in:
-CR2: ffffc900035b4b58
----[ end trace 0000000000000000 ]---
-RIP: 0010:readl arch/x86/include/asm/io.h:59 [inline]
-RIP: 0010:__er32 drivers/net/ethernet/intel/e1000e/e1000.h:604 [inline]
-RIP: 0010:e1000_init_mac_params_82571 drivers/net/ethernet/intel/e1000e/82571.c:278 [inline]
-RIP: 0010:e1000_get_variants_82571+0xe08/0x1c30 drivers/net/ethernet/intel/e1000e/82571.c:320
-Code: f6 ff ff e8 da 1f 0f fb 4c 89 ea 48 b8 00 00 00 00 00 fc ff df 48 c1 ea 03 80 3c 02 00 0f 85 f7 0b 00 00 49 8b 87 00 07 00 00 <8b> a8 58 5b 00 00 89 e8 31 ff 83 e0 02 89 c6 89 44 24 10 e8 10 1a
-RSP: 0018:ffffc900000f7a00 EFLAGS: 00010246
-RAX: ffffc900035af000 RBX: ffff88807ed91694 RCX: ffffffff86fb44f8
-RDX: 1ffff1100fdb22b8 RSI: ffffffff86fb4506 RDI: ffff88801eaa2540
-RBP: 0000000000000000 R08: 0000000000000005 R09: 0000000000000001
-R10: 0000000000000000 R11: 0000000000000000 R12: 1ffff9200001ef45
-R13: ffff88807ed915c0 R14: ffff88807ed915b8 R15: ffff88807ed90ec0
-FS:  0000000000000000(0000) GS:ffff888123dd8000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: ffffc900035b4b58 CR3: 0000000073af9000 CR4: 00000000003526f0
-----------------
-Code disassembly (best guess):
-   0:	f6 ff                	idiv   %bh
-   2:	ff                   	ljmp   (bad)
-   3:	e8 da 1f 0f fb       	call   0xfb0f1fe2
-   8:	4c 89 ea             	mov    %r13,%rdx
-   b:	48 b8 00 00 00 00 00 	movabs $0xdffffc0000000000,%rax
-  12:	fc ff df
-  15:	48 c1 ea 03          	shr    $0x3,%rdx
-  19:	80 3c 02 00          	cmpb   $0x0,(%rdx,%rax,1)
-  1d:	0f 85 f7 0b 00 00    	jne    0xc1a
-  23:	49 8b 87 00 07 00 00 	mov    0x700(%r15),%rax
-* 2a:	8b a8 58 5b 00 00    	mov    0x5b58(%rax),%ebp <-- trapping instruction
-  30:	89 e8                	mov    %ebp,%eax
-  32:	31 ff                	xor    %edi,%edi
-  34:	83 e0 02             	and    $0x2,%eax
-  37:	89 c6                	mov    %eax,%esi
-  39:	89 44 24 10          	mov    %eax,0x10(%rsp)
-  3d:	e8                   	.byte 0xe8
-  3e:	10 1a                	adc    %bl,(%rdx)
-
+Add a link_speed parameter to ice_print_link_msg() to ensure link
+status and speed are always taken from the same source and point in
+time.
 
 ---
-This report is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
 
-syzbot will keep track of this issue. See:
-https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+v2:
+Remove conditional assignement of local var link_up only during
+UP events. Cache state of both link_up and link_speed for every event.
+---
 
-If the report is already addressed, let syzbot know by replying with:
-#syz fix: exact-commit-title
+Fixes: c2a23e00613b ("ice: Refactor link event flow")
+Signed-off-by: Jakub Kaminski <jakub.kaminski@intel.com>
+Signed-off-by: Lukasz Czapnik <lukasz.czapnik@intel.com>
+Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Reviewed-by: Tomasz Lichwala <tomasz.lichwala@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice.h         |  2 +-
+ drivers/net/ethernet/intel/ice/ice_ethtool.c |  2 +-
+ drivers/net/ethernet/intel/ice/ice_main.c    | 17 ++++++++---------
+ 3 files changed, 10 insertions(+), 11 deletions(-)
 
-If you want syzbot to run the reproducer, reply with:
-#syz test: git://repo/address.git branch-or-commit-hash
-If you attach or paste a git patch, syzbot will apply it before testing.
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index da679793b397..567058c28907 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -1006,7 +1006,7 @@ int ice_get_rss_key(struct ice_vsi *vsi, u8 *seed);
+ int ice_set_rss_hfunc(struct ice_vsi *vsi, u8 hfunc);
+ void ice_fill_rss_lut(u8 *lut, u16 rss_table_size, u16 rss_size);
+ int ice_schedule_reset(struct ice_pf *pf, enum ice_reset_req reset);
+-void ice_print_link_msg(struct ice_vsi *vsi, bool isup);
++void ice_print_link_msg(struct ice_vsi *vsi, bool isup, u16 link_speed);
+ int ice_plug_aux_dev(struct ice_pf *pf);
+ void ice_unplug_aux_dev(struct ice_pf *pf);
+ void ice_rdma_finalize_setup(struct ice_pf *pf);
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index 9ddd7e82a300..c37b72763ce5 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -2814,7 +2814,7 @@ ice_set_link_ksettings(struct net_device *netdev,
+ 		/* Tell the OS link is going down, the link will go
+ 		 * back up when fw says it is ready asynchronously
+ 		 */
+-		ice_print_link_msg(np->vsi, false);
++		ice_print_link_msg(np->vsi, false, 0);
+ 		netif_carrier_off(netdev);
+ 		netif_tx_stop_all_queues(netdev);
+ 	}
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 968a8e18d197..f8f847b2729b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -835,8 +835,9 @@ static void ice_print_topo_conflict(struct ice_vsi *vsi)
+  * ice_print_link_msg - print link up or down message
+  * @vsi: the VSI whose link status is being queried
+  * @isup: boolean for if the link is now up or down
++ * @link_speed: current link speed value to display
+  */
+-void ice_print_link_msg(struct ice_vsi *vsi, bool isup)
++void ice_print_link_msg(struct ice_vsi *vsi, bool isup, u16 link_speed)
+ {
+ 	struct ice_aqc_get_phy_caps_data *caps;
+ 	const char *an_advertised;
+@@ -860,7 +861,7 @@ void ice_print_link_msg(struct ice_vsi *vsi, bool isup)
+ 		return;
+ 	}
+ 
+-	switch (vsi->port_info->phy.link_info.link_speed) {
++	switch (link_speed) {
+ 	case ICE_AQ_LINK_SPEED_200GB:
+ 		speed = "200 G";
+ 		break;
+@@ -1190,11 +1191,8 @@ ice_link_event(struct ice_pf *pf, struct ice_port_info *pi, bool link_up,
+ 
+ 	ice_check_link_cfg_err(pf, pi->phy.link_info.link_cfg_err);
+ 
+-	/* Check if the link state is up after updating link info, and treat
+-	 * this event as an UP event since the link is actually UP now.
+-	 */
+-	if (phy_info->link_info.link_info & ICE_AQ_LINK_UP)
+-		link_up = true;
++	link_up = phy_info->link_info.link_info & ICE_AQ_LINK_UP;
++	link_speed = phy_info->link_info.link_speed;
+ 
+ 	vsi = ice_get_main_vsi(pf);
+ 	if (!vsi || !vsi->port_info)
+@@ -1224,7 +1222,7 @@ ice_link_event(struct ice_pf *pf, struct ice_port_info *pi, bool link_up,
+ 			ice_set_dflt_mib(pf);
+ 	}
+ 	ice_vsi_link_event(vsi, link_up);
+-	ice_print_link_msg(vsi, link_up);
++	ice_print_link_msg(vsi, link_up, link_speed);
+ 
+ 	ice_vc_notify_link_state(pf);
+ 
+@@ -6922,7 +6920,8 @@ static int ice_up_complete(struct ice_vsi *vsi)
+ 	    (vsi->port_info->phy.link_info.link_info & ICE_AQ_LINK_UP) &&
+ 	    ((vsi->netdev && (vsi->type == ICE_VSI_PF ||
+ 			      vsi->type == ICE_VSI_SF)))) {
+-		ice_print_link_msg(vsi, true);
++		ice_print_link_msg(vsi, true,
++				   vsi->port_info->phy.link_info.link_speed);
+ 		netif_tx_start_all_queues(vsi->netdev);
+ 		netif_carrier_on(vsi->netdev);
+ 		ice_ptp_link_change(pf, true);
+-- 
+2.50.1
 
-If you want to overwrite report's subsystems, reply with:
-#syz set subsystems: new-subsystem
-(See the list of subsystem names on the web dashboard)
-
-If the report is a duplicate of another one, reply with:
-#syz dup: exact-subject-of-another-report
-
-If you want to undo deduplication, reply with:
-#syz undup
