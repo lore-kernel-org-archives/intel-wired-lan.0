@@ -1,121 +1,121 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9669DC5AC67
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  6 Aug 2026 23:29:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51185C5AC82
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  6 Aug 2026 23:29:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 60A9380F8E;
-	Thu,  6 Aug 2026 23:29:32 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id QAvkFGiFpRFd; Thu,  6 Aug 2026 23:29:30 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 29CF280F8D
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1786058970;
-	bh=uk1DBhl2SjEAtDClBoBuZQ0iwRCMwuffCjBsfq5FWJI=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=9lECIN+oI1o3gk5C4qNvKUMjnWGUpw1SP2AXcsljgu5o64RzuRxpooBVxKLgWLCfG
-	 CRwZsKvZZf4/zXsWP4D5Xxa+m6pYJXeRjXiNQ3o34O/7YbznpRVaY5VCm9inWfyU76
-	 vzfyH0U+EQfNntQdNcdcpZsskG0j7RpaUWxnzY7CZ7SQ8j/n61Zg3Rn4HTyFppXM83
-	 J29ZbhbBB58Lb5yTQxE3SC0n1Fbv4U6w1IPgB6Rtceh3j1fAWDiY0aSkOJMMcUcUUt
-	 xQIVMH8xxXWiRYuyZYqYjq6r7YOe23chHxAAgUS1oGh9p9KCjZG16RBgFCMc3IVyAx
-	 vzXcwyNv54aXQ==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 29CF280F8D;
-	Thu,  6 Aug 2026 23:29:30 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 1D573198
- for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Aug 2026 23:29:28 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 0F93340907
- for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Aug 2026 23:29:28 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1A94B408F3;
+	Thu,  6 Aug 2026 23:29:33 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 1eF5a2-BFGvW for <intel-wired-lan@lists.osuosl.org>;
- Thu,  6 Aug 2026 23:29:27 +0000 (UTC)
+ id mD1imPHqXfgg; Thu,  6 Aug 2026 23:29:32 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4FBBF40909
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1786058972;
+	bh=kMvizLUHUgWoAQ2a15IzPnCt/bdK0Ped3AtGw1CCqzs=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=q/5ox57zJRNQNpZWdhFMFP3InnkQgMbkpYhqdKhl472P0Du6NKlUc7mYhobKxx033
+	 juBL02G3Rf2eTkujVuKApb8d6PV2jerWl9wiPpn+dhvJ249JJnQrn2bNxfUCdwlyMt
+	 sVdYACvxeB5wK27GbKX1yRXE+4pytHq9fVtkIHsN6O7CfJNCEuIjm3870u+yqiP5Rq
+	 KhkkGdjaj+RY+9Z6BB7fyOsWkkKVi4d5ZE1Oy6XAsI1k1598GSZnlk1KdO28ed3rRi
+	 mmTUc+7uCTomp7Rj/1R5w8autHnWLXo8GQwGk8IBAG8m81Yy3C3OWwV2InmqMWRR/n
+	 CcS6dTz/agfLw==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 4FBBF40909;
+	Thu,  6 Aug 2026 23:29:32 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 41F63198
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Aug 2026 23:29:31 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id 33CF24090C
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Aug 2026 23:29:31 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id KTvqTxyyZ2Ov for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  6 Aug 2026 23:29:30 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::b12b; helo=mail-yx1-xb12b.google.com;
+ client-ip=2607:f8b0:4864:20::b129; helo=mail-yx1-xb129.google.com;
  envelope-from=willemdebruijn.kernel@gmail.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org F09F2408E8
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org F09F2408E8
-Received: from mail-yx1-xb12b.google.com (mail-yx1-xb12b.google.com
- [IPv6:2607:f8b0:4864:20::b12b])
- by smtp4.osuosl.org (Postfix) with ESMTPS id F09F2408E8
- for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Aug 2026 23:29:26 +0000 (UTC)
-Received: by mail-yx1-xb12b.google.com with SMTP id
- 956f58d0204a3-6626b5ace23so2478086d50.0
- for <intel-wired-lan@lists.osuosl.org>; Thu, 06 Aug 2026 16:29:26 -0700 (PDT)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 1F8F1408FB
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1F8F1408FB
+Received: from mail-yx1-xb129.google.com (mail-yx1-xb129.google.com
+ [IPv6:2607:f8b0:4864:20::b129])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 1F8F1408FB
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Aug 2026 23:29:30 +0000 (UTC)
+Received: by mail-yx1-xb129.google.com with SMTP id
+ 956f58d0204a3-66804667af2so2516376d50.0
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 06 Aug 2026 16:29:29 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1786058966; x=1786663766;
+ d=1e100.net; s=20251104; t=1786058969; x=1786663769;
  h=content-transfer-encoding:mime-version:references:in-reply-to
  :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
  :to:cc:subject:date:message-id:reply-to:content-type;
- bh=uk1DBhl2SjEAtDClBoBuZQ0iwRCMwuffCjBsfq5FWJI=;
- b=GBBoPrSX7pDy5yCAs3ZVFO3IVyW1G27GOUVwiCMbnN1T/ItwTDlnLLndWAH9eGZM1n
- kc3tBAdVUZAi7gkWuj66BrjuzSUQ3OZKK+aXPpNi2WPJwDos5C29YOToO8bkc0lQZ9iH
- 8sRKcmRxaLp97cbutZoLVNj6n6d9yKmco0tu8Mu6DmU3GUa7762qo6xO0OJeziCkjwLc
- /Ey/sJEGkJzTyXq68FlRzJluuFIzA1l9c0MzsY/xgAEmjCzh+lRR27u9b6OqLyKHU300
- m5uMruXGEawIlqCwGCudviljc9k2N/CMuIV7ikPUMqR1ihp3ZAAs+GMgQzt1o+tqeOC/
- qJkQ==
-X-Gm-Message-State: AOJu0YzqK3kU4NPIl9osYHwfXC6XBR3dvv0K0EVMYOlvgUW84nijsQcl
- r2QsfLxpLK86ELJAeBDCY1/TWOvGN1E1MLYpZ1Pk4wNpXBb2GfEhKw1Z
-X-Gm-Gg: AR+sD12srkquLvmSeQAFmmCbDEEurNNpga5p+viNBjdQjZbPuL5BkiAwP9WuHbiHyLL
- KTNWUZPthprWK2v8V7sx7be/rwaEp7x1B5sZ43U/hQ/55/cjG86Y99YlsFvhtstqGb1DfXUgn/M
- 8RzLztOoACSfIdeYEylfvpKDgqtlRW6cXJve0iAQ8a0FM0XGSVWb0vh9lczlEtUAN07lW/JzzSO
- WbQIPajGbTjztp041IkuSQAE989e18bL6mIsNxfotY1LxR1Id7MDDhRyrTLgruug9Yfj29v0WMz
- mzkDEN+5wVWLuUUG2mmfuF30/a/rMxdJE9Ld/rU1CH0jhMNYq6IQGmqNaIJTpeibJkHxsVH1Jf7
- qLB3wxLUesmja51HmCyMZKGbc0Y9ubZlgO8CW+pa+BD+Dik/haXpRYUTE62M0+RIww/FaJZsy95
- Nd5nVH5Q2WN3vfNOhfEVEpbaovvgVromwAjSrAG3R2fXFKLnv6i8Ou/Mym8bbs6GOBfFYP9zvFp
- fI45qKY6vXvRvszBt32JZLsv1L44yKmeOcr4ADkYf02Nom2VyB6fNuY5QY=
-X-Received: by 2002:a05:690e:148e:b0:664:c5f8:e342 with SMTP id
- 956f58d0204a3-66abad2350fmr4751115d50.3.1786058965577; 
- Thu, 06 Aug 2026 16:29:25 -0700 (PDT)
+ bh=kMvizLUHUgWoAQ2a15IzPnCt/bdK0Ped3AtGw1CCqzs=;
+ b=cXGgdtUxar9VkOSMNHe/6HZ3nbdSryFYGelL9T1rzsUYfRdTEW3ohnklLMz/Dr+6T5
+ 0OBdyzm6i1Y+y6k7FdtaoT50PFPXtKTeIs1UamJuAlPbY8vQ2ULr2JCdvb/h1mWwiYzQ
+ 460ohLhZ8See1mr4sOxcFO7y/pjiHhN5PpXPvGlqPSCh/grJrztdi2aLAkSjO8HlEOrc
+ AKWzeEvB0HbJo0rTVUP69xu4KXg+WDFMH5MBvEB3dkOP39MISXKA+yK+ZJ/Ph+vGicj5
+ v58Yv29xtnVCtWL6iUMzSUhBxb+aOxkZ37q6pzRxhfWDtlK11wEhIVMrpw8z4bPSV2iV
+ slJQ==
+X-Gm-Message-State: AOJu0YwTi8yGTpByYiPoZ8Ko/PMfISHmIpMSBGXvvDuBnAWy7zBqKUcz
+ M9UI3qLlABI2zLxm67Ohr4H1pvYGoLVbPbpSb0Ed9KjTm6qo3ULhSXuS
+X-Gm-Gg: AR+sD105wTWqaT3t603XhqhSttTIFBKr1/0u8pg1bTF4Sp/qiSt6hQu6frIlNYS3HGd
+ 1jOe0lS4fPPrHR9wpUvwGPOUJ5S1bX+FOaQOLZCzifHP87n8Da/XKARtxvnMwEYiyZPjLo32EjZ
+ r5fMQImmKjx5bDN2dpS7lk4DBa1UuXya65tBQ7NNVBveX55i7WimymlN06+QZDRzdxuoHm7emA6
+ 1aXAA94aZtHlMcx8XZc9kThVDShyS0tvGXi8Kcr0ojfou4pN/K02345L/9A8c9/bQ6/zow32t/1
+ W2mB+TVgriF0mi3ooXVoIEOHYesOH8Pz2JGqOpKHLan5AwbO3EJS7sVTyj4cOiI6js77J7G0EQm
+ uuCKHMlYAR309lcodVsknY4xk73x/EKIik1jMwca/HI0o71rOLlqm9qThhyrh2GTXj1QLxgiTcW
+ AvEBWt5Xl2vhHo+nZ1L7imdZnvwmiLapT7QLgg1MpLr04+yB09S9y6D5NuyYvipgxl45pWJpNca
+ HJ7MpYeHjDfFAsyuilf1F223dYQMbwzPVrO1kaNh42EeQ9Thc1AHKfXMoNNOKVm1SYOqA==
+X-Received: by 2002:a53:e141:0:b0:664:cd4c:83ef with SMTP id
+ 956f58d0204a3-66ac2fb0dc5mr2297573d50.30.1786058968799; 
+ Thu, 06 Aug 2026 16:29:28 -0700 (PDT)
 Received: from willemb.c.googlers.com.com
  (250.4.48.34.bc.googleusercontent.com. [34.48.4.250])
  by smtp.gmail.com with ESMTPSA id
- 956f58d0204a3-66acacdbdf2sm209273d50.4.2026.08.06.16.29.24
+ 956f58d0204a3-66acacdbdf2sm209273d50.4.2026.08.06.16.29.27
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 06 Aug 2026 16:29:24 -0700 (PDT)
+ Thu, 06 Aug 2026 16:29:27 -0700 (PDT)
 From: Willem de Bruijn <willemdebruijn.kernel@gmail.com>
 To: netdev@vger.kernel.org
 Cc: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
  joshua.a.hay@intel.com, przemyslaw.kitszel@intel.com,
  Willem de Bruijn <willemb@google.com>
-Date: Thu,  6 Aug 2026 19:26:00 -0400
-Message-ID: <20260806232913.4020403-4-willemdebruijn.kernel@gmail.com>
+Date: Thu,  6 Aug 2026 19:26:02 -0400
+Message-ID: <20260806232913.4020403-6-willemdebruijn.kernel@gmail.com>
 X-Mailer: git-send-email 2.55.0.679.g6767b8d81c-goog
 In-Reply-To: <20260806232913.4020403-1-willemdebruijn.kernel@gmail.com>
 References: <20260806232913.4020403-1-willemdebruijn.kernel@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20251104; t=1786058966; x=1786663766; darn=lists.osuosl.org;
+ d=gmail.com; s=20251104; t=1786058969; x=1786663769; darn=lists.osuosl.org;
  h=content-transfer-encoding:mime-version:references:in-reply-to
  :message-id:date:subject:cc:to:from:from:to:cc:subject:date
  :message-id:reply-to:content-type;
- bh=uk1DBhl2SjEAtDClBoBuZQ0iwRCMwuffCjBsfq5FWJI=;
- b=pr/fwO/Z+6/xQ/j5i4O4pBvtcPOfMfJeEuYtIM70Bgcy5hb8OLlXe/Sof4X+3kihOP
- ggFW6trSPmHs0iD8YNPim9dtJR3Ge4Sh4rMJrpmZgmiJs06slHdhqKZ3Oe8rBP62JPML
- 5D7lGMFmmi4UdTERx1sNOAZRgp6EaM2bBRg59fAGnBpUsz/gfbUu41gkzxXGokp/68tL
- TfXilfXLdf9S9t5YZ6vI7LSDmsWr+QvKizuzgBrLAmY1n0fsG+JjiBs5nVRo4wyXtJAI
- omqTVSGkDn1pmzoEbXXoxryqCpCWSLTxXYq8E6VbMJ0Cy9ZiYaIsmHLJYTYlwjiXufqL
- 2DQA==
+ bh=kMvizLUHUgWoAQ2a15IzPnCt/bdK0Ped3AtGw1CCqzs=;
+ b=d1O/4lMfQvo2FVB605oFbLFe9e/ptqkMDayq+sfhPipWfTUx2eIFaDO3M/Rgx6Dfpb
+ LcfTH2GVcLDlieCUGFIYhmHqJln6/ez4vzeeuIdsAcJapiprgxaskD/FTHqkl7d1ootx
+ WKbCfkGwZ5vW3D+dq9IHYeIR5bvvTMx/Swa4xit7C3rV/itU5XdPd0j3/ZQJH3XHtF62
+ c0qPccypHMyNEvv5twu33zga0dY83W3Wy9QPi9txnQG71iWItVlRl7jGI8nS7HlpdtlE
+ R5U9cyl/Isq/2Ysapde5Z6MQFRZXSBKoidzSQF09t21A6P+g6RVmBOQ4cdYmXkG9jaeI
+ Ectw==
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=gmail.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20251104 header.b=pr/fwO/Z
-Subject: [Intel-wired-lan] [PATCH net-next v4 3/6] idpf: support pacing
- offload
+ header.a=rsa-sha256 header.s=20251104 header.b=d1O/4lMf
+Subject: [Intel-wired-lan] [PATCH net-next v4 5/6] selftests: drv-net: in
+ so_txtime tell apart sw from hw pacing
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -133,322 +133,238 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: Willem de Bruijn <willemb@google.com>
 
-If skb->tstamp is in the future, program this future delivery txtime
-in the transmit descriptor.
+Detect software pacing in so_txtime.c using SO_TIMESTAMPING.
 
-TCP pacing offload is only offloaded if SK_PACING_FQ is negotiated and
-the FQ offload_horizon is configured. But device support for pacing
-offload must be more robust: it can also be reached through SO_TXTIME.
+If '-H' (hw) is passed
 
-Bounds check txtime. Only packets with timestamp between now and the
-horizon (pacing_offload_horizon) are offloaded.
+1. measure sw tx delay with SOF_TIMESTAMPING_TX_SOFTWARE, and
+2. fail if delay exceeds a threshold, indicating pacing
 
-Negotiate the feature with the device using virtchnl. Support is
-conditional on
-- splitq mode, where tx and tx completion queues are separate, so
-  completions can be returned out of order.
-- flow scheduling mode, where completions can arrive out of order.
-- PTP to ensure the NIC clock is synced to CLOCK_TAI.
+Also extend while condition to account for possible variance.
+This applies to all tests, not just the new '-H' variants.
 
-Do not explicitly check for these preconditions. Trust the firmware to
-only advertise EDT when they are met. These features are negotiated
-per adapter, but expect all vports to uniformly request splitq
-(req_[rt]x_splitq) and flow scheduling (flow_sch_en) when available.
+Also reorder getopt parameters to make them alphabetical.
 
-Disable if in netpoll. It does not need the feature, and the ktime
-functions are not safe to call in this context.
-
-Cc: Tony Nguyen <anthony.l.nguyen@intel.com>
-Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Cc: Joshua A Hay <joshua.a.hay@intel.com>
 Signed-off-by: Willem de Bruijn <willemb@google.com>
 
 ---
 
 Changes
   v3 -> v4
-    - add EDT virtchnl negotiation
-    - move endianness fix to its own iwl-net patch
-    - update commit-msg: check is against pacing_offload_horizon, not max_..
-    - simplify assignment, avoid the le32 assignment in favor of u8 inits
-    - replace open coded constant with IDPF_TXD_FLOW_SCH_HORIZON_OVERFLOW_M
-    - (minor) fix 24b timestamp comment: is 23b + overflow bit
+    - rename -h to -H to avoid aliasing implicit getopt -h
+    - count sw timestamps to verify that they were actually checked
+    - (minor) do not ask for SOF_TIMESTAMPING_OPT_ID as not used
     - (minor) remove unused parameter
-  v2 -> v3
-    - use READ_ONCE and read pacing_offload_horizon only once
-  v1 -> v2
-    - move special zero case up and return early
 
-Sashiko, ignore pre-existing issues.
-
-Sashiko, ignore that idpf_tx_splitq_set_txtime may have a benign race
-by calling ktime_mono_to_any twice to get TAI to REALTIME offset.
+Reading timestamps from the error queue is never particularly slow,
+so errors are always counted, not only if !KSFT_MACHINE_SLOW.
 ---
- drivers/net/ethernet/intel/idpf/idpf.h        |  1 +
- drivers/net/ethernet/intel/idpf/idpf_lib.c    |  3 +
- drivers/net/ethernet/intel/idpf/idpf_txrx.c   | 70 ++++++++++++++++++-
- drivers/net/ethernet/intel/idpf/idpf_txrx.h   |  2 +
- .../net/ethernet/intel/idpf/idpf_virtchnl.c   | 56 ++++++++++++++-
- drivers/net/ethernet/intel/idpf/virtchnl2.h   | 10 +++
- 6 files changed, 140 insertions(+), 2 deletions(-)
+ .../testing/selftests/drivers/net/so_txtime.c | 93 +++++++++++++++----
+ 1 file changed, 77 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf.h b/drivers/net/ethernet/intel/idpf/idpf.h
-index ec1b75f039bb..03bca27b2724 100644
---- a/drivers/net/ethernet/intel/idpf/idpf.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf.h
-@@ -720,6 +720,7 @@ struct idpf_adapter {
- 	struct delayed_work stats_task;
- 	struct workqueue_struct *stats_wq;
- 	struct virtchnl2_get_capabilities caps;
-+	struct virtchnl2_edt_caps_ilog2 edt_caps;
- 	struct idpf_vc_xn_manager *vcxn_mngr;
+diff --git a/tools/testing/selftests/drivers/net/so_txtime.c b/tools/testing/selftests/drivers/net/so_txtime.c
+index f6f3253ed174..951312e67b66 100644
+--- a/tools/testing/selftests/drivers/net/so_txtime.c
++++ b/tools/testing/selftests/drivers/net/so_txtime.c
+@@ -42,8 +42,10 @@ static bool	cfg_machine_slow;
+ static uint64_t	cfg_start_time_ns;
+ static int	cfg_mark;
+ static bool	cfg_rx;
++static bool	cfg_verify_hw_offload;
  
- 	struct idpf_dev_ops dev_ops;
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_lib.c b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-index bb81e620c5c8..106e59dd5fad 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_lib.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-@@ -888,6 +888,9 @@ static int idpf_cfg_netdev(struct idpf_vport *vport)
- 	netdev->min_mtu = ETH_MIN_MTU;
- 	netdev->max_mtu = vport->max_mtu;
+ static uint64_t glob_tstart;
++static uint64_t glob_tstart_real;
+ static uint64_t tdeliver_max;
  
-+	if (adapter->edt_caps.time_horizon_ns)
-+		netdev->max_pacing_offload_horizon = adapter->edt_caps.time_horizon_ns;
+ static int errors;
+@@ -191,12 +193,32 @@ static int do_recv_errqueue_txtime(struct sock_extended_err *err,
+ 	return 1;
+ }
+ 
+-static int do_recv_errqueue(int fdt)
++static int do_recv_errqueue_timestamping(struct scm_timestamping *tss)
++{
++	int64_t ts;
 +
- 	dflt_features = NETIF_F_SG	|
- 			NETIF_F_HIGHDMA;
- 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-index 99fcd8e298d6..e9068e0a4e5f 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-@@ -1,6 +1,8 @@
- // SPDX-License-Identifier: GPL-2.0-only
- /* Copyright (C) 2023 Intel Corporation */
- 
-+#include <linux/netpoll.h>
++	ts = tss->ts[0].tv_sec * 1000ULL * 1000 * 1000;
++	ts += tss->ts[0].tv_nsec;
++	ts -= glob_tstart_real;
++	ts /= 1000;
 +
- #include "idpf.h"
- #include "idpf_ptp.h"
- #include "idpf_virtchnl.h"
-@@ -2408,7 +2410,12 @@ void idpf_tx_splitq_build_flow_desc(union idpf_tx_flex_desc *desc,
- 				    struct idpf_tx_splitq_params *params,
- 				    u16 td_cmd, u16 size)
++	if (ts > cfg_variance_us) {
++		fprintf(stderr, "sw delay %" PRId64 "us exceeds bounds\n", ts);
++		if (!cfg_machine_slow)
++			errors++;
++	}
++
++	return 1;
++}
++
++static int do_recv_errqueue(int fdt, int *num_ts)
  {
--	*(u32 *)&desc->flow.qw1.cmd_dtype = (u8)(params->dtype | td_cmd);
-+	desc->flow.qw1.cmd_dtype = (u8)(params->dtype | td_cmd);
-+
-+	desc->flow.qw1.ts[0] = params->offload.desc_ts[0];
-+	desc->flow.qw1.ts[1] = params->offload.desc_ts[1];
-+	desc->flow.qw1.ts[2] = params->offload.desc_ts[2];
-+
- 	desc->flow.qw1.rxr_bufsize = cpu_to_le16((u16)size);
- 	desc->flow.qw1.compl_tag = cpu_to_le16(params->compl_tag);
- }
-@@ -3011,6 +3018,63 @@ static bool idpf_tx_splitq_need_re(struct idpf_tx_queue *tx_q)
- 	return gap >= IDPF_TX_SPLITQ_RE_MIN_GAP;
- }
+ 	char control[CMSG_SPACE(sizeof(struct sock_extended_err)) +
++		     CMSG_SPACE(sizeof(struct scm_timestamping)) +
+ 		     CMSG_SPACE(sizeof(struct sockaddr_in6))] = {0};
+ 	char data[sizeof(struct ethhdr) + sizeof(struct ipv6hdr) +
+ 		  sizeof(struct udphdr) + 1];
++	struct scm_timestamping *tss;
+ 	struct sock_extended_err *err;
+ 	int ret, num_tstamp = 0;
+ 	struct msghdr msg = {0};
+@@ -222,16 +244,29 @@ static int do_recv_errqueue(int fdt)
+ 			error(1, 0, "errqueue: flags 0x%x\n", msg.msg_flags);
  
-+static void idpf_tx_splitq_set_txtime(const struct sk_buff *skb,
-+				      struct idpf_tx_splitq_params *tx_params)
-+{
-+	struct idpf_netdev_priv *np = netdev_priv(skb->dev);
-+	u64 ts, now, horizon;
+ 		cm = CMSG_FIRSTHDR(&msg);
++		tss = NULL;
 +
-+	horizon = READ_ONCE(skb->dev->pacing_offload_horizon);
-+	if (!horizon)
-+		return;
-+
-+	/* Skip if netpoll: not needed and not safe to call ktime helpers */
-+	if (netpoll_tx_running(skb->dev))
-+		return;
-+
-+	switch (skb->tstamp_type) {
-+	case SKB_CLOCK_REALTIME:
-+		ts = ktime_to_ns(ktime_add(skb->tstamp,
-+					   ktime_mono_to_any(0, TK_OFFS_TAI) -
-+					   ktime_mono_to_any(0, TK_OFFS_REAL)));
-+		break;
-+	case SKB_CLOCK_MONOTONIC:
-+		ts = ktime_to_ns(ktime_mono_to_any(skb->tstamp, TK_OFFS_TAI));
-+		break;
-+	case SKB_CLOCK_TAI:
-+		ts = ktime_to_ns(skb->tstamp);
-+		break;
-+	default:
-+		WARN_ON_ONCE(1);
-+		return;
-+	}
-+
-+	now = ktime_get_clocktai_ns();
-+	if (ts < now)
-+		return;
-+
-+	/* beyond offload horizon? set overflow bit only */
-+	if (ts > now + horizon) {
-+		tx_params->offload.desc_ts[2] =
-+			IDPF_TXD_FLOW_SCH_HORIZON_OVERFLOW_M;
-+		return;
-+	}
-+
-+	ts >>= np->adapter->edt_caps.tstamp_granularity_pow2;
-+
-+	/* 0 is valid 23b timestamp, but also means field unset.
-+	 * Increase by one to avoid this case
-+	 */
-+	if ((ts & 0x7fffff) == 0) {
-+		tx_params->offload.desc_ts[0] = 1;
-+		return;
-+	}
-+
-+	tx_params->offload.desc_ts[0] = ts & 0xff;
-+	tx_params->offload.desc_ts[1] = (ts >> 8) & 0xff;
-+	tx_params->offload.desc_ts[2] = ((ts >> 16) & 0x7f);
-+}
-+
- /**
-  * idpf_tx_splitq_frame - Sends buffer on Tx ring using flex descriptors
-  * @skb: send buffer
-@@ -3097,6 +3161,10 @@ static netdev_tx_t idpf_tx_splitq_frame(struct sk_buff *skb,
- 
- 		tx_params.dtype = IDPF_TX_DESC_DTYPE_FLEX_FLOW_SCHE;
- 		tx_params.eop_cmd = IDPF_TXD_FLEX_FLOW_CMD_EOP;
-+
-+		if (skb->tstamp)
-+			idpf_tx_splitq_set_txtime(skb, &tx_params);
-+
- 		/* Set the RE bit periodically to "clean" the descriptor ring */
- 		if (idpf_tx_splitq_need_re(tx_q)) {
- 			tx_params.eop_cmd |= IDPF_TXD_FLEX_FLOW_CMD_RE;
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.h b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-index 908dfa28674e..86e881c697cc 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-@@ -161,6 +161,7 @@ union idpf_tx_flex_desc {
-  * @tso_segs: Number of segments to be sent
-  * @tso_hdr_len: Length of headers to be duplicated
-  * @td_cmd: Command field to be inserted into descriptor
-+ * @desc_ts: Flow scheduling offload timestamp
-  */
- struct idpf_tx_offload_params {
- 	u32 tx_flags;
-@@ -174,6 +175,7 @@ struct idpf_tx_offload_params {
- 	u16 tso_hdr_len;
- 
- 	u16 td_cmd;
-+	u8 desc_ts[3];
- };
- 
- /**
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-index 8bd6cca64c9b..964eb8aa283f 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-@@ -2,6 +2,7 @@
- /* Copyright (C) 2023 Intel Corporation */
- 
- #include <linux/export.h>
-+#include <linux/log2.h>
- #include <net/libeth/rx.h>
- 
- #include "idpf.h"
-@@ -1001,7 +1002,8 @@ static int idpf_send_get_caps_msg(struct idpf_adapter *adapter)
- 			    VIRTCHNL2_CAP_SPLITQ_QSCHED		|
- 			    VIRTCHNL2_CAP_PROMISC		|
- 			    VIRTCHNL2_CAP_LOOPBACK		|
--			    VIRTCHNL2_CAP_PTP);
-+			    VIRTCHNL2_CAP_PTP			|
-+			    VIRTCHNL2_CAP_EDT);
- 
- 	xn_params.vc_op = VIRTCHNL2_OP_GET_CAPS;
- 	xn_params.send_buf.iov_base = &caps;
-@@ -1019,6 +1021,49 @@ static int idpf_send_get_caps_msg(struct idpf_adapter *adapter)
- 	return 0;
- }
- 
-+/**
-+ * idpf_send_get_edt_caps_msg - Send virtchnl get EDT caps msg
-+ * @adapter: Driver specific private struct
-+ *
-+ * Return: 0 on success or error code on failure.
-+ */
-+static int idpf_send_get_edt_caps_msg(struct idpf_adapter *adapter)
-+{
-+	struct virtchnl2_edt_caps caps = {};
-+	struct idpf_vc_xn_params xn_params = {
-+		.vc_op = VIRTCHNL2_OP_GET_EDT_CAPS,
-+		.send_buf = {
-+			.iov_base = &caps,
-+			.iov_len = sizeof(caps),
-+		},
-+		.recv_buf = {
-+			.iov_base = &caps,
-+			.iov_len = sizeof(caps),
-+		},
-+		.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
-+	};
-+	ssize_t reply_sz;
-+	u64 gran_ns, horizon_ns;
-+
-+	reply_sz = idpf_vc_xn_exec(adapter, &xn_params);
-+	if (reply_sz < 0)
-+		return reply_sz;
-+	if (reply_sz < sizeof(caps))
-+		return -EIO;
-+
-+	horizon_ns = le64_to_cpu(caps.time_horizon_ns);
-+	if (horizon_ns > U32_MAX) {
-+		dev_warn(&adapter->pdev->dev, "EDT horizon exceeds U32\n");
-+		return 0;
-+	}
-+
-+	adapter->edt_caps.time_horizon_ns = horizon_ns;
-+	gran_ns = le64_to_cpu(caps.tstamp_granularity_ns);
-+	adapter->edt_caps.tstamp_granularity_pow2 = gran_ns ? ilog2(gran_ns) : 9;
-+
-+	return 0;
-+}
-+
- /**
-  * idpf_send_get_lan_memory_regions - Send virtchnl get LAN memory regions msg
-  * @adapter: Driver specific private struct
-@@ -3547,6 +3592,15 @@ int idpf_vc_core_init(struct idpf_adapter *adapter)
- 		}
- 	}
- 
-+	if (idpf_is_cap_ena(adapter, IDPF_OTHER_CAPS, VIRTCHNL2_CAP_EDT)) {
-+		err = idpf_send_get_edt_caps_msg(adapter);
-+		if (err) {
-+			dev_err(&adapter->pdev->dev, "Failed to get EDT caps: %d\n",
-+				err);
-+			return -EINVAL;
++		if (cm->cmsg_level == SOL_SOCKET &&
++		    cm->cmsg_type == SCM_TIMESTAMPING) {
++			tss = (void *)CMSG_DATA(cm);
++			cm = CMSG_NXTHDR(&msg, cm);
++			if (!cm)
++				error(1, 0, "timestamp missing ip err\n");
 +		}
-+	}
 +
- 	err = idpf_map_lan_mmio_regs(adapter);
- 	if (err) {
- 		dev_err(&adapter->pdev->dev, "Failed to map BAR0 region(s): %d\n",
-diff --git a/drivers/net/ethernet/intel/idpf/virtchnl2.h b/drivers/net/ethernet/intel/idpf/virtchnl2.h
-index 39fea65c075c..7525146491cd 100644
---- a/drivers/net/ethernet/intel/idpf/virtchnl2.h
-+++ b/drivers/net/ethernet/intel/idpf/virtchnl2.h
-@@ -457,6 +457,16 @@ struct virtchnl2_edt_caps {
- };
- VIRTCHNL2_CHECK_STRUCT_LEN(16, virtchnl2_edt_caps);
+ 		if (cm->cmsg_level != cfg_errq_level ||
+ 		    cm->cmsg_type != cfg_errq_type)
+ 			error(1, 0, "errqueue: type 0x%x.0x%x\n",
+ 				    cm->cmsg_level, cm->cmsg_type);
  
-+/**
-+ * struct virtchnl2_edt_caps_ilog2 - Host parsed EDT caps.
-+ * @time_horizon_ns: Total time window in nanoseconds.
-+ * @tstamp_granularity_pow2: Log2 of timestamp granularity in nanoseconds.
-+ */
-+struct virtchnl2_edt_caps_ilog2 {
-+	u32 time_horizon_ns;
-+	u8 tstamp_granularity_pow2;
-+};
+ 		err = (struct sock_extended_err *)CMSG_DATA(cm);
+-		if (err->ee_origin != SO_EE_ORIGIN_TXTIME)
++		if (err->ee_origin == SO_EE_ORIGIN_TXTIME)
++			num_tstamp += do_recv_errqueue_txtime(err, data[ret - 1]);
++		else if (err->ee_origin == SO_EE_ORIGIN_TIMESTAMPING && tss)
++			*num_ts += do_recv_errqueue_timestamping(tss);
++		else
+ 			error(1, 0, "errqueue: origin 0x%x\n", err->ee_origin);
+ 
+-		num_tstamp += do_recv_errqueue_txtime(err, data[ret - 1]);
+ 		msg.msg_flags = 0;
+ 		msg.msg_controllen = sizeof(control);
+ 	}
+@@ -243,7 +278,7 @@ static void recv_errqueue_msgs(int fdt)
+ {
+ 	struct pollfd pfd = { .fd = fdt, .events = POLLERR };
+ 	const int timeout_ms = 10;
+-	int ret, num_tstamp = 0;
++	int ret, num_tstamp = 0, num_ts = 0;
+ 
+ 	do {
+ 		ret = poll(&pfd, 1, timeout_ms);
+@@ -251,12 +286,19 @@ static void recv_errqueue_msgs(int fdt)
+ 			error(1, errno, "poll");
+ 
+ 		if (ret && (pfd.revents & POLLERR))
+-			num_tstamp += do_recv_errqueue(fdt);
++			num_tstamp += do_recv_errqueue(fdt, &num_ts);
+ 
+-		if (num_tstamp == cfg_num_pkt)
++		if (num_tstamp == cfg_num_pkt || num_ts == cfg_num_pkt)
+ 			break;
+ 
+-	} while (gettime_ns(cfg_clockid) < tdeliver_max);
++	} while (gettime_ns(cfg_clockid) <
++		 tdeliver_max + (cfg_variance_us * 1000));
 +
- /**
-  * struct virtchnl2_version_info - Version information.
-  * @major: Major version.
++	if (cfg_verify_hw_offload && num_ts != cfg_num_pkt) {
++		fprintf(stderr, "missing timestamps: expected %d, got %d\n",
++			cfg_num_pkt, num_ts);
++		errors++;
++	}
+ }
+ 
+ static void start_time_wait(void)
+@@ -301,6 +343,17 @@ static void setsockopt_txtime(int fd)
+ 		error(1, 0, "getsockopt txtime: mismatch");
+ }
+ 
++static void setsockopt_txtimestamping(int fd)
++{
++	int val = SOF_TIMESTAMPING_TX_SOFTWARE |
++		  SOF_TIMESTAMPING_SOFTWARE |
++		  SOF_TIMESTAMPING_OPT_TSONLY;
++
++	if (setsockopt(fd, SOL_SOCKET, SO_TIMESTAMPING,
++		       &val, sizeof(val)))
++		error(1, errno, "setsockopt timestamping");
++}
++
+ static int setup_tx(struct sockaddr *addr, socklen_t alen)
+ {
+ 	int fd;
+@@ -314,6 +367,9 @@ static int setup_tx(struct sockaddr *addr, socklen_t alen)
+ 
+ 	setsockopt_txtime(fd);
+ 
++	if (cfg_verify_hw_offload)
++		setsockopt_txtimestamping(fd);
++
+ 	if (cfg_mark &&
+ 	    setsockopt(fd, SOL_SOCKET, SO_MARK, &cfg_mark, sizeof(cfg_mark)))
+ 		error(1, errno, "setsockopt mark");
+@@ -354,6 +410,7 @@ static void do_test_tx(struct sockaddr *addr, socklen_t alen)
+ 
+ 	start_time_wait();
+ 	glob_tstart = gettime_ns(cfg_clockid);
++	glob_tstart_real = gettime_ns(CLOCK_REALTIME);
+ 
+ 	for (i = 0; i < cfg_num_pkt; i++)
+ 		do_send_one(fdt, &cfg_buf[i]);
+@@ -446,10 +503,11 @@ static void usage(const char *progname)
+ 			"  -6            only IPv6\n"
+ 			"  -c <clock>    monotonic or tai (default)\n"
+ 			"  -D <addr>     destination IP address (server)\n"
+-			"  -S <addr>     source IP address (client)\n"
++			"  -H            verify hardware offload (tx)\n"
++			"  -m <mark>     socket mark\n"
+ 			"  -r            run rx mode\n"
++			"  -S <addr>     source IP address (client)\n"
+ 			"  -t <nsec>     start time (UTC nanoseconds)\n"
+-			"  -m <mark>     socket mark\n"
+ 			"\n",
+ 			progname);
+ 	exit(1);
+@@ -461,7 +519,7 @@ static void parse_opts(int argc, char **argv)
+ 	int domain = PF_UNSPEC;
+ 	int c;
+ 
+-	while ((c = getopt(argc, argv, "46c:S:D:rt:m:")) != -1) {
++	while ((c = getopt(argc, argv, "46c:D:Hm:rS:t:")) != -1) {
+ 		switch (c) {
+ 		case '4':
+ 			if (domain != PF_UNSPEC)
+@@ -488,21 +546,24 @@ static void parse_opts(int argc, char **argv)
+ 			else
+ 				error(1, 0, "unknown clock id %s", optarg);
+ 			break;
+-		case 'S':
+-			saddr = optarg;
+-			break;
+ 		case 'D':
+ 			daddr = optarg;
+ 			break;
++		case 'H':
++			cfg_verify_hw_offload = true;
++			break;
++		case 'm':
++			cfg_mark = strtol(optarg, NULL, 0);
++			break;
+ 		case 'r':
+ 			cfg_rx = true;
+ 			break;
++		case 'S':
++			saddr = optarg;
++			break;
+ 		case 't':
+ 			cfg_start_time_ns = strtoll(optarg, NULL, 0);
+ 			break;
+-		case 'm':
+-			cfg_mark = strtol(optarg, NULL, 0);
+-			break;
+ 		default:
+ 			usage(argv[0]);
+ 		}
 -- 
 2.55.0.679.g6767b8d81c-goog
 
