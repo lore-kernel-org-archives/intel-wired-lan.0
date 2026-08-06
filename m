@@ -4,118 +4,118 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51185C5AC82
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  6 Aug 2026 23:29:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C760C5AC7A
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  6 Aug 2026 23:29:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 1A94B408F3;
-	Thu,  6 Aug 2026 23:29:33 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 0BB8640903;
+	Thu,  6 Aug 2026 23:29:36 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id mD1imPHqXfgg; Thu,  6 Aug 2026 23:29:32 +0000 (UTC)
+ id sNqBJoUAnTCE; Thu,  6 Aug 2026 23:29:34 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4FBBF40909
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2FC7B40907
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1786058972;
-	bh=kMvizLUHUgWoAQ2a15IzPnCt/bdK0Ped3AtGw1CCqzs=;
+	s=default; t=1786058974;
+	bh=f6avniWt0KYSUT1rJggrxMEdUFeAg0dFqmkqy+4409U=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=q/5ox57zJRNQNpZWdhFMFP3InnkQgMbkpYhqdKhl472P0Du6NKlUc7mYhobKxx033
-	 juBL02G3Rf2eTkujVuKApb8d6PV2jerWl9wiPpn+dhvJ249JJnQrn2bNxfUCdwlyMt
-	 sVdYACvxeB5wK27GbKX1yRXE+4pytHq9fVtkIHsN6O7CfJNCEuIjm3870u+yqiP5Rq
-	 KhkkGdjaj+RY+9Z6BB7fyOsWkkKVi4d5ZE1Oy6XAsI1k1598GSZnlk1KdO28ed3rRi
-	 mmTUc+7uCTomp7Rj/1R5w8autHnWLXo8GQwGk8IBAG8m81Yy3C3OWwV2InmqMWRR/n
-	 CcS6dTz/agfLw==
+	b=j+iAP1EPlvRbqQ0F9kTUV0ds9WcfsmRqDjwIz1kKkAdbGEBmeclu0/y3KFylIinQR
+	 k3HYoIcSlp0FLI9sZ8At7vx1i1FKjos18dEMpfpb0Fbou7zMS+FeQzJJwe/4PkKRaj
+	 xXgHbFCbvwCIR/YQqC15okVED4SsDh6aJ5XzEWj72+F+j+yMsL+DeC4sAVm576ybdD
+	 jEXmEpZ1gctGZPHbOLPp+4b0glyJMG35IA79Y/Gp9cij7WC7sSTs2OPoM/ubuPJie3
+	 RTNGxr/X4S6IEbubcDonITSldy0zNehFV8Mr8ojQpwQORem1znJYAs8utzSAHtqbyG
+	 SzzCl44H3qNUA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 4FBBF40909;
-	Thu,  6 Aug 2026 23:29:32 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 41F63198
- for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Aug 2026 23:29:31 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 2FC7B40907;
+	Thu,  6 Aug 2026 23:29:34 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 8F101198
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Aug 2026 23:29:32 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 33CF24090C
- for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Aug 2026 23:29:31 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 7D44080F8D
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Aug 2026 23:29:32 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id KTvqTxyyZ2Ov for <intel-wired-lan@lists.osuosl.org>;
- Thu,  6 Aug 2026 23:29:30 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id oZfdPr3HpnG8 for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  6 Aug 2026 23:29:31 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::b129; helo=mail-yx1-xb129.google.com;
+ client-ip=2607:f8b0:4864:20::b134; helo=mail-yx1-xb134.google.com;
  envelope-from=willemdebruijn.kernel@gmail.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 1F8F1408FB
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1F8F1408FB
-Received: from mail-yx1-xb129.google.com (mail-yx1-xb129.google.com
- [IPv6:2607:f8b0:4864:20::b129])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 1F8F1408FB
- for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Aug 2026 23:29:30 +0000 (UTC)
-Received: by mail-yx1-xb129.google.com with SMTP id
- 956f58d0204a3-66804667af2so2516376d50.0
- for <intel-wired-lan@lists.osuosl.org>; Thu, 06 Aug 2026 16:29:29 -0700 (PDT)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 9D41080F8B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9D41080F8B
+Received: from mail-yx1-xb134.google.com (mail-yx1-xb134.google.com
+ [IPv6:2607:f8b0:4864:20::b134])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 9D41080F8B
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Aug 2026 23:29:31 +0000 (UTC)
+Received: by mail-yx1-xb134.google.com with SMTP id
+ 956f58d0204a3-6688dfaed31so4367442d50.3
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 06 Aug 2026 16:29:31 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1786058969; x=1786663769;
+ d=1e100.net; s=20251104; t=1786058970; x=1786663770;
  h=content-transfer-encoding:mime-version:references:in-reply-to
  :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
  :to:cc:subject:date:message-id:reply-to:content-type;
- bh=kMvizLUHUgWoAQ2a15IzPnCt/bdK0Ped3AtGw1CCqzs=;
- b=cXGgdtUxar9VkOSMNHe/6HZ3nbdSryFYGelL9T1rzsUYfRdTEW3ohnklLMz/Dr+6T5
- 0OBdyzm6i1Y+y6k7FdtaoT50PFPXtKTeIs1UamJuAlPbY8vQ2ULr2JCdvb/h1mWwiYzQ
- 460ohLhZ8See1mr4sOxcFO7y/pjiHhN5PpXPvGlqPSCh/grJrztdi2aLAkSjO8HlEOrc
- AKWzeEvB0HbJo0rTVUP69xu4KXg+WDFMH5MBvEB3dkOP39MISXKA+yK+ZJ/Ph+vGicj5
- v58Yv29xtnVCtWL6iUMzSUhBxb+aOxkZ37q6pzRxhfWDtlK11wEhIVMrpw8z4bPSV2iV
- slJQ==
-X-Gm-Message-State: AOJu0YwTi8yGTpByYiPoZ8Ko/PMfISHmIpMSBGXvvDuBnAWy7zBqKUcz
- M9UI3qLlABI2zLxm67Ohr4H1pvYGoLVbPbpSb0Ed9KjTm6qo3ULhSXuS
-X-Gm-Gg: AR+sD105wTWqaT3t603XhqhSttTIFBKr1/0u8pg1bTF4Sp/qiSt6hQu6frIlNYS3HGd
- 1jOe0lS4fPPrHR9wpUvwGPOUJ5S1bX+FOaQOLZCzifHP87n8Da/XKARtxvnMwEYiyZPjLo32EjZ
- r5fMQImmKjx5bDN2dpS7lk4DBa1UuXya65tBQ7NNVBveX55i7WimymlN06+QZDRzdxuoHm7emA6
- 1aXAA94aZtHlMcx8XZc9kThVDShyS0tvGXi8Kcr0ojfou4pN/K02345L/9A8c9/bQ6/zow32t/1
- W2mB+TVgriF0mi3ooXVoIEOHYesOH8Pz2JGqOpKHLan5AwbO3EJS7sVTyj4cOiI6js77J7G0EQm
- uuCKHMlYAR309lcodVsknY4xk73x/EKIik1jMwca/HI0o71rOLlqm9qThhyrh2GTXj1QLxgiTcW
- AvEBWt5Xl2vhHo+nZ1L7imdZnvwmiLapT7QLgg1MpLr04+yB09S9y6D5NuyYvipgxl45pWJpNca
- HJ7MpYeHjDfFAsyuilf1F223dYQMbwzPVrO1kaNh42EeQ9Thc1AHKfXMoNNOKVm1SYOqA==
-X-Received: by 2002:a53:e141:0:b0:664:cd4c:83ef with SMTP id
- 956f58d0204a3-66ac2fb0dc5mr2297573d50.30.1786058968799; 
- Thu, 06 Aug 2026 16:29:28 -0700 (PDT)
+ bh=f6avniWt0KYSUT1rJggrxMEdUFeAg0dFqmkqy+4409U=;
+ b=YnnIeb4RtGJTTITMOpXkR0c5XW+6Vcb4XmYQ/IcPJGRcEkyWYEoelhql8G0XdSRUDA
+ V+IJ9AyYdYoAcmfMbXSYzymrCHqsoSnVVxfkAsrf+WaZNokQIdqVGuB+aMQ2FqXTTALu
+ AU0TXQd3ohJ2W+ZtjeBpsSowBlVH3S+fdx/fQ7tH7M5MlYtGuAk8DVr1G/hWapBCW3xg
+ GAu4JCDDLOHaB4i+HWjGhbi7ePUJBbeo7Pklgv6yLXlhPIB8sZKBYldy7AGvB5wZoE6M
+ mIw5oJowoPjtPgjlWYadLwPlW4Kxk+tKwBZYvNW1wEihxTz9++cDyP99oPn3k04tXBd3
+ V1jw==
+X-Gm-Message-State: AOJu0YxdKBygmupmSxQ8pS+/YCoeg8P4XZN16kN3K91Bgv+9BgIIfCHq
+ G1yAFjmHV1Cqmz2McX5ZZndx211QEuyLJdp3HxHstfxKPw9fCC/hiwXJ
+X-Gm-Gg: AR+sD11gXjQeB7INJnPa1bG/O2zSN2P8JdvFwiKJCoqT7hYCaTYkZz0oFzx7CSdYO+g
+ JwHcQYN+CwMt/c7hqfXCZN7bV1UiW9Qw5ZLJk793/tiNTSa3sghyEKP+Y8zY8jE7sNQpkNL4Dh3
+ K+f33XpKvt+/RgZj6cH6LWfiTmJXKdFAWCF14P/oG07IzvOZHn8ORco7SnmqqJ0Npn9G61UEKDS
+ fIBVZCTKSVgCqnwKiT0AFb2RBuK9OEW+dlXfRzRh+bTIWQKv8G1sPY7wEsIbSnWiSCThEbF3/eu
+ pxYzOtucv925vSTXzDJveqmel/3yElup/g0TZYIfCVyaKOrdqwoH7fCcXPjFwN08JLTRcVFDYPi
+ KHpeApmvNnG05BfnNT9ugaJUXhB7RUCLJ61ok6xn+6TbKjms8BdyoPsdCl/XpFxIL3PUgrh1Ao1
+ 5ClMNfGtoYgg+tzRi1V/y2uenVML0pEDgbZWET6kYfjMFke2YeFcVVznub5Ox9fBuN03b2SrVBO
+ ugPu7ZM7MVU99NHGKh3y8ySTpt6UBw+StbNlHNvv1vfpEE0G18AwQpkj7o=
+X-Received: by 2002:a05:690e:445a:b0:668:713d:893 with SMTP id
+ 956f58d0204a3-6699a91a8efmr8651954d50.4.1786058970362; 
+ Thu, 06 Aug 2026 16:29:30 -0700 (PDT)
 Received: from willemb.c.googlers.com.com
  (250.4.48.34.bc.googleusercontent.com. [34.48.4.250])
  by smtp.gmail.com with ESMTPSA id
- 956f58d0204a3-66acacdbdf2sm209273d50.4.2026.08.06.16.29.27
+ 956f58d0204a3-66acacdbdf2sm209273d50.4.2026.08.06.16.29.28
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 06 Aug 2026 16:29:27 -0700 (PDT)
+ Thu, 06 Aug 2026 16:29:29 -0700 (PDT)
 From: Willem de Bruijn <willemdebruijn.kernel@gmail.com>
 To: netdev@vger.kernel.org
 Cc: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
  joshua.a.hay@intel.com, przemyslaw.kitszel@intel.com,
  Willem de Bruijn <willemb@google.com>
-Date: Thu,  6 Aug 2026 19:26:02 -0400
-Message-ID: <20260806232913.4020403-6-willemdebruijn.kernel@gmail.com>
+Date: Thu,  6 Aug 2026 19:26:03 -0400
+Message-ID: <20260806232913.4020403-7-willemdebruijn.kernel@gmail.com>
 X-Mailer: git-send-email 2.55.0.679.g6767b8d81c-goog
 In-Reply-To: <20260806232913.4020403-1-willemdebruijn.kernel@gmail.com>
 References: <20260806232913.4020403-1-willemdebruijn.kernel@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20251104; t=1786058969; x=1786663769; darn=lists.osuosl.org;
+ d=gmail.com; s=20251104; t=1786058970; x=1786663770; darn=lists.osuosl.org;
  h=content-transfer-encoding:mime-version:references:in-reply-to
  :message-id:date:subject:cc:to:from:from:to:cc:subject:date
  :message-id:reply-to:content-type;
- bh=kMvizLUHUgWoAQ2a15IzPnCt/bdK0Ped3AtGw1CCqzs=;
- b=d1O/4lMfQvo2FVB605oFbLFe9e/ptqkMDayq+sfhPipWfTUx2eIFaDO3M/Rgx6Dfpb
- LcfTH2GVcLDlieCUGFIYhmHqJln6/ez4vzeeuIdsAcJapiprgxaskD/FTHqkl7d1ootx
- WKbCfkGwZ5vW3D+dq9IHYeIR5bvvTMx/Swa4xit7C3rV/itU5XdPd0j3/ZQJH3XHtF62
- c0qPccypHMyNEvv5twu33zga0dY83W3Wy9QPi9txnQG71iWItVlRl7jGI8nS7HlpdtlE
- R5U9cyl/Isq/2Ysapde5Z6MQFRZXSBKoidzSQF09t21A6P+g6RVmBOQ4cdYmXkG9jaeI
- Ectw==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ bh=f6avniWt0KYSUT1rJggrxMEdUFeAg0dFqmkqy+4409U=;
+ b=pIJF5E4c2ahvE+Ki/EVxPXXSYdLG7GgsP0tBqU71xHXHnAmF6di9CKlyNhLYOD9xeG
+ kCVabFFVbPxU6tDPnaLcowT+9NawEUFAQKgVLY0lW8RPGxzOkmVyS3os/0GYKTEGc5Ej
+ l1oOarZyTgxjyuX+KbdWDfHAkgVTiBPj9gXzemILuSdk6YCSlSokm5fpjcm27vbKXRBM
+ wRMM+vhspUYaZDjfyPgC8HpJL2+Mud2LcxdZT9IJUK1A4aGx3dBu6qER1kz3d+6vyM0N
+ QHss0JYzsntK3YZMHWBMwnEfcIys9i1Hvz02gy2mS10tZ+SfHyeILR6ClA1UTb7uIvy6
+ C7ig==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=gmail.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20251104 header.b=d1O/4lMf
-Subject: [Intel-wired-lan] [PATCH net-next v4 5/6] selftests: drv-net: in
- so_txtime tell apart sw from hw pacing
+ header.a=rsa-sha256 header.s=20251104 header.b=pIJF5E4c
+Subject: [Intel-wired-lan] [PATCH net-next v4 6/6] selftests: drv-net:
+ extend so_txtime with hw offload
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -133,17 +133,23 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: Willem de Bruijn <willemb@google.com>
 
-Detect software pacing in so_txtime.c using SO_TIMESTAMPING.
+Add two pacing hardware offload variants
 
-If '-H' (hw) is passed
+1. one that uses FQ to safely offload when within bounds.
+2. one that uses pfifo_fast and thus forwards all packets.
 
-1. measure sw tx delay with SOF_TIMESTAMPING_TX_SOFTWARE, and
-2. fail if delay exceeds a threshold, indicating pacing
+Verify that the packets are paced in hardware with new flag '-H'.
 
-Also extend while condition to account for possible variance.
-This applies to all tests, not just the new '-H' variants.
+Also increase rcvtimeout significantly to reduce flakiness. Especially
+for the new beyond_hw_horizon test, which is close to the 100ms limit.
+But update recv_verify_empty to take MSG_DONTWAIT. That last empty
+check must not delay each testcase by the receive timeout.
 
-Also reorder getopt parameters to make them alphabetical.
+Hardware pacing offload can complete packets out of order. So the
+reverse_order test is expected to pass with pfifo_fast too.
+
+Do not test ETF, which does not change its dequeue behavior based on
+pacing_offload_horizon.
 
 Signed-off-by: Willem de Bruijn <willemb@google.com>
 
@@ -151,220 +157,164 @@ Signed-off-by: Willem de Bruijn <willemb@google.com>
 
 Changes
   v3 -> v4
-    - rename -h to -H to avoid aliasing implicit getopt -h
-    - count sw timestamps to verify that they were actually checked
-    - (minor) do not ask for SOF_TIMESTAMPING_OPT_ID as not used
-    - (minor) remove unused parameter
-
-Reading timestamps from the error queue is never particularly slow,
-so errors are always counted, not only if !KSFT_MACHINE_SLOW.
+    - replace ethtool with rtnetlink APIs
+    - expect_fail: correctly handle negative test pfifofast beyond_hw_horizon,
+      also when KSFT_MACHINE_SLOW suppresses timing errors
+    - commit-msg: clarify that rcvtimeout increase is also needed for
+      beyond_hw_horizon test
+    - define the horizon (50ms) once, rather than three times
+    - leave cfg.require_ipver in place
+  v2 -> v3
+    - remove drivers/net/settings timeout change: superseded by recent commit
+    - add reverse_order comment
+  v1 -> v2
+    - re-raise NlError from e (patchwork pylint)
+    - simplify expect_pass test (patchwork pylint)
 ---
- .../testing/selftests/drivers/net/so_txtime.c | 93 +++++++++++++++----
- 1 file changed, 77 insertions(+), 16 deletions(-)
+ .../testing/selftests/drivers/net/so_txtime.c |  4 +-
+ .../selftests/drivers/net/so_txtime.py        | 75 ++++++++++++++++++-
+ 2 files changed, 75 insertions(+), 4 deletions(-)
 
 diff --git a/tools/testing/selftests/drivers/net/so_txtime.c b/tools/testing/selftests/drivers/net/so_txtime.c
-index f6f3253ed174..951312e67b66 100644
+index 951312e67b66..9028f9e5a411 100644
 --- a/tools/testing/selftests/drivers/net/so_txtime.c
 +++ b/tools/testing/selftests/drivers/net/so_txtime.c
-@@ -42,8 +42,10 @@ static bool	cfg_machine_slow;
- static uint64_t	cfg_start_time_ns;
- static int	cfg_mark;
- static bool	cfg_rx;
-+static bool	cfg_verify_hw_offload;
+@@ -155,7 +155,7 @@ static void do_recv_verify_empty(int fdr)
+ 	char rbuf[1];
+ 	int ret;
  
- static uint64_t glob_tstart;
-+static uint64_t glob_tstart_real;
- static uint64_t tdeliver_max;
- 
- static int errors;
-@@ -191,12 +193,32 @@ static int do_recv_errqueue_txtime(struct sock_extended_err *err,
- 	return 1;
+-	ret = recv(fdr, rbuf, sizeof(rbuf), 0);
++	ret = recv(fdr, rbuf, sizeof(rbuf), MSG_DONTWAIT);
+ 	if (ret != -1 || errno != EAGAIN)
+ 		error(1, 0, "recv: not empty as expected (%d, %d)", ret, errno);
  }
+@@ -379,7 +379,7 @@ static int setup_tx(struct sockaddr *addr, socklen_t alen)
  
--static int do_recv_errqueue(int fdt)
-+static int do_recv_errqueue_timestamping(struct scm_timestamping *tss)
-+{
-+	int64_t ts;
-+
-+	ts = tss->ts[0].tv_sec * 1000ULL * 1000 * 1000;
-+	ts += tss->ts[0].tv_nsec;
-+	ts -= glob_tstart_real;
-+	ts /= 1000;
-+
-+	if (ts > cfg_variance_us) {
-+		fprintf(stderr, "sw delay %" PRId64 "us exceeds bounds\n", ts);
-+		if (!cfg_machine_slow)
-+			errors++;
-+	}
-+
-+	return 1;
-+}
-+
-+static int do_recv_errqueue(int fdt, int *num_ts)
+ static int setup_rx(struct sockaddr *addr, socklen_t alen)
  {
- 	char control[CMSG_SPACE(sizeof(struct sock_extended_err)) +
-+		     CMSG_SPACE(sizeof(struct scm_timestamping)) +
- 		     CMSG_SPACE(sizeof(struct sockaddr_in6))] = {0};
- 	char data[sizeof(struct ethhdr) + sizeof(struct ipv6hdr) +
- 		  sizeof(struct udphdr) + 1];
-+	struct scm_timestamping *tss;
- 	struct sock_extended_err *err;
- 	int ret, num_tstamp = 0;
- 	struct msghdr msg = {0};
-@@ -222,16 +244,29 @@ static int do_recv_errqueue(int fdt)
- 			error(1, 0, "errqueue: flags 0x%x\n", msg.msg_flags);
- 
- 		cm = CMSG_FIRSTHDR(&msg);
-+		tss = NULL;
-+
-+		if (cm->cmsg_level == SOL_SOCKET &&
-+		    cm->cmsg_type == SCM_TIMESTAMPING) {
-+			tss = (void *)CMSG_DATA(cm);
-+			cm = CMSG_NXTHDR(&msg, cm);
-+			if (!cm)
-+				error(1, 0, "timestamp missing ip err\n");
-+		}
-+
- 		if (cm->cmsg_level != cfg_errq_level ||
- 		    cm->cmsg_type != cfg_errq_type)
- 			error(1, 0, "errqueue: type 0x%x.0x%x\n",
- 				    cm->cmsg_level, cm->cmsg_type);
- 
- 		err = (struct sock_extended_err *)CMSG_DATA(cm);
--		if (err->ee_origin != SO_EE_ORIGIN_TXTIME)
-+		if (err->ee_origin == SO_EE_ORIGIN_TXTIME)
-+			num_tstamp += do_recv_errqueue_txtime(err, data[ret - 1]);
-+		else if (err->ee_origin == SO_EE_ORIGIN_TIMESTAMPING && tss)
-+			*num_ts += do_recv_errqueue_timestamping(tss);
-+		else
- 			error(1, 0, "errqueue: origin 0x%x\n", err->ee_origin);
- 
--		num_tstamp += do_recv_errqueue_txtime(err, data[ret - 1]);
- 		msg.msg_flags = 0;
- 		msg.msg_controllen = sizeof(control);
- 	}
-@@ -243,7 +278,7 @@ static void recv_errqueue_msgs(int fdt)
- {
- 	struct pollfd pfd = { .fd = fdt, .events = POLLERR };
- 	const int timeout_ms = 10;
--	int ret, num_tstamp = 0;
-+	int ret, num_tstamp = 0, num_ts = 0;
- 
- 	do {
- 		ret = poll(&pfd, 1, timeout_ms);
-@@ -251,12 +286,19 @@ static void recv_errqueue_msgs(int fdt)
- 			error(1, errno, "poll");
- 
- 		if (ret && (pfd.revents & POLLERR))
--			num_tstamp += do_recv_errqueue(fdt);
-+			num_tstamp += do_recv_errqueue(fdt, &num_ts);
- 
--		if (num_tstamp == cfg_num_pkt)
-+		if (num_tstamp == cfg_num_pkt || num_ts == cfg_num_pkt)
- 			break;
- 
--	} while (gettime_ns(cfg_clockid) < tdeliver_max);
-+	} while (gettime_ns(cfg_clockid) <
-+		 tdeliver_max + (cfg_variance_us * 1000));
-+
-+	if (cfg_verify_hw_offload && num_ts != cfg_num_pkt) {
-+		fprintf(stderr, "missing timestamps: expected %d, got %d\n",
-+			cfg_num_pkt, num_ts);
-+		errors++;
-+	}
- }
- 
- static void start_time_wait(void)
-@@ -301,6 +343,17 @@ static void setsockopt_txtime(int fd)
- 		error(1, 0, "getsockopt txtime: mismatch");
- }
- 
-+static void setsockopt_txtimestamping(int fd)
-+{
-+	int val = SOF_TIMESTAMPING_TX_SOFTWARE |
-+		  SOF_TIMESTAMPING_SOFTWARE |
-+		  SOF_TIMESTAMPING_OPT_TSONLY;
-+
-+	if (setsockopt(fd, SOL_SOCKET, SO_TIMESTAMPING,
-+		       &val, sizeof(val)))
-+		error(1, errno, "setsockopt timestamping");
-+}
-+
- static int setup_tx(struct sockaddr *addr, socklen_t alen)
- {
+-	struct timeval tv = { .tv_usec = 100 * 1000 };
++	struct timeval tv = { .tv_usec = 600 * 1000 };
  	int fd;
-@@ -314,6 +367,9 @@ static int setup_tx(struct sockaddr *addr, socklen_t alen)
  
- 	setsockopt_txtime(fd);
+ 	fd = socket(addr->sa_family, SOCK_DGRAM, 0);
+diff --git a/tools/testing/selftests/drivers/net/so_txtime.py b/tools/testing/selftests/drivers/net/so_txtime.py
+index adf6c848d6d8..24a686eda562 100755
+--- a/tools/testing/selftests/drivers/net/so_txtime.py
++++ b/tools/testing/selftests/drivers/net/so_txtime.py
+@@ -12,7 +12,9 @@ import time
+ from lib.py import ksft_exit, ksft_run, ksft_variants
+ from lib.py import KsftNamedVariant, KsftSkipEx
+ from lib.py import NetDrvEpEnv, bkg, cmd, defer, tc
++from lib.py import RtnlFamily, NlError
  
-+	if (cfg_verify_hw_offload)
-+		setsockopt_txtimestamping(fd);
++_HW_OFFLOAD_HORIZON_MS = 50
+ 
+ def test_so_txtime(cfg, clockid, ipver, args_tx, args_rx, expect_success):
+     """Main function. Run so_txtime as sender and receiver."""
+@@ -32,10 +34,39 @@ def test_so_txtime(cfg, clockid, ipver, args_tx, args_rx, expect_success):
+     expect_fail = not expect_success
+     if slow_machine:
+         expect_success = False
++        expect_fail = None
+ 
+     with bkg(cmd_rx, host=cfg.remote, fail=expect_success,
+              expect_fail=expect_fail, exit_wait=True):
+-        cmd(cmd_tx)
++        cmd(cmd_tx, fail=expect_success)
 +
- 	if (cfg_mark &&
- 	    setsockopt(fd, SOL_SOCKET, SO_MARK, &cfg_mark, sizeof(cfg_mark)))
- 		error(1, errno, "setsockopt mark");
-@@ -354,6 +410,7 @@ static void do_test_tx(struct sockaddr *addr, socklen_t alen)
++
++def _dev_setup_pacing_offload(cfg):
++    """Configure pacing-offload-horizon."""
++    rtnl = RtnlFamily()
++
++    try:
++        link = rtnl.getlink({'ifi-index': cfg.ifindex})
++    except NlError as e:
++        raise KsftSkipEx('getlink not supported by device') from e
++
++    if 'pacing-offload-horizon' not in link or \
++       'max-pacing-offload-horizon' not in link:
++        raise KsftSkipEx('pacing offload horizon not supported by device')
++
++    horizon = _HW_OFFLOAD_HORIZON_MS * 1000_000
++    if link['max-pacing-offload-horizon'] < horizon:
++        raise KsftSkipEx('pacing offload max horizon too small')
++
++    cur_horizon = link['pacing-offload-horizon']
++    rtnl.setlink({
++        'ifi-index': cfg.ifindex,
++        'pacing-offload-horizon': horizon,
++    })
++    defer(rtnl.setlink, {
++        'ifi-index': cfg.ifindex,
++        'pacing-offload-horizon': cur_horizon
++    })
  
- 	start_time_wait();
- 	glob_tstart = gettime_ns(cfg_clockid);
-+	glob_tstart_real = gettime_ns(CLOCK_REALTIME);
  
- 	for (i = 0; i < cfg_num_pkt; i++)
- 		do_send_one(fdt, &cfg_buf[i]);
-@@ -446,10 +503,11 @@ static void usage(const char *progname)
- 			"  -6            only IPv6\n"
- 			"  -c <clock>    monotonic or tai (default)\n"
- 			"  -D <addr>     destination IP address (server)\n"
--			"  -S <addr>     source IP address (client)\n"
-+			"  -H            verify hardware offload (tx)\n"
-+			"  -m <mark>     socket mark\n"
- 			"  -r            run rx mode\n"
-+			"  -S <addr>     source IP address (client)\n"
- 			"  -t <nsec>     start time (UTC nanoseconds)\n"
--			"  -m <mark>     socket mark\n"
- 			"\n",
- 			progname);
- 	exit(1);
-@@ -461,7 +519,7 @@ static void parse_opts(int argc, char **argv)
- 	int domain = PF_UNSPEC;
- 	int c;
+ def _qdisc_setup(ifname, qdisc, optargs=""):
+@@ -56,6 +87,7 @@ def _test_variants_fq():
+             ["one_pkt", "a,10", "a,10"],
+             ["in_order", "a,10,b,20", "a,10,b,20"],
+             ["reverse_order", "a,20,b,10", "b,10,a,20"],
++            ["beyond_hw_horizon", "a,70", "a,70"],
+         ]:
+             name = f"v{ipver}_{testcase[0]}"
+             yield KsftNamedVariant(name, ipver, testcase[1], testcase[2])
+@@ -69,6 +101,39 @@ def test_so_txtime_fq_mono(cfg, ipver, args_tx, args_rx):
+     test_so_txtime(cfg, "mono", ipver, args_tx, args_rx, True)
  
--	while ((c = getopt(argc, argv, "46c:S:D:rt:m:")) != -1) {
-+	while ((c = getopt(argc, argv, "46c:D:Hm:rS:t:")) != -1) {
- 		switch (c) {
- 		case '4':
- 			if (domain != PF_UNSPEC)
-@@ -488,21 +546,24 @@ static void parse_opts(int argc, char **argv)
- 			else
- 				error(1, 0, "unknown clock id %s", optarg);
- 			break;
--		case 'S':
--			saddr = optarg;
--			break;
- 		case 'D':
- 			daddr = optarg;
- 			break;
-+		case 'H':
-+			cfg_verify_hw_offload = true;
-+			break;
-+		case 'm':
-+			cfg_mark = strtol(optarg, NULL, 0);
-+			break;
- 		case 'r':
- 			cfg_rx = true;
- 			break;
-+		case 'S':
-+			saddr = optarg;
-+			break;
- 		case 't':
- 			cfg_start_time_ns = strtoll(optarg, NULL, 0);
- 			break;
--		case 'm':
--			cfg_mark = strtol(optarg, NULL, 0);
--			break;
- 		default:
- 			usage(argv[0]);
- 		}
+ 
++@ksft_variants(_test_variants_fq())
++def test_so_txtime_fq_mono_hw(cfg, ipver, args_tx, args_rx):
++    """Run all variants of monotonic fq tests, with offload horizon."""
++    cfg.require_ipver(ipver)
++    cfg.require_nsim(nsim_test=False)
++
++    _dev_setup_pacing_offload(cfg)
++    try:
++        _qdisc_setup(cfg.ifname, "fq", f"offload_horizon {_HW_OFFLOAD_HORIZON_MS}ms")
++    except Exception as e:
++        raise KsftSkipEx("netdev does not support offload. skipping") from e
++
++    # Expect all tests to use only hw pacing, except beyond_hw_horizon.
++    # Do not pass -H to that test so that with sw pacing fallback it passes.
++    hw_only = "-H" if args_tx != "a,70" else ""
++    test_so_txtime(cfg, "mono", ipver, f"{hw_only} {args_tx}", args_rx, True)
++
++
++@ksft_variants(_test_variants_fq())
++def test_so_txtime_pfifofast_mono_hw(cfg, ipver, args_tx, args_rx):
++    """Run all variants of monotonic tests, without fq pacing sw backup."""
++    cfg.require_ipver(ipver)
++    cfg.require_nsim(nsim_test=False)
++
++    _dev_setup_pacing_offload(cfg)
++    _qdisc_setup(cfg.ifname, "pfifo_fast")
++
++    # Expect all tests to pass, except beyond_hw_horizon without sw fallback.
++    # It will send immediately, failing the receiver arrival bounds check.
++    expect_pass = not args_tx == "a,70"
++    test_so_txtime(cfg, "mono", ipver, f"-H {args_tx}", args_rx, expect_pass)
++
++
+ @ksft_variants(_test_variants_fq())
+ def test_so_txtime_fq_tai(cfg, ipver, args_tx, args_rx):
+     """Run all variants of fq tests, but pass CLOCK_TAI to test conversion."""
+@@ -108,7 +173,13 @@ def main() -> None:
+     """Boilerplate ksft main."""
+     with NetDrvEpEnv(__file__) as cfg:
+         ksft_run(
+-            [test_so_txtime_fq_mono, test_so_txtime_fq_tai, test_so_txtime_etf],
++            [
++                test_so_txtime_fq_mono,
++                test_so_txtime_fq_mono_hw,
++                test_so_txtime_pfifofast_mono_hw,
++                test_so_txtime_fq_tai,
++                test_so_txtime_etf,
++            ],
+             args=(cfg,),
+         )
+     ksft_exit()
 -- 
 2.55.0.679.g6767b8d81c-goog
 
