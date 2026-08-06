@@ -4,92 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E69D5C56205
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  6 Aug 2026 16:02:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2B42C56208
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  6 Aug 2026 16:02:42 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 9454B406D0;
-	Thu,  6 Aug 2026 16:02:41 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 9C3834072E;
+	Thu,  6 Aug 2026 16:02:42 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id tWDWUdSyqphe; Thu,  6 Aug 2026 16:02:39 +0000 (UTC)
+ id avcYEGoeDL8X; Thu,  6 Aug 2026 16:02:41 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 86806406D5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org AD765406D5
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1786032159;
-	bh=Yg5XgpDj8AgqqB0BK6OhjlrRk5Vk4TngM7ime0NiK3E=;
+	s=default; t=1786032161;
+	bh=zvyn7tSuYfZbgeHgBXNE98REvGw/upXdVARtrfoFp/k=;
 	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=iggcVb8GiWru+dJHqWcpSg3TUPdf90eSIR3H53Sg/XjSR9c9E4MR5H3/DttBynhIp
-	 rKzclryr8l4rMTROg48oZwv/87KQhKlYnXHF8Ioz7BNLOiUdA39aAXry4cpmBA9u33
-	 rx7vmMjlR2G3k4K85VlpRCHYW+t7Fn3jL0P/w+1lMBVOEhfvu3mrkrViUi1lHzl9WQ
-	 mo4QHoR+zDStGf1WBg3nV3HqhV/B+NDwEtI/8pCH08bw0WkzuoAzZdN6lhroh+PBs4
-	 4TCtgGW1Qk5X0wu7htAJhfTUh5Ksi/hURzZ+ijFmI55CCkDHGI8zcKAB7/jLRIJG4M
-	 L5wNVH9tVNO7w==
+	b=fy7YCCcPjVkna7LjKdPHPlTrk1ftvs4aVS86ycvwMEEf5mraJV/gdHzKww/f0vnp8
+	 dJqC4BAmXspAcQu7lykUjCI/E0CGVSxDUdc6DkYLF/rhXdb/ju6RdEIUrBBU2vjh6q
+	 YxHZuzMvdCSh8LoMaT44iSXb7SxlQ7am9oObWQG9ulFZRjW774xHMVNW1WiTiJCcVR
+	 Xl18AkoX0eLb+W0VWHUZBrV8a3adAJIWADsMLwSCmbmU0h6P93MK9I0pYCNryrj4SE
+	 xS6V6BlSlzjGsh9GyvsFDX+deSKVTgb0+WlwIk4d432FPSo0Jg50Pmr0kKNsrAo5/t
+	 1+VCdywT2NTKg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 86806406D5;
-	Thu,  6 Aug 2026 16:02:39 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 30781218
- for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Aug 2026 15:36:39 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id AD765406D5;
+	Thu,  6 Aug 2026 16:02:41 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 0898C218
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Aug 2026 15:37:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 224BC60806
- for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Aug 2026 15:36:39 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id EE343402A4
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Aug 2026 15:37:42 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 665svJX4cRsJ for <intel-wired-lan@lists.osuosl.org>;
- Thu,  6 Aug 2026 15:36:38 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id hVyili1SpMDy for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  6 Aug 2026 15:37:42 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=209.85.167.208;
  helo=mail-oi1-f208.google.com;
- envelope-from=3bkp0agkbaiu178tjuun0jyyrm.pxxpun31n0lxw2nw2.lxv@m3kw2wvrgufz5godrsrytgd7.apphosting.bounces.google.com;
+ envelope-from=3rkp0agkbamu39avlwwp2l00to.rzzrwp53p2nzy4py4.nzx@m3kw2wvrgufz5godrsrytgd7.apphosting.bounces.google.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 14183605E0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 14183605E0
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org D7BB240125
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D7BB240125
 Received: from mail-oi1-f208.google.com (mail-oi1-f208.google.com
  [209.85.167.208])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 14183605E0
- for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Aug 2026 15:36:37 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTPS id D7BB240125
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Aug 2026 15:37:41 +0000 (UTC)
 Received: by mail-oi1-f208.google.com with SMTP id
- 5614622812f47-4ab4dd46ddeso1175224b6e.3
- for <intel-wired-lan@lists.osuosl.org>; Thu, 06 Aug 2026 08:36:37 -0700 (PDT)
+ 5614622812f47-4af9bf0f53bso2492514b6e.1
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 06 Aug 2026 08:37:41 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1786030597; x=1786635397;
+ d=1e100.net; s=20251104; t=1786030661; x=1786635461;
  h=content-type:to:from:subject:message-id:date:mime-version
  :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
  :content-type;
- bh=Yg5XgpDj8AgqqB0BK6OhjlrRk5Vk4TngM7ime0NiK3E=;
- b=HR4ZEjWkmqaen0PmygSL8SioSuPqQdoXmZf5Icl7qBoaHJdES2aePe4Fmds//f/2d4
- K4F/ATnLjwnJ9D9Rtm9heyQiOqMzlqObBgEEOTi0v1M9xpx79AnvRbzvG/hCewZOwcES
- FvdAnNrBqRYVjyeWLjLMCSX7ttgr7Pw2a8StqlMbjWQk0vv3kk2g43/oEOLycQzGZGsO
- VBDNstp6F1wCjaU7v3u72vEzdEido/hEIDGXiUGpF1OyhxngLB4+CJ4hXuPsEtGDURcC
- G01rV61gQsb0sxWcc24umR07H8Q+fh3NXy5EpBjfzB7ksltR0BOFg3bqlTY7jNfX4Cvx
- utlw==
+ bh=zvyn7tSuYfZbgeHgBXNE98REvGw/upXdVARtrfoFp/k=;
+ b=GOfLhiFTP8shqP59am3rxFzJ3GVzBuC1AB0rUkBBgXItphKnKMAP3yCBSVXM/4XjPd
+ iJhT6Np7L9w7+fM3DYjKkvQM3pdmsJPiqvlorUiOJcIsUPLw8ZS2+Py9tgDdY7t6JN4i
+ TBsfZttY7g9LON3DxyEAyxUznOMy5WeF3dad6EQQPwgRlcxY9e19gF46eOoD2wPSpgxv
+ xXZL1isMPdtAIW3RZamfmUtkP+cShtgIK6dSTcmhlp13QFm0iG8HGrla4Aw3TiBLw5f/
+ zXkqnS4LvZpHiTc/41idAiEAp+wTbT/6CwRWCqDgHV9k3Ca3EzpEz34jpLH0IR++2Ibd
+ pIZw==
 X-Forwarded-Encrypted: i=1;
- AHgh+RqpL8YjdfZYHsN6yvH5zPxc9W/eCNMCM5MCZGcRbl06iex5rsiGtiw9JAv4AsC8dIe7DBB2uVuWW6NRyhjuAp4=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YwQhJZ8MuTaT96de/Ly1bH1FUmsquZiB7Sbs/25JD+8GcGDftJ4
- FrPlv+GnDdKZE31ot5PGrq48X31rZQedD51gBs1yDtU6LqMRph3msaLT1gTnGnlCtmicAc3Fy89
- Pq5SnpfOoaCWtURwjGfDQTB8vH71xPP/GJNsNdRrM8LGZb+oUKhv5NqbIdS4=
+ AHgh+Rq/oYhSbrplP7lwgtl+l0EZwpL8L6ZEcANK0qpd5wCNbc8qV12PwVKKk+E1kq+22tBOKtSIflYycWUeSupz8xQ=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YzS/VFmpo3L7I1rR/OG1v3uAg26/tgXzhijRd9FqPe2/U1hORZo
+ AXrZKZ7bPwyyV4Sjrx7tOSrDMLsqlExtg5L0SV+Ej7YX/MX0moIhNEgchq9SjANBERjcA4X4E10
+ ogjT9RAvM9hrj+bW0tEd4K+XKc8BHJDzlx1lzfNZ0y8MMEEQR11m2c4MW9Qw=
 MIME-Version: 1.0
-X-Received: by 2002:a05:6808:1927:b0:497:d371:21c8 with SMTP id
- 5614622812f47-4afae27b56emr10300335b6e.19.1786030596845; Thu, 06 Aug 2026
- 08:36:36 -0700 (PDT)
-Date: Thu, 06 Aug 2026 08:36:36 -0700
+X-Received: by 2002:a05:6808:6f98:b0:4a4:82b:2a36 with SMTP id
+ 5614622812f47-4b133472ff2mr1090783b6e.11.1786030660811; Thu, 06 Aug 2026
+ 08:37:40 -0700 (PDT)
+Date: Thu, 06 Aug 2026 08:37:40 -0700
 X-Google-Appengine-App-Id: s~syzkaller
 X-Google-Appengine-App-Id-Alias: syzkaller
-Message-ID: <6a74aa04.01d0871a.3a0d52.0025.GAE@google.com>
-From: syzbot <syzbot+e0abb1d45ac291ebebeb@syzkaller.appspotmail.com>
+Message-ID: <6a74aa44.01d0871a.3a0d52.0029.GAE@google.com>
+From: syzbot <syzbot+8ce4dba751e79facdc38@syzkaller.appspotmail.com>
 To: andrew+netdev@lunn.ch, anthony.l.nguyen@intel.com, davem@davemloft.net, 
  edumazet@google.com, intel-wired-lan@lists.osuosl.org, kuba@kernel.org, 
  linux-kernel@vger.kernel.org, netdev@vger.kernel.org, pabeni@redhat.com, 
  przemyslaw.kitszel@intel.com, syzkaller-bugs@googlegroups.com
 Content-Type: text/plain; charset="UTF-8"
 X-Mailman-Approved-At: Thu, 06 Aug 2026 16:02:38 +0000
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=syzkaller.appspotmail.com
-Subject: [Intel-wired-lan] [syzbot] [intel-wired-lan?] UBSAN:
- shift-out-of-bounds in e100_eeprom_load
+Subject: [Intel-wired-lan] [syzbot] [intel-wired-lan?] BUG: unable to handle
+ kernel paging request in e1000_get_cfg_done_82571
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -111,64 +111,109 @@ syzbot found the following issue on:
 
 HEAD commit:    848acc8ffe1b Merge tag 'fsverity-for-linus' of git://git.k..
 git tree:       upstream
-console output: https://syzkaller.appspot.com/x/log.txt?x=15087e32580000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=145fa60d73086782
-dashboard link: https://syzkaller.appspot.com/bug?extid=e0abb1d45ac291ebebeb
-compiler:       gcc (Debian 14.2.0-19) 14.2.0, GNU ld (GNU Binutils for Debian) 2.44
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=17ed13b9580000
-C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=162c5bb9580000
+console output: https://syzkaller.appspot.com/x/log.txt?x=159d33b9580000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=c05be6c9b0d36cb9
+dashboard link: https://syzkaller.appspot.com/bug?extid=8ce4dba751e79facdc38
+compiler:       Debian clang version 22.1.8 (++20260613092233+e80beda6e255-1~exp1~20260613092250.77), Debian LLD 22.1.8
+
+Unfortunately, I don't have any reproducer for this issue yet.
 
 Downloadable assets:
 disk image (non-bootable): https://storage.googleapis.com/syzbot-assets/d900f083ada3/non_bootable_disk-848acc8f.raw.xz
-vmlinux: https://storage.googleapis.com/syzbot-assets/6fb497cc0c8d/vmlinux-848acc8f.xz
-kernel image: https://storage.googleapis.com/syzbot-assets/663ccee34982/bzImage-848acc8f.xz
+vmlinux: https://storage.googleapis.com/syzbot-assets/2425c07b5d46/vmlinux-848acc8f.xz
+kernel image: https://storage.googleapis.com/syzbot-assets/cf278dd14da3/bzImage-848acc8f.xz
 
 IMPORTANT: if you fix the issue, please add the following tag to the commit:
-Reported-by: syzbot+e0abb1d45ac291ebebeb@syzkaller.appspotmail.com
+Reported-by: syzbot+8ce4dba751e79facdc38@syzkaller.appspotmail.com
 
-e1000e 0000:00:02.0 eth1: removed PHC
-e1000e 0000:00:02.0 eth1: NIC Link is Down
-------------[ cut here ]------------
-UBSAN: shift-out-of-bounds in drivers/net/ethernet/intel/e100.c:768:21
-shift exponent 65529 is too large for 32-bit type 'int'
-CPU: 0 UID: 0 PID: 5934 Comm: syz.0.17 Not tainted syzkaller #0 PREEMPT(full) 
+e1000e 0000:00:03.0: Interrupt Throttling Rate (ints/sec) set to dynamic conservative mode
+e1000e 0000:00:03.0 0000:00:03.0 (uninitialized): Failed to initialize MSI interrupts.  Falling back to legacy interrupts.
+e1000e 0000:00:03.0: The NVM Checksum Is Not Valid
+BUG: unable to handle page fault for address: ffffc900014c70b0
+#PF: supervisor read access in kernel mode
+#PF: error_code(0x0000) - not-present page
+PGD 1b000067 P4D 1b000067 PUD 1c2b9067 PMD 313cf067 PTE 0
+Oops: Oops: 0000 [#1] SMP KASAN NOPTI
+CPU: 0 UID: 0 PID: 5316 Comm: syz.0.0 Not tainted syzkaller #0 PREEMPT(full) 
 Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
+RIP: 0010:readl arch/x86/include/asm/io.h:59 [inline]
+RIP: 0010:__er32 drivers/net/ethernet/intel/e1000e/e1000.h:604 [inline]
+RIP: 0010:e1000_get_cfg_done_82571+0x42/0x130 drivers/net/ethernet/intel/e1000e/82571.c:850
+Code: fc ff df e8 a0 97 f9 fa 4c 8d 73 08 bd 9d ff ff ff 4d 89 f4 49 c1 ec 03 43 80 3c 3c 00 74 08 4c 89 f7 e8 21 ca 68 fb 49 8b 06 <44> 8b a8 10 10 00 00 44 89 ee 81 e6 00 00 04 00 31 ff e8 a7 9b f9
+RSP: 0018:ffffc9000e0bf828 EFLAGS: 00010246
+RAX: ffffc900014c60a0 RBX: ffff888012ea95b8 RCX: 0000000000100000
+RDX: ffffc9000f08a000 RSI: 000000000007b7ca RDI: 000000000007b7cb
+RBP: 00000000ffffff9d R08: ffffffff9057c237 R09: 1ffffffff20af846
+R10: dffffc0000000000 R11: ffffffff86cd8b00 R12: 1ffff110025d52b8
+R13: ffff888012ea8ec0 R14: ffff888012ea95c0 R15: dffffc0000000000
+FS:  00007f43c9d9e6c0(0000) GS:ffff88808c540000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: ffffc900014c70b0 CR3: 0000000045878000 CR4: 0000000000352ef0
 Call Trace:
  <TASK>
- __dump_stack lib/dump_stack.c:94 [inline]
- dump_stack_lvl+0x100/0x190 lib/dump_stack.c:120
- ubsan_epilogue+0xa/0x30 lib/ubsan.c:233
- __ubsan_handle_shift_out_of_bounds+0x279/0x2a0 lib/ubsan.c:494
- e100_eeprom_load.cold+0x55/0x9e drivers/net/ethernet/intel/e100.c:768
- e100_probe+0xd07/0x1ab0 drivers/net/ethernet/intel/e100.c:2921
- local_pci_probe+0xdd/0x1b0 drivers/pci/pci-driver.c:332
- pci_call_probe+0x176/0x800 drivers/pci/pci-driver.c:394
+ e1000_phy_hw_reset drivers/net/ethernet/intel/e1000e/e1000.h:542 [inline]
+ e1000_probe+0x1fb5/0x2b20 drivers/net/ethernet/intel/e1000e/netdev.c:7725
+ local_pci_probe drivers/pci/pci-driver.c:332 [inline]
+ pci_call_probe drivers/pci/pci-driver.c:394 [inline]
  __pci_device_probe drivers/pci/pci-driver.c:455 [inline]
- pci_device_probe+0x1cd/0x370 drivers/pci/pci-driver.c:489
- call_driver_probe drivers/base/dd.c:628 [inline]
- really_probe+0x241/0xa60 drivers/base/dd.c:706
- __driver_probe_device+0x20e/0x450 drivers/base/dd.c:868
- device_driver_attach+0xd1/0x220 drivers/base/dd.c:1203
- bind_store+0xf4/0x190 drivers/base/bus.c:267
- drv_attr_store+0x74/0xb0 drivers/base/bus.c:125
- sysfs_kf_write+0xf2/0x150 fs/sysfs/file.c:145
- kernfs_fop_write_iter+0x3e0/0x5f0 fs/kernfs/file.c:345
+ pci_device_probe+0x431/0xc90 drivers/pci/pci-driver.c:489
+ call_driver_probe drivers/base/dd.c:-1 [inline]
+ really_probe+0x254/0xae0 drivers/base/dd.c:706
+ __driver_probe_device+0x1e8/0x360 drivers/base/dd.c:868
+ device_driver_attach+0xe0/0x1d0 drivers/base/dd.c:1203
+ bind_store+0x1d0/0x220 drivers/base/bus.c:267
+ kernfs_fop_write_iter+0x3a4/0x540 fs/kernfs/file.c:345
  new_sync_write fs/read_write.c:595 [inline]
- vfs_write+0x6ac/0x1050 fs/read_write.c:687
- ksys_write+0x12a/0x250 fs/read_write.c:739
+ vfs_write+0x612/0xba0 fs/read_write.c:687
+ ksys_write+0x150/0x270 fs/read_write.c:739
  do_syscall_x64 arch/x86/entry/syscall_64.c:63 [inline]
- do_syscall_64+0x115/0x870 arch/x86/entry/syscall_64.c:94
+ do_syscall_64+0x174/0x580 arch/x86/entry/syscall_64.c:94
  entry_SYSCALL_64_after_hwframe+0x77/0x7f
-RIP: 0033:0x7f60d819e019
+RIP: 0033:0x7f43c8f9e019
 Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 e8 ff ff ff f7 d8 64 89 01 48
-RSP: 002b:00007ffc13c52ae8 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
-RAX: ffffffffffffffda RBX: 00007f60d8425fa0 RCX: 00007f60d819e019
-RDX: 000000000000000c RSI: 0000200000000280 RDI: 0000000000000005
-RBP: 00007f60d823500c R08: 0000000000000000 R09: 0000000000000000
+RSP: 002b:00007f43c9d9dfe8 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
+RAX: ffffffffffffffda RBX: 00007f43c9225fa0 RCX: 00007f43c8f9e019
+RDX: 000000000000000d RSI: 0000200000000240 RDI: 0000000000000005
+RBP: 00007f43c903500c R08: 0000000000000000 R09: 0000000000000000
 R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000000
-R13: 00007f60d8425fac R14: 00007f60d8425fa0 R15: 00007f60d8425fa0
+R13: 00007f43c9226038 R14: 00007f43c9225fa0 R15: 00007ffc48486068
  </TASK>
----[ end trace ]---
+Modules linked in:
+CR2: ffffc900014c70b0
+---[ end trace 0000000000000000 ]---
+RIP: 0010:readl arch/x86/include/asm/io.h:59 [inline]
+RIP: 0010:__er32 drivers/net/ethernet/intel/e1000e/e1000.h:604 [inline]
+RIP: 0010:e1000_get_cfg_done_82571+0x42/0x130 drivers/net/ethernet/intel/e1000e/82571.c:850
+Code: fc ff df e8 a0 97 f9 fa 4c 8d 73 08 bd 9d ff ff ff 4d 89 f4 49 c1 ec 03 43 80 3c 3c 00 74 08 4c 89 f7 e8 21 ca 68 fb 49 8b 06 <44> 8b a8 10 10 00 00 44 89 ee 81 e6 00 00 04 00 31 ff e8 a7 9b f9
+RSP: 0018:ffffc9000e0bf828 EFLAGS: 00010246
+RAX: ffffc900014c60a0 RBX: ffff888012ea95b8 RCX: 0000000000100000
+RDX: ffffc9000f08a000 RSI: 000000000007b7ca RDI: 000000000007b7cb
+RBP: 00000000ffffff9d R08: ffffffff9057c237 R09: 1ffffffff20af846
+R10: dffffc0000000000 R11: ffffffff86cd8b00 R12: 1ffff110025d52b8
+R13: ffff888012ea8ec0 R14: ffff888012ea95c0 R15: dffffc0000000000
+FS:  00007f43c9d9e6c0(0000) GS:ffff88808c540000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: ffffc900014c70b0 CR3: 0000000045878000 CR4: 0000000000352ef0
+----------------
+Code disassembly (best guess), 3 bytes skipped:
+   0:	e8 a0 97 f9 fa       	call   0xfaf997a5
+   5:	4c 8d 73 08          	lea    0x8(%rbx),%r14
+   9:	bd 9d ff ff ff       	mov    $0xffffff9d,%ebp
+   e:	4d 89 f4             	mov    %r14,%r12
+  11:	49 c1 ec 03          	shr    $0x3,%r12
+  15:	43 80 3c 3c 00       	cmpb   $0x0,(%r12,%r15,1)
+  1a:	74 08                	je     0x24
+  1c:	4c 89 f7             	mov    %r14,%rdi
+  1f:	e8 21 ca 68 fb       	call   0xfb68ca45
+  24:	49 8b 06             	mov    (%r14),%rax
+* 27:	44 8b a8 10 10 00 00 	mov    0x1010(%rax),%r13d <-- trapping instruction
+  2e:	44 89 ee             	mov    %r13d,%esi
+  31:	81 e6 00 00 04 00    	and    $0x40000,%esi
+  37:	31 ff                	xor    %edi,%edi
+  39:	e8                   	.byte 0xe8
+  3a:	a7                   	cmpsl  %es:(%rdi),%ds:(%rsi)
+  3b:	9b                   	fwait
+  3c:	f9                   	stc
 
 
 ---
@@ -181,10 +226,6 @@ https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
 
 If the report is already addressed, let syzbot know by replying with:
 #syz fix: exact-commit-title
-
-If you want syzbot to run the reproducer, reply with:
-#syz test: git://repo/address.git branch-or-commit-hash
-If you attach or paste a git patch, syzbot will apply it before testing.
 
 If you want to overwrite report's subsystems, reply with:
 #syz set subsystems: new-subsystem
