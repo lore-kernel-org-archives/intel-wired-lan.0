@@ -4,95 +4,118 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C5D07C56208
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  6 Aug 2026 16:25:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7475CC56205
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  6 Aug 2026 17:28:23 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 8C319407C2;
-	Thu,  6 Aug 2026 16:25:20 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 21E0640856;
+	Thu,  6 Aug 2026 17:28:23 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id VLxAE81yhtlK; Thu,  6 Aug 2026 16:25:19 +0000 (UTC)
+ id iVpfQnlmvIPF; Thu,  6 Aug 2026 17:28:21 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3A8D9407BA
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0036340859
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1786033519;
-	bh=W8msDT7eNvhDc1IB697hW+Yt+pYyziSs+AvP4aM/IR8=;
+	s=default; t=1786037301;
+	bh=g5bdrOH9EQYp8+Y2KB755YBGfk5WlLVToWPGvUG6bgI=;
 	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=jQyHqFxDby31rhE+l2uJFpkA4hKwtilhHlBdqgDgg6F1ODyzRhK6wGGUCSzJV60Z3
-	 48wVUdypNr977FAsIKUcHQEJ2LjbJYsiMHt9SieWsLRwr1LLV96DZMXdQGt0v81O5K
-	 HUp87LwbqM90WvgrmOSdCEO6Q7+/ZG7hmoapLE/ALHfDR8Qc/4qJ5Lo9u9/UsIenL4
-	 Ngqgn6oceXCmu24X6VQXAE9HkZk2oIWtnDpUXxSF7DG0nmoX3I5VHvXMTv33zy40wH
-	 9pphE0Fcr6WxLtuA/XFOdFFZnQ8J2IqNMyUZiV9wfSEi5HgF+0420XSupdGEAggCOd
-	 rUuatZcV04CnQ==
+	b=BQtFdFMN0cfJNSytNPqFvyVfZKDlrnzhmPoSBp2I5NZmgNTdSCbnGXCI1tSm0xGpr
+	 gUmL/792uGIsqwuI3S9k1eoCAC9aJ6BO9Wc0kGgR7RqnY8WJ6/igY2uc7TnLRxeknP
+	 AxrhTzNl3yF70CFTEc3bow+YEv8ag5DZoLjf2ZVAMLKxm3fGn0KJ844sxDTXfF/omC
+	 MpSUs4Qitw6Z8VuXgSwev8gAA6pVEtY9GmYm4zIsTu8WrqLzlwOwzBEMtnqf4BSRCi
+	 FErB7Kir5BcBy1PcJshAmta7ucM+2YKenTZn6Ae0Bg0gKc908mEBVKsR9r6/mNGSRR
+	 iewoZ9iXuywCA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 3A8D9407BA;
-	Thu,  6 Aug 2026 16:25:19 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id D594D392
- for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Aug 2026 16:25:17 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 0036340859;
+	Thu,  6 Aug 2026 17:28:20 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 7DF5B2B6
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Aug 2026 17:25:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id BB65E407BA
- for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Aug 2026 16:25:17 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 6FB9D40857
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Aug 2026 17:25:39 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id jaz086c1TWta for <intel-wired-lan@lists.osuosl.org>;
- Thu,  6 Aug 2026 16:25:17 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.15;
- helo=mgamail.intel.com; envelope-from=lukasz.czapnik@intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org E0650407B0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E0650407B0
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
- by smtp4.osuosl.org (Postfix) with ESMTPS id E0650407B0
- for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Aug 2026 16:25:16 +0000 (UTC)
-X-CSE-ConnectionGUID: q+eGrzBOSBy8zAIBm2xb/w==
-X-CSE-MsgGUID: 9URRBCqdS1WJReFLvh5/NA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11867"; a="90308338"
-X-IronPort-AV: E=Sophos;i="6.25,208,1779174000"; d="scan'208";a="90308338"
-Received: from fmviesa008.fm.intel.com ([10.60.135.148])
- by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 06 Aug 2026 09:25:15 -0700
-X-CSE-ConnectionGUID: a9GOIrb2RJakJ0c7eZoehQ==
-X-CSE-MsgGUID: nQjtUUevSK6tPemc796stA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,208,1779174000"; d="scan'208";a="259540526"
-Received: from os-delivery.igk.intel.com ([10.123.220.24])
- by fmviesa008.fm.intel.com with ESMTP; 06 Aug 2026 09:25:14 -0700
-From: Lukasz Czapnik <lukasz.czapnik@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org, Jakub Kaminski <jakub.kaminski@intel.com>,
- Lukasz Czapnik <lukasz.czapnik@intel.com>,
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
- Tomasz Lichwala <tomasz.lichwala@intel.com>
-Date: Thu,  6 Aug 2026 18:24:58 +0200
-Message-ID: <20260806162458.2384818-1-lukasz.czapnik@intel.com>
-X-Mailer: git-send-email 2.50.1
+ id AYWBSjhu5oaj for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  6 Aug 2026 17:25:38 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2607:f8b0:4864:20::102c; helo=mail-pj1-x102c.google.com;
+ envelope-from=skunkolee@gmail.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org CED8F40856
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CED8F40856
+Received: from mail-pj1-x102c.google.com (mail-pj1-x102c.google.com
+ [IPv6:2607:f8b0:4864:20::102c])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id CED8F40856
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Aug 2026 17:25:38 +0000 (UTC)
+Received: by mail-pj1-x102c.google.com with SMTP id
+ 98e67ed59e1d1-3856d6fbcb3so2020799a91.2
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 06 Aug 2026 10:25:38 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20251104; t=1786037138; x=1786641938;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to:content-type;
+ bh=g5bdrOH9EQYp8+Y2KB755YBGfk5WlLVToWPGvUG6bgI=;
+ b=Y6gcrtwisjsoi4b3TAWl2mST55wyKeqT1inUld0xluRMgHQfbCucW9tZAZVwrjUo8G
+ idAvfNxkpnXJlR+pdGwCii26V+fQ126YCVo1/CEIF8NznYqb6/1QOk588DYk/1ZUOYRB
+ 0i+YBnBQ9t4sBeFzlPbQD4IVIBs7lCy8IRQP4brdOX8PJZ6vniXf4Mu7V03nQ8ri50aD
+ gtgU8IYcT1YChVpWQLhfHMROvmuKDtZfeLnS6Si16m+6L9xZZbthsrpgRJObJ9uHt5HV
+ +7v8RnxqnKkt6SO+filWMRX6XEsfHhPvkCAlHik+WdRVfcL/T+YyVklJyyh4M2ImFlYZ
+ 0S3g==
+X-Forwarded-Encrypted: i=1;
+ AHgh+RrI+tLiYz0OBEOTHt2ijy2XAT2kIpBIgrRh9JI/CLnqee+lR0oIibpUUpf77tuWm1kOnmguVs26luPqDnz/jDs=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YxE3Yl5NObEGl/g5MgI4AtzXqgKs1DZBy8aMRlAJChXd4vvK7hD
+ kMKfldPXQe6HijRTqOQoavUVOFk5q9///7GVEH4t0t7/E0bahJJVxxaU
+X-Gm-Gg: AR+sD11t74hmarSN5OIYPuhbYdjQQ8ZWxCACwAjZZGmEkM0mShE590KE1wuzM1ptEmF
+ LzTVUMBDKvtOzuUd1t6w6Xo20VG0DvQvzO18Mce3kY/U21hXJFlP9WowtFBmYWQbJEuPuQxzCHg
+ 6G2Hgjeb8tFw4vjgarn82uDWI8rNCpcT5jWjUq1myezvm4mCh3Np8i6d9HiSji8D4JfXMOcZCsg
+ bqqvInSlCTqwxxaPwe9YUUq+t9kaNIUNOjZdODCc8MQas9Qb7awHzAOIaX07LoMo5VydA0DgUDy
+ UITQHDigwi0xOB69XhyLNG/tCChnitUoUOac0WMtorpY4WXkgWGoyQHPQlJ3IKtAuaGckC/b0CN
+ LK4eZU/cZ5VPvcQ6MGvyKQN2M+P0O5Et8OicVDJAuOTHQIWREseKy318EZKVHuaRXRr+cge2ttW
+ Ej6GdZtz4Z6jr5BZV4o43wgSRvHna2yOVf3jJ46LO3kVr5Gi/mHdItxhdt8SU0XmlPaknePXYed
+ ZdjN+NDqsxkiFJJgYh6/i2IUuBAj6w63xWM1deH6FdIxKcMXolVYB+Xsc0t
+X-Received: by 2002:a17:90b:524c:b0:38e:5ac1:9517 with SMTP id
+ 98e67ed59e1d1-3903c54b386mr15896123a91.3.1786037137831; 
+ Thu, 06 Aug 2026 10:25:37 -0700 (PDT)
+Received: from bloom.localdomain ([2604:3d09:178e:e100::6868])
+ by smtp.gmail.com with ESMTPSA id
+ 98e67ed59e1d1-390b1389e3csm57948a91.2.2026.08.06.10.25.35
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 06 Aug 2026 10:25:36 -0700 (PDT)
+From: Ivy Lopez <skunkolee@gmail.com>
+To: anthony.l.nguyen@intel.com,
+	przemyslaw.kitszel@intel.com
+Cc: andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com, intel-wired-lan@lists.osuosl.org,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Ivy Lopez <skunkolee@gmail.com>
+Date: Thu,  6 Aug 2026 11:24:52 -0600
+Message-ID: <20260806172452.32139-1-skunkolee@gmail.com>
+X-Mailer: git-send-email 2.55.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1786033517; x=1817569517;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=UHRfMQbjLWBkx3tHNc2RKv40AQfZ76LxxAOE4XPfZ+M=;
- b=lcTFbeJH9suizRKbf46B70i8qn5I22qJxWhxiBsMrUPPvLMFM+49/Svi
- 7t/CewGjJpsNWfpphFfCRU4kxVGkNzeopaipYVEQnHcuF5gAc6el2Zmd4
- GlyHHwu9gZMuyx76XInMsyfE4/zn2F8fhysGxNaJ0k4jD9MmSEQl74qaF
- rU8Imz3DnLJcK/5vasxxMyBiCF21ZXALmkvA/FID3rA+1ZqaCwooV4XXk
- ePZRCsHFea0sqvbT/FgmBB+jSbOwS/3rdXSS5U0BCr3ZR5NZGVu7cNT2p
- bwmUqukF/o9XiGTooOxw5OpRNnlzAGh2ah/fB8VQjE7PG1yEWMv8s72KF
- Q==;
+X-Mailman-Approved-At: Thu, 06 Aug 2026 17:28:20 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20251104; t=1786037138; x=1786641938; darn=lists.osuosl.org;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+ bh=g5bdrOH9EQYp8+Y2KB755YBGfk5WlLVToWPGvUG6bgI=;
+ b=sBaqsInBdUaBIjRmG0cd/W17N1qkD3xa4U5ppd94QdQjhsbtmDCIGQGrImltK02avZ
+ cUBSsjS2UWFTjohJbLEwTlvi7574Pn/RFc/OKhd+pk25c4zCQUxFladXyr/9QqKhJCru
+ jjhKZZPnQp6NPalal1LD/Qa0i8s1C2n+8Wxhmov4/Vbu8nRTMeaRkZOfX79jnQ+S4DBq
+ MmL0G1RqGmx7fK7g7jfvcn3qQBVmYeE6SUeDPmsYt9ZQV3oqjj8916jDFDJPvC2emQs9
+ 9T1WvBTRFqRp1TxJJQ/hSNW7zG1LrBROWaiS0m4fcCEWH59BUnciS+ibJA83ZmlnxCCt
+ t/RA==
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=intel.com
+ header.from=gmail.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=lcTFbeJH
-Subject: [Intel-wired-lan] [PATCH iwl-net v2] ice: Fix "Unknown bps" during
- link events
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20251104 header.b=sBaqsInB
+Subject: [Intel-wired-lan] [PATCH] e1000e: fix incorrect modified flag check
+ in e1000_read_nvm_spt()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -108,130 +131,47 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Jakub Kaminski <jakub.kaminski@intel.com>
+e1000_read_nvm_spt() reads two adjacent 16-bit NVM words as one
+32-bit dword for efficiency. When deciding whether to use the
+shadow RAM value for the high word (data[i + 1]), it incorrectly
+checks the "modified" flag of the low word (shadow_ram[offset + i])
+instead of the high word's own flag (shadow_ram[offset + i + 1]).
 
-The driver may display "NIC Link is up Unknown bps" messages during
-link state changes. This occurs when link status and link speed are
-read from different points in time.
+This can cause silent NVM shadow RAM corruption:
+ - if only the high word is marked modified, its pending write is
+   lost and the stale flash value is returned instead
+ - if only the low word is marked modified, the high word is
+   incorrectly overwritten with the low word's shadow value
 
-The driver processes link events by receiving an asynchronous ARQ event
-from firmware containing link_up and link_speed values, then performing
-a synchronous AQ query via ice_update_link_info() which overwrites the
-phy.link_info structure, and finally calling ice_link_event() with a
-link_speed parameter while ice_print_link_msg() read link_speed from
-phy.link_info directly.
+This function is used on all PCH chips from SPT onward (SPT, CNP,
+TGP, ADP, MTP, etc). The bug has been present since the dword-read
+optimization was introduced for these chips.
 
-ice_print_link_msg() always read link_speed from the phy.link_info
-structure. This caused link status from the ARQ event to be combined
-with link_speed from the later AQ query, mixing information from two
-different points in time. When firmware state changed between these
-moments, inconsistent messages like "Link is up Unknown bps" appeared.
+Note: this was found via code review while investigating a separate
+reproducible packet loss issue on I219-LM (SPT+ PCH). Testing showed
+this fix does not resolve that particular symptom, but the flag
+check is still a genuine logic bug that can corrupt shadow RAM
+contents and should be fixed regardless.
 
-Add a link_speed parameter to ice_print_link_msg() to ensure link
-status and speed are always taken from the same source and point in
-time.
-
+Fixes: 79849ebc0e06 ("e1000e: initial support for i219")
+Signed-off-by: Ivy Lopez <skunkolee@gmail.com>
 ---
+ drivers/net/ethernet/intel/e1000e/ich8lan.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-v2:
-Remove conditional assignement of local var link_up only during
-UP events. Cache state of both link_up and link_speed for every event.
----
-
-Fixes: c2a23e00613b ("ice: Refactor link event flow")
-Signed-off-by: Jakub Kaminski <jakub.kaminski@intel.com>
-Signed-off-by: Lukasz Czapnik <lukasz.czapnik@intel.com>
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Reviewed-by: Tomasz Lichwala <tomasz.lichwala@intel.com>
----
- drivers/net/ethernet/intel/ice/ice.h         |  2 +-
- drivers/net/ethernet/intel/ice/ice_ethtool.c |  2 +-
- drivers/net/ethernet/intel/ice/ice_main.c    | 17 ++++++++---------
- 3 files changed, 10 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index da679793b397..567058c28907 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -1006,7 +1006,7 @@ int ice_get_rss_key(struct ice_vsi *vsi, u8 *seed);
- int ice_set_rss_hfunc(struct ice_vsi *vsi, u8 hfunc);
- void ice_fill_rss_lut(u8 *lut, u16 rss_table_size, u16 rss_size);
- int ice_schedule_reset(struct ice_pf *pf, enum ice_reset_req reset);
--void ice_print_link_msg(struct ice_vsi *vsi, bool isup);
-+void ice_print_link_msg(struct ice_vsi *vsi, bool isup, u16 link_speed);
- int ice_plug_aux_dev(struct ice_pf *pf);
- void ice_unplug_aux_dev(struct ice_pf *pf);
- void ice_rdma_finalize_setup(struct ice_pf *pf);
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 9ddd7e82a300..c37b72763ce5 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -2814,7 +2814,7 @@ ice_set_link_ksettings(struct net_device *netdev,
- 		/* Tell the OS link is going down, the link will go
- 		 * back up when fw says it is ready asynchronously
- 		 */
--		ice_print_link_msg(np->vsi, false);
-+		ice_print_link_msg(np->vsi, false, 0);
- 		netif_carrier_off(netdev);
- 		netif_tx_stop_all_queues(netdev);
- 	}
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 968a8e18d197..f8f847b2729b 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -835,8 +835,9 @@ static void ice_print_topo_conflict(struct ice_vsi *vsi)
-  * ice_print_link_msg - print link up or down message
-  * @vsi: the VSI whose link status is being queried
-  * @isup: boolean for if the link is now up or down
-+ * @link_speed: current link speed value to display
-  */
--void ice_print_link_msg(struct ice_vsi *vsi, bool isup)
-+void ice_print_link_msg(struct ice_vsi *vsi, bool isup, u16 link_speed)
- {
- 	struct ice_aqc_get_phy_caps_data *caps;
- 	const char *an_advertised;
-@@ -860,7 +861,7 @@ void ice_print_link_msg(struct ice_vsi *vsi, bool isup)
- 		return;
- 	}
- 
--	switch (vsi->port_info->phy.link_info.link_speed) {
-+	switch (link_speed) {
- 	case ICE_AQ_LINK_SPEED_200GB:
- 		speed = "200 G";
- 		break;
-@@ -1190,11 +1191,8 @@ ice_link_event(struct ice_pf *pf, struct ice_port_info *pi, bool link_up,
- 
- 	ice_check_link_cfg_err(pf, pi->phy.link_info.link_cfg_err);
- 
--	/* Check if the link state is up after updating link info, and treat
--	 * this event as an UP event since the link is actually UP now.
--	 */
--	if (phy_info->link_info.link_info & ICE_AQ_LINK_UP)
--		link_up = true;
-+	link_up = phy_info->link_info.link_info & ICE_AQ_LINK_UP;
-+	link_speed = phy_info->link_info.link_speed;
- 
- 	vsi = ice_get_main_vsi(pf);
- 	if (!vsi || !vsi->port_info)
-@@ -1224,7 +1222,7 @@ ice_link_event(struct ice_pf *pf, struct ice_port_info *pi, bool link_up,
- 			ice_set_dflt_mib(pf);
- 	}
- 	ice_vsi_link_event(vsi, link_up);
--	ice_print_link_msg(vsi, link_up);
-+	ice_print_link_msg(vsi, link_up, link_speed);
- 
- 	ice_vc_notify_link_state(pf);
- 
-@@ -6922,7 +6920,8 @@ static int ice_up_complete(struct ice_vsi *vsi)
- 	    (vsi->port_info->phy.link_info.link_info & ICE_AQ_LINK_UP) &&
- 	    ((vsi->netdev && (vsi->type == ICE_VSI_PF ||
- 			      vsi->type == ICE_VSI_SF)))) {
--		ice_print_link_msg(vsi, true);
-+		ice_print_link_msg(vsi, true,
-+				   vsi->port_info->phy.link_info.link_speed);
- 		netif_tx_start_all_queues(vsi->netdev);
- 		netif_carrier_on(vsi->netdev);
- 		ice_ptp_link_change(pf, true);
+diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+index aa90e0ce8aca..87cd1cdc6f10 100644
+--- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
++++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+@@ -3473,7 +3473,7 @@ static s32 e1000_read_nvm_spt(struct e1000_hw *hw, u16 offset, u16 words,
+ 				    dev_spec->shadow_ram[offset + i].value;
+ 			else
+ 				data[i] = (u16)(dword & 0xFFFF);
+-			if (dev_spec->shadow_ram[offset + i].modified)
++			if (dev_spec->shadow_ram[offset + i + 1].modified)
+ 				data[i + 1] =
+ 				    dev_spec->shadow_ram[offset + i + 1].value;
+ 			else
 -- 
-2.50.1
+2.55.0
 
