@@ -1,120 +1,94 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86A69C2A09B
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  7 Aug 2026 15:27:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70256C2A09B
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  7 Aug 2026 17:56:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 2BEF781331;
-	Fri,  7 Aug 2026 15:27:35 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 2E80D6064F;
+	Fri,  7 Aug 2026 17:56:11 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id GI3PG2vlhHd6; Fri,  7 Aug 2026 15:27:33 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 7EX2pOxQvDZ5; Fri,  7 Aug 2026 17:56:10 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9551381338
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 581EE60614
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1786116453;
-	bh=tkpFr6rG5lBoCbq0wNytvjoTRlryXvJyiJH9uY9WWYY=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	s=default; t=1786125370;
+	bh=GDXoF9CinyPJhdEEKmaaI5VC+HQIgkKj7FttjEW4yD0=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=6tTIiUsKxKVTcvT9GXT8dNgKAJPetraFLQRfc+bPITdHDwGRvfQWG30ptRHYoEmUq
-	 cL0DDWEgSdlYJ08Xaqd2pa2SyKXVP4DBnKkOgrDPoLWRXyR9upWltPxb8/xX8VYNbp
-	 hnDeru11uPqvcU5yQn70NhexC2y703+SzFys5DyolN3wAXL8f4aWt7fx+91OWwUt7/
-	 Hgw+QPwVmXquzBTx5qMdBmG/rh2EruyjQLuRIy357/L7a57i0D1AbTaKdVpj54IYMh
-	 SRARBCrK3EZLTUMilyOMaVmk0nhB+Y2Dg+KOlUeTtSTJqQmvd5IUt7D0vBpR+8A0OF
-	 rdetNyo6CFuoA==
+	b=QCQIMvWFursRBzn4vRDDEdGIAnlPvfHJW0Fd9gWDU6wZUo6RqL5av0UiTjnga4Vp8
+	 zMPdLFBbRiFKT5orMhww4UmUje9DdZBCLzrf6B5k9N5oLUEhY5NigihIw+GQpdZUUd
+	 WGKE5gHi/b1XtVJ4msHSFTNrIkTh8e3LyvdhqUK70+iXIbGhazQNXnKd2TOQwpOMc7
+	 cf+/RrK/v+/cI9KDpP54lyPv+h5lgePJOdAX5JmQzXwJyUa7VGLPsrxhwElw8RnzKW
+	 mC4Vs7L07yxZam3JY8tBLck32WDP3ZaJDTgkRvLiUDT/cGUuBcbDXsg35hkf8GeUjA
+	 xEOI2LaPT1nqQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 9551381338;
-	Fri,  7 Aug 2026 15:27:33 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id DE2FD282
- for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Aug 2026 14:56:38 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 581EE60614;
+	Fri,  7 Aug 2026 17:56:10 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 79DBB1AF
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Aug 2026 17:56:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id C3BEF40244
- for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Aug 2026 14:56:38 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 622624068B
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Aug 2026 17:56:09 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id OSJjDeW3FlEw for <intel-wired-lan@lists.osuosl.org>;
- Fri,  7 Aug 2026 14:56:38 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::532; helo=mail-pg1-x532.google.com;
- envelope-from=pavankumaryalagada@gmail.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org E37A240074
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E37A240074
-Received: from mail-pg1-x532.google.com (mail-pg1-x532.google.com
- [IPv6:2607:f8b0:4864:20::532])
- by smtp2.osuosl.org (Postfix) with ESMTPS id E37A240074
- for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Aug 2026 14:56:37 +0000 (UTC)
-Received: by mail-pg1-x532.google.com with SMTP id
- 41be03b00d2f7-c9e0b89e228so2071034a12.1
- for <intel-wired-lan@lists.osuosl.org>; Fri, 07 Aug 2026 07:56:37 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1786114597; x=1786719397;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
- :message-id:reply-to:content-type;
- bh=tkpFr6rG5lBoCbq0wNytvjoTRlryXvJyiJH9uY9WWYY=;
- b=a8bi2gAuvhNUPkbkv9O+wVLNw2UZAE55OfKQPy4/ZpdABbDRWpxuM6ECpc43a2OQKA
- GbGZ2fI1naiFKmO7xN+bh0D0UlXxhVPyRPTeBNBIk6TCCc2Wlox+SF1hwJAqfaD3FzGe
- XgvmlEgFLikNTw6wFoPUCJDMN+4jMjrTtT2KatYsFQgD0oNHfaVn5U1msmRuIXTfwwyx
- dz3fQJ5RsKbqPE2A9m1cf64oMDMP2BSb5QQ7mG0Jib0GhBXQy4sGgbxobtV96LgUQECJ
- idPjnvUqV7zAb/XPvEMm2wMtfH6WPiW3moKqxRsgEahNT1fSJ9Szfkj1v/yf36y9+TIu
- rKiA==
-X-Gm-Message-State: AOJu0YxZmutlIFPK0K0Cod1k+IGxVU8wnIJkE6RzufRo75QaHtK1oScw
- 0Ot2oRvxifocs0Zm10d/TmZa0FCiYa+GbOkpugOwzLFd8T/GoWo+SCNa3Mt9BZsC
-X-Gm-Gg: AR+sD10n/RqCgDgSkoRLJzFTKzQXO2Xajdk3nuJQWr7F+QSHek3hdJgEgr/Z9nILpdl
- WKh811OuXeJtk0L90arF9/Vy5essVT1HKsPYXLowWch7BM1k2Mtfnzdnq95ywYU1Rv2cy9ntguw
- ZpeUSMsVoW7ZX/2oHbO1YwVNc8OCmvjy98tXfnus7yuNIeP8ZUA+MVnNu3wnRheThzcxFuEnOFK
- llQwj8ZT+tyQKoFGRxVghONQQiuNPoQ8j60F+UKynX9XEMQ5YlBBbUQm6o0HfVxNAqZR/5q68pX
- vdG90DvkeAISkryP2xrkdt3fMMH2nkz18zSp3NSW/8lCeREAuIazka/capASQLhN1LnPhn4ce9S
- RhhQEjmfm+isgsFpeaDTBjFB2yJ3qDF4TEbfpXw46HuUuqnG4W+xwQu3xSdoxU/EBizjn85LL38
- EE1CKG8Fgw3a0qHqKas+jfIalWCL7Xw25sy7pbu62OZj6PNGc3vPv/ZfWpCPsTIcBSTtA=
-X-Received: by 2002:a05:6a20:a11a:b0:3cb:8eb2:acbd with SMTP id
- adf61e73a8af0-3cbce9294abmr977283637.25.1786114596980; 
- Fri, 07 Aug 2026 07:56:36 -0700 (PDT)
-Received: from user.. ([2405:201:c052:b00b:782d:6a3f:587:95d7])
- by smtp.gmail.com with ESMTPSA id
- a92af1059eb24-141019c3912sm11957018c88.8.2026.08.07.07.56.31
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 07 Aug 2026 07:56:36 -0700 (PDT)
-From: pavankumaryalagada@gmail.com
-To: intel-wired-lan@lists.osuosl.org,
-	netdev@vger.kernel.org
-Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
- andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com, linux-kernel@vger.kernel.org,
- skhan@linuxfoundation.org, pavankumaryalagada@gmail.com,
- syzbot+e0abb1d45ac291ebebeb@syzkaller.appspotmail.com
-Date: Fri,  7 Aug 2026 20:26:26 +0530
-Message-ID: <20260807145626.52692-1-pavankumaryalagada@gmail.com>
-X-Mailer: git-send-email 2.43.0
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Fri, 07 Aug 2026 15:27:32 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20251104; t=1786114597; x=1786719397; darn=lists.osuosl.org;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
- bh=tkpFr6rG5lBoCbq0wNytvjoTRlryXvJyiJH9uY9WWYY=;
- b=CmJxXNoDZpdUZEehoEuY5zolbWwHlYs2HbBdRMLMAOVxsNfwRWC9AZyyRqS8S6+SkW
- 4oX6khW5Q3BTg9bR3DjAbMW/0JZ/9phQUCSX0TxBi5ZRgfDBdqBPI/MK4Eoaz7Ow2lVa
- 0DiAd0Y2t8WJuXUidfm3rca7dvzjlaEI3J+zJhnHX8yaUPXMzyQucQDhkbmCoaTG4GYa
- JQGrLCF3N051lsaizmdLKHmC5nxX7ioFeXaM9s8do/aecuISQz7EgthNzMAaJ25o84p0
- k1HGN9SlTZUOpaoF5oyTUmNBSg9xEuqnjHa+UbWa/k+A8KmdRx5FoXmqFJlsKAACQhvi
- Y3eA==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 6h2kY2taglQF for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  7 Aug 2026 17:56:08 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.8;
+ helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org EA51D407A1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EA51D407A1
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id EA51D407A1
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Aug 2026 17:56:07 +0000 (UTC)
+X-CSE-ConnectionGUID: BbVRgc3NRtiArOpsGTvt8Q==
+X-CSE-MsgGUID: uLzoUJ23R5ye3je7W3ilUg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11868"; a="104272175"
+X-IronPort-AV: E=Sophos;i="6.25,210,1779174000"; d="scan'208";a="104272175"
+Received: from fmviesa004.fm.intel.com ([10.60.135.144])
+ by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 07 Aug 2026 10:56:07 -0700
+X-CSE-ConnectionGUID: gokCfQ/YQfqhUhOMdGkwCA==
+X-CSE-MsgGUID: 2baFxMSKS76VE6VW96+Gsg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,210,1779174000"; d="scan'208";a="264446118"
+Received: from lkp-server01.sh.intel.com (HELO 6eda058d650d) ([10.239.97.150])
+ by fmviesa004.fm.intel.com with ESMTP; 07 Aug 2026 10:56:04 -0700
+Received: from kbuild by 6eda058d650d with local (Exim 4.98.2)
+ (envelope-from <lkp@intel.com>) id 1wsOna-00000000Iqe-37GE;
+ Fri, 07 Aug 2026 17:56:02 +0000
+Date: Sat, 08 Aug 2026 01:55:07 +0800
+From: kernel test robot <lkp@intel.com>
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Message-ID: <202608080142.6VGAiJLA-lkp@intel.com>
+User-Agent: s-nail v14.9.25
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1786125368; x=1817661368;
+ h=date:from:to:subject:message-id;
+ bh=h2uSR3r2/mMJBIzZVx1c8UhQ4lVYfV4yQ9BGf+X8HZQ=;
+ b=Z+NGE44LtxPn5HVHLfD46ra3ttTDItHb2pK/2wjiW4QFkDukXd0vcFhp
+ Wm9HXaHIjHlODdrtQ/mnfKXaw6W/FSARkmtbpob2S940c2vp0EpZHa3q7
+ HEKkZA2FkvEeurGqOWbDqSwBx0iln7ialLh20QjNTgj5lJcwvEuYqdmm0
+ /IpHsoVPekzLGTlqeCpT+5A9xTEGeR0a4b3yl8HgZxXoZkcGor01seKlc
+ tre38MX5Msugg9bj0Lt6hLYDKe0E55SGR/vac9wDY5eYbPwO/JAGiZ5MK
+ d2y+nYUhLjAWkFN18YS6INp4g99qjhgU7M+KV6n7Za7BVCxSLAiEp5VTq
+ w==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=gmail.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20251104 header.b=CmJxXNoD
-Subject: [Intel-wired-lan] [PATCH] e100: prevent shift out-of-bounds in
- e100_eeprom_load
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=Z+NGE44L
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD REGRESSION
+ 6da7adaa29975305bcae253c620c9f5c710c9e21
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -130,62 +104,91 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Yalagada Pavan Kumar <pavankumaryalagada@gmail.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 6da7adaa29975305bcae253c620c9f5c710c9e21  i40e: xsk: use xdp_build_skb_from_zc() for XDP_PASS
 
-When reading the EEPROM address length, e100_eeprom_read() can return
-an invalid length (0 or >= 16). Passing an invalid addr_len to bit-shift
-operations causes a shift out-of-bounds, triggering a kernel panic or
-UBSAN warning.
+Unverified Error/Warning (likely false positive, kindly check if interested):
 
-Validate addr_len after reading it from EEPROM and return -EINVAL if
-the value is out of bounds. Additionally, use 1U to prevent
-signed integer overflow when calculating eeprom_wc.
+    drivers/net/ethernet/intel/idpf/idpf_virtchnl.c:1616:1: internal compiler error: in final_scan_insn_1, at final.cc:2823
+    drivers/net/ethernet/intel/idpf/idpf_virtchnl_ptp.c:438:1: internal compiler error: in final_scan_insn_1, at final.cc:2823
 
-Reported-by: syzbot+e0abb1d45ac291ebebeb@syzkaller.appspotmail.com
-Tested-by: syzbot+e0abb1d45ac291ebebeb@syzkaller.appspotmail.com
-Closes: https://syzkaller.appspot.com/bug?extid=e0abb1d45ac291ebebeb
-Signed-off-by: Yalagada Pavan Kumar <pavankumaryalagada@gmail.com>
----
-Tested using syzbot c reproducer.
----
- drivers/net/ethernet/intel/e100.c | 17 +++++++++++++++--
- 1 file changed, 15 insertions(+), 2 deletions(-)
+Error/Warning ids grouped by kconfigs:
 
-diff --git a/drivers/net/ethernet/intel/e100.c b/drivers/net/ethernet/intel/e100.c
-index 29960762e64a..1de5cd41ea0c 100644
---- a/drivers/net/ethernet/intel/e100.c
-+++ b/drivers/net/ethernet/intel/e100.c
-@@ -744,7 +744,12 @@ static __le16 e100_eeprom_read(struct nic *nic, u16 *addr_len, u16 addr)
- 		 * complete address.  Use this to adjust addr_len. */
- 		ctrl = ioread8(&nic->csr->eeprom_ctrl_lo);
- 		if (!(ctrl & eedo) && i > 16) {
--			*addr_len -= (i - 16);
-+			u16 len = i - 16;
-+
-+			if (len > *addr_len)
-+				*addr_len = 0;
-+			else
-+				*addr_len -= len;
- 			i = 17;
- 		}
- 
-@@ -765,7 +770,15 @@ static int e100_eeprom_load(struct nic *nic)
- 
- 	/* Try reading with an 8-bit addr len to discover actual addr len */
- 	e100_eeprom_read(nic, &addr_len, 0);
--	nic->eeprom_wc = 1 << addr_len;
-+
-+	if (!addr_len || addr_len >= 16) {
-+		netif_err(nic, probe, nic->netdev,
-+			"Invalid EEPROM address length %u\n",
-+			addr_len);
-+		return -EINVAL;
-+	}
-+
-+	nic->eeprom_wc = 1U << addr_len;
- 
- 	for (addr = 0; addr < nic->eeprom_wc; addr++) {
- 		nic->eeprom[addr] = e100_eeprom_read(nic, &addr_len, addr);
--- 
-2.43.0
+recent_errors
+`-- csky-allmodconfig
+    |-- drivers-net-ethernet-intel-idpf-idpf_virtchnl.c:internal-compiler-error:in-final_scan_insn_1-at-final.cc
+    `-- drivers-net-ethernet-intel-idpf-idpf_virtchnl_ptp.c:internal-compiler-error:in-final_scan_insn_1-at-final.cc
 
+elapsed time: 1586m
+
+configs tested: 63
+configs skipped: 1
+
+tested configs:
+alpha                            allnoconfig    gcc-16.1.0
+alpha                           allyesconfig    gcc-16.1.0
+alpha                              defconfig    gcc-16.1.0
+arc                             allmodconfig    gcc-16.1.0
+arc                             allyesconfig    gcc-16.1.0
+arc                  randconfig-001-20260807    gcc-8.5.0
+arc                  randconfig-002-20260807    gcc-14.3.0
+arm                  randconfig-001-20260807    clang-17
+arm                  randconfig-002-20260807    gcc-12.5.0
+arm                  randconfig-003-20260807    gcc-10.5.0
+arm                  randconfig-004-20260807    gcc-16.1.0
+arm64                randconfig-001-20260807    clang-24
+arm64                randconfig-003-20260807    gcc-16.1.0
+csky                            allmodconfig    gcc-16.1.0
+csky                 randconfig-001-20260807    gcc-14.3.0
+hexagon              randconfig-001-20260807    clang-24
+hexagon              randconfig-002-20260807    clang-24
+i386                            allmodconfig    gcc-14
+loongarch                          defconfig    clang-24
+loongarch            randconfig-001-20260807    clang-24
+loongarch            randconfig-002-20260807    clang-18
+mips                       qi_lb60_defconfig    clang-17
+nios2                           allmodconfig    gcc-11.5.0
+nios2                            allnoconfig    gcc-11.5.0
+nios2                randconfig-001-20260807    gcc-8.5.0
+nios2                randconfig-002-20260807    gcc-8.5.0
+parisc                          allmodconfig    gcc-16.1.0
+parisc                          allyesconfig    gcc-16.1.0
+parisc                             defconfig    gcc-16.1.0
+parisc               randconfig-001-20260807    gcc-9.5.0
+parisc               randconfig-002-20260807    gcc-8.5.0
+powerpc              randconfig-001-20260807    clang-24
+powerpc              randconfig-002-20260807    clang-24
+powerpc64            randconfig-001-20260807    gcc-8.5.0
+powerpc64            randconfig-002-20260807    gcc-14.3.0
+riscv                         randconfig-001    gcc-13.4.0
+riscv                randconfig-001-20260807    gcc-12.5.0
+riscv                randconfig-002-20260807    gcc-10.5.0
+s390                 randconfig-001-20260807    gcc-9.5.0
+s390                 randconfig-002-20260807    gcc-15.2.0
+sh                                 defconfig    gcc-16.1.0
+sh                   randconfig-001-20260807    gcc-16.1.0
+sh                   randconfig-002-20260807    gcc-16.1.0
+sparc                randconfig-001-20260807    gcc-15.2.0
+sparc                randconfig-002-20260807    gcc-16.1.0
+sparc64              randconfig-001-20260807    clang-20
+sparc64              randconfig-002-20260807    clang-20
+um                   randconfig-001-20260807    gcc-14
+um                   randconfig-002-20260807    clang-24
+x86_64     buildonly-randconfig-001-20260807    clang-22
+x86_64     buildonly-randconfig-002-20260807    gcc-14
+x86_64     buildonly-randconfig-003-20260807    gcc-14
+x86_64     buildonly-randconfig-004-20260807    clang-22
+x86_64     buildonly-randconfig-005-20260807    clang-22
+x86_64     buildonly-randconfig-006-20260807    clang-22
+x86_64               randconfig-001-20260807    clang-22
+x86_64               randconfig-002-20260807    gcc-14
+x86_64               randconfig-003-20260807    clang-22
+x86_64               randconfig-004-20260807    clang-22
+x86_64               randconfig-005-20260807    clang-22
+x86_64               randconfig-006-20260807    gcc-14
+xtensa               randconfig-001-20260807    gcc-8.5.0
+xtensa               randconfig-002-20260807    gcc-13.4.0
+
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
