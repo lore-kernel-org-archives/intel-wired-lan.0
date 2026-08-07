@@ -1,181 +1,120 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CFE58C5AC7A
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  7 Aug 2026 14:11:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86A69C2A09B
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  7 Aug 2026 15:27:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 80FF460A71;
-	Fri,  7 Aug 2026 14:11:43 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 2BEF781331;
+	Fri,  7 Aug 2026 15:27:35 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 21mozyeJ8DGQ; Fri,  7 Aug 2026 14:11:41 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id GI3PG2vlhHd6; Fri,  7 Aug 2026 15:27:33 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 46CCC60A47
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9551381338
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1786111901;
-	bh=jY/yOsvpc9aWjuEvUxwTi0KWtinXasaO3wK8pTemGEY=;
-	h=Date:To:Cc:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From:Reply-To:From;
-	b=B83znlMaolY/iBsoahnhDmiB21GUGptXaXLWHY9ZRzKZrv4VgzTY/lrN6BQ7TNgmR
-	 8vGT3hla2W0MAR2XEiyukm+6ZWblFd85dkYExMsLDiX3lKSwUPPOV0nxSx5UVcOr5z
-	 kwnUo8aArd3Zb1gvF57zIFcEBA7FVhJVjQrGZZVrZ7MkzhXu57iCjedLS0fFNX6zPq
-	 c3zOiw9Ma9kmTCiCvhWW60MSUyEBFHFgqYDl80BRbR9MjTVglfF9IJnB2Ju/6fzKGi
-	 7R/7DULF+z9dN0/cmE3KOfK9bZnbkVr7IacSUwlx7mGdExFTf4ICA+eLoq588BgCtd
-	 c8yqaMtRO0O7g==
+	s=default; t=1786116453;
+	bh=tkpFr6rG5lBoCbq0wNytvjoTRlryXvJyiJH9uY9WWYY=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=6tTIiUsKxKVTcvT9GXT8dNgKAJPetraFLQRfc+bPITdHDwGRvfQWG30ptRHYoEmUq
+	 cL0DDWEgSdlYJ08Xaqd2pa2SyKXVP4DBnKkOgrDPoLWRXyR9upWltPxb8/xX8VYNbp
+	 hnDeru11uPqvcU5yQn70NhexC2y703+SzFys5DyolN3wAXL8f4aWt7fx+91OWwUt7/
+	 Hgw+QPwVmXquzBTx5qMdBmG/rh2EruyjQLuRIy357/L7a57i0D1AbTaKdVpj54IYMh
+	 SRARBCrK3EZLTUMilyOMaVmk0nhB+Y2Dg+KOlUeTtSTJqQmvd5IUt7D0vBpR+8A0OF
+	 rdetNyo6CFuoA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 46CCC60A47;
-	Fri,  7 Aug 2026 14:11:41 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 9551381338;
+	Fri,  7 Aug 2026 15:27:33 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 932C3259
- for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Aug 2026 14:11:40 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id DE2FD282
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Aug 2026 14:56:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 798E940207
- for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Aug 2026 14:11:40 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id C3BEF40244
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Aug 2026 14:56:38 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ociJKxhLjmNX for <intel-wired-lan@lists.osuosl.org>;
- Fri,  7 Aug 2026 14:11:39 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=205.220.180.131;
- helo=mx0b-0031df01.pphosted.com; envelope-from=jeff.johnson@oss.qualcomm.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 825B740246
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 825B740246
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com
- [205.220.180.131])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 825B740246
- for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Aug 2026 14:11:38 +0000 (UTC)
-Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
- by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id
- 677CgWiV1295464
- for <intel-wired-lan@lists.osuosl.org>; Fri, 7 Aug 2026 14:11:38 GMT
-Received: from mail-pl1-f200.google.com (mail-pl1-f200.google.com
- [209.85.214.200])
- by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fvy6gvbf3-1
- (version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
- for <intel-wired-lan@lists.osuosl.org>; Fri, 07 Aug 2026 14:11:37 +0000 (GMT)
-Received: by mail-pl1-f200.google.com with SMTP id
- d9443c01a7336-2cc73f47bdcso57817655ad.3
- for <intel-wired-lan@lists.osuosl.org>; Fri, 07 Aug 2026 07:11:37 -0700 (PDT)
+ id OSJjDeW3FlEw for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  7 Aug 2026 14:56:38 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2607:f8b0:4864:20::532; helo=mail-pg1-x532.google.com;
+ envelope-from=pavankumaryalagada@gmail.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org E37A240074
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E37A240074
+Received: from mail-pg1-x532.google.com (mail-pg1-x532.google.com
+ [IPv6:2607:f8b0:4864:20::532])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id E37A240074
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Aug 2026 14:56:37 +0000 (UTC)
+Received: by mail-pg1-x532.google.com with SMTP id
+ 41be03b00d2f7-c9e0b89e228so2071034a12.1
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 07 Aug 2026 07:56:37 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1786111897; x=1786716697;
- h=content-transfer-encoding:content-type:in-reply-to:content-language
- :from:references:cc:to:subject:user-agent:mime-version:date
- :message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+ d=1e100.net; s=20251104; t=1786114597; x=1786719397;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
  :message-id:reply-to:content-type;
- bh=jY/yOsvpc9aWjuEvUxwTi0KWtinXasaO3wK8pTemGEY=;
- b=UM8um1KbJ8pmuLGPpd2jgq4w67TEDQw7OFHPjcBR/cha5rGyqg9yUwKnNMGAFdtDhb
- uORZN+dTYcEAlnOZsR2bKJ1VCSfBgLMUxSDldvwxTULyB+Ongp37cKPbSCf1Eh1hCKvC
- eSyfsjDNuGULQhOcXpF/s1XvBdYSX9e8wv5gNh+4Z0ViqxUvqk5kjzwVeMvWVm6ScdB1
- 5XYW3gnnkIzZinc1wpfVywaWvsk21IDOFhA60o8foJKlaSWcqzqdXNyMOWRY17gbdNGi
- Ia9SZdDu9bBPZN8Qa7QSV8F7eSgTLK+mjaR0NaLyUa6aHRazHF5Nl2u0lF/Scd9oMB98
- 1lqA==
-X-Gm-Message-State: AOJu0YypnzHk37k0kV6vaY4gU4a+TVGPJtr/wpM0JmJMYScfbo4/toFE
- qUxarzt7gSECJ5nErDz7vId6Y3ZihrxQCcPBPWKneGK2pTMB4fHJbSoFEZKqztr5jz3C//a7fPP
- TJK7PXjcTRmT2uUS/RrCgwQUhBr2t1C5BP+iuDfTeH07tnKcEfGnhHLCjRFKhgLQr6S3BV5fz
-X-Gm-Gg: AR+sD13gEFdJi+oU6UmWiHtqQCtBEgCxjSxsOgcFrEOTqm4DG55mCwjEqDdaCnvGy/a
- ryFECuuk7Cg4PAI/3w+T31ExJ40ynZYj7evBVqNPfxtOShVIKAbKrnGARy/pZNrqydelRBbAG2S
- +UG/CxkAwDLTSB8X03x3eGVF1pgQidrPuNubAKnRI6b+U/J4fEJbn8ohH1enJFw1nkHRgBlRFkf
- WCtdNGuIrefrl8Q5rOl2fjYqRVLL/vmKusodlOzOS/bcAky+TWUSRtRqvu05prTz9iEtTEr3u09
- D6RideAVlmqDFms2ZtuPWIKY5mTxj+m154U7JfOviynyG/g1vIeF/Wt3SHgd6D2EMYxf+AhIPiU
- 4WMv0mI783qqRtm7e0EYt92QaqIqFwm3rmAdCkDjIKbscQ6iqC5qZmS6+ZUpk
-X-Received: by 2002:a17:903:46c6:b0:2cc:864b:539 with SMTP id
- d9443c01a7336-2d0ca713b0dmr274945745ad.6.1786111896718; 
- Fri, 07 Aug 2026 07:11:36 -0700 (PDT)
-X-Received: by 2002:a17:903:46c6:b0:2cc:864b:539 with SMTP id
- d9443c01a7336-2d0ca713b0dmr274945125ad.6.1786111896262; 
- Fri, 07 Aug 2026 07:11:36 -0700 (PDT)
-Received: from [192.168.1.20] (103.sub-97-215-187.myvzw.com. [97.215.187.103])
+ bh=tkpFr6rG5lBoCbq0wNytvjoTRlryXvJyiJH9uY9WWYY=;
+ b=a8bi2gAuvhNUPkbkv9O+wVLNw2UZAE55OfKQPy4/ZpdABbDRWpxuM6ECpc43a2OQKA
+ GbGZ2fI1naiFKmO7xN+bh0D0UlXxhVPyRPTeBNBIk6TCCc2Wlox+SF1hwJAqfaD3FzGe
+ XgvmlEgFLikNTw6wFoPUCJDMN+4jMjrTtT2KatYsFQgD0oNHfaVn5U1msmRuIXTfwwyx
+ dz3fQJ5RsKbqPE2A9m1cf64oMDMP2BSb5QQ7mG0Jib0GhBXQy4sGgbxobtV96LgUQECJ
+ idPjnvUqV7zAb/XPvEMm2wMtfH6WPiW3moKqxRsgEahNT1fSJ9Szfkj1v/yf36y9+TIu
+ rKiA==
+X-Gm-Message-State: AOJu0YxZmutlIFPK0K0Cod1k+IGxVU8wnIJkE6RzufRo75QaHtK1oScw
+ 0Ot2oRvxifocs0Zm10d/TmZa0FCiYa+GbOkpugOwzLFd8T/GoWo+SCNa3Mt9BZsC
+X-Gm-Gg: AR+sD10n/RqCgDgSkoRLJzFTKzQXO2Xajdk3nuJQWr7F+QSHek3hdJgEgr/Z9nILpdl
+ WKh811OuXeJtk0L90arF9/Vy5essVT1HKsPYXLowWch7BM1k2Mtfnzdnq95ywYU1Rv2cy9ntguw
+ ZpeUSMsVoW7ZX/2oHbO1YwVNc8OCmvjy98tXfnus7yuNIeP8ZUA+MVnNu3wnRheThzcxFuEnOFK
+ llQwj8ZT+tyQKoFGRxVghONQQiuNPoQ8j60F+UKynX9XEMQ5YlBBbUQm6o0HfVxNAqZR/5q68pX
+ vdG90DvkeAISkryP2xrkdt3fMMH2nkz18zSp3NSW/8lCeREAuIazka/capASQLhN1LnPhn4ce9S
+ RhhQEjmfm+isgsFpeaDTBjFB2yJ3qDF4TEbfpXw46HuUuqnG4W+xwQu3xSdoxU/EBizjn85LL38
+ EE1CKG8Fgw3a0qHqKas+jfIalWCL7Xw25sy7pbu62OZj6PNGc3vPv/ZfWpCPsTIcBSTtA=
+X-Received: by 2002:a05:6a20:a11a:b0:3cb:8eb2:acbd with SMTP id
+ adf61e73a8af0-3cbce9294abmr977283637.25.1786114596980; 
+ Fri, 07 Aug 2026 07:56:36 -0700 (PDT)
+Received: from user.. ([2405:201:c052:b00b:782d:6a3f:587:95d7])
  by smtp.gmail.com with ESMTPSA id
- d9443c01a7336-2d14d57f8b7sm10026305ad.30.2026.08.07.07.11.34
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Fri, 07 Aug 2026 07:11:35 -0700 (PDT)
-Message-ID: <2480a569-de5f-4d91-9b9f-60a46613e5ef@oss.qualcomm.com>
-Date: Fri, 7 Aug 2026 07:11:33 -0700
+ a92af1059eb24-141019c3912sm11957018c88.8.2026.08.07.07.56.31
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Fri, 07 Aug 2026 07:56:36 -0700 (PDT)
+From: pavankumaryalagada@gmail.com
+To: intel-wired-lan@lists.osuosl.org,
+	netdev@vger.kernel.org
+Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com, linux-kernel@vger.kernel.org,
+ skhan@linuxfoundation.org, pavankumaryalagada@gmail.com,
+ syzbot+e0abb1d45ac291ebebeb@syzkaller.appspotmail.com
+Date: Fri,  7 Aug 2026 20:26:26 +0530
+Message-ID: <20260807145626.52692-1-pavankumaryalagada@gmail.com>
+X-Mailer: git-send-email 2.43.0
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>, Andrew Lunn
- <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>
-Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- Ally Heev <allyheev@gmail.com>, linux-kernel@vger.kernel.org,
- Simon Horman <horms@kernel.org>, Dan Carpenter <dan.carpenter@linaro.org>
-References: <20251116-aheev-fix-free-uninitialized-ptrs-ethernet-intel-v1-0-0ddc81be6a4c@gmail.com>
- <20251116-aheev-fix-free-uninitialized-ptrs-ethernet-intel-v1-2-0ddc81be6a4c@gmail.com>
- <72754805-575c-4568-9dab-514e1b758847@oss.qualcomm.com>
- <ae840989-03df-4e84-a9cc-46c51f6dd44e@oss.qualcomm.com>
- <8f35edd6-6b37-4575-8a30-558ae0dee0bd@intel.com>
-Content-Language: en-US
-In-Reply-To: <8f35edd6-6b37-4575-8a30-558ae0dee0bd@intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Authority-Analysis: v=2.4 cv=EYH4hvmC c=1 sm=1 tr=0 ts=6a75e799 cx=c_pps
- a=IZJwPbhc+fLeJZngyXXI0A==:117 a=UaEkX0D7FlC0tWE/LoNF7Q==:17
- a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=3WHJM1ZQz_JShphwDgj5:22
- a=VwQbUJbxAAAA:8 a=KKAkSRfTAAAA:8 a=pGLkceISAAAA:8 a=XQPYAtKPP1igbtPNMl0A:9
- a=QEXdDO2ut3YA:10 a=uG9DUKGECoFWVXl0Dc02:22 a=cvBusfyB2V15izCimMoJ:22
-X-Proofpoint-ORIG-GUID: nCqI2euVeQLfZoDZWRytHtTtRJxuzkZf
-X-Proofpoint-GUID: nCqI2euVeQLfZoDZWRytHtTtRJxuzkZf
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODA3MDExMSBTYWx0ZWRfX+sAgAtukfWYK
- F+q/42jrpQMNguI9fLfaTOrX2fLM/nadldFgWzc9kbT9K0puqicET339pfP/bEJfbFS6JUOV7bt
- Yx/WvfEnYN89P7ZoM2xmQ0bvMZh7tzA=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA3MDExMSBTYWx0ZWRfX9Q3BhMLDVcgW
- RIUX2zwrHANTUfitANt2zWwXXDl/1+Gzo+H1ZP5YaxcFzcc6OJmuDJcvG1F/eYWVF6KsmQjZkJ6
- aKC0z9KgI6CFEYC7CQcTiJtCkuQ+aiTezAMTUGOrFKoI+qkGNJLqNLBy/piW8eM95+u3OdKqx97
- sU8XttDiXoDmIYpTZf6FL+TQC3qDRcZ5oOzZaeTIdsKL4vOB/F3A4mwJKrbxWzP5VhooXQVacqq
- ywmsBuNegWmrX02bVAbY/0K9r5qKfvkXWs5EWsAScS+d8t1bSdk0DsRr+pVSabhe9xgj4c/pEK1
- nztxG8V4oGtrtQR3eMX0QTguTeigitRFhOqVb4fkxfor3SHU9ASfyaGvXfejFe3ZefdZ+PICYlx
- 2QeT+4lHB4yRg/MtoMkMbEY9OsQXIYnOEWaTlgCaTfyA1OhMXkIS83J4qZFvQdfJ7hNc8n3TKNV
- 0fz0XG9wWn4JA9oT4oQ==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-07_02,2026-08-06_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 phishscore=0 suspectscore=0 priorityscore=1501 spamscore=0
- clxscore=1015 malwarescore=0 bulkscore=0 impostorscore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608070111
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Fri, 07 Aug 2026 15:27:32 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=qualcomm.com; h=
- cc:content-transfer-encoding:content-type:date:from:in-reply-to
- :message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
- jY/yOsvpc9aWjuEvUxwTi0KWtinXasaO3wK8pTemGEY=; b=XdR4O5xb7tobtL3Z
- w38JXbrqD/s5ZITebXeCQBNbWDhlxZFelzyFSR+mmHn+JQNctTe6yt7gmtIjH4ch
- wBYsPymzjHh1P+lw4UyxcfAv0lJWGI7r+7IRDsrJTbF8X2rz3dgly0+a4J/GlsZo
- V9cgcG7QwGzooIDmngRCgxEyD2ZkqHVwCD5De4/O4lsfrAxJa7q+ZreHCAHvEU2/
- LQNocv9NrrJB/+uKWW+hKB1ARfUULSi05u6d77XFGBk3rAcgCvURgPBOVR+CdyOk
- 1UWcuP8GP/mNWQ2nKvEMIH37b8qTtivfD+ue0Ig9saO7rOQREGC+KdCjebYex3hN
- lNgjcQ==
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=oss.qualcomm.com; s=google; t=1786111897; x=1786716697; darn=lists.osuosl.org;
- h=content-transfer-encoding:content-type:in-reply-to:content-language
- :from:references:cc:to:subject:user-agent:mime-version:date
- :message-id:from:to:cc:subject:date:message-id:reply-to:content-type;
- bh=jY/yOsvpc9aWjuEvUxwTi0KWtinXasaO3wK8pTemGEY=;
- b=WGdBWvpCh5s++7ZPTSd8ZB9tLJPNlpVsyhZTe5zqdicQAB5OOv8hakPvuSyQ9aC2tK
- nqr3WncvE480+m+qbJDClPngQsXBoYSTXs4g5eQL1PXs41uVVjix/Re6Eki535vUV2A3
- 0uRUZ3Tlr3ojetLw2AzCzIQQ9q0CN/IWcg74edgA+gBgkbp/Bc4GHgbok3sHJ2aIYR8h
- DJXGbMgs/vl1wqjHvTlI2FOFSvmG23mPV+5QidrGTTKK2jq8HmKmo1uicp+RHQhNV3rN
- I3w0CeLl0cmfwYoo2ttVNF17caa1GjKcp45fOwsSZt8GOSgR0GV6EcPjzgi9olkshMZI
- nAwA==
+ d=gmail.com; s=20251104; t=1786114597; x=1786719397; darn=lists.osuosl.org;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+ bh=tkpFr6rG5lBoCbq0wNytvjoTRlryXvJyiJH9uY9WWYY=;
+ b=CmJxXNoDZpdUZEehoEuY5zolbWwHlYs2HbBdRMLMAOVxsNfwRWC9AZyyRqS8S6+SkW
+ 4oX6khW5Q3BTg9bR3DjAbMW/0JZ/9phQUCSX0TxBi5ZRgfDBdqBPI/MK4Eoaz7Ow2lVa
+ 0DiAd0Y2t8WJuXUidfm3rca7dvzjlaEI3J+zJhnHX8yaUPXMzyQucQDhkbmCoaTG4GYa
+ JQGrLCF3N051lsaizmdLKHmC5nxX7ioFeXaM9s8do/aecuISQz7EgthNzMAaJ25o84p0
+ k1HGN9SlTZUOpaoF5oyTUmNBSg9xEuqnjHa+UbWa/k+A8KmdRx5FoXmqFJlsKAACQhvi
+ Y3eA==
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=oss.qualcomm.com
+ dmarc=pass (p=none dis=none)
+ header.from=gmail.com
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com
- header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1
- header.b=XdR4O5xb; 
- dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com
- header.a=rsa-sha256 header.s=google header.b=WGdBWvpC
-Subject: Re: [Intel-wired-lan] __free usage
+ dkim=pass (2048-bit key,
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20251104 header.b=CmJxXNoD
+Subject: [Intel-wired-lan] [PATCH] e100: prevent shift out-of-bounds in
+ e100_eeprom_load
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -188,55 +127,65 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-From: Jeff Johnson via Intel-wired-lan <intel-wired-lan@osuosl.org>
-Reply-To: Jeff Johnson <jeff.johnson@oss.qualcomm.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 8/5/2026 4:56 AM, Przemek Kitszel wrote:
-> On 8/5/26 00:56, Jeff Johnson via Intel-wired-lan wrote:
->> On 8/4/2026 3:54 PM, Jeff Johnson wrote:
->>> On 11/16/2025 7:56 AM, Ally Heev wrote:
->>>> usage of cleanup attributes is discouraged in net [1], achieve cleanup
->>>> using goto. In this patch though, only uninitialized pointers with __free
->>>> attribute are cleaned as they can cause undefined behavior when they
->>>> go out of scope
->>>>
->>>> Suggested-by: Simon Horman <horms@kernel.org>
->>>> Reported-by: Dan Carpenter <dan.carpenter@linaro.org>
->>>> Closes: https://lore.kernel.org/all/aPiG_F5EBQUjZqsl@stanley.mountain/
->>>> Signed-off-by: Ally Heev <allyheev@gmail.com>
->>>>
->>>> [1] https://docs.kernel.org/process/maintainer-netdev.html#using-device-managed-and-cleanup-h-constructs
->>>
->>> <SMH>
->>>
->>> If using __free() *correctly* gives more readable code, why wouldn't we do it?
->>>
->>> The only problem with this function is that it doesn't follow the guidance
->>> from cleanup.h:
->>>
->>>   * the recommendation is to always define and assign variables in one
->>>   * statement and not group variable definitions at the top of the
->>>   * function when __free() is used.
->> OMG, not sure why Thunderbird showed this as a recent unread e-mail.
->> Please ignore this noise!
-> 
-> always happy to see some __free() advocates :)
-> 
-> perhaps with our new meticulous friend Sashiko __free() would not be
-> misused anymore, especially if we let them know the following quote:
-> 
->  > So just make the rule be that __free() without an assignment is 
-> simply > a bug.
->  >               Linus
-> 
-> and the resulting "less code" is always better (if only to fit more
-> data into the AI context window)
+From: Yalagada Pavan Kumar <pavankumaryalagada@gmail.com>
 
-There are unfortunately some uses of __free() that require a NULL assignment,
-namely when the allocation is passed back via  a ** argument -- see
-__free(firmware). But for all the rest it would be good to have the
-consistency. Anything to help reduce often buggy cleanup gotos.
+When reading the EEPROM address length, e100_eeprom_read() can return
+an invalid length (0 or >= 16). Passing an invalid addr_len to bit-shift
+operations causes a shift out-of-bounds, triggering a kernel panic or
+UBSAN warning.
 
-/jeff
+Validate addr_len after reading it from EEPROM and return -EINVAL if
+the value is out of bounds. Additionally, use 1U to prevent
+signed integer overflow when calculating eeprom_wc.
+
+Reported-by: syzbot+e0abb1d45ac291ebebeb@syzkaller.appspotmail.com
+Tested-by: syzbot+e0abb1d45ac291ebebeb@syzkaller.appspotmail.com
+Closes: https://syzkaller.appspot.com/bug?extid=e0abb1d45ac291ebebeb
+Signed-off-by: Yalagada Pavan Kumar <pavankumaryalagada@gmail.com>
+---
+Tested using syzbot c reproducer.
+---
+ drivers/net/ethernet/intel/e100.c | 17 +++++++++++++++--
+ 1 file changed, 15 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/e100.c b/drivers/net/ethernet/intel/e100.c
+index 29960762e64a..1de5cd41ea0c 100644
+--- a/drivers/net/ethernet/intel/e100.c
++++ b/drivers/net/ethernet/intel/e100.c
+@@ -744,7 +744,12 @@ static __le16 e100_eeprom_read(struct nic *nic, u16 *addr_len, u16 addr)
+ 		 * complete address.  Use this to adjust addr_len. */
+ 		ctrl = ioread8(&nic->csr->eeprom_ctrl_lo);
+ 		if (!(ctrl & eedo) && i > 16) {
+-			*addr_len -= (i - 16);
++			u16 len = i - 16;
++
++			if (len > *addr_len)
++				*addr_len = 0;
++			else
++				*addr_len -= len;
+ 			i = 17;
+ 		}
+ 
+@@ -765,7 +770,15 @@ static int e100_eeprom_load(struct nic *nic)
+ 
+ 	/* Try reading with an 8-bit addr len to discover actual addr len */
+ 	e100_eeprom_read(nic, &addr_len, 0);
+-	nic->eeprom_wc = 1 << addr_len;
++
++	if (!addr_len || addr_len >= 16) {
++		netif_err(nic, probe, nic->netdev,
++			"Invalid EEPROM address length %u\n",
++			addr_len);
++		return -EINVAL;
++	}
++
++	nic->eeprom_wc = 1U << addr_len;
+ 
+ 	for (addr = 0; addr < nic->eeprom_wc; addr++) {
+ 		nic->eeprom[addr] = e100_eeprom_read(nic, &addr_len, addr);
+-- 
+2.43.0
+
