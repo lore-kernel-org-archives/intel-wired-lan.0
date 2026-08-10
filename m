@@ -1,96 +1,121 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40E87C5AD4E
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 10 Aug 2026 07:57:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A49B2C5AD4E
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 10 Aug 2026 08:34:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D915840462;
-	Mon, 10 Aug 2026 07:57:06 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 5F1E4605D0;
+	Mon, 10 Aug 2026 08:34:22 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id xM203m4ZHQyQ; Mon, 10 Aug 2026 07:57:06 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id KQq3sMwEmE73; Mon, 10 Aug 2026 08:34:21 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2C09540467
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9F5236067B
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1786348626;
-	bh=x6+cp6O5wtVjC91J7LfxWlixgOmlbpFsCI4098OBfpw=;
+	s=default; t=1786350861;
+	bh=wx/dR5BeT9JtgYuBtWLK4gYFoR3mxTUHjHYo0mlT1ww=;
 	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=ppuXUarC9QueMITHizAUbC3IKBoifK1tPc5tQx+UVy1C9RWIwLQr99QHwaCAReX9X
-	 9WGqnF0eC1DI1d8mglVCtYlBgnsZec/y2/tffEF3VEFuc7mblvcgea+nUgELg5OxFP
-	 onQqjVT3rjGEzs0Fg9p1hCZyOj+FGuYU+Qcf9u1DYjMN567we+fW1QnGbBR8oy5C32
-	 84W94kboJvVkJQ0RFBO9P1wQcURpN0vKc2DEPDl+vBQGfI6zl7DthrMzYY2w4nxmZe
-	 IEUzwJqyiRvr1D5plN3tnipzO2anQuLfaKIyelX+tGMV/xp/XkicZXGGvzvaj3Qn1Z
-	 1zBrCXGV5fKKQ==
+	b=rOCn6OS4DbhdhlxWMTk779i9SZi8bRoopz03ZnVMH7cOFppClW0SgGb2zC4wz45Nm
+	 ZotsQjiMFpo3jStLBHJKw3nc2TR7fBbq8K8ogtUAX/Cx9jHdNa1WbWGd58pljFMVkW
+	 jMfhMTCS14CF5S1WZzHDa607EQT1YeSIlKDB2sGbDQRCTJHQkIn3LSHaYxhPl+Be2R
+	 Tc0dNR+g8Z57Sj+bptZeRpsjSQ4H+g47g7UTMCVuxZAKvoacYDUCYrYpNsk23tTSOh
+	 F6qzM314kxIpZn+JlcCuzoF9wqQPr7SU42nz8i5yIjNFgpwlx6gnnYrEOBfBdCnS0P
+	 zbYNBd3LeY1HQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 2C09540467;
-	Mon, 10 Aug 2026 07:57:06 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 80401259
- for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Aug 2026 07:57:03 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 9F5236067B;
+	Mon, 10 Aug 2026 08:34:21 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id E27E5282
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Aug 2026 08:34:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 65E2880C7A
- for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Aug 2026 07:57:03 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id D44CC6067B
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Aug 2026 08:34:20 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id O5iOsJcloZ31 for <intel-wired-lan@lists.osuosl.org>;
- Mon, 10 Aug 2026 07:57:02 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.20;
- helo=mgamail.intel.com; envelope-from=tomasz.lichwala@linux.intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 53FA880C74
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 53FA880C74
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 53FA880C74
- for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Aug 2026 07:57:01 +0000 (UTC)
-X-CSE-ConnectionGUID: iYI/JtFYSXySw3pu7JroNA==
-X-CSE-MsgGUID: abH0BHPlRgWERM/D147+RA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11870"; a="86615160"
-X-IronPort-AV: E=Sophos;i="6.25,215,1779174000"; d="scan'208";a="86615160"
-Received: from fmviesa009.fm.intel.com ([10.60.135.149])
- by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 10 Aug 2026 00:57:00 -0700
-X-CSE-ConnectionGUID: ZK3DD+3aS3aczdK1fDddXw==
-X-CSE-MsgGUID: h0HSaT1WTHqmvps8KTSS2g==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,215,1779174000"; d="scan'208";a="256756179"
-Received: from os-delivery.igk.intel.com ([10.123.220.8])
- by fmviesa009.fm.intel.com with ESMTP; 10 Aug 2026 00:56:53 -0700
-From: Tomasz Lichwala <tomasz.lichwala@linux.intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org, Tomasz Lichwala <tomasz.lichwala@linux.intel.com>
-Date: Mon, 10 Aug 2026 09:56:52 +0200
-Message-ID: <20260810075652.27915-1-tomasz.lichwala@linux.intel.com>
-X-Mailer: git-send-email 2.54.0
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 4aknWuqyP5bi for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 10 Aug 2026 08:34:20 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2607:f8b0:4864:20::529; helo=mail-pg1-x529.google.com;
+ envelope-from=pavankumaryalagada@gmail.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org D106C605D0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D106C605D0
+Received: from mail-pg1-x529.google.com (mail-pg1-x529.google.com
+ [IPv6:2607:f8b0:4864:20::529])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id D106C605D0
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Aug 2026 08:34:19 +0000 (UTC)
+Received: by mail-pg1-x529.google.com with SMTP id
+ 41be03b00d2f7-caf45fc5202so1222719a12.1
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Aug 2026 01:34:19 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20251104; t=1786350859; x=1786955659;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to:content-type;
+ bh=wx/dR5BeT9JtgYuBtWLK4gYFoR3mxTUHjHYo0mlT1ww=;
+ b=qaj2IagsPjNBnpffCm4DjUicC/9TcocG1L0IOKpDhMtxpLBifjBdbf6Tia++loC+Oi
+ jpPtIrpjxkxJumVVQR7+lOGoo3S+zxiLa+ow3FH50+3l+sU9TyH/cSFyOHSwMLrhfBy2
+ Jl7TZSpWGkIdVv7KOFlLbBIniMiunOWdeR+FFi/gzc0hP+zsXljfLzc47+fJqQdp9Uzw
+ 4sHtjYJSyq6uWyeuwlMFSxZekDdkla+28M2+2eVoecUEXEmXngqo6aNa2OrAIFCiyCwz
+ Jov9xEGILeUW1K4wqbS6yoe2rGMPlDr72mH18TpUxfVGsmvN1Hkc0TzWxQnZ9oHeGq+T
+ ejiA==
+X-Forwarded-Encrypted: i=1;
+ AHgh+RrNP0MUdEvF0NUerdqblukwLK/md07YWXm9B+WVDmfZHn/B6g3rXxUdjBO6YWC5BHBlFfe5yKQ6M0qLuvDFt8w=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YzQTgyhHNEE+Paf54HRwEl4GRLR72fZk0Q2++ku/5wVVoLhG3yr
+ ogU4MvHw/OX03Wsrr+a64Cf0pbs7Gtu2Q6slkmvrWbnOCywkbfGNgPLw
+X-Gm-Gg: AR+sD102hg5X+mXeXgw/rzZqGopn740a+2lnO6NLdKhvsj/aJssXLR6F96ZAr6KCCFP
+ DJLZswz2Gq4PN0EoQf/DTA7Xd13y8M/xotscTvLgvKgVcTTIgYmdI3KR4ovi068MyF33Bd4EIuU
+ xAyomOtOkrFto12NiVPtbiNX01WJorCto/w1C6PaH88A7DZxv2F+15GU0rSa2XNwx6U1vEE2XRS
+ EWleZZKA8ODkEstomAU11MIify3Tj+BccXbyizxybb7wydoqMZhQXpyWsqtNVV8nVj8XFdhwe7v
+ 3Efa11gytcyyBJYJrZtUTB7ebDA1/Zqm1fWLOFRhpojitLUHp5msNk+EagREbrM0M348MDRkGpA
+ gPaSh8ERPy6NyK08/+IvhXFGHFLVqYNApGjGMc+UBtzkrWlY5kfPL+MaLCPwhxt+2d4oUeKa1ZA
+ V7qM6R+DzqmrXHaPcynKAWgn7yj69vUibntssUa8uhEeQpCs/NJPJYJMNjACejmyZSOKpa
+X-Received: by 2002:a05:6a21:485:b0:3c4:3b16:2979 with SMTP id
+ adf61e73a8af0-3cb85f0397fmr51639254637.30.1786350859021; 
+ Mon, 10 Aug 2026 01:34:19 -0700 (PDT)
+Received: from user.. ([2405:201:c052:b00b:9a9f:f6f8:5800:36c0])
+ by smtp.gmail.com with ESMTPSA id
+ 5a478bee46e88-315bebee8d0sm38776661eec.24.2026.08.10.01.34.13
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 10 Aug 2026 01:34:18 -0700 (PDT)
+From: pavankumaryalagada@gmail.com
+To: anthony.l.nguyen@intel.com,
+	przemyslaw.kitszel@intel.com
+Cc: andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com, intel-wired-lan@lists.osuosl.org,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ skhan@linuxfoundation.org,
+ syzbot+e0abb1d45ac291ebebeb@syzkaller.appspotmail.com,
+ Yalagada Pavan Kumar <pavankumaryalagada@gmail.com>
+Date: Mon, 10 Aug 2026 14:03:55 +0530
+Message-ID: <20260810083355.21631-1-pavankumaryalagada@gmail.com>
+X-Mailer: git-send-email 2.43.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1786348622; x=1817884622;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=K3dGZxx+dFdUL7gnm6sbE+ZMC4jTvvyK6dHc60lLDNg=;
- b=k0FgvbLNfmTK1zgRqUQ4iquaI5zRmu5080Ypl/HcLdtPjyuT1nV3iFSC
- /miTFebuHMSVqG/qo9JNYPTjEsQmo1fLWzAju2V3LFb0195Ztq2KJ/gqX
- Iai+4b8PLf8JyelGW52VFMVMUEQ9d2gNlenNreo6PmBd/K6GCrnLc6BCO
- 7a0n6ALui0z+8DTYpU2QyAtvGZKezayLE6xdAjT3Fj8XOIN7CV6c25NGk
- hV2a+PxM5CSp4HaOZA9lZL/iL/dkzG2slmpKSnVnYmK/HmaMX2lhLIhMR
- L08GEgjV2HiTXseWtinz14uuUCuE82zB94WZlfxbCdikNJ75nBu7SsBy9
- g==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=linux.intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=k0FgvbLN
-Subject: [Intel-wired-lan] [iwl-next] ixgbe: implement Total Port Shutdown
- for E610
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20251104; t=1786350859; x=1786955659; darn=lists.osuosl.org;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+ bh=wx/dR5BeT9JtgYuBtWLK4gYFoR3mxTUHjHYo0mlT1ww=;
+ b=su2T1BVsNK6kqZY7PnmhbjiKuVUL+zHjXuKC1lrZkxQXk0HQ5C/NES/tcgjCFaJOMD
+ /UxgVVRZMOp61fe0Jq30SNLjMgYl84yMWFPxILvbsMZYMvKyLq5W6f/+L4iS0RIKL8aq
+ lw7rJjHgIsbSIWRUsdGJYj4jft0VMUmehIkCpo+vO3wFVboSNBy+vSMsEpTy3F0Vk3l9
+ khYFqhgHq0PGGc2hMbGHoDrWMUmaMhl2WhqEIzbudCAzd9bJT6RAS3YSp7c6HHjnpNza
+ mzEc+u5JTwbJpM6NweMevpvOD7DuwjKOsGHQ7g1Gl1R5fUfQeHKSX9V+JKbnIWtktsGy
+ J+Nw==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=gmail.com
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20251104 header.b=su2T1BVs
+Subject: [Intel-wired-lan] [PATCH v2] e100: prevent shift-out-of-bounds in
+ e100_eeprom_load()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -106,181 +131,67 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Implement Total Port Shutdown (TPS) for E610. When TPS is provisioned
-in the NVM (by the platform firmware), the port's PHY is powered down
-whenever the interface is administratively down.
+From: Yalagada Pavan Kumar <pavankumaryalagada@gmail.com>
 
-When the PORT_DIS bit is set in the Link Default Override TLV in
-the NVM PFA area, enable Total Port Shutdown (TPS). This forces the
-link-down-on-close private flag and prevents the user from changing
-it via ethtool, ensuring the PHY is powered down when the interface
-is brought down as provisioned in the NVM.
+When reading the EEPROM address length, e100_eeprom_read() can return
+an invalid length (0 or >= 16). Passing an invalid addr_len to bit-shift
+operations causes a shift out-of-bounds, triggering a kernel panic or
+UBSAN warning.
 
-The Link Default Override TLV (0x134) is read from the NVM PFA during
-driver init. Each port has its own 10-word configuration block within
-the TLV. If the PORT_DIS bit is set in the port's link_options field,
-the driver sets both TOTAL_PORT_SHUTDOWN_ENA and LINK_DOWN_ON_CLOSE
-flags.
+Validate addr_len after reading it from EEPROM in both
+e100_eeprom_load() and e100_eeprom_save(), and return -EIO if the value
+is out of bounds.
 
-Signed-off-by: Tomasz Lichwala <tomasz.lichwala@linux.intel.com>
+Reported-by: syzbot+e0abb1d45ac291ebebeb@syzkaller.appspotmail.com
+Closes: https://syzkaller.appspot.com/bug?extid=e0abb1d45ac291ebebeb
+Signed-off-by: Yalagada Pavan Kumar <pavankumaryalagada@gmail.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe.h      |  1 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c | 38 +++++++++++++++++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h |  2 +
- .../net/ethernet/intel/ixgbe/ixgbe_ethtool.c  | 13 +++++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 14 ++++++-
- .../ethernet/intel/ixgbe/ixgbe_type_e610.h    | 13 +++++++
- 6 files changed, 80 insertions(+), 1 deletion(-)
+Tested in QEMU using syzbot c reproducer.
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index 02e7d6f0d852..41f43294465b 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -684,6 +684,7 @@ struct ixgbe_adapter {
- #define IXGBE_FLAG2_API_MISMATCH		BIT(23)
- #define IXGBE_FLAG2_FW_ROLLBACK			BIT(24)
- #define IXGBE_FLAG2_LINK_DOWN_ON_CLOSE		BIT(25)
-+#define IXGBE_FLAG2_TOTAL_PORT_SHUTDOWN_ENA	BIT(26)
- 
- 	/* Tx fast path data */
- 	int num_tx_queues;
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
-index c92a586ee9b6..46a7c3ef7396 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
-@@ -4051,6 +4051,44 @@ static int ixgbe_get_pfa_module_tlv(struct ixgbe_hw *hw, u16 *module_tlv,
- 	return -ENODATA;
- }
- 
-+/**
-+ * ixgbe_get_link_default_override - Get link default override from NVM
-+ * @hw: pointer to hardware structure
-+ * @ldo: pointer to link default override struct to populate
-+ *
-+ * Read the Link Default Override TLV from the NVM PFA and return
-+ * the per-port override configuration.
-+ *
-+ * Return: 0 on success, negative error code on failure.
-+ */
-+int ixgbe_get_link_default_override(struct ixgbe_hw *hw,
-+				    struct ixgbe_link_default_override_tlv *ldo)
-+{
-+	struct ixgbe_adapter *adapter = hw->back;
-+	u16 tlv, tlv_len;
-+	u32 tlv_start;
-+	u8 pf_func;
-+	int err;
-+
-+	err = ixgbe_get_pfa_module_tlv(hw, &tlv, &tlv_len,
-+				       IXGBE_E610_SR_LINK_DEFAULT_OVERRIDE_PTR);
-+	if (err)
-+		return err;
-+
-+	pf_func = PCI_FUNC(adapter->pdev->devfn);
-+
-+	tlv_start = tlv + IXGBE_E610_SR_PFA_TLV_HDR_SIZE +
-+		    pf_func * IXGBE_E610_SR_PFA_LINK_OVERRIDE_WORDS;
-+
-+	if (tlv_start + IXGBE_E610_SR_PFA_LINK_OVERRIDE_WORDS >
-+	    tlv + IXGBE_E610_SR_PFA_TLV_HDR_SIZE + tlv_len)
-+		return -ERANGE;
-+
-+	return ixgbe_read_ee_aci_buffer_e610(hw, tlv_start,
-+					     IXGBE_E610_SR_PFA_LINK_OVERRIDE_WORDS,
-+					     (u16 *)ldo);
-+}
-+
- /**
-  * ixgbe_read_pba_string_e610 - Read PBA string from NVM
-  * @hw: pointer to hardware structure
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
-index 1f4c8b022698..fc96d67e018e 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
-@@ -82,6 +82,8 @@ int ixgbe_read_ee_aci_e610(struct ixgbe_hw *hw, u16 offset, u16 *data);
- int ixgbe_read_ee_aci_buffer_e610(struct ixgbe_hw *hw, u16 offset,
- 				  u16 words, u16 *data);
- int ixgbe_validate_eeprom_checksum_e610(struct ixgbe_hw *hw, u16 *checksum_val);
-+int ixgbe_get_link_default_override(struct ixgbe_hw *hw,
-+				    struct ixgbe_link_default_override_tlv *ldo);
- int ixgbe_reset_hw_e610(struct ixgbe_hw *hw);
- int ixgbe_get_flash_data(struct ixgbe_hw *hw);
- int ixgbe_aci_nvm_update_empr(struct ixgbe_hw *hw);
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-index 6a35630f8421..1e1db8435506 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-@@ -3852,6 +3852,19 @@ static int ixgbe_set_priv_flags(struct net_device *netdev, u32 priv_flags)
- 		}
+v2:
+- Return -EIO instead of -EINVAL for an invalid EEPROM address length.
+- Validate addr_len in e100_eeprom_save() as well.
+- Drop the unnecessary 1U change in the shift.
+- Update the commit message.
+
+v1:
+https://lore.kernel.org/all/20260807145626.52692-1-pavankumaryalagada@gmail.com/T/
+---
+ drivers/net/ethernet/intel/e100.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/e100.c b/drivers/net/ethernet/intel/e100.c
+index 1de5cd41ea0c..464dc2d6cdb5 100644
+--- a/drivers/net/ethernet/intel/e100.c
++++ b/drivers/net/ethernet/intel/e100.c
+@@ -775,10 +775,10 @@ static int e100_eeprom_load(struct nic *nic)
+ 		netif_err(nic, probe, nic->netdev,
+ 			"Invalid EEPROM address length %u\n",
+ 			addr_len);
+-		return -EINVAL;
++		return -EIO;
  	}
  
-+	/* Do not allow any change to link-down-on-close when Total Port
-+	 * Shutdown is enabled - the flag is managed by TPS exclusively.
-+	 */
-+	if (adapter->flags2 & IXGBE_FLAG2_TOTAL_PORT_SHUTDOWN_ENA) {
-+		bool cur = !!(adapter->flags2 & IXGBE_FLAG2_LINK_DOWN_ON_CLOSE);
-+		bool req = !!(priv_flags & IXGBE_PRIV_LINK_DOWN_ON_CLOSE);
+-	nic->eeprom_wc = 1U << addr_len;
++	nic->eeprom_wc = 1 << addr_len;
+ 
+ 	for (addr = 0; addr < nic->eeprom_wc; addr++) {
+ 		nic->eeprom[addr] = e100_eeprom_read(nic, &addr_len, addr);
+@@ -804,6 +804,14 @@ static int e100_eeprom_save(struct nic *nic, u16 start, u16 count)
+ 
+ 	/* Try reading with an 8-bit addr len to discover actual addr len */
+ 	e100_eeprom_read(nic, &addr_len, 0);
 +
-+		if (req != cur) {
-+			e_warn(probe, "Setting link-down-on-close not supported on this port\n");
-+			return -EOPNOTSUPP;
-+		}
++	if (!addr_len || addr_len >= 16) {
++		netif_err(nic, probe, nic->netdev,
++			"Invalid EEPROM address length %u\n",
++			addr_len);
++		return -EIO;
 +	}
 +
- 	flags2 &= ~IXGBE_FLAG2_LINK_DOWN_ON_CLOSE;
- 	if (priv_flags & IXGBE_PRIV_LINK_DOWN_ON_CLOSE) {
- 		if (adapter->hw.mac.type == ixgbe_mac_e610) {
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 79d5d652d3cf..5f8f9884cbea 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -7001,9 +7001,21 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter,
- 	if (hw->mac.ops.init_swfw_sync)
- 		hw->mac.ops.init_swfw_sync(hw);
+ 	nic->eeprom_wc = 1 << addr_len;
  
--	if (hw->mac.type == ixgbe_mac_e610)
-+	if (hw->mac.type == ixgbe_mac_e610) {
-+		struct ixgbe_link_default_override_tlv ldo = {};
-+		int err;
-+
- 		mutex_init(&hw->aci.lock);
- 
-+		err = ixgbe_get_link_default_override(hw, &ldo);
-+		if (!err && (ldo.link_options & IXGBE_LINK_OVERRIDE_PORT_DIS)) {
-+			adapter->flags2 |=
-+				IXGBE_FLAG2_TOTAL_PORT_SHUTDOWN_ENA |
-+				IXGBE_FLAG2_LINK_DOWN_ON_CLOSE;
-+			e_dev_info("Total Port Shutdown enabled\n");
-+		}
-+	}
-+
- #ifdef IXGBE_FCOE
- 	/* FCoE support exists, always init the FCoE lock */
- 	spin_lock_init(&adapter->fcoe.lock);
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
-index 959cacecae49..43e2d3e1cd59 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
-@@ -29,6 +29,19 @@
- #define IXGBE_E610_SR_NETLIST_BANK_PTR		0x46
- #define IXGBE_E610_SR_NETLIST_BANK_SIZE		0x47
- 
-+/* Link Default Override TLV in PFA */
-+#define IXGBE_E610_SR_LINK_DEFAULT_OVERRIDE_PTR	0x134
-+#define IXGBE_E610_SR_PFA_LINK_OVERRIDE_WORDS	10
-+#define IXGBE_E610_SR_PFA_TLV_HDR_SIZE		2
-+
-+#define IXGBE_LINK_OVERRIDE_PORT_DIS		BIT(2)
-+
-+struct ixgbe_link_default_override_tlv {
-+	u16 link_options;
-+	u16 phy_options;
-+	u16 phy_types[8];
-+};
-+
- /* The OROM version topology */
- #define IXGBE_OROM_VER_PATCH_MASK		GENMASK_ULL(7, 0)
- #define IXGBE_OROM_VER_BUILD_MASK		GENMASK_ULL(23, 8)
+ 	if (start + count >= nic->eeprom_wc)
 -- 
-2.54.0
+2.43.0
 
