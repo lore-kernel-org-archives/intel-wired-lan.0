@@ -4,86 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8481C5B569
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 10 Aug 2026 18:48:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0DCD7C5B567
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 10 Aug 2026 18:48:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 9A99680F28;
-	Mon, 10 Aug 2026 18:48:01 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id DCC3380F2F;
+	Mon, 10 Aug 2026 18:48:03 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id fch23m0USgQH; Mon, 10 Aug 2026 18:47:58 +0000 (UTC)
+ id VDyGJjk7WSP4; Mon, 10 Aug 2026 18:48:01 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 46D3E80F1C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B137080F1C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1786387678;
-	bh=k/Ax58T4Q8crjfyLzO+c1sFhNTHsEbLvFPcefzRdh9g=;
+	s=default; t=1786387681;
+	bh=/h1pNasFi/92T6RUAvXDvHq7QawRH4lT9AOvszwUiP4=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=huvVGDB5wFR5q/DfFGlZnnQVMt5Klgj+w5heJRpppzEANdjg6yyC9uuKO8Pvdq+yR
-	 3/4K/UXn7HKzEYriU/iXFMjxgRojnDt5fZZeGoLAp+8kgYkGeg0JhzKJ2Ypuq1/GbJ
-	 L78GoMnktEjUY5qnjsGqi6lKTWDyD9iJLm0s5kIiYDZDRTweccHagxu5sVPyIQrc21
-	 vFqEqU36PzXF7fL06ZlaniiXLh3TWpU+eDHbYrV6AUHD6zcCzZH5TVdUlfLCNu2AeJ
-	 7XYQuqg/VnrhMvYDi4LQ9lMBi6oMHYxFhPi2sHjn8bo1idgsJK++XgUgq+kV7/K1Ty
-	 Vhz8aRQl04msA==
+	b=jk2xaSuZW825tDStEG8D3td3s2jit2BzmAcXl9zKuP+0Bz3NHuHE9VUuEoIyJfvSe
+	 zyYYr+U9zuAIL3aogxBa1p/x3ND2PU07iYEOSCagV4LYHWiUK0Qm2BvRX5i2F/iwjZ
+	 T+J8zM+BjFQvSZ+Kgcq4chkd3+XWFgl5qocuEB34idCQIBIyT8Q/nw+HhhOEkvQnYp
+	 iZIhPavd8CO/iSDLhuPpKdTBad2rnMdwprVXLQcaxjxBSVzKGrFwVfsnaADPiYOsYl
+	 fK9nSQpzzKOB3jpfJHOS8OvRH6A3HtAkg7AI2MbWwMdjvmBKsNgMGTPtZ0rYbmna1A
+	 MUTRpRHL8HZyA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 46D3E80F1C;
-	Mon, 10 Aug 2026 18:47:58 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id BF67F218
- for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Aug 2026 18:47:56 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id B137080F1C;
+	Mon, 10 Aug 2026 18:48:01 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id A7B4B24E
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Aug 2026 18:47:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id B126B60645
- for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Aug 2026 18:47:56 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id A5CC760645
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Aug 2026 18:47:58 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id jec2hfaIqDnt for <intel-wired-lan@lists.osuosl.org>;
- Mon, 10 Aug 2026 18:47:56 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2607:f8b0:4864:39::6;
- helo=mail-pj2-x06.google.com; envelope-from=sdf.kernel@gmail.com;
+ id J6VS7lM_Ykdv for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 10 Aug 2026 18:47:58 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2607:f8b0:4864:3b::;
+ helo=mail-pz2-x00.google.com; envelope-from=sdf.kernel@gmail.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 1E56F605ED
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1E56F605ED
-Received: from mail-pj2-x06.google.com (mail-pj2-x06.google.com
- [IPv6:2607:f8b0:4864:39::6])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 1E56F605ED
- for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Aug 2026 18:47:56 +0000 (UTC)
-Received: by mail-pj2-x06.google.com with SMTP id
- 98e67ed59e1d1-38f25802c19so911332a91.1
- for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Aug 2026 11:47:56 -0700 (PDT)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 045F6605ED
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 045F6605ED
+Received: from mail-pz2-x00.google.com (mail-pz2-x00.google.com
+ [IPv6:2607:f8b0:4864:3b::])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 045F6605ED
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Aug 2026 18:47:57 +0000 (UTC)
+Received: by mail-pz2-x00.google.com with SMTP id
+ 41be03b00d2f7-c888c001628so1453115a12.0
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Aug 2026 11:47:57 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1786387675; x=1786992475;
+ d=1e100.net; s=20251104; t=1786387677; x=1786992477;
  h=content-transfer-encoding:mime-version:references:in-reply-to
  :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
  :to:cc:subject:date:message-id:reply-to:content-type;
- bh=k/Ax58T4Q8crjfyLzO+c1sFhNTHsEbLvFPcefzRdh9g=;
- b=crEwN1oZPe5rWulPgiq+7xyDTqhMhWuJdHPe+spsYXsfvyWse7gmm4I3ztT/0Jv6CI
- w4ShBtp/GGo1FO4hh8OSnJvm/k94rRkQgai/unu80QEdAuzqYYEWGs0xQdz7d2GJ5m8t
- 2H61z/bfKjhMkh0Avno/5ETy9pmss+sXlddKi3kKIaxv2a0hkWl2/Y0kIe/PdfXCton8
- ZW0Z+6nIFHNPJn6VDlRUX1/TF4ncKuv/R3WZtAV8XgKqeTr4kT2dlAVZ0BbBCG46r1Hf
- OcdelsE8bSFwXfKH/jIAK3r2hes78XQIGKaUwr67dRfsqJsM9hba5cuO258xMx2MCCMC
- h0Hw==
+ bh=/h1pNasFi/92T6RUAvXDvHq7QawRH4lT9AOvszwUiP4=;
+ b=P6TVXhf2eSLYQPnf3sZsmRO5/tKNwxkljlcE9c1Gy7OhcBwd+G6awsjK+XAPEWtzyR
+ bk6UwVvE2bUI8vCLi85K+W+RN7hCHwE4vKId8+n9rzDIhCipRIJb5vERedJ5NfProRoS
+ pngFx/6j4dJTlR58kV3AsQ3OvX59vvN0QCxB5duyUK07eCc473Te24lsrBRr4CH3mVCK
+ a8EmXuxRXDKgHA20GlD+OyIhddUtagebM1wKvqlGFuAgYTCTbDewgAffuKCcn+PLCku9
+ d8Kb2BmsiPM3kK+SsaV0SD3m2Y6iO0Fcu6kKs+IL+jjIeRfpher2eS6hyVql/djDE1UX
+ aLfw==
 X-Forwarded-Encrypted: i=1;
- AHgh+RrGJXwcNBlwK7m0RYO27anaUiP4BuRcbyaPicfobk8JdC4wzHvocBbO8r4jgY1ZViE59xbSP4LptebxSxKqKGw=@lists.osuosl.org
-X-Gm-Message-State: AOJu0Yzq7KPyyrC1baGCW49vYSzRseDJOktjZiYqlS9o3rhCYIlr/Xii
- 7nUi22AVW7y6SMuP+U8lyC1WgItRwfpkyPoWYJ1WaTLA23sJvyF9Cyli
-X-Gm-Gg: AR+sD11Es9E7oG5FowU0jo9DB6W9adr6TgEf0YsAuC1P3MD+JFPDEdHTYQn7dhiXZDZ
- TBlN06zoAMHuaAQg+5BNk6SsoQ998k/o30GU5vMf6CPu8zYI7DiATbdNPLOysY+PILRpn/ISM3X
- 2pZTzqcyVRF0Ly3PDFP5SNGSH7PT4hhuUyYiYHZNcCr7QToDtFzKVCxI4+0vOZcgCdsKdNoDGsm
- Awm+jgDgoF6EdPxHmfOpQKhQIHo878OESP4VnT936mEWJhL6nMgHuxGhr0wjJTrpy2S/IAJxNYF
- MbwyeaBEphbPaTIhC3WJ332hKwdRgF9GsswimsTJLK59SvAM/vrijMgPtIYa7q0F4k5iQEXHj4M
- EE+SjfNkT4MmCBl90oWofQncny5Kddvo7Sl3v+iysdMwcje1ZcZfjXlIcGUEav24Qg7PUgSSDVq
- 95UiV5CdajGpCOY1DyKu61x8lFYynixKMNkPM22rGN2L4vzWWKb+07yAsTcx4H5twX
-X-Received: by 2002:a17:90b:1807:b0:38e:6dd:a9ad with SMTP id
- 98e67ed59e1d1-39281b1b0c8mr20842462a91.0.1786387675358; 
- Mon, 10 Aug 2026 11:47:55 -0700 (PDT)
-Received: from localhost ([2a03:2880:2ff:48::])
+ AHgh+Rp7d5wF25f8qmpKF4LSeMFr5qpDKDSpxREiMM499yExa4HXOWCXtTIgoFrKtPLt3XAu5FnuvSWBcNECv6r2Mns=@lists.osuosl.org
+X-Gm-Message-State: AOJu0Yx4GGaPLKa1A/lF/tMgQk70O6g27g8/F8FlLuB4ESdMHDLdumz0
+ tbH0qAw41eKpQDrGAS8Rmz8aEG7h4MEbAAzKnl2WvZhFuI0nXE4KViv2
+X-Gm-Gg: AR+sD13NtLIke3zSPWDb0ijNv7X05+qm0S77+FG39QuHhBJCGX0N0CCUpBXOJoMgS5B
+ j9AN1Yz+vlHVLfQ1Ff6286BhMZKw35gpj87Dj/yY0MxX++v/HD4Awenm0nzSXHkps+odj6/GJjF
+ wbgxkm1fr+jbpYP3VCsypATiFdz4a5ZeXL+EViTFQ5sn7SjfEgdVhLV1bkLJ2S2mlqVeqNnMx/C
+ jjYw4Cucc1nuzJiDJ0LYWTkcy6PRbMbuzlOqugMGfa0WgLsOeZUlfGC2ide8vpwvk7b95MN2wrD
+ s3ietKF+Yyqbl2tsqey8INErSY6vjGtGBNpS4UOR8LIVxMhWZ7Igl3tnLvwDBAM5URX/Tjgvvq3
+ x1pYB5KSpzEbonTNw2OIqTbFIxpGkJbZyI6JfwfZOmK1E2Dlx7hlKZyxunnn1I8OCcm3fPmIlne
+ /mt9XFV7HRDdsHo/6+dwVozlPKTRNhqLfhRwToVcL+nbB85QTRvOUGGQ==
+X-Received: by 2002:a05:6a20:918c:b0:3c3:89cf:f3a with SMTP id
+ adf61e73a8af0-3cbce6cb365mr23635499637.5.1786387677292; 
+ Mon, 10 Aug 2026 11:47:57 -0700 (PDT)
+Received: from localhost ([2a03:2880:2ff:58::])
  by smtp.gmail.com with ESMTPSA id
- 98e67ed59e1d1-392d5226b40sm611653a91.13.2026.08.10.11.47.54
+ 41be03b00d2f7-cbe8f38882fsm4517610a12.31.2026.08.10.11.47.56
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 10 Aug 2026 11:47:55 -0700 (PDT)
+ Mon, 10 Aug 2026 11:47:56 -0700 (PDT)
 From: Stanislav Fomichev <sdf.kernel@gmail.com>
 X-Google-Original-From: Stanislav Fomichev <sdf@fomichev.me>
 To: netdev@vger.kernel.org
@@ -101,33 +101,33 @@ Cc: davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
  linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org,
  linux-stm32@st-md-mailman.stormreply.com,
  linux-arm-kernel@lists.infradead.org, bpf@vger.kernel.org, leon@kernel.org
-Date: Mon, 10 Aug 2026 11:47:51 -0700
-Message-ID: <20260810184753.135756-2-sdf@fomichev.me>
+Date: Mon, 10 Aug 2026 11:47:53 -0700
+Message-ID: <20260810184753.135756-4-sdf@fomichev.me>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260810184753.135756-1-sdf@fomichev.me>
 References: <20260810184753.135756-1-sdf@fomichev.me>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20251104; t=1786387675; x=1786992475; darn=lists.osuosl.org;
+ d=gmail.com; s=20251104; t=1786387677; x=1786992477; darn=lists.osuosl.org;
  h=content-transfer-encoding:mime-version:references:in-reply-to
  :message-id:date:subject:cc:to:from:from:to:cc:subject:date
  :message-id:reply-to:content-type;
- bh=k/Ax58T4Q8crjfyLzO+c1sFhNTHsEbLvFPcefzRdh9g=;
- b=Cw4YIedsaeG85vXDz4bzhhvG/st0MZHQioj+PWMsn78/Fx1QSETRHeB9V/1O2sxMQc
- RK387unt3u6fyr65scc0iJ+MexUPWh3pS2arm5nQDBNkvIYE9lweJXMpnHU7+TkGQccM
- g5c1SeM8WZ/ESoCg3j0N8xWN4MdEb0IepkNZZNgU2rVGdjtWOE9KvQ/dHuWnqnlLKMUZ
- wb0DytZ86PtFhoTT7QVYxvc9kJWICNrA2cLhm6ay36NwtP/wEoljx6nLFjUUslN2Qy0a
- PCBSj/EHH2KSGs9Moh3+bMga9MDH7dwSIE/k688UmNk0dZ4HnUZkLolq/ZWdr77JGL+U
- UMvw==
+ bh=/h1pNasFi/92T6RUAvXDvHq7QawRH4lT9AOvszwUiP4=;
+ b=NKejMilEtwjb4Jg60i0Bm3NuWUuSmvQnFi1BiGmkBLlm89yEJfCRLgi6OfGXA4rfMf
+ ybZUSYIwT3RWww3XmEklhgV+n0z6g7zCb15HnzIR7ZLRKyYmnFCB1KWEOaEY7mTkJ0A3
+ BUlF2DZwwgTyNKYTQbU6ax3i7KSaDDMM34VSQyxHd1hFJxH7k1viU5wLn3M8T9xd+Jaq
+ a0booFA0zZILn+fiH61gRsM5rjIH0xmEELplrZ/3r8l7Z4z7625120zM83w7LqIILEP4
+ Ja8pjfBfzCkROHnH4OwxzK+B/Z17jFSUB41/v88K3rsd6vz2Zw8Lojpc3GIMI/D62E1+
+ EpsQ==
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=gmail.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20251104 header.b=Cw4YIeds
-Subject: [Intel-wired-lan] [PATCH net-next 1/3] xsk: align TX metadata
- layout across ABIs
+ header.a=rsa-sha256 header.s=20251104 header.b=NKejMilE
+Subject: [Intel-wired-lan] [PATCH net-next 3/3] net: stmmac: skip
+ queueMaxSDU check for AF_XDP
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -143,41 +143,38 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Add explicit padding before launch_time so xsk_tx_metadata has the same
-layout on 32-bit and 64-bit systems. This intentionally replaces the
-incompatible 32-bit launch-time layout while the interface is still new.
+Commit c5c3e1bfc9e0 ("net: stmmac: Offload queueMaxSDU from tc-taprio")
+was inspired by commit 92a0dcb8427d ("igc: offload queue max SDU from
+tc-taprio"), but the igc change does not apply the check to AF_XDP.
 
-Fixes: ca4419f15abd ("xsk: Add launch time hardware offload support to XDP Tx metadata")
+xsk_tx_peek_desc() reserves a completion entry. Continuing without
+queuing or completing the descriptor leaves the AF_XDP rings imbalanced,
+so remove the check from the zero-copy path.
+
+Fixes: c5c3e1bfc9e0 ("net: stmmac: Offload queueMaxSDU from tc-taprio")
 Signed-off-by: Stanislav Fomichev <sdf@fomichev.me>
 ---
- include/uapi/linux/if_xdp.h       | 1 +
- tools/include/uapi/linux/if_xdp.h | 1 +
- 2 files changed, 2 insertions(+)
+ drivers/net/ethernet/stmicro/stmmac/stmmac_main.c | 7 -------
+ 1 file changed, 7 deletions(-)
 
-diff --git a/include/uapi/linux/if_xdp.h b/include/uapi/linux/if_xdp.h
-index 23a062781468..50d67df78911 100644
---- a/include/uapi/linux/if_xdp.h
-+++ b/include/uapi/linux/if_xdp.h
-@@ -149,6 +149,7 @@ struct xsk_tx_metadata {
- 			__u16 csum_start;
- 			/* Offset from csum_start where checksum should be stored. */
- 			__u16 csum_offset;
-+			__u32 reserved;
+diff --git a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
+index efa35cfecc4f..6e9d4cb336ee 100644
+--- a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
++++ b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
+@@ -2714,13 +2714,6 @@ static bool stmmac_xdp_xmit_zc(struct stmmac_priv *priv, u32 queue, u32 budget)
+ 		if (!xsk_tx_peek_desc(pool, &xdp_desc))
+ 			break;
  
- 			/* XDP_TXMD_FLAGS_LAUNCH_TIME */
- 			/* Launch time in nanosecond against the PTP HW Clock */
-diff --git a/tools/include/uapi/linux/if_xdp.h b/tools/include/uapi/linux/if_xdp.h
-index 23a062781468..50d67df78911 100644
---- a/tools/include/uapi/linux/if_xdp.h
-+++ b/tools/include/uapi/linux/if_xdp.h
-@@ -149,6 +149,7 @@ struct xsk_tx_metadata {
- 			__u16 csum_start;
- 			/* Offset from csum_start where checksum should be stored. */
- 			__u16 csum_offset;
-+			__u32 reserved;
- 
- 			/* XDP_TXMD_FLAGS_LAUNCH_TIME */
- 			/* Launch time in nanosecond against the PTP HW Clock */
+-		if (priv->est && priv->est->enable &&
+-		    priv->est->max_sdu[queue] &&
+-		    xdp_desc.len > priv->est->max_sdu[queue]) {
+-			priv->xstats.max_sdu_txq_drop[queue]++;
+-			continue;
+-		}
+-
+ 		tx_desc = stmmac_get_tx_desc(priv, tx_q, entry);
+ 		dma_addr = xsk_buff_raw_get_dma(pool, xdp_desc.addr);
+ 		meta = xsk_buff_get_metadata(pool, xdp_desc.addr,
 -- 
 2.53.0-Meta
 
