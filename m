@@ -4,88 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68BC5C5B572
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 13 Aug 2026 13:41:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3715FC5B572
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 13 Aug 2026 13:59:24 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 19928810F9;
-	Thu, 13 Aug 2026 13:41:17 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id CFF3080F26;
+	Thu, 13 Aug 2026 13:59:23 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id aTEOyrV5Gkmu; Thu, 13 Aug 2026 13:41:16 +0000 (UTC)
+ id 3HCU_YTi4rb3; Thu, 13 Aug 2026 13:59:22 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7D9238128A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 171BC80EEC
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1786628476;
-	bh=9EE/BH3UiuwcrIxxvRbbgXCdLnjpoDTMD4n+FkY/R8o=;
+	s=default; t=1786629562;
+	bh=O2KvK+dDWD+lxggjkeFjWjKL6VrmWECW2QAh9Fd6p8A=;
 	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=dL4IB3DVP9Fg8GyUbHZ47QWb8J/2QYiFPm/GMfT2rp+gCZnLzTucD0fCyfJQj1gbe
-	 ryQdN76rwuQv9EGTbITl2ZJr9EcM9snnDPmMdKmi+EzdB9fdvSjPMgiil3+JIp9F8j
-	 U2Mps0Ugm73b3cq0xfuWoFQOS3u4mRfG0PlyIFeYcchyPHUuHpuZm/XURh8fPh+n2F
-	 OXCqF+BRl3x7GQqg8JzA6ZzG4Trn9iXTTXm59xzK3yVyNOgcFlIgFzrPlNcCOQxB7f
-	 o0sgSBkoN1SPkNvUUIyCPjbYd/o28kAGHQpxPE7EIJh5RZHMj0w6nBaxtD8DDjY1Se
-	 jFVxka2NBVveQ==
+	b=F2KW2QKhkUldJC0QI7uok+DQiodvxR+MpvcHwPdz9MAYPH8sejH0FLo14lTbtF0WM
+	 OS1bkmstZDzVQJ6nBoQ6gTbDPaFKT5VETOo3SYmGInSjPmXZjFoTuH/0vpRRAoSJOh
+	 nY9peAN4Xnb2pZxDFytpCB9Ncp4WVSoAgTSzYRjYuUYvflIsEyhnKkjJp0XM2AwVZH
+	 RCwGVQiYnp2OSsNqNS5EWhECtAFG1VAeAVySVyGpfqFpay8nEpCyPavYzisaS/rQbP
+	 74RDjRRarq0ZyKPSw740nSHwFOiGGD/IPfssNzkt1PbHm5/kE3xhF4020XTpAxW8sm
+	 QSliu0u0qlMZA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 7D9238128A;
-	Thu, 13 Aug 2026 13:41:16 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 3BAC83A4
- for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Aug 2026 13:41:15 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 171BC80EEC;
+	Thu, 13 Aug 2026 13:59:22 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 2EB341B8
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Aug 2026 13:59:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 246004085B
- for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Aug 2026 13:41:15 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 14D7140131
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Aug 2026 13:59:21 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id C41XQ4lwK8ZH for <intel-wired-lan@lists.osuosl.org>;
- Thu, 13 Aug 2026 13:41:14 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
- envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 4634740827
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4634740827
-Received: from tor.source.kernel.org (tor.source.kernel.org
- [IPv6:2600:3c04:e001:324:0:1991:8:25])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 4634740827
- for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Aug 2026 13:41:14 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id uIQjT0-Oq4Y0 for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 13 Aug 2026 13:59:20 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
+ helo=sea.source.kernel.org; envelope-from=horms@kernel.org;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 6EDE9400AC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6EDE9400AC
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 6EDE9400AC
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Aug 2026 13:59:20 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id 586A160A9E;
- Thu, 13 Aug 2026 13:41:12 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1CB4C1F000E9;
- Thu, 13 Aug 2026 13:41:09 +0000 (UTC)
-Date: Thu, 13 Aug 2026 14:41:08 +0100
+ by sea.source.kernel.org (Postfix) with ESMTP id B2D47437AD;
+ Thu, 13 Aug 2026 13:59:19 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B3C151F00A3A;
+ Thu, 13 Aug 2026 13:59:18 +0000 (UTC)
+Date: Thu, 13 Aug 2026 14:59:16 +0100
 From: Simon Horman <horms@kernel.org>
-To: Emil Tantilov <emil.s.tantilov@intel.com>
+To: Dave Ertman <david.m.ertman@intel.com>
 Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
- andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com, joshua.a.hay@intel.com
-Message-ID: <20260813134108.GC265046@horms.kernel.org>
-References: <20260811171751.22165-1-emil.s.tantilov@intel.com>
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Message-ID: <20260813135916.GE265046@horms.kernel.org>
+References: <20260811181127.1142095-1-david.m.ertman@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260811171751.22165-1-emil.s.tantilov@intel.com>
+In-Reply-To: <20260811181127.1142095-1-david.m.ertman@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=kernel.org; s=k20260515; t=1786628472;
- bh=9EE/BH3UiuwcrIxxvRbbgXCdLnjpoDTMD4n+FkY/R8o=;
+ d=kernel.org; s=k20260515; t=1786629559;
+ bh=O2KvK+dDWD+lxggjkeFjWjKL6VrmWECW2QAh9Fd6p8A=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To;
- b=BfACpuDe5G8qX7sXQsqAK7gc+rT3WtYryujv1ByOx0sFeKgZRL2D/yRcGBOrClB2E
- qmTY4WFCODY/ZB5YoXB6bHsdjpWpJgTlprQiwb5LcQs/BFsHcUpMSoGqJ1LEBfHbH4
- FhMhPSz7/IyNzTNoiioswWH54ID3Df+3jvBKBQL+mcdW7dyl4QMuRfQ0mEDZyIyGJZ
- Ri3rljowrqmzPDI2go1esnXjSWiM1aF+qIt5bkLBiUkuyXEHwF5vi39ANePS50U2Wj
- fJTntFGeCDVKeMTFMz6ADvV6Ebo9chsxYK2tIKNuVheNts1xTS9ICFtRwtVCQrtVF1
- YvVp32Y1IpMcA==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ b=OafavZya8KFKh3Gg3LOhqKz+WkmMIMr1SuUwv+mr+wJik4AthzfHWiTjr9eOrVuJx
+ z4WNzDnndpsiyXXjJNJrm0bhEbANBTRaIYEs4NgnQBtj/YMLCWhi7a5U/4edIdSeAl
+ qzmD1DTBQp+Hd2vJHEXv1U1rxDzkthlF6udb/NYf35I5WFyah8nUAj7+X2a8NlU/KR
+ 5x5HARqvQGMBIXX59hzY30+Ko5j58ZpaIPPuVRK1hC/AFDGutBHaDXA43cl39i1Gmv
+ nnSOLklkmBDgrf8tLh2psyxhg98zWJ2aCfi+c+iPKO8IB+TxRo/ag6JQcjKvC2tNNO
+ c/iNg4H+0M2jQ==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20260515 header.b=BfACpuDe
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net] idpf: fix possible race on
- remove during a reset
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20260515 header.b=OafavZya
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net v2] ice: Fix incorrect LLDP
+ filter assumptions
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -101,42 +99,26 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Tue, Aug 11, 2026 at 10:17:51AM -0700, Emil Tantilov wrote:
-> Reset and remove can race, leaving NAPI registered and enabled:
+On Tue, Aug 11, 2026 at 02:11:27PM -0400, Dave Ertman wrote:
+> In commit 4d5a1c4e6d49 ("ice: do not add LLDP-specific filter if not
+> necessary"), it was assumed that llpd_fltr_ctrl was a unique application
+> of a filter instance and the other command in the flow was generic.
+> This is an incorrect assumption, they are both meant to add a filter to
+> handle LLDP packets and only varied in the actual AQ call made.  The
+> newer AQ call was created to handle a special case in some NVM images
+> where a LLDP filter was already existent and the old AQ command would
+> generate an error if a new filter was attempted to be added. The newer
+> AQ command would detect this case and instead would add the current
+> target to the existing filter rule.
 > 
-> modprobe idpf& sleep 1; ip link set eth0 up& rmmod idpf
+> Fix the flow so that the newer command is always used if available and
+> only fall back to the older command when that is the only solution.
 > 
-> [145561.805104] WARNING: net/core/dev.c:7699 at __netif_napi_del_locked+0x11a/0x130, CPU#30: rmmod/22393
-> ...
-> [145561.810238] RIP: 0010:__netif_napi_del_locked+0x11a/0x130
-> ...
-> [145561.817678] Call Trace:
-> [145561.818125]  <TASK>
-> [145561.818653]  free_netdev+0x110/0x2a0
-> [145561.819109]  idpf_vport_dealloc+0x452/0x460 [idpf]
-> [145561.819668]  ? enable_work+0x9f/0x100
-> [145561.820133]  idpf_deinit_task+0x51/0x70 [idpf]
-> [145561.820694]  idpf_vc_core_deinit+0x32/0x170 [idpf]
-> [145561.821193]  idpf_remove+0x40/0x200 [idpf]
-> [145561.821667]  pci_device_remove+0x40/0xa0
-> [145561.822132]  device_release_driver_internal+0x1a9/0x210
-> [145561.822691]  driver_detach+0x4b/0x90
-> [145561.823161]  bus_remove_driver+0x70/0x100
-> [145561.823721]  pci_unregister_driver+0x2e/0xb0
-> [145561.824207]  __do_sys_delete_module.constprop.0+0x190/0x2e0
-> [145561.824715]  ? kmem_cache_free+0x312/0x550
-> [145561.825213]  do_syscall_64+0xc8/0x6b0
-> [145561.825709]  ? clear_bhb_loop+0x30/0x80
-> [145561.826216]  entry_SYSCALL_64_after_hwframe+0x76/0x7e
-> [145561.826602] RIP: 0033:0x7fe628130beb
+> Also remove the obsolete state flag from the PF struct.
 > 
-> Make sure to call idpf_vport_stop() in idpf_stop(), irrespective of the
-> IDPF_REMOVE_IN_PROG state, to allow a reset racing with remove to tear
-> down NAPI in idpf_detach_and_close(), which runs under RTNL lock.
-> 
-> Fixes: 2e281e1155fc ("idpf: detach and close netdevs while handling a reset")
-> Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
-> Reviewed-by: Joshua Hay <joshua.a.hay@intel.com>
+> Fixes: 4d5a1c4e6d49 ("ice: do not add LLDP-specific filter if not necessary")
+> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+> Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 
 Reviewed-by: Simon Horman <horms@kernel.org>
 
