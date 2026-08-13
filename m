@@ -4,128 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97CC2C5DF69
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 13 Aug 2026 19:08:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A13D9C5B572
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 13 Aug 2026 19:13:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 5F14360DCE;
-	Thu, 13 Aug 2026 19:08:10 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 503A760DD2;
+	Thu, 13 Aug 2026 19:13:11 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id JbtQ_0gDxock; Thu, 13 Aug 2026 19:08:08 +0000 (UTC)
+ id 3uRFykdtCtyZ; Thu, 13 Aug 2026 19:13:08 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8AB8860DCD
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8325360DE0
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1786648088;
-	bh=zjeV9JcXmMB5XUYPG/BDWWBwnse1nt9xQQ5l1gfrbe8=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=oo3Y7o14mioBl/poCtNCZUWMPeeHlAAoz+P5Lkno1oLm1c1ug1yN59nNe3PDSPYOF
-	 3iMQt4Xp1vcw0n1s7ZbSIjX8fvHnRkIZx/84D8lwWjLYpUhRhOiccebaXJTvjrzvil
-	 mxLw4KEDqAQRfscd5TY3CxZANWL3oWiP8HcWudCL6RJkvFo9R6yerXSdvfaoRvhilA
-	 JysZ7v7TtTsz7SWcvPrlXAtH2bAEemzgKrVPXwclVdbWffkdfHtVMVUhjL+LUTUwdd
-	 xcVovuIQ7o3LWrHIR/lPQWZC8iOzLEm0i02xfD00UphNx45TXLW8eRLhCndUDcIo3i
-	 OuVz3TJwTWfrA==
+	s=default; t=1786648388;
+	bh=HgQ8g9iYQlXrVgJq9vO0IiFFz6gWOEY5iwSd5jQYvNc=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=3o96bYytRCFm6juiIesHOabXG7R7mvTCxZnoEcldETiCOTKw7bdg2MmQC99HyNAb3
+	 tNtl3lPDsuddOgeeZvA3CHroKbpYY1bKjtwE4UsaA0/4vBEK3yyx+vCMN8h/wjm4xJ
+	 wy3tcrJHcxTTveXzsfv0rHTiPZwT63X3ZdS6UKMDwwrQipbeFRbtaN2yCcLJb69DTa
+	 Su2r9ClcD6Na/FyLSkBijwwARHBrHePTa362Ckxbg+aiVNXoQsbc26EiSGdA9pcftD
+	 TsDTSdDRIDQLTDxximr2H1GonA7OIzP05nGwSSy7tZDu+bb5/uHEDcEjgyVPdcD7mS
+	 xi8ChBd3J68Cw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 8AB8860DCD;
-	Thu, 13 Aug 2026 19:08:08 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 7FF3E3DF
- for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Aug 2026 19:08:06 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 8325360DE0;
+	Thu, 13 Aug 2026 19:13:08 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id E88FC194
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Aug 2026 19:13:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 65DB381363
- for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Aug 2026 19:08:06 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id CC05840C84
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Aug 2026 19:13:07 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ikLXItnvT5x0 for <intel-wired-lan@lists.osuosl.org>;
- Thu, 13 Aug 2026 19:08:05 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2607:f8b0:4864:39::7;
- helo=mail-pj2-x07.google.com; envelope-from=sdf.kernel@gmail.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org C080A81354
-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C080A81354
-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20251104 header.b=Q/suFLuq
-Received: from mail-pj2-x07.google.com (mail-pj2-x07.google.com
- [IPv6:2607:f8b0:4864:39::7])
- by smtp1.osuosl.org (Postfix) with ESMTPS id C080A81354
- for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Aug 2026 19:08:05 +0000 (UTC)
-Received: by mail-pj2-x07.google.com with SMTP id
- 98e67ed59e1d1-38dcd98e5easo115315a91.0
- for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Aug 2026 12:08:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20251104; t=1786648085; x=1787252885; darn=lists.osuosl.org;
- h=content-transfer-encoding:mime-version:references:in-reply-to
- :message-id:date:subject:cc:to:from:from:to:cc:subject:date
- :message-id:reply-to:content-type;
- bh=zjeV9JcXmMB5XUYPG/BDWWBwnse1nt9xQQ5l1gfrbe8=;
- b=Q/suFLuqse8JLPogeg1eHLNfiPOdqLS3DQt+OEge3RQ/EkfyR2nDIUzjlLrZF5/buD
- ZWO6r60FFN0ZT6cU/UTffUCTUl96L7A16iq5C37m4qWHsOX6AHvsn0Uod2tc+Ub4rEki
- AprxXxSyT8H20n6EFz47wKzcsOfTJVj8djniP5+AXZWVdtGwCPfKhvAb2/+jkGMHUriH
- m8AjVC3Qmy5XhTxLyyd+oVA2XJj9TYY84AjijHuIHlL6OYMNZSqjsnmHESapfoXPFHzE
- yJefck9fGEnm0Aqy0JxtmzBLhtiklu9R93QUejaUNfhR+VvX+EoHgkvHpk/IdNIV20ap
- 6gfQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1786648085; x=1787252885;
- h=content-transfer-encoding:mime-version:references:in-reply-to
- :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
- :to:cc:subject:date:message-id:reply-to:content-type;
- bh=zjeV9JcXmMB5XUYPG/BDWWBwnse1nt9xQQ5l1gfrbe8=;
- b=IA/g64PRyi+pHym3fgr7d76vXZIvKFcQLFPtOd4TxjbRVJAuyd9KnxxskmlX7UyXYO
- 3QFgBWHlOPYTwsbqZPANPjNl5jFn+UPE0sPYsr44WUDBn1KSYHavrmgLHwHukNtj/l1z
- UYTUg9ut2oqP/gpYaE2a3JVhz5jimCeDzmsos1RTs2j22uNVwThRreSgGGblk59lsxvn
- Ze7iz7thU6gSOX3885VzUm1xFuSw+3ZZvQEP4APuUhIWV8EjNk2Vvp7wHi5qyBzR6mE/
- 0YXIoag2idzmbmqxHOq9OlioN6f195J2UTrx6TbfCRSWNV7KI7vITuKrYmVMmdTZIx7J
- mnxQ==
-X-Forwarded-Encrypted: i=1;
- AHgh+RpZxDpjLfy+quzRDymUC4CmA4efAOWeTOKWVuCtctONfvRYx4KFolNXe0AcxzhJlDncQicojf0pCFmH+HYsi1s=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YwQJiK/3m0tuSLg8BQGSsm/TSlVsKfo/pi+uRFNwMLdlCe1zs+A
- j9cAvpC8+paYdKBFAfxnHHFkXLdsPNyaYkxSguXjuFI5Vu45XBHpmGUb
-X-Gm-Gg: AR+sD12O+5Dwm9XsfgQJGs+Gt33c3E1KEeaGvA3J1bGrqWGyQYhR13XyQ5l/HEx5ya6
- xzTdR4Cv2eCWq/E3146oSEAWTjaAUsOdjOHxBH9D5jK69ext/mBSXD8Iil9kTxkSSUS/eI9yIO+
- V7fdW8al2FkPwe1AZbLIeNhXfp2W8bvq/NKtUOlv5mYDoiyfGw/EZso7rTm+08r+IUU4cDSEgxF
- wTdsz4e4hf7GeEOlU/pIplRH5ou3/yo9O8DMqnw/5DbRvvcEfHN5mgTYwawcbCp/Mo3tnkpeb9v
- HogQ1zLGKa0Dnskz0Ye+Mum7zpiW1YKHeFFS8BnfzYpP2HjL6TMOGSGKJtddRKpuybdINKBfzZZ
- mgpmuC9LuSWCdB0kfxo4ffauloTrVMXCFhTdDcXoxHw9fhRNGkyoNoeb2WlJVf05M1v+nfmwjTL
- iqpTyoOJMZyUSdAw5mYyg5UbgGgqdj8cSWyI//oATQiVEFT0Sg+hqRLA==
-X-Received: by 2002:a17:90b:2f0d:b0:38e:7268:220d with SMTP id
- 98e67ed59e1d1-3933ed5e238mr29902a91.20.1786648085014; 
- Thu, 13 Aug 2026 12:08:05 -0700 (PDT)
-Received: from localhost ([2a03:2880:2ff:52::])
- by smtp.gmail.com with ESMTPSA id
- 98e67ed59e1d1-39339fe280fsm485100a91.12.2026.08.13.12.08.04
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 13 Aug 2026 12:08:04 -0700 (PDT)
-From: Stanislav Fomichev <sdf.kernel@gmail.com>
-X-Google-Original-From: Stanislav Fomichev <sdf@fomichev.me>
-To: netdev@vger.kernel.org
-Cc: davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
- pabeni@redhat.com, anthony.l.nguyen@intel.com,
- przemyslaw.kitszel@intel.com, andrew+netdev@lunn.ch, saeedm@nvidia.com,
- tariqt@nvidia.com, mbloch@nvidia.com, maxime.chevallier@bootlin.com,
- mcoquelin.stm32@gmail.com, alexandre.torgue@foss.st.com,
- aleksander.lobakin@intel.com, horms@kernel.org, magnus.karlsson@intel.com,
- maciej.fijalkowski@intel.com, sdf@fomichev.me, ast@kernel.org,
- daniel@iogearbox.net, hawk@kernel.org, john.fastabend@gmail.com,
- witu@nvidia.com, martin.lau@kernel.org, yoong.siang.song@intel.com,
- rohan.g.thomas@intel.com, intel-wired-lan@lists.osuosl.org,
- linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org,
- linux-stm32@st-md-mailman.stormreply.com,
- linux-arm-kernel@lists.infradead.org, bpf@vger.kernel.org, leon@kernel.org
-Date: Thu, 13 Aug 2026 12:08:00 -0700
-Message-ID: <20260813190800.222527-4-sdf@fomichev.me>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260813190800.222527-1-sdf@fomichev.me>
-References: <20260813190800.222527-1-sdf@fomichev.me>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Subject: [Intel-wired-lan] [PATCH net v2 3/3] net: stmmac: skip queueMaxSDU
- check for AF_XDP
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 8EJoeaLSmAyk for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 13 Aug 2026 19:13:07 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.16;
+ helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org CCB7540C9D
+Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=intel.com
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CCB7540C9D
+Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=U1UH/Uj2
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id CCB7540C9D
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Aug 2026 19:13:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1786648387; x=1818184387; h=date:from:to:subject:message-id;
+ bh=M/CKhOaaivbPg3euQ2k+6KZixAIytSNjfbnhXmhskiw=;
+ b=U1UH/Uj2/pGsJso1afxBFq2nNPyXmpRqL8jdJl+Kq2klkrlGhjG1AC9y
+ LXf5BLLjiK7qOm44oTnY3WP0X9VX5xSj1kCZXmqOsanPgF5FUeaHWtUBQ
+ 9cIFq1wQeoL9ZLvgDrrxXW3TypkEFH7cCUfRcYG3yR/AcPJ+5C0iXYpdk
+ ruH+0VCd7pOOH0kiZDCQw15tbYtdz3PFUB3qqxL6giQCQqCPk0LKu/2sV
+ xXHDIrvwwN6P5Qt8o+00yp8xM6/+uOPvuD0eIum/roqJxZ33ONwXBHBcU
+ Pd4FvsMi13gMHIf7aATSt5FMal2g3W3F8OHPRR20EpXvJ+RmGFWYfmnZ6 Q==;
+X-CSE-ConnectionGUID: ynwo55qjQuW82ZLl04Po/Q==
+X-CSE-MsgGUID: uhJOdOa6SNShHdzs7N6J+Q==
+X-IronPort-AV: E=McAfee;i="6800,10657,11874"; a="87448545"
+X-IronPort-AV: E=Sophos;i="6.25,221,1779174000"; d="scan'208";a="87448545"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+ by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 13 Aug 2026 12:13:06 -0700
+X-CSE-ConnectionGUID: wovrO5pNR/GTjDtyU9NiMA==
+X-CSE-MsgGUID: qZktrAxvSVO1iBGQnNu0zA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,221,1779174000"; d="scan'208";a="267518408"
+Received: from lkp-server01.sh.intel.com (HELO 6eda058d650d) ([10.239.97.150])
+ by orviesa003.jf.intel.com with ESMTP; 13 Aug 2026 12:13:06 -0700
+Received: from kbuild by 6eda058d650d with local (Exim 4.98.2)
+ (envelope-from <lkp@intel.com>) id 1wuarP-00000000WIy-2RSA;
+ Thu, 13 Aug 2026 19:13:03 +0000
+Date: Fri, 14 Aug 2026 03:12:26 +0800
+From: kernel test robot <lkp@intel.com>
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Message-ID: <202608140313.yLy6pdT6-lkp@intel.com>
+User-Agent: s-nail v14.9.25
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 6ff543fa0ee2e9ac263b5f9b56afb847ab8df06a
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -141,41 +100,34 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Commit c5c3e1bfc9e0 ("net: stmmac: Offload queueMaxSDU from tc-taprio")
-was inspired by commit 92a0dcb8427d ("igc: offload queue max SDU from
-tc-taprio"), but the igc change does not apply the check to AF_XDP.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: 6ff543fa0ee2e9ac263b5f9b56afb847ab8df06a  e1000e: fix incorrect modified flag check in e1000_read_nvm_spt()
 
-xsk_tx_peek_desc() reserves a completion entry. Continuing without
-queuing or completing the descriptor leaves the AF_XDP rings imbalanced,
-so remove the check from the zero-copy path.
+elapsed time: 741m
 
-The assumptions is that AF_XDP zero-copy traffic bypasses the qdisc, so
-taprio's queueMaxSDU check does not apply to this path.
+configs tested: 15
+configs skipped: 1
 
-Fixes: c5c3e1bfc9e0 ("net: stmmac: Offload queueMaxSDU from tc-taprio")
-Signed-off-by: Stanislav Fomichev <sdf@fomichev.me>
----
- drivers/net/ethernet/stmicro/stmmac/stmmac_main.c | 7 -------
- 1 file changed, 7 deletions(-)
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-diff --git a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
-index 62de03e65a90..4a82f4351303 100644
---- a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
-+++ b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
-@@ -2710,13 +2710,6 @@ static bool stmmac_xdp_xmit_zc(struct stmmac_priv *priv, u32 queue, u32 budget)
- 		if (!xsk_tx_peek_desc(pool, &xdp_desc))
- 			break;
- 
--		if (priv->est && priv->est->enable &&
--		    priv->est->max_sdu[queue] &&
--		    xdp_desc.len > priv->est->max_sdu[queue]) {
--			priv->xstats.max_sdu_txq_drop[queue]++;
--			continue;
--		}
--
- 		tx_desc = stmmac_get_tx_desc(priv, tx_q, entry);
- 		dma_addr = xsk_buff_raw_get_dma(pool, xdp_desc.addr);
- 		meta = xsk_buff_get_metadata(pool, xdp_desc.addr,
--- 
-2.53.0-Meta
+tested configs:
+alpha              allnoconfig    gcc-16.1.0
+alpha             allyesconfig    gcc-16.1.0
+alpha                defconfig    gcc-16.1.0
+arc               allmodconfig    gcc-16.1.0
+arc               allyesconfig    gcc-16.1.0
+arm        netwinder_defconfig    gcc-16.1.0
+csky              allmodconfig    gcc-16.1.0
+i386              allmodconfig    gcc-14
+loongarch            defconfig    clang-24
+nios2             allmodconfig    gcc-11.5.0
+nios2              allnoconfig    gcc-11.5.0
+parisc            allmodconfig    gcc-16.1.0
+parisc            allyesconfig    gcc-16.1.0
+parisc               defconfig    gcc-16.1.0
+sh                   defconfig    gcc-16.1.0
 
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
