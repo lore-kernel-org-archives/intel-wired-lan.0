@@ -4,100 +4,100 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D39DC5DF66
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 17 Aug 2026 15:27:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35B04C5B572
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 17 Aug 2026 15:27:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 1FDF94076F;
+	by smtp4.osuosl.org (Postfix) with ESMTP id CA30540720;
 	Mon, 17 Aug 2026 15:27:20 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id O8kLnIShnfoN; Mon, 17 Aug 2026 15:27:19 +0000 (UTC)
+ id CcDJ6OnLX_7L; Mon, 17 Aug 2026 15:27:20 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 50BBC4071B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D546D4073D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
 	s=default; t=1786980439;
-	bh=2WaeFHY8Amefx+z0iRX7zRmJGE/YSFA3BET5wf4LK6c=;
+	bh=BUYEVZhB6IjzU8iIkm7Fy+3Re1KgS2KX1bdxTPKKy6E=;
 	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=EPNYvJ1k2EjkqiIhEkFUEDoCWWWIAtqvVwoqcO+Nv1iWJeAt31lDCXUlteJf6l9Rb
-	 YAS5A9dbkfJdKGS6jAtkm0v8+sIoKdfzLiwN77ZwgAYnefvepydhpH7dvj6TvgsqDO
-	 0ct6pe5RLOXAffd96qoYYa/9yvp/pwGK3is2Yszi1EfrptlzV2RCyyn0LpltXWqpLR
-	 OcqpJArE0RBK70tVIZOdaum83/r9vtUbrA/ojnLWDyxeZYm4DXgXU1nYKsKznV7Oa0
-	 eRqwc772s6UQqPB+6aOqTNLEfIVaDPdcqc4MChQojqqTuIPDx3wH33lEDSs2vqB8t1
-	 LViNDp04vzV+w==
+	b=vmV8+I/q0LHnl06sBjeIuhxUz7YpPzi2PBAcVp0d5u6L/oYD+wGiR0EOGJ75JmkGh
+	 /U20MtecVQq1eu6fGv+TmLI2W2ER/On3btUsGhEXPF5rNpzbAsOWMJNBmXKrsMJjp0
+	 9VHzmrrnDl8ruVvSqDnV4Axx9OW9F35nje/OJoJz89zxL9Q3dODbQqVOw+mgahU7SW
+	 GuLdPMUwwuS5huOQRud8KwCs/NrDFlK48MN7NRHVsegK/ngdu6UcQEBgiQ+jqtmMEK
+	 RYOehHzgEWSBdX3rWsJMjCbur2Y+wiid+vNf/nPy9iq5wk5TgEfP6WNUPsp0/i8psI
+	 YfPQqoaUYr8lw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 50BBC4071B;
+	by smtp4.osuosl.org (Postfix) with ESMTP id D546D4073D;
 	Mon, 17 Aug 2026 15:27:19 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 3EF063DF
- for <intel-wired-lan@lists.osuosl.org>; Sat, 15 Aug 2026 01:08:29 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 39EA033B
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 15 Aug 2026 01:08:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 3C54860AB9
- for <intel-wired-lan@lists.osuosl.org>; Sat, 15 Aug 2026 01:08:29 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 209E360AFB
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 15 Aug 2026 01:08:33 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 0uwM4hnHwWOw for <intel-wired-lan@lists.osuosl.org>;
- Sat, 15 Aug 2026 01:08:28 +0000 (UTC)
+ id rb7U7Uy1SUaz for <intel-wired-lan@lists.osuosl.org>;
+ Sat, 15 Aug 2026 01:08:32 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::32f; helo=mail-ot1-x32f.google.com;
+ client-ip=2607:f8b0:4864:20::32d; helo=mail-ot1-x32d.google.com;
  envelope-from=shivani07g@gmail.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 75DE560AAE
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 5331860AAE
 Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 75DE560AAE
-Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20251104 header.b=XfMc+NMp
-Received: from mail-ot1-x32f.google.com (mail-ot1-x32f.google.com
- [IPv6:2607:f8b0:4864:20::32f])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 75DE560AAE
- for <intel-wired-lan@lists.osuosl.org>; Sat, 15 Aug 2026 01:08:28 +0000 (UTC)
-Received: by mail-ot1-x32f.google.com with SMTP id
- 46e09a7af769-7e6b5737bb2so2074203a34.1
- for <intel-wired-lan@lists.osuosl.org>; Fri, 14 Aug 2026 18:08:28 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5331860AAE
+Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20251104 header.b=pwmw9lWG
+Received: from mail-ot1-x32d.google.com (mail-ot1-x32d.google.com
+ [IPv6:2607:f8b0:4864:20::32d])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 5331860AAE
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 15 Aug 2026 01:08:32 +0000 (UTC)
+Received: by mail-ot1-x32d.google.com with SMTP id
+ 46e09a7af769-7e9ecb1e13cso1640834a34.3
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 14 Aug 2026 18:08:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20251104; t=1786756107; x=1787360907; darn=lists.osuosl.org;
+ d=gmail.com; s=20251104; t=1786756111; x=1787360911; darn=lists.osuosl.org;
  h=content-transfer-encoding:mime-version:message-id:date:subject:cc
  :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
- bh=2WaeFHY8Amefx+z0iRX7zRmJGE/YSFA3BET5wf4LK6c=;
- b=XfMc+NMp3wA9KJuthy4slo/F5vC2lRRPSiFGxtUKc/q5sZEPbtqsg0Rs68XptuMQUO
- GrcMQXnJRQsHiXx6kBEyDZp254BYrId7Xlyj8O77/xHaLgbX4e8t5EMtbWKc5utA1C6Q
- LLSFnq94t463cJ9D1Z6UaybgQD2LX8p0Y4bbMAoRXTe24XVSwXU7NSADBQiX9qvajavk
- Fa4mJDDKoJDOvPK2lJU0MvCX8xk5JhRtlJiyBxfUJ5T6cv8eiKfbxhxYlAFCZEQSIc36
- 3zKfLprrsF0lzf8DiXnfnFkC5Sf6tT5Vu0udxneoc+Q1feM8h/MF+faHZf/HPJ0KmUPk
- fCBA==
+ bh=BUYEVZhB6IjzU8iIkm7Fy+3Re1KgS2KX1bdxTPKKy6E=;
+ b=pwmw9lWGgyjoxFQcIaX/Kwb2K9MUwiIOTPJlmD1iVmb6p6WcoeC+Vxn9+pF2Dh+k7K
+ f7/b+k42AQNorwEvrynCyziPRV1vDEW42Xq6feW2X/3Q18cUBblybEdlDEY9k5PYmMPy
+ FQnh7lKzVrNt0gtknV+q4Lyo7jYNxpFyWiox7liu7iMEKl3StU/oBv4NZ6i93R47cAMg
+ 4vRsrTgHJcZy7GMrNh1cr2TUqOnG6ewN9GCerduuP6KFvkVCA2YJuLNRNhEJvXvILFE6
+ dztu5oTjz5aFl11ie5hxpyJEBU5nFD2ZLruVGy51QVYpV2kJ8dygZEhKrxCWa1lNzhdG
+ 6+3w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1786756107; x=1787360907;
+ d=1e100.net; s=20251104; t=1786756111; x=1787360911;
  h=content-transfer-encoding:mime-version:message-id:date:subject:cc
  :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
  :message-id:reply-to:content-type;
- bh=2WaeFHY8Amefx+z0iRX7zRmJGE/YSFA3BET5wf4LK6c=;
- b=XhSah0Fdm7T/LpNzGmCvcFZlSrMmPYuWQLGxaHnYWtyr8oCkd/cR3HKboS6rumEgVq
- TwKLm7PCdcNLXWqTolQxPxayKSFPIFJuSbUfzfLFA3TMyOQPaG+K7u2zr8dAGWE+JOvy
- N3lYeN+Cp8MCG1dD+X5clxJYc23TAItQOeguYWzHIzlyTxmZyriK7U0MaUgsxn+WnQi7
- +9B6JtizUsPg9x1K58Kl6sFsKYY/3GNOcuMcLmDD6X1N455M9MVH+RFeu4+u7p1WQSVS
- gDmIuuTj5MF9QIuDJBZSNiJIVo5LjDOILAQvVOIzfooYo5ce1WJg3tguG+HEj99bZK9p
- cgDw==
-X-Gm-Message-State: AOJu0YyWv1z/gg5reCWCgzywz7EpvdRLCug55s/kylZpQP5ehLw8Kmze
- Cd3OuncjWzHhT/SEcE1MbFwfpA6SAkZR2MAVshvHk4QazRe9feJnjGJsgC++I7wF
-X-Gm-Gg: AR+sD13oCi/G5DaInbSupz/4V2YZOhDGV25C2C2/wOj9fks3+G+AMS+TIw1puC1LgJ1
- ZTvQ2DzSFhVorWjUyioRRAcQkUJNQ0t6RDcMKhPqIW/bBujaUCEbxsmW4Tfjh/KZxASvJkVVbOk
- NISE/TBKR2+i/qLNk0q+0OhS8ctjPluRM+r0L5MKWEQxiYvB0O3gAFaHx0RLAJxPtq5+Q+kEyJ0
- aaVmVlIR/14XZkcSKt6XG1YwiGTjl5Ro8xwXGvifJM80h70JGXyE4LtriHmMekDXrzGIH2zD2uy
- OsHQY1aJPF/YjT0jQodcLiqMrp83TVllJES28lBWw5VkQTjy0eC1fLhaYprSi9RKrU8jCsDR7mU
- uSJIq7bkRNquNtpbBpU+AzXJ/jWEH/mVKzji3gvYk3tLVyYqSUrOD7pkHEsHFfb3eJvXACNi8T9
- 73kBJBSsCJFfUPW5aEC/GsVYYX326x7GxLjNdjr2EgcH+/+Ew/l9jm1HOT2L+pXkqk6PuZoU9B5
- gO0l0mNFDpZWW4AiTlwk8dJj+GXymY=
-X-Received: by 2002:a05:6830:3813:b0:7e9:d3aa:e391 with SMTP id
- 46e09a7af769-7f3de4ea83dmr9379236a34.6.1786756107331; 
- Fri, 14 Aug 2026 18:08:27 -0700 (PDT)
+ bh=BUYEVZhB6IjzU8iIkm7Fy+3Re1KgS2KX1bdxTPKKy6E=;
+ b=Kt1B2+FNcJELulbvPigWLI6MtwBGOcuJam/vehDaLMO2ZMr9Nsn/9CH4n9/SnLo/F6
+ 3pzsvPiulD3ntbQOVAHjyqrT+UNbPW1+3fFTPEZGjp6sxOUo5+QKo6bNUlfrsa/0Dvpi
+ s/UTZ0V3nvcq4XqG3TkcA4MnzKy1art9I7VVSPcUoDHLgbS5Mmx2C9HNkLgcMQA2KqGd
+ jaMuWj7pWa2bTLig7gaCqUtVRAQMh2lXAwrmfDKoiVu0iODotXZN7NgCFSJKV3NLJmAG
+ yudusOKOxZ5ZKHaLecXIsWDjIlL5EO/gRScYdGSK7SQG9zag3MVjUTP127Ka9XG5jvJO
+ ULWQ==
+X-Gm-Message-State: AOJu0YydWIRHVCAUvAe7DaqFC0ScPIlVpsegj7apHUPfO2PaEY5SgktR
+ /9xV+KwgFIoNH+aZnN6ki/nqwE/bqcukCyhLZWOmxEN6kjBJ20YH/Y03mp5ZVDV+
+X-Gm-Gg: AR+sD10vYZF8B7gj7eb5787KG2+TCHlN9WRbKpDCaXG3rA7Hgpf0spEwKmrpdTsPKOm
+ 2szvCrJORp2/Hng/BVabba1A4Ns09xnwWgFjg62eakG1GZ2BLUPi0+r5s4geyAEYmLgU+OPNCMz
+ YBB16kEQhqL6ACG+z92af8u2J0nMXDvMDwP0AyNcyK6uu3o3BG1sneMA+YfIz0z0MF1lqzPJJVv
+ Nq1/HOkOoF34EW4MWJdsmTp0i4CZDiJGJmfvY/cT+zUfmCDqbnZNM2uG0v+3ktzO/7MEBXD51Sd
+ 8jEGHhyWYgZZz94n2rx5UuHbx0E32zmBic4rKyOlJYZ25mEcsyiR1iYjZsM6UGwrhvQ+FoyDiPv
+ vlkDXcn/eqyphh29YeLU/0/4gJ9+C8gb1xr7C6q2Bcpvy+mgd3oJ+MbokMxns4m2XWvMMZfoitP
+ nDJsVufE3unF5v2pv4yU6qaInWYLVuzPHiit2uQKMXyZH52NPhk/HhjqgLE2h/jzCuwD7ooPcLF
+ BpAM9AA848gSER5oiAlJhY9io4IOpw=
+X-Received: by 2002:a05:6830:441e:b0:7e9:dd7f:7a83 with SMTP id
+ 46e09a7af769-7f3de1e5583mr8902353a34.0.1786756111121; 
+ Fri, 14 Aug 2026 18:08:31 -0700 (PDT)
 Received: from shiv-machina.. (174-16-201-18.hlrn.qwest.net. [174.16.201.18])
  by smtp.gmail.com with ESMTPSA id
- 46e09a7af769-7f3e869f65fsm2320947a34.26.2026.08.14.18.08.26
+ 46e09a7af769-7f3e86282fesm2232153a34.14.2026.08.14.18.08.30
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 14 Aug 2026 18:08:26 -0700 (PDT)
+ Fri, 14 Aug 2026 18:08:30 -0700 (PDT)
 From: Shivani Gupta <shivani07g@gmail.com>
 To: intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>,
  Przemek Kitszel <przemyslaw.kitszel@intel.com>
@@ -107,16 +107,19 @@ Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
  Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
  Paolo Abeni <pabeni@redhat.com>,
  Richard Cochran <richardcochran@gmail.com>,
- Simon Horman <horms@kernel.org>,
- Alessio Igor Bogani <alessio.bogani@elettra.eu>
-Date: Sat, 15 Aug 2026 01:08:15 +0000
-Message-Id: <20260815010815.91898-1-shivani07g@gmail.com>
+ Jacob Keller <jacob.e.keller@intel.com>,
+ Matthew Vick <matthew.vick@intel.com>,
+ Vinicius Costa Gomes <vinicius.gomes@intel.com>,
+ Kurt Kanzenbach <kurt@linutronix.de>,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Date: Sat, 15 Aug 2026 01:08:25 +0000
+Message-Id: <20260815010827.91912-1-shivani07g@gmail.com>
 X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Mon, 17 Aug 2026 15:27:18 +0000
-Subject: [Intel-wired-lan] [PATCH iwl-net] igb: Reject hwtstamp requests
- when PTP is unavailable
+Subject: [Intel-wired-lan] [PATCH iwl-net 0/2] igb: PTP Tx timestamp state
+ fixes
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -132,138 +135,60 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-IGB depends on PTP_1588_CLOCK_OPTIONAL, so ptp_clock_register() can
-return NULL when PTP is compiled out and can fail at runtime.
+The igb driver keeps a single outstanding Tx hardware timestamp
+request in adapter->ptp_tx_skb, guarded only by the atomic
+__IGB_PTP_TX_IN_PROGRESS bit. The fields around it (ptp_tx_skb,
+ptp_tx_start) are accessed from the transmit path, the retrieval
+worker, the watchdog and the teardown paths without any common
+synchronization.
 
-Commit b888c510f7b3 ("igb: Avoid starting unnecessary workqueues")
-moved the PTP locks, work items, timestamp configuration, and clock
-reset behind successful clock registration. The netdev is already
-registered when igb_ptp_init() runs, however, and the hwtstamp entry
-points were not gated on registration. On 82576 a TX timestamp request
-can therefore schedule a never-initialized ptp_tx_work.
+Patch 1 ports the fix igc received in commit 9c50e2b150c8 ("igc: Fix
+race condition in PTP tx code") - which the igc series cover letter
+already announced as intended for igb - to igb's single-timestamp
+model: a new ptp_tx_lock protects the timestamp request state and is
+initialized during software setup, before register_netdev() exposes any
+consumer. The state bit is removed, and the unsafe cancel_work_sync()
+calls in the watchdog path (deadlock with the new lock) and the
+atomic-context transmit error path (sleeping while atomic) are dropped
+in favor of the worker checking the request state under the lock.
+igb-specific paths that do not exist in igc (the 82576 polling worker
+with its timeout branch, and transmit error cleanup that verifies slot
+ownership) are covered as well.
 
-Initialize the passive PTP state and hardware clock before registering
-the PHC. INIT_WORK() and INIT_DELAYED_WORK() do not queue any work; the
-overflow work is started only after registration succeeds. This also
-ensures that PHC callbacks and the netdev timestamping paths never
-observe partially initialized state.
+Patch 2 fixes a related lifecycle bug: disabling Tx timestamping with
+a request outstanding strands the request. On re-enable, all new
+requests are dropped until the stale one is flagged as a bogus
+"Tx timestamp hang" by the watchdog up to 15 seconds later. Pending
+requests are now dropped at disable time. The disabled mode and empty
+slot are published atomically under the lock introduced by patch 1, so
+the transmit path cannot admit a replacement request during cleanup
+(which is why the two patches form one series).
 
-Reject hwtstamp get and set requests with -EOPNOTSUPP while no PTP clock
-is registered, and advertise software timestamping only in that state.
-Successful registration retains the existing behavior on 82576, 82580,
-i350, i354, i210, and i211. On 82575, an OFF request that was previously
-accepted as a no-op now reports that hardware timestamping is
-unsupported.
+Both issues were validated on QEMU's igb (82576) model. The unpatched
+disable/re-enable blackout reproduces deterministically (recovery only
+via the 15 s watchdog timeout); the final patches complete 100 cycles
+without a blackout. A 60-second timestamp stress test with link flaps
+delivered 6445 of 6469 requests and completed without a KASAN, lockdep,
+DEBUG_ATOMIC_SLEEP, warning, or panic report. The race window itself is
+nanoseconds wide and was not directly reproduced; it is identical in
+structure to the igc bug fixed by 9c50e2b150c8.
 
-Reproduced with CONFIG_IGB=y and CONFIG_PTP_1588_CLOCK=n on the QEMU
-82576 model: SIOCSHWTSTAMP(HWTSTAMP_TX_ON) followed by a hardware
-timestamp request warned in __queue_work() before this change and
-returns EOPNOTSUPP afterwards.
+Note: this series touches the same schedule_work() call sites as Kurt
+Kanzenbach's pending "[PATCH iwl-next v5] igb: Retrieve Tx timestamp
+from BH workqueue" (20260305-igb_irq_ts-v5-1-d3b96828ab5b@linutronix.de).
+The overlap is textual only - that patch changes which workqueue runs
+ptp_tx_work, this series changes the locking around the request state -
+and either rebases trivially on the other.
 
-Fixes: b888c510f7b3 ("igb: Avoid starting unnecessary workqueues")
-Signed-off-by: Shivani Gupta <shivani07g@gmail.com>
----
- drivers/net/ethernet/intel/igb/igb_ethtool.c |  9 +++++
- drivers/net/ethernet/intel/igb/igb_ptp.c     | 40 ++++++++++++++------
- 2 files changed, 38 insertions(+), 11 deletions(-)
+Shivani Gupta (2):
+  igb: Fix race condition in PTP tx code
+  igb: Clear pending Tx timestamp requests when disabling Tx
+    timestamping
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-index f7938c1da835..4ebd447117cc 100644
---- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-@@ -2396,6 +2396,15 @@ static int igb_get_ts_info(struct net_device *dev,
- 	case e1000_i354:
- 	case e1000_i210:
- 	case e1000_i211:
-+		/* No PTP clock, no hardware timestamping. Advertise what
-+		 * igb_ptp_hwtstamp_set() will actually accept.
-+		 */
-+		if (!(adapter->ptp_flags & IGB_PTP_ENABLED)) {
-+			info->so_timestamping =
-+				SOF_TIMESTAMPING_TX_SOFTWARE;
-+			return 0;
-+		}
-+
- 		info->so_timestamping =
- 			SOF_TIMESTAMPING_TX_SOFTWARE |
- 			SOF_TIMESTAMPING_TX_HARDWARE |
-diff --git a/drivers/net/ethernet/intel/igb/igb_ptp.c b/drivers/net/ethernet/intel/igb/igb_ptp.c
-index 638d8242b66b..01992a73b37b 100644
---- a/drivers/net/ethernet/intel/igb/igb_ptp.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ptp.c
-@@ -1104,6 +1104,9 @@ int igb_ptp_hwtstamp_get(struct net_device *netdev,
- {
- 	struct igb_adapter *adapter = netdev_priv(netdev);
- 
-+	if (!(adapter->ptp_flags & IGB_PTP_ENABLED))
-+		return -EOPNOTSUPP;
-+
- 	*config = adapter->tstamp_config;
- 
- 	return 0;
-@@ -1285,6 +1288,9 @@ int igb_ptp_hwtstamp_set(struct net_device *netdev,
- 	struct igb_adapter *adapter = netdev_priv(netdev);
- 	int err;
- 
-+	if (!(adapter->ptp_flags & IGB_PTP_ENABLED))
-+		return -EOPNOTSUPP;
-+
- 	err = igb_ptp_set_timestamp_mode(adapter, config);
- 	if (err)
- 		return err;
-@@ -1378,6 +1384,25 @@ void igb_ptp_init(struct igb_adapter *adapter)
- 		return;
- 	}
- 
-+	/* Initialize all state used by the PHC and timestamping paths before
-+	 * registering either interface. INIT_WORK() only initializes the work
-+	 * item; no work is queued until timestamping is enabled.
-+	 */
-+	spin_lock_init(&adapter->tmreg_lock);
-+	INIT_WORK(&adapter->ptp_tx_work, igb_ptp_tx_work);
-+
-+	if (adapter->ptp_flags & IGB_PTP_OVERFLOW_CHECK)
-+		INIT_DELAYED_WORK(&adapter->ptp_overflow_work,
-+				  igb_ptp_overflow_check);
-+
-+	adapter->tstamp_config.rx_filter = HWTSTAMP_FILTER_NONE;
-+	adapter->tstamp_config.tx_type = HWTSTAMP_TX_OFF;
-+
-+	/* Initialize the hardware clock before ptp_clock_register() makes its
-+	 * callbacks visible. The overflow work is started after registration.
-+	 */
-+	igb_ptp_reset(adapter);
-+
- 	adapter->ptp_clock = ptp_clock_register(&adapter->ptp_caps,
- 						&adapter->pdev->dev);
- 	if (IS_ERR(adapter->ptp_clock)) {
-@@ -1388,17 +1413,9 @@ void igb_ptp_init(struct igb_adapter *adapter)
- 			 adapter->netdev->name);
- 		adapter->ptp_flags |= IGB_PTP_ENABLED;
- 
--		spin_lock_init(&adapter->tmreg_lock);
--		INIT_WORK(&adapter->ptp_tx_work, igb_ptp_tx_work);
--
- 		if (adapter->ptp_flags & IGB_PTP_OVERFLOW_CHECK)
--			INIT_DELAYED_WORK(&adapter->ptp_overflow_work,
--					  igb_ptp_overflow_check);
--
--		adapter->tstamp_config.rx_filter = HWTSTAMP_FILTER_NONE;
--		adapter->tstamp_config.tx_type = HWTSTAMP_TX_OFF;
--
--		igb_ptp_reset(adapter);
-+			schedule_delayed_work(&adapter->ptp_overflow_work,
-+					      IGB_SYSTIM_OVERFLOW_PERIOD);
- 	}
- }
- 
-@@ -1513,7 +1530,8 @@ void igb_ptp_reset(struct igb_adapter *adapter)
- 
- 	wrfl();
- 
--	if (adapter->ptp_flags & IGB_PTP_OVERFLOW_CHECK)
-+	if ((adapter->ptp_flags & IGB_PTP_ENABLED) &&
-+	    (adapter->ptp_flags & IGB_PTP_OVERFLOW_CHECK))
- 		schedule_delayed_work(&adapter->ptp_overflow_work,
- 				      IGB_SYSTIM_OVERFLOW_PERIOD);
- }
+ drivers/net/ethernet/intel/igb/igb.h      |   3 +-
+ drivers/net/ethernet/intel/igb/igb_main.c |  49 +++++++-----
+ drivers/net/ethernet/intel/igb/igb_ptp.c  | 120 ++++++++++++++++++++----------
+ 3 files changed, 113 insertions(+), 59 deletions(-)
+
+
+base-commit: 24ef02f934eeb48830cff6b739abc3c62b1d107b
