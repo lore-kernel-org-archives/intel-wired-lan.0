@@ -1,76 +1,75 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D632C5DF66
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 17 Aug 2026 10:17:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C09F3C5B572
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 17 Aug 2026 10:18:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id A2A10406EE;
-	Mon, 17 Aug 2026 10:17:31 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 782D780ED2;
+	Mon, 17 Aug 2026 10:18:06 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id dy2JUf9mz1q9; Mon, 17 Aug 2026 10:17:31 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id pPeOx-W6l3Bz; Mon, 17 Aug 2026 10:18:04 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E1D19406E3
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org ADC1B80ECB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1786961850;
-	bh=vBwO+o8/g3c8E5g41SDi1C7yT6nUsCVbHkSVCJNe+7M=;
+	s=default; t=1786961884;
+	bh=TXBQkyiFLvXRPc/vOwn4FFBd5nq323zoO1sSOJOX4cw=;
 	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=dPbWbOmBYOu3VUmPBk3J54lWEw6no5rq9SEvE0v2mQPIYAz72ES7qBZeLoQQI2NTR
-	 zax4k2fZZWlOnE1BTVljvZKp/TUCeipyyzMhqvdBU8/Fkw2zRMWoXQNm8aRQ0/gSKm
-	 CWM49rUvO6BdDqXy6ZkjPGzuYd+KCSHuceWM5jyUzXjCvSPee2r2QljVCrJfCR4LkG
-	 0KjCgQZNyKhA0d0VUQbKOBRNig5I5Kng3kUtWyvk/UyzT3dkeXBX62VdL6gbjxgyBf
-	 JCuJw0R4vd62rrhxixh2cTXB2f82WnzASkPrds2ZJs/yEiJVBoqAY4m2Pa1IIWVflN
-	 8lzk3KpGXK2+w==
+	b=I6SPvT9MmezlugVvWNR0ZPAX6Cu/P+gCXiZcXPc/5OZN5l2YFIa8QeMpc6xC0IbqQ
+	 zLpaxnDPQDrI6C4jsRr9NHqgXSLTIeVtKqGggB50L8/4tl3DH8EsYaL7qPLVwL8gFg
+	 hUUba0FKl93/oRoFt+ggSofPUjbryThxDSCd/ROhnbnV1bzIW+rk2I0Bb7KG+OI/hl
+	 795BeCNRFeyL3FGf9xvhAEn8jUznbkClGTf60pH+TYw8WPToO8g/hQ/N/Xw83OeFLo
+	 UF198F2OXn+9B/VzdQEVLem4lFS7ExMsuoCv6XUYFC3qqSgDdP2JEAXRuVL9x82/x5
+	 mTW3w5GKZnSlg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id E1D19406E3;
-	Mon, 17 Aug 2026 10:17:30 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id E25BF25B
- for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Aug 2026 10:17:29 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id ADC1B80ECB;
+	Mon, 17 Aug 2026 10:18:04 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id B1E6A282
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Aug 2026 10:18:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id D3E14406DB
- for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Aug 2026 10:17:29 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 97A4E80ECA
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Aug 2026 10:18:03 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id CXbqH1lOtKAQ for <intel-wired-lan@lists.osuosl.org>;
- Mon, 17 Aug 2026 10:17:29 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
- envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 1D81E40680
-Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=quarantine dis=none)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id E0OmdcYVI-7l for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 17 Aug 2026 10:18:02 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
+ helo=tor.source.kernel.org; envelope-from=horms@kernel.org;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 2951D80ECB
+Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1D81E40680
-Authentication-Results: smtp4.osuosl.org; dkim=pass (2048-bit key,
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2951D80ECB
+Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=iCLqWUDd
-Received: from sea.source.kernel.org (sea.source.kernel.org
- [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 1D81E40680
- for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Aug 2026 10:17:28 +0000 (UTC)
+ header.s=k20260515 header.b=WnoxnwwN
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 2951D80ECB
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Aug 2026 10:18:02 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by sea.source.kernel.org (Postfix) with ESMTP id 69997418F3;
- Mon, 17 Aug 2026 10:17:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CE3EE1F000E9;
- Mon, 17 Aug 2026 10:17:22 +0000 (UTC)
+ by tor.source.kernel.org (Postfix) with ESMTP id E6868600AE;
+ Mon, 17 Aug 2026 10:18:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 000DA1F000E9;
+ Mon, 17 Aug 2026 10:17:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1786961848;
- bh=vBwO+o8/g3c8E5g41SDi1C7yT6nUsCVbHkSVCJNe+7M=;
+ s=k20260515; t=1786961880;
+ bh=TXBQkyiFLvXRPc/vOwn4FFBd5nq323zoO1sSOJOX4cw=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To;
- b=iCLqWUDdgR60lfTw8qDSfaik+jq0gVVQ2pIQ9nR9Fzve0F46IqthNlpYXx6i20W9J
- V16oGiX5xkxkdMzLCSfTOsdvHXsT9SBAZhaV30aC8Z/eOBonZNfNWYbjFGXdfGVlBn
- /FxYZRJpb8y1sL2eubbgEaQFBs+RG8chBlTgzsj4WGqiKHohZ+3vl9aoXEhoDFu3TX
- c1ohb5moXp31CqhGHvH1+y3iYIbS/Oes9dt5cr4dYrmsmvUyK7RjovsJ0y+fG3JeHb
- FfQOSrNjf+NZ7Ivob3epw0MJSctcl2VDgBOxUd8V0UDQWYQX2Bv1Qbstx4oyl+0zJS
- N1te37kfU44Nw==
-Date: Mon, 17 Aug 2026 11:17:20 +0100
+ b=WnoxnwwNzxDZ1uTD3Jm53Egy4+C6aqoRoY0GEIURu9TYM82Zq+KqLLAJ/E2+/+UgC
+ M3LKx/OX2d5cuGEO1UZnES5hvb30VCRndCdCmDJLGMHFSiUhJ4tPIkuebjI6x+fVFc
+ 54056sAl+BGJK1Lbbl5FuyrHxcXqwZqkNt2PJuLbhjKopgFXps6Xa+ABEO2rh1Lpi8
+ 85D0gqTYZKc38c3RkDt/Cgbz3XaSYodY+Dyf0yuy0eQfJ4A6+3RbG6kV0jYw6lQ+fT
+ T9FC3OurG4v08tTv0HWDox4ksMeFINLXpqRB2B8uP2i+pZ/0T8/T5jOE0dTqPDugUo
+ aiXwObD4UGM8A==
+Date: Mon, 17 Aug 2026 11:17:52 +0100
 From: Simon Horman <horms@kernel.org>
 To: Stanislav Fomichev <sdf.kernel@gmail.com>
 Cc: netdev@vger.kernel.org, davem@davemloft.net, edumazet@google.com,
@@ -87,15 +86,15 @@ Cc: netdev@vger.kernel.org, davem@davemloft.net, edumazet@google.com,
  linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org,
  linux-stm32@st-md-mailman.stormreply.com,
  linux-arm-kernel@lists.infradead.org, bpf@vger.kernel.org, leon@kernel.org
-Message-ID: <20260817101720.GX265046@horms.kernel.org>
+Message-ID: <20260817101752.GY265046@horms.kernel.org>
 References: <20260813190800.222527-1-sdf@fomichev.me>
- <20260813190800.222527-2-sdf@fomichev.me>
+ <20260813190800.222527-4-sdf@fomichev.me>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260813190800.222527-2-sdf@fomichev.me>
-Subject: Re: [Intel-wired-lan] [PATCH net v2 1/3] xsk: align TX metadata
- layout across ABIs
+In-Reply-To: <20260813190800.222527-4-sdf@fomichev.me>
+Subject: Re: [Intel-wired-lan] [PATCH net v2 3/3] net: stmmac: skip
+ queueMaxSDU check for AF_XDP
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -111,20 +110,19 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu, Aug 13, 2026 at 12:07:58PM -0700, Stanislav Fomichev wrote:
-> Add explicit padding before launch_time so xsk_tx_metadata has the same
-> layout on 32-bit and 64-bit systems.
+On Thu, Aug 13, 2026 at 12:08:00PM -0700, Stanislav Fomichev wrote:
+> Commit c5c3e1bfc9e0 ("net: stmmac: Offload queueMaxSDU from tc-taprio")
+> was inspired by commit 92a0dcb8427d ("igc: offload queue max SDU from
+> tc-taprio"), but the igc change does not apply the check to AF_XDP.
 > 
-> On i386 and m68k, the old native 32-bit layout put launch_time at offset 12
-> and had a natural size of 20 bytes. Using sizeof(struct xsk_tx_metadata) as
-> tx_metadata_len was already rejected because the length must be a multiple
-> of eight, so the straightforward use of the interface was broken on those
-> ABIs. Userspace could still register a padded length of 24 bytes, though;
-> mixing the old and new layouts then silently reads launch_time from the
-> wrong offset and misprograms packet launch times. This intentionally
-> replaces that incompatible layout while the interface is still new.
+> xsk_tx_peek_desc() reserves a completion entry. Continuing without
+> queuing or completing the descriptor leaves the AF_XDP rings imbalanced,
+> so remove the check from the zero-copy path.
 > 
-> Fixes: ca4419f15abd ("xsk: Add launch time hardware offload support to XDP Tx metadata")
+> The assumptions is that AF_XDP zero-copy traffic bypasses the qdisc, so
+> taprio's queueMaxSDU check does not apply to this path.
+> 
+> Fixes: c5c3e1bfc9e0 ("net: stmmac: Offload queueMaxSDU from tc-taprio")
 > Signed-off-by: Stanislav Fomichev <sdf@fomichev.me>
 
 Reviewed-by: Simon Horman <horms@kernel.org>
