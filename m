@@ -4,100 +4,95 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 494F1C5DF81
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 18 Aug 2026 15:55:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DBA53C5DF7D
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 18 Aug 2026 16:24:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id F33D8408A5;
-	Tue, 18 Aug 2026 15:55:37 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 9D186408AF;
+	Tue, 18 Aug 2026 16:24:48 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id qeHEXtjTWUPH; Tue, 18 Aug 2026 15:55:35 +0000 (UTC)
+ id pdkiMuVKGXG5; Tue, 18 Aug 2026 16:24:47 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5AAB44089A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D2E18408AB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1787068535;
-	bh=0UrsHYpwduIVRiS+hgmK00Mxc2GcJS9MAz23YRB0is4=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=QxTg2EFSiqDVEz4/FHT6bwjxOVysavvk6tNo2BSUlUIlyVB1/bXxKP9y8qKhrttnh
-	 ySxBzgAHQ9JkmTZBavhJtdr5DFlIqAiV1OpG3T+ILPd/e+O0udoNSgR8r4o7dwwS7O
-	 jSs/Hbc5MX9WjnzGXdv8dkvfRJJKbq2Ur8tpSyXaieu0z1Dn1fUAfUvTUg4lc/hkwb
-	 yO7jaFq2nrdA+t987iJlbmSTsKEPGuxNlsswmEteN8UY7kh45wrWgVeQdBS1E8zirs
-	 AyYznTBQc9VbDPsJGBU9sGrLlnv/JrlidX7x6XTqznxJoOu+CAwX8ztQVXw9Ydcqyt
-	 HiFGNM5jrzB+w==
+	s=default; t=1787070287;
+	bh=lAH3pJNXPJ/mpBu0kcIh+xNKTmt6P69p829a8VtOvMM=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=b8PRCe44x0VsBATctra8WsF2QImyd1ojEB+ETbj6oag4qgAmOldeBzOM+60RNhAmZ
+	 zhtbs0cNNbzXn1SNuH2pseRAHy6Z7wxNlXt91+8+LK5jrSGXUpMkciQneBI1HtSDhi
+	 pYOpjj0W5NPD6UZoUmuBrSmki95HACJc14TkOeALXx8qjQa9zCGhTgOZWbcMlst7tM
+	 NXiUBJfUzo67YEVUwZpU+AcOCdH1Vh0jYFmLJaAdDoaBsvhvYmj61+iusb1zOxF6Be
+	 dlGDb748hO1DWw4zeM5Y/ziS+Eh5eGrzu95Jjm/ikTEmX9mniBzp7Q4Z4jtw1GX+3c
+	 EGmePb6uFMC+w==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 5AAB44089A;
-	Tue, 18 Aug 2026 15:55:35 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id AA677282
- for <intel-wired-lan@lists.osuosl.org>; Tue, 18 Aug 2026 15:55:34 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id D2E18408AB;
+	Tue, 18 Aug 2026 16:24:47 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 941C72B2
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 18 Aug 2026 16:24:46 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 8B341401E9
- for <intel-wired-lan@lists.osuosl.org>; Tue, 18 Aug 2026 15:55:34 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 7A6B7608D5
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 18 Aug 2026 16:24:46 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id kYvyIdbKC_LZ for <intel-wired-lan@lists.osuosl.org>;
- Tue, 18 Aug 2026 15:55:33 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.11;
- helo=mgamail.intel.com; envelope-from=aleksander.lobakin@intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 7589C40333
-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7589C40333
-Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=Yp27KGD2
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 7589C40333
- for <intel-wired-lan@lists.osuosl.org>; Tue, 18 Aug 2026 15:55:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1787068533; x=1818604533;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=yEi0XZpOkgFPsaJijaL4IkH0cSsDe0QMWkd8OkfTQP4=;
- b=Yp27KGD2MK5P/blMkj40ZN0hhE5s9HlCADzwx075zoBi+dX5LAttSXP5
- 8wbfbh1vkFa8dNP8Scv0iGafMa/8/gu+w0MApSHEmo2RVCF71FgpgyUX4
- uXBoovI59x7ZK6FTN96UBtgFjz6UCUNShfEzA395ARVXeEIB3Qrqp9hVT
- IuAnFKU9Cb93ZTU4H9fept7uapQIew4sKWw+TPYsO9vbL4rj9ctH3doXK
- dLc0YRNDYQ7BYdLPCzVAoxTdOC4uack157LA7j8sNvsTPr20l7beP2KFT
- Ksd6jVWGpMZyz+YUYwe1t3HlIyxvWjgTOkNUvPBxV8BvXZZJtyBshikG8 g==;
-X-CSE-ConnectionGUID: WLSqJW39QWichEGup6GI7w==
-X-CSE-MsgGUID: 5l+jLr5rSvWQv0t9woB0Jw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11879"; a="97903376"
-X-IronPort-AV: E=Sophos;i="6.25,230,1779174000"; d="scan'208,223";a="97903376"
-Received: from fmviesa006.fm.intel.com ([10.60.135.146])
- by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 18 Aug 2026 08:55:31 -0700
-X-CSE-ConnectionGUID: 2EUtB9HyT6GtDYXaqoWdog==
-X-CSE-MsgGUID: 68K4VxMpRRmK27v/GQiB9g==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,230,1779174000"; 
- d="scan'208,223";a="261059294"
-Received: from newjersey.igk.intel.com ([10.102.20.203])
- by fmviesa006.fm.intel.com with ESMTP; 18 Aug 2026 08:55:27 -0700
-From: Alexander Lobakin <aleksander.lobakin@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Cc: Alexander Lobakin <aleksander.lobakin@intel.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>,
- "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>,
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
- YiFei Zhu <zhuyifei@google.com>, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Date: Tue, 18 Aug 2026 17:51:01 +0200
-Message-ID: <20260818155101.2416665-1-aleksander.lobakin@intel.com>
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 1qmYZPEs0SNI for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 18 Aug 2026 16:24:45 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
+ helo=sea.source.kernel.org; envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org B066960832
+Authentication-Results: smtp3.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B066960832
+Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20260515 header.b=Bvv2WUii
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id B066960832
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 18 Aug 2026 16:24:45 +0000 (UTC)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+ by sea.source.kernel.org (Postfix) with ESMTP id E671243224;
+ Tue, 18 Aug 2026 16:24:44 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 333431F000E9;
+ Tue, 18 Aug 2026 16:24:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+ s=k20260515; t=1787070284;
+ bh=lAH3pJNXPJ/mpBu0kcIh+xNKTmt6P69p829a8VtOvMM=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References;
+ b=Bvv2WUii6kPGfFMnUBHavzMRt6MiX+8jYJeKt3gdN0E+jnY/489pqoEyEbCGlX9w5
+ 5PAmXWAcMQkPsTolXP1HaWwia1K0FQBRUaL2zyDeuowiqCQHMYYFGycASzWRV3xKYk
+ iSgPOhSmT4uD1Eww8lr5NT0f+n1Bw6eUbkYcZ/ZdWJwqKtCI0XKCXgPQ3+J/LDCfGf
+ KR1T5pQ8n1Rx6bAxoutfWwv/SOABcXWAzozbgyDI6dKUXhE3q+E2HGqNcxs5JUjzpR
+ u4u0pPlGpLvb0b4PP5FDsXwYFZ+pPDndH6iJj+mAxYzAdrgYg2M+6wGTp6lvyJy7y/
+ TOPlVERvk3/eg==
+From: Jakub Kicinski <kuba@kernel.org>
+To: sdf.kernel@gmail.com
+Cc: Jakub Kicinski <kuba@kernel.org>, netdev@vger.kernel.org,
+ davem@davemloft.net, edumazet@google.com, pabeni@redhat.com,
+ anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ andrew+netdev@lunn.ch, saeedm@nvidia.com, tariqt@nvidia.com,
+ mbloch@nvidia.com, maxime.chevallier@bootlin.com,
+ mcoquelin.stm32@gmail.com, alexandre.torgue@foss.st.com,
+ aleksander.lobakin@intel.com, horms@kernel.org, magnus.karlsson@intel.com,
+ maciej.fijalkowski@intel.com, sdf@fomichev.me, ast@kernel.org,
+ daniel@iogearbox.net, hawk@kernel.org, john.fastabend@gmail.com,
+ witu@nvidia.com, martin.lau@kernel.org, yoong.siang.song@intel.com,
+ rohan.g.thomas@intel.com, intel-wired-lan@lists.osuosl.org,
+ linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org,
+ linux-stm32@st-md-mailman.stormreply.com,
+ linux-arm-kernel@lists.infradead.org, bpf@vger.kernel.org, leon@kernel.org
+Date: Tue, 18 Aug 2026 09:24:42 -0700
+Message-ID: <20260818162442.3980697-1-kuba@kernel.org>
 X-Mailer: git-send-email 2.55.0
+In-Reply-To: <20260813190800.222527-4-sdf@fomichev.me>
+References: <20260813190800.222527-4-sdf@fomichev.me>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: [Intel-wired-lan] [PATCH iwl-next v2] idpf: add flow-based XDP
- fallback for FWs without Tx FIFO support
+Subject: Re: [Intel-wired-lan] [PATCH net v2 3/3] net: stmmac: skip
+ queueMaxSDU check for AF_XDP
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -113,536 +108,115 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From the first days of XDP implementation in idpf, it relied and
-worked solely on top of the queue-based scheduling Tx mode, which
-basically means simple FIFO. However, turned out not every firmware
-supports this mode and XDP doesn't work there at all.
-
-Since the flow-based scheduling Tx mode is mandatory and supported
-by every FW, introduce a simple fallback guarded by a static key
-to not hurt the more performant mode. The FB mode generates a
-completion for each Tx descriptor and never guarantees that there
-won't be any out-of-order completions. Serialize that using a
-bitmap of completed descriptors and report contiguous blocks of
-free bits to match XDP and XSk expectations and avoid further
-code complication.
-
-The usage of a bitmap on hotpath might sound scary, but this
-fallback is able to reach around 70% of the QB mode's performance,
-which is comparable to what ice gives us. The main bottlenecks are
-unlikely()s and one completion per each descriptor, while in the QB
-mode we have one completion per batch (which might contain 64 or
-even 128 frames), plus the size of the completion descriptor is
-8 bytes in this mode (4 bytes in the QB mode), which means a lot
-of additional PCI traffic.
-
-bloat-o-meter shows .text increase in about 2 Kb without adding new
-functions or uninlining any of the existing ones. I played a bunch
-with inlining and uninlining certain pieces or the whole fallback,
-but the compiler collapses and optimizes libeth templates so hardly
-so that each additional external call only makes things worse.
-
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Tested-by: YiFei Zhu <zhuyifei@google.com>
-Signed-off-by: Alexander Lobakin <aleksander.lobakin@intel.com>
+This is an AI-generated review of your patch. The human sending this
+email has considered the AI review valid, or at least plausible.
 ---
-I know the window is closed, this is to trigger the validation and
-for eventual reviews.
+net: stmmac: skip queueMaxSDU check for AF_XDP
 
-From v1[0]:
-* rework static key management: move to idpf_xdpsqs_{get,put}() to
-  avoid refcount imbalance issues as .ndo_bpf() is not always called
-  in pairs (hardware reset etc.) (Sashiko, internal Sashiko);
-* don't zero the whole pending window but only the frames sent since
-  the last batch to avoid missed OOO completions (internal Sashiko);
-* micro-optimize idpf_xdpsq_set_rs{,_fb}().
+This drops the per-queue max SDU length check from the stmmac AF_XDP
+zero-copy transmit path, on the grounds that xsk_tx_peek_desc() has
+already reserved a completion ring entry and the old "continue" skipped
+both queuing and completion. The change is tagged for stable via a Fixes:
+tag on c5c3e1bfc9e0.
 
-Regarding the rest of comments:
+> diff --git a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
+> index 62de03e65a90c..4a82f4351303a 100644
+> --- a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
+> +++ b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
+> @@ -2710,13 +2710,6 @@ static bool stmmac_xdp_xmit_zc(struct stmmac_priv *priv, u32 queue, u32 budget)
+>  		if (!xsk_tx_peek_desc(pool, &xdp_desc))
+>  			break;
+>  
+> -		if (priv->est && priv->est->enable &&
+> -		    priv->est->max_sdu[queue] &&
+> -		    xdp_desc.len > priv->est->max_sdu[queue]) {
+> -			priv->xstats.max_sdu_txq_drop[queue]++;
+> -			continue;
+> -		}
+> -
 
-> Could this sentinel bit cause a deadlock if the queue is completely full?
-> When full, next_to_use equals next_to_clean. If the hardware just completed
-> the oldest descriptor, its bit would be cleared, but this __set_bit would
-> blindly overwrite it back to 1. The completion would be ignored and the
-> queue might permanently stall.
+[Severity: Medium]
+The completion ring imbalance described in the commit message looks real:
+xsk_tx_peek_desc() reserves the cq slot with xskq_prod_reserve_addr() and
+only xsk_tx_completed() submits it, so the old "continue" left the cq
+producer permanently offset.
 
-Intel HW works that way that we can't fill the ring completely. We need to
-always leave at least one descriptor free, otherwise ntc will equal ntu
-in the HW and the queue will stall. So in all sending routines, our budget
-is limited to `free - 1`, meaning the situation described above can't happen
-(next_to_use never has its bit set to 1, so it's safe to use this bit as a
-guard and reset it after the bitmap search is complete).
+Was completing the reserved descriptor considered instead of removing the
+check, i.e. keeping the length test and doing:
 
-> Is ret bounded before it is used as a bitmap index here?
-> idpf_xdp_parse_cqe() returns upper_16_bits(val) straight from the device
-> completion descriptor, so ret can be anywhere in [0, 65535].  pending_mask
-> is allocated with bitmap_zalloc_node(desc_count), where desc_count is at
-> most IDPF_MAX_DESCS.
+	if (priv->est && priv->est->enable &&
+	    priv->est->max_sdu[queue] &&
+	    xdp_desc.len > priv->est->max_sdu[queue]) {
+		priv->xstats.max_sdu_txq_drop[queue]++;
+		xsk_tx_completed(pool, 1);
+		continue;
+	}
 
-No cards under this driver have ever been seen writing garbage instead of
-the completion tag.
+That would fix the ring accounting without dropping the enforcement.
 
-[0] https://lore.kernel.org/intel-wired-lan/20260708151327.1091570-1-aleksander.lobakin@intel.com
----
- drivers/net/ethernet/intel/idpf/idpf.h      |   1 +
- drivers/net/ethernet/intel/idpf/idpf_txrx.h |  18 +--
- drivers/net/ethernet/intel/idpf/xdp.h       |  73 ++++++++++-
- include/net/libeth/xdp.h                    |  13 ++
- drivers/net/ethernet/intel/idpf/idpf_txrx.c |  12 +-
- drivers/net/ethernet/intel/idpf/xdp.c       | 131 +++++++++++++++++++-
- 6 files changed, 229 insertions(+), 19 deletions(-)
+On stmmac, queueMaxSDU has no hardware table. priv->est->max_sdu[] is
+written only by tc_taprio_map_maxsdu_txq() in stmmac_tc.c:
 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf.h b/drivers/net/ethernet/intel/idpf/idpf.h
-index 470bc23c844c..1e897e131cb2 100644
---- a/drivers/net/ethernet/intel/idpf/idpf.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf.h
-@@ -383,6 +383,7 @@ struct idpf_vport {
- 	struct idpf_tx_queue **txqs;
- 	u16 num_txq;
- 	u16 num_xdp_txq;
-+	bool xdpsq_fb;
- 	bool xdpsq_share;
- 	struct bpf_prog *xdp_prog;
- 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.h b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-index e8a632ffa61e..bd31151f0a89 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-@@ -625,12 +625,14 @@ libeth_cacheline_set_assert(struct idpf_rx_queue,
-  * @clean_budget: singleq only, queue cleaning budget
-  * @cleaned_pkts: Number of packets cleaned for the above said case
-  * @refillq: Pointer to refill queue
-+ * @cached_tstamp_caps: Tx timestamp capabilities negotiated with the CP
-+ * @tstamp_task: Work that handles Tx timestamp read
-  * @pending: number of pending descriptors to send in QB
-  * @xdp_tx: number of pending &xdp_buff or &xdp_frame buffers
-  * @timer: timer for XDP Tx queue cleanup
-  * @xdp_lock: lock for XDP Tx queues sharing
-- * @cached_tstamp_caps: Tx timestamp capabilities negotiated with the CP
-- * @tstamp_task: Work that handles Tx timestamp read
-+ * @pending_mask: mask of buffers waiting for completion in the FB XDP mode
-+ * @last_ntu: @next_to_use from the previous batch in the FB XDP mode
-  * @stats_sync: See struct u64_stats_sync
-  * @q_stats: See union idpf_tx_queue_stats
-  * @q_id: Queue id
-@@ -689,6 +691,9 @@ struct idpf_tx_queue {
- 			u16 cleaned_pkts;
- 
- 			struct idpf_sw_queue *refillq;
-+
-+			struct idpf_ptp_vport_tx_tstamp_caps *cached_tstamp_caps;
-+			struct work_struct *tstamp_task;
- 		};
- 		struct {
- 			u32 pending;
-@@ -696,12 +701,12 @@ struct idpf_tx_queue {
- 
- 			struct libeth_xdpsq_timer *timer;
- 			struct libeth_xdpsq_lock xdp_lock;
-+
-+			unsigned long *pending_mask;
-+			u32 last_ntu;
- 		};
- 	};
- 
--	struct idpf_ptp_vport_tx_tstamp_caps *cached_tstamp_caps;
--	struct work_struct *tstamp_task;
--
- 	struct u64_stats_sync stats_sync;
- 	struct idpf_tx_queue_stats q_stats;
- 	__cacheline_group_end_aligned(read_write);
-@@ -718,8 +723,7 @@ struct idpf_tx_queue {
- 	__cacheline_group_end_aligned(cold);
- };
- libeth_cacheline_set_assert(struct idpf_tx_queue, 64,
--			    104 +
--			    offsetof(struct idpf_tx_queue, cached_tstamp_caps) -
-+			    96 + offsetof(struct idpf_tx_queue, tstamp_task) -
- 			    offsetofend(struct idpf_tx_queue, timer) +
- 			    offsetof(struct idpf_tx_queue, q_stats) -
- 			    offsetofend(struct idpf_tx_queue, tstamp_task),
-diff --git a/drivers/net/ethernet/intel/idpf/xdp.h b/drivers/net/ethernet/intel/idpf/xdp.h
-index 63e56f7d43e0..95e47ea2ccba 100644
---- a/drivers/net/ethernet/intel/idpf/xdp.h
-+++ b/drivers/net/ethernet/intel/idpf/xdp.h
-@@ -8,6 +8,10 @@
- 
- #include "idpf_txrx.h"
- 
-+struct idpf_q_vec_rsrc;
-+
-+DECLARE_STATIC_KEY_FALSE(idpf_xdp_fb);
-+
- int idpf_xdp_rxq_info_init(struct idpf_rx_queue *rxq);
- int idpf_xdp_rxq_info_init_all(const struct idpf_q_vec_rsrc *rsrc);
- void idpf_xdp_rxq_info_deinit(struct idpf_rx_queue *rxq, u32 model);
-@@ -15,12 +19,40 @@ void idpf_xdp_rxq_info_deinit_all(const struct idpf_q_vec_rsrc *rsrc);
- void idpf_xdp_copy_prog_to_rqs(const struct idpf_q_vec_rsrc *rsrc,
- 			       struct bpf_prog *xdp_prog);
- 
--int idpf_xdpsqs_get(const struct idpf_vport *vport);
--void idpf_xdpsqs_put(const struct idpf_vport *vport);
-+int idpf_xdpsqs_get(struct idpf_vport *vport);
-+void idpf_xdpsqs_put(struct idpf_vport *vport);
- 
- u32 idpf_xdpsq_poll(struct idpf_tx_queue *xdpsq, u32 budget);
- bool idpf_xdp_tx_flush_bulk(struct libeth_xdp_tx_bulk *bq, u32 flags);
- 
-+static inline void idpf_xdp_tx_xmit_fb(struct libeth_xdp_tx_desc desc, u32 i,
-+				       const struct libeth_xdpsq *sq, u64 priv)
-+{
-+	struct idpf_flex_tx_sched_desc *tx_desc = sq->descs;
-+	u32 cmd;
-+
-+	cmd = FIELD_PREP(IDPF_TXD_FLEX_FLOW_DTYPE_M,
-+			 IDPF_TX_DESC_DTYPE_FLEX_FLOW_SCHE);
-+	if (desc.flags & LIBETH_XDP_TX_LAST)
-+		cmd |= IDPF_TXD_FLEX_FLOW_CMD_EOP;
-+	if (priv && (desc.flags & LIBETH_XDP_TX_CSUM))
-+		cmd |= IDPF_TXD_FLEX_FLOW_CMD_CS_EN;
-+
-+	tx_desc = &tx_desc[i];
-+	tx_desc->buf_addr = cpu_to_le64(desc.addr);
-+
-+#ifdef __LIBETH_WORD_ACCESS
-+	*(u64 *)&tx_desc->qw1 = ((u64)desc.len << 48) | ((u64)i << 32) | cmd;
-+#else
-+	tx_desc->qw1.rxr_bufsize = cpu_to_le16(desc.len);
-+	tx_desc->qw1.compl_tag = cpu_to_le16(i);
-+	tx_desc->qw1.ts[0] = 0;
-+	tx_desc->qw1.ts[1] = 0;
-+	tx_desc->qw1.ts[2] = 0;
-+	tx_desc->qw1.cmd_dtype = cmd;
-+#endif
-+}
-+
- /**
-  * idpf_xdp_tx_xmit - produce a single HW Tx descriptor out of XDP desc
-  * @desc: XDP descriptor to pull the DMA address and length from
-@@ -34,6 +66,14 @@ static inline void idpf_xdp_tx_xmit(struct libeth_xdp_tx_desc desc, u32 i,
- 	struct idpf_flex_tx_desc *tx_desc = sq->descs;
- 	u32 cmd;
- 
-+	if (static_branch_unlikely(&idpf_xdp_fb) &&
-+	    idpf_queue_has(FLOW_SCH_EN,
-+			   libeth_xdpsq_to_sq(sq, struct idpf_tx_queue,
-+					      next_to_use))) {
-+		idpf_xdp_tx_xmit_fb(desc, i, sq, priv);
-+		return;
-+	}
-+
- 	cmd = FIELD_PREP(IDPF_FLEX_TXD_QW1_DTYPE_M,
- 			 IDPF_TX_DESC_DTYPE_FLEX_L2TAG1_L2TAG2);
- 	if (desc.flags & LIBETH_XDP_TX_LAST)
-@@ -53,12 +93,34 @@ static inline void idpf_xdp_tx_xmit(struct libeth_xdp_tx_desc desc, u32 i,
- #endif
- }
- 
--static inline void idpf_xdpsq_set_rs(const struct idpf_tx_queue *xdpsq)
-+static inline void idpf_xdpsq_set_rs_fb(struct idpf_tx_queue *xdpsq)
-+{
-+	u32 ntu = xdpsq->next_to_use;
-+	u32 old = xdpsq->last_ntu;
-+
-+	if (old > ntu) {
-+		bitmap_set(xdpsq->pending_mask, old, xdpsq->desc_count - old);
-+		if (ntu)
-+			bitmap_set(xdpsq->pending_mask, 0, ntu);
-+	} else {
-+		bitmap_set(xdpsq->pending_mask, old, ntu - old);
-+	}
-+
-+	xdpsq->last_ntu = ntu;
-+}
-+
-+static __always_inline void idpf_xdpsq_set_rs(struct idpf_tx_queue *xdpsq)
- {
- 	u32 ntu, cmd;
- 
-+	if (static_branch_unlikely(&idpf_xdp_fb) &&
-+	    idpf_queue_has(FLOW_SCH_EN, xdpsq)) {
-+		idpf_xdpsq_set_rs_fb(xdpsq);
-+		return;
-+	}
-+
- 	ntu = xdpsq->next_to_use;
--	if (unlikely(!ntu))
-+	if (!ntu)
- 		ntu = xdpsq->desc_count;
- 
- 	cmd = FIELD_PREP(IDPF_FLEX_TXD_QW1_CMD_M, IDPF_TX_DESC_CMD_RS);
-@@ -84,7 +146,8 @@ static inline void idpf_xdpsq_update_tail(const struct idpf_tx_queue *xdpsq)
-  * Set the RS bit ("end of batch"), bump the tail, and queue the cleanup timer.
-  * To be called after a NAPI polling loop, at the end of .ndo_xdp_xmit() etc.
-  */
--static inline void idpf_xdp_tx_finalize(void *_xdpsq, bool sent, bool flush)
-+static __always_inline void idpf_xdp_tx_finalize(void *_xdpsq, bool sent,
-+						 bool flush)
- {
- 	struct idpf_tx_queue *xdpsq = _xdpsq;
- 
-diff --git a/include/net/libeth/xdp.h b/include/net/libeth/xdp.h
-index 898723ab62e8..ed61d83bda2d 100644
---- a/include/net/libeth/xdp.h
-+++ b/include/net/libeth/xdp.h
-@@ -430,6 +430,19 @@ struct libeth_xdpsq {
- 	struct libeth_xdpsq_lock	*lock;
- };
- 
-+/**
-+ * libeth_xdpsq_to_sq - get SQ pointer from an XDPSQ pointer
-+ * @xdpsq: &libeth_xdpsq corresponding to the queue
-+ * @type: typeof() of the driver Tx queue structure
-+ * @member: name of the NTU field inside @type
-+ *
-+ * Some of the sending callbacks take only &libeth_xdpsq pointer and no pointer
-+ * to the actual driver Tx queue structure. Use this helper to quickly jump to
-+ * the latter when needed.
-+ */
-+#define libeth_xdpsq_to_sq(xdpsq, type, member)				      \
-+	container_of_const((xdpsq)->ntu, type, member)
-+
- /**
-  * struct libeth_xdp_tx_desc - abstraction for an XDP Tx descriptor
-  * @addr: DMA address of the frame
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-index 89355368c3b3..209764a8070c 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-@@ -227,7 +227,7 @@ static int idpf_tx_desc_alloc(const struct idpf_vport *vport,
- 
- 	idpf_xsk_setup_queue(vport, tx_q, VIRTCHNL2_QUEUE_TYPE_TX);
- 
--	if (!idpf_queue_has(FLOW_SCH_EN, tx_q))
-+	if (!idpf_queue_has(FLOW_SCH_EN, tx_q) || idpf_queue_has(XDP, tx_q))
- 		return 0;
- 
- 	refillq = tx_q->refillq;
-@@ -1058,6 +1058,13 @@ static void idpf_clean_queue_set(const struct idpf_queue_set *qs)
- 			if (idpf_queue_has(XDP, q->txq)) {
- 				q->txq->pending = 0;
- 				q->txq->xdp_tx = 0;
-+
-+				if (static_branch_unlikely(&idpf_xdp_fb) &&
-+				    idpf_queue_has(FLOW_SCH_EN, q->txq)) {
-+					bitmap_zero(q->txq->pending_mask,
-+						    q->txq->desc_count);
-+					q->txq->last_ntu = 0;
-+				}
- 			} else {
- 				q->txq->txq_grp->num_completions_pending = 0;
- 			}
-@@ -1320,7 +1327,8 @@ static void idpf_txq_group_rel(struct idpf_q_vec_rsrc *rsrc)
- 			if (!txq_grp->txqs[j])
- 				continue;
- 
--			if (idpf_queue_has(FLOW_SCH_EN, txq_grp->txqs[j])) {
-+			if (idpf_queue_has(FLOW_SCH_EN, txq_grp->txqs[j]) &&
-+			    !idpf_queue_has(XDP, txq_grp->txqs[j])) {
- 				kfree(txq_grp->txqs[j]->refillq);
- 				txq_grp->txqs[j]->refillq = NULL;
- 			}
-diff --git a/drivers/net/ethernet/intel/idpf/xdp.c b/drivers/net/ethernet/intel/idpf/xdp.c
-index cbccd4546768..c771663677a5 100644
---- a/drivers/net/ethernet/intel/idpf/xdp.c
-+++ b/drivers/net/ethernet/intel/idpf/xdp.c
-@@ -7,6 +7,8 @@
- #include "xdp.h"
- #include "xsk.h"
- 
-+DEFINE_STATIC_KEY_FALSE(idpf_xdp_fb);
-+
- static int idpf_rxq_for_each(const struct idpf_q_vec_rsrc *rsrc,
- 			     int (*fn)(struct idpf_rx_queue *rxq, void *arg),
- 			     void *arg)
-@@ -149,10 +151,12 @@ void idpf_xdp_copy_prog_to_rqs(const struct idpf_q_vec_rsrc *rsrc,
- 
- static void idpf_xdp_tx_timer(struct work_struct *work);
- 
--int idpf_xdpsqs_get(const struct idpf_vport *vport)
-+int idpf_xdpsqs_get(struct idpf_vport *vport)
- {
- 	struct libeth_xdpsq_timer **timers __free(kvfree) = NULL;
--	struct net_device *dev;
-+	unsigned long **masks __free(kvfree) = NULL;
-+	const struct net_device *dev;
-+	bool warn;
- 	u32 sqs;
- 
- 	if (!idpf_xdp_enabled(vport))
-@@ -176,6 +180,34 @@ int idpf_xdpsqs_get(const struct idpf_vport *vport)
- 	dev = vport->netdev;
- 	sqs = vport->dflt_qv_rsrc.xdp_txq_offset;
- 
-+	vport->xdpsq_fb = !idpf_is_cap_ena(vport->adapter, IDPF_OTHER_CAPS,
-+					   VIRTCHNL2_CAP_SPLITQ_QSCHED);
-+	if (!vport->xdpsq_fb)
-+		goto setup;
-+
-+	masks = kvzalloc_objs(*masks, vport->num_xdp_txq);
-+	if (!masks)
-+		goto err_masks;
-+
-+	for (u32 i = 0; i < vport->num_xdp_txq; i++) {
-+		masks[i] = bitmap_zalloc_node(vport->txqs[sqs + i]->desc_count,
-+					      GFP_KERNEL, cpu_to_mem(i));
-+		if (!masks[i]) {
-+			for (int j = i - 1; j >= 0; j--)
-+				bitmap_free(masks[j]);
-+
-+			goto err_masks;
-+		}
-+	}
-+
-+	warn = !static_key_enabled(&idpf_xdp_fb);
-+	static_branch_inc(&idpf_xdp_fb);
-+
-+	if (warn && net_ratelimit())
-+		netdev_warn(dev,
-+			    "The FW doesn't support Tx in FIFO mode, XDP Tx performance might be suboptimal\n");
-+
-+setup:
- 	for (u32 i = sqs; i < vport->num_txq; i++) {
- 		struct idpf_tx_queue *xdpsq = vport->txqs[i];
- 
-@@ -183,8 +215,8 @@ int idpf_xdpsqs_get(const struct idpf_vport *vport)
- 		kfree(xdpsq->refillq);
- 		xdpsq->refillq = NULL;
- 
--		idpf_queue_clear(FLOW_SCH_EN, xdpsq);
--		idpf_queue_clear(FLOW_SCH_EN, xdpsq->complq);
-+		idpf_queue_assign(FLOW_SCH_EN, xdpsq, vport->xdpsq_fb);
-+		idpf_queue_assign(FLOW_SCH_EN, xdpsq->complq, vport->xdpsq_fb);
- 		idpf_queue_set(NOIRQ, xdpsq);
- 		idpf_queue_set(XDP, xdpsq);
- 		idpf_queue_set(XDP, xdpsq->complq);
-@@ -197,12 +229,25 @@ int idpf_xdpsqs_get(const struct idpf_vport *vport)
- 		xdpsq->pending = 0;
- 		xdpsq->xdp_tx = 0;
- 		xdpsq->thresh = libeth_xdp_queue_threshold(xdpsq->desc_count);
-+
-+		if (static_branch_unlikely(&idpf_xdp_fb) && vport->xdpsq_fb) {
-+			xdpsq->pending_mask = masks[i - sqs];
-+			xdpsq->last_ntu = 0;
-+		}
- 	}
- 
- 	return 0;
-+
-+err_masks:
-+	vport->xdpsq_fb = false;
-+
-+	for (u32 i = 0; i < vport->num_xdp_txq; i++)
-+		kfree(timers[i]);
-+
-+	return -ENOMEM;
- }
- 
--void idpf_xdpsqs_put(const struct idpf_vport *vport)
-+void idpf_xdpsqs_put(struct idpf_vport *vport)
- {
- 	struct net_device *dev;
- 	u32 sqs;
-@@ -222,10 +267,23 @@ void idpf_xdpsqs_put(const struct idpf_vport *vport)
- 		libeth_xdpsq_deinit_timer(xdpsq->timer);
- 		libeth_xdpsq_put(&xdpsq->xdp_lock, dev);
- 
-+		if (static_branch_unlikely(&idpf_xdp_fb) &&
-+		    idpf_queue_has(FLOW_SCH_EN, xdpsq)) {
-+			bitmap_free(xdpsq->pending_mask);
-+			xdpsq->pending_mask = NULL;
-+			xdpsq->last_ntu = 0;
-+		}
-+
- 		kfree(xdpsq->timer);
- 		xdpsq->refillq = NULL;
- 		idpf_queue_clear(NOIRQ, xdpsq);
- 	}
-+
-+	if (!vport->xdpsq_fb)
-+		return;
-+
-+	static_branch_dec(&idpf_xdp_fb);
-+	vport->xdpsq_fb = false;
- }
- 
- static int idpf_xdp_parse_cqe(const struct idpf_splitq_4b_tx_compl_desc *desc,
-@@ -250,6 +308,65 @@ static int idpf_xdp_parse_cqe(const struct idpf_splitq_4b_tx_compl_desc *desc,
- 	return upper_16_bits(val);
- }
- 
-+static u32 idpf_xdpsq_poll_fb(struct idpf_tx_queue *xdpsq, u32 budget)
-+{
-+	struct idpf_compl_queue *cq = xdpsq->complq;
-+	unsigned long *mask = xdpsq->pending_mask;
-+	u32 done_frames, tx_cnt, new_ntc;
-+	u32 ntc = cq->next_to_clean;
-+	u32 cnt = cq->desc_count;
-+	bool gen;
-+
-+	gen = idpf_queue_has(GEN_CHK, cq);
-+
-+	for (done_frames = 0; done_frames < budget; ) {
-+		int ret;
-+
-+		ret = idpf_xdp_parse_cqe(&cq->comp[ntc].common, gen);
-+		if (ret >= 0) {
-+			__clear_bit(ret, mask);
-+			done_frames++;
-+
-+			goto next;
-+		}
-+
-+		switch (ret) {
-+		case -ENODATA:
-+			goto out;
-+		case -EINVAL:
-+			break;
-+		}
-+
-+next:
-+		if (unlikely(++ntc == cnt)) {
-+			ntc = 0;
-+			gen = !gen;
-+			idpf_queue_change(GEN_CHK, cq);
-+		}
-+	}
-+
-+out:
-+	cq->next_to_clean = ntc;
-+
-+	if (unlikely(!done_frames))
-+		return 0;
-+
-+	tx_cnt = xdpsq->desc_count;
-+
-+	/* Don't go past next_to_use */
-+	__set_bit(xdpsq->next_to_use, mask);
-+
-+	new_ntc = find_next_bit(mask, tx_cnt, xdpsq->next_to_clean);
-+	done_frames = new_ntc - xdpsq->next_to_clean;
-+
-+	if (new_ntc == tx_cnt)
-+		done_frames += find_first_bit(mask, tx_cnt);
-+
-+	__clear_bit(xdpsq->next_to_use, mask);
-+
-+	return done_frames;
-+}
-+
- u32 idpf_xdpsq_poll(struct idpf_tx_queue *xdpsq, u32 budget)
- {
- 	struct idpf_compl_queue *cq = xdpsq->complq;
-@@ -260,6 +377,10 @@ u32 idpf_xdpsq_poll(struct idpf_tx_queue *xdpsq, u32 budget)
- 	u32 done_frames;
- 	bool gen;
- 
-+	if (static_branch_unlikely(&idpf_xdp_fb) &&
-+	    idpf_queue_has(FLOW_SCH_EN, xdpsq))
-+		return idpf_xdpsq_poll_fb(xdpsq, budget);
-+
- 	gen = idpf_queue_has(GEN_CHK, cq);
- 
- 	for (done_frames = 0; done_frames < budget; ) {
+		for (j = offset; j < offset + count; j++)
+			priv->est->max_sdu[j] = qopt->max_sdu[i] + ETH_HLEN - ETH_TLEN;
+
+and read only by the length checks in stmmac_main.c. With this hunk gone,
+does an AF_XDP zero-copy socket now transmit frames above the configured
+per-queue limit while tc_query_caps() still reports:
+
+		caps->gate_mask_per_txq = true;
+		caps->supports_queue_max_sdu = true;
+
+That capability is what taprio uses to accept a queueMaxSDU configuration
+in the first place, and sch_taprio comments in
+taprio_skb_exceeds_queue_max_sdu() that "Devices with full offload are
+expected to honor this in hardware".
+
+The "bypasses the qdisc" rationale also applies to stmmac_xdp_xmit_xdpf(),
+which serves XDP_TX and ndo_xdp_xmit and does not traverse the qdisc
+either, yet still enforces the same limit:
+
+	if (priv->est && priv->est->enable &&
+	    priv->est->max_sdu[queue] &&
+	    xdpf->len > priv->est->max_sdu[queue]) {
+		priv->xstats.max_sdu_txq_drop[queue]++;
+		return STMMAC_XDP_CONSUMED;
+	}
+
+Should that check be removed as well so the XDP paths agree? The cited igc
+precedent checks only in igc_xmit_frame_ring() and in neither of its XDP
+paths, so matching igc would mean touching stmmac_xdp_xmit_xdpf() too.
+
+There is also a hardware side to this. An oversized frame on an EST-gated
+queue raises MTL_EST_STATUS.HLBF, and est_irq_status() in stmmac_est.c only
+counts it and clears the error register:
+
+	if (status & EST_HLBF) {
+		value = readl(est_addr + EST_FRM_SZ_ERR);
+	...
+				x->mtl_est_txq_hlbf[i]++;
+		/* Clear Interrupt */
+		writel(feqn, est_addr + EST_FRM_SZ_ERR);
+
+There is no queue flush or EST reprogramming. est_configure() programs only:
+
+	if (cfg->enable)
+		ctrl |= EST_EEST | EST_SSWL | EST_DFBS;
+
+and no DDBF (drop-on-frame-size-error) definition exists in the tree, so
+the drop-versus-retain response is left at the reset value. If the IP
+retains the frame after the doorbell was rung and cur_tx advanced, does
+dirty_tx stop advancing and xsk_tx_completed() never run for that
+descriptor, reintroducing the same ring imbalance from the hardware side?
+
+One related side effect worth mentioning in the changelog: for zero-copy
+traffic, taprio window_drops attribution moves from max_sdu_txq_drop to
+the HLBF counters reported through stmmac_tc.c.
+
+Also, in the commit message:
+
+>     The assumptions is that AF_XDP zero-copy traffic bypasses the qdisc, so
+
+"The assumptions is" should be "The assumption is".
 -- 
-2.55.0
-
+pw-bot: cr
