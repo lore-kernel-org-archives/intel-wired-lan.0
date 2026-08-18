@@ -1,99 +1,98 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB52BC5DF81
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 18 Aug 2026 18:19:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17E58C5DF81
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 18 Aug 2026 19:11:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 878E9810B7;
-	Tue, 18 Aug 2026 18:19:49 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id BAD0440912;
+	Tue, 18 Aug 2026 19:11:19 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id UvQKlFehONVe; Tue, 18 Aug 2026 18:19:47 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id JimjVRVbikGW; Tue, 18 Aug 2026 19:11:19 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7687881008
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1787077187;
-	bh=ETkdxpF0tWteog/KgiT1FsO7wpghpPcJQS69iR4Nkr4=;
-	h=Date:From:To:Cc:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1787080279;
+	bh=CmDb2knTC5ep3vyIeWqUF5fC8E/mg7myErS7a6E/tro=;
+	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=oGDZhCQdsEsUDcK74LDvs04TmHG04PFww5Xhne7T8q6dopXL/4E1HaYP8ffXK26GH
-	 lZxUf+G2wq29D/gC7+pKvt3x3dI7MvVYHTSRdgi1lW5e4CC8leTFagmSDVfDahNYbC
-	 Q78m/1jsikZ2eyQG2X0fBK3gWtV0v4cwKERFaju2cDfKwTxXD40H9xmmFcRnhqyId4
-	 CjxmqdZSEBvh68EFkjkaedOyzQQnIc36tDyTJ6l8F9uzZNQ9CZQzP9g9XXJzkoMYun
-	 XwlVyPW7OoZ5uNdFbYBJDsjP/zaCIpX91V/2hMCkns9JJJRWMwTk64MH3igWBjmlAg
-	 96lR5D6fgGY1Q==
+	b=HIa4VgYCnaWSlSbBZkOif0gkvNfAyqSajjvVFlQ9llj3C2oyVtYqF0N90/72813U1
+	 /VnlpzOz3BfIn/V1rRror9C3qbfhsF4NCHTaXq45eOdZNWuluwf6YjSFeHSsL9hjvZ
+	 uactX5dI6dg8eC8l2LYTPTSWXBNCDEXRg5kaMsAPHbygCtXSGHFCmRK5ohuN6VGJxX
+	 b22qkL7y7Gc2U/vpFi4JXTJT7EkOcMZHgzpo6tJ6QmaWLUeh00qqVsJoxpRyulJSog
+	 pSVhIgXzbuBBHcalY0HI0xtUrXNjQUP3LWWpcX1JkHaiSZieR9zJl84y79YsaikLta
+	 +6tsXwLpDkDow==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 7687881008;
-	Tue, 18 Aug 2026 18:19:47 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id B496F2FD
- for <intel-wired-lan@lists.osuosl.org>; Tue, 18 Aug 2026 18:19:45 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 10FD940919;
+	Tue, 18 Aug 2026 19:11:19 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 2CDD62FD
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 18 Aug 2026 19:11:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id B217040094
- for <intel-wired-lan@lists.osuosl.org>; Tue, 18 Aug 2026 18:19:45 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 2AB24606B3
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 18 Aug 2026 19:11:18 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ixqb1nz_T6dS for <intel-wired-lan@lists.osuosl.org>;
- Tue, 18 Aug 2026 18:19:45 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org; envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 0E6E540168
-Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=quarantine dis=none)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id nZUDuOeUvDJz for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 18 Aug 2026 19:11:17 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
+ envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
+Authentication-Results: smtp3.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0E6E540168
-Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
+Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=Sux8edeC
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 0E6E540168
- for <intel-wired-lan@lists.osuosl.org>; Tue, 18 Aug 2026 18:19:44 +0000 (UTC)
+ header.s=k20260515 header.b=bEYSULiH
+Received: from sea.source.kernel.org (sea.source.kernel.org
+ [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 69F3C60681
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 18 Aug 2026 19:11:17 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id 5A778601DE;
- Tue, 18 Aug 2026 18:19:43 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6D5101F000E9;
- Tue, 18 Aug 2026 18:19:41 +0000 (UTC)
+ by sea.source.kernel.org (Postfix) with ESMTP id 87EC0432C6;
+ Tue, 18 Aug 2026 19:11:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1A2D71F000E9;
+ Tue, 18 Aug 2026 19:11:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1787077183;
- bh=ETkdxpF0tWteog/KgiT1FsO7wpghpPcJQS69iR4Nkr4=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References;
- b=Sux8edeCFCaJcTjEbYr3gqRoxfK1jSE1/+SPmVdBg0gfzcEYZv7X8zVv+9UEiGGpT
- 3vhTFsYy4zlxy9/PdHazRIEdqv0cERm2YiN0kz1mjdr8k/Yy9CMgSQVGe2vZ99nmqE
- cIZpn4lk0O66W3g/6exvx/aQOCx+UUTj4sw9uGR7bIiONOE2c1c98oNfrmtU0Y/Yi+
- mcynAMzj1tH97qegngbomLgMtsNYL26DoBRuluoSfdf8x5GHodQUeZu7fI6YR958Uc
- WkHBjqnw5A88hJF+4GOHo7AcoXBZS8mdA39P7lYnSn/qKNQq4n0n/WXIikyAqZ3f3p
- h5ey7nS4LrDqA==
-Date: Tue, 18 Aug 2026 11:19:40 -0700
-From: Jakub Kicinski <kuba@kernel.org>
-To: Stanislav Fomichev <sdf.kernel@gmail.com>
-Cc: netdev@vger.kernel.org, davem@davemloft.net, edumazet@google.com,
- pabeni@redhat.com, anthony.l.nguyen@intel.com,
- przemyslaw.kitszel@intel.com, andrew+netdev@lunn.ch, saeedm@nvidia.com,
- tariqt@nvidia.com, mbloch@nvidia.com, maxime.chevallier@bootlin.com,
- mcoquelin.stm32@gmail.com, alexandre.torgue@foss.st.com,
- aleksander.lobakin@intel.com, horms@kernel.org, magnus.karlsson@intel.com,
- maciej.fijalkowski@intel.com, sdf@fomichev.me, ast@kernel.org,
- daniel@iogearbox.net, hawk@kernel.org, john.fastabend@gmail.com,
- witu@nvidia.com, martin.lau@kernel.org, yoong.siang.song@intel.com,
- rohan.g.thomas@intel.com, intel-wired-lan@lists.osuosl.org,
- linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org,
- linux-stm32@st-md-mailman.stormreply.com,
- linux-arm-kernel@lists.infradead.org, bpf@vger.kernel.org, leon@kernel.org
-Message-ID: <20260818111940.2e280a6b@kernel.org>
-In-Reply-To: <aoSOau3NuHTLLxnL@devvm7509.cco0.facebook.com>
-References: <20260813190800.222527-4-sdf@fomichev.me>
- <20260818162442.3980697-1-kuba@kernel.org>
- <aoSOau3NuHTLLxnL@devvm7509.cco0.facebook.com>
+ s=k20260515; t=1787080276;
+ bh=CmDb2knTC5ep3vyIeWqUF5fC8E/mg7myErS7a6E/tro=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To;
+ b=bEYSULiHf53V5M8lq8g7q/X7gZF0Rh2tfPI0cMdJaehcgnl0VyPFKdp6XTVsB60/+
+ UVcLxGcgduQEfoUvr4GivaGnKi9zyOm7YrrBbEbmHH7WXiJsB7v7l46sFnvUkgCQvn
+ WchgPw1Oa2lcsmUh+dfloMDV5+3ZQZMzuxMVzQm1Lf65L9liNZ1eKLSbpRYbJVx3og
+ LlvxCyB6qGz5+7p9xLhEQFeLADaFHsytYZ9XmZ6o9Hew5QPUJrpFNoFA+tzp+kdd9C
+ HdPpfP0aOlux2fS1Ftrt/946ENJnwr3ShKCcs3UsfEcV+W7c4SCZG5rOXBzgQYsRCx
+ 4jybb0ElmZ3DA==
+Date: Tue, 18 Aug 2026 20:11:10 +0100
+From: Simon Horman <horms@kernel.org>
+To: Pengpeng Hou <pengpeng@iscas.ac.cn>
+Cc: anthony.l.nguyen@intel.com, Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Jedrzej Jagielski <jedrzej.jagielski@intel.com>,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ Richard Cochran <richardcochran@gmail.com>,
+ Jacob Keller <jacob.e.keller@intel.com>,
+ Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>,
+ Karol Kolacinski <karol.kolacinski@intel.com>,
+ Sergey Temerkhanov <sergey.temerkhanov@intel.com>,
+ Michal Michalik <michal.michalik@intel.com>,
+ intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Message-ID: <20260818191110.GK265046@horms.kernel.org>
+References: <20260815135700.54202-1-pengpeng@iscas.ac.cn>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Subject: Re: [Intel-wired-lan] [PATCH net v2 3/3] net: stmmac: skip
- queueMaxSDU check for AF_XDP
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260815135700.54202-1-pengpeng@iscas.ac.cn>
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net v3] ice: propagate ETH56G
+ deskew poll failures
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -109,29 +108,31 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Tue, 18 Aug 2026 10:03:16 -0700 Stanislav Fomichev wrote:
-> > Was completing the reserved descriptor considered instead of removing the
-> > check, i.e. keeping the length test and doing:
-> > 
-> > 	if (priv->est && priv->est->enable &&
-> > 	    priv->est->max_sdu[queue] &&
-> > 	    xdp_desc.len > priv->est->max_sdu[queue]) {
-> > 		priv->xstats.max_sdu_txq_drop[queue]++;
-> > 		xsk_tx_completed(pool, 1);
-> > 		continue;
-> > 	}
-> > 
-> > That would fix the ring accounting without dropping the enforcement.  
+On Sat, Aug 15, 2026 at 09:57:00PM +0800, Pengpeng Hou wrote:
+> ice_ptp_calc_deskew_eth56g() ignores the return value of
+> read_poll_timeout(). If register reads succeed but the DESKEW valid bit
+> never appears, the timeout is treated as success. If a register read fails,
+> the poll condition can also inspect deskew_i before a successful read and
+> continue polling instead of stopping on the hard error. The function then
+> returns an int error through its u32 deskew return type.
 > 
-> Don't think this suggestion would work. xsk_tx_completed(1) will complete
-> the first queued entry, no the current rejected one (completions are in order).
+> Return the deskew value through an output parameter. Stop polling when
+> either the read fails or the valid bit appears, then propagate the register
+> error or the poll timeout separately before calculating and applying the
+> deskew value.
 > 
-> If it's not convincing, I can repost only patches 1 and 2. Or if it sounds
-> reasonable, can try to explain that part in the description.
+> Fixes: 7cab44f1c35f ("ice: Introduce ETH56G PHY model for E825C products")
+> 
+> Assisted-by: Codex:gpt-5
+> Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
+> ---
+> Changes since v2: https://lore.kernel.org/all/20260706144325.91320-1-pengpeng@iscas.ac.cn/
+> - capture and propagate the read_poll_timeout() result
+> - stop the poll immediately on a register read error
+> - initialize deskew_i before it is used by the poll condition
+> - do not carry the v2 Reviewed-by because the poll logic changed
 
-Hm, I see. No strong preference but I'd probably just add a comment
-above the checks saying that we are leaking there semi-intentionally
-because it's an application error to send packets HW/schedule can't
-handle. We expect user to fix their app. IOW if we can't handle this
-well I think it's better to wedge the SW and bump the drop counter
-for visibility, than risk HW silently misbehaving.
+Thanks for the update.
+
+Reviewed-by: Simon Horman <horms@kernel.org>
+
