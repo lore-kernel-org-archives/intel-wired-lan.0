@@ -4,95 +4,140 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DBA53C5DF7D
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 18 Aug 2026 16:24:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 23D69C5DF86
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 18 Aug 2026 17:03:59 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 9D186408AF;
-	Tue, 18 Aug 2026 16:24:48 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id D7DE7408B0;
+	Tue, 18 Aug 2026 17:03:58 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id pdkiMuVKGXG5; Tue, 18 Aug 2026 16:24:47 +0000 (UTC)
+ id RiPjNYv7Vc4u; Tue, 18 Aug 2026 17:03:58 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D2E18408AB
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 12738408BD
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1787070287;
-	bh=lAH3pJNXPJ/mpBu0kcIh+xNKTmt6P69p829a8VtOvMM=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1787072638;
+	bh=LARP5bmG64wd0GpLVR0nEMY/+zhPU+0Nmo0aQ8UdxmY=;
+	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=b8PRCe44x0VsBATctra8WsF2QImyd1ojEB+ETbj6oag4qgAmOldeBzOM+60RNhAmZ
-	 zhtbs0cNNbzXn1SNuH2pseRAHy6Z7wxNlXt91+8+LK5jrSGXUpMkciQneBI1HtSDhi
-	 pYOpjj0W5NPD6UZoUmuBrSmki95HACJc14TkOeALXx8qjQa9zCGhTgOZWbcMlst7tM
-	 NXiUBJfUzo67YEVUwZpU+AcOCdH1Vh0jYFmLJaAdDoaBsvhvYmj61+iusb1zOxF6Be
-	 dlGDb748hO1DWw4zeM5Y/ziS+Eh5eGrzu95Jjm/ikTEmX9mniBzp7Q4Z4jtw1GX+3c
-	 EGmePb6uFMC+w==
+	b=RL+YLiXU8v0FcFSIPeKaSWwTy5OZhM46XMyMVyqlBSPUw6GWP7GGp7/eAC0xZOZZE
+	 gPpHYPCh6wgcfu+tZNFk8x4NCIW5qgPi9kkNXFMOI7mYPtCiLB+Pg8Jh+eUYfAMGUp
+	 fdCQU3dA91mZC6YReuHMq1kY4xRg9PxXX0tIxC1k83UGU3Af1oJTGASHYa0dQb0ynT
+	 ef0jOREIIIdX1roP1B4y4x2MKs9cj2we7x7xIvKwlLRvr3/jy+CioWrXMHTFSRy9jq
+	 h2rnPPipmOKcYf+l8leRxWp2ZQOyhQSAp+MOxqzh/omI58Y+mSPBRxd4lfcE20ZhRV
+	 5NUouVJIELuAg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D2E18408AB;
-	Tue, 18 Aug 2026 16:24:47 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 941C72B2
- for <intel-wired-lan@lists.osuosl.org>; Tue, 18 Aug 2026 16:24:46 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 12738408BD;
+	Tue, 18 Aug 2026 17:03:58 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 0E02329B
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 18 Aug 2026 17:03:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 7A6B7608D5
- for <intel-wired-lan@lists.osuosl.org>; Tue, 18 Aug 2026 16:24:46 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id F3D5D408AC
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 18 Aug 2026 17:03:56 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 1qmYZPEs0SNI for <intel-wired-lan@lists.osuosl.org>;
- Tue, 18 Aug 2026 16:24:45 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
- helo=sea.source.kernel.org; envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org B066960832
-Authentication-Results: smtp3.osuosl.org; dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B066960832
-Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=Bvv2WUii
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
- by smtp3.osuosl.org (Postfix) with ESMTPS id B066960832
- for <intel-wired-lan@lists.osuosl.org>; Tue, 18 Aug 2026 16:24:45 +0000 (UTC)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by sea.source.kernel.org (Postfix) with ESMTP id E671243224;
- Tue, 18 Aug 2026 16:24:44 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 333431F000E9;
- Tue, 18 Aug 2026 16:24:43 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1787070284;
- bh=lAH3pJNXPJ/mpBu0kcIh+xNKTmt6P69p829a8VtOvMM=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References;
- b=Bvv2WUii6kPGfFMnUBHavzMRt6MiX+8jYJeKt3gdN0E+jnY/489pqoEyEbCGlX9w5
- 5PAmXWAcMQkPsTolXP1HaWwia1K0FQBRUaL2zyDeuowiqCQHMYYFGycASzWRV3xKYk
- iSgPOhSmT4uD1Eww8lr5NT0f+n1Bw6eUbkYcZ/ZdWJwqKtCI0XKCXgPQ3+J/LDCfGf
- KR1T5pQ8n1Rx6bAxoutfWwv/SOABcXWAzozbgyDI6dKUXhE3q+E2HGqNcxs5JUjzpR
- u4u0pPlGpLvb0b4PP5FDsXwYFZ+pPDndH6iJj+mAxYzAdrgYg2M+6wGTp6lvyJy7y/
- TOPlVERvk3/eg==
-From: Jakub Kicinski <kuba@kernel.org>
-To: sdf.kernel@gmail.com
-Cc: Jakub Kicinski <kuba@kernel.org>, netdev@vger.kernel.org,
- davem@davemloft.net, edumazet@google.com, pabeni@redhat.com,
- anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
- andrew+netdev@lunn.ch, saeedm@nvidia.com, tariqt@nvidia.com,
- mbloch@nvidia.com, maxime.chevallier@bootlin.com,
- mcoquelin.stm32@gmail.com, alexandre.torgue@foss.st.com,
- aleksander.lobakin@intel.com, horms@kernel.org, magnus.karlsson@intel.com,
- maciej.fijalkowski@intel.com, sdf@fomichev.me, ast@kernel.org,
- daniel@iogearbox.net, hawk@kernel.org, john.fastabend@gmail.com,
- witu@nvidia.com, martin.lau@kernel.org, yoong.siang.song@intel.com,
- rohan.g.thomas@intel.com, intel-wired-lan@lists.osuosl.org,
- linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org,
- linux-stm32@st-md-mailman.stormreply.com,
- linux-arm-kernel@lists.infradead.org, bpf@vger.kernel.org, leon@kernel.org
-Date: Tue, 18 Aug 2026 09:24:42 -0700
-Message-ID: <20260818162442.3980697-1-kuba@kernel.org>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260813190800.222527-4-sdf@fomichev.me>
-References: <20260813190800.222527-4-sdf@fomichev.me>
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id gJix19UQ3vom for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 18 Aug 2026 17:03:56 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
+ envelope-from=sdf.kernel@gmail.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 3AB5F40892
+Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3AB5F40892
+Authentication-Results: smtp4.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20251104 header.b=psgQHUfS
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
+ [IPv6:2607:f8b0:4864:20::541])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 3AB5F40892
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 18 Aug 2026 17:03:56 +0000 (UTC)
+Received: by mail-pg1-x541.google.com with SMTP id
+ 41be03b00d2f7-ca80d708489so1004302a12.1
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 18 Aug 2026 10:03:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20251104; t=1787072635; x=1787677435; darn=lists.osuosl.org;
+ h=in-reply-to:content-disposition:content-type:mime-version
+ :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+ :date:message-id:reply-to:content-type;
+ bh=LARP5bmG64wd0GpLVR0nEMY/+zhPU+0Nmo0aQ8UdxmY=;
+ b=psgQHUfS72oB3noa7cFF7ebS0uxyu1FZNGdquGRNjwlEUAu+19nwkZNUIh9U9DU+rY
+ Iji0t4QyfMoiYFU3THSADqblWjV2wJjj85yiLiRZQhFmRRI8zbLY1HmlVYvehFJ+pe38
+ anraknlCC+9sXi0pxSk7qLavoyxeDhq1kUy2pQhQz+RtfTlhT8ZZO1+W2jwGloj5A24B
+ otihLS0luhZeba+n7uAxIvMG3H21M3nKHaZXiF7uFvYYSvY416RdPog9hA8FT41OLQnj
+ WtevnC5msES4vGw9x9wcwJiCGkvb8tgNS+KL6wgDMko3E+0UqUcCV8LIhbMXgksAs2SQ
+ hgjg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20251104; t=1787072635; x=1787677435;
+ h=in-reply-to:content-disposition:content-type:mime-version
+ :references:message-id:subject:cc:to:from:date:x-gm-gg
+ :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+ :content-type;
+ bh=LARP5bmG64wd0GpLVR0nEMY/+zhPU+0Nmo0aQ8UdxmY=;
+ b=PVBwqCdTDuQYkmwH84zXZX9patj9O6avqH0zLXrDmnq7cdjYqikk/NRw0Qijlqn9SZ
+ 9uGxyjxMRcAuvVG+AEVYYXe+lR6q0KO0GWp2bRy5JJPHIliq1zouCVKmjFE9Bu6Z9xyE
+ 6IBZTOO5d1pOVQERuGPqzPLrqDcS9ksU5dDnq71rENWKADHQJ9TFEYligFtkjwlMrxlg
+ 12EeVDtY9zzhnvdb7aGaFdquE8NHLUvNA2sHEdfpWQbzpxvwnt5K3PCduCdYXppo2f5S
+ 57LMO2BTno7noqtl7OBKtwiYfDyevfzklLzwl9Z3XHJpuFUPGXMeL0SzDCKHsqgCkNaY
+ HTPw==
+X-Forwarded-Encrypted: i=1;
+ AHgh+RpmgAnnAQ/1h4kUw+3YycLn9xIkXWLWnSvCkFrMNo7NQ3dH20XraNybLa4tbavxyi95sjcpKnbXrPNvf8I1RFo=@lists.osuosl.org
+X-Gm-Message-State: AOJu0Yz9oNLb+xJ0sA5izarkEIEExIdCveLmse21nfZei+DvjGsAgJ3o
+ BUs8xvAxmnI/pKiOnW7YmULYDaZAw8qL5XZFQrJweUbUC1MjeJVlABFn
+X-Gm-Gg: AR+sD12C5lFs0/28E96fLErcmCQKhGKMXoUyTQqc1vq1SjGYTKRlxAutDKH1ZGDZTGF
+ q9A2HTP+OWcXDVSSCRFiU/m5EueWZV5Ssb0U+Phx5LSQI1Ij+DWu5m0+8jOPnH3Gn5Ja/cwMnJd
+ 0/pp2MS2lYgbI4HxNJHOCpdJ5q6tWHw+BsAGmnzv5g6o3QgiMy5tyKQEZloNmRU34zBw6oaOyfj
+ VC6S9HGe7I5yvbRrpsGmIjVrYBgrcw6O9KgLW+mDaC3NY9x5pgG5hpdnrrV4jEfw8FPFiWIk2T/
+ 4H91EJUm/G5fWvHq1YrlqUT6yQjKrq6VClZGoDB7L53YLoptsLJaWh+gSHRsyOCNyEBsm158sWW
+ R2AWyxjU69saQ1gW9qc1R0MS8aDDOZJVXfC/a9lqwyjLCKKUspIdQQtJCRBB1D97NvVYEAbf2IF
+ r0JGruYiop2JakBkHHEgdGRqT3qFSsxHIVrKhOfLlksUr5nYgHrFXtj03ktePhFojs
+X-Received: by 2002:a05:6a20:2446:b0:39b:bc11:9ec5 with SMTP id
+ adf61e73a8af0-3ccded40c3emr7581611637.13.1787072635279; 
+ Tue, 18 Aug 2026 10:03:55 -0700 (PDT)
+Received: from localhost ([2a03:2880:2ff:56::])
+ by smtp.gmail.com with ESMTPSA id
+ 41be03b00d2f7-cc13c0445c6sm2311742a12.32.2026.08.18.10.03.54
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 18 Aug 2026 10:03:54 -0700 (PDT)
+Date: Tue, 18 Aug 2026 10:03:38 -0700
+From: Stanislav Fomichev <sdf.kernel@gmail.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Netdev <netdev@vger.kernel.org>, 
+ "David S . Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
+ Anthony L Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
+ andrew+netdev@lunn.ch, Saeed Mahameed <saeedm@nvidia.com>, 
+ Tariq Toukan <tariqt@nvidia.com>, Mark Bloch <mbloch@nvidia.com>, 
+ Maxime Chevallier <maxime.chevallier@bootlin.com>,
+ Maxime Coquelin <mcoquelin.stm32@gmail.com>, 
+ Alexandre Torgue <alexandre.torgue@foss.st.com>,
+ Alexander Lobakin <aleksander.lobakin@intel.com>, 
+ Simon Horman <horms@kernel.org>, magnus.karlsson@intel.com, 
+ Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
+ Stanislav Fomichev <sdf@fomichev.me>, 
+ Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
+ Jesper Dangaard Brouer <hawk@kernel.org>,
+ John Fastabend <john.fastabend@gmail.com>, witu@nvidia.com, 
+ Martin KaFai Lau <martin.lau@kernel.org>, yoong.siang.song@intel.com,
+ rohan.g.thomas@intel.com, 
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
+ linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org, 
+ linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org,
+ bpf@vger.kernel.org, Leon Romanovsky <leon@kernel.org>
+Message-ID: <aoSQWPGrYEBfZUnP@devvm7509.cco0.facebook.com>
+References: <20260813190800.222527-1-sdf@fomichev.me>
+ <20260813190800.222527-2-sdf@fomichev.me>
+ <06f8153d-2156-4e7d-9d49-006db4b2cec4@app.fastmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Subject: Re: [Intel-wired-lan] [PATCH net v2 3/3] net: stmmac: skip
- queueMaxSDU check for AF_XDP
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <06f8153d-2156-4e7d-9d49-006db4b2cec4@app.fastmail.com>
+Subject: Re: [Intel-wired-lan] [PATCH net v2 1/3] xsk: align TX metadata
+ layout across ABIs
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -108,115 +153,38 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-This is an AI-generated review of your patch. The human sending this
-email has considered the AI review valid, or at least plausible.
----
-net: stmmac: skip queueMaxSDU check for AF_XDP
+On 08/17, Arnd Bergmann wrote:
+> On Thu, Aug 13, 2026, at 21:07, Stanislav Fomichev wrote:
+> > Add explicit padding before launch_time so xsk_tx_metadata has the same
+> > layout on 32-bit and 64-bit systems.
+> >
+> > On i386 and m68k, the old native 32-bit layout put launch_time at offset 12
+> > and had a natural size of 20 bytes. Using sizeof(struct xsk_tx_metadata) as
+> > tx_metadata_len was already rejected because the length must be a multiple
+> > of eight, so the straightforward use of the interface was broken on those
+> > ABIs. Userspace could still register a padded length of 24 bytes, though;
+> > mixing the old and new layouts then silently reads launch_time from the
+> > wrong offset and misprograms packet launch times. This intentionally
+> > replaces that incompatible layout while the interface is still new.
+> >
+> > Fixes: ca4419f15abd ("xsk: Add launch time hardware offload support to 
+> > XDP Tx metadata")
+> > Signed-off-by: Stanislav Fomichev <sdf@fomichev.me>
+> 
+> This is probably the right approach, given lack of alternatives.
+> In the changelog text, it may be worth noting a few more points:
+> 
+> - A few additional architectures have the same issue: csky,
+>   nios2, openrisc and sh.
+> - the commit that introduced the mistake was part of linux-6.15,
+>   so the 6.18-lts release also needs an ABI change. I don't
+>   think the "while the interface is still new" wording
+>   makes sense here.
+> - what actually saves us here is that none of the affected
+>   architectures are likely to have notable use cases for
+>   xdp that would care about the ABI break.
+>   The one that is most likely to have affected users
+>   is x86-compat, and that is also the only one that is
+>   broken right now.
 
-This drops the per-queue max SDU length check from the stmmac AF_XDP
-zero-copy transmit path, on the grounds that xsk_tx_peek_desc() has
-already reserved a completion ring entry and the old "continue" skipped
-both queuing and completion. The change is tagged for stable via a Fixes:
-tag on c5c3e1bfc9e0.
-
-> diff --git a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
-> index 62de03e65a90c..4a82f4351303a 100644
-> --- a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
-> +++ b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
-> @@ -2710,13 +2710,6 @@ static bool stmmac_xdp_xmit_zc(struct stmmac_priv *priv, u32 queue, u32 budget)
->  		if (!xsk_tx_peek_desc(pool, &xdp_desc))
->  			break;
->  
-> -		if (priv->est && priv->est->enable &&
-> -		    priv->est->max_sdu[queue] &&
-> -		    xdp_desc.len > priv->est->max_sdu[queue]) {
-> -			priv->xstats.max_sdu_txq_drop[queue]++;
-> -			continue;
-> -		}
-> -
-
-[Severity: Medium]
-The completion ring imbalance described in the commit message looks real:
-xsk_tx_peek_desc() reserves the cq slot with xskq_prod_reserve_addr() and
-only xsk_tx_completed() submits it, so the old "continue" left the cq
-producer permanently offset.
-
-Was completing the reserved descriptor considered instead of removing the
-check, i.e. keeping the length test and doing:
-
-	if (priv->est && priv->est->enable &&
-	    priv->est->max_sdu[queue] &&
-	    xdp_desc.len > priv->est->max_sdu[queue]) {
-		priv->xstats.max_sdu_txq_drop[queue]++;
-		xsk_tx_completed(pool, 1);
-		continue;
-	}
-
-That would fix the ring accounting without dropping the enforcement.
-
-On stmmac, queueMaxSDU has no hardware table. priv->est->max_sdu[] is
-written only by tc_taprio_map_maxsdu_txq() in stmmac_tc.c:
-
-		for (j = offset; j < offset + count; j++)
-			priv->est->max_sdu[j] = qopt->max_sdu[i] + ETH_HLEN - ETH_TLEN;
-
-and read only by the length checks in stmmac_main.c. With this hunk gone,
-does an AF_XDP zero-copy socket now transmit frames above the configured
-per-queue limit while tc_query_caps() still reports:
-
-		caps->gate_mask_per_txq = true;
-		caps->supports_queue_max_sdu = true;
-
-That capability is what taprio uses to accept a queueMaxSDU configuration
-in the first place, and sch_taprio comments in
-taprio_skb_exceeds_queue_max_sdu() that "Devices with full offload are
-expected to honor this in hardware".
-
-The "bypasses the qdisc" rationale also applies to stmmac_xdp_xmit_xdpf(),
-which serves XDP_TX and ndo_xdp_xmit and does not traverse the qdisc
-either, yet still enforces the same limit:
-
-	if (priv->est && priv->est->enable &&
-	    priv->est->max_sdu[queue] &&
-	    xdpf->len > priv->est->max_sdu[queue]) {
-		priv->xstats.max_sdu_txq_drop[queue]++;
-		return STMMAC_XDP_CONSUMED;
-	}
-
-Should that check be removed as well so the XDP paths agree? The cited igc
-precedent checks only in igc_xmit_frame_ring() and in neither of its XDP
-paths, so matching igc would mean touching stmmac_xdp_xmit_xdpf() too.
-
-There is also a hardware side to this. An oversized frame on an EST-gated
-queue raises MTL_EST_STATUS.HLBF, and est_irq_status() in stmmac_est.c only
-counts it and clears the error register:
-
-	if (status & EST_HLBF) {
-		value = readl(est_addr + EST_FRM_SZ_ERR);
-	...
-				x->mtl_est_txq_hlbf[i]++;
-		/* Clear Interrupt */
-		writel(feqn, est_addr + EST_FRM_SZ_ERR);
-
-There is no queue flush or EST reprogramming. est_configure() programs only:
-
-	if (cfg->enable)
-		ctrl |= EST_EEST | EST_SSWL | EST_DFBS;
-
-and no DDBF (drop-on-frame-size-error) definition exists in the tree, so
-the drop-versus-retain response is left at the reset value. If the IP
-retains the frame after the doorbell was rung and cur_tx advanced, does
-dirty_tx stop advancing and xsk_tx_completed() never run for that
-descriptor, reintroducing the same ring imbalance from the hardware side?
-
-One related side effect worth mentioning in the changelog: for zero-copy
-traffic, taprio window_drops attribution moves from max_sdu_txq_drop to
-the HLBF counters reported through stmmac_tc.c.
-
-Also, in the commit message:
-
->     The assumptions is that AF_XDP zero-copy traffic bypasses the qdisc, so
-
-"The assumptions is" should be "The assumption is".
--- 
-pw-bot: cr
+Will try to add that to the commit description, thanks!
