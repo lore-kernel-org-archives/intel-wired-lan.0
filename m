@@ -1,103 +1,103 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C64CC5DF8A
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C7522C5DF85
 	for <intel-wired-lan@archiver.kernel.org>; Wed, 19 Aug 2026 16:05:47 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 45CB960745;
+	by smtp1.osuosl.org (Postfix) with ESMTP id 6544D80BE6;
 	Wed, 19 Aug 2026 16:05:47 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id OEibZtBoPItD; Wed, 19 Aug 2026 16:05:46 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id UZC6c_P_pe-Q; Wed, 19 Aug 2026 16:05:45 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1787155546;
-	bh=CKdPBJAuwbKNHRSj/o9wx9GTRe/KKjDR+X94RAURNcg=;
+	s=default; t=1787155545;
+	bh=knHPZ2hqDlF6r7lICpyiSankCSnQUl1ZecmnK0yjr1w=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=FMaIu5SyhcqkjLqeW/TotGIKHjWMnvJ7KzFmbIsqX9KjsC+ReoPPaavZDGHa1eH/y
-	 adEkT7catIBYCr2mIOR2Tv2Y2ojuwp0dHhGewqPu2z4NhTbiOO9GDSTK4OhuDYRQE5
-	 zCFu+d8k79SeFkdx9qiAgdJWn7nl0lCY75NHNVn/oHcZ9dz6m5tod8RFDRL+kIzcgW
-	 HBcxYz0gIoPwwgjZ6ldAcfH91/AtlOEA1ZYnRSoIHxFYt1Xl7rZy+eUX40mgktkRS2
-	 D9V3LtEtS9KGF8AA1AX2FneYQfEymDCyDb3+8eOhVY/KiGBxlQen8ErKB6aMvJiZQz
-	 MunyMyiaCmDTw==
+	b=d4RxKYQ+ZUo8sgfT0hIUe4dte5PHafrM/g+HOLzh2gJhTBKJPlriQN0zskD5Y4nzi
+	 BdFK5RLt4LRtl7Tv2s1V2unutosRz+J3KaSgwA+ZBEJeV3faFVRnkfnlNLoKI/EQhB
+	 0g1CVXXhaFBNP+gA6DRGEJJl5Z8o7+gyhepbalchVm5uyRDB9SGjUyrHWsnQERqFtf
+	 Ze+FswkrJA3mVR+qx6PhpOMAPEfcrfn4H3QuYjLwhj6r0Y/OVXi/84fiq+6Kzytacv
+	 r3hBfP+67qgKwbAF7Iiok0x8f8rvs3R3+bnUnepSJi96O3l7EOBPY2K7Bt6H+HV3pa
+	 84CbaOT+vJhOA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 0333C6072F;
-	Wed, 19 Aug 2026 16:05:46 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id EC5941EA4
+	by smtp1.osuosl.org (Postfix) with ESMTP id 6A5F280B0A;
+	Wed, 19 Aug 2026 16:05:45 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 80249265
  for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Aug 2026 16:05:42 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id D1A7A405CD
+ by smtp2.osuosl.org (Postfix) with ESMTP id 66BF4400A2
  for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Aug 2026 16:05:42 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id utrGLVM1f0bY for <intel-wired-lan@lists.osuosl.org>;
- Wed, 19 Aug 2026 16:05:42 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2607:f8b0:4864:39::4;
- helo=mail-pj2-x04.google.com; envelope-from=sdf.kernel@gmail.com;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id llXwq5CrNGBB for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 19 Aug 2026 16:05:41 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2607:f8b0:4864:3b::1;
+ helo=mail-pz2-x01.google.com; envelope-from=sdf.kernel@gmail.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org;
+Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp4.osuosl.org;
+Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20251104 header.b=hGhfT78a
-Received: from mail-pj2-x04.google.com (mail-pj2-x04.google.com
- [IPv6:2607:f8b0:4864:39::4])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 32CF0405C5
- for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Aug 2026 16:05:41 +0000 (UTC)
-Received: by mail-pj2-x04.google.com with SMTP id
- d9443c01a7336-2cac634f921so3655325ad.0
- for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Aug 2026 09:05:41 -0700 (PDT)
+ header.a=rsa-sha256 header.s=20251104 header.b=lof10GN9
+Received: from mail-pz2-x01.google.com (mail-pz2-x01.google.com
+ [IPv6:2607:f8b0:4864:3b::1])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 8D63D4008B
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Aug 2026 16:05:40 +0000 (UTC)
+Received: by mail-pz2-x01.google.com with SMTP id
+ 41be03b00d2f7-cbb8ebaca74so480381a12.1
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Aug 2026 09:05:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20251104; t=1787155541; x=1787760341; darn=lists.osuosl.org;
+ d=gmail.com; s=20251104; t=1787155540; x=1787760340; darn=lists.osuosl.org;
  h=content-transfer-encoding:mime-version:references:in-reply-to
  :message-id:date:subject:cc:to:from:from:to:cc:subject:date
  :message-id:reply-to:content-type;
- bh=CKdPBJAuwbKNHRSj/o9wx9GTRe/KKjDR+X94RAURNcg=;
- b=hGhfT78arBibpJVnw513mjBLyidqlopvuPadmMytgzM6Wy19aTNGYIBZMaIBa6FW/y
- HBMTgTX1xmj7H9QU9YxdAJGSCWO9Q/+LsiX0J2DuipdnvGTgIlWOI03Fa+X9JkpAWC+Z
- AEO9yt4QpaF4ljNdXUc1ekLG9sTjvb6Ki3obCdWQt9DCwOGs/CZdYfyP9FIgN3bXMh5s
- CsWXe+yr6IWyD5YupgqAVU24cXYCGwBGahMbtF8aTJ2FVje4jsbtXUKETIPEU96WA5UN
- b7KEjpgk0gHb9gz9aWu9lwukdwg23ZzmnppMrOcm7dMoVMy2edH9aRfdQIMFm+AUQYcn
- PMog==
+ bh=knHPZ2hqDlF6r7lICpyiSankCSnQUl1ZecmnK0yjr1w=;
+ b=lof10GN96HanO5dWkfL0cIWwvUwfKjVj9C2xfTi7fY0FpMzXYrrfS/EaRGHyMtWT6I
+ QkmtDrKgXFiHtslAEWow3BTyK9alsdo/2fL0ZmcKcRC6aZ4um06fqW384hAvkcnJktY0
+ KxpegttiJXQyJrcApzS50/MkPui+U6W1cLR0S25ZP3d9OIGiFUc5pwKvydYUapBAbhY2
+ 403OEWf8jpAAd0EpVHn0G7U60ZqOHRRyLjdcDQ98+q9MkQ63/Upljq6omj/QTv5dcugY
+ pS47mB6vAteFkAgxwYbppB58UrO0fmyvKK0Uh89kg3oDrsGg7oYF42R2iwG82IWo0Xde
+ iWzQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1787155541; x=1787760341;
+ d=1e100.net; s=20251104; t=1787155540; x=1787760340;
  h=content-transfer-encoding:mime-version:references:in-reply-to
  :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
  :to:cc:subject:date:message-id:reply-to:content-type;
- bh=CKdPBJAuwbKNHRSj/o9wx9GTRe/KKjDR+X94RAURNcg=;
- b=KyCZ+I9ttlnSLxvWBSkf57CYkdUVq71WX9DjRNKgByaI8XEChumWlqYVxiFKfTVNun
- 1bKZF9fHFXFPVx7iyJadeACG7cQ9EqzTdK8+DlvF550rUml4Hp1AsfXTFTiuByUosj4E
- +rproCG7rKJiAyrbe1xHfZZp2u3wlJJ1oUkW+mIp4gZXjg6Ye+E6mpA141SNeAlHFoKt
- Vb2/LXv8x/d8JJ2ulyPy2iN/dAOkpYlKZ0UGAWFKOkT5v4uJkPXLOhSLBQRWlabLzTPA
- na9tn5jJ/v4GcXo5RwGdPm0Bc1LDpkpV66cmuH978R2uemKGH5kO3ScLQIy5YgoAtIXS
- neAQ==
+ bh=knHPZ2hqDlF6r7lICpyiSankCSnQUl1ZecmnK0yjr1w=;
+ b=CRRJE5MxSOkta7JOuDxAMxgF9HT91g/rDXf1/sEQaQVB2ADHUSF4xrlf7eD7IUKZIB
+ Zmd1q8SHg5y+gzdcNS68KOdUb2RT+f9H9vIpxaYlIwUXUtOF7vLUjj9faRfKi7g9yam2
+ ru6k9dYdq5p4WrU+VIqx+9RS1j69pNieOt1TzcTmyXEUhZmobMVxJO8a88cr1i70qCwT
+ inC3CPdrMVm/WtJJefSW/czEWvvP/JHBwKM408DNUsmyXDWu695OcvrBierXSRBPvJe5
+ srwT9fa6jCHKnK6GDEG0wq+t5se7BfweeYb0sP9WGeCXm5/c7JZ/L17BHVSzSpaGlLPT
+ w7iQ==
 X-Forwarded-Encrypted: i=1;
- AHgh+Ro5O6Kl7MgCrL6xKTegU9f44KhWzh2YjGL992OSs/w+s3Tr1DCLz61+riiuIERsT9MuRYJn95JUiAf4uUOeh5g=@lists.osuosl.org
-X-Gm-Message-State: AFuF++me0/35Z4SUwxBGS8QRn+1Gpz7oeYVCdURHgLmEKf5ld5lkDznA
- j5bQ1I3lRWGoXR2IQMzFRDbtGVdQy1ay9qZNJHRciyGo2v6Gj40PX4g6
-X-Gm-Gg: AR+sD11K0XGJEF7lGA2MPVWRxutMY2Qx9HO6FPnBMNi0QeFerh1NT1P8eb4+fegMGxG
- ikDcDoeAaYZHAkb9NKIDt9Xmp/taEV5YwNgQ2srEipxEZZUV8+w7jSnS5yonJEO0zm36f9AFDqj
- qJCjtY8zn2wnTo5H8+/d2Ol2J3nUunks5dbfGONQIxyI30dE2wwmMRLGKhnHA9NxkuY5naEhSTW
- /R5vxlBsR4fREg0Lheof1YgojBuxpO8qC7lNhPNYNk3M8kHigYyASwWYe1w4QCtR5H8hqkcaz69
- JEATrFVzCzQr4nFVqGvgmzoga2VS7lchXNSCOeqM5iy2kuMZNhJuRUxfEp/19Hdv38u1nKK5OSu
- vYZMeZz4QaH58H2rmxua3pomI1C3JAD3I8dQg4bzbXGHNaiGCl1tW6nOwfQ3qocXSJ3PVlYUsQx
- 9rWXWkqS3Zc3VIWceiJDx1RY+shk80wRT1j08/u5oTwOqEneQKujzZDY0CghkwFbbe
-X-Received: by 2002:a17:90b:3fc4:b0:38e:11ba:992c with SMTP id
- 98e67ed59e1d1-3958110c755mr10914058a91.12.1787155541199; 
- Wed, 19 Aug 2026 09:05:41 -0700 (PDT)
-Received: from localhost ([2a03:2880:2ff:4f::])
- by smtp.gmail.com with ESMTPSA id
- 98e67ed59e1d1-3957fb17eb5sm3740911a91.3.2026.08.19.09.05.40
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ AHgh+RrXmO2WMI+EpINuL803toH+JFPUDpMuzGoQL0Ocpy8p6VwCc/MRxk6nnDoq9zpm0Kk5lj3Mh2hSeg335LgAb/g=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YwEOzYYcYR18I3g9Yb4/b4yYiNmAnGxMYMzjDnLB2guxSujeurQ
+ FSQSy7XMnV+zFxkje+KTz5f6lqQ3zNhqGZy90i/j04cXh0qXfUce6nnC
+X-Gm-Gg: AR+sD11ydu3++Akvs2k+HXZvpqVyzEh3iJrYWWxEjhcoEYc7VK7ayREFbwyMyIMmC+Z
+ 2xXqkb9fHggLA6Tq5/DGdVKNozirLMPyK+KviVFFLD/BtUl4KrYjfGSIhNglUDhghIvaKz52TVr
+ uUZ8BUdDF9RdJKX4wClYgigwrR2UWAcJH7tcMU/L9GXOVyTb3AY6o2nzzzzBtNS4ZWoBWb96uZy
+ 0HNfQZlm4WUKDVzNyft7Yooj4Wm8GaZxG6aexykgovfOy5RPGFZlFOpiMOWkxanFPm+LciWlKGJ
+ B/38goE7zuk2jsFiwPK0FTcbgNuBSVKzhYVxQUXd+VkrVK5CeLf9TsTXYy3GYZU5aDWfE/3z34f
+ 4PYtSYuCtT9ynoiQaMrS/1IvO1KcAjqMt/h07g9T+cruBEvJTZxuBH00FxOQVO7tQSVdUOmGWs5
+ JNAcSUjywZKD+x/7CLTJXcHqtb8r8R6i6I4PIc2ThVcNqcKmwT7HNGhcAHI0zwSlad
+X-Received: by 2002:a05:6a00:bd90:b0:848:2e7e:353a with SMTP id
+ d2e1a72fcca58-851d3481104mr8568063b3a.0.1787155540004; 
  Wed, 19 Aug 2026 09:05:40 -0700 (PDT)
+Received: from localhost ([2a03:2880:2ff:46::])
+ by smtp.gmail.com with ESMTPSA id
+ d2e1a72fcca58-851d33b82bbsm857116b3a.24.2026.08.19.09.05.39
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 19 Aug 2026 09:05:39 -0700 (PDT)
 From: Stanislav Fomichev <sdf.kernel@gmail.com>
 X-Google-Original-From: Stanislav Fomichev <sdf@fomichev.me>
 To: netdev@vger.kernel.org
@@ -115,10 +115,9 @@ Cc: davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
  linux-rdma@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com,
  linux-arm-kernel@lists.infradead.org, bpf@vger.kernel.org,
  linux-csky@vger.kernel.org, leon@kernel.org
-Subject: [PATCH net v3 3/3] net: stmmac: document oversized AF_XDP frame
- handling
-Date: Wed, 19 Aug 2026 09:05:35 -0700
-Message-ID: <20260819160535.1472459-4-sdf@fomichev.me>
+Subject: [PATCH net v3 2/3] xsk: honor XDP_TX_METADATA in zero-copy path
+Date: Wed, 19 Aug 2026 09:05:34 -0700
+Message-ID: <20260819160535.1472459-3-sdf@fomichev.me>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260819160535.1472459-1-sdf@fomichev.me>
 References: <20260819160535.1472459-1-sdf@fomichev.me>
@@ -138,38 +137,208 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-stmmac drops AF_XDP zero-copy frames that exceed taprio's queueMaxSDU
-after xsk_tx_peek_desc() has reserved their completion entries.
+The zero-copy path reads TX metadata whenever the UMEM has metadata space,
+even if the descriptor does not set XDP_TX_METADATA. Pass descriptor
+options through the metadata helpers and ignore metadata unless the option
+is set.
 
-Completing a rejected descriptor is unsafe because AF_XDP completions are
-ordered: xsk_tx_completed(pool, 1) would complete the oldest outstanding
-descriptor, which may still be owned by hardware. Instead, leave the
-completion pending so the ring eventually wedges and increment the drop
-counter to expose the application error without risking hardware
-misbehavior.
+This does not fix the existing per-WQE metadata handling for mlx5 MPWQEs.
+Only the descriptor that starts a session passes through
+xsk_tx_metadata_request() and configures offload state shared by the batch.
+Metadata on descriptors joining an open session is therefore not validated
+and does not configure its requested offloads. In addition, a non-NULL
+metadata pointer from such a descriptor is treated as a timestamp
+completion request even when XDP_TXMD_FLAGS_TIMESTAMP is not set, so its
+metadata union can be overwritten with an unrequested timestamp. Fixing
+mixed metadata states within one MPWQE requires a separate change.
 
-Document this intentional ring imbalance at the check.
-
+Fixes: 48eb03dd2630 ("xsk: Add TX timestamp and TX checksum offload support")
+Reviewed-by: Alexander Lobakin <aleksander.lobakin@intel.com>
 Signed-off-by: Stanislav Fomichev <sdf@fomichev.me>
 ---
- drivers/net/ethernet/stmicro/stmmac/stmmac_main.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/net/ethernet/intel/igc/igc_main.c     |  3 ++-
+ .../ethernet/mellanox/mlx5/core/en/xsk/tx.c   |  2 +-
+ .../net/ethernet/stmicro/stmmac/stmmac_main.c |  3 ++-
+ include/net/libeth/xsk.h                      |  2 +-
+ include/net/xdp_sock_drv.h                    | 22 +++++++++++--------
+ include/net/xsk_buff_pool.h                   |  3 ++-
+ net/xdp/xsk_buff_pool.c                       |  7 ++++--
+ 7 files changed, 26 insertions(+), 16 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 39043d8ca1bf..59067939a586 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -3074,7 +3074,8 @@ static void igc_xdp_xmit_zc(struct igc_ring *ring)
+ 		olinfo_status = xdp_desc.len << IGC_ADVTXD_PAYLEN_SHIFT;
+ 
+ 		dma = xsk_buff_raw_get_dma(pool, xdp_desc.addr);
+-		meta = xsk_buff_get_metadata(pool, xdp_desc.addr);
++		meta = xsk_buff_get_metadata(pool, xdp_desc.addr,
++					     xdp_desc.options);
+ 		xsk_buff_raw_dma_sync_for_device(pool, dma, xdp_desc.len);
+ 		bi = &ring->tx_buffer_info[ntu];
+ 
+diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/tx.c b/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/tx.c
+index 3d19dad8f868..d194eeddd7b5 100644
+--- a/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/tx.c
++++ b/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/tx.c
+@@ -99,7 +99,7 @@ bool mlx5e_xsk_tx(struct mlx5e_xdpsq *sq, unsigned int budget)
+ 		xdptxd.dma_addr = xsk_buff_raw_get_dma(pool, desc.addr);
+ 		xdptxd.data = xsk_buff_raw_get_data(pool, desc.addr);
+ 		xdptxd.len = desc.len;
+-		meta = xsk_buff_get_metadata(pool, desc.addr);
++		meta = xsk_buff_get_metadata(pool, desc.addr, desc.options);
+ 
+ 		xsk_buff_raw_dma_sync_for_device(pool, xdptxd.dma_addr, xdptxd.len);
+ 
 diff --git a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
-index 62de03e65a90..6a532747c039 100644
+index a71f0df26378..62de03e65a90 100644
 --- a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
 +++ b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
-@@ -2713,6 +2713,10 @@ static bool stmmac_xdp_xmit_zc(struct stmmac_priv *priv, u32 queue, u32 budget)
- 		if (priv->est && priv->est->enable &&
- 		    priv->est->max_sdu[queue] &&
- 		    xdp_desc.len > priv->est->max_sdu[queue]) {
-+			/* Completions are ordered, so this descriptor cannot
-+			 * be completed safely. Wedge the ring to expose the
-+			 * application error instead.
-+			 */
- 			priv->xstats.max_sdu_txq_drop[queue]++;
- 			continue;
- 		}
+@@ -2719,7 +2719,8 @@ static bool stmmac_xdp_xmit_zc(struct stmmac_priv *priv, u32 queue, u32 budget)
+ 
+ 		tx_desc = stmmac_get_tx_desc(priv, tx_q, entry);
+ 		dma_addr = xsk_buff_raw_get_dma(pool, xdp_desc.addr);
+-		meta = xsk_buff_get_metadata(pool, xdp_desc.addr);
++		meta = xsk_buff_get_metadata(pool, xdp_desc.addr,
++					     xdp_desc.options);
+ 		xsk_buff_raw_dma_sync_for_device(pool, dma_addr, xdp_desc.len);
+ 
+ 		/* To return XDP buffer to XSK pool, we simple call
+diff --git a/include/net/libeth/xsk.h b/include/net/libeth/xsk.h
+index 5dcc0d7f65b7..a452b7828ce4 100644
+--- a/include/net/libeth/xsk.h
++++ b/include/net/libeth/xsk.h
+@@ -196,7 +196,7 @@ __libeth_xsk_xmit_fill_buf_md(const struct xdp_desc *xdesc,
+ 	struct libeth_xdp_tx_desc desc;
+ 	struct xdp_desc_ctx ctx;
+ 
+-	ctx = xsk_buff_raw_get_ctx(sq->pool, xdesc->addr);
++	ctx = xsk_buff_raw_get_ctx(sq->pool, xdesc->addr, xdesc->options);
+ 	desc = (typeof(desc)){
+ 		.addr	= ctx.dma,
+ 		__libeth_xdp_tx_len(xdesc->len),
+diff --git a/include/net/xdp_sock_drv.h b/include/net/xdp_sock_drv.h
+index b344789f5df8..d94aeb506379 100644
+--- a/include/net/xdp_sock_drv.h
++++ b/include/net/xdp_sock_drv.h
+@@ -240,6 +240,7 @@ static inline void *xsk_buff_raw_get_data(struct xsk_buff_pool *pool, u64 addr)
+  * xsk_buff_raw_get_ctx - get &xdp_desc context
+  * @pool: XSk buff pool desc address belongs to
+  * @addr: desc address (from userspace)
++ * @options: desc options (from userspace)
+  *
+  * Wrapper for xp_raw_get_ctx() to be used in drivers, see its kdoc for
+  * details.
+@@ -248,9 +249,9 @@ static inline void *xsk_buff_raw_get_data(struct xsk_buff_pool *pool, u64 addr)
+  * pointer, if it is present (initialized to %NULL otherwise).
+  */
+ static inline struct xdp_desc_ctx
+-xsk_buff_raw_get_ctx(const struct xsk_buff_pool *pool, u64 addr)
++xsk_buff_raw_get_ctx(const struct xsk_buff_pool *pool, u64 addr, u32 options)
+ {
+-	return xp_raw_get_ctx(pool, addr);
++	return xp_raw_get_ctx(pool, addr, options);
+ }
+ 
+ #define XDP_TXMD_FLAGS_VALID ( \
+@@ -318,18 +319,20 @@ xsk_tx_metadata_request(const struct xsk_buff_pool *pool,
+ }
+ 
+ static inline struct xsk_tx_metadata *
+-__xsk_buff_get_metadata(const struct xsk_buff_pool *pool, void *data)
++__xsk_buff_get_metadata(const struct xsk_buff_pool *pool, void *data,
++			unsigned int options)
+ {
+-	if (!pool->tx_metadata_len)
++	if (!pool->tx_metadata_len || !(options & XDP_TX_METADATA))
+ 		return NULL;
+ 
+ 	return data - pool->tx_metadata_len;
+ }
+ 
+ static inline struct xsk_tx_metadata *
+-xsk_buff_get_metadata(struct xsk_buff_pool *pool, u64 addr)
++xsk_buff_get_metadata(struct xsk_buff_pool *pool, u64 addr, u32 options)
+ {
+-	return __xsk_buff_get_metadata(pool, xp_raw_get_data(pool, addr));
++	return __xsk_buff_get_metadata(pool, xp_raw_get_data(pool, addr),
++				       options);
+ }
+ 
+ static inline void xsk_buff_dma_sync_for_cpu(struct xdp_buff *xdp)
+@@ -510,7 +513,7 @@ static inline void *xsk_buff_raw_get_data(struct xsk_buff_pool *pool, u64 addr)
+ }
+ 
+ static inline struct xdp_desc_ctx
+-xsk_buff_raw_get_ctx(const struct xsk_buff_pool *pool, u64 addr)
++xsk_buff_raw_get_ctx(const struct xsk_buff_pool *pool, u64 addr, u32 options)
+ {
+ 	return (struct xdp_desc_ctx){ };
+ }
+@@ -530,13 +533,14 @@ xsk_tx_metadata_request(const struct xsk_buff_pool *pool,
+ }
+ 
+ static inline struct xsk_tx_metadata *
+-__xsk_buff_get_metadata(const struct xsk_buff_pool *pool, void *data)
++__xsk_buff_get_metadata(const struct xsk_buff_pool *pool, void *data,
++			unsigned int options)
+ {
+ 	return NULL;
+ }
+ 
+ static inline struct xsk_tx_metadata *
+-xsk_buff_get_metadata(struct xsk_buff_pool *pool, u64 addr)
++xsk_buff_get_metadata(struct xsk_buff_pool *pool, u64 addr, u32 options)
+ {
+ 	return NULL;
+ }
+diff --git a/include/net/xsk_buff_pool.h b/include/net/xsk_buff_pool.h
+index 2bb1d122b1bc..a7df573784fd 100644
+--- a/include/net/xsk_buff_pool.h
++++ b/include/net/xsk_buff_pool.h
+@@ -154,7 +154,8 @@ struct xdp_desc_ctx {
+ 	struct xsk_tx_metadata *meta;
+ };
+ 
+-struct xdp_desc_ctx xp_raw_get_ctx(const struct xsk_buff_pool *pool, u64 addr);
++struct xdp_desc_ctx xp_raw_get_ctx(const struct xsk_buff_pool *pool, u64 addr,
++				   u32 options);
+ 
+ static inline dma_addr_t xp_get_dma(struct xdp_buff_xsk *xskb)
+ {
+diff --git a/net/xdp/xsk_buff_pool.c b/net/xdp/xsk_buff_pool.c
+index 78c14f106395..9d2d94f1fb75 100644
+--- a/net/xdp/xsk_buff_pool.c
++++ b/net/xdp/xsk_buff_pool.c
+@@ -763,6 +763,7 @@ EXPORT_SYMBOL(xp_raw_get_dma);
+  * xp_raw_get_ctx - get &xdp_desc context
+  * @pool: XSk buff pool desc address belongs to
+  * @addr: desc address (from userspace)
++ * @options: desc options (from userspace)
+  *
+  * Helper for getting desc's DMA address and metadata pointer, if present.
+  * Saves one call on hotpath and double calculation of the actual address.
+@@ -771,14 +772,16 @@ EXPORT_SYMBOL(xp_raw_get_dma);
+  * Return: new &xdp_desc_ctx struct containing desc's DMA address and metadata
+  * pointer, if it is present (initialized to %NULL otherwise).
+  */
+-struct xdp_desc_ctx xp_raw_get_ctx(const struct xsk_buff_pool *pool, u64 addr)
++struct xdp_desc_ctx xp_raw_get_ctx(const struct xsk_buff_pool *pool, u64 addr,
++				   u32 options)
+ {
+ 	struct xdp_desc_ctx ret;
+ 
+ 	addr = __xp_raw_get_addr(pool, addr);
+ 
+ 	ret.dma = __xp_raw_get_dma(pool, addr);
+-	ret.meta = __xsk_buff_get_metadata(pool, __xp_raw_get_data(pool, addr));
++	ret.meta = __xsk_buff_get_metadata(pool, __xp_raw_get_data(pool, addr),
++					   options);
+ 
+ 	return ret;
+ }
 -- 
 2.53.0-Meta
 
