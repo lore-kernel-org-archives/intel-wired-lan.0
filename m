@@ -1,90 +1,115 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2D6DCC5DF81
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 20 Aug 2026 09:21:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5C569C5DF81
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 20 Aug 2026 09:41:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id E1D21401DE;
-	Thu, 20 Aug 2026 09:21:46 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 2176B809A4;
+	Thu, 20 Aug 2026 09:41:03 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 0oKENvbWj6cA; Thu, 20 Aug 2026 09:21:46 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id CPc_48YrjpjL; Thu, 20 Aug 2026 09:41:02 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1787217706;
-	bh=yGM8/26gW53hFNA+QmXK1afgYF/JWOaYIxVM0Jn73eY=;
+	s=default; t=1787218862;
+	bh=yF1JbB5R/FVZprSXPu19zqoBb23lz+r7CLHDK21Q7Ng=;
 	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=g5TvnO6eD49Sm3xcgFlnE880ASfOQgeszUUt+MLBubje9+PFjhU4rZzCewvdfkFp5
-	 20DfwV/ZFl2WTyBJQ9TMbMaVsFJcKpq14N8u3TlcFxmGqyHX0PU4ruSDoArdSElhp2
-	 /MX/d+tSCAiP8FvFSkz4FOjDGJPCtMvS8qJX6lum2f2PK9qmaGdSHWnHnHddsO4N82
-	 pt//z6peqFNSt2b4bfXLKdONVh2uUB78KxR2Gplw+/NzWY59jLXfLsLcLOuG1Z7niR
-	 j90uvVJRkOodi/HEPJR0xxkqsU25BVrflSmdCz21X3ENe2FI47MqYOYHbEfZMlynnH
-	 Q+WiMh14cxDoQ==
+	b=9nwil3+hwZ2e+mBq/RYb68044kQ2vqvZIkvw/1aWEpe8d9ITHbpCzORLTbrqxEnJR
+	 Et1Xp8AaHd1d0Cy1uKo1uZoF6aNj69upLQrOc3oJTdrO3drxB9ONX5T4yLmjwwcb+s
+	 cgL/XAFgpbCPNO/MzNgRYA9QeCWoczSppe1bRJ0HyycTc/HrPHdbMbf8RcZxBM7TiH
+	 X3LLDKIQBJXF00YVuuYW1sNus8V3GDP3RwjL9lYbNRkLjGPsh0QlO1vbD4v3NpoYgP
+	 guFP987WtcZnviSbr/uBvJ//REDMrGzmtBiYt55Yl721vmNHUdFX7I5Sp3qlrZ9zcg
+	 cAkA+5hEykyGg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 4407D4027B;
-	Thu, 20 Aug 2026 09:21:46 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 2D52139E
- for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Aug 2026 09:21:44 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 588D980ADE;
+	Thu, 20 Aug 2026 09:41:02 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 8D5312FD
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Aug 2026 09:41:00 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 2AC7F40525
- for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Aug 2026 09:21:44 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 8ADBE80ADE
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Aug 2026 09:41:00 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id YgJIJ8yzO-XU for <intel-wired-lan@lists.osuosl.org>;
- Thu, 20 Aug 2026 09:21:43 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.21;
- helo=mgamail.intel.com; envelope-from=dima.ruinskiy@intel.com;
- receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=ZAI0QvUV
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 6CB3A40523
- for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Aug 2026 09:21:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1787217703; x=1818753703;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=LvJ/qUaizwJhlogkbvoqvddNzWe9GDc7q575tH3s8Vo=;
- b=ZAI0QvUV8D7tB8YTVNKMSvr69GQE20axW7yTpsfiGqtYHEw0rMN82ZlK
- JjLJVbHZ3OlFBTHWV440mBdJJcya34eqrtJyzQFAcIcIUeLwU7ZPTFEPd
- 9jv+8qI1eLUQoR0HFmBPT+LrHvYjboxLbkhSccWoMiQWIoGhUhAKDKvKB
- 8K5kk8qq9U2vtiK0hh4x3HrjXYSEjKWMq7JJonGaKUHAinZJxE9Z3tCVb
- eadckmpRYfIrxpDSxfr6K16GftwkE5aYq9Ipr1z+74oNYTzCvWSQZfqVv
- fa60eriy1ViZnGa+WIdrJ0QWxVxig17gCeUeh7bQXqIAGFoD3OwT/7KxR A==;
-X-CSE-ConnectionGUID: jhM5qyF1SuCTAVQe4p0fJw==
-X-CSE-MsgGUID: IVymtohTS2qAA1z168pEQA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11880"; a="87604722"
-X-IronPort-AV: E=Sophos;i="6.25,232,1779174000"; d="scan'208";a="87604722"
-Received: from orviesa006.jf.intel.com ([10.64.159.146])
- by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 20 Aug 2026 02:21:42 -0700
-X-CSE-ConnectionGUID: nAZrSOCiSpee3o7FnGPtwA==
-X-CSE-MsgGUID: lMQG3RnERZuUfZiT+H3/8A==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,232,1779174000"; d="scan'208";a="264165394"
-Received: from ccdlinuxdev11.iil.intel.com ([143.185.162.70])
- by orviesa006.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 20 Aug 2026 02:21:40 -0700
-From: Dima Ruinskiy <dima.ruinskiy@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org, dima.ruinskiy@intel.com,
- anthony.l.nguyen@intel.com, allen.lan@intel.com, acelan.kao@canonical.com,
- kuba@kernel.org
-Subject: [PATCH iwl-next v2] igc: Support ACPI-based MAC passthrough
-Date: Thu, 20 Aug 2026 12:21:37 +0300
-Message-Id: <20260820092137.1835887-1-dima.ruinskiy@intel.com>
-X-Mailer: git-send-email 2.34.1
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id dcctxllwJmFM for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 20 Aug 2026 09:40:58 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2607:f8b0:4864:20::102e; helo=mail-pj1-x102e.google.com;
+ envelope-from=pavankumaryalagada@gmail.com; receiver=<UNKNOWN> 
+Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20251104 header.b=B2EW1piA
+Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com
+ [IPv6:2607:f8b0:4864:20::102e])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id AF95C809A4
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Aug 2026 09:40:58 +0000 (UTC)
+Received: by mail-pj1-x102e.google.com with SMTP id
+ 98e67ed59e1d1-3811f512167so2841571a91.3
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Aug 2026 02:40:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20251104; t=1787218858; x=1787823658; darn=lists.osuosl.org;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+ bh=yF1JbB5R/FVZprSXPu19zqoBb23lz+r7CLHDK21Q7Ng=;
+ b=B2EW1piA2dxXTz8iISIR12OvJ2c3nWpd/SpKYNkKkR6yAC0M8qMgS8z65uO7pMekWj
+ W9fG4ttSF55uW2aWonY2uVWGlKLJp0foCkwCvxO+hYDIZMPnyxjEW+vOt/EO/7Y4BMIh
+ Q/Q2kE8WjROGvQ3ekFn58syx0qE8SRhh8EuTWZxSNpZkTTG0h6yxRVgIhuUgL8FeWHK3
+ kheg/wJ6sd7ywDpm9W6Jzrw2y97CqASST0NdOhEwDjT6qnH+hd+qHgkoZq58p02mAfSf
+ XadvaA70lfLZk0JvdYoSUeguW/DlahfPLfBrvLydVj/gm93oGkWQggz7b8hKMat+sRDl
+ sw1g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20251104; t=1787218858; x=1787823658;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to:content-type;
+ bh=yF1JbB5R/FVZprSXPu19zqoBb23lz+r7CLHDK21Q7Ng=;
+ b=atzkHE9pgpAkG1uZ+SYZwWWTWqbCKbVAHoPNZd8jMQhPrhynvFWRsAO3XsQMv540cW
+ 7SVkn6sr4PEB4LvB9uPkqJ1+9Mg8PWkMgiMzc4k1u6EaSogrDGV4NJvupONoy1+NYQJi
+ R8luZwnfIUn7/+ohyU9ojZVmWKFBqQGEC8UrimXEcl7+13YrWn6oCUIEI1/Q58aPR223
+ kX3UUOPdzTC2lgRjW24o/UZYvl3MQJRX4qabOKXtlrDDo7HxQQ14PIVXeT9D0rZqgz8o
+ db5ohARpDt3M6ROYkZQ43NgL/HFSJXwfo4yd8pEEOT8oKHkyQRsnTvLKrXYoMW8lQBQo
+ dilg==
+X-Gm-Message-State: AFuF++n7QC1KkzJr1gp9KmfYwtsv39iCveuA06wrAp7CUIR4UORO7ytM
+ k/bYqH5WMmsYlvPc0gbDW6Nqh1B7adseaAA+dVqcYbmfY9jJs30IMcFx
+X-Gm-Gg: AR+sD136EXhUfG8Gnat3pmrZRP0M3UkQFzxRIUQ/QNUVPCijGuk9dLFKo4MCYKcELMx
+ ONt8w+2J/hJEr6WdU0PNsPMXnKbXm4bKxrwWDfVMDNg6d+8EtBTaypVQ27id5PTLwDVSDTIGfMl
+ tmAnsZveof8POL/vylx9OL1JYXBTkG9w5PI8CZBK/J+g2j7Im0Zf+INaAE/KG1CrUeIMvyDlCOD
+ P9ZEJe+TaR1z60Nt+j4Fud8mqm2pZK5Pluc8vqT79RTq/DMnrOYmWLXHIHXcok84Gi/5egG4zm5
+ XJRNEkHWE2WyIsi5EomDI1uFjFtnxvnWBzUydz/Y36z9l39KWBBKm+ExG+uqhvPYoJSUAlBCH75
+ kMHCLF8i3z1d4m6NCHao5mWJBs7PMamODO/qa2zaR/J+wiFMJpyh/KHsxyTNvdPgsaYqMhNT0Uy
+ pWyM38AmvJ9mHOmzYBvwZZsjeOg46WbnfGAdJG029/brvkV/X2CZYyp/Zx7zMRa2W1jSCxCHTG8
+ qQ0Cv3Y
+X-Received: by 2002:a17:90b:4ac9:b0:37f:ed7e:7e42 with SMTP id
+ 98e67ed59e1d1-395810cad6amr20759699a91.14.1787218857689; 
+ Thu, 20 Aug 2026 02:40:57 -0700 (PDT)
+Received: from user.. ([2405:201:c052:b00b:6143:5a42:8472:2f21])
+ by smtp.gmail.com with ESMTPSA id
+ 5a478bee46e88-327cb5a9831sm8393939eec.21.2026.08.20.02.40.51
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 20 Aug 2026 02:40:56 -0700 (PDT)
+From: pavankumaryalagada@gmail.com
+To: Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Cc: intel-wired-lan@lists.osuosl.org, Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S . Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, skhan@linuxfoundation.org,
+ syzbot+e0abb1d45ac291ebebeb@syzkaller.appspotmail.com, kohei@enjuk.jp,
+ aleksandr.loktionov@intel.com,
+ Yalagada Pavan Kumar <pavankumaryalagada@gmail.com>
+Subject: [PATCH iwl-next v4] e100: prevent shift-out-of-bounds in EEPROM access
+Date: Thu, 20 Aug 2026 15:10:45 +0530
+Message-ID: <20260820094045.41400-1-pavankumaryalagada@gmail.com>
+X-Mailer: git-send-email 2.43.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -101,185 +126,94 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-Some systems implement a system MAC address object in the ACPI table,
-using either \\_SB.AMAC or \\MACA object names. This system MAC address,
-when enabled, is intended to override the permanent MAC address of a
-network controller in a docking station connected to the system.
+From: Yalagada Pavan Kumar <pavankumaryalagada@gmail.com>
 
-Implement lookup of the relevant ACPI object names and use them to
-initialize the MAC address. Limit the scope to I225/I226 device IDs used
-in docking stations, to avoid interfering with onboard I225/I226 NICs.
+When reading the EEPROM address length, e100_eeprom_read() can return
+an invalid length. This value is then used as a shift count when
+calculating eeprom_wc, resulting in a shift-out-of-bounds UBSAN warning.
 
-On systems where the feature is disabled or unsupported, the ACPI objects
-do not exist or do not contain a valid Ethernet MAC, causing a fallback
-to the existing MAC address initialization path.
+Stop EEPROM address probing if the detected address length exceeds
+the initial address length to prevent addr_len from underflowing.
 
-Assisted-by: GitHub-Copilot:claude-opus-4.7
-Signed-off-by: Dima Ruinskiy <dima.ruinskiy@intel.com>
+Validate addr_len after reading it from the EEPROM in both
+e100_eeprom_load() and e100_eeprom_save(), and return -EIO
+if the value is zero or greater than 8.
+
+Reported-by: syzbot+e0abb1d45ac291ebebeb@syzkaller.appspotmail.com
+Closes: https://syzkaller.appspot.com/bug?extid=e0abb1d45ac291ebebeb
+Signed-off-by: Yalagada Pavan Kumar <pavankumaryalagada@gmail.com>
 ---
-v2: limit scope to dock device ids
-v1: initial version
----
- drivers/net/ethernet/intel/igc/igc.h      |  1 +
- drivers/net/ethernet/intel/igc/igc_base.c |  8 +++
- drivers/net/ethernet/intel/igc/igc_hw.h   |  2 +
- drivers/net/ethernet/intel/igc/igc_main.c | 69 +++++++++++++++++++++--
- 4 files changed, 76 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index 88291f775c22..05affaa04aa4 100644
---- a/drivers/net/ethernet/intel/igc/igc.h
-+++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -567,6 +567,7 @@ enum igc_tx_flags {
- 
- enum igc_boards {
- 	board_base,
-+	board_dock,
- };
- 
- /* The largest size we can write to the descriptor is 65535.  In order to
-diff --git a/drivers/net/ethernet/intel/igc/igc_base.c b/drivers/net/ethernet/intel/igc/igc_base.c
-index ab9120a3127f..c9067cc79b69 100644
---- a/drivers/net/ethernet/intel/igc/igc_base.c
-+++ b/drivers/net/ethernet/intel/igc/igc_base.c
-@@ -474,4 +474,12 @@ const struct igc_info igc_base_info = {
- 	.get_invariants		= igc_get_invariants_base,
- 	.mac_ops		= &igc_mac_ops_base,
- 	.phy_ops		= &igc_phy_ops_base,
-+	.is_dock		= false,
-+};
+v4:
+ - Squash the v1-v3 changes into a single standalone patch.
+ - Prevent addr_len underflow during EEPROM probing.
+ - Validate addr_len in e100_eeprom_load() and e100_eeprom_save().
+ - Use BIT() and cast the result to u16 for eeprom_wc.
+ - Target iwl-next as requested by Tony Nguyen.
+
+v3: https://lore.kernel.org/all/20260816113754.22900-1-pavankumaryalagada@gmail.com/T/
+
+v2: https://lore.kernel.org/all/20260810083355.21631-1-pavankumaryalagada@gmail.com/T/
+
+v1: https://lore.kernel.org/all/20260807145626.52692-1-pavankumaryalagada@gmail.com/T/
+---
+ drivers/net/ethernet/intel/e100.c | 29 ++++++++++++++++++++++++++---
+ 1 file changed, 26 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/e100.c b/drivers/net/ethernet/intel/e100.c
+index 29960762e64a..cd8190386652 100644
+--- a/drivers/net/ethernet/intel/e100.c
++++ b/drivers/net/ethernet/intel/e100.c
+@@ -744,7 +744,14 @@ static __le16 e100_eeprom_read(struct nic *nic, u16 *addr_len, u16 addr)
+ 		 * complete address.  Use this to adjust addr_len. */
+ 		ctrl = ioread8(&nic->csr->eeprom_ctrl_lo);
+ 		if (!(ctrl & eedo) && i > 16) {
+-			*addr_len -= (i - 16);
++			u16 len = i - 16;
 +
-+const struct igc_info igc_dock_info = {
-+	.get_invariants		= igc_get_invariants_base,
-+	.mac_ops		= &igc_mac_ops_base,
-+	.phy_ops		= &igc_phy_ops_base,
-+	.is_dock		= true,
- };
-diff --git a/drivers/net/ethernet/intel/igc/igc_hw.h b/drivers/net/ethernet/intel/igc/igc_hw.h
-index 62aaee55668a..d14b7666b5d7 100644
---- a/drivers/net/ethernet/intel/igc/igc_hw.h
-+++ b/drivers/net/ethernet/intel/igc/igc_hw.h
-@@ -69,9 +69,11 @@ struct igc_info {
- 	struct igc_mac_operations *mac_ops;
- 	const struct igc_phy_operations *phy_ops;
- 	struct igc_nvm_operations *nvm_ops;
-+	bool is_dock;
- };
++			if (len > *addr_len) {
++				*addr_len = 0;
++				break;
++			}
++
++			*addr_len -= len;
+ 			i = 17;
+ 		}
  
- extern const struct igc_info igc_base_info;
-+extern const struct igc_info igc_dock_info;
+@@ -765,7 +772,15 @@ static int e100_eeprom_load(struct nic *nic)
  
- enum igc_forced_speed_duplex {
- 	IGC_FORCED_10H,
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 82800a4a6d6c..15d0815a2110 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -11,6 +11,8 @@
- #include <net/pkt_sched.h>
- #include <linux/bpf_trace.h>
- #include <net/xdp_sock_drv.h>
-+#include <linux/acpi.h>
-+#include <linux/hex.h>
- #include <linux/pci.h>
- #include <linux/mdio.h>
- 
-@@ -44,6 +46,7 @@ static const char igc_copyright[] =
- 
- static const struct igc_info *igc_info_tbl[] = {
- 	[board_base] = &igc_base_info,
-+	[board_dock] = &igc_dock_info,
- };
- 
- static const struct pci_device_id igc_pci_tbl[] = {
-@@ -54,8 +57,8 @@ static const struct pci_device_id igc_pci_tbl[] = {
- 	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_K), .driver_data = board_base },
- 	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_K2), .driver_data = board_base },
- 	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I226_K), .driver_data = board_base },
--	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_LMVP), .driver_data = board_base },
--	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I226_LMVP), .driver_data = board_base },
-+	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_LMVP), .driver_data = board_dock },
-+	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I226_LMVP), .driver_data = board_dock },
- 	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_IT), .driver_data = board_base },
- 	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I226_LM), .driver_data = board_base },
- 	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I226_V), .driver_data = board_base },
-@@ -7116,6 +7119,57 @@ static enum hrtimer_restart igc_qbv_scheduling_timer(struct hrtimer *timer)
- 	return HRTIMER_NORESTART;
- }
- 
-+static bool igc_get_acpi_mac_passthru(u8 *mac)
-+{
-+	static const struct {
-+		const char *name;
-+		acpi_object_type type;
-+		u32 length;
-+	} sources[] = {
-+		{ "\\_SB.AMAC", ACPI_TYPE_BUFFER, 23 },
-+		{ "\\MACA",     ACPI_TYPE_STRING, 22 },
-+	};
-+	struct acpi_buffer buffer;
-+	union acpi_object *obj;
-+	bool mac_found = false;
-+	acpi_status status;
-+	u8 buf[ETH_ALEN];
-+	int i;
+ 	/* Try reading with an 8-bit addr len to discover actual addr len */
+ 	e100_eeprom_read(nic, &addr_len, 0);
+-	nic->eeprom_wc = 1 << addr_len;
 +
-+	if (!IS_ENABLED(CONFIG_ACPI))
-+		return false;
-+
-+	for (i = 0; i < ARRAY_SIZE(sources) && !mac_found; i++) {
-+		buffer.length = ACPI_ALLOCATE_BUFFER;
-+		buffer.pointer = NULL;
-+
-+		status = acpi_evaluate_object(NULL, (char *)sources[i].name,
-+					      NULL, &buffer);
-+		if (ACPI_FAILURE(status))
-+			continue;
-+
-+		obj = buffer.pointer;
-+		if (!obj || obj->type != sources[i].type ||
-+		    obj->string.length != sources[i].length)
-+			goto free_obj;
-+
-+		if (!strncmp(obj->string.pointer, "_AUXMAC_#", 9) ||
-+		    obj->string.pointer[21] != '#')
-+			goto free_obj;
-+
-+		if (hex2bin(buf, obj->string.pointer + 9, ETH_ALEN) ||
-+		    !is_valid_ether_addr(buf))
-+			goto free_obj;
-+
-+		ether_addr_copy(mac, buf);
-+		mac_found = true;
-+free_obj:
-+		kfree(obj);
++	if (!addr_len || addr_len > 8) {
++		netif_err(nic, probe, nic->netdev,
++			  "Invalid EEPROM address length %u\n",
++			  addr_len);
++		return -EIO;
 +	}
 +
-+	return mac_found;
-+}
++	nic->eeprom_wc = (u16)BIT(addr_len);
+ 
+ 	for (addr = 0; addr < nic->eeprom_wc; addr++) {
+ 		nic->eeprom[addr] = e100_eeprom_read(nic, &addr_len, addr);
+@@ -791,7 +806,15 @@ static int e100_eeprom_save(struct nic *nic, u16 start, u16 count)
+ 
+ 	/* Try reading with an 8-bit addr len to discover actual addr len */
+ 	e100_eeprom_read(nic, &addr_len, 0);
+-	nic->eeprom_wc = 1 << addr_len;
 +
- /**
-  * igc_probe - Device Initialization Routine
-  * @pdev: PCI device information struct
-@@ -7279,9 +7333,16 @@ static int igc_probe(struct pci_dev *pdev,
- 	}
++	if (!addr_len || addr_len > 8) {
++		netif_err(nic, probe, nic->netdev,
++			  "Invalid EEPROM address length %u\n",
++			  addr_len);
++		return -EIO;
++	}
++
++	nic->eeprom_wc = (u16)BIT(addr_len);
  
- 	if (eth_platform_get_mac_address(&pdev->dev, hw->mac.addr)) {
--		/* copy the MAC address out of the NVM */
--		if (hw->mac.ops.read_mac_addr(hw))
-+		/* Look for a system-provided MAC in the ACPI table before
-+		 * falling back to reading the address from the NVM.
-+		 */
-+		if (ei->is_dock && igc_get_acpi_mac_passthru(hw->mac.addr)) {
-+			netdev->addr_assign_type = NET_ADDR_STOLEN;
-+			dev_info(&pdev->dev, "Using ACPI pass-thru MAC addr %pM\n",
-+				 hw->mac.addr);
-+		} else if (hw->mac.ops.read_mac_addr(hw)) {
- 			dev_err(&pdev->dev, "NVM Read Error\n");
-+		}
- 	}
- 
- 	eth_hw_addr_set(netdev, hw->mac.addr);
+ 	if (start + count >= nic->eeprom_wc)
+ 		return -EINVAL;
 -- 
-2.43.7
+2.43.0
 
