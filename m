@@ -4,84 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D91FBC5DF82
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 20 Aug 2026 06:30:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2D6DCC5DF81
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 20 Aug 2026 09:21:47 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 7C00E40292;
-	Thu, 20 Aug 2026 06:30:16 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id E1D21401DE;
+	Thu, 20 Aug 2026 09:21:46 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ZjCY3JkhitPY; Thu, 20 Aug 2026 06:30:15 +0000 (UTC)
+ id 0oKENvbWj6cA; Thu, 20 Aug 2026 09:21:46 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1787207415;
-	bh=ZqJDYEqV30WFu+sJw3rwap1PsZuN60F4uhHyghDm3U8=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	s=default; t=1787217706;
+	bh=yGM8/26gW53hFNA+QmXK1afgYF/JWOaYIxVM0Jn73eY=;
+	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=HoYEUMOcoTeoBi1q8jq2qvOI5aB4N58+c5ZlRlThNViDCCMam4jA3c6YYWW62XN+l
-	 u45T0ncrq8HV/VgJwVj1r1Tq9X2N5FphZhRqZcwVqLPZK0xqjn2QB2iTIyZese8yk/
-	 P5aMGIx06S0+2eADO/wfIXkENaSlE7BlqVzi0ZKKxBq/vDSho8o/yQmjsaQmjU3hAv
-	 3gvPVTrdHyI1FZ7+njwyWNjwRq7uPzLW+A9oOA3FXj85CucoJ/3+oypkSqTkGyP1fH
-	 lowEDLPRwSiJ4s5N6Hxjm2xSExs5I03C3BFIqjDWEBvPXcCIVhCyKLb00ux98Z406Q
-	 inOx6BQmQSjmw==
+	b=g5TvnO6eD49Sm3xcgFlnE880ASfOQgeszUUt+MLBubje9+PFjhU4rZzCewvdfkFp5
+	 20DfwV/ZFl2WTyBJQ9TMbMaVsFJcKpq14N8u3TlcFxmGqyHX0PU4ruSDoArdSElhp2
+	 /MX/d+tSCAiP8FvFSkz4FOjDGJPCtMvS8qJX6lum2f2PK9qmaGdSHWnHnHddsO4N82
+	 pt//z6peqFNSt2b4bfXLKdONVh2uUB78KxR2Gplw+/NzWY59jLXfLsLcLOuG1Z7niR
+	 j90uvVJRkOodi/HEPJR0xxkqsU25BVrflSmdCz21X3ENe2FI47MqYOYHbEfZMlynnH
+	 Q+WiMh14cxDoQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 5D01440208;
-	Thu, 20 Aug 2026 06:30:15 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id D07AE2FD
- for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Aug 2026 06:30:13 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 4407D4027B;
+	Thu, 20 Aug 2026 09:21:46 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 2D52139E
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Aug 2026 09:21:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id CDFB360675
- for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Aug 2026 06:30:13 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 2AC7F40525
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Aug 2026 09:21:44 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id IAXHXR2nQHZK for <intel-wired-lan@lists.osuosl.org>;
- Thu, 20 Aug 2026 06:30:11 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.14;
- helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp3.osuosl.org;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id YgJIJ8yzO-XU for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 20 Aug 2026 09:21:43 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.21;
+ helo=mgamail.intel.com; envelope-from=dima.ruinskiy@intel.com;
+ receiver=<UNKNOWN> 
+Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=PGWkZqy8
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
- by smtp3.osuosl.org (Postfix) with ESMTPS id B737760671
- for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Aug 2026 06:30:11 +0000 (UTC)
+Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=ZAI0QvUV
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 6CB3A40523
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Aug 2026 09:21:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1787207412; x=1818743412; h=date:from:to:subject:message-id;
- bh=YbixH+B7k4I9qy0m7cUK+33SPxHkYGPptZX8IyK1GTw=;
- b=PGWkZqy8lEd3FfZwjlIsT2sfRFkdtwdtoicnOkbXoEeYiXEyplpM1s7C
- YwPwTanUxKwTh+YRSBtypz8R5BRfS5ViAR+9edeqaBtnQYRMejVgg4TvO
- 7ZGqkeru4lFU6EO4dYPLUEJiM4co7FDmp05X6c6rK9hMByIpVHpqFuSgX
- r940K+aMroMD2Y8uVp9+s+SIiTg0xLjqZMbxTwO2KRfHiYOp9+BRGuFsY
- giYA7WImuKDp+vuQIKoxpwkf5QStI3WHum87hNOeZvyl5CRTb6z1+cJFe
- 2jD6b7/w9kC6IRvIk6rBjX+sAhBnGWx9+rrVY5AQHO6h+JOfnDvth9pf8 w==;
-X-CSE-ConnectionGUID: uQL9PMEJR8uvh+L6O3MTZw==
-X-CSE-MsgGUID: hdAiQER7R3Cof6H7E5cz7w==
-X-IronPort-AV: E=McAfee;i="6800,10657,11880"; a="91607395"
-X-IronPort-AV: E=Sophos;i="6.25,232,1779174000"; d="scan'208";a="91607395"
-Received: from fmviesa001.fm.intel.com ([10.60.135.141])
- by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 19 Aug 2026 23:30:11 -0700
-X-CSE-ConnectionGUID: DC6jFxa6SiiY/EhPHLLVeQ==
-X-CSE-MsgGUID: tXQvIL4pTIeHcZa3SJCwFw==
+ t=1787217703; x=1818753703;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=LvJ/qUaizwJhlogkbvoqvddNzWe9GDc7q575tH3s8Vo=;
+ b=ZAI0QvUV8D7tB8YTVNKMSvr69GQE20axW7yTpsfiGqtYHEw0rMN82ZlK
+ JjLJVbHZ3OlFBTHWV440mBdJJcya34eqrtJyzQFAcIcIUeLwU7ZPTFEPd
+ 9jv+8qI1eLUQoR0HFmBPT+LrHvYjboxLbkhSccWoMiQWIoGhUhAKDKvKB
+ 8K5kk8qq9U2vtiK0hh4x3HrjXYSEjKWMq7JJonGaKUHAinZJxE9Z3tCVb
+ eadckmpRYfIrxpDSxfr6K16GftwkE5aYq9Ipr1z+74oNYTzCvWSQZfqVv
+ fa60eriy1ViZnGa+WIdrJ0QWxVxig17gCeUeh7bQXqIAGFoD3OwT/7KxR A==;
+X-CSE-ConnectionGUID: jhM5qyF1SuCTAVQe4p0fJw==
+X-CSE-MsgGUID: IVymtohTS2qAA1z168pEQA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11880"; a="87604722"
+X-IronPort-AV: E=Sophos;i="6.25,232,1779174000"; d="scan'208";a="87604722"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+ by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 20 Aug 2026 02:21:42 -0700
+X-CSE-ConnectionGUID: nAZrSOCiSpee3o7FnGPtwA==
+X-CSE-MsgGUID: lMQG3RnERZuUfZiT+H3/8A==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,232,1779174000"; d="scan'208";a="290677157"
-Received: from lkp-server01.sh.intel.com (HELO 6eda058d650d) ([10.239.97.150])
- by fmviesa001.fm.intel.com with ESMTP; 19 Aug 2026 23:30:09 -0700
-Received: from kbuild by 6eda058d650d with local (Exim 4.98.2)
- (envelope-from <lkp@intel.com>) id 1wwwHv-00000000i6J-0c9T;
- Thu, 20 Aug 2026 06:30:07 +0000
-Date: Thu, 20 Aug 2026 14:29:53 +0800
-From: kernel test robot <lkp@intel.com>
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Subject: [tnguy-next-queue:10GbE] BUILD SUCCESS
- 25b00c01fe1062ef1f2aaa3c4ee6638ec9beb239
-Message-ID: <202608201441.u5LbCEc3-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+X-IronPort-AV: E=Sophos;i="6.25,232,1779174000"; d="scan'208";a="264165394"
+Received: from ccdlinuxdev11.iil.intel.com ([143.185.162.70])
+ by orviesa006.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 20 Aug 2026 02:21:40 -0700
+From: Dima Ruinskiy <dima.ruinskiy@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Cc: netdev@vger.kernel.org, dima.ruinskiy@intel.com,
+ anthony.l.nguyen@intel.com, allen.lan@intel.com, acelan.kao@canonical.com,
+ kuba@kernel.org
+Subject: [PATCH iwl-next v2] igc: Support ACPI-based MAC passthrough
+Date: Thu, 20 Aug 2026 12:21:37 +0300
+Message-Id: <20260820092137.1835887-1-dima.ruinskiy@intel.com>
+X-Mailer: git-send-email 2.34.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -96,193 +101,185 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 10GbE
-branch HEAD: 25b00c01fe1062ef1f2aaa3c4ee6638ec9beb239  Merge branch 'net-dsa-mt7628-embedded-switch-initial-support'
+Some systems implement a system MAC address object in the ACPI table,
+using either \\_SB.AMAC or \\MACA object names. This system MAC address,
+when enabled, is intended to override the permanent MAC address of a
+network controller in a docking station connected to the system.
 
-elapsed time: 1921m
+Implement lookup of the relevant ACPI object names and use them to
+initialize the MAC address. Limit the scope to I225/I226 device IDs used
+in docking stations, to avoid interfering with onboard I225/I226 NICs.
 
-configs tested: 174
-configs skipped: 2
+On systems where the feature is disabled or unsupported, the ACPI objects
+do not exist or do not contain a valid Ethernet MAC, causing a fallback
+to the existing MAC address initialization path.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Assisted-by: GitHub-Copilot:claude-opus-4.7
+Signed-off-by: Dima Ruinskiy <dima.ruinskiy@intel.com>
+---
+v2: limit scope to dock device ids
+v1: initial version
+---
+ drivers/net/ethernet/intel/igc/igc.h      |  1 +
+ drivers/net/ethernet/intel/igc/igc_base.c |  8 +++
+ drivers/net/ethernet/intel/igc/igc_hw.h   |  2 +
+ drivers/net/ethernet/intel/igc/igc_main.c | 69 +++++++++++++++++++++--
+ 4 files changed, 76 insertions(+), 4 deletions(-)
 
-tested configs:
-alpha                            allnoconfig    gcc-16.1.0
-alpha                           allyesconfig    gcc-16.1.0
-alpha                              defconfig    gcc-16.1.0
-arc                             allmodconfig    gcc-16.1.0
-arc                             allyesconfig    gcc-16.1.0
-arc                  randconfig-001-20260819    gcc-11.5.0
-arc                  randconfig-001-20260820    clang-24
-arc                  randconfig-002-20260819    gcc-11.5.0
-arc                  randconfig-002-20260819    gcc-13.4.0
-arc                  randconfig-002-20260820    clang-24
-arm                  randconfig-001-20260819    gcc-11.5.0
-arm                  randconfig-001-20260819    gcc-13.4.0
-arm                  randconfig-001-20260820    clang-24
-arm                  randconfig-002-20260819    gcc-11.5.0
-arm                  randconfig-002-20260819    gcc-15.2.0
-arm                  randconfig-002-20260820    clang-24
-arm                  randconfig-003-20260819    gcc-10.5.0
-arm                  randconfig-003-20260819    gcc-11.5.0
-arm                  randconfig-003-20260820    clang-24
-arm                  randconfig-004-20260819    gcc-11.5.0
-arm                  randconfig-004-20260819    gcc-15.2.0
-arm                  randconfig-004-20260820    clang-24
-arm                          sunxi_defconfig    gcc-16.1.0
-arm64                         randconfig-001    gcc-14.3.0
-arm64                randconfig-001-20260819    gcc-11.5.0
-arm64                randconfig-002-20260819    clang-17
-arm64                randconfig-003-20260819    clang-17
-arm64                randconfig-004-20260819    gcc-8.5.0
-csky                            allmodconfig    gcc-16.1.0
-csky                 randconfig-001-20260819    gcc-9.5.0
-csky                 randconfig-002-20260819    gcc-11.5.0
-hexagon                       randconfig-001    gcc-11.5.0
-hexagon                       randconfig-001    gcc-14.3.0
-hexagon              randconfig-001-20260819    gcc-11.5.0
-hexagon              randconfig-001-20260820    gcc-14.3.0
-hexagon              randconfig-002-20260819    gcc-11.5.0
-hexagon              randconfig-002-20260820    gcc-14.3.0
-i386                            allmodconfig    gcc-14
-i386       buildonly-randconfig-001-20260819    clang-22
-i386       buildonly-randconfig-001-20260819    gcc-14
-i386       buildonly-randconfig-001-20260820    gcc-14
-i386       buildonly-randconfig-002-20260819    gcc-14
-i386       buildonly-randconfig-002-20260820    gcc-14
-i386       buildonly-randconfig-003-20260819    gcc-14
-i386       buildonly-randconfig-003-20260820    gcc-14
-i386       buildonly-randconfig-004-20260819    gcc-14
-i386       buildonly-randconfig-004-20260820    gcc-14
-i386       buildonly-randconfig-005-20260819    gcc-14
-i386       buildonly-randconfig-005-20260820    gcc-14
-i386       buildonly-randconfig-006-20260819    gcc-12
-i386       buildonly-randconfig-006-20260819    gcc-14
-i386       buildonly-randconfig-006-20260820    gcc-14
-i386                 randconfig-001-20260819    gcc-14
-i386                 randconfig-002-20260819    gcc-14
-i386                 randconfig-003-20260819    gcc-14
-i386                 randconfig-004-20260819    gcc-14
-i386                 randconfig-005-20260819    gcc-14
-i386                 randconfig-006-20260819    gcc-12
-i386                 randconfig-006-20260819    gcc-14
-i386                 randconfig-007-20260819    clang-22
-i386                 randconfig-007-20260819    gcc-14
-i386                 randconfig-011-20260819    gcc-13
-i386                 randconfig-011-20260819    gcc-14
-i386                 randconfig-012-20260819    gcc-14
-i386                 randconfig-013-20260819    gcc-14
-i386                 randconfig-014-20260819    clang-22
-i386                 randconfig-014-20260819    gcc-14
-i386                 randconfig-015-20260819    clang-22
-i386                 randconfig-015-20260819    gcc-14
-i386                 randconfig-016-20260819    clang-22
-i386                 randconfig-016-20260819    gcc-14
-i386                 randconfig-017-20260819    clang-22
-i386                 randconfig-017-20260819    gcc-14
-loongarch                          defconfig    clang-24
-loongarch            randconfig-001-20260819    gcc-11.5.0
-loongarch            randconfig-001-20260820    gcc-14.3.0
-loongarch            randconfig-002-20260819    gcc-11.5.0
-loongarch            randconfig-002-20260820    gcc-14.3.0
-m68k                         amiga_defconfig    gcc-16.1.0
-mips                          jazz_defconfig    clang-24
-nios2                           allmodconfig    gcc-11.5.0
-nios2                            allnoconfig    gcc-11.5.0
-nios2                randconfig-001-20260819    gcc-11.5.0
-nios2                randconfig-001-20260820    gcc-14.3.0
-nios2                randconfig-002-20260819    gcc-11.5.0
-nios2                randconfig-002-20260820    gcc-14.3.0
-parisc                          allmodconfig    gcc-16.1.0
-parisc                          allyesconfig    gcc-16.1.0
-parisc                             defconfig    gcc-16.1.0
-parisc               randconfig-001-20260819    clang-24
-parisc               randconfig-001-20260820    gcc-8.5.0
-parisc               randconfig-002-20260819    clang-24
-parisc               randconfig-002-20260820    gcc-8.5.0
-powerpc                        ps3_defconfig    gcc-16.1.0
-powerpc              randconfig-001-20260819    clang-24
-powerpc              randconfig-001-20260820    gcc-8.5.0
-powerpc              randconfig-002-20260819    clang-24
-powerpc              randconfig-002-20260820    gcc-8.5.0
-powerpc64            randconfig-001-20260819    clang-24
-powerpc64            randconfig-001-20260820    gcc-8.5.0
-powerpc64            randconfig-002-20260819    clang-24
-powerpc64            randconfig-002-20260820    gcc-8.5.0
-riscv                         randconfig-001    gcc-13.4.0
-riscv                randconfig-001-20260819    clang-24
-riscv                randconfig-001-20260819    gcc-8.5.0
-riscv                randconfig-002-20260819    clang-24
-riscv                randconfig-002-20260819    gcc-9.5.0
-s390                 randconfig-001-20260819    clang-24
-s390                 randconfig-001-20260819    gcc-14.3.0
-s390                 randconfig-002-20260819    clang-24
-sh                                 defconfig    gcc-16.1.0
-sh                kfr2r09-romimage_defconfig    gcc-16.1.0
-sh                   randconfig-001-20260819    clang-24
-sh                   randconfig-001-20260819    gcc-16.1.0
-sh                   randconfig-002-20260819    clang-24
-sh                   randconfig-002-20260819    gcc-11.5.0
-sh                     rts7751r2d1_defconfig    gcc-16.1.0
-sparc                randconfig-001-20260819    gcc-12.5.0
-sparc                randconfig-001-20260820    gcc-13.4.0
-sparc                randconfig-002-20260819    gcc-8.5.0
-sparc                randconfig-002-20260820    gcc-13.4.0
-sparc64              randconfig-001-20260819    clang-20
-sparc64              randconfig-001-20260820    gcc-13.4.0
-sparc64              randconfig-002-20260819    gcc-10.5.0
-sparc64              randconfig-002-20260820    gcc-13.4.0
-um                   randconfig-001-20260819    gcc-14
-um                   randconfig-001-20260820    gcc-13.4.0
-um                   randconfig-002-20260819    gcc-12
-um                   randconfig-002-20260820    gcc-13.4.0
-x86_64              buildonly-randconfig-001    gcc-12
-x86_64     buildonly-randconfig-001-20260819    gcc-14
-x86_64     buildonly-randconfig-001-20260820    gcc-14
-x86_64     buildonly-randconfig-002-20260819    gcc-14
-x86_64     buildonly-randconfig-002-20260820    gcc-14
-x86_64     buildonly-randconfig-003-20260819    gcc-14
-x86_64     buildonly-randconfig-003-20260820    gcc-14
-x86_64     buildonly-randconfig-004-20260819    gcc-14
-x86_64     buildonly-randconfig-004-20260820    gcc-14
-x86_64     buildonly-randconfig-005-20260819    gcc-14
-x86_64     buildonly-randconfig-005-20260820    gcc-14
-x86_64     buildonly-randconfig-006-20260819    gcc-14
-x86_64     buildonly-randconfig-006-20260820    gcc-14
-x86_64                                 kexec    clang-22
-x86_64               randconfig-001-20260819    gcc-14
-x86_64               randconfig-002-20260819    gcc-14
-x86_64               randconfig-003-20260819    gcc-14
-x86_64               randconfig-004-20260819    gcc-14
-x86_64               randconfig-005-20260819    gcc-14
-x86_64               randconfig-006-20260819    gcc-14
-x86_64                        randconfig-011    clang-22
-x86_64                        randconfig-011    gcc-14
-x86_64               randconfig-011-20260819    clang-22
-x86_64               randconfig-011-20260819    gcc-14
-x86_64               randconfig-012-20260819    clang-22
-x86_64               randconfig-012-20260819    gcc-14
-x86_64               randconfig-013-20260819    clang-22
-x86_64               randconfig-013-20260819    gcc-14
-x86_64               randconfig-014-20260819    clang-22
-x86_64               randconfig-014-20260819    gcc-14
-x86_64               randconfig-015-20260819    clang-22
-x86_64               randconfig-016-20260819    clang-22
-x86_64               randconfig-016-20260819    gcc-12
-x86_64                        randconfig-071    gcc-14
-x86_64               randconfig-071-20260819    gcc-14
-x86_64               randconfig-072-20260819    gcc-14
-x86_64               randconfig-073-20260819    gcc-12
-x86_64               randconfig-074-20260819    clang-22
-x86_64               randconfig-075-20260819    gcc-14
-x86_64               randconfig-076-20260819    gcc-14
-x86_64                          rhel-9.4-bpf    gcc-14
-xtensa               randconfig-001-20260819    gcc-16.1.0
-xtensa               randconfig-001-20260820    gcc-13.4.0
-xtensa               randconfig-002-20260819    gcc-14.3.0
-xtensa               randconfig-002-20260820    gcc-13.4.0
+diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+index 88291f775c22..05affaa04aa4 100644
+--- a/drivers/net/ethernet/intel/igc/igc.h
++++ b/drivers/net/ethernet/intel/igc/igc.h
+@@ -567,6 +567,7 @@ enum igc_tx_flags {
+ 
+ enum igc_boards {
+ 	board_base,
++	board_dock,
+ };
+ 
+ /* The largest size we can write to the descriptor is 65535.  In order to
+diff --git a/drivers/net/ethernet/intel/igc/igc_base.c b/drivers/net/ethernet/intel/igc/igc_base.c
+index ab9120a3127f..c9067cc79b69 100644
+--- a/drivers/net/ethernet/intel/igc/igc_base.c
++++ b/drivers/net/ethernet/intel/igc/igc_base.c
+@@ -474,4 +474,12 @@ const struct igc_info igc_base_info = {
+ 	.get_invariants		= igc_get_invariants_base,
+ 	.mac_ops		= &igc_mac_ops_base,
+ 	.phy_ops		= &igc_phy_ops_base,
++	.is_dock		= false,
++};
++
++const struct igc_info igc_dock_info = {
++	.get_invariants		= igc_get_invariants_base,
++	.mac_ops		= &igc_mac_ops_base,
++	.phy_ops		= &igc_phy_ops_base,
++	.is_dock		= true,
+ };
+diff --git a/drivers/net/ethernet/intel/igc/igc_hw.h b/drivers/net/ethernet/intel/igc/igc_hw.h
+index 62aaee55668a..d14b7666b5d7 100644
+--- a/drivers/net/ethernet/intel/igc/igc_hw.h
++++ b/drivers/net/ethernet/intel/igc/igc_hw.h
+@@ -69,9 +69,11 @@ struct igc_info {
+ 	struct igc_mac_operations *mac_ops;
+ 	const struct igc_phy_operations *phy_ops;
+ 	struct igc_nvm_operations *nvm_ops;
++	bool is_dock;
+ };
+ 
+ extern const struct igc_info igc_base_info;
++extern const struct igc_info igc_dock_info;
+ 
+ enum igc_forced_speed_duplex {
+ 	IGC_FORCED_10H,
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 82800a4a6d6c..15d0815a2110 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -11,6 +11,8 @@
+ #include <net/pkt_sched.h>
+ #include <linux/bpf_trace.h>
+ #include <net/xdp_sock_drv.h>
++#include <linux/acpi.h>
++#include <linux/hex.h>
+ #include <linux/pci.h>
+ #include <linux/mdio.h>
+ 
+@@ -44,6 +46,7 @@ static const char igc_copyright[] =
+ 
+ static const struct igc_info *igc_info_tbl[] = {
+ 	[board_base] = &igc_base_info,
++	[board_dock] = &igc_dock_info,
+ };
+ 
+ static const struct pci_device_id igc_pci_tbl[] = {
+@@ -54,8 +57,8 @@ static const struct pci_device_id igc_pci_tbl[] = {
+ 	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_K), .driver_data = board_base },
+ 	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_K2), .driver_data = board_base },
+ 	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I226_K), .driver_data = board_base },
+-	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_LMVP), .driver_data = board_base },
+-	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I226_LMVP), .driver_data = board_base },
++	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_LMVP), .driver_data = board_dock },
++	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I226_LMVP), .driver_data = board_dock },
+ 	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_IT), .driver_data = board_base },
+ 	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I226_LM), .driver_data = board_base },
+ 	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I226_V), .driver_data = board_base },
+@@ -7116,6 +7119,57 @@ static enum hrtimer_restart igc_qbv_scheduling_timer(struct hrtimer *timer)
+ 	return HRTIMER_NORESTART;
+ }
+ 
++static bool igc_get_acpi_mac_passthru(u8 *mac)
++{
++	static const struct {
++		const char *name;
++		acpi_object_type type;
++		u32 length;
++	} sources[] = {
++		{ "\\_SB.AMAC", ACPI_TYPE_BUFFER, 23 },
++		{ "\\MACA",     ACPI_TYPE_STRING, 22 },
++	};
++	struct acpi_buffer buffer;
++	union acpi_object *obj;
++	bool mac_found = false;
++	acpi_status status;
++	u8 buf[ETH_ALEN];
++	int i;
++
++	if (!IS_ENABLED(CONFIG_ACPI))
++		return false;
++
++	for (i = 0; i < ARRAY_SIZE(sources) && !mac_found; i++) {
++		buffer.length = ACPI_ALLOCATE_BUFFER;
++		buffer.pointer = NULL;
++
++		status = acpi_evaluate_object(NULL, (char *)sources[i].name,
++					      NULL, &buffer);
++		if (ACPI_FAILURE(status))
++			continue;
++
++		obj = buffer.pointer;
++		if (!obj || obj->type != sources[i].type ||
++		    obj->string.length != sources[i].length)
++			goto free_obj;
++
++		if (!strncmp(obj->string.pointer, "_AUXMAC_#", 9) ||
++		    obj->string.pointer[21] != '#')
++			goto free_obj;
++
++		if (hex2bin(buf, obj->string.pointer + 9, ETH_ALEN) ||
++		    !is_valid_ether_addr(buf))
++			goto free_obj;
++
++		ether_addr_copy(mac, buf);
++		mac_found = true;
++free_obj:
++		kfree(obj);
++	}
++
++	return mac_found;
++}
++
+ /**
+  * igc_probe - Device Initialization Routine
+  * @pdev: PCI device information struct
+@@ -7279,9 +7333,16 @@ static int igc_probe(struct pci_dev *pdev,
+ 	}
+ 
+ 	if (eth_platform_get_mac_address(&pdev->dev, hw->mac.addr)) {
+-		/* copy the MAC address out of the NVM */
+-		if (hw->mac.ops.read_mac_addr(hw))
++		/* Look for a system-provided MAC in the ACPI table before
++		 * falling back to reading the address from the NVM.
++		 */
++		if (ei->is_dock && igc_get_acpi_mac_passthru(hw->mac.addr)) {
++			netdev->addr_assign_type = NET_ADDR_STOLEN;
++			dev_info(&pdev->dev, "Using ACPI pass-thru MAC addr %pM\n",
++				 hw->mac.addr);
++		} else if (hw->mac.ops.read_mac_addr(hw)) {
+ 			dev_err(&pdev->dev, "NVM Read Error\n");
++		}
+ 	}
+ 
+ 	eth_hw_addr_set(netdev, hw->mac.addr);
+-- 
+2.43.7
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
