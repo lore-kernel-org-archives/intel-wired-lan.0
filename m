@@ -4,85 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E502CC5DF97
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 175DCC5DF96
 	for <intel-wired-lan@archiver.kernel.org>; Fri, 21 Aug 2026 15:25:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id B07438132E;
-	Fri, 21 Aug 2026 15:25:02 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id DAA3281369;
+	Fri, 21 Aug 2026 15:25:01 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id EvCxKFux7gCV; Fri, 21 Aug 2026 15:25:01 +0000 (UTC)
+ id HgWUIX8g2bZE; Fri, 21 Aug 2026 15:25:01 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
 	s=default; t=1787325901;
-	bh=SWS0vxQEWUCicnyfD/aXeNaw6YBmFo+GNtcRNV4ScmI=;
+	bh=OMybOzOLGh/VfoufWjUW6TuJUrtPEMS8IX34AZuw2zU=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=dE2ZZz4yorywecOWpj4+3P6v+e3+53Syyml30tlAMi8NBXJjRhC2Giar1KNfpTQXd
-	 FzCfG1symgdB4OqK9cvi4m0H+es9eoMOSeiekVrnpN+JPhnNZWykBaFIVdqh0EZmLC
-	 UMlbipngzlMNmaYcdaZ2T+TEX6Qh99u3BAriqSXMYVtEFk4FvaFHME8HcHdhurRtiZ
-	 WZ+tJj9JNEaMDRSTrosqfxoA994krEvw+SdAGClH4ODYn6tPUU4wjBQtkYf7E+2VR5
-	 3xtlWE6jfg1D3y29sPlBTdNSJtXDwwIh3WzdYqWYXVgf+vcc6rgIJjLcTM0m1aZ5hF
-	 hfMHf0TxN0udA==
+	b=Xg3vR/9mDADp4F+0YhJ6IW4xFZkvmzAxxthKdqd8vZ5pjbbT3JtCt/LFLPM7wET5T
+	 MGFZZfnlxp6spWDudKwQeVRdF4bgv205/b5ia/B//vXXD4oNoQo52lXv4JyctR8mHa
+	 mU5UscE83qERujzkvhUPcteO3FP+EEqVVUyPR+jcML4Mi+cIVrD13OA0TdMpPFsU3T
+	 +3cYHVnNM0Q8FJxZoPUM9Kyo47hX6lQQCSNN9RRqrgNq/ztdaRfO5Leqdukd1jx0Bf
+	 PkzdQpQWHF9/Hvk6SWaFbw5X1WJuWZfC3IABOcX/VAlL9a/dok/cQy5zVYo6wOvvKK
+	 hbR23VEYd0smA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id CA7CB8135B;
+	by smtp1.osuosl.org (Postfix) with ESMTP id 2E0A081330;
 	Fri, 21 Aug 2026 15:25:01 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 010223A4
- for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Aug 2026 15:25:00 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id CF3863A4
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Aug 2026 15:24:59 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id DB8C48132E
+ by smtp3.osuosl.org (Postfix) with ESMTP id C15B960666
  for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Aug 2026 15:24:59 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id t2eXALfKiMBu for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id YYk0fm6qpqi2 for <intel-wired-lan@lists.osuosl.org>;
  Fri, 21 Aug 2026 15:24:59 +0000 (UTC)
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.15;
  helo=mgamail.intel.com; envelope-from=sergey.temerkhanov@intel.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp1.osuosl.org;
+Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=knM8MX0T
+Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=h8/N3yzT
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
- by smtp1.osuosl.org (Postfix) with ESMTPS id E162481325
- for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Aug 2026 15:24:58 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 907C2605D3
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Aug 2026 15:24:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1787325899; x=1818861899;
+ t=1787325898; x=1818861898;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=BWEJljClCLoMqdC5CrvRogdJO+tr/guzV0d1rSKboEs=;
- b=knM8MX0Twl9QC5F54RCBZ5oCdwc0PyPBl9U6/0rAfp9BKBlEH+sQpwl6
- lTGLqvNa1Nso8cLrBsXESR7idfBwYBuWl8q2OIWhmh+VrvWg31kdQUpJw
- hMPEQb1jMXuDT9shG+HbPQhSOalwwMTF6uQ/jbf5tdk/E+sT3KmO0oP/I
- R/ZLAfpXZjzV9tq3aGJkBG8Rk439msXOPXzKUwHhjAeTwA6gpo7BjssFO
- qjfKkK8rwJ+y3BHUB13hZLwVuofQ3Y9FIw2TtdMWgWPgSIdRCCJhaEe/I
- vYgatGb+aan3IedDBV3eo63cE0q0mAUIy4KnvsouJSOLXIw4rDj4wo8tj w==;
-X-CSE-ConnectionGUID: HQSaiY41R0mJRqJcpPg9kw==
-X-CSE-MsgGUID: Uw93t904QrO+9i3wCApdbg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11882"; a="91553204"
-X-IronPort-AV: E=Sophos;i="6.25,235,1779174000"; d="scan'208";a="91553204"
+ bh=uS1Gk3FU8H9sDA2GM9EWDtq+Xlygp4KxaypBMwUQwy0=;
+ b=h8/N3yzTu0sN67Z9BKsxCbC/WfqrEdFGfz1Ft5aOBXI9gXoqmksjfA/W
+ TwKcC1QocmtzmTPI+BwxnEbPi/vTdzNDZrQWgOS36ludXXWwreYkGjAWp
+ qhSp4DjDR/Gpwqje79GcK6lTBTB4eCYMj/EcR1zRc5bnLHP8Pe0Tyb4se
+ zPCacwAZYfu0E4XRYGRSwJdK3ltvz6XO3qAJByqZgWQHMXnLbpH7CUyB2
+ cTMe10SD7eakgNYb6h3XJDDf0ipdRoZTuuabECzk5AD3quNYKXu8AWbhs
+ V/AtYzAFzAngxki0xsUm+hORzYlJ0djVaCudjY3RUQ5PnNIPXSRVBz+jw g==;
+X-CSE-ConnectionGUID: Hksr2zO9S52njqDVvLWK5Q==
+X-CSE-MsgGUID: Lamrh7QCSWap9GFR0YGY9w==
+X-IronPort-AV: E=McAfee;i="6800,10657,11882"; a="91553200"
+X-IronPort-AV: E=Sophos;i="6.25,235,1779174000"; d="scan'208";a="91553200"
 Received: from orviesa005.jf.intel.com ([10.64.159.145])
  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 21 Aug 2026 08:24:58 -0700
-X-CSE-ConnectionGUID: dbRnceBASMy97UvEKZn1Cg==
-X-CSE-MsgGUID: itlv4FlbTBS7AO1ie586oQ==
+ 21 Aug 2026 08:24:56 -0700
+X-CSE-ConnectionGUID: riteX99IQ666q2+XxzqFTQ==
+X-CSE-MsgGUID: 6dZFAxTHSAuzOrNuPlgyRQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,235,1779174000"; d="scan'208";a="270602192"
+X-IronPort-AV: E=Sophos;i="6.25,235,1779174000"; d="scan'208";a="270602188"
 Received: from gnrd8.igk.intel.com (HELO GNRD8) ([10.123.232.137])
- by orviesa005.jf.intel.com with ESMTP; 21 Aug 2026 08:24:57 -0700
+ by orviesa005.jf.intel.com with ESMTP; 21 Aug 2026 08:24:55 -0700
 From: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org
-Subject: [PATCH iwl-next v3 3/6] ice: dpll: Use switch statements to handle
- pin states
-Date: Fri, 21 Aug 2026 15:24:51 +0000
-Message-ID: <20260821152454.3703979-4-sergey.temerkhanov@intel.com>
+Subject: [PATCH iwl-next v3 1/6] ice: dpll: Add the MUX tables to the
+ documentation
+Date: Fri, 21 Aug 2026 15:24:49 +0000
+Message-ID: <20260821152454.3703979-2-sergey.temerkhanov@intel.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260821152454.3703979-1-sergey.temerkhanov@intel.com>
 References: <20260821152454.3703979-1-sergey.temerkhanov@intel.com>
@@ -102,167 +102,48 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-Use switch statements to handle pin states to make the code more
-readable. This also makes this code more future-proof, should any
-new states appear.
-
-This also changes how direction-mismatched state requests are handled in
-ice_dpll_sma_pin_state_set(). Previously, requesting CONNECTED on an
-INPUT-direction SMA pin or SELECTABLE on an OUTPUT-direction pin would
-fall through to ice_dpll_pin_disable() and return success. After this
-change those requests return -EINVAL without issuing a firmware command.
-Because the DPLL netlink core does not filter pin states by direction
-before calling the driver, this is a user-visible netlink API change.
+Add the tables documenting the DPLL pin MUX states and behavior
+to the driver.
 
 Signed-off-by: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Reviewed-by: Przemyslaw Korba <przemyslaw.korba@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_dpll.c | 72 ++++++++++++++++++-----
- 1 file changed, 57 insertions(+), 15 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_dpll.c | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_dpll.c b/drivers/net/ethernet/intel/ice/ice_dpll.c
-index 4dcbbabee7aa..f4d6c247e96e 100644
+index 382fbe98f2b0..9b3584fa43a9 100644
 --- a/drivers/net/ethernet/intel/ice/ice_dpll.c
 +++ b/drivers/net/ethernet/intel/ice/ice_dpll.c
-@@ -1338,10 +1338,12 @@ ice_dpll_ufl_pin_state_set(const struct dpll_pin *pin, void *pin_priv,
- 	ret = -EINVAL;
- 	switch (p->idx) {
- 	case ICE_DPLL_PIN_SW_1_IDX:
--		if (state == DPLL_PIN_STATE_CONNECTED) {
-+		switch (state) {
-+		case DPLL_PIN_STATE_CONNECTED:
- 			data &= ~ICE_SMA1_MASK;
- 			enable = true;
--		} else if (state == DPLL_PIN_STATE_DISCONNECTED) {
-+			break;
-+		case DPLL_PIN_STATE_DISCONNECTED:
- 			/* Skip if U.FL1 is not active, setting TX_EN
- 			 * while DIR_EN is set would also deactivate
- 			 * the paired SMA1 output.
-@@ -1352,18 +1354,21 @@ ice_dpll_ufl_pin_state_set(const struct dpll_pin *pin, void *pin_priv,
- 			}
- 			data |= ICE_SMA1_TX_EN;
- 			enable = false;
--		} else {
-+			break;
-+		default:
- 			goto unlock;
- 		}
- 		target = p->output;
- 		type = ICE_DPLL_PIN_TYPE_OUTPUT;
- 		break;
- 	case ICE_DPLL_PIN_SW_2_IDX:
--		if (state == DPLL_PIN_STATE_SELECTABLE) {
-+		switch (state) {
-+		case DPLL_PIN_STATE_SELECTABLE:
- 			data |= ICE_SMA2_DIR_EN;
- 			data &= ~ICE_SMA2_UFL2_RX_DIS;
- 			enable = true;
--		} else if (state == DPLL_PIN_STATE_DISCONNECTED) {
-+			break;
-+		case DPLL_PIN_STATE_DISCONNECTED:
- 			/* Skip if U.FL2 is not active, setting
- 			 * UFL2_RX_DIS could also disable the paired
- 			 * SMA2 input.
-@@ -1375,7 +1380,8 @@ ice_dpll_ufl_pin_state_set(const struct dpll_pin *pin, void *pin_priv,
- 			}
- 			data |= ICE_SMA2_UFL2_RX_DIS;
- 			enable = false;
--		} else {
-+			break;
-+		default:
- 			goto unlock;
- 		}
- 		target = p->input;
-@@ -1497,19 +1503,49 @@ ice_dpll_sma_pin_state_set(const struct dpll_pin *pin, void *pin_priv,
- 		return -EBUSY;
+@@ -92,6 +92,29 @@ static const struct dpll_pin_frequency ice_esync_range[] = {
+ 	DPLL_PIN_FREQUENCY_RANGE(0, DPLL_PIN_FREQUENCY_1_HZ),
+ };
  
- 	mutex_lock(&pf->dplls.lock);
--	if (!sma->active) {
--		ret = ice_dpll_sma_direction_set(sma, sma->direction, extack);
--		if (ret)
-+	switch (state) {
-+	case DPLL_PIN_STATE_SELECTABLE:
-+		if (sma->direction == DPLL_PIN_DIRECTION_OUTPUT) {
-+			enable = false;
-+			ret = -EINVAL;
-+			goto unlock;
-+		}
-+		enable = true;
-+		break;
-+	case DPLL_PIN_STATE_CONNECTED:
-+		if (sma->direction == DPLL_PIN_DIRECTION_INPUT) {
-+			enable = false;
-+			ret = -EINVAL;
- 			goto unlock;
-+		}
-+		enable = true;
-+		break;
-+	case DPLL_PIN_STATE_DISCONNECTED:
-+		enable = false;
-+		break;
-+	default:
-+		ret = -EINVAL;
-+		goto unlock;
- 	}
--	if (sma->direction == DPLL_PIN_DIRECTION_INPUT) {
--		enable = state == DPLL_PIN_STATE_SELECTABLE;
++/*
++ * SMA1/U.FL1 MUX table
++ *+----------------+-------------+------------+
++ *|                | SMA1_DIR_EN | SMA1_TX_EN |
++ *+----------------+-------------+------------+
++ *|SMA1 RX Enable  |       0     |      x     |
++ *|u.FL1 TX Enable |       0     |      0     |
++ *|SMA1 TX Enable  |       1     |      0     |
++ *|All Disable     |       1     |      1     |
++ *+----------------+-------------+------------+
++ *
++ * SMA2/U.FL2 MUX table
++ *+----------------+-------------+------------+------------+
++ *|                | SMA2_DIR_EN | SMA2_TX_EN | UFL2_RX_EN |
++ *+----------------+-------------+------------+------------+
++ *|SMA2 RX Enable  |       0     |      x     |     x      |
++ *|u.FL2 RX Enable |       1     |      x     |     0      |
++ *|SMA2 TX Enable  |       1     |      0     |     x      |
++ *|SMA2 Disable    |       1     |      1     |     x      |
++ *|All Disable     |       1     |      1     |     1      |
++ *+----------------+-------------+------------+------------+
++ */
 +
-+	switch (sma->direction) {
-+	case DPLL_PIN_DIRECTION_INPUT:
- 		target = sma->input;
- 		type = ICE_DPLL_PIN_TYPE_INPUT;
--	} else {
--		enable = state == DPLL_PIN_STATE_CONNECTED;
-+		break;
-+	case DPLL_PIN_DIRECTION_OUTPUT:
- 		target = sma->output;
- 		type = ICE_DPLL_PIN_TYPE_OUTPUT;
-+		break;
-+	default:
-+		ret = -EINVAL;
-+		goto unlock;
-+	}
-+
-+	if (!sma->active) {
-+		ret = ice_dpll_sma_direction_set(sma, sma->direction, extack);
-+		if (ret)
-+			goto unlock;
- 	}
- 
- 	if (enable)
-@@ -4917,7 +4953,8 @@ static int ice_dpll_init_info_sw_pins(struct ice_pf *pf)
- 		pin->prop.capabilities = caps;
- 		pin->pf = pf;
- 		pin->prop.board_label = ice_dpll_sw_pin_ufl[i];
--		if (i == ICE_DPLL_PIN_SW_1_IDX) {
-+		switch (i) {
-+		case ICE_DPLL_PIN_SW_1_IDX:
- 			pin->direction = DPLL_PIN_DIRECTION_OUTPUT;
- 			pin_abs_idx = ICE_DPLL_PIN_SW_OUTPUT_ABS(i);
- 			pin->prop.freq_supported =
-@@ -4927,7 +4964,8 @@ static int ice_dpll_init_info_sw_pins(struct ice_pf *pf)
- 			pin->prop.freq_supported_num = freq_supp_num;
- 			pin->input = NULL;
- 			pin->output = &d->outputs[pin_abs_idx];
--		} else if (i == ICE_DPLL_PIN_SW_2_IDX) {
-+			break;
-+		case ICE_DPLL_PIN_SW_2_IDX:
- 			pin->direction = DPLL_PIN_DIRECTION_INPUT;
- 			pin_abs_idx = ICE_DPLL_PIN_SW_INPUT_ABS(i) +
- 				      input_idx_offset;
-@@ -4940,6 +4978,10 @@ static int ice_dpll_init_info_sw_pins(struct ice_pf *pf)
- 			pin->prop.capabilities =
- 				(DPLL_PIN_CAPABILITIES_PRIORITY_CAN_CHANGE |
- 				 caps);
-+			break;
-+		default:
-+			dev_err(ice_pf_to_dev(pf), "Invalid U.FL pin index: %d\n", i);
-+			return -EINVAL;
- 		}
- 		pin->muxed = &d->sma[i];
- 		ice_dpll_phase_range_set(&pin->prop.phase_range, phase_adj_max);
+ /**
+  * ice_dpll_is_sw_pin - check if given pin shall be controlled by SW
+  * @pf: private board structure
 -- 
 2.53.0
 
