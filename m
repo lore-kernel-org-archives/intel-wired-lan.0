@@ -4,213 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 723FAC5DF7D
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 21 Aug 2026 12:22:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7977BC5DF87
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 21 Aug 2026 13:02:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2FAC060A3F;
-	Fri, 21 Aug 2026 12:22:25 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 22C6F60896;
+	Fri, 21 Aug 2026 13:02:05 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 657Rv4zGNuyK; Fri, 21 Aug 2026 12:22:24 +0000 (UTC)
+ id kBEgpzmJSX5R; Fri, 21 Aug 2026 13:02:04 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1787314944;
-	bh=8JJ4PU1w/CslgxtJLCOa1o4SY/M/lMPOG1hqS5Ccb0I=;
-	h=From:To:CC:Subject:Date:References:In-Reply-To:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=FboR6q+JETbCPgBesiB/X4AwdMs9SK5zvXeLTFWU3jQseme6PdDF7ExoixfNKznZ5
-	 UBrimj17LJtZUkSG6y5x2WA8NDkqLTpwRWOinrf5FNfq7wC5/lfdkfqqK38aDHSRP6
-	 tT4eESNLFNm8tzMyhQXvUN/eq2AEMw59OTGqQS8ULlcXGfD08LwZJJXs9Y8KYSecPM
-	 OSv1np6jUl+vyvCWNNR4SVE3/CteOwmPLi6hKh+Frp1HHutZ+cPRP7/fyYe8zF67eo
-	 GTu3kDcZ7+uW4Xj36gSm572HEYGJ/2SkyDG70/i0TW1NMxHZPNG50uNXp1XbNcqhgA
-	 IIPkV8D/GVTGg==
+	s=default; t=1787317324;
+	bh=kgfYJ0OS3v9OVnlW4ghWV/utX1NlmQRbFaMq+u22tKk=;
+	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=cMeuhrJPX4E3uRfJNLIausPPzMewrekjh0T8uLjdqSI53QZ8NjYntswk8lZsVs2Ru
+	 SY7N1CoCyG8pb6Zjj209e2FyYJPQoy3Xzfdc3bmDw0dhX+/9yEEor+qdmnZPBeKVqC
+	 l9KU4j9Z19Ly2BNhUY9+c9yXgP5hI/lF3Bywd3PHa/AwIgY02ffz654mjtzZVfQLRu
+	 9czYq1nGWsim9Iw6+Y3nZm+bYLVyd2Cew0TgC3ojneplpv5wmSYz9l4hRR+CGdrCzn
+	 8CTRI4EeMZli2kDggFZP+jAuvouKas50FRsxrHBZB2vm7s53D708JrpAcjIexZh2kF
+	 4jvhr6xvT8i2Q==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 381B760896;
-	Fri, 21 Aug 2026 12:22:24 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 55A823A4
- for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Aug 2026 12:22:22 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 539AE606BD;
+	Fri, 21 Aug 2026 13:02:04 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 06050EA3
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Aug 2026 13:02:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 46AD540125
- for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Aug 2026 12:22:22 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id E0B4540962
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Aug 2026 13:02:02 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ayyB78OoN117 for <intel-wired-lan@lists.osuosl.org>;
- Fri, 21 Aug 2026 12:22:21 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.18;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id tefrqo6bOFPc for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 21 Aug 2026 13:02:02 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.16;
  helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org;
+Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=BEiVFl/P
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 3E1B9400DC
- for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Aug 2026 12:22:20 +0000 (UTC)
+Authentication-Results: smtp4.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=Ub2bPqmP
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 00736405EB
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Aug 2026 13:02:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1787314942; x=1818850942;
- h=from:to:cc:subject:date:message-id:references:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=ZxywOCVtcW0wuFuX6A63sYHcsMPhuvZWcHrIQIMtxpE=;
- b=BEiVFl/PVPe1I3U49VYRa/qXybuKokRaM0dim9mSbvhnETSqQ051jO1Y
- Dsi/zhRnJJdYzZsPHyAaOWyiZ97v2sVTYJ6CsXJ+k/DlR4UdVyJekTl8j
- 0YYpwliaoDrTZSd4btl7Xk8c1IzMqi65OfeRwJjf4dU+H5CHWwcgMo1b1
- xuMNgwUtjj0DUTV6s0ZjblTSFb6EvujmQ/PNXq/e1X9amU+inpVN5igYn
- 8KSAKNtNG+3qF4RmnwAm8J9gyqVo032sEtOuhXkMz/wO/7SQ5XP4N2ktr
- AJeJkBChi85sE9wozAXoPBQ8f2nFzPrGAaaDzhFkMsnd3WVGlrkWD8krH Q==;
-X-CSE-ConnectionGUID: sNTEcesdRW6fHSvJYe/Hhg==
-X-CSE-MsgGUID: zCFzOOu+TeC/DuHO9Gu4fg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11881"; a="87922908"
-X-IronPort-AV: E=Sophos;i="6.25,235,1779174000"; d="scan'208";a="87922908"
-Received: from fmviesa010.fm.intel.com ([10.60.135.150])
- by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 21 Aug 2026 05:22:20 -0700
-X-CSE-ConnectionGUID: uI7PjAtqRv24mdOTrqvRbQ==
-X-CSE-MsgGUID: 11f4ZY/+TAi96/zWwVovbg==
+ t=1787317322; x=1818853322;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=nw3iUyLxXldjaUCaQJDPrq3oYRJPiB2mPDaxB+mHRck=;
+ b=Ub2bPqmPVaG4XkggJjbOb32eowGtGU3Jmzf9mwkyW1H8w6aDNP1/G0AI
+ xrgGm66rDKJI0yjx7eLl/XdAN1iRs8Tj36TzniqG/KYE/o8ddcR3K5Sxa
+ ExzTKBRJUN4s9CRLrEPnyyYDMeUANsDYNTJdunP5vChQeG2JPzTSR5Yzr
+ FOCAzqStS5FDxYiOasStrmrQgTLn5ZrZ3Ih3l3gh2VY8E5IO7q8lKJFeh
+ d8PZBCyn88mO0LqvgLOixpI7puNYlLTbu14iPzkiWTVyy4jyL/7IA53me
+ L0kQnF6ZBv0K0dGaozX05JrNBM7I86Kd2B+6Vvxa3XK6BxM671zBX5Qab w==;
+X-CSE-ConnectionGUID: MU4C7Cm6TRuIRLOWSiKt1w==
+X-CSE-MsgGUID: t5d9Ocq2So2Tb0AEVF0O6w==
+X-IronPort-AV: E=McAfee;i="6800,10657,11882"; a="75400961"
+X-IronPort-AV: E=Sophos;i="6.25,235,1779174000"; d="scan'208";a="75400961"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+ by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 21 Aug 2026 06:02:01 -0700
+X-CSE-ConnectionGUID: USNqRBxKQ0OgKvCPieX+Ww==
+X-CSE-MsgGUID: GOh2slfXSJeSDoOtm9AlAg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,235,1779174000"; d="scan'208";a="262619822"
-Received: from fmsmsx903.amr.corp.intel.com ([10.18.126.92])
- by fmviesa010.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 21 Aug 2026 05:22:19 -0700
-Received: from FMSMSX901.amr.corp.intel.com (10.18.126.90) by
- fmsmsx903.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.45; Fri, 21 Aug 2026 05:22:19 -0700
-Received: from fmsedg903.ED.cps.intel.com (10.1.192.145) by
- FMSMSX901.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.45 via Frontend Transport; Fri, 21 Aug 2026 05:22:19 -0700
-Received: from CH5PR02CU005.outbound.protection.outlook.com (40.107.200.1) by
- edgegateway.intel.com (192.55.55.83) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.45; Fri, 21 Aug 2026 05:22:16 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=VOFJHSuKwWJKcKbi0Q3W/IKbBNCe3xfTVYN8n3GURzMvYKmBwaS6ITjV1eSpTG3Gcg2xSPE1ovnqgnEbwLq4wVtMA6+Ejwxgql5EzOikvq1JBMteF/Uk0lo/oiVpjnD8afUUVl084PivGqg4chReJn0L3YnZP/3/gp6oHnkT2oRws1Oc6YjTzUeuAnxiL1pCrbWqo6a20LgDL2c18IDAVkkXQ8ioPy4QApvEdyk1n2gO2Q4/UEVuyRwEhG3LjkJ/b5xMQs8iw61IExKfxvnaS5R/JbMpdB/62OSDVgFkGVlQG56jFHUspWQFlWK2jlZoiYRv12P7s3FLIwiaYfyxQA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=8JJ4PU1w/CslgxtJLCOa1o4SY/M/lMPOG1hqS5Ccb0I=;
- b=QJ+wuE9/X8erbtMc+0+jOfHDwGGQNNbHk+vPy3bgrnSWgQrL6KQrXh/PoQyanSuzXUhkDE6In28g5oQjzbJEy7oocAqYvwb8zRVXiWGVl6UxtV0nsXgJyh166b4hpHqjf2Sv98U29iPGdb4oSrnZ/7U48urqBAzB8HMoOAmkK3ImoHUgUzv4sj4DZZ6iOYlKbTiRPK2iDOWubGp4Ldg7Yt/YeoF9lECevBODsUwLlwjx6m6XMTjwn26gQJbYXWIK4pBGoKvy7dPoNGmFcUriXBD6Uc3vVeO/xYmlaJpHEF9E3JhHz8IB67CkgCZKYwkGHDe+NrzJosPzkVTgeXnVIA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from IA3PR11MB8986.namprd11.prod.outlook.com (2603:10b6:208:577::21)
- by PH7PR11MB5768.namprd11.prod.outlook.com (2603:10b6:510:131::21)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.339.10; Fri, 21 Aug
- 2026 12:22:08 +0000
-Received: from IA3PR11MB8986.namprd11.prod.outlook.com
- ([fe80::e6f0:6afb:6ef9:ab5c]) by IA3PR11MB8986.namprd11.prod.outlook.com
- ([fe80::e6f0:6afb:6ef9:ab5c%6]) with mapi id 15.21.0339.008; Fri, 21 Aug 2026
- 12:22:08 +0000
-From: "Loktionov, Aleksandr" <aleksandr.loktionov@intel.com>
-To: Stanislav Fomichev <sdf.kernel@gmail.com>, "netdev@vger.kernel.org"
- <netdev@vger.kernel.org>
-CC: "davem@davemloft.net" <davem@davemloft.net>, "edumazet@google.com"
- <edumazet@google.com>, "kuba@kernel.org" <kuba@kernel.org>,
- "pabeni@redhat.com" <pabeni@redhat.com>, "Nguyen, Anthony L"
- <anthony.l.nguyen@intel.com>, "Kitszel, Przemyslaw"
- <przemyslaw.kitszel@intel.com>, "andrew+netdev@lunn.ch"
- <andrew+netdev@lunn.ch>, "saeedm@nvidia.com" <saeedm@nvidia.com>,
- "tariqt@nvidia.com" <tariqt@nvidia.com>, "mbloch@nvidia.com"
- <mbloch@nvidia.com>, "maxime.chevallier@bootlin.com"
- <maxime.chevallier@bootlin.com>, "mcoquelin.stm32@gmail.com"
- <mcoquelin.stm32@gmail.com>, "alexandre.torgue@foss.st.com"
- <alexandre.torgue@foss.st.com>, "Lobakin, Aleksander"
- <aleksander.lobakin@intel.com>, "horms@kernel.org" <horms@kernel.org>,
- "Karlsson, Magnus" <magnus.karlsson@intel.com>, "Fijalkowski, Maciej"
- <maciej.fijalkowski@intel.com>, "sdf@fomichev.me" <sdf@fomichev.me>,
- "ast@kernel.org" <ast@kernel.org>, "daniel@iogearbox.net"
- <daniel@iogearbox.net>, "hawk@kernel.org" <hawk@kernel.org>,
- "john.fastabend@gmail.com" <john.fastabend@gmail.com>, "guoren@kernel.org"
- <guoren@kernel.org>, "dtatulea@nvidia.com" <dtatulea@nvidia.com>,
- "witu@nvidia.com" <witu@nvidia.com>, "martin.lau@kernel.org"
- <martin.lau@kernel.org>, "Song, Yoong Siang" <yoong.siang.song@intel.com>,
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
- "linux-stm32@st-md-mailman.stormreply.com"
- <linux-stm32@st-md-mailman.stormreply.com>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, "bpf@vger.kernel.org"
- <bpf@vger.kernel.org>, "linux-csky@vger.kernel.org"
- <linux-csky@vger.kernel.org>, "leon@kernel.org" <leon@kernel.org>
-Subject: RE: [PATCH net v3 2/3] xsk: honor XDP_TX_METADATA in zero-copy path
-Thread-Topic: [PATCH net v3 2/3] xsk: honor XDP_TX_METADATA in zero-copy path
-Thread-Index: AQHdL/SmXgyqtDdYQUaVd2408OQu7Laob2Cw
-Date: Fri, 21 Aug 2026 12:22:07 +0000
-Message-ID: <IA3PR11MB8986C83D3B64E9670AAFF1D4E5A32@IA3PR11MB8986.namprd11.prod.outlook.com>
-References: <20260819160535.1472459-1-sdf@fomichev.me>
- <20260819160535.1472459-3-sdf@fomichev.me>
-In-Reply-To: <20260819160535.1472459-3-sdf@fomichev.me>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: IA3PR11MB8986:EE_|PH7PR11MB5768:EE_
-x-ms-office365-filtering-correlation-id: 32a87d19-98d6-4ed5-546a-08deff7ed189
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
- ARA:13230040|1800799024|376014|7416014|366016|23010399003|22082099003|18002099003|4143699003|56012099006|38070700021|11063799006|10067099003;
-x-microsoft-antispam-message-info: oP6rfCLg2+dqK1YMQuIf2KZ7VSQlKEz8D2OKSGY91Qa9v+w2m29+lh7udbeVt+4yFaDFHtqd2bJsfu9nQNKIGLQfcAC+9exGpeYwVUguIUoPOyyteEIh0fks9YcR1Pnah++FayLr7cE9hXdcTGWqKn3LS9MRn90+zwFmrb/Sf8JL7zfVq51fvTGbVKaLEYxKo0/MO3FDS3aCEDFaJesMCMRnVqBCSnjDe7i0WgHx55ZRHqwgoaUDZFpgVeDbSIVeUJlZjlQemC3noTRsRbW2jCXUyLSoN9APaji2aY5YPl1lG3HDHhgF4yLCJo2R3i4YHz+Subt5m2FRp/yjXNZQOZ5eelLu4yknYY+6NzpkVSd1LJ5Ghim5Q4cBWBh58uX86Rda6KiiPcUE+wzhfqQtPhF6kf0Q04Xn29iTQUn8aeikn6kcvx+pqISbwomndaSoESo9OQI/3oNUfoiEIqlzSk/HI4axTMd+Iv6paEFks52tWZrT0LmLPeSYGAVSWUmpqI93MeXtUWPAZ9wLt8OabDnz8ONGDpm1OMHWBJLX6j2Tu2to1mc66O4hkY1LBvvT2IlOtg01F3Nn4yK73tWLBGe1kyx1MF/WEwzdvVfL4j6uUsSWO/Nh6rPMLqNlbQUhQiuX4N7GqcK7yupZ4cdLYsLgSqPUa/FBbkG5gjMDhGMUQvGW2TcET5gO+QO56fGXRoavAUCHROviS/OXrg39bg==
-x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:IA3PR11MB8986.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230040)(1800799024)(376014)(7416014)(366016)(23010399003)(22082099003)(18002099003)(4143699003)(56012099006)(38070700021)(11063799006)(10067099003);
- DIR:OUT; SFP:1101; 
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?bpFjVRlZ4ICH3yjjtMROUKtBtTQvGj3iK9BUIs7fSi81V68bQ6nDG8KRjjbo?=
- =?us-ascii?Q?2q9uejvX/3glcrsNkrHZrEBt9TpCsyAzUI8BafZgYFVdW7rXu+YbvKoH/YOc?=
- =?us-ascii?Q?sF1Omz+nEl/Rda4xZitg4PCX8yubUcukyoceOkXj8uI7tMyfsnlMTf4/fQ2H?=
- =?us-ascii?Q?ZFL8wncSFE9YCL8qV3m6Ow7RpwOi1LWoNIIEWFccN2TbSb1W1hsOYtXMfMfx?=
- =?us-ascii?Q?ZVnL4CJ9xRIDBqOw8EjV3F4Q2JGQcp65SZcm6eKiPUK+fLCdwnGYkgSo8J6y?=
- =?us-ascii?Q?wRexSaX4SLQ1PRVR27oGJ+LJrxbFi+P25YNP7GTqlOsVhg/0JTOcJZLMgH7N?=
- =?us-ascii?Q?vewJa5kV/WCCsrIa50uoKDz1uEddTjXNeE2UCDCrddhSzFlM5J+syBkIE32I?=
- =?us-ascii?Q?xOYs3kGsKRK95IBanDf70k3IW4rDVK9tSYPoztYr+kNTmL6kAURYZkTTc0/u?=
- =?us-ascii?Q?HaZTFEMfieTlZPWkRcAxLbIOoGGHaH6YxccdPf8XQ8PfBUyR0mWg4hWt4Ngk?=
- =?us-ascii?Q?0h+RduFBCubsfGWcTRKoIhLgh149uYNe+ZUBiIHR7N3cEc4P7RQA/9PVaOlP?=
- =?us-ascii?Q?37C+jpoarbwnHtlaIR2a7x5n72ZmpGuNNKXdPLQ+ovF7taeKIKy2u0A5ClKz?=
- =?us-ascii?Q?yWo/Hg2DJDyqxOu9Xb/y9iI+ouTSqpLkccdrn8ZrIKfZbCMg5rmo2Y/J9vNX?=
- =?us-ascii?Q?PgmYaIuIfj+WAEGeXHLDwjXtJS3dbNjuP+OWS2nuUZC+7gNLJn7ZbGAD0eJW?=
- =?us-ascii?Q?hpBO4YZ1DkeyfgqnevRWTEmjOEN5A/CMPE49GWy7pHDWIYJWz7ffXNsFG20j?=
- =?us-ascii?Q?4B8oVa6on2GiFtXxI1XxmWWMI34njgy/MBl/wVtuDSJODL2xoooz/YQnZkB5?=
- =?us-ascii?Q?OWpVcpCcbYfe5omhn8BVsVGD+2ZqQ9ihRSTfJCoTLOPlyn80Qgynn8B5KqJ7?=
- =?us-ascii?Q?3h4BpFRtcnqbRUVQL5hTLRlRxvaFXLaxkOYRflbcboumtatYVBKN7Iv0rehG?=
- =?us-ascii?Q?f7ptKVSBPWZeT7u9W2qXkesvmNb8KUbyOSDdGiKyYXormf5/xM74MF4qVIcn?=
- =?us-ascii?Q?krrQ3cgv/JTr3DzUcyLCPlsb3lsapFkAXBF7gzoKPTqf25V4KV4rRwQo4Rp/?=
- =?us-ascii?Q?ozw2pl6CA/4APHeATzxiLwiIpffgqDAVsW6RPIaXMuZbASpGbeAQyg8deXbg?=
- =?us-ascii?Q?R/w9WYSwIODC1hM2FtRKmpuBIKoO8cx+gI/U5q+0JOK11LyqO/DtVyvWMIYB?=
- =?us-ascii?Q?OLdbpgITBsNEDz12ircKwix143RkbYJtRYy26ZN5wSkL4xG98qptguU/vhN8?=
- =?us-ascii?Q?4IpFE8+sgp8n9tdHE02iCk1C4uzu53iQKBrl5v8FqlTEMdgaL9MZX1CgdStE?=
- =?us-ascii?Q?a2c159UQeZ/I5OkEfdhlXMsYfqokxOLnVjeDcQ5FWZqyP2kPYn31FcKjU1bH?=
- =?us-ascii?Q?JoFBZXI32/FQI17pvn/sfg6P6npGF5OHZ2s1JRBQ52uH74/QQ2I8Jo71uRmL?=
- =?us-ascii?Q?hKay4AEr/7Xc+/3vkSUaiozjNrnamJgyDttICM7zZGKDqs5AqE/Oiqw6HhTr?=
- =?us-ascii?Q?8TOV9I1lIyLY3HW+EMNW5ysftsvdG0Fylc7VX/vkCTke+mP/KhNgoLmUtNkF?=
- =?us-ascii?Q?QVEWx1pOO9YjnL+45RH4QySR/jeQeK+m0m5Z60ll5c/WES4UvmgqIEB2tgm8?=
- =?us-ascii?Q?V3VpFfxEXaTrwLlDZxofY8GbaISh27rAsN/b1SE45A93wjXSwooG6nr9SIH7?=
- =?us-ascii?Q?3jB7Thci90ni8GdZcngfqRz6rvLsHhs=3D?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+X-IronPort-AV: E=Sophos;i="6.25,235,1779174000"; d="scan'208";a="271568479"
+Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
+ by fmviesa005.fm.intel.com with ESMTP; 21 Aug 2026 06:01:59 -0700
+From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+To: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
+ aleksandr.loktionov@intel.com
+Cc: netdev@vger.kernel.org,
+	Simon Horman <horms@kernel.org>
+Subject: [PATCH iwl-net v2 0/2] i40e: fix set_ringparam error path crashes
+Date: Fri, 21 Aug 2026 15:01:55 +0200
+Message-ID: <20260821130157.1451118-1-aleksandr.loktionov@intel.com>
+X-Mailer: git-send-email 2.52.0
 MIME-Version: 1.0
-X-Exchange-RoutingPolicyChecked: T6OCH/5iCgNEE7muiyVVFw/YSyipv2xHtoJg39C13rDt/1tIRfdKizjT8utLKHRv9F3RPQwPN1XPWeeQV6+4EayMY38Xm5OgXGomr70znpSUHWyHdiODdQtsNhFD/0eWBH8mXgiBNxBTt6gho94qlnYElUJUEYpKqJGGs4xa0Q3ssdqa0imnNf4aQ6zf46N7QHtUWSf2+aVYFycf0zP8ilplciQw9/2DH0myBhkD81UdICkn2OJQ30UCMuqJBmk34JPYsSbBGSvIFUzWZ1kUuk5cQ31BXi4+Ikf6xD/2PNAAjKfd6gIpgKCxWLiiFSEs28XI1Vxj7FgYMe23f4qJwg==
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: IA3PR11MB8986.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 32a87d19-98d6-4ed5-546a-08deff7ed189
-X-MS-Exchange-CrossTenant-originalarrivaltime: 21 Aug 2026 12:22:07.9547 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: uZJFi7jZkZmHPV7zdZK5Dh4/0sYnJE+GVutUcHe1QOGUrD7UwZsyaQl5aG4No2XSxNUXoCO0xLgmXcYkSKkYI0KShdFqNHvg4dGSA8igtc0=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR11MB5768
-X-OriginatorOrg: intel.com
+Content-Transfer-Encoding: 8bit
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -225,268 +100,57 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
+i40e_set_ringparam() has two independent ways to crash a live queue
+while resizing descriptors. Both need a failure injected into the
+middle of the resize to hit, but both are 100% reliable once you know
+where.
 
+Patch 1 is the reported bug: the free_tx: label frees vsi->tx_rings[i]
+(the live, NAPI-active ring) instead of &tx_rings[i] (the staged copy),
+on Rx allocation failure. desc/tx_bi go to NULL under a running NAPI,
+next poll dereferences them. Reproduced by forcing an Rx alloc failure
+right after a Tx descriptor count change; panic address matched the
+original report exactly (CR2 == old_count * sizeof(desc)).
 
-> -----Original Message-----
-> From: Stanislav Fomichev <sdf.kernel@gmail.com>
-> Sent: Wednesday, August 19, 2026 6:06 PM
-> To: netdev@vger.kernel.org
-> Cc: davem@davemloft.net; edumazet@google.com; kuba@kernel.org;
-> pabeni@redhat.com; Nguyen, Anthony L <anthony.l.nguyen@intel.com>;
-> Kitszel, Przemyslaw <przemyslaw.kitszel@intel.com>;
-> andrew+netdev@lunn.ch; saeedm@nvidia.com; tariqt@nvidia.com;
-> mbloch@nvidia.com; maxime.chevallier@bootlin.com;
-> mcoquelin.stm32@gmail.com; alexandre.torgue@foss.st.com; Lobakin,
-> Aleksander <aleksander.lobakin@intel.com>; horms@kernel.org; Karlsson,
-> Magnus <magnus.karlsson@intel.com>; Fijalkowski, Maciej
-> <maciej.fijalkowski@intel.com>; sdf@fomichev.me; ast@kernel.org;
-> daniel@iogearbox.net; hawk@kernel.org; john.fastabend@gmail.com;
-> guoren@kernel.org; dtatulea@nvidia.com; witu@nvidia.com;
-> martin.lau@kernel.org; Song, Yoong Siang <yoong.siang.song@intel.com>;
-> intel-wired-lan@lists.osuosl.org; linux-kernel@vger.kernel.org; linux-
-> rdma@vger.kernel.org; linux-stm32@st-md-mailman.stormreply.com; linux-
-> arm-kernel@lists.infradead.org; bpf@vger.kernel.org; linux-
-> csky@vger.kernel.org; leon@kernel.org
-> Subject: [PATCH net v3 2/3] xsk: honor XDP_TX_METADATA in zero-copy
-> path
->=20
-> The zero-copy path reads TX metadata whenever the UMEM has metadata
-> space, even if the descriptor does not set XDP_TX_METADATA. Pass
-> descriptor options through the metadata helpers and ignore metadata
-> unless the option is set.
->=20
-> This does not fix the existing per-WQE metadata handling for mlx5
-> MPWQEs.
-> Only the descriptor that starts a session passes through
-> xsk_tx_metadata_request() and configures offload state shared by the
-> batch.
-> Metadata on descriptors joining an open session is therefore not
-> validated and does not configure its requested offloads. In addition,
-> a non-NULL metadata pointer from such a descriptor is treated as a
-> timestamp completion request even when XDP_TXMD_FLAGS_TIMESTAMP is not
-> set, so its metadata union can be overwritten with an unrequested
-> timestamp. Fixing mixed metadata states within one MPWQE requires a
-> separate change.
->=20
-> Fixes: 48eb03dd2630 ("xsk: Add TX timestamp and TX checksum offload
-> support")
-> Reviewed-by: Alexander Lobakin <aleksander.lobakin@intel.com>
-> Signed-off-by: Stanislav Fomichev <sdf@fomichev.me>
-> ---
->  drivers/net/ethernet/intel/igc/igc_main.c     |  3 ++-
->  .../ethernet/mellanox/mlx5/core/en/xsk/tx.c   |  2 +-
->  .../net/ethernet/stmicro/stmmac/stmmac_main.c |  3 ++-
->  include/net/libeth/xsk.h                      |  2 +-
->  include/net/xdp_sock_drv.h                    | 22 +++++++++++-------
-> -
->  include/net/xsk_buff_pool.h                   |  3 ++-
->  net/xdp/xsk_buff_pool.c                       |  7 ++++--
->  7 files changed, 26 insertions(+), 16 deletions(-)
->=20
-> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c
-> b/drivers/net/ethernet/intel/igc/igc_main.c
-> index 39043d8ca1bf..59067939a586 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_main.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-> @@ -3074,7 +3074,8 @@ static void igc_xdp_xmit_zc(struct igc_ring
-> *ring)
->  		olinfo_status =3D xdp_desc.len << IGC_ADVTXD_PAYLEN_SHIFT;
->=20
->  		dma =3D xsk_buff_raw_get_dma(pool, xdp_desc.addr);
-> -		meta =3D xsk_buff_get_metadata(pool, xdp_desc.addr);
-> +		meta =3D xsk_buff_get_metadata(pool, xdp_desc.addr,
-> +					     xdp_desc.options);
->  		xsk_buff_raw_dma_sync_for_device(pool, dma,
-> xdp_desc.len);
->  		bi =3D &ring->tx_buffer_info[ntu];
->=20
-> diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/tx.c
-> b/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/tx.c
-> index 3d19dad8f868..d194eeddd7b5 100644
-> --- a/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/tx.c
-> +++ b/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/tx.c
-> @@ -99,7 +99,7 @@ bool mlx5e_xsk_tx(struct mlx5e_xdpsq *sq, unsigned
-> int budget)
->  		xdptxd.dma_addr =3D xsk_buff_raw_get_dma(pool, desc.addr);
->  		xdptxd.data =3D xsk_buff_raw_get_data(pool, desc.addr);
->  		xdptxd.len =3D desc.len;
-> -		meta =3D xsk_buff_get_metadata(pool, desc.addr);
-> +		meta =3D xsk_buff_get_metadata(pool, desc.addr,
-> desc.options);
->=20
->  		xsk_buff_raw_dma_sync_for_device(pool, xdptxd.dma_addr,
-> xdptxd.len);
->=20
-> diff --git a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
-> b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
-> index a71f0df26378..62de03e65a90 100644
-> --- a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
-> +++ b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
-> @@ -2719,7 +2719,8 @@ static bool stmmac_xdp_xmit_zc(struct
-> stmmac_priv *priv, u32 queue, u32 budget)
->=20
->  		tx_desc =3D stmmac_get_tx_desc(priv, tx_q, entry);
->  		dma_addr =3D xsk_buff_raw_get_dma(pool, xdp_desc.addr);
-> -		meta =3D xsk_buff_get_metadata(pool, xdp_desc.addr);
-> +		meta =3D xsk_buff_get_metadata(pool, xdp_desc.addr,
-> +					     xdp_desc.options);
->  		xsk_buff_raw_dma_sync_for_device(pool, dma_addr,
-> xdp_desc.len);
->=20
->  		/* To return XDP buffer to XSK pool, we simple call diff
-> --git a/include/net/libeth/xsk.h b/include/net/libeth/xsk.h index
-> 5dcc0d7f65b7..a452b7828ce4 100644
-> --- a/include/net/libeth/xsk.h
-> +++ b/include/net/libeth/xsk.h
-> @@ -196,7 +196,7 @@ __libeth_xsk_xmit_fill_buf_md(const struct
-> xdp_desc *xdesc,
->  	struct libeth_xdp_tx_desc desc;
->  	struct xdp_desc_ctx ctx;
->=20
-> -	ctx =3D xsk_buff_raw_get_ctx(sq->pool, xdesc->addr);
-> +	ctx =3D xsk_buff_raw_get_ctx(sq->pool, xdesc->addr, xdesc-
-> >options);
->  	desc =3D (typeof(desc)){
->  		.addr	=3D ctx.dma,
->  		__libeth_xdp_tx_len(xdesc->len),
-> diff --git a/include/net/xdp_sock_drv.h b/include/net/xdp_sock_drv.h
-> index b344789f5df8..d94aeb506379 100644
-> --- a/include/net/xdp_sock_drv.h
-> +++ b/include/net/xdp_sock_drv.h
-> @@ -240,6 +240,7 @@ static inline void *xsk_buff_raw_get_data(struct
-> xsk_buff_pool *pool, u64 addr)
->   * xsk_buff_raw_get_ctx - get &xdp_desc context
->   * @pool: XSk buff pool desc address belongs to
->   * @addr: desc address (from userspace)
-> + * @options: desc options (from userspace)
->   *
->   * Wrapper for xp_raw_get_ctx() to be used in drivers, see its kdoc
-> for
->   * details.
-> @@ -248,9 +249,9 @@ static inline void *xsk_buff_raw_get_data(struct
-> xsk_buff_pool *pool, u64 addr)
->   * pointer, if it is present (initialized to %NULL otherwise).
->   */
->  static inline struct xdp_desc_ctx
-> -xsk_buff_raw_get_ctx(const struct xsk_buff_pool *pool, u64 addr)
-> +xsk_buff_raw_get_ctx(const struct xsk_buff_pool *pool, u64 addr, u32
-> +options)
->  {
-> -	return xp_raw_get_ctx(pool, addr);
-> +	return xp_raw_get_ctx(pool, addr, options);
->  }
->=20
->  #define XDP_TXMD_FLAGS_VALID ( \
-> @@ -318,18 +319,20 @@ xsk_tx_metadata_request(const struct
-> xsk_buff_pool *pool,  }
->=20
->  static inline struct xsk_tx_metadata *
-> -__xsk_buff_get_metadata(const struct xsk_buff_pool *pool, void *data)
-> +__xsk_buff_get_metadata(const struct xsk_buff_pool *pool, void *data,
-> +			unsigned int options)
->  {
-> -	if (!pool->tx_metadata_len)
-> +	if (!pool->tx_metadata_len || !(options & XDP_TX_METADATA))
->  		return NULL;
->=20
->  	return data - pool->tx_metadata_len;
->  }
->=20
->  static inline struct xsk_tx_metadata *
-> -xsk_buff_get_metadata(struct xsk_buff_pool *pool, u64 addr)
-> +xsk_buff_get_metadata(struct xsk_buff_pool *pool, u64 addr, u32
-> +options)
->  {
-> -	return __xsk_buff_get_metadata(pool, xp_raw_get_data(pool,
-> addr));
-> +	return __xsk_buff_get_metadata(pool, xp_raw_get_data(pool,
-> addr),
-> +				       options);
->  }
->=20
->  static inline void xsk_buff_dma_sync_for_cpu(struct xdp_buff *xdp) @@
-> -510,7 +513,7 @@ static inline void *xsk_buff_raw_get_data(struct
-> xsk_buff_pool *pool, u64 addr)  }
->=20
->  static inline struct xdp_desc_ctx
-> -xsk_buff_raw_get_ctx(const struct xsk_buff_pool *pool, u64 addr)
-> +xsk_buff_raw_get_ctx(const struct xsk_buff_pool *pool, u64 addr, u32
-> +options)
->  {
->  	return (struct xdp_desc_ctx){ };
->  }
-> @@ -530,13 +533,14 @@ xsk_tx_metadata_request(const struct
-> xsk_buff_pool *pool,  }
->=20
->  static inline struct xsk_tx_metadata *
-> -__xsk_buff_get_metadata(const struct xsk_buff_pool *pool, void *data)
-> +__xsk_buff_get_metadata(const struct xsk_buff_pool *pool, void *data,
-> +			unsigned int options)
->  {
->  	return NULL;
->  }
->=20
->  static inline struct xsk_tx_metadata *
-> -xsk_buff_get_metadata(struct xsk_buff_pool *pool, u64 addr)
-> +xsk_buff_get_metadata(struct xsk_buff_pool *pool, u64 addr, u32
-> +options)
->  {
->  	return NULL;
->  }
-> diff --git a/include/net/xsk_buff_pool.h b/include/net/xsk_buff_pool.h
-> index 2bb1d122b1bc..a7df573784fd 100644
-> --- a/include/net/xsk_buff_pool.h
-> +++ b/include/net/xsk_buff_pool.h
-> @@ -154,7 +154,8 @@ struct xdp_desc_ctx {
->  	struct xsk_tx_metadata *meta;
->  };
->=20
-> -struct xdp_desc_ctx xp_raw_get_ctx(const struct xsk_buff_pool *pool,
-> u64 addr);
-> +struct xdp_desc_ctx xp_raw_get_ctx(const struct xsk_buff_pool *pool,
-> u64 addr,
-> +				   u32 options);
->=20
->  static inline dma_addr_t xp_get_dma(struct xdp_buff_xsk *xskb)  {
-> diff --git a/net/xdp/xsk_buff_pool.c b/net/xdp/xsk_buff_pool.c index
-> 78c14f106395..9d2d94f1fb75 100644
-> --- a/net/xdp/xsk_buff_pool.c
-> +++ b/net/xdp/xsk_buff_pool.c
-> @@ -763,6 +763,7 @@ EXPORT_SYMBOL(xp_raw_get_dma);
->   * xp_raw_get_ctx - get &xdp_desc context
->   * @pool: XSk buff pool desc address belongs to
->   * @addr: desc address (from userspace)
-> + * @options: desc options (from userspace)
->   *
->   * Helper for getting desc's DMA address and metadata pointer, if
-> present.
->   * Saves one call on hotpath and double calculation of the actual
-> address.
-> @@ -771,14 +772,16 @@ EXPORT_SYMBOL(xp_raw_get_dma);
->   * Return: new &xdp_desc_ctx struct containing desc's DMA address and
-> metadata
->   * pointer, if it is present (initialized to %NULL otherwise).
->   */
-> -struct xdp_desc_ctx xp_raw_get_ctx(const struct xsk_buff_pool *pool,
-> u64 addr)
-> +struct xdp_desc_ctx xp_raw_get_ctx(const struct xsk_buff_pool *pool,
-> u64 addr,
-> +				   u32 options)
->  {
->  	struct xdp_desc_ctx ret;
->=20
->  	addr =3D __xp_raw_get_addr(pool, addr);
->=20
->  	ret.dma =3D __xp_raw_get_dma(pool, addr);
-> -	ret.meta =3D __xsk_buff_get_metadata(pool,
-> __xp_raw_get_data(pool, addr));
-> +	ret.meta =3D __xsk_buff_get_metadata(pool,
-> __xp_raw_get_data(pool, addr),
-> +					   options);
->=20
->  	return ret;
->  }
-> --
-> 2.53.0-Meta
+Patch 2 was found reviewing patch 1. The staged tx_rings[] copies are
+shallow copies of the live rings, so they carry over the same
+ring->netdev/queue_index. Freeing one of these copies before
+i40e_down() has run - either from this same free_tx: label or from the
+i40e_setup_tx_descriptors() failure unwind loop above it - resets BQL
+state for the live queue it was copied from. dql_completed() then
+BUG_ONs the next time the live ring reports a completion that was
+queued before the reset. This one predates patch 1's bug by four
+years (Fixes: 9f65e15b4f98, 2013) and doesn't need patch 1 applied to
+be reachable via the setup_tx_descriptors() path.
 
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Reproduced by forcing i40e_setup_tx_descriptors() to fail on a later
+queue while flooding real Tx traffic on the earlier ones:
+
+  kernel BUG at lib/dynamic_queue_limits.c:99!
+  RIP: dql_completed+0x285/0x2a0
+  Call Trace:
+   <IRQ>
+   i40e_napi_poll+0x74b/0x1700 [i40e]
+   __napi_poll+0x10a/0x200
+   net_rx_action+0x2f7/0x380
+   handle_softirqs+0xcc/0x270
+
+Confirmed clean with the fix applied, same traffic, repeated
+resize cycles.
+
+Patch 2 touches both error paths above, but only the free_tx: hunk
+needs patch 1 applied first to match its diff context - the
+setup_tx_descriptors() unwind hunk applies, and matters, on its own.
+
+Cc: Simon Horman <horms@kernel.org>
+
+Aleksandr Loktionov (2):
+  i40e: fix set_ringparam error path freeing live Tx rings
+  i40e: avoid resetting BQL state when freeing temporary Tx rings in
+    set_ringparam
+
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+-- 
+2.52.0
