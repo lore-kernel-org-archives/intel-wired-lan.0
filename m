@@ -1,93 +1,133 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9821C5DF94
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 21 Aug 2026 15:25:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C34CFC5DF8C
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 21 Aug 2026 17:28:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 78D9E8154C;
-	Fri, 21 Aug 2026 15:25:06 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 7A51040B74;
+	Fri, 21 Aug 2026 17:28:56 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id RfiD75Ih_61l; Fri, 21 Aug 2026 15:25:05 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id R7OlClUru4XB; Fri, 21 Aug 2026 17:28:55 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1787325905;
-	bh=LrI1xZ2wsgNbAdUjqFv2tk5hEUF0UBqRZoUGygKMrLE=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
+	s=default; t=1787333334;
+	bh=+RpCheSrOdysr+r97ve0JN+xVtWYbZrCXCOuzISS1Oo=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=T4osV1pvrqi4aD2PLs8+d/qteRQX+linhT460F8CXc4Wo3mXNcjP5INbvTtzMGmTh
-	 KIqGs7ZOh8KWwPg5u5vWxaEKzZzSmLt4YO6Mj4Zo536GySp1hhrs+hm/1KcS+xGv+1
-	 lVIRZUiHscQctSZSBmnNZ8wCGkFtgDpkil61Rsz81l5AFmxiXWdLbmmic0K4ow6KvC
-	 1hDAZWHhsXl9tRMvN+4VqTL5IEtAV1sx1gxbKE0qYiiCIleTWzsZ+3zGKBa2flYs1Q
-	 HKhQXHhIRgww4pm/D1jSem3RQmGn3q9T8Rbf+kYnCPcYhdUMQAFu0Fj7GDJuLO/e/l
-	 NGe/h6hrmKkUA==
+	b=sWLatHsWkogRNKpEQSLVDJjFUwNSaMxy2r53f4OEOP7dnQSOd+oVm/y8HcWKPZ3Dx
+	 YtVwbc647TybaRwpbit/5lmN2z+rGRGSZuzbNLbym1oRAVrcaVEF8mbp2CqOaIm26v
+	 pemEdkjZJBeb1fMaLadjd3AwHNTw30+L1rzgzgcDbVgv1ZeppUr10zSoNUviexvYaR
+	 E7ZZGLQHyy0uAMDEPcu5utXqDvQttMMIhHyPIDnUruwxCYCRfACRrGc/RBYvu91gVh
+	 EBEUDlYSdn0tqKJ+TpqmZqbeSssMYw/EoXgmCMCLabnG7jVPccyFFk4hvr2Y9kJ/f3
+	 gZCXby8LYqlCw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id B2D0581351;
-	Fri, 21 Aug 2026 15:25:05 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id E4C7540A26;
+	Fri, 21 Aug 2026 17:28:54 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id B482A3A4
- for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Aug 2026 15:25:03 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 463274B8
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Aug 2026 17:28:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id A6BE781346
- for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Aug 2026 15:25:03 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 37D61811E0
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Aug 2026 17:28:54 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id jzEGHUdtGu1d for <intel-wired-lan@lists.osuosl.org>;
- Fri, 21 Aug 2026 15:25:02 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.15;
- helo=mgamail.intel.com; envelope-from=sergey.temerkhanov@intel.com;
+ id yq105oN4W-HE for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 21 Aug 2026 17:28:53 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2607:f8b0:4864:39::b;
+ helo=mail-pj2-x0b.google.com; envelope-from=sdf.kernel@gmail.com;
  receiver=<UNKNOWN> 
 Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=NXk/IayL
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
- by smtp1.osuosl.org (Postfix) with ESMTPS id A20958138C
- for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Aug 2026 15:25:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1787325903; x=1818861903;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=FK27Me50DfS5nXjO5Gv14h1qOMEXBLLc469hrldiMVo=;
- b=NXk/IayLj7JjFPLB8As5DqffAXLrWTRpjWVcv0XVMSslWMR3S5wiyPew
- 2THYQZ9ElmJm76vL9OUscmW/KqFxfcBXedvA4Hri5M6Xsgdj5Du9nC6ux
- Xv2FfWy3jADj5s+Cw9cX8vp4mWcU6bgCUfgqxncIbuxF2aL31RXILgRTd
- oddNvKXk7h47TapeDEsiLrBjygGQlhlhfJpVt4ArQpP8oUIiqRNvwNI9I
- aSDT/yv3NiRbwOH/GtvNxTJubUHKGY2Lx6KPRzaxjLosysly3vpHh9yeW
- +yt97NBYxXPq20oq2HVogF9JHJKzDroxKkMIBiE6j6oM1GbZT+xsWgDsE Q==;
-X-CSE-ConnectionGUID: 6o5p9d+xRTuRT+lE9+NX9g==
-X-CSE-MsgGUID: olHQArRNSUKNANRUnK2zrg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11882"; a="91553211"
-X-IronPort-AV: E=Sophos;i="6.25,235,1779174000"; d="scan'208";a="91553211"
-Received: from orviesa005.jf.intel.com ([10.64.159.145])
- by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 21 Aug 2026 08:25:02 -0700
-X-CSE-ConnectionGUID: GY7rI1Y7Rt6+T7X7cokoLg==
-X-CSE-MsgGUID: BRsHS9/GRZKORD4mTXhy1A==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,235,1779174000"; d="scan'208";a="270602196"
-Received: from gnrd8.igk.intel.com (HELO GNRD8) ([10.123.232.137])
- by orviesa005.jf.intel.com with ESMTP; 21 Aug 2026 08:25:00 -0700
-From: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org
-Subject: [PATCH iwl-next v3 6/6] ice: dpll: Rework the SMA control logic to
- match the requirements
-Date: Fri, 21 Aug 2026 15:24:54 +0000
-Message-ID: <20260821152454.3703979-7-sergey.temerkhanov@intel.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260821152454.3703979-1-sergey.temerkhanov@intel.com>
-References: <20260821152454.3703979-1-sergey.temerkhanov@intel.com>
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20251104 header.b=PlXnp2gQ
+Received: from mail-pj2-x0b.google.com (mail-pj2-x0b.google.com
+ [IPv6:2607:f8b0:4864:39::b])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 3EE5081178
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Aug 2026 17:28:52 +0000 (UTC)
+Received: by mail-pj2-x0b.google.com with SMTP id
+ d9443c01a7336-2d59734a089so8363565ad.0
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Aug 2026 10:28:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20251104; t=1787333332; x=1787938132; darn=lists.osuosl.org;
+ h=in-reply-to:content-disposition:content-type:mime-version
+ :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+ :date:message-id:reply-to:content-type;
+ bh=+RpCheSrOdysr+r97ve0JN+xVtWYbZrCXCOuzISS1Oo=;
+ b=PlXnp2gQwgprLEd8ZVQIv/cUDQ8rHmqRflXH/4j2+21wnLCM/mAsEQOF43JvKDHkqz
+ SfvmTHNp/FQdM7qIl4UvTc4I3GoF430VZDk4lw2Diiz1lr9ZhS6nzDnGJZoBScd70vE+
+ T9he4rgxCL5ov9xH298HCMNPsM0UQSIqBrwFZPI/+NmR2WFXVUwC9MIbzx6Tt5lm//m6
+ T5ttn4a/7qyWbILCGkqWgIIZ0OqKk8eAqvSgbhx4pq16cnkXD/zciLyZvJlGPd1ThN6c
+ 05lADmDIVTnB1jWE2EQSZXC5d/eqcV7zfyAkMqBh4UW3WZqmuQ2jFm96XD9Zc5Ar4nCy
+ rGAw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20251104; t=1787333332; x=1787938132;
+ h=in-reply-to:content-disposition:content-type:mime-version
+ :references:message-id:subject:cc:to:from:date:x-gm-gg
+ :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+ :content-type;
+ bh=+RpCheSrOdysr+r97ve0JN+xVtWYbZrCXCOuzISS1Oo=;
+ b=bjz2gV0Ex2Dr3Z0SEO94vzrkmgDgHSxvtb5LlBIWwqy3RxXf9OOXpPBwrxdJFc9l74
+ 2WIrsmlRPKQWLuOMcT9nO1cR4RfoD5MbT/zqpGnHYm6RBPV6tbx5GRBKF8lq5nD4gdeI
+ AU0ZWzomQRxU2xhupnHe0/RbrAaMuyvRRykY3u9ojfhdKeM3K2rS/QbcW8t6y/Jl4Jz4
+ qD4jhHdk+t1uDWDUoWpjE3CDMXD1G9xvH5WYUCoWGtUTprIrK7WM6i8M6z30uTZ21Q7x
+ BtgvP8m42XVbzglJYSQDzFFFKmqFYKuMZ3JwlN3aTEwMh5Ts2OuyrHOGplAwFygaWiCq
+ 5ljA==
+X-Forwarded-Encrypted: i=1;
+ AHgh+Rq6ta21yfHKADYFv2ZAuOda0Ouu1c8qbtmt7k/nl/AO1xMcYoJOZps1/HKGd0QbRyTC8Fz5VD0+m6oZfuYSBS8=@lists.osuosl.org
+X-Gm-Message-State: AFuF++mkN4RcwNPL8YPWtuq+8sFF6YOHoC+j4jEi/TVIrO3TNFXy+Jd7
+ PjwzqPcXShNv7eX1d+6PFEygY0JLqAceqdwi53Zo+OB1t3HyCzOOm3WB
+X-Gm-Gg: AR+sD13EkIfp9Q2LPcjfSkyEVXUb/Br6guh3847/Nt1yAIe0XKshFzcxfABCaWTA9B0
+ fY9vs2YMCwfAxH7/+efRs1+K2iDFJcXh5MXu0iZ4hW6fsypd1Htw1lZex9SbrCgs39J7K2YTP07
+ r3xq/nfRkiFOcV1rQ38T6GEeMLLrJ18CcXJc4YNVV0xz/6OSKs6lsBpvI8JuU2WunZuQe1KMkIw
+ ni/w3ZQgmncULvetyG8ttBY4BqXem2BH+VtKIO6QteclOagggu0zoQWMLep/xm1LYmfdtVkgm0j
+ 7HkpWvQqk9F789meI3SdjILGKx0Xh4Rxi5PxzR7b3d+yXti5Ryr7TAwCUsTpl2WrV0hoedZEwKN
+ VntH3GuX2utUOwbT/ef1Pog0fN1fOHVHdRG0FrgBEXYXbirP7N25u+vg4c+XDwhJReauS81DEQv
+ htDyf7AjLP3JracltXVXRmJg49h+O+TsLd9EebQJqHcCUuYdDARSQjdg==
+X-Received: by 2002:a17:902:e943:b0:2d6:3c2f:69b with SMTP id
+ d9443c01a7336-2d64af6f8cemr156390915ad.8.1787333331890; 
+ Fri, 21 Aug 2026 10:28:51 -0700 (PDT)
+Received: from localhost ([2a03:2880:2ff:48::])
+ by smtp.gmail.com with ESMTPSA id
+ d9443c01a7336-2d62d555b51sm21790945ad.7.2026.08.21.10.28.51
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Fri, 21 Aug 2026 10:28:51 -0700 (PDT)
+Date: Fri, 21 Aug 2026 10:28:47 -0700
+From: Stanislav Fomichev <sdf.kernel@gmail.com>
+To: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Cc: netdev@vger.kernel.org, davem@davemloft.net, edumazet@google.com, 
+ kuba@kernel.org, pabeni@redhat.com, anthony.l.nguyen@intel.com, 
+ przemyslaw.kitszel@intel.com, andrew+netdev@lunn.ch, saeedm@nvidia.com,
+ tariqt@nvidia.com, 
+ mbloch@nvidia.com, maxime.chevallier@bootlin.com, mcoquelin.stm32@gmail.com, 
+ alexandre.torgue@foss.st.com, aleksander.lobakin@intel.com, horms@kernel.org, 
+ magnus.karlsson@intel.com, sdf@fomichev.me, ast@kernel.org,
+ daniel@iogearbox.net, 
+ hawk@kernel.org, john.fastabend@gmail.com, guoren@kernel.org,
+ dtatulea@nvidia.com, 
+ witu@nvidia.com, martin.lau@kernel.org, yoong.siang.song@intel.com, 
+ intel-wired-lan@lists.osuosl.org, linux-kernel@vger.kernel.org,
+ linux-rdma@vger.kernel.org, 
+ linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org,
+ bpf@vger.kernel.org, linux-csky@vger.kernel.org, leon@kernel.org
+Subject: Re: [PATCH net v3 3/3] net: stmmac: document oversized AF_XDP frame
+ handling
+Message-ID: <aoiIarzdjk92RkCN@devvm7509.cco0.facebook.com>
+References: <20260819160535.1472459-1-sdf@fomichev.me>
+ <20260819160535.1472459-4-sdf@fomichev.me> <aoceSoSFMx69Z9up@boxer>
+ <aoeoJ6-njBxcWs4w@devvm7509.cco0.facebook.com>
+ <aogpDsa8hz6CPpD3@boxer>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <aogpDsa8hz6CPpD3@boxer>
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -102,277 +142,85 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-Make the SMA control logic match the requirements:
+On 08/21, Maciej Fijalkowski wrote:
+> On Thu, Aug 20, 2026 at 06:29:16PM -0700, Stanislav Fomichev wrote:
+> > On 08/20, Maciej Fijalkowski wrote:
+> > > On Wed, Aug 19, 2026 at 09:05:35AM -0700, Stanislav Fomichev wrote:
+> > > > stmmac drops AF_XDP zero-copy frames that exceed taprio's queueMaxSDU
+> > > > after xsk_tx_peek_desc() has reserved their completion entries.
+> > > > 
+> > > > Completing a rejected descriptor is unsafe because AF_XDP completions are
+> > > > ordered: xsk_tx_completed(pool, 1) would complete the oldest outstanding
+> > > > descriptor, which may still be owned by hardware. Instead, leave the
+> > > > completion pending so the ring eventually wedges and increment the drop
+> > > > counter to expose the application error without risking hardware
+> > > > misbehavior.
+> > > > 
+> > > > Document this intentional ring imbalance at the check.
+> > > > 
+> > > > Signed-off-by: Stanislav Fomichev <sdf@fomichev.me>
+> > > > ---
+> > > >  drivers/net/ethernet/stmicro/stmmac/stmmac_main.c | 4 ++++
+> > > >  1 file changed, 4 insertions(+)
+> > > > 
+> > > > diff --git a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
+> > > > index 62de03e65a90..6a532747c039 100644
+> > > > --- a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
+> > > > +++ b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
+> > > > @@ -2713,6 +2713,10 @@ static bool stmmac_xdp_xmit_zc(struct stmmac_priv *priv, u32 queue, u32 budget)
+> > > >  		if (priv->est && priv->est->enable &&
+> > > >  		    priv->est->max_sdu[queue] &&
+> > > >  		    xdp_desc.len > priv->est->max_sdu[queue]) {
+> > > > +			/* Completions are ordered, so this descriptor cannot
+> > > > +			 * be completed safely. Wedge the ring to expose the
+> > > > +			 * application error instead.
+> > > > +			 */
+> > > >  			priv->xstats.max_sdu_txq_drop[queue]++;
+> > > >  			continue;
+> > > 
+> > > Hmm. I read the discussion on v2. Maybe we could cancel cq entry here in
+> > > this branch? Also it feels like something achievable at bind time when
+> > > taprio is configured and vice versa?
+> > > 
+> > > Otherwise we over-commit cq entries.
+> > 
+> > What do you want to achieve with the cancel here? IIUC it will make it look
+> > as if some (if the user has posted many) tx descriptor has not been consumed
+> > by the kernel?
+> 
+> Oof. My bad. I meant completely different thing :D
+> 
+> Right now the semantics are that we post invalid/dropped addrs to cq (the
+> rationale was that dropped descs are gone and unreachable which might
+> eventually lead to dying traffic).
+> 
+> We should submit xdp_desc's addr to cq.
+> 
+> Regarding the comment included in code I must disagree. CQ entries no
+> longer imply that 'this particular descriptor has been successfully sent
+> by HW'.
 
-Setting SMA1 as Rx automatically enables U.FL1 as Tx if U.FL1 is
-disconnected.
-Setting SMA1 as Tx automatically changes U.FL1 state to disconnected.
+But then we need to support some sort of out-of-order completions, no?
+This looks similar to
+https://lore.kernel.org/netdev/20260818162442.3980697-1-kuba@kernel.org/
 
-Setting SMA2 as Tx automatically enables U.FL2 as Rx if U.FL2 is
-disconnected.
-Setting SMA2 as Rx automatically changes U.FL2 state to disconnected.
+We write desc to cq at xsk_tx_peek_desc, so when we get an error here
+we might have already "queued" a bunch of cq entries (which will be
+xsk_tx_completed(num) from sirq). So unless we rewrite the way
+we do completions, there is no easy way to put that desc on cq without
+breaking the order and racing with real completions from the HW.
+Am I missing something here?
 
-Signed-off-by: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
-Reviewed-by: Przemyslaw Korba <przemyslaw.korba@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_dpll.c | 172 ++++++++++++++++++----
- 1 file changed, 146 insertions(+), 26 deletions(-)
+> > I do agree that a better idea is to probably do these checks during control
+> > paths, but it's a bit more involved (and not sure if it's possible? if we
+> > have a bunch of xsk sockets and we change that max_sdu, do we go over all
+> > sockets on the system somehow?). My main motivation with this patch was
+> > to make our LLM reviewers less chatty about preexisting issues.
+> 
+> I hear you, however I feel like we do not know this driver too much and
+> probably we don't have a HW to test out such changes, so maybe let us try
+> to fix existing behavior?
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dpll.c b/drivers/net/ethernet/intel/ice/ice_dpll.c
-index 0081544b769c..9e3e69e523c9 100644
---- a/drivers/net/ethernet/intel/ice/ice_dpll.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dpll.c
-@@ -1359,28 +1359,37 @@ static int ice_dpll_sma_direction_set(struct ice_dpll_pin *p,
- {
- 	struct ice_dplls *d = &p->pf->dplls;
- 	struct ice_dpll_pin *peer;
--	u8 data;
--	int ret;
-+	struct ice_dpll_pin *target = NULL;
-+	struct ice_dpll_pin_config peer_config;
-+	enum ice_dpll_pin_type type = 0;
-+	u8 data, old_data = 0;
-+	int peer_dpll_idx, restore_err, ret;
- 
- 	if (p->direction == direction && p->active)
- 		return 0;
- 	ret = ice_read_sma_ctrl(&p->pf->hw, &data);
- 	if (ret)
- 		return ret;
-+	old_data = data;
- 
- 	switch (p->idx) {
- 	case ICE_DPLL_PIN_SW_1_IDX:
--		data &= ~ICE_SMA1_MASK;
--		if (direction == DPLL_PIN_DIRECTION_OUTPUT)
-+		if (direction == DPLL_PIN_DIRECTION_OUTPUT) {
-+			data &= ~ICE_SMA1_TX_EN;
- 			data |= ICE_SMA1_DIR_EN;
-+		} else {
-+			data &= ~ICE_SMA1_DIR_EN;
-+			data &= ~ICE_SMA1_TX_EN;
-+		}
- 		break;
- 	case ICE_DPLL_PIN_SW_2_IDX:
- 		if (direction == DPLL_PIN_DIRECTION_INPUT) {
- 			data &= ~ICE_SMA2_DIR_EN;
--			data |= ICE_SMA2_UFL2_RX_DIS;
-+			data &= ~ICE_SMA2_TX_EN;
- 		} else {
--			data &= ~(ICE_SMA2_TX_EN | ICE_SMA2_UFL2_RX_DIS);
- 			data |= ICE_SMA2_DIR_EN;
-+			data &= ~ICE_SMA2_UFL2_RX_DIS;
-+			data &= ~ICE_SMA2_TX_EN;
- 		}
- 		break;
- 	default:
-@@ -1392,7 +1401,7 @@ static int ice_dpll_sma_direction_set(struct ice_dpll_pin *p,
- 						ICE_DPLL_PIN_TYPE_SOFTWARE,
- 						extack);
- 	if (ret)
--		return ret;
-+		goto restore_sma;
- 
- 	/* When a direction change activates the paired U.FL pin, enable
- 	 * its backing CGU pin so the pin reports as connected. Without
-@@ -1403,27 +1412,44 @@ static int ice_dpll_sma_direction_set(struct ice_dpll_pin *p,
- 	 */
- 	peer = p->muxed;
- 	if (peer->active) {
--		struct ice_dpll_pin *target;
--		enum ice_dpll_pin_type type;
--		int peer_ret;
--
- 		if (peer->output) {
- 			target = peer->output;
- 			type = ICE_DPLL_PIN_TYPE_OUTPUT;
--		} else {
-+		} else if (peer->input) {
- 			target = peer->input;
- 			type = ICE_DPLL_PIN_TYPE_INPUT;
-+		} else {
-+			ret = -EINVAL;
-+			goto restore_sma;
- 		}
--		peer_ret = ice_dpll_get_fallback_idx(d, target);
--		if (peer_ret < 0)
--			peer_ret = d->eec.dpll_idx;
--		ret = ice_dpll_pin_enable(&p->pf->hw, target, peer_ret, type,
--					  extack);
--		if (!ret)
--			ret = ice_dpll_pin_state_update(p->pf, target,
--							type, extack);
-+
-+		ret = ice_dpll_pin_config_get(p->pf, target, type,
-+					      &peer_config, extack);
-+		if (ret)
-+			goto restore_sma;
-+
-+		peer_dpll_idx = ice_dpll_get_fallback_idx(d, target);
-+		if (peer_dpll_idx < 0)
-+			peer_dpll_idx = d->eec.dpll_idx;
-+		ret = ice_dpll_pin_enable(&p->pf->hw, target, peer_dpll_idx,
-+					  type, extack);
-+		if (ret)
-+			goto restore_peer;
-+		ret = ice_dpll_pin_state_update(p->pf, target, type, extack);
-+		if (ret)
-+			goto restore_peer;
- 	}
- 
-+	return 0;
-+
-+restore_peer:
-+	restore_err =
-+		ice_dpll_pin_config_restore(p->pf, target, type, &peer_config,
-+					    extack, ret);
-+	if (restore_err)
-+		ret = restore_err;
-+restore_sma:
-+	ice_dpll_restore_sma_ctrl(p->pf, old_data, ret);
- 	return ret;
- }
- 
-@@ -1681,11 +1707,15 @@ ice_dpll_sma_pin_state_set(const struct dpll_pin *pin, void *pin_priv,
- 			   struct netlink_ext_ack *extack)
- {
- 	struct ice_dpll_pin *sma = pin_priv, *target;
-+	struct ice_dpll_pin *peer_target = NULL;
- 	struct ice_dpll *d = dpll_priv;
- 	struct ice_pf *pf = sma->pf;
--	enum ice_dpll_pin_type type;
-+	enum ice_dpll_pin_type peer_type = 0, type;
-+	struct ice_dpll_pin_config old_config;
-+	struct ice_dpll_pin_config peer_config;
-+	u8 old_data = 0;
- 	bool enable;
--	int ret;
-+	int peer_dpll_idx, restore_err, ret = -EINVAL;
- 
- 	if (ice_dpll_is_reset(pf, extack))
- 		return -EBUSY;
-@@ -1693,6 +1723,10 @@ ice_dpll_sma_pin_state_set(const struct dpll_pin *pin, void *pin_priv,
- 	mutex_lock(&pf->dplls.lock);
- 	switch (state) {
- 	case DPLL_PIN_STATE_SELECTABLE:
-+		/* Reject direction-mismatched requests: SELECTABLE + OUTPUT
-+		 * is an invalid combination, return -EINVAL in this case
-+		 * immediately instead of disabling the pin.
-+		 */
- 		if (sma->direction == DPLL_PIN_DIRECTION_OUTPUT) {
- 			enable = false;
- 			ret = -EINVAL;
-@@ -1701,6 +1735,10 @@ ice_dpll_sma_pin_state_set(const struct dpll_pin *pin, void *pin_priv,
- 		enable = true;
- 		break;
- 	case DPLL_PIN_STATE_CONNECTED:
-+		/* Reject direction-mismatched requests: CONNECTED + INPUT
-+		 * is an invalid combination, return -EINVAL in this case
-+		 * immediately instead of disabling the pin.
-+		 */
- 		if (sma->direction == DPLL_PIN_DIRECTION_INPUT) {
- 			enable = false;
- 			ret = -EINVAL;
-@@ -1736,13 +1774,95 @@ ice_dpll_sma_pin_state_set(const struct dpll_pin *pin, void *pin_priv,
- 			goto unlock;
- 	}
- 
--	if (enable)
-+	if (enable) {
-+		u8 data;
-+
-+		ret = ice_read_sma_ctrl(&pf->hw, &data);
-+		if (ret)
-+			goto unlock;
-+		old_data = data;
-+		switch (sma->idx) {
-+		case ICE_DPLL_PIN_SW_1_IDX:
-+			data &= ~ICE_SMA1_TX_EN;
-+			break;
-+		case ICE_DPLL_PIN_SW_2_IDX:
-+			data &= ~ICE_SMA2_UFL2_RX_DIS;
-+			data &= ~ICE_SMA2_TX_EN;
-+			break;
-+		default:
-+			ret = -EINVAL;
-+			goto unlock;
-+		}
-+		ret = ice_write_sma_ctrl(&pf->hw, data);
-+		if (ret)
-+			goto restore_sma_ctrl;
-+		ret = ice_dpll_sw_pins_update(pf);
-+		if (ret)
-+			goto restore_sma_ctrl;
-+
-+		ret = ice_dpll_pin_config_get(pf, target, type, &old_config,
-+					      extack);
-+		if (ret)
-+			goto restore_sma_ctrl;
- 		ret = ice_dpll_pin_enable(&pf->hw, target, d->dpll_idx, type,
- 					  extack);
--	else
--		ret = ice_dpll_pin_disable(&pf->hw, target, type, extack);
--	if (!ret)
-+		if (ret)
-+			goto restore_target;
-+		/* Refresh target state before peer-side operations. */
- 		ret = ice_dpll_pin_state_update(pf, target, type, extack);
-+		if (ret)
-+			goto restore_target;
-+
-+		if (sma->muxed && sma->muxed->active) {
-+			ice_dpll_get_peer_target(sma->muxed, &peer_target,
-+						 &peer_type);
-+			if (!peer_target) {
-+				ret = -EINVAL;
-+				goto restore_target;
-+			}
-+
-+			ret = ice_dpll_pin_config_get(pf, peer_target, peer_type,
-+						      &peer_config, extack);
-+			if (ret)
-+				goto restore_target;
-+
-+			peer_dpll_idx =
-+				ice_dpll_get_fallback_idx(&pf->dplls, peer_target);
-+			if (peer_dpll_idx < 0)
-+				peer_dpll_idx = d->dpll_idx;
-+			ret = ice_dpll_pin_enable(&pf->hw, peer_target,
-+						  peer_dpll_idx, peer_type, extack);
-+			if (ret)
-+				goto restore_peer;
-+			ret = ice_dpll_pin_state_update(pf, peer_target, peer_type,
-+							extack);
-+			if (ret)
-+				goto restore_peer;
-+		}
-+	} else {
-+		ret = ice_dpll_pin_disable(&pf->hw, target, type, extack);
-+		if (!ret)
-+			ret = ice_dpll_pin_state_update(pf, target, type,
-+							extack);
-+	}
-+	goto unlock;
-+
-+restore_peer:
-+	restore_err =
-+		ice_dpll_pin_config_restore(pf, peer_target, peer_type,
-+					    &peer_config, extack, ret);
-+	if (restore_err)
-+		ret = restore_err;
-+restore_target:
-+	restore_err =
-+		ice_dpll_pin_config_restore(pf, target, type, &old_config,
-+					    extack, ret);
-+	if (restore_err)
-+		ret = restore_err;
-+restore_sma_ctrl:
-+	restore_err = ice_dpll_restore_sma_ctrl(pf, old_data, ret);
-+	if (restore_err)
-+		ret = restore_err;
- 
- unlock:
- 	mutex_unlock(&pf->dplls.lock);
--- 
-2.53.0
-
+Let's definitely fix it properly if you have better ideas. But since we
+don't have HW, I'm not super confident doing anything sophisticated
+myself :-D
