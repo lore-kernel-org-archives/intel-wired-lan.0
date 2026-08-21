@@ -4,187 +4,193 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 02BCFC5DF7D
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 21 Aug 2026 11:12:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8587C5DF7D
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 21 Aug 2026 11:22:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 96BFD4092B;
-	Fri, 21 Aug 2026 11:12:00 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 52BED408E0;
+	Fri, 21 Aug 2026 11:22:10 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id KcRPTqlYNBh3; Fri, 21 Aug 2026 11:11:59 +0000 (UTC)
+ id T9Lm_HdTNU7A; Fri, 21 Aug 2026 11:22:09 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1787310719;
-	bh=M8wFe1BOI8xU7NO1AFinkJmhR3cWhtCAED+Zn56H3m4=;
-	h=From:To:CC:Subject:Date:References:In-Reply-To:List-Id:
+	s=default; t=1787311329;
+	bh=GtsEkn/+BTHHwNgiX/Dgdv1hLayCqg8HD6WK4uhxMRI=;
+	h=Date:From:To:CC:Subject:References:In-Reply-To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=ZOjnL74D7pDKHTTQeosY6GUr5FZhb/B3dtx9mMYOC5QtFr2F0VPMrSnvRULdXjsge
-	 ug5YXm7KzBYbKHGm+s26l02Qlh5EomFl7vWvx2pGNlg9x0nJ1L9WBeio+BGxYgbw0O
-	 /mrXkD2aDFy/teLnuxgVmisiXXd56QNBl8sjre9YWw97yzpbzklpP3Ke99wuQ1zEfl
-	 ueffFeSSr2GEDhqEFpu84HbZu/KeW/SQ79LfxV6u5x8XEsRkCP1VhnnvLOVX5c0YV0
-	 zaeHU0MVxNIVIPbX6HzLqB/Q+CIrMAZlJ2h0CcqPlVHxVe1hJqH2Qnc4D0f+cmlR4Y
-	 Z2f9ay9pk05ig==
+	b=giK7Y2EF1xAItv9NEx/sIP+7eWI/TBLJQwOS4p+uFknXv5SW2I47A6+xoSMyTP24S
+	 PW13a9O22JWM3n7tgPNXooynyCA/1r+ECc+CfqI+He69ZR/2voV6rLqADH8YJAQb4C
+	 cW6V4o+3RMT7Z87PpqIEPb1LiBgjDRGmbLYRameqTOcPSS+mT5pRiOEAp+YlKhilRc
+	 BOu4P6zEvyGNfPtZ7WRaJR79AQ7APTDOJe4+GKzowWorDUb+APZg18dD4bgRee2BLC
+	 GkPM2DlLB0EBN2lnc7m4zqwnReDtDF16rS/zSugrrTnFxOKfGvlDhoDGCnHsJYmEHV
+	 yGu7RaveacbSg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B8A9E40911;
-	Fri, 21 Aug 2026 11:11:59 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 7F0474B8
- for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Aug 2026 11:11:58 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id F38A6408D0;
+	Fri, 21 Aug 2026 11:22:08 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 23ACEEA3
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Aug 2026 11:22:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 6482D6068A
- for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Aug 2026 11:11:58 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 1518540118
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Aug 2026 11:22:08 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id q815NBtzkCJd for <intel-wired-lan@lists.osuosl.org>;
- Fri, 21 Aug 2026 11:11:57 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.20;
- helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id NbdYJiZ6vnO2 for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 21 Aug 2026 11:22:07 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.18;
+ helo=mgamail.intel.com; envelope-from=maciej.fijalkowski@intel.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp3.osuosl.org;
+Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
+Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=hN6l3LwG
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 1966360649
- for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Aug 2026 11:11:55 +0000 (UTC)
+ header.s=Intel header.b=DcmKM4K8
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 16D5A40026
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Aug 2026 11:22:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1787310717; x=1818846717;
- h=from:to:cc:subject:date:message-id:references:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=3mqOkLFXM7E7LXfZOiQ9C2REmBNZp46NSOZP5bgVSeg=;
- b=hN6l3LwGzEHK84lC3NzUfIkAY91SX23zK5m+zoaJPofu+4gZFhllNAH2
- gC1KWuFws5QXO+RopchxigXEAW3ZiB51Rj/EFDdI4rr7mo3M0PMoVJc8K
- f3yhVxzmdB/6tYVGyqaQDN0+5Jdgh8a0Xe73VZ6EEEzlG/k/bXNKQiewq
- Xv+LQGR6pbvw+FqXjK5u/sCwS1DByU7pJ2uwePZSE32F2PL6K0T8OP4Y/
- BS7sqh5cWMbkDcsq0dGsapMFKFAh+HyWlW70WHB+XFcKQIr83BmzqGRkx
- NgN2+jtU3uZQHOG7azPfbMoBK2YXzzemAQ28rhDtHsKTpkZTIyZ6B55Sq g==;
-X-CSE-ConnectionGUID: fvunzc73RgyyIlfivd39rA==
-X-CSE-MsgGUID: 5dlJzdUGRkelexDyzFm6Bw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11881"; a="87627298"
-X-IronPort-AV: E=Sophos;i="6.25,235,1779174000"; d="scan'208";a="87627298"
-Received: from fmviesa010.fm.intel.com ([10.60.135.150])
- by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 21 Aug 2026 04:11:55 -0700
-X-CSE-ConnectionGUID: BjiZimvySPedfLEyHWrADw==
-X-CSE-MsgGUID: G/zvEP14Rbq+TRauIxz2Bg==
+ t=1787311327; x=1818847327;
+ h=date:from:to:cc:subject:message-id:references:
+ in-reply-to:mime-version;
+ bh=dVqpDjhWfYFwUNfGDHeCGktw557cjfp4Gg2Cdn9tvEE=;
+ b=DcmKM4K8HDWd7E+73gNvCVRf6hvDThWCqmFRET7ceIknT+3OpLHgKimM
+ q/oBkkXNziHvKgq8hZ/h8lQF6WX0RdPd1zCIgSm4titF1SthbD2Ym3RcL
+ OF92sesmVYO1y/wS3bHTkY2aKC6/BGseVGRp2lyh26qTgDpJrADfUln9l
+ YoU70PCSM6iFpROLJbF9KUSepKK7Wm5jSeKEZYgoEDAsRgCxyapgQFoDE
+ UXpwr9BhWB7jlPY55IkqZs3Kv6siUkowT9ByQ/Lmr9cAo9SfhNNKgkkxT
+ 9sMvC+km7wbLsuIXnENUbl/NOCR+YTMzZbKSxO81YvKSVCVZhHQthfHNo g==;
+X-CSE-ConnectionGUID: Opleg/kZQpCxYQgqe4OtPA==
+X-CSE-MsgGUID: tqXZibehSGGyJMT4PlzOrw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11881"; a="87919214"
+X-IronPort-AV: E=Sophos;i="6.25,235,1779174000"; d="scan'208";a="87919214"
+Received: from orviesa009.jf.intel.com ([10.64.159.149])
+ by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 21 Aug 2026 04:22:05 -0700
+X-CSE-ConnectionGUID: f2x2DIarSaKDC/H33EDN3g==
+X-CSE-MsgGUID: nCrnzgVOQnSW56dT9vBJbQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,235,1779174000"; d="scan'208";a="262603696"
-Received: from fmsmsx901.amr.corp.intel.com ([10.18.126.90])
- by fmviesa010.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 21 Aug 2026 04:10:49 -0700
-Received: from FMSMSX901.amr.corp.intel.com (10.18.126.90) by
- fmsmsx901.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+X-IronPort-AV: E=Sophos;i="6.25,235,1779174000"; d="scan'208";a="266910343"
+Received: from fmsmsx903.amr.corp.intel.com ([10.18.126.92])
+ by orviesa009.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 21 Aug 2026 04:22:04 -0700
+Received: from FMSMSX902.amr.corp.intel.com (10.18.126.91) by
+ fmsmsx903.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.45; Fri, 21 Aug 2026 04:10:48 -0700
-Received: from fmsedg901.ED.cps.intel.com (10.1.192.143) by
- FMSMSX901.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ 15.2.2562.45; Fri, 21 Aug 2026 04:22:03 -0700
+Received: from fmsedg902.ED.cps.intel.com (10.1.192.144) by
+ FMSMSX902.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.45 via Frontend Transport; Fri, 21 Aug 2026 04:10:48 -0700
-Received: from CH1PR05CU001.outbound.protection.outlook.com (52.101.193.7) by
- edgegateway.intel.com (192.55.55.81) with Microsoft SMTP Server
+ 15.2.2562.45 via Frontend Transport; Fri, 21 Aug 2026 04:22:03 -0700
+Received: from SJ2PR03CU001.outbound.protection.outlook.com (52.101.43.43) by
+ edgegateway.intel.com (192.55.55.82) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.45; Fri, 21 Aug 2026 04:10:47 -0700
+ 15.2.2562.45; Fri, 21 Aug 2026 04:22:03 -0700
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=DfEXS0SYbKYTf2P7AXVueUgxx/CeSpaFYUmXhjHHXdOib0fv966/4tv8u9rnU0EqsHUvo2yEU5vJdhBBtVzphHFKgsv8RMUJ7qR4kKTVMv93yA5Ks4Ml2Sn0BXFuK+oZMyQBeA+7wg3KkaPPPLIR8dZgEAcAWXfOpxAiFmKBOa1c2BOcb8JjG9E5lRmer6UAydRzdiCaYlc0T4raxrlZE+o+/tiWWgWJj/vF8gJrBtHusyAjnQHc0RHjLBWLlUa4RX39LDZRjRIutI7dLx+5KzFPNCwTc7GTs98wUIyLgPU/ftPBizId/+0CcFsohnpr9YP07cnQaIvH15RnyO5RYQ==
+ b=gIf8Y6lRNzWkZE47UEUj6h1DGQJWwa6S80rYNFyKtI47gqL6nL+F5FNtMWFg2LJWpVgVWbQQC72E3XAAtWMSdAPxTj5VyObm7NRwDv8aPjd90dMfO84t8iirrDv/6KgI3dhQUAxr1AzviPOZbwJe6XhlOmyINOVmIClBu21eGFbeo4Q3pMgSjZ3IGPZpyVfirQoa+v8MN54dbvJcf3/A3+bzEPnt51I+Ij67FgFH+WiiU16pqXT1DysTFZwEot36F8+i6nufcZrD5MnU3KtLtn7kV43KSa23NEd+3qVFCTw+NwqE6UWQVbcoMj2pisMKycyexoSYIENxo8iRXl1JKg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=M8wFe1BOI8xU7NO1AFinkJmhR3cWhtCAED+Zn56H3m4=;
- b=GaEZ0+4ISVlbKsfl/Hje5LzKS+0i715p5RSRzUWYhORK+ZC5wBxrfdE8Nyk2gZ474K/hzFaxIuePY65m/2t4RIZ1RVbwwbpICBlibDp636p3ICNqCNSVCtbz89+QW5g+d3HpoixGyOzRoBMRUHxU0+zsq9dvMjjYNj8GOWRwAtKFhLG8Qc6pcWN6kNGBU/IBDDouawElULOvk+02fqq1NFnipxW1OeZybgGp3dRAZxyaMq3Xhj2iNsiQnOpTKzZIzC9SjaMeDOv2tXVMvCFSbWi+oQ1HepWS25bLXxH1I+wtbDWDvdGsQ2EwmnDm+uQRuSd0s5aCxJgg6UcLp5fG0g==
+ bh=GtsEkn/+BTHHwNgiX/Dgdv1hLayCqg8HD6WK4uhxMRI=;
+ b=fx3F/3BpvBQhJm93xPgwbH1JMR5TSRULPh59gh/VrDe2x+R/kOnpg0DSGlWP+4rTZsm8ZbKVvmyxnGBsLSFff5QUIL5Ze7r7Uogh+1Rgg8Wu6ZVkaviYe+95c/nS6atHBcw+dQrZwI6zYFKiJYodbylwFmnpeM4PAsGNbwaS2LRhCwOEWEcacTn6/EHIwWnu7l8+zU/vlxr3/MNHoktY4j73VSDkQ9amNyJI0v+s6HIHOHDPjHlyeSDa1u02MjNqINIkFoFJxTnNLTROCLJquV52605BqTBkHlaeFBr3J0759/ed2CgZyG2GG0gTZB7NkSuU6CT7BF2GrFCpuwzcJQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
  dkim=pass header.d=intel.com; arc=none
-Received: from IA3PR11MB8986.namprd11.prod.outlook.com (2603:10b6:208:577::21)
- by BL3PR11MB6457.namprd11.prod.outlook.com (2603:10b6:208:3bc::19)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.339.11; Fri, 21 Aug
- 2026 11:10:44 +0000
-Received: from IA3PR11MB8986.namprd11.prod.outlook.com
- ([fe80::e6f0:6afb:6ef9:ab5c]) by IA3PR11MB8986.namprd11.prod.outlook.com
- ([fe80::e6f0:6afb:6ef9:ab5c%6]) with mapi id 15.21.0339.008; Fri, 21 Aug 2026
- 11:10:44 +0000
-From: "Loktionov, Aleksandr" <aleksandr.loktionov@intel.com>
-To: Simon Horman <horms@kernel.org>
-CC: "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- "Nguyen, Anthony L" <anthony.l.nguyen@intel.com>, "netdev@vger.kernel.org"
- <netdev@vger.kernel.org>
-Subject: RE: [PATCH iwl-net v1] i40e: fix set_ringparam error path freeing
- live Tx rings
-Thread-Topic: [PATCH iwl-net v1] i40e: fix set_ringparam error path freeing
- live Tx rings
-Thread-Index: AQHdEDkjxHhTWICfq029YQNAK4bGX7Zv/xiAgDibsRA=
-Date: Fri, 21 Aug 2026 11:10:43 +0000
-Message-ID: <IA3PR11MB898627357B69696EFD995B7DE5A32@IA3PR11MB8986.namprd11.prod.outlook.com>
-References: <20260710065530.4138116-1-aleksandr.loktionov@intel.com>
- <20260716104217.268158-1-horms@kernel.org>
-In-Reply-To: <20260716104217.268158-1-horms@kernel.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: dkim=none (message not signed)
+Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=intel.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: IA3PR11MB8986:EE_|BL3PR11MB6457:EE_
-x-ms-office365-filtering-correlation-id: 5bab1208-de64-4e87-9a84-08deff74d81f
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
- ARA:13230040|23010399003|366016|376014|1800799024|3023799007|6133799003|10067099003|56012099006|4143699003|5023799004|11063799006|22082099003|38070700021|18002099003;
-x-microsoft-antispam-message-info: fWoJwpIXSMhKF1n2zfLWAliPDV3KqSK9TgrIUhLSm3xdFfCgZpoSyXMAh7lOMZhvQuzC8JiXGv+NE4dRpyLAirlVCwG+FyLbn/yolL+dcUj0q5Qmo99W7nusrcbqSimN+m9EYt8zdRBDqKfTS639kbJ91mRqKOZ3g6J+0oTxLJ2GWNE0uERlRrUszJhb5IcbAOoH2ZHdCxW2libc2QiyN/1L2xtIDu9VH0jP9SyVyHpnMxccciMDCi1mEfnqL4BF38WhcpV2WBq6Ol0HSY56keJDROJLF8ZoARLu5B6UPi6ts2qdqPkUgeucBTCbLhYJvm8zPQwgTaecdUVElRe9MzpIv51MomCLDwko6AGGVFoB+84nL6IdD2ahrnYni1necTVEMLagfQ0fXY0hboOvYakrWXmrdDNVl/Zg1KaoD9eLlx7SBoiTbZvxS6kf1nk69XkNEWew5AqgEtc+WrLr3OSvE0IfUu6dKDO01H8hl9PbDEiJnIdfDFYCnkHJfM6EA7aE4we3GKSSU/ykT7f25nhUotm4PslYcwtu/U9jGnuYLRcs62snjI64DJK6/gkV9lNM4+46+vgRP8RAFiVDSIV14rug5OHPseymX8rWt3g5Qxgg01SoilpwBHc1Yrv6recumuxhrVFRqxzQUS3Y/sb+qKSZ9pgcBetyk710K0M=
-x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:IA3PR11MB8986.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230040)(23010399003)(366016)(376014)(1800799024)(3023799007)(6133799003)(10067099003)(56012099006)(4143699003)(5023799004)(11063799006)(22082099003)(38070700021)(18002099003);
- DIR:OUT; SFP:1101; 
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?Un+h3DSbOLt/Fs/bG8mdujw9OVs+8gqZBx7herCbL8vAWTuK/6MN3slLBIMp?=
- =?us-ascii?Q?XoKPlr8TRPF3VOWIE1ML9pZGGGzxmXXiOAt0D6x8JVFk4Ck2R93mMqv/QbzM?=
- =?us-ascii?Q?aCmGfezbyGFQgikR6Yjqmr5NdfxyOL/81XaYVEjA563AlDwsZWrC5u3GuoKS?=
- =?us-ascii?Q?z39nN5b62ezsnzucdvcFekkNddhmyb6052l8Yyj3rzlHKbJBQwnB4KGN5E47?=
- =?us-ascii?Q?znDAxlfj25f1hrBgb7g71hj5a80g5A+rh/fNinVCWRkjAJLb4yJmPYATD7+j?=
- =?us-ascii?Q?pNiIoDFbiybnU6Ofeat26pmrwGPL+mkAL+S37fE8ShDn9KQQfLIfpfBi29kf?=
- =?us-ascii?Q?kdUPT/vB3cSmsTavHn9xRL/H02GmlVSTEtXizAt8QP6WOjxe9vJgi2CQeajc?=
- =?us-ascii?Q?t0mKirmf/WBW+xvT2n6CeaB+yeBZk2eErktrxebp+PhQvkL+Ayn0IKyZgwOB?=
- =?us-ascii?Q?dOGydsR0yVB3M0m+lBiLroUDLna9QgWQjCPD4L3xgm5hr9zn7jr7mdd8Y/t2?=
- =?us-ascii?Q?OmqGRVfz+UsM25UWaI7ywFRi6cO/mUIqRa8s3w9/Jzf01I692Zf0TYb+FADL?=
- =?us-ascii?Q?Xn5oFD0Vt7DWqxsrndS4UhUqF7TIAY7GSphsmTOO4ec3VNG0+3LopsFsZTYZ?=
- =?us-ascii?Q?tDwgMWZrnisu3oR8EyABjWTgFSFmmVQVxlPdu448KFKsGOBew2JWxBLdOOz4?=
- =?us-ascii?Q?154+RGJgU9X2hZZeTyJnQbLpQB+znLJ3c9EXw6HuhJMIAnu6uiKhf4ky7J9w?=
- =?us-ascii?Q?ecdf8X0pzHzm5tVTtaa6nl7cKy3PIOU1Bte7JzqYZ+hwKrVeV3/FLshqJouV?=
- =?us-ascii?Q?QCkKSdiEZkfQpYj1OeGdRsxLNr/PD2xTgcIIiuikE6UDL/ezS/wP8kDUoXjt?=
- =?us-ascii?Q?7p13QtGRpGbf2xO6eOzPYaTZRZdd+Xw1le5361i2y3m92ddirjj3E3KAaf3K?=
- =?us-ascii?Q?QRX7sDMui8jhHFgTzZ2fqm+iD9xuB/xrL46V/FAjR3F4YXuEb6i2GvlyBh9/?=
- =?us-ascii?Q?p9nXc8FCowukhPYvF+MvSJZBzx0LMfoin49+lpsIy7cW9znmljvvdSZdHehr?=
- =?us-ascii?Q?Ps6KWQctscvINRU8yDCWU+nDn2HyXsUA2jlKXSRZUy+RzGM7rAvq20bOf99+?=
- =?us-ascii?Q?PDmqVStw6lGCsIFTTrpfQYK16ykahKQMt/J4hMAoU1HtjI6Ris09Rw2UM/XY?=
- =?us-ascii?Q?BtjJx+8oPRNuDJ9ww+a+Oabx4GvGItPKm5d7gomWyFLHZJYtZVKRHN5lKeLZ?=
- =?us-ascii?Q?GJkyYbcQ02a6Ddc2ZoeB2J3oUJohZEi6NE0r4nI81j6o6J8cTcEKmleNbA+5?=
- =?us-ascii?Q?xxR7ok6wK4lDx4SeshAj+4lv3BufPoAToZuHi3JfVuXVHTfxwRpoJ/COt9y0?=
- =?us-ascii?Q?+MCEXBbumTIBuW174bEIZXXDOa4H8DF5cbJnLmJTo7zqtJEHJ0+gyR5jlqf2?=
- =?us-ascii?Q?7WokL0fm7PMloiNTBQSB+llK+v5bCNalo3RC+IW7vQ2VQHQ5yXewrIbR6NVC?=
- =?us-ascii?Q?pgezeGfVqtIst2BmanGL0P6T1RNzRVrHMtn7gsNCWJDvxlrrYYzmyGQ0iFCt?=
- =?us-ascii?Q?B29YsXq2n6AgG2YvylEatVNQO9BUZUxX8W8M0A/mt2pvSjtrbhhKuVZvm2sf?=
- =?us-ascii?Q?MuRMigYmuyv774NwFqjDg0sapuISv0iCPV1eKsPmIPAnYNbCjVMNw/Teg91q?=
- =?us-ascii?Q?OSYx8psJbJq2x8guOF9H9POShUpTeBwCUsZ59l2PtgUqlt808hjf5nhd6GJO?=
- =?us-ascii?Q?+CRb3Agj6TCI6SRmldpCB0dDP9KVt0Q=3D?=
+Received: from DM4PR11MB6117.namprd11.prod.outlook.com (2603:10b6:8:b3::19) by
+ MW6PR11MB8437.namprd11.prod.outlook.com (2603:10b6:303:249::20) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.339.11; Fri, 21 Aug
+ 2026 11:21:59 +0000
+Received: from DM4PR11MB6117.namprd11.prod.outlook.com
+ ([fe80::d9b3:e942:2686:3cdd]) by DM4PR11MB6117.namprd11.prod.outlook.com
+ ([fe80::d9b3:e942:2686:3cdd%6]) with mapi id 15.21.0339.010; Fri, 21 Aug 2026
+ 11:21:59 +0000
+Date: Fri, 21 Aug 2026 13:21:45 +0200
+From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+To: Stanislav Fomichev <sdf.kernel@gmail.com>
+CC: <netdev@vger.kernel.org>, <davem@davemloft.net>, <edumazet@google.com>,
+ <kuba@kernel.org>, <pabeni@redhat.com>, <anthony.l.nguyen@intel.com>,
+ <przemyslaw.kitszel@intel.com>, <andrew+netdev@lunn.ch>, <saeedm@nvidia.com>, 
+ <tariqt@nvidia.com>, <mbloch@nvidia.com>, <maxime.chevallier@bootlin.com>,
+ <mcoquelin.stm32@gmail.com>, <alexandre.torgue@foss.st.com>,
+ <aleksander.lobakin@intel.com>, <horms@kernel.org>,
+ <magnus.karlsson@intel.com>, <sdf@fomichev.me>, <ast@kernel.org>,
+ <daniel@iogearbox.net>, <hawk@kernel.org>, <john.fastabend@gmail.com>,
+ <guoren@kernel.org>, <dtatulea@nvidia.com>, <witu@nvidia.com>,
+ <martin.lau@kernel.org>, <yoong.siang.song@intel.com>,
+ <intel-wired-lan@lists.osuosl.org>, <linux-kernel@vger.kernel.org>,
+ <linux-rdma@vger.kernel.org>, <linux-stm32@st-md-mailman.stormreply.com>,
+ <linux-arm-kernel@lists.infradead.org>, <bpf@vger.kernel.org>,
+ <linux-csky@vger.kernel.org>, <leon@kernel.org>
+Subject: Re: [PATCH net v3 2/3] xsk: honor XDP_TX_METADATA in zero-copy path
+Message-ID: <aog0yV9ZwSJ14P8Y@boxer>
+References: <20260819160535.1472459-1-sdf@fomichev.me>
+ <20260819160535.1472459-3-sdf@fomichev.me>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+In-Reply-To: <20260819160535.1472459-3-sdf@fomichev.me>
+X-ClientProxiedBy: TL2P290CA0001.ISRP290.PROD.OUTLOOK.COM
+ (2603:1096:950:2::19) To DM4PR11MB6117.namprd11.prod.outlook.com
+ (2603:10b6:8:b3::19)
 MIME-Version: 1.0
-X-Exchange-RoutingPolicyChecked: SDHC4fdOVOtb92WEDNTyHuk988XB3zhCRQuu4AyBCa7/HVKzSkZu171x4dJFnDf+HAQ5OYR6WNDytb5ydx75tECnQs165jd2Fkc8rdq11rwOQBUMCfC88kbNBrnfoDiqs6wCHzRw6yd/EmnpdSJpNNKNGoGDxRxbJcJKZ4Ri46kY4kPJrPzWk4gQGjuEDRUqFJFiRBUvL3T9DBciIUxw3OZREtOdnHmxbr2xVUak8D7x2rdsZKOJn0SimDzYjHcWx3cOuMJ+MJ2nfdW/9J787jKIIGkQ+e+aRDGl5AF3i5G28A7uVxNIqz1G7nVj/LNO+5rVrIN3QMpL5uZ94Tt77w==
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DM4PR11MB6117:EE_|MW6PR11MB8437:EE_
+X-MS-Office365-Filtering-Correlation-Id: 8ee1de98-f849-4937-47fa-08deff766a9c
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+ ARA:13230040|366016|23010399003|1800799024|376014|7416014|10067099003|56012099006|4143699003|11063799006|18002099003|22082099003;
+X-Microsoft-Antispam-Message-Info: KgeA2flJA+mJ3U6y/UsCzqmJuovAnBvzAvtGBCHKbESUNnc3DkZPCAvyO27V2q87+9CwoDoXwsC5x2NhUC38929Kjikwyv8baae7r7P9vIR5kUGcRUVkXjYwTN63kC90dye/wgDXvo7jJWAco4DM3LtuBShQ4tql7/mYbSmYekg/PaGguMvnG5viASjAzStQtLxcSbEohiNT1ALOYdD6005omzQgXrJsMU3oi+BPZREMedDD8QRXRlhXzYwLjab9CeuZCFxQNFD9g51vLcOGjPIVIzlZcljBAuYmuteMPJoP4JgPHH/Jhvpm3rjSWTZYNPgFX05FhSArbLttu3DIdctGG4oTf2OtPgYjPa3FJ+cAyhBm85e8NgHE1qGXIuKT1HaltXAlGfieK0A8YOajY2+ZFcMAXCcCzplMuGc1Kcc/tHBqt2JODAd61XADa9nm3nWTcf8lfRLhBccaiZ95xHHTIhfAiH+JoE6Jv+HoeD00dJU1YW+0zDiofXMHaWxGnC3XDHWVtxf22LMtx9VfHWp9/pmREl3QuNREbR0qy1sXuGN6WbzJa5wCcf0rfJs8RxVIws4/h+j+iI9/FD77Yvqv40HkJPnGonStKAKGE+ZsijJwRpl8ABr1cbqKPK3buhtIlUrKlTqM5rLic7acUhbsKV+SWi71qZtgWSGC/pg=
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:DM4PR11MB6117.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230040)(366016)(23010399003)(1800799024)(376014)(7416014)(10067099003)(56012099006)(4143699003)(11063799006)(18002099003)(22082099003);
+ DIR:OUT; SFP:1101; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?fIlS8D223UUeuFenCigeOsYPO1Oi/GH98vBeFyqOym8+RdH6zY4G2gsaKvsT?=
+ =?us-ascii?Q?DSdbLvBHuBellZvSt2LsSM/5QZ1Iu3Za/qK6J4vOOYY5AQcgTVkLKlWDthIS?=
+ =?us-ascii?Q?iTZBJ7tE8SzEmUwSZVbMuCP5OjiSkJZDnaEoHFC6k1RVuM1+x+0dbQmGsvSd?=
+ =?us-ascii?Q?W0HMO/8/sHIs+Xpqyctwd2/O2s6buUZBXk0WHHHFsRmBxG42LbJYBIrv6UJu?=
+ =?us-ascii?Q?CK6EDA2JU9lE6yLCrwR3XKqeOl8uewg7IhvA3a0PNzzlDvaUx9jaMeq9I73t?=
+ =?us-ascii?Q?Bjr+ZWeXwGqFp57I05pp6E2xVAc5knqqEXRKG82GYChiHvDr2StZgH3OH4SR?=
+ =?us-ascii?Q?M+yyGLOx1iTZItxx9K7k9t9lQowhqkS4WYUtkD41Tpf4RetNDayOD1N9en2Y?=
+ =?us-ascii?Q?Iy8YAQ3+yWrPgKtgJewjsMDy8ua+F6op5q78F6jST/iEyNZ4YRYaJ+qcfGjJ?=
+ =?us-ascii?Q?BhcwM5zFpLe/7QczeoGuswtRsQRFs3emMnRwhZlVijpxImJAEdH4uwYZ9FsX?=
+ =?us-ascii?Q?THhF+qJNkPnLznYOzHJ8jCqKbB/CKUmz3aBfveiR7CJSjsCB0G1cb30BLYKC?=
+ =?us-ascii?Q?wHQ8igngXoX7anyGbME+C86cFKat+fb8cH0INpE7tlOu8dTm0KHUIfg+HDNp?=
+ =?us-ascii?Q?jHYJj7dCnqTaHpcsbvf5NcsemOzZYeZAHUiKy1JR1KnzFWIPy6VjuBLe2r5b?=
+ =?us-ascii?Q?irQumDLQveO3mW8XNi9ZPeyPeLJJhhbhoO+TeyLuugc49Lk6sYU89o4zYMkS?=
+ =?us-ascii?Q?llnHqbOZepiv7w9EvAvabc5cMWPIq4ItLvmYo0KdR+yw7CuTVlhhjqw3frhS?=
+ =?us-ascii?Q?Sa9kM98AzK/JHwSxIVtofRSYRfXxdIDhG3uJukHWmpNZAAyqIPRSHMMJHAVc?=
+ =?us-ascii?Q?MvNL20jioR/e96gw2jLWrVzU34mnXjHad+EeS43ZvXrE9oJ0HymvJMfsuAk2?=
+ =?us-ascii?Q?EM7Bur+OY9emJkm0HkVeXc+XngRATt+AsegpbC5pdGd7R2mrJEtwwlHbKtF7?=
+ =?us-ascii?Q?2Nhfvj6X6liMQ+zNKkKvaBRScCLVFPgu7U6k4QyR0RM8dnssSuC9an/peA7+?=
+ =?us-ascii?Q?XgTuXThWhLeDtIItQSn3w7dKqIpjuKXQXIFKK3+E1MUqE6do916vUSGMklLt?=
+ =?us-ascii?Q?SIOT2jV0DEeuC3Gxl/5OHoZVKtlFLwfI5OGqTTU4K7pRuqMl2X5aX21uxcY9?=
+ =?us-ascii?Q?bhKaffdmSj2aveU9PLFz1+gNkChB/dqoZV7fOMtmXI1BkdRKknDb2y03g1Yt?=
+ =?us-ascii?Q?6GecG2Nnn/iWHspwmciZPYheGd4+XKs5N7C0rfn229xOVzytmrULnRsyV1XF?=
+ =?us-ascii?Q?AZh+3GdP6NrTt+WDd4ZYLpowxnZvChoPciwFmY1yziilwnKk/VTCqT5LtqhN?=
+ =?us-ascii?Q?4f6oBkgRue6+bVAQxA0ilY9lpR0hcCXE+7rMywIFMcrp6OsX5ePPfxGsvfwG?=
+ =?us-ascii?Q?I1hpVqV1Aj1nJ+blzKeeUDlg2+y3lsQ29M6redwg0SsJlqykqdaHQgxDw6eq?=
+ =?us-ascii?Q?KWZG21BTSds9cn8gLKYQE+HXwJM+PVGlsOyg7rFsJgm5zP5dWopSz+Kb6qwV?=
+ =?us-ascii?Q?49SzR+JuxgFw2rCGrOPsGVf7wJh3voc+/VWMUlGtEsOvGlupJMXWvuExlmf5?=
+ =?us-ascii?Q?QIPJWROyt8ZhaunYot9syjeMVjKETE1/Kd9SbpkleORIg/+bXHtOSXQJrC6e?=
+ =?us-ascii?Q?Y1wRhJO26r28QDkGGRZgKTWnxeelrO77PxL0hdMPNwNxdXI1dlz7dLNDE5Oj?=
+ =?us-ascii?Q?99wZJDLAZCAfEPJkLaLe8dNjUA3DdTE=3D?=
+X-Exchange-RoutingPolicyChecked: hwWr6K2pTbQ9C/ueJYdnWHiLf8JLoG2GEYtRAiuskN9ggWk6cUnjrYPeIIqaF4R8Q+GdLKVNB9ikbDwf4rE8DYWCSXz3qIOb9ZHHwPoAUPt607ky1BEutYbKyJGzwT/Dp7Sa6eeCPdJh3O+RNMsGD0SPPThswf/GVafpNplshsH5pogJLIfkhw4/hLnOsJ8icdUsDvGC/G04vfG19+z3uxYvqXN+Kkr56+Sk1NJzrf5Tezl/8sSGhvA71A1xXG1A/LDKQxk9sxUiOBChx3rt+yrGLSOs0EjccA6kkqsivoCHDMFcOgL/mEVUM/SDXCFncVGJ0fpcURXagkuuk0UBKA==
+X-MS-Exchange-CrossTenant-Network-Message-Id: 8ee1de98-f849-4937-47fa-08deff766a9c
+X-MS-Exchange-CrossTenant-AuthSource: DM4PR11MB6117.namprd11.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: IA3PR11MB8986.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 5bab1208-de64-4e87-9a84-08deff74d81f
-X-MS-Exchange-CrossTenant-originalarrivaltime: 21 Aug 2026 11:10:44.0378 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: f2YBmLPZOu6E+DuqqRRmUub7oeDLuKDc+oftxRSD8Ii4TBeBL8gNGtEyIY600UPs5HjwYz4RmC19QkvWdZ59MVMLRD50QpiCJ+LfeK7Lkro=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BL3PR11MB6457
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Aug 2026 11:21:59.4470 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: pnZawhsxW3w667rBVjxtdXn1dhCdV8GkIJVv2HJGjQKdygQXARH2Qtdnuzho+Esrf2Bx8U0OeFU1Vspbale00VWOJh+UC5JwSy3ARiWh8BI=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW6PR11MB8437
 X-OriginatorOrg: intel.com
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
@@ -200,77 +206,212 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
+On Wed, Aug 19, 2026 at 09:05:34AM -0700, Stanislav Fomichev wrote:
+> The zero-copy path reads TX metadata whenever the UMEM has metadata space,
+> even if the descriptor does not set XDP_TX_METADATA. Pass descriptor
+> options through the metadata helpers and ignore metadata unless the option
+> is set.
+> 
+> This does not fix the existing per-WQE metadata handling for mlx5 MPWQEs.
+> Only the descriptor that starts a session passes through
+> xsk_tx_metadata_request() and configures offload state shared by the batch.
+> Metadata on descriptors joining an open session is therefore not validated
+> and does not configure its requested offloads. In addition, a non-NULL
+> metadata pointer from such a descriptor is treated as a timestamp
+> completion request even when XDP_TXMD_FLAGS_TIMESTAMP is not set, so its
+> metadata union can be overwritten with an unrequested timestamp. Fixing
+> mixed metadata states within one MPWQE requires a separate change.
+> 
+> Fixes: 48eb03dd2630 ("xsk: Add TX timestamp and TX checksum offload support")
+> Reviewed-by: Alexander Lobakin <aleksander.lobakin@intel.com>
+> Signed-off-by: Stanislav Fomichev <sdf@fomichev.me>
 
+Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 
-> -----Original Message-----
-> From: Simon Horman <horms@kernel.org>
-> Sent: Thursday, July 16, 2026 12:42 PM
-> To: Loktionov, Aleksandr <aleksandr.loktionov@intel.com>
-> Cc: Simon Horman <horms@kernel.org>; intel-wired-lan@lists.osuosl.org;
-> Nguyen, Anthony L <anthony.l.nguyen@intel.com>; netdev@vger.kernel.org
-> Subject: Re: [PATCH iwl-net v1] i40e: fix set_ringparam error path
-> freeing live Tx rings
->=20
-> This is an AI-generated review of your patch. The human sending this
-> email has considered the AI review valid, or at least plausible.
-> Full review at: https://sashiko.dev
 > ---
-> --- Patch [1]: [PATCH iwl-net v1] i40e: fix set_ringparam error path
-> freeing live Tx rings --- commit
-> 7042e7b9f58a75bdb26437aed842a7b6780df035
-> Author: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
->=20
-> i40e: fix set_ringparam error path freeing live Tx rings
->=20
-> This commit fixes an issue in the i40e_set_ringparam() error path
-> where it mistakenly frees live, NAPI-active TX rings instead of the
-> temporary rings allocated for a configuration change. It does this by
-> passing the address of the temporary rings instead of the live ring
-> pointer.
->=20
-> > diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> > b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> > index 3da9ec49cc745..6d2b076049f7e 100644
-> > --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> > +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> > @@ -2249,7 +2249,7 @@ static int i40e_set_ringparam(struct
-> net_device *netdev,
-> >  	if (tx_rings) {
-> >  		for (i =3D 0; i < tx_alloc_queue_pairs; i++) {
-> >  			if (i40e_active_tx_ring_index(vsi, i))
-> > -				i40e_free_tx_resources(vsi->tx_rings[i]);
-> > +				i40e_free_tx_resources(&tx_rings[i]);
->=20
-> [Severity: High]
-> This is a pre-existing issue, but does calling
-> i40e_free_tx_resources() on the cloned &tx_rings[i] inadvertently
-> reset the Byte Queue Limits (BQL) state on the live TX queues?
->=20
-> Because the temporary rings are shallow copies of the live rings, they
-> inherit the netdev and queue_index fields. When
-> i40e_free_tx_resources() cleans up the temporary rings, it calls
-> i40e_clean_tx_ring():
->=20
-> drivers/net/ethernet/intel/i40e/i40e_txrx.c:i40e_clean_tx_ring() {
->     ...
->     netdev_tx_reset_queue(txring_txq(tx_ring));
->     ...
-> }
->=20
-> Since i40e_down() has not yet been called on this error path, the live
-> queue is still actively transmitting. Locklessly resetting BQL here
-> zeroes num_queued. When the hardware subsequently completes the
-> already-queued packets, won't dql_completed() underflow and trigger a
-> BUG_ON()?
->=20
-> The same issue also seems to be present in the earlier error path if
-> i40e_setup_tx_descriptors() fails.
->=20
-> >  		}
-> >  		kfree(tx_rings);
-> >  		tx_rings =3D NULL;
-
-Thank you for your review.
-I'll re-spin v2 asap
-
-Alex
+>  drivers/net/ethernet/intel/igc/igc_main.c     |  3 ++-
+>  .../ethernet/mellanox/mlx5/core/en/xsk/tx.c   |  2 +-
+>  .../net/ethernet/stmicro/stmmac/stmmac_main.c |  3 ++-
+>  include/net/libeth/xsk.h                      |  2 +-
+>  include/net/xdp_sock_drv.h                    | 22 +++++++++++--------
+>  include/net/xsk_buff_pool.h                   |  3 ++-
+>  net/xdp/xsk_buff_pool.c                       |  7 ++++--
+>  7 files changed, 26 insertions(+), 16 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+> index 39043d8ca1bf..59067939a586 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_main.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+> @@ -3074,7 +3074,8 @@ static void igc_xdp_xmit_zc(struct igc_ring *ring)
+>  		olinfo_status = xdp_desc.len << IGC_ADVTXD_PAYLEN_SHIFT;
+>  
+>  		dma = xsk_buff_raw_get_dma(pool, xdp_desc.addr);
+> -		meta = xsk_buff_get_metadata(pool, xdp_desc.addr);
+> +		meta = xsk_buff_get_metadata(pool, xdp_desc.addr,
+> +					     xdp_desc.options);
+>  		xsk_buff_raw_dma_sync_for_device(pool, dma, xdp_desc.len);
+>  		bi = &ring->tx_buffer_info[ntu];
+>  
+> diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/tx.c b/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/tx.c
+> index 3d19dad8f868..d194eeddd7b5 100644
+> --- a/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/tx.c
+> +++ b/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/tx.c
+> @@ -99,7 +99,7 @@ bool mlx5e_xsk_tx(struct mlx5e_xdpsq *sq, unsigned int budget)
+>  		xdptxd.dma_addr = xsk_buff_raw_get_dma(pool, desc.addr);
+>  		xdptxd.data = xsk_buff_raw_get_data(pool, desc.addr);
+>  		xdptxd.len = desc.len;
+> -		meta = xsk_buff_get_metadata(pool, desc.addr);
+> +		meta = xsk_buff_get_metadata(pool, desc.addr, desc.options);
+>  
+>  		xsk_buff_raw_dma_sync_for_device(pool, xdptxd.dma_addr, xdptxd.len);
+>  
+> diff --git a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
+> index a71f0df26378..62de03e65a90 100644
+> --- a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
+> +++ b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
+> @@ -2719,7 +2719,8 @@ static bool stmmac_xdp_xmit_zc(struct stmmac_priv *priv, u32 queue, u32 budget)
+>  
+>  		tx_desc = stmmac_get_tx_desc(priv, tx_q, entry);
+>  		dma_addr = xsk_buff_raw_get_dma(pool, xdp_desc.addr);
+> -		meta = xsk_buff_get_metadata(pool, xdp_desc.addr);
+> +		meta = xsk_buff_get_metadata(pool, xdp_desc.addr,
+> +					     xdp_desc.options);
+>  		xsk_buff_raw_dma_sync_for_device(pool, dma_addr, xdp_desc.len);
+>  
+>  		/* To return XDP buffer to XSK pool, we simple call
+> diff --git a/include/net/libeth/xsk.h b/include/net/libeth/xsk.h
+> index 5dcc0d7f65b7..a452b7828ce4 100644
+> --- a/include/net/libeth/xsk.h
+> +++ b/include/net/libeth/xsk.h
+> @@ -196,7 +196,7 @@ __libeth_xsk_xmit_fill_buf_md(const struct xdp_desc *xdesc,
+>  	struct libeth_xdp_tx_desc desc;
+>  	struct xdp_desc_ctx ctx;
+>  
+> -	ctx = xsk_buff_raw_get_ctx(sq->pool, xdesc->addr);
+> +	ctx = xsk_buff_raw_get_ctx(sq->pool, xdesc->addr, xdesc->options);
+>  	desc = (typeof(desc)){
+>  		.addr	= ctx.dma,
+>  		__libeth_xdp_tx_len(xdesc->len),
+> diff --git a/include/net/xdp_sock_drv.h b/include/net/xdp_sock_drv.h
+> index b344789f5df8..d94aeb506379 100644
+> --- a/include/net/xdp_sock_drv.h
+> +++ b/include/net/xdp_sock_drv.h
+> @@ -240,6 +240,7 @@ static inline void *xsk_buff_raw_get_data(struct xsk_buff_pool *pool, u64 addr)
+>   * xsk_buff_raw_get_ctx - get &xdp_desc context
+>   * @pool: XSk buff pool desc address belongs to
+>   * @addr: desc address (from userspace)
+> + * @options: desc options (from userspace)
+>   *
+>   * Wrapper for xp_raw_get_ctx() to be used in drivers, see its kdoc for
+>   * details.
+> @@ -248,9 +249,9 @@ static inline void *xsk_buff_raw_get_data(struct xsk_buff_pool *pool, u64 addr)
+>   * pointer, if it is present (initialized to %NULL otherwise).
+>   */
+>  static inline struct xdp_desc_ctx
+> -xsk_buff_raw_get_ctx(const struct xsk_buff_pool *pool, u64 addr)
+> +xsk_buff_raw_get_ctx(const struct xsk_buff_pool *pool, u64 addr, u32 options)
+>  {
+> -	return xp_raw_get_ctx(pool, addr);
+> +	return xp_raw_get_ctx(pool, addr, options);
+>  }
+>  
+>  #define XDP_TXMD_FLAGS_VALID ( \
+> @@ -318,18 +319,20 @@ xsk_tx_metadata_request(const struct xsk_buff_pool *pool,
+>  }
+>  
+>  static inline struct xsk_tx_metadata *
+> -__xsk_buff_get_metadata(const struct xsk_buff_pool *pool, void *data)
+> +__xsk_buff_get_metadata(const struct xsk_buff_pool *pool, void *data,
+> +			unsigned int options)
+>  {
+> -	if (!pool->tx_metadata_len)
+> +	if (!pool->tx_metadata_len || !(options & XDP_TX_METADATA))
+>  		return NULL;
+>  
+>  	return data - pool->tx_metadata_len;
+>  }
+>  
+>  static inline struct xsk_tx_metadata *
+> -xsk_buff_get_metadata(struct xsk_buff_pool *pool, u64 addr)
+> +xsk_buff_get_metadata(struct xsk_buff_pool *pool, u64 addr, u32 options)
+>  {
+> -	return __xsk_buff_get_metadata(pool, xp_raw_get_data(pool, addr));
+> +	return __xsk_buff_get_metadata(pool, xp_raw_get_data(pool, addr),
+> +				       options);
+>  }
+>  
+>  static inline void xsk_buff_dma_sync_for_cpu(struct xdp_buff *xdp)
+> @@ -510,7 +513,7 @@ static inline void *xsk_buff_raw_get_data(struct xsk_buff_pool *pool, u64 addr)
+>  }
+>  
+>  static inline struct xdp_desc_ctx
+> -xsk_buff_raw_get_ctx(const struct xsk_buff_pool *pool, u64 addr)
+> +xsk_buff_raw_get_ctx(const struct xsk_buff_pool *pool, u64 addr, u32 options)
+>  {
+>  	return (struct xdp_desc_ctx){ };
+>  }
+> @@ -530,13 +533,14 @@ xsk_tx_metadata_request(const struct xsk_buff_pool *pool,
+>  }
+>  
+>  static inline struct xsk_tx_metadata *
+> -__xsk_buff_get_metadata(const struct xsk_buff_pool *pool, void *data)
+> +__xsk_buff_get_metadata(const struct xsk_buff_pool *pool, void *data,
+> +			unsigned int options)
+>  {
+>  	return NULL;
+>  }
+>  
+>  static inline struct xsk_tx_metadata *
+> -xsk_buff_get_metadata(struct xsk_buff_pool *pool, u64 addr)
+> +xsk_buff_get_metadata(struct xsk_buff_pool *pool, u64 addr, u32 options)
+>  {
+>  	return NULL;
+>  }
+> diff --git a/include/net/xsk_buff_pool.h b/include/net/xsk_buff_pool.h
+> index 2bb1d122b1bc..a7df573784fd 100644
+> --- a/include/net/xsk_buff_pool.h
+> +++ b/include/net/xsk_buff_pool.h
+> @@ -154,7 +154,8 @@ struct xdp_desc_ctx {
+>  	struct xsk_tx_metadata *meta;
+>  };
+>  
+> -struct xdp_desc_ctx xp_raw_get_ctx(const struct xsk_buff_pool *pool, u64 addr);
+> +struct xdp_desc_ctx xp_raw_get_ctx(const struct xsk_buff_pool *pool, u64 addr,
+> +				   u32 options);
+>  
+>  static inline dma_addr_t xp_get_dma(struct xdp_buff_xsk *xskb)
+>  {
+> diff --git a/net/xdp/xsk_buff_pool.c b/net/xdp/xsk_buff_pool.c
+> index 78c14f106395..9d2d94f1fb75 100644
+> --- a/net/xdp/xsk_buff_pool.c
+> +++ b/net/xdp/xsk_buff_pool.c
+> @@ -763,6 +763,7 @@ EXPORT_SYMBOL(xp_raw_get_dma);
+>   * xp_raw_get_ctx - get &xdp_desc context
+>   * @pool: XSk buff pool desc address belongs to
+>   * @addr: desc address (from userspace)
+> + * @options: desc options (from userspace)
+>   *
+>   * Helper for getting desc's DMA address and metadata pointer, if present.
+>   * Saves one call on hotpath and double calculation of the actual address.
+> @@ -771,14 +772,16 @@ EXPORT_SYMBOL(xp_raw_get_dma);
+>   * Return: new &xdp_desc_ctx struct containing desc's DMA address and metadata
+>   * pointer, if it is present (initialized to %NULL otherwise).
+>   */
+> -struct xdp_desc_ctx xp_raw_get_ctx(const struct xsk_buff_pool *pool, u64 addr)
+> +struct xdp_desc_ctx xp_raw_get_ctx(const struct xsk_buff_pool *pool, u64 addr,
+> +				   u32 options)
+>  {
+>  	struct xdp_desc_ctx ret;
+>  
+>  	addr = __xp_raw_get_addr(pool, addr);
+>  
+>  	ret.dma = __xp_raw_get_dma(pool, addr);
+> -	ret.meta = __xsk_buff_get_metadata(pool, __xp_raw_get_data(pool, addr));
+> +	ret.meta = __xsk_buff_get_metadata(pool, __xp_raw_get_data(pool, addr),
+> +					   options);
+>  
+>  	return ret;
+>  }
+> -- 
+> 2.53.0-Meta
+> 
