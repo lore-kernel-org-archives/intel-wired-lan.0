@@ -1,199 +1,115 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 055ABC5DF7D
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 21 Aug 2026 20:59:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71149C5DF94
+	for <intel-wired-lan@archiver.kernel.org>; Sat, 22 Aug 2026 00:15:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 8C9B9409D7;
-	Fri, 21 Aug 2026 20:59:37 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 0D56260870;
+	Sat, 22 Aug 2026 00:15:03 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 00uWo_MKaNov; Fri, 21 Aug 2026 20:59:35 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id gLKqDkGzUE_j; Sat, 22 Aug 2026 00:15:02 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1787345975;
-	bh=LebL994XkMcN/9zTWfEffqb7UQOujw6A1rp1cyz9GW8=;
-	h=Date:Subject:To:References:From:In-Reply-To:List-Id:
+	s=default; t=1787357702;
+	bh=EsSW+Orb0Znjss7PUevWeI0AL157eqj/g7A6EZuyBCo=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=cbOlc/dRHu/abdyCVxbxogPlnChNE9WpHiETitaGl+UFQbMMsrh9Wdk4UJXzf2kD5
-	 ElV/PLZI10gV3ZJpF0OCMqXOW8EFrH+MV2iTE8hqVC34he0Vl3+OCd9QQcKO/X1NTx
-	 tAAMcXK/7t+0M/oQahIa+lps6vZZuaTkqvHQkOpi42EuAAn6ym9HwfN2dx/7Tzoad2
-	 KRb96UNfM9NN57nPyK66gDyKuUY1iR/4wdtJ7QKrkvw1J3NwKrx3mj8bOvH9SIHjjf
-	 iRpVZfWmKWkIHCK4yCJiHPXwnoBdEDCQ7AeQU/EsOgkjoGdk7qHplC4+Wy75jXAVwn
-	 cEqZ9ijbMIYcg==
+	b=m3WgdWBVrp37J1bvxQ9mJ1yH4YW7MLhgmjoVK56ZJ2XZ8QlHojk4jt+Lw7VzNbsiF
+	 MtiNZaFV/NYQyCqf/9Ynul7aN1VDZl2IBfM2HIw4Lxd7TvItjZwkEKL8hftP7yuLoU
+	 V4vUThKrcaYEta0R/9JpvKCbQD+LmzeZaOQ2Dd/nnwW9sT5SXcfeYQPy4G5GvYykgU
+	 eNzi4A6lX0qjjYylQDJ2GmzGBHpkcW2np0d4h9raMmcumz7vWNR4hirSJyDhxzG/6l
+	 mWAh16KpT7mZmv9gvR4Tb6k6Yv8TpMiPC80fiGsS9VugLCCnJ7wBCI1E8UvyyHLxjq
+	 AQFM8QG0JF2Yw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C3B2940816;
-	Fri, 21 Aug 2026 20:59:35 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 03104386
- for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Aug 2026 20:59:35 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 1B64D60AD8;
+	Sat, 22 Aug 2026 00:15:02 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 09B014C4
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 22 Aug 2026 00:15:00 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id E8EF440447
- for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Aug 2026 20:59:34 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id DDB7A40A05
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 22 Aug 2026 00:14:59 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id xmkiJGSd87BN for <intel-wired-lan@lists.osuosl.org>;
- Fri, 21 Aug 2026 20:59:34 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.9;
- helo=mgamail.intel.com; envelope-from=anthony.l.nguyen@intel.com;
+ id OpNx-gy445Y4 for <intel-wired-lan@lists.osuosl.org>;
+ Sat, 22 Aug 2026 00:14:59 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.15;
+ helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
 Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=AFiR91Od
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 0CC134024D
- for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Aug 2026 20:59:33 +0000 (UTC)
+ header.a=rsa-sha256 header.s=Intel header.b=dv4kTuEm
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 21065400FB
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 22 Aug 2026 00:14:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1787345974; x=1818881974;
- h=message-id:date:subject:to:references:from:in-reply-to:
- content-transfer-encoding:mime-version;
- bh=QdGEGlxGlnZNuREN/7k5kDYI4hboQnEeZgGn7L1+8g4=;
- b=AFiR91OdFkPVnvRYyp2rjAkuz3+MKt1n/uTWoN+Sq517e+t9LWHZWbXc
- ysvn6+QcBERMWWx6Pt7XwMxqtr1oR4T0Lgcvr5mvzKobYtfUD40jSqJm7
- CxbSqbCXWFNo32lgmAwVK0fJA78yh+75GvuuZ0kwQD38SgaTr6L9kqf3X
- kxd2TwTW5PhQ8qrOKoA5HeEppKhOY+6rPwhMl1FqQfGOZTnpeQWJ2dC/o
- e1Mey6/CIhJhGXnmdzx64yjMvxXpNSIAWiNbiiJxWaSPJfXSP6YPDg+9/
- VVMWB7mFslE0ddlJPqPiHN+RFwoPywXaUEZmJwLq77VLaNQk3bmMJXqM9 Q==;
-X-CSE-ConnectionGUID: jJIoWtj0SGSOzE3Ystfe4w==
-X-CSE-MsgGUID: LMTG1JMaS12BY+9nzwCeJg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11882"; a="110686856"
-X-IronPort-AV: E=Sophos;i="6.25,235,1779174000"; d="scan'208";a="110686856"
-Received: from fmviesa009.fm.intel.com ([10.60.135.149])
- by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 21 Aug 2026 13:59:33 -0700
-X-CSE-ConnectionGUID: 4wUPg2sZSZ+F6LZDvhkpGw==
-X-CSE-MsgGUID: xVNzzE73TOOr9MODuBJU7g==
+ t=1787357699; x=1818893699;
+ h=from:date:subject:mime-version:content-transfer-encoding:
+ message-id:references:in-reply-to:to:cc;
+ bh=ykZV2+vW3SLYhEntRCRH3HuzfRCJ0g8W/+CtjsohyO4=;
+ b=dv4kTuEmJXaPErCsC68Cje3IZ/4y3dyeFWFAT830LadSJEjLLhrrg9rg
+ /ZQTcu9twRq1bCyIz/ndMG1Itmj7hxVTEuF4nY8mvFITbPhuesU1UdzP5
+ QieFM76QfN2uFzRnWr1uvFUxVUO27F1GbVmqUrLfOt/RZU768BOros3OY
+ z6kK5hPPT7C9Q3jySNqUMubTFXwGIknJOdnIJ3BtWeyfcaZmpgq5STkFy
+ auKlWLYVwoT6Zz4y1tSVev8Cp1JD//am2BAgthOuw5Cgyn+ZXWVs4pHyx
+ a7xnTiAglB6V02Hm/ycVZ3c15H6oK5T24EEFqF0q/w+4bBwspYHchtH3Z w==;
+X-CSE-ConnectionGUID: RN3Byfz+S3mhrXf8j+u2cg==
+X-CSE-MsgGUID: 6UpySvY2Qa+wsF0moWWUGg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11882"; a="91584757"
+X-IronPort-AV: E=Sophos;i="6.25,236,1779174000"; d="scan'208";a="91584757"
+Received: from fmviesa008.fm.intel.com ([10.60.135.148])
+ by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 21 Aug 2026 17:14:57 -0700
+X-CSE-ConnectionGUID: xF22i8fUQwy2TEtfYqc1kw==
+X-CSE-MsgGUID: Fe4mJMo+Sta7HsM0hKY1CA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,235,1779174000"; d="scan'208";a="260297792"
-Received: from orsmsx903.amr.corp.intel.com ([10.22.229.25])
- by fmviesa009.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 21 Aug 2026 13:59:32 -0700
-Received: from ORSMSX902.amr.corp.intel.com (10.22.229.24) by
- ORSMSX903.amr.corp.intel.com (10.22.229.25) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.45; Fri, 21 Aug 2026 13:59:31 -0700
-Received: from ORSEDG902.ED.cps.intel.com (10.7.248.12) by
- ORSMSX902.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.45 via Frontend Transport; Fri, 21 Aug 2026 13:59:31 -0700
-Received: from CH1PR05CU001.outbound.protection.outlook.com (52.101.193.47) by
- edgegateway.intel.com (134.134.137.112) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.45; Fri, 21 Aug 2026 13:59:31 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=H72DcxbfNBgyg1kLJIvDymPEtsywYqEZB/SIwcC37bj0RNmk6a+M49v90z3OwjR2dfm9836/iGrsHQnSZFTHt6Dv+rTJkxF6Ydd5X/gZFiqoNBpgHcAXBQQyVz/5N9urLuAaFTVVKqrMlZo8KjrFnT08WRTYxGsC1z3Se9giz5WTh40C0iLZ/svgXvJeltLNNXoxZE5pPfljAmwWVWACWXc7paHqjyJbAlv5lgEQSjx5HrZiZj7MB6uzfRpC00ltuX3XVVWwdNzt7zAAUntZb6IfIUiS/T7xv13UIZTyQuD1hUsp/G5FZR5hOgcEw/FxIklbKCoEmwSdI+0gzmrpOw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=LebL994XkMcN/9zTWfEffqb7UQOujw6A1rp1cyz9GW8=;
- b=VjSs5Pj6hY5jG3/d3cQDt113UroO+zuKb3hgCypD0R1oF+AKQDI9lLBZPIIZ0xRaXFJ23MGjI1PovOWgYLjya/TqsPmTQ49umHB23v9Sme1B6z2khw5oPPmgy9h54gAhZyqJPREbtBPdm5QzCdYi136li9GtRe2T2mcGjd5roL0nj159flFxPYjh2uEJojJ9yDpsAR08z05wfWXAhSNqOdElXvsYGz3HDB2tEbs6tlzG2huLpsMEhZ9/EG+XPF6YA9DG9PiTr9jbczlMEJbvTUhQUqTm0vzc4IPeUWmEsaAb6TV7WcKFl0EEhP1vSFFJEoA2Dr+MwJIDk7IWUhqOYg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Received: from DS0PR11MB8230.namprd11.prod.outlook.com (2603:10b6:8:158::21)
- by SJ0PR11MB8272.namprd11.prod.outlook.com (2603:10b6:a03:47d::21) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.339.8; Fri, 21 Aug
- 2026 20:59:28 +0000
-Received: from DS0PR11MB8230.namprd11.prod.outlook.com
- ([fe80::2592:f5a9:a751:be40]) by DS0PR11MB8230.namprd11.prod.outlook.com
- ([fe80::2592:f5a9:a751:be40%5]) with mapi id 15.21.0339.010; Fri, 21 Aug 2026
- 20:59:28 +0000
-Message-ID: <477734d9-ed8e-4696-8160-382b29e7491c@intel.com>
-Date: Fri, 21 Aug 2026 13:59:26 -0700
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH net-next] ice: rephrase LLDP filter fallback message
-To: Thomas Bogendoerfer <tbogendoerfer@suse.de>, Przemek Kitszel
- <przemyslaw.kitszel@intel.com>, Andrew Lunn <andrew+netdev@lunn.ch>, "David
- S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, "Jakub
- Kicinski" <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- <intel-wired-lan@lists.osuosl.org>, <netdev@vger.kernel.org>,
- <linux-kernel@vger.kernel.org>, "Ertman, David M" <david.m.ertman@intel.com>
-References: <20260717084453.9521-1-tbogendoerfer@suse.de>
-Content-Language: en-US
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-In-Reply-To: <20260717084453.9521-1-tbogendoerfer@suse.de>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: MW4PR04CA0344.namprd04.prod.outlook.com
- (2603:10b6:303:8a::19) To DS0PR11MB8230.namprd11.prod.outlook.com
- (2603:10b6:8:158::21)
+X-IronPort-AV: E=Sophos;i="6.25,236,1779174000"; d="scan'208";a="263836461"
+Received: from orcnseosdtjek.jf.intel.com (HELO [10.166.28.109])
+ ([10.166.28.109])
+ by fmviesa008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 21 Aug 2026 17:14:57 -0700
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Fri, 21 Aug 2026 17:13:07 -0700
+Subject: [PATCH iwl-net 02/12] ice: E822: keep Tx timestamps disabled
+ during offset calibration
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS0PR11MB8230:EE_|SJ0PR11MB8272:EE_
-X-MS-Office365-Filtering-Correlation-Id: b6598860-a666-48ab-e40a-08deffc71700
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
- ARA:13230040|1800799024|366016|376014|23010399003|18002099003|22082099003|10067099003|6133799003|56012099006|11063799006|921020;
-X-Microsoft-Antispam-Message-Info: HqaZYyRXaqpnYAVBVpQ5VKi1dVzAlFG3y5tW5wpBcJxyigkECWlb8gzEk2Gpm8pcOLkDGwif7X50R3IrabUwTVgOgj11DxLIs2dZnH8QhIFmvKQtXwmQTgv7RQ+l8YIqyAWYbL1m0IQLSn4Fx9CARNPKlcR/3W7kvWR9hGCJkpAaiHuXnlUapGd0uarSOkbL2omqliSROVfnf7BNGjXV2xwk6+Hx7HKyoVaawNkOt1Wy3fX1+jfv6g5oxixanoIlL0KUodvSIedsJyBH2uInDLBmtD5baNVbS5Z+x7MSRN8kAm28iKYTtXxRE2G0K1ccU+4aZ/ZmOZnx7sSsWikZ4V0lTTKopC8JkEoAOKTcJk+3JlTC08P2C1MTovTpYOzp/namEAU1JHPtGiIKvJF3CYFUQ1/H4WR60wh5ZDRWl2fjClczZxRI77cXDUG6OVJ4gfkYgOh+pDffzwOUj1eq7oP0Fm9AkLJCoW4KXXpV+olxx6wqwDF3GBDVP7JTMRjAb5lirpWrinHJxcovGxphdy5SYh1Ra8ek4ExO8X5mlODQiwq/NxTTfkcoDooK7xPkglSDk6TaDxb9qNCa2FCsucXGqlCnz4LMKpAk8DVSiAmIGViCYHZmiszX8jmazB4tacEPZHutlcDAOBQQRCG3o05nKTCNhA7O7RgPxyZxKJo+ESPYD1NE0vXZxtpj/7eg9z8xME2ytYfVNK60hjle3g==
-X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:DS0PR11MB8230.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230040)(1800799024)(366016)(376014)(23010399003)(18002099003)(22082099003)(10067099003)(6133799003)(56012099006)(11063799006)(921020);
- DIR:OUT; SFP:1101; 
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?VWM4bUk5c3lwVEtHaTNFdExoblhJdzVtbE94emc1MlJWZ2hzRWROWG1POG1K?=
- =?utf-8?B?ekhwSVpXUng1MXk3VjdMMG9JemkzblJoNWRuZy9icGdOTnhkZXpFRFMrZThi?=
- =?utf-8?B?OFJ6MzZaWXRRaWN4U0dZSHhhaG11amZvS1BQdmJRRGFLeGllSlQ5emkwQ25o?=
- =?utf-8?B?ckxycFErc3lDc21YZXZBd21ad3FiQXg3Ni9rMzNzN1JPRXQrNS9iWWg5U2tJ?=
- =?utf-8?B?Y0VwaElsMS9hbDJXcEIzbmRUeWkvMTZMVlBmYm5MT1luSEhQcFJmNXRHbVRq?=
- =?utf-8?B?bHF0a0lmcy9hcFRvZHhNMHR0TmlEMUdRMjc2b3pwWi9CQTJrRHR3YnFXdk0x?=
- =?utf-8?B?Zlp3NTFYcW5JZHRtc0xiZjBSbWpjUklpaFlkSXg4T0xKNTlXVmp1Q21NanlG?=
- =?utf-8?B?cEIzWkdsUElPbnJQNlV0Q3IyYkNQZEtBTXZ0cU9kZlVSS3VDVmVJaEFML0xL?=
- =?utf-8?B?ZHR3WVRNMEVNZnhUZUh3MktLSnMwV04wTHFOWU5vdFV1NE5ZRHBvd3YzWExC?=
- =?utf-8?B?OU83U0ttTGh6QmZQaHdiU0pRejdWVHhweFUxVi9yNWVSeW1wMkRIV0tyK0RT?=
- =?utf-8?B?SnFCQTNHS0ZIU3BIWW1xSWFPOXlpTm9xZkJNdHhSVFpuVWtkWGtvQWNnWTJO?=
- =?utf-8?B?dXA0UENPMkhnSU9TbmwyWm1TNWg1RUhVaWdOU2RtbG40aXdseEdiaHFKcVpw?=
- =?utf-8?B?SXlVcHN5SXliVDVZL0x5Ky9zZk9YVzRnN0NjckIvUGJXQ1dtaTUrcW1jNENw?=
- =?utf-8?B?MEVOb2ZhcFB1dUg2YTNCNlpzdXE0ejhjN3VsWW5MZzZaZ1c0Zkt1Y01HeHlx?=
- =?utf-8?B?cVh3NHVPTG9XckI4K3ZIZnJzc3gvQzlxZGNvRmdYbnh3MThVMXV3cDRJdE0r?=
- =?utf-8?B?MDJmRm1QM1ZQczAxNHptb2hFUkp2RjlEOXdCRmxjSmRMdHgycExaV2JmeUly?=
- =?utf-8?B?R1BKQ2JoZHZxN05ReTlibFVpbHkyN0phK2orWVpGVlYvR2htNXZQKzVFUTV0?=
- =?utf-8?B?UmE1UGxndmVFckpDODhaTGRiY29EcUpXaVdobGhpQ2VyU2JSTXB6M3FrT0oz?=
- =?utf-8?B?akFZVDVSZUovdGdWS29QNmdXQVZuVFN5YjdzOU55YXBiSXh5ZTBjZjIxbzk5?=
- =?utf-8?B?NTFLNVFmaGhmRW85ejNSMkFGSjNiSGZvMC84WjNzYkVodHloZ1FpOFkxQmQy?=
- =?utf-8?B?ZVJVTW1JZG1VbDRoQXRaWDI5eFF4bEtMeG5oSlhucXpzMzVJd1J4REtGM2dx?=
- =?utf-8?B?QnFaYUoxaFQxZ2t0ZUg1UjA3RENEQ3J3TWxyZW1QZkxmN0VjLzgvdGgzcHh1?=
- =?utf-8?B?UkF2UVU3aFVsWXY5WnVaNFpXdXhrSERVeDUvc3BhdFBmaHVXNnovY1FFS1FJ?=
- =?utf-8?B?dFB5QldNY3c5WXk2ZHpwRWpCT0RlblF6c25JbisyQzdnSjh0VWRXSEt1NFNJ?=
- =?utf-8?B?Z0JVUG1rYTMzazFGbDhFUlpyblEzaWdqQ1EwRGdGa0JSQ2VVMGR3dFdzbmgw?=
- =?utf-8?B?TnZ5OVEwUStJYitrbGpCUVBZbjd4dThaSnNxL1huZXZNUXJOZVFVQmhoaE9r?=
- =?utf-8?B?Yk96MldvMjRJYlYvczIvUXh6VVNXUDJrSXpIUm9QeDJ5cUhUTVduV2d5RXRT?=
- =?utf-8?B?Kyt1eG1JK0V5eCtQeXA5K3FsS000T25wd0U5Sm5qem1Xcll2RmhNU0pYQUtN?=
- =?utf-8?B?aktISGhBS21GL2s4T0EzR0Z4R1A0UWo0NUI5YzJmUmdrbEIybXY0TzFWUU1y?=
- =?utf-8?B?ZnVaZ0VGOHFwaGU3dHJTMnN1NFlmVG9LSzM3blhIVEJMYU5vaEVrQTJFaFFm?=
- =?utf-8?B?UzFxbnlaL0RYZjVPR2JPSUlFQnVac1RJdTQvNFh5eVdqYVVzaFZlTDVsZEw5?=
- =?utf-8?B?Mzg0YjNTY3F2Z1RPL2NKTjlTRFpNTk1CMkhLc0FCWlVJbWhJcnd3WHVQSXRa?=
- =?utf-8?B?b3lsNVlKNUZDbnE1NytvNytLRnozV2VzSk1iNnNoWGJha1VGWFNCUUpoN3NX?=
- =?utf-8?B?dHFPQUhsYWtYaVo5ZG9wWS9GamozaTY3Smdwam12WkhCNmNRamlLeStCQkI5?=
- =?utf-8?B?c3pTTklhYW9ud3JpRmRkSzRFT3laamp2a01pblhHakQwNm51UFdnUjR0eG1r?=
- =?utf-8?B?OTZXNExHTVdJUUg4azhVMWlPSkVwcTlRd2FySS9IOHplV3FLeFA3Y2w2bXBL?=
- =?utf-8?B?ZSt0ZzFDUzVieGh3bzJwTVJqbFVMcENwamM3Qm1SSXhuM1R4N0I1eldFYVVB?=
- =?utf-8?B?aTdnZnpQUmtGNjZQdnRSMGhmTkxGQnA4SmRqT1JXMlFpRnBiRzJlcDRKNjc4?=
- =?utf-8?B?Ri9PZm1KQ2E4YWN2SVpXUkVUZUhON2YxMSt2N0tNNHdjaWkyeDcvcTFDNnR4?=
- =?utf-8?Q?FEZhKIBNOi5C+sTk=3D?=
-X-Exchange-RoutingPolicyChecked: WiW75Z2RrqsqxgHwE3WasBPoC3L4DvzZMVni/DYHZDSdpdpt7jn3D0BKqa0hzZJCA8X7Aebs4JU9iiBFhwvE2HGogU1Trwn1JUxa4Oetx9Q5SbudAYmRiVAdZOPIYd0fFz5kCEXxxQhluBhZ2yUTJ1rLHucgR6uORfysrphL+IqyH+RaeudZ0+ioF8mSIb7rU89CL8GL1jVPhyoCyUX32x5v0jWMYVOyOcQZdvwD2AdyIVHrJEmL/rW5+n3/SXv/6FMV/87JpPgGj6EwuE12KVZ8lNJPCwFZWgHxah08KGzUSkgcXmbJ296j57lr2K9wst0DezTweSxSP0BqgUCrew==
-X-MS-Exchange-CrossTenant-Network-Message-Id: b6598860-a666-48ab-e40a-08deffc71700
-X-MS-Exchange-CrossTenant-AuthSource: DS0PR11MB8230.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Aug 2026 20:59:28.4908 (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: IXOrkcnaJuh3VhXH3/zaYl0Msb92P8MjcaWN2tfsn4vyk48qi3+Vle8R1WkU0p3CjGhQFIJk8QvR7qfpsvgfZCiyFQ6w3lYznqioJ+zp8D4=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR11MB8272
-X-OriginatorOrg: intel.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260821-jk-e825c-minimized-fixes-v1-2-9d0731eb4858@intel.com>
+References: <20260821-jk-e825c-minimized-fixes-v1-0-9d0731eb4858@intel.com>
+In-Reply-To: <20260821-jk-e825c-minimized-fixes-v1-0-9d0731eb4858@intel.com>
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Cc: netdev@vger.kernel.org, 
+ Maciej Machnikowski <maciej.machnikowski@intel.com>, 
+ Anthony Nguyen <anthony.l.nguyen@intel.com>, 
+ Przemyslaw Korba <przemyslaw.korba@intel.com>, 
+ Grzegorz Nitka <grzegorz.nitka@intel.com>, Petr Oros <poros@redhat.com>, 
+ alexander.nowlin@intel.com, kevin.bross@intel.com, ranjit.cavatur@intel.com, 
+ Jacob Keller <jacob.e.keller@intel.com>, 
+ Karol Kolacinski <karol.kolacinski@intel.com>, 
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>, 
+ Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>, 
+ Przemyslaw Korba <przemyslaw.korba@intel.com>
+X-Mailer: b4 0.17-dev-75809
+X-Developer-Signature: v=1; a=openpgp-sha256; l=5018;
+ i=jacob.e.keller@intel.com; h=from:subject:message-id;
+ bh=sz/nG1arp4DPJGcG5ocSxMQWFYrOSeyE6veQhp2P4PM=;
+ b=owGbwMvMwCWWNS3WLp9f4wXjabUkhqyOlz/DVFYIHhdv+3popfubjKRg2wXKs/kcInMklTbuc
+ bF0tCjsKGVhEONikBVTZFFwCFl53XhCmNYbZzmYOaxMIEMYuDgFYCLiuowMvW0J9rpLCs5H7pG+
+ zv5OU4V3ykv7/3YWtptm/s0rj41LZmQ4fFcjYeJpZdna/n39DDfOX5zqeWi7e+yXd2fuCi2aNuU
+ oOwA=
+X-Developer-Key: i=jacob.e.keller@intel.com; a=openpgp;
+ fpr=204054A9D73390562AEC431E6A965D3E6F0F28E8
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -208,41 +124,120 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
+From: Karol Kolacinski <karol.kolacinski@intel.com>
 
+Do not clear the tx.calibrating flag immediately after starting the PHY
+timer in ice_ptp_port_phy_restart(). Instead, keep Tx timestamps
+disabled until the offset verification work (ice_ptp_wait_for_offsets)
+has confirmed that both Tx and Rx PHY offsets are properly configured.
 
-On 7/17/2026 1:44 AM, Thomas Bogendoerfer wrote:
-> Seeing an error message in a logfile triggers scripts/admins thinking of
-> problems. The LLDP fallback message itself is not an error, it just
-> indicates it's using a different filter mechanism. So rephrase to a
-> less "scary" message.
+Previously, tx.calibrating was set to true, then immediately back to
+false right after ice_start_phy_timer_e82x() returned. This allowed Tx
+timestamp requests to be served during the window where offset
+verification was still pending. Timestamps produced during this window
+use uncalibrated PHY offsets and can produce incorrect values.
 
-Hi Thomas,
+When ptp4l receives incorrect timestamps, it may reject them and wait
+for the next sync interval (typically 1-2 seconds), compounding delays
+during link cycling. This contributes to the time transmitter port
+becoming unresponsive after repeated link down/up cycles.
 
-I believe this patch [1] will remove the need for this change. Could 
-test it and confirm that it will work for you?
+Move the tx.calibrating = false to ice_ptp_wait_for_offsets(), after
+both Tx and Rx offset configuration has completed successfully. This
+ensures that Tx timestamps are only reported with properly calibrated
+PHY offsets.
 
-Thanks,
-Tony
+If ice_start_phy_timer_e82x() fails, restore calibrating to false on
+the error path to prevent permanently disabling Tx timestamps when
+ov_work is never queued.
 
-[1] 
-https://lore.kernel.org/intel-wired-lan/20260811181127.1142095-1-david.m.ertman@intel.com/ 
+Log a debug message while offset calibration is still pending, including
+the specific Tx/Rx error codes to aid debugging stalled calibration.
+This path is expected on every routine link-up: ov_work is first queued
+with no delay and the vernier offset cannot be computed until at least
+one packet has been transmitted, so the first several invocations
+normally land here. Use dev_dbg() rather than a rate-limited warning to
+avoid emitting KERN_WARNING on every link-up during normal operation.
+Log a debug message when calibration completes successfully.
 
-> Signed-off-by: Thomas Bogendoerfer <tbogendoerfer@suse.de>
-> ---
->   drivers/net/ethernet/intel/ice/ice_lib.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-> index 8cdc4fda89e9..59341b5a0c05 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_lib.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-> @@ -2097,7 +2097,7 @@ void ice_vsi_cfg_sw_lldp(struct ice_vsi *vsi, bool tx, bool create)
->   				goto report;
->   
->   			dev_info(dev,
-> -				 "Failed to add generic LLDP Rx filter on VSI %i error: %d, falling back to specialized AQ control\n",
-> +				 "Using generic LLDP Rx filter on VSI %i is not possible (%d), falling back to specialized AQ control\n",
->   				 vsi->vsi_num, status);
->   		}
->   
+Fixes: 3a7496234d17 ("ice: implement basic E822 PTP support")
+Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
+Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+Signed-off-by: Przemyslaw Korba <przemyslaw.korba@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_ptp.c | 36 ++++++++++++++++++++++++++------
+ 1 file changed, 30 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
+index 1d647ccce7c4..9d99cbb42463 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+@@ -1156,6 +1156,7 @@ static int ice_ptp_check_tx_fifo(struct ice_ptp_port *port)
+ static void ice_ptp_wait_for_offsets(struct kthread_work *work)
+ {
+ 	struct ice_ptp_port *port;
++	unsigned long flags;
+ 	struct ice_pf *pf;
+ 	struct ice_hw *hw;
+ 	int tx_err;
+@@ -1178,12 +1179,28 @@ static void ice_ptp_wait_for_offsets(struct kthread_work *work)
+ 		tx_err = ice_phy_cfg_tx_offset_e82x(hw, port->port_num);
+ 	rx_err = ice_phy_cfg_rx_offset_e82x(hw, port->port_num);
+ 	if (tx_err || rx_err) {
+-		/* Tx and/or Rx offset not yet configured, try again later */
++		/* Tx and/or Rx offset not yet configured, try again later.
++		 * This is expected during normal link-up: the vernier offset
++		 * calibration cannot complete until at least one packet has
++		 * been transmitted, so the first retries routinely land here.
++		 */
++		dev_dbg(ice_pf_to_dev(pf),
++			"PTP offset not yet valid for port %u (tx_err=%d rx_err=%d)\n",
++			port->port_num, tx_err, rx_err);
+ 		kthread_queue_delayed_work(pf->ptp.kworker,
+ 					   &port->ov_work,
+ 					   msecs_to_jiffies(100));
+ 		return;
+ 	}
++
++	/* Tx and Rx offsets are now configured, enable Tx timestamps */
++	spin_lock_irqsave(&port->tx.lock, flags);
++	port->tx.calibrating = false;
++	spin_unlock_irqrestore(&port->tx.lock, flags);
++
++	dev_dbg(ice_pf_to_dev(pf),
++		"PTP offset valid for port %u, Tx timestamps enabled\n",
++		port->port_num);
+ }
+ 
+ /**
+@@ -1266,13 +1283,20 @@ ice_ptp_port_phy_restart(struct ice_ptp_port *ptp_port)
+ 
+ 		/* Start the PHY timer in Vernier mode */
+ 		err = ice_start_phy_timer_e82x(hw, port);
+-		if (err)
++		if (err) {
++			spin_lock_irqsave(&ptp_port->tx.lock, flags);
++			ptp_port->tx.calibrating = false;
++			spin_unlock_irqrestore(&ptp_port->tx.lock, flags);
+ 			break;
++		}
+ 
+-		/* Enable Tx timestamps right away */
+-		spin_lock_irqsave(&ptp_port->tx.lock, flags);
+-		ptp_port->tx.calibrating = false;
+-		spin_unlock_irqrestore(&ptp_port->tx.lock, flags);
++		/* Do not clear calibrating flag here. Tx timestamps remain
++		 * disabled until ice_ptp_wait_for_offsets() has verified
++		 * that the Tx and Rx offset calibration has completed.
++		 * Clearing it here would allow Tx timestamps to be reported
++		 * before the PHY offset registers are configured, leading
++		 * to incorrect timestamp values.
++		 */
+ 
+ 		kthread_queue_delayed_work(pf->ptp.kworker, &ptp_port->ov_work,
+ 					   0);
+
+-- 
+2.55.0.814.gc42f45431d0f
 
