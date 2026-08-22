@@ -1,45 +1,45 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 65CA0C61CE3
-	for <intel-wired-lan@archiver.kernel.org>; Sat, 22 Aug 2026 00:15:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87558C5DF9C
+	for <intel-wired-lan@archiver.kernel.org>; Sat, 22 Aug 2026 00:15:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 31DD160870;
-	Sat, 22 Aug 2026 00:15:11 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 59BBB40C08;
+	Sat, 22 Aug 2026 00:15:12 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id zUIc7mwhaGfL; Sat, 22 Aug 2026 00:15:10 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id mJUPh1kctTsG; Sat, 22 Aug 2026 00:15:10 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
 	s=default; t=1787357710;
-	bh=2Ys8VaTNz9GUZi87BWOX91B0J4hkpja64sV05H8a1/o=;
+	bh=HJwSb4z7CUYfgYpeE4WFyhfolMIvQzR2z9xyOrbn408=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=5kF4ShvymrQhf9BIu0VOBPmEDwWibhHnJ6yBGKcm4sJWl75T/z/E945mBKCudbzWX
-	 faCcj6L7VeHvlQVjEPQpKSO/q7u04RN9GXlQSKVlo3XUI8BxZ049y9t26yVlSZKSVo
-	 STIulyjYX5/ntyPGUg4soahd3RTrl0hD2SlK58xY7hX/rfMLi9ofAoNhqJlTDuzrNi
-	 kYjylsO8QkZ8QyEZrcI7bdSQwvJL12/QzNCxG8aEfnUbvru504Cf4TB9b9R1bHhkHP
-	 il7AhSKwPuwepv1J9bbSI1Mn6MMWQmiQW76+EJLqvtxy0G+hixAfzsf21jEZf8Fsxt
-	 wDStVCDOVSXyQ==
+	b=AjuthyKauDM6koCBKInm98NmLulgC6Gim0pkYmt1zs1QCw5I0YhqYo1hPPdCA6OqV
+	 MI5BibOr3APfhZ3HCfUADwO3z14MxB0hOaD/XVQweSG1/uFscOrBh77MFB8F9CueJW
+	 F1wXNUgj3cZVZF6y4DTILj+kBz9D0ZdaXHLj/gbfvEGSIkUMtAy3sO974an3Rl6z2/
+	 RlKyeE0Q3GmZXitPI9iGX3vzDJYWIf6iu8BgqL8iExZHhYfelTQXxVKwg9buCDx3A8
+	 oUa0+8P+FTRovev67Fw/MJwq9eyKkVSOphsPoOYcwbV0+kD62hI+LQUwZGh0aOSziV
+	 waUdcK/PaM5aA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 7E6DF60AEC;
-	Sat, 22 Aug 2026 00:15:10 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id E844440C35;
+	Sat, 22 Aug 2026 00:15:09 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 57B594C4
- for <intel-wired-lan@lists.osuosl.org>; Sat, 22 Aug 2026 00:15:04 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id F28A893F
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 22 Aug 2026 00:15:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 54FCA400E6
- for <intel-wired-lan@lists.osuosl.org>; Sat, 22 Aug 2026 00:15:04 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id D886940085
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 22 Aug 2026 00:15:03 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id u0RDX0JyktDi for <intel-wired-lan@lists.osuosl.org>;
- Sat, 22 Aug 2026 00:15:00 +0000 (UTC)
+ id Fi6k9PUwau_q for <intel-wired-lan@lists.osuosl.org>;
+ Sat, 22 Aug 2026 00:14:59 +0000 (UTC)
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.15;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
@@ -47,44 +47,45 @@ Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=QsIWftum
+ header.a=rsa-sha256 header.s=Intel header.b=fi3PRw8f
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
- by smtp2.osuosl.org (Postfix) with ESMTPS id E320A400FB
+ by smtp2.osuosl.org (Postfix) with ESMTPS id B48D2409E9
  for <intel-wired-lan@lists.osuosl.org>; Sat, 22 Aug 2026 00:14:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1787357700; x=1818893700;
+ t=1787357699; x=1818893699;
  h=from:date:subject:mime-version:content-transfer-encoding:
  message-id:references:in-reply-to:to:cc;
- bh=v49SQFMhOzMtNigLXBHbsxtSesAnp9SN8lNHGpc13Pk=;
- b=QsIWftum7ZTV5Wi1q/1XtZsW0hea/HQnFAaEKM1aMuYp30rp6rdz7KrZ
- ed0dythcep/OW6MPLcb8VwN0o1jXWauq2vzi5nLY9ZCRHgAQWzXU3Pr7V
- CWxv4uiLFRR/Tb/xuz1am2VmOvLrjUFGmLbtxcEj5fbGFq9kIs/oXvsvg
- 1Lr/xpyBe8qcO1WeOgm4XZ4X6NbxeRBlzPQDquA4Pomgt88wyK9TvzKc7
- xHe5o997R83MVsWOdiMN0LUIav0RoqWJQqtKGfRKqCKo5dIDwexmWHBDN
- iXrjnIDkNxgBjCeB6Vt2PywiEk90zFM8NLxWIjMn/1Bhg4D0yCJ0E34EI w==;
-X-CSE-ConnectionGUID: k5Q7y5ZeSF6jLPNODLyfRg==
-X-CSE-MsgGUID: J5GH+bTWS26nnsGJUbDxTQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11882"; a="91584763"
-X-IronPort-AV: E=Sophos;i="6.25,236,1779174000"; d="scan'208";a="91584763"
+ bh=v9eFE5xOvrdwPdRVFGSjAioRp6GAx3IlfqYW70aCId4=;
+ b=fi3PRw8fJBS96LymM3A6by/+yNJdB4gCBrOODmzjt2mNPIXKuzeZ1Q3K
+ 3q9dvuLgAMZUln0nfONAe8An851P8T5rng8COua0JoKg8NBXpbY1gQEfj
+ E7sv0oPfFczKK4cBTv6uNPwrb2FR295sxRbCATXtE2xoHgjCPSL7ERWaW
+ K2I7D/iwJCKrbCC+JA3hZJ+GCi0mVWQXOJaSH7qB2EviS868IxMCXTUHt
+ gZIMc3j3KcjHaO/KlQEQkphf9G+m7doOOmOX0lJMotzVjYm3hP37sj2Am
+ DRxZp8gGlDL5l74DzhhKUm5YO8O6mNq+XINDasn1aoGBMcinryTeS64Ph Q==;
+X-CSE-ConnectionGUID: PfiQdtEjSeuWHpuZ0iLieQ==
+X-CSE-MsgGUID: fyirBBUqTdCxt/21CkgIAw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11882"; a="91584771"
+X-IronPort-AV: E=Sophos;i="6.25,236,1779174000"; d="scan'208";a="91584771"
 Received: from fmviesa008.fm.intel.com ([10.60.135.148])
  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 21 Aug 2026 17:14:58 -0700
-X-CSE-ConnectionGUID: fGYRyzeQS3aycnBrmsnFRQ==
-X-CSE-MsgGUID: /ScqY8EWS0WsXq0sVss3Lw==
+ 21 Aug 2026 17:14:59 -0700
+X-CSE-ConnectionGUID: ywXt/LLqSsGoq3GonUCQTQ==
+X-CSE-MsgGUID: v8/G21ywQZyMjqItdUOkHQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,236,1779174000"; d="scan'208";a="263836468"
+X-IronPort-AV: E=Sophos;i="6.25,236,1779174000"; d="scan'208";a="263836476"
 Received: from orcnseosdtjek.jf.intel.com (HELO [10.166.28.109])
  ([10.166.28.109])
  by fmviesa008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 21 Aug 2026 17:14:58 -0700
+ 21 Aug 2026 17:14:59 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri, 21 Aug 2026 17:13:09 -0700
-Subject: [PATCH iwl-net 04/12] ice: call PTP link change only from link events
+Date: Fri, 21 Aug 2026 17:13:11 -0700
+Subject: [PATCH iwl-net 06/12] ice: E825: clear PHY_REG_TX_MEMORY_STATUS
+ prior to soft reset
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260821-jk-e825c-minimized-fixes-v1-4-9d0731eb4858@intel.com>
+Message-Id: <20260821-jk-e825c-minimized-fixes-v1-6-9d0731eb4858@intel.com>
 References: <20260821-jk-e825c-minimized-fixes-v1-0-9d0731eb4858@intel.com>
 In-Reply-To: <20260821-jk-e825c-minimized-fixes-v1-0-9d0731eb4858@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
@@ -95,18 +96,15 @@ Cc: netdev@vger.kernel.org,
  Grzegorz Nitka <grzegorz.nitka@intel.com>, Petr Oros <poros@redhat.com>, 
  alexander.nowlin@intel.com, kevin.bross@intel.com, ranjit.cavatur@intel.com, 
  Jacob Keller <jacob.e.keller@intel.com>, 
- Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>, 
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>, 
- Przemyslaw Korba <przemyslaw.korba@intel.com>, 
  Maciek Machnikowski <maciej.machnikowski@intel.com>
 X-Mailer: b4 0.17-dev-75809
-X-Developer-Signature: v=1; a=openpgp-sha256; l=5978;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=8402;
  i=jacob.e.keller@intel.com; h=from:subject:message-id;
- bh=1mxwf1AeCf0zlLsqd8Hitzlm3lT/yjkTggp4qhu4JQw=;
- b=owGbwMvMwCWWNS3WLp9f4wXjabUkhqyOlz/Ppie+/q74Y0eqSA/PsaCm7Lsr2ThFDf46qc0OF
- OMSWevVUcrCIMbFICumyKLgELLyuvGEMK03znIwc1iZQIYwcHEKwERmxjMy9DJY1Wg9mb5k6dUr
- h93idZu4tkTZ3Cy/67Tgr3R+SFrQBUaGt3U//d6bbO+/Yv9HLdDcJrPAQjdn5+dc7ROSE668OpX
- CDwA=
+ bh=v9eFE5xOvrdwPdRVFGSjAioRp6GAx3IlfqYW70aCId4=;
+ b=owGbwMvMwCWWNS3WLp9f4wXjabUkhqyOl7/+2fKf2WuZIWdjfPHuW3d1vUnxFnb+7E/tP/650
+ PlZTPJjRykLgxgXg6yYIouCQ8jK68YTwrTeOMvBzGFlAhnCwMUpABM5PYuR4dS6ns49ylJnBfLS
+ j32q4S35s/76rx1ivWeUI1g2TLyV9oKR4eJKcesew5KdXQ+P3b72z6ZiZ/Z/97T5pSe79n23j1i
+ 2nxsA
 X-Developer-Key: i=jacob.e.keller@intel.com; a=openpgp;
  fpr=204054A9D73390562AEC431E6A965D3E6F0F28E8
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -123,166 +121,204 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-From: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+The drivers current implementation of ice_ptp_reset_ts_memory_eth56g() is
+flawed. It tries to clear the timestamp memory by writing to the
+PHY_REG_TX_MEMORY_STATUS region. This does not work properly, as it does
+not trigger appropriate PHY actions.
 
-Remove redundant ice_ptp_link_change() calls from ice_up_complete() and
-ice_down(). These duplicate the call already made from
-ice_handle_link_event(), creating three problems:
+To clear outstanding timestamp memory, the driver must read the timestamps.
+However, naively doing this as part of ice_ptp_reset_ts_memory() is
+problematic. When reading the timestamp index, hardware kicks off a chain
+of actions including clearing the ready bitmap index, and decrementing an
+internal counter if the timestamp index was marked as valid.
 
-1. Double initialization on link-up: ice_handle_link_event() calls
-   ice_ptp_link_change(true), then ice_up_complete() calls it again.
-   The second call re-enters ice_ptp_port_phy_restart(), re-setting the
-   calibrating flag and restarting the PHY timer while the first
-   invocation's offset verification work (ov_work) may still be running.
+This can potentially leave the internal hardware counter out of sync with
+the actual number of timestamps. This occurs because the
+PHY_REG_TX_MEMORY_STATUS region is not zero-initialized when the device
+boots up. Instead, it is filled with garbage. On a cold power on, attempts
+to read the stale data result in the hardware triggering a counter
+decrement for a timestamp that never happened. This underflows the counter,
+and prevents new timestamp interrupts from being triggered for real
+timestamp requests.
 
-2. Premature cleanup on administrative down: ice_down() calls
-   ice_ptp_link_change(false) during ifconfig down or reset preparation,
-   even when the physical link is still up. This clears timestamp state
-   unnecessarily and can interfere with ongoing PTP operations.
+We must read the PHY_REG_TX_MEMORY_STATUS in order to clear stale
+timestamps. But doing so may cause a desync with the counter. To prevent
+issues, perform this clearing always and only right before initiating a PHY
+soft reset.
 
-3. Ordering dependency: ice_down()/ice_up_complete() are called during
-   reset sequences where PTP may not be fully initialized, creating
-   edge cases with partially configured state.
+The soft reset will clear and reset the internal counter and the ready
+bitmap. The reads to PHY_REG_TX_MEMORY_STATUS will reset the region valid
+bits ensuring that no stale data is left behind. This combination ensures
+that we always have a clean slate with no stale data and with the counter
+properly reset to zero.
 
-The link event handler is the correct and sufficient place to drive PTP
-link state changes, as it reflects actual physical link transitions. Remove
-the calls of ice_ptp_link_change from the ice_down()/ice_up() flows.
-
-Initialize the link_up in ice_ptp_init() and ensure that we check and
-restore the link status at the end of the rebuild flow, ensuring that we
-initialize the PHY timer appropriately after a reset.
-
-Fixes: 6b1ff5d39228 ("ice: always call ice_ptp_link_change and make it void")
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-Signed-off-by: Przemyslaw Korba <przemyslaw.korba@intel.com>
-Signed-off-by: Petr Oros <poros@redhat.com>
+Fixes: 3ec46e157c7f ("ice: perform PHY soft reset for E825C ports at initialization")
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Reviewed-by: Maciek Machnikowski <maciej.machnikowski@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 11 +++++++--
- drivers/net/ethernet/intel/ice/ice_ptp.c  | 38 +++++++++++++++++++++++--------
- 2 files changed, 37 insertions(+), 12 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 89 +++++++++++++++--------------
+ 1 file changed, 47 insertions(+), 42 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index d88835482d3a..bb631ae9e67d 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -6745,7 +6745,6 @@ static int ice_up_complete(struct ice_vsi *vsi)
- 		ice_print_link_msg(vsi, true);
- 		netif_tx_start_all_queues(vsi->netdev);
- 		netif_carrier_on(vsi->netdev);
--		ice_ptp_link_change(pf, true);
- 	}
- 
- 	/* Perform an initial read of the statistics registers now to
-@@ -7273,7 +7272,6 @@ int ice_down(struct ice_vsi *vsi)
- 
- 	if (vsi->netdev) {
- 		vlan_err = ice_vsi_del_vlan_zero(vsi);
--		ice_ptp_link_change(vsi->back, false);
- 		netif_carrier_off(vsi->netdev);
- 		netif_tx_disable(vsi->netdev);
- 	}
-@@ -7794,6 +7792,15 @@ static void ice_rebuild(struct ice_pf *pf, enum ice_reset_req reset_type)
- 
- 	ice_update_pf_netdev_link(pf);
- 
-+	if (test_bit(ICE_FLAG_PTP_SUPPORTED, pf->flags) && pf->hw.port_info) {
-+		bool link_up;
-+
-+		link_up = !!(pf->hw.port_info->phy.link_info.link_info &
-+			     ICE_AQ_LINK_UP);
-+		if (pf->ptp.port.link_up != link_up)
-+			ice_ptp_link_change(pf, link_up);
-+	}
-+
- 	/* tell the firmware we are up */
- 	err = ice_send_version(pf);
- 	if (err) {
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index b8647a39db6d..8aa49dda90a2 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -1327,14 +1327,14 @@ void ice_ptp_link_change(struct ice_pf *pf, bool linkup)
- 	struct ice_ptp_port *ptp_port;
- 	struct ice_hw *hw = &pf->hw;
- 
--	if (pf->ptp.state != ICE_PTP_READY)
--		return;
--
- 	ptp_port = &pf->ptp.port;
- 
- 	/* Update cached link status for this port immediately */
- 	ptp_port->link_up = linkup;
- 
-+	if (pf->ptp.state != ICE_PTP_READY)
-+		return;
-+
- 	/* Skip HW writes if reset is in progress */
- 	if (pf->hw.reset_ongoing)
- 		return;
-@@ -3296,9 +3296,13 @@ static int ice_ptp_init_owner(struct ice_pf *pf)
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+index d48eb3c61823..b7d217ac31f3 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+@@ -737,24 +737,6 @@ static int ice_read_port_mem_eth56g(struct ice_hw *hw, u8 port, u16 offset,
+ 	return ice_read_port_eth56g(hw, port, offset, val, ETH56G_PHY_MEM_PTP);
  }
  
+-/**
+- * ice_write_port_mem_eth56g - Write a PHY port memory location
+- * @hw: pointer to the HW struct
+- * @port: Port number to be read
+- * @offset: Offset from PHY port register base
+- * @val: Pointer to the value to read (out param)
+- *
+- * Return:
+- * * %0      - success
+- * * %EINVAL - invalid port number or resource type
+- * * %other  - failed to write to PHY
+- */
+-static int ice_write_port_mem_eth56g(struct ice_hw *hw, u8 port, u16 offset,
+-				     u32 val)
+-{
+-	return ice_write_port_eth56g(hw, port, offset, val, ETH56G_PHY_MEM_PTP);
+-}
+-
  /**
-- * ice_ptp_init_work - Initialize PTP work threads
-+ * ice_ptp_init_work - Initialize the PTP kworker
-  * @pf: Board private structure
-  * @ptp: PF PTP structure
-+ *
-+ * Allocate the kworker and initialize the periodic work function. The
-+ * periodic work is not queued here; the caller starts it once the PTP
-+ * state is ICE_PTP_READY.
-  */
- static int ice_ptp_init_work(struct ice_pf *pf, struct ice_ptp *ptp)
+  * ice_write_quad_ptp_reg_eth56g - Write a PHY quad register
+  * @hw: pointer to the HW struct
+@@ -1139,8 +1121,8 @@ static int ice_read_ptp_tstamp_eth56g(struct ice_hw *hw, u8 port, u8 idx,
+  * internal PHYs of the 56G devices.
+  *
+  * To directly clear the contents of the timestamp block entirely, discarding
+- * all timestamp data at once, software should instead use
+- * ice_ptp_reset_ts_memory_quad_eth56g().
++ * all timestamp data at once, software should instead perform a PHY soft
++ * reset via ice_ptp_phy_soft_reset_eth56g().
+  *
+  * This function should only be called on an idx whose bit is set according to
+  * ice_get_phy_tx_tstamp_ready().
+@@ -1152,11 +1134,11 @@ static int ice_read_ptp_tstamp_eth56g(struct ice_hw *hw, u8 port, u8 idx,
+ static int ice_clear_ptp_tstamp_eth56g(struct ice_hw *hw, u8 port, u8 idx)
  {
-@@ -3317,9 +3321,6 @@ static int ice_ptp_init_work(struct ice_pf *pf, struct ice_ptp *ptp)
+ 	u64 unused_tstamp;
+-	u16 lo_addr;
+ 	int err;
  
- 	ptp->kworker = kworker;
+-	/* Read the timestamp register to ensure the timestamp status bit is
+-	 * cleared.
++	/* Per the PHY spec, reading the timestamp memory location is what
++	 * clears the entry's valid bit and its corresponding (read-only)
++	 * ts_memory_status bit.
+ 	 */
+ 	err = ice_read_ptp_tstamp_eth56g(hw, port, idx, &unused_tstamp);
+ 	if (err) {
+@@ -1164,32 +1146,40 @@ static int ice_clear_ptp_tstamp_eth56g(struct ice_hw *hw, u8 port, u8 idx)
+ 			  port, idx, err);
+ 	}
  
--	/* Start periodic work going */
--	kthread_queue_delayed_work(ptp->kworker, &ptp->work, 0);
+-	lo_addr = (u16)PHY_TSTAMP_L(idx);
+-
+-	err = ice_write_port_mem_eth56g(hw, port, lo_addr, 0);
+-	if (err) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to clear low PTP timestamp register for port %u, idx %u, err %d\n",
+-			  port, idx, err);
+-		return err;
+-	}
 -
  	return 0;
  }
  
-@@ -3441,6 +3442,22 @@ void ice_ptp_init(struct ice_pf *pf)
- 	if (err)
- 		goto err_clean_pf;
+ /**
+- * ice_ptp_reset_ts_memory_eth56g - Clear all timestamps from the port block
++ * ice_ptp_clear_tx_memory_status_eth56g - Reset one port's Tx timestamp memory
+  * @hw: pointer to the HW struct
++ * @port: port number to clear
++ *
++ * Fully reset a single PHY port's Tx timestamp memory. Per the PHY spec, the
++ * only way to clear a timestamp valid bit (and its read-only ts_memory_status
++ * bit) is to read the timestamp memory location, so read every entry for the
++ * port (two 32-bit reads each). This discards all timestamp data on the port,
++ * so it must only be used for a full reset; callers that must preserve
++ * in-flight timestamps clear individual indices via ice_clear_phy_tstamp().
++ *
++ * Due to interactions with an internal HW counter for the number of
++ * outstanding Tx timestamps, this *must* only be called as part of the
++ * ice_ptp_phy_soft_reset_eth56g() procedure. Otherwise, the internal counter
++ * may become out of sync and prevent new timestamp interrupts.
++ *
++ * Return: 0 on success, negative error code on failure to read the PHY.
+  */
+-static void ice_ptp_reset_ts_memory_eth56g(struct ice_hw *hw)
++static int ice_ptp_clear_tx_memory_status_eth56g(struct ice_hw *hw, u8 port)
+ {
+-	unsigned int port;
++	int err = 0;
++	u8 idx;
  
-+	/* Seed link_up from current PHY status, since link may already be up
-+	 * (e.g. after PXE boot) with no link-change edge to catch it later.
-+	 */
-+	if (pf->hw.port_info)
-+		ptp->port.link_up =
-+			!!(pf->hw.port_info->phy.link_info.link_info &
-+			ICE_AQ_LINK_UP);
+-	for (port = 0; port < hw->ptp.num_lports; port++) {
+-		ice_write_ptp_reg_eth56g(hw, port, PHY_REG_TX_MEMORY_STATUS_L,
+-					 0);
+-		ice_write_ptp_reg_eth56g(hw, port, PHY_REG_TX_MEMORY_STATUS_U,
+-					 0);
++	for (idx = 0; idx < INDEX_PER_PORT; idx++) {
++		err = ice_clear_ptp_tstamp_eth56g(hw, port, idx);
++		if (err)
++			return err;
+ 	}
 +
-+	/* Create the kworker before restarting the PHY, which queues work on
-+	 * it in the E82x restart path. This prevents concurrent link events
-+	 * from reaching ice_ptp_port_phy_restart() while kworker is still NULL
-+	 */
-+	err = ice_ptp_init_work(pf, ptp);
-+	if (err)
-+		goto err_exit;
++	return 0;
+ }
+ 
+ /**
+@@ -2290,6 +2280,7 @@ int ice_ptp_read_tx_hwtstamp_status_eth56g(struct ice_hw *hw, u32 *ts_status)
+  *
+  * Trigger a soft reset of the ETH56G PHY by toggling the soft reset
+  * bit in the PHY global register. The reset sequence consists of:
++ *   0. Reading every timestamp memory register to clear its valid bit
+  *   1. Clearing the soft reset bit
+  *   2. Asserting the soft reset bit
+  *   3. Clearing the soft reset bit again
+@@ -2298,6 +2289,12 @@ int ice_ptp_read_tx_hwtstamp_status_eth56g(struct ice_hw *hw, u32 *ts_status)
+  * to settle. This provides a controlled way to reinitialize the PHY
+  * without requiring a full device reset.
+  *
++ * To ensure that the internal counter matches the contents of the
++ * PHY_REG_TX_MEMORY_STATUS, read every timestamp index prior to performing
++ * the soft reset. The PHY_REG_TX_MEMORY_STATUS reads ensure that the region
++ * is cleared, while the soft reset procedure ensures that the timsetamp
++ * counter is reset to zero.
++ *
+  * Return: 0 on success, or a negative error code on failure when
+  *         reading or writing the PHY register.
+  */
+@@ -2306,6 +2303,13 @@ int ice_ptp_phy_soft_reset_eth56g(struct ice_hw *hw, u8 port)
+ 	u32 global_val;
+ 	int err;
+ 
++	err = ice_ptp_clear_tx_memory_status_eth56g(hw, port);
++	if (err) {
++		ice_debug(hw, ICE_DBG_PTP, "Failed to clear PHY_REG_TX_MEMORY_STATUS for port %d, err %d\n",
++			  port, err);
++		return err;
++	}
 +
- 	/* Start the PHY timestamping block */
- 	ice_ptp_reset_phy_timestamping(pf);
- 
-@@ -3449,9 +3466,10 @@ void ice_ptp_init(struct ice_pf *pf)
- 
- 	ptp->state = ICE_PTP_READY;
- 
--	err = ice_ptp_init_work(pf, ptp);
--	if (err)
--		goto err_exit;
-+	/* Start periodic work only after the state is READY; the worker
-+	 * returns without rescheduling while the state is not READY.
-+	 */
-+	kthread_queue_delayed_work(ptp->kworker, &ptp->work, 0);
- 
- 	dev_info(ice_pf_to_dev(pf), "PTP init successful\n");
- 	return;
+ 	err = ice_read_ptp_reg_eth56g(hw, port, PHY_REG_GLOBAL, &global_val);
+ 	if (err) {
+ 		ice_debug(hw, ICE_DBG_PTP, "Failed to read PHY_REG_GLOBAL for port %d, err %d\n",
+@@ -5797,8 +5801,9 @@ void ice_ptp_reset_ts_memory(struct ice_hw *hw)
+ 		ice_ptp_reset_ts_memory_e82x(hw);
+ 		break;
+ 	case ICE_MAC_GENERIC_3K_E825:
+-		ice_ptp_reset_ts_memory_eth56g(hw);
+-		break;
++		/* E825 hardware must only reset timestamp memory as part of
++		 * the soft reset procedure.
++		 */
+ 	case ICE_MAC_E810:
+ 	default:
+ 		return;
 
 -- 
 2.55.0.814.gc42f45431d0f
