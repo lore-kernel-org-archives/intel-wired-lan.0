@@ -1,93 +1,93 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8266AC5DF9C
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73BDEC5DF98
 	for <intel-wired-lan@archiver.kernel.org>; Sat, 22 Aug 2026 00:15:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 152DA60AE6;
-	Sat, 22 Aug 2026 00:15:05 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 009AA40C7A;
+	Sat, 22 Aug 2026 00:15:04 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id kqKDVeg8nZZM; Sat, 22 Aug 2026 00:15:03 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id DUoatjC1R6WE; Sat, 22 Aug 2026 00:15:02 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1787357703;
-	bh=+4RyQ800aw7OlgRFbJVxbUHhVfSB/O1bQ+0BGGnnjGM=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=lPjXAZtSgFcMl2vGz8NPFJPtUyO841M89lk9zRL/44vwhaahe6u5zrtPSUDpJuUqr
-	 JXQ3kP46wQJOZKaC2ozzsSrdD83XQ3ZGcdgSnqMWpwaFhw0uIlfAZdFGS0mw1zJo61
-	 3C/LfnDd6UX6nt1zQK6xDiQ3EfDWs5WNPR1tTR1sYuhqYyo04gQrQLIrnlQL5BmXus
-	 A38diflb7g896bw5P1U6crTqSGN4wHeBDJQCMmPWnxQST1eHBZtQQG/ksDc957EmUX
-	 DzQZa8BY14ebhSCS9LA87q/2QsjHCZxiL+5mM0wPO4sInLLDnBVCLWMgbPogsaySHV
-	 6DErlvvmL7MhA==
+	s=default; t=1787357702;
+	bh=o9AA2XN9tBpQaNF2rvFa3SGmoWV5MJbfG78/jVPB2pA=;
+	h=From:Subject:Date:To:Cc:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=CzCAG4+iVN7uDaicjM7PcPJk5ncxdzz2VmU+wNYeR09tIZpZziXZdwjEr/RrajWBa
+	 gONqHyDxJF6/YlFF7jAaGVWsMGX6PA4SFzDsjgAAhSt7DCBdUqMSj1L++w2p/gTro5
+	 7PIgN1SH/ltWQ8rub4htOj4mQNfnK+ez5usXCEQsBIZU3kYdSChnh6wlIyCpJY6ZgI
+	 OkvzV+7Krhw3WJTJARofVZgBuP8qVEMH8UTsMdXMxz5A4N4LewivdvyfGXXQJPiWOX
+	 vkPO/p/MjEXc0bjU55M9lmw1yj8reowgAXSMThPACWq6OGLuDWxNU5jmu2tNCo9SBz
+	 hWyfuGx4uwlqQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B9CED60AB9;
-	Sat, 22 Aug 2026 00:15:03 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id D0B9893F
+	by smtp4.osuosl.org (Postfix) with ESMTP id B7BCE409AB;
+	Sat, 22 Aug 2026 00:15:02 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 3141F4C4
  for <intel-wired-lan@lists.osuosl.org>; Sat, 22 Aug 2026 00:15:00 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id B734C81323
+ by smtp2.osuosl.org (Postfix) with ESMTP id 1817D40A05
  for <intel-wired-lan@lists.osuosl.org>; Sat, 22 Aug 2026 00:15:00 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id F3qHS9DCjUU0 for <intel-wired-lan@lists.osuosl.org>;
- Sat, 22 Aug 2026 00:15:00 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id eMOzaiXuOkvO for <intel-wired-lan@lists.osuosl.org>;
+ Sat, 22 Aug 2026 00:14:59 +0000 (UTC)
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.15;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp1.osuosl.org;
+Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=PBY0uHuS
+Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=Kz3nOA8c
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
- by smtp1.osuosl.org (Postfix) with ESMTPS id DF9468132A
- for <intel-wired-lan@lists.osuosl.org>; Sat, 22 Aug 2026 00:14:59 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTPS id BC2B740085
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 22 Aug 2026 00:14:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1787357700; x=1818893700;
- h=from:date:subject:mime-version:content-transfer-encoding:
- message-id:references:in-reply-to:to:cc;
- bh=L6wFLgo75OBbsTVRHSFdNT6sYdqsXUqea1hudqbm/Kw=;
- b=PBY0uHuStfkNOwoe2zpWRIDHohI6Z6Vu8DBeMvfdEviz0lZpxzXXOF6m
- XN4XGBnoyOnFwN3s5rNqJsdKwSBtz64eRN5C2pAqRr05L7UQflxzg8sXy
- JabygMg43MR/WjrX60WA2RnuVYdCoTtJRFw+YwembDZSCFoYaZXIrn4si
- Nq0yKd1Gsn4LIXBEqNm9EKA+IScgCR6auRzbSl6Fjt+l8YyzZeOelcAOM
- c+f9DPtyOdY9KSPe2e4CTvErcLi7fe+/kegw4+K5p1mZ69rAZ1+gxQQu6
- FawwMdrzrJDR3UDOBjhkoB3HhjcrWOHCShYML5yBI31FyeT6tJalV6yX3 w==;
-X-CSE-ConnectionGUID: O+/aJtF1SDWbr/9Li6QwLg==
-X-CSE-MsgGUID: HZt1gijdTFiYXYUeZ4jgow==
-X-IronPort-AV: E=McAfee;i="6800,10657,11882"; a="91584776"
-X-IronPort-AV: E=Sophos;i="6.25,236,1779174000"; d="scan'208";a="91584776"
+ t=1787357698; x=1818893698;
+ h=from:subject:date:message-id:mime-version:
+ content-transfer-encoding:to:cc;
+ bh=kYD3iI89NTE2YUXGl8/06/Xw9GgwasM6OadX6ns7lg4=;
+ b=Kz3nOA8c0OgP7Ycw9Uk1+AyeQJU4hruABTt3scoymaGIstIKWWySnyH0
+ ENcJZwyOSqovb96dIxfikA5odmpX5uAe3ScCU83PdXqvuwIuui/+4WTkw
+ b9C8O9PXpfT43C4TMhcj5J8yJBLPys6/5Aij+mUvsOc4EDhjdavElKe4J
+ gZSlXI+fB8BVsJOJaSzMM+WmsXyAvaKfVdmvTO4haAE2N+x/u+/e2kR1U
+ VER7NCXmbGaSCht+Gpp91lZuqqRVOZy1sCJOTTexg9CkIfVzwY2A+SYx9
+ kksJDL+r4zpl1orCPyHht4e0DRcXSyZ1/D5iLPtRdbRLaZaPJhBYAvr11 g==;
+X-CSE-ConnectionGUID: KIg+oIv5SFueCNzdFh6Rfg==
+X-CSE-MsgGUID: OIhlVNWrSeO0tWWOTdr7Kw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11882"; a="91584750"
+X-IronPort-AV: E=Sophos;i="6.25,236,1779174000"; d="scan'208";a="91584750"
 Received: from fmviesa008.fm.intel.com ([10.60.135.148])
  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 21 Aug 2026 17:14:59 -0700
-X-CSE-ConnectionGUID: VtHKTQ6rSneGnyx1Eu0mpw==
-X-CSE-MsgGUID: 9Ypcah5xS8qMhOexfQdBdA==
+ 21 Aug 2026 17:14:56 -0700
+X-CSE-ConnectionGUID: z92HXSDLSB2aFsDcDaH9Uw==
+X-CSE-MsgGUID: /zxDoQi2QEOvFbfdF+K/ag==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,236,1779174000"; d="scan'208";a="263836481"
+X-IronPort-AV: E=Sophos;i="6.25,236,1779174000"; d="scan'208";a="263836454"
 Received: from orcnseosdtjek.jf.intel.com (HELO [10.166.28.109])
  ([10.166.28.109])
  by fmviesa008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 21 Aug 2026 17:14:59 -0700
+ 21 Aug 2026 17:14:56 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri, 21 Aug 2026 17:13:12 -0700
-Subject: [PATCH iwl-net 07/12] ice: E825: perform a soft reset when
- starting the PHY timer
+Subject: [PATCH iwl-net 00/12] ice: E82x: timestamp processing logic fixes
+Date: Fri, 21 Aug 2026 17:13:05 -0700
+Message-Id: <20260821-jk-e825c-minimized-fixes-v1-0-9d0731eb4858@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260821-jk-e825c-minimized-fixes-v1-7-9d0731eb4858@intel.com>
-References: <20260821-jk-e825c-minimized-fixes-v1-0-9d0731eb4858@intel.com>
-In-Reply-To: <20260821-jk-e825c-minimized-fixes-v1-0-9d0731eb4858@intel.com>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yWMwQ6CMBAFf4Xs2U1ok2rxV4wHbJ+6KNV0QYiEf
+ 7fqcTKZWUiRBUr7aqGMl6g8UgGzqShc23QBSyxMtrbb2puGuxvDWxe4lyS9vBH5LDOUvXNNGyO
+ C2Vkq+TPjJ0p9IJnunDDQ8S90PHUIw3dM6/oB9lkKhYUAAAA=
+X-Change-ID: 20260819-jk-e825c-minimized-fixes-8559addec172
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
 Cc: netdev@vger.kernel.org, 
  Maciej Machnikowski <maciej.machnikowski@intel.com>, 
@@ -96,15 +96,19 @@ Cc: netdev@vger.kernel.org,
  Grzegorz Nitka <grzegorz.nitka@intel.com>, Petr Oros <poros@redhat.com>, 
  alexander.nowlin@intel.com, kevin.bross@intel.com, ranjit.cavatur@intel.com, 
  Jacob Keller <jacob.e.keller@intel.com>, 
- Maciek Machnikowski <maciej.machnikowski@intel.com>
+ Maciek Machnikowski <maciej.machnikowski@intel.com>, 
+ Karol Kolacinski <karol.kolacinski@intel.com>, 
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>, 
+ Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>, 
+ Przemyslaw Korba <przemyslaw.korba@intel.com>
 X-Mailer: b4 0.17-dev-75809
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1806;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=7603;
  i=jacob.e.keller@intel.com; h=from:subject:message-id;
- bh=L6wFLgo75OBbsTVRHSFdNT6sYdqsXUqea1hudqbm/Kw=;
- b=owGbwMvMwCWWNS3WLp9f4wXjabUkhqyOl78uONZu+zn5bquRlODDdQWzxNvZbjBeq/voVXV5k
- qKXiElcRykLgxgXg6yYIouCQ8jK68YTwrTeOMvBzGFlAhnCwMUpABPZvIbhv1eA0/41v6Nj2ydt
- 7HKPmnPn8JUUw6+cs7+ar3NXb1X1qmL4p+W741Ou3an4zHOtn/aY7vD9GpamaMaYP3/fJsegx1/
- FGAE=
+ bh=kYD3iI89NTE2YUXGl8/06/Xw9GgwasM6OadX6ns7lg4=;
+ b=owGbwMvMwCWWNS3WLp9f4wXjabUkhqyOlzdlLbY694gx+ut26CvOdHgmFJ/HMd2s5cASe/X81
+ exufFc7SlkYxLgYZMUUWRQcQlZeN54QpvXGWQ5mDisTyBAGLk4BmMhLb0aGLQf7Ls1lfX+S6wmr
+ SL/Bsa6bc48fPD/3jaz5pJfPhHW7shkZmic/rPyRd2vDy8mpHXXZf6/kzxV0+v7n3sdXh/3ENlX
+ 5cwAA
 X-Developer-Key: i=jacob.e.keller@intel.com; a=openpgp;
  fpr=204054A9D73390562AEC431E6A965D3E6F0F28E8
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -121,49 +125,145 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-To ensure that the E825 PHY timer begins in a clean state, initiate a PHY
-soft reset prior to programming the PHY. This ensures that we clear any
-outstanding Tx timestamp memory, and ensures that the PHY internal state
-has been completely reset.
+This series contains several related fixes for the ice driver PTP logic
+relating to timestamp handling and device (re)initialization.
 
-Fixes: 7cab44f1c35f ("ice: Introduce ETH56G PHY model for E825C products")
+Of particular note is some changes around the handling of timestamps that
+are requested near device state changes such as administrative up/down
+cycles and link change events.
+
+The E825 device logic in the PHY has an internal counter which is used as
+part of the "threshold" logic which determines when the device will trigger
+an interrupt signal from a given PHY port to the MAC. This internal counter
+requires some precise handling to ensure that the internal device state
+remains in sync with software expectations. Otherwise, the device can be
+finagled into a state where the PHY stops producing new timestamp interrupt
+notifications to the MAC indefinitely. This in turn degrades the timestamp
+processing latency and results in application failures for common
+timestamping applications such as ptp4l.
+
+There are four major categories of problem resolved by this series:
+
+ * Timestamp requests made while the PHY_REG_TX_OFFSET_READY bit is cleared
+   will increment the internal counter, but leave their valid bit set to 0.
+   Upon read, the counter is not decremented. This leads to a desync of the
+   counter and blocks the PHY interrupt.
+
+ * Software logic for tracking timestamps incorrectly cleared in-use bits
+   without waiting for completion in certain cases. If the timestamp *does*
+   later complete, it leaves an "orphaned" ready bit which is not
+   tracked by software. This results in the internal counter becoming
+   desynced if that index is re-used.
+
+ * The PHY timestamp memory region lacks pull-down zero-initialization at
+   power on, resulting in uninitialized random data in the memory region.
+   If software reads these values, an entry with its valid bit set to 1 can
+   trigger a counter decrement and cause an underflow which results in the
+   counter becoming desynced.
+
+ * Timestamp request which complete near the beginning of the PHY losing
+   link can become "stuck" such that the hardware logic triggered by a
+   timestamp read does not activate. The memory status bit and the valid
+   bit in the the timestamp index are not cleared. This window where this
+   may occur begins *before* the firmware notifies the driver of link loss.
+   When this occurs, the driver may accidentally re-use a stale timestamp,
+   and the IRQ re-trigger logic triggers a repeated IRQ "storm" that can
+   consume significant excess CPU time.
+
+The series' primary focus is towards preventing driver flows that can
+trigger the above sequences. It is based on work from Przemyslaw Korba which
+was previously posted at [1]. During that series development, Petr from
+RedHat reported the 3rd issue mentioned above. While attempting to root
+cause that issue, several other issues were uncovered and those fixes have
+also been included in this series.
+
+First, the locking around the PTP ports list in the adapter structure is
+converted to use RCU primitives and a spinlock, resolving a couple of
+reports from Petr about places where the original list was accessed without
+lock protection. Note that an older version of this fix used an xarray
+instead of the list. The xarray has more overhead and results in an
+increase of ~25 microseconds to the average latency for processing Tx
+timestamps. The list is simpler and avoids this overhead.
+
+Next, come two fixes for E822 hardware that were originally posted as part
+of Przemyslaw Korba's work [1]. The E822-only "vernier" offset validation
+work task is properly canceled during device reset, and new timestamp
+requests are kept disabled until the validation task completes.
+
+Next, Arkadiusz modifies the driver to stop pretending that the link has
+gone down during ice_down(). This removes "virtual" PTP link changes that
+occurred on several flows including MTU change, Eswitch setup, and others.
+Now, the driver only triggers a PTP PHY timer reinitialization when the
+physical PHY link has changed instead of during many other actions.
+
+Next, the driver is modified to stop clearing the PHY_REG_TX_OFFSET_READY
+bit. This bits only purpose is to tell hardware to mark any captured
+timestamps as invalid. Since this also disables the necessary side effects
+on read it is problematic to have cleared. According to hardware engineers,
+keeping it enabled should not have any other side effects.
+
+Next, the driver is modified to clear the PHY_REG_TX_MEMORY_STATUS by
+reading each index *prior* to the PHY soft reset. This ensures that any
+stale or invalid data left in the memory array is cleared, followed by the
+counter being reset via the PHY soft reset procedure.
+
+Next, the E825 timer start procedure is modified to first include a soft
+reset. This ensures that upon link up the device is reconfigured from a
+known-good state with its internal counter reset and everything cleared.
+
+Next, Petr modifies the ice_ptp_flush_tx_tracker() function to wait a little
+bit for any outstanding timestamps before flushing.
+
+Next, Petr modifies the ice_ptp_process_tx_tstamp() function to avoid
+releasing any index from software unless either a) it is actually completed
+by hardware or b) it is timed out waiting for a full two seconds. This
+closes the final gap from the second issue mentioned above. Instead of
+immediately releasing the index, the software now waits until hardware has
+completed it or the driver has waited long enough to be sufficiently sure
+that no such timestamp will be done.
+
+Next, the driver is modified to no longer mark timestamps as "stale" during
+a clock adjust event. This avoids marking timestamps as stale unnecessarily.
+
+Finally, the ice_ptp_process_tx_tstamp() function is modified to verify
+that hardware actually cleared the ready bitmap. This ensures that we do
+not report false timestamps near a link down event.
+
+Link: [1] https://lore.kernel.org/intel-wired-lan/20260720120151.2675206-1-przemyslaw.korba@intel.com/
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Reviewed-by: Maciek Machnikowski <maciej.machnikowski@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
+Arkadiusz Kubalewski (1):
+      ice: call PTP link change only from link events
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-index b7d217ac31f3..10e973876608 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-@@ -2119,9 +2119,11 @@ int ice_stop_phy_timer_eth56g(struct ice_hw *hw, u8 port, bool soft_reset)
-  * @hw: pointer to the HW struct
-  * @port: the PHY port to start
-  *
-- * Start the clock of a PHY port. This must be done as part of the flow to
-- * re-calibrate Tx and Rx timestamping offsets whenever the clock time is
-- * initialized or when link speed changes.
-+ * Perform a PHY soft reset and then start the clock for the PHY port.
-+ *
-+ * This must be done as part of the flow to re-calibrate Tx and Rx
-+ * timestamping offsets whenever the clock time is initialized or when link
-+ * speed changes.
-  *
-  * Return:
-  * * %0     - success
-@@ -2137,6 +2139,10 @@ int ice_start_phy_timer_eth56g(struct ice_hw *hw, u8 port)
- 
- 	tmr_idx = ice_get_ptp_src_clock_index(hw);
- 
-+	err = ice_ptp_phy_soft_reset_eth56g(hw, port);
-+	if (err)
-+		return err;
-+
- 	err = ice_stop_phy_timer_eth56g(hw, port, false);
- 	if (err)
- 		return err;
+Jacob Keller (7):
+      ice: use reference counting and RCU for PTP port access
+      ice: E825: stop clearing PHY_REG_TX_OFFSET_READY
+      ice: E825: clear PHY_REG_TX_MEMORY_STATUS prior to soft reset
+      ice: E825: perform a soft reset when starting the PHY timer
+      ice: remove unnecessary discarding of timestamps after clock adjust
+      ice: skip reading Tx ready bitmap on ports with no timestamps
+      ice: don't clear in_use until HW clears ready bitmap
 
--- 
-2.55.0.814.gc42f45431d0f
+Karol Kolacinski (2):
+      ice: E822: keep Tx timestamps disabled during offset calibration
+      ice: E822: cancel offset verification work during reset preparation
+
+Petr Oros (2):
+      ice: wait for in-flight Tx timestamps before flushing the tracker
+      ice: keep Tx timestamp slots tracked until completion or timeout
+
+ drivers/net/ethernet/intel/ice/ice_adapter.h |   6 +-
+ drivers/net/ethernet/intel/ice/ice_ptp.h     |  12 +-
+ drivers/net/ethernet/intel/ice/ice_adapter.c |   7 +-
+ drivers/net/ethernet/intel/ice/ice_main.c    |  13 +-
+ drivers/net/ethernet/intel/ice/ice_ptp.c     | 348 ++++++++++++++++++---------
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c  | 105 ++++----
+ 6 files changed, 318 insertions(+), 173 deletions(-)
+---
+base-commit: 564973a259ec76f2dad0853420e7034cc43994c4
+change-id: 20260819-jk-e825c-minimized-fixes-8559addec172
+
+Best regards,
+--  
+Jacob Keller <jacob.e.keller@intel.com>
 
