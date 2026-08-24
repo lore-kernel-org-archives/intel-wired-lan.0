@@ -1,91 +1,88 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D2DBC5DF9B
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 24 Aug 2026 13:22:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C1BCC5DF81
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 24 Aug 2026 15:51:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 0B42D40652;
-	Mon, 24 Aug 2026 13:22:56 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id B668080B8B;
+	Mon, 24 Aug 2026 15:51:08 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 1ecCfn7eMHLL; Mon, 24 Aug 2026 13:22:54 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id kaiUtUuK3x-m; Mon, 24 Aug 2026 15:51:08 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1787577774;
-	bh=W1mYa70rSkl/+xbo58TUmsAHLfx1g15gUBw1nDnrTGs=;
-	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=YNtAZkHleXbuH95I8VkNQ48K8lJ/5YA19m1Chwpsm+kDMKX6L/+rwOT+l0H11bdvx
-	 Wb687GP74I+cy3xUrwAZPUICbo1pmHNAHWLjnEZYfSv9i1HxxZS1G598euexbE0SO8
-	 S8CVqtceC8uPDHk6eEdppgUjYtRYNQJLTfMuAP7A7Xb2aTQC2hFUxQcdxxwBWHQzkU
-	 f7fTHz6dFqji4VxFjASOe5gWvJVHtUi/SN4fN1kacR7Sx6KFBYYlVLeJYDzoxjzfEi
-	 q6WinpN1xSQCnszOhrMjTfKZbzWVPsqoGDHwU9zqx/i38puvv50r7VSDdfRi9F9rO4
-	 PYKwqWwUrSPSg==
+	s=default; t=1787586668;
+	bh=qGnYzb6sb2CaYap45m87vBaR83LJiJZymed/HuvCnUk=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=QRc952APMhvMFOX2howXxpNhqko5ZCImZT/ccL8ocWvWyDLAcKILJPbYZY1dszAam
+	 mNf2u83m7Vu7f6tAMPe8btzht+10DqBIK5E5H7f90bfMkJGbcBd9szprzzzoWFUlid
+	 4y6HrrLFIOudPUtjVam561D+kdHP36tGPkmas8ahxjfoHYZwJQ1oSVr8bjpUteoiMO
+	 p0x558TUJ2GcypmXBYXf/zFjoQTH+Ji4Nr1zwV7814SIv8Z8xR/EV3vkCh9jX9kt/U
+	 fHKYiCf/EDUyCPiKb5xiO0XN4RNsX/3PWRKTEE44FZpVRLFfUJFTFDN5NeX+9oh8Fa
+	 bc5HLvq/tGUgQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 1D1444065B;
-	Mon, 24 Aug 2026 13:22:54 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 761313AD
- for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Aug 2026 13:22:52 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id E803580B2C;
+	Mon, 24 Aug 2026 15:51:07 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id D0E5B29B
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Aug 2026 15:51:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 5ADC040050
- for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Aug 2026 13:22:52 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id BA17840068
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Aug 2026 15:51:06 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id YMBNv7-Hd4WJ for <intel-wired-lan@lists.osuosl.org>;
- Mon, 24 Aug 2026 13:22:51 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.14;
- helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
+ id eSUZafNs4ZDV for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 24 Aug 2026 15:51:06 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
+ helo=sea.source.kernel.org; envelope-from=horms@kernel.org;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=i77ViLRv
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
- by smtp2.osuosl.org (Postfix) with ESMTPS id A36D640029
- for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Aug 2026 13:22:51 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1787577771; x=1819113771;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=4iwRKxSimrc6YusEY2wkNKpRDAOO+LqtPIbldkpRD9Y=;
- b=i77ViLRva15uSM5SYPKuYjTieZGJGW4rFh1gHePWP0+q8Qe80yRc95Vi
- R1DoqTCuGl+IAiU4sD/N3lyKDRhzJjU00MXw94Ex0IMzN5ovPxyL2KFqS
- C1buOHyUIqPQO27syW36Kik+MmlPXOHSrta98JNYZl3AZMdMDoGRrfG1p
- haowVeUnusuZXuhTKfjWZN3lwd3cCN7AlqOy8Sushe6v2M5PfsljCxAMW
- Pp3zTvZeqPoqBrPzY7sSj+YhFxJ2kPOaobz/DarArW4UMeg3eHPekZMjg
- 0zjg4lLYzJiZkW2fRednN0e9eR1i7adIcqdMFGKHpOOpUE5+pxJPfhbyA Q==;
-X-CSE-ConnectionGUID: Ebq8/vi2Tb+soGTYIH8Xjg==
-X-CSE-MsgGUID: dWk2G97RQ8WdWVhHs+pQKg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11884"; a="91898136"
-X-IronPort-AV: E=Sophos;i="6.25,240,1779174000"; d="scan'208";a="91898136"
-Received: from orviesa001.jf.intel.com ([10.64.159.141])
- by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 24 Aug 2026 06:22:50 -0700
-X-CSE-ConnectionGUID: X2TNBJc/Q4iKOZ8Nnsjp1A==
-X-CSE-MsgGUID: rb4Vfjr1S1WVsplx+l9oGA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,240,1779174000"; d="scan'208";a="305213235"
-Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by orviesa001.jf.intel.com with ESMTP; 24 Aug 2026 06:22:50 -0700
-From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-To: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
- aleksandr.loktionov@intel.com
-Cc: netdev@vger.kernel.org
-Subject: [PATCH iwl-net v2] ice: fix bound parser hash offset before reading
+Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20260515 header.b=K5zJ6lOW
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 256BD40029
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Aug 2026 15:51:05 +0000 (UTC)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+ by sea.source.kernel.org (Postfix) with ESMTP id B9C3940A9A;
+ Mon, 24 Aug 2026 15:51:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 93EA81F000E9;
+ Mon, 24 Aug 2026 15:51:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+ s=k20260515; t=1787586664;
+ bh=qGnYzb6sb2CaYap45m87vBaR83LJiJZymed/HuvCnUk=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To;
+ b=K5zJ6lOWqJaiA4tHxVuhif8Mm3bjKQTt1ciDXs5YMdZjTdSI6wZ31p8MeOhn3VXtq
+ ZzMfNkXtKEp33p4VVjw4fseQGwOnRr6N3i21KsAm6490Y/F2IlXdVtyt0butglDCVI
+ Ai2yUFTH2CP+dMQg7x97akzd1bDmJBhgrue3bQyOUNzTPNFUTbB9pQg27mRp24e7Zy
+ vX83Jt42erme+CQX05t6g8wnxu2QB/255FyNnNpt/vCNoiPpzKvyk01RayqM88VFUo
+ 1HvUfkuDeVj2aOpf37Uvgb4NBjOuLjm90qYkAjRYr7EHraleZPlJK/Qfl7mBeu76Jd
+ uR8c/L2Rpvcgg==
+Date: Mon, 24 Aug 2026 16:51:01 +0100
+From: Simon Horman <horms@kernel.org>
+To: "Loktionov, Aleksandr" <aleksandr.loktionov@intel.com>
+Cc: "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
+ "Nguyen, Anthony L" <anthony.l.nguyen@intel.com>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "Kitszel, Przemyslaw" <przemyslaw.kitszel@intel.com>
+Subject: Re: [PATCH iwl-net] ice: fix bound parser hash offset before reading
  packet data
-Date: Mon, 24 Aug 2026 15:22:48 +0200
-Message-ID: <20260824132248.3396788-1-aleksandr.loktionov@intel.com>
-X-Mailer: git-send-email 2.52.0
+Message-ID: <20260824155101.GW265046@horms.kernel.org>
+References: <20260820114314.646344-1-aleksandr.loktionov@intel.com>
+ <20260824110838.GP265046@horms.kernel.org>
+ <IA3PR11MB89864B9D29B763A29C25B823E5A02@IA3PR11MB8986.namprd11.prod.outlook.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <IA3PR11MB89864B9D29B763A29C25B823E5A02@IA3PR11MB8986.namprd11.prod.outlook.com>
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -100,68 +97,24 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-ice_rt_ho_set() uses the HO register as the starting offset of an
-ICE_GPR_HV_SIZE-byte memcpy() out of rt->pkt_buf. Potentially HO can
-be advanced by user-controlled data reachable through
-ice_parse_raw_rss_pattern() -> ice_parser_run() ->
-ice_parser_rt_execute() -> ice_rt_gpr_set() -> ice_rt_ho_set(), i.e. a
-VF-supplied raw RSS pattern (virt/rss.c), with no bound against the
-size of pkt_buf.
+On Mon, Aug 24, 2026 at 01:18:10PM +0000, Loktionov, Aleksandr wrote:
+> 
+> 
+> > -----Original Message-----
+> > From: Simon Horman <horms@kernel.org>
 
-Clamp HO to the last offset from which ICE_GPR_HV_SIZE bytes can still
-be read out of pkt_buf, deriving the limit from sizeof(rt->pkt_buf)
-so it stays correct if the packet buffer layout changes.
+...
 
-ice_parser_rt_pktbuf_set() stores the caller's raw pkt_len in
-rt->pkt_len, even though it only ever copies min(ICE_PARSER_MAX_PKT_LEN,
-pkt_len) bytes into rt->pkt_buf. Both ice_parse_raw_rss_pattern() and
-ice_vc_fdir_parse_raw() pass a VF-supplied pkt_len of up to
-VIRTCHNL_MAX_SIZE_RAW_PACKET (1024), i.e. larger than
-ICE_PARSER_MAX_PKT_LEN (504). With HO now capped at 504, the
-"HO >= pkt_len" loop exit in ice_parser_rt_execute() would never be
-reached for such an oversized pkt_len. Store the already-clamped
-length instead, so rt->pkt_len always matches what was actually copied
-into rt->pkt_buf and the loop-exit check remains a valid bound
-regardless of the caller-supplied pkt_len.
+> Good day, Simon
+> 
+> The clamp math is off, for the record: pkt_buf is ICE_PARSER_MAX_PKT_LEN + ICE_PARSER_PKT_REV = 536 bytes, so sizeof(rt->pkt_buf) - ICE_GPR_HV_SIZE is 504, not 488.
+> 
+> That said, the actual point stands: ice_parser_rt_pktbuf_set() stores the unclamped caller pkt_len into rt->pkt_len, and both raw RSS and raw FDIR VF paths can pass up to VIRTCHNL_MAX_SIZE_RAW_PACKET (1024) > ICE_PARSER_MAX_PKT_LEN (504). After this fix HO can't exceed 504 either, so HO >= pkt_len stops being a reliable exit for those inputs. Doesn't look like a guaranteed infinite loop to me - the graph's is_last_round action still ends parsing independent of HO - but there's no reason to leave a dangling bound in a bounds-fix patch. I'll send v2 that also stores the clamped length in rt->pkt_len, same Fixes: tag.
 
-Fixes: 9a4c07aaa0f5 ("ice: add parser execution main loop")
-Cc: stable@vger.kernel.org
-Cc: horms@kernel.org
-Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
----
-v1 -> v2:
-- also clamp rt->pkt_len in ice_parser_rt_pktbuf_set() to the same
-  ICE_PARSER_MAX_PKT_LEN bound already used for the rt->pkt_buf copy,
-  so the "HO >= pkt_len" loop-exit in ice_parser_rt_execute() can't be
-  bypassed by an oversized pkt_len from the raw RSS/FDIR VF paths
-  (reported in review)
-- dropped Przemek's Reviewed-by since the patch changed
----
- drivers/net/ethernet/intel/ice/ice_parser_rt.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+Thanks, much appreciated.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_parser_rt.c b/drivers/net/ethernet/intel/ice/ice_parser_rt.c
-index 3995d66..b330005 100644
---- a/drivers/net/ethernet/intel/ice/ice_parser_rt.c
-+++ b/drivers/net/ethernet/intel/ice/ice_parser_rt.c
-@@ -10,6 +10,8 @@ static void ice_rt_tsr_set(struct ice_parser_rt *rt, u16 tsr)
- 
- static void ice_rt_ho_set(struct ice_parser_rt *rt, u16 ho)
- {
-+	/* keep the ICE_GPR_HV_SIZE-byte read below within pkt_buf */
-+	ho = min_t(u16, ho, sizeof(rt->pkt_buf) - ICE_GPR_HV_SIZE);
- 	rt->gpr[ICE_GPR_HO_IDX] = ho;
- 	memcpy(&rt->gpr[ICE_GPR_HV_IDX], &rt->pkt_buf[ho], ICE_GPR_HV_SIZE);
- }
-@@ -106,7 +108,7 @@ void ice_parser_rt_pktbuf_set(struct ice_parser_rt *rt, const u8 *pkt_buf,
- 	u16 ho = rt->gpr[ICE_GPR_HO_IDX];
- 
- 	memcpy(rt->pkt_buf, pkt_buf, len);
--	rt->pkt_len = pkt_len;
-+	rt->pkt_len = len;
- 
- 	memcpy(&rt->gpr[ICE_GPR_HV_IDX], &rt->pkt_buf[ho], ICE_GPR_HV_SIZE);
- }
--- 
-2.52.0
+> 
+> The DDP-table-index and FDIR IRQ-context points from Sashiko are unrelated to this patch - different code, different trust boundary (signed firmware package vs. VF input). 
+> I think it should not block this fix.
 
+Yes, agreed.
