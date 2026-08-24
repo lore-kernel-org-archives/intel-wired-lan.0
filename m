@@ -4,85 +4,81 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C1BCC5DF81
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 24 Aug 2026 15:51:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AF487C5DF9C
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 24 Aug 2026 16:02:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id B668080B8B;
-	Mon, 24 Aug 2026 15:51:08 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 7C22E80C8B;
+	Mon, 24 Aug 2026 16:02:09 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id kaiUtUuK3x-m; Mon, 24 Aug 2026 15:51:08 +0000 (UTC)
+ id 3gTnGtmr0NGA; Mon, 24 Aug 2026 16:02:08 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1787586668;
-	bh=qGnYzb6sb2CaYap45m87vBaR83LJiJZymed/HuvCnUk=;
+	s=default; t=1787587328;
+	bh=LGq+20MTSxt1LGfHj3jPyYgDVwZp6lkTgCk64GTKZho=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=QRc952APMhvMFOX2howXxpNhqko5ZCImZT/ccL8ocWvWyDLAcKILJPbYZY1dszAam
-	 mNf2u83m7Vu7f6tAMPe8btzht+10DqBIK5E5H7f90bfMkJGbcBd9szprzzzoWFUlid
-	 4y6HrrLFIOudPUtjVam561D+kdHP36tGPkmas8ahxjfoHYZwJQ1oSVr8bjpUteoiMO
-	 p0x558TUJ2GcypmXBYXf/zFjoQTH+Ji4Nr1zwV7814SIv8Z8xR/EV3vkCh9jX9kt/U
-	 fHKYiCf/EDUyCPiKb5xiO0XN4RNsX/3PWRKTEE44FZpVRLFfUJFTFDN5NeX+9oh8Fa
-	 bc5HLvq/tGUgQ==
+	b=AIabs+HNTi+kajGy4+BxhhdSTZ0AiwwOGGyw48r6haMiio9xOGnkTi001CphAK9Gr
+	 PqwNduYniPxCNHtuPQZO5AMQ7N2LpZeHaTSqHn6HWukoFttyWw8cSmBjLRkFJed05H
+	 bqmKGuv/zZ/2r5VpicJjtWPyXiqwxFvHzRNO3Ts+mBsdK/yQxiuUMCC0Be01cB1qpu
+	 tTEMeyFhBylURLFJvo1+/DOudQqFHNZ+y0NvEk7dQbFOdIHP4RzUilPLOrsqxY/oNy
+	 0WZOqhjLigQRrqVXNvEDFRyf26PYTZ341bPAyIMZvmRE7kVH2rdfykk5H2PpM5FYVr
+	 lRFKwLsEq8WvA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id E803580B2C;
-	Mon, 24 Aug 2026 15:51:07 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id D0E5B29B
- for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Aug 2026 15:51:06 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id A098F80BA8;
+	Mon, 24 Aug 2026 16:02:08 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 9BA0E279
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Aug 2026 16:02:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id BA17840068
- for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Aug 2026 15:51:06 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 8D91340097
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Aug 2026 16:02:06 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id eSUZafNs4ZDV for <intel-wired-lan@lists.osuosl.org>;
- Mon, 24 Aug 2026 15:51:06 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
- helo=sea.source.kernel.org; envelope-from=horms@kernel.org;
- receiver=<UNKNOWN> 
+ id SEZLDPFTNLWL for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 24 Aug 2026 16:02:06 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
+ envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
 Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=K5zJ6lOW
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 256BD40029
- for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Aug 2026 15:51:05 +0000 (UTC)
+Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20260515 header.b=RrxyDW5P
+Received: from sea.source.kernel.org (sea.source.kernel.org
+ [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id D48F240068
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Aug 2026 16:02:05 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by sea.source.kernel.org (Postfix) with ESMTP id B9C3940A9A;
- Mon, 24 Aug 2026 15:51:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 93EA81F000E9;
- Mon, 24 Aug 2026 15:51:03 +0000 (UTC)
+ by sea.source.kernel.org (Postfix) with ESMTP id 0980542A30;
+ Mon, 24 Aug 2026 16:02:05 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 089F61F000E9;
+ Mon, 24 Aug 2026 16:02:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1787586664;
- bh=qGnYzb6sb2CaYap45m87vBaR83LJiJZymed/HuvCnUk=;
+ s=k20260515; t=1787587324;
+ bh=LGq+20MTSxt1LGfHj3jPyYgDVwZp6lkTgCk64GTKZho=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To;
- b=K5zJ6lOWqJaiA4tHxVuhif8Mm3bjKQTt1ciDXs5YMdZjTdSI6wZ31p8MeOhn3VXtq
- ZzMfNkXtKEp33p4VVjw4fseQGwOnRr6N3i21KsAm6490Y/F2IlXdVtyt0butglDCVI
- Ai2yUFTH2CP+dMQg7x97akzd1bDmJBhgrue3bQyOUNzTPNFUTbB9pQg27mRp24e7Zy
- vX83Jt42erme+CQX05t6g8wnxu2QB/255FyNnNpt/vCNoiPpzKvyk01RayqM88VFUo
- 1HvUfkuDeVj2aOpf37Uvgb4NBjOuLjm90qYkAjRYr7EHraleZPlJK/Qfl7mBeu76Jd
- uR8c/L2Rpvcgg==
-Date: Mon, 24 Aug 2026 16:51:01 +0100
+ b=RrxyDW5PXTz7/JgnpWdBk/R+ttFpiejJO/6ekdULuH4V393VsC2hG9nXnv5ODKXqv
+ c8+8/aoSkmdlKpqJtRfV0EcsFwuSYYzVNGB7Cx1/woZqtL7Mwi5wY/3jeomKE7W+mQ
+ AQmQFITiHtWXB+ZObUlKWqT0l796jWqlPlyuY0+Fn2eNug7H1wXUr1nDkdnv283v81
+ bIOlmrtqs9RmbW6AXg3YDs6FrsQMnaMPN0wOSroSM6BqwYM+ISmrKH9RP+fq5vyV9M
+ UrclcChU3jIXXORGkR1CwQjy7SpfggF69hoKi4aUi5FwBQcm33OMTDnviyEYFu7uMJ
+ FTv8G9HtnAaDg==
+Date: Mon, 24 Aug 2026 17:02:01 +0100
 From: Simon Horman <horms@kernel.org>
-To: "Loktionov, Aleksandr" <aleksandr.loktionov@intel.com>
-Cc: "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- "Nguyen, Anthony L" <anthony.l.nguyen@intel.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "Kitszel, Przemyslaw" <przemyslaw.kitszel@intel.com>
-Subject: Re: [PATCH iwl-net] ice: fix bound parser hash offset before reading
- packet data
-Message-ID: <20260824155101.GW265046@horms.kernel.org>
-References: <20260820114314.646344-1-aleksandr.loktionov@intel.com>
- <20260824110838.GP265046@horms.kernel.org>
- <IA3PR11MB89864B9D29B763A29C25B823E5A02@IA3PR11MB8986.namprd11.prod.outlook.com>
+To: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Cc: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
+ netdev@vger.kernel.org
+Subject: Re: [PATCH iwl-net v2 0/2] i40e: fix set_ringparam error path crashes
+Message-ID: <20260824160201.GX265046@horms.kernel.org>
+References: <20260821130157.1451118-1-aleksandr.loktionov@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <IA3PR11MB89864B9D29B763A29C25B823E5A02@IA3PR11MB8986.namprd11.prod.outlook.com>
+In-Reply-To: <20260821130157.1451118-1-aleksandr.loktionov@intel.com>
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -97,24 +93,58 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-On Mon, Aug 24, 2026 at 01:18:10PM +0000, Loktionov, Aleksandr wrote:
+On Fri, Aug 21, 2026 at 03:01:55PM +0200, Aleksandr Loktionov wrote:
+> i40e_set_ringparam() has two independent ways to crash a live queue
+> while resizing descriptors. Both need a failure injected into the
+> middle of the resize to hit, but both are 100% reliable once you know
+> where.
 > 
+> Patch 1 is the reported bug: the free_tx: label frees vsi->tx_rings[i]
+> (the live, NAPI-active ring) instead of &tx_rings[i] (the staged copy),
+> on Rx allocation failure. desc/tx_bi go to NULL under a running NAPI,
+> next poll dereferences them. Reproduced by forcing an Rx alloc failure
+> right after a Tx descriptor count change; panic address matched the
+> original report exactly (CR2 == old_count * sizeof(desc)).
 > 
-> > -----Original Message-----
-> > From: Simon Horman <horms@kernel.org>
-
-...
-
-> Good day, Simon
+> Patch 2 was found reviewing patch 1. The staged tx_rings[] copies are
+> shallow copies of the live rings, so they carry over the same
+> ring->netdev/queue_index. Freeing one of these copies before
+> i40e_down() has run - either from this same free_tx: label or from the
+> i40e_setup_tx_descriptors() failure unwind loop above it - resets BQL
+> state for the live queue it was copied from. dql_completed() then
+> BUG_ONs the next time the live ring reports a completion that was
+> queued before the reset. This one predates patch 1's bug by four
+> years (Fixes: 9f65e15b4f98, 2013) and doesn't need patch 1 applied to
+> be reachable via the setup_tx_descriptors() path.
 > 
-> The clamp math is off, for the record: pkt_buf is ICE_PARSER_MAX_PKT_LEN + ICE_PARSER_PKT_REV = 536 bytes, so sizeof(rt->pkt_buf) - ICE_GPR_HV_SIZE is 504, not 488.
+> Reproduced by forcing i40e_setup_tx_descriptors() to fail on a later
+> queue while flooding real Tx traffic on the earlier ones:
 > 
-> That said, the actual point stands: ice_parser_rt_pktbuf_set() stores the unclamped caller pkt_len into rt->pkt_len, and both raw RSS and raw FDIR VF paths can pass up to VIRTCHNL_MAX_SIZE_RAW_PACKET (1024) > ICE_PARSER_MAX_PKT_LEN (504). After this fix HO can't exceed 504 either, so HO >= pkt_len stops being a reliable exit for those inputs. Doesn't look like a guaranteed infinite loop to me - the graph's is_last_round action still ends parsing independent of HO - but there's no reason to leave a dangling bound in a bounds-fix patch. I'll send v2 that also stores the clamped length in rt->pkt_len, same Fixes: tag.
-
-Thanks, much appreciated.
-
+>   kernel BUG at lib/dynamic_queue_limits.c:99!
+>   RIP: dql_completed+0x285/0x2a0
+>   Call Trace:
+>    <IRQ>
+>    i40e_napi_poll+0x74b/0x1700 [i40e]
+>    __napi_poll+0x10a/0x200
+>    net_rx_action+0x2f7/0x380
+>    handle_softirqs+0xcc/0x270
 > 
-> The DDP-table-index and FDIR IRQ-context points from Sashiko are unrelated to this patch - different code, different trust boundary (signed firmware package vs. VF input). 
-> I think it should not block this fix.
+> Confirmed clean with the fix applied, same traffic, repeated
+> resize cycles.
+> 
+> Patch 2 touches both error paths above, but only the free_tx: hunk
+> needs patch 1 applied first to match its diff context - the
+> setup_tx_descriptors() unwind hunk applies, and matters, on its own.
+> 
+> Cc: Simon Horman <horms@kernel.org>
+> 
+> Aleksandr Loktionov (2):
+>   i40e: fix set_ringparam error path freeing live Tx rings
+>   i40e: avoid resetting BQL state when freeing temporary Tx rings in
+>     set_ringparam
 
-Yes, agreed.
+Thanks for the update.
+
+For the series:
+Reviewed-by: Simon Horman <horms@kernel.org>
+
