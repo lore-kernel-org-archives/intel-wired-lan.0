@@ -4,200 +4,198 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B2C07C5DF81
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 24 Aug 2026 23:48:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E8639C5DF81
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 24 Aug 2026 23:51:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 664F960667;
-	Mon, 24 Aug 2026 23:48:41 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id B0CCF6068D;
+	Mon, 24 Aug 2026 23:51:54 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id xrjeWqk1SUfa; Mon, 24 Aug 2026 23:48:40 +0000 (UTC)
+ id Oju7RjHQVFLb; Mon, 24 Aug 2026 23:51:52 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1787615320;
-	bh=IT5mnvw2gSxtfFXq6XlEiWF9B9JvCvASB9cTcyT8t2w=;
+	s=default; t=1787615512;
+	bh=pwWiJyCjxTwXAQYGSnNncufmSss5s1WYS0UVEJhyQpc=;
 	h=Date:Subject:To:CC:References:From:In-Reply-To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=0idzTMcKsI0kdRXIVuaLHAExGSyx63D4K2CZYqXKSjjbPRAcg6w40zyP+pjBB1Ekx
-	 XTmOR0zBwxMtyYXNzgnPaUeFQgqofdsl3RCA0jOM8XQ5J2K1GKd5q9L1muw6zN4ev9
-	 cS7sFPWacG+7o8rQMBZxGxEcWvmlgFR+Cr7UT9mwsleIaUBqBn88w//0DFrA3Tv4O3
-	 do3DCi+c47ZaQJmjc7INkWjDtPtH47D6HBwRL6AXkMTFymWsQBA77Op4koO1PofFVv
-	 7tYOsJtgwsOc1jZiu/7VnbtIpVGLKToEr3uNIF6xwK8bxBbHWCSf4N8CapLUpmduF3
-	 9qJPr9M8vR4Lw==
+	b=FAPs0tnsO0yrfJIlknz+Jinh/Xh+/zc18aUpgG87w0jeoSCzFiOlMv6ntVSApYGP/
+	 nBL6h+/LExNRUkJXxWWjM3518u1k6IW/7gyhye1HdHjHF4hWh3NYyiGzX0ouKeIAs/
+	 ndYh5S/bUcO1FC1ddi9h3y2QmySkzi9hj7267eb/Ma5I8EZP5sLT5wBdbUIHPsRssL
+	 /XSqSrFRZEJIw+4T+eYe34V4u6v9kEZGXAYUVk+Ei8ZlQiygygoZUsIb+oR2yjEgJy
+	 9aSXUzK9rSdpGfekSZ1HoiuHPXnqDdDqmM7fTTt3IyEQsdKNuGlAUnvCTMt2e36KaQ
+	 1hZA+R4sMQk3Q==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 9ACE460672;
-	Mon, 24 Aug 2026 23:48:40 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 135D74B8
- for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Aug 2026 23:48:39 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 7AED360667;
+	Mon, 24 Aug 2026 23:51:52 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 1E9AF279
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Aug 2026 23:51:51 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id F318260672
- for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Aug 2026 23:48:38 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id F352480D10
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Aug 2026 23:51:50 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id oVMgg7dGSqBv for <intel-wired-lan@lists.osuosl.org>;
- Mon, 24 Aug 2026 23:48:38 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.7;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id nSBo_Eh6Kpxl for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 24 Aug 2026 23:51:50 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.19;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp3.osuosl.org;
+Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
+Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=nfepEQEY
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
- by smtp3.osuosl.org (Postfix) with ESMTPS id CC4F96063A
- for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Aug 2026 23:48:37 +0000 (UTC)
+ header.s=Intel header.b=MgjurD1k
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id F2E0080D07
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Aug 2026 23:51:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1787615318; x=1819151318;
+ t=1787615510; x=1819151510;
  h=message-id:date:subject:to:cc:references:from:
  in-reply-to:content-transfer-encoding:mime-version;
- bh=T0rqXWX+9OEARFVxzGtUY/hE6I7o1jwGI6dKLZryCx4=;
- b=nfepEQEYvwtwQGzW3CfmC2a868c2vMXvvoDDD/PhmwUaLmpz0Affw34m
- TLpPiucE6R7TkWiBs1SbVOOPi5rTbD4PAbqh4wWTpVYfj7/pdV3g0ICd8
- DSgeQXEbDYMmLoiOtviSC/1k1O09A38rRa/fp+enfjpPmjfwlAn3i7n4h
- 5gfqEbyHjVfs9ciiHmL+RIkXSXmENUPOW0eRdT4AovsbIkVL6KhSudvr5
- Pc4yxZ2SYxqMoxqCfB0dT67MCuhSjFZgUtyMC1mUzZ9QEvjvH4LAzVm9H
- OzCyQ73fyU2qzKbpUmfiBn8I8qwps3Lp1cwMKFOCheFYi8hMGe39jdetL Q==;
-X-CSE-ConnectionGUID: E2TiAlz9Qk6axAmvzkbrFA==
-X-CSE-MsgGUID: 7YNXp5LhQPi5P4Pupvh0vw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11885"; a="113615200"
-X-IronPort-AV: E=Sophos;i="6.25,241,1779174000"; d="scan'208";a="113615200"
-Received: from fmviesa004.fm.intel.com ([10.60.135.144])
- by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 24 Aug 2026 16:48:36 -0700
-X-CSE-ConnectionGUID: WvAEZSEjSryXSm8wlXQhng==
-X-CSE-MsgGUID: 0n2qLbn7SWu0ZzJRRaTrnQ==
+ bh=noIzB2FeNtBMvmouBHV02khElz8ZPzLA3TW3MsIVOTM=;
+ b=MgjurD1khuzQbBFiaWCH6wcL6WVHEZerP45+OhPiF3/29kXZ0ZJS1/ss
+ 9OUAJugAI+xy/6HKQ8E4fWH2VfeQALq73D//4tw+pY2rERwwSblJGtqBE
+ pI0UcdmPt3dIl0mwQ2umlaEUKTcnM5QIs1i1QF4N71335I0RoSYYt3dMx
+ MdJwZtV1kOF1LuQdP3pmkkcMtBWrt9towj2u/aykR26uLII3CZjldM145
+ 1SxkNwYTf3Zlv8E8jiepk2bm9YAoEE8asmG7pYIGP+1J3zCFNQu1C8p98
+ +XnlNCp4uWu6XAB6AbSyDtU0GdFn68HZOXn1ZSgAP9WfPKjt6PzYr7//f w==;
+X-CSE-ConnectionGUID: qdhI24uLSbq00Y71uj4zDA==
+X-CSE-MsgGUID: 81BR2ghOSLGvPXc+NeDNOA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11885"; a="88001513"
+X-IronPort-AV: E=Sophos;i="6.25,241,1779174000"; d="scan'208";a="88001513"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+ by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 24 Aug 2026 16:51:49 -0700
+X-CSE-ConnectionGUID: a4tWDyULQS+ZPz/7D0g0CA==
+X-CSE-MsgGUID: DiwoTCfZT7iPCH2UZU2/RQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,241,1779174000"; d="scan'208";a="269086213"
-Received: from orsmsx901.amr.corp.intel.com ([10.22.229.23])
- by fmviesa004.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 24 Aug 2026 16:48:37 -0700
-Received: from ORSMSX902.amr.corp.intel.com (10.22.229.24) by
- ORSMSX901.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
+X-IronPort-AV: E=Sophos;i="6.25,241,1779174000"; d="scan'208";a="272345508"
+Received: from fmsmsx903.amr.corp.intel.com ([10.18.126.92])
+ by fmviesa005.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 24 Aug 2026 16:51:48 -0700
+Received: from FMSMSX901.amr.corp.intel.com (10.18.126.90) by
+ fmsmsx903.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.45; Mon, 24 Aug 2026 16:48:36 -0700
-Received: from ORSEDG903.ED.cps.intel.com (10.7.248.13) by
- ORSMSX902.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
+ 15.2.2562.45; Mon, 24 Aug 2026 16:51:47 -0700
+Received: from fmsedg903.ED.cps.intel.com (10.1.192.145) by
+ FMSMSX901.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.45 via Frontend Transport; Mon, 24 Aug 2026 16:48:36 -0700
-Received: from CY3PR05CU001.outbound.protection.outlook.com (40.93.201.52) by
- edgegateway.intel.com (134.134.137.113) with Microsoft SMTP Server
+ 15.2.2562.45 via Frontend Transport; Mon, 24 Aug 2026 16:51:47 -0700
+Received: from DM1PR04CU001.outbound.protection.outlook.com (52.101.61.34) by
+ edgegateway.intel.com (192.55.55.83) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.45; Mon, 24 Aug 2026 16:48:36 -0700
+ 15.2.2562.45; Mon, 24 Aug 2026 16:51:47 -0700
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=pyOfEZJwsjA7OLUS63S0DNKQYPGf1xMgSf8Y/Sviw/vpisWUAO2xtxcVFOo4dzaE/SmmCdQiYozZuP4YBInmifn+jWgzE158Wcm3hi6T12bEpLepv2u2zn6lqxY8Zf12q8fybw7La2Cdej2mDj+CAJUmifhECBFH76fhFV57XEY+bWgNG80TyCifR4a1Rct01VHtXeiT3t8HqjN18zmaJCkcHcQ7kGlqmCoWbP2iSvuqk1ujqJvGATn3+gWopFqHfevBhnyh9mAisSbRzv2+2bvJuyg5mPrujJWRFSJUmfzcNdyCxW+tNRflz+TJM2j5wno2fql3TCQaMBCHsD/Ziw==
+ b=hrLYtd0VUg8jPuHRb0N8mjnEWGZ+iMQJxq0WhvNnYL0ZIXNvcCgWwC8xy7gcU+UXOrWpM4gaCk+jhMsfn57E6j/WVQV/MBhEteEkC9QiOsAQIqm5+CJGAyoyeHEN1mrAmgsT6E8tqbEm7pU1S5ipS2v9xCHT6or5BRN10F3wx5rvrBIzcOSXI4MJU7Mry89Z0vklo7VzUEwYJCS6D7oNhSAel8GA2TH3rxNNKnxNcAkUgnV9g/X+xI76dPRjIzBYM+HbTUXZKLGwPr+lrHVlNX8ycFqYKQOMVwTzugAzt/BLNKLXlJ/1mt1yjnIyb+4W9s0vMX+V2U9S6YVULSPaTA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=IT5mnvw2gSxtfFXq6XlEiWF9B9JvCvASB9cTcyT8t2w=;
- b=Z+6rUVwAr6kLPzuUZid1R8n7jyKcoiF+nvXqxCre1FxjUXShTjEtYW3rCS/TBXsf+cv6y1Cbacp5mkTOzhHnMLYdOAAxdA1KjjF1fulP7+KuUZW44z0iKcUieJQBbGYbhcB6kAs0k068fRznpuuwI0zCj9i+G4pd7vYknanbfgOq+CwLuMP7Paz/5JwyNMj06sD6Umj1HxUYj69A4hv6f8qd/XSuJl1Cf87zL1zIXMcPZoaAyRrnFPMsQSq/Bmw/rThdR1rIhoNOc4TPxVOCTRzWBOy+vmwdZFvjjhSk2Y/81N9Pkm5pim8RRn2bHJLFVhl21OO5IAhxLlqZg7LrDw==
+ bh=pwWiJyCjxTwXAQYGSnNncufmSss5s1WYS0UVEJhyQpc=;
+ b=IyNw9vegudckZM0hpBK5kwl+DVCYLQVQTiiLD11k9QC372yQ/BMWanzx4//fotrJHtqpCghV76DaWaH9Geq/2JkGfnvzol5uU+zL5/UHaDKo5xCTTGqkevHXpqpcOtcgk0tfKeVub8fP5wj9oy2lCg/zVNOX/VCAONJWyDKoUnJN5ao6cQ0F0pOvL8veAoSTku7rabT51XKHdMwFF/+yyziDCWvmpZABB3pTveoa6qgb+FCsvU49LIp51l3UgTu17PoSa1wJ5Vg50hdRbOk7sFVDQI8hWa31HY79lQ9QzR4dXDvROSiojD22nlGeA0RR0vv3rUclRzMm1U/7JF0i4Q==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
  dkim=pass header.d=intel.com; arc=none
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=intel.com;
 Received: from DS0PR11MB7381.namprd11.prod.outlook.com (2603:10b6:8:134::14)
- by LVUPR11MB9592.namprd11.prod.outlook.com (2603:10b6:408:3a2::6) with
+ by MW6PR11MB8391.namprd11.prod.outlook.com (2603:10b6:303:243::14) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.339.8; Mon, 24 Aug
- 2026 23:48:33 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.339.12; Mon, 24 Aug
+ 2026 23:51:39 +0000
 Received: from DS0PR11MB7381.namprd11.prod.outlook.com
  ([fe80::4c39:dfe6:d6dc:6f58]) by DS0PR11MB7381.namprd11.prod.outlook.com
  ([fe80::4c39:dfe6:d6dc:6f58%6]) with mapi id 15.21.0339.012; Mon, 24 Aug 2026
- 23:48:33 +0000
-Message-ID: <fe1d1e1f-be5f-40b8-8b2c-f3b13cb75309@intel.com>
-Date: Mon, 24 Aug 2026 16:48:31 -0700
+ 23:51:39 +0000
+Message-ID: <1d5d8fa4-1b48-4ad8-ba67-d04f704921f8@intel.com>
+Date: Mon, 24 Aug 2026 16:51:37 -0700
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH iwl-net 04/12] ice: call PTP link change only from link
- events
+Subject: Re: [PATCH iwl-net 06/12] ice: E825: clear PHY_REG_TX_MEMORY_STATUS
+ prior to soft reset
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
 CC: <netdev@vger.kernel.org>, Maciej Machnikowski
  <maciej.machnikowski@intel.com>, Anthony Nguyen <anthony.l.nguyen@intel.com>, 
  Przemyslaw Korba <przemyslaw.korba@intel.com>, Grzegorz Nitka
  <grzegorz.nitka@intel.com>, Petr Oros <poros@redhat.com>,
  <alexander.nowlin@intel.com>, <kevin.bross@intel.com>,
- <ranjit.cavatur@intel.com>, Arkadiusz Kubalewski
- <arkadiusz.kubalewski@intel.com>, Aleksandr Loktionov
- <aleksandr.loktionov@intel.com>
+ <ranjit.cavatur@intel.com>
 References: <20260821-jk-e825c-minimized-fixes-v1-0-9d0731eb4858@intel.com>
- <20260821-jk-e825c-minimized-fixes-v1-4-9d0731eb4858@intel.com>
+ <20260821-jk-e825c-minimized-fixes-v1-6-9d0731eb4858@intel.com>
 From: Jacob Keller <jacob.e.keller@intel.com>
 Content-Language: en-US
-In-Reply-To: <20260821-jk-e825c-minimized-fixes-v1-4-9d0731eb4858@intel.com>
+In-Reply-To: <20260821-jk-e825c-minimized-fixes-v1-6-9d0731eb4858@intel.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: MW4PR04CA0347.namprd04.prod.outlook.com
- (2603:10b6:303:8a::22) To DS0PR11MB7381.namprd11.prod.outlook.com
+X-ClientProxiedBy: MW4P222CA0027.NAMP222.PROD.OUTLOOK.COM
+ (2603:10b6:303:114::32) To DS0PR11MB7381.namprd11.prod.outlook.com
  (2603:10b6:8:134::14)
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS0PR11MB7381:EE_|LVUPR11MB9592:EE_
-X-MS-Office365-Filtering-Correlation-Id: 0680a8af-7476-416b-af93-08df023a34ee
+X-MS-TrafficTypeDiagnostic: DS0PR11MB7381:EE_|MW6PR11MB8391:EE_
+X-MS-Office365-Filtering-Correlation-Id: df411f76-9726-4e41-66c4-08df023aa3c8
 X-LD-Processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
- ARA:13230040|1800799024|376014|23010399003|366016|6133799003|4143699003|5023799004|11063799006|10067099003|56012099006|18002099003|22082099003;
-X-Microsoft-Antispam-Message-Info: oXZtYluJZIl0+gvDIIrz17DsyBZrxkXsZ5+vGa9ikEuJHpwfujAdnul2Bcnt5GK1LwZG3UFzhSepyNfERcwfIf+5+P6t7Ked3lLQMBammuu1oG9Lcm/i8LP/E1IrDgeXV4U0/zJvDqJYHrTHqLTIVcPvcuxrSMcpS6eS6KJl9NVoskS8PnvwWJ6hgKyIhf9wjijReDV6k6e4UA7zt4KzU/tPEKt1hZb7/8FdEMx8SpO9CbbeibLjBAX1ARs3jnh+vr50aXO28MfrEy6SE5eHIRvTkeOohfjfF2af6Y7JSiqU0BhaQLR1+N7dXzcky3h2snEdXiod8JRRNZIxhbypGWydJkUugeCtIEGr4J82jiJWhsm8JnIaGpzH79HME12fCrE2uwH8gMSzgNGciorik0VecUkQoa7W2z49xBdsNzi+ERYP0p5ZQiyfCMdEYwfM3zfopTqgZl13HEqWwiLMdSk4ibWSqcT9MEFNQ4zVNveFtCZ1UB+u9idSWtzIeld+PgM4uhP4Dh5thbJa0Qa+GFO6gaDOmvmejPK+DTxAwoxTGkVP2GEtBkqwKimNxTWr2IjWcRm2vf9dt8S3U8pPyca97ZuXP2IAfLb+yvrytHEDd3T3GYWcJBRBP4o9k3sDfQGSUvwuBF3hmvaFzGvBu48SuDjHRxk/pavUhJH1uOE=
+ ARA:13230040|376014|1800799024|366016|23010399003|6133799003|10067099003|56012099006|11063799006|4143699003|18002099003|22082099003;
+X-Microsoft-Antispam-Message-Info: J4pVWWYTJRbbUEaVinzBDNuuhcEjGb4UjzB3ejzq8rhrQ41LFh8Q9Ww4WL5lQf14LUVst7G1ol07vQYmDlKvlekGq08sGU6XQ7cTM71XkGVC1ns0SuLDJBhoik8cORUxjd/pNRR9sf9evgRbm9spezEEagOHBYfc5sOOD1RUElOvJ5/10SQai+7uk9xHLthmzWDeDrbnW2uFDWowGpUG5/mRvYDUMM6/CyMhFkiSGKI5FlR2cRZGb7dCw3fF+5n0TRe8WApHhk7J3TlLSVWQPN3R+Xam987DcJyiSz8ZgyIG16fWWGdAOntabsBRKnVe0XxYkqwr2h0Tisph/bvyuqvbIxNpXwGN7IBsIH9d3PtnM/750EG5xPMJEt7EFPMkEUDb/MRI//EMiWABioLMQKM8ZvD/lEoxPKyIjnj+zhYGx72KZ92z8ggDkyg//X3sGjHxmUb0bSUIGi77Qk4x25bxT4ECjjfZivGFomBEMsk7b8HXVufsmYwtOk3GXkj0fVenMNMhMb39HZAGpCLTT8jo1aBCEKi+suBjMki3Z+rETuteuNOiycVwCW8r8btlh5ywnQFF8V4bwbxlErI6JBHPy33bPuw4BFHcP3i8Po5jwpVUdS/n7AmDk/rYkyKiijv1h59IhP8XTJwegSE9h5ZxZcUtGIKYFgJe41fq8tk=
 X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
  IPV:NLI; SFV:NSPM; H:DS0PR11MB7381.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230040)(1800799024)(376014)(23010399003)(366016)(6133799003)(4143699003)(5023799004)(11063799006)(10067099003)(56012099006)(18002099003)(22082099003);
+ SFS:(13230040)(376014)(1800799024)(366016)(23010399003)(6133799003)(10067099003)(56012099006)(11063799006)(4143699003)(18002099003)(22082099003);
  DIR:OUT; SFP:1101; 
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?dkYyeGZ3N21vNWFmVkVTYXRuamdUblVXOGtrcjdzMFd1bFl2cVN2MTVrNVBj?=
- =?utf-8?B?RFU5blcrRU0vNmdIcUxMaFdHWkJjMHpaWGRGNGNtV0s1VFc1SnM0K0cyS21W?=
- =?utf-8?B?dkVzOGVGQTJDWlF5TEtBdkphQndoWGZ2RU95TXdVVDA1aUdIemZaWlVhZWs0?=
- =?utf-8?B?SG5oY2U2Y2lWVlByZHFHdy96TVJjUkxFRGFyYmh6Z2lRL2dsSzFpWVdPV0pi?=
- =?utf-8?B?RDQwaWVjU00yRGRpZ2trVVo1MTZoRSsxSWNtNll5MXdFeXBiME52dU5IcEhq?=
- =?utf-8?B?V3Y2dkx4UGZLd1lKQkFtSHR3MThKbUxvV2k1b000Vlg3QlpQUXczRXBGbndX?=
- =?utf-8?B?bG9hSUozSldUSjNtN0lHV3FHczE2Zll3NFlnZnBSYVhhTVRIalNzYkV5aitW?=
- =?utf-8?B?QVB1QWVkUUJEQ3A1SUlVclhIZ2JzZm1VM1lMc0ExWW9oUzVwekhRR1RRMmhn?=
- =?utf-8?B?TE93bzJtYVNxL0NqVlc0ZEdpZlhEVVhaVWtzc25iUHlaZzJFNzFJbUZ2a2ZW?=
- =?utf-8?B?V0pFT0ZEcWVFeFlmZDRUWGlSb0NaUzRuamlTM0tzM0d1VzBXbnVncExNdVZ3?=
- =?utf-8?B?R1ZnYktxOHFnMHdZcnhiZGh2V1NlRmNsU2JROGxxSDRldHpFMHVvajNMRE5Y?=
- =?utf-8?B?Y0NrQnUvVzZJTEJNRXNqN3J1ejBqcVByMEhjZmRNZ1d6TEtIb3pNYnRhSWlo?=
- =?utf-8?B?KzI0aWZNck9qYlRSeTBpNjdYRjNOSGdncmFEUWR6cng1NEsvYWNzaWtYVTRu?=
- =?utf-8?B?ZVNZVitySCtFM1o4Rll2V2F1Unp4bnR3dE1jRHJ5N05iZGdZV2gzeTlEckJl?=
- =?utf-8?B?ZmdkTU5kVmppSkl0cmNSNkE0QitwZFI1YUY1VEdxRzY5ZWRmRWpKSVhkRzM1?=
- =?utf-8?B?ZzQ1NDd3Z2daQjNGV25ZazRMMytHUy9zOURUTG5ucFJDZjIwMVE4eitNRkxT?=
- =?utf-8?B?RDlrV3BqNXJJTUV2bHkxMTRaMDhYeGhSWW1Db0JmTkxZQTBrR3ZyMnVTZmRV?=
- =?utf-8?B?dWdvQW1NVVhJQmUrRFRzUWZ2RUlZYWRmbkFqc2I0b2w2NWVicXJ2SFFtSnpy?=
- =?utf-8?B?NGNBRHVzaERUM0x2L01GeFdvbitLMGpoMnpwVitlc09HNExIb0NTM3M3R2w1?=
- =?utf-8?B?OTVzV1ZOdlpYcC9wYld4czJDQi9iSzEvRFpTMFYyMzk4aEtZOEhZUWxTbTJa?=
- =?utf-8?B?QUdManQvbmN5aytqN1pqcW5rMTRaTVM1TnFmUmZIV29STHp3UFJIdUh6TDhi?=
- =?utf-8?B?VGpTVWpOakY0RUJSbTF6ZU40N1VxaEI2akJGeW1ic1ZOWVFwL25TbmNhdkRv?=
- =?utf-8?B?RUduMDlHVEZTb1ROODdaMk1uZTBkaEtqdVpRZ0N2RjZoR0lsOGJna29DZ3ow?=
- =?utf-8?B?dURnNGd1SFlXS2ViN3d1TzAyRkR0eU5KQVlOdkx2SmpWb3NTa00rb1c0YktI?=
- =?utf-8?B?YXdkQXl0a09QMGwxMThwRmFFNWZSaVIvS1Axb1U5Nkl6Tkg4NHNIWDNTeGVk?=
- =?utf-8?B?UFJKNTRpMGRSc1hSYk5IRUV2c2RxQTE3N1FNYy9zNnNtK3UzYVVKRnQvY2Za?=
- =?utf-8?B?VzlWOWNBN3FCU0lzMFI2SUIvd3VFczA1ZjZhV0ZabGRGSE8vME95NUNWWFdT?=
- =?utf-8?B?NmpIbDlOQTFBQkt1VEtMaVErT0MydzdHSVZKRXd6SnNDREQzOTlOLzN4NDZW?=
- =?utf-8?B?Q2hVQUN4N0xrY0J5RUIrbWl6VE9HdEErQithS1Nmczhqcm10Rk9TL05CalFj?=
- =?utf-8?B?cEJmSHQvYkl1c2dNUXgvWUV5VGhzaHRXWmpTYjdrOFZncVgwUHpnWE1CRVJt?=
- =?utf-8?B?dng1ZlRFUVQ4QW9GbHdSR1BPN2ROS2xWR3VIS3F4ZFB0VzBiN1loL1laQS9r?=
- =?utf-8?B?V2IzUzlNK1VTOXM2NlVRTGpGbVk0bnFpa3RhQzFXdUhEN28vWmFoVFE1dzEv?=
- =?utf-8?B?VWlSdzlkL01rRTdOdE1LNWtJNHFSTW5HN1FMSjNrbCt6WGpybVlIcitRZWw0?=
- =?utf-8?B?NFVBU3llZU9kekwwd2ZaZ0Q3Y3lsSHZCUjNhQWtNOURpamUvb3cyUXNsSXlW?=
- =?utf-8?B?L00ybWhqaldZczFTazMrOERtYnluNmdrcHpiSktZbmUrcTRWMzVtUzlnMzE3?=
- =?utf-8?B?UXVXQklxRk1FdllHdHdqVlJkS1FmemhTcG9QdmRLV1FLRDg3d0dKQzdESUpG?=
- =?utf-8?B?TTdpU0pEUDgySUZOODAyTmRVMnphYnNQNlBNMFl1cEN3cVlLVURZU0FFR3Z0?=
- =?utf-8?B?U0J0UG9PQjg4WmQ3M1RBb1A4UGthbHpGQUZmQWJVZU9VTE40a1NVN0EremE4?=
- =?utf-8?B?T2NuWnNydEhiSE02K0h3TGs4VFBPclJBN3VPNXN0SHJjS1I5c215Zz09?=
-X-Exchange-RoutingPolicyChecked: m9ZirrQA39n0/Gl6I9IetiRLcHHjV+81TOJnsPSzhsog9JcxPSsP2i6+qZqAXFtilWRLRWeIYu1kXscnhh4wpu19fCXQmbkNAs0iZfmG5UtnFAg2KnFpjwp+8qoftpt60ulkXoi2yV2NRNsbp7w0xhG/kUw7kByK9Zq5EP9H/cLI0GpCC5sc1yF6lniRUFt6Alr1CPj7x+kuHiUKrTd6JWD9uMmdfHPPIFhk2Ut+n2fv5grNwCecr5ZTQ+BKDJzLn0bFEannuTda9jfnDbxSFJS+vXPz9yz2PtWWKt41goHpnORVzR3H+oEqhQ8mLVAqFhVGzMbkTUb0GJ08x/3KvQ==
-X-MS-Exchange-CrossTenant-Network-Message-Id: 0680a8af-7476-416b-af93-08df023a34ee
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?T2pZZldwZXZsUlVVdGdmTVZwdGxmMXRVWEpWQ2hqWkpEM2NEbGp5RFIwSmt0?=
+ =?utf-8?B?ejN3aTJ2MXY2QXZHck9lOGwzOEFxNy94eFRMZmVnd01oQmJ0WjV1b2pzbGpo?=
+ =?utf-8?B?Q0NSWm92d2dCQytkZHFZVzBMM1UzMXJrSktodjBxOVRucHlHNklxMkprY0ZO?=
+ =?utf-8?B?aDV5NVpJQTJXTzFTY2QwVUtOVDlWTlNqUThZUjdmOTY2Vm8vaUU3dUtacmlV?=
+ =?utf-8?B?cU9UeFVSRnpyRTdNVlhiRHd4aUhXMHM4RCtQM2J0eFVpK1FjVFlKNktxcG1I?=
+ =?utf-8?B?MkZ3aTA5SDJJcTVZNHUwQkYvQm96Qm1zbUQrWVg1TjJNblIrNmRqK1cya2Ny?=
+ =?utf-8?B?ZW9HY293VXZwZm1ZSHZpdUp2Rjd4LzdHMVQ2T1BPRFlYTUVOWmUrSHpJNFFo?=
+ =?utf-8?B?SnllMXhySXZ2OVFqQWhKVG1sU0NXNW1vazlSN1VYcGZLUEx0TTBTR3FhbGkv?=
+ =?utf-8?B?MXRyZGJweGVtWUZzK2hNTUxLdDVITjkyZU8zbVdpL2dESHhCR09jUTV2bHZC?=
+ =?utf-8?B?dnNLWUl6SGZzUkwxNUxLNjFnMkNsMTg1UW1oZGRkOGhvelllZ2hBZ3U3anJH?=
+ =?utf-8?B?Z2xwVkgyKzRzUklOeGV6QXJPV1A4a2pUWFQ5MUpZMjFMOERaYm9peFFHTjc5?=
+ =?utf-8?B?Y2w4dnQweStkZDU3WSs2WGhiSWN2WHN5Q0JCUHFqdThPdzBNNUpncjlqckxC?=
+ =?utf-8?B?R0phRVFFMXBkNzN6eE15Y0IrWjI5YVhKOTYwVU5jRG9oT2J1ekhhUFVnTUgw?=
+ =?utf-8?B?MzhJc0VCd090UmFOajY0ZThVTWorUE5vTThWdWhaYUhTZkVXVTFLd3NqMlAw?=
+ =?utf-8?B?OFNCZlNEOUpuNTd1UldHRDdGY0Y4cFhTamJ0RWVJTGZEc2NXYm1lcFhRWnNo?=
+ =?utf-8?B?bkhSRlFIcExtWHZyeHBKKzEwdXFycklMQ0hxM0poMnM3c1ZKd0JvdjZuMTl2?=
+ =?utf-8?B?RnJHbGZWUVYrdEtwRWZJcmdOL2VXNHJGcnUyeldFVmNtSXhiMHFMNkpsTVF0?=
+ =?utf-8?B?TTRCcDVtYU55a3VLaXhyWHhIY2VKUjIwVU55WlNtVGs0eEFTRC9kdE1DWFNM?=
+ =?utf-8?B?MFYvbHBKR1lqbm9kdzk2THpjMno4MkluU0tLQ0l1NGdpdHF4SmNLRTBZUGY2?=
+ =?utf-8?B?Q2tsaU04VjQwSUh3Q2ZRQVZkSWJqTGtZNzVDS2Z4dWI0NE1ySjR4RVZoR2Fm?=
+ =?utf-8?B?UmtkS3dVaE85Y2hOM0ltMUFrYklUSUxnVHUwa282ckphRWk2S0FvNFYyUkIz?=
+ =?utf-8?B?bUlGekgvbktrSkx3NW1hd1lDWGJyZWVMa3NkKytsQ1lsNmpNM1A0MCtma0tJ?=
+ =?utf-8?B?UG5DcWx4N1BwY0dtUVpQK2dyQ0VnSlhRUW9wSzViUExIK3VyRlo1aXRJdldW?=
+ =?utf-8?B?VDBkUEVNQzR3WkppSXc0VFd5L2NkYmJOVnBJNnRTcFNpWUxlcnZaUDNPVUdZ?=
+ =?utf-8?B?Q0xzSWthQ284cVpPVzJCVDBhNmw4ZkVzbW03WGo3Tjc1U3AxRzZpa2gxUGwx?=
+ =?utf-8?B?azhYbk5QdTZ4L2NRT0cvd3JrWVBFSzVLMndQdXYwU0xkUFpvZG5Cb3JmR21X?=
+ =?utf-8?B?OUN6RW11T25pdkRhWjRGS0RDN0ZrNFRnR1JHamNDVnFFRng2ZjdENFlRclpW?=
+ =?utf-8?B?Ty85WExGWDBGZVkrdXBVckl2VmNPQmhRYmw4bUwvdVNMNHozSEtmb2JsQ1NU?=
+ =?utf-8?B?U0JZU0RzcXprbkMxaVBoUDBnWkxGeU9ncG01NllGUFY5TGY2NXVqTWxQMmND?=
+ =?utf-8?B?dkh2K0lsZDFDeW5pWlB3d2JsK2R0ZGNZZnlEc2x0VUorbHl2TFA1djJ2M1Ju?=
+ =?utf-8?B?WElLUTNiT1ZVYmdkbzk3Z2NtTmxMb1dEQWwrUmdialZVWkxlWXltNTZnV3Mv?=
+ =?utf-8?B?YVJxQm96djBwdkp4ZWp1U1lYcnp3eWJ0dkllOEhMNzc2dVZNMFp6RWc5Mm15?=
+ =?utf-8?B?OTFSVFlQTDhXTU9CSkExNGtYWVBrSnNkUG5FRFdRN0VXSWtpS0FVRzc5SzBO?=
+ =?utf-8?B?TUpSN3o3b3FEYzNPb2k5U2o2SkNHSm9JSUVZNHYwaG9sSThFelRieXNRTFhY?=
+ =?utf-8?B?QUV0VWxjRUVBZ3E2S2dTY1FaaUdwQWtWTlNrQTJ6TUZaTWs0a1NFSEM1dTlO?=
+ =?utf-8?B?OGowK1MyR3l5dHVZUzFMa1Y2TVBnWmRTelJxcXJMenRjWEVRQ052dU9HRkdE?=
+ =?utf-8?B?MmZZcmllUkFpemFobllKWlEwZGMzeDdtMFlqRkdOWGpzelpBZ2s4Qk9nTTdD?=
+ =?utf-8?B?MHhzSUhrcGFINWMrSHpSU3V4ajRnekVTMzJMd1RiRGdwd0lwYU1lNDh3aDBx?=
+ =?utf-8?B?akYzOTFncVQ1L3NDMjFWVFoybzJhRGo3VFgyemdPMHFQaEJxWTEydz09?=
+X-Exchange-RoutingPolicyChecked: chA+nx/rMWKJCttRQ3OrKyw09+DDgC386uhGnbkTWjnV6/AosTICeGUNVpP4yNP5FPC+X4TGix8hRUxRaS/WIvSE1sMV3CiLmRUWb6x7wU95KIFNEQJiQNe452a3K7DgClR+qJaSuYJtIJrFEd9fiP5gQ8+S+MJhQJb2DBoV5EY9ru+lsDvll/08TTVQvp0/XvcGJIikZe5KTTxHeG+4+oqA87a5J3yuGJ9asQOPLiTVkTmQXTO+BUGSxVnYvPah4KHCHgwCwnhDXSN2QEoY5H+ByGKtRgXGhfzJwJl7bVZsHWfYXfPlXGEUSiQzjex7V+YI98z5FIftWy7nfSneKQ==
+X-MS-Exchange-CrossTenant-Network-Message-Id: df411f76-9726-4e41-66c4-08df023aa3c8
 X-MS-Exchange-CrossTenant-AuthSource: DS0PR11MB7381.namprd11.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Aug 2026 23:48:33.0605 (UTC)
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Aug 2026 23:51:39.0497 (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: WfxiGO8JK2D4U+DR8L3XWbYPUnEYrHU9BQZuk4xCqFVoDUpZNuVgUp6/WJh7zaTMAKRhN9BWPN6n6SamgHfRggEYzM5cYKBPRL2mrvmRDnw=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: LVUPR11MB9592
+X-MS-Exchange-CrossTenant-UserPrincipalName: QOHYamuFZoZyGCqP4uJYQ9tKxZ1b5/yCfoUS/yTL6l0TDoiqubipnQUoG4awnhIjQ5f3XVWCGNHQy+pmYmMXl9JTitR3s3yz0GL3olWPN8M=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW6PR11MB8391
 X-OriginatorOrg: intel.com
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
@@ -214,119 +212,130 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
 On 8/21/2026 5:13 PM, Jacob Keller wrote:
-> From: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+> The drivers current implementation of ice_ptp_reset_ts_memory_eth56g() is
+> flawed. It tries to clear the timestamp memory by writing to the
+> PHY_REG_TX_MEMORY_STATUS region. This does not work properly, as it does
+> not trigger appropriate PHY actions.
 > 
-> Remove redundant ice_ptp_link_change() calls from ice_up_complete() and
-> ice_down(). These duplicate the call already made from
-> ice_handle_link_event(), creating three problems:
+> To clear outstanding timestamp memory, the driver must read the timestamps.
+> However, naively doing this as part of ice_ptp_reset_ts_memory() is
+> problematic. When reading the timestamp index, hardware kicks off a chain
+> of actions including clearing the ready bitmap index, and decrementing an
+> internal counter if the timestamp index was marked as valid.
 > 
-> 1. Double initialization on link-up: ice_handle_link_event() calls
->    ice_ptp_link_change(true), then ice_up_complete() calls it again.
->    The second call re-enters ice_ptp_port_phy_restart(), re-setting the
->    calibrating flag and restarting the PHY timer while the first
->    invocation's offset verification work (ov_work) may still be running.
+> This can potentially leave the internal hardware counter out of sync with
+> the actual number of timestamps. This occurs because the
+> PHY_REG_TX_MEMORY_STATUS region is not zero-initialized when the device
+> boots up. Instead, it is filled with garbage. On a cold power on, attempts
+> to read the stale data result in the hardware triggering a counter
+> decrement for a timestamp that never happened. This underflows the counter,
+> and prevents new timestamp interrupts from being triggered for real
+> timestamp requests.
 > 
-> 2. Premature cleanup on administrative down: ice_down() calls
->    ice_ptp_link_change(false) during ifconfig down or reset preparation,
->    even when the physical link is still up. This clears timestamp state
->    unnecessarily and can interfere with ongoing PTP operations.
+> We must read the PHY_REG_TX_MEMORY_STATUS in order to clear stale
+> timestamps. But doing so may cause a desync with the counter. To prevent
+> issues, perform this clearing always and only right before initiating a PHY
+> soft reset.
 > 
-> 3. Ordering dependency: ice_down()/ice_up_complete() are called during
->    reset sequences where PTP may not be fully initialized, creating
->    edge cases with partially configured state.
+> The soft reset will clear and reset the internal counter and the ready
+> bitmap. The reads to PHY_REG_TX_MEMORY_STATUS will reset the region valid
+> bits ensuring that no stale data is left behind. This combination ensures
+> that we always have a clean slate with no stale data and with the counter
+> properly reset to zero.
 > 
-> The link event handler is the correct and sufficient place to drive PTP
-> link state changes, as it reflects actual physical link transitions. Remove
-> the calls of ice_ptp_link_change from the ice_down()/ice_up() flows.
-> 
-> Initialize the link_up in ice_ptp_init() and ensure that we check and
-> restore the link status at the end of the rebuild flow, ensuring that we
-> initialize the PHY timer appropriately after a reset.
-> 
-> Fixes: 6b1ff5d39228 ("ice: always call ice_ptp_link_change and make it void")
-> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-> Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-> Signed-off-by: Przemyslaw Korba <przemyslaw.korba@intel.com>
-> Signed-off-by: Petr Oros <poros@redhat.com>
+> Fixes: 3ec46e157c7f ("ice: perform PHY soft reset for E825C ports at initialization")
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > Reviewed-by: Maciek Machnikowski <maciej.machnikowski@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_main.c | 11 +++++++--
->  drivers/net/ethernet/intel/ice/ice_ptp.c  | 38 +++++++++++++++++++++++--------
->  2 files changed, 37 insertions(+), 12 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 89 +++++++++++++++--------------
+>  1 file changed, 47 insertions(+), 42 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-> index d88835482d3a..bb631ae9e67d 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_main.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-> @@ -7794,6 +7792,15 @@ static void ice_rebuild(struct ice_pf *pf, enum ice_reset_req reset_type)
+> diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+> index d48eb3c61823..b7d217ac31f3 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+> @@ -737,24 +737,6 @@ static int ice_read_port_mem_eth56g(struct ice_hw *hw, u8 port, u16 offset,
+>  	return ice_read_port_eth56g(hw, port, offset, val, ETH56G_PHY_MEM_PTP);
+>  }
 >  
->  	ice_update_pf_netdev_link(pf);
->  
-> +	if (test_bit(ICE_FLAG_PTP_SUPPORTED, pf->flags) && pf->hw.port_info) {
-> +		bool link_up;
-> +
-> +		link_up = !!(pf->hw.port_info->phy.link_info.link_info &
-> +			     ICE_AQ_LINK_UP);
-> +		if (pf->ptp.port.link_up != link_up)
-> +			ice_ptp_link_change(pf, link_up);
-> +	}
-> +
-
-
-Sashiko says:
-
-> Does conditionally skipping ice_ptp_link_change() here leave the non-owner PF
-> PHY timer stopped indefinitely after a global reset if the link remains up?
-> During a global reset (like EMPR or GLOBR), concurrent rebuilds are triggered
-> across all PFs. The clock-owner PF iterates over all adapter ports in
-> ice_ptp_rebuild_owner() and calls ice_ptp_port_phy_restart().
-> If the clock-owner PF executes this before a non-owner PF has finished
-> ice_init_all_ctrlq() or cleared its reset state, the SBQ command fails.
-> Previously, the unconditional call to ice_ptp_link_change() masked this race
-> by forcing a successful retry. Since ice_down() no longer clears link_up, and
-> the physical link may stay UP across the reset, the condition
-> pf->ptp.port.link_up != link_up will evaluate to false, leaving the non-owner
-> PF's PHY timer stopped indefinitely.
-
-I think this is correct. We need to ensure that we restart the PHY
-somewhere in the chain after the CQ is active and the timer has been
-reconfigured by the clock owner. Will investigate.
-
-> diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-> index b8647a39db6d..8aa49dda90a2 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-> @@ -1327,14 +1327,14 @@ void ice_ptp_link_change(struct ice_pf *pf, bool linkup)
->  	struct ice_ptp_port *ptp_port;
->  	struct ice_hw *hw = &pf->hw;
->  
-> -	if (pf->ptp.state != ICE_PTP_READY)
-> -		return;
+> -/**
+> - * ice_write_port_mem_eth56g - Write a PHY port memory location
+> - * @hw: pointer to the HW struct
+> - * @port: Port number to be read
+> - * @offset: Offset from PHY port register base
+> - * @val: Pointer to the value to read (out param)
+> - *
+> - * Return:
+> - * * %0      - success
+> - * * %EINVAL - invalid port number or resource type
+> - * * %other  - failed to write to PHY
+> - */
+> -static int ice_write_port_mem_eth56g(struct ice_hw *hw, u8 port, u16 offset,
+> -				     u32 val)
+> -{
+> -	return ice_write_port_eth56g(hw, port, offset, val, ETH56G_PHY_MEM_PTP);
+> -}
 > -
->  	ptp_port = &pf->ptp.port;
+>  /**
+>   * ice_write_quad_ptp_reg_eth56g - Write a PHY quad register
+>   * @hw: pointer to the HW struct
+> @@ -1139,8 +1121,8 @@ static int ice_read_ptp_tstamp_eth56g(struct ice_hw *hw, u8 port, u8 idx,
+>   * internal PHYs of the 56G devices.
+>   *
+>   * To directly clear the contents of the timestamp block entirely, discarding
+> - * all timestamp data at once, software should instead use
+> - * ice_ptp_reset_ts_memory_quad_eth56g().
+> + * all timestamp data at once, software should instead perform a PHY soft
+> + * reset via ice_ptp_phy_soft_reset_eth56g().
+>   *
+>   * This function should only be called on an idx whose bit is set according to
+>   * ice_get_phy_tx_tstamp_ready().
+> @@ -1152,11 +1134,11 @@ static int ice_read_ptp_tstamp_eth56g(struct ice_hw *hw, u8 port, u8 idx,
+>  static int ice_clear_ptp_tstamp_eth56g(struct ice_hw *hw, u8 port, u8 idx)
+>  {
+>  	u64 unused_tstamp;
+> -	u16 lo_addr;
+>  	int err;
 >  
->  	/* Update cached link status for this port immediately */
->  	ptp_port->link_up = linkup;
+> -	/* Read the timestamp register to ensure the timestamp status bit is
+> -	 * cleared.
+> +	/* Per the PHY spec, reading the timestamp memory location is what
+> +	 * clears the entry's valid bit and its corresponding (read-only)
+> +	 * ts_memory_status bit.
+>  	 */
+>  	err = ice_read_ptp_tstamp_eth56g(hw, port, idx, &unused_tstamp);
+>  	if (err) {
+> @@ -1164,32 +1146,40 @@ static int ice_clear_ptp_tstamp_eth56g(struct ice_hw *hw, u8 port, u8 idx)
+>  			  port, idx, err);
+>  	}
 >  
-> +	if (pf->ptp.state != ICE_PTP_READY)
-> +		return;
-> +
-
+> -	lo_addr = (u16)PHY_TSTAMP_L(idx);
+> -
+> -	err = ice_write_port_mem_eth56g(hw, port, lo_addr, 0);
+> -	if (err) {
+> -		ice_debug(hw, ICE_DBG_PTP, "Failed to clear low PTP timestamp register for port %u, idx %u, err %d\n",
+> -			  port, idx, err);
+> -		return err;
+> -	}
+> -
 
 Sashiko says:
 
-> This is a pre-existing issue, but is there a Time-of-Check to Time-of-Use
-> (TOCTOU) race between checking ICE_PTP_READY here and module unload?
-> In ice_remove(), ice_unload() is called which invokes ice_ptp_release().
-> This destroys the PTP port mutex and the kworker. However, the background
-> service task is not stopped until ice_deinit_dev() is called much later.
-> If the service task processes a link event concurrently, ice_ptp_link_change()
-> checks ICE_PTP_READY without synchronization. If preempted immediately after
-> this check, ice_ptp_release() can destroy the resources.
-> When ice_ptp_link_change() resumes, it calls ice_ptp_port_phy_restart()
-> which attempts to acquire the destroyed ps_lock and queues work on the freed
-> kworker, potentially causing a use-after-free or NULL pointer dereference.
+> Does ice_clear_ptp_tstamp_eth56g() intentionally ignore the error from
+> ice_read_ptp_tstamp_eth56g() and unconditionally return 0?
+> If the read fails, the timestamp memory valid bits won't be cleared, which
+> could leave stale bits intact before the soft reset.
+> Additionally, unconditionally returning 0 here makes the error check in the
+> newly introduced ice_ptp_clear_tx_memory_status_eth56g() loop dead code:
+> 	for (idx = 0; idx < INDEX_PER_PORT; idx++) {
+> 		err = ice_clear_ptp_tstamp_eth56g(hw, port, idx);
+> 		if (err)
+> 			return err; /* This is never reached */
+> 	}
+> Should ice_clear_ptp_tstamp_eth56g() return err instead of 0 when the PHY
+> timestamp read fails?
 
-I think this is best fixed by having ice_ptp_link_change acquire a
-reference using the kref in the first patch to ensure that the port
-can't be removed until the function exits. Will fix this in the first patch.
+It makes sense to me that we should bail here if we fail to access the
+device. Presumably multiple other accesses would be failing but I think
+its not correct to hide the error in the clear timestamp function. Will
+fix in v2.
