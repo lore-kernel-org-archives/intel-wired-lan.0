@@ -1,111 +1,83 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 732C4C61DB9
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 25 Aug 2026 22:55:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14442C61DBD
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 25 Aug 2026 23:57:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 3EC83407E9;
-	Tue, 25 Aug 2026 22:55:18 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id C06F3605F8;
+	Tue, 25 Aug 2026 23:57:48 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id HO2sFvTjfeiJ; Tue, 25 Aug 2026 22:55:17 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Zxvs8ts-AORL; Tue, 25 Aug 2026 23:57:48 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1787698517;
-	bh=jSwfq+FuHj9Gvk440wIrSZE1bdx2Xs2rfTwPWNq5u7o=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=keAfvhmhK/GOuFzqKPhHalscAlN1FN81RMiAoQRy70YRoGh5x8+ynK3a8XzUA/sD2
-	 S5Lq4I4enbrT96ApLAUS43hYwlURhczLhPYAseGLeo1gV+5TkOIK+uVCSR5fQ4RMA+
-	 r1JaVg9gLBim747h1DuiOQ+jXq9YQx2I/1EZY22EAe5eaA0hGQ0tw8mVAlUltxhyTT
-	 mENPO755a4MhWhOIz5QJ5+GQqWK8/I1SH1m3qBwml7hQlI+kUzKUA1Yu8e+pjg0XFG
-	 RYabko9UoQ7284n6liWIh/b+MqSng0wWyCVeqH1m2VC8YVKxHmOLu8K0QqlPfX21wG
-	 TYjhYEgIYUPeg==
+	s=default; t=1787702268;
+	bh=0zuxoKD2M1JEVqHANBIUbWduPp/SxtJyTy5Prh/oD7w=;
+	h=Date:To:From:Cc:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=yHW9QtuNpRfq6Vrd0qou8u/XJ5ZRcBKgGrT+o7o7wdxocZFQ9s2AJwhDGcWA4GezB
+	 Me34+L+R9mkw1ZOmdWLyYr9vuUbBsScnBRb0VeLQxREn+QOHE2EAarT1FeqcqcKey6
+	 a9ASEAJKzWtrueBuz/0++RLn3NqlozrE8GGh4dkYaiqoiy5zH90p4keXQtBVGVtb2s
+	 oG19jtdvbgrxtE0jKD93tEWgknFVsPqr997yLmbf7TPBnMvWqzCsIkiILaOyMwc7dK
+	 Pb19EVTdLOPBleJibJLEmYdIjF7Cie+sbPXCYe6W9PI16BnBJhySMlgeOVi55vk0lt
+	 Bq+UfrrBltiqw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 1AAD14073C;
-	Tue, 25 Aug 2026 22:55:17 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 16AF3334
- for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Aug 2026 22:55:09 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id EA8FD605F9;
+	Tue, 25 Aug 2026 23:57:47 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 8A63B2FD
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Aug 2026 23:56:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id EEC9340629
- for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Aug 2026 22:55:08 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 70F6A40055
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Aug 2026 23:56:28 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id QHjDXstBo8Ul for <intel-wired-lan@lists.osuosl.org>;
- Tue, 25 Aug 2026 22:55:08 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.19;
- helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
- receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=advbjnQK
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 189AB40688
- for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Aug 2026 22:55:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1787698508; x=1819234508;
- h=from:date:subject:mime-version:content-transfer-encoding:
- message-id:references:in-reply-to:to:cc;
- bh=g8RGxE7giMMr46tTI9lcGOZyzcS9JQ8ajj7RuZ4LyDU=;
- b=advbjnQKoz8ZXEMz2pKIGDq4y8OKxGxZZ8TPjBW6CvqJm+psFMRSZM3R
- 9rImW5v6h0Mzsiw3Z5OhPn1Xt7xWUnntwLnZFWY/cGmojMQj3NXEPrfrr
- BanC21n8kTfrMDCZfuyew1toqWjGNQ0Ixij6/B24J2CmVMJWMhf/ga+sR
- oK7iDQQT0PGVGGpJM3e7XEgNqI7z/lT2EDtT5CyANtE9EyGKNBvu6L3Vo
- eGTEgZu/xEE2k7x3RaaM53ahGEBZ5w2J6J5Q8ClByZ4e9fT0o9suKoClf
- nsFR4v77bjhV6Tsoz9j8MSPSSi29TGQgWJKplNYdqpoqL4bulu7t4rcIX w==;
-X-CSE-ConnectionGUID: ZfAmFQ1SRPqW9cXiPUGuWQ==
-X-CSE-MsgGUID: A8OQ58G3Rv+bFSq4rMNqHw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11886"; a="87120456"
-X-IronPort-AV: E=Sophos;i="6.25,243,1779174000"; d="scan'208";a="87120456"
-Received: from fmviesa008.fm.intel.com ([10.60.135.148])
- by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 25 Aug 2026 15:55:08 -0700
-X-CSE-ConnectionGUID: qlKXyJrESmeq4oyYWE/PQw==
-X-CSE-MsgGUID: dnY+pwqCQKCHdZVvhev10Q==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,243,1779174000"; d="scan'208";a="264789707"
-Received: from orcnseosdtjek.jf.intel.com (HELO [10.166.28.109])
- ([10.166.28.109])
- by fmviesa008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 25 Aug 2026 15:55:07 -0700
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 25 Aug 2026 15:53:38 -0700
-Subject: [PATCH iwl-net v2 14/14] ice: don't clear in_use until HW clears
- ready bitmap
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id w9kqt1Ty1eul for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 25 Aug 2026 23:56:27 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=109.224.244.103;
+ helo=mail-244103.protonmail.ch; envelope-from=p@1g4.org; receiver=<UNKNOWN> 
+Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=quarantine dis=none) header.from=1g4.org
+Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=1g4.org header.i=@1g4.org header.a=rsa-sha256
+ header.s=protonmail3 header.b=mrGmclxG
+Received: from mail-244103.protonmail.ch (mail-244103.protonmail.ch
+ [109.224.244.103])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 69B49401AD
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Aug 2026 23:56:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=1g4.org;
+ s=protonmail3; t=1787702146; x=1787961346;
+ bh=0zuxoKD2M1JEVqHANBIUbWduPp/SxtJyTy5Prh/oD7w=;
+ h=Date:To:From:Cc:Subject:Message-ID:Feedback-ID:From:To:Cc:Date:
+ Subject:Reply-To:Feedback-ID:Message-ID:BIMI-Selector;
+ b=mrGmclxGRKil5ZV/uCVKYMkGgZX257YTVHByLpKbQjafzcklEip4jwpOOgdPl2hch
+ tqTZFnukn1bui8ETwIF6tdrefF4GR4SCv3s3aBBHDPKS8lkdI56C1nkKpaPZ1+rvPT
+ CQGTwcanShKSG2PUZlDhKTqcAqL1mMdagjK3HMkrHwky3dHFfHFgYBtnT+gRAvkBJF
+ dCOhDtafvMec+qinDtVQKzeH/DIUpxqP2DWiNsxQorhPCNzMyLJI+/RDr2j6vwYm7X
+ aYVsXeF0IwZKinWiNHh08MmMxEQTonwL9f4BXX6sxUCoKuJzwnXSNQVNXV5j48aaZi
+ FRr9h/9BRK6Zg==
+Date: Tue, 25 Aug 2026 23:55:40 +0000
+To: intel-wired-lan@lists.osuosl.org
+From: Paul Moses <p@1g4.org>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com, maciej.fijalkowski@intel.com,
+ andre.guedes@intel.com, vedang.patel@intel.com, jithu.joseph@intel.com,
+ richardcochran@gmail.com, tkusters@aweta.nl, stable@vger.kernel.org
+Subject: [PATCH net] igc: only strip RX timestamp header from first buffer
+Message-ID: <20260825235530.3278670-1-p@1g4.org>
+Feedback-ID: 8253658:user:proton
+X-Pm-Message-ID: 8f3ba88960520ef0ca5839f4ffd264c7e10e4b08
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260825-jk-e825c-minimized-fixes-v2-14-8223f95d26e3@intel.com>
-References: <20260825-jk-e825c-minimized-fixes-v2-0-8223f95d26e3@intel.com>
-In-Reply-To: <20260825-jk-e825c-minimized-fixes-v2-0-8223f95d26e3@intel.com>
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Cc: netdev@vger.kernel.org, 
- Maciej Machnikowski <maciej.machnikowski@intel.com>, 
- Anthony Nguyen <anthony.l.nguyen@intel.com>, 
- Przemyslaw Korba <przemyslaw.korba@intel.com>, 
- Grzegorz Nitka <grzegorz.nitka@intel.com>, Petr Oros <poros@redhat.com>, 
- alexander.nowlin@intel.com, kevin.bross@intel.com, ranjit.cavatur@intel.com, 
- Jacob Keller <jacob.e.keller@intel.com>
-X-Mailer: b4 0.17-dev-c276d
-X-Developer-Signature: v=1; a=openpgp-sha256; l=7381;
- i=jacob.e.keller@intel.com; h=from:subject:message-id;
- bh=g8RGxE7giMMr46tTI9lcGOZyzcS9JQ8ajj7RuZ4LyDU=;
- b=owGbwMvMwCWWNS3WLp9f4wXjabUkhqw+WTt1/x0eJkGpf9a/KCq798Fo9frwXf9t9XUu1b19X
- JIvunxGRykLgxgXg6yYIouCQ8jK68YTwrTeOMvBzGFlAhnCwMUpABPZMJeR4eGaxc7fPkqvqWuQ
- 575bscXzB7u2+b05M155J/xlOlZrqMfIcFBy5h+Hng8ZJczaGgcc7xZ/j+f3SzobrSIR0By3ZtF
- 7bgA=
-X-Developer-Key: i=jacob.e.keller@intel.com; a=openpgp;
- fpr=204054A9D73390562AEC431E6A965D3E6F0F28E8
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+X-Mailman-Approved-At: Tue, 25 Aug 2026 23:57:47 +0000
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -120,189 +92,88 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-During a link down transition, the E825 PHY has a small window where it
-does not properly respond to reading the PHY timestamp registers. When this
-occurs, the PHY does not automatically clear the ready bitmap or the valid
-bit for the timestamp. This begins happening slightly before a link
-transition even before the firmware has notified the driver of the state
-change.
+igc_clean_rx_irq() strips IGC_TS_HDR_LEN whenever a descriptor reports
+IGC_RXDADV_STAT_TSIP. For multi-buffer packets, continuation descriptors
+retain TSIP even though the inline timestamp is present only in the first
+RX buffer.
 
-The driver happily completes the timestamp, releasing the in_use bit. This
-allows another request to reuse the bit potentially reporting an invalid
-stale timestamp. Additionally, with the ready bit still set high the driver
-continues to re-trigger the IRQ and check for timestamps in a tight loop,
-wasting CPU cycles.
+Subtracting the header length from each continuation buffer truncates
+jumbo packets by 16 bytes per continuation and leaves the packet length
+larger than the received data.
 
-To fix this, re-read the PHY timestamp memory status after each read of a
-PHY index. Double check if the hardware cleared the index properly. If it
-hasn't, mark the timestamp index as stale and skip processing it.
+Only consume the timestamp header when skb is NULL, which identifies the
+first buffer of a new packet. An skb carried in rx_ring->skb remains
+non-NULL when packet assembly resumes in a later NAPI poll.
 
-Stale timestamps are already ignored by the ice_any_port_has_timestamps()
-function. However, the ice_ptp_tx_tstamps_pending() function also checks
-the ready bitmap. Instead, modify it to only check the software tracker.
-Additionally, stop re-triggering the interrupt from the IRQ if the
-timestamp tracker is calibrating or has the link marked as down. Continue
-to check the hardware ready bitmap from the watchdog to catch cases of
-unexpected timestamps.
-
-With these changes, the timestamp processing no longer triggers a repeated
-spamming of the IRQ during link down events where timestamps get stuck as
-the PHY transitions to link down. Once link is restored, the PHY will be
-reset and the stuck timestamps are cleared.
-
-Measuring CPU utilization of the miscellaneous IRQ thread function during
-timestamp storms near a link reset shows that this prevents the spikes
-caused by the "stuck" ready bit. Without this fix, the CPU handling the IRQ
-becomes slammed due to the IRQ re-triggering logic.
-
-Measuring latency using the ice Tx timestamp traces does show that this fix
-comes at a latency cost. Latency is measured using the ice Tx timestamp
-traces for the request to completion time. I measured a couple of different
-workloads both before and after this fix:
-
- * ptp4l using a profile with ~16 SYNC messages per second
-
-    before: 159.40 microseconds mean, stdev 45.28
-     after: 182.07 microseconds mean,  stdev 43.43
-
- * a C program generating 16 timestamp requests every 10 milliseconds on
-   two different ports:
-
-    before: 604.35 microseconds mean, stdev 345.32
-     after: 990.13 microseconds mean, stdev 625.64
-
-In the normal work flows this comes with about a 20 microsecond penalty on
-the average, and the standard deviation remains approximately the same. For
-heavy workloads with many more timestamps than expected for typical
-applications this comes at a significant cost. This is because we handle
-all timestamps in a single thread. If there are many concurrent timestamps
-being requested at once, any which use the later slots on ports later in
-the port list will take much longer to be processed once the interrupt is
-fired. Since each timestamp now requires an additional PHY register access,
-this cost is much higher in the case where the device is under unusually
-heavy load.
-
-However, *correctness* is more important than speed here. Additionally, we
-still remain well below the default limit of 10 milliseconds that ptp4l
-will wait before complaining about missing timestamps.
-
-Fixes: 7cab44f1c35f ("ice: Introduce ETH56G PHY model for E825C products")
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Link: https://lore.kernel.org/all/20260625-igb-rx-ts-fix-v3-1-99b3efa08dca@=
+aweta.nl/
+Fixes: e1ed4f92a625 ("igc: Refactor Rx timestamp handling")
+Cc: stable@vger.kernel.org
+Signed-off-by: Paul Moses <p@1g4.org>
 ---
- drivers/net/ethernet/intel/ice/ice_ptp.c | 59 +++++++++++++++++---------------
- 1 file changed, 31 insertions(+), 28 deletions(-)
+#
+# REPRO
+#=20
+# Receiver: igc / enp1s0 / 10.0.5.175
+# Sender:   RTL8125B / enP4p65s0 / 10.0.5.165
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index 96e96ba1731d..d96a44ec53a7 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -620,6 +620,19 @@ static void ice_ptp_process_tx_tstamp(struct ice_ptp_tx *tx)
- 		if (err && !drop_ts)
- 			continue;
- 
-+		/* verify ready bit cleared */
-+		if (tx->has_ready_bitmap) {
-+			err = ice_get_phy_tx_tstamp_ready(hw, tx->block, &tstamp_ready);
-+			if (err || tstamp_ready & BIT_ULL(phy_idx)) {
-+				spin_lock_irqsave(&tx->lock, flags);
-+				if (!test_and_set_bit(idx, tx->stale))
-+					dev_dbg(ice_pf_to_dev(pf), "PHY port %u failed to clear ready bit for idx %u\n",
-+						ptp_port->port_num, phy_idx);
-+				spin_unlock_irqrestore(&tx->lock, flags);
-+				continue;
-+			}
-+		}
-+
- 		ice_trace(tx_tstamp_fw_done, tx->tstamps[idx].skb, idx);
- 
- 		/* For PHYs which don't implement a proper timestamp ready
-@@ -2768,10 +2781,14 @@ static bool ice_port_has_timestamps(struct ice_ptp_tx *tx, bool in_irq)
- 		if (!tx->init)
- 			return false;
- 
--		if (in_irq)
-+		if (in_irq) {
-+			if (!ice_ptp_is_tx_tracker_up(tx))
-+				return false;
-+
- 			return bitmap_andnot(tstamps, tx->in_use, tx->stale, tx->len);
--		else
-+		} else {
- 			return !bitmap_empty(tx->in_use, tx->len);
-+		}
- 	}
- }
- 
-@@ -2794,41 +2811,18 @@ static bool ice_any_port_has_timestamps(struct ice_pf *pf, bool in_irq)
- 
- bool ice_ptp_tx_tstamps_pending(struct ice_pf *pf, bool in_irq)
- {
--	struct ice_hw *hw = &pf->hw;
--	int ret;
--
--	/* Check software indicator */
- 	switch (pf->ptp.tx_interrupt_mode) {
- 	case ICE_PTP_TX_INTERRUPT_NONE:
- 		return false;
- 	case ICE_PTP_TX_INTERRUPT_SELF:
--		if (ice_port_has_timestamps(&pf->ptp.port.tx, in_irq))
--			return true;
--		break;
-+		return ice_port_has_timestamps(&pf->ptp.port.tx, in_irq);
- 	case ICE_PTP_TX_INTERRUPT_ALL:
--		if (ice_any_port_has_timestamps(pf, in_irq))
--			return true;
--		break;
-+		return ice_any_port_has_timestamps(pf, in_irq);
- 	default:
- 		WARN_ONCE(1, "Unexpected Tx timestamp interrupt mode %u\n",
- 			  pf->ptp.tx_interrupt_mode);
--		break;
--	}
--
--	/* Check hardware indicator */
--	ret = ice_check_phy_tx_tstamp_ready(hw);
--	if (ret < 0) {
--		dev_dbg(ice_pf_to_dev(pf), "Unable to read PHY Tx timestamp ready bitmap, err %d\n",
--			ret);
--		/* Stop triggering IRQs if we're unable to read PHY */
- 		return false;
- 	}
--
--	/* ice_check_phy_tx_tstamp_ready() returns 1 if there are timestamps
--	 * available, 0 if there are no waiting timestamps, and a negative
--	 * value if there was an error (which we checked for above).
--	 */
--	return ret > 0;
- }
- 
- /**
-@@ -2912,6 +2906,7 @@ static void ice_ptp_maybe_trigger_tx_interrupt(struct ice_pf *pf)
- {
- 	struct device *dev = ice_pf_to_dev(pf);
- 	struct ice_hw *hw = &pf->hw;
-+	int ret;
- 
- 	if (!pf->ptp.port.tx.has_ready_bitmap)
- 		return;
-@@ -2919,7 +2914,15 @@ static void ice_ptp_maybe_trigger_tx_interrupt(struct ice_pf *pf)
- 	if (!ice_pf_src_tmr_owned(pf))
- 		return;
- 
--	if (ice_ptp_tx_tstamps_pending(pf, false)) {
-+	ret = ice_check_phy_tx_tstamp_ready(hw);
-+	if (ret < 0) {
-+		dev_dbg(dev, "Unable to read PHY Tx timestamp ready bitmap, err %pe\n",
-+			ERR_PTR(ret));
-+		/* Don't trigger an IRQ if we are unable to access the PHY */
-+		return;
-+	}
-+
-+	if (ret > 0 || ice_ptp_tx_tstamps_pending(pf, false)) {
- 		dev_dbg(dev, "PTP periodic task detected waiting timestamps. Triggering Tx timestamp interrupt now.\n");
- 
- 		wr32(hw, PFINT_OICR, PFINT_OICR_TSYN_TX_M);
+# Both hosts
+sudo ip link set dev enp1s0 mtu 9000
+sudo ip link set dev enP4p65s0 mtu 9000
 
--- 
-2.55.0.814.gc42f45431d0f
+# Baseline: RX timestamping off
+sudo hwstamp_ctl -i enp1s0 -t 0 -r 0
+ping -n -M do -c 5 -s 8972 10.0.5.175
+# 5/5 received
+
+# Enable RX timestamping only
+sudo hwstamp_ctl -i enp1s0 -t 0 -r 1
+
+# Receiver
+sudo timeout 20 tcpdump -ni enp1s0 -s 0 -w /tmp/igc-jumbo.pcap \
+  'icmp and host 10.0.5.165'
+
+# Sender
+ping -n -M do -c 5 -W 2 -s 8972 10.0.5.175
+# 0/5 received
+
+# Receiver
+sudo tcpdump -nn -e -vvv -r /tmp/igc-jumbo.pcap
+# length 8950
+# [total length 9000 > length 8936] (invalid)
+# wrong icmp cksum
+
+# Expected Ethernet length: 9014
+# Captured length:          8950
+# Loss:                       64 =3D 4 continuation buffers * 16 bytes
+
+# Disable RX timestamping again
+sudo hwstamp_ctl -i enp1s0 -t 0 -r 0
+ping -n -M do -c 5 -s 8972 10.0.5.175
+# 5/5 received
+
+---
+
+ drivers/net/ethernet/intel/igc/igc_main.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethern=
+et/intel/igc/igc_main.c
+index 1fb5f3cbe93c..41b293dc10c3 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -2639,7 +2639,8 @@ static int igc_clean_rx_irq(struct igc_q_vector *q_ve=
+ctor, const int budget)
+=20
+ =09=09pktbuf =3D page_address(rx_buffer->page) + rx_buffer->page_offset;
+=20
+-=09=09if (igc_test_staterr(rx_desc, IGC_RXDADV_STAT_TSIP)) {
++=09=09if (!skb &&
++=09=09    igc_test_staterr(rx_desc, IGC_RXDADV_STAT_TSIP)) {
+ =09=09=09ctx.rx_ts =3D pktbuf;
+ =09=09=09pkt_offset =3D IGC_TS_HDR_LEN;
+ =09=09=09size -=3D IGC_TS_HDR_LEN;
+--=20
+2.55.GIT
+
 
