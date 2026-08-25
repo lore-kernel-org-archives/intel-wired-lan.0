@@ -1,200 +1,201 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5EABC5DF9C
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 25 Aug 2026 00:37:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2EEABC61DBE
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 25 Aug 2026 12:50:29 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 4923680C0D;
-	Tue, 25 Aug 2026 00:37:10 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id C65CB606A5;
+	Tue, 25 Aug 2026 12:50:28 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id nKqZFJNqGJAk; Tue, 25 Aug 2026 00:37:09 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id AEiDHPGo2K3m; Tue, 25 Aug 2026 12:50:27 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1787618229;
-	bh=o3toiUSdJjyN4oya9iGRcihfR6y0/YUfC4IxVcY1U6M=;
+	s=default; t=1787662226;
+	bh=ej3zqBbKmS55VAdjamYi+slarfq5bDHfkgFSO0jwAjQ=;
 	h=Date:Subject:To:CC:References:From:In-Reply-To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=NTUHxCu3MUWvMtUbUF7kqQGljNOeVg3YXhUeZaTBbVKjUQTiH+o/La7nnZSWRhUqt
-	 W7NYBkHxqPzMnFNOQ/Y4muGM+IeFjEim+B3Z4EzgCdPkyWWYiSoOEDysQosCSfEXc8
-	 rX4zCIVfGs6aJCp+vPS62tmaEdpqoTJngSwQyB96B+vvcla2HmRs6PkiZgFtc194hY
-	 okS1iu4RI8pI6GVadCHCGJOBLHZCAbPUE0C/SubVxjoenir4sq0KtmgvbTzPWFEpBW
-	 1cA22FjtFHDPyEyK0yrlmamaq1zoN2bjeTzzbCqMyE41zG+e4mLC86IXRtyg73vTrk
-	 qbt15itfDkWlw==
+	b=44R7kKO/w7R06VKwO7XHZIcrnAJBhE0mBvvkw1mEf71qQBeKkO59lKXYWD5jS2qDU
+	 EpQTA8K1zGZCoHk/T6EukvSEJ8qt7cVYhG82NcomKGh3E97GXBnrFt8dQLuGQgqgNv
+	 irKquqr9B+F4diGCWmC+daRyccYfnp0XDXu6NjUrUl9OjcFir9qrVYWqToOUBJJwzb
+	 oBUZf9gQwpD94pzkYyvtk2xr9kPji4BU0xrSSCiSWXyjiD5pE5EWb4nG2fcjNfrZzJ
+	 BLyse+RfEwScvJDTAbHlURKKi8SA7zRQUhMMXG20DeiRaW5pl9qfjC6HJl/FKJs6G1
+	 P1pZpJVje/btg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 56FD880CDF;
-	Tue, 25 Aug 2026 00:37:09 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 0B23A35E
- for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Aug 2026 00:37:08 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id E1C6060683;
+	Tue, 25 Aug 2026 12:50:26 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 6FFC8118
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Aug 2026 12:50:26 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 01FB5405FB
- for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Aug 2026 00:37:08 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 58FC2400D1
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Aug 2026 12:50:26 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id IFNUNxIZXFt8 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 25 Aug 2026 00:37:07 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.10;
- helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id r-q4FXr4E_ye for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 25 Aug 2026 12:50:25 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.11;
+ helo=mgamail.intel.com; envelope-from=aleksander.lobakin@intel.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org;
+Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp4.osuosl.org; dkim=pass (2048-bit key,
+Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=jBG2fGmy
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
- by smtp4.osuosl.org (Postfix) with ESMTPS id C88CE405F1
- for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Aug 2026 00:37:05 +0000 (UTC)
+ header.s=Intel header.b=WvBwxsl0
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 005AA40074
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Aug 2026 12:50:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1787618227; x=1819154227;
+ t=1787662225; x=1819198225;
  h=message-id:date:subject:to:cc:references:from:
  in-reply-to:content-transfer-encoding:mime-version;
- bh=3IpB7KBaMxorcUXBY40QY5k4Ckn/brBTE+JckWUNDxo=;
- b=jBG2fGmyOe9log091GqxdCT9KVMlVQZoJdwK9Rp/c9IKp0Fh49lZomy0
- bMkvX+GajTqzTV3c3hZKY0mJ0TOX/xBx5c5IhWS61/WooGMdcGlCa+w3Q
- YFoIMZdB82kQXZpYmlxncx1h+iKiky40Hpvb8Pje29PvpO/cw9q7qVv+M
- 01LdgdkuzLchOR2gGPlhVM1UEjnNmeg5kRxmlGQteStkYsL3yft+ZO7bT
- mhyxHucAM87LEvhrrUSCEOQ+LDv2fhTBVzvSUBuEu2Ql7qc2bUDI0lPpv
- razAiPkModjSGzwRy8bioDkEUUzBdyPMA0nrHI8kNKkMC0GNbScEQnLoj Q==;
-X-CSE-ConnectionGUID: SeWdMIbuQvCrjBl4D2W4IA==
-X-CSE-MsgGUID: Dz4hkws5R3evN5PAngTkQw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11885"; a="105459527"
-X-IronPort-AV: E=Sophos;i="6.25,241,1779174000"; d="scan'208";a="105459527"
-Received: from fmviesa003.fm.intel.com ([10.60.135.143])
- by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 24 Aug 2026 17:37:05 -0700
-X-CSE-ConnectionGUID: taCRLeQFSuearxXLqWhinQ==
-X-CSE-MsgGUID: ACOufXVoT9ipoANFlPQGdQ==
+ bh=imi/Q6wtDHyPqWPw6/qAP8EAPyXwbVPbyNtFBnKqxi8=;
+ b=WvBwxsl05byceUvyV/hHSpCt90lJz5/PN6rdTJRqXksHjFCe01ipDVMd
+ oewQ9Sf7XH8qLZKVhUuLR3F4Aoepb+WFy1sckoL0BXdfSVY4YIGeCwiSK
+ m7Se0ldXcmZ+KRafnr+PGEZm2m49hHczTCvasm+YY8d+Ic/6KzvAsKlPK
+ wdEOJnTVPy/8Q96kHzm0FR2X8CldUjC+PVpCD1hFff2sgm8LIXVTDfPqN
+ zf1FdYa0rvI4ysbASr50xAN2hLjAztq2Fy+IZkU8DjEDr/I78MiX2Yszy
+ JKy1mlE//S/b1eWJ0KOW3D/A6YvxK1hU7JYvQ4RCzJPOoP9+Wa8VZtuYJ A==;
+X-CSE-ConnectionGUID: P1leIYLzTxmRrKT5plVF8A==
+X-CSE-MsgGUID: Ai9wawC9Tq69YQ8cwnZt2Q==
+X-IronPort-AV: E=McAfee;i="6800,10657,11885"; a="98716813"
+X-IronPort-AV: E=Sophos;i="6.25,242,1779174000"; d="scan'208";a="98716813"
+Received: from fmviesa004.fm.intel.com ([10.60.135.144])
+ by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 25 Aug 2026 05:50:23 -0700
+X-CSE-ConnectionGUID: 2tvMvQBOTDWiR7glIsPyBg==
+X-CSE-MsgGUID: SLiUti5hQK2sdvumyKnO7w==
 X-ExtLoop1: 1
-Received: from fmsmsx903.amr.corp.intel.com ([10.18.126.92])
- by fmviesa003.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 24 Aug 2026 17:37:05 -0700
-Received: from FMSMSX903.amr.corp.intel.com (10.18.126.92) by
- fmsmsx903.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
+X-IronPort-AV: E=Sophos;i="6.25,242,1779174000"; d="scan'208";a="269227889"
+Received: from orsmsx903.amr.corp.intel.com ([10.22.229.25])
+ by fmviesa004.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 25 Aug 2026 05:50:23 -0700
+Received: from ORSMSX903.amr.corp.intel.com (10.22.229.25) by
+ ORSMSX903.amr.corp.intel.com (10.22.229.25) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.45; Mon, 24 Aug 2026 17:37:04 -0700
-Received: from fmsedg902.ED.cps.intel.com (10.1.192.144) by
- FMSMSX903.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
+ 15.2.2562.45; Tue, 25 Aug 2026 05:50:22 -0700
+Received: from ORSEDG901.ED.cps.intel.com (10.7.248.11) by
+ ORSMSX903.amr.corp.intel.com (10.22.229.25) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.45 via Frontend Transport; Mon, 24 Aug 2026 17:37:04 -0700
-Received: from DM5PR21CU001.outbound.protection.outlook.com (52.101.62.62) by
- edgegateway.intel.com (192.55.55.82) with Microsoft SMTP Server
+ 15.2.2562.45 via Frontend Transport; Tue, 25 Aug 2026 05:50:22 -0700
+Received: from SJ2PR03CU001.outbound.protection.outlook.com (52.101.43.62) by
+ edgegateway.intel.com (134.134.137.111) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.45; Mon, 24 Aug 2026 17:37:03 -0700
+ 15.2.2562.45; Tue, 25 Aug 2026 05:50:22 -0700
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=qbQb1qMYkAGgByhGhhXnhbNHbepN6BVqMjY2CSmWuOQcpQ1ewZquJQLuh9mFJ8d2LoA2JGWunKnwgAafYRJDTov8ybSor1hJV11F6dOlbnMNCfKp9NiMircyPXLUET6wCcsSLLG771ZcduZfoFXAi1H8XguX4X1616Z4jF7to5PC3eeOL9OWaUTWutqSjnEBOTnhOcbB9LmOcFsspVRFKGOsKiLg6HnuKbMXfWs1uACIpH6rrRCUl34GVvPHOhEvoo44R8Dl4nB1yy6k1H207O0/40Jj1UVGEcxuqrncEy4uy9pNo21GfVK/LEM8sDiC9xZP+m8Rc5N0CyEaI48efQ==
+ b=K7T3JxgD+8Sghe9bVceQLDqsGKMCgIMouEDZWlB0j2g/F52SUX4hN/sWV1JPy/SHX12OWgRv5vp28qLP1RfngENMNq+p9CJJgF+dsFnQx4ZYO3a3/O0YaeXbVzHW72XopfktI+9lp7zbxSJNpQtnBzFpRFAfBl9rlP58kVRnuXHvDEpLkMAFdOZ3x1TJNGdG2f6qp+d9pirquQ9+VceVrHf9Vy97IwcYZKks/jOn3ID16Hz6Tt1kvj5pSOVJJ7YPrqB+M//VxYB3c813vh5dNfo/wpLA3FJOpVy9c5JHKUI/u7EGG7bkQu6+UnlZ4IqA19BE/Axp7Ovo1Ip1o+/HAg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=o3toiUSdJjyN4oya9iGRcihfR6y0/YUfC4IxVcY1U6M=;
- b=vb6Q5AExRqvYkpVjlOxNmByy8LnxErJ/2e6twQ6Aml21ux5bO/ebiBTJEdkXsQkouzoyAvCJhqYDqNl17S7eHb+H/BmaEe2Y7ozj3Ap1gLeY4YLxQZ0g1O5xJFeLg+EemgAqXhYYS4xboc7L3ZBdH3hoUUQqAPNhwaN9lWPKda4lum7m9D5Q9l9C0Vy8XVr1ulHCV69LQMUAmdtQmVSzz93qJ7Ym424ZX1dYZOUXlnLKAV+v7grHIn3785BwsrtkrGEbGFB9kla5pjzNR4AP/mUO/fbEKHW/LI+Cuqm1VXc4M1bBuXCSfvO0+pv/Ta4nBWqco8PTRAJ0Kt7DxfIiLQ==
+ bh=ej3zqBbKmS55VAdjamYi+slarfq5bDHfkgFSO0jwAjQ=;
+ b=wSEcqIZTnyI3LPCQpQVpeIss/0MvNJfQuQ9E+GdUwHVraJzZO9JeYlfpwky55uUxQFbHD8sm1Hdf4Z5Tes6jY/zpSrXCq9E1jnG++Ba7I4rW3p0LfYT3JhIDSpU4C6sBh90z0wbg0kMSl1PAwbqdaQu67wD1zEYj5rUhXjtH4SlwfjmaG4dvOsguLuTI3/KXXEB6ppvCWspkOJH7f0KE0CTwNmUFQpE8Vxs/52ffUJ8oSCV7/1cNdJ6GnaxMRq5aLnc1X/1ZHx3BPk15aqwz9Q19mTWmH9cl+p1+hBkxKYjqn76TjsaWwcSrE61ubNv0MGb0S5+3n2kKa17NE8I/yQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
  dkim=pass header.d=intel.com; arc=none
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=intel.com;
-Received: from DS0PR11MB7381.namprd11.prod.outlook.com (2603:10b6:8:134::14)
- by PH0PR11MB5125.namprd11.prod.outlook.com (2603:10b6:510:3e::15) with
+Received: from DS0PR11MB8718.namprd11.prod.outlook.com (2603:10b6:8:1b9::20)
+ by DS0PR11MB7505.namprd11.prod.outlook.com (2603:10b6:8:153::12) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.339.12; Tue, 25 Aug
- 2026 00:36:59 +0000
-Received: from DS0PR11MB7381.namprd11.prod.outlook.com
- ([fe80::4c39:dfe6:d6dc:6f58]) by DS0PR11MB7381.namprd11.prod.outlook.com
- ([fe80::4c39:dfe6:d6dc:6f58%6]) with mapi id 15.21.0339.012; Tue, 25 Aug 2026
- 00:36:59 +0000
-Message-ID: <3e84fc3b-8b46-4c76-9d4b-edba2ade63c0@intel.com>
-Date: Mon, 24 Aug 2026 17:36:56 -0700
+ 2026 12:50:10 +0000
+Received: from DS0PR11MB8718.namprd11.prod.outlook.com
+ ([fe80::6aa:411d:4bfa:619c]) by DS0PR11MB8718.namprd11.prod.outlook.com
+ ([fe80::6aa:411d:4bfa:619c%4]) with mapi id 15.21.0360.005; Tue, 25 Aug 2026
+ 12:50:10 +0000
+Message-ID: <ea7bd312-a9b7-402c-bded-42a34b63b167@intel.com>
+Date: Tue, 25 Aug 2026 14:44:54 +0200
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH iwl-net 12/12] ice: don't clear in_use until HW clears
- ready bitmap
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-CC: <netdev@vger.kernel.org>, Maciej Machnikowski
- <maciej.machnikowski@intel.com>, Anthony Nguyen <anthony.l.nguyen@intel.com>, 
- Przemyslaw Korba <przemyslaw.korba@intel.com>, Grzegorz Nitka
- <grzegorz.nitka@intel.com>, Petr Oros <poros@redhat.com>,
- <alexander.nowlin@intel.com>, <kevin.bross@intel.com>,
- <ranjit.cavatur@intel.com>
-References: <20260821-jk-e825c-minimized-fixes-v1-0-9d0731eb4858@intel.com>
- <20260821-jk-e825c-minimized-fixes-v1-12-9d0731eb4858@intel.com>
+Subject: Re: [PATCH iwl-next v2] idpf: add flow-based XDP fallback for FWs
+ without Tx FIFO support
+To: <intel-wired-lan@lists.osuosl.org>
+CC: Tony Nguyen <anthony.l.nguyen@intel.com>, Przemek Kitszel
+ <przemyslaw.kitszel@intel.com>, Andrew Lunn <andrew+netdev@lunn.ch>, "David
+ S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, "Jakub
+ Kicinski" <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Simon Horman
+ <horms@kernel.org>, Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
+ YiFei Zhu <zhuyifei@google.com>, <netdev@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>
+References: <20260818155101.2416665-1-aleksander.lobakin@intel.com>
 Content-Language: en-US
-From: Jacob Keller <jacob.e.keller@intel.com>
-In-Reply-To: <20260821-jk-e825c-minimized-fixes-v1-12-9d0731eb4858@intel.com>
+From: Alexander Lobakin <aleksander.lobakin@intel.com>
+In-Reply-To: <20260818155101.2416665-1-aleksander.lobakin@intel.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: MW4P222CA0022.NAMP222.PROD.OUTLOOK.COM
- (2603:10b6:303:114::27) To DS0PR11MB7381.namprd11.prod.outlook.com
- (2603:10b6:8:134::14)
+X-ClientProxiedBy: VI1PR0102CA0065.eurprd01.prod.exchangelabs.com
+ (2603:10a6:803::42) To DS0PR11MB8718.namprd11.prod.outlook.com
+ (2603:10b6:8:1b9::20)
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS0PR11MB7381:EE_|PH0PR11MB5125:EE_
-X-MS-Office365-Filtering-Correlation-Id: b3c14815-3561-4944-8ade-08df0240f8e0
-X-LD-Processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
+X-MS-TrafficTypeDiagnostic: DS0PR11MB8718:EE_|DS0PR11MB7505:EE_
+X-MS-Office365-Filtering-Correlation-Id: cbc2b201-bdff-4975-f16b-08df02a76546
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
- ARA:13230040|376014|23010399003|1800799024|366016|6133799003|3023799007|10067099003|56012099006|11063799006|4143699003|22082099003|18002099003;
-X-Microsoft-Antispam-Message-Info: SlpLS/z4q4MjKH6b6B8qChm6RmVLh8djwT2VvR8LekI3fr9O19Bpj9KU+dy8vO3+Rxb9hZ2lxq/0LmlQCEYSOdqccleUpXv1ueZuspsMQU5u9ECLzpGQE8RtV+eEPU0h8nTS+KayfYxqP6AqtF+o7xrlGtR7jmzDItW7msM1jZfOTCsOWp/1xwD52ECoOrhxAHezTsH0QsaphLChyNMeBeo+ugRbkWAvd+fchzxMq+karPCxUaI922zFAbgvsWIM0030VbhmdSbjz47DISDSORZD7+/pmxkyHcbwNIqcVVAP3QfASItBdsNojgDjYyAdKx4faoIDs9/bANEJGJJzpo3FE/wJxRg8zYuuZYZXTGpgTPSqXfA0Piz75XZ1KSjTG7703l3x6Eg7lSPyavupysi4qw1+GYeoXF5Cv1C1Ls4grtezefhBqWFNqXzO3HGA1i68Z+eusKS7xa1TIihBCpA1o8IGjxEB7TfheQHoAytLQrep+BKCeeBSvqYLlJKvGVc4OT1WjHviVnLtqUqHzjTWG7eOqkMdc/RRWcjF9n+2PbuPnrYmZ+trd8SvMmydtcTclSgid4VFMbyVzTxczsgQ89N9mnQi3atOh36iYcc4vG6Tj/4cMH8CcGBS0HVcjEZhW/M8IVMFQXxe9o6C3ZW0tLBEFKR+j523AAkSmwM=
+ ARA:13230040|376014|23010399003|7416014|1800799024|366016|6133799003|10067099003|56012099006|11063799006|5023799004|22082099003|18002099003;
+X-Microsoft-Antispam-Message-Info: MQQRDf9RwYI/xsJZ3A8Qyh3P7ZZqRk8T4FK9KGHlNZGuJzdJ2WZ9EySU97dhC3Bej6u4i2vBKdgVzCf3ubXqPLs3My4HFZn1cqplNpaUF7x3YPUCzAnvVhZx8GFUPxYXuXCVQalM2L7bbuJa/a727Qyv4q+ywjjYLdKR2HtXFbfswa77AT8ynzEHba82cx/uisMUqH2f7vzAT4fdQqGUY1olT3IHoQcG8jZzpzRPaRQGLG+rFQtA5ym+EgKXMkWrCPWA0zef4bgl+bZ15I7cRuOPwC8I4tsPiOMt6eOdltBFxHBkw8fmZYj7pIjmEzHJDv9yn8M6e1C3FN/UqeMrKsNhgsVcxVPCB9x/+MDvj1zM3xfQ1yH7Y3QZsK9j9Up2RtUEByNB6SVNANr66/arHZ3RS3X/oNlI9cE/OVHtgm7hNArfpn/wKO/LMqc6i3zHa010t2HXHQj4Q1HUWMdwn3PY8a3UOAixPy9I69oPDwD4o9YOhQ4HcnOaZLZpThV/IwhlfOqxvMZyyB92C3qKGeR9TDHHzAQ7pbZ/frW60zR2cWydxwb/UoFlq8Q86dqlg4AuAGcy8zQWVYm4WV3763jQA1IbBPeXpj4CsnEoc1AKD6uxSj4P8tolV+h0hkRf3MZjkltP7RH3F68wyaNPCxaDcsYfVyFWxz7s5BIxw1o=
 X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:DS0PR11MB7381.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230040)(376014)(23010399003)(1800799024)(366016)(6133799003)(3023799007)(10067099003)(56012099006)(11063799006)(4143699003)(22082099003)(18002099003);
+ IPV:NLI; SFV:NSPM; H:DS0PR11MB8718.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230040)(376014)(23010399003)(7416014)(1800799024)(366016)(6133799003)(10067099003)(56012099006)(11063799006)(5023799004)(22082099003)(18002099003);
  DIR:OUT; SFP:1101; 
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?eDkvb3FOazR3TldRY1V0NWNqNlcyeG5WaTBDd3NGNHZTclJUQk95ZW5iNERM?=
- =?utf-8?B?WkJCMDBlVEJyKysveXVKZjNhYTRLZVRnVWh2TUg2MmtIK3RZV1U4MGlMby80?=
- =?utf-8?B?cnFKL3cvMGRuZTFCVzU2enMxTUJvUzJqZHgybU9yU2lKd3orKzE3cGJJem42?=
- =?utf-8?B?UmVkQnI4MHk4cEZ2dldNSUl0MUV0c2VrbktONExwSHU2VXgxNG02NXlBalNJ?=
- =?utf-8?B?NGErdVg3aTBwWnkvcW1scVlPZ2pOcGN0UnRQOGN2aXl6OTNnSHpaVjVMVXc0?=
- =?utf-8?B?R2djSFpIUGRuYVdndUVzVko4VU50cjhlODlpRGgxbk9UU21KSTF6YnBXLy93?=
- =?utf-8?B?eUdJZTcrcXkzbmorNWY0R29FdFZ5VUR2S1BPY2VacThhSWkrQmZQaUhNK0hh?=
- =?utf-8?B?UlRpTnRKdW8yOHVTZHNiSmppd05yNldOdENVWnFLV3JiUjByOFN3dTV3Znc1?=
- =?utf-8?B?d2tGMzFrd3FVdHR6b1FseWFXUHN0cWE1QWFpbFpIdnpWeXdiclNFOGtTS1gw?=
- =?utf-8?B?b00vNFZzVWNwOCt4Vzh4UjM2QkE1UjV6MHNQN290SDRMOEp4Rk9uRlVpQXBR?=
- =?utf-8?B?YUxjKyt5S0ZGYnhGc3JQb0JpWk9xZStIOEwrbHZHSDRxalJpbGxjZElNcE91?=
- =?utf-8?B?YjFza0p4SzlxKzkrRFpKWUxjbUlnci8xOVlraVdWQjMzVEdXemJSWjdOMVE5?=
- =?utf-8?B?Z3ZQdURKRTZEdUVlTXlGbERvc2N2QUxvd2VEQTFudUtYTTRrRDhneG9HWngy?=
- =?utf-8?B?UkRDKzIxcUhURzEwNW5iSlNTUHlIcG5jTVJmTXg1VEg5NWZyQXlkSkJvTjQ1?=
- =?utf-8?B?VkFoMnNrRmhXS1c3WEJJOEV1RUEvZzhmdmZodml0RjBxK1dWU1F2YVcrY2Ru?=
- =?utf-8?B?MGp2NlpjVVdOMC9YZzNvQjNZZmNvNGtoaDFrM2hXbm9IcGlYdWYzVGNVYUlG?=
- =?utf-8?B?TW5zRG5haHZ6WllVaVpqOTVpL1FvVStDaWJGRVorcmRkWlRkOUJ3NXEwRVAv?=
- =?utf-8?B?VXViOU5lMmsyNUhZOERnaXczWnZSMDVZbkNucW9ieklwbXdIU1M4dWhEOU1m?=
- =?utf-8?B?N3Y3cXZ5QmVmWHpzTkd0R0RaZllUNEZTOU9ybnQ1VlRXSWRrOUJqNloyNVNX?=
- =?utf-8?B?TzgzZ3k4clZxUXNFQVNBZ0QvK2oweVVOQXJmNWJaVHZJS2tLM3Vnb1NVRW9Z?=
- =?utf-8?B?L1d6Zm0wbUZTWU8xUjVTOVowYjBWaFpaRldSLzFCTXAvS25VM0ZOTWNmQlgy?=
- =?utf-8?B?MHc0cHB0WEZXM1BVQkxGc21YdjJFdkszYTR2QVk1UlpXOTMvRmo0amNtTmhP?=
- =?utf-8?B?NnQwMlFrazgyekV6bGY4YUd3MUpveTVnWUNUZHFTSlVqTU9ZTW5HM0dUOExW?=
- =?utf-8?B?c0QyWG5XRVZKd1lHcTVTbjFDUTI2Qjl5Rk9SZXNyWVFRYjJROUxzWEJnOUlM?=
- =?utf-8?B?T0djQXNBekNwbis2TkpnY3hLb1k3YnNFYURiWWJYcVlRemFTTkhHNG9nZE1B?=
- =?utf-8?B?cVhIR2VQckpiVjJmMDJ4aXdFS2paYktsTEtrT29KYTJXakpoTElwMjFyYVB6?=
- =?utf-8?B?MUxnM2IwRzB3b2pDVnhpVlM4YmtWL2VvWGRuOEo4dnYwNE9XMEFDUzQ5OEFt?=
- =?utf-8?B?dWNGdmN3WmN6dTBna0xZQUlhVzB1ZUNTRUhWSVZoSUphTnc5bGNsMWFEZUg1?=
- =?utf-8?B?R0hTNEpSSTExNUZKYkJUT3d2azcydjlpZ3N6OTkwTGJyUko5QVBDV1FXOXJS?=
- =?utf-8?B?cHZoTWptZmhMTlNkWnlnWFViclF0N2dOTVp4Rkc3UjFiU2RqVENWLzlVWVBp?=
- =?utf-8?B?MEp3T29QWHZwREJ6MmNLdklxSHBkeTgwcXBBOURtOVdLVGpCSFpFeS9hck9r?=
- =?utf-8?B?Z1IwdVNtckhZV3VPamY4cDhPTjNiTHAzcTVHeW14M2Y4QUFBRnNua2NSZVRE?=
- =?utf-8?B?YjVpZFA4cHByMjVEZytXSFc5N2VCdzNzZnByRm9PRVllOXRmdklDQmwxVWxz?=
- =?utf-8?B?VThMeisxK1ZpT2NWVDBMdy9pZDR5UHhrSi9xY3FjWDdJV3Y3czNtalpORVhx?=
- =?utf-8?B?c0pOSm9tVHBRTzVCU0Q1cW52SnNaR0cxWTU0RXdXaVdMR0VtVkhGK3gvVHpa?=
- =?utf-8?B?Si9MSkR0cyt0TlhRT3QrU25PQTNSREZPSlh4NUFIMlRVdE52dGdNaStGMVVW?=
- =?utf-8?B?R1hLbDc3eDNYUzRFNGFBYTg4VFBiZTZiN2M3RVpaNU56RmpEY3Fkb0hPeEpk?=
- =?utf-8?B?bkI5aXJ5VHRWbFZQRUFYZkIxNENtUWdPR0dGZE1TUkE0ak1PeFAyc3VHQ2Vy?=
- =?utf-8?B?aFR2dHlScitUL29UOUZsQjFBN2xXaE9JWXNvL2JMQjZNaXJhbDYwZz09?=
-X-Exchange-RoutingPolicyChecked: APNdB+wJHfoRiNCkoLL64nSvXTV67C30Y3o9zJfIuyYBL0SN1DicVDpq4jJyso9v08Al+QofFA99N4yWbAkMa2nEXWVY1c37iEFcjd3xRVZq55q9x3grJHnCExniqwDS/yaV+78zuRkBFmk/wJOeZJVlE3owZDWwKCEV2/OBdHOlXxg6eQwn0/U+/LsEaHxNTotQllsNqSW19Lde0aVRiJ9annLb4DzXDDCL5hL+gKIS+bou9WYN5v36MFc+cujb8e4XVU/tzmRdaoYlO/3zXBcVjfopSYE34iTzjjWvOrQoL46pfYxDaEUvMjwE9/XrxBM5Sro2deYmVu0ROlACSw==
-X-MS-Exchange-CrossTenant-Network-Message-Id: b3c14815-3561-4944-8ade-08df0240f8e0
-X-MS-Exchange-CrossTenant-AuthSource: DS0PR11MB7381.namprd11.prod.outlook.com
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?VkN5ZldLRG80a0l0WmFFZzluUXBERnE5ek10NXFoak41TjkzZStjaXE3WGh3?=
+ =?utf-8?B?bjNNSGRBa3dXdDdkVnppRUovZVlFUmNvQXJpTDRUdk9wbWpTSU9VOVFiRVBQ?=
+ =?utf-8?B?NEVqWUVtcEhlRE5JOHF1TmdWeW9La2VaV0N0aXdKUDdMS2ljNDVZZS9UZklZ?=
+ =?utf-8?B?bzJFaWJXTjVJcjJlVFE5MzZzOVE1TWZGNEVHM29DenNLYlJMY0pRNnZZb0ZK?=
+ =?utf-8?B?NmNjaVBTbk9NRC9pQ0kwYjlvemt2TlA3SG40QmpJS0ZUQnI5dmJZWmQvbHoz?=
+ =?utf-8?B?OVByOVJSdC9BMnRQYS92eEZEZmJzaWlmaXlYUW1tdDFlekNVeFR5VWozbXMv?=
+ =?utf-8?B?aDdWVWlwOXZrSkM5MzdzQldMU3IvbXI0VWY0N3BPaFNjaG1rUHFZMFNHYXFY?=
+ =?utf-8?B?MjV4c2xrV0NrRFVMOWcva0tDRUcySnhCWEJ0amIzbFc1VTBFVm1mKzJQeHcx?=
+ =?utf-8?B?THJZTzh0ZFIzWTNrSGVDdSt5RDBkMlVnSEEyeC9HaUViQmo0L3gyVU41cjIw?=
+ =?utf-8?B?N1Q2dHoxajdsN29wSnh4L1hmMXpxUVNsNExxUTBSRllySVI4RGltU09kc2F6?=
+ =?utf-8?B?SXptWHlPZ1I2T2RtN3VNeU5McUNzVjV5dGE5RUptWFk2TERwd0FqUHlpZFNV?=
+ =?utf-8?B?dktFUW9ENE9MUmVuVGxKdUtUbzZTRWl4VEcxVi9DUnNreUtKS3d5dys1d1Jt?=
+ =?utf-8?B?U0crTExkLzI1UUZ1MGtqMHRhOExvaUFQUWZlYVdNR3hHTlVyL2IrazdMNFpv?=
+ =?utf-8?B?cFI5eEdyUkJQMFpFQmdsODg1N0IzbkpRZ3hWYkRWNHE1bU9iNDlCd1ZzT2Vt?=
+ =?utf-8?B?emVIZjRRYTN0Sk9xbHVYNjl2U0l2YmdMbWxxdnFvS0N3MjJIdFlRYTJnYzNu?=
+ =?utf-8?B?QjAza1RSalNtTk54cE1ZQWw1QWNmbEM1dkQ2bFc5WXhXNzBYWDN6QzdhWFA2?=
+ =?utf-8?B?QTVnSTduU1hXTHN1N1hpRVNmZmVNNTZZU3JGUElCQ0tvMEQzVmtkazV6SHZm?=
+ =?utf-8?B?WmhIMnNGSEhiRGJsZGRlb0dPeTkzeVovZXdYNU8rOE90TkpFM2phK20xVjhP?=
+ =?utf-8?B?NEg2eExXNG1jQmd6YllRRVFSTDFsdTlqb2hTMUFPQ2xBSkVEdTMvUUtFUjQ2?=
+ =?utf-8?B?c3JNcHFYV3JsaVJFaWswNEhZcU9OWHgvOFVzTlMyKzR4dDByc3JBeUhLbi9H?=
+ =?utf-8?B?RERCam9BVklkeWFpUDNJbXl5ZDZiVVl3WGM0WVlqNEpHYk1Icm9FYXh5bGVJ?=
+ =?utf-8?B?ZWp0UlBjZStXTjF2NHg1M0w3QWN5R2s4anp1d2tqMVFXem5LbFdBWTBncEF4?=
+ =?utf-8?B?a2ZneHBkdjM2cGUzemVUelFxcEJTRkJ1WnZvNW13N3VOMXN0clA3S0NLSXdp?=
+ =?utf-8?B?NkJNam5MbUpiS1BCUFFoOVZ0MXgwZWxzUXR3SWV5cjBlOWh3UFlOWlE3MmFz?=
+ =?utf-8?B?alJ6SlI4ZU1qSzVuUWdjQXZkbDBRdDVwR3QvRDJCaHZUZVBaYkpMdkljemxJ?=
+ =?utf-8?B?YWZCSVEwQ2h4Ym0zV05SdWFQdDEyQ3JIRGZSL3FLV0pqWHdOTlV3dHRXK2t3?=
+ =?utf-8?B?bFNReG5IakRmcGxZWW44dkdsRnc3cUdyRmRKcVk5a21LZkhGR1E0Rm5xM0lu?=
+ =?utf-8?B?TGxhRGFObm1TVmhVWGNXcUVJRVNLU0c2eU8zVGhTcS9VN0pSTVBCMi9DdlZZ?=
+ =?utf-8?B?dWg3L0JLVXNiYjU0VG1HQnFhSmdmVFIvbWNGR2xqbCtQZi9mNXIzbWYwV0g5?=
+ =?utf-8?B?LzB4cEJacVlDMlcwTVZ3U3RNNzdFYlBlSVpwRjFOV0xqQng3R2pXcTlQMldF?=
+ =?utf-8?B?THM4SmNFMnlpaUdKaXlnSTU3VklTQ1BNMjE2c2o0ZDZ0ejl2WDFZckdrLzl0?=
+ =?utf-8?B?WlBnZk02VlE4dlcrdFQvREJYdzJENTlZUjZmZUU4eXkrT29BYndaT0V1N2NX?=
+ =?utf-8?B?dzJ0K2d2Ry9rR0MvYlQ0a001MFNDa0FaMmsrZkRlRmxVM0oxZ0hHUnM5SVkx?=
+ =?utf-8?B?N0VXTTU3TXI0ZGJYcTZZTmtyemwzUVB0QUFYWElrY3BZQzNsQldVRTFtdVpi?=
+ =?utf-8?B?RUhqVnh3b0QwN3I0U3hKcCtLTEk0dHN0R3ZzYTNYbCtCVVJxN3VESmMrdWxr?=
+ =?utf-8?B?dlFtK3pENTk4ZngvVS9wVEw4b2xpaXh5RlJQMVJsVlpBdXhackFvUWxjSytN?=
+ =?utf-8?B?dVJjT1JVYVhIcHFzMUdSU3F3eXB3dUZUdndMaGpWN3NYUnFnSzR6R3d0Q1RT?=
+ =?utf-8?B?ckUvMmRBSEdLSnVGMXRxVmtTRy9XM3BCdmxUQS9CZVU5ajRZWmxkNUJlMDNU?=
+ =?utf-8?B?NTAwOHQva2RmM1VqQ21BYjVKS0lKOFFycmR4QzdHQzMzUmh0d0szTGRiT0Nx?=
+ =?utf-8?Q?RQCIqHVK2RfCk1CI=3D?=
+X-Exchange-RoutingPolicyChecked: 5HuX9Xk2cwfASqZHgqzzur3Md+vtx1Upa6Nzxqq8J3QvCr6GhVNrcuCQkNzRp32bh7GFa3hnBZxoxZJ0+BkofsdIzxKh1y+NjaOZCbA8z2RPYzFlcBJDeJA/jH+V3vjw3lhegI19JE4s/n5fWr/nN3tv935J+h3WYwSoVCZp9M/8V+H/1XsrY54X0B3FjdF4AmHPDcjzOVeGh6yCzm/mG/Qljg6nvRg3e/X1Z3r1HPdHZDmLwY7cpdmvWJITOhK0UlY815tid63NSgh5j7e78q+3B50R5jcDcMWkw7P6bD0BKPBIU9gyQ+xNCVmTwuiesutH/Px2YhL+2R7yzL3s2Q==
+X-MS-Exchange-CrossTenant-Network-Message-Id: cbc2b201-bdff-4975-f16b-08df02a76546
+X-MS-Exchange-CrossTenant-AuthSource: DS0PR11MB8718.namprd11.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Aug 2026 00:36:58.9891 (UTC)
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Aug 2026 12:50:09.5104 (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: P0Te5eZPyaOcJgY7FdvddWox9d8U558vdfFpt25GUHbmCuR8vyXB27XAHw8w9t/22btnCvcymiHw90JFm5onLsdyfCRzDZng+1l9VaFH5Xg=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR11MB5125
+X-MS-Exchange-CrossTenant-UserPrincipalName: 1Q/pWD2tRG94OeozzPkfGKHWIiQGocpsddyDupS/O+cM0ldV6hRIUQ3BbclPkhdffozCMx33cDbHo7pg73arFiv/LPuVZQz1+PuqRd88eV8=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR11MB7505
 X-OriginatorOrg: intel.com
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
@@ -210,248 +211,229 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-On 8/21/2026 5:13 PM, Jacob Keller wrote:
-> During a link down transition, the E825 PHY has a small window where it
-> does not properly respond to reading the PHY timestamp registers. When this
-> occurs, the PHY does not automatically clear the ready bitmap or the valid
-> bit for the timestamp. This begins happening slightly before a link
-> transition even before the firmware has notified the driver of the state
-> change.
+From: Alexander Lobakin <aleksander.lobakin@intel.com>
+Date: Tue, 18 Aug 2026 17:51:01 +0200
+
+> From the first days of XDP implementation in idpf, it relied and
+> worked solely on top of the queue-based scheduling Tx mode, which
+> basically means simple FIFO. However, turned out not every firmware
+> supports this mode and XDP doesn't work there at all.
 > 
-> The driver happily completes the timestamp, releasing the in_use bit. This
-> allows another request to reuse the bit potentially reporting an invalid
-> stale timestamp. Additionally, with the ready bit still set high the driver
-> continues to re-trigger the IRQ and check for timestamps in a tight loop,
-> wasting CPU cycles.
+> Since the flow-based scheduling Tx mode is mandatory and supported
+> by every FW, introduce a simple fallback guarded by a static key
+> to not hurt the more performant mode. The FB mode generates a
+> completion for each Tx descriptor and never guarantees that there
+> won't be any out-of-order completions. Serialize that using a
+> bitmap of completed descriptors and report contiguous blocks of
+> free bits to match XDP and XSk expectations and avoid further
+> code complication.
 > 
-> To fix this, re-read the PHY timestamp memory status after each read of a
-> PHY index. Double check if the hardware cleared the index properly. If it
-> hasn't, mark the timestamp index as stale and skip processing it.
+> The usage of a bitmap on hotpath might sound scary, but this
+> fallback is able to reach around 70% of the QB mode's performance,
+> which is comparable to what ice gives us. The main bottlenecks are
+> unlikely()s and one completion per each descriptor, while in the QB
+> mode we have one completion per batch (which might contain 64 or
+> even 128 frames), plus the size of the completion descriptor is
+> 8 bytes in this mode (4 bytes in the QB mode), which means a lot
+> of additional PCI traffic.
 > 
-> Stale timestamps are already ignored by the ice_any_port_has_timestamps()
-> function. However, the ice_ptp_tx_tstamps_pending() function also checks
-> the ready bitmap. Instead, modify it to only check the software tracker.
-> Additionally, stop re-triggering the interrupt from the IRQ if the
-> timestamp tracker is calibrating or has the link marked as down. Continue
-> to check the hardware ready bitmap from the watchdog to catch cases of
-> unexpected timestamps.
+> bloat-o-meter shows .text increase in about 2 Kb without adding new
+> functions or uninlining any of the existing ones. I played a bunch
+> with inlining and uninlining certain pieces or the whole fallback,
+> but the compiler collapses and optimizes libeth templates so hardly
+> so that each additional external call only makes things worse.
 > 
-> With these changes, the timestamp processing no longer triggers a repeated
-> spamming of the IRQ during link down events where timestamps get stuck as
-> the PHY transitions to link down. Once link is restored, the PHY will be
-> reset and the stuck timestamps are cleared.
-> 
-> Measuring CPU utilization of the miscellaneous IRQ thread function during
-> timestamp storms near a link reset shows that this prevents the spikes
-> caused by the "stuck" ready bit. Without this fix, the CPU handling the IRQ
-> becomes slammed due to the IRQ re-triggering logic.
-> 
-> Measuring latency using the ice Tx timestamp traces does show that this fix
-> comes at a latency cost. Latency is measured using the ice Tx timestamp
-> traces for the request to completion time. I measured a couple of different
-> workloads both before and after this fix:
-> 
->  * ptp4l using a profile with ~16 SYNC messages per second
-> 
->     before: 159.40 microseconds mean, stdev 45.28
->      after: 182.07 microseconds mean,  stdev 43.43
-> 
->  * a C program generating 16 timestamp requests every 10 milliseconds on
->    two different ports:
-> 
->     before: 604.35 microseconds mean, stdev 345.32
->      after: 990.13 microseconds mean, stdev 625.64
-> 
-> In the normal work flows this comes with about a 20 microsecond penalty on
-> the average, and the standard deviation remains approximately the same. For
-> heavy workloads with many more timestamps than expected for typical
-> applications this comes at a significant cost. This is because we handle
-> all timestamps in a single thread. If there are many concurrent timestamps
-> being requested at once, any which use the later slots on ports later in
-> the port list will take much longer to be processed once the interrupt is
-> fired. Since each timestamp now requires an additional PHY register access,
-> this cost is much higher in the case where the device is under unusually
-> heavy load.
-> 
-> However, *correctness* is more important than speed here. Additionally, we
-> still remain well below the default limit of 10 milliseconds that ptp4l
-> will wait before complaining about missing timestamps.
-> 
-> Fixes: 7cab44f1c35f ("ice: Introduce ETH56G PHY model for E825C products")
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+> Tested-by: YiFei Zhu <zhuyifei@google.com>
+> Signed-off-by: Alexander Lobakin <aleksander.lobakin@intel.com>
+
+Comments from Sashiko:
+
 > ---
->  drivers/net/ethernet/intel/ice/ice_ptp.c | 54 +++++++++++++++-----------------
->  1 file changed, 26 insertions(+), 28 deletions(-)
+> I know the window is closed, this is to trigger the validation and
+> for eventual reviews.
 > 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-> index b337247c94e0..0e44ed6b0ae8 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-> @@ -620,6 +620,22 @@ static void ice_ptp_process_tx_tstamp(struct ice_ptp_tx *tx)
+> From v1[0]:
+> * rework static key management: move to idpf_xdpsqs_{get,put}() to
+>   avoid refcount imbalance issues as .ndo_bpf() is not always called
+>   in pairs (hardware reset etc.) (Sashiko, internal Sashiko);
+> * don't zero the whole pending window but only the frames sent since
+>   the last batch to avoid missed OOO completions (internal Sashiko);
+> * micro-optimize idpf_xdpsq_set_rs{,_fb}().
+> 
+> Regarding the rest of comments:
+> 
+>> Could this sentinel bit cause a deadlock if the queue is completely full?
+>> When full, next_to_use equals next_to_clean. If the hardware just completed
+>> the oldest descriptor, its bit would be cleared, but this __set_bit would
+>> blindly overwrite it back to 1. The completion would be ignored and the
+>> queue might permanently stall.
+> 
+> Intel HW works that way that we can't fill the ring completely. We need to
+> always leave at least one descriptor free, otherwise ntc will equal ntu
+> in the HW and the queue will stall. So in all sending routines, our budget
+> is limited to `free - 1`, meaning the situation described above can't happen
+> (next_to_use never has its bit set to 1, so it's safe to use this bit as a
+> guard and reset it after the bitmap search is complete).
+> 
+>> Is ret bounded before it is used as a bitmap index here?
+>> idpf_xdp_parse_cqe() returns upper_16_bits(val) straight from the device
+>> completion descriptor, so ret can be anywhere in [0, 65535].  pending_mask
+>> is allocated with bitmap_zalloc_node(desc_count), where desc_count is at
+>> most IDPF_MAX_DESCS.
+> 
+> No cards under this driver have ever been seen writing garbage instead of
+> the completion tag.
+> 
+> [0] https://lore.kernel.org/intel-wired-lan/20260708151327.1091570-1-aleksander.lobakin@intel.com
+> ---
+>  drivers/net/ethernet/intel/idpf/idpf.h      |   1 +
+>  drivers/net/ethernet/intel/idpf/idpf_txrx.h |  18 +--
+>  drivers/net/ethernet/intel/idpf/xdp.h       |  73 ++++++++++-
+>  include/net/libeth/xdp.h                    |  13 ++
+>  drivers/net/ethernet/intel/idpf/idpf_txrx.c |  12 +-
+>  drivers/net/ethernet/intel/idpf/xdp.c       | 131 +++++++++++++++++++-
+>  6 files changed, 229 insertions(+), 19 deletions(-)
 
-Sashiko says:
+[...]
 
-> This is a pre-existing issue, but I noticed something about the tx->in_use
-> logic in ice_ptp_process_tx_tstamp().
-> At the beginning of the function, there is an early return:
->     if (!tx->init || bitmap_empty(tx->in_use, tx->len))
->         return;
-> If a timestamp times out after 2 seconds, the driver frees the SKB and clears
-> the slot from tx->in_use. If the hardware subsequently completes the capture
-> and sets the ready bit, does this early return prevent the driver from
-> clearing that unexpected hardware timestamp ready bit?
-> Could this lead to data corruption if a new packet reuses the slot, reads the
-> stale timestamp, and clears the ready bit, thereby passing the verification
-> checks?
-
-I don't believe we can fix this. If hardware fails to complete a
-timestamp within 2 seconds *and then* completes it after two seconds we
-end up in a bad state. However, if hardware never completes the
-timestamp and we remove our timeout logic then we also end up in a bad
-state.
-
-In principle there is no possible "cutoff" we can make that correctly
-handles both cases of either a super delayed timestamp or one that
-simply never completes.
-
-I believe 2 seconds is a sufficient cutoff to practically ensure we
-handle all cases correctly as it should not be reasonable for the PHY to
-hold a packet for 2 seconds before transmitting it once enqueued. We
-could increase this to a larger time and be more and more certain.
-However, if we increase to infinity then indexes can and will become
-locked should a packet be enqueued which gets dropped before transmission.
-
-
->  		if (err && !drop_ts)
->  			continue;
->  
-> +		/* verify ready bit cleared */
-> +		if (tx->has_ready_bitmap) {
-> +			err = ice_get_phy_tx_tstamp_ready(hw, tx->block, &tstamp_ready);
-> +			if (err)
-> +				continue;
+> @@ -197,12 +229,25 @@ int idpf_xdpsqs_get(const struct idpf_vport *vport)
+>  		xdpsq->pending = 0;
+>  		xdpsq->xdp_tx = 0;
+>  		xdpsq->thresh = libeth_xdp_queue_threshold(xdpsq->desc_count);
 > +
-> +			if (tstamp_ready & BIT_ULL(phy_idx)) {
-> +				spin_lock_irqsave(&tx->lock, flags);
-> +				if (!test_and_set_bit(idx, tx->stale))
-> +					dev_dbg(ice_pf_to_dev(pf), "PHY port %u failed to clear ready bit for idx %u\n",
-> +						ptp_port->port_num, phy_idx);
-> +				spin_unlock_irqrestore(&tx->lock, flags);
-> +				continue;
-> +			}
-
-Sashiko says:
-
-> If a timestamp request times out (i.e. older than 2 seconds), the driver sets
-> drop_ts = true earlier in the loop.
-> If ice_get_phy_tx_tstamp_ready() fails and returns an error, this
-> unconditionally executes continue. Does this bypass the skip_ts_read
-> cleanup block that would normally clear in_use and free the socket buffer?
-> Could this result in permanently leaking the SKB, exhausting the Tx tracker
-> slots, and unbounded timeout statistic increments?
-
-I think we probably should continue but mark the timestamp as stale just
-like we do with checking the ready bitmap. That way we safely handle
-that case and avoid storming the IRQ.
-
-Sashiko also says:
-
-> Removing the hardware read error fallback here, combined with the early
-> continue on error in ice_ptp_process_tx_tstamp() above, appears to leave
-> in_use set without marking the timestamp as stale.
-> If the PHY becomes temporarily unreadable during a link down transition, does
-> ice_ptp_tx_tstamps_pending() in IRQ context evaluate to true, continuously
-> re-arming and triggering the interrupt in an infinite loop?
-The IRQ will storm regardless in that case because the in_use is set. If
-we mark it as stale that would stop the re-arming of the interrupt.
-
-
-> +		}
-> +
->  		ice_trace(tx_tstamp_fw_done, tx->tstamps[idx].skb, idx);
->  
->  		/* For PHYs which don't implement a proper timestamp ready
-> @@ -2764,10 +2780,14 @@ static bool ice_port_has_timestamps(struct ice_ptp_tx *tx, bool in_irq)
->  		if (!tx->init)
->  			return false;
->  
-> -		if (in_irq)
-> +		if (in_irq) {
-> +			if (!ice_ptp_is_tx_tracker_up(tx))
-> +				return false;
-> +
->  			return bitmap_andnot(tstamps, tx->in_use, tx->stale, tx->len);
-> -		else
-> +		} else {
->  			return !bitmap_empty(tx->in_use, tx->len);
+> +		if (static_branch_unlikely(&idpf_xdp_fb) && vport->xdpsq_fb) {
+> +			xdpsq->pending_mask = masks[i - sqs];
+> +			xdpsq->last_ntu = 0;
 > +		}
 >  	}
+>  
+>  	return 0;
+> +
+> +err_masks:
+> +	vport->xdpsq_fb = false;
+> +
+> +	for (u32 i = 0; i < vport->num_xdp_txq; i++)
+> +		kfree(timers[i]);
+> +
+> +	return -ENOMEM;
+
+> Does this mix goto-based cleanup with __free() declarations?
+> The kernel cleanup guidelines mention that the expectation is that
+> usage of goto and cleanup helpers is never mixed in the same function.
+> Could this be converted entirely to scope-based cleanup to avoid
+> violating the cleanup subsystem rules?
+
+Yes it does, BUT. While you can you __free() for pointers on the stack,
+you can't use it for pointers in the dynamically allocated array.
+So the arrays themselves are cleaned up automatically, while the
+pointers inside them are freed manually.
+
+The sole alternative solution would be to free everything manually, but
+this would complicate already quite sloppy code even more.
+
 >  }
 >  
-> @@ -2790,41 +2810,18 @@ static bool ice_any_port_has_timestamps(struct ice_pf *pf, bool in_irq)
->  
->  bool ice_ptp_tx_tstamps_pending(struct ice_pf *pf, bool in_irq)
+> -void idpf_xdpsqs_put(const struct idpf_vport *vport)
+> +void idpf_xdpsqs_put(struct idpf_vport *vport)
 >  {
-> -	struct ice_hw *hw = &pf->hw;
-> -	int ret;
-> -
-> -	/* Check software indicator */
->  	switch (pf->ptp.tx_interrupt_mode) {
->  	case ICE_PTP_TX_INTERRUPT_NONE:
->  		return false;
->  	case ICE_PTP_TX_INTERRUPT_SELF:
-> -		if (ice_port_has_timestamps(&pf->ptp.port.tx, in_irq))
-> -			return true;
-> -		break;
-> +		return ice_port_has_timestamps(&pf->ptp.port.tx, in_irq);
->  	case ICE_PTP_TX_INTERRUPT_ALL:
-> -		if (ice_any_port_has_timestamps(pf, in_irq))
-> -			return true;
-> -		break;
-> +		return ice_any_port_has_timestamps(pf, in_irq);
->  	default:
->  		WARN_ONCE(1, "Unexpected Tx timestamp interrupt mode %u\n",
->  			  pf->ptp.tx_interrupt_mode);
-> -		break;
-> -	}
-> -
-> -	/* Check hardware indicator */
-> -	ret = ice_check_phy_tx_tstamp_ready(hw);
-> -	if (ret < 0) {
-> -		dev_dbg(ice_pf_to_dev(pf), "Unable to read PHY Tx timestamp ready bitmap, err %d\n",
-> -			ret);
-> -		/* Stop triggering IRQs if we're unable to read PHY */
->  		return false;
->  	}
-> -
-> -	/* ice_check_phy_tx_tstamp_ready() returns 1 if there are timestamps
-> -	 * available, 0 if there are no waiting timestamps, and a negative
-> -	 * value if there was an error (which we checked for above).
-> -	 */
-> -	return ret > 0;
+>  	struct net_device *dev;
+>  	u32 sqs;
+
+[...]
+
+> @@ -250,6 +308,65 @@ static int idpf_xdp_parse_cqe(const struct idpf_splitq_4b_tx_compl_desc *desc,
+>  	return upper_16_bits(val);
 >  }
 >  
->  /**
-> @@ -2915,7 +2912,8 @@ static void ice_ptp_maybe_trigger_tx_interrupt(struct ice_pf *pf)
->  	if (!ice_pf_src_tmr_owned(pf))
->  		return;
->  
-> -	if (ice_ptp_tx_tstamps_pending(pf, false)) {
-> +	if (ice_ptp_tx_tstamps_pending(pf, false) ||
-> +	    ice_check_phy_tx_tstamp_ready(hw)) {
->  		dev_dbg(dev, "PTP periodic task detected waiting timestamps. Triggering Tx timestamp interrupt now.\n");
->  
+> +static u32 idpf_xdpsq_poll_fb(struct idpf_tx_queue *xdpsq, u32 budget)
+> +{
+> +	struct idpf_compl_queue *cq = xdpsq->complq;
+> +	unsigned long *mask = xdpsq->pending_mask;
+> +	u32 done_frames, tx_cnt, new_ntc;
+> +	u32 ntc = cq->next_to_clean;
+> +	u32 cnt = cq->desc_count;
+> +	bool gen;
+> +
+> +	gen = idpf_queue_has(GEN_CHK, cq);
+> +
+> +	for (done_frames = 0; done_frames < budget; ) {
+> +		int ret;
+> +
+> +		ret = idpf_xdp_parse_cqe(&cq->comp[ntc].common, gen);
+> +		if (ret >= 0) {
+> +			__clear_bit(ret, mask);
 
-Sashiko (and Aleks Loktionov!) says:
+> Is it possible for a buggy or malicious firmware to return an out-of
+> bounds completion tag here?
+> While it was noted in the commit message that cards have not been seen
+> writing garbage, firmware is considered an untrusted source by kernel
+> security standards. Could a large value in ret bypass the size of
+> pending_mask and cause an out-of-bounds write?
 
-> The ice_check_phy_tx_tstamp_ready() function can return a negative error
-> code on failure.
-> By evaluating it directly in this boolean condition without checking if the
-> return value is > 0, will a negative error code evaluate to true?
-> Could this cause the watchdog to endlessly trigger spurious Tx timestamp
-> hardware interrupts whenever the PHY read fails?
-I'll fix this in v2.
+Tags are written by HW, not FW. If we needed to verify everything that
+HW writes, our best would be 20 Mpps instead of almost 100 :p
 
->  		wr32(hw, PFINT_OICR, PFINT_OICR_TSYN_TX_M);
-> 
+> +			done_frames++;
+> +
+> +			goto next;
+> +		}
+> +
+> +		switch (ret) {
+> +		case -ENODATA:
+> +			goto out;
+> +		case -EINVAL:
+> +			break;
+> +		}
+> +
+> +next:
+> +		if (unlikely(++ntc == cnt)) {
+> +			ntc = 0;
+> +			gen = !gen;
+> +			idpf_queue_change(GEN_CHK, cq);
+> +		}
+> +	}
+> +
+> +out:
+> +	cq->next_to_clean = ntc;
+> +
+> +	if (unlikely(!done_frames))
+> +		return 0;
+> +
+> +	tx_cnt = xdpsq->desc_count;
+> +
+> +	/* Don't go past next_to_use */
+> +	__set_bit(xdpsq->next_to_use, mask);
+> +
+> +	new_ntc = find_next_bit(mask, tx_cnt, xdpsq->next_to_clean);
+> +	done_frames = new_ntc - xdpsq->next_to_clean;
+> +
+> +	if (new_ntc == tx_cnt)
+> +		done_frames += find_first_bit(mask, tx_cnt);
+> +
+> +	__clear_bit(xdpsq->next_to_use, mask);
+> +
+> +	return done_frames;
 
+> If out-of-order completions are processed, could this cause the XDP Tx
+> cleanup timer to permanently stall?
+> If completions are processed in the loop above (so done_frames > 0)
+> but the descriptor exactly at next_to_clean is still pending, the new
+> done_frames calculated here will be 0. Returning 0 back up the call
+> chain will reach libeth_xdpsq_run_timer() in include/net/libeth/xdp.h:
+
+The timer is cold path for cleanup only (as hotpath only cleans 1/4 of
+the ring at most) and is run in 1 second after the last completion
+polling, meaning no traffic at all. Hotpath will still try to complete
+descriptors each time a new batch is to be sent.
+
+> +}
+> +
+>  u32 idpf_xdpsq_poll(struct idpf_tx_queue *xdpsq, u32 budget)
+>  {
+>  	struct idpf_compl_queue *cq = xdpsq->complq;
+
+I hope that explanation is enough.
+
+Thanks,
+Olek
