@@ -1,91 +1,91 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1BABEC61DB9
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A8E3C61DCA
 	for <intel-wired-lan@archiver.kernel.org>; Tue, 25 Aug 2026 22:55:13 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id DE20A4073C;
-	Tue, 25 Aug 2026 22:55:12 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 30F8360743;
+	Tue, 25 Aug 2026 22:55:13 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id AbtcFXvAZtuP; Tue, 25 Aug 2026 22:55:12 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id jvongF9yd02Q; Tue, 25 Aug 2026 22:55:12 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1787698511;
-	bh=/zysGyK4DsLqHIDA5e7bKk9ksazejMCwNbaI9lvlLWM=;
+	s=default; t=1787698512;
+	bh=dagr/JoAFwzMN47/fBNTN0ZmpygI9aa2PAzzBV4KFoo=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=D5jR+Gso0unkm9+vhcdevp3AEX8Y3cS2MgKXvB1lj2Hmmpix/lmu+3sNSqJLSXN3P
-	 miK7kBLg9iH7olrVPhuZjQEO9iVPbHov2TL6BGKHaYDVgIXNAgh64S0FBWnXVyQP8g
-	 ZchBHsDsWATNyF5sh1mLQEu2uRwTEZZmFjlnflO7Pf77b74JNCXfUN3udX4vYbOZKr
-	 1gMu+wVdTAXOK9HX1zymDRjHz6FdaySqpc7v2UMxUiDJ7ibLZoVDJKQR4qXvol/IYb
-	 YjEuiQSs3FyfwpNDZi8gkWtH4BmVg7Cnop5Uwb0xaL3Ysa7CdwlhVVBUf/pjnE6NEj
-	 wLuy1iZlQpkCA==
+	b=W2NPCU5o6nPGg0z2EpUdeHC5VmbEszX+deRGiozEDP5S0wpZ2FSzrLLBEobxGunRQ
+	 684yNXfQezAZE7gFSAhTJhYzwQ1CmG7pQTBPiQlUQEjwrO/y7p9GL4dXuh8uG97tQo
+	 tGhMI0ms5V75QFvmytkJtPgdE+ESV3W3KiDnc44uYoBEn8XucMSEasqgP3P1lx6sCj
+	 ozAlhyIVF2NtyMx6O3t5HunF5anRY6cf5KlOXEF321Ppy6llFwHMqsgVP6vzRasprk
+	 ryalNplTzgFZ8JnStSF9yzLfixae+M1aRTqmjh22OGNtqXUbj9Iz+nw7MwkOwZuoU7
+	 G3u2NmXVjqdog==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id E223640746;
-	Tue, 25 Aug 2026 22:55:11 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id C152E230
- for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Aug 2026 22:55:07 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 7768B60748;
+	Tue, 25 Aug 2026 22:55:12 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 04110334
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Aug 2026 22:55:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id A779F406E5
+ by smtp1.osuosl.org (Postfix) with ESMTP id DE89F80C0C
  for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Aug 2026 22:55:07 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id mApks-GCh7Az for <intel-wired-lan@lists.osuosl.org>;
- Tue, 25 Aug 2026 22:55:06 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id jHEd9GiZ8SbP for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 25 Aug 2026 22:55:07 +0000 (UTC)
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.19;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org;
+Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp4.osuosl.org;
+Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=lCOenrk0
+ header.a=rsa-sha256 header.s=Intel header.b=heCDwkVl
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
- by smtp4.osuosl.org (Postfix) with ESMTPS id A7E9E40688
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 0503580C0F
  for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Aug 2026 22:55:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
  t=1787698507; x=1819234507;
  h=from:date:subject:mime-version:content-transfer-encoding:
  message-id:references:in-reply-to:to:cc;
- bh=DADCx5ikbCjxZtfqVaLtabxb276pvs/kXKBlg9ol2f0=;
- b=lCOenrk0BO1TUiFaLigScwvwk1BQCFD1IjmBjDazkXXuGXUuqPsJymLG
- gejqNc5P6ls64zBHpE3Drx2pLhbf9OCFF+//dyQrQvQQCg43L9jqiaXJx
- /nF/J27kd/NZZ6SZC2QYWGtFAo3b/wcy9jdfGdXNw0WFCrdgib8dyWUfi
- adRTvFylFKUL6eMOQx7u0vFPtPBLaubeL/cGzqG8zsYJuA0iNNLm6nmHF
- A3zpfDRg0vX5QeZmzb7+GJDlxLxyXLkqooZnbJecPLmaGbWuWMjgTRUss
- o02wqoWn3xeDaGn5czS+QKxS804wCn9qvSCCF6Tg7MUzAcGI7SXOA5+qY Q==;
-X-CSE-ConnectionGUID: QEr8HJ2nQompBLMlDZQq/Q==
-X-CSE-MsgGUID: 79cL7qdfRgeJxfq/UIY90Q==
-X-IronPort-AV: E=McAfee;i="6800,10657,11886"; a="87120425"
-X-IronPort-AV: E=Sophos;i="6.25,243,1779174000"; d="scan'208";a="87120425"
+ bh=a99FOWCs/bYkfVBGeGgPD01SSReMylnTPDv5YtBzeVc=;
+ b=heCDwkVl+unbWpvce3iPr1yo3JIjwDrh5qjDz22vP7B61l1JS71dwWiI
+ uxoBHnH6s8/bitn1bx7SaXqHUcPNtvQi7uXllQO1GgFSHAx4L1CNbxv+2
+ StLN8BVf5njmGdYUaI48e6Z2je8YU9e/2ynt9fvnu3nbN8sPE2+H+h9zL
+ WEIOvVkDcWhYvewdKCR0uQi3l/a5xstkh5bN4mlPTDIsVTASZGtWhIYPf
+ rEyvMVgFwKfCyiMUleeIspRZFuA37Ctbp+YTw8ZG8ic5uy0GOTJJfWMso
+ BuPLigkeHU758Wlmob8/T0eTNRtY/Es3c81wc8nBaznMANGipp5b+KB1v Q==;
+X-CSE-ConnectionGUID: pNsDNArsRHCwVZLlqCLYWA==
+X-CSE-MsgGUID: T2Xzcr94SeKyZwuS2/PdZQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11886"; a="87120428"
+X-IronPort-AV: E=Sophos;i="6.25,243,1779174000"; d="scan'208";a="87120428"
 Received: from fmviesa008.fm.intel.com ([10.60.135.148])
  by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  25 Aug 2026 15:55:06 -0700
-X-CSE-ConnectionGUID: r7EGaFgHRXmNyLaYQR0A1Q==
-X-CSE-MsgGUID: HfkQSuG6Traqb9bCoEnPBw==
+X-CSE-ConnectionGUID: 1CrmWsfjTx6o9PQX3SXUqQ==
+X-CSE-MsgGUID: Mx03oinZQwWGg7qg4zNNUQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,243,1779174000"; d="scan'208";a="264789671"
+X-IronPort-AV: E=Sophos;i="6.25,243,1779174000"; d="scan'208";a="264789674"
 Received: from orcnseosdtjek.jf.intel.com (HELO [10.166.28.109])
  ([10.166.28.109])
  by fmviesa008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  25 Aug 2026 15:55:05 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 25 Aug 2026 15:53:28 -0700
-Subject: [PATCH iwl-net v2 04/14] ice: E822: keep Tx timestamps disabled
- during offset calibration
+Date: Tue, 25 Aug 2026 15:53:29 -0700
+Subject: [PATCH iwl-net v2 05/14] ice: E822: cancel offset verification
+ work during reset preparation
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260825-jk-e825c-minimized-fixes-v2-4-8223f95d26e3@intel.com>
+Message-Id: <20260825-jk-e825c-minimized-fixes-v2-5-8223f95d26e3@intel.com>
 References: <20260825-jk-e825c-minimized-fixes-v2-0-8223f95d26e3@intel.com>
 In-Reply-To: <20260825-jk-e825c-minimized-fixes-v2-0-8223f95d26e3@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
@@ -99,15 +99,16 @@ Cc: netdev@vger.kernel.org,
  Karol Kolacinski <karol.kolacinski@intel.com>, 
  Aleksandr Loktionov <aleksandr.loktionov@intel.com>, 
  Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>, 
- Przemyslaw Korba <przemyslaw.korba@intel.com>
+ Przemyslaw Korba <przemyslaw.korba@intel.com>, 
+ Maciek Machnikowski <maciej.machnikowski@intel.com>
 X-Mailer: b4 0.17-dev-c276d
-X-Developer-Signature: v=1; a=openpgp-sha256; l=4837;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2262;
  i=jacob.e.keller@intel.com; h=from:subject:message-id;
- bh=Mk4dR0jl1aKzjq+uRi7trGpIdPS1BReUetnmDWNHCEE=;
- b=owGbwMvMwCWWNS3WLp9f4wXjabUkhqw+Wesbe9ea15gstMnik2EP1GR7eSa5yPTZ8V7Feb9/7
- U46zhvfUcrCIMbFICumyKLgELLyuvGEMK03znIwc1iZQIYwcHEKwETi1Rj+Sv/b80//8/Zbju/u
- 7vm96N3HI7v+Ghg5C//1Pzh92jKHiipGhs5uu+cPDC+1JMbIBYW4Cp6O1PaWS91/Pfm8i9SJ6rQ
- wFgA=
+ bh=K87Sta57oonzmfFQbJSMEr1vapfGSR0f3s8Z4O6rPj8=;
+ b=owGbwMvMwCWWNS3WLp9f4wXjabUkhqw+WRuLzL9yXWffv77wcAX3gnk5k6V0jltnr1hV/y3Kv
+ Efwnd3rjlIWBjEuBlkxRRYFh5CV140nhGm9cZaDmcPKBDKEgYtTACZy7B4jw2tBnRVmvtt5uh7Z
+ OE4xfS6jcSrZI4Lbdfb5rEXmByR+rWJkuPzmwsrNy3zn2jvemGySYJ5cm79sceSPdpfofK+CWNv
+ PXAA=
 X-Developer-Key: i=jacob.e.keller@intel.com; a=openpgp;
  fpr=204054A9D73390562AEC431E6A965D3E6F0F28E8
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -126,110 +127,52 @@ Errors-To: intel-wired-lan-bounces@osuosl.org
 
 From: Karol Kolacinski <karol.kolacinski@intel.com>
 
-Do not clear the tx.calibrating flag immediately after starting the PHY
-timer in ice_ptp_port_phy_restart(). Instead, keep Tx timestamps
-disabled until the offset verification work (ice_ptp_wait_for_offsets)
-has confirmed that both Tx and Rx PHY offsets are properly configured.
+Cancel the offset verification delayed work (ov_work) during PTP reset
+preparation to prevent it from running concurrently with the reset
+sequence.
 
-Previously, tx.calibrating was set to true, then immediately back to
-false right after ice_start_phy_timer_e82x() returned. This allowed Tx
-timestamp requests to be served during the window where offset
-verification was still pending. Timestamps produced during this window
-use uncalibrated PHY offsets and can produce incorrect values.
+Without this, ice_ptp_wait_for_offsets() can execute during a reset,
+find that ice_is_reset_in_progress() is true, and re-queue itself in a
+tight loop. Meanwhile, the reset path in ice_ptp_rebuild_owner() calls
+ice_ptp_port_phy_restart(), which starts a new ov_work. This results in
+two ov_work instances running simultaneously, racing over the PHY offset
+registers and the calibrating flag.
 
-When ptp4l receives incorrect timestamps, it may reject them and wait
-for the next sync interval (typically 1-2 seconds), compounding delays
-during link cycling. This contributes to the time transmitter port
-becoming unresponsive after repeated link down/up cycles.
+Cancel ov_work in ice_ptp_prepare_for_reset() alongside the existing
+cancellation of the Tx tracker. The comment in the existing code already
+documents that ov_work interference during reset is a concern but only
+cancels it during ice_ptp_release().
 
-Move the tx.calibrating = false to ice_ptp_wait_for_offsets(), after
-both Tx and Rx offset configuration has completed successfully. This
-ensures that Tx timestamps are only reported with properly calibrated
-PHY offsets.
-
-If ice_start_phy_timer_e82x() fails, do not restore calibrating to false.
-The device is in a state where timestamps cannot succeed properly anyways.
-A dev_err message is already logged on failure to start the timer at the
-end of the function.
-
-Log a debug message while offset calibration is still pending, including
-the specific Tx/Rx error codes to aid debugging stalled calibration.
-This path is expected on every routine link-up: ov_work is first queued
-with no delay and the vernier offset cannot be computed until at least
-one packet has been transmitted, so the first several invocations
-normally land here. Use dev_dbg() rather than a rate-limited warning to
-avoid emitting KERN_WARNING on every link-up during normal operation.
-Log a debug message when calibration completes successfully.
-
-Fixes: 3a7496234d17 ("ice: implement basic E822 PTP support")
+Fixes: 4809671015a1 ("ice: Fix E810 PTP reset flow")
 Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
 Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
 Signed-off-by: Przemyslaw Korba <przemyslaw.korba@intel.com>
+Reviewed-by: Maciek Machnikowski <maciej.machnikowski@intel.com>
+Tested-by: Alexander Nowlin <alexander.nowlin@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ptp.c | 30 +++++++++++++++++++++++++-----
- 1 file changed, 25 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_ptp.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index 68537705e839..d018f02f700d 100644
+index d018f02f700d..9bf3bac552f1 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -1156,6 +1156,7 @@ static int ice_ptp_check_tx_fifo(struct ice_ptp_port *port)
- static void ice_ptp_wait_for_offsets(struct kthread_work *work)
- {
- 	struct ice_ptp_port *port;
-+	unsigned long flags;
- 	struct ice_pf *pf;
- 	struct ice_hw *hw;
- 	int tx_err;
-@@ -1178,12 +1179,28 @@ static void ice_ptp_wait_for_offsets(struct kthread_work *work)
- 		tx_err = ice_phy_cfg_tx_offset_e82x(hw, port->port_num);
- 	rx_err = ice_phy_cfg_rx_offset_e82x(hw, port->port_num);
- 	if (tx_err || rx_err) {
--		/* Tx and/or Rx offset not yet configured, try again later */
-+		/* Tx and/or Rx offset not yet configured, try again later.
-+		 * This is expected during normal link-up: the vernier offset
-+		 * calibration cannot complete until at least one packet has
-+		 * been transmitted, so the first retries routinely land here.
-+		 */
-+		dev_dbg(ice_pf_to_dev(pf),
-+			"PTP offset not yet valid for port %u (tx_err=%d rx_err=%d)\n",
-+			port->port_num, tx_err, rx_err);
- 		kthread_queue_delayed_work(pf->ptp.kworker,
- 					   &port->ov_work,
- 					   msecs_to_jiffies(100));
+@@ -2998,6 +2998,14 @@ void ice_ptp_prepare_for_reset(struct ice_pf *pf, enum ice_reset_req reset_type)
+ 	if (reset_type == ICE_RESET_PFR)
  		return;
- 	}
+ 
++	/* Cancel the offset verification work for E82x before releasing the
++	 * Tx tracker. If ov_work is running during reset, it may issue
++	 * sideband queue commands that will fail or timeout, and may
++	 * reference state that is being torn down.
++	 */
++	if (hw->mac_type == ICE_MAC_GENERIC)
++		kthread_cancel_delayed_work_sync(&ptp->port.ov_work);
 +
-+	/* Tx and Rx offsets are now configured, enable Tx timestamps */
-+	spin_lock_irqsave(&port->tx.lock, flags);
-+	port->tx.calibrating = false;
-+	spin_unlock_irqrestore(&port->tx.lock, flags);
-+
-+	dev_dbg(ice_pf_to_dev(pf),
-+		"PTP offset valid for port %u, Tx timestamps enabled\n",
-+		port->port_num);
- }
+ 	if (ice_pf_src_tmr_owned(pf) && hw->mac_type == ICE_MAC_GENERIC_3K_E825)
+ 		ice_ptp_prepare_rebuild_sec(pf, false, reset_type);
  
- /**
-@@ -1269,10 +1286,13 @@ ice_ptp_port_phy_restart(struct ice_ptp_port *ptp_port)
- 		if (err)
- 			break;
- 
--		/* Enable Tx timestamps right away */
--		spin_lock_irqsave(&ptp_port->tx.lock, flags);
--		ptp_port->tx.calibrating = false;
--		spin_unlock_irqrestore(&ptp_port->tx.lock, flags);
-+		/* Do not clear calibrating flag here. Tx timestamps remain
-+		 * disabled until ice_ptp_wait_for_offsets() has verified
-+		 * that the Tx and Rx offset calibration has completed.
-+		 * Clearing it here would allow Tx timestamps to be reported
-+		 * before the PHY offset registers are configured, leading
-+		 * to incorrect timestamp values.
-+		 */
- 
- 		kthread_queue_delayed_work(pf->ptp.kworker, &ptp_port->ov_work,
- 					   0);
 
 -- 
 2.55.0.814.gc42f45431d0f
