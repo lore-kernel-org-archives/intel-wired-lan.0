@@ -1,120 +1,120 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 991B5C5DF9C
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 25 Aug 2026 00:17:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BAB35C5DF9C
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 25 Aug 2026 00:24:46 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 57E954052A;
-	Tue, 25 Aug 2026 00:17:46 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 8ZpPUw4w3b7y; Tue, 25 Aug 2026 00:17:45 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1787617065;
-	bh=chkDZ42P8bP0lb+RYEcrDyntz6eyh4CFt13QWhq6Rc8=;
-	h=Date:Subject:To:CC:References:From:In-Reply-To:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=G+SSseQYFrnVbcw7iAP+YfXU9VEOGoSEWI++tHlfqIFIKijqLmDXBRHF6MH5jnga1
-	 j/SzdmNhIK9H7uk/hmcpuj0notUecwiNIJ+JtrgUvKK+h0yHsq8TN8sqkeqOvgtp99
-	 4DRdwixmlQE4/l0JfDctCnD0EvQMcJZKauTsDbrC2QGLllQCbwVqjMaLSOy+1ZRrNh
-	 S7GiKQGXi4nhC7AsRkUNxT2/9Kiq1jrk2DW3vv/Dq40Rt0+D0lPe7Dn30TPxfsLl2t
-	 3bWiecpvIzf+gV54bdF6GSDZhpjmaQVuwRizeVZsGhOXiPvcL6ztDMVq5WMsfy6DTj
-	 lqYh1n+GMc0ig==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 8A2DA4043E;
-	Tue, 25 Aug 2026 00:17:45 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id E69FD4B8
- for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Aug 2026 00:17:43 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id D76DE6063A
- for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Aug 2026 00:17:43 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 7517660674;
+	Tue, 25 Aug 2026 00:24:46 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Vz4LrU2-oJwH for <intel-wired-lan@lists.osuosl.org>;
- Tue, 25 Aug 2026 00:17:43 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.18;
+ id 5k51FUhqo4iO; Tue, 25 Aug 2026 00:24:45 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1787617485;
+	bh=APnQLEojM7XnPdh3X+gA+py67Dj85Y0JcAa56x82g/A=;
+	h=Date:Subject:To:CC:References:From:In-Reply-To:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=NPxHVIq5jPRJhMvRaGUlCcB7wIJKNcHxunGR5n1ReltmhfvO6EagyW/rRiHtb2rzx
+	 eQycJ8q5s9z249veKJsMla7Q3IptllnI8xEhBgZF+DdvhzpWGvxJHrFo4DZbzCEqAN
+	 Fq+cOLSmR55DFeJnuketmciYDadhjA4GayJ/JZoGQi/H7VT/moUcGBVcl5PWdGp5Ot
+	 Lw3M2OraixJM+xVZJdrkmIg7ReXjWkEw9+zHkgWT7ZZMZ3zfAkzDHUbEpTDEP0oiVS
+	 +BbHPVXQdiHBulWRxiesI86g/b0yFr6iB5lx1LgAN9IQkrrjUbRUeH4oEXyIWGl4TK
+	 upJUWZ9RMzNxA==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp3.osuosl.org (Postfix) with ESMTP id 0757960667;
+	Tue, 25 Aug 2026 00:24:45 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id BD8214B8
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Aug 2026 00:24:43 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id A3A454005F
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Aug 2026 00:24:43 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id tvwVQ1UguZcE for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 25 Aug 2026 00:24:43 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.10;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp3.osuosl.org;
+Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
+Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=CjFE74hT
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
- by smtp3.osuosl.org (Postfix) with ESMTPS id C925D60618
- for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Aug 2026 00:17:42 +0000 (UTC)
+ header.s=Intel header.b=POxD5RyM
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id AFDA040050
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Aug 2026 00:24:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1787617062; x=1819153062;
+ t=1787617483; x=1819153483;
  h=message-id:date:subject:to:cc:references:from:
  in-reply-to:content-transfer-encoding:mime-version;
- bh=dj54Qhk4C6HqgKaiZPC4tro2HTNftlFsajRVGq3NxLA=;
- b=CjFE74hTQCMjfvwAAT3SOtQM7gIRCBAOyrIc4edZcajHODWZr5valxHD
- qSLjPx0aMSPtGN2zRpS/9YT5PSmQTC62k2uVQ05Y/sBEJPud4a/+EO53A
- 98bJBTsXOM+3HJ8RG9RM8CfQmcAr+jMiPu5FL+5C2mPJhtGiLVGD80ZVk
- IBHL48zSPcKKxzULll+EJHfaXr0YrGJwAWgCjGdZrYrfT6O2BM/4M38GZ
- 2HZRsG/46eFpKyXPyeTy2Utjwi1UBx6qfq8C8+qKee4eUmPdp/yQ7inoF
- rtMvwJOeHMuHG3oBy5pyX6a9IxboERvUnXQCT0gjauEkJo5vDyFhZyins Q==;
-X-CSE-ConnectionGUID: y/SS0OgLT8ayZIqG9O3I4Q==
-X-CSE-MsgGUID: BIbeoZTZQFa9Mt20WAxWnA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11885"; a="87204739"
-X-IronPort-AV: E=Sophos;i="6.25,241,1779174000"; d="scan'208";a="87204739"
-Received: from fmviesa006.fm.intel.com ([10.60.135.146])
- by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 24 Aug 2026 17:17:41 -0700
-X-CSE-ConnectionGUID: HG3uXFO9TaSe+MLFNuSajw==
-X-CSE-MsgGUID: Y5k15f8CSi6K52YJW3Qo+Q==
+ bh=zkDduwOtDdD8AzSFvhAQR/pmV1FXalKeoh1ZSPkhCnA=;
+ b=POxD5RyMAKQPIymdsWQjusj52Nfs9iZ9B/+8OXKk25Je/C8+/chWqLR1
+ bXk2xwLT7N6jsir9jt25A1C7GW0JJn7kmIo7FPZsg6PKgul5H35ide86c
+ SwBD9IA+BVvJG47Dkfti/y0XEtHa9wHWxvdrOfFMnV99glXwRVbLy6V8P
+ rUjCMf/DRZ+3RB87WcTZBmbRSzIzs6n+R+B2vq1pouzDJq99qLvnzfex8
+ 0JeZxsMYYr71X9vYlcWcqoHCHzgYTyVv0YH4jj8jFfBUVpkC7daxZmHSi
+ 4ev42RSpoWwVAkuYHf2c/pgBzo0W1ACcUybwXjQxySJPZRPLEESeAwwso g==;
+X-CSE-ConnectionGUID: OkHYKnEzRW+TMdff0R27rw==
+X-CSE-MsgGUID: bOjA7PUwQdmF67Ynnoel6A==
+X-IronPort-AV: E=McAfee;i="6800,10657,11885"; a="99428438"
+X-IronPort-AV: E=Sophos;i="6.25,241,1779174000"; d="scan'208";a="99428438"
+Received: from orviesa001.jf.intel.com ([10.64.159.141])
+ by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 24 Aug 2026 17:24:40 -0700
+X-CSE-ConnectionGUID: hT3Lkne4R3qv6oAFOxmk7w==
+X-CSE-MsgGUID: 7lzxvMN/S2CNEuBacwUTng==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,241,1779174000"; d="scan'208";a="262837335"
-Received: from orsmsx902.amr.corp.intel.com ([10.22.229.24])
- by fmviesa006.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 24 Aug 2026 17:17:41 -0700
-Received: from ORSMSX902.amr.corp.intel.com (10.22.229.24) by
- ORSMSX902.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
+X-IronPort-AV: E=Sophos;i="6.25,241,1779174000"; d="scan'208";a="305381907"
+Received: from fmsmsx902.amr.corp.intel.com ([10.18.126.91])
+ by orviesa001.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 24 Aug 2026 17:24:40 -0700
+Received: from FMSMSX903.amr.corp.intel.com (10.18.126.92) by
+ fmsmsx902.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.45; Mon, 24 Aug 2026 17:17:41 -0700
-Received: from ORSEDG903.ED.cps.intel.com (10.7.248.13) by
- ORSMSX902.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
+ 15.2.2562.45; Mon, 24 Aug 2026 17:24:39 -0700
+Received: from fmsedg903.ED.cps.intel.com (10.1.192.145) by
+ FMSMSX903.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.45 via Frontend Transport; Mon, 24 Aug 2026 17:17:41 -0700
-Received: from CY3PR05CU001.outbound.protection.outlook.com (40.93.201.53) by
- edgegateway.intel.com (134.134.137.113) with Microsoft SMTP Server
+ 15.2.2562.45 via Frontend Transport; Mon, 24 Aug 2026 17:24:39 -0700
+Received: from PH0PR06CU001.outbound.protection.outlook.com (40.107.208.41) by
+ edgegateway.intel.com (192.55.55.83) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.45; Mon, 24 Aug 2026 17:17:41 -0700
+ 15.2.2562.45; Mon, 24 Aug 2026 17:24:38 -0700
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=ZysUodLVRNXQcy4ZeneAqjO6JpHQDin7hp7RWIAL3JzbRPD2iqw3XWes1IgYDxRoQ/OZU8cV/vMZwbIzLtkKri6oEtf2bfsULQOAbttkpT5M9Z+9wocSlWIQMquKtUqLN3z+488m8Ti5dryCEvd+1DCb+6dS3j3pvjGT71nwXwaoXMqYqMYC7yY1hKqFVlsx+IRM81oF4JtzgHyzjHyZsT+jNlBA7FyyjhzBnpBVA+LkKhyzsF50ChV6l9Qozg80VfC4KnBERI91Qo7qHpWuluKiVJcWUu7I3insbzm4YvRs0DjrHs+siZkbT4UanZ5G3Ot9etByUEAfOuoZzBskOw==
+ b=jSvLoa+WYFfwYokHcmJZEe2hN+Q9ijsLdOjuWLxpIaZhkz2vN9gwJKv2HT7vdL5MSaVzcsos3TtXZIJujdc5aVAC4SpyFn/eNxaC7jnarsKphuCfhqAFxaVRraJmQiZQ9ddWN5tgUqABes5Hq/+I+AF/+MfvuEx99tafaoF1VeXnuuuL/PJW6AclOBKvMIGiRfIUAOUVDGyPkC97sc0+1F9e2K3Evj2iGC/VqHeLHMyYyhs6ZuoA30r96NPlvaPzx2lRt+5s1cQUlw22TsTy54VRJuwivk9BxqIenumxs12/anUceK7OH/b+6WOKBKkXs4c29QA6Rsm9rw5cQLm8ZA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=chkDZ42P8bP0lb+RYEcrDyntz6eyh4CFt13QWhq6Rc8=;
- b=jm1gekNJMtdo7VU2XA12z1aVFJ4AwwlUgXQ4XLL55feaDHfuGW35FPxoiBVIs51UF8ptwDLpPjyFvj1FWeAIZQEygQKsIawBxQrw7hFzptbzHYl5qXw/n5wfa/hjVyjfxjrkLYX1CHaosiMMYKaxQEiq2Ne6/4ze2hCaTJcGkeWfvFrK5vqRQDYUeJrgloo7xJbSasgxBhcFblzmN6AsCm0PO+YBiqAQesphHrjreYhq57Usy1aPtqnjBOaEEmAWRrLF/GdEpdtuSsUpgy18/DpaDGsL4KPF4pLzBIcYTc9N5VV4Vih8e9LZ8nwtih1QUvj+vnr8774xaUzna0m5Pw==
+ bh=APnQLEojM7XnPdh3X+gA+py67Dj85Y0JcAa56x82g/A=;
+ b=wmsllMKxLcGTcwVoShRRqgmSGaif6q/TDCcAmA74uEMxH0qwr7tzYERqXdcFbrC7OK2mMWttRPrYAtqaJ0+MZKeq51e/gxl3iQhbLabNa5JPRjmH8ZtrrF/QW81ZeGmkIsvCgZxMvH0kkN782f3Bv78wyBzFJ0lC4tgYsvogHoUHlb+8LWD4IS3B+qWuAu4zifEK/q9fdbDXSN2WBMo8Ie9Q1ZN0BYABHJ7exVRSqGNxy6+0FFelfd86fMEoezAJb21bqcW+OWt8OsM6a9Hjb/gaflmg5Qa7UuvYAnhUmQIoWIkwl24smepPiaUfFSOTXxWnpGra7VX9LWNgaKPS+g==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
  dkim=pass header.d=intel.com; arc=none
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=intel.com;
 Received: from DS0PR11MB7381.namprd11.prod.outlook.com (2603:10b6:8:134::14)
- by DSWPR11MB9763.namprd11.prod.outlook.com (2603:10b6:8:355::11) with
+ by IA3PR11MB140164.namprd11.prod.outlook.com (2603:10b6:208:548::5) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.339.12; Tue, 25 Aug
- 2026 00:17:39 +0000
+ 2026 00:24:37 +0000
 Received: from DS0PR11MB7381.namprd11.prod.outlook.com
  ([fe80::4c39:dfe6:d6dc:6f58]) by DS0PR11MB7381.namprd11.prod.outlook.com
  ([fe80::4c39:dfe6:d6dc:6f58%6]) with mapi id 15.21.0339.012; Tue, 25 Aug 2026
- 00:17:39 +0000
-Message-ID: <9773d301-867a-418c-bc9c-719ab51b4023@intel.com>
-Date: Mon, 24 Aug 2026 17:17:37 -0700
+ 00:24:37 +0000
+Message-ID: <75884c38-209c-476d-9796-50255a200cbf@intel.com>
+Date: Mon, 24 Aug 2026 17:24:35 -0700
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH iwl-net 10/12] ice: remove unnecessary discarding of
- timestamps after clock adjust
+Subject: Re: [PATCH iwl-net 11/12] ice: skip reading Tx ready bitmap on ports
+ with no timestamps
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
 CC: <netdev@vger.kernel.org>, Maciej Machnikowski
  <maciej.machnikowski@intel.com>, Anthony Nguyen <anthony.l.nguyen@intel.com>, 
@@ -123,79 +123,79 @@ CC: <netdev@vger.kernel.org>, Maciej Machnikowski
  <alexander.nowlin@intel.com>, <kevin.bross@intel.com>,
  <ranjit.cavatur@intel.com>
 References: <20260821-jk-e825c-minimized-fixes-v1-0-9d0731eb4858@intel.com>
- <20260821-jk-e825c-minimized-fixes-v1-10-9d0731eb4858@intel.com>
-Content-Language: en-US
+ <20260821-jk-e825c-minimized-fixes-v1-11-9d0731eb4858@intel.com>
 From: Jacob Keller <jacob.e.keller@intel.com>
-In-Reply-To: <20260821-jk-e825c-minimized-fixes-v1-10-9d0731eb4858@intel.com>
+Content-Language: en-US
+In-Reply-To: <20260821-jk-e825c-minimized-fixes-v1-11-9d0731eb4858@intel.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: MW4PR04CA0153.namprd04.prod.outlook.com
- (2603:10b6:303:85::8) To DS0PR11MB7381.namprd11.prod.outlook.com
+X-ClientProxiedBy: MW3PR06CA0019.namprd06.prod.outlook.com
+ (2603:10b6:303:2a::24) To DS0PR11MB7381.namprd11.prod.outlook.com
  (2603:10b6:8:134::14)
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS0PR11MB7381:EE_|DSWPR11MB9763:EE_
-X-MS-Office365-Filtering-Correlation-Id: edf9f69c-7c0b-4825-16d6-08df023e45a1
+X-MS-TrafficTypeDiagnostic: DS0PR11MB7381:EE_|IA3PR11MB140164:EE_
+X-MS-Office365-Filtering-Correlation-Id: 7e480de0-f669-43d2-36b3-08df023f3ec9
 X-LD-Processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
- ARA:13230040|1800799024|376014|23010399003|366016|10063799003|10067099003|4143699003|56012099006|11063799006|22082099003|18002099003;
-X-Microsoft-Antispam-Message-Info: 7CTYodTTHKKxz3WYe18NBDcy5q8gRqrPqnYpGiGTPx6LDEz03G0oVYSvFYO9VeExmVv5zCUzCkO3aHNWDe/ILLWrjDAhCmgNu+ayOakViXQr+f5BcrRglZUt9rvplFYDLfQZN4TjJvtQyBD3KifNnNOFDcpuXOKysZQ24ascSaLzk1TNFJ8M1OmcN7bt+IHkbQ4CwUAeRHbvEhyJOpniBYVRGl/Zr8dVwqW/so1hq5/Np6odCDlutRTqf+nP6x4elqj6epEHkkWwkak5V/dPQYpEMhq3cm09kgogHLUmRzLpR49HB2c4YXslrkvwDIQz4EM9IO8Vm7N9d663nwXuOX315BNLNGcxay0RAqr85GRTSws5PUCgAwscWaKhdstCveP8HI/e6kHmdH7kKXYhcmIEoN8dSwHh6axAjkQW8+P+jD6we1hT9/CCFoScciGI9kAtjseBRb9Qcz+20rPjY3tgTAWqJnJo1WYV8TR9EHb+AwWNSYY3raI5osJvAJO0mFklqz84GpXbLY/NEothLPjipLc3/xuOkP87g2LUsXvpza+jgb2DZtXnzB5e5Bqto6TwBtdjJSVOhF84q8o9tMYN/k3FbfOy1mKGCNkj9l5PV+Tnh/7944aRBPafaT2srfSJp0nmrCrifOk/nkhEbArkS6w+dd8RQFwOhome6ls=
+ ARA:13230040|23010399003|376014|1800799024|366016|10067099003|56012099006|4143699003|5023799004|11063799006|22082099003|18002099003|3023799007;
+X-Microsoft-Antispam-Message-Info: vGhFxqNakHQSzTmH9DQ7P/QpHoTSITZbY0PwF3JqpP858SDRCtjf2HRArkUFbxXn//OigUSsX08aQitAvHv1n7KIONn1Lm/76iRYWRUqOoj5Ikghb7Gy3IPuQll9rpNaK56UlZqNIpOgaf58l871o+l3AOBV3yqSrofn6t88s3kZWC5O++25Fsy8JAo/3IfOPjfZaxH70bLQ1IUQP8gFn9aw29HPv9EDImBJ8Gs00a1jv4NMUERIpRYGwVDFAlWHhXdKkIdfEGpYT5Uw5JRLZm4wP9ySpIeVJheVwubuffDKjQv2I5ZiGc1kBkw4hd5HYe1e/uQXsCcuSlkMKyOoAOSo6JPzGTUEFaDEFDUu89E/fE3FR9Yqzh8Z619X5zj7irPjVdE3ZH5lnFLV0rxZm5wD/PO3sbLNnUbiBQYyVSB9fJ30SUzyRXe7b/j5GaaW+BdjZhtpAuf0jHy6j6KsmSw/IgHJ2REZmc9y2oY1sf0M6lPnnpOsU7IuSd9DhbFkOJ7tI13MaXzvjp136HRdtPfKiEQ+49ez+QMns5DtSHcSDcp29CZxqQ/YCZtBN5g9fCy9thKaL50y2PqQgph29SRG8BRx9RaBkzrdSTOrPtoUsZWpgRPY4TiCoV7UI15Un0xq1H+i7QDMuJ4LVbfC5Rq++/z8YV403t+g7fllzdo=
 X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
  IPV:NLI; SFV:NSPM; H:DS0PR11MB7381.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230040)(1800799024)(376014)(23010399003)(366016)(10063799003)(10067099003)(4143699003)(56012099006)(11063799006)(22082099003)(18002099003);
+ SFS:(13230040)(23010399003)(376014)(1800799024)(366016)(10067099003)(56012099006)(4143699003)(5023799004)(11063799006)(22082099003)(18002099003)(3023799007);
  DIR:OUT; SFP:1101; 
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?Q2tmUXZza0VhNEZ0dHpmTG5jRURRV2VoQnpRTTBucUEvT0NpdjJLYzZvQ0JD?=
- =?utf-8?B?TEJFNk54NFVabTMxLytoYUxVdHFSWmYxT2JLY1dpenVoWFk3REVzNlJtejNU?=
- =?utf-8?B?WVEzR05KOHRUVE9NclJGR1puMnZCVzZpZUxCc3lSSnlncTVaK21wV3ExZDlF?=
- =?utf-8?B?L294cVZRT053ZHBVRVlUL0ZPU1F2K2FIVGQ2Vm4zSWY3c3NXM1JZRTVXaFZj?=
- =?utf-8?B?OTBjalpnV2JDbUliakxZSkFRM2pvdE95eWtTK2JIWHhyM0hVMjExKzRBS2dv?=
- =?utf-8?B?NEozYkp2Z1hGaGkrdG1aYmpTZWlvb1Mva2RLNmJKQjI0ck1IS0NCWVZ0T2hF?=
- =?utf-8?B?U28rV21wckZjYTB6SG83MXlmd0QxRjB5ZUVaUHh5ZjRHU1BIUVo0L3g1M1V4?=
- =?utf-8?B?cXE2c3g2NHRtaWRwWStQbE1wa3JJb3ZQT2hDYlppak84WkE2enVuWjViZDZC?=
- =?utf-8?B?Z0RXOHl6V3NmYkYyOUQ2SFY1MXdUSVZoUk1HYnhVK2ZmZVlUdGw3QTRVZTJi?=
- =?utf-8?B?ODRGbXpKNUJNQ09HdmM1SkJ1dDlwajhQV1M5WThzWW9VSlk1Y1krQTd6T1hk?=
- =?utf-8?B?akFMTzBnOGgwMU5GbkxmdFV6dlBSU0diZHdIRXVIamFyOTNjcGJnL216VVJD?=
- =?utf-8?B?L0ZrZzRUME9ZcEYzdHFWcjdjWW82MHcwSlhELzV3Mmduc3pYZDRoOFh3Z0dz?=
- =?utf-8?B?SHBQQTlKV2VLTlJvVEFlbFZnYzBrMGRqa2VDNXp4QlBTNXllOVVxN1dIOVBw?=
- =?utf-8?B?R2lYZ2U2Nm9hcm55M0h5OUp0TUpxQTdkeUFZK0RYOTRVSlN5amtBdUJNYlJ5?=
- =?utf-8?B?S1lVRHBWa0R4bWorbUtqVktuYWdUZmdCSkRYL05tS2FLcVFjMFVvck83UXFo?=
- =?utf-8?B?QTc0amV5S1RYZmRkN2JtZGM0R0lIT2RTZFVMSG5HRnkvb1ZpNUhucisySlVl?=
- =?utf-8?B?ZEJuaHhEcFlTMW1NVjEwbHl5N3Q1TWNSemttVzVWL1lJSVlSbkVVMjRQZlFR?=
- =?utf-8?B?ZFp5dkhMQThRVGhWYTdKWXJPS1hEZFdlUVRIVmc2MFlHSjVpQWc5K3gzN2hE?=
- =?utf-8?B?ZnpYM1Q0bE5xdmV1UVJQVGNTdkJaWStoMEpaNGRscVNYNFplRWNmSmdYMkg1?=
- =?utf-8?B?anQ4K3hsRHdDV1B3SVVCakxMUk9iOEdzY3N0WWlZemFSN2QzMHpnbWhwaW5R?=
- =?utf-8?B?MVZRTlBSeVNjMWF3czIzNk03OVltZzhZRSsrVk84RDhQZ0l6VnhVNzdXV1A0?=
- =?utf-8?B?ZVg0Z1pmRURoYWxnN3I2NWpBSmNvMWQrdlIxVzA0czNtVGs1dlpxYmhLL2cz?=
- =?utf-8?B?RFkvdHBGMGNyUnFVNzZ2RGJJVDhWeUd6NE9kMDVwRXFpemk2bk9UM0hsNVMy?=
- =?utf-8?B?NVZxaFpjbEhhU0hrVE1YTHNPZ3dDZlFNUnptdkNmdVFGeTVGbTR0ZlR4YThN?=
- =?utf-8?B?KzBGcG9QNngyZjVEeVhHNDBsc2ROUDJNTTFXWTdwQmNzZWVRb2F0a2hYT01y?=
- =?utf-8?B?ZEk2K0h0Q2tOVFhQTnBGNDlwdFl6SXd0c2NNVGNWT1kvRGNTY3hiZUwvMXJ1?=
- =?utf-8?B?aWhKTU11WVMvSmxaK3p6Z3A2UytLT1ovNEJKUjlUZnBQVWYvWncvZTltZk9X?=
- =?utf-8?B?S3BuZE1odFFRTTMyK2lNdVNIbnV1MFdlaXZqUFFNNzdXT1FRQk9LV01HTU1W?=
- =?utf-8?B?NXRWM1I4d3loT003VWtLdFltRDNoZUNPL25vTzVPcFBTS2RuQ0w3QnlwT25C?=
- =?utf-8?B?NGpqTVhtbmNoV1VwVmR0QUpWOEkycW9RQ1A3dDRJekMvYkVVaGxRN3NaTXda?=
- =?utf-8?B?MEd0TUJGcmdLV1BESXFMZ1o0QUV2NDRxUzhMenZNczAwdTNmditMVnpBWWlB?=
- =?utf-8?B?Uk14QnVUQTNPbUR5ZTMvalV4VDkySDAweC9yNUpLNHk0SVZoTDg1TGJtUTlv?=
- =?utf-8?B?aTlEVEpQeVJmUEFWSnBKQ2lDM01LeFFveDhqTVR3bVNJQ01JUUNmZFlYYnVT?=
- =?utf-8?B?Q3VTQ1FtT252S1VpWmNTMEZpR0MxQ1pGQVBadzBBQ2x1WWZXZkRCY1BBUlU0?=
- =?utf-8?B?QWVCU3dleGRJU1VGZFFrQklxSEdwc1A5anBZS1ZIc1BESGhUeTFwTHg4YXJm?=
- =?utf-8?B?bEI3MVk0UDNMbUI2V21jcXVoVCtCMy9Sbzc3WVpPS0s4T2pXODNjd29VU1hr?=
- =?utf-8?B?NEVIbElET3VrVDZUNjZZei82aWdHaThtaFRZVHYzZ2VnN1ZtMzZJdXZRS0x1?=
- =?utf-8?B?ZVRpSS84QVVQaEFnMlVndFZ2ek82QzNQMGRCNk4rbHNRemxLYXBESDRVV3pn?=
- =?utf-8?B?Umppb29wRXkxcHd3WmZ2VGM1bi9KMDEycVBXU29PL0hidXBDQy84Zz09?=
-X-Exchange-RoutingPolicyChecked: WwAFg14wuN5tNGJNU8Y18RGk7yKnYlOWybxqDPnU3ZKGRabYum0CsG2dJUGCB3U4IXPtl0F737qicFBGlOfe/G9/v+e8sCZ4TvECcAVpu3cQ931enNpIop8+xjWRZiDOzsPIMRGYJYrpG6/rf7KER9NnLLGgyl1FS91/ZvRfkSwijIC5iz4hmidBiQl6vPahAj2OQwPDNWHR6TJZKHnEI3uutQiGm+Nfnz/5FuXglbSxFsbHX2RvlzIobFs/cALplQtIeqF0/laeEh995MBr7sD5B0tlCfTA9L56TEF978AW0Eil1+K5pShhoyrzLeUsJdL/emB+FgR07msaJCVeQw==
-X-MS-Exchange-CrossTenant-Network-Message-Id: edf9f69c-7c0b-4825-16d6-08df023e45a1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?VkRLdTB5c1FHUUxyN0hOTVpGaXFERU9JQlNuVTkyVUQ4cmNrdHA5Q2UwZTFU?=
+ =?utf-8?B?a2lQQ003YkJmRVE1N0xJTkFoZHBPaWRrZ3podEJMeHNabldaZVd3QnVYY2lR?=
+ =?utf-8?B?T0RTU3lCOXFaTnAzQmcyWlg3dklIRm5nK3dxbWtOU0U3dHRFR1YyZ21vUUJp?=
+ =?utf-8?B?K3Vlc0o1TlA0bDdvM3BpWnZBU2lWcEQ3aEVuaDV6ZFc3ODFYcTJnU1VXZC91?=
+ =?utf-8?B?ZGlkUjk0S0pOZmxrK2NXM094ZG1zRVJtakdVZzM0UWtTaGh3UWJkb1ZFQUlz?=
+ =?utf-8?B?V1kvSWpNVjRIa0o1UkRTdUx3OHBVMlh6M3VYZlpEbEJEL2JUbUNiQkwxSkgy?=
+ =?utf-8?B?dXFLUGFJNTFTdHJTQkwwQUxhVVM5MWxXUENweGNORFN6cGdTTU1qMHF3Uklo?=
+ =?utf-8?B?L0hzaXErV2hpUzVrdU05TUZ6L0ROK1hwUDc3OFFTUGF6ekFJeHVVNWZMazJa?=
+ =?utf-8?B?TGJuSFBpMmIySi9yKytkb2Rma1cwbjIvczJQSHNXMWE3YXdnU1lkQ01oZ2Ns?=
+ =?utf-8?B?SWVnQkNTcGQ0MlRob21tQmdjaURzWFpmVTJqbzJGR2hoSFVkbFJMN2lwUWJ0?=
+ =?utf-8?B?OStvQkpLazlGKzhWVkpkQmR0N3J3SE8zbE4zL1RWWXBZSUxmOW80RkpJV1R3?=
+ =?utf-8?B?QWdlSlBNZ3VyTmNyQlViWFBZeDBYZ2pXQnZBTVVCMjN3aE8wTFF3aElxd202?=
+ =?utf-8?B?TU5DMXBRMFlrUCtZb3dmYUpueXZpT1U3MkNYMDlaMG1OWXNwZ0NQYVNPN3FQ?=
+ =?utf-8?B?ZTZCeTFWSWZ5M3RIeGp4dllJdlEvRTY1MGhmeStzVTVGamdJcWxXTDNnOGFn?=
+ =?utf-8?B?eEhJK2RLOVpyQ0dwc21zU0hPakZYQ29aWUdJcFh4b2pLTUtLTG0wVmZmSEhU?=
+ =?utf-8?B?NTR2cWZjNTl2bVJVMG9Gak1sdERTdDVCTUJsNVBRRktmcHJUNmU5N2lQOU8y?=
+ =?utf-8?B?VnY1R3kvRUJsVk1RTWt6L2FmMEVXVFBMeHYyY0grMnlUdXRVVXhER29ZT0I0?=
+ =?utf-8?B?M3k2TGlxczVvVzV4TEtmeXk2aVp1cVI2QU1WVnVOMjZTdnZia1RUZmpZaVVI?=
+ =?utf-8?B?SXZqaWNXVGdyUFQweUs5NVBna3NaWHA5YTRrVm1pNk9BdWIxRGpVVy9uWHF3?=
+ =?utf-8?B?clVsd0wxZnlHSVBIbUplYWh1R1prSTdRNi9WeDUra3dMTGZ6bzF5OWhKVGh2?=
+ =?utf-8?B?SjhHQ3A1eEZaT2tKT0V1WTJUTjNST2lIR05rS1RUMEpxRWZDS2N0WTMxYm13?=
+ =?utf-8?B?MEJYL0czR3dKcW5yVkdFdG1WVGduYzM3RzZpSTI4KzlLZVlzcXB5dmhNbHpZ?=
+ =?utf-8?B?VzRrYkVFckYvTkd2WlRNbkVIUi8vTU5EaVBYL1ZGY1hRWkcvWmdWSS9Wb0ZX?=
+ =?utf-8?B?R25VTFlEeXVFeTJhV0NWaVhHcm14U0s3UHdHbys5QXlNdGZBMTBmOFlLYlYz?=
+ =?utf-8?B?dDRFTDl2ZXEyNWwzOUMyRGNJY0kyM2loRFNMdXpkc1l4MmQ1WmgzaG4yVUw4?=
+ =?utf-8?B?eG9mcjZ2ejgzWHdNUlNnVy9EVTZJdVFoTkhqbXVzY0ViQXlaMUhrWnVrUVlG?=
+ =?utf-8?B?SXJjazB1N1hzWXpFcWlWUStsaW54VTVxcE1QZVdCZEtjLy9HM1RlN05TRTVn?=
+ =?utf-8?B?K1BjTXNEWXFPWVI4V3hsVnplTW1raEZLZlErdnd2N1hBVEdibE1lUlBwWG0y?=
+ =?utf-8?B?OUdQNHJZOXY1UmxMOE05YklRLzBSOFdXYjQvQnA4WHFLc0FlN01vYlBDc0FI?=
+ =?utf-8?B?TXlnM0gwdEJMZTJxY05nK2drTUJTMTdBTE1sS0R6WkUwYXVLNUpZU0VNZkRZ?=
+ =?utf-8?B?dlNxbnhQOXEyTS9JYkdvYzl0UENacFB1cHlaN1MzdXNTMEJ4U2Y3UGlISEow?=
+ =?utf-8?B?bHJla0tnYVhGTm0wT3V6dGhzMU8wRHc2bGFtUFJQYlE0RjR6aGtaS3I5b2Y3?=
+ =?utf-8?B?UHJXODdUZjZSdWV3eEdIY2RSMDhtSXo0Zkx3WnJZM05PaGZWRWJqQ3NqU1Bh?=
+ =?utf-8?B?NWJvaWNBOXBxS0cvOHZkdkFxNWt2c1RFN1RqSndtZzdiVlU1MWNUN0lpbGI0?=
+ =?utf-8?B?cWhXS1AxUVVHcFUzbjdnWmtXUGI3T2M1NU9YWENVTnpVRitDRzZHeEw2Sjkx?=
+ =?utf-8?B?QzV2TWkyWlVpUzFIY2FWL3JWZm5ScGFHZnZnWStlY2hkdDhTTUNYdTlPZzZ5?=
+ =?utf-8?B?WDl5SkNMTjBPY3lXUFVMZmNZUnJab3cvSytLSWdRd1hnYmJhTW5YVDJ1L3l5?=
+ =?utf-8?B?K3YyVnZwL3RObzlwcG9WR3lENTFoL2JZb2trYUY3R2k5MHpUOUF2V3lWVnJk?=
+ =?utf-8?B?c1hKaEpuMnRWdDN0Z0tvMzRVVWtWeks5TGxadysxdnZDQmp6WE1Idz09?=
+X-Exchange-RoutingPolicyChecked: b17UdpLK0mCCimDEbLCECvtG1S7tti7YEBakqdzzUS/ZYAbzjGMle6NXKbM4Z8+Xcdf5Mv8f4KmtgLTIArDn+7MrpxCRVvMg5cJ5qqFFtgtyQU6xCx2AC/QzGn06ALq2xPUo8vGRpglJK3zzXK8NGHl3SOPtgLrAIM7QsH/StB9xbDmEffM18AuOYP09px1QWFNTMkqVzX1clnW92MnBQmnEsrz4OdZfR8bMfRTxjFDQ5FgTlYVrRiHQTOBLx9+9FF/kyi6UShUKbGOhZy2Kj9eiFEGLMsIp1gdqL6D7sP9MosivaWzuPM5RnUp2AQFPy3/UZ6KL5VapO4GKpurf7w==
+X-MS-Exchange-CrossTenant-Network-Message-Id: 7e480de0-f669-43d2-36b3-08df023f3ec9
 X-MS-Exchange-CrossTenant-AuthSource: DS0PR11MB7381.namprd11.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Aug 2026 00:17:39.0847 (UTC)
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Aug 2026 00:24:37.0928 (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: KGytyFlQqOb+tbDAoVTjiWcbWMhsJcEiXQt+y+KwV6wNRrNGfg9ln5TeQ2qIbwLGWNB7ZAuaBm0N3Ejn7mSHRgctt2TVWdui5F/8NadVRuQ=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DSWPR11MB9763
+X-MS-Exchange-CrossTenant-UserPrincipalName: w4Vd8rEh2IWC6tqMXhRiMH/XN1DF+rAHZYClJHXlp7jSaLKDoHTkxBEGQ+tfRNB9nAubJmagzKdZqKLL5BlecjWS5oc2nbXRhfOW56utl4c=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA3PR11MB140164
 X-OriginatorOrg: intel.com
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
@@ -212,125 +212,108 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
 On 8/21/2026 5:13 PM, Jacob Keller wrote:
-> The ice driver currently discards any outstanding timestamps that are
-> happening very near to a .adjtime or .settime callback. This was originally
-> add by commit d40fd6009332 ("ice: handle flushing stale Tx timestamps in
-> ice_ptp_tx_tstamp").
+> On E82x devices, the interrupt for Tx timestamps are handled by the clock
+> owner. When an interrupt with the Tx timestamp cause is fired, the clock
+> owner PF iterates the list of ports and checks for timestamps across all
+> ports.
 > 
-> The original motivation for discarding timestamps was that extending an old
-> timestamp using the new cached value of PHC was a problem, as it could
-> produce incorrect results. The change did not describe what such "incorrect
-> results" were.
+> The existing logic reads the PHY timestamp ready bitmap before iterating
+> the list of in-use timestamp indexes, even for ports which have no
+> timestamps waiting in the software timestamp tracker. This has a
+> significant and measurable latency impact on reporting Tx timestamps.
 > 
-> There are no such incorrect results. Extending the 32 bit timestamp with
-> the new time value just means that the timestamp is reported in terms of
-> the newly updated and adjusted system clock. This won't produce incorrect
-> results or problematic timestamps to applications. Either the timestamp
-> will be extended with the value of the PHC just prior to the time
-> adjustment (if the timestamp completes prior to the adjust callback), or it
-> will be extended using the new PHC value after the adjustment. In either
-> case, the resulting extended timestamp value makes sense.
+> Check the bitmap and exit early in the event that there are no timestamps
+> waiting on a port. Observant reviewers may notice that the check is done
+> without acquiring the lock. This is fine, as the only thread that can clear
+> in_use bits is the miscellaneous interrupt handler. Whether the thread sees
+> or fails to see a new outstanding timestamp does not affect correctness,
+> only determining whether or not it should do extra work.
 > 
-
-Sashiko says:
-
-> Could removing the stale flush logic actually lead to corrupted timestamps if
-> the time jumps by more than 2.14 seconds?
-> Looking at ice_ptp_extend_32b_ts():
-> ice_ptp_extend_32b_ts() {
->         ...
->         phc_time_lo = (u32)cached_phc_time;
->         delta = (in_tstamp - phc_time_lo);
->         ...
-> }
-> If a time adjustment exceeds 2.14 seconds while a Tx timestamp is in flight,
-> won't the 32-bit modulo math wrap? It appears reconstructing the old hardware
-> timestamp using the post-jump cached_phc_time would produce a meaningless
-> value rather than a correctly extended one.
-
-I no longer believe that result would be incorrect. I don't see other
-users of similar logic around struct timecounter needing any similar
-logic. The users of timecounter are very similar with the only
-difference being that they maintain the "upper" bits entirely in
-software, while the ice driver has hardware maintain them, effectively.
-Perhaps I am wrong and missing something? If others agree I can drop
-this from the series.
-
-> The timestamp extension logic is very similar to the logic found in
-> timecounter_cyc2time, the primary difference being that the ice hardware
-> maintains the full 64 bits of nanoseconds in the MAC rather than being
-> maintained purely by software as in the timecounter case.
+> Using the ice Tx timestamp traces, with a simple ptp4l setup the average
+> latency appears to be around 175 to 200 microseconds with a few outliers
+> taking hundreds of microseconds to be reported. With the check to skip
+> empty bitmaps (and thus skip reading the ready bitmap for inactive ports),
+> the average latency drops ~50 microseconds.
 > 
-> Indeed, I couldn't find an example of a driver using timecounter_cyc2time
-> which does discard timestamps that occur nearby a time adjustment. The ice
-> driver behavior of discarding such timestamps just results in failure to
-> deliver a Tx timestamp to userspace, resulting in applications such as
-> ptp4l to timeout and enter a fault state. Reporting the extended timestamp
-> based on the updated PHC value isn't producing "garbage" results, and
-> doesn't lead to incorrect behavior.
-> 
-> This effectively reverts commit d40fd6009332 ("ice: handle flushing stale
-> Tx timestamps in ice_ptp_tx_tstamp"). However, the stale logic remains, as
-> we now use it to inform the driver to drop timestamps which might fail due
-> to link down.
-> 
-> Fixes: d40fd6009332 ("ice: handle flushing stale Tx timestamps in ice_ptp_tx_tstamp")
+> Fixes: d938a8cca88a ("ice: Auxbus devices & driver for E822 TS")
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Reviewed-by: Maciek Machnikowski <maciej.machnikowski@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_ptp.c | 17 ++++-------------
->  1 file changed, 4 insertions(+), 13 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_ptp.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
 > diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-> index 1a9bf8839404..8c2dd83d8d6c 100644
+> index 8c2dd83d8d6c..b337247c94e0 100644
 > --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
 > +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-> @@ -826,12 +826,10 @@ ice_ptp_flush_tx_tracker(struct ice_pf *pf, struct ice_ptp_tx *tx)
->   * ice_ptp_mark_tx_tracker_stale - Mark unfinished timestamps as stale
->   * @tx: the tracker to mark
->   *
-> - * Mark currently outstanding Tx timestamps as stale. This prevents sending
-> - * their timestamp value to the stack. This is required to prevent extending
-> - * the 40bit hardware timestamp incorrectly.
-> - *
-> - * This should be called when the PTP clock is modified such as after a set
-> - * time request.
-> + * Mark currently outstanding Tx timestamps as stale. This prevents the driver
-> + * from reporting the timestamp to the stack. This is called to inform the
-> + * driver that a timestamp is expected to fail if it was initiated as the link
-> + * went down.
->   */
->  static void
->  ice_ptp_mark_tx_tracker_stale(struct ice_ptp_tx *tx)
-> @@ -1049,13 +1047,6 @@ static void ice_ptp_reset_cached_phctime(struct ice_pf *pf)
->  		kthread_queue_delayed_work(pf->ptp.kworker, &pf->ptp.work,
->  					   msecs_to_jiffies(10));
->  	}
-
+> @@ -573,7 +573,7 @@ static void ice_ptp_process_tx_tstamp(struct ice_ptp_tx *tx)
+>  	pf = ptp_port_to_pf(ptp_port);
+>  	hw = &pf->hw;
+>  
+> -	if (!tx->init)
+> +	if (!tx->init || bitmap_empty(tx->in_use, tx->len))
+>  		return;
+>  
+>  	/* Read the Tx ready status first */
+> 
 
 Sashiko says:
 
-
-> This is a pre-existing issue, but is it possible for pf->ptp.kworker to be
-> NULL here during driver teardown?
-> Looking at ice_ptp_release(), it destroys the kworker before unregistering
-> the PTP clock:
-> ice_ptp_release() {
->         if (pf->ptp.kworker) {
->                 kthread_destroy_worker(pf->ptp.kworker);
->                 pf->ptp.kworker = NULL;
->         }
->         if (!pf->ptp.clock)
->                 return;
->         ...
->         ptp_clock_unregister(pf->ptp.clock);
+> This is a pre-existing issue, but could this lockless check of tx->in_use
+> result in a use-after-free or NULL pointer dereference during a cross-PF
+> teardown?
+> In ice_ptp_release_tx_tracker(), a secondary PF undergoing reset sets
+> tx->init = 0 and frees tx->in_use:
+> drivers/net/ethernet/intel/ice/ice_ptp.c:ice_ptp_release_tx_tracker() {
+>     tx->init = 0;
+>     spin_unlock_irqrestore(&tx->lock, flags);
+>     /* wait for potentially outstanding interrupt to complete */
+>     synchronize_irq(pf->oicr_irq.virq);
+>     ...
+>     bitmap_free(tx->in_use);
+>     tx->in_use = NULL;
 > }
-> If userspace calls adjtime or settime concurrently during this window, it
-> would unconditionally call ice_ptp_reset_cached_phctime(). If the update
-> fails and falls back to queuing work, could this dereference the NULL
-> pf->ptp.kworker pointer?
+> Since synchronize_irq() only waits on the resetting PF's IRQ, it doesn't
+> block the clock owner PF which runs on a different IRQ.
+> Can the clock owner PF running ice_ptp_process_tx_tstamp() evaluate
+> tx->init as true, get preempted, and then dereference tx->in_use after
+> it has been freed by the resetting PF?
 
 
-I will check this. I think the correct answer is to kref on the port
-access to ensure that we don't finish teardown until the function exits,
-which would be included as part of the first patch of the series.
+I believe this will be fixed by the patch which removes the call to stop
+clearing the tracker except on load. I will investigate if we need any
+further change as there may be a similar issue with teardown. We might
+need to synchronize against the clock owner IRQ for ports using the
+INTERRUPT_ALL mode.
+
+> This is also a pre-existing issue, but does adding this early return prevent
+> the driver from recovering if a hardware timestamp takes too long to arrive?
+> When a timestamp request takes longer than 2 seconds, the software drops it
+> and clears its index from tx->in_use:
+> drivers/net/ethernet/intel/ice/ice_ptp.c:ice_ptp_process_tx_tstamp() {
+>     ...
+>     if (time_is_before_jiffies(tx->tstamps[idx].start + 2 * HZ)) {
+>         drop_ts = true;
+>     ...
+> skip_ts_read:
+>     ...
+>     clear_bit(idx, tx->in_use);
+> }
+> If the hardware subsequently completes this dropped timestamp, the ready bit
+> will assert. However, with tx->in_use now being empty, the early return
+> prevents the driver from calling ice_read_phy_tstamp().
+> As noted in the driver comments in this same function, failing to read valid
+> PHY timestamps can cause the hardware interrupt generation logic to become
+> permanently stuck on some devices. Should this path ensure orphaned timestamps
+> are still read and cleared from PHY memory?
+
+If hardware somehow holds onto a timestamp for longer than 2 seconds the
+logic we have already fails, but we need some cut off. It *is* possible
+that a timestamp never happens if it occurs near a link event. We have
+no way to be informed by hardware that it won't complete a timestamp. If
+we do nothing the more common case of a missed timestamp would lock the
+index indefinitely.
+
+The assumption being made here is that 2 seconds is sufficient time to
+be certain the hardware will no longer complete the timestamp. I don't
+think we can make the software robust in both ways, and have to make
+some trade off here.
