@@ -1,208 +1,100 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B72DC5DF97
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 26 Aug 2026 12:51:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3755EC61DBD
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 26 Aug 2026 14:37:42 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B078C406A5;
-	Wed, 26 Aug 2026 12:51:37 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id DB420809C4;
+	Wed, 26 Aug 2026 14:37:41 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 13BcFb9j_Mzd; Wed, 26 Aug 2026 12:51:35 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id oaCHEjH7cJw8; Wed, 26 Aug 2026 14:37:40 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1787748695;
-	bh=V2wqeoZ3SkrfoUGPjKcJ1XCusNNGlRny3w1+O7pcGU4=;
-	h=From:To:CC:Subject:Date:References:In-Reply-To:List-Id:
+	s=default; t=1787755060;
+	bh=GJJjeH1fCAde4avsp6BZ4U9/7WGHxznHmW/jtpmPsiU=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=AeXrkKsbm+4OaSwx099yD8TZRPQplvOgyubh78bidF27T/HfxYyMfgG59Q7O9rNHL
-	 C+gVDrPpnd8npimsa5E/92fVrYJAFC8LV7xqrv2zdXFz4VkF8Tlkp6ITFDm2AOOOMY
-	 qGuHmhveWt5MDCSrzjh3FmqdKl+Fz+Kkma0vekNuKZVFdxS4ZKmK2qW2SniuT3+3HA
-	 rX6Xfi11oG3bNGoBV4HSVOCRWh4JDl9yVa7PHT86kE2qvIoZS5MkxCRSvf9zsE7IMV
-	 dv9gSdq1FafaoP1daQPXho/BlufRfOkYgo9cqVE9hI2nM25epJXd+90edxVUhzS5Zh
-	 BXf3S/P37rzQA==
+	b=qSgjlLTcj0o28ggXT+X/G5/xdk84xLdLt/2iOwccuvREgOEQROZq9VdZq+AVsojE7
+	 b7YYLLqV3M/gd3qAlwg+XTInZoQER27B+QC8p0qGGwDkgmIlPvPeV4wLTVWqWLRsC9
+	 ar8IclYCUrh5DTp4RbKxPjvjllhsMHe9Vc/qLd7ZDv2YG7PGXuViiRI4sjCnvGC8nR
+	 upYg/at+ksRk5UhncDU9sZo7/t/UsbJKIRTFy8+pRQzR9rxTIORJarMRtb/19JbHMD
+	 oMb/+naz/xULzwQPBrOcgP6BGdrzb/LQAMNEwRbIz2BpBUId2rgIpBnlHZAaza7yOR
+	 fu2041ecEdxLg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C8E244069F;
-	Wed, 26 Aug 2026 12:51:35 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 1C60D334
- for <intel-wired-lan@lists.osuosl.org>; Wed, 26 Aug 2026 12:51:34 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id F2A8380992;
+	Wed, 26 Aug 2026 14:37:39 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 22158396
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 26 Aug 2026 14:37:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 0BA80605ED
- for <intel-wired-lan@lists.osuosl.org>; Wed, 26 Aug 2026 12:51:34 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 1FC3940115
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 26 Aug 2026 14:37:39 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id N0eAYVFNgalL for <intel-wired-lan@lists.osuosl.org>;
- Wed, 26 Aug 2026 12:51:33 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.12;
- helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id AQvAH3D29-hF for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 26 Aug 2026 14:37:38 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.13;
+ helo=mgamail.intel.com; envelope-from=tomasz.lichwala@linux.intel.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=km7CvXm3
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
- by smtp3.osuosl.org (Postfix) with ESMTPS id A722E605EB
- for <intel-wired-lan@lists.osuosl.org>; Wed, 26 Aug 2026 12:51:31 +0000 (UTC)
+Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=none dis=none)
+ header.from=linux.intel.com
+Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=mO/XzlLP
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 05F3B40064
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 26 Aug 2026 14:37:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1787748693; x=1819284693;
- h=from:to:cc:subject:date:message-id:references:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=V2wqeoZ3SkrfoUGPjKcJ1XCusNNGlRny3w1+O7pcGU4=;
- b=km7CvXm3/HdMxWoQX1P9rW0tz1HRHcDcblXB8iCSWjfbZOtH9+xlSl3o
- J9RXz+c1CAS5RgjebtzFP4xbRRox/pEytENQRWI4iby1ccOBj+04T4YA2
- yee9Zwl4rd2IpQNiQlTt9VBCfFRm0/x5Khwro7/vPjyLSq9myQqkHZa8x
- 9IK1xMrQ84mr67iKL16Kb9xHwta4fZyVJWcsuMDz/N07Qy4loanTm4xbs
- Av10Kp3YZgDSIzslnetdaibQBZNKlpTe2JLtLeY3lF1ZKG8AlQL6pevrP
- 5M4tPyh9z0nQNK6+9C0kOqYlCTEZxp2C4TNohw5Lcbf8ur11ogBmkfn5I g==;
-X-CSE-ConnectionGUID: n9g5qwZ3TdWdAtsXR0/Kzw==
-X-CSE-MsgGUID: 0AfLnWgBT3+wAJboyRJhyw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11886"; a="99749339"
-X-IronPort-AV: E=Sophos;i="6.25,244,1779174000"; d="scan'208";a="99749339"
-Received: from orviesa001.jf.intel.com ([10.64.159.141])
- by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 26 Aug 2026 05:51:32 -0700
-X-CSE-ConnectionGUID: aT5TtPbIRjS2vbDUcXiGgg==
-X-CSE-MsgGUID: Xq/JfuFWRX6kzrjeDNpDdA==
+ t=1787755058; x=1819291058;
+ h=message-id:date:mime-version:subject:to:cc:references:
+ from:in-reply-to:content-transfer-encoding;
+ bh=TC0OkRhjUUdFeNQ+mtm8uAHBZtV7OvjOvchH+vTv8fM=;
+ b=mO/XzlLPycTONmXFBe+kZukxW+oSJ9XtqOXyWe+Z8K2HkiTTbB0UH8gB
+ vjz/fse73u8TfXvBTqm8NREfhU16pcIr8u2k4Msb/LyHUzMw/gXTPmZ63
+ IsViFN1jn86EAEtS8ti2UuUvcp/BtjZz8J9dxS30x1mZ9XGChMnZ6gEUO
+ FEY1b/HlXqHzxFr4ya5nOg0y2/0w5s3sPC2ZI7o7oeCHiogEb+gzJotaO
+ Vw6rmo5me+v6ZMZeRoSeI6PONfbsR3oUr1+YNlgKPTS8slNoJbSQWEDt8
+ 8MZcbJnhQCiknpWqW6mTT5IcH1QTASUXO67gysMIQhK4088UOSutdnrR6 g==;
+X-CSE-ConnectionGUID: 0KcudeRWQS+YajZh6GOX0g==
+X-CSE-MsgGUID: 7Jt33n0yTlm46I9dH8TuKQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11886"; a="99398627"
+X-IronPort-AV: E=Sophos;i="6.25,244,1779174000"; d="scan'208";a="99398627"
+Received: from fmviesa002.fm.intel.com ([10.60.135.142])
+ by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 26 Aug 2026 07:37:37 -0700
+X-CSE-ConnectionGUID: w4u+Dbg+Si+4jd/oNNqvmg==
+X-CSE-MsgGUID: PR2O1Gc8TeC4k/eU3TvEJg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,244,1779174000"; d="scan'208";a="305795266"
-Received: from fmsmsx902.amr.corp.intel.com ([10.18.126.91])
- by orviesa001.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 26 Aug 2026 05:51:31 -0700
-Received: from FMSMSX903.amr.corp.intel.com (10.18.126.92) by
- fmsmsx902.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.46; Wed, 26 Aug 2026 05:51:30 -0700
-Received: from fmsedg901.ED.cps.intel.com (10.1.192.143) by
- FMSMSX903.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.46 via Frontend Transport; Wed, 26 Aug 2026 05:51:30 -0700
-Received: from BN1PR04CU002.outbound.protection.outlook.com (52.101.56.5) by
- edgegateway.intel.com (192.55.55.81) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.45; Wed, 26 Aug 2026 05:51:29 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=uahVPZ3vTQmMhXvj4reecdwrFHuetT6dR8EUdvTkcqeXZb7bWyJb6lJgPwuMM6fyYI0l6FRoMLzLOPrFEcjXm5iiOqkLPw+uGopHmEWPxFVCefGN6QKV4MGOljCU+hmwADkfDCPGDEwNr4WWy8rP3u57jXDGyhO09B/L9sG4C2voj7JzqT1snBm3Ee50UQdVcY6B4+NHPcvnEw+KRRvoS8+WrHWSfjjYfc8Z8caZsnIUq8XlXLGS8uaOefgvoEzPwiUxVntq0ZHCm/mKt/oiKCLBOw7m4lFJ9lgew8RnXZ0yWUmdL2FXYMmM1V7hP83ucnTWym+LE1OQZCMvriAz2g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=V2wqeoZ3SkrfoUGPjKcJ1XCusNNGlRny3w1+O7pcGU4=;
- b=m6v4Q2byp6NmIqQrPMWPsOP75/biNUGMLT2ZsTrqVvwi12qotbJrbxsFD4hg3LxCYlX+0KsjXAUt1cDShetOKBY8kUoI/dUWw8IOkfFJe+hH2BGTDo5YOPtKxtwWhMQ7HVIOmR02ch1CIfeW0u2VTjt9iuC5zzId7It1Pu5ri8B6csqRYDMQ+62xgLijFuawZ3hFYVmKXB/o4O1XxKFckSArtw3zwDHnOZSgQEZd6haBKZZcmAWYkN5l6yjC2NcvTKJNIaOBNnNUedfVzGxDin0LXgKm4Gm4VBUBsyn0WSiPFqQngcs0k2/qBUgp1T8pnJiTLHFE5/z9ykLnA2qXpA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from IA3PR11MB8986.namprd11.prod.outlook.com (2603:10b6:208:577::21)
- by SA2PR11MB5052.namprd11.prod.outlook.com (2603:10b6:806:fa::15)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.339.8; Wed, 26 Aug
- 2026 12:51:26 +0000
-Received: from IA3PR11MB8986.namprd11.prod.outlook.com
- ([fe80::e6f0:6afb:6ef9:ab5c]) by IA3PR11MB8986.namprd11.prod.outlook.com
- ([fe80::e6f0:6afb:6ef9:ab5c%6]) with mapi id 15.21.0360.008; Wed, 26 Aug 2026
- 12:51:26 +0000
-From: "Loktionov, Aleksandr" <aleksandr.loktionov@intel.com>
-To: Paul Moses <p@1g4.org>, "intel-wired-lan@lists.osuosl.org"
- <intel-wired-lan@lists.osuosl.org>
-CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Nguyen,
- Anthony L" <anthony.l.nguyen@intel.com>, "Kitszel, Przemyslaw"
- <przemyslaw.kitszel@intel.com>, "andrew+netdev@lunn.ch"
- <andrew+netdev@lunn.ch>, "davem@davemloft.net" <davem@davemloft.net>,
- "edumazet@google.com" <edumazet@google.com>, "kuba@kernel.org"
- <kuba@kernel.org>, "pabeni@redhat.com" <pabeni@redhat.com>, "Fijalkowski,
- Maciej" <maciej.fijalkowski@intel.com>, "andre.guedes@intel.com"
- <andre.guedes@intel.com>, "vedang.patel@intel.com" <vedang.patel@intel.com>,
- "jithu.joseph@intel.com" <jithu.joseph@intel.com>, "richardcochran@gmail.com"
- <richardcochran@gmail.com>, "tkusters@aweta.nl" <tkusters@aweta.nl>,
- "stable@vger.kernel.org" <stable@vger.kernel.org>
-Subject: RE: [PATCH net] igc: only strip RX timestamp header from first buffer
-Thread-Topic: [PATCH net] igc: only strip RX timestamp header from first buffer
-Thread-Index: AQHdNO2R6jqyjjKiv0GE6VYbCwfpNbawSTHA
-Date: Wed, 26 Aug 2026 12:51:26 +0000
-Message-ID: <IA3PR11MB898675B237F0A38CA850BED4E5AE2@IA3PR11MB8986.namprd11.prod.outlook.com>
-References: <20260825235530.3278670-1-p@1g4.org>
-In-Reply-To: <20260825235530.3278670-1-p@1g4.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: IA3PR11MB8986:EE_|SA2PR11MB5052:EE_
-x-ms-office365-filtering-correlation-id: efc9dd9b-79aa-4020-5a61-08df0370bded
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
- ARA:13230040|23010399003|1800799024|376014|7416014|366016|18002099003|22082099003|56012099006|38070700021|6133799003|11063799006|10067099003;
-x-microsoft-antispam-message-info: 7AzGbL3u7bDzEn8wz+yreEZPjAb5Z8zILFpNz6NFNo8UszSV2+aHD1bhK3aM1UpEU7RRdOV8kFOnNkrn1yJDAfWgnBwPVwrwcJxUpzcMBU97plmQWOuc6dTbj6kIKlHE9sj7+gjONNw+e2ufdzyGzQMV1Hlj3wmAU54W5furdrtaPhlSJiYyeo0ZZFQyiyVWVMGp+1ofP6RpbxVUQ0a34s9r736n/T9f1GmrAW9CbT2IXjKyYw+u2sT4KJPHEmfNwD5DTNrtkArXlk/gV3efBPrZAfT7mSTv4t04rdbodWGD+d4wtxrmN5ZO1xUxNAMzdaiX0aTkwmmAfm3CEVnoNC32lJGxMiytIzsb6wLzXw+4SWIanS3TBeAT2NcSWJmN9DLcCa1LCwr8vyKj+g81vLA7rzhJiE9bS0F8LszLvje/9uONlrn9YmVaFrgSn6de2Ae0cW7/0w9/ibAfJo3LLUZqYbiQIntV3vfA8FuknHh+pqWYAoDl9CEmXg4SFyDe9ubdKwppC1G3VmO6j8ZQKWU7mpGWWADxL4SiAT5wmAgEXnuyOd8+EKk44qnG/xLZGl7zEO2dEGlZDptRI0Brmg45J6MTdE5F0zwvTdL/5LVB5ciWYK7BjEkHQ1/Joph0VJ7yfwdXw5PWe/F0Y68I+aq564A7NVPRQ5D4+tRQCLB/p7g2i8SNrgVgktl3VHE5nX020bg9lGft71PfOC26PI2eNHl0OkE5hfA+DVGgzx8=
-x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:IA3PR11MB8986.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230040)(23010399003)(1800799024)(376014)(7416014)(366016)(18002099003)(22082099003)(56012099006)(38070700021)(6133799003)(11063799006)(10067099003);
- DIR:OUT; SFP:1101; 
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?utf-8?B?ZXd3MzNVVjl4QThIOGFqMEdJWlBzNk1QWGZZcXg5RVdjakRKdWRlZHQ2SkJZ?=
- =?utf-8?B?RjVYbTlIam1QcVRPaU1vZEcxV1orQWNXVk1jYSs2T01SaWJTSVhHcTBWOHB0?=
- =?utf-8?B?TEd5b2xKa1BJUjVISEE1VjNjQnhwR0lYVy95bGZYMTI0R2RTK1pyQjBhZmVR?=
- =?utf-8?B?S3lvYkRWVmlMazQydmJvT3RHeXZBRE53dUl6ZVlYVUFDdmZLN1NyZnFaOW11?=
- =?utf-8?B?eGNVWG0zeEprUVBRQUEyVWEvSkpqaTV3bThhOWVLKzA2K2FhUVBvd2dnZEh1?=
- =?utf-8?B?YWN0NkUvYk53dGNjZVRvVjhLYTFnQnpJbTdrdzloM2JqbUdZRndGN3V6MDdH?=
- =?utf-8?B?Q2FvZWl2N2J1ZUpSWlpGUHJoSnZ2dERrREV4NURhaW5EU2xyWTFKUXIwdlor?=
- =?utf-8?B?ZHFWeUE3emlFMXhWcXJMQkorTkZFMFNodjR0UXVCMXVxaisrdm5xN09EU0dk?=
- =?utf-8?B?NWpmaDU2RFY0VElzZkI2Sjc0UUFXanY4eHZyYThNOW4vZlAvQWw3ZUJJMmpG?=
- =?utf-8?B?Z2FDajdaOHpJbDd2RkZ5VTF3RlJoRVJWQUF2L3NTeGkzVHU4Q3h2eU8vQ1pF?=
- =?utf-8?B?YVJrVGVJb25zVmJrc0VPRWs3YVlGM2xaeUpSYUtQKzZDWmI3NFlsbnpjanQv?=
- =?utf-8?B?d3NGVW12TFUwU3c2NFhWWmRyUXUyeFZlMHY0L2JKRUJFaE5yZ29BSnN3RjZB?=
- =?utf-8?B?czM0WmYrTTMwcm13Q016cmt2eXQvcHE0YVFjQzZoUHlodTJMWm1jYXJTOXMr?=
- =?utf-8?B?ZzQ3VDNzLzBKY0JYN2VPY0NhTmNkMS9sNjN3U3ljbUp2RkFyME4xcjdMVVli?=
- =?utf-8?B?dmlvVzhodFFmdXpGdE5wUW0zcTNOQlArL1FDZ1ZTVURHUVYyTWJHWU5uVHo4?=
- =?utf-8?B?VFVNOTFEdkxIRVVwMHh2bmNhWU8rcGNoNU4vTVR3MHBScXA3cHFsM1BoWkph?=
- =?utf-8?B?RXdSY3BzWTJqeVRXVHZZZThhcXBYR05ZU1Y0VUdkNC9sWjNBQlI5aW5ZOTVL?=
- =?utf-8?B?cmpRSnBHMDRtNWNGQ3kxck9nd2RaWENRZ0dTMVF0aUlYaWFZOGh3NDVRK2ts?=
- =?utf-8?B?d1g0ZFdCd3kvQWJQOEVDcEpnWmFpYkVLYmZFSFBGTWljRFdMYUo4eTBnOHpp?=
- =?utf-8?B?T1dTNSt4cnRLaVRXWHpNTUlhbVF0M2p2S2VBQXZIdEpZMk9jbVZnTUtVQTJ2?=
- =?utf-8?B?WUJSeW9XYy9MdDN3NUxtM2RnKytnNzluR1FweDFBb2ZTN0Y3Vlh3WG4zSVN2?=
- =?utf-8?B?YXR4NDdleDZhWGNVb2I0RkpvK2IrMmdsbXA5eml1TytvYXVobUJJU0NwS1lW?=
- =?utf-8?B?Z3JTcW10RnZoNW9ZVGJxVlBkbmFRY2s2TzlIaDU1NXhPZmhyYlhkZi9Vc3F3?=
- =?utf-8?B?QWtGOFNLTTRXd1lsVTIvaFNXNTAvUlR6LzgzR3drbWpZODB1RVY0ekZPc0M0?=
- =?utf-8?B?SWZzdUM3K1hJK0NCNS8yOE9ZOEUwejh0MUczN2JlQVNYOGlCaXV0Y1FiNllO?=
- =?utf-8?B?OWxFU2ZkeHpwemZFeVkyMUwzOCtLV1loTis1WWMrVlRFREUwT0ViU1hBSWxQ?=
- =?utf-8?B?SkRURVBXbXVteWhXT3VlK01yRlBTbWxYYlQyVXU5OGljeDhPR3FUYlE1YURP?=
- =?utf-8?B?RjlNblRERzFoQVkxNTBGOHBzekdNaEs4L3VOVW12WlFlK0J3RE14TFpvcWpB?=
- =?utf-8?B?VWU5UFE4NXkyRGdVSWJoL09VNWNHVHNuMjVaNFBWcTJQVlk5RUtKNGhYSkRJ?=
- =?utf-8?B?OHBzSDRIdmRkLzI1UEhpMVkwL0VBRG40anNRTGRuU21BKzFtSE1NVWFZN1FM?=
- =?utf-8?B?Mzcrd284aWtKZllUdjRCdGs0THY3dFJQL0NsQmZKeUM1Zi9MdlJpN2ZkVWVn?=
- =?utf-8?B?b0UwTitjZE1TYUQ4NFRrRnF2anZqVzUrOXplSUZOMXYyam9CQXpoN3NWd2xi?=
- =?utf-8?B?WFlKemRoOVdqTlVDS2l0aGxGZDIrZXFOUEErbGU0czJGU20wM0ZtY00vczdO?=
- =?utf-8?B?OGxVN1BkZkZmTVlXdlE5Y1c0TVJCTkh3N084aGVsUTJ4ZVdpbmVnRXdZZ2FY?=
- =?utf-8?B?d0pTMzBVSHFHY2MzaHRhTWlCb0xDWEFCTnRxRGtiS0hqcFBHOUEwQlUvREhk?=
- =?utf-8?B?cHhJZWM4ZlFJKytPYk1HTGZ1THRtbmRRRzZXTno1ZEg3U3orbHNwaFlaNzJM?=
- =?utf-8?B?N3oxSUxxZ1hxK0o5TThPaS9oZFE0VjZGWXh5bEJkTnAzZlNGd0oySjJhY0p6?=
- =?utf-8?B?OGtubko4eDhIaFVGajhjSDYveVZ5Ty9vSUF0ZlBmOGxpK0J2K0dBc1lPWFJn?=
- =?utf-8?B?bnlyNVE5VVdzRmE2OG1nU2R4NlNRdU1RdXRCWnlVeklqNXNmb01ScDBpQVpy?=
- =?utf-8?Q?LQkXNYLhHKzLdwzg=3D?=
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+X-IronPort-AV: E=Sophos;i="6.25,244,1779174000"; d="scan'208";a="291117041"
+Received: from linux.intel.com ([10.54.29.200])
+ by fmviesa002.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 26 Aug 2026 07:37:36 -0700
+Received: from [10.102.88.131] (soc-5CG4396XFD.clients.intel.com
+ [10.102.88.131])
+ by linux.intel.com (Postfix) with ESMTP id 6F5D020BF394;
+ Wed, 26 Aug 2026 07:37:35 -0700 (PDT)
+Message-ID: <b164ae67-2874-43ed-aa32-66ca42ae90cc@linux.intel.com>
+Date: Wed, 26 Aug 2026 16:37:34 +0200
 MIME-Version: 1.0
-X-Exchange-RoutingPolicyChecked: eG+mF2/hTA/UVe4uB3Nhf8oNMoH1zzAJFK5V1ES/WTEIV6ABIZtiXlfPYQQexNgggv0LFGWg+Z27Wk5G3Ih3v2sm4ZUcU9TRnb80A/vXcnxwI2ESrocpQZP8YINnXkFXOnFJAQe+JGrtZQDqFzjii6/JFZUtyDne+v7WaA+3ETE/XLqUV3p9h0MJU4z7k8jIjdH0SfI9AD50vsLbomx7qqYNNvgw/wkxd0RaIjLY7OI52q/UenvmZ+8eguNK6Jfmis9cBQ/fhR34vqvtzzyuX6E4FWDP+nMF14eORJoSgOC3rK46FG6cYaVPubuy4VD+UaRLG64Uf0IC8+DDgtl4aw==
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: IA3PR11MB8986.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: efc9dd9b-79aa-4020-5a61-08df0370bded
-X-MS-Exchange-CrossTenant-originalarrivaltime: 26 Aug 2026 12:51:26.7395 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: tUluX7SKHAWoadgHxJQ/s3vqE+KC4KnbLMqGMFuC21RibBMqwMepryK2uO3gIgqq5RPZzwwbqX2K2efUeTvU9TgC7MZ2KBHQQM2g8xliLxA=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA2PR11MB5052
-X-OriginatorOrg: intel.com
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH iwl-net v4] ixgbevf: fix link speed reporting for Hyper-V
+ E610 VFs
+To: intel-wired-lan@lists.osuosl.org
+Cc: netdev@vger.kernel.org, Marcin Szycik <marcin.szycik@linux.intel.com>
+References: <20260824110834.2364407-1-tomasz.lichwala@linux.intel.com>
+Content-Language: pl
+From: Tomasz Lichwala <tomasz.lichwala@linux.intel.com>
+In-Reply-To: <20260824110834.2364407-1-tomasz.lichwala@linux.intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -217,66 +109,202 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogUGF1bCBNb3NlcyA8cEAx
-ZzQub3JnPg0KPiBTZW50OiBXZWRuZXNkYXksIEF1Z3VzdCAyNiwgMjAyNiAxOjU2IEFNDQo+IFRv
-OiBpbnRlbC13aXJlZC1sYW5AbGlzdHMub3N1b3NsLm9yZw0KPiBDYzogbmV0ZGV2QHZnZXIua2Vy
-bmVsLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgTmd1eWVuLA0KPiBBbnRob255
-IEwgPGFudGhvbnkubC5uZ3V5ZW5AaW50ZWwuY29tPjsgS2l0c3plbCwgUHJ6ZW15c2xhdw0KPiA8
-cHJ6ZW15c2xhdy5raXRzemVsQGludGVsLmNvbT47IGFuZHJldytuZXRkZXZAbHVubi5jaDsNCj4g
-ZGF2ZW1AZGF2ZW1sb2Z0Lm5ldDsgZWR1bWF6ZXRAZ29vZ2xlLmNvbTsga3ViYUBrZXJuZWwub3Jn
-Ow0KPiBwYWJlbmlAcmVkaGF0LmNvbTsgRmlqYWxrb3dza2ksIE1hY2llaiA8bWFjaWVqLmZpamFs
-a293c2tpQGludGVsLmNvbT47DQo+IGFuZHJlLmd1ZWRlc0BpbnRlbC5jb207IHZlZGFuZy5wYXRl
-bEBpbnRlbC5jb207DQo+IGppdGh1Lmpvc2VwaEBpbnRlbC5jb207IHJpY2hhcmRjb2NocmFuQGdt
-YWlsLmNvbTsgdGt1c3RlcnNAYXdldGEubmw7DQo+IHN0YWJsZUB2Z2VyLmtlcm5lbC5vcmcNCj4g
-U3ViamVjdDogW1BBVENIIG5ldF0gaWdjOiBvbmx5IHN0cmlwIFJYIHRpbWVzdGFtcCBoZWFkZXIg
-ZnJvbSBmaXJzdA0KPiBidWZmZXINCj4gDQo+IGlnY19jbGVhbl9yeF9pcnEoKSBzdHJpcHMgSUdD
-X1RTX0hEUl9MRU4gd2hlbmV2ZXIgYSBkZXNjcmlwdG9yIHJlcG9ydHMNCj4gSUdDX1JYREFEVl9T
-VEFUX1RTSVAuIEZvciBtdWx0aS1idWZmZXIgcGFja2V0cywgY29udGludWF0aW9uDQo+IGRlc2Ny
-aXB0b3JzDQo+IHJldGFpbiBUU0lQIGV2ZW4gdGhvdWdoIHRoZSBpbmxpbmUgdGltZXN0YW1wIGlz
-IHByZXNlbnQgb25seSBpbiB0aGUNCj4gZmlyc3QNCj4gUlggYnVmZmVyLg0KPiANCj4gU3VidHJh
-Y3RpbmcgdGhlIGhlYWRlciBsZW5ndGggZnJvbSBlYWNoIGNvbnRpbnVhdGlvbiBidWZmZXIgdHJ1
-bmNhdGVzDQo+IGp1bWJvIHBhY2tldHMgYnkgMTYgYnl0ZXMgcGVyIGNvbnRpbnVhdGlvbiBhbmQg
-bGVhdmVzIHRoZSBwYWNrZXQNCj4gbGVuZ3RoDQo+IGxhcmdlciB0aGFuIHRoZSByZWNlaXZlZCBk
-YXRhLg0KPiANCj4gT25seSBjb25zdW1lIHRoZSB0aW1lc3RhbXAgaGVhZGVyIHdoZW4gc2tiIGlz
-IE5VTEwsIHdoaWNoIGlkZW50aWZpZXMNCj4gdGhlDQo+IGZpcnN0IGJ1ZmZlciBvZiBhIG5ldyBw
-YWNrZXQuIEFuIHNrYiBjYXJyaWVkIGluIHJ4X3JpbmctPnNrYiByZW1haW5zDQo+IG5vbi1OVUxM
-IHdoZW4gcGFja2V0IGFzc2VtYmx5IHJlc3VtZXMgaW4gYSBsYXRlciBOQVBJIHBvbGwuDQo+IA0K
-PiBMaW5rOiBodHRwczovL2xvcmUua2VybmVsLm9yZy9hbGwvMjAyNjA2MjUtaWdiLXJ4LXRzLWZp
-eC12My0xLQ0KPiA5OWIzZWZhMDhkY2FAYXdldGEubmwvDQo+IEZpeGVzOiBlMWVkNGY5MmE2MjUg
-KCJpZ2M6IFJlZmFjdG9yIFJ4IHRpbWVzdGFtcCBoYW5kbGluZyIpDQo+IENjOiBzdGFibGVAdmdl
-ci5rZXJuZWwub3JnDQo+IFNpZ25lZC1vZmYtYnk6IFBhdWwgTW9zZXMgPHBAMWc0Lm9yZz4NCj4g
-LS0tDQo+ICMNCj4gIyBSRVBSTw0KPiAjDQo+ICMgUmVjZWl2ZXI6IGlnYyAvIGVucDFzMCAvIDEw
-LjAuNS4xNzUNCj4gIyBTZW5kZXI6ICAgUlRMODEyNUIgLyBlblA0cDY1czAgLyAxMC4wLjUuMTY1
-DQo+IA0KPiAjIEJvdGggaG9zdHMNCj4gc3VkbyBpcCBsaW5rIHNldCBkZXYgZW5wMXMwIG10dSA5
-MDAwDQo+IHN1ZG8gaXAgbGluayBzZXQgZGV2IGVuUDRwNjVzMCBtdHUgOTAwMA0KPiANCj4gIyBC
-YXNlbGluZTogUlggdGltZXN0YW1waW5nIG9mZg0KPiBzdWRvIGh3c3RhbXBfY3RsIC1pIGVucDFz
-MCAtdCAwIC1yIDANCj4gcGluZyAtbiAtTSBkbyAtYyA1IC1zIDg5NzIgMTAuMC41LjE3NQ0KPiAj
-IDUvNSByZWNlaXZlZA0KPiANCj4gIyBFbmFibGUgUlggdGltZXN0YW1waW5nIG9ubHkNCj4gc3Vk
-byBod3N0YW1wX2N0bCAtaSBlbnAxczAgLXQgMCAtciAxDQo+IA0KPiAjIFJlY2VpdmVyDQo+IHN1
-ZG8gdGltZW91dCAyMCB0Y3BkdW1wIC1uaSBlbnAxczAgLXMgMCAtdyAvdG1wL2lnYy1qdW1iby5w
-Y2FwIFwNCj4gICAnaWNtcCBhbmQgaG9zdCAxMC4wLjUuMTY1Jw0KPiANCj4gIyBTZW5kZXINCj4g
-cGluZyAtbiAtTSBkbyAtYyA1IC1XIDIgLXMgODk3MiAxMC4wLjUuMTc1DQo+ICMgMC81IHJlY2Vp
-dmVkDQo+IA0KPiAjIFJlY2VpdmVyDQo+IHN1ZG8gdGNwZHVtcCAtbm4gLWUgLXZ2diAtciAvdG1w
-L2lnYy1qdW1iby5wY2FwDQo+ICMgbGVuZ3RoIDg5NTANCj4gIyBbdG90YWwgbGVuZ3RoIDkwMDAg
-PiBsZW5ndGggODkzNl0gKGludmFsaWQpDQo+ICMgd3JvbmcgaWNtcCBja3N1bQ0KPiANCj4gIyBF
-eHBlY3RlZCBFdGhlcm5ldCBsZW5ndGg6IDkwMTQNCj4gIyBDYXB0dXJlZCBsZW5ndGg6ICAgICAg
-ICAgIDg5NTANCj4gIyBMb3NzOiAgICAgICAgICAgICAgICAgICAgICAgNjQgPSA0IGNvbnRpbnVh
-dGlvbiBidWZmZXJzICogMTYgYnl0ZXMNCj4gDQo+ICMgRGlzYWJsZSBSWCB0aW1lc3RhbXBpbmcg
-YWdhaW4NCj4gc3VkbyBod3N0YW1wX2N0bCAtaSBlbnAxczAgLXQgMCAtciAwDQo+IHBpbmcgLW4g
-LU0gZG8gLWMgNSAtcyA4OTcyIDEwLjAuNS4xNzUNCj4gIyA1LzUgcmVjZWl2ZWQNCj4gDQo+IC0t
-LQ0KPiANCj4gIGRyaXZlcnMvbmV0L2V0aGVybmV0L2ludGVsL2lnYy9pZ2NfbWFpbi5jIHwgMyAr
-Ky0NCj4gIDEgZmlsZSBjaGFuZ2VkLCAyIGluc2VydGlvbnMoKyksIDEgZGVsZXRpb24oLSkNCj4g
-DQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL25ldC9ldGhlcm5ldC9pbnRlbC9pZ2MvaWdjX21haW4u
-Yw0KPiBiL2RyaXZlcnMvbmV0L2V0aGVybmV0L2ludGVsL2lnYy9pZ2NfbWFpbi5jDQo+IGluZGV4
-IDFmYjVmM2NiZTkzYy4uNDFiMjkzZGMxMGMzIDEwMDY0NA0KPiAtLS0gYS9kcml2ZXJzL25ldC9l
-dGhlcm5ldC9pbnRlbC9pZ2MvaWdjX21haW4uYw0KPiArKysgYi9kcml2ZXJzL25ldC9ldGhlcm5l
-dC9pbnRlbC9pZ2MvaWdjX21haW4uYw0KPiBAQCAtMjYzOSw3ICsyNjM5LDggQEAgc3RhdGljIGlu
-dCBpZ2NfY2xlYW5fcnhfaXJxKHN0cnVjdCBpZ2NfcV92ZWN0b3INCj4gKnFfdmVjdG9yLCBjb25z
-dCBpbnQgYnVkZ2V0KQ0KPiANCj4gIAkJcGt0YnVmID0gcGFnZV9hZGRyZXNzKHJ4X2J1ZmZlci0+
-cGFnZSkgKyByeF9idWZmZXItDQo+ID5wYWdlX29mZnNldDsNCj4gDQo+IC0JCWlmIChpZ2NfdGVz
-dF9zdGF0ZXJyKHJ4X2Rlc2MsIElHQ19SWERBRFZfU1RBVF9UU0lQKSkgew0KPiArCQlpZiAoIXNr
-YiAmJg0KPiArCQkgICAgaWdjX3Rlc3Rfc3RhdGVycihyeF9kZXNjLCBJR0NfUlhEQURWX1NUQVRf
-VFNJUCkpIHsNCj4gIAkJCWN0eC5yeF90cyA9IHBrdGJ1ZjsNCj4gIAkJCXBrdF9vZmZzZXQgPSBJ
-R0NfVFNfSERSX0xFTjsNCj4gIAkJCXNpemUgLT0gSUdDX1RTX0hEUl9MRU47DQo+IC0tDQo+IDIu
-NTUuR0lUDQo+IA0KDQpSZXZpZXdlZC1ieTogQWxla3NhbmRyIExva3Rpb25vdiA8YWxla3NhbmRy
-Lmxva3Rpb25vdkBpbnRlbC5jb20+DQo=
+This email covers the Sashiko review for this patch.
+
+On 24.08.2026 13:08, Tomasz Lichwala wrote:
+> When an E610 VF is running under Hyper-V, the VFLINKS register does not
+> carry valid link speed. The existing code reads speed from VFLINKS, which
+> does not reflect the actual negotiated speed. This results in ethtool
+> reporting a stale or incorrect link speed.
+> 
+> The Hyper-V synthetic NIC exposes the actual link status through
+> emulated PCI config space at offset 0x209 in VFLINKS register format.
+> Read and decode link status from there when checking link on E610 VFs.
+> 
+> To avoid generating unnecessary VMBus transactions on every watchdog
+> cycle, read the PCI config register on demand when ethtool or sysfs
+> queries link speed, rather than polling it periodically. The cached
+> value is used by the watchdog and link state notifications as before.
+> 
+> Guard the PCI config space read with IS_ENABLED(CONFIG_PCI_MMCONFIG),
+> since accessing offsets above 256 requires MMCONFIG support.
+> 
+> Fixes: 4c44b450c69b ("ixgbevf: Add support for Intel(R) E610 device")
+> Reviewed-by: Marcin Szycik <marcin.szycik@linux.intel.com>
+> Signed-off-by: Tomasz Lichwala <tomasz.lichwala@linux.intel.com>
+> ---
+> v4:
+>  - Read link speed on demand from ethtool/sysfs query instead of polling
+>    every watchdog cycle to avoid unnecessary VMBus transactions (ethtool.c)
+>  - Restore get_link_status caching for E610 VFs in check_link
+>  - Add IS_ENABLED(CONFIG_PCI_MMCONFIG) guard for PCI config reads above
+>    offset 256
+>  - Add CC netdev@vger.kernel.org
+> v3:
+>  - Remove #if IS_ENABLED(CONFIG_PCI_MMCONFIG) preprocessor guard
+>  - Replace goto decode label with if/else control flow
+>  - Move get_link_status check into else branch (non-E610 path only)
+>  - Expand commit message with problem description
+> v2:
+>  - Simplify error path: return 0 with link_up=false instead of
+>    propagating PCI read error code
+>  - Fix alignment in macro definitions
+>  - Update comment describing Hyper-V PCI config offsets
+>  drivers/net/ethernet/intel/ixgbevf/ethtool.c | 12 ++++
+>  drivers/net/ethernet/intel/ixgbevf/vf.c      | 68 +++++++++++++++++---
+>  2 files changed, 72 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ixgbevf/ethtool.c b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
+> index 537a60d5276f..2463fccffd4d 100644
+> --- a/drivers/net/ethernet/intel/ixgbevf/ethtool.c
+> +++ b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
+> @@ -83,6 +83,18 @@ static int ixgbevf_get_link_ksettings(struct net_device *netdev,
+>  				      struct ethtool_link_ksettings *cmd)
+>  {
+>  	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
+> +	struct ixgbe_hw *hw = &adapter->hw;
+> +
+> +	/* E610 Hyper-V VFs: read current link speed from PCI config space
+> +	 * on every link speed query.
+> +	 */
+> +	if (hw->mac.type == ixgbe_mac_e610_vf) {
+
+The mac type check matches both Hyper-V and bare-metal E610 VFs. On bare-metal, forcing get_link_status=true and calling ixgbevf_check_mac_link_vf() would indeed corrupt the link state — the CTS mailbox read fails (no pending CTS), causing a false link-down report.
+
+Fixed in v5 by checking the subsystem device ID (IXGBE_SUBDEV_ID_E610_VF_HV) instead of the mac type.  This is the same identifier used in the PCI ID table to select Hyper-V mac_ops during probe, so the on-demand read now only triggers for Hyper-V VFs where hw->mac.ops.check_link points to ixgbevf_hv_check_mac_link_vf().
+
+> +		spin_lock_bh(&adapter->mbx_lock);
+> +		hw->mac.get_link_status = true;
+> +		hw->mac.ops.check_link(hw, &adapter->link_speed,
+> +				       &adapter->link_up, false);
+
+This is not a race introduced by this patch. The watchdog's pattern of caching adapter->link_speed into a local variable before taking mbx_lock is pre-existing for all Hyper-V VF types. The ethtool response is always correct because it reads adapter->link_speed immediately after check_link returns within the same function call. The mbx_lock serializes concurrent check_link calls - ethtool and watchdog cannot execute check_link simultaneously.
+
+> +		spin_unlock_bh(&adapter->mbx_lock);
+> +	}
+>  
+>  	ethtool_link_ksettings_zero_link_mode(cmd, supported);
+>  	ethtool_link_ksettings_add_link_mode(cmd, supported, 10000baseT_Full);
+> diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.c b/drivers/net/ethernet/intel/ixgbevf/vf.c
+> index f6df86d124b9..a84b62641e9b 100644
+> --- a/drivers/net/ethernet/intel/ixgbevf/vf.c
+> +++ b/drivers/net/ethernet/intel/ixgbevf/vf.c
+> @@ -1,14 +1,17 @@
+>  // SPDX-License-Identifier: GPL-2.0
+>  /* Copyright(c) 1999 - 2024 Intel Corporation. */
+>  
+> +#include <linux/unaligned.h>
+> +
+>  #include "vf.h"
+>  #include "ixgbevf.h"
+>  
+> -/* On Hyper-V, to reset, we need to read from this offset
+> - * from the PCI config space. This is the mechanism used on
+> - * Hyper-V to support PF/VF communication.
+> +/* On Hyper-V the PF/VF communication is through emulated PCI config
+> + * space. The reset and link status are exposed at the offsets below.
+>   */
+> -#define IXGBE_HV_RESET_OFFSET           0x201
+> +#define IXGBE_HV_RESET_OFFSET		0x201
+> +#define IXGBE_HV_LINK_STATUS_OFFSET	0x209
+> +#define IXGBE_HV_LINK_STATUS_SIZE	4
+>  
+>  static inline s32 ixgbevf_write_msg_read_ack(struct ixgbe_hw *hw, u32 *msg,
+>  					     u32 *retmsg, u16 size)
+> @@ -901,6 +904,40 @@ static s32 ixgbevf_check_mac_link_vf(struct ixgbe_hw *hw,
+>  	return ret_val;
+>  }
+>  
+> +/**
+> + * ixgbevf_hv_read_links_e610 - read link status from PCI config space
+> + * @hw: pointer to hardware structure
+> + * @links_reg: pointer to store read value
+> + *
+> + * On Hyper-V E610 VFs the VFLINKS register does not carry valid link speed.
+> + * Instead, link status is exposed through emulated PCI config space at offset
+> + * 0x209 in VFLINKS register format.
+> + *
+> + * Return: 0 on success, negative error code on failure.
+> + */
+> +static s32 ixgbevf_hv_read_links_e610(struct ixgbe_hw *hw, u32 *links_reg)
+> +{
+> +	struct ixgbevf_adapter *adapter = hw->back;
+> +	u8 data[IXGBE_HV_LINK_STATUS_SIZE];
+> +
+> +	if (!IS_ENABLED(CONFIG_PCI_MMCONFIG)) {
+
+
+The IS_ENABLED(CONFIG_PCI_MMCONFIG) guard is intentionally kept for consistency with  xgbevf_hv_reset_hw_vf(), which uses the same pattern to access emulated PCI config space at offset  x201. Both functions read from extended config space offsets (>256) that require MMCONFIG on x86. In practice, Hyper-V E610 VFs are only deployed on x86 hosts where CONFIG_PCI_MMCONFIG is always enabled. If ARM64 Hyper-V support becomes relevant, both functions would need to be updated together.
+
+> +		dev_err_once(&adapter->pdev->dev,
+> +			     "cannot read link status, PCI_MMCONFIG is required for Hyper-V\n");
+> +		return -EOPNOTSUPP;
+> +	}
+> +
+> +	for (int i = 0; i < IXGBE_HV_LINK_STATUS_SIZE; i++) {
+> +		int ret = pci_read_config_byte(adapter->pdev,
+> +					       IXGBE_HV_LINK_STATUS_OFFSET + i,
+> +					       &data[i]);
+> +		if (ret)
+> +			return pcibios_err_to_errno(ret);
+> +	}
+> +
+> +	*links_reg = get_unaligned_le32(data);
+> +	return 0;
+> +}
+> +
+>  /**
+>   * ixgbevf_hv_check_mac_link_vf - check link
+>   * @hw: pointer to private hardware struct
+> @@ -909,6 +946,7 @@ static s32 ixgbevf_check_mac_link_vf(struct ixgbe_hw *hw,
+>   * @autoneg_wait_to_complete: unused
+>   *
+>   * Hyper-V variant; there is no mailbox communication.
+> + * For E610 VFs, link status is read from emulated PCI config space.
+>   */
+>  static s32 ixgbevf_hv_check_mac_link_vf(struct ixgbe_hw *hw,
+>  					ixgbe_link_speed *speed,
+> @@ -926,8 +964,16 @@ static s32 ixgbevf_hv_check_mac_link_vf(struct ixgbe_hw *hw,
+>  	if (!mac->get_link_status)
+>  		goto out;
+>  
+> -	/* if link status is down no point in checking to see if pf is up */
+> -	links_reg = IXGBE_READ_REG(hw, IXGBE_VFLINKS);
+> +	if (mac->type == ixgbe_mac_e610_vf) {
+> +		if (ixgbevf_hv_read_links_e610(hw, &links_reg)) {
+> +			*link_up = false;
+> +			*speed = IXGBE_LINK_SPEED_UNKNOWN;
+> +			return 0;
+> +		}
+> +	} else {
+> +		links_reg = IXGBE_READ_REG(hw, IXGBE_VFLINKS);
+> +	}
+> +
+>  	if (!(links_reg & IXGBE_LINKS_UP))
+>  		goto out;
+>  
+> @@ -941,8 +987,11 @@ static s32 ixgbevf_hv_check_mac_link_vf(struct ixgbe_hw *hw,
+>  			udelay(100);
+>  			links_reg = IXGBE_READ_REG(hw, IXGBE_VFLINKS);
+>  
+> -			if (!(links_reg & IXGBE_LINKS_UP))
+> -				goto out;
+> +			if (!(links_reg & IXGBE_LINKS_UP)) {
+> +				*link_up = false;
+> +				*speed = IXGBE_LINK_SPEED_UNKNOWN;
+> +				return 0;
+> +			}
+>  		}
+>  	}
+>  
+> @@ -956,6 +1005,9 @@ static s32 ixgbevf_hv_check_mac_link_vf(struct ixgbe_hw *hw,
+>  	case IXGBE_LINKS_SPEED_100_82599:
+>  		*speed = IXGBE_LINK_SPEED_100_FULL;
+>  		break;
+> +	default:
+> +		*speed = IXGBE_LINK_SPEED_UNKNOWN;
+> +		break;
+>  	}
+>  
+>  	/* if we passed all the tests above then the link is up and we no
+
