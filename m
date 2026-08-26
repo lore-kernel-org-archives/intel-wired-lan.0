@@ -1,83 +1,93 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14442C61DBD
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 25 Aug 2026 23:57:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F28BEC61DC2
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 26 Aug 2026 09:48:55 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C06F3605F8;
-	Tue, 25 Aug 2026 23:57:48 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id A53B4802AE;
+	Wed, 26 Aug 2026 09:48:55 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Zxvs8ts-AORL; Tue, 25 Aug 2026 23:57:48 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id wTWCJvCQBOlC; Wed, 26 Aug 2026 09:48:55 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1787702268;
-	bh=0zuxoKD2M1JEVqHANBIUbWduPp/SxtJyTy5Prh/oD7w=;
-	h=Date:To:From:Cc:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=yHW9QtuNpRfq6Vrd0qou8u/XJ5ZRcBKgGrT+o7o7wdxocZFQ9s2AJwhDGcWA4GezB
-	 Me34+L+R9mkw1ZOmdWLyYr9vuUbBsScnBRb0VeLQxREn+QOHE2EAarT1FeqcqcKey6
-	 a9ASEAJKzWtrueBuz/0++RLn3NqlozrE8GGh4dkYaiqoiy5zH90p4keXQtBVGVtb2s
-	 oG19jtdvbgrxtE0jKD93tEWgknFVsPqr997yLmbf7TPBnMvWqzCsIkiILaOyMwc7dK
-	 Pb19EVTdLOPBleJibJLEmYdIjF7Cie+sbPXCYe6W9PI16BnBJhySMlgeOVi55vk0lt
-	 Bq+UfrrBltiqw==
+	s=default; t=1787737735;
+	bh=OMybOzOLGh/VfoufWjUW6TuJUrtPEMS8IX34AZuw2zU=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=ThdC0377hSLv5q8ymQXSwADrt/4Ew9AhTXrCKQjS65eCd9r655IIbvnBOmeMfa88j
+	 qmNyhDxGOHId8OadEv539jYPp1wEoRkPvJjFsA3/4sNWDUXmfwWBk9eD3cLIvsmknR
+	 0BRtmbYuNmFCX4tXuuc6DOgXrs9Jbr+rsjcQ3Mgs0+lwfs5kJbLYgjtYL/ytTzh0s5
+	 3Nla9ePx34NTSIpxf2WIMLP9LXP02L1oxBDFqIjPhb2Q7bBOxW+zxul6WURNLd4CDU
+	 uSSI6WCLlB99pMBESO1iCkmbFZKeHz4XIkJk23YlIOvAKPSDTTucsmxVOKP6EAyDgv
+	 IU36le86mexPg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id EA8FD605F9;
-	Tue, 25 Aug 2026 23:57:47 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 8A63B2FD
- for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Aug 2026 23:56:28 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 17F04807AA;
+	Wed, 26 Aug 2026 09:48:55 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 0B3363C3
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 26 Aug 2026 09:48:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 70F6A40055
- for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Aug 2026 23:56:28 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id EF1A240568
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 26 Aug 2026 09:48:53 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id w9kqt1Ty1eul for <intel-wired-lan@lists.osuosl.org>;
- Tue, 25 Aug 2026 23:56:27 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=109.224.244.103;
- helo=mail-244103.protonmail.ch; envelope-from=p@1g4.org; receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=quarantine dis=none) header.from=1g4.org
-Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=1g4.org header.i=@1g4.org header.a=rsa-sha256
- header.s=protonmail3 header.b=mrGmclxG
-Received: from mail-244103.protonmail.ch (mail-244103.protonmail.ch
- [109.224.244.103])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 69B49401AD
- for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Aug 2026 23:56:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=1g4.org;
- s=protonmail3; t=1787702146; x=1787961346;
- bh=0zuxoKD2M1JEVqHANBIUbWduPp/SxtJyTy5Prh/oD7w=;
- h=Date:To:From:Cc:Subject:Message-ID:Feedback-ID:From:To:Cc:Date:
- Subject:Reply-To:Feedback-ID:Message-ID:BIMI-Selector;
- b=mrGmclxGRKil5ZV/uCVKYMkGgZX257YTVHByLpKbQjafzcklEip4jwpOOgdPl2hch
- tqTZFnukn1bui8ETwIF6tdrefF4GR4SCv3s3aBBHDPKS8lkdI56C1nkKpaPZ1+rvPT
- CQGTwcanShKSG2PUZlDhKTqcAqL1mMdagjK3HMkrHwky3dHFfHFgYBtnT+gRAvkBJF
- dCOhDtafvMec+qinDtVQKzeH/DIUpxqP2DWiNsxQorhPCNzMyLJI+/RDr2j6vwYm7X
- aYVsXeF0IwZKinWiNHh08MmMxEQTonwL9f4BXX6sxUCoKuJzwnXSNQVNXV5j48aaZi
- FRr9h/9BRK6Zg==
-Date: Tue, 25 Aug 2026 23:55:40 +0000
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id DWZsTeJB_jGs for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 26 Aug 2026 09:48:53 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.14;
+ helo=mgamail.intel.com; envelope-from=sergey.temerkhanov@intel.com;
+ receiver=<UNKNOWN> 
+Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=d78T9tqi
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 40B0240562
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 26 Aug 2026 09:48:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1787737733; x=1819273733;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=uS1Gk3FU8H9sDA2GM9EWDtq+Xlygp4KxaypBMwUQwy0=;
+ b=d78T9tqiTDLFSjY4+oTVdtqbbmklZ3wB51APS1Po9RXeZiFQ0Qa4MyoS
+ EwgJElufGChSS8NsuEurzXxpfHgo5+i/O9os4oZ1A8LBfULDUGogT+eOv
+ d2mnUPyATCRG/g9pVvH2M+Lgip/qjtV87eiolrWo8s2chx8FbgHBaYjUr
+ Ey3PnEK8GaZOEgq5LoIzPSf30PE5BVnuOwl8GXM9YJbdS9OgLg3fPVtiO
+ gds5mi+yS3nKrtIB8Z2+SYXc5EPniUIkw/LvXkqa6KYIE36g+Rz8AL9ih
+ 5WROL2T3gkyqridaOC1jtiGhU9r4XG5aWFrSveWYbcBp2xpbqPq7j+H1N A==;
+X-CSE-ConnectionGUID: Kt7y22DwRiKyS6DPWbcpxw==
+X-CSE-MsgGUID: eHwmCeGuR+iifbx6/EYZ8w==
+X-IronPort-AV: E=McAfee;i="6800,10657,11886"; a="88232949"
+X-IronPort-AV: E=Sophos;i="6.25,244,1779174000"; d="scan'208";a="88232949"
+Received: from fmviesa009.fm.intel.com ([10.60.135.149])
+ by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 26 Aug 2026 02:48:52 -0700
+X-CSE-ConnectionGUID: 7B5au/OrT/C5AMFFQDelvg==
+X-CSE-MsgGUID: /7CKX7J9SfO7GxMAVXRARA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,244,1779174000"; d="scan'208";a="261404797"
+Received: from gnrd8.igk.intel.com (HELO GNRD8) ([10.123.232.137])
+ by fmviesa009.fm.intel.com with ESMTP; 26 Aug 2026 02:48:51 -0700
+From: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-From: Paul Moses <p@1g4.org>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
- andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com, maciej.fijalkowski@intel.com,
- andre.guedes@intel.com, vedang.patel@intel.com, jithu.joseph@intel.com,
- richardcochran@gmail.com, tkusters@aweta.nl, stable@vger.kernel.org
-Subject: [PATCH net] igc: only strip RX timestamp header from first buffer
-Message-ID: <20260825235530.3278670-1-p@1g4.org>
-Feedback-ID: 8253658:user:proton
-X-Pm-Message-ID: 8f3ba88960520ef0ca5839f4ffd264c7e10e4b08
+Cc: netdev@vger.kernel.org
+Subject: [PATCH iwl-next v4 1/6] ice: dpll: Add the MUX tables to the
+ documentation
+Date: Wed, 26 Aug 2026 09:48:44 +0000
+Message-ID: <20260826094849.4112016-2-sergey.temerkhanov@intel.com>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260826094849.4112016-1-sergey.temerkhanov@intel.com>
+References: <20260826094849.4112016-1-sergey.temerkhanov@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-X-Mailman-Approved-At: Tue, 25 Aug 2026 23:57:47 +0000
+Content-Transfer-Encoding: 8bit
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -92,88 +102,48 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-igc_clean_rx_irq() strips IGC_TS_HDR_LEN whenever a descriptor reports
-IGC_RXDADV_STAT_TSIP. For multi-buffer packets, continuation descriptors
-retain TSIP even though the inline timestamp is present only in the first
-RX buffer.
+Add the tables documenting the DPLL pin MUX states and behavior
+to the driver.
 
-Subtracting the header length from each continuation buffer truncates
-jumbo packets by 16 bytes per continuation and leaves the packet length
-larger than the received data.
-
-Only consume the timestamp header when skb is NULL, which identifies the
-first buffer of a new packet. An skb carried in rx_ring->skb remains
-non-NULL when packet assembly resumes in a later NAPI poll.
-
-Link: https://lore.kernel.org/all/20260625-igb-rx-ts-fix-v3-1-99b3efa08dca@=
-aweta.nl/
-Fixes: e1ed4f92a625 ("igc: Refactor Rx timestamp handling")
-Cc: stable@vger.kernel.org
-Signed-off-by: Paul Moses <p@1g4.org>
+Signed-off-by: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
 ---
-#
-# REPRO
-#=20
-# Receiver: igc / enp1s0 / 10.0.5.175
-# Sender:   RTL8125B / enP4p65s0 / 10.0.5.165
+ drivers/net/ethernet/intel/ice/ice_dpll.c | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
 
-# Both hosts
-sudo ip link set dev enp1s0 mtu 9000
-sudo ip link set dev enP4p65s0 mtu 9000
-
-# Baseline: RX timestamping off
-sudo hwstamp_ctl -i enp1s0 -t 0 -r 0
-ping -n -M do -c 5 -s 8972 10.0.5.175
-# 5/5 received
-
-# Enable RX timestamping only
-sudo hwstamp_ctl -i enp1s0 -t 0 -r 1
-
-# Receiver
-sudo timeout 20 tcpdump -ni enp1s0 -s 0 -w /tmp/igc-jumbo.pcap \
-  'icmp and host 10.0.5.165'
-
-# Sender
-ping -n -M do -c 5 -W 2 -s 8972 10.0.5.175
-# 0/5 received
-
-# Receiver
-sudo tcpdump -nn -e -vvv -r /tmp/igc-jumbo.pcap
-# length 8950
-# [total length 9000 > length 8936] (invalid)
-# wrong icmp cksum
-
-# Expected Ethernet length: 9014
-# Captured length:          8950
-# Loss:                       64 =3D 4 continuation buffers * 16 bytes
-
-# Disable RX timestamping again
-sudo hwstamp_ctl -i enp1s0 -t 0 -r 0
-ping -n -M do -c 5 -s 8972 10.0.5.175
-# 5/5 received
-
----
-
- drivers/net/ethernet/intel/igc/igc_main.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethern=
-et/intel/igc/igc_main.c
-index 1fb5f3cbe93c..41b293dc10c3 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -2639,7 +2639,8 @@ static int igc_clean_rx_irq(struct igc_q_vector *q_ve=
-ctor, const int budget)
-=20
- =09=09pktbuf =3D page_address(rx_buffer->page) + rx_buffer->page_offset;
-=20
--=09=09if (igc_test_staterr(rx_desc, IGC_RXDADV_STAT_TSIP)) {
-+=09=09if (!skb &&
-+=09=09    igc_test_staterr(rx_desc, IGC_RXDADV_STAT_TSIP)) {
- =09=09=09ctx.rx_ts =3D pktbuf;
- =09=09=09pkt_offset =3D IGC_TS_HDR_LEN;
- =09=09=09size -=3D IGC_TS_HDR_LEN;
---=20
-2.55.GIT
-
+diff --git a/drivers/net/ethernet/intel/ice/ice_dpll.c b/drivers/net/ethernet/intel/ice/ice_dpll.c
+index 382fbe98f2b0..9b3584fa43a9 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dpll.c
++++ b/drivers/net/ethernet/intel/ice/ice_dpll.c
+@@ -92,6 +92,29 @@ static const struct dpll_pin_frequency ice_esync_range[] = {
+ 	DPLL_PIN_FREQUENCY_RANGE(0, DPLL_PIN_FREQUENCY_1_HZ),
+ };
+ 
++/*
++ * SMA1/U.FL1 MUX table
++ *+----------------+-------------+------------+
++ *|                | SMA1_DIR_EN | SMA1_TX_EN |
++ *+----------------+-------------+------------+
++ *|SMA1 RX Enable  |       0     |      x     |
++ *|u.FL1 TX Enable |       0     |      0     |
++ *|SMA1 TX Enable  |       1     |      0     |
++ *|All Disable     |       1     |      1     |
++ *+----------------+-------------+------------+
++ *
++ * SMA2/U.FL2 MUX table
++ *+----------------+-------------+------------+------------+
++ *|                | SMA2_DIR_EN | SMA2_TX_EN | UFL2_RX_EN |
++ *+----------------+-------------+------------+------------+
++ *|SMA2 RX Enable  |       0     |      x     |     x      |
++ *|u.FL2 RX Enable |       1     |      x     |     0      |
++ *|SMA2 TX Enable  |       1     |      0     |     x      |
++ *|SMA2 Disable    |       1     |      1     |     x      |
++ *|All Disable     |       1     |      1     |     1      |
++ *+----------------+-------------+------------+------------+
++ */
++
+ /**
+  * ice_dpll_is_sw_pin - check if given pin shall be controlled by SW
+  * @pf: private board structure
+-- 
+2.53.0
 
