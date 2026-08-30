@@ -1,87 +1,117 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47D7EC61DD9
-	for <intel-wired-lan@archiver.kernel.org>; Sun, 30 Aug 2026 06:11:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 477CFC61DE2
+	for <intel-wired-lan@archiver.kernel.org>; Sun, 30 Aug 2026 23:22:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id E1B9D40633;
-	Sun, 30 Aug 2026 06:11:06 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id DA02780C47;
+	Sun, 30 Aug 2026 23:22:17 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id YY77x79uK2n1; Sun, 30 Aug 2026 06:11:06 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id IG9Inmly537D; Sun, 30 Aug 2026 23:22:15 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1788070266;
-	bh=5qKWQdjYlf/mwu1SSHT1RT3/rC20vLxJ8NptMwZJnio=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	s=default; t=1788132135;
+	bh=n4rOnTRkH1wkU5lCvSZzN1icwwcD6oE7qDsPfernsaU=;
+	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=i0eroOJ27e3xXN4PUi2e/uXlFGZy6Ywb3+vUTWsN5ev/SDMKCbIHh0MEKehkl0vdm
-	 71buXxalnX80x2zj1Qq/aPjGKhQ5hd2Gyc2o11U7JDnGLVbaFkz+1DQjP5YGo8fwj9
-	 EEHCXZUkPBtqhtWfstuRd0EzbYEVOrG14aWsQtNTkZxwye5x/mSmvOmMJce2M1WkeS
-	 OxLKtN0TC7yjyfIaSaTkkCl+vgPwJKpTF7hLBkcQ4f6wz7QIUVXeisSxrhHcwHjzOH
-	 w5UCI/I1CoOeU8t8+55Wy/8DuJULqSJKseb7IIJK551RBUePp3tH31I5n3GD9dVL8H
-	 YyIyXCbc6YKQw==
+	b=8vpOJnXu5vOKkFrlhQqJ7TZfAiCaco8/nzYUMemmVeAvJ0yMR7Xvlyg/mQPpHLcsC
+	 MMuJlWb/86ZnexHR5iDJDlDM+Rzznbfc01FKX17IYLJ4d9kkcxAsYcaVy2bB7NRDCS
+	 d8oS5+ox07GJqqA0ppSpEEoh6EkswEl4yEJ7gqy0e0/Rky99WLsTq857Y+Du1+ynag
+	 BBWd0/3JYGZ/A5QOJ+uCiCCVNaMAikD5uIPO9wQhhF9gTgAzNXK/9ytIZdywB/3lY0
+	 0AmbXSv6YBkprgV9nDPTmMJ6JMnemHO3Q6bbkNhZlBiiHri1p7/edg7pBACnhCtMwg
+	 ykD3wonCSf/Ig==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 073EF40634;
-	Sun, 30 Aug 2026 06:11:06 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id BF7DF34E
- for <intel-wired-lan@lists.osuosl.org>; Sun, 30 Aug 2026 06:11:04 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id CD05880C43;
+	Sun, 30 Aug 2026 23:22:15 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 1BDF8334
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 30 Aug 2026 23:22:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id B10E540082
- for <intel-wired-lan@lists.osuosl.org>; Sun, 30 Aug 2026 06:11:04 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 047A640056
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 30 Aug 2026 23:22:15 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id AHOVg68qUIhx for <intel-wired-lan@lists.osuosl.org>;
- Sun, 30 Aug 2026 06:11:03 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.16;
- helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
+ id lyIbz0Q2-EMl for <intel-wired-lan@lists.osuosl.org>;
+ Sun, 30 Aug 2026 23:22:14 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2607:f8b0:4864:20::1134; helo=mail-yw1-x1134.google.com;
+ envelope-from=tactii@gmail.com; receiver=<UNKNOWN> 
 Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=a5+TPH9d
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
- by smtp2.osuosl.org (Postfix) with ESMTPS id A7A4D40050
- for <intel-wired-lan@lists.osuosl.org>; Sun, 30 Aug 2026 06:11:01 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1788070263; x=1819606263; h=date:from:to:subject:message-id;
- bh=8Fs/IHGE+a1CjGGla+80rMnEYZoAZ8GitrcTQyr2fOM=;
- b=a5+TPH9dmFi7NBF3I2BaH0QpgCQcdLkRmmxTDsN57/f3V7pqU5v3Rxqw
- MgUCwOm0BXmMyuhlZWhnodwvW/p8LWL85cyYhuOJlnIhojTI0t9QlHB6o
- ZXjPhKPJ9dYuBwXWnvZhD4dXebbRiqCoi3cSNTOJIXNMY6+4wkDmsHs+N
- 8eInqyU6B4OoOoyjd+qK1+mEjODeufUuJoNutzq+8dyTzu9nkx1g/Fj1/
- uq5xE4ZB0r6tdx3eOVs07qh8T6WcVM4RQwmFeWu+CE52tmlIXeDqny3YT
- sk5Hykaq+GYU7noZH0cL2aTYRpoONPzTNkTUw1xFcBHVGMJxjpLVb1G4L w==;
-X-CSE-ConnectionGUID: sCEf6CtGSgWbfpVtW0PZig==
-X-CSE-MsgGUID: O7VUjw8dSX247rVuGDCmEQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11890"; a="76058101"
-X-IronPort-AV: E=Sophos;i="6.25,251,1779174000"; d="scan'208";a="76058101"
-Received: from fmviesa010.fm.intel.com ([10.60.135.150])
- by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 29 Aug 2026 23:11:01 -0700
-X-CSE-ConnectionGUID: d9y+BaMvTVOh+gaJu2rOBw==
-X-CSE-MsgGUID: 3aYACnE1S5WbG4DU7yReAw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,251,1779174000"; d="scan'208";a="264768024"
-Received: from lkp-server01.sh.intel.com (HELO 3532383e6126) ([10.239.97.150])
- by fmviesa010.fm.intel.com with ESMTP; 29 Aug 2026 23:11:00 -0700
-Received: from kbuild by 3532383e6126 with local (Exim 4.98.2)
- (envelope-from <lkp@intel.com>) id 1x0Yks-00000000DdM-0NKW;
- Sun, 30 Aug 2026 06:10:58 +0000
-Date: Sun, 30 Aug 2026 14:10:52 +0800
-From: kernel test robot <lkp@intel.com>
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Subject: [tnguy-net-queue:dev-queue] BUILD SUCCESS
- 10b5e0324c4b3669bec7ec99e8dead440fa89281
-Message-ID: <202608301439.LwCWd8YU-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20251104 header.b=KYBRu2LA
+Received: from mail-yw1-x1134.google.com (mail-yw1-x1134.google.com
+ [IPv6:2607:f8b0:4864:20::1134])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id E831E40050
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 30 Aug 2026 23:22:13 +0000 (UTC)
+Received: by mail-yw1-x1134.google.com with SMTP id
+ 00721157ae682-81e6f0b4610so26056217b3.2
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 30 Aug 2026 16:22:13 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20251104; t=1788132132; x=1788736932; darn=lists.osuosl.org;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+ bh=n4rOnTRkH1wkU5lCvSZzN1icwwcD6oE7qDsPfernsaU=;
+ b=KYBRu2LAj3BnZpJKpLAqPRMqXuaUK4boBXng/1XMXRTkqvoQAYOgKi7HLHn8rRb4nR
+ x4tgUJeaJdwCHrhPuD8JujuUcB1qk54DxIDa7+gWYFqirlSlA/fAQM23Ji96i2lrcrvZ
+ odQrxrODHVFqmsRsDcu8rdN8QJ3EwfKzRW3f0udV7czyDgiLrNSG8Y4MYiMTQHqxLDhf
+ AVITo3yaBNAxCtvUYOna4u9OBaK4v6pXbyXk4Nml/xnZX7OUE19Oqy1xL4nDhTv78iu8
+ cA+U8yxHdOg7F4cguuLtYwgKHvAYl8gvSyaMUOIuzztSBSbn8aKuE19cMfwTKQHnB/xq
+ bULw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20251104; t=1788132132; x=1788736932;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to:content-type;
+ bh=n4rOnTRkH1wkU5lCvSZzN1icwwcD6oE7qDsPfernsaU=;
+ b=ol5/NSP9wNQXVdPWCLiSqyUG5FyG+K4VrGboo7THyxdsd7LJ7XM31qNQ5fP2/9R3M8
+ 445nGaN0GWI/flxt98P3Sifyv35f1giAlOh6ZLqe1FOcgdPNtGi63bfpWcXdFtvMCpf8
+ ryYp2MwAOIve0FQz7j13N+YD3F05U7UYmHkHjuqw4Ij7aQDAStlkP/EuW3D0MUSawLRe
+ 2I56ZEJCa+uOKEJ9NdAiGILrDVMX7LTrDCLqY+DV6DnDzS+neGoxaNU2JStkESHJuJVV
+ Y9GIthwOWOqukl91YTUvApBY9oNvJhP8h2meOUawRbikkS8BgU+RSxJb3+l/82VNrN62
+ uIeA==
+X-Gm-Message-State: AFuF++nSFby/p/ciPlsQZYzQCc7wVpk8ItxSP9Ys3cUFe5sz6Ae5patv
+ Q5VdYFmtbFV1L5RQMRGfotg4zDIGPZxLm+JEADiwgr7sYVu+PV7Ca2Eo8v7B/XbJ7LA=
+X-Gm-Gg: AYBFou3HIkoM6Y0oDDEeXN/7xjMa2TcEgTTnr0lsVaMYD7N2fHKG6PqHe4vL21v5APU
+ W4ppevQLFASXORbZQnqKDh/fOeTLBaFRoPquCUhukClKGdlcOS1GLvldlhRCo7clpnyxo7/9RRE
+ 7MV9X+uTo1XJXIJkc4AM5qM8jlCkrO/7bsMagur2wVC67E5+1LLKwKp/IJeTu+P8xFSAzTJaftS
+ 8e3rOgE3W3U8kmx6XNl7Gth0H02fP5FZ4WxCp7EY5RIxtHgGb3v62h2aRyP08kLyRvVXkNIxMzp
+ TgAR9rMeZOvZ/tUsaRdCslwWb5l01/fcWGsfQ/nEEfWIlILiJQu/6xaTBuNURQQmupYd0/Yixj2
+ Uu3K2U9bXVYjin0QmwOsTP8rx0v7grgjji4pEIwwb8iwVDAV9zKDd+gTQDTGrlvsbilakzECPRn
+ 0O2XyopUabtj7ZIADCte0qFzrIi0FH/Szhy2BznUfP
+X-Received: by 2002:a05:690c:38a:b0:861:d742:8c1 with SMTP id
+ 00721157ae682-86722c33022mr677777b3.2.1788132132176; 
+ Sun, 30 Aug 2026 16:22:12 -0700 (PDT)
+Received: from devobuntu.lan ([2600:6c5c:6b00:316::23])
+ by smtp.gmail.com with ESMTPSA id
+ 00721157ae682-85e677606aesm39025937b3.45.2026.08.30.16.22.10
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Sun, 30 Aug 2026 16:22:11 -0700 (PDT)
+From: Matt Vollrath <tactii@gmail.com>
+To: intel-wired-lan@lists.osuosl.org
+Cc: netdev@vger.kernel.org, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Alexander Lobakin <aleksander.lobakin@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S . Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>,
+ Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>,
+ linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Matt Vollrath <tactii@gmail.com>
+Subject: [PATCH iwl-next 0/8] e1000e: use page pool
+Date: Sun, 30 Aug 2026 19:21:38 -0400
+Message-ID: <20260830232146.36948-1-tactii@gmail.com>
+X-Mailer: git-send-email 2.43.0
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -96,205 +126,173 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: 10b5e0324c4b3669bec7ec99e8dead440fa89281  igc: only strip RX timestamp header from first buffer
+This series converges the three e1000e Rx paths into one and then makes
+it use a page pool. The jumbo path is chosen as the golden path because
+it is the only one that can handle every combination of MTU and page
+size. Any performance regression caused by using that path for all
+configurations is remedied by eliminating allocations and DMA mapping
+from the hot path, as shown in benchmarks below.
 
-elapsed time: 766m
+There are some general modernizations in this conversion, intended to
+make this driver match conventions found in other Intel drivers. The
+copybreak parameter is removed. The NAPI skb cache is used. The netmem
+API is used for chained frames. Prefetch is used optimistically in the
+cleaner loop to pull in the next descriptor and the frame headers.
 
-configs tested: 186
-configs skipped: 2
+User-visible changes:
+* The copybreak module parameter and its documentation are removed.
+* The rx_header_split ethtool stat is removed.
+* Small packets are charged at the buffer's full 2 KB truesize at
+  standard MTU.
+* Jumbo MTU frames are delivered as 2 KB chunks. At MTU > 2026 this
+  increases userspace copy overhead by gathering more fragments and
+  increases truesize accounting per frame. This is described in more
+  detail below.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+The series begins by fixing some existing bugs which would either be
+more reachable or have worse consequences after the conversion.
+Missing support for CrcStripping=0 is added. The page dump routine's
+mis-read of jumbo buffers is remedied. A race between the reset task
+and runtime PM is guarded.
 
-tested configs:
-alpha                             allnoconfig    gcc-16.1.0
-alpha                            allyesconfig    gcc-16.1.0
-alpha                               defconfig    gcc-16.1.0
-arc                              allmodconfig    clang-24
-arc                              allmodconfig    gcc-16.1.0
-arc                               allnoconfig    gcc-16.1.0
-arc                              allyesconfig    clang-24
-arc                              allyesconfig    gcc-16.1.0
-arc                                 defconfig    gcc-16.1.0
-arc                   randconfig-001-20260830    gcc-15.2.0
-arc                   randconfig-002-20260830    gcc-15.2.0
-arm                               allnoconfig    clang-17
-arm                              allyesconfig    clang-24
-arm                              allyesconfig    gcc-16.1.0
-arm                                 defconfig    gcc-16.1.0
-arm                           omap1_defconfig    clang-24
-arm                   randconfig-001-20260830    gcc-15.2.0
-arm                   randconfig-002-20260830    gcc-15.2.0
-arm                   randconfig-003-20260830    gcc-15.2.0
-arm                   randconfig-004-20260830    gcc-15.2.0
-arm                          sp7021_defconfig    clang-24
-arm64                            allmodconfig    clang-24
-arm64                             allnoconfig    gcc-16.1.0
-arm64                               defconfig    gcc-16.1.0
-arm64                 randconfig-001-20260830    gcc-16.1.0
-arm64                 randconfig-002-20260830    gcc-16.1.0
-arm64                 randconfig-003-20260830    gcc-16.1.0
-arm64                 randconfig-004-20260830    gcc-16.1.0
-csky                             allmodconfig    gcc-16.1.0
-csky                              allnoconfig    gcc-16.1.0
-csky                                defconfig    gcc-16.1.0
-csky                  randconfig-001-20260830    gcc-16.1.0
-csky                  randconfig-002-20260830    gcc-16.1.0
-hexagon                          allmodconfig    clang-24
-hexagon                          allmodconfig    gcc-16.1.0
-hexagon                           allnoconfig    clang-24
-hexagon                             defconfig    gcc-16.1.0
-hexagon               randconfig-001-20260830    clang-24
-hexagon               randconfig-002-20260830    clang-24
-i386                             allmodconfig    clang-22
-i386                             allmodconfig    gcc-14
-i386                              allnoconfig    gcc-14
-i386                             allyesconfig    clang-22
-i386                             allyesconfig    gcc-14
-i386        buildonly-randconfig-001-20260830    clang-22
-i386        buildonly-randconfig-002-20260830    clang-22
-i386        buildonly-randconfig-003-20260830    clang-22
-i386        buildonly-randconfig-004-20260830    clang-22
-i386        buildonly-randconfig-005-20260830    clang-22
-i386        buildonly-randconfig-006-20260830    clang-22
-i386                                defconfig    gcc-16.1.0
-i386                  randconfig-001-20260830    clang-22
-i386                  randconfig-002-20260830    clang-22
-i386                  randconfig-003-20260830    clang-22
-i386                  randconfig-004-20260830    clang-22
-i386                  randconfig-005-20260830    clang-22
-i386                  randconfig-006-20260830    clang-22
-i386                  randconfig-007-20260830    clang-22
-loongarch                        allmodconfig    clang-24
-loongarch                         allnoconfig    clang-20
-loongarch                           defconfig    clang-24
-loongarch             randconfig-001-20260830    gcc-13.4.0
-loongarch             randconfig-002-20260830    clang-19
-m68k                             allmodconfig    gcc-16.1.0
-m68k                              allnoconfig    gcc-16.1.0
-m68k                             allyesconfig    clang-24
-m68k                             allyesconfig    gcc-16.1.0
-m68k                         apollo_defconfig    gcc-16.1.0
-m68k                                defconfig    clang-24
-m68k                          sun3x_defconfig    gcc-16.1.0
-microblaze                        allnoconfig    gcc-16.1.0
-microblaze                       allyesconfig    gcc-16.1.0
-microblaze                          defconfig    clang-24
-mips                             allmodconfig    gcc-16.1.0
-mips                              allnoconfig    gcc-16.1.0
-mips                             allyesconfig    gcc-16.1.0
-mips                     cu1830-neo_defconfig    gcc-16.1.0
-mips                    maltaup_xpa_defconfig    gcc-16.1.0
-mips                           xway_defconfig    gcc-16.1.0
-nios2                            allmodconfig    clang-20
-nios2                            allmodconfig    gcc-11.5.0
-nios2                             allnoconfig    clang-24
-nios2                             allnoconfig    gcc-11.5.0
-nios2                               defconfig    clang-24
-nios2                 randconfig-001-20260830    gcc-9.5.0
-nios2                 randconfig-002-20260830    gcc-11.5.0
-openrisc                         allmodconfig    clang-20
-openrisc                         allmodconfig    gcc-16.1.0
-openrisc                          allnoconfig    clang-24
-openrisc                          allnoconfig    gcc-16.1.0
-openrisc                            defconfig    gcc-16.1.0
-parisc                           allmodconfig    gcc-16.1.0
-parisc                            allnoconfig    clang-24
-parisc                            allnoconfig    gcc-16.1.0
-parisc                           allyesconfig    clang-17
-parisc                           allyesconfig    gcc-16.1.0
-parisc                              defconfig    gcc-16.1.0
-parisc                randconfig-001-20260830    gcc-13.4.0
-parisc                randconfig-002-20260830    gcc-13.4.0
-parisc64                            defconfig    clang-24
-powerpc                          allmodconfig    gcc-16.1.0
-powerpc                           allnoconfig    clang-24
-powerpc                           allnoconfig    gcc-16.1.0
-powerpc                    gamecube_defconfig    gcc-16.1.0
-powerpc                     kmeter1_defconfig    clang-24
-powerpc                 linkstation_defconfig    gcc-16.1.0
-powerpc                     mpc5200_defconfig    clang-24
-powerpc                     mpc83xx_defconfig    clang-24
-powerpc               randconfig-001-20260830    gcc-13.4.0
-powerpc               randconfig-002-20260830    gcc-13.4.0
-powerpc64             randconfig-001-20260830    gcc-13.4.0
-powerpc64             randconfig-002-20260830    gcc-13.4.0
-riscv                            allmodconfig    clang-24
-riscv                             allnoconfig    clang-24
-riscv                             allnoconfig    gcc-16.1.0
-riscv                            allyesconfig    clang-24
-riscv                               defconfig    gcc-16.1.0
-riscv                 randconfig-001-20260830    gcc-16.1.0
-riscv                 randconfig-002-20260830    gcc-16.1.0
-s390                             allmodconfig    clang-17
-s390                             allmodconfig    clang-24
-s390                              allnoconfig    clang-24
-s390                             allyesconfig    gcc-16.1.0
-s390                                defconfig    gcc-16.1.0
-s390                  randconfig-001-20260830    gcc-16.1.0
-s390                  randconfig-002-20260830    gcc-16.1.0
-sh                               allmodconfig    gcc-16.1.0
-sh                                allnoconfig    clang-24
-sh                                allnoconfig    gcc-16.1.0
-sh                               allyesconfig    clang-17
-sh                               allyesconfig    gcc-16.1.0
-sh                                  defconfig    gcc-14
-sh                          kfr2r09_defconfig    gcc-16.1.0
-sh                    randconfig-001-20260830    gcc-16.1.0
-sh                    randconfig-002-20260830    gcc-16.1.0
-sh                           se7705_defconfig    clang-24
-sh                           se7722_defconfig    clang-24
-sh                           sh2007_defconfig    clang-24
-sparc                             allnoconfig    clang-24
-sparc                             allnoconfig    gcc-16.1.0
-sparc                               defconfig    gcc-16.1.0
-sparc64                          allmodconfig    clang-20
-sparc64                             defconfig    gcc-14
-um                               allmodconfig    clang-17
-um                                allnoconfig    clang-17
-um                                allnoconfig    clang-24
-um                               allyesconfig    gcc-14
-um                               allyesconfig    gcc-16.1.0
-um                                  defconfig    gcc-14
-um                             i386_defconfig    gcc-14
-um                           x86_64_defconfig    gcc-14
-x86_64                           allmodconfig    clang-22
-x86_64                            allnoconfig    clang-22
-x86_64                            allnoconfig    clang-24
-x86_64                           allyesconfig    clang-22
-x86_64                              defconfig    gcc-14
-x86_64                                  kexec    clang-22
-x86_64                randconfig-001-20260830    gcc-14
-x86_64                randconfig-002-20260830    gcc-14
-x86_64                randconfig-003-20260830    gcc-14
-x86_64                randconfig-004-20260830    gcc-14
-x86_64                randconfig-005-20260830    gcc-14
-x86_64                randconfig-006-20260830    gcc-14
-x86_64                randconfig-011-20260830    clang-22
-x86_64                randconfig-012-20260830    clang-22
-x86_64                randconfig-013-20260830    clang-22
-x86_64                randconfig-014-20260830    clang-22
-x86_64                randconfig-015-20260830    clang-22
-x86_64                randconfig-016-20260830    clang-22
-x86_64                randconfig-071-20260830    gcc-14
-x86_64                randconfig-072-20260830    gcc-14
-x86_64                randconfig-073-20260830    gcc-14
-x86_64                randconfig-074-20260830    gcc-14
-x86_64                randconfig-075-20260830    gcc-14
-x86_64                randconfig-076-20260830    gcc-14
-x86_64                               rhel-9.4    clang-22
-x86_64                           rhel-9.4-bpf    gcc-14
-x86_64                          rhel-9.4-func    clang-22
-x86_64                    rhel-9.4-kselftests    clang-22
-x86_64                         rhel-9.4-kunit    gcc-14
-x86_64                           rhel-9.4-ltp    gcc-14
-x86_64                          rhel-9.4-rust    clang-22
-xtensa                            allnoconfig    clang-24
-xtensa                            allnoconfig    gcc-16.1.0
-xtensa                           allyesconfig    clang-20
-xtensa                           allyesconfig    gcc-16.1.0
+Then the standard and packet-split paths are removed, making the jumbo
+path the only way to Rx. At this point standard-MTU Rx allocates and
+maps a page per packet, until the page pool conversion removes that
+cost.
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Next NAPI is disabled while the adapter is down, which is required to
+pass assertions when the page pool is destroyed.
+
+Next is the main event, the singular Rx path is converted to use a page
+pool with support from libeth.
+
+Finally, a small change to Tx to return skbs to the NAPI cache, which
+the Rx side now pulls from when constructing frame heads.
+
+Benchmarks were run on an I218-V and Xeon E3-1240v3 pinned at 3.8GHz.
+NAPI was isolated on one core and iperf3 on another. ITR was fixed at
+4000/s because the adaptive scaling can take a few minutes to settle (to
+be fixed separately). C-states above C1 and EEE were disabled. Kernel
+version was 7.1.12. Direct link from sender to receiver.
+
+The sender was an 82574L in a Xeon E3-1270 pinned at 3.4GHz, NIC vectors
+and iperf3 -s pinned to separate cores, ITR fixed.
+
+For cycle measurements, each cell is perf stat cycles on the core
+divided by packets received over 30s, averaged over three runs. IOMMU
+"lazy" is the default DMA-FQ. Throughput was identical between stock
+and series, with one exception noted below. The stock driver is
+configured at the default copybreak=256. Note that the stock copybreak
+features is flawed; it always remaps DMA when sending an already-mapped
+buffer back to the h/w.
+
+Bulk TCP, segments sized to the MTU (line rate at both MTUs):
+
+                      NAPI core cycles/pkt    consumer core cycles/pkt
+  MTU   IOMMU   kpps    stock  series  change   stock  series  change
+  1500  off     81.4     2523    1784    -29%    2193    2193      0%
+  1500  lazy    81.4     5170    1938    -63%    2369    2323     -2%
+  9000  off     13.9    11590    7574    -35%   11764   12792     +9%
+  9000  lazy    13.9    21781    8423    -61%   12129   13396    +10%
+
+The increase in consumer cost at MTU 9000 is probably because the frame
+arrives as five 2 KB chunks instead of three pieces from the legacy
+packet-split path. The copy to userspace walks more fragments and GRO
+merges fewer frames per skb.
+
+TCP with an 88-byte MSS (iperf3 -M 88, ~142-byte frames):
+
+                      NAPI core cycles/pkt    consumer core cycles/pkt
+  MTU   IOMMU   kpps    stock  series  change   stock  series  change
+  1500  off    754.3     1453     793    -45%     446     484     +8%
+  1500  lazy   754.3     3819     809    -79%     387     496    +28%
+  9000  off    754.4     2231     780    -65%     498     509     +2%
+  9000  lazy 520/754     6920     798    -88%     430     523    +22%
+
+At MTU 9000 with IOMMU on, the stock driver can't keep up with the
+stream at line rate. It polls continuously at 95% of the core and can't
+send descriptors back to h/w fast enough, so it sends pause frames and
+flow control throttles the sender.
+
+Differences in consumer cost are likely explained by two things:
+* The stock copybreak=256 leaves the payload in the NAPI core's cache.
+* The high IOMMU cost in the stock driver causes it to return more bytes
+  per read.
+
+UDP, one full-size datagram per frame (1472/8972 bytes, line rate):
+
+                      NAPI core cycles/pkt    consumer core cycles/pkt
+  MTU   IOMMU   kpps    stock  series  change   stock  series  change
+  1500  off     81.4     4991    4417    -11%    6409    6381      0%
+  1500  lazy    81.4     7426    4397    -41%    6619    6395     -3%
+  9000  off     13.9    12070    8286    -31%   12861   13624     +6%
+  9000  lazy    13.9    21494    8289    -61%   12566   13772    +10%
+
+Here we see a similar tax on the jumbo MTU consumer due to gathering
+more fragments.
+
+UDP, 64-byte datagrams paced at 150 kpps:
+
+                      NAPI core cycles/pkt    consumer core cycles/pkt
+  MTU   IOMMU   kpps    stock  series  change   stock  series  change
+  1500  off    150.2     4202    3939     -6%    5541    5525      0%
+  1500  lazy   150.3     6663    3919    -41%    6151    5465    -11%
+  9000  off    150.2     4376    3956    -10%    5535    5428     -2%
+  9000  lazy   150.2     6821    3953    -42%    6154    5453    -11%
+
+At MTU 9000, this rate of datagrams runs up against the socket receive
+buffer's limits in the series, causing a 0.003% drop rate. Because each
+datagram sits in a full page buffer, the default 213 KB socket buffer
+only holds 48 vs. stock's ~275. This can be remedied by increasing
+SO_RCVBUF or rmem_default. This is another example of copybreak truesize
+compression value in the stock driver.
+
+Payload Density:
+
+This table shows pieces per frame and density at every MTU breakpoint.
+Stock is the standard path at 1500 and packet-split above it.
+
+                stock (std / packet split)    series (2 KB chunks)
+MTU            pieces truesize   density    pieces truesize   density
+<= 1500           1     2688      0.56         1     2304      0.66
+1501-2026         1     4864   0.31-0.42       1     4352   0.35-0.47
+2027-4074         1     4864   0.42-0.84       2     8448   0.24-0.48
+4075-4096         1     4864      0.84         3    12544      0.33
+4097-6122         2     8960   0.46-0.68       3    12544   0.33-0.49
+6123-8170         2     8960   0.68-0.91       4    16640   0.37-0.49
+8171-8192         2     8960   0.91-0.92       5    20736   0.39-0.40
+8193-9212         3    13056   0.63-0.71       5    20736   0.40-0.44
+
+Series chunk counts assume the worst-case frame (MTU + 22: VLAN tag
+and FCS present).
+
+This series is hungrier for socket buffer size under two conditions:
+* At higher-than-standard MTU, some page size is wasted because
+  RCTL.BSIZE only accepts powers of two, unlike the more granular
+  settings of later h/w.
+* For small packets at any MTU, copybreak no longer moves the payload
+  into an appropriately-sized buffer.
+
+Matt Vollrath (8):
+  e1000e: add jumbo Rx CRC stripping
+  e1000e: dump pages for jumbo Rx buffers
+  e1000e: prevent race between PM and reset task
+  e1000e: remove packet-split Rx path
+  e1000e: always use jumbo Rx path
+  e1000e: disable NAPI while interface is down
+  e1000e: use libeth page_pool for Rx
+  e1000e: return skbs to NAPI cache
+
+ .../device_drivers/ethernet/intel/e1000e.rst  |   15 -
+ drivers/net/ethernet/intel/Kconfig            |    1 +
+ drivers/net/ethernet/intel/e1000e/e1000.h     |   53 +-
+ drivers/net/ethernet/intel/e1000e/ethtool.c   |    1 -
+ drivers/net/ethernet/intel/e1000e/netdev.c    | 1374 +++++------------
+ drivers/net/ethernet/intel/e1000e/param.c     |    6 -
+ 6 files changed, 382 insertions(+), 1068 deletions(-)
+
+
+base-commit: 1b78070aaef63512688aebfbc82365ef9d6660f1
+-- 
+2.43.0
+
