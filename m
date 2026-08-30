@@ -1,101 +1,101 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2D70C61DE2
-	for <intel-wired-lan@archiver.kernel.org>; Sun, 30 Aug 2026 23:22:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32292C61DE2
+	for <intel-wired-lan@archiver.kernel.org>; Sun, 30 Aug 2026 23:22:29 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 95A4B80C66;
-	Sun, 30 Aug 2026 23:22:24 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id CEE2B4046C;
+	Sun, 30 Aug 2026 23:22:28 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id uxJdlDchTkZa; Sun, 30 Aug 2026 23:22:22 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id vp1tu-yLztim; Sun, 30 Aug 2026 23:22:27 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1788132142;
-	bh=V0uXGJNgPYreSiDYBBxdQJQqH0DPau7askhrNGDyNQM=;
+	s=default; t=1788132147;
+	bh=oDyIKzL6PQfyOtcZdXIqJp7bl04CBybW0yg006Rr6/Q=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=61xMfSN81GRbLBWiU6jQK4/5XCZtUCVIsfTbKOIbbC3FnIeuEasN2qDkU4Vcrz6G6
-	 DU9cS7kjAh0139ATHJ2pwqoUA5xRMlWqUhR8cZYwpEHUMI9PGlzc9nXZFYvNiwkUSB
-	 Jzpfp4NDupcHN8AmXqZ52umvF1j4AJPvx02vRaUJPGvDRy1JWECEBnUU/fEsNaaB8E
-	 Cnwh6fyo1vh1IqHmt4XmnxpYxbG5CETrt81RWCxvq6tyP0aw9G1Bp29BeoFzc6/G+V
-	 n9Iyu6+Y3DgiW65ntjKAwoKQ+VrrzBdO3BweUXtHgeXUJ7Rmjc7Xv8MTY0Y77U02tg
-	 T28PI6+E4/OPA==
+	b=yu0j8hcv11+jvciB0qOkOfv36aCfJbg4YRRAnb9spEjgAFDAAjVse21l4PA1DCfRe
+	 AY3C7bvxmvNSWhyqNE5B/3XcRBQtQujmItd/Fnr7S7dOJhPFFcmsipXQfKiOi4gFXX
+	 E2npPvfWWuqzsiu8Mkkv6/zdHpcYtoIbqKyiYAhaGpZf83UZG3t/S4fU7lKKnKNuVc
+	 pvZ3+iMJF9zk6eCWd2VWA4O60gIhbFT5dIUUNuuXHfNflb/QwvveBZw3IAvAU89sLu
+	 Zhw+BSK785lUf6Xt1EQGVkBAGd9LBgB/C8XLXqirmnSYnm0b0jnpRSes4v7Gg1eaUr
+	 mT0APLg0hv2aA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 6EB4880C49;
-	Sun, 30 Aug 2026 23:22:22 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 2BC032AA
- for <intel-wired-lan@lists.osuosl.org>; Sun, 30 Aug 2026 23:22:21 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id EC26A40462;
+	Sun, 30 Aug 2026 23:22:26 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 81EA4334
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 30 Aug 2026 23:22:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 12CBB40056
- for <intel-wired-lan@lists.osuosl.org>; Sun, 30 Aug 2026 23:22:21 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 7F59C605D9
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 30 Aug 2026 23:22:25 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id i7781VVtSqdY for <intel-wired-lan@lists.osuosl.org>;
- Sun, 30 Aug 2026 23:22:20 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id myStZchdoDJE for <intel-wired-lan@lists.osuosl.org>;
+ Sun, 30 Aug 2026 23:22:25 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::112f; helo=mail-yw1-x112f.google.com;
+ client-ip=2607:f8b0:4864:20::112e; helo=mail-yw1-x112e.google.com;
  envelope-from=tactii@gmail.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org;
+Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20251104 header.b=nrOi/XXu
-Received: from mail-yw1-x112f.google.com (mail-yw1-x112f.google.com
- [IPv6:2607:f8b0:4864:20::112f])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 54AA240050
- for <intel-wired-lan@lists.osuosl.org>; Sun, 30 Aug 2026 23:22:20 +0000 (UTC)
-Received: by mail-yw1-x112f.google.com with SMTP id
- 00721157ae682-81ecf499af9so33115197b3.1
- for <intel-wired-lan@lists.osuosl.org>; Sun, 30 Aug 2026 16:22:19 -0700 (PDT)
+Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20251104 header.b=naLFX6nQ
+Received: from mail-yw1-x112e.google.com (mail-yw1-x112e.google.com
+ [IPv6:2607:f8b0:4864:20::112e])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id C6054605D3
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 30 Aug 2026 23:22:24 +0000 (UTC)
+Received: by mail-yw1-x112e.google.com with SMTP id
+ 00721157ae682-855a66e5b5dso26626757b3.0
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 30 Aug 2026 16:22:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20251104; t=1788132139; x=1788736939; darn=lists.osuosl.org;
+ d=gmail.com; s=20251104; t=1788132143; x=1788736943; darn=lists.osuosl.org;
  h=content-transfer-encoding:mime-version:references:in-reply-to
  :message-id:date:subject:cc:to:from:from:to:cc:subject:date
  :message-id:reply-to:content-type;
- bh=V0uXGJNgPYreSiDYBBxdQJQqH0DPau7askhrNGDyNQM=;
- b=nrOi/XXubKZo8OOVx8ByYrw90WSXBK94nziTQupWj7znVCrR3HDI5sSMFGoqqumB9N
- Exgb9u3X1TWHx2mYSVbirqRt5gZouNAaNK+CLixonrJjOZ3qPDr4qwtlS2zZ1oEsHk+y
- sJvqYuEtGUTn87fSAXl8OKTlrWr7iBMbCd7JebCatNeBdvR0IBE4Qd8CPdMyIsqzCCYs
- Gwjh0qRfjOEo0zxB1rjS0zFkR65M7q7cmbOaVoiNrmRqeQRv7v98kCrGHWTODN75jFSk
- Wu6TVBQ07n2OWtpMOaziZzunVFI3CG1s2Kn9n5FyTsmgVl0JpdHreByUxaryMwL19H85
- suFQ==
+ bh=oDyIKzL6PQfyOtcZdXIqJp7bl04CBybW0yg006Rr6/Q=;
+ b=naLFX6nQ/TtewRUjsR7zXh7Lq2z3vXAOQnurPfR797x9z4G99eBClbsV2PqdkrpEK4
+ Qc6C9W01uoiybJaqWS846CXCMQMFW1qvsU4ohVf0uOOp0YwSWd7GBTJuYg8hxqNsdNa6
+ gum+s7IOWXOb8XbWmPo6nq5NC6NzNVa3KJW2+NA7ux74uaY/DAP8TLmxquwEtXNTdwKg
+ 0hDHmdYdd+BIgkrJ3leAAOqbEEUqDHcu7EFgStvfLyH0e7xiHwXq7NQapE4Fr9RWSQJk
+ VSSy2aricJMVKScfqXGRbwuRvBcJb2b6PAX6NEBr0ITilH5QPWbw+JRgsXhjjBNYa5+o
+ FyZQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1788132139; x=1788736939;
+ d=1e100.net; s=20251104; t=1788132143; x=1788736943;
  h=content-transfer-encoding:mime-version:references:in-reply-to
  :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
  :to:cc:subject:date:message-id:reply-to:content-type;
- bh=V0uXGJNgPYreSiDYBBxdQJQqH0DPau7askhrNGDyNQM=;
- b=FwtnM2CDqMrk2/O87rBkYhProiqB2RPGeABnqVJD/cVlJpihAj/XqNpPIRznxzALNp
- PQ1WcUjM1pEt8IDBjbCOGk6Z7uiVT+eGyAgs/ruxxQjL6n1nmA527mkMSlk/V8N1yIkP
- YdzRuAxyIJD4N6TZ1+8JSa0iyOv718+It4szjcuBoY9yAYXu7gtM/jHRD7vMzeZj4hd7
- P0rZXPUPuHSy+BDyrGYwCUwt9CWjZzqckqM1Kj+dPsZshh2LrSkn1xvOFzQuJy62NZ+t
- VVUgKnjxURGtSICpGox8Lk+felHUwFjmp56VNVGwP+zTbhl+GWI8Ov9ORGyOlI/nvbS6
- JjhQ==
-X-Gm-Message-State: AFuF++n7kNnAKLRqqz+4xrIK+rT12DfGXyPOAeorGIVfI2KeXn531Hot
- n3hDQlcl4sCG2LSwmv/xk04ynNxi8LA6MIj1EGEVAn34ogxkFkMgQSatcOqAvE2gMfI=
-X-Gm-Gg: AYBFou2HdzxHjdySr1vam+q6YoxZeZnUzMtH7VT8LQDcHDN/E9ezWfY6eMFsHtvvApg
- iC/MNzU6H3uyBO+v6zuUpE4k+PBIyEa0WTWZWgeNw7as+Zqfq7dkknQ+ba59yIvJZ7xubR7KHXO
- uUH+maZrDdhHYqVvAoFJF1nU5zQUCNVjgW28tgy6FLMCl8FurvFBLVPmCILV6iWWBNYuK/NUGnU
- /PYoUyg497AK3oF/PaPv55bi6ZOSO1Ka4gNVLZY3tz61XBqsl9T/fWX9GS8FsMSvgAH2jGRovCR
- mRt5BWtxdiO7J1Fx+3dhLDhLMQR96TyragxE4CshL6xCW2RrQ0lRjqT1h7WSskFkUzQdGFM2C/N
- yjgUXoZ2w2EHucA6+3iJjiqYqUv72RRaQHH+rJvepwlMIYKPTpKAvckNNJI4sVdBE42/sSQ/z7P
- YpJgJE/sE/Fv/VWOngc5ntmKTRWyrUSBbuy+FJ46Mu
-X-Received: by 2002:a05:690c:6912:b0:858:d6fb:2b9f with SMTP id
- 00721157ae682-85d660db315mr76627717b3.5.1788132138950; 
- Sun, 30 Aug 2026 16:22:18 -0700 (PDT)
+ bh=oDyIKzL6PQfyOtcZdXIqJp7bl04CBybW0yg006Rr6/Q=;
+ b=eU1J8x3TcuHYtDcsKXdnmj6ni13aiUIosEOxMuRrRs0r6nu3YXeIVTSM7S9t8IJo91
+ SQWDOkLILnyAEX2SukGFRmiZwMgCvH7vMMggiiVXB/MFCQ6YC8eUdgnR6OHY1egmCGBs
+ cBbElbFyZKY75jPRGuWQXiEfaZ+dSvTIQraVa/oN87gU8B2FqADttolvoLpaSfKpTrb8
+ RakQREWw29pZj08k+7BLuhUucAfLXBaXIHly/k2ynIm/CIJeBEEuKGOwr+mmP8xMH6F5
+ 5E/qMJJpN1cJVl62j7FO/LUisdpph3vHlMvRnkbt4/4TDM0ZRbYxLRWN50aV8DqEwXjx
+ 0iDg==
+X-Gm-Message-State: AFuF++kZwAzb6LahGuzfnesMCGYQIsaF3bHW9HDzAW8IV9j7lVRiVn18
+ BnLtl1TLk0+RzSBiKyQ8wBBEpwQmBf8p3gvUFb0AHc+IHwhMhzXqKwa4b/foa8t81d4=
+X-Gm-Gg: AYBFou3Qs7s6WEwxiqzaHop4PBSvX0RpA907QGp5Jm9dDAqdLl20Qey2P570Au6ZTIw
+ n9FfdLD07C0+R8Wmt48waIkQYMktb4wfB/12OX+mu4mBiSIys5e/kmdB7s+fvI6ODv+hsyMO0gU
+ dCzSjQmritMY8Kt0ZiRt15MooL/JdBfmVZHRoINpMuWq2fCIfGpS4FSpJx7EfTou/LNoXqfRULQ
+ hWbIZzZNHbepsY8qi+FLxJjj5nakkAgwo+xJHQoEvtHnsT5XdEEsP/rKQsmSh4LZA70YO/16gN2
+ iH4vQhY5GIlxDdW6gLqaHrWJYYxoGP7qOVYadpA6TJDwj8If4m1COz4fPW9Ed/iAde8u20H9syU
+ CqZ+9zIsgYZRXzs1OSoJLoz71KQYSXxmgFWugqdvjy8BBqpNMmQTSHh6W60XcrHDzUJy053yKnu
+ HoPSkRB/5ycYRl2q8vpRf3KGy2hqGN5bHYEAsQ0fK3zq47EWAk21g=
+X-Received: by 2002:a05:690c:e294:b0:862:65f4:c8c2 with SMTP id
+ 00721157ae682-86726879df3mr283417b3.21.1788132143343; 
+ Sun, 30 Aug 2026 16:22:23 -0700 (PDT)
 Received: from devobuntu.lan ([2600:6c5c:6b00:316::23])
  by smtp.gmail.com with ESMTPSA id
- 00721157ae682-85e677606aesm39025937b3.45.2026.08.30.16.22.16
+ 00721157ae682-85e677606aesm39025937b3.45.2026.08.30.16.22.22
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sun, 30 Aug 2026 16:22:18 -0700 (PDT)
+ Sun, 30 Aug 2026 16:22:22 -0700 (PDT)
 From: Matt Vollrath <tactii@gmail.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org, Tony Nguyen <anthony.l.nguyen@intel.com>,
@@ -107,10 +107,10 @@ Cc: netdev@vger.kernel.org, Tony Nguyen <anthony.l.nguyen@intel.com>,
  Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>,
  Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>,
  linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
- Matt Vollrath <tactii@gmail.com>
-Subject: [PATCH iwl-next 1/8] e1000e: add jumbo Rx CRC stripping
-Date: Sun, 30 Aug 2026 19:21:39 -0400
-Message-ID: <20260830232146.36948-2-tactii@gmail.com>
+ Matt Vollrath <tactii@gmail.com>, stable@vger.kernel.org
+Subject: [PATCH iwl-next 2/8] e1000e: dump pages for jumbo Rx buffers
+Date: Sun, 30 Aug 2026 19:21:40 -0400
+Message-ID: <20260830232146.36948-3-tactii@gmail.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260830232146.36948-1-tactii@gmail.com>
 References: <20260830232146.36948-1-tactii@gmail.com>
@@ -130,59 +130,52 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-When the hardware is configured to not strip the FCS (CrcStripping=0),
-the jumbo Rx path would deliver frames with the FCS still attached.
-Follow the standard path's convention by stripping the FCS at EOP and
-leaving it out of the byte count.
+The jumbo Rx path keeps its data in buffer_info->page rather than the
+skb, which is only a shell. Previously data beyond the end of the skb
+allocation would be dumped. The jumbo path would at best dump useless
+garbage. At worst it would dump arbitrary kernel memory. This OOB read
+is only reachable when page size is >16K and MTU is >1518.
 
-The jumbo path was omitted when the CrcStripping feature was added.
-Since v3.3[1], the jumbo path has only been used where the page size is
-over 16K, which practically rules out LOMs, BMC sideband, and the need
-to leave FCS on frames. The bug is only reachable only by setting
-CrcStripping=0 on a platform with nothing that needs it.
-
-This change prepares for convergence of Rx onto the jumbo path in
-following patches. The set of h/w routed through this path will expand
-to include LOMs.
-
-[1] Commit 79d4e9087a6e ("e1000e: disable Early Receive DMA on ICH LOMs")
+Dump the page instead when it exists. Skip dumping the shell skb left
+behind when a jumbo slot is cleaned.
 
 Signed-off-by: Matt Vollrath <tactii@gmail.com>
-Fixes: eb7c3adb1ca9 ("e1000e: fix IPMI traffic")
+Fixes: f0c5dadff3fb ("e1000e: fix panic while dumping packets on Tx hang with IOMMU")
+Cc: stable@vger.kernel.org
 Assisted-by: Claude:claude-5-fable
 ---
- drivers/net/ethernet/intel/e1000e/netdev.c | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/e1000e/netdev.c | 17 ++++++++++++++++-
+ 1 file changed, 16 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 844f31ab37ad..599600ad695c 100644
+index 599600ad695c..47ff3c6ab451 100644
 --- a/drivers/net/ethernet/intel/e1000e/netdev.c
 +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -1631,13 +1631,23 @@ static bool e1000_clean_jumbo_rx_irq(struct e1000_ring *rx_ring, int *work_done,
- 			}
- 		}
+@@ -465,8 +465,23 @@ static void e1000e_dump(struct e1000_adapter *adapter)
+ 					(unsigned long long)buffer_info->dma,
+ 					buffer_info->skb, next_desc);
  
-+		/* strip the Ethernet CRC; it may span fragments */
-+		if (!(adapter->flags2 & FLAG2_CRC_STRIPPING) &&
-+		    !(netdev->features & NETIF_F_RXFCS))
-+			pskb_trim(skb, skb->len - 4);
-+
- 		/* Receive Checksum Offload */
- 		e1000_rx_checksum(adapter, staterr, skb);
- 
- 		e1000_rx_hash(netdev, rx_desc->wb.lower.hi_dword.rss, skb);
- 
--		/* probably a little skewed due to removing CRC */
- 		total_rx_bytes += skb->len;
-+		/* If configured to store CRC, keep the FCS bytes out of the
-+		 * total_rx_bytes counter
-+		 */
-+		if (!(adapter->flags2 & FLAG2_CRC_STRIPPING) &&
-+		    (netdev->features & NETIF_F_RXFCS))
-+			total_rx_bytes -= 4;
- 		total_rx_packets++;
- 
- 		/* eth type trans needs skb->data to point to something */
++				/* Jumbo buffers land in the page; a cleaned
++				 * jumbo slot keeps only its small shell skb
++				 * until it is refilled, so only dump an skb
++				 * that can hold a whole buffer.
++				 */
+ 				if (netif_msg_pktdata(adapter) &&
+-				    buffer_info->skb)
++				    buffer_info->page)
++					print_hex_dump(KERN_INFO, "",
++						       DUMP_PREFIX_ADDRESS, 16,
++						       1,
++						       page_address(buffer_info->page),
++						       adapter->rx_buffer_len,
++						       true);
++				else if (netif_msg_pktdata(adapter) &&
++					 buffer_info->skb &&
++					 skb_tailroom(buffer_info->skb) >=
++					 adapter->rx_buffer_len)
+ 					print_hex_dump(KERN_INFO, "",
+ 						       DUMP_PREFIX_ADDRESS, 16,
+ 						       1,
 -- 
 2.43.0
 
