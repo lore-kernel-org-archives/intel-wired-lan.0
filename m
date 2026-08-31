@@ -1,86 +1,85 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 66278C624CE
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 31 Aug 2026 13:42:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A05B8C624C6
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 31 Aug 2026 13:43:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 0DF3B6065A;
-	Mon, 31 Aug 2026 13:42:35 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id V5L9q09YXMEy; Mon, 31 Aug 2026 13:42:32 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1788183752;
-	bh=y/XpQkTwD7YDfNmRf1hxIgdzel+6jf6KqkpHKItv8lM=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=cMytDPJNuKOqK+BmGlYYbBP0urc5UCqISc4w/nO6CxZmW2Escb+pVhe3+PPCdj9U8
-	 6obcEC28//oPa5lLAoZFufebhIOZt7z1QK1pqFNuPE21uWOYEa090AV9vZvhBTdQ59
-	 YDiuIGerdi7NxzjPuiBxIvor46IpyvzqR7lQuhl7RzD8F6XwF0SI8bsynXn/BedhNY
-	 wM3NOrz6kygLdHVntCSDfaR8f2FLQ5Rtgby/GtZJ5tyD2JScloPfPluWVQzIOMsrpW
-	 lNqLEqmqK7a+A2nyL9+zvKuREREWV1N1ywc4XUcC8O9NblfYYnhWRQmZHKOvmmeT+l
-	 QZ/nVUa1qN5nQ==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 673B760653;
-	Mon, 31 Aug 2026 13:42:32 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id E14702FC
- for <intel-wired-lan@lists.osuosl.org>; Mon, 31 Aug 2026 13:42:30 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id D30A680D5C
- for <intel-wired-lan@lists.osuosl.org>; Mon, 31 Aug 2026 13:42:30 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 5393880D6E;
+	Mon, 31 Aug 2026 13:43:48 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id N85nCEwshrgB for <intel-wired-lan@lists.osuosl.org>;
- Mon, 31 Aug 2026 13:42:29 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
- envelope-from=sashal@kernel.org; receiver=<UNKNOWN> 
-Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ id YWJRu04zwlyn; Mon, 31 Aug 2026 13:43:46 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1788183826;
+	bh=J7qa3P0tM7aM6Wz+KWaE0ziDUJ4FAegbpIf/DfL6C04=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=ryIqAUZvFVUcJMTO6OMI9PylKtc0gAEDo0w/PXsEpDBCAEJ+j3hZY3tTqDcpfDRAt
+	 M+gbiEFWmR0qPpsRo145kXH3W+Lfgen4ITzowST/SC9SXCLX19l3SUzmsbnPSmrTuh
+	 QLWCqVxEoMxS4rEwe1joTjYnQorxZGLfGXLV+LIRQFG47qqvr3VQYEMj5LeES1V2Id
+	 t89Zry/8y6Yl+16v0a6OSHshEhW2/hE9ycqN2z7EW4JvnTm1f2dR5Exinj+jqiIaEg
+	 CEUgjZBij0M6uKV1JXOLH7WLQ4Xdg/gjLWTvUnf1TMpjZ2XvI8SBStpPyliWeNBeac
+	 H/AH2eC6w77rQ==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp1.osuosl.org (Postfix) with ESMTP id 35B0480D60;
+	Mon, 31 Aug 2026 13:43:46 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 553F4127
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 31 Aug 2026 13:43:44 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id 47516400FC
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 31 Aug 2026 13:43:44 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 34Mj1Udu5jH3 for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 31 Aug 2026 13:43:43 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
+ helo=sea.source.kernel.org; envelope-from=sashal@kernel.org;
+ receiver=<UNKNOWN> 
+Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
+Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=A+OssN7Z
-Received: from sea.source.kernel.org (sea.source.kernel.org
- [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 5CFA780D52
- for <intel-wired-lan@lists.osuosl.org>; Mon, 31 Aug 2026 13:42:28 +0000 (UTC)
+ header.s=k20260515 header.b=Zx1r5P6L
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id E1A30400F8
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 31 Aug 2026 13:43:42 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by sea.source.kernel.org (Postfix) with ESMTP id 608AB417B2;
- Mon, 31 Aug 2026 13:42:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9C2D81F00A3F;
- Mon, 31 Aug 2026 13:42:26 +0000 (UTC)
+ by sea.source.kernel.org (Postfix) with ESMTP id 2F4EE40748;
+ Mon, 31 Aug 2026 13:43:42 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5E1311F00A3D;
+ Mon, 31 Aug 2026 13:43:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1788183748;
- bh=y/XpQkTwD7YDfNmRf1hxIgdzel+6jf6KqkpHKItv8lM=;
+ s=k20260515; t=1788183822;
+ bh=J7qa3P0tM7aM6Wz+KWaE0ziDUJ4FAegbpIf/DfL6C04=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References;
- b=A+OssN7ZVEq0NqScoLE2gyJpxokH+0sDfeq99qxiTvN8aDg7oihGAdUXzXm8qwvYZ
- 12n/zekeBfjUZHCgWHvxtjceNm6T/KQPsj5hJiVKrrWmMbH/C9IXTrFM0F1kPYmywG
- ksPBKm5ES1Wm2Ffi6tRmRFea3sVSSqLisG8dBvLBfWJuG8ObQHyO/jz+msl8b4x4EA
- hWwMJQA0CjrbZnXLuEyFFjId14lE0pnOSwiMqpmDqcLT9FFydZYpOSuQilBs1lVlN9
- rF1l33+APq1WWTieigv0wF9DKF5JcSdmT4JqeN45Msc3LwcHW8NlIv21YoNpihTJ0N
- pRw1rWIGwj7HQ==
+ b=Zx1r5P6LciBSlxYbSZzaL2BvB+6w+CYF5xR//kLOYABgfD2LsG0FWuiAB0NOmS5QM
+ Z+WYDKkxp4rd+D0DE/jsJdUT260qBWmjkkZKMEJbC99r7nuo/jb7KSGIkoAvMPJY7R
+ b2JhsgSMwp0VmQdR+Y/dybAyz/CIdz+bQT2mGu8HePeQfGV+TrUdd+zpxupHPhvoxn
+ 3GLnT8CHGrAovDnf918dR48gRixxPyYHzICdiP8Pwcv0gA92ZTobzk26WMaqGBShTj
+ Gq8zv/V2jWopcI54pkP1FEt2Qr0GEE/WNOilZ7cN/LaMBp4Gf1oGCtnv3SGaRcCPGv
+ JRv+SrDWyIxOg==
 From: Sasha Levin <sashal@kernel.org>
 To: patches@lists.linux.dev,
 	stable@vger.kernel.org
-Cc: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>,
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
- Rinitha S <sx.rinitha@intel.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
- Jakub Kicinski <kuba@kernel.org>, Sasha Levin <sashal@kernel.org>,
- przemyslaw.kitszel@intel.com, andrew+netdev@lunn.ch, davem@davemloft.net,
- edumazet@google.com, pabeni@redhat.com, intel-wired-lan@lists.osuosl.org,
+Cc: Agalakov Daniil <ade@amicon.ru>, Iskhakov Daniil <dish@amicon.ru>,
+ Avigail Dahan <avigailx.dahan@intel.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>, Jakub Kicinski <kuba@kernel.org>,
+ Sasha Levin <sashal@kernel.org>, przemyslaw.kitszel@intel.com,
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+ pabeni@redhat.com, intel-wired-lan@lists.osuosl.org,
  netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.18-5.10] ice: pass the return value of
- skb_checksum_help()
-Date: Mon, 31 Aug 2026 09:25:08 -0400
-Message-ID: <20260831133314.4125787-280-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.18-5.10] e1000e: limit endianness conversion to
+ boundary words
+Date: Mon, 31 Aug 2026 09:25:53 -0400
+Message-ID: <20260831133314.4125787-325-sashal@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260831133314.4125787-1-sashal@kernel.org>
 References: <20260831133314.4125787-1-sashal@kernel.org>
@@ -104,22 +103,32 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+From: Agalakov Daniil <ade@amicon.ru>
 
-[ Upstream commit 2d19302f628853742c4828381abbd668c1315598 ]
+[ Upstream commit a5ecafcfb27baf2dba766c4fd99dbb947f4e85d8 ]
 
-skb_checksum_help() can fail. Pass its return value back to the caller.
+[Why]
+In e1000_set_eeprom(), the eeprom_buff is allocated to hold a range of
+words. However, only the boundary words (the first and the last) are
+populated from the EEPROM if the write request is not word-aligned.
+The words in the middle of the buffer remain uninitialized because they
+are intended to be completely overwritten by the new data via memcpy().
 
-Commonize this software path in goto.
+The previous implementation had a loop that performed le16_to_cpus()
+on the entire buffer. This resulted in endianness conversion being
+performed on uninitialized memory for all interior words.
 
-Instead of just returning error try calculating software checksum first.
-There is a check for TSO in checksum_sw_fb.
+Fix this by converting the endianness only for the boundary words
+immediately after they are successfully read from the EEPROM.
 
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-Tested-by: Rinitha S <sx.rinitha@intel.com> (A Contingent worker at Intel)
+Found by Linux Verification Center (linuxtesting.org) with SVACE.
+
+Co-developed-by: Iskhakov Daniil <dish@amicon.ru>
+Signed-off-by: Iskhakov Daniil <dish@amicon.ru>
+Signed-off-by: Agalakov Daniil <ade@amicon.ru>
+Tested-by: Avigail Dahan <avigailx.dahan@intel.com>
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
-Link: https://patch.msgid.link/20260717185340.3595286-4-anthony.l.nguyen@intel.com
+Link: https://patch.msgid.link/20260609213559.178657-14-anthony.l.nguyen@intel.com
 Signed-off-by: Jakub Kicinski <kuba@kernel.org>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
@@ -129,367 +138,404 @@ LLM Generated explanations, may be completely bogus:
 ## Phase 1: Commit Message Forensics
 
 **Step 1.1 — Subject line**
-Record: `[ice]` `[pass]` — propagate `skb_checksum_help()` return value
-in `ice_tx_csum()`.
+
+Record: `[e1000e] [limit] — limit endianness conversion to boundary
+words in EEPROM write path`
 
 **Step 1.2 — Tags**
+
 Record:
-- `Reviewed-by:` Aleksandr Loktionov (Intel)
-- `Tested-by:` Rinitha S (Intel)
-- `Signed-off-by:` Michal Swiatkowski, Tony Nguyen, Jakub Kicinski
-- `Link:` https://patch.msgid.link/20260717185340.3595286-4-
+- **Fixes:** — none
+- **Reported-by:** — none (found by SVACE static analysis, not a
+  user/syzbot report)
+- **Tested-by:** Avigail Dahan `<avigailx.dahan@intel.com>`
+- **Reviewed-by:** — not in commit message (present in pull-request
+  thread)
+- **Acked-by:** — none
+- **Link:** https://patch.msgid.link/20260609213559.178657-14-
   anthony.l.nguyen@intel.com
-- No `Fixes:`, `Reported-by:`, `Cc: stable@vger.kernel.org`, or `Acked-
-  by:` on this specific patch
-- Part of `[PATCH net 03/13]` series (not a multi-part dependency for
-  this hunk)
+- **Cc: stable@vger.kernel.org:** — absent (expected for manual review;
+  not a negative signal)
+- **Signed-off-by:** Iskhakov Daniil, Agalakov Daniil, Tony Nguyen,
+  Jakub Kicinski (ignore pipeline-added SOBs)
+- **Co-developed-by:** Iskhakov Daniil
+- Notable: static-analysis finding (SVACE / Linux Verification Center),
+  Intel Tested-by
 
 **Step 1.3 — Body analysis**
+
 Record:
-- **Bug:** `skb_checksum_help()` can fail, but `ice_tx_csum()` ignored
-  its return value and returned `0`.
-- **Symptom:** On software-checksum fallback failure, the TX path
-  continues as if checksum handling succeeded; the skb may remain
-  `CHECKSUM_PARTIAL` and be transmitted without a valid checksum.
-- **Root cause:** Error paths called `skb_checksum_help(skb); return 0;`
-  instead of propagating the error.
-- **Additional intent:** Consolidate fallback paths under
-  `checksum_sw_fb`; for some paths that previously returned `-1`, try
-  software checksum first (unless TSO).
+- **Bug:** In `e1000_set_eeprom()`, `eeprom_buff` is `kmalloc()`’d
+  (uninitialized). For unaligned EEPROM writes, only boundary words are
+  read from hardware; interior words stay uninitialized until `memcpy()`
+  fills them. The old code ran `le16_to_cpus()` over the entire word
+  range, touching uninitialized interior words.
+- **Symptom:** Undefined behavior / uninitialized-memory use (SVACE
+  finding). No crash, oops, or corruption described in the commit
+  message.
+- **Root cause:** Endianness conversion loop was broader than the set of
+  words actually read from EEPROM.
+- **Version info:** None in message; blame shows buggy loop dates to
+  driver introduction (2007).
 
 **Step 1.4 — Hidden bug fix?**
-Record: **Yes.** Although framed as error propagation/cleanup, this
-fixes a real TX correctness bug: continuing transmission after
-`skb_checksum_help()` failure.
+
+Record: **Yes.** Although phrased as limiting conversion scope, this
+fixes uninitialized-memory use (KMSAN/SVACE class) and tightens per-read
+error handling (`goto out` immediately after failed `e1000_read_nvm()`).
 
 ---
 
 ## Phase 2: Diff Analysis
 
 **Step 2.1 — Inventory**
-Record:
-- **File:** `drivers/net/ethernet/intel/ice/ice_txrx.c` (+9 / -11)
-- **Function:** `ice_tx_csum()`
-- **Scope:** Single-file, single-function surgical change
 
-**Step 2.2 — Code flow changes**
-Record per hunk:
-1. **Encapsulated IPv6 `ipv6_skip_exthdr()` failure:** `return -1` →
-   `goto checksum_sw_fb` (try SW checksum before drop, unless TSO).
-2. **Unknown outer transport (default):** inline `skb_checksum_help();
-   return 0` → `goto checksum_sw_fb`.
-3. **Neither IPv4 nor IPv6 inner header:** `return -1` → `goto
-   checksum_sw_fb`.
-4. **Unknown inner L4 protocol (default):** inline `skb_checksum_help();
-   return 0` → `goto checksum_sw_fb`.
-5. **New label `checksum_sw_fb`:** TSO still returns `-1`; otherwise
-   `return skb_checksum_help(skb)`.
+Record:
+- **File:** `drivers/net/ethernet/intel/e1000e/ethtool.c` (+12 / −7, 19
+  lines touched)
+- **Function:** `e1000_set_eeprom()`
+- **Scope:** Single-file, surgical fix
+
+**Step 2.2 — Code flow per hunk**
+
+Record:
+- **Hunk 1 (first boundary word):** Before — read NVM, advance `ptr`,
+  defer all endianness work. After — on read failure, `goto out`; on
+  success, `le16_to_cpus()` only on `eeprom_buff[0]`, then advance
+  `ptr`.
+- **Hunk 2 (last boundary word):** Before — conditional second read
+  gated on `!ret_val`; shared error check later. After — unconditional
+  check for odd end alignment; read, fail-fast `goto out`, then
+  `le16_to_cpus()` only on the last boundary index.
+- **Removed:** Full-buffer `le16_to_cpus()` loop over `last_word -
+  first_word + 1` words.
+- **Unchanged:** `memcpy()` of user data, full-buffer `cpu_to_le16s()`
+  loop, `e1000_write_nvm()`.
 
 **Step 2.3 — Bug mechanism**
-Record: **Error-path / logic correctness fix.**
-`skb_checksum_help()` returns `0` on success or negative on failure
-(`-EINVAL`, `-EFAULT`, `-ENOMEM`, etc., per `net/core/dev.c`). Old code
-always returned `0` after calling it. Caller `ice_xmit_frame_ring()`
-only drops on `csum < 0`, so failures were treated as success.
+
+Record: **Category (e) — initialization / memory safety.** `kmalloc()`
+leaves interior buffer words uninitialized; old loop called
+`le16_to_cpus()` on them before `memcpy()` overwrote them. Secondary
+improvement: **error-path correctness** — fail immediately after each
+NVM read instead of batching error checks.
 
 **Step 2.4 — Fix quality**
-Record: **Obviously correct and minimal.** Matches the pattern used in
-`fm10k` (checks `skb_checksum_help()` return). Low regression risk; TSO
-paths still fail hard. Minor behavioral broadening on paths that
-previously dropped immediately now attempt software checksum first.
+
+Record: **Obviously correct and minimal.** Interior words are fully
+supplied by `memcpy()` and only need `cpu_to_le16s()` before write;
+boundary words that were EEPROM-read need `le16_to_cpus()` right after
+read. Regression risk is very low.
 
 ---
 
 ## Phase 3: Git History Investigation
 
 **Step 3.1 — Blame**
-Record: Buggy `skb_checksum_help(); return 0` lines blame to
-`5d324e5159d9e` (merge artifact; `ice_txrx.c` content is present
-throughout this 6.18.y tree). The ignored-return pattern exists in
-current `HEAD`.
+
+Record: Buggy full-buffer loop introduced in `bc7f75fa9788` (Auke Kok,
+2007-09-17) — original e1000e driver. Present in this tree at lines
+599–601.
 
 **Step 3.2 — Fixes: tag**
-Record: N/A — no `Fixes:` tag present.
+
+Record: **N/A** — no `Fixes:` tag in commit message.
 
 **Step 3.3 — Related file history**
-Record: Recent `ice_txrx.c` changes in this tree include double-free
-fix, jumbo_remove revert, etc. No duplicate fix for this issue. Commit
-`2d19302f6288` is **not** in `HEAD`.
+
+Record: Related recent commits in this tree:
+- `90fb7db49c6db` — `e1000e: fix heap overflow in e1000_set_eeprom` (Cc:
+  stable, already in 6.18.44)
+- `7e93136459ddf` — cast cleanup in same file
+- Fix commit `a5ecafcfb27ba` is on `origin/master` but **not** in
+  current HEAD (`v6.18.44`)
 
 **Step 3.4 — Author context**
-Record: Intel wired-LAN team (Michal Swiatkowski, Tony Nguyen).
-Reviewed/tested internally. netdev maintainers (Davem, Kuba, netdev
-list) were CC'd per `b4 dig -w`.
+
+Record: Agalakov Daniil also authored `e1000: check return value of
+e1000_read_eeprom` (`70b85c1773446`). Tony Nguyen (Intel wired LAN
+maintainer) committed this via the Intel pull request. Patch was part of
+a 15-patch Intel queue, but this hunk is self-contained.
 
 **Step 3.5 — Dependencies**
-Record: **Standalone.** Only touches `ice_tx_csum()` in `ice_txrx.c`.
-Patch is 03/13 of a larger pull request, but this hunk has no structural
-dependency on other series patches. `git apply --check` succeeds cleanly
-on this tree.
+
+Record: **Standalone.** No prerequisite commits required; `git apply
+--check` on `a5ecafcfb27ba` against current tree succeeds cleanly.
+Sibling fix exists for legacy `e1000` (`4cc8566ae0d16`) but is
+independent.
 
 ---
 
 ## Phase 4: Mailing List and External Research
 
 **Step 4.1 — Original discussion**
+
 Record:
-- `b4 dig -c 2d19302f6288`: https://patch.msgid.link/20260717185340.3595
-  286-4-anthony.l.nguyen@intel.com
-- Earlier v2 series: `[PATCH iwl-next v2 0/4]` from May 2026
-- Applied version is the July 2026 netdev 03/13 submission
+- `b4 dig -c a5ecafcfb27ba` → https://patch.msgid.link/20260609213559.17
+  8657-14-anthony.l.nguyen@intel.com
+- Earlier revisions in series v1–v3 (March–April 2026) for `e1000`
+  variant; committed version is from June 2026 Intel pull request (patch
+  13/15).
+- Applied to netdev/net-next by Jakub Kicinski.
 
-**Step 4.2 — Reviewers**
-Record: netdev maintainers CC'd (davem, kuba, pabeni, edumazet,
-andrew+netdev). Intel reviewers on patch.
+**Step 4.2 — Reviewers (b4 dig -w)**
 
-**Step 4.3 — Bug reports**
-Record: No syzbot/user bug report. Issue identified by code review /
-driver maintainers.
+Record: CC’d netdev maintainers (davem, kuba, pabeni, edumazet,
+andrew+netdev). Thread contains multiple `Reviewed-by:` tags from Intel
+engineers (Loktionov, Kitszel, Ruinskiy) and netdev reviewers (Joe
+Damato, Paul Menzel, Simon Horman, Dan Carpenter).
+
+**Step 4.3 — Bug report**
+
+Record: No syzbot/bugzilla link. Found by **Linux Verification Center /
+SVACE** static analysis — same defect class as KMSAN uninitialized-
+memory reports, but no runtime reproducer cited.
 
 **Step 4.4 — Series context**
-Record: Part of 13-patch Intel wired-LAN pull. Sibling patches (PTP
-crash, ptype bounds, etc.) explicitly carry `Cc:
-stable@vger.kernel.org`; **this patch does not**, which is a mild
-negative signal but not decisive per review instructions.
 
-**Step 4.5 — Stable list**
-Record: No stable-list discussion found specifically for this patch.
-Other patches in the same series were stable-nominated.
+Record: One patch in a larger Intel driver update series; this change
+does not depend on other patches in that series.
+
+**Step 4.5 — Stable list history**
+
+Record: No `Cc: stable` in patch or thread grep results. Contrast: the
+related heap-overflow fix (`90fb7db`) explicitly requested stable.
 
 ---
 
 ## Phase 5: Code Semantic Analysis
 
 **Step 5.1 — Key functions**
-Record: `ice_tx_csum()` (modified), `checksum_sw_fb` (new label).
+
+Record: `e1000_set_eeprom()` (modified); registered via
+`ethtool_ops.set_eeprom` at line 2340.
 
 **Step 5.2 — Callers**
-Record: `ice_xmit_frame_ring()` at line 2648:
-```c
-csum = ice_tx_csum(first, &offload);
-if (csum < 0)
-    goto out_drop;
-```
-Called from `ice_start_xmit()` → standard netdev TX hot path
-(userspace/network stack packet transmission).
+
+Record:
+- `net/ethtool/ioctl.c:ethtool_set_eeprom()` → `ops->set_eeprom()`
+- Invoked from `ETHTOOL_SEEPROM` ioctl case (line 3364)
+- Requires `CAP_NET_ADMIN` (default branch at line 3299)
 
 **Step 5.3 — Callees**
-Record: `ipv6_skip_exthdr()`, `skb_checksum_help()` (can
-allocate/linearize skb, validate offsets).
+
+Record: `kmalloc()`, `e1000_read_nvm()`, `le16_to_cpus()`, `memcpy()`,
+`cpu_to_le16s()`, `e1000_write_nvm()`, `e1000e_update_nvm_checksum()`,
+`kfree()`.
 
 **Step 5.4 — Reachability**
-Record: **Userspace-reachable** via normal packet transmission on Intel
-E810/ice NICs with `CHECKSUM_PARTIAL` skbs that cannot use hardware
-offload (unusual L4, encapsulation edge cases, memory pressure during
-linearization).
+
+Record: Reachable from userspace via `ethtool` EEPROM write ioctl, but
+only by **privileged** (`CAP_NET_ADMIN`) users on interfaces using
+`CONFIG_E1000E`. Uncommon path (manual EEPROM/NVM programming), but real
+and intentional.
 
 **Step 5.5 — Similar patterns**
-Record: Same ignored-return pattern exists in sibling Intel drivers
-(`i40e`, `iavf`, `idpf`, `ixgbe`, etc.). `fm10k` correctly checks the
-return value. This fix addresses ice only.
+
+Record: Same bug/fix pattern exists in legacy `e1000` driver
+(`4cc8566ae0d16`). Prior e1000e fixes for uninitialized data exist
+(`61114910a5f6a`, `24ad2a9209a0b`) showing maintainer attention to this
+class of issue in the driver.
 
 ---
 
-## Phase 6: Cross-Reference Against Local Tree
+## Phase 6: Cross-Reference Against Local Tree (6.18.44)
 
 **Step 6.1 — Buggy code present?**
-Record: **Yes.** Local tree is `v6.18.44` (`linux-6.18.y`).
-`ice_tx_csum()` at lines 2106-2107 and 2221-2222 has the buggy pattern.
-Fix commit `2d19302f6288` is **not** merged.
+
+Record: **Yes.** Current tree at
+`drivers/net/ethernet/intel/e1000e/ethtool.c:599-601` still has the
+full-buffer `le16_to_cpus()` loop. Bug present since 2007 in this
+driver.
 
 **Step 6.2 — Backport complications**
-Record: **Clean apply** — `git apply --check` on `2d19302f6288` passes
-with no conflicts.
+
+Record: **Clean apply expected.** Verified with `git show a5ecafcfb27ba
+| git apply --check` — success. Local tree already has `90fb7db` bounds
+checking (`check_add_overflow`); patch context still matches.
 
 **Step 6.3 — Related fixes already present?**
-Record: **No** equivalent fix in this tree.
+
+Record: Heap overflow fix `90fb7db49c6db` is already in 6.18.44. The
+endianness/uninitialized-memory fix `a5ecafcfb27ba` is **not** present
+(`git merge-base --is-ancestor` confirms).
 
 ---
 
 ## Phase 7: Subsystem and Maintainer Context
 
-**Step 7.1 — Subsystem**
-Record: `drivers/net/ethernet/intel/ice` — **IMPORTANT** (widely
-deployed datacenter 10/25/100GbE driver).
+**Step 7.1 — Subsystem criticality**
 
-**Step 7.2 — Activity**
-Record: Actively maintained; multiple ice fixes already in 6.18.y (PTP,
-ptype, memory leaks, etc.).
+Record: **IMPORTANT** — `e1000e` Intel onboard Ethernet driver, widely
+deployed on laptops/desktops/servers. Not core kernel, but common
+hardware.
+
+**Step 7.2 — Subsystem activity**
+
+Record: Actively maintained — recent commits include PTP cleanup, DMA
+leak fix, power-gating fix, EEPROM overflow fix (Aug–2025+).
 
 ---
 
 ## Phase 8: Impact and Risk Assessment
 
 **Step 8.1 — Who is affected**
-Record: Systems using Intel ice NICs (`CONFIG_ICE`) transmitting
-`CHECKSUM_PARTIAL` packets that hit software-checksum fallback paths.
+
+Record: Users of `CONFIG_E1000E` who perform ethtool EEPROM writes
+(admin tooling, manufacturing, lab setups). Not universal, but real
+hardware population.
 
 **Step 8.2 — Trigger conditions**
-Record:
-- Unusual/unsupported L4 in encapsulated packets
-- `ipv6_skip_exthdr()` parse failures
-- `skb_checksum_help()` failures: bad offsets (`-EINVAL`), unreadable
-  frags (`-EFAULT`), OOM during linearize (`-ENOMEM`)
-- **Frequency:** Uncommon edge cases, not every packet
-- **Unprivileged trigger:** Yes, via normal network traffic patterns
+
+Record: Unaligned EEPROM write spanning more than one word via
+`ETHTOOL_SEEPROM`. Requires `CAP_NET_ADMIN`. Not everyday traffic, but
+deliberately triggerable by root.
 
 **Step 8.3 — Failure mode severity**
-Record: **MEDIUM-HIGH** — not a kernel oops/panic, but transmits packets
-with invalid/missing checksums when software checksum computation fails
-(outbound data integrity corruption). Caller should drop; old code did
-not.
+
+Record:
+- **UB / uninitialized read:** le16_to_cpus on garbage interior words —
+  **MEDIUM** as defect class (sanitizer/UB), but on the success path
+  those words are fully overwritten by `memcpy()` before NVM write, so
+  **no demonstrated EEPROM corruption**.
+- **No crash, deadlock, or info leak to userspace** identified.
+- Error-path behavior unchanged in outcome (still aborts on read
+  failure).
 
 **Step 8.4 — Risk-benefit**
+
 Record:
-- **Benefit:** Correct error handling on common TX path; prevents
-  corrupt outbound packets on failure
-- **Risk:** Very low — 20-line change, Intel-reviewed/tested, applies
-  cleanly
-- **Ratio:** Favorable for backport
+- **Benefit:** Eliminates longstanding UB; aligns code with actual data
+  flow; very low-risk correctness fix; Intel-tested.
+- **Risk:** Very low — 12 lines of localized logic, no API changes.
+- **Ratio:** Moderate benefit (correctness/sanitizer hygiene, not user-
+  visible failure) vs very low risk.
 
 ---
 
 ## Phase 9: Final Synthesis
 
-**Evidence FOR:**
-- Real, verifiable bug (ignored error return)
-- Affects standard TX path on widely used driver
-- Small, self-contained, applies cleanly to 6.18.44
-- Reviewed and tested by Intel; merged to netdev
-- Caller already handles negative returns correctly (`out_drop`)
-- Prevents transmitting `CHECKSUM_PARTIAL` skbs after checksum setup
-  failed
+**Step 9.1 — Evidence summary**
 
-**Evidence AGAINST:**
-- No crash/oops/security report; impact is network correctness on rare
-  paths
-- Not explicitly `Cc: stable` (unlike several sibling patches in same
-  series)
-- Slight behavior change: some previously-dropped paths now attempt
-  software checksum first
+**FOR backport:**
+- Real bug (uninitialized memory access) present since 2007
+- Small, surgical, Intel-tested, multi-reviewer
+- Applies cleanly to 6.18.44
+- Same function as heap-overflow fix already in stable
+- Uninitialized-memory defects are explicitly high-priority in stable
+  guidance
+- Improves fail-fast error handling after NVM reads
 
-**Stable rules checklist:**
-1. Obviously correct and tested? **PASS** (Intel Reviewed-by/Tested-by;
-   logic is straightforward)
-2. Fixes a real bug? **PASS**
-3. Important issue? **PASS** (outbound packet integrity corruption on
-   error paths)
-4. Small and contained? **PASS** (1 file, ~20 lines)
+**AGAINST backport:**
+- No runtime crash, corruption, or security exploit demonstrated
+- Static analysis only (SVACE), not syzbot/KMSAN runtime report
+- Privileged, rare ethtool EEPROM path
+- Interior words are overwritten by `memcpy()` before NVM write —
+  functional outcome appears correct even with the bug
+- Author did not Cc: stable (unlike the related overflow fix)
+
+**Unresolved:** No runtime reproducer or user report confirming
+observable misbehavior on production kernels.
+
+**Step 9.2 — Stable rules checklist**
+
+1. Obviously correct and tested? **PASS** (Intel Tested-by; logic
+   verified)
+2. Fixes a real bug? **PASS** (UB on uninitialized heap memory)
+3. Important issue? **PASS (borderline)** — uninitialized-memory defect
+   class, but no crash/corruption/security impact demonstrated
+4. Small and contained? **PASS** (1 file, ~19 lines)
 5. No new features/APIs? **PASS**
-6. Can apply to local tree? **PASS** (verified clean apply)
+6. Can apply to local tree? **PASS** (clean apply verified)
 
-**Exception category:** N/A (not device ID/quirk/build/doc fix).
+**Step 9.3 — Exception category**
+
+Record: Not a device ID, quirk, DT, build, or docs fix. Standard bug-fix
+category.
+
+**Step 9.4 — Decision rationale for 6.18.44**
+
+The buggy code is present in this tree, the fix is minimal and verified,
+and it removes undefined behavior in a reachable (though privileged)
+userspace-triggered path. While there is no demonstrated user-visible
+failure on the success path—interior words are overwritten before the
+NVM write—the defect is genuine, longstanding, and in the same critical
+function as a prior stable-nominated overflow fix. The backport risk is
+negligible and the correctness improvement is clear.
 
 ---
 
-## Problem Summary for Stable Users
-
-On Intel ice NICs in this 6.18.y tree, when hardware checksum offload
-cannot handle a `CHECKSUM_PARTIAL` packet and the driver falls back to
-`skb_checksum_help()`, a failure in that function is silently ignored.
-The driver returns success, and the packet may be transmitted without a
-valid checksum. The fix propagates the error so `ice_xmit_frame_ring()`
-drops the skb instead of sending a corrupt packet. This is a low-risk,
-high-correctness fix appropriate for stable.
-
 ## Verification
 
-- [Phase 1] Parsed commit message and tags from provided diff + `git
-  show 2d19302f6288`
-- [Phase 2] Read current `ice_tx_csum()` and `skb_checksum_help()` in
-  tree
-- [Phase 3] `git describe HEAD` → `v6.18.44`; `git blame` on lines
-  2102-2107, 2218-2222
-- [Phase 3] `git merge-base` check: fix NOT in HEAD
-- [Phase 3] `git apply --check` on `2d19302f6288` → clean
-- [Phase 4] `b4 dig -c 2d19302f6288` → lore URL found
-- [Phase 4] `b4 dig -a` → v2 iwl-next series + v1 net 01/13 series
-- [Phase 4] `b4 dig -w` → netdev maintainers CC'd
-- [Phase 4] Saved mbox; confirmed patch 03/13 lacks explicit `Cc:
-  stable`
-- [Phase 5] Traced caller `ice_xmit_frame_ring()` lines 2648-2650
-- [Phase 5] Read `skb_checksum_help()` return paths in
-  `net/core/dev.c:3555-3606`
-- [Phase 5] Compared with `fm10k_main.c:810` (checks return value)
-- [Phase 6] Confirmed buggy code at `ice_txrx.c:2106-2107, 2221-2222`
-- [Phase 8] Assessed failure mode as outbound packet corruption, not
-  kernel crash
+- **[Phase 1]** Parsed commit `a5ecafcfb27ba` message and tags via `git
+  show`
+- **[Phase 2]** Analyzed diff via `git show a5ecafcfb27ba` and read
+  current `ethtool.c:547-626`
+- **[Phase 3]** `git blame -L 599,601` → `bc7f75fa9788` (2007)
+- **[Phase 3]** `git log --oneline -20 --
+  drivers/net/ethernet/intel/e1000e/ethtool.c`
+- **[Phase 3]** `git merge-base --is-ancestor a5ecafcfb27ba HEAD` → NOT
+  in HEAD
+- **[Phase 3]** `git apply --check` on patch → clean apply
+- **[Phase 4]** `b4 dig -c a5ecafcfb27ba -a -w` → lore URL and reviewer
+  CC list
+- **[Phase 4]** `b4 dig -m /tmp/e1000e_endian.mbox`; grep for
+  stable/Reviewed-by
+- **[Phase 4]** WebFetch of lore URL blocked by bot protection (Anubis)
+- **[Phase 5]** `grep e1000_set_eeprom` → ethtool ops registration at
+  line 2340
+- **[Phase 5]** Read `net/ethtool/ioctl.c:2037-2078, 3299-3364` for call
+  chain and CAP_NET_ADMIN
+- **[Phase 6]** `git describe HEAD` → `v6.18.44-1-g2736c32da98b9`; `make
+  kernelversion` → `6.18.44`
+- **[Phase 6]** Confirmed buggy loop at lines 599-601 in current tree
+- **[Phase 7]** `git log --oneline -20 --
+  drivers/net/ethernet/intel/e1000e/`
+- **[Phase 8]** Traced data flow: interior words uninitialized → old
+  `le16_to_cpus` → `memcpy` overwrite → `cpu_to_le16s` → NVM write
 
-**YES**The analysis is complete for commit `2d19302f6288` (`ice: pass
-the return value of skb_checksum_help()`) against the local **v6.18.44**
-(`linux-6.18.y`) tree.
+**YES**
 
-**Verdict: YES** — backport it.
+ drivers/net/ethernet/intel/e1000e/ethtool.c | 19 ++++++++++++-------
+ 1 file changed, 12 insertions(+), 7 deletions(-)
 
-**Why:** In `ice_tx_csum()`, `skb_checksum_help()` failures were ignored
-and the function returned `0`, so `ice_xmit_frame_ring()` could transmit
-`CHECKSUM_PARTIAL` packets without a valid checksum. The fix is small
-(one function in `ice_txrx.c`), applies cleanly here, and is
-reviewed/tested by Intel.
-
-**Local state:** The buggy code is still present; the fix is not in this
-tree yet.
-
- drivers/net/ethernet/intel/ice/ice_txrx.c | 20 +++++++++-----------
- 1 file changed, 9 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index 73f08d02f9c76..b843f66c4a6e0 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -2081,7 +2081,7 @@ int ice_tx_csum(struct ice_tx_buf *first, struct ice_tx_offload_params *off)
- 			ret = ipv6_skip_exthdr(skb, exthdr - skb->data,
- 					       &l4_proto, &frag_off);
- 			if (ret < 0)
--				return -1;
-+				goto checksum_sw_fb;
- 		}
- 
- 		/* define outer transport */
-@@ -2100,11 +2100,7 @@ int ice_tx_csum(struct ice_tx_buf *first, struct ice_tx_offload_params *off)
- 			l4.hdr = skb_inner_network_header(skb);
- 			break;
- 		default:
--			if (first->tx_flags & ICE_TX_FLAGS_TSO)
--				return -1;
--
--			skb_checksum_help(skb);
--			return 0;
-+			goto checksum_sw_fb;
- 		}
- 
- 		/* compute outer L3 header size */
-@@ -2163,7 +2159,7 @@ int ice_tx_csum(struct ice_tx_buf *first, struct ice_tx_offload_params *off)
- 			ipv6_skip_exthdr(skb, exthdr - skb->data, &l4_proto,
- 					 &frag_off);
- 	} else {
--		return -1;
-+		goto checksum_sw_fb;
- 	}
- 
- 	/* compute inner L3 header size */
-@@ -2216,15 +2212,17 @@ int ice_tx_csum(struct ice_tx_buf *first, struct ice_tx_offload_params *off)
- 		break;
- 
- 	default:
--		if (first->tx_flags & ICE_TX_FLAGS_TSO)
--			return -1;
--		skb_checksum_help(skb);
--		return 0;
-+		goto checksum_sw_fb;
- 	}
- 
- 	off->td_cmd |= cmd;
- 	off->td_offset |= offset;
- 	return 1;
+diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
+index 8e40bb50a01e1..77f3e7991e75c 100644
+--- a/drivers/net/ethernet/intel/e1000e/ethtool.c
++++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
+@@ -585,20 +585,25 @@ static int e1000_set_eeprom(struct net_device *netdev,
+ 		/* need read/modify/write of first changed EEPROM word */
+ 		/* only the second byte of the word is being modified */
+ 		ret_val = e1000_read_nvm(hw, first_word, 1, &eeprom_buff[0]);
++		if (ret_val)
++			goto out;
 +
-+checksum_sw_fb:
-+	if (first->tx_flags & ICE_TX_FLAGS_TSO)
-+		return -1;
-+	return skb_checksum_help(skb);
- }
++		/* Device's eeprom is always little-endian, word addressable */
++		le16_to_cpus(&eeprom_buff[0]);
++
+ 		ptr++;
+ 	}
+-	if (((eeprom->offset + eeprom->len) & 1) && (!ret_val))
++	if ((eeprom->offset + eeprom->len) & 1) {
+ 		/* need read/modify/write of last changed EEPROM word */
+ 		/* only the first byte of the word is being modified */
+ 		ret_val = e1000_read_nvm(hw, last_word, 1,
+ 					 &eeprom_buff[last_word - first_word]);
++		if (ret_val)
++			goto out;
  
- /**
+-	if (ret_val)
+-		goto out;
+-
+-	/* Device's eeprom is always little-endian, word addressable */
+-	for (i = 0; i < last_word - first_word + 1; i++)
+-		le16_to_cpus(&eeprom_buff[i]);
++		/* Device's eeprom is always little-endian, word addressable */
++		le16_to_cpus(&eeprom_buff[last_word - first_word]);
++	}
+ 
+ 	memcpy(ptr, bytes, eeprom->len);
+ 
 -- 
 2.53.0
 
