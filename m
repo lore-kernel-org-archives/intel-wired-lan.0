@@ -1,199 +1,121 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17275C61DD6
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  2 Sep 2026 16:10:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 45B0CC624D3
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  2 Sep 2026 18:18:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id D485860726;
-	Wed,  2 Sep 2026 16:10:40 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id eLCopMwjQ8Cd; Wed,  2 Sep 2026 16:10:38 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1788365438;
-	bh=cqX99LSYY6LfHhJ4+qx+mEhj3NYtSlslvmORD26zOR0=;
-	h=From:To:CC:Subject:Date:References:In-Reply-To:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=75n36Z5sikWUY2XERlktDuKDQtdwjMWYRwD4yWTZ2Q8ltJRU0y/YarsfLKuPum0SR
-	 dOfCIfqWyWTWv+hKyS1A+JWlLSgcw6g0nArjwdPZsTo0rX01uxf1YUJNj7Nxti5e9t
-	 zL1rzHwoHRUWgd3xFA8FNGM0mtkL3mBvg5M/HH73anrQTxtzskSPqn0d4bhAQ6cbAX
-	 ZOMn9kGnwe9kh/34lH1j2oFPsIueD4U4oFM+Wxb8MqnYVXEr1lpBaYZCkJj/1bXsOB
-	 ntoqmuhZdFPVI533y9b5J/99e+GfEwcoZl2zNb2jUSSwUxB8CT7niqnih9XQxpKFbg
-	 PU3yHOwmKIbHQ==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B116A606F5;
-	Wed,  2 Sep 2026 16:10:38 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id C2B342B2
- for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Sep 2026 16:10:37 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id A88BA407F5
- for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Sep 2026 16:10:37 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id E448F40A4B;
+	Wed,  2 Sep 2026 18:18:01 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id cWSikTgyP6Zu for <intel-wired-lan@lists.osuosl.org>;
- Wed,  2 Sep 2026 16:10:36 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.16;
- helo=mgamail.intel.com; envelope-from=alexander.nowlin@intel.com;
- receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp4.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=FdHbMluA
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
- by smtp4.osuosl.org (Postfix) with ESMTPS id D211B40750
- for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Sep 2026 16:10:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1788365437; x=1819901437;
- h=from:to:cc:subject:date:message-id:references:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=32glSCF6xvRWr5lmsO0pkEvAuGXLG4QiTL6CqCpQfuM=;
- b=FdHbMluA4Ak9xspkCRxJZps5HvwJfi0+p9eRvQnxb4nA58Mhn/AiSOPA
- ScCCSbr40lXDzWviTuqZNTYIn6Cm74LMRJrxkbSRJhOIfZuj787GGB4RF
- uQ2lbZdUtslrWF9ZR9P511JfSnJOWTvdCkgt3mPECunFST+l3vs6ebccG
- rbfsFqzqkSm/I5wONAF2AaCu9BK9VhDYj+tgojqfFiFkM1CmE8y22r0KC
- LWfGpfnIMylpXp18A/npk5mkijqrxANG4eVItw3F6ltyLPB8oQnfVYp2h
- sZEjZKmYtZdVdQsMyaOtUxQIeDTEdDFyl+MWOZwFPUknJq0fXYclIZFPY A==;
-X-CSE-ConnectionGUID: CXBRdHGgRRCG2DwhW/Jk5w==
-X-CSE-MsgGUID: 8rm7gGMfTai1a2hMZtFXMA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11894"; a="89039402"
-X-IronPort-AV: E=Sophos;i="6.25,258,1779174000"; d="scan'208";a="89039402"
-Received: from orviesa002.jf.intel.com ([10.64.159.142])
- by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 02 Sep 2026 09:10:36 -0700
-X-CSE-ConnectionGUID: D1XSG1QeS7CHNZTYouNyUQ==
-X-CSE-MsgGUID: zMyMQ23wR96C9whYDOAqaA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,258,1779174000"; d="scan'208";a="299321952"
-Received: from orsmsx903.amr.corp.intel.com ([10.22.229.25])
- by orviesa002.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 02 Sep 2026 09:10:35 -0700
-Received: from ORSMSX901.amr.corp.intel.com (10.22.229.23) by
- ORSMSX903.amr.corp.intel.com (10.22.229.25) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.46; Wed, 2 Sep 2026 09:10:34 -0700
-Received: from ORSEDG903.ED.cps.intel.com (10.7.248.13) by
- ORSMSX901.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.46 via Frontend Transport; Wed, 2 Sep 2026 09:10:34 -0700
-Received: from SJ2PR03CU001.outbound.protection.outlook.com (52.101.43.59) by
- edgegateway.intel.com (134.134.137.113) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.46; Wed, 2 Sep 2026 09:10:34 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=cc/lr66GdR7NBOaWyBg/17ZQJ5sg95Pthn4ETcthZd2OIRb7kOIwJWPlumdENhrgFoh8yKclFjllZwbfCE8gb9EKTw/T4W7js2hqT/qaU/07ibYUL3rFkSZj1Qqn78okirdZFq/oOoL0SgtbNYo4rgpD0EHKm0XtJGLoI3DbmlgamwsOyC+GyHGj7dL1ywIAR2ji6PCZUaDBl8Q9+LFIoB/cXwvTXikSgulJdM94mQ5BvzN1ATjQLVJG7APm9i0MkbtJZOu6sIxYBbXP9sfQjc+DQZ5Kp1yR77TTYvRh1svGTvYJ+k50/hfW7OOdegTTOllwnD26XK3c1R/qfIYlmw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=cqX99LSYY6LfHhJ4+qx+mEhj3NYtSlslvmORD26zOR0=;
- b=Oq9xBMXcnFl3sIs5HjizbriN3m9NRlEhkgH+Uag+AB0vpLB2GT7pZOkb1JclDTqMETrxxk+2SxzcdTmyRVbDux3nnShW0zF8S2atBxK4ILB7R+eg01oziWATiN3Yn8vaieKi3o5G2mUPDeYAbf3L0uKazSl9vDTedIoE30Di615nwI+da4sNAPBfYYlr+NOsYnn62GjoEXoW9NO/5tym8/7v+/RyL2kda8EYnn05ak0VCPGJTOO1m0itQ4o6p6tM7G3Ef14QbTamZcE9Na+FBSgI66uzEST5DZjK+kJTJQxVGO/ULVefuGlczTvMFNl420SoRt7EZVxpy8ss1XBKAA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from LV1PR11MB8790.namprd11.prod.outlook.com (2603:10b6:408:2b1::16)
- by DS4PR11MB180604.namprd11.prod.outlook.com (2603:10b6:8:50a::23)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.360.13; Wed, 2 Sep
- 2026 16:10:32 +0000
-Received: from LV1PR11MB8790.namprd11.prod.outlook.com
- ([fe80::27cb:7a60:19bb:584a]) by LV1PR11MB8790.namprd11.prod.outlook.com
- ([fe80::27cb:7a60:19bb:584a%5]) with mapi id 15.21.0360.008; Wed, 2 Sep 2026
- 16:10:32 +0000
-From: "Nowlin, Alexander" <alexander.nowlin@intel.com>
-To: "Nitka, Grzegorz" <grzegorz.nitka@intel.com>,
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>
-CC: "Kitszel, Przemyslaw" <przemyslaw.kitszel@intel.com>,
- "richardcochran@gmail.com" <richardcochran@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Kubalewski,
- Arkadiusz" <arkadiusz.kubalewski@intel.com>, "Korba, Przemyslaw"
- <przemyslaw.korba@intel.com>, "andrew+netdev@lunn.ch"
- <andrew+netdev@lunn.ch>, "edumazet@google.com" <edumazet@google.com>,
- "Nguyen, Anthony L" <anthony.l.nguyen@intel.com>, "netdev@vger.kernel.org"
- <netdev@vger.kernel.org>, "kuba@kernel.org" <kuba@kernel.org>,
- "pabeni@redhat.com" <pabeni@redhat.com>, "davem@davemloft.net"
- <davem@davemloft.net>
-Subject: RE: [Intel-wired-lan] [PATCH v3 iwl-next 3/3] ice: use per-interface
- clock_id for E825 generic DPLLs
-Thread-Topic: [Intel-wired-lan] [PATCH v3 iwl-next 3/3] ice: use per-interface
- clock_id for E825 generic DPLLs
-Thread-Index: AQHdIz0XvlRbOY/EJE+5nG91gJ+mdLa7pI3g
-Date: Wed, 2 Sep 2026 16:10:32 +0000
-Message-ID: <LV1PR11MB879063573C9585C9EDF4685590B72@LV1PR11MB8790.namprd11.prod.outlook.com>
-References: <20260803113507.1858083-1-grzegorz.nitka@intel.com>
- <20260803113507.1858083-4-grzegorz.nitka@intel.com>
-In-Reply-To: <20260803113507.1858083-4-grzegorz.nitka@intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: LV1PR11MB8790:EE_|DS4PR11MB180604:EE_
-x-ms-office365-filtering-correlation-id: 730e750e-fb96-41e7-12e4-08df090cb6de
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
- ARA:13230040|1800799024|376014|23010399003|366016|38070700021|10067099003|4143699003|22082099003|56012099006|18002099003|11063799006;
-x-microsoft-antispam-message-info: 7+AA8/6V8eJE4hz9wLj9AB2ZZwztefG630tsl8KHY9R5tQfpyX5t6WY/Hh9Xnxw483nqG8llhnlLtl8B0PQomYrlpHsnKSEzVjCdTjc7/KXp8Fgd2wBWNCBg4WMjRWt8CTDxISvrAqMcgoue+Ye5zRBS17xJ7OCQGHuSGFD+evdH4gxXIxzfppCibx+j4L+beii5V9G+4yKn8uSMu5eHr8OSk8DWhUVE4066huQ/t6/VQ/oWWFrl7sHj2k8HVaSEp0CWbk1IHTDNfC+4MEqIRu2wMrUumVXoOkRvP6vWFu63Q88QA/8ZEc05E2UNytaV3FPFP+014qDmzEoaTPb3Jrlj2ob1i9a6X6QH2bGktOnIK62iKrY5G08+tTOdIhTdACwvZuxN0aVmwV0Eu15COh0Mv21r8vRSyOeynVEyI1G6M2NkwgjgGxL9tbYNosq3VEBPkFSBUJ+pVjGWSGbkt4JTGXNwc7R7gX8cMj6IddO8a/dva7nu8IFuyCiyQ4ZUqmD/kzUj1yVsRLs4B5Vx0kspx8cVlvcbHova5DSU8rAz84OO12W4BwSVAIkCjHj/5+FIw+O41YeCLLV6LNLisCgkoo5EWn/nLNYSsnQXR5Vcq6wzmWVFYghx06B4wrC8h1Pan/jWGNsVnuN8/ycJaktGR1QX/HlJuQ6UV0kkF1ovQaYF4rRLZavq2O2V1ab/OV8XdLlLO+pTJDFyEoemhl1DAcSSau2eDnBxW5Xp+Yw=
-x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:LV1PR11MB8790.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230040)(1800799024)(376014)(23010399003)(366016)(38070700021)(10067099003)(4143699003)(22082099003)(56012099006)(18002099003)(11063799006);
- DIR:OUT; SFP:1101; 
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?Ybsu5fTfohkvSjIY+gndAZakiBJk7p+q+sC9z5UsM2uTqBA5jeFaKDMwdrEA?=
- =?us-ascii?Q?ZwAzslZGAihaAgw6Lipk8Z/wxneEcRumAbmOlTHAlvgmEt/eyV4ZMuTPpesF?=
- =?us-ascii?Q?VYeV6qsAA9YHVkyGUDl+r2AdivJHFdzgIT3RSXf2MZaGDTlsgUAilmjcB/am?=
- =?us-ascii?Q?TEBkCwYFR2AvK+keXXNmJTT3PN0GXcDxXqQCkNKMyL5NRyQYWF5XOOUILJTt?=
- =?us-ascii?Q?C+kALP77Shuox3S3e9eCSwBbMoJduJ29gTemKrilHpms9tl1SuokjrELsnzf?=
- =?us-ascii?Q?oXX25Bx4uC/QyEecbvIiaECLCcVe/jRD4uJLplhfCYRbV92p9xnrnC2rYsfN?=
- =?us-ascii?Q?JimY2xTTTCiRR9SAEVMSHmX7eAaHdWXFI5C6VJEvWFmuGRyA6Goq9YKJWJ1e?=
- =?us-ascii?Q?8UtlNlt2PLDIAOCSD89rPbrlI76TDYB36wAtscBhZqyDDlui+EWnkQc0Yy8P?=
- =?us-ascii?Q?XvBHnNmp+ihMoQr6qRjwiBnU/myGVAu9CerH9ZRLTZNxPOhcI89eXyNlIcJY?=
- =?us-ascii?Q?+ZGoPiylIYSdute1/KY/ViYLoML+3W1brAkpWkgfmGG2JX7qGPEtLfYaBHhT?=
- =?us-ascii?Q?S2FjYg5qLg0+xngtXuDzwK6vkDDl/gZyN8T0dsQm3UFi2WfyY7t4Pt3WWuBn?=
- =?us-ascii?Q?NZ7Uv9IzNX+33lj+7G0676czv14R/jeudy9zpYOxLIYkQWCpEbQG6QUJ8p3g?=
- =?us-ascii?Q?SqSQtJ5NfCnK5XqRGOMkk4NPgaEhFKyJAsBYYwksiyL3u7tp8GHe2lJw//MY?=
- =?us-ascii?Q?CgmCCJg6jyrKdsiQLYEy5tUrQgPpGXhbIIvyEPCxX29yL8FAnH23yRtfx/Td?=
- =?us-ascii?Q?fRI/CJ9lbB3Iske3oi566qPN9x+3qkck7jM8a8e6gaIQ0S5+P1AzOBxHgIFJ?=
- =?us-ascii?Q?Cf9I3ENcqmjXOp5fNB8rBMdmC2oRuZxtIg7dDuOq4mK5d0NK0Q5mHg46PBPC?=
- =?us-ascii?Q?500M/KBvnHZui7C7hBjvsbwGhubCiP4OgtBWVdpdDKee4ianswJjVdBh2ktk?=
- =?us-ascii?Q?yqTnjdpVyX+FK8hG9c5SKXBOohK89uNLcyle99b8M7YMulnEwp6DXdwc/E0g?=
- =?us-ascii?Q?HpWmVZa5uSW/WHe3AmxBWCqgyPxDD2iw/R1nJGjn5yjkP7BeWF9YEVQodUls?=
- =?us-ascii?Q?pFbZm53DbUjpgs5JYpIBNgzhfkIdGx9oNqgTHbV2zKXWoJNB9jMnHF75R3NW?=
- =?us-ascii?Q?5r5RGF7ZCGfWWW4Ms6JqZ3bSpm74b3DbM+xML17JNyGLEmUth66xZXuT4Cnp?=
- =?us-ascii?Q?O1hQ+8OQhSEtdNjRmhfg7TK7DVMbD2F77EfWpxNWpQaU6JrwD5iNQ18PeFwK?=
- =?us-ascii?Q?O6XgZLDYOLMmiTs6w1BYkD+/uWN01SgiDg1eOUouLNv7kIqBL2ACZ4/qTwa8?=
- =?us-ascii?Q?G4LwMLKPMLXq0FPo+txbXx81f6RT88vgGXz51+jg79TzJcIMECzE1QoYBaJE?=
- =?us-ascii?Q?m7bRATkHuF8+WhFMraz0ROpKq2+RqqjOB0HDSINOqXoPziZYYtmXc9Jkmo9k?=
- =?us-ascii?Q?2p5T3Y0nTfGDfiTLApyDfnWAQRI3dfB7AMHs7sce/nI9gIeKh5BP07QwmPFk?=
- =?us-ascii?Q?gb40c0pEQ5vYIO5th/eOXoX6VffagLjarsN1RwlSEJopXbXBn6rsmlzgF5rR?=
- =?us-ascii?Q?REVGNOl5FhWSMy0PYEAHdzyNPEJ6VUsLDuccv4oQ19TD4GxK37SVox5oiUp1?=
- =?us-ascii?Q?PEShXCRZq0sEmq6wQ9An0yzHSxkL5SoSHZ3GQwW2gYt43l8QCLOR3aOs6jUn?=
- =?us-ascii?Q?n/rhkvuSaA=3D=3D?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+ id m40AYcRSebmo; Wed,  2 Sep 2026 18:18:00 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1788373080;
+	bh=NHAQDq6vBiUnbuFOJFe77aW1ys7kP0t0k+chohCQ+QQ=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=Fkl3CuOryBl42SxjXyGXxEtndrFisLKakMQ4z24gQUwD/tvEwvwPhL7mIftofWZnx
+	 1NinSyU6gyACvLaNz/BCXceywvOV2q4AMyWx4LCk9GdZg5nGCpdi2vOBJaVuadEU0c
+	 KxTQ588qo5tVsZYt7s5YYSnM4/p3wW60U8MJ0quxKxnrHxYlXlS84LPXwrYmb6fSu4
+	 zlgQah+G2fCX332YlUsJRSABMGsLHanVaq95fThc9cmJLSVOyCXsUuKiFLAcuyJLEL
+	 CcaVpSYAyxcOC+5zA56bl/xmSXPk+J9IAewEfAxk3QH4b0Y85zz6ND+v4znH6P3VNl
+	 fBaViHFzsnv3w==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id F010E40513;
+	Wed,  2 Sep 2026 18:17:59 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id DC7F82B2
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Sep 2026 18:17:58 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id D1BF340191
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Sep 2026 18:17:58 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id IkH_u2alB26W for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  2 Sep 2026 18:17:57 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2607:f8b0:4864:20::112c; helo=mail-yw1-x112c.google.com;
+ envelope-from=willemdebruijn.kernel@gmail.com; receiver=<UNKNOWN> 
+Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20251104 header.b=X9/oBRaN
+Received: from mail-yw1-x112c.google.com (mail-yw1-x112c.google.com
+ [IPv6:2607:f8b0:4864:20::112c])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 9E47240177
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Sep 2026 18:17:57 +0000 (UTC)
+Received: by mail-yw1-x112c.google.com with SMTP id
+ 00721157ae682-8565d77c277so20384197b3.0
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 02 Sep 2026 11:17:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20251104; t=1788373076; x=1788977876; darn=lists.osuosl.org;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+ :message-id:reply-to:content-type;
+ bh=NHAQDq6vBiUnbuFOJFe77aW1ys7kP0t0k+chohCQ+QQ=;
+ b=X9/oBRaNYnYd2Vp0WfKqElNeCOrf1LMaZsvURbggXaAOBOuOqu/Lr8KU5crqnxNJ+A
+ h1KgWRogkanIsgJGffn6lzFq23qhJjzGxm3d44G0YfG/D0rZ4WezRoXoA2hf2vIl6bfV
+ ANE6gVSsRl7ujHiAcIFGuSbOtW8ly2hcFk5G+RscKw0idt1MwYk5gVpFfcoSp7eYbXjA
+ u+MrRfi+Aa9NTeFSm0IGV70O5zxd3/9T+QVcmGedmJ6UDiX7kFb8ZJaE15vFAOZclCnx
+ W57rVUESAL4qI2gn5wHI6POMxx6PLnMznZ01sOAiw6U2q1fkLWvEZA1tDfxDXAi31i7I
+ zzwg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20251104; t=1788373076; x=1788977876;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+ :to:cc:subject:date:message-id:reply-to:content-type;
+ bh=NHAQDq6vBiUnbuFOJFe77aW1ys7kP0t0k+chohCQ+QQ=;
+ b=rWqFBciZ2R5qPsupPYuJh3MZN3ghGnmBLZ8gMB136F3LU8881dco3bmjt+ZykaWU0r
+ om9D62co5czMdt61hermIMkSPBfdYLJ49DWQAcLU4R1PE/ErKndnpkB19BBgmV8GVyD+
+ /bt/+GT2BnamU3Wen/uyvapD37DUfn04zuZjWLSyLA73mQ9O5WlSNJGQDgScFRssGIP8
+ fHA0s++LDaZjTzOW83QCVYw9w8sHTCRHuQJrDHVtD7BD56csCzb/SFxvZ0TkdoBgVEkX
+ jsOU3uUXJ06itZvJ6nN6RdLmeQNSJTxyLisBsVpLepen6NBw8zwjx+MoLHWsQRzykCRU
+ i0WQ==
+X-Forwarded-Encrypted: i=1;
+ AKwUvBzXlD6eL+abgeobOFf9+YXJ1K4ByLbIlxrUbakFu6i/pjMYemQ7+WsjBG3fqkm7C5Tkgd/tKOTSrbfc8R8nDJY=@lists.osuosl.org
+X-Gm-Message-State: AFuF++mTE3kCfGc4OJYdqdBlAuH1hRQGDoOxTQthhkoYFoelbWbdECdY
+ fxn6fr+P5N48iOobG/INy7Yfkk8L35vt5dI2KrlveYX4x5lLQKMhhMt6
+X-Gm-Gg: AYBFou1NOoqXEUE9DGiPqbD44s5rmBzrUfX7X8Eh2WtI2d49yjMr4newYyBFs75B3jW
+ 8PoD8yOIhhDzssIMELrZeWEN4NES/Uz1x1OM4MYSfAEVBv6/V5jxX/KAJOMI0LTmPl/VdDwwE+e
+ fLR992TY4yXc/WVfDlm6Up6MSKv6OobKiiL2YAcbfE8bHFl504uAw9S/48g2qeqT45zUbpUv3z0
+ mr/nYExVuQHQeCaq0pdRpYB/E+rs2HLsWTLTxNoUUK6J7npxqDt9kPkV+Wr0tZ2IX6fiJO5mIvE
+ mpT6AhCfSv7/h3y1hgP12qYFKzWRUbH68KrkaHjpUIP2X2CSPwHSJsCgZ4CvQVfh3fVUTY74PPo
+ hsWszGPm/iEG4Ih91dxqkxm6fdlDhllJ02ngimwbAMz+zreMuClZg3fED2mYAwT/Kk9uc4aIFQx
+ nM4ArYbyxMDUm+JATpZTdKhRbKXo0Sr2caHumiPdFV4Hy0TpVu4R+FbwmjL2NgjBxFUpeEsrzFs
+ I9rCcRzjP2342bYIFoaGDGQ8Bav2IYyJ+P/FyNsRP2HTkV8xSQfq4BVicBWGTYo
+X-Received: by 2002:a05:690c:e3c2:b0:81f:238a:1709 with SMTP id
+ 00721157ae682-86c54f03a9emr33848597b3.34.1788373075960; 
+ Wed, 02 Sep 2026 11:17:55 -0700 (PDT)
+Received: from willemb.c.googlers.com.com
+ (234.207.85.34.bc.googleusercontent.com. [34.85.207.234])
+ by smtp.gmail.com with ESMTPSA id
+ 00721157ae682-86c1784192bsm23162297b3.30.2026.09.02.11.17.55
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 02 Sep 2026 11:17:55 -0700 (PDT)
+From: Willem de Bruijn <willemdebruijn.kernel@gmail.com>
+To: netdev@vger.kernel.org
+Cc: davem@davemloft.net, kuba@kernel.org, edumazet@google.com,
+ pabeni@redhat.com, horms@kernel.org, andrew+netdev@lunn.ch,
+ Willem de Bruijn <willemb@google.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Joshua A Hay <joshua.a.hay@intel.com>, intel-wired-lan@lists.osuosl.org
+Subject: [PATCH net-next v8 3/6] idpf: support pacing offload
+Date: Wed,  2 Sep 2026 14:17:13 -0400
+Message-ID: <20260902181747.2483351-4-willemdebruijn.kernel@gmail.com>
+X-Mailer: git-send-email 2.55.0.970.g62bdec98f9-goog
+In-Reply-To: <20260902181747.2483351-1-willemdebruijn.kernel@gmail.com>
+References: <20260902181747.2483351-1-willemdebruijn.kernel@gmail.com>
 MIME-Version: 1.0
-X-Exchange-RoutingPolicyChecked: 5Qi6QOr2kbaplffYpbG+O3atqfKht5CzyH0M+EVWYkhS/syBMfRYbXrK5gJa+x2AXEUpclTl5EsUVvUGA3d2/PYY+Z5w34emZGUFc1D4SSKX6Kk3i5V3XmeaFvnDontRsR5gtWuk0ekLZwmR70ZbomnwBihnhGlCMjgg06W6Shbngs2Mpdg0Br+aNy03MRLyfIqN5P/WKkQENt63iWjnXpD/ZdLTVZG8jIgtpW4x8lxnjBAcHzwlHtdRIoZ2vLIJC9vMwPlyCaGDNoLbCNzzx0xnns9ntcWZEvl3ro8ATrYh9kzsa0Rt6svIHkQQUeDhcAjEfbZzlEONW2QkyKtJcw==
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: LV1PR11MB8790.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 730e750e-fb96-41e7-12e4-08df090cb6de
-X-MS-Exchange-CrossTenant-originalarrivaltime: 02 Sep 2026 16:10:32.1797 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: KqFb4KBSGEnRTZwu+q0YTM5T8uJ7zoJFX1HNM3XB2BA5q1RZMOKFOn2AvBzql/2IQIMbF68x4AjwY9GNjE9CJFy5Brv9zqWm5V4J3ig7ibo=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS4PR11MB180604
-X-OriginatorOrg: intel.com
+Content-Transfer-Encoding: 8bit
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -208,43 +130,386 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of G=
-rzegorz Nitka
-> Sent: Monday, August 3, 2026 4:35 AM
-> To: intel-wired-lan@lists.osuosl.org
-> Cc: Kitszel, Przemyslaw <przemyslaw.kitszel@intel.com>; richardcochran@gm=
-ail.com; linux-kernel@vger.kernel.org; Kubalewski, Arkadiusz <arkadiusz.kub=
-alewski@intel.com>; Korba, Przemyslaw <przemyslaw.korba@intel.com>; andrew+=
-netdev@lunn.ch; edumazet@google.com; Nguyen, Anthony L <anthony.l.nguyen@in=
-tel.com>; netdev@vger.kernel.org; kuba@kernel.org; pabeni@redhat.com; davem=
-@davemloft.net
-> Subject: [Intel-wired-lan] [PATCH v3 iwl-next 3/3] ice: use per-interface=
- clock_id for E825 generic DPLLs
->=20
-> On E825, the TX-CLK and TSPLL DPLL devices are registered as DPLL_TYPE_GE=
-NERIC. Their clock_id was derived from the board-level PCIe DSN, which is i=
-dentical for all interfaces sharing the same NAC/quad. As a > result, users=
-pace (e.g. 'dpll device show') reports several DPLL devices with the same c=
-lock_id and no board or signal label, making it impossible to unambiguously=
- map a DPLL device to the interface it belongs to.
->=20
-> Since these DPLLs are per-interface, use the permanent port MAC as the cl=
-ock_id basis for E825 generic DPLLs:
->=20
->   * TX-CLK uses the plain MAC-derived value.
->   * TSPLL on the source-timer owner PF uses the same MAC-derived
->     value with a dedicated tag bit, so it stays distinct from
->     TX-CLK while remaining stable per interface.
->=20
-> Other DPLL objects (EEC/PPS and non-E825 paths) keep the board DSN-derive=
-d clock_id. When the permanent MAC is not yet valid, fall back to the exist=
-ing board-level clock_id to preserve init behavior.
->=20
-> Reviewed-by: Przemyslaw Korba <przemyslaw.korba@intel.com>
-> Signed-off-by: Grzegorz Nitka <grzegorz.nitka@intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice_dpll.c | 81 +++++++++++++++++++++--
->  1 file changed, 76 insertions(+), 5 deletions(-)
+From: Willem de Bruijn <willemb@google.com>
 
-Tested-by: Alexander Nowlin <alexander.nowlin@intel.com>
+If skb->tstamp is in the future, program this future delivery txtime
+in the transmit descriptor.
+
+TCP pacing offload is only offloaded if SK_PACING_FQ is negotiated and
+the FQ offload_horizon is configured. But device support for pacing
+offload must be more robust: it can also be reached through SO_TXTIME.
+
+Bounds check txtime. Only packets with timestamp between now and the
+horizon (pacing_offload_horizon) are offloaded.
+
+Negotiate the feature with the device using virtchnl. Support is
+conditional on
+- splitq mode, where tx and tx completion queues are separate, so
+  completions can be returned out of order.
+- flow scheduling mode, where completions can arrive out of order.
+- PTP to ensure the NIC clock is synced to CLOCK_TAI.
+
+These features are negotiated per adapter, but expect all vports to
+uniformly request splitq (req_[rt]x_splitq) and flow scheduling
+(flow_sch_en) when available.
+
+Do not explicitly check all preconditions. Trust the firmware to
+only advertise EDT when all are met. In general, firmware response is
+trusted to be correct. If not, EDT would be the least of the worries.
+In particular, granularity is trusted to be a power of two. And
+time_horizon_ns is a range expressible given the chosen granularity.
+
+Packets beyond the horizon are sent immediately with the overflow bit
+set.
+
+On device reset, dev->pacing_offload_horizon, fq offload_horizon and
+granularity are not re-negotiated. It is safe to assume that firmware
+does not change these EDT capabilities across resets.
+
+Must not be called from netpoll due to ktime_get. But netpoll does not
+generate packets with EDT, so no explicit test is needed.
+
+Do not fail device initialization on EDT init error. Log an error, but
+continue without EDT, similar to PTP.
+
+Cc: Tony Nguyen <anthony.l.nguyen@intel.com>
+Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Cc: Joshua A Hay <joshua.a.hay@intel.com>
+Cc: intel-wired-lan@lists.osuosl.org
+Signed-off-by: Willem de Bruijn <willemb@google.com>
+
+---
+
+Changes
+  v7 -> v8
+    - remove unused variable np in idpf_tx_splitq_set_txtime
+  v6 -> v7
+    - rebase onto libie changes: adjust idpf_send_get_edt_caps_msg
+    - only set horizon if splitq with flow scheduling
+    - fail on illegal granularity 0, rather than use hardcoded default
+    - zero edt_caps on negotation error, in case of call after reset
+    - cache ts_gran_pow2 in idpf_tx_queue to be in hot cache line
+    - similar to FQ, add offload slack to avoid pacing < 400ns of now
+    - remove now superfluous include netpoll.h
+    - reverse xmas tree (1x)
+  v5 -> v6
+    - move EDT caps from virtchnl2_edt_caps_ilog2 to idpf_edt_caps_ilog2
+    - do not fail device init if EDT init failed, same as PTP
+    - replace netpoll branch with commit-msg comment
+    - add commit-msg comment about device reset
+    - add commit-msg about behavior beyond horizon
+    - add commit-msg about trusting EDT capability response
+  v4 -> v5
+    - fix kdoc: idpf.h:738 struct member 'edt_caps' not described..
+  v3 -> v4
+    - add EDT virtchnl negotiation
+    - move endianness fix to its own iwl-net patch
+    - update commit-msg: check is against pacing_offload_horizon, not max_..
+    - simplify assignment, avoid the le32 assignment in favor of u8 inits
+    - replace open coded constant with IDPF_TXD_FLOW_SCH_HORIZON_OVERFLOW_M
+    - (minor) fix 24b timestamp comment: is 23b + overflow bit
+    - (minor) remove unused parameter
+  v2 -> v3
+    - use READ_ONCE and read pacing_offload_horizon only once
+  v1 -> v2
+    - move special zero case up and return early
+
+Sashiko, ignore pre-existing issues.
+
+Sashiko, ignore that idpf_tx_splitq_set_txtime may have a benign race
+by calling ktime_mono_to_any twice to get TAI to REALTIME offset.
+---
+ drivers/net/ethernet/intel/idpf/idpf.h        | 12 ++++
+ drivers/net/ethernet/intel/idpf/idpf_lib.c    |  6 ++
+ drivers/net/ethernet/intel/idpf/idpf_txrx.c   | 66 ++++++++++++++++++-
+ drivers/net/ethernet/intel/idpf/idpf_txrx.h   |  8 ++-
+ .../net/ethernet/intel/idpf/idpf_virtchnl.c   | 60 ++++++++++++++++-
+ 5 files changed, 149 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/idpf/idpf.h b/drivers/net/ethernet/intel/idpf/idpf.h
+index 470bc23c844c..f214023095ee 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf.h
++++ b/drivers/net/ethernet/intel/idpf/idpf.h
+@@ -604,6 +604,16 @@ struct idpf_vport_config {
+ 	DECLARE_BITMAP(flags, IDPF_VPORT_CONFIG_FLAGS_NBITS);
+ };
+ 
++/**
++ * struct idpf_edt_caps_ilog2 - Host parsed EDT capabilities.
++ * @time_horizon_ns: Total time window in nanoseconds.
++ * @tstamp_granularity_pow2: Log2 of timestamp granularity in nanoseconds.
++ */
++struct idpf_edt_caps_ilog2 {
++	u32 time_horizon_ns;
++	u8 tstamp_granularity_pow2;
++};
++
+ #define idpf_for_each_vport(adapter, iter) \
+ 	for (struct idpf_vport **__##iter = &(adapter)->vports[0], \
+ 	     *iter = (adapter)->max_vports ? *__##iter : NULL; \
+@@ -657,6 +667,7 @@ struct idpf_vport_config {
+  * @stats_task: Periodic statistics retrieval task
+  * @stats_wq: Workqueue for statistics task
+  * @caps: Negotiated capabilities with device
++ * @edt_caps: Negotiated EDT capabilities with device
+  * @dev_ops: See idpf_dev_ops
+  * @cdev_info: IDC core device info pointer
+  * @num_vfs: Number of allocated VFs through sysfs. PF does not directly talk
+@@ -720,6 +731,7 @@ struct idpf_adapter {
+ 	struct delayed_work stats_task;
+ 	struct workqueue_struct *stats_wq;
+ 	struct virtchnl2_get_capabilities caps;
++	struct idpf_edt_caps_ilog2 edt_caps;
+ 
+ 	struct idpf_dev_ops dev_ops;
+ 	struct iidc_rdma_core_dev_info *cdev_info;
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_lib.c b/drivers/net/ethernet/intel/idpf/idpf_lib.c
+index 827c795afcb6..c2ad3fdf72aa 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_lib.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_lib.c
+@@ -890,6 +890,12 @@ static int idpf_cfg_netdev(struct idpf_vport *vport)
+ 	netdev->min_mtu = ETH_MIN_MTU;
+ 	netdev->max_mtu = vport->max_mtu;
+ 
++	if (adapter->edt_caps.time_horizon_ns &&
++	    idpf_is_queue_model_split(vport->dflt_qv_rsrc.txq_model) &&
++	    !idpf_is_cap_ena(adapter, IDPF_OTHER_CAPS,
++			     VIRTCHNL2_CAP_SPLITQ_QSCHED))
++		netdev->max_pacing_offload_horizon = adapter->edt_caps.time_horizon_ns;
++
+ 	dflt_features = NETIF_F_SG	|
+ 			NETIF_F_HIGHDMA;
+ 
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
+index 24b91be25676..d80b6f5a0fde 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
+@@ -1742,6 +1742,7 @@ static int idpf_txq_group_alloc(struct idpf_vport *vport,
+ 			q->desc_count = rsrc->txq_desc_count;
+ 			q->tx_max_bufs = idpf_get_max_tx_bufs(adapter);
+ 			q->tx_min_pkt_len = idpf_get_min_tx_pkt_len(adapter);
++			q->ts_gran_pow2 = adapter->edt_caps.tstamp_granularity_pow2;
+ 			q->netdev = vport->netdev;
+ 			q->txq_grp = tx_qgrp;
+ 			q->rel_q_id = j;
+@@ -2408,7 +2409,12 @@ void idpf_tx_splitq_build_flow_desc(union idpf_tx_flex_desc *desc,
+ 				    struct idpf_tx_splitq_params *params,
+ 				    u16 td_cmd, u16 size)
+ {
+-	*(__le32 *)&desc->flow.qw1.cmd_dtype = cpu_to_le32((u8)(params->dtype | td_cmd));
++	desc->flow.qw1.cmd_dtype = (u8)(params->dtype | td_cmd);
++
++	desc->flow.qw1.ts[0] = params->offload.desc_ts[0];
++	desc->flow.qw1.ts[1] = params->offload.desc_ts[1];
++	desc->flow.qw1.ts[2] = params->offload.desc_ts[2];
++
+ 	desc->flow.qw1.rxr_bufsize = cpu_to_le16((u16)size);
+ 	desc->flow.qw1.compl_tag = cpu_to_le16(params->compl_tag);
+ }
+@@ -3011,6 +3017,60 @@ static bool idpf_tx_splitq_need_re(struct idpf_tx_queue *tx_q)
+ 	return gap >= IDPF_TX_SPLITQ_RE_MIN_GAP;
+ }
+ 
++static void idpf_tx_splitq_set_txtime(const struct sk_buff *skb,
++				      const struct idpf_tx_queue *tx_q,
++				      struct idpf_tx_splitq_params *tx_params)
++{
++	const int offload_slack_ns = 400;
++	u64 ts, now, horizon;
++
++	horizon = READ_ONCE(skb->dev->pacing_offload_horizon);
++	if (!horizon)
++		return;
++
++	switch (skb->tstamp_type) {
++	case SKB_CLOCK_REALTIME:
++		ts = ktime_to_ns(ktime_add(skb->tstamp,
++					   ktime_mono_to_any(0, TK_OFFS_TAI) -
++					   ktime_mono_to_any(0, TK_OFFS_REAL)));
++		break;
++	case SKB_CLOCK_MONOTONIC:
++		ts = ktime_to_ns(ktime_mono_to_any(skb->tstamp, TK_OFFS_TAI));
++		break;
++	case SKB_CLOCK_TAI:
++		ts = ktime_to_ns(skb->tstamp);
++		break;
++	default:
++		WARN_ON_ONCE(1);
++		return;
++	}
++
++	now = ktime_get_clocktai_ns();
++	if (ts < now + offload_slack_ns)
++		return;
++
++	/* beyond offload horizon? set overflow bit only */
++	if (ts > now + horizon) {
++		tx_params->offload.desc_ts[2] =
++			IDPF_TXD_FLOW_SCH_HORIZON_OVERFLOW_M;
++		return;
++	}
++
++	ts >>= tx_q->ts_gran_pow2;
++
++	/* 0 is valid 23b timestamp, but also means field unset.
++	 * Increase by one to avoid this case
++	 */
++	if ((ts & 0x7fffff) == 0) {
++		tx_params->offload.desc_ts[0] = 1;
++		return;
++	}
++
++	tx_params->offload.desc_ts[0] = ts & 0xff;
++	tx_params->offload.desc_ts[1] = (ts >> 8) & 0xff;
++	tx_params->offload.desc_ts[2] = ((ts >> 16) & 0x7f);
++}
++
+ /**
+  * idpf_tx_splitq_frame - Sends buffer on Tx ring using flex descriptors
+  * @skb: send buffer
+@@ -3097,6 +3157,10 @@ static netdev_tx_t idpf_tx_splitq_frame(struct sk_buff *skb,
+ 
+ 		tx_params.dtype = IDPF_TX_DESC_DTYPE_FLEX_FLOW_SCHE;
+ 		tx_params.eop_cmd = IDPF_TXD_FLEX_FLOW_CMD_EOP;
++
++		if (skb->tstamp)
++			idpf_tx_splitq_set_txtime(skb, tx_q, &tx_params);
++
+ 		/* Set the RE bit periodically to "clean" the descriptor ring */
+ 		if (idpf_tx_splitq_need_re(tx_q)) {
+ 			tx_params.eop_cmd |= IDPF_TXD_FLEX_FLOW_CMD_RE;
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.h b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
+index 93547597efd2..fe0c913f9bb9 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_txrx.h
++++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
+@@ -161,6 +161,7 @@ union idpf_tx_flex_desc {
+  * @tso_segs: Number of segments to be sent
+  * @tso_hdr_len: Length of headers to be duplicated
+  * @td_cmd: Command field to be inserted into descriptor
++ * @desc_ts: Flow scheduling offload timestamp
+  */
+ struct idpf_tx_offload_params {
+ 	u32 tx_flags;
+@@ -174,6 +175,7 @@ struct idpf_tx_offload_params {
+ 	u16 tso_hdr_len;
+ 
+ 	u16 td_cmd;
++	u8 desc_ts[3];
+ };
+ 
+ /**
+@@ -608,6 +610,7 @@ libeth_cacheline_set_assert(struct idpf_rx_queue,
+  *	 hot path TX pointers stored in vport. Used in both singleq/splitq.
+  * @desc_count: Number of descriptors
+  * @tx_min_pkt_len: Min supported packet length
++ * @ts_gran_pow2: Txtime timestamp granularity in nanoseconds (log2).
+  * @thresh: XDP queue cleaning threshold
+  * @netdev: &net_device corresponding to this queue
+  * @next_to_use: Next descriptor to use
+@@ -666,7 +669,10 @@ struct idpf_tx_queue {
+ 	u16 desc_count;
+ 
+ 	union {
+-		u16 tx_min_pkt_len;
++		struct {
++			u16 tx_min_pkt_len;
++			u8 ts_gran_pow2;
++		};
+ 		u32 thresh;
+ 	};
+ 
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
+index 1caf52706973..030ecd9b6c41 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
+@@ -3,6 +3,7 @@
+ 
+ #include <linux/export.h>
+ #include <linux/net/intel/libie/pci.h>
++#include <linux/log2.h>
+ #include <net/libeth/rx.h>
+ 
+ #include "idpf.h"
+@@ -553,7 +554,8 @@ static int idpf_send_get_caps_msg(struct idpf_adapter *adapter)
+ 			    VIRTCHNL2_CAP_SPLITQ_QSCHED		|
+ 			    VIRTCHNL2_CAP_PROMISC		|
+ 			    VIRTCHNL2_CAP_LOOPBACK		|
+-			    VIRTCHNL2_CAP_PTP);
++			    VIRTCHNL2_CAP_PTP			|
++			    VIRTCHNL2_CAP_EDT);
+ 
+ 	err = idpf_send_mb_msg_stack(adapter, &xn_params, &caps);
+ 	if (err)
+@@ -573,6 +575,54 @@ static int idpf_send_get_caps_msg(struct idpf_adapter *adapter)
+ 	return err;
+ }
+ 
++/**
++ * idpf_send_get_edt_caps_msg - Send virtchnl get EDT caps msg
++ * @adapter: Driver specific private struct
++ *
++ * Return: 0 on success or error code on failure.
++ */
++static int idpf_send_get_edt_caps_msg(struct idpf_adapter *adapter)
++{
++	struct libie_ctlq_xn_send_params xn_params = {
++		.timeout_ms	= IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
++		.chnl_opcode	= VIRTCHNL2_OP_GET_EDT_CAPS,
++	};
++	struct virtchnl2_edt_caps caps = {};
++	u64 gran_ns, horizon_ns;
++	int err;
++
++	err = idpf_send_mb_msg_stack(adapter, &xn_params, &caps);
++	if (err)
++		return err;
++
++	if (xn_params.recv_mem.iov_len < sizeof(caps)) {
++		err = -EIO;
++		goto free_rx_buf;
++	}
++
++	memcpy(&caps, xn_params.recv_mem.iov_base, sizeof(caps));
++	horizon_ns = le64_to_cpu(caps.time_horizon_ns);
++	gran_ns = le64_to_cpu(caps.tstamp_granularity_ns);
++	if (horizon_ns > U32_MAX) {
++		dev_warn(&adapter->pdev->dev, "EDT horizon exceeds U32\n");
++		err = -EINVAL;
++		goto free_rx_buf;
++	}
++	if (!gran_ns) {
++		dev_warn(&adapter->pdev->dev, "EDT granularity undefined\n");
++		err = -EINVAL;
++		goto free_rx_buf;
++	}
++
++	adapter->edt_caps.time_horizon_ns = horizon_ns;
++	adapter->edt_caps.tstamp_granularity_pow2 = ilog2(gran_ns);
++
++free_rx_buf:
++	libie_ctlq_release_rx_buf(&xn_params.recv_mem);
++
++	return err;
++}
++
+ /**
+  * idpf_mmio_region_non_static - Check if region is not static
+  * @mmio_info: PCI resources info
+@@ -3085,6 +3135,14 @@ int idpf_vc_core_init(struct idpf_adapter *adapter)
+ 		}
+ 	}
+ 
++	if (idpf_is_cap_ena(adapter, IDPF_OTHER_CAPS, VIRTCHNL2_CAP_EDT)) {
++		err = idpf_send_get_edt_caps_msg(adapter);
++		if (err) {
++			dev_err(&adapter->pdev->dev, "EDT init failed, err=%d\n", err);
++			memset(&adapter->edt_caps, 0, sizeof(adapter->edt_caps));
++		}
++	}
++
+ 	pci_sriov_set_totalvfs(adapter->pdev, idpf_get_max_vfs(adapter));
+ 	num_max_vports = idpf_get_max_vports(adapter);
+ 	adapter->vports = kzalloc_objs(*adapter->vports, num_max_vports);
+-- 
+2.55.0.970.g62bdec98f9-goog
+
