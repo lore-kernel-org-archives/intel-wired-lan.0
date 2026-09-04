@@ -1,139 +1,140 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7907C79F82
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  4 Sep 2026 15:39:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE30DC624D3
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  4 Sep 2026 18:12:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 6AE4A403B4;
-	Fri,  4 Sep 2026 15:39:33 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id pKLoY4stUEaB; Fri,  4 Sep 2026 15:39:28 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org C751E40BFB
-Authentication-Results: smtp4.osuosl.org; arc=fail smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=fail; t=1788536366;
-	b=gmqm8kXNrrjy+pLVNOqUn5J8/rNM1pSUId4ykgjoSiXDd77H0fBlAU6kOEDIWSNc+HTY
-	 qFUVy+x2OGToM/a4SGB7q0Mu+NCZ3Mv+T8hBJ6ttaO9QZ37MuZdNgwYQWQ09OqApH2jnQ
-	 7Rhsa1R3FR1c7Hwz5JUGngXpAb5vfVhmkEpmQT/Ph4tNyzcGrBWJcVOaZSh2tgtrt89iw
-	 QIqBd+qfzvAW3EeCaxIOKmqrDvMFpnHGH+R4mAQTZCHZCKq/LmKB1GeCD1KknNoprZF5f
-	 lhZp40cAWu+tiNYIIOVtWviKVbhWNKxoN6TZZ98nrVrh2OdrLQuT1NwauYpd11V+llA==
-ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1788536366;
-	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
-	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:X-Greylist:Received-SPF:Received:
-	 X-UUID:X-CID-CACHE:X-CID-P-RULE:X-CID-O-INFO:X-CID-META:X-CID-BVR:
-	 X-CID-BAS:X-CID-FACTOR:X-CID-RHF:X-UUID:X-User:Received:From:To:Cc:
-	 Subject:Date:Message-Id:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding:X-Mailman-Approved-At:X-BeenThere:
-	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=XePG7DlC6Yr6UhVch6vd1y5C2io9G7eRSfxVLvoNR70=;
-	b=Ad/AvS815DC67izeHtgshoa4BXYvQRvSMCgxBo3Y2iSRUKe4Al7D1Hz8xAkQeWPYgfHm
-	 uVnBMgdYvC5jV7O/et2lwIEhY/xP+w34vJtyat4CPapX6OLs0T7t6bRS11pTnQA5+hWGo
-	 +RpLSbpdM9y7MDkTy+yyfF8xw8EO4DOt/ybzDnZhvR+dLxgI27IUXlZqGDwWpng66UssT
-	 mAtReuedGnoDLQ1djhCDe8B9Zy6E0MfGXxD1OYUhxcFluk1lyp1s0gLhXclWPp2sx1hMd
-	 ip1hTPGjUhMyjINMKWJLWGfMe6slfaqKVWgBjbdih5nKOKCMb+zNN1pplftpvyeHu8Q==
-ARC-Authentication-Results: i=2; smtp4.osuosl.org; arc=fail smtp.remote-ip=140.211.166.142
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1788536366;
-	bh=XePG7DlC6Yr6UhVch6vd1y5C2io9G7eRSfxVLvoNR70=;
-	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=Pefwr2+EOywSos/qvc0N5yPdXEOEDcc94VQcWwwzqoK/EPww3ojf2JFM/oT1kFulo
-	 6kuWC9TMWURT0pyCzPMJPsz8d+uSf70aK4qxFbiKpHtvUlsKwlexm8M330TEKkozou
-	 3NTPlZWAoHUB4lib5plfYxeWD8vW7TF1DXFhtNtrw9lq67qlMa6bi31insz44PSaQl
-	 /6V+pWAVDgVYJNrtBgIbzbp6ETmkoY83T1PkWbZL06yAzYGHFR6tQdAv3WYhod8KES
-	 5EyhI1GVoWhYXXxVbHHT+M5vfAtfW/oEJUKi8rkpsNhhsIk0xenelP84aILgwEj/RL
-	 KWdXwHn2RZmKw==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C751E40BFB;
-	Fri,  4 Sep 2026 15:39:26 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id BF3952FC
- for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Sep 2026 09:23:52 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id B1472810E2
- for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Sep 2026 09:23:52 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 4F6C681157;
+	Fri,  4 Sep 2026 18:12:39 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id IkVDVfPQvCen for <intel-wired-lan@lists.osuosl.org>;
- Fri,  4 Sep 2026 09:23:49 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org BBEBF81109
-Authentication-Results: smtp1.osuosl.org;
- arc=none smtp.remote-ip=124.126.103.232
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1788513829;
- b=q5//2naHOGDPKoSRevmKdaLjzAHGnHDdneYk2s6pm0qZwz5PUJIiKZ9jdc4X5Zgev4rR
- Fd4n5HQoPiUZY0wTUw8cEhDjJ0TfoEgzirCXFFyBK+euziQzT0xrKIf8Ehbe+I4/LKDtN
- FbR3m6FFbEhgBmC3MOcAcirPvEk4g14+6q454IIk3R6XQt5uDtsmnb4uoT7xXR75Ue6EO
- OEFXjYBXuvcKH1xgT0ffhO0bF86B+P71PYfjV8K9RgHGTnFx69VQCqizmRH9sqBQZsl9k
- HHTVtwrG/P/wrBfMAvQhK6LEn6J4w7saR5R6rjj5alVIo+g5plNjwKZdNGzK3LNK3XQ==
+ id Meh2sCqdBlif; Fri,  4 Sep 2026 18:12:37 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 831288114C
+Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1788545557;
+	b=iBgY9f04fs3L7hUIhZanQKOBKELRAzbU73OAEVnoN8GIbcF+UAGYx7Qa2XaRv4t/pEnY
+	 WZXvFHEy432ZdSONUDQZG+6RXs0htoWZSw0Kdk7Zu17y5RcFea99FMDO8ovuQsCCmMjGY
+	 KIJRwq5bxY8YRY/+xhSgFIKg6ugchHOlIfvZBmI/s43kGgyIp87vhG34nxZvGj4VTOFT3
+	 CaVqTBjt9SUM66UPUzw8b0tFrz1u4tTMf80L1O6LlVMGA0CpM6lqBGa57DQbw6iDsqYyS
+	 AZvqahMThWQPzeldGWIbVJucD7IzBbuGOOsVjC4SwWaJ8zBjmAv54k/dEov1qZIysNQ==
+ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
+	c=relaxed/relaxed; t=1788545557;
+	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
+	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
+	 DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-IronPort-AV:
+	 X-IronPort-AV:Received:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-ExtLoop1:
+	 X-IronPort-AV:Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
+	 MIME-Version:Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:
+	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 List-Subscribe:Errors-To;
+	bh=+LsAmrwUk58kk3dL2xo7eOhnb4EtITPbmzGqEjEgPCY=;
+	b=eXIPhxI7nc1RA8tP1Oo75G1kc19gKIT2XVdKi0xvyqJ53FmltgdIGbSwfc11JuSP3Ko2
+	 HsmAKrey1jeTqIb1SZ5uGpud4DhsxvNUVR5BOlBiW2B/gGYzoYEUTxZwBa7At+ohMqXok
+	 7SGygtJ20WAovSnjNGyoJRfFRmZKkKR+0HKJVatPPZc5IHf7RnKLE4V+IyHF4ZmBiq1Nm
+	 BDZ8lLsaSo7o8Q7v1+0mFMSgSpFivfmgT2ccEB5RcqRV15sHTt/QblV83JrfpCYO8MUoz
+	 du7VfVrGqi5tm1yRxO4TPy82uEs9bnJleUXbtrwKZfAsnLlARkFh4nOLIVjHpQdrBhA==
+ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1788545557;
+	bh=+LsAmrwUk58kk3dL2xo7eOhnb4EtITPbmzGqEjEgPCY=;
+	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=YHjxb2i8IM0ZeoMB0oJUQqRLa/8WIHuWitKcO3KaQ2+ZXODODrPebPPhA3ZukjeFZ
+	 M764GOCU3rzmZtF/PX0Rt1BtsIROYs3CsYg4bbefIhJheIv3WRBUjqWmNpIR8Te724
+	 CUYXFMUeAgVfvd7F9A4OWp8dxnNDZGm5TsXEiBenmownwSyfi009eBTcLwYfuOdpZJ
+	 hKUJ+8uCy1xWvaw7l68MtB6QPpot+VczDxLV0D/yRIKJ9UbYtCAtfLjMIoCoI8fI9F
+	 uLVt6s/4dZn5PToIiFQD7N8yYbYYULscgUS8fppGHlMHbE0/F2LT14m6dzH92JQ7yY
+	 N+IRa+OleIuuA==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp1.osuosl.org (Postfix) with ESMTP id 831288114C;
+	Fri,  4 Sep 2026 18:12:37 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 5C4BF29B
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Sep 2026 18:12:36 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id 41BFD404ED
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Sep 2026 18:12:36 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id s5uk3rE-lIlg for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  4 Sep 2026 18:12:35 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org 4834140143
+Authentication-Results: smtp2.osuosl.org; arc=none smtp.remote-ip=198.175.65.11
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1788545555;
+ b=c4mkI3g63LF3QjURSCefzBCdSuZ7gjVQrYO34StQ0pa8qsFssx03JfSh/O5VKy0JtWsY
+ Dh74OZYg8rxW0tCTEPG86pcI7NSrU6t3B0aAn7fC2jh3/4/sZnycSBOBkrAewKEbajNOw
+ mEVUxnKvUvC7E9DgZU1EY6Mfq4lDZaDXMdG1RgdU9pgqWQp1gssUiVZBIbcM/uzQEdowj
+ WMfMc3fJ0uN+Jf8Cvzi4MBHmZl6RCrHWYxkjO00Hla0YzOe/lFMK81tOIs9R7iGE3WGbO
+ Z+kJz7lEdDIB4/cLumyz475rpuYPB9BPJYKHL2RZTQE512kJmnW8NdIJ5hqEodBt2dA==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1788513829;
- h=X-Greylist:Received-SPF:X-UUID:X-CID-CACHE:X-CID-P-RULE:X-CID-O-INFO:
- X-CID-META:X-CID-BVR:X-CID-BAS:X-CID-FACTOR:X-CID-RHF:X-UUID:X-User:
- Received:From:To:Cc:Subject:Date:Message-Id:X-Mailer:MIME-Version:
- Content-Transfer-Encoding;
- bh=XePG7DlC6Yr6UhVch6vd1y5C2io9G7eRSfxVLvoNR70=;
- b=cfngnNY63QY9AcWXzoWEuZPjyp2YtJXOfjz8lnjR+2ejB0V8jPTCkbfjbZLp/rdrGmpo
- Pxln5PFL2sWyETTq6PTRQsffd1lL9e1h5/9tlkzkluBTHzu1BveSJC7IJkbz5Y3K5ajVZ
- 6Pvlf29kJIW4zxXsIFi+gXwNk9rqFJQmxie5P5h21Shm6fNXmldu0q+0ycNJrVAiY5n2K
- SlwdfXAWTIRZPZc5UG9IeTwJLf8VD7pLkF0zwV96EaXjWqYayE7iissbft15Fn7dtJ6jM
- Egd6JQGjc7Frmd2LiJf2tfY1X1lhw8NWbv1thT1CUfKAdtTz/rj7h3Kkk7dBy+OwaEw==
-ARC-Authentication-Results: i=1; smtp1.osuosl.org;
- dmarc=none header.from=kylinos.cn; 
- arc=none smtp.remote-ip=124.126.103.232
-X-Greylist: delayed 306 seconds by postgrey-1.37 at util1.osuosl.org;
- Fri, 04 Sep 2026 09:23:48 UTC
-Authentication-Results: smtp1.osuosl.org;
- dmarc=none (p=none dis=none) header.from=kylinos.cn
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=124.126.103.232;
- helo=mailgw.kylinos.cn; envelope-from=zhangyunfei1@kylinos.cn;
+ c=relaxed/relaxed; t=1788545555;
+ h=Received-SPF:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+ X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
+ X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:From:To:Cc:Subject:
+ Date:Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding;
+ bh=+LsAmrwUk58kk3dL2xo7eOhnb4EtITPbmzGqEjEgPCY=;
+ b=Amvszq4/RbRqJhTwgU8LRGadm/HVOCyuG4y6uNXqRZV0IKZGwRzK2NbnQG/c3KzD/nEE
+ dNoSrycy9uVlNOUDJknw/8TjVGhrSqeIcf5EKKwbWDeoijYst9AnJPHmkqaAYqUZD4+IA
+ 5Jq3wzpZd0Y31QYUrbQ+dk5YoswAKm87FAEgojBptSYWJoVPt55TMIDWHXzBrkuqaohAT
+ 6O4ng54eZO4adtFSpZpnlPnxzoUuMIr/NTDwT/2F0H5efFEmZreCEsMDI5qIzKugG4DOR
+ ph9B5K0pWxn6DhuLbWVv59iHN9hhnVXkNkbQfwtLkvzluDg1oxQ3/Rxiqj78y9Bnxsg==
+ARC-Authentication-Results: i=1; smtp2.osuosl.org;
+ dmarc=pass header.from=intel.com; 
+ dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=YMXEDjUv; 
+ arc=none smtp.remote-ip=198.175.65.11
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.11;
+ helo=mgamail.intel.com; envelope-from=paul.greenwalt@intel.com;
  receiver=<UNKNOWN> 
-Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
- by smtp1.osuosl.org (Postfix) with ESMTPS id BBEBF81109
- for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Sep 2026 09:23:45 +0000 (UTC)
-X-UUID: 986b2f36a84111f19a56ed5b684f684d-20260904
-X-CID-CACHE: Type:Local,Time:202609041652+08,HitQuantity:1
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.3.19, REQID:b423684e-fd62-4efe-b204-c4557f2ee3f3, IP:0,
- U
- RL:0,TC:0,Content:-25,EDM:25,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTI
- ON:release,TS:0
-X-CID-META: VersionHash:7db8b62, CLOUDID:b6ab868a27b7a9a21e041c51ec84c36b,
- BulkI
- D:nil,BulkQuantity:0,SF:102|136|850|865|898,TC:nil,Content:0|15|50|99,EDM:
- 5|-100,IP:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OS
- A:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
-X-CID-BVR: 2,SSN|SDN
-X-CID-BAS: 2,SSN|SDN,0,_
-X-CID-FACTOR: TF_CID_SPAM_SNR
-X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
-X-UUID: 986b2f36a84111f19a56ed5b684f684d-20260904
-X-User: zhangyunfei1@kylinos.cn
-Received: from localhost.localdomain [(10.44.16.150)] by mailgw.kylinos.cn
- (envelope-from <zhangyunfei1@kylinos.cn>)
- (Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
- with ESMTP id 1503395201; Fri, 04 Sep 2026 17:18:30 +0800
-From: Zhang Yunfei <zhangyunfei1@kylinos.cn>
-To: Tony Nguyen <anthony.l.nguyen@intel.com>
-Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Subject: [PATCH iwl-net] idpf: fix NULL pointer dereference and memory leak in
- interrupt request
-Date: Fri,  4 Sep 2026 17:18:27 +0800
-Message-Id: <20260904091827.911123-1-zhangyunfei1@kylinos.cn>
-X-Mailer: git-send-email 2.25.1
+Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=YMXEDjUv
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 4834140143
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Sep 2026 18:12:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1788545556; x=1820081556;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=CCP1aLa16TX+XNs3QoYyKSeAWpz6nlqIaV1KDEBmgqs=;
+ b=YMXEDjUvYp7bRTW/9aORaYAXgQavQrYB1EZ/0GE3HbVZWM5LQT/dfIIM
+ HBSm5PX0Af+fCcKluzTi4aXB6qOX0kNlwo+Yl361fRBUV7KOBEHKhOgmT
+ ibpgfz1lsyNI7l7yQ0q8Od72KgVY+7jc9kW0tzxJ7OuwAb/rHu3gU1ANi
+ rFwcJfn/hy+llJeykvJBTnPMb5UT6A3GSDEYis9YX53v29UIsRjHotMzY
+ tCtmxCFb8AXj25vgFpX94zbVSBwpMJlQ94/sMXx88uXqoz9vF8lrgkLW7
+ Bc9vXEj+tEp5w+JJ50tVljoX3d5fKiE8cDG+DaiQ3FTPLWiO6R4fD2+cm w==;
+X-CSE-ConnectionGUID: vrjQhYJ7REmM0GEofHpa+Q==
+X-CSE-MsgGUID: Y85+BcjfSP+vqXkACNTQgg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11896"; a="99385434"
+X-IronPort-AV: E=Sophos;i="6.25,262,1779174000"; d="scan'208";a="99385434"
+Received: from orviesa008.jf.intel.com ([10.64.159.148])
+ by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 04 Sep 2026 11:12:34 -0700
+X-CSE-ConnectionGUID: hWDnpN8/SgWwEQdbDjQC8g==
+X-CSE-MsgGUID: 5WWbPWz1RJij01QGOIQCHQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,262,1779174000"; d="scan'208";a="269577544"
+Received: from unknown (HELO fedora.jf.intel.com) ([10.166.5.147])
+ by orviesa008.jf.intel.com with ESMTP; 04 Sep 2026 11:12:34 -0700
+From: Paul Greenwalt <paul.greenwalt@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Cc: Paul Greenwalt <paul.greenwalt@intel.com>
+Subject: [PATCH iwl-next v3 0/3] idpf: add devlink info support with selftest
+Date: Fri,  4 Sep 2026 06:37:11 -0400
+Message-ID: <20260904103714.978256-1-paul.greenwalt@intel.com>
+X-Mailer: git-send-email 2.52.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Fri, 04 Sep 2026 15:39:23 +0000
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -148,50 +149,89 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-The kasprintf() call in idpf_vport_intr_req_irq() can return NULL on
-memory pressure, but the result is passed directly to request_irq()
-without a NULL check. The IRQ core then stores this pointer as
-action->name and dereferences it later from /proc/interrupts and
-procfs, leading to a NULL pointer dereference.
+Add initial devlink support for idpf and a matching selftest.
 
-Add a NULL check after kasprintf() and bail out with -ENOMEM.
+Patch 1 consolidates the drvdata clear into idpf_decfg_device(), the
+declared inverse of idpf_cfg_device() which sets it.
 
-Additionally, when request_irq() fails, request_threaded_irq() frees
-the irqaction itself without taking ownership of the name string, so
-the caller-allocated name is leaked. Free it on the error path only.
-On the success path the name is owned by the irq action and released
-later via kfree(free_irq(...)) in the cleanup loop, so it must not be
-freed here.
+Patch 2 adds the devlink instance and implements .info_get, reporting:
+  - serial_number: PCI Device Serial Number, for NIPA CI identification
+  - fw.mgmt.api (running): driver-device communication protocol version
 
-Fixes: d4d558718266 ("idpf: initialize interrupts and enable vport")
-Cc: stable@vger.kernel.org # 6.7
-Signed-off-by: Zhang Yunfei <zhangyunfei1@kylinos.cn>
----
- drivers/net/ethernet/intel/idpf/idpf_txrx.c | 5 +++++
- 1 file changed, 5 insertions(+)
+This follows a phased approach and reports stable, readily-available
+information. Firmware version support will be added in future patches as
+it becomes available through virtchnl.
 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-index 24b91be25676..86dedf5c1c09 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-@@ -4063,12 +4063,17 @@ static int idpf_vport_intr_req_irq(struct idpf_vport *vport,
- 
- 		name = kasprintf(GFP_KERNEL, "%s-%s-%s-%d", drv_name, if_name,
- 				 vec_name, vector);
-+		if (!name) {
-+			err = -ENOMEM;
-+			goto free_q_irqs;
-+		}
- 
- 		err = request_irq(irq_num, idpf_vport_intr_clean_queues, 0,
- 				  name, q_vector);
- 		if (err) {
- 			netdev_err(vport->netdev,
- 				   "Request_irq failed, error: %d\n", err);
-+			kfree(name);
- 			goto free_q_irqs;
- 		}
- 
+Patch 3 adds a hardware selftest that logs devlink info in the format
+NIPA CI consumes.
+
+The changes in both revisions below address findings from Sashiko AI
+review of the series, together with direct review comments on v2.
+
+v2 -> v3:
+- Patch 1:
+  - Drop the comment above pci_set_drvdata().
+- Patch 2 (was patches 2 and 3 in v2, now squashed):
+  - Register the instance in idpf_probe() rather than from the reset
+    worker, so it stays available for the whole time the driver is
+    bound, including when the virtchnl handshake never succeeds. This
+    drops the IDPF_DEVLINK_REGISTERED flag added in v2 and no longer
+    touches idpf.h or idpf_lib.c.
+  - Omit the virtchnl version until it has been negotiated, as the
+    instance is now registered before the handshake runs.
+  - Read the version fields with READ_ONCE().
+  - Include linux/pci.h and linux/unaligned.h directly.
+  - Fix the SPDX identifier and copyright style in idpf_devlink.h.
+- Patch 3:
+  - Report skips through log_test_skip() so that a ksft result line is
+    emitted for every exit path.
+  - Do not fail when the driver name is absent; whether it appears in
+    the JSON depends on the installed iproute2 rather than the kernel.
+
+v1 -> v2:
+- Patch 1:
+  - Move the drvdata clear into idpf_decfg_device() so it pairs with the
+    set in idpf_cfg_device(), instead of adding a second, redundant
+    pci_set_drvdata(NULL) at idpf_probe()'s err_free label.
+- Patch 2:
+  - Select NET_DEVLINK in Kconfig.
+  - Omit serial_number when the device reports no PCI DSN, instead of
+    reporting an all-zero serial number.
+  - Pass the buffer size to the DSN helper rather than hardcoding it.
+- Patch 3:
+  - Read NETIF from drivers/net/net.config as documented in
+    drivers/net/README.rst, in addition to the environment.
+  - Skip, rather than fail, devices that report no versions and no serial
+    number; implementing devlink info is optional and devlink reports a
+    driver name even when info_get is absent.
+  - Count and log board.serial_number.
+  - Treat a devlink/ethtool driver name difference as informational; it
+    is legitimate for e.g. mlx4 and DSA user ports.
+  - Do not require ethtool; it is only used for an optional fallback
+    handle lookup and the driver name comparison.
+  - Query devlink dev info once and validate a single snapshot.
+  - Log the reported versions.
+
+Paul Greenwalt (3):
+  idpf: clear drvdata in idpf_decfg_device()
+  idpf: add devlink support
+  selftests: net: hw: add devlink info test
+
+ Documentation/networking/devlink/idpf.rst     |  30 ++++
+ Documentation/networking/devlink/index.rst    |   1 +
+ drivers/net/ethernet/intel/idpf/Kconfig       |   1 +
+ drivers/net/ethernet/intel/idpf/Makefile      |   1 +
+ .../net/ethernet/intel/idpf/idpf_devlink.c    |  98 +++++++++++
+ .../net/ethernet/intel/idpf/idpf_devlink.h    |  45 +++++
+ drivers/net/ethernet/intel/idpf/idpf_main.c   |  16 +-
+ .../testing/selftests/drivers/net/hw/Makefile |   1 +
+ .../selftests/drivers/net/hw/devlink_info.sh  | 158 ++++++++++++++++++
+ 9 files changed, 347 insertions(+), 4 deletions(-)
+ create mode 100644 Documentation/networking/devlink/idpf.rst
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_devlink.c
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_devlink.h
+ create mode 100755 tools/testing/selftests/drivers/net/hw/devlink_info.sh
+
 -- 
-2.25.1
+2.52.0
 
