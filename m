@@ -1,138 +1,144 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE30DC624D3
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  4 Sep 2026 18:12:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A3DB5C79F82
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  4 Sep 2026 18:12:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 4F6C681157;
-	Fri,  4 Sep 2026 18:12:39 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 5136A60B86;
+	Fri,  4 Sep 2026 18:12:40 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Meh2sCqdBlif; Fri,  4 Sep 2026 18:12:37 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 831288114C
-Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1788545557;
-	b=iBgY9f04fs3L7hUIhZanQKOBKELRAzbU73OAEVnoN8GIbcF+UAGYx7Qa2XaRv4t/pEnY
-	 WZXvFHEy432ZdSONUDQZG+6RXs0htoWZSw0Kdk7Zu17y5RcFea99FMDO8ovuQsCCmMjGY
-	 KIJRwq5bxY8YRY/+xhSgFIKg6ugchHOlIfvZBmI/s43kGgyIp87vhG34nxZvGj4VTOFT3
-	 CaVqTBjt9SUM66UPUzw8b0tFrz1u4tTMf80L1O6LlVMGA0CpM6lqBGa57DQbw6iDsqYyS
-	 AZvqahMThWQPzeldGWIbVJucD7IzBbuGOOsVjC4SwWaJ8zBjmAv54k/dEov1qZIysNQ==
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id tzuR934I9UED; Fri,  4 Sep 2026 18:12:39 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 7C22260B6C
+Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1788545559;
+	b=fY16iIEta95L1Bcb9AxrcBaOanoNjpkMMQ8PyFnSsc0nLykv9fVDxJnxYes6IAmxRhW/
+	 HWxiFt7frNNeBZ2H35G60YEjLaRX8HRYUsupfAmR1LiC9kxRRNx7fvlJ1uDXEY/8yMGzi
+	 +C7euvgclftogmf9wMtK8nAVPODhFBWOe1WcMAkV7rfiYMikUXgsbBt/02PbJA319yaLt
+	 0fGEb7Fwyu1nzxWjBi9Ik7dABJ8cw8nun5wJ4DtpsENHkY+ybV/zNuP9KyhyMoPWhx5mx
+	 6DPWI8Zt8PviETxhSvesE1bSEA0cU4dl+RZlwUTeallcl/LCwv7TwyJ8zXCNy3f+MiA==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1788545557;
+	c=relaxed/relaxed; t=1788545559;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
 	 DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-IronPort-AV:
 	 X-IronPort-AV:Received:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-ExtLoop1:
 	 X-IronPort-AV:Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
-	 MIME-Version:Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:
-	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
-	 List-Subscribe:Errors-To;
-	bh=+LsAmrwUk58kk3dL2xo7eOhnb4EtITPbmzGqEjEgPCY=;
-	b=eXIPhxI7nc1RA8tP1Oo75G1kc19gKIT2XVdKi0xvyqJ53FmltgdIGbSwfc11JuSP3Ko2
-	 HsmAKrey1jeTqIb1SZ5uGpud4DhsxvNUVR5BOlBiW2B/gGYzoYEUTxZwBa7At+ohMqXok
-	 7SGygtJ20WAovSnjNGyoJRfFRmZKkKR+0HKJVatPPZc5IHf7RnKLE4V+IyHF4ZmBiq1Nm
-	 BDZ8lLsaSo7o8Q7v1+0mFMSgSpFivfmgT2ccEB5RcqRV15sHTt/QblV83JrfpCYO8MUoz
-	 du7VfVrGqi5tm1yRxO4TPy82uEs9bnJleUXbtrwKZfAsnLlARkFh4nOLIVjHpQdrBhA==
-ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding:
+	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
+	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
+	bh=wgRV6vQFtgD/ZtMJ9DwlubloegD8SZicn6+VX0AdMN4=;
+	b=UH8S9Il8I7wPS55lmGEZIKZQpHuf4OglyBs6W440ttpGAozcHGG0MbsNJCR+JhwTD7MX
+	 BRcQVSdEYRP4SGc6JTqDdlFdsN8t5dBMQPgqnHFaFIvJrfW2rF/B7JzvZt/0oHeUOo1Fb
+	 X11Erc4ZbPj+RMYqD4bfe+JLHNM5Ra45vHXRnwVJssGKfo5nTVkNLBTaNw7QHHcSL/fOj
+	 UXQdswXVdmwU8QmgMSKkHDU6dSgIC7vVml63VtcKjcR8PjFSt8VpOQ/EushP2ShW1lSXy
+	 OMKT1DRZSuPNa4R0eApqb5GaIw/4Qh9tkxeGptJqhT5157peJHCgSHag6DJr6/LALJQ==
+ARC-Authentication-Results: i=2; smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1788545557;
-	bh=+LsAmrwUk58kk3dL2xo7eOhnb4EtITPbmzGqEjEgPCY=;
-	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=YHjxb2i8IM0ZeoMB0oJUQqRLa/8WIHuWitKcO3KaQ2+ZXODODrPebPPhA3ZukjeFZ
-	 M764GOCU3rzmZtF/PX0Rt1BtsIROYs3CsYg4bbefIhJheIv3WRBUjqWmNpIR8Te724
-	 CUYXFMUeAgVfvd7F9A4OWp8dxnNDZGm5TsXEiBenmownwSyfi009eBTcLwYfuOdpZJ
-	 hKUJ+8uCy1xWvaw7l68MtB6QPpot+VczDxLV0D/yRIKJ9UbYtCAtfLjMIoCoI8fI9F
-	 uLVt6s/4dZn5PToIiFQD7N8yYbYYULscgUS8fppGHlMHbE0/F2LT14m6dzH92JQ7yY
-	 N+IRa+OleIuuA==
+	s=default; t=1788545559;
+	bh=wgRV6vQFtgD/ZtMJ9DwlubloegD8SZicn6+VX0AdMN4=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=jS9uayhp7IWpE9suURITx9zhVvuXZi02QFJ+bgmfl/1JKIT9vwnQ8nBz2EsySXw/1
+	 HBFurec1gFx42soU2Fe4QzcnmV0RDY4+0/j8rEr/NNXvw73z/l9SGH8a+Pbkz3EJjn
+	 aizANzF1zUD3iFmVYQOmEjJP8VYowHWxsawsrf+S+qq9w06G94U6NlZ9aGyWL6ToEt
+	 ai90rzWI9esPhc7KSxGNpuCRRWpgzKtN6coR65jMZEgqSvYCJTLaNYWMQEGjwbbJB3
+	 V5yN3O5R9ejEx7MLARjG1yMOjWrsxUwKL3DoCkkS3KkDA2o0ta7o8VM7CLz72Yfi4P
+	 Lx4UpAYJ047WQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 831288114C;
-	Fri,  4 Sep 2026 18:12:37 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 7C22260B6C;
+	Fri,  4 Sep 2026 18:12:39 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 5C4BF29B
- for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Sep 2026 18:12:36 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 64C0729B
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Sep 2026 18:12:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 41BFD404ED
- for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Sep 2026 18:12:36 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 56FCB404EF
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Sep 2026 18:12:38 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id s5uk3rE-lIlg for <intel-wired-lan@lists.osuosl.org>;
- Fri,  4 Sep 2026 18:12:35 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org 4834140143
+ id fGH5ocRqcx9I for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  4 Sep 2026 18:12:37 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org 5C11C40143
 Authentication-Results: smtp2.osuosl.org; arc=none smtp.remote-ip=198.175.65.11
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1788545555;
- b=c4mkI3g63LF3QjURSCefzBCdSuZ7gjVQrYO34StQ0pa8qsFssx03JfSh/O5VKy0JtWsY
- Dh74OZYg8rxW0tCTEPG86pcI7NSrU6t3B0aAn7fC2jh3/4/sZnycSBOBkrAewKEbajNOw
- mEVUxnKvUvC7E9DgZU1EY6Mfq4lDZaDXMdG1RgdU9pgqWQp1gssUiVZBIbcM/uzQEdowj
- WMfMc3fJ0uN+Jf8Cvzi4MBHmZl6RCrHWYxkjO00Hla0YzOe/lFMK81tOIs9R7iGE3WGbO
- Z+kJz7lEdDIB4/cLumyz475rpuYPB9BPJYKHL2RZTQE512kJmnW8NdIJ5hqEodBt2dA==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1788545557;
+ b=G57C4pdacy1gYNHQlKG4nIyqCb33qE49QZv2TrkQm+2ChFj4vrVHKpKZEaHW7NlHd87L
+ RdCoF9IaFLLC0wibfc0IZ9jyOYAyZ2uR4I6ZDRjBOB1R1vUE+4SwjCybjWmV43w+Ok/TE
+ bigdnMBvwP5a5v0m900p2atpQPbeLYQe+Gd+aEbrtc5Z8WD3j02eBby7ecymzFMucgqTe
+ y35J3zHnf2qTxKgiwqbvYBiMX0tpznuEURQQK8Nvc9PQx7LQIH49LZDGTsNsxMmtdyiD8
+ iRu+yS+c2bWsVQv3DGgeORuR6O1M6Rb0ax1GX4d+8N1C5c665WhQANSQfQfvJZ9QaFA==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1788545555;
+ c=relaxed/relaxed; t=1788545557;
  h=Received-SPF:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
  X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
  X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:From:To:Cc:Subject:
- Date:Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding;
- bh=+LsAmrwUk58kk3dL2xo7eOhnb4EtITPbmzGqEjEgPCY=;
- b=Amvszq4/RbRqJhTwgU8LRGadm/HVOCyuG4y6uNXqRZV0IKZGwRzK2NbnQG/c3KzD/nEE
- dNoSrycy9uVlNOUDJknw/8TjVGhrSqeIcf5EKKwbWDeoijYst9AnJPHmkqaAYqUZD4+IA
- 5Jq3wzpZd0Y31QYUrbQ+dk5YoswAKm87FAEgojBptSYWJoVPt55TMIDWHXzBrkuqaohAT
- 6O4ng54eZO4adtFSpZpnlPnxzoUuMIr/NTDwT/2F0H5efFEmZreCEsMDI5qIzKugG4DOR
- ph9B5K0pWxn6DhuLbWVv59iHN9hhnVXkNkbQfwtLkvzluDg1oxQ3/Rxiqj78y9Bnxsg==
+ Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
+ Content-Transfer-Encoding;
+ bh=wgRV6vQFtgD/ZtMJ9DwlubloegD8SZicn6+VX0AdMN4=;
+ b=MYFFMkHNn9v8RU6VAVSlY6DQ5C0qPTVx2ZwPrqItaPpqLgj3XuO3xyQMk14eHwGtIOL+
+ WGq6+N1lJnDS27h/N50IsTMlQQCcDBP4xCEfKReXjceYVwzUDweKC+PIVmV+6noRIEXHL
+ mkq5O9E4JB/RAqLEDXfdtL5DlzNEepEwCIAyrRXGBfZ1mqnX8Vjofv39q1jkSBa5TN1Ut
+ yY9c3aWDRFP+Ulx9ic+Y6uyxKa0wmkQjOqRS0eGyBscW+wgNccKY8ozzuDLp9MU7HEKtq
+ 9WBI1PppGkNQjuCIF2P3XlFlwNIRS6R587yNVdyCnx6Gx+bY78MnYKCda2D+pukNELw==
 ARC-Authentication-Results: i=1; smtp2.osuosl.org;
  dmarc=pass header.from=intel.com; 
  dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=YMXEDjUv; 
+ header.s=Intel header.b=BjjQDojU; 
  arc=none smtp.remote-ip=198.175.65.11
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.11;
  helo=mgamail.intel.com; envelope-from=paul.greenwalt@intel.com;
  receiver=<UNKNOWN> 
 Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=YMXEDjUv
+Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=BjjQDojU
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 4834140143
- for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Sep 2026 18:12:34 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 5C11C40143
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Sep 2026 18:12:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1788545556; x=1820081556;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=CCP1aLa16TX+XNs3QoYyKSeAWpz6nlqIaV1KDEBmgqs=;
- b=YMXEDjUvYp7bRTW/9aORaYAXgQavQrYB1EZ/0GE3HbVZWM5LQT/dfIIM
- HBSm5PX0Af+fCcKluzTi4aXB6qOX0kNlwo+Yl361fRBUV7KOBEHKhOgmT
- ibpgfz1lsyNI7l7yQ0q8Od72KgVY+7jc9kW0tzxJ7OuwAb/rHu3gU1ANi
- rFwcJfn/hy+llJeykvJBTnPMb5UT6A3GSDEYis9YX53v29UIsRjHotMzY
- tCtmxCFb8AXj25vgFpX94zbVSBwpMJlQ94/sMXx88uXqoz9vF8lrgkLW7
- Bc9vXEj+tEp5w+JJ50tVljoX3d5fKiE8cDG+DaiQ3FTPLWiO6R4fD2+cm w==;
-X-CSE-ConnectionGUID: vrjQhYJ7REmM0GEofHpa+Q==
-X-CSE-MsgGUID: Y85+BcjfSP+vqXkACNTQgg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11896"; a="99385434"
-X-IronPort-AV: E=Sophos;i="6.25,262,1779174000"; d="scan'208";a="99385434"
+ t=1788545558; x=1820081558;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=Um0Hm4c9zBE6+FlO1pMm/K+tZ6BSLmlXIMFuZBZYwyI=;
+ b=BjjQDojU8h3eNeKFrCkGjDD7eJA2qYWzuwvZV9+QSLqktkxrCq9mWcPC
+ rMbYkuqtMBTMG47eD8s+01+iKzk0szhCMmm+ryrFGoVAcna01uvg8J2iN
+ WnPy2Z7KAlr+xRCQXitCYUTflZelHMfomsHT+Oy55WSBlVmSu9hpdY5U5
+ rg2w1JIyWzcSUDbsOxEnM1c0sPO3ssw97r3+Ub/gi0rzjDUIl0W6adW3A
+ VGIaeNDN841zu/J0H8P2Sy66gz706fbDZdoTx6yPfvyvDkkgkGBd4e4G0
+ wTiWcb1GpwZr8EMxb6jRf9Fy4D6MwRwxXmPhg3ErGGzQhMsYbEOMbe/GF A==;
+X-CSE-ConnectionGUID: l53jaakTR++JZUl6iiv4mQ==
+X-CSE-MsgGUID: JLm7D0DcRz63aphMztV2lA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11896"; a="99385443"
+X-IronPort-AV: E=Sophos;i="6.25,262,1779174000"; d="scan'208";a="99385443"
 Received: from orviesa008.jf.intel.com ([10.64.159.148])
  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 04 Sep 2026 11:12:34 -0700
-X-CSE-ConnectionGUID: hWDnpN8/SgWwEQdbDjQC8g==
-X-CSE-MsgGUID: 5WWbPWz1RJij01QGOIQCHQ==
+ 04 Sep 2026 11:12:38 -0700
+X-CSE-ConnectionGUID: HR1LPTHmSvWbqACEEU2DOg==
+X-CSE-MsgGUID: 173zasGaRZ2oijXVS/OmYg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,262,1779174000"; d="scan'208";a="269577544"
+X-IronPort-AV: E=Sophos;i="6.25,262,1779174000"; d="scan'208";a="269577548"
 Received: from unknown (HELO fedora.jf.intel.com) ([10.166.5.147])
- by orviesa008.jf.intel.com with ESMTP; 04 Sep 2026 11:12:34 -0700
+ by orviesa008.jf.intel.com with ESMTP; 04 Sep 2026 11:12:35 -0700
 From: Paul Greenwalt <paul.greenwalt@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Cc: Paul Greenwalt <paul.greenwalt@intel.com>
-Subject: [PATCH iwl-next v3 0/3] idpf: add devlink info support with selftest
-Date: Fri,  4 Sep 2026 06:37:11 -0400
-Message-ID: <20260904103714.978256-1-paul.greenwalt@intel.com>
+Cc: Paul Greenwalt <paul.greenwalt@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Subject: [PATCH iwl-next v3 1/3] idpf: clear drvdata in idpf_decfg_device()
+Date: Fri,  4 Sep 2026 06:37:12 -0400
+Message-ID: <20260904103714.978256-2-paul.greenwalt@intel.com>
 X-Mailer: git-send-email 2.52.0
+In-Reply-To: <20260904103714.978256-1-paul.greenwalt@intel.com>
+References: <20260904103714.978256-1-paul.greenwalt@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -149,89 +155,51 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-Add initial devlink support for idpf and a matching selftest.
+pci_set_drvdata(pdev, adapter) is set as the last step of
+idpf_cfg_device(), but its inverse, idpf_decfg_device(), does not
+clear it. idpf_remove() open-codes the clear right after calling
+idpf_decfg_device(), so the two functions are not true opposites of
+each other.
 
-Patch 1 consolidates the drvdata clear into idpf_decfg_device(), the
-declared inverse of idpf_cfg_device() which sets it.
+Move the pci_set_drvdata(pdev, NULL) into idpf_decfg_device() so the
+set/clear pairing lives in one place, and drop the now-redundant
+explicit clear from idpf_remove(). idpf_decfg_device() is also called
+from idpf_probe()'s err_init_wq unwind path, which did not previously
+clear drvdata at all; it now does too, closing that window for
+consistency with the rest of the teardown path. This has no
+observable effect: the driver core already clears drvdata via
+dev_set_drvdata() when a probe function returns an error, under
+device_lock(), before any consumer of drvdata can observe a stale
+pointer.
 
-Patch 2 adds the devlink instance and implements .info_get, reporting:
-  - serial_number: PCI Device Serial Number, for NIPA CI identification
-  - fw.mgmt.api (running): driver-device communication protocol version
+Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
+---
+ drivers/net/ethernet/intel/idpf/idpf_main.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-This follows a phased approach and reports stable, readily-available
-information. Firmware version support will be added in future patches as
-it becomes available through virtchnl.
-
-Patch 3 adds a hardware selftest that logs devlink info in the format
-NIPA CI consumes.
-
-The changes in both revisions below address findings from Sashiko AI
-review of the series, together with direct review comments on v2.
-
-v2 -> v3:
-- Patch 1:
-  - Drop the comment above pci_set_drvdata().
-- Patch 2 (was patches 2 and 3 in v2, now squashed):
-  - Register the instance in idpf_probe() rather than from the reset
-    worker, so it stays available for the whole time the driver is
-    bound, including when the virtchnl handshake never succeeds. This
-    drops the IDPF_DEVLINK_REGISTERED flag added in v2 and no longer
-    touches idpf.h or idpf_lib.c.
-  - Omit the virtchnl version until it has been negotiated, as the
-    instance is now registered before the handshake runs.
-  - Read the version fields with READ_ONCE().
-  - Include linux/pci.h and linux/unaligned.h directly.
-  - Fix the SPDX identifier and copyright style in idpf_devlink.h.
-- Patch 3:
-  - Report skips through log_test_skip() so that a ksft result line is
-    emitted for every exit path.
-  - Do not fail when the driver name is absent; whether it appears in
-    the JSON depends on the installed iproute2 rather than the kernel.
-
-v1 -> v2:
-- Patch 1:
-  - Move the drvdata clear into idpf_decfg_device() so it pairs with the
-    set in idpf_cfg_device(), instead of adding a second, redundant
-    pci_set_drvdata(NULL) at idpf_probe()'s err_free label.
-- Patch 2:
-  - Select NET_DEVLINK in Kconfig.
-  - Omit serial_number when the device reports no PCI DSN, instead of
-    reporting an all-zero serial number.
-  - Pass the buffer size to the DSN helper rather than hardcoding it.
-- Patch 3:
-  - Read NETIF from drivers/net/net.config as documented in
-    drivers/net/README.rst, in addition to the environment.
-  - Skip, rather than fail, devices that report no versions and no serial
-    number; implementing devlink info is optional and devlink reports a
-    driver name even when info_get is absent.
-  - Count and log board.serial_number.
-  - Treat a devlink/ethtool driver name difference as informational; it
-    is legitimate for e.g. mlx4 and DSA user ports.
-  - Do not require ethtool; it is only used for an optional fallback
-    handle lookup and the driver name comparison.
-  - Query devlink dev info once and validate a single snapshot.
-  - Log the reported versions.
-
-Paul Greenwalt (3):
-  idpf: clear drvdata in idpf_decfg_device()
-  idpf: add devlink support
-  selftests: net: hw: add devlink info test
-
- Documentation/networking/devlink/idpf.rst     |  30 ++++
- Documentation/networking/devlink/index.rst    |   1 +
- drivers/net/ethernet/intel/idpf/Kconfig       |   1 +
- drivers/net/ethernet/intel/idpf/Makefile      |   1 +
- .../net/ethernet/intel/idpf/idpf_devlink.c    |  98 +++++++++++
- .../net/ethernet/intel/idpf/idpf_devlink.h    |  45 +++++
- drivers/net/ethernet/intel/idpf/idpf_main.c   |  16 +-
- .../testing/selftests/drivers/net/hw/Makefile |   1 +
- .../selftests/drivers/net/hw/devlink_info.sh  | 158 ++++++++++++++++++
- 9 files changed, 347 insertions(+), 4 deletions(-)
- create mode 100644 Documentation/networking/devlink/idpf.rst
- create mode 100644 drivers/net/ethernet/intel/idpf/idpf_devlink.c
- create mode 100644 drivers/net/ethernet/intel/idpf/idpf_devlink.h
- create mode 100755 tools/testing/selftests/drivers/net/hw/devlink_info.sh
-
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_main.c b/drivers/net/ethernet/intel/idpf/idpf_main.c
+index 1e4dd9b713a0a..3dbbe21459990 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_main.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_main.c
+@@ -112,6 +112,8 @@ static void idpf_decfg_device(struct idpf_adapter *adapter)
+ 		pci_disable_ptm(pdev);
+ 
+ 	libie_pci_unmap_all_mmio_regions(&adapter->ctlq_ctx.mmio_info);
++
++	pci_set_drvdata(pdev, NULL);
+ }
+ 
+ /**
+@@ -182,7 +184,6 @@ static void idpf_remove(struct pci_dev *pdev)
+ 	mutex_destroy(&adapter->vc_buf_lock);
+ 
+ 	idpf_decfg_device(adapter);
+-	pci_set_drvdata(pdev, NULL);
+ 	kfree(adapter);
+ }
+ 
 -- 
 2.52.0
 
