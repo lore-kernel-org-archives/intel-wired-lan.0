@@ -1,28 +1,28 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DFCBFC624D3
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  4 Sep 2026 18:12:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B89CC79F87
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  4 Sep 2026 18:12:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 84C4B40B0F;
-	Fri,  4 Sep 2026 18:12:42 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 58FFE8114C;
+	Fri,  4 Sep 2026 18:12:43 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id EKQhlpLdabrA; Fri,  4 Sep 2026 18:12:41 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 566C540B3C
-Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1788545561;
-	b=E+1TJT5UwXRpw1C0XG/od2bJWwmFq5N6r/8bg0f5xooEGWpjFuCWf7HZCTvyB+0PhmFv
-	 3hrEhmsaBlSk+xqscrtS/zVrM7Avj72FmzF9xsU7y5R2k620XPpcUH57axVHYUX1EDBRw
-	 1ASvrJlwPWzDLYyDiIz1Dn7OJ8frTLmLGmaoN6yW1MevnN8tdogF9WqWZYSXXh4auGNF9
-	 vsDcFv0q5UcRCT+Q8VP8ZXbrJd45QsTtiPuzOHrzSQ1JNzz+NBIQbduMhbUI1uNbfAKlG
-	 DI9x/8k6McILSq6ecrWZY7xqY4loXPmmLS0CND0XXzRz80dipk1E30P1tGEXIq+UjgQ==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id C8CJwNsw5s8T; Fri,  4 Sep 2026 18:12:42 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 49EEF8115C
+Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1788545562;
+	b=YzlJUAxJfaXr1mPBZEONjU2kpeapybVc8rHws1Zmya90/MbfSEBG/g45gxvPxgJm7oyI
+	 VSfWmF+R+c8asrY+HIqHGIeqPtwjm+iC6syvH0neELsq2icEC5y2T+6rXsWBlfHtPi5i2
+	 fnOat68BXl1ngXaCIbLM4XrYU+KVLyoqb0jpWsCOAgYQ1NLMyxDvbx3+pEh344iMDOUQp
+	 +O1KoeAYK77lcQS+XqQZ+Yn6u2tFcQXYqjbJhTBNCfYtF91fhvezrJmOyHhQQTmPI/B1c
+	 t/oqkD3l3Pcox34xUiX9nlVt+VTOfmUg5IYOHc3S7mosPNOsyhsT4CUwVdlFjEBSwCw==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1788545561;
+	c=relaxed/relaxed; t=1788545562;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
@@ -32,48 +32,48 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding:
 	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
 	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=R7V/eoU+rd64ycrGvlsAM6ncuvv4vVdxeflSSHRexVM=;
-	b=NLqdDkDYuxkyUN4wVaex977VmxG98Gr5dBMGeWRHggrWM5/aNAmFBCFtCIX4fvMibg4f
-	 WKdExkzxpYFBSa9iwWCX0r/LOEpKAYnzmAdSgaTUdsRpQNfO5ebfSqaNzoj7OuMqg/hN0
-	 f36tvfuPjkeQJA0Zxr1ShLWVNo3EHMeF8oEsr/PD8LrgCmr4QUMAz7sU3RK7XfnlT9ySc
-	 Mh1fWBeGQwTdtu4scgLDTZ/MwaXcsMqTWxJ+PIhUf8mmZHjjsKrle1Uue/K3B9MqaPtn9
-	 8gyjW2tZ8aLQU3bxaAGHenK3LF9hq4wjdKFO0eGjcd6+kh9YA3PgR+sFWDby73W7xUw==
-ARC-Authentication-Results: i=2; smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	bh=86X2LJWgXDDnh5tB63KEqi6VB1eOXzHmxO/FyeCZmck=;
+	b=Ad3R+CeyeveQfk2pqI9dKkheeeJhpo3ANG327JB1Gwqq22eKynSWQ4ant0HyDlODnvNa
+	 wKIMI4RKEZmS0qbY7xA+NEf54H64RMijnXXcqjyFKS7IZ0ECQnAmXE+lUlYmsK1f9DJxw
+	 IetjlawU4UPrl/9vLj6gGpeEqqZdVGDfhgJ78ShU6FOJy7ASJfISv5lybLdVUOzhxtoU9
+	 rKCACyvzlUFgzcmp5itZ2fh5xLwEE/8J2xMMI/o0y3lE6TkCLkrAmSEe9AarsS17XzKZ1
+	 TJcCfLXdbkiEmPaUgCbQwIXHVzTrWZFjzKnL3lVyUnIcdtkVHKJKEyW8YVFPkuxDY5g==
+ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1788545561;
-	bh=R7V/eoU+rd64ycrGvlsAM6ncuvv4vVdxeflSSHRexVM=;
+	s=default; t=1788545562;
+	bh=86X2LJWgXDDnh5tB63KEqi6VB1eOXzHmxO/FyeCZmck=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=I0N2cO+fOYq9GjSdRJ+FdbxSvyDIkrJKqVCHHVDl8KuHQXfKXVstrHjhEhigO76il
-	 MSUFFfEe+rLW+Pu1Q0zW7M0kmEm8U4GFUc6FJTFoHECxNmqkeOi68Asn68+28SFIv8
-	 4KnJHjIJ9OH/HJwmJnt7g6H0ixQdJ+I31IZqEEdBg3bzlpsczzRGKDo/6gR+qSGWYl
-	 UfufLfmEwYdv1r6N067g4pprOFflII01SYY7irL5lvwYeAL1qU+spxmvxWtdjupgGk
-	 XBcwdTBFBDqrpazfshU4Dz9GgJvvqRG6QI62kN2AdOwHve/8lLtJxtrACWyH9HQckY
-	 OjXJlgD9RFAXA==
+	b=1P9ocK4eGI52jzosgA+z+ju3Jq9T1ptgCWcaH4Y5lYPLmwnlvJ0uGn7DX6WITF//O
+	 4SUqi2oTeHOQSAGN132xjfDdJlOCB0e0pGNdQC4FKgMWpBJKpx8B83/RNovpsnLLYO
+	 kjOYZS9LvcyFqib9+sRW+GxmFzXtV/RmX9JFbFd3fPgG3BLA0cqbCmmmuPKpofIP0K
+	 DjQWXPhxXCV/AHeANluMx067wBcKmWVhCl3zHfxa/Q5536fmxNlmI/0nyuJoK/L4zc
+	 sjoow8FkJydzL3HOFRnByHESOsioA7hTQ+R+rd/Cu2XnjvpyNKfRrJ/Fyf5Q/KDGQK
+	 COtzO1flgcguA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 566C540B3C;
-	Fri,  4 Sep 2026 18:12:41 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 2D7BA463
+	by smtp1.osuosl.org (Postfix) with ESMTP id 49EEF8115C;
+	Fri,  4 Sep 2026 18:12:42 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 46132463
  for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Sep 2026 18:12:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 13E6660B6C
+ by smtp2.osuosl.org (Postfix) with ESMTP id 2C65D40143
  for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Sep 2026 18:12:39 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 40J_1sEF1G0s for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 5O98wnLt-pfv for <intel-wired-lan@lists.osuosl.org>;
  Fri,  4 Sep 2026 18:12:38 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org C46DB6070F
-Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=198.175.65.11
+ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org B894F404ED
+Authentication-Results: smtp2.osuosl.org; arc=none smtp.remote-ip=198.175.65.11
 ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1788545558;
- b=LoeHeq741IXSmHRP76D8tjjCJwzyJgNdc3wjKD5cvGoAFvkfi2s8ffu5dYHa04iC2emY
- Oj/p6NKeYa/wWoPJvw/sRooZxC9ex23GxR30OqiMXJJrY8eK4R1lm5ex6B4HoztHMHjo4
- dUZBVUYFkNwNCKoNCM/puXpHIZq58JSWiaqg4oY8Ocv+XM8vAZ9GYNU5BlkZeQ18+Ssp8
- dh0yZPlMIPUd6RepKuTnVc2ncSBCue+xOzqE9gQNzKHsAJ6qUJmwBxofodDgvn0UBseT7
- DgNsET74HtdISMtfm/tVP233SHpy+tvOT03Gnexn30aIDMyHb/sRsJdyW1fuNavSrKw==
+ b=fEmjwUA/46+MET8MVXWjLtinuEDYJPp/WpTEkhQlfbSNLDyaChyAbLsUV8lTbZovdHfT
+ XW9r7PInFsekDoPzRiuwuclnk7y1SZxN/FYKu8atRKTvibHTh/Bf/mQ3y0jbA9D8wdKcA
+ 9mG7ynyHWkpa29rB1XcBoDW+Ibw7So2tStOR4/0XDIMcjJny3CYCqml53wDkeQM2bjYnE
+ sxGYh/iB4IBuiAXHUH/ZzAfPRCABXfIAsMz78Qfqrc4oAoQyClaW9EcxtdvFkCBBugxAs
+ MOOI6owRBtQ+oTsXfb6UYwPA1XavvgFj52GbD3kZ+dSB4dHDFMg+AwnuYUGJwSaQa0A==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
  c=relaxed/relaxed; t=1788545558;
  h=Received-SPF:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
@@ -81,59 +81,59 @@ ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
  X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:From:To:Cc:Subject:
  Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
  Content-Transfer-Encoding;
- bh=R7V/eoU+rd64ycrGvlsAM6ncuvv4vVdxeflSSHRexVM=;
- b=aIn0d4PHJXO8sXxKwRxkascCSwNmn/OZMpji9pK9bXoQQSBiEOJEiPYc3NO8Z0WE6H0T
- X5IqSqrbdVW3e7PTquKqHzubI85gLnfor0MKG8+Y4pVIQngRm2eoSdWM9OYPhQUOfdY5O
- Mn50u8L/8rat5FcBu+jrLqhaDIQT1NmyYyGrxabrtY0TKuXcNyGe73Il3gvGpL6/PCVZt
- MMyzz3wVPzr+hF0A4rCO3VAVozlu8n5JXqTNvdP7nxcWFabDbW4CllZhRSTlj1u2b6yls
- WGrrL2NLwowPkeei4NriIr0Ttd3VEulFT0m8JXbr1Wk7Cp69dfiDmzgMW/HBlfDt0IQ==
-ARC-Authentication-Results: i=1; smtp3.osuosl.org;
+ bh=86X2LJWgXDDnh5tB63KEqi6VB1eOXzHmxO/FyeCZmck=;
+ b=CN7/y5D60I+4sx/scIccfFYh7DXZj1tTM0v9unoMo5Nn47eQPAxT5dOUIoCdGtYaTeAE
+ 4g8V1OGEztMEfE2qKc69nW1XI5/QOVExVGHOHlqNPdCXsGcA+2rK0g5UAhN6FiaZK8+k6
+ lYcYuu7GBdjkIjWPSgqryc/lUV8sYqGwkaiGTG2z+ZvO+nCGkT3RE6kq5XgZfT6mDRI6C
+ xLbBWkAvgbola9nVDLfaplekLoFDqqjZdfHJG/1+5/E4N8wMRvJ04m1HjNCZ1UcKeV5Lp
+ Eqm2UGxqoUvNKtWX1A05AxIUaiHw8OXnCtjKz0Gy3FDJw1FyKH4tX4n5MnGOfSPRk6g==
+ARC-Authentication-Results: i=1; smtp2.osuosl.org;
  dmarc=pass header.from=intel.com; 
  dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=R8qsM1wz; 
+ header.s=Intel header.b=eatKBhG9; 
  arc=none smtp.remote-ip=198.175.65.11
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.11;
  helo=mgamail.intel.com; envelope-from=paul.greenwalt@intel.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp3.osuosl.org;
+Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=R8qsM1wz
+Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=eatKBhG9
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
- by smtp3.osuosl.org (Postfix) with ESMTPS id C46DB6070F
+ by smtp2.osuosl.org (Postfix) with ESMTPS id B894F404ED
  for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Sep 2026 18:12:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
  t=1788545558; x=1820081558;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=reSAekbHuAUa0dhMe++2/gB99tKjcz+T+Y3IlWVe9Xk=;
- b=R8qsM1wzQvaJvQ+M3WdPrzqXg8+0B61SfPXXJNk1/L2ztnobFWeDjUbw
- N36bzCfrPwc5SwUjR4fCG9AiOIYGAnqAbPiWJT6bW6IGrEyEFOooJsUBX
- SyNAuSkT8Sc72x6xNlf5ieINk4/94d69pUJ1wsnzrJX8cFE6F2pZ0aHqs
- WWfHSeo9WjeCJgi8TsHyO2tibZzlWBMghDKCID+ySy6sxklJwUrP1wLKa
- VUTw7lDt4fJTiSd9/1V1ZOhOJUBObBTuxkubSO37m3BPGoIU/rHqSXnD6
- k++rXzOMUgBc2hdgTWnt2ATiYq/uTI1FPNpe9fN+wrVBiVhedcotRTxMc g==;
-X-CSE-ConnectionGUID: Zj48ftq3Qsyal1fFPWs0PA==
-X-CSE-MsgGUID: wTAvExukQ8iWbsX8XIYDaQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11896"; a="99385444"
-X-IronPort-AV: E=Sophos;i="6.25,262,1779174000"; d="scan'208";a="99385444"
+ bh=PLNtNGBPOMpXrI4Qsal6HG6ABaucAPG5u+Pmymgvlu4=;
+ b=eatKBhG9kxvHf20bHPLDTCd99w0ZzyMROiC7+mUknXKkx2cz19PUlr1e
+ sDcp7uHBG0jDTPo2VGKxeuiq4T0lKoW69V34zedgQ8Z1FzX/cnyxPPPKA
+ 5Y747MsxQMXyMPQXe9gXZ8mzlUtM5nFJw6dVAN5l1J9k5WAP8XDmOkgS+
+ giMEllBKh0iF5xY/CInuBKTJSi7myJ/k/EgJl7wyX3iOdeC8bc2EuWc7X
+ ia691bbHGLBCHOBpSh9GlAtSgLgS7gJfxzBc/9VlFXDpsSqoGUZNtD3w1
+ ANqGjtzEQ+5+iiWEKyIL5+yqBmrC5VaaXEQtLuEIpAhJdDrI50jLNv0K6 w==;
+X-CSE-ConnectionGUID: miFFRriSRue4UROXHFnEBQ==
+X-CSE-MsgGUID: frSQgnq1RW+pGsXW21Hdjg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11896"; a="99385445"
+X-IronPort-AV: E=Sophos;i="6.25,262,1779174000"; d="scan'208";a="99385445"
 Received: from orviesa008.jf.intel.com ([10.64.159.148])
  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  04 Sep 2026 11:12:38 -0700
-X-CSE-ConnectionGUID: l/tLKz8qSFOMT+JKLQ+/MA==
-X-CSE-MsgGUID: utWEvnvnT3G3TmSMZG6AfQ==
+X-CSE-ConnectionGUID: w/ZzishxScGQlC1DBlwsoQ==
+X-CSE-MsgGUID: VNOR31aXSwu9hLZ67QCcxA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,262,1779174000"; d="scan'208";a="269577552"
+X-IronPort-AV: E=Sophos;i="6.25,262,1779174000"; d="scan'208";a="269577558"
 Received: from unknown (HELO fedora.jf.intel.com) ([10.166.5.147])
- by orviesa008.jf.intel.com with ESMTP; 04 Sep 2026 11:12:36 -0700
+ by orviesa008.jf.intel.com with ESMTP; 04 Sep 2026 11:12:37 -0700
 From: Paul Greenwalt <paul.greenwalt@intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: Paul Greenwalt <paul.greenwalt@intel.com>
-Subject: [PATCH iwl-next v3 2/3] idpf: add devlink support
-Date: Fri,  4 Sep 2026 06:37:13 -0400
-Message-ID: <20260904103714.978256-3-paul.greenwalt@intel.com>
+Subject: [PATCH iwl-next v3 3/3] selftests: net: hw: add devlink info test
+Date: Fri,  4 Sep 2026 06:37:14 -0400
+Message-ID: <20260904103714.978256-4-paul.greenwalt@intel.com>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <20260904103714.978256-1-paul.greenwalt@intel.com>
 References: <20260904103714.978256-1-paul.greenwalt@intel.com>
@@ -153,350 +153,228 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-Add a devlink instance for the idpf adapter and implement the .info_get
-callback, reporting:
-  - serial_number: PCI Device Serial Number, for device identification
-  - fw.mgmt.api: running version of the driver-device communication
-    channel (virtchnl)
+Add a selftest that logs the device information a driver reports through
+the devlink info interface: the driver name, serial numbers and every
+reported version, in the format NIPA CI consumes for device regression
+tracking. This helps maintainers identify pass/fail status changes
+caused by FW updates.
 
-This enables NIPA CI and other tools to uniquely identify devices under
-test and track device capabilities. This phased implementation initially
-focuses on stable, readily available information. Firmware version
-information will be added in future patches as support is exposed
-through virtchnl and the driver architecture allows reliable retrieval.
+Every devlink info field is optional, so the test reports what a device
+provides rather than requiring any particular field. devlink reports the
+driver name for every registered instance, even when the driver does not
+implement info_get, so a device that reports no versions and no serial
+number is skipped, as are devices with no devlink instance. Whether the
+driver name itself appears in the JSON depends on the installed
+iproute2, so it is logged when present but not required.
 
-The adapter structure is carved out of the devlink private area, so
-devlink_alloc() replaces the plain kzalloc_obj() in idpf_probe() and
-devlink_free() replaces the corresponding kfree() on both the probe
-error path and in idpf_remove(). The instance is registered in
-idpf_probe(), before the reset worker that performs the virtchnl
-handshake is queued, and unregistered in idpf_remove(), so it stays
-available for the whole time the driver is bound.
+The devlink 'driver' attribute names the driver bound to the parent
+device, which may legitimately differ from the netdev's ethtool driver -
+mlx4 reports mlx4_core and mlx4_en, and DSA user ports report dsa - so a
+difference is logged rather than failed. ethtool is only used for an
+optional fallback handle lookup and that comparison, so it is not
+required to run the test.
 
-The serial number is omitted on devices that do not implement the PCI
-Device Serial Number extended capability, where pci_get_dsn() returns 0,
-rather than reporting an all-zero serial number. The virtchnl version is
-omitted until it has been negotiated, as the instance is registered
-before the handshake runs.
+NETIF is read from the environment or from drivers/net/net.config as
+described in drivers/net/README.rst. net.config is sourced before
+net/lib.sh so that it cannot clobber the framework's globals. The test
+needs only a single local interface, so it sources net/lib.sh rather
+than the forwarding library, which requires NUM_NETIFS and a configured
+remote host.
 
-$ devlink dev show
-pci/0000:85:00.0
+Example usage:
 
-$ devlink dev info pci/0000:85:00.0
-pci/0000:85:00.0:
-  driver idpf
-  serial_number 00-a0-c9-ff-ff-23-45-67
-  versions:
-      running:
-        fw.mgmt.api 2.0
+  NETIF=eth0 ./tools/testing/selftests/drivers/net/hw/devlink_info.sh
+
+  INFO: driver: idpf
+  INFO: serial_number: 00-a0-c9-ff-ff-23-45-67
+  INFO: fw.mgmt.api (running): 2.0
+  TEST: devlink info                                                  [ OK ]
 
 Link: https://github.com/linux-netdev/nipa/wiki/Netdev-CI-system#device-information
 Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
+Assisted-by: Claude:claude-opus-5
 ---
- Documentation/networking/devlink/idpf.rst     | 30 ++++++
- Documentation/networking/devlink/index.rst    |  1 +
- drivers/net/ethernet/intel/idpf/Kconfig       |  1 +
- drivers/net/ethernet/intel/idpf/Makefile      |  1 +
- .../net/ethernet/intel/idpf/idpf_devlink.c    | 98 +++++++++++++++++++
- .../net/ethernet/intel/idpf/idpf_devlink.h    | 45 +++++++++
- drivers/net/ethernet/intel/idpf/idpf_main.c   | 13 ++-
- 7 files changed, 186 insertions(+), 3 deletions(-)
- create mode 100644 Documentation/networking/devlink/idpf.rst
- create mode 100644 drivers/net/ethernet/intel/idpf/idpf_devlink.c
- create mode 100644 drivers/net/ethernet/intel/idpf/idpf_devlink.h
+ .../testing/selftests/drivers/net/hw/Makefile |   1 +
+ .../selftests/drivers/net/hw/devlink_info.sh  | 158 ++++++++++++++++++
+ 2 files changed, 159 insertions(+)
+ create mode 100755 tools/testing/selftests/drivers/net/hw/devlink_info.sh
 
-diff --git a/Documentation/networking/devlink/idpf.rst b/Documentation/networking/devlink/idpf.rst
-new file mode 100644
-index 0000000000000..5121cffd8f476
+diff --git a/tools/testing/selftests/drivers/net/hw/Makefile b/tools/testing/selftests/drivers/net/hw/Makefile
+index 78bb0169350b2..edd353f27a396 100644
+--- a/tools/testing/selftests/drivers/net/hw/Makefile
++++ b/tools/testing/selftests/drivers/net/hw/Makefile
+@@ -19,6 +19,7 @@ TEST_GEN_FILES := \
+ 
+ TEST_PROGS = \
+ 	csum.py \
++	devlink_info.sh \
+ 	devlink_rate_cross_esw.py \
+ 	devlink_rate_tc_bw.py \
+ 	devmem.py \
+diff --git a/tools/testing/selftests/drivers/net/hw/devlink_info.sh b/tools/testing/selftests/drivers/net/hw/devlink_info.sh
+new file mode 100755
+index 0000000000000..7516297b27d80
 --- /dev/null
-+++ b/Documentation/networking/devlink/idpf.rst
-@@ -0,0 +1,30 @@
-+.. SPDX-License-Identifier: GPL-2.0
++++ b/tools/testing/selftests/drivers/net/hw/devlink_info.sh
+@@ -0,0 +1,158 @@
++#!/bin/bash
++# SPDX-License-Identifier: GPL-2.0
++#
++# Test devlink info support
++#
++# This test logs the device information a driver reports through the devlink
++# info interface, in the format NIPA CI consumes for regression tracking (see
++# the Device information section at
++# https://github.com/linux-netdev/nipa/wiki/Netdev-CI-system).
++#
++# Implementing devlink info is optional, so a device whose driver reports no
++# versions and no serial number is skipped rather than failed.
++#
++# Usage:
++#   NETIF=eth0 ./devlink_info.sh
 +
-+====================
-+idpf devlink support
-+====================
++ALL_TESTS="devlink_info_test"
 +
-+This document describes the devlink features implemented by the ``idpf``
-+device driver.
++lib_dir=$(dirname "$0")
 +
-+Info versions
-+=============
++# NETIF may also be provided through drivers/net/net.config, as documented in
++# drivers/net/README.rst. Source it before lib.sh so that a stray assignment
++# cannot clobber the framework's globals.
++if [[ -z "$NETIF" && -f "$lib_dir/../net.config" ]]; then
++	source "$lib_dir/../net.config"
++fi
 +
-+The ``idpf`` driver reports the following versions
++source "$lib_dir"/../../../net/lib.sh
 +
-+.. list-table:: devlink info versions implemented
-+    :widths: 5 5 5 90
++require_command devlink
++require_command jq
 +
-+    * - Name
-+      - Type
-+      - Example
-+      - Description
-+    * - ``fw.mgmt.api``
-+      - running
-+      - 2.0
-+      - 2-digit version number (major.minor) of the communication channel
-+        (virtchnl) used by the device.
++DL_HANDLE=
++DL_INFO=
 +
-+The driver also reports the PCI Device Serial Number through the
-+``serial_number`` attribute, on devices that implement the PCI Device Serial
-+Number extended capability.
-diff --git a/Documentation/networking/devlink/index.rst b/Documentation/networking/devlink/index.rst
-index d4a83fdcff7fe..538494b1051bd 100644
---- a/Documentation/networking/devlink/index.rst
-+++ b/Documentation/networking/devlink/index.rst
-@@ -85,6 +85,7 @@ parameters, info versions, and other features it supports.
-    hns3
-    i40e
-    ice
-+   idpf
-    ionic
-    iosm
-    ixd
-diff --git a/drivers/net/ethernet/intel/idpf/Kconfig b/drivers/net/ethernet/intel/idpf/Kconfig
-index 586df3a4afe90..4ee8bbc401fe6 100644
---- a/drivers/net/ethernet/intel/idpf/Kconfig
-+++ b/drivers/net/ethernet/intel/idpf/Kconfig
-@@ -6,6 +6,7 @@ config IDPF
- 	depends on PCI_MSI
- 	depends on PTP_1588_CLOCK_OPTIONAL
- 	select DIMLIB
-+	select NET_DEVLINK
- 	select LIBIE_CP
- 	select LIBETH_XDP
- 	help
-diff --git a/drivers/net/ethernet/intel/idpf/Makefile b/drivers/net/ethernet/intel/idpf/Makefile
-index 4aaafa175ec37..81b27a4067478 100644
---- a/drivers/net/ethernet/intel/idpf/Makefile
-+++ b/drivers/net/ethernet/intel/idpf/Makefile
-@@ -7,6 +7,7 @@ obj-$(CONFIG_IDPF) += idpf.o
- 
- idpf-y := \
- 	idpf_dev.o		\
-+	idpf_devlink.o		\
- 	idpf_ethtool.o		\
- 	idpf_idc.o		\
- 	idpf_lib.o		\
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_devlink.c b/drivers/net/ethernet/intel/idpf/idpf_devlink.c
-new file mode 100644
-index 0000000000000..afdb5bc2e002c
---- /dev/null
-+++ b/drivers/net/ethernet/intel/idpf/idpf_devlink.c
-@@ -0,0 +1,98 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/* Copyright (C) 2026 Intel Corporation */
-+
-+#include <linux/pci.h>
-+#include <linux/unaligned.h>
-+
-+#include "idpf.h"
-+#include "idpf_devlink.h"
-+
-+#define IDPF_DEVLINK_INFO_LEN		128
-+
-+/**
-+ * idpf_info_get_dsn - format the PCI DSN as the device serial number
-+ * @adapter: the idpf adapter structure
-+ * @buf: buffer to store the formatted serial number
-+ * @buf_size: size of @buf
-+ *
-+ * Return: true if the device reports a DSN, false otherwise.
-+ */
-+static bool idpf_info_get_dsn(struct idpf_adapter *adapter, char *buf,
-+			      size_t buf_size)
++setup_prepare()
 +{
-+	u64 dsn = pci_get_dsn(adapter->pdev);
-+	u8 dsn_be[sizeof(dsn)];
++	local err
 +
-+	if (!dsn)
-+		return false;
++	if [[ -z "$NETIF" ]]; then
++		log_test_skip "devlink info" "NETIF is not configured"
++		exit "$EXIT_STATUS"
++	fi
 +
-+	/* Copy the DSN into an array in Big Endian format */
-+	put_unaligned_be64(dsn, dsn_be);
-+	snprintf(buf, buf_size, "%8phD", dsn_be);
++	# Try to get the devlink handle from the devlink port first.
++	DL_HANDLE=$(devlink -j port show 2>/dev/null |
++		jq -r --arg netif "$NETIF" \
++			'.port | to_entries[] |
++			 select(.value.netdev == $netif) | .key' 2>/dev/null |
++		head -n 1 |
++		cut -d/ -f1-2)
 +
-+	return true;
++	# Fall back to the PCI address reported by ethtool. Devices on other
++	# buses are only found through the devlink port lookup above.
++	if [[ -z "$DL_HANDLE" ]] && command -v ethtool >/dev/null; then
++		local bus_info
++
++		bus_info=$(ethtool -i "$NETIF" 2>/dev/null |
++			awk '/^bus-info:/ {print $2}')
++		if [[ -n "$bus_info" ]] &&
++		   devlink dev show "pci/$bus_info" &>/dev/null; then
++			DL_HANDLE="pci/$bus_info"
++		fi
++	fi
++
++	if [[ -z "$DL_HANDLE" ]]; then
++		log_test_skip "devlink info" "no devlink handle for $NETIF"
++		exit "$EXIT_STATUS"
++	fi
++
++	# Query once so that a single snapshot is validated throughout.
++	DL_INFO=$(devlink -j dev info "$DL_HANDLE" 2>/dev/null)
++	err=$?
++	if ((err)); then
++		log_test_skip "devlink info" "devlink dev info failed for $DL_HANDLE"
++		exit "$EXIT_STATUS"
++	fi
 +}
 +
-+/**
-+ * idpf_devlink_info_get - .info_get devlink handler
-+ * @devlink: devlink instance structure
-+ * @req: the devlink info request
-+ * @extack: extended netlink ack structure
-+ *
-+ * Callback for the devlink .info_get operation. Reports information about the
-+ * device. The virtchnl version is only reported once it has been negotiated,
-+ * as the instance is registered before the handshake runs.
-+ *
-+ * Return: zero on success or a negative error code on failure.
-+ */
-+static int idpf_devlink_info_get(struct devlink *devlink,
-+				 struct devlink_info_req *req,
-+				 struct netlink_ext_ack *extack)
++# jq's "// empty" maps a missing or null field to no output, so callers get an
++# empty string rather than the literal text "null".
++info_get()
 +{
-+	struct idpf_adapter *adapter = devlink_priv(devlink);
-+	char buf[IDPF_DEVLINK_INFO_LEN];
-+	u32 maj, min;
-+	int err;
++	local name=$1
 +
-+	if (idpf_info_get_dsn(adapter, buf, sizeof(buf))) {
-+		err = devlink_info_serial_number_put(req, buf);
-+		if (err)
-+			return err;
-+	}
-+
-+	maj = READ_ONCE(adapter->virt_ver_maj);
-+	min = READ_ONCE(adapter->virt_ver_min);
-+	if (!maj && !min)
-+		return 0;
-+
-+	snprintf(buf, sizeof(buf), "%u.%u", maj, min);
-+
-+	return devlink_info_version_running_put(req,
-+					DEVLINK_INFO_VERSION_GENERIC_FW_MGMT_API,
-+					buf);
++	jq -r --arg name "$name" '.[][][$name] // empty' <<<"$DL_INFO"
 +}
 +
-+static const struct devlink_ops idpf_devlink_ops = {
-+	.info_get = idpf_devlink_info_get,
-+};
-+
-+/**
-+ * idpf_adapter_alloc - allocate devlink and return adapter
-+ * @dev: IDPF device to allocate for
-+ *
-+ * Allocate a devlink instance for this device and return the private area as
-+ * the adapter structure.
-+ *
-+ * Return: adapter structure on success, NULL on failure
-+ */
-+struct idpf_adapter *idpf_adapter_alloc(struct device *dev)
++log_versions()
 +{
-+	struct devlink *devlink;
++	local versions line
 +
-+	devlink = devlink_alloc(&idpf_devlink_ops, sizeof(struct idpf_adapter),
-+				dev);
-+	if (!devlink)
-+		return NULL;
++	versions=$(jq -r '.[][].versions // {} | to_entries[] | .key as $type |
++			  .value | to_entries[] |
++			  "\(.key) (\($type)): \(.value)"' <<<"$DL_INFO" \
++			  2>/dev/null)
 +
-+	return devlink_priv(devlink);
-+}
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_devlink.h b/drivers/net/ethernet/intel/idpf/idpf_devlink.h
-new file mode 100644
-index 0000000000000..3ace09be8dddf
---- /dev/null
-+++ b/drivers/net/ethernet/intel/idpf/idpf_devlink.h
-@@ -0,0 +1,45 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/* Copyright (C) 2026 Intel Corporation */
-+
-+#ifndef _IDPF_DEVLINK_H_
-+#define _IDPF_DEVLINK_H_
-+#include <net/devlink.h>
-+
-+struct idpf_adapter;
-+
-+struct idpf_adapter *idpf_adapter_alloc(struct device *dev);
-+
-+/**
-+ * idpf_devlink_free - teardown the devlink
-+ * @adapter: IDPF adapter structure to free
-+ */
-+static inline void idpf_devlink_free(struct idpf_adapter *adapter)
-+{
-+	struct devlink *devlink = priv_to_devlink(adapter);
-+
-+	devlink_free(devlink);
++	while IFS= read -r line; do
++		[[ -n "$line" ]] && log_info "$line"
++	done <<<"$versions"
 +}
 +
-+/**
-+ * idpf_devlink_register - register the devlink
-+ * @adapter: IDPF adapter structure
-+ */
-+static inline void idpf_devlink_register(struct idpf_adapter *adapter)
++has_any_version()
 +{
-+	struct devlink *devlink = priv_to_devlink(adapter);
-+
-+	devlink_register(devlink);
++	jq -e '.[][].versions // {} | [.[] | to_entries[]] | length > 0' \
++		<<<"$DL_INFO" &>/dev/null
 +}
 +
-+/**
-+ * idpf_devlink_unregister - unregister the devlink
-+ * @adapter: IDPF adapter structure
-+ */
-+static inline void idpf_devlink_unregister(struct idpf_adapter *adapter)
++devlink_info_test()
 +{
-+	struct devlink *devlink = priv_to_devlink(adapter);
++	RET=0
 +
-+	devlink_unregister(devlink);
++	local driver serial board_serial
++
++	driver=$(info_get "driver")
++	serial=$(info_get "serial_number")
++	board_serial=$(info_get "board.serial_number")
++
++	# devlink reports the driver name for every registered instance, even
++	# when the driver does not implement info_get. Everything else is
++	# optional, so a device with nothing further to report is not a
++	# failure.
++	if ! has_any_version && [[ -z "$serial" && -z "$board_serial" ]]; then
++		log_test_skip "devlink info" "no info reported for $DL_HANDLE"
++		return
++	fi
++
++	# Whether the driver name appears in the JSON depends on the installed
++	# iproute2, so report it when present but do not require it.
++	[[ -n "$driver" ]] && log_info "driver: $driver"
++
++	# devlink names the driver bound to the parent device, which can
++	# legitimately differ from the netdev's ethtool driver, so report a
++	# difference without failing.
++	if command -v ethtool >/dev/null; then
++		local ethtool_driver
++
++		ethtool_driver=$(ethtool -i "$NETIF" 2>/dev/null |
++			awk '/^driver:/ {print $2}')
++		if [[ -n "$driver" && -n "$ethtool_driver" &&
++		      "$driver" != "$ethtool_driver" ]]; then
++			log_info "driver mismatch: devlink='$driver' ethtool='$ethtool_driver'"
++		fi
++	fi
++
++	[[ -n "$serial" ]] && log_info "serial_number: $serial"
++	[[ -n "$board_serial" ]] && log_info "board.serial_number: $board_serial"
++
++	log_versions
++
++	log_test "devlink info"
 +}
 +
-+#endif /* _IDPF_DEVLINK_H_ */
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_main.c b/drivers/net/ethernet/intel/idpf/idpf_main.c
-index 3dbbe21459990..34a69bb2e36bc 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_main.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_main.c
-@@ -3,6 +3,7 @@
- 
- #include "idpf.h"
- #include "idpf_devids.h"
-+#include "idpf_devlink.h"
- #include "idpf_lan_vf_regs.h"
- #include "idpf_virtchnl.h"
- 
-@@ -127,12 +128,15 @@ static void idpf_remove(struct pci_dev *pdev)
- 
- 	set_bit(IDPF_REMOVE_IN_PROG, adapter->flags);
- 
-+	idpf_devlink_unregister(adapter);
++setup_prepare
 +
- 	/* Wait until vc_event_task is done to consider if any hard reset is
- 	 * in progress else we may go ahead and release the resources but the
- 	 * thread doing the hard reset might continue the init path and
- 	 * end up in bad state.
- 	 */
- 	cancel_delayed_work_sync(&adapter->vc_event_task);
++tests_run
 +
- 	if (adapter->num_vfs)
- 		idpf_sriov_configure(pdev, 0);
- 
-@@ -184,7 +188,8 @@ static void idpf_remove(struct pci_dev *pdev)
- 	mutex_destroy(&adapter->vc_buf_lock);
- 
- 	idpf_decfg_device(adapter);
--	kfree(adapter);
-+
-+	idpf_devlink_free(adapter);
- }
- 
- /**
-@@ -263,7 +268,7 @@ static int idpf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	struct idpf_adapter *adapter;
- 	int err;
- 
--	adapter = kzalloc_obj(*adapter);
-+	adapter = idpf_adapter_alloc(dev);
- 	if (!adapter)
- 		return -ENOMEM;
- 
-@@ -349,6 +354,8 @@ static int idpf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	INIT_DELAYED_WORK(&adapter->stats_task, idpf_statistics_task);
- 	INIT_DELAYED_WORK(&adapter->vc_event_task, idpf_vc_event_task);
- 
-+	idpf_devlink_register(adapter);
-+
- 	adapter->dev_ops.reg_ops.reset_reg_init(adapter);
- 	set_bit(IDPF_HR_DRV_LOAD, adapter->flags);
- 	queue_delayed_work(adapter->vc_event_wq, &adapter->vc_event_task,
-@@ -367,7 +374,7 @@ static int idpf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- err_init_wq:
- 	idpf_decfg_device(adapter);
- err_free:
--	kfree(adapter);
-+	idpf_devlink_free(adapter);
- 	return err;
- }
- 
++exit "$EXIT_STATUS"
 -- 
 2.52.0
 
