@@ -4,136 +4,137 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5ED89C624DB
-	for <intel-wired-lan@archiver.kernel.org>; Sun,  6 Sep 2026 02:33:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A8A0AC79F99
+	for <intel-wired-lan@archiver.kernel.org>; Sun,  6 Sep 2026 08:50:53 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id ED18580DCF;
-	Sun,  6 Sep 2026 02:33:50 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 57F9780BF3;
+	Sun,  6 Sep 2026 08:50:53 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id BnBZZS1H8im7; Sun,  6 Sep 2026 02:33:50 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 1720780E94
+ id Xf5zCSacO6x6; Sun,  6 Sep 2026 08:50:52 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org B0DA480D2C
 Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1788662030;
-	b=TzKx8s5MyviM5qwvu+SeY5nDcyrflfHxqn+T5K73pH9vsph5n2Cj6PZJal/mzibHBdSU
-	 UMpKxyT5MmCWuCJ/nV/vPGf9T8gw6QZRpe6cX8+ZItJoACz+kDmOW9fK6pcyFpDA9KaVa
-	 tTVIVsK+/gAA9X9GBtiU4dehP3/jkHbaynQeOOjETDaMDk7lmOavhhHKbIYqNjFvknFmN
-	 699VIWJ5ZrLMRfffqmXep9cV1VO1Oooz7+zCy9iNSjNM0s59JWUiYxs3EOFJlmIrXAgM4
-	 ehTMRoFu9LokxZ4G/fMfKc8NQFdC5EURiNomvIkl86leXV0+WGYBAGOtc0AT3crMFsw==
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1788684652;
+	b=Pf3xe331Y0wGkZhRHX2TLDC2jQ1QPmqVqjCSPtr3d9FrqSwMhhJyiQt2WJ5NKHCVHxPi
+	 FLWMWvJoIuHiC4tCBKO8M0hAsZObEdC5SOOQsBczCIUFVOW1Rdpoe+ZF+4rZTO8qFeWyE
+	 9v5UJxC1Bo/fULUWr5PKzfuYQ39TiqjiyRuzvvlwhrVcxfIcTiP5arRcJP4QNSJ1NDVGU
+	 fsH6y5AgdWpSCTRtHOusdbdZxQLSC9NnfqsbUXaM9EUuaRmfJwDApZdg3bAfM1JzP5REw
+	 A9hveZBFAn8fAaRofGcufqBAl4PF7BaYc9aNUz/AJYMWCZBzMfTz5sLsWjmSnXZ8rug==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1788662030;
+	c=relaxed/relaxed; t=1788684652;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 X-Zone-Loop:X-Originating-IP:DKIM-Signature:From:To:Cc:Subject:Date:
-	 Message-ID:MIME-Version:Content-Transfer-Encoding:X-Authenticated-Id:
-	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
-	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=e/Kfiw3qaXMLZ0W+h5i+dWrr+6v+H5PFs6MwMeazqFo=;
-	b=DTKhEpjPzMjAjrsK5w8JXTHedl7h58j2H/E1//dbzJKl1fo+wqGCnb8Ft2b98678Va2e
-	 I4iFlLhRh+PPRh6PsPED1ikZn8f/NK4J1QmNaUXAeq2vwYgoXNFvf/yd5zggqu1tST5U5
-	 5WLY3GKJiGOww7tZPofh35Kun04W0I8bEhWp5MwAV8h1K8t/BzvAk8h/YeAfqeAMQ0x/o
-	 rpdVXhWo3gpJptkHW3esti0qIijBgmts/cyOhtlKqQNUEnzpaYR/WgPtn5N7rFjkPK1H3
-	 mVcQoEjPoigCGkZP47958+WEs+g+ePVqNq2ea90kYkkFmWjCBzre7gn+Wj7R+8lfMQw==
-ARC-Authentication-Results: i=2; smtp1.osuosl.org; dmarc=pass header.from=wii.dev;
-	dkim=pass header.d=wii.dev header.i=@wii.dev header.a=rsa-sha256 header.s=x header.b=Vvkmx+dy;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	 Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:References:
+	 MIME-Version:Content-Type:Content-Disposition:In-Reply-To:X-BeenThere:
+	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Errors-To;
+	bh=0id2YY5pP9gAEYb7cM3kFahfETFF3hnWLbjOK24RpHQ=;
+	b=UUbD2aeHa7Mzxq2r3fVqHuh4VJMfztFZY57Ka+nG5r/JsL2e5DLxaohWx5t7nWpDK6Iq
+	 GTghManXrUOmn4cj4xTlDkLNjbsZbVglfPm9ipBo5WMiWulHNc2V321jSlDQM2HTaw6pX
+	 xEQiKaMnwiATygOsBjbadWqsVRFm7tcMB2zPfU4tdzIffc6zgni2Sep64YQ9JZ1rFiotc
+	 9xQCn8/n+djLf8Ju3s319+6r+dyfVEv7vKvOzzhPKkEeu70/o1/dVUFgjOwt9t3gRJfpA
+	 1y/J5YsYebffihvnxKKF9t31+szkHBGGCO/KqB9UMsF5/108RsPqIC0wyUMrW6b1uHQ==
+ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1788662030;
-	bh=e/Kfiw3qaXMLZ0W+h5i+dWrr+6v+H5PFs6MwMeazqFo=;
-	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=pLgsbaAWCogpkaBXGTmMc60WaUz+acWz0VbthD4ieV2XPZla7QGPHF7MlTCjfJ+/R
-	 xhlmey9RLrVR5dFIwOIAZP44xmT+jI89lZIj5HC21mEwrrLaiOCIKNmC2TGhwcwbK+
-	 BGPVEvtVCA8Ks/gKhVHu8NO1f/Cm36o7WeM8U3wpDvoEzlPqsUfFP2Y1E2XLTziyp9
-	 9xZ76u5NctO/Dcr1uG5c4PR/eeBpy6DJ1fHJUUMDgWbdbTnA51USOMwWZSHOIVGe4X
-	 IMHhsfH2bEOQGS2zUv+4EIfbla9EmI4qkdJjrB3Du7bSgL+EiYldJzvOOC96Tk3XPl
-	 oidgE+A+ETLjQ==
+	s=default; t=1788684652;
+	bh=0id2YY5pP9gAEYb7cM3kFahfETFF3hnWLbjOK24RpHQ=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=DMi/kcPPjNto888dLhXBvhD6nzcFDSjHsqY6gR8PDr7FKnd/rvN8G8gMs4IoYYaxe
+	 8g+AEp7EWYXnR15Rm+ZzBYhXv1uq6itppEikwqLAFGXBPkN01BPtE3ODeSM+vbIFJX
+	 Jao13yxK+zpwTJbRnQA+8Ggu/viQxP5nJLjjnPJgUy6Rb3p22EV7RBXthUeFtr5KhJ
+	 0g51bMWUiSX3pHuuDA5sfrqKukLTuY0R/wCOwIUXTIATVdMQcWds5UkUAp5VAywzlr
+	 mhDRv/68WwFljhnMlP+tDNF13NESV7t/NAgsnhRcJRNE9OhQoRwPJKlzsKzjzzaCaW
+	 56c2y1bQ4g7MA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 1720780E94;
-	Sun,  6 Sep 2026 02:33:50 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id EFE1A1134
- for <intel-wired-lan@lists.osuosl.org>; Sun,  6 Sep 2026 02:33:47 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id B0DA480D2C;
+	Sun,  6 Sep 2026 08:50:52 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id DFCEEA48
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  6 Sep 2026 08:50:50 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id CCE2880E94
- for <intel-wired-lan@lists.osuosl.org>; Sun,  6 Sep 2026 02:33:47 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id D1387405E6
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  6 Sep 2026 08:50:50 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id wKuHdpFtVsn9 for <intel-wired-lan@lists.osuosl.org>;
- Sun,  6 Sep 2026 02:33:47 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 80E2880DCF
-Authentication-Results: smtp1.osuosl.org;
- arc=none smtp.remote-ip=136.175.108.15
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1788662027;
- b=e/soyY3nPoQ90ahgKlLQc8qzx68lpe/OZJKzjCaI92RyjUA+UWM1eglLMcFv1POjHpT5
- fa36zWNIHJXIfvftmBhhHo3hZDJnIni7AmhIiO6HHTdejnoDJtUVnTsRg8AXrCZnd8xEz
- MmX21A4WKTI36WzqmIwFhK5fEr7dx8BiGKHZZCxAonRZrPswTri8x/bSQQPal13ICE+8v
- 4rDYnRSZGEU8kVfdErC8WMhtz+KdZA4QOAZcN7g4y7t7bzd+Ewgd8HqERWVgHBOk9BGVo
- tNPG2hYwZoyFaSTtkoVU693IH4qIDbP5mp8KSYNZ2MKrt/ss2Lp5diiy38g5ctdDIrg==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id BbQ4-Bv2ThsO for <intel-wired-lan@lists.osuosl.org>;
+ Sun,  6 Sep 2026 08:50:50 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 1B1B2405D8
+Authentication-Results: smtp4.osuosl.org; arc=none
+ smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1788684650;
+ b=ruNpRJhH8VW/HoM4mnPLLrhBmY3XhiRI7/pKjmKgnrtCrd8RWkQzEUU1z/GFGGcgBV0D
+ 9V6oiEH20tBpOt4NRFePIeyGqhxoa1DDQ8++IeRiXnHa69MOc6T1W3JURhrgsA1NoNJ3z
+ ACdpLPU/uuDHByEJUbWrUHNcKUWL+GMmlQqmuszq+9lObhkfLqsbRguSOg4QaoA0ZXPFG
+ uUghZBPFNUfTIvFc1kJ2miaiTYSg39turTRasvD244nEYYKrsUmIEtKZR9ZofXVJy8tij
+ rodKUqOK7kvhfVhTKCDXiRlxe3RRkszMNysoc42MxbmwF+78RCpUHj/1uo/eTjcuSIQ==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1788662027;
- h=Received-SPF:Received:X-Zone-Loop:X-Originating-IP:DKIM-Signature:
- From:To:Cc:Subject:Date:Message-ID:MIME-Version:
- Content-Transfer-Encoding:X-Authenticated-Id;
- bh=e/Kfiw3qaXMLZ0W+h5i+dWrr+6v+H5PFs6MwMeazqFo=;
- b=jFNjtzJf9F5CR/NwFuhLamXXqp4+kMPNxWwOTnIQkR6PqiSvhjT1wn1S4ta2XZB0AvBx
- vgik8st68niBLfzoNnUnsZz3U5rlwU7Z21zPEzBCdq8v2/WZXLRR3Liryh8S448tvatkk
- FvHw52c5XYA+pSkMx8/NBI5Hj4bJHuYmFUl+E6WIhvRopM111D44QsNE9ToX6pUDwJRqQ
- gQvVRJUenknFzIW2jFM/qcTKY08/rlswRPj/r061jetgGvPWwVJimi1KpDBfLlQH3Ft68
- huKYIiO3p6pF3DunYTT9UJFn+rEqtMEQgckaTsELY+/TCKqCYt2HAwzuzlz4HsJIHRw==
-ARC-Authentication-Results: i=1; smtp1.osuosl.org;
- dmarc=pass header.from=wii.dev; 
- dkim=pass header.d=wii.dev header.i=@wii.dev header.a=rsa-sha256 header.s=x
- header.b=Vvkmx+dy; 
- arc=none smtp.remote-ip=136.175.108.15
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=136.175.108.15;
- helo=mail-108-mta15.mxroute.com; envelope-from=ripatel@wii.dev;
- receiver=<UNKNOWN> 
-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=quarantine dis=none) header.from=wii.dev
-Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=wii.dev header.i=@wii.dev header.a=rsa-sha256 header.s=x
- header.b=Vvkmx+dy
-Received: from mail-108-mta15.mxroute.com (mail-108-mta15.mxroute.com
- [136.175.108.15])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 80E2880DCF
- for <intel-wired-lan@lists.osuosl.org>; Sun,  6 Sep 2026 02:33:45 +0000 (UTC)
-Received: from filter006.mxroute.com ([136.175.111.3] filter006.mxroute.com)
- (Authenticated sender: mN4UYu2MZsgR)
- by mail-108-mta15.mxroute.com (ZoneMTA) with ESMTPSA id 1a07490829f0002cd7.003
- for <intel-wired-lan@lists.osuosl.org>
- (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384);
- Sun, 06 Sep 2026 02:33:42 +0000
-X-Zone-Loop: 8c92b4127451424c7c13656f851079e622dff507acac
-X-Originating-IP: [136.175.111.3]
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=wii.dev;
- s=x; h=Content-Transfer-Encoding:MIME-Version:Message-ID:Date:Subject:Cc:To:
- From:Sender:Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:
- References:List-Id:List-Help:List-Unsubscribe:List-Subscribe:List-Post:
- List-Owner:List-Archive; bh=e/Kfiw3qaXMLZ0W+h5i+dWrr+6v+H5PFs6MwMeazqFo=; b=V
- vkmx+dyuTLamP4NC3lKOipgo6M4GKxgx0f4Dw94vA4r6AsJcZjuYUgAPv4bFzV9kyV2ktwvvLozvR
- YoRoV16IJsPIERhQeJ5CjATAdNkjUj0a8UExR1+P2RyeXBlrAK0vkH5qxP9RXya3y5GFHY7grJhQQ
- uaXnH4fC7U9tNjk0NpWp01VqENF7edkRhsiqXjx8vqnWj3L1YxlhlifM6IFAif21XDNXUdh5o5tf0
- sZXD+b44yfsy0GGEKTsg1jP5Dvvcfw4CMr2HYlugFNh5kG2DtnlquxP2qm5DSct58edpH4QBob3iQ
- 059mRTGkL5yr3fBAQ+wFsN/t93SMrceuQ==;
-From: Richard Patel <ripatel@wii.dev>
-To: intel-wired-lan@lists.osuosl.org
-Cc: Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew@lunn.ch>, Steve Douthit <stephend@silicom-usa.com>,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- Richard Patel <ripatel@wii.dev>
-Subject: [PATCH iwl-net v2] ixgbe: fix MDIO bus lifetime
-Date: Sun,  6 Sep 2026 02:33:19 +0000
-Message-ID: <20260906023319.1978945-1-ripatel@wii.dev>
+ c=relaxed/relaxed; t=1788684650;
+ h=Received-SPF:Received:Received:DKIM-Signature:Date:From:To:Cc:
+ Subject:Message-ID:References:MIME-Version:Content-Type:
+ Content-Disposition:In-Reply-To;
+ bh=0id2YY5pP9gAEYb7cM3kFahfETFF3hnWLbjOK24RpHQ=;
+ b=b3KTe7MiucGtx4Cbdi748BoVtUIzCdxpcbxJfF0BciPp+uttdYqODHMmEnlT481Kymi4
+ Ko5aX6vwJkJ62GiBpG2FMpdmCIgZqbtQxYlbBniRu6dsYs3BsNSY6KEi+ZzvD0C5xTbYR
+ dOjM/2acPiom4cf/aLRCan5pIDbmx5ZSyOcRME0ouJfB02nFdmH+O6qmUQDeOjrouIebB
+ YpobhHWIJKZjdgmtOmmeQLQ3DmRtu7epnF8MhfxemGtfRdbiMMBBzTsbYWnN60790dnA3
+ 7IwlUzi9DIjEqjOcpIxpy1lQVU+aOPtpKaL7hA5sGc0ySPUfo2yYYvmLbXEHxs85zlg==
+ARC-Authentication-Results: i=1; smtp4.osuosl.org;
+ dmarc=pass header.from=kernel.org; 
+ dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20260515 header.b=kdnF7prQ; 
+ arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
+ envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
+Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+Authentication-Results: smtp4.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20260515 header.b=kdnF7prQ
+Received: from tor.source.kernel.org (tor.source.kernel.org
+ [IPv6:2600:3c04:e001:324:0:1991:8:25])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 1B1B2405D8
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  6 Sep 2026 08:50:49 +0000 (UTC)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+ by tor.source.kernel.org (Postfix) with ESMTP id 4F4EC600AA;
+ Sun,  6 Sep 2026 08:50:47 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 25BE01F00A3A;
+ Sun,  6 Sep 2026 08:50:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+ s=k20260515; t=1788684646;
+ bh=0id2YY5pP9gAEYb7cM3kFahfETFF3hnWLbjOK24RpHQ=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To;
+ b=kdnF7prQ8zopDeyyKcLUegLUsYl9i/7Z0B0Z/bFghhmV2Jtbyj/E4IJ5P9UZoO3nW
+ M0lbYNeiprBfoX28//ylZBcpaKgCdPGNPS7C2oIIhVyLZ+xc+4i3d2U7Elq6yNwrHz
+ WVWPW8lcqnb3KQ1Dq6O85vLPElvFEESM5B3MQ/pL6v9FunfVyV/dTrl36bjM2WVQfB
+ ytYSuFMijPSQytIBk1NKRhjIwiIKvDxf4NeoSnRx2v8OEYx0MzzD+RZ1BWr/ERUtnb
+ nQrf7sI2xxpcvV+cOgE6I/Bds8OEyVOAyCih/qreUR6iejI/3bcJrtrtU8ROWl+DvN
+ 5+n08F2mZa/0w==
+Date: Sun, 6 Sep 2026 09:50:42 +0100
+From: Simon Horman <horms@kernel.org>
+To: "Rawda, Tony" <Tony.Rawda@disney.com>
+Cc: "anthony.l.nguyen@intel.com" <anthony.l.nguyen@intel.com>,
+ "przemyslaw.kitszel@intel.com" <przemyslaw.kitszel@intel.com>,
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "richardcochran@gmail.com" <richardcochran@gmail.com>,
+ "vitaly.lifshits@intel.com" <vitaly.lifshits@intel.com>,
+ "sasha.neftin@intel.com" <sasha.neftin@intel.com>
+Subject: Re: [PATCH] e1000e: set fixed clock frequency indication for Alder
+ Point
+Message-ID: <20260906085042.GF40544@horms.kernel.org>
+References: <DM6PR03MB383684B3604D2B332361B810FAB62@DM6PR03MB3836.namprd03.prod.outlook.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Authenticated-Id: ripatel@wii.dev
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <DM6PR03MB383684B3604D2B332361B810FAB62@DM6PR03MB3836.namprd03.prod.outlook.com>
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -148,93 +149,29 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-Plugging in an unsupported SFP module caused ixgbe NICs to get
-wedged permanently.
+On Thu, Sep 03, 2026 at 06:06:33PM +0000, Rawda, Tony wrote:
+> On some Alder Point (e1000_pch_adp) platforms the XTAL value reported in
+> the software STRAP is incorrect, so the SYSCFI bit in TSYNCRXCTL selects
+> a 24 MHz base frequency while the SYSTIM counter actually advances at
+> 38.4 MHz. As a result the PTP hardware clock runs ~1.6x too fast
+> (38.4/24), which prevents ptp4l and other PTP-based time sync from
+> disciplining the clock.
+> 
+> Commit 688a0d61b2d7 ("e1000e: set fixed clock frequency indication for
+> Nahum 11 and Nahum 13") fixed the same problem for e1000_pch_mtp,
+> e1000_pch_lnp and e1000_pch_ptp. Alder Point silicon likewise always
+> runs at 38.4 MHz, so give it the same fixed-frequency override in both
+> e1000e_get_base_timinca() and e1000e_ptp_init().
+> 
+> Observed on an HP Z2 Mini G9 with I219-LM (17) [8086:1a1c]: before the
+> change the PHC advanced 16.0 s per 10.0 s of wall-clock time and
+> /sys/class/ptp/ptpN/max_adjustment read 999999999 (MAX_PPB_24MHZ);
+> afterwards it advances ~10.0 s and max_adjustment reads 230769100
+> (MAX_PPB_38400KHZ).
+> 
+> Fixes: 59e466888038 ("e1000e: Add support for Alder Lake")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Tony Rawda <Tony.Rawda@disney.com>
 
-ixgbe unregisters the netdev when rejecting an SFP transceiver as
-unsupported.
-
-  ixgbe 0000:3b:00.0: failed to initialize because an unsupported SFP+ module type was detected.
-  ixgbe 0000:3b:00.0: Reload the driver after installing a supported module.
-  ixgbe 0000:3b:00.0: removed PHC on enp59s0
-
-This code path failed to unregister an MDIO bus owned by that
-netdev, so when unregister_netdev() tries to tear it down
-(via device_del() -> devres_release_all() -> mdiobus_free()),
-it trips over the leaked registration.
-
-  ixgbe-mdio-0000:3b:00.0: not in UNREGISTERED state
-  WARNING: drivers/net/phy/mdio_bus_provider.c:711 at mdiobus_free+0x3d/0x50, CPU#21: kworker/u128:0/12
-
-This prevents ixgbe from reloading, even after PCIe remove/rescan:
-
-  sysfs: cannot create duplicate filename '/class/mdio_bus/ixgbe-mdio-0000:3b:00.0'
-
-Switch to devm_mdiobus_register(), drop custom unregister calls.
-This is safe because the bus is already devm-allocated, so unregister
-always happens before free.
-
-Assisted-by: LLM
-Fixes: 8fa10ef01260 ("ixgbe: register a mdiobus")
-Suggested-by: Andrew Lunn <andrew@lunn.ch>
-Signed-off-by: Richard Patel <ripatel@wii.dev>
----
-v1 -> v2: use devm_mdiobus_register() instead of another
-          mdiobus_unregister() call
-v1: https://lore.kernel.org/netdev/20260826042945.2344686-1-ripatel@wii.dev/
-
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 9 ++-------
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  | 2 +-
- 2 files changed, 3 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index f91856498eb2..96f60269fca6 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -8471,6 +8471,7 @@ static void ixgbe_sfp_detection_subtask(struct ixgbe_adapter *adapter)
- 		e_dev_err("Reload the driver after installing a "
- 			  "supported module.\n");
- 		unregister_netdev(adapter->netdev);
-+		adapter->mii_bus = NULL;
- 	}
- }
- 
-@@ -8693,11 +8694,8 @@ static void ixgbe_service_task(struct work_struct *work)
- 	}
- 	if (ixgbe_check_fw_error(adapter)) {
- 		if (!test_bit(__IXGBE_DOWN, &adapter->state)) {
--			if (adapter->mii_bus) {
--				mdiobus_unregister(adapter->mii_bus);
--				adapter->mii_bus = NULL;
--			}
- 			unregister_netdev(adapter->netdev);
-+			adapter->mii_bus = NULL;
- 		}
- 		ixgbe_service_event_complete(adapter);
- 		return;
-@@ -12104,9 +12102,6 @@ static void ixgbe_remove(struct pci_dev *pdev)
- 	if (adapter->hw.mac.type == ixgbe_mac_e610)
- 		ixgbe_disable_link_status_events(adapter);
- 
--	if (adapter->mii_bus)
--		mdiobus_unregister(adapter->mii_bus);
--
- #ifdef CONFIG_IXGBE_DCA
- 	if (adapter->flags & IXGBE_FLAG_DCA_ENABLED) {
- 		adapter->flags &= ~IXGBE_FLAG_DCA_ENABLED;
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-index ab733e73927d..74631cb2ddbc 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-@@ -1086,7 +1086,7 @@ int ixgbe_mii_bus_init(struct ixgbe_hw *hw)
- 	hw->phy.mdio.mode_support = MDIO_SUPPORTS_C45 | MDIO_SUPPORTS_C22;
- 
- 	adapter->mii_bus = bus;
--	return mdiobus_register(bus);
-+	return devm_mdiobus_register(dev, bus);
- }
- 
- /**
--- 
-2.52.0
+Reviewed-by: Simon Horman <horms@kernel.org>
 
