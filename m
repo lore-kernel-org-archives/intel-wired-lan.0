@@ -4,25 +4,25 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39673C79FA0
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  7 Sep 2026 21:54:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 439D6C79F9E
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  7 Sep 2026 21:54:50 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id E2A1B60675;
-	Mon,  7 Sep 2026 21:54:48 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 1A7546069E;
+	Mon,  7 Sep 2026 21:54:50 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id pbA2u9DX34S5; Mon,  7 Sep 2026 21:54:47 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 32B926068A
+ id wN1HNpBo4obY; Mon,  7 Sep 2026 21:54:49 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 7343C6068A
 Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1788818087;
-	b=glCTBW+lOSe0tZvraDe4R3QvhhZvEGJ5KIvOZOLGPQpovhOUpqpUsq9GYEOcpUzKMTCW
-	 rjDcxjN8WRZEAPr+eOGDK8KGN+PZX0slEob2yt0Wdfszbpv39Szc82hbFcNfnuAH4hsjc
-	 1tg+NU9TxAqlHElq/+XM/TUtHCH1UzqHbXZ4afDbZcEUKR30vC2myJ0h/BSAslRM7rT3Q
-	 nhGKvg0Qzj9mxo2gS2JRPG4XP1aPEsFJ6FEl28g5AwE1bFf0Nxp5lV2O76laE1+iIDn+Y
-	 S096L3o5CKY5T5DKqb1wwwwu7dlY9xk7cXJsjPVqSTdkgg8hSifge095+9Ubpyk3QZQ==
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1788818089;
+	b=mfsoPADVqfCrVuwHovnNuopIUN5dW/WrVa/VDR5kEj7/accI0i1Ptz+we13HazxVydLK
+	 cvy0a0kYbUmZDmc8VmjtF1P7gDfDLlFVXtQ7abrNFkriyMeGG2RrkM9VXNL0UqIiqK+/+
+	 /dy1wVSEH+NByu1qEcVEkxWYml2/y/k6Hf56z6NRlZBio+1Od4f06R5TcQ+q0xm975MDz
+	 3KfzvSz2DZoMj7yElhOunuU3W8jqhvWH5nOQ0Tzhff5SlRcDC5czHH6i15UMxlVqeNJY0
+	 +AFFrp7k3nC5WwuYhupYqACwoA6L3ZM+6PbQn7wirgQzHXs/f0nJ0UDs32+3a5c/4FQ==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1788818087;
+	c=relaxed/relaxed; t=1788818089;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
@@ -32,127 +32,125 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding:
 	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
 	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=kt5vYk7oIJTAvWcYqFLR1526VYebZHALzcXyXv4GXys=;
-	b=OBRgYodRRmHCthokd1fA2e044iPok47xb2a567IpcdVPyzTcpWRrDq0Ah+0qOfj/+hqJ
-	 zveyrfVbQiLwHDSIf5DKvSsYkDBeJt1pw3rLC5v6iHqHVPQxlo02UmkFIsDbGpGe3O6nV
-	 4rtZ7QHTJc5TNDjl5hOxJkZG3ZzvdYedCOfZ1ukjQo4gasinvloha9/CtcL/ESNMKTv3y
-	 WXaq92UqOim8jl7XnzF0CgvjOGYYyO+0emDqjYfrD/rlZyfulpvy2JNm2naeZRNeAtpOC
-	 X0nA/inNrKGtXQq120Tl3yGI8il5Lsee5mizCdGoSeQd6Rjfi7SGf/uemgHqqYUnk9g==
-ARC-Authentication-Results: i=2; smtp3.osuosl.org; dmarc=pass header.from=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=MmXN00Zc;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	bh=6RHq+lKbojD+F3T7fWOVIQ9NEbYVOA2OmDM0VbI8dbM=;
+	b=Emef8KqnAPch42v8PylI5XAsZV68fW6lPHiBr0hBcdRr/I0L1BSN9xtxfRIjE9bQpg+y
+	 z82IVJRdhEhm5IrtnSAKG6JQ9sEAqiICjPiYWxncoZoyQhLd3wvESMMHmua24dHrJdWVv
+	 J63JNgJ+fXt1g4FzQbwxwk78jA3rqBVX+jtIV1AL5aNEBy7ArHr5I/70ck21HlcIpKmTz
+	 /652Hc2QwkX0WGfOcrynVKbtP5KSCc4v9QRTLb1sbUUxLYCT8frXG5xvKoknkQNIVWRCz
+	 H8/iyL6v/UsdIjCgx9Uft1qL+1KCscTuJMo+Fx3qAYf0NpbPw8oZ6jYFQCwmhUMr0cg==
+ARC-Authentication-Results: i=2; smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1788818087;
-	bh=kt5vYk7oIJTAvWcYqFLR1526VYebZHALzcXyXv4GXys=;
+	s=default; t=1788818089;
+	bh=6RHq+lKbojD+F3T7fWOVIQ9NEbYVOA2OmDM0VbI8dbM=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=Tq7Xh64swJgMB9AFr7pEtXZhwGzTQSKSst97/BRs2Gkx7Dz4GMCNrE3Y1Q+Vm4ZUw
-	 x49j7raXCJOK5whe/wv8AWRjhst9pA/5Y26bx1AvxTUroTwSNvIcy6DZanO+Mysdyx
-	 baduPkqn1JlC8vh4QrwCxWBq4z7FWIhCthlmigWkXdGI69yg5PpKjgxMuoKr8XlwGv
-	 djOrbLP2xOWiejtSez2XQqdaSttZAWt6X+X9193bjPfdBettkkRc1L0c0ohVMDekMG
-	 Q8TwO1Gkd73QeQPclEWKcRIbC3fPkts+zq3NOjczlafQgtXyzyy3j1XVXBbWK5eW+g
-	 asu6XZ43gNpoQ==
+	b=bDxg02vEDkG19+76MjDz7Z16rADDzed3y+tmwUmlCtn2FoEA3IV/5Nhi9MRysyKRK
+	 YlL4H66hE8PpQYuyygjJkbKJujnBYcsP2OThpEJJSgdN7cbed6VNYS3rg5t+YS8Ykt
+	 SyzGfa/51qX4uLiwv6k9kwCQ3Q60O6vV7yKRQVE3weiIVM2UH9CSg99JmJkV1qnBWx
+	 3X1/JZhxN6vCRZpIiffaKgNga0k+fXy3ZOZAkEYM9+r9/9SQbHFZYUzbw8fErhrsmH
+	 OmTQdfBCzc66sVQtZruKvC9c8zD+bABJv5XLb1B2SiNNENvZjGCwG5flr8ykQOE4wZ
+	 b90q8K4FJvqUQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 32B926068A;
-	Mon,  7 Sep 2026 21:54:47 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 387CC49D
- for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Sep 2026 21:54:45 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 7343C6068A;
+	Mon,  7 Sep 2026 21:54:49 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id C287F49D
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Sep 2026 21:54:46 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 1EC54605CB
- for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Sep 2026 21:54:45 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id A8542807D5
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Sep 2026 21:54:46 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id owTwvT5cpFqg for <intel-wired-lan@lists.osuosl.org>;
- Mon,  7 Sep 2026 21:54:44 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 2B780600C4
-Authentication-Results: smtp3.osuosl.org;
- arc=none smtp.remote-ip="2607:f8b0:4864:20::1135"
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1788818084;
- b=DN2zIIAggq3IIsrZDlkcQs25k2okW7MNxDDGsSPkAXMaoCOdixTZaOK8HbTXrQWSqiIY
- MngISy3MRqa6h/2cU63CLQzLyC7uvxekitckDPGYwJvHjEb/RlrA34/te0GkUjEn9LMsv
- qCVUd3KUvetSZVcD/UpVnGvRgDkh95RcSo8TMd/Q06B4gjQR+3NwDwzCIfyAWF3Dp5tzt
- jKn3A1nQDCDj77P5bYmxBUA8yO6VjDPwOxZ4kTNc62klv23aInG8aaZxgj4WpaOIwoyZ9
- sjA2dPurAiiIxz669i/0HgjNv51ak/umkJQbO4tZif1kHXmQd+HsJ0flQFdEqhqmMug==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Kc_1V2DxfoBM for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  7 Sep 2026 21:54:46 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org F2CB780744
+Authentication-Results: smtp1.osuosl.org;
+ arc=none smtp.remote-ip="2607:f8b0:4864:41::10"
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1788818086;
+ b=lTc3d2HCP5qx7kikF+wro7VPeM+1DO9FCwE7rEnhuNX6gmCt/yB1D8/D38txt8FHeATQ
+ EsAAbBJ/NOicaUp/rJgrJw9sAYKUWZ0/Zd1NoTUN20lVDn9OH0ke2D5SeZwrlqUQboe3m
+ 83sOoiSQDfoQ9wNRVae9gjQVC4RF8UMDUGHSTE6UI4MG3Nlw75ccPsCzOLtJvAHLZWqD1
+ 9eEKM5Ednn0CdYQsXWykTfgKailam0+EdOHwV2TURWoyWZyNqk2XCp4K3i4ds+0w8IQYR
+ o/3DoUiAP5JxdUGcmS6s/lFumF8KcyjgcgJ2qwnrOqiTY1nTNiKh48Pfj0mlpyuDXMA==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1788818084;
+ c=relaxed/relaxed; t=1788818086;
  h=Received-SPF:Received:DKIM-Signature:X-Google-DKIM-Signature:
  X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
  From:X-Google-Original-From:To:Cc:Subject:Date:Message-ID:X-Mailer:
  In-Reply-To:References:MIME-Version:Content-Transfer-Encoding;
- bh=kt5vYk7oIJTAvWcYqFLR1526VYebZHALzcXyXv4GXys=;
- b=Oce7gUOIkidE/Qv36G/v80pOIcePR1uYPBC3N2aP/qbqL142uU4v6nGBwT3xk84xTLkm
- K4YS3MC0cn1kAJ6WQ1y5aBcRlz0dlxf5ReCt4YAC570qv4Pi1e4k76scOiAp9fXBP5DDS
- MbLve48cuMTecNZWc7OQIp+xc2bPWcLSW9CVGtwCZs2JON6wGPU6JdDWrJBTdIov0OdaB
- fKHATsOnm/UXPn1M6EBpZ/wjxbMcvsHkWmrSNZ4AqHZ1Kh1smR+ZPVruelxbOH4Sfjyzc
- 5llB6Q+8r4wYT3cMD1bCPJLGGzZEp1nqgN9Xf14cJwnpaqgmE/I2oJaP1rRajZImbew==
-ARC-Authentication-Results: i=1; smtp3.osuosl.org;
+ bh=6RHq+lKbojD+F3T7fWOVIQ9NEbYVOA2OmDM0VbI8dbM=;
+ b=qcmDC5MxEjX+SqxdqTfHO/gvy4AYKwnVep2qqxrB4GDADuPxgboXOc+vWqsdyc1m3UMQ
+ UjbaC9g0qvKtOCoT8WoY5nR/VOYmYyP7E3riBcl2+Ns37JtOqEKH0Ra3u3RJjjSR3VTve
+ 3qwjyFDDoC3SWeQFKt94A+chtoqVUgGXfZ6HHtUpLW+VtGukpoDxmVNIpJUKZ500839B8
+ g137mIuzaYvn2annE5OORwabnAnVOI7Pyj06QU9bKCodGM+YkNVaIhm15auQ67d56m263
+ eO1DgR36yCld0bauDOGdUDUJvdkoU0Y+KMRg5hOwU7r9LBjQlCZH6dYvVrB0R+i/1qQ==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org;
  dmarc=pass header.from=gmail.com; 
  dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20251104 header.b=MmXN00Zc; 
- arc=none smtp.remote-ip="2607:f8b0:4864:20::1135"
+ header.s=20251104 header.b=mHTUjqGw; 
+ arc=none smtp.remote-ip="2607:f8b0:4864:41::10"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::1135; helo=mail-yw1-x1135.google.com;
+ client-ip=2607:f8b0:4864:41::10; helo=mail-yx2-x10.google.com;
  envelope-from=yury.norov@gmail.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp3.osuosl.org;
+Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp3.osuosl.org;
+Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20251104 header.b=MmXN00Zc
-Received: from mail-yw1-x1135.google.com (mail-yw1-x1135.google.com
- [IPv6:2607:f8b0:4864:20::1135])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 2B780600C4
- for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Sep 2026 21:54:43 +0000 (UTC)
-Received: by mail-yw1-x1135.google.com with SMTP id
- 00721157ae682-836c8bde2dcso18102377b3.0
- for <intel-wired-lan@lists.osuosl.org>; Mon, 07 Sep 2026 14:54:43 -0700 (PDT)
+ header.a=rsa-sha256 header.s=20251104 header.b=mHTUjqGw
+Received: from mail-yx2-x10.google.com (mail-yx2-x10.google.com
+ [IPv6:2607:f8b0:4864:41::10])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id F2CB780744
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Sep 2026 21:54:45 +0000 (UTC)
+Received: by mail-yx2-x10.google.com with SMTP id
+ 00721157ae682-85d4eb63f16so2583367b3.0
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 07 Sep 2026 14:54:45 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20251104; t=1788818082; x=1789422882; darn=lists.osuosl.org;
+ d=gmail.com; s=20251104; t=1788818084; x=1789422884; darn=lists.osuosl.org;
  h=content-transfer-encoding:mime-version:references:in-reply-to
  :message-id:date:subject:cc:to:from:from:to:cc:subject:date
  :message-id:reply-to:content-type;
- bh=kt5vYk7oIJTAvWcYqFLR1526VYebZHALzcXyXv4GXys=;
- b=MmXN00Zcfhsl/4x0Ys9iGcWOrKZf0nmUlC8qz6oeqznCxPy6EN6Y2rtga0W/Cy2/4r
- +F9pjQcQtcRbwh/u4XIHLcO/ZHqs21RYkYiljYWl+dPFtD5eWmJCgD5iGhNlsStfGhHx
- r4meyALsfKqGGHhI0+fAxLjYzbSf1YIedNsdaalxJBm1W8GIu+9KyChXJd47NdM8xJpk
- 6Q0UhQobvKutLlYmxqziiTOvB657QfuOGguv7GMHgmqTIrccan9IoBHP2cHJeSVzh1Sj
- aeMMYYeVAHEBK8d+Vj466b1zMwKJ6FCk8x8qO+tqHIwAsFopQOQ7lvg3CzWtQpRefrfy
- vWjA==
+ bh=6RHq+lKbojD+F3T7fWOVIQ9NEbYVOA2OmDM0VbI8dbM=;
+ b=mHTUjqGwHis7GodGqSH1zssRKl3zITND4dAxsfQJIsSUZTW6cZK2T2skHKjdImUGa+
+ YMExlHhxGUKQmMFOat33h/zfb0HZ0ssm/xev9v7o3sMoO/izx9BGYnWJD/Lwmh/2Glc4
+ 6WJ7x3KZ+P3Z8ELlpWuXJZq53dS1unJnI5n6QLfFZDr4vR3IEKBO1aeCjv2aEedLX59c
+ B0DtTXY0ZzJ63Ncs18fCOrv9MT5BOVqHnBreEyp8JG5/wxhRk/X9Ugz/eKk1ErGoX4T0
+ /AAP/uJsP7O+eP+8oyxVpZxhbN+kEpp7aUNgb3ogPX5/uRPYrb3LxfCoWO4POCIg7No0
+ xZ5Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1788818082; x=1789422882;
+ d=1e100.net; s=20251104; t=1788818084; x=1789422884;
  h=content-transfer-encoding:mime-version:references:in-reply-to
  :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
  :to:cc:subject:date:message-id:reply-to:content-type;
- bh=kt5vYk7oIJTAvWcYqFLR1526VYebZHALzcXyXv4GXys=;
- b=mTD25J5Vf6uZ8XzOaGV2/GBZLSpPtioKZsyWXbxPhEoyuxCApSaUZrRxLqEq+A+mm2
- xiJSj+bTA9K3qY1S6O+fP0r70267N4BZkGKWG4gUM7Sto9Mx/J5sYnBcwjWPVZ3zhDCa
- Pyamvcp3pwG2zVVPC23/mhd2aoJopp8fIntdODn8J8Pe49n16cXL/hP7UwKlt6Jh0aiv
- EpU/cjQOtoP9IGkHSNBqU0VvynRTvrjs5r7hNh3gIXig34uZj3D2hksJmi9w+GMCk88d
- o3EU1gKNJ1x+JV+EUpO4VjcY22Q4OOrRWrqqQwXLGEKAxDhU9znMkgYwURRl5babJgaW
- l5lA==
+ bh=6RHq+lKbojD+F3T7fWOVIQ9NEbYVOA2OmDM0VbI8dbM=;
+ b=rEsSxJUnDTMucpQYw/vbJ5VrFlgOYyUnrRcejAoQI1e9Qjn0ME7Q19+3aFwBhivxTG
+ CMhduW9sFvhp0O8cTPjwojuFEckkEBBZREV4MQjiyp+d5oiDwnh0qd8n1CrDF1KvmjYw
+ AGQUvFRAdGN7HHoZyddEfiZD38rdD818JDheV2TYw2la7EwWqvlVekjBGYbFJJAreBC0
+ VXw3HRUjso7B6QLMhQ5TzF76mi9JxqW/kBP0ZBlz3GmHkNlJPPVW2LqrpvO0pJhyv6fg
+ h/eHLc3e6uFRSytCOGydgaZBajvUC3bxrnNn/wWTPcgp7OI1iVVU7uCoQ3KG8kUIAgSz
+ v+mg==
 X-Forwarded-Encrypted: i=1;
- AKwUvBxEaEBMeV88yTA3qr2+HM8YvFZNAGzkw35EFEuHM6yc0ToQXcFGkbWVrnn3tfVEFMgrrUIvaTutYb/nOWvEO1Y=@lists.osuosl.org
-X-Gm-Message-State: AFuF++lxhpY2Rc/fwn9xUr89oZhW1XGvTxasrhmSSjw5Y93/i9pC6/qG
- 5vdGBJOLrBmfDCiO8oKw4/bPOMXxxWUEG2XcWFnyVej9wfIXCLViUCyy
-X-Gm-Gg: AYBFou1rZ6MtF7Ur6dd/z5EzHIsiXVR+OOLTnO7iygIrrRhIo1wDKtspNV5WX0R+Q47
- OS3G3iC5gEC5cPxJeo6N2obKgT593EjE86lzY193Q28hVTCsRoxoaXdh7C3/t+rqg3PUXshK2bp
- Bkrv6AWxfB7py4QUA1XsitfuhfNghJcjG/56hjIpDDgu/7J4spjOtRGCV8mQIJar/I1JKJaD74D
- 4KU9MBzg9tpc/1HrQSljqMeWx4CTH+v/mtc6o3mT70hrLlSREgmtTKztjD5kH9msBpDzxCzIhH8
- 2Ik8KlecLIkFB5N54MAm/lxdSQMwX24UFaKDhm/xaHZHdXd12cJe4eq1Kx2jaIM5XhZ/ORGaFbt
- dUy3YKd1GH8fhK5ZSvtq3ZK/i0RrM81lN41kTkS/v9jxeLFpA/CvBJn8XRubkF4mlkbfn+5mAU1
- 3GlDM8euiwLmmVkbiTFkY6dXkZsH0fL8uTFbAROgV16pba2B9CcKc6BAuulmpjT3H5QE8pdt1cT
- yNTuNZvLrae59r6rg==
-X-Received: by 2002:a05:690c:4f02:b0:81e:eebb:8e4a with SMTP id
- 00721157ae682-87123521b7fmr78031777b3.12.1788818082551; 
- Mon, 07 Sep 2026 14:54:42 -0700 (PDT)
+ AKwUvBzNawkMdU3VsrsDYNeT+N3Ltrd4tkeQlM44yudscNBdJ/w8QCbuu/eYagJkZ48kN0pbZguasWHAFlBs4x61sdI=@lists.osuosl.org
+X-Gm-Message-State: AFuF++n7RTMstiq248SJZc8Hu28Coj9YN3Hzy69T7qzHr0qz4OfX4SM4
+ DvBb23hfU9BPUpq3jR4j9KZWxPtF7Mmo6vCgQaRUas5MlKf7bj6pqC9j
+X-Gm-Gg: AYBFou0e81nB1tMfGl6WFOWodEcMEO+phaizIrsbyC48jcZzJ0y+OKM7aXR2a0FsA79
+ Dsu5fgWmc7/5N8XmOVmd9g8BI/r+gxntpPrx1K/46kqAlSeLbn3ZpNqKDELdxx/vtY+mjkZR8ge
+ XzybqjkCptEebjNjxvZ8m5vkpTk+z4f0K9FEc0bXUovxK/PsIxzXQM4Uz2HFcvtOxSbw880AGNy
+ TqltfDWwbrYqzhyPnKsVLCO9ObpMR1xqgCULybl3YDPpQsEUPOHiUs4dMWK1yA1kIX0tWClb3Ri
+ J5Ss3lMF0oHLDbDxui6liX4IWi2HbBgGx8UIg5w9tfJJOyfmyHemYbn4HgLPW4a4Jw0MUXcfGcS
+ zo4rTL2Nuhq9UaZZGkqkhBywMVP/hWnSP6URQMzRj7l63xuG+A/NDxKT4WBqVIA5Frbl0QO/cKx
+ du4ck99sebk0az3oMzG/igNxycJZr5vl38ZxY86MA26jsk6q8MnQU0CFWCmTmOqg6fbCX9aNAWs
+ rySV8rSiDsPTKE5/KTulrQ3uEy+
+X-Received: by 2002:a05:690c:39b:b0:7ef:9fd9:db07 with SMTP id
+ 00721157ae682-87c098a896emr9838697b3.12.1788818084460; 
+ Mon, 07 Sep 2026 14:54:44 -0700 (PDT)
 Received: from localhost (c-73-105-0-191.hsd1.fl.comcast.net. [73.105.0.191])
  by smtp.gmail.com with ESMTPSA id
- 00721157ae682-8714bb0efc1sm77847347b3.45.2026.09.07.14.54.42
+ 00721157ae682-87143bb048dsm77918817b3.1.2026.09.07.14.54.44
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 07 Sep 2026 14:54:42 -0700 (PDT)
+ Mon, 07 Sep 2026 14:54:44 -0700 (PDT)
 From: Yury Norov <yury.norov@gmail.com>
 X-Google-Original-From: Yury Norov <ynorov@nvidia.com>
 To: Andrew Lunn <andrew@lunn.ch>, Heiner Kallweit <hkallweit1@gmail.com>,
@@ -169,9 +167,10 @@ To: Andrew Lunn <andrew@lunn.ch>, Heiner Kallweit <hkallweit1@gmail.com>,
 Cc: Yury Norov <ynorov@nvidia.com>, Yury Norov <yury.norov@gmail.com>,
  Rasmus Villemoes <linux@rasmusvillemoes.dk>,
  Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 1/9] bitmap: add bitmap_and_and() and bitmap_and_andnot()
-Date: Mon,  7 Sep 2026 17:54:30 -0400
-Message-ID: <20260907215439.409858-2-ynorov@nvidia.com>
+Subject: [PATCH 3/9] net: amd: xgbe: use linkmode_and() return value in
+ xgbe_set_link_ksettings()
+Date: Mon,  7 Sep 2026 17:54:32 -0400
+Message-ID: <20260907215439.409858-4-ynorov@nvidia.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260907215439.409858-1-ynorov@nvidia.com>
 References: <20260907215439.409858-1-ynorov@nvidia.com>
@@ -191,248 +190,44 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-Add bitmap_and_and() and bitmap_and_andnot() to combine three bitmaps
-in a single pass. Both helpers return whether the resulting bitmap is
-non-empty.
+bitmap_empty() is O(N).
 
-Introduce BITMAP_OP() to share the word iteration with bitmap_and(),
-and add tests for small constants, multiword bitmaps, aliases, tail
-masking, empty results and zero-sized bitmaps.
+Use the return value of linkmode_and() when validating the requested
+advertisement instead of scanning the result bitmap separately.
 
 Signed-off-by: Yury Norov <ynorov@nvidia.com>
 ---
- include/linux/bitmap.h | 32 +++++++++++++++++
- lib/bitmap.c           | 46 +++++++++++++++++++------
- lib/test_bitmap.c      | 78 ++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 146 insertions(+), 10 deletions(-)
+ drivers/net/ethernet/amd/xgbe/xgbe-ethtool.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/include/linux/bitmap.h b/include/linux/bitmap.h
-index 7df1573a409c..d524ef6b0300 100644
---- a/include/linux/bitmap.h
-+++ b/include/linux/bitmap.h
-@@ -44,6 +44,10 @@ struct device;
-  *  bitmap_fill(dst, nbits)                     *dst = ~0UL
-  *  bitmap_copy(dst, src, nbits)                *dst = *src
-  *  bitmap_and(dst, src1, src2, nbits)          *dst = *src1 & *src2
-+ *  bitmap_and_and(dst, src1, src2, src3, nbits)
-+ *                                               *dst = *src1 & *src2 & *src3
-+ *  bitmap_and_andnot(dst, src1, src2, src3, nbits)
-+ *                                               *dst = *src1 & *src2 & ~(*src3)
-  *  bitmap_or(dst, src1, src2, nbits)           *dst = *src1 | *src2
-  *  bitmap_weighted_or(dst, src1, src2, nbits)	*dst = *src1 | *src2. Returns Hamming Weight of dst
-  *  bitmap_weighted_xor(dst, src1, src2, nbits)	*dst = *src1 ^ *src2. Returns Hamming Weight of dst
-@@ -166,6 +170,12 @@ void bitmap_cut(unsigned long *dst, const unsigned long *src,
- 		unsigned int first, unsigned int cut, unsigned int nbits);
- bool __bitmap_and(unsigned long *dst, const unsigned long *bitmap1,
- 		 const unsigned long *bitmap2, unsigned int nbits);
-+bool __bitmap_and_and(unsigned long *dst, const unsigned long *bitmap1,
-+		      const unsigned long *bitmap2,
-+		      const unsigned long *bitmap3, unsigned int nbits);
-+bool __bitmap_and_andnot(unsigned long *dst, const unsigned long *bitmap1,
-+			 const unsigned long *bitmap2,
-+			 const unsigned long *bitmap3, unsigned int nbits);
- void __bitmap_or(unsigned long *dst, const unsigned long *bitmap1,
- 		 const unsigned long *bitmap2, unsigned int nbits);
- unsigned int __bitmap_weighted_or(unsigned long *dst, const unsigned long *bitmap1,
-@@ -337,6 +347,28 @@ bool bitmap_and(unsigned long *dst, const unsigned long *src1,
- 	return __bitmap_and(dst, src1, src2, nbits);
- }
+diff --git a/drivers/net/ethernet/amd/xgbe/xgbe-ethtool.c b/drivers/net/ethernet/amd/xgbe/xgbe-ethtool.c
+index a9f4fcc4daae..113a10855938 100644
+--- a/drivers/net/ethernet/amd/xgbe/xgbe-ethtool.c
++++ b/drivers/net/ethernet/amd/xgbe/xgbe-ethtool.c
+@@ -231,6 +231,7 @@ static int xgbe_set_link_ksettings(struct net_device *netdev,
+ 	struct xgbe_prv_data *pdata = netdev_priv(netdev);
+ 	struct ethtool_link_ksettings *lks = &pdata->phy.lks;
+ 	__ETHTOOL_DECLARE_LINK_MODE_MASK(advertising);
++	bool has_advertising;
+ 	u32 speed;
+ 	int ret;
  
-+static __always_inline
-+bool bitmap_and_and(unsigned long *dst, const unsigned long *src1,
-+		    const unsigned long *src2, const unsigned long *src3,
-+		    unsigned int nbits)
-+{
-+	if (small_const_nbits(nbits))
-+		return (*dst = *src1 & *src2 & *src3 &
-+			       BITMAP_LAST_WORD_MASK(nbits)) != 0;
-+	return __bitmap_and_and(dst, src1, src2, src3, nbits);
-+}
-+
-+static __always_inline
-+bool bitmap_and_andnot(unsigned long *dst, const unsigned long *src1,
-+		       const unsigned long *src2, const unsigned long *src3,
-+		       unsigned int nbits)
-+{
-+	if (small_const_nbits(nbits))
-+		return (*dst = *src1 & *src2 & ~(*src3) &
-+			       BITMAP_LAST_WORD_MASK(nbits)) != 0;
-+	return __bitmap_and_andnot(dst, src1, src2, src3, nbits);
-+}
-+
- static __always_inline
- void bitmap_or(unsigned long *dst, const unsigned long *src1,
- 	       const unsigned long *src2, unsigned int nbits)
-diff --git a/lib/bitmap.c b/lib/bitmap.c
-index ed685127a107..85ce3cbaa9ab 100644
---- a/lib/bitmap.c
-+++ b/lib/bitmap.c
-@@ -34,6 +34,25 @@
-  * for the best explanations of this ordering.
-  */
+@@ -267,11 +268,11 @@ static int xgbe_set_link_ksettings(struct net_device *netdev,
+ 		  __ETHTOOL_LINK_MODE_MASK_NBITS, cmd->link_modes.advertising,
+ 		  __ETHTOOL_LINK_MODE_MASK_NBITS, lks->link_modes.supported);
  
-+/*
-+ * Common helper for bitmap operations.
-+ * @FETCH: The expression that fetches and combines each word of the bitmaps
-+ * @bits: The bitmap size in bits
-+ */
-+#define BITMAP_OP(FETCH, bits)							\
-+({										\
-+	unsigned long idx, val, sz = (bits), result = 0;			\
-+										\
-+	for (idx = 0; idx * BITS_PER_LONG < sz; idx++) {			\
-+		val = (FETCH);							\
-+		if (sz - idx * BITS_PER_LONG < BITS_PER_LONG)		\
-+			val &= BITMAP_LAST_WORD_MASK(sz);			\
-+		result |= (dst[idx] = val);					\
-+	}									\
-+										\
-+	result != 0;								\
-+})
-+
- bool __bitmap_equal(const unsigned long *bitmap1,
- 		    const unsigned long *bitmap2, unsigned int bits)
- {
-@@ -230,19 +249,26 @@ EXPORT_SYMBOL(bitmap_cut);
- bool __bitmap_and(unsigned long *dst, const unsigned long *bitmap1,
- 				const unsigned long *bitmap2, unsigned int bits)
- {
--	unsigned int k;
--	unsigned int lim = bits/BITS_PER_LONG;
--	unsigned long result = 0;
--
--	for (k = 0; k < lim; k++)
--		result |= (dst[k] = bitmap1[k] & bitmap2[k]);
--	if (bits % BITS_PER_LONG)
--		result |= (dst[k] = bitmap1[k] & bitmap2[k] &
--			   BITMAP_LAST_WORD_MASK(bits));
--	return result != 0;
-+	return BITMAP_OP(bitmap1[idx] & bitmap2[idx], bits);
- }
- EXPORT_SYMBOL(__bitmap_and);
+-	linkmode_and(advertising, cmd->link_modes.advertising,
+-		     lks->link_modes.supported);
++	has_advertising = linkmode_and(advertising,
++				       cmd->link_modes.advertising,
++				       lks->link_modes.supported);
  
-+bool __bitmap_and_and(unsigned long *dst, const unsigned long *bitmap1,
-+		      const unsigned long *bitmap2,
-+		      const unsigned long *bitmap3, unsigned int bits)
-+{
-+	return BITMAP_OP(bitmap1[idx] & bitmap2[idx] & bitmap3[idx], bits);
-+}
-+EXPORT_SYMBOL(__bitmap_and_and);
-+
-+bool __bitmap_and_andnot(unsigned long *dst, const unsigned long *bitmap1,
-+			 const unsigned long *bitmap2,
-+			 const unsigned long *bitmap3, unsigned int bits)
-+{
-+	return BITMAP_OP(bitmap1[idx] & bitmap2[idx] & ~bitmap3[idx], bits);
-+}
-+EXPORT_SYMBOL(__bitmap_and_andnot);
-+
- void __bitmap_or(unsigned long *dst, const unsigned long *bitmap1,
- 				const unsigned long *bitmap2, unsigned int bits)
- {
-diff --git a/lib/test_bitmap.c b/lib/test_bitmap.c
-index 56bd23059b26..fbc46ed960a4 100644
---- a/lib/test_bitmap.c
-+++ b/lib/test_bitmap.c
-@@ -193,6 +193,81 @@ static void __init test_zero_clear(void)
- 	expect_eq_pbl("", bmap, 1024);
- }
- 
-+static void __init test_bitmap_and(void)
-+{
-+	enum { nbits = BITS_PER_LONG + 13 };
-+	DECLARE_BITMAP(src1, nbits);
-+	DECLARE_BITMAP(src2, nbits);
-+	DECLARE_BITMAP(src3, nbits);
-+	DECLARE_BITMAP(dst, nbits);
-+	DECLARE_BITMAP(expected, nbits);
-+	unsigned long small_src1 = ~0UL;
-+	unsigned long small_src2 = ~0UL;
-+	unsigned long small_src3 = BIT(2);
-+	unsigned long small_dst;
-+	bool ret;
-+
-+	ret = bitmap_and_and(&small_dst, &small_src1, &small_src2,
-+			     &small_src3, 4);
-+	expect_eq_ulong(true, ret);
-+	expect_eq_ulong(BIT(2), small_dst);
-+
-+	ret = bitmap_and_andnot(&small_dst, &small_src1, &small_src2,
-+				&small_src3, 4);
-+	expect_eq_ulong(true, ret);
-+	expect_eq_ulong(GENMASK(3, 0) & ~BIT(2), small_dst);
-+
-+	bitmap_zero(src1, nbits);
-+	bitmap_zero(src2, nbits);
-+	bitmap_zero(src3, nbits);
-+	bitmap_zero(expected, nbits);
-+	__set_bit(1, src1);
-+	__set_bit(2, src1);
-+	__set_bit(BITS_PER_LONG + 1, src1);
-+	__set_bit(BITS_PER_LONG + 12, src1);
-+	__set_bit(BITS_PER_LONG + 13, src1);
-+	__set_bit(1, src2);
-+	__set_bit(BITS_PER_LONG + 1, src2);
-+	__set_bit(BITS_PER_LONG + 12, src2);
-+	__set_bit(BITS_PER_LONG + 13, src2);
-+	__set_bit(BITS_PER_LONG + 1, src3);
-+	__set_bit(1, expected);
-+	__set_bit(BITS_PER_LONG + 1, expected);
-+	__set_bit(BITS_PER_LONG + 12, expected);
-+
-+	ret = bitmap_and(dst, src1, src2, nbits);
-+	expect_eq_ulong(true, ret);
-+	expect_eq_bitmap(expected, dst, nbits);
-+	expect_eq_ulong(BIT(1) | BIT(12), dst[1]);
-+
-+	bitmap_zero(expected, nbits);
-+	__set_bit(BITS_PER_LONG + 1, expected);
-+	ret = bitmap_and_and(dst, src1, src2, src3, nbits);
-+	expect_eq_ulong(true, ret);
-+	expect_eq_bitmap(expected, dst, nbits);
-+	expect_eq_ulong(BIT(1), dst[1]);
-+
-+	bitmap_zero(expected, nbits);
-+	__set_bit(1, expected);
-+	__set_bit(2, expected);
-+	__set_bit(BITS_PER_LONG + 12, expected);
-+	ret = bitmap_andnot(dst, src1, src3, nbits);
-+	expect_eq_ulong(true, ret);
-+	expect_eq_bitmap(expected, dst, nbits);
-+	expect_eq_ulong(BIT(12), dst[1]);
-+
-+	__clear_bit(2, expected);
-+	ret = bitmap_and_andnot(src2, src1, src2, src3, nbits);
-+	expect_eq_ulong(true, ret);
-+	expect_eq_bitmap(expected, src2, nbits);
-+	expect_eq_ulong(BIT(12), src2[1]);
-+
-+	bitmap_fill(src3, nbits);
-+	ret = bitmap_and_andnot(src2, src1, src2, src3, nbits);
-+	expect_eq_ulong(false, ret);
-+	expect_eq_pbl("", src2, nbits);
-+}
-+
- static void __init test_find_nth_bit(void)
- {
- 	unsigned long b, bit, cnt = 0;
-@@ -1533,6 +1608,8 @@ static void __init test_zero_nbits(void)
- 	bitmap_zero(NULL, 0);
- 
- 	ret = bitmap_and(NULL, NULL, NULL, 0);
-+	ret = bitmap_and_and(NULL, NULL, NULL, NULL, 0);
-+	ret = bitmap_and_andnot(NULL, NULL, NULL, NULL, 0);
- 	ret = bitmap_empty(NULL, 0);
- 	ret = bitmap_equal(NULL, NULL, 0);
- 	ret = bitmap_full(NULL, 0);
-@@ -1566,6 +1643,7 @@ static void __init test_zero_nbits(void)
- static void __init selftest(void)
- {
- 	test_zero_clear();
-+	test_bitmap_and();
- 	test_fill_set();
- 	test_copy();
- 	test_bitmap_region();
+-	if ((cmd->base.autoneg == AUTONEG_ENABLE) &&
+-	    bitmap_empty(advertising, __ETHTOOL_LINK_MODE_MASK_NBITS)) {
++	if (!has_advertising && cmd->base.autoneg == AUTONEG_ENABLE) {
+ 		netdev_err(netdev,
+ 			   "unsupported requested advertisement\n");
+ 		return -EINVAL;
 -- 
 2.53.0
 
