@@ -1,143 +1,139 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85FA1C79FAA
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  7 Sep 2026 18:12:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7E4D0C79FA0
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  7 Sep 2026 19:00:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 35617605D8;
-	Mon,  7 Sep 2026 18:12:23 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 26FD680982;
+	Mon,  7 Sep 2026 19:00:28 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id smUivAfAWpbx; Mon,  7 Sep 2026 18:12:22 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 65B4A60662
-Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1788804742;
-	b=O1VHJH8zfkwIH+ORo7j+zYE9gMMEin6fffFUyYjzSBmShXTxbaClI4Xnh2BsrYnDAM2C
-	 Ndgs3IiuPSu4dYVT6+MpHflCtTvNLHvqyTEKDFpXHe/xZbEoX32c/dgmnABZEvbF7xhYP
-	 PQrosg/n8G4+jcWHwXXYcbeKhkGkAdDx24RzRTXo7plzgiMdXARNzzfNVC0HEjj7DLD2y
-	 KQebFoesfKY4OQsk8ZiwF5f0HmqFFJsbTeLB4UdGq9a0F7U6h2GmOh27yKn709yJeQVaN
-	 7FFXwKJJtrKSn83YJx4/urGFmsp8FNwWAqm/y8Y/QBp3bBKRc7S+KH8h61mUu89m01Q==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id SkEkQEC4SUOL; Mon,  7 Sep 2026 19:00:27 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 0E1C68097B
+Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1788807627;
+	b=ZTO2j5IetLe4kuTeq4oGnaAfBWeYv0CI4JQb55xOwCfdOYUnEycyjl+2xEmxBWFI0aLl
+	 hBemsO+LmjWts3xUmYb3WsMI5+s7loe7FgwvXLu8WAUWvpyogBJmt9NBSDnd7SLhw1KAz
+	 6QNFJqvf43X/uaQ+IOe4RvO7DnIGKXpngKCPl680ZieEOUoj89VBnRixDGJS9+U0vCfi4
+	 cOApc7zQNAAGBoq4rfck9CtBrGe+VNz5qlElpRU2Qy+fgmRWwpirjHe6hR7XNSSBZ7Ejx
+	 peXhQ/hlgkxMcifkERRX6i9q3kUpaIMGt6L/sbZ84076GaFeYPmcvMynw7JKxYB6EMw==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1788804742;
+	c=relaxed/relaxed; t=1788807627;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
-	 DKIM-Signature:Received:Message-ID:Date:MIME-Version:User-Agent:
-	 Subject:To:Cc:References:Content-Language:From:In-Reply-To:
-	 Content-Type:Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:
-	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
-	 List-Subscribe:Errors-To;
-	bh=tUA4k8R2t1QpHAGgeyT0ZKIm7T5VVZVvcJldkkde15c=;
-	b=bH/MeOYSqpt9n+43502ECL0vOShvba+U7jz5tpmbuBB6PQO6EUZ9fEbsjWGx1Dc78XzH
-	 8o+mbd+AZJidr81gt+rC2BDeFl3o6zuTDJZ3q+vUFJjSbx+6PZymMXhzKg7djnLKzbIi8
-	 BYwoXnc7TTAM8cCM9DEOCkXrttWdNCjRC0zs1ErEKig/JWnmBwlWBPEiqjwDy8RahkE/+
-	 OFsKsQzHMQoxBCWOLooIQk2HiHWGhPdR/u8btRQm/a/ncq6UQwH2RMBdg5CqA4KpDukD+
-	 BLr28O60XRiYSS94k2NLy42lzAZtRwvoBA/ooh+CjgtT+wF0H2TN4keJb6Ud59XNgIQ==
-ARC-Authentication-Results: i=2; smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	 DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-IronPort-AV:
+	 X-IronPort-AV:Received:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-ExtLoop1:
+	 X-IronPort-AV:Received:Received:Date:From:To:Subject:Message-ID:
+	 User-Agent:X-BeenThere:X-Mailman-Version:Precedence:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Errors-To;
+	bh=+tqNsoXmM4MNdumgVg7tZ1g3oG9WkeUSswFT+v5E6rM=;
+	b=o6GHxvhyKnD6GcSqdXoTsy33nHbFF/uLoQeT/l5nDtuNSP//RXrmaLsfBBghaP6+ZYHm
+	 UIngi1+rdzWn77UKq4+khyVuo4jhxKrAjLsl442Va68DnQ5j3ybFnNyM6sYBjIVT51emR
+	 1hME78KO2JBXA6Z+vgwVLM6zAtqImdapj2zoGS7SGNymmjCjVbzmEEkTchClEd2ek6OR9
+	 GkVAtfbGsFZVnXIlJTzY5EVU6UxrbnK+P9eB9y5LuvsUYKlP/h5IltPP57EwsaLuFvvnp
+	 UhUUj/wi9fQ0JQJP9gbXgNeXPGmNZ3e0DbKbtK23WDoDy++FSNBl7ma+eVF6VUrkEdw==
+ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1788804742;
-	bh=tUA4k8R2t1QpHAGgeyT0ZKIm7T5VVZVvcJldkkde15c=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=ODwaEN4Jxv2bdFra8U+eIx0TAjW2euH7kEhQ3xXYKUNm6fIB0VQhjA6B/apgLFLPi
-	 yMeygzhWmz8eDwmZrfLd+6tFCXWlj2pdZCSS3iWD7DC0seSlNY7925T0OAbSZqIYQZ
-	 Jijdlj00PFO+2Y8ODntaywteu8Mc+SLKcNWK55FXMD/WhpnduGcpKUM80OhU2jrrNu
-	 R5XQiXICrV6sCd5tsyODvOK1rh+mKDe87LnM3B82hQ6C5aGXrp94j2zHLkxjYELqRG
-	 9o8nGysvOOhIr1NnZguB+wf6u4Z5K+HwTLOnJUBN4sACZsHzx4+h8a7xl12bY3Vv7N
-	 TEcuABU3rGg5A==
+	s=default; t=1788807627;
+	bh=+tqNsoXmM4MNdumgVg7tZ1g3oG9WkeUSswFT+v5E6rM=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=hauGRvB0MKsD73fDmamizN2371Wr5F4wuuY2R2w0GpF8+MahEv2FR2+c3mYFEt9ET
+	 IMUwed+lUPS1I2Tpb8eQxlYuDXL5/BfWUy9r2ewKaP8FqbAsjMgOG0RFzk22c4cLBK
+	 l/7BD1KF/Fo8bde9y0CsTaCYu1BpK9LYzUTUJd11ya8sCHYagb0GYfpyS+cjpIY20j
+	 8xKw6Pj6j1Kj4RNLLhpKqS7OKYqb9GewiEMYocpCeQ0bhxD5l63MR4hjhB4hXYaPYU
+	 4ZcpWr11uEd5DF383yEuUux2zegy24yMteS5u6FSyNmfCKQrMqeCMntkPY1P9AHHWF
+	 JqZgpKs43pPSg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 65B4A60662;
-	Mon,  7 Sep 2026 18:12:22 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id F2FEEAEB
- for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Sep 2026 18:12:20 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 0E1C68097B;
+	Mon,  7 Sep 2026 19:00:27 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 966C3388
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Sep 2026 19:00:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id D966E40070
- for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Sep 2026 18:12:20 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 7C673605F5
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Sep 2026 19:00:25 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id TNHyHlEU6mgh for <intel-wired-lan@lists.osuosl.org>;
- Mon,  7 Sep 2026 18:12:19 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org 3A9614005A
-Authentication-Results: smtp2.osuosl.org;
- arc=none smtp.remote-ip="2607:7c80:54:3::133"
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1788804739;
- b=K7ZzFuVWRmJE341NBtRfWZ1Z+bsbFwRs3IKG9R7hbRRkvC38bryFpa66Ob9wO8jjItLy
- RxAoLJXHETZ3xGmPIIOUKkaTcbQ6IHBIoCH4jFSKgTKfnKKYW6fpMGDxd6MKjH/bPoQOK
- FStV9H3Ta+48w8emob2OUudMHWtLgVY2Ar2f0Mg3AJ7HfHq2/KYE/EZpGxsET3+/KV0fg
- PODt68EBx6XtLlCRDeO8xMtVm53Ilog9AUeGGcEgk09uBoxebEnLfcUw0wfdygY1Q/+bc
- ktZ7Rztfr/r0J2ZD8yVy1FrJJrIRX9iKaXfKGAHndjnZ4HF/id9Ywvi6yxWCNFXH8zA==
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id J2VQ40vA6BKo for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  7 Sep 2026 19:00:24 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org D9361605CE
+Authentication-Results: smtp3.osuosl.org;
+ arc=none smtp.remote-ip=192.198.163.11
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1788807624;
+ b=pGDP6Flkpf9fZ1WN80CJOJBUlKxF4+GCmKGFCVChD4Tc4PwUZ3cRsvvdgAE3gISOC39L
+ GCMcF4V9JJhyzJsVXJQlob1PCy1lkLCMiiGeIIx8J67QqNQo0P5sc5oaq1HUXqv1DOuN4
+ yJeX4an7u33Gyz9iE4S1oH32chOGVs2pPSetQPYvjHXapA5xfASEOxqxaOQHQNbMBlvwl
+ 03MNK0KldanqMvcfYtq2M13Q2ebCtvVvyZGB/R3aWaXiVmEObaVosLEppb+tCEauFKlAD
+ fzAVmWuALyNEKML4tfzxPdB9v2yYD77DFUYBGLbDMGgWIUbT/KA1yeE/JLkMZ9Dv6nw==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1788804739;
- h=Received-SPF:DKIM-Signature:Received:Message-ID:Date:MIME-Version:
- User-Agent:Subject:To:Cc:References:Content-Language:From:In-Reply-To:
- Content-Type:Content-Transfer-Encoding;
- bh=tUA4k8R2t1QpHAGgeyT0ZKIm7T5VVZVvcJldkkde15c=;
- b=PUxV0wsQGinlz7cCN2RKvbprBaI+yIvCNUlxY4nwWcG7c68GGxqlNW5i7NCa5VEy3P1+
- Atuzqj51Z/G0nuCZTFcteuaZvtW3hWqKj//Z2bMY/UkaEDKCPBls5wzUl9CnSOggrkkaw
- 4ENI5lwp5A9mytbqYM/Q+doAxZ8VzZGBqcsdfHUctWwwOWpO592iEgz/217eE0tuWMYav
- AGpkVXHFEan1UEZn7vTmxx2wRJtkK0RCRlLYYKq84kFttFjHjTFkQP0btytygApSyKw6x
- VdTG0a15Sm8Q8jPlXiwjiRIj00Lt4JZFVz7090wWYOYnNPdyVbYVQOmq82l5xwpOk/A==
-ARC-Authentication-Results: i=1; smtp2.osuosl.org;
- dmarc=pass header.from=infradead.org; 
- dkim=pass header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=bombadil.20210309 header.b=WTzWqTdy; 
- arc=none smtp.remote-ip="2607:7c80:54:3::133"
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2607:7c80:54:3::133;
- helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org;
- receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=infradead.org
-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org
- header.a=rsa-sha256 header.s=bombadil.20210309 header.b=WTzWqTdy
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:3::133])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 3A9614005A
- for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Sep 2026 18:12:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
- Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
- Message-ID:Sender:Reply-To:Content-ID:Content-Description;
- bh=tUA4k8R2t1QpHAGgeyT0ZKIm7T5VVZVvcJldkkde15c=; b=WTzWqTdywnsEwqjXCxEQTDsw2S
- S0GF02yWDOz/17M8o03Ohp0ZWpez/vaC4WRDHIdPsxPCPdCQt9y9sgjFNgtTaPektuda40Bf5/FfF
- 6sdeMfTnS2nI6S1Nxp9uVKKD1PZgbhUkOKYqN3glIn/acrrSjFRXe8982InOs9xpKId6JlAOt7Sfs
- dpzwPxjregJkSAwu5TP3UbfgCzvkL/rBvbv7NSS13WwGu8L0PSGw+Y9qkLc2dA0vfKcN0GU0ryFSj
- pkAKlDUUxC+Z5nV5MoCF6w3E4iUf32YHRZOyWT0VEhvjaQdZjfuVCMt5hL7B7O3dL3sYmuh/+MX6k
- mj/33REA==;
-Received: from [50.53.43.113] (helo=[192.168.254.34])
- by bombadil.infradead.org with esmtpsa (Exim 4.99.1 #2 (Red Hat Linux))
- id 1x3cp0-00000007RIP-364Z; Mon, 07 Sep 2026 17:07:54 +0000
-Message-ID: <c2f439ac-ca0e-4532-b649-c32c4e474436@infradead.org>
-Date: Mon, 7 Sep 2026 10:07:53 -0700
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/2] Documentation/networking: fix repeated words in
- comments
-To: Hemanth Selam <hemanth.selam@gmail.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>, "David S . Miller"
- <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Simon Horman <horms@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
- Shuah Khan <skhan@linuxfoundation.org>
-Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
-References: <20260907064528.6602-1-hemanth.selam@gmail.com>
- <20260907064528.6602-3-hemanth.selam@gmail.com>
-Content-Language: en-US
-From: Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <20260907064528.6602-3-hemanth.selam@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+ c=relaxed/relaxed; t=1788807624;
+ h=Received-SPF:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+ X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
+ X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Received:Date:From:To:
+ Subject:Message-ID:User-Agent;
+ bh=+tqNsoXmM4MNdumgVg7tZ1g3oG9WkeUSswFT+v5E6rM=;
+ b=FIaFO4k2NHP68qzV/e+LKNi9KMyiZfTMtgoIm1q2CncQBno5XLLB7rMGGEISKfOHEyRP
+ 2oYFfyoyK51zwjCWSye7FMX/sbjw8oax8C1dOnxetlbH/r0+iNRqnbGbqOd9OutejZUJl
+ X6+bz6bOmcey5A5D9nLN8+yU79PoiTNinwc6Zslvg8hleWkTUSS5KFLocJgMIgjXDCcE9
+ OtEo1XHeaMsCk0giY0GKwl0+fqu/U2LUJ50yZimIxdjsQeT3b+6Ysj3dOmT/+wrg3eWkH
+ e9p8snuvr3PFncc0tfXYhieP1YCYmpJNg3ixBAF0K6bB6AH61zPcWD9ZklMTEGVZ/eA==
+ARC-Authentication-Results: i=1; smtp3.osuosl.org;
+ dmarc=pass header.from=intel.com; 
+ dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=aK7O+pne; 
+ arc=none smtp.remote-ip=192.198.163.11
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.11;
+ helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
+Authentication-Results: smtp3.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=aK7O+pne
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id D9361605CE
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Sep 2026 19:00:23 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1788807624; x=1820343624; h=date:from:to:subject:message-id;
+ bh=RA4K//1+1gk2rQnt1K3xAEl0E2Q68c/xPh7tCQHodls=;
+ b=aK7O+pnea9Hn2VD/83CywybOveEXqQUKguZq2YV2UXutynUvXZehECoT
+ NEupf/zm+/bkG6VbaFNk273OPdSMNuIT4sM5DQhmdPFP/Ui3o6F1v/pmd
+ 4nxst+vfxToGNj9ESM8A5LIf1Z9v21x9u5UkjjjNWBEuZvXB8nUIYZfv2
+ odBbxcATJwTW231KAoi8HG2GuMHj9ydjclGPmEZN0/asfJN/KJ+83nCV1
+ YGFqYp3im6TSGoeiVqyNB2Uejv+gvhSUetjqhaWuIdeXhf5obnScG3Nt1
+ 4vDhvNXSuh1HZafAuWUBcod0R/edP6xWbncjtPCY9coZLH2Woh3EWj5Pr A==;
+X-CSE-ConnectionGUID: OACAmOHNTH+BTCyp6TKeSg==
+X-CSE-MsgGUID: ukX+IdRzT+KCWkuqTPiqtw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11899"; a="99805008"
+X-IronPort-AV: E=Sophos;i="6.25,267,1779174000"; d="scan'208";a="99805008"
+Received: from orviesa008.jf.intel.com ([10.64.159.148])
+ by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 07 Sep 2026 12:00:23 -0700
+X-CSE-ConnectionGUID: YnauxN23Q8GOdgfE+PMwPg==
+X-CSE-MsgGUID: u4VKY8m8QFu9oBrz0t0x8w==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,267,1779174000"; d="scan'208";a="270263849"
+Received: from lkp-server01.sh.intel.com (HELO dff15f1b2031) ([10.239.97.150])
+ by orviesa008.jf.intel.com with ESMTP; 07 Sep 2026 12:00:22 -0700
+Received: from kbuild by dff15f1b2031 with local (Exim 4.98.2)
+ (envelope-from <lkp@intel.com>) id 1x3eZn-000000001GJ-2sRR;
+ Mon, 07 Sep 2026 19:00:19 +0000
+Date: Tue, 08 Sep 2026 02:59:38 +0800
+From: kernel test robot <lkp@intel.com>
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Subject: [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ ed020eb043e16ad646bcf78e1e3903a65771f6d2
+Message-ID: <202609080235.2Aopu01a-lkp@intel.com>
+User-Agent: s-nail v14.9.25
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -152,49 +148,84 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: ed020eb043e16ad646bcf78e1e3903a65771f6d2  e100: prevent shift-out-of-bounds in EEPROM access
 
+elapsed time: 4473m
 
-On 9/6/26 11:45 PM, Hemanth Selam wrote:
-> Drop words accidentally written twice, reported by checkpatch.pl as a
-> possible repeated word.  Only touches comments, no code changes.
-> 
-> Assisted-by: Cursor:claude-opus-5
-> Signed-off-by: Hemanth Selam <hemanth.selam@gmail.com>
+configs tested: 65
+configs skipped: 0
 
-Acked-by: Randy Dunlap <rdunlap@infradead.org>
-Thanks.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-> ---
->  Documentation/networking/device_drivers/ethernet/intel/i40e.rst | 2 +-
->  Documentation/networking/device_drivers/ethernet/intel/iavf.rst | 2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/Documentation/networking/device_drivers/ethernet/intel/i40e.rst b/Documentation/networking/device_drivers/ethernet/intel/i40e.rst
-> index 53d9d5829d69..e01f0adda3f6 100644
-> --- a/Documentation/networking/device_drivers/ethernet/intel/i40e.rst
-> +++ b/Documentation/networking/device_drivers/ethernet/intel/i40e.rst
-> @@ -692,7 +692,7 @@ queues: for each tc, <num queues>@<offset> (e.g. queues 16@0 16@16 assigns
->  16 queues to tc0 at offset 0 and 16 queues to tc1 at offset 16. Max total
->  number of queues for all tcs is 64 or number of cores, whichever is lower.)
->  
-> -hw 1 mode channel: ‘channel’ with ‘hw’ set to 1 is a new new hardware
-> +hw 1 mode channel: ‘channel’ with ‘hw’ set to 1 is a new hardware
->  offload mode in mqprio that makes full use of the mqprio options, the
->  TCs, the queue configurations, and the QoS parameters.
->  
-> diff --git a/Documentation/networking/device_drivers/ethernet/intel/iavf.rst b/Documentation/networking/device_drivers/ethernet/intel/iavf.rst
-> index eb926c3bd4cd..5840569917f5 100644
-> --- a/Documentation/networking/device_drivers/ethernet/intel/iavf.rst
-> +++ b/Documentation/networking/device_drivers/ethernet/intel/iavf.rst
-> @@ -171,7 +171,7 @@ queues: for each tc, <num queues>@<offset> (e.g. queues 16@0 16@16 assigns
->  16 queues to tc0 at offset 0 and 16 queues to tc1 at offset 16. Max total
->  number of queues for all tcs is 64 or number of cores, whichever is lower.)
->  
-> -hw 1 mode channel: ‘channel’ with ‘hw’ set to 1 is a new new hardware
-> +hw 1 mode channel: ‘channel’ with ‘hw’ set to 1 is a new hardware
->  offload mode in mqprio that makes full use of the mqprio options, the
->  TCs, the queue configurations, and the QoS parameters.
->  
+tested configs:
+alpha         allnoconfig    gcc-16.1.0
+alpha        allyesconfig    gcc-16.1.0
+arc          allmodconfig    clang-24
+arc           allnoconfig    gcc-16.1.0
+arc          allyesconfig    clang-24
+arm           allnoconfig    gcc-16.1.0
+arm          allyesconfig    clang-24
+arm64        allmodconfig    clang-24
+arm64         allnoconfig    gcc-16.1.0
+csky         allmodconfig    gcc-16.1.0
+csky          allnoconfig    gcc-16.1.0
+hexagon      allmodconfig    gcc-16.1.0
+hexagon       allnoconfig    gcc-16.1.0
+i386         allmodconfig    clang-22
+i386          allnoconfig    gcc-16.1.0
+i386         allyesconfig    clang-22
+loongarch    allmodconfig    clang-24
+loongarch     allnoconfig    gcc-16.1.0
+m68k         allmodconfig    gcc-16.1.0
+m68k          allnoconfig    gcc-16.1.0
+m68k         allyesconfig    clang-24
+microblaze    allnoconfig    gcc-16.1.0
+microblaze   allyesconfig    gcc-16.1.0
+mips         allmodconfig    gcc-16.1.0
+mips          allnoconfig    gcc-16.1.0
+mips         allyesconfig    gcc-16.1.0
+nios2        allmodconfig    clang-20
+nios2         allnoconfig    clang-24
+nios2         allnoconfig    gcc-11.5.0
+openrisc     allmodconfig    clang-20
+openrisc      allnoconfig    clang-24
+openrisc      allnoconfig    gcc-16.1.0
+parisc       allmodconfig    gcc-16.1.0
+parisc        allnoconfig    clang-24
+parisc        allnoconfig    gcc-16.1.0
+parisc       allyesconfig    clang-17
+powerpc      allmodconfig    gcc-16.1.0
+powerpc       allnoconfig    clang-24
+powerpc       allnoconfig    gcc-16.1.0
+riscv        allmodconfig    clang-24
+riscv         allnoconfig    clang-24
+riscv         allnoconfig    gcc-16.1.0
+riscv        allyesconfig    clang-24
+s390         allmodconfig    clang-17
+s390          allnoconfig    clang-24
+s390         allyesconfig    gcc-16.1.0
+sh           allmodconfig    gcc-16.1.0
+sh            allnoconfig    clang-24
+sh            allnoconfig    gcc-16.1.0
+sh           allyesconfig    clang-17
+sparc         allnoconfig    clang-24
+sparc         allnoconfig    gcc-16.1.0
+sparc64      allmodconfig    clang-20
+um           allmodconfig    clang-17
+um            allnoconfig    clang-17
+um            allnoconfig    clang-24
+um           allyesconfig    gcc-16.1.0
+x86_64       allmodconfig    clang-22
+x86_64        allnoconfig    clang-22
+x86_64        allnoconfig    clang-24
+x86_64       allyesconfig    clang-22
+x86_64      rhel-9.4-rust    clang-22
+xtensa        allnoconfig    clang-24
+xtensa        allnoconfig    gcc-16.1.0
+xtensa       allyesconfig    clang-20
 
--- 
-~Randy
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
