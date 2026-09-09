@@ -4,137 +4,135 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2050C79FB7
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  9 Sep 2026 14:16:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A949C79FBF
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  9 Sep 2026 17:03:23 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 8F77D6078C;
-	Wed,  9 Sep 2026 14:16:28 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 0B1A1607CB;
+	Wed,  9 Sep 2026 17:03:23 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id huygSq1v2ncQ; Wed,  9 Sep 2026 14:16:28 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 069DF60769
+ id iPO3_N2NGERr; Wed,  9 Sep 2026 17:03:22 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 3E14C607C5
 Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1788963388;
-	b=Uc0ytnufDXsnrQ3p0B8gR6CVHIWVzxOr9ynPWpKhXe5ocMjGV6hbQAiOmbiERWg51ZHx
-	 lozixrWF1BX6EHRhZoYhMfr/VahALDyzkjZdbfPgsyrnRaeQ1V8Ton3O4BX4jtPjbY8cR
-	 XSBH4J6VaxFXIhMabbuGpLcG2D1/G4fPo1SnB6cAIeMlx+A2zXyBCYz8mvhSNlMCQSyiY
-	 4Qztv4UHkvwnvQV1oo2KzFp7S87N012fTkbvns3hmwDzhqelPmQtqZQibS/QG4wjvjIfy
-	 yp5KexUUsNx9AXeNMKhK3JXWZPqHLpPwMjmklqopXBRabCZ4r1tTKK2Wzuun6CqMQ4w==
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1788973400;
+	b=JIRdLY0aXLlLmo0+beJiNkG7itxWgWTwBPT6I/MggKtioTwH6+9u0pYWuL4xlThGOurB
+	 wfucmrdPRdR8gZNOCLqvpU2YZarlA/9k4ZK1NFqLA/+Pdiu3HDLLQNAa2w0yZwkl4a7Ig
+	 LHxKsbRL+nSlGiS7/3SkJrIQ7O2VeeDHuOjtmL8dLFH6Gh+KdhTQoSX/LJ860McMhUYpj
+	 4ZYo7JGn+rQsLTSjvvylvxHFApDZ3zczrOzOuGh9vk2zPlFK1wNIwt/X/fAHqi9y+nBcs
+	 TgUXtLgDI7Yh9Ia5ChzuKq6eTaOIN/ZJUZmBqHAVX41beWYGiH11GwRNnIHMLG73TQQ==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1788963388;
+	c=relaxed/relaxed; t=1788973400;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
-	 DKIM-Signature:Received:Date:From:To:Cc:Subject:Message-ID:References:
-	 MIME-Version:Content-Type:Content-Disposition:In-Reply-To:
-	 X-Debian-User:X-BeenThere:X-Mailman-Version:Precedence:List-Id:
+	 DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-IronPort-AV:
+	 X-IronPort-AV:Received:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-ExtLoop1:
+	 X-IronPort-AV:Received:Received:Date:From:To:Subject:Message-ID:
+	 User-Agent:X-BeenThere:X-Mailman-Version:Precedence:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Errors-To;
-	bh=4gJWK0CsCanIqr2CcAL6KVdYWNAlhC1u6+5ypr1xDm8=;
-	b=SZRGpDxvzEjXhSdteUjIt/y/HijLKhxbLC8E2Dor9zmTwwWB2jgjYXlnnPCq7dIiK+WP
-	 ZLIO+QP/OVgEUt23U0NMRpgq6F5Ov0qr7yXY2Ac16Z4PZYPIXO6RgGhQYEgmVVsF7nYyo
-	 Y82jTttDsQHz81wfqufV/mfIyC0qEcGuMK4tVhsspiukdnU8T6pIykx6X503ypYixRsfU
-	 m2j1QonHFDd8JxM795O4WmTYKvNJ3aV80mVhVeWT/FQ5NtqyNllOuIrtmB+mPe/Rkdr0I
-	 ZfqwU4OfrJ+e3NM+DQUNpyVgY4K/ehIXd/zyAsHxGIDxsDnaE5pOmO/KfivzNahvEnQ==
-ARC-Authentication-Results: i=2; smtp3.osuosl.org; dmarc=pass header.from=debian.org;
-	dkim=pass header.d=debian.org header.i=@debian.org header.a=rsa-sha256 header.s=smtpauto.stravinsky header.b=vqdKoGkM;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	bh=IZN0qz0B8VU1f6kCKA8NYDMeQa/kyVvQA2BIQSlPfA4=;
+	b=PvLHi8AKe5T7kEJnE2NZBPXFKN9VEWwK64K8N0bmrNWwxNw2QDFns9ZkWbEZURnltLui
+	 71h9UgNCpI+byDMuj8JQ4p9BV7h1eTW3ka1VMSoIK59UuD71vGCOk8/eJasMzlUJJmUix
+	 mhjcG5UmMx2VuSQxrO9XYBAtn5OTeui8mwOE2FW2Rr3Abz8giIq2N9vr6TlhMl7I6BKM4
+	 LoaGnHDwBowdFqYOX/5JV/ObJqByJRWD7RIz1djys4BPRwmx0pkDUKujBuOOF+9CILFpC
+	 BPvnUsVzC0UfYptQY4Jnt6fc8+fpBKD/BaxGxKrIdn6okKKhy3j35F9FDu2WHqW/nTg==
+ARC-Authentication-Results: i=2; smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1788963388;
-	bh=4gJWK0CsCanIqr2CcAL6KVdYWNAlhC1u6+5ypr1xDm8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=E3kLpLls7WsdBJ5ZIQjiZQazlAIM1rLdG/KYEyDNTZmDK0u1bKc1NeZF2kot+MiFe
-	 FemQocubJ1lReGrnYJGDKQR3O46SmWg+kwrpERlpwXImFGOyFy7MJXouaeJWy5dY8J
-	 VlzDhOIkOVx9y1NZN1kfop66lD+MczzmEHUvp8huFc5ia4HFQwG2w/DK+WwzxyecdU
-	 TQ+5fLxiCKPB4aPZxFv19UWVsfxWNAuYw+QLZdxSpLVljXjbxea6slbtDdIWGqLZZ4
-	 489RkeO3k2NS5N76cKhk4a9nDDLIUUueG7V/NSsceGZbV2GSm+Uo0xXb7KXuzmp+ic
-	 n1vX8CiLjsecA==
+	s=default; t=1788973400;
+	bh=IZN0qz0B8VU1f6kCKA8NYDMeQa/kyVvQA2BIQSlPfA4=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=BQpyb3Ny4c/UOeFEczhNwMg2ZuzSe/zYxmtnpSiD5mBTPni4skIsCcCrJt5K2vC+c
+	 qcxd0DYuwxb421+UQtvreQnocZFKjEUKnC/L/lkG0mZR2Idet1RqSFUKxsG5pJP9Bp
+	 fCsyJDK2Dji0HrRFi8Uqi3IGu8DeNOI4/nW/4jPHVJPP6ZaWKk7nTK+MCQwcSFssQv
+	 X4KpT586uTg7B/u8gijuSEYLUQugx1atUPNKncuj4UwfTAfkrzh5/Ug64G0kO1BJ9G
+	 JoK7VmQR8QkZClpBn4v/tjQtfz3BhWMJwDMhtF8TryQMZ/IhYhqfgpvArjnaCdwx6d
+	 NXu7w67M6MaWg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 069DF60769;
-	Wed,  9 Sep 2026 14:16:28 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 9E8EE755
- for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Sep 2026 14:16:26 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 3E14C607C5;
+	Wed,  9 Sep 2026 17:03:20 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 592A0268
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Sep 2026 17:03:19 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 820A660769
- for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Sep 2026 14:16:26 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 4A400407B7
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Sep 2026 17:03:19 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id M3bzU-i1B-1r for <intel-wired-lan@lists.osuosl.org>;
- Wed,  9 Sep 2026 14:16:26 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org A7015605D7
-Authentication-Results: smtp3.osuosl.org;
- arc=none smtp.remote-ip="2001:41b8:202:deb::311:108"
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1788963386;
- b=Td6zajw9KFfl8WUZ5njYf2XyaX7XnW5oXqs0LRu/qJghoXopr6SmBFJAOAsaaOntL0y6
- 5LV1ocAfj33qTKYkQM6u4C8INn8W6Wr/gjn9+tPSWU3imJeXTD6bB3bUrWiL8aR7c/7mn
- SUYQiG44GTC1IsLRQFSiZ2rGs0hmNGTQIoLuwHpIgBVQ0WORA1LoZwzMikuJ+9z2hJVeD
- u8t4EI35/96bwh+lsYjNLAsMVRGbLiUY6RXLHjZfWs3U7MCzpJ6TpCnnKxUP6w4dg6pm1
- QpxRTHU4gouZhXK6L7A8mjHsfaLPwva5MGjufSN1EhpvKcqYfmaK4UPGFvHhs3vmt0w==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id y5fhg_2mQRrY for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  9 Sep 2026 17:03:18 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org B0EBA407B8
+Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=198.175.65.14
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1788973398;
+ b=V2l1xgJh66Bk1Zk6Cjr0AXoLLS8TL0PsP1Y1Ow7BRdrMQ0ayc3P5o4elGJ71Mp1H4awB
+ Ms3QCiNjwl367KjqTw88gihzxYNSgq9Iz5eJAdFatMAy49Z966zO+v7337bo847Il2NyB
+ E1WYv8RZ+tkMKMsstO4rIHThUutzHe0UoqMuOOefVoG5cY0xk6hFplPXfgQTDnEeCcZnn
+ aPT2nFQl4g9376z0ApsGSLgUIbUlr/zNEh+5PeJ6+DvcoGvWe0ONibO3gp7qoT8h8A7nI
+ iA773Pv2nurTMY8znL7OSiKno5VaHtK5RXPP6yRqwSAAt3I3QhfAoacg8XfVNIsbJMA==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1788963386;
- h=Received-SPF:DKIM-Signature:Received:Date:From:To:Cc:Subject:
- Message-ID:References:MIME-Version:Content-Type:Content-Disposition:
- In-Reply-To:X-Debian-User;
- bh=4gJWK0CsCanIqr2CcAL6KVdYWNAlhC1u6+5ypr1xDm8=;
- b=KdgykL5mH5jfHQ5zoXv7mWjxeL2RTUC+KMOfeeTMjT76hniPze/BdmoFXqXtPNM6K6zQ
- MF/tBegKElNjG0hV4m528qv2vnQapTqw13fsIEY2//V0ZQYy2g7TCRrtOT9CFoNhvd0tw
- M+fsf2VxdyyTr2Jl+MagxhtShJgo/faP533aLoIP8CvNWQv+Fg6yZDKeOnpM5SU9wofID
- Ur9vzXex6oTPldRUP0nxmoztYZLudau3vTyMSVE9Nn22I2twJxkS/aCMsQvMDK7660m/f
- OS9rQmBl1Xy1Wpgt/vvlBur2E+vcLnBTA+cjzMaye6G8p3AtxgvcZoUo1+urmG0L88Q==
-ARC-Authentication-Results: i=1; smtp3.osuosl.org;
- dmarc=pass header.from=debian.org; 
- dkim=pass header.d=debian.org header.i=@debian.org header.a=rsa-sha256
- header.s=smtpauto.stravinsky header.b=vqdKoGkM; 
- arc=none smtp.remote-ip="2001:41b8:202:deb::311:108"
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2001:41b8:202:deb::311:108; helo=stravinsky.debian.org;
- envelope-from=leitao@debian.org; receiver=<UNKNOWN> 
-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=debian.org
-Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=debian.org header.i=@debian.org header.a=rsa-sha256
- header.s=smtpauto.stravinsky header.b=vqdKoGkM
-Received: from stravinsky.debian.org (stravinsky.debian.org
- [IPv6:2001:41b8:202:deb::311:108])
- by smtp3.osuosl.org (Postfix) with ESMTPS id A7015605D7
- for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Sep 2026 14:16:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=debian.org; 
- s=smtpauto.stravinsky;
- h=X-Debian-User:In-Reply-To:Content-Type:MIME-Version:
- References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=4gJWK0CsCanIqr2CcAL6KVdYWNAlhC1u6+5ypr1xDm8=; b=vqdKoGkMqI3l0Mzokkdx6VXH/n
- foZpguuW3YclQ/ZVT6v840i9RDe+kEtQW5iJM3vrIKGKgo6CuD2y+ltV0VhDLSmVk0IIof45Ckxi5
- uTcLhbRP7My87tHahpjnFL8YWY22jLZaC/m2qsb7XQi2k3mfSeNHclDqvC5krIIERBVDHQ0JFJtHS
- PoLcGpstJQonj4MyTYpbJGuZBLIXod3xZgW1NTf1reMs4Vmzb68udEyO1xBLpgY5rPMS9eLqL5ZRY
- 8PBvZuxjXQ453EXgtMHq7+wkCctHvAICvFd1UAYIfwUGx9IFv18kNglsbtwVevcaZhza8uM8D+M4X
- vmPdGyBw==;
-Received: from authenticated-user by stravinsky.debian.org with esmtpsa
- (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
- (Exim 4.96) (envelope-from <leitao@debian.org>) id 1x4J5n-00370r-18;
- Wed, 09 Sep 2026 14:16:03 +0000
-Date: Wed, 9 Sep 2026 07:15:58 -0700
-From: Breno Leitao <leitao@debian.org>
-To: Jakub Kicinski <kuba@kernel.org>
-Cc: anthony.l.nguyen@intel.com, netdev@vger.kernel.org, 
- davem@davemloft.net, edumazet@google.com, pabeni@redhat.com,
- andrew+netdev@lunn.ch, horms@kernel.org, intel-wired-lan@lists.osuosl.org,
- przemyslaw.kitszel@intel.com, 
- jbrandeb@kernel.org, benjamin.h.shelton@intel.com
-Subject: Re: [PATCH iwl] eth: ice: don't dereference pointers from TP_printk()
-Message-ID: <aqFp78nsYmT8gRDO@gmail.com>
-References: <20260821020201.1337338-1-kuba@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260821020201.1337338-1-kuba@kernel.org>
-X-Debian-User: leitao
+ c=relaxed/relaxed; t=1788973398;
+ h=Received-SPF:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+ X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
+ X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Received:Date:From:To:
+ Subject:Message-ID:User-Agent;
+ bh=IZN0qz0B8VU1f6kCKA8NYDMeQa/kyVvQA2BIQSlPfA4=;
+ b=Qt7gokmqXwAtAQpg//9gswq5KWZuuVLpgUEMUjfhZjsNlAIonqiKcB+Djw/XHZJ6f9xq
+ tY6zNeQ+hW/Fhi2DGr6rLRD1vB04q30HAzc0T6PwUV9zgX812X19F/CjKodVJ2sdMPExZ
+ iAvpbf70SlcUBlLDdb9obLmE+eLmKMR/xqXuE4rcbWEkMbFz6KHkQY3c7Aq+yjQ7F/S9e
+ dbK7qqzRm2nBOXg7hT5XTTQhaRU8dUruNE0Qp62EnjuRZVZkBVukJtQMs/RhBNe2eR18D
+ r7klZdaHykkDlFyp8xJyhrxftCOt8/Bq5mNkRuhMfmdrSfEHMSfXQ9Lzbb0sQIVhC+Q==
+ARC-Authentication-Results: i=1; smtp4.osuosl.org;
+ dmarc=pass header.from=intel.com; 
+ dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=gLlUJ+QO; 
+ arc=none smtp.remote-ip=198.175.65.14
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.14;
+ helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
+Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp4.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=gLlUJ+QO
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id B0EBA407B8
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Sep 2026 17:03:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1788973398; x=1820509398; h=date:from:to:subject:message-id;
+ bh=zhR+4E3ki28Dl9cKEarzrcuny91dkbeXI2Ps7uDuyZE=;
+ b=gLlUJ+QOc+bl3JdOtTrmzILeCNfDoZY42zviHuH806+MCL+MYaxT+dKV
+ HIB/TBy87LehiB46/I1KGQvHtSBjk6xAgxTdy1W3vm9qS1ND/VVbRH4AE
+ akZZWd0s/fGuuWVLtrXxfJrhSXTyiYC6WTtye8SYfLv8Ln0KoaOhWyGm0
+ X/Pgspw4aQbc59aEs66CDfd3iIZGx9KYJ2XrRMyon1pvojFvLpZ1tf6ly
+ yLXdrqCkzBmovud5Rqy5u7RulRAYGmSdSfPMduoQj50Sqfrf/gWzEd+sD
+ WW7JVQtmWFD87jfPJGW5Pdybxyf9xAseEiVB/Vkxw/Mht169cN30efAVS w==;
+X-CSE-ConnectionGUID: MgoO5A1oQaq3UAl6Te+yug==
+X-CSE-MsgGUID: TZSc5gAsQTaTMb1viErGMg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11900"; a="93275179"
+X-IronPort-AV: E=Sophos;i="6.25,270,1779174000"; d="scan'208";a="93275179"
+Received: from fmviesa006.fm.intel.com ([10.60.135.146])
+ by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 09 Sep 2026 10:03:17 -0700
+X-CSE-ConnectionGUID: LKMme4jqTBGMFr7pKwR2Fw==
+X-CSE-MsgGUID: cteaEE8sSJWiqMRH0+kXgg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,270,1779174000"; d="scan'208";a="267085189"
+Received: from lkp-server01.sh.intel.com (HELO a3e91e2cf319) ([10.239.97.150])
+ by fmviesa006.fm.intel.com with ESMTP; 09 Sep 2026 10:03:15 -0700
+Received: from kbuild by a3e91e2cf319 with local (Exim 4.98.2)
+ (envelope-from <lkp@intel.com>) id 1x4LhZ-000000000ez-1Orf;
+ Wed, 09 Sep 2026 17:03:13 +0000
+Date: Thu, 10 Sep 2026 01:02:23 +0800
+From: kernel test robot <lkp@intel.com>
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Subject: [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 46cd38dd9ad34dcff3acf363a2a74942d480d7da
+Message-ID: <202609100120.OjAxqX2Y-lkp@intel.com>
+User-Agent: s-nail v14.9.25
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -149,23 +147,69 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-On Thu, Aug 20, 2026 at 07:02:01PM -0700, Jakub Kicinski wrote:
-> After forwarding net-next during the v7.3 merge window we started
-> seeing:
-> 
->   TRACE EVENT ERROR: Event ice_tx_dim_work has double dereference in TP_printk: REC->q_vector->tx.tx_ring->q_index
->   WARNING: kernel/trace/trace_events.c:420 at test_double_dereference.cold+0x39/0x4b
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: 46cd38dd9ad34dcff3acf363a2a74942d480d7da  iavf: add missing PTP adjustment callbacks
 
-I am seeing this in one of my hosts as well.
+elapsed time: 1489m
 
-> this is due to extra checks added in tracing subsystem in
-> commit b5cc230af5e5 ("tracing: Warn when an event dereferences a pointer in TP_printk()").
-> 
-> Printing happens long after the event was recorded, by which point
-> the pointers may be invalid (the ring or the dim instance).
-> Copy the eight scalars into the event instead.
-> 
-> Fixes: 3089cf6d3caa ("ice: add tracepoints")
-> Signed-off-by: Jakub Kicinski <kuba@kernel.org>
+configs tested: 50
+configs skipped: 0
 
-Reviewed-by: Breno Leitao <leitao@debian.org>
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+tested configs:
+alpha        allnoconfig    gcc-16.1.0
+alpha       allyesconfig    gcc-16.1.0
+arc         allmodconfig    gcc-16.1.0
+arc          allnoconfig    gcc-16.1.0
+arc         allyesconfig    gcc-16.1.0
+arm          allnoconfig    clang-17
+arm         allyesconfig    gcc-16.1.0
+arm64       allmodconfig    clang-24
+arm64        allnoconfig    gcc-16.1.0
+csky        allmodconfig    gcc-16.1.0
+csky         allnoconfig    gcc-16.1.0
+hexagon     allmodconfig    clang-24
+hexagon      allnoconfig    clang-24
+i386         allnoconfig    gcc-14
+loongarch   allmodconfig    clang-19
+loongarch    allnoconfig    clang-20
+m68k        allmodconfig    gcc-16.1.0
+m68k         allnoconfig    gcc-16.1.0
+m68k        allyesconfig    gcc-16.1.0
+microblaze   allnoconfig    gcc-16.1.0
+microblaze  allyesconfig    gcc-16.1.0
+mips        allmodconfig    gcc-16.1.0
+mips         allnoconfig    gcc-16.1.0
+mips        allyesconfig    gcc-16.1.0
+nios2       allmodconfig    gcc-11.5.0
+nios2        allnoconfig    gcc-11.5.0
+openrisc    allmodconfig    gcc-16.1.0
+openrisc     allnoconfig    gcc-16.1.0
+parisc      allmodconfig    gcc-16.1.0
+parisc       allnoconfig    gcc-16.1.0
+parisc      allyesconfig    gcc-16.1.0
+powerpc     allmodconfig    gcc-16.1.0
+powerpc      allnoconfig    gcc-16.1.0
+riscv       allmodconfig    clang-24
+riscv        allnoconfig    gcc-16.1.0
+riscv       allyesconfig    clang-24
+s390        allmodconfig    clang-24
+s390         allnoconfig    clang-24
+s390        allyesconfig    gcc-16.1.0
+sh          allmodconfig    gcc-16.1.0
+sh           allnoconfig    gcc-16.1.0
+sh          allyesconfig    gcc-16.1.0
+sparc        allnoconfig    gcc-16.1.0
+sparc64     allmodconfig    clang-20
+um          allmodconfig    clang-17
+um           allnoconfig    clang-17
+um          allyesconfig    gcc-14
+x86_64       allnoconfig    clang-22
+xtensa       allnoconfig    gcc-16.1.0
+xtensa      allyesconfig    gcc-16.1.0
+
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
