@@ -1,298 +1,282 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1037AC79FBF
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 10 Sep 2026 15:33:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AFDACC79F9F
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 10 Sep 2026 15:47:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id A931280D60;
-	Thu, 10 Sep 2026 15:33:04 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 7302C40AFB;
+	Thu, 10 Sep 2026 15:47:01 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id j-_bMO4XGVKw; Thu, 10 Sep 2026 15:33:04 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org DF0CB80E46
-Authentication-Results: smtp1.osuosl.org; arc=fail smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=fail; t=1789054384;
-	b=fkwNBUki+WZV/tTnlS5yJU4uCtHjHOQEqD/FJzJscMofljw/UvX+a/pOh9nNmrobbLyh
-	 PBHaOl/VGYyuRAqggMBF+sqd2o+Gv52FsLlva/Olr7RZ2JCKfvME2QZjQ30CeT/vu5qWS
-	 cWWYkrzfp/m8alw5BcKfAD9dZlfwnCJ93zNe9jnAvfPOTgB0mKi7boZbNokwcMf0GEXTp
-	 XFjfEbaczLKPzePNZWYQG5+2xn6z3HX+i5lClaWcGyXdJRzowhdYWWZYV4pqszGNl7tkV
-	 3gfOrWMarneNBxpLrQ+m1EzmiKzJg/MDLMyq/bqXUGOWZfJcRyibuXOXOL7Wf0HAXHQ==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id HSQjLOFovHaR; Thu, 10 Sep 2026 15:47:00 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org CA24B40AFD
+Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789055220;
+	b=ADc6wQkm34dyVSKALDfyfjX5Rk7qbNsjEKj8oVTjbExh1v7UFod1nbwcHWvU9zZZHBGL
+	 W4Dotrfdmui5bh8O0CCI3OxObyMKYy8or+tqE+ilWOYPUyBUisasXwaYBKswKP4qXyd8+
+	 95IYy7AUjT2jE1PbN/EcvF/O9eVRQD9p3g5eEl85ENp+Ts8WwaZuH9X2WGcacmDfKbqHf
+	 FfRYE2BEhOzjLgmjNOKbf/N9zp1ikqxNUnWRNMVwBwU3qAO52WrlA98Aq3b/vE7yuYtXV
+	 J9WiyfSQwyQXHecdrGrvaCaPW5rLpGmCzoiC6328uGM5CiRVwSH2IFVrbs7tVh0keOw==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1789054384;
+	c=relaxed/relaxed; t=1789055220;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:X-Greylist:Received-SPF:Received:
-	 Received:DKIM-Signature:DKIM-Signature:DKIM-Signature:DKIM-Signature:
-	 Received:Received:Message-ID:Date:MIME-Version:User-Agent:Subject:To:
-	 Cc:References:Content-Language:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:X-Spamd-Result:X-BeenThere:
+	 Received:Received:DKIM-Signature:DKIM-Signature:X-ME-Sender:
+	 X-ME-Proxy-Cause:X-ME-Proxy:Feedback-ID:Received:X-Mailer:
+	 MIME-Version:X-ThreadId:Date:From:To:Cc:Message-Id:In-Reply-To:
+	 References:Subject:Content-Type:Content-Transfer-Encoding:X-BeenThere:
 	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=u+K7ooVeSqRxjIANte2bbg3RZ65EwBMeUVjE/SVMc5A=;
-	b=O0bF7gybQeTDua/P/20TOksVfsOwWsSF+PJD5K0RCcVWZYbvAuS2/EKask37uRGgDGr4
-	 Ep1zs6+Jvo92RPGjXjCSe8ipfsQbxRbl1Qt38l4cSQlxWI20WlELfWArmxQTpTLxIMOsb
-	 Luo7yMpTVbYprqYqJeO2ZB3N9vn+3eWV3RBoro93BAD3OVAqZ9TwdTlzncqQfhfeuTCr7
-	 672jkgJ371o9UEEKJPFEnMONbgrb4RabVq7+F7aeMU9HiJcenW/0AbRDW8RsunSYng5nn
-	 1Qu6atm5YjNAUqYMIr7w9mC6pIjfHBdgLek+a04y/hYPuPCzc40zcIejnHAAoyVuMHA==
-ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=fail smtp.remote-ip=140.211.166.142
+	bh=VJHi3AALrojUsaiH2K9JRyFh6yN6vM9XW4bo5EfCLvk=;
+	b=F1QOMuwxVBpB98AL5Hn0ZggX2ugEjJNLJrXVhw5ojfBbi9tScD7CQ9RRnYj9wzyyfPTu
+	 oPP6h/Lxnyb6LIssrq8gpEFcijaHU7+P6uEqP/qbpedFdjy58awJeh/mDRhVuzZC+nlYm
+	 UfMfkdkeMFRr1QsK3MAM/n9c17f/je5C8MGGhx9foXOmgfgwg9EvLl3cje71eDX87wdnk
+	 qq179nozwxK4RoZHKx8zwrqJsHwtK9nBsFqG+pqA4EM9fGBJwyZsmFSBMrPLVSESIsh7s
+	 8qYETsLMKSyOZ7+C2FR12GPb1gIIS1R2DbGG9jm+roENroti8qJxwhdpBkRME/NWN9w==
+ARC-Authentication-Results: i=2; smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1789054383;
-	bh=u+K7ooVeSqRxjIANte2bbg3RZ65EwBMeUVjE/SVMc5A=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:List-Id:
+	s=default; t=1789055220;
+	bh=VJHi3AALrojUsaiH2K9JRyFh6yN6vM9XW4bo5EfCLvk=;
+	h=Date:From:To:Cc:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=lRmI9UiYEoc+69ES/9g6al04hIEiac6svjgqfeBVWIvB4S/giXTsijGvN5nafR4cn
-	 6FsSGm21l8OTizUMGEfsZmCKVFTwBsvM+diz5fUbqnxHlr7OptLRNPyPL+MX4dfRB+
-	 S/A3mlIGCqq+To5D5cTJ7cauCi0cMjbsCrdUuueqZJ3FpJp8VPsPUZpmnSNc5nMcwA
-	 8DLDsexvogmNT1uV/1pi0PkrXo30mvjwqpJVRDm1+up81UWR96h9kkIK+2XiNs6hsQ
-	 dC+8qhMPc/C0uaEDFwTsi9OXgvYiPjEUfJkb8uk1rum+iz+nxVrNUci9vxO1hL7GXv
-	 F4tJjAUnKghpg==
+	b=0gZCXT/jROJEvzPVJS60rAmvsqdsyhc64r+cxo9OfhKMiwkey/8+Vg4Hy79z6gipT
+	 ytO9Jfv7DVBF85kId/IkfOkq27rfTRKT+VBOTdj1mhWcwBFnvs5xubOOY89sNGB+VX
+	 dgA5jd5FD9q/8Tp/08c5RZFlAMlBwGpfyXM+D0rELCHUudcHGpCBIwLUJlZdxtSEyJ
+	 lm9rKxE8dO/ZPUMH4wrHu1BO2KLCAg9rytJke3eozQD1900XzoJJayLitXcG3tvVwj
+	 u5K8+mxLJcWNRiwAZPQ1sfNnCGqClidPtFA0llK4rcbChtqZ7HGk61ArSaXxGRouR1
+	 kQatKj0DA3Lzg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id DF0CB80E46;
-	Thu, 10 Sep 2026 15:33:03 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 7CA79769
- for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Sep 2026 15:33:02 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id CA24B40AFD;
+	Thu, 10 Sep 2026 15:47:00 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id F2E2E362
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Sep 2026 15:46:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 6F452607C4
- for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Sep 2026 15:33:02 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id F064140332
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Sep 2026 15:46:58 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id z-MFzJEO03sU for <intel-wired-lan@lists.osuosl.org>;
- Thu, 10 Sep 2026 15:33:01 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 4A7CB60B6C
-Authentication-Results: smtp3.osuosl.org;
- arc=none smtp.remote-ip=195.135.223.131
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789054381;
- b=VhY+JEVNffUMNfSYKxXZtz2oIwrKsT7woknM4jdgpHum2vzjVtMQMTJ2fzfcAQgQebQM
- U5o6QMMUwbKlwY0oDWr+H3sF3XhzcaXt4WLZ/3n6p5FRBstzaJH28pQK+4i6gOrl6g/Jh
- sj2lFOQEa/wXsZzUmyl7Tfy5GN816vYZPtcF1gtEXwLViJ/W18tkhaDIwN1jxQlhFwSiS
- +o/i/FxrPZvVP90wzeWVf7aYbGTembwWK60n4a/VCqj8tI1CdnwDJifPu56R6Ly18TrXv
- nMxBDEAaFNihah+xSnN0x0AiQ/s+EMDOWdRblR8p+wc8HFCO1N1Y62edq5IlI+/PC4w==
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id HEq9bDpcJtOK for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 10 Sep 2026 15:46:58 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org 7D85C4032B
+Authentication-Results: smtp2.osuosl.org;
+ arc=none smtp.remote-ip=202.12.124.141
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789055218;
+ b=mA6oagRM1qgGsiHRpLkl2GIkijafT4CC6K65C58wR0+fL1XIS6u4tLQiCZ0DhrpOIwox
+ QaaW9fjgtx/1ELDAr4T0+ESFosfwZN41gwpfb4cJr5PkTrtMMQYJz/SpxKvZyvzPo9IUh
+ TBy750B3xCDlkKgLHD8QmPw2+JB0TauMKeNg974d/sjNWHfIPDixn9rq6q+obtsrF3++H
+ QM/lLDwz0+qhh/ugZdCba7qq3dJyzAf4tlxXF/QMqICe4n8rMsSDBkYlgiEveRoB6BTXL
+ zgmvhzMivLxYhxAQtloGuAcksOX9DGgYKMrnowoVb2fZt9GNXDXNo5VQVibbpQT/UDg==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1789054381;
- h=X-Greylist:Received-SPF:Received:DKIM-Signature:DKIM-Signature:
- DKIM-Signature:DKIM-Signature:Received:Received:Message-ID:Date:
- MIME-Version:User-Agent:Subject:To:Cc:References:Content-Language:
- From:In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Spam-Score:
- X-Spam-Level:X-Spamd-Result:X-Spam-Flag;
- bh=u+K7ooVeSqRxjIANte2bbg3RZ65EwBMeUVjE/SVMc5A=;
- b=UAxkj/Q56Z/lDKkt6SvXV00bjpHnX9cJjGpN8dARZqP87yD1BGNNxZC3u+a20GA6WjGP
- gQPREmLFzwnEp75BiwmQ/wFMEbq9I0IVyGILj8qjbk8veKEVflbm7bJ5b6rvtpg1JMKqF
- Q8UNuSt01+BaM+sTe17TM8bCogFO9b6g8LynZwF5X62JiJGd8yUCjfOExAzW91Cjm7iIu
- /bFHy62U1iv831KWoa6pXnOIllryljPjYOxp6K0AM/Jj0kBOI+Wit0sWYavz5rZRtqG5N
- 5RxNXqcvSfBb3zWKdmvIrOy1FbenJnCFHh8YulT/pkffuwC00I3HFRMEOuy8uC44OSQ==
-ARC-Authentication-Results: i=1; smtp3.osuosl.org;
- dmarc=pass header.from=suse.de; 
- dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256
- header.s=susede2_rsa header.b=Ye0ZfhhC; 
- dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256
- header.s=susede2_ed25519 header.b=CFJEDO+G; 
- dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256
- header.s=susede2_rsa header.b=XJXdvWaF; 
- dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256
- header.s=susede2_ed25519 header.b="X/YemN1Z"; 
- arc=none smtp.remote-ip=195.135.223.131
-X-Greylist: delayed 2570 seconds by postgrey-1.37 at util1.osuosl.org;
- Thu, 10 Sep 2026 15:33:01 UTC
-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de
- header.a=rsa-sha256 header.s=susede2_rsa header.b=Ye0ZfhhC; 
- dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256
- header.s=susede2_ed25519 header.b=CFJEDO+G; 
- dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de
- header.a=rsa-sha256 header.s=susede2_rsa header.b=XJXdvWaF; 
- dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256
- header.s=susede2_ed25519 header.b=X/YemN1Z
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=195.135.223.131;
- helo=smtp-out2.suse.de; envelope-from=fmancera@suse.de; receiver=<UNKNOWN> 
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 4A7CB60B6C
- for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Sep 2026 15:33:00 +0000 (UTC)
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
- (No client certificate requested)
- by smtp-out2.suse.de (Postfix) with ESMTPS id 05A371FE0B;
- Thu, 10 Sep 2026 15:32:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
- t=1789054374; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=u+K7ooVeSqRxjIANte2bbg3RZ65EwBMeUVjE/SVMc5A=;
- b=Ye0ZfhhC5Lmz/BxATsM2B+JzJtLa8HYRZzjN2qTnCWADRr6tpIkldt5l15o0L5el79nBz2
- oxOoqtQd2ouUdCLsphREEXlorloZZHY2/rFncCrdsARA22zuA49YjggNQYafpgpHqYkRO6
- j9whO/q1716g3jKwYWpPYf+drdXl+x8=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
- s=susede2_ed25519; t=1789054374;
- h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=u+K7ooVeSqRxjIANte2bbg3RZ65EwBMeUVjE/SVMc5A=;
- b=CFJEDO+GQCFf0ce6h7Qw97LPvPGntfnxuuvt147Evijut8os4kPxwuboU+JLN1tLWEGHXC
- YKBKJGAx7Xn6d0BA==
-Authentication-Results: smtp-out2.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
- t=1789054370; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=u+K7ooVeSqRxjIANte2bbg3RZ65EwBMeUVjE/SVMc5A=;
- b=XJXdvWaFFLx8zFfzQHInjvc/ynoER3OZ5wux2JpT5ct+UqLpqlLniDhzvJOip6EDunwaDq
- quHk2QHvF40YLVGOA+vgEf/w+GlazRd7eXPybgJfxPkseGWQhtjkNr2+S3AMlkX3w5EE5W
- oM0GMnKUGclL7NeHFKYCPmbRMvs3VrQ=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
- s=susede2_ed25519; t=1789054370;
- h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=u+K7ooVeSqRxjIANte2bbg3RZ65EwBMeUVjE/SVMc5A=;
- b=X/YemN1ZpByULvRUTvR6JHpWh1rpkcxrIY4nd4XWcdtghJ/BM/ZPQz32A8R3KZxhdbyfKL
- v4PU0Kq3UpVylZBg==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
- (No client certificate requested)
- by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 757391326D;
- Thu, 10 Sep 2026 15:32:43 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
- by imap1.dmz-prg2.suse.org with ESMTPSA id bsfdGZvNomr8FQAAD6G6ig
- (envelope-from <fmancera@suse.de>); Thu, 10 Sep 2026 15:32:43 +0000
-Message-ID: <5a4d00a9-65ba-4f58-8c0f-9d6ce97f6bad@suse.de>
-Date: Thu, 10 Sep 2026 17:32:04 +0200
+ c=relaxed/relaxed; t=1789055218;
+ h=X-Greylist:Received-SPF:Received:Received:DKIM-Signature:
+ DKIM-Signature:X-ME-Sender:X-ME-Proxy-Cause:X-ME-Proxy:Feedback-ID:
+ Received:X-Mailer:MIME-Version:X-ThreadId:Date:From:To:Cc:Message-Id:
+ In-Reply-To:References:Subject:Content-Type:
+ Content-Transfer-Encoding;
+ bh=VJHi3AALrojUsaiH2K9JRyFh6yN6vM9XW4bo5EfCLvk=;
+ b=B/Y8umAcmQ/8nl95p7ihguUSdg+BkW9ELnbu2a+suN/b+tz2d8lgc5GwI8/iLuVVLTN7
+ qioJn3fDvOC51ptaYv9PYgT35hOqio/JmY2BS7dfiyOuxSmnQsgDroTlhZHL4bKSXWDCF
+ 5DYRouYvAYQSjEUfL6naxvhEL0OpEdUwngeMRC+tkncmv/G6Nb81Y01wpbBlPtUpAAYQt
+ XVs0aeE1r96QAC5yXq5+1W1yo5xBPXChOuxLLGUqvfFU1TP9R/ih+gzOf6p52/04ls9zr
+ VNrG7cRMD5cFyzB6ST0iys6zCDvGS5ND7agWccveiSPt3XWQpERFER67/67TBQQQBlQ==
+ARC-Authentication-Results: i=1; smtp2.osuosl.org;
+ dmarc=pass header.from=arndb.de; 
+ dkim=pass header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256
+ header.s=fm3 header.b=g5YX+XDA; 
+ dkim=pass header.d=messagingengine.com header.i=@messagingengine.com
+ header.a=rsa-sha256 header.s=fm1 header.b=Mjj1H69q; 
+ arc=none smtp.remote-ip=202.12.124.141
+X-Greylist: delayed 561 seconds by postgrey-1.37 at util1.osuosl.org;
+ Thu, 10 Sep 2026 15:46:57 UTC
+Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=arndb.de
+Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key, unprotected) header.d=arndb.de header.i=@arndb.de
+ header.a=rsa-sha256 header.s=fm3 header.b=g5YX+XDA; 
+ dkim=pass (2048-bit key,
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.a=rsa-sha256 header.s=fm1 header.b=Mjj1H69q
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=202.12.124.141;
+ helo=flow-b6-smtp.messagingengine.com; envelope-from=arnd@arndb.de;
+ receiver=<UNKNOWN> 
+Received: from flow-b6-smtp.messagingengine.com
+ (flow-b6-smtp.messagingengine.com [202.12.124.141])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 7D85C4032B
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Sep 2026 15:46:56 +0000 (UTC)
+Received: from ams-compute-02.internal (ams-compute-02.internal [10.64.2.62])
+ by mailflow.stl.internal (Postfix) with ESMTP id B78891300388;
+ Thu, 10 Sep 2026 11:37:29 -0400 (EDT)
+Received: from ams-imap-03 ([10.64.2.23])
+ by ams-compute-02.internal (MEProxy); Thu, 10 Sep 2026 11:37:34 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+ :cc:content-transfer-encoding:content-type:content-type:date
+ :date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+ :references:reply-to:subject:subject:to:to; s=fm3; t=1789054649;
+ x=1789061849; bh=VJHi3AALrojUsaiH2K9JRyFh6yN6vM9XW4bo5EfCLvk=; b=
+ g5YX+XDAJclx6iQY1Iqpvad/dhrXmtpPU4X7PHlSgR64ReSdtRKtKAHoCH7XVsr5
+ hAoaD2CjknoqFaItBRP2Pce1s5t+MBHlX5z6PSL9MFShemil7OeGznVKek97Pboj
+ pOYd7bm9YwDodqlP0W6v+izYml6crN4RUubmoSZ24C7XJk6JFapLKhvb8RNOa9fU
+ s9DAERYBnqQIx6FjZ9VJdtmLrsrdcXcqAsaEWv+3/dnl5QWZYUgt9eOEPAnHh//o
+ GqHfb2N9eRIZ7x6p7Yf4XLM9osYhuuGRF0GCvYc4NhczWcBbp7F3ujKQMS5sGZFE
+ njVBCvnGUlw1aVe55lI0Og==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:cc:content-transfer-encoding
+ :content-type:content-type:date:date:feedback-id:feedback-id
+ :from:from:in-reply-to:in-reply-to:message-id:mime-version
+ :references:reply-to:subject:subject:to:to:x-me-proxy
+ :x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1789054649; x=
+ 1789061849; bh=VJHi3AALrojUsaiH2K9JRyFh6yN6vM9XW4bo5EfCLvk=; b=M
+ jj1H69qJ9QbYpI2qqgrm0TY1an5n7bAIzQ0T4sIOc382Q5JiSEzvGzcnytPog3mX
+ YTl40hPZ5Doi8vrUsnS8gyQP3QmUPDhjisRddU4Mg8XKLI/Ux3ZCO+ZiVFyUrTYQ
+ mkyfvndbskAGq/u+yA4ML2PgHbke7KkCVP5yPRG/VCZ9u9If5V66tyjKEaHiZW4W
+ DJASGFMLx2pJegmYltp2DTEo5BfCHoo162GdBUoBaBzw4KPSpMHCw/cw77gIvrxO
+ frBXjWuRTd2Dm1BkDcyvLUHrL3S3F5aBB07UJ6QjSl1CFAF2eNcVeesYQo4gNvEc
+ 2rp6udhsJugr91rgSQmsw==
+X-ME-Sender: <xms:qs6ialjxbEuodcS0_ZTw49mWDlh3-eH5ipz4y--9tvyE15ehv0kuGA>
+ <xme:qs6iak2m5qY1JZA52TgCLnb0Zlxl2I7QizMK2xUaH33EcsB7aIS8Gn1OjVrM5licJ
+ 6tWlaF6EbXIiUUb37baJ0Zd0PN4oJ0KtYtQwTmputgqJWm-6V4jymhG>
+X-ME-Proxy-Cause: dmFkZTFEwk/pbFsgZVvj1/HzO07XC8c86PahbIj9Ip0Bc489VSmLqZw2fxt9jqTF6ASy2J
+ Bh8LpJFRvRMfxgrm0BzqpnQ4+FLZVi6/PYWufUjxT9Vw2yLZMvXhGutXjCdn5zpysql4rf
+ 4oXu8f8leUGkFACC3NRJZNhD3z1gLg3BuiiSNulTSbNf/7sZabwsiK4Ivzij5BKUo/pvlm
+ N5bsM1GtBKSA2QAmu2L9srOMeJlcR+G3QpuNNzrAlfxtUkOtu1ETj8xY0ae0n16CaydZ7o
+ 0SYTEts/JKJ/hF8H5riazj4NnaBJJINfKYCXtU2ogsd4knZf2c6XXMR7LDauOa3DULeriZ
+ 0zecyUgKRcqt+NBZFIG8DW19AN2ywWhsRUrQ3XXV5vcRLgJ4+0Xr/XpS4f8hEyG0LtKFqt
+ QnpEuZK818HonIlCCpCzRvx5ykclnNC0zhvRgqyrLMdw1J/ipnqJ/ufaaxN1IjTJXgKNYS
+ OTydTB/ZaZX67n+6HNlgcl4plIjbODbPBp0bqLPXFArdRv6l/GqG7nWmZuQ2/dwI+RA6rG
+ QyZZ8rIoMag4LJSVL6jK/uYEStG2jXNGSqxUE2hRLSUV++qO702qwXCJbFQ7sdrkjKip51
+ kT2tH8QDoaWCFZEfJgoWEwICI/2gQcKdPgM7OZxkPWi4zRiW1TF1JGHhqSDw
+X-ME-Proxy: <xmx:sc6ialjamB9SeQnHab_t6ZRsQqT-buxwQbX7Pk1AlPeCCTQb7rOOeQ>
+ <xmx:sc6iaglIqAf0vosGUApMblzQyeJj-NLS64wxskaXgk2cV7M71tEuZw>
+ <xmx:sc6iaiTuMxs-CFVvJ2UHUpblwBGAL8YpG-Y6W7CwFQlvVLQUZWL9Mg>
+ <xmx:sc6iasWedQvENNAVhlBvV-KNGWkAMnU-r3agZilH1yq9Zos-xHWiZQ>
+ <xmx:uc6ian8Q2FSkLT9gPSPBqk5JaLSiRD4MeryCzmrJXmDUbfNMGy4g4w1i>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.ams.internal (Postfix, from userid 501)
+ id A91DC32A007B; Thu, 10 Sep 2026 11:37:14 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 01/13 net-next] net: ipv4: introduce CONFIG_IPV4 to
- decouple the IPv4 stack
-To: Nicolai Buchwitz <nb@tipi-net.de>
-Cc: netdev@vger.kernel.org, horms@kernel.org, kuba@kernel.org,
- pabeni@redhat.com, edumazet@google.com, davem@davemloft.net,
- Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>,
- Andrew Lunn <andrew+netdev@lunn.ch>, Tony Nguyen
- <anthony.l.nguyen@intel.com>, Przemek Kitszel
- <przemyslaw.kitszel@intel.com>, Elad Nachman <enachman@marvell.com>,
- Saeed Mahameed <saeedm@nvidia.com>, Tariq Toukan <tariqt@nvidia.com>,
- Mark Bloch <mbloch@nvidia.com>, Ido Schimmel <idosch@nvidia.com>,
- Petr Machata <petrm@nvidia.com>, Edward Cree <ecree.xilinx@gmail.com>,
- Maxime Chevallier <maxime.chevallier@bootlin.com>,
- Maxime Coquelin <mcoquelin.stm32@gmail.com>,
- Alexandre Torgue <alexandre.torgue@foss.st.com>,
- Arend van Spriel <arend.vanspriel@broadcom.com>,
- Miri Korenblit <miriam.rachel.korenblit@intel.com>,
- Keith Busch <kbusch@kernel.org>, Jens Axboe <axboe@kernel.dk>,
- Christoph Hellwig <hch@lst.de>, Sagi Grimberg <sagi@grimberg.me>,
- Chaitanya Kulkarni <kch@nvidia.com>, Saurav Kashyap <skashyap@marvell.com>,
- Javed Hasan <jhasan@marvell.com>, GR-QLogic-Storage-Upstream@marvell.com,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- "Martin K. Petersen" <mkp@kernel.org>, Nilesh Javali <njavali@marvell.com>,
- Manish Rangankar <mrangankar@marvell.com>, Varun Prakash
- <varun@chelsio.com>, Alexander Viro <viro@zeniv.linux.org.uk>,
- Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
- David Howells <dhowells@redhat.com>, Marc Dionne <marc.dionne@auristor.com>,
- Trond Myklebust <trondmy@kernel.org>, Anna Schumaker <anna@kernel.org>,
- Chuck Lever <cel@kernel.org>, Jeff Layton <jlayton@kernel.org>,
- NeilBrown <neil@brown.name>, Olga Kornievskaia <okorniev@redhat.com>,
- Dai Ngo <Dai.Ngo@oracle.com>, Tom Talpey <tom@talpey.com>,
- Marek Lindner <marek.lindner@mailbox.org>,
- Simon Wunderlich <sw@simonwunderlich.de>,
- Antonio Quartulli <antonio@mandelbit.com>,
- Sven Eckelmann <sven@narfation.org>,
- Nikolay Aleksandrov <razor@blackwall.org>,
- Pablo Neira Ayuso <pablo@netfilter.org>, Florian Westphal <fw@strlen.de>,
- Phil Sutter <phil@nwl.cc>, Johannes Berg <johannes@sipsolutions.net>,
- Matthieu Baerts <matttbe@kernel.org>, Mat Martineau <martineau@kernel.org>,
- Geliang Tang <geliang@kernel.org>, Julian Anastasov <ja@ssi.bg>,
- Aaron Conole <aconole@redhat.com>, Eelco Chaudron <echaudro@redhat.com>,
- Ilya Maximets <i.maximets@ovn.org>, Allison Henderson <achender@kernel.org>,
- Jamal Hadi Salim <jhs@mojatatu.com>, Jiri Pirko <jiri@resnulli.us>,
- Marcelo Ricardo Leitner <marcelo.leitner@gmail.com>,
- Xin Long <lucien.xin@gmail.com>, "D. Wythe" <alibuda@linux.alibaba.com>,
- Dust Li <dust.li@linux.alibaba.com>, Sidraya Jayagond
- <sidraya@linux.ibm.com>, Mahanta Jambigi <mjambigi@linux.ibm.com>,
- Tony Lu <tonylu@linux.alibaba.com>, Wen Gu <guwen@linux.alibaba.com>,
- Jon Maloy <jmaloy@redhat.com>, Tung Quang Nguyen
- <tung.quang.nguyen@est.tech>, Steffen Klassert
- <steffen.klassert@secunet.com>, Herbert Xu <herbert@gondor.apana.org.au>,
- Casey Schaufler <casey@schaufler-ca.com>, Paul Moore <paul@paul-moore.com>,
- James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>,
- Vikas Gupta <vikas.gupta@broadcom.com>,
- Bhargava Marreddy <bhargava.marreddy@broadcom.com>,
- Rajashekar Hudumula <rajashekar.hudumula@broadcom.com>,
+X-ThreadId: Ay04W235egbV
+Date: Thu, 10 Sep 2026 17:36:54 +0200
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: "Nicolai Buchwitz" <nb@tipi-net.de>,
+ "Fernando Fernandez Mancera" <fmancera@suse.de>
+Cc: Netdev <netdev@vger.kernel.org>, "Simon Horman" <horms@kernel.org>,
+ "Jakub Kicinski" <kuba@kernel.org>, "Paolo Abeni" <pabeni@redhat.com>,
+ "Eric Dumazet" <edumazet@google.com>,
+ "David S . Miller" <davem@davemloft.net>,
+ "Jason Gunthorpe" <jgg@ziepe.ca>, "Leon Romanovsky" <leon@kernel.org>,
+ "Andrew Lunn" <andrew+netdev@lunn.ch>,
+ "Anthony L Nguyen" <anthony.l.nguyen@intel.com>,
+ "Przemek Kitszel" <przemyslaw.kitszel@intel.com>,
+ "Elad Nachman" <enachman@marvell.com>,
+ "Saeed Mahameed" <saeedm@nvidia.com>, "Tariq Toukan" <tariqt@nvidia.com>,
+ "Mark Bloch" <mbloch@nvidia.com>, "Ido Schimmel" <idosch@nvidia.com>,
+ "Petr Machata" <petrm@nvidia.com>, "Edward Cree" <ecree.xilinx@gmail.com>,
+ "Maxime Chevallier" <maxime.chevallier@bootlin.com>,
+ "Maxime Coquelin" <mcoquelin.stm32@gmail.com>,
+ "Alexandre Torgue" <alexandre.torgue@foss.st.com>,
+ "Arend van Spriel" <arend.vanspriel@broadcom.com>,
+ "Miri Korenblit" <miriam.rachel.korenblit@intel.com>,
+ "Keith Busch" <kbusch@kernel.org>, "Jens Axboe" <axboe@kernel.dk>,
+ "Christoph Hellwig" <hch@lst.de>, "Sagi Grimberg" <sagi@grimberg.me>,
+ "Chaitanya Kulkarni" <kch@nvidia.com>,
+ "Saurav Kashyap" <skashyap@marvell.com>,
+ "Javed Hasan" <jhasan@marvell.com>, GR-QLogic-Storage-Upstream@marvell.com,
+ "James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>,
+ "Martin K. Petersen" <mkp@kernel.org>,
+ "Nilesh Javali" <njavali@marvell.com>,
+ "Manish Rangankar" <mrangankar@marvell.com>,
+ "Varun Prakash" <varun@chelsio.com>,
+ "Alexander Viro" <viro@zeniv.linux.org.uk>,
+ "Christian Brauner" <brauner@kernel.org>, "Jan Kara" <jack@suse.cz>,
+ "David Howells" <dhowells@redhat.com>,
+ "Marc Dionne" <marc.dionne@auristor.com>,
+ "Trond Myklebust" <trondmy@kernel.org>,
+ "Anna Schumaker" <anna@kernel.org>, "Chuck Lever" <cel@kernel.org>,
+ "Jeff Layton" <jlayton@kernel.org>, NeilBrown <neil@brown.name>,
+ "Olga Kornievskaia" <okorniev@redhat.com>,
+ "Dai Ngo" <Dai.Ngo@oracle.com>, "Tom Talpey" <tom@talpey.com>,
+ "Marek Lindner" <marek.lindner@mailbox.org>,
+ "Simon Wunderlich" <sw@simonwunderlich.de>,
+ "Antonio Quartulli" <antonio@mandelbit.com>,
+ "Sven Eckelmann" <sven@narfation.org>,
+ "Nikolay Aleksandrov" <razor@blackwall.org>,
+ "Pablo Neira Ayuso" <pablo@netfilter.org>,
+ "Florian Westphal" <fw@strlen.de>, "Phil Sutter" <phil@nwl.cc>,
+ "Johannes Berg" <johannes@sipsolutions.net>,
+ "Matthieu Baerts" <matttbe@kernel.org>,
+ "Mat Martineau" <martineau@kernel.org>,
+ "Geliang Tang" <geliang@kernel.org>, "Julian Anastasov" <ja@ssi.bg>,
+ "Aaron Conole" <aconole@redhat.com>,
+ "Eelco Chaudron" <echaudro@redhat.com>,
+ "Ilya Maximets" <i.maximets@ovn.org>,
+ "Allison Henderson" <achender@kernel.org>,
+ "Jamal Hadi Salim" <jhs@mojatatu.com>, "Jiri Pirko" <jiri@resnulli.us>,
+ "Marcelo Ricardo Leitner" <marcelo.leitner@gmail.com>,
+ "Xin Long" <lucien.xin@gmail.com>, "D. Wythe" <alibuda@linux.alibaba.com>,
+ "Dust Li" <dust.li@linux.alibaba.com>,
+ "Sidraya Jayagond" <sidraya@linux.ibm.com>,
+ "Mahanta Jambigi" <mjambigi@linux.ibm.com>,
+ "Tony Lu" <tonylu@linux.alibaba.com>, "Wen Gu" <guwen@linux.alibaba.com>,
+ "Jon Maloy" <jmaloy@redhat.com>,
+ "Tung Quang Nguyen" <tung.quang.nguyen@est.tech>,
+ "Steffen Klassert" <steffen.klassert@secunet.com>,
+ "Herbert Xu" <herbert@gondor.apana.org.au>,
+ "Casey Schaufler" <casey@schaufler-ca.com>,
+ "Paul Moore" <paul@paul-moore.com>, "James Morris" <jmorris@namei.org>,
+ "Serge E. Hallyn" <serge@hallyn.com>,
+ "Vikas Gupta" <vikas.gupta@broadcom.com>,
+ "Bhargava Marreddy" <bhargava.marreddy@broadcom.com>,
+ "Rajashekar Hudumula" <rajashekar.hudumula@broadcom.com>,
  =?UTF-8?Q?Markus_Bl=C3=B6chl?= <markus@blochl.de>,
- Arnd Bergmann <arnd@arndb.de>, Heiner Kallweit <hkallweit1@gmail.com>,
- Florian Fainelli <florian.fainelli@broadcom.com>,
- Krzysztof Kozlowski <krzk@kernel.org>,
- Qingfang Deng <qingfang.deng@linux.dev>, Julian Braha
- <julianbraha@gmail.com>, Ethan Nelson-Moore <enelsonmoore@gmail.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Eric Biggers <ebiggers@kernel.org>, Ard Biesheuvel <ardb@kernel.org>,
- Neal Cardwell <ncardwell@google.com>, Kuniyuki Iwashima <kuniyu@google.com>,
- Willem de Bruijn <willemb@google.com>, Alyssa Ross <hi@alyssa.is>,
- Joel Granados <joel.granados@kernel.org>, Oleg Nesterov <oleg@redhat.com>,
- linux-rdma@vger.kernel.org, linux-kernel@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org, oss-drivers@corigine.com,
+ "Heiner Kallweit" <hkallweit1@gmail.com>,
+ "Florian Fainelli" <florian.fainelli@broadcom.com>,
+ "Krzysztof Kozlowski" <krzk@kernel.org>,
+ "Qingfang Deng" <qingfang.deng@linux.dev>,
+ "Julian Braha" <julianbraha@gmail.com>,
+ "Ethan Nelson-Moore" <enelsonmoore@gmail.com>,
+ "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
+ "Eric Biggers" <ebiggers@kernel.org>, "Ard Biesheuvel" <ardb@kernel.org>,
+ "Neal Cardwell" <ncardwell@google.com>,
+ "Kuniyuki Iwashima" <kuniyu@google.com>,
+ "Willem de Bruijn" <willemb@google.com>, "Alyssa Ross" <hi@alyssa.is>,
+ "Joel Granados" <joel.granados@kernel.org>,
+ "Oleg Nesterov" <oleg@redhat.com>, linux-rdma@vger.kernel.org,
+ linux-kernel@vger.kernel.org,
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
+ "open list:NETRONOME ETHERNET DRIVERS" <oss-drivers@corigine.com>,
  linux-net-drivers@amd.com, linux-stm32@st-md-mailman.stormreply.com,
  linux-arm-kernel@lists.infradead.org, linux-wireless@vger.kernel.org,
  brcm80211@lists.linux.dev, brcm80211-dev-list.pdl@broadcom.com,
  linux-nvme@lists.infradead.org, linux-scsi@vger.kernel.org,
  target-devel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
  linux-afs@lists.infradead.org, linux-nfs@vger.kernel.org,
- b.a.t.m.a.n@lists.open-mesh.org, bridge@lists.linux.dev,
+ b.a.t.m.a.n@lists.open-mesh.org,
+ "open list:ETHERNET BRIDGE" <bridge@lists.linux.dev>,
  netfilter-devel@vger.kernel.org, coreteam@netfilter.org,
  mptcp@lists.linux.dev, lvs-devel@vger.kernel.org, dev@openvswitch.org,
  rds-devel@oss.oracle.com, linux-sctp@vger.kernel.org,
- linux-s390@vger.kernel.org, tipc-discussion@lists.sourceforge.net,
+ linux-s390@vger.kernel.org,
+ "open list:TIPC NETWORK LAYER" <tipc-discussion@lists.sourceforge.net>,
  linux-security-module@vger.kernel.org
+Message-Id: <cda5d4e9-49a5-4d6f-93d4-fb50d74ed5ce@app.fastmail.com>
+In-Reply-To: <aeb37452e976f5d44540ac3a0999d07b@tipi-net.de>
 References: <20260910144914.8025-1-fmancera@suse.de>
  <20260910144914.8025-2-fmancera@suse.de>
  <aeb37452e976f5d44540ac3a0999d07b@tipi-net.de>
-Content-Language: en-US
-From: Fernando Fernandez Mancera <fmancera@suse.de>
-In-Reply-To: <aeb37452e976f5d44540ac3a0999d07b@tipi-net.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spamd-Result: default: False [-0.80 / 50.00]; BAYES_HAM(-3.00)[100.00%];
- FORGED_RECIPIENTS(2.00)[m:nb@tipi-net.de, m:netdev@vger.kernel.org,
- m:pabeni@redhat.com, m:edumazet@google.com, m:davem@davemloft.net,
- m:jgg@ziepe.ca, m:anthony.l.nguyen@intel.com, m:przemyslaw.kitszel@intel.com,
- m:ecree.xilinx@gmail.com, m:maxime.chevallier@bootlin.com,
- m:mcoquelin.stm32@gmail.com, m:alexandre.torgue@foss.st.com,
- m:arend.vanspriel@broadcom.com, m:miriam.rachel.korenblit@intel.com,
- m:axboe@kernel.dk, m:sagi@grimberg.me, m:James.Bottomley@hansenpartnership.com,
- m:varun@chelsio.com, m:viro@zeniv.linux.org.uk, m:jack@suse.cz,
- m:dhowells@redhat.com, m:marc.dionne@auristor.com, m:neil@brown.name,
- m:okorniev@redhat.com, m:tom@talpey.com, m:sw@simonwunderlich.de,
- m:razor@blackwall.org, m:fw@strlen.de, m:johannes@sipsolutions.net,
- m:ja@ssi.bg, m:aconole@redhat.com, m:echaudro@redhat.com, m:jiri@resnulli.us,
- m:marcelo.leitner@gmail.com, m:lucien.xin@gmail.com, m:jmaloy@redhat.com,
- m:tung.quang.nguyen@est.tech, m:steffen.klassert@secunet.com,
- m:herbert@gondor.apana.org.au, m:casey@schaufler-ca.com, m:serge@hallyn.c
- om,m:vikas.gupta@broadcom.com,m:bhargava.marreddy@broadcom.com,m:rajashekar.hudumula@broadcom.com,m:markus@blochl.de,m:arnd@arndb.de,m:hkallweit1@gmail.com,m:florian.fainelli@broadcom.com,m:julianbraha@gmail.com,m:enelsonmoore@gmail.com,s:linux-afs@lists.infradead.org,s:linux-arm-kernel@lists.infradead.org,s:linux-nvme@lists.infradead.org,s:brcm80211@lists.linux.dev,s:bridge@lists.linux.dev,s:mptcp@lists.linux.dev,s:b.a.t.m.a.n@lists.open-mesh.org,s:intel-wired-lan@lists.osuosl.org,s:tipc-discussion@lists.sourceforge.net,s:coreteam@netfilter.org,s:dev@openvswitch.org,s:rds-devel@oss.oracle.com];
- SUSPICIOUS_RECIPS(1.50)[]; NEURAL_HAM_LONG(-1.00)[-1.000];
- NEURAL_HAM_SHORT(-0.20)[-0.999]; MIME_GOOD(-0.10)[text/plain];
- TAGGED_RCPT(0.00)[netdev]; RCVD_VIA_SMTP_AUTH(0.00)[];
- ARC_NA(0.00)[]; TO_DN_SOME(0.00)[]; MIME_TRACE(0.00)[0:+];
- MID_RHS_MATCH_FROM(0.00)[]; RCVD_TLS_ALL(0.00)[];
- DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
- FROM_HAS_DN(0.00)[];
- FREEMAIL_CC(0.00)[vger.kernel.org,kernel.org,redhat.com,google.com,davemloft.net,ziepe.ca,lunn.ch,intel.com,marvell.com,nvidia.com,gmail.com,bootlin.com,foss.st.com,broadcom.com,kernel.dk,lst.de,grimberg.me,hansenpartnership.com,chelsio.com,zeniv.linux.org.uk,suse.cz,auristor.com,brown.name,oracle.com,talpey.com,mailbox.org,simonwunderlich.de,mandelbit.com,narfation.org,blackwall.org,netfilter.org,strlen.de,nwl.cc,sipsolutions.net,ssi.bg,ovn.org,mojatatu.com,resnulli.us,linux.alibaba.com,linux.ibm.com,est.tech,secunet.com,gondor.apana.org.au,schaufler-ca.com,paul-moore.com,namei.org,hallyn.com,blochl.de,arndb.de,linux.dev,linuxfoundation.org,alyssa.is,lists.osuosl.org,corigine.com,amd.com,st-md-mailman.stormreply.com,lists.infradead.org,lists.linux.dev,lists.open-mesh.org,openvswitch.org,oss.oracle.com,lists.sourceforge.net];
- R_RATELIMIT(0.00)[to_ip_from(RLu5qefsf3rq4khkdydytudeq9)];
- FROM_EQ_ENVFROM(0.00)[]; RCVD_COUNT_TWO(0.00)[2];
- TO_MATCH_ENVRCPT_SOME(0.00)[]; RCPT_COUNT_GT_50(0.00)[133];
- DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo, suse.de:mid,
- suse.de:email]
+Subject: Re: [PATCH 01/13 net-next] net: ipv4: introduce CONFIG_IPV4 to
+ decouple the IPv4 stack
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -307,58 +291,32 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-On 9/10/26 5:11 PM, Nicolai Buchwitz wrote:
-> Hi Fernando,
-> 
-> Thanks for the patch - after nearly 30 years IPv6 should be mature 
-> enough :)
-> 
-> On 10.9.2026 16:48, Fernando Fernandez Mancera wrote:
->> Historically, the IPv4 protocol has been linked to the core INET
->> subsystem. Because shared infrastructure like the TCP/UDP engine,
->> routing or INET hashtables live inside net/ipv4/, it has been impossible
->> to compile a kernel with only IPv6 support.
->>
->> This patch introduces the CONFIG_IPV4 Kconfig symbol, which is set to
->> 'def_bool y' for now. This does not allow to completely disable the
->> IPv4 stack yet but it lays the necessary build-system work for that
->> goal.
->>
->> In addition, multiple subsystems Kconfig symbols across networking
->> features like tunnels, drivers and filesystems have been adjusted to
->> depend on IPv4. Keep on mind that follow-up work is required to convert
->> the Kconfig symbol to bool and remove the dependency on IPv4 where it
->> makes sense.
->>
->> Signed-off-by: Fernando Fernandez Mancera <fmancera@suse.de>
->> ---
-> 
->> [...]
-> 
+On Thu, Sep 10, 2026, at 17:11, Nicolai Buchwitz wrote:
 >> diff --git a/net/packet/Kconfig b/net/packet/Kconfig
 >> index 2997382d597c..00fda9e08cb0 100644
 >> --- a/net/packet/Kconfig
 >> +++ b/net/packet/Kconfig
 >> @@ -5,6 +5,7 @@
->>
->>  config PACKET
->>      tristate "Packet socket"
->> +    depends on IPV4
-> 
->    depends on IPV4 || !INET
-> 
-> Otherwise this would break existing configs with INET=n. The same applies
-> to other affected options that currently permit INET=n.
+>> 
+>>  config PACKET
+>>  	tristate "Packet socket"
+>> +	depends on IPV4
+>
+>    depends on IPV4 || !INET
+>
+> Otherwise this would break existing configs with INET=n. The same 
+> applies to other affected options that currently permit INET=n.
 
-That is a good point. I will review the other configs too.
+Since that's a lot of symbols that all need the same dependency,
+maybe we could have an intermediate symbol for it:
 
-Thanks!
-Fernando.
+config IPV4_IF_INET # or any better name you can think of
+      def_bool IPV4 || !INET
 
-> 
->> [...]
-> 
-> Thanks,
-> Nicolai
-> 
+Similarly, everything that currently has 'depends on INET && IPV4'
+could be simplified to just 'depends on IPV4', and the leftover
+'depends on INET && IPV6' from the days of modular IPV6 can now
+become 'depends on IPV4'. We only needed to list both in the past
+to deal with the IPV6=m case.
 
+       Arnd
