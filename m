@@ -1,28 +1,28 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E95DCC79FBF
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 10 Sep 2026 15:49:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 757CDC88E41
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 10 Sep 2026 15:49:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B461460B90;
-	Thu, 10 Sep 2026 15:49:40 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 23D614083C;
+	Thu, 10 Sep 2026 15:49:41 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id go_lMzZwhhVE; Thu, 10 Sep 2026 15:49:39 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 9305160740
-Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789055379;
-	b=qBnX0A9yc1IcRJFPG0oN1RStcTwwnz1C9KFwdpZ2oCKb/5d/J3lgzwneC5TzFyAOG57Z
-	 fUci8R2aZKe8WaO5YFWF2xFeL4zR3yxtFnG4VIxA0BZdm3EEmfoyTk1lwYZierAA9K5d0
-	 JwOObTEPctOOMeSmP1lIoynKHaZAyQAxHWiBvmq0EuhjmP3cFH1Pk2o5cveqPm5X5Bq02
-	 9CfuRbFROxc6Xr3Fsk7udArf1Lx+cNzfPeWSSbDiJyVi5zfvRtKlYPdbxKhNwJ/1AKCLq
-	 kzYFsTKA98MZHLrNojkB1R5A+WrdegYbwTX9lXfulL2lRFtAyQn1lBsIh54hhzY1eIQ==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id NJuoxF5yBaKq; Thu, 10 Sep 2026 15:49:40 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 79A5A40A4C
+Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789055380;
+	b=Dl2ZWz7evcHQLG3c6j30wWgzc2qSdf9htiIkOejWOVByycOTNQu+EdngZPjFZjsWfiwz
+	 BNRuiEA3SRrBT2rsne8e4MsYYdiDCxhIUiGe6JEFUvWOgkFoNhe5kTEMpoVIcnHMNcRsn
+	 ecyJazsSRHUli6kD34Y6llSXqXeFyFS41pxB/HByr0pUtg7+CIfZuDhX/NCHDMQzJYsHR
+	 mTK93/Xv1otfM+UfZ8fTaQ5Bdtn93vT+J9VwawI7nMReAuwPAPyZw/2SRwzdHJk0+ln1F
+	 Kb9LIzdzt92ou6fFG6yuvsxes/CX/gEqNVAI8MvpFBnFnexIz+hAm7fM7WTxGHDUllg==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1789055379;
+	c=relaxed/relaxed; t=1789055380;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
@@ -34,66 +34,66 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 X-TBoneOriginalCC:X-TBoneDomainSigned:X-Mailman-Approved-At:
 	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
 	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=cCdgCovM884FfdUWP8JorqJdxM/aXjJe2TbERbkQhls=;
-	b=ZPW1AJogi+Azfh7cHRTvVvVbmmGotWhy6rCG2cPScHuO2f9SVpK+yG+9PsgHdUqxFRIn
-	 xGF50rgncnx8Njr2ywyl+bu46WNz2E2NmOYRUCEp1s6+RxzDVNuCBLEHWwUTUwDPd8oE8
-	 HaLQyV6n7zGdJPFoefAAsvbjfnI6u36X/9TmvgENXkKfd9CeqZBYyj2gPHRy1GNSNKRb1
-	 r6fX28MtCd/WCAOYCdHLFA4IiqKjd+6I3yNEmvJflCQI88Ig0+BYYZb/p1na2IHxj9XEZ
-	 JLrMZGA9IaHao/2h2FMjI8Bd8vVHtgFyzTaBiWPa70KF2aWiMi0j6OPy+JFe+UpRdnQ==
-ARC-Authentication-Results: i=2; smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	bh=HYc1GkjMkoO0IwSEGcDUPrpgIzT7TfqZnoypA7FbSqQ=;
+	b=RJ3ikS9XJVAbFgBHxa9KxncE90V2TYyV9mWVKJsbN97f+BNdoWlrMJ0A5wwJ5F1P7pF/
+	 1nutoJe2arF0RF/H4BBhY4lMAFY1tZ28Ct3U0z9vVHz41rFe1jiL6/m/vF1fAeLbLxWcb
+	 k9oRvfSwcEOjHNxldlHoITwrLoyzeZ4ifNMTfhBW/u6l8ATFTbS1gxLdy03Y3ROaJy6xD
+	 jk2iCYHvwPSiejsN++PX+bHL8A4FM19VvNfyO5mcU8SbUkzxLyEEKkrFm+mgy0Ujx8DOE
+	 OkMcZuGdwXl0WcfHIp1sAXGz+6NbEW9bLQqfcwD55id08VwPX4o7hQkB1xHpHLxY54A==
+ARC-Authentication-Results: i=2; smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1789055379;
-	bh=cCdgCovM884FfdUWP8JorqJdxM/aXjJe2TbERbkQhls=;
+	s=default; t=1789055380;
+	bh=HYc1GkjMkoO0IwSEGcDUPrpgIzT7TfqZnoypA7FbSqQ=;
 	h=From:To:CC:Subject:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=LJqtqh/9Cq/PgIAi79YxzzWbxFrLSX/Yo5TMqMJ6XXlil+N+ugFrTxGQgYPqvVllL
-	 yZ9VLWIbTaf0b6dVavabQjZx9jr1uT+nP6ookOKQgcIw/NK3hDWP1q1BbLf894fc66
-	 Acpms0d3Xz2ZIBRgyVlE2Gtu/g16KUhVhn8AF2p7gMZ/YNSnAC5dxpffcw/xvb+kwA
-	 +P2BsAX5LsSalPI1cEMrKNoKY0lJW8Y0ZD16A5+5nPpKIRvziqAdMluNy8muXfooda
-	 9izKp3zyY7tabgy7XGC4ZC3kkHzDBkKYA18pw/25+WYICSWfDbWZ0mAuZGjxckXkhA
-	 r3OyTp1Gp2KMA==
+	b=jRQgRv/62JXutUI3p72G5vuGYfpOLiUaBm3AzEsKacnCY1GNWCY9N2uleOfXfK4cj
+	 Zjcz5snxg2rlfsJvyLFevX6NUC41oVTNSETv/djO/F0vfI3PU7MVeg1ww290SASRgy
+	 K9PpIPdVYFf+fApMTHmqalwdU2gYelPwS8VYaIy39UFffufBiM0OL3upOc+S143gUQ
+	 RAOs310H+5LnNirJoNPIoc5LUWPBkWZ5qDlkjrLfY1cORXwirz14EBsrnXqsOoL3Zi
+	 B0EeiNu8ERm3qItQMRHtqSxhEOL3tG13QUdEPinsYEbuCSv0Y6gy+syqPoLUsO7MtH
+	 tIQyoFV8MxIMQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 9305160740;
-	Thu, 10 Sep 2026 15:49:39 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 74FFD43F
- for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Sep 2026 11:41:01 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 79A5A40A4C;
+	Thu, 10 Sep 2026 15:49:40 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 94E1543F
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Sep 2026 11:41:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 5B35F40073
- for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Sep 2026 11:41:01 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 7B41B40024
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Sep 2026 11:41:02 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id nroAeoEZXPQx for <intel-wired-lan@lists.osuosl.org>;
- Thu, 10 Sep 2026 11:41:00 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org EB07D40024
+ id jnADOaY_3ciT for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 10 Sep 2026 11:41:02 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org 3D38D4006B
 Authentication-Results: smtp2.osuosl.org; arc=none smtp.remote-ip=80.228.58.149
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789040460;
- b=dueho+/71oKIRt/5AycZJwfhGuTS/Wq+GRXQ7Cx+niUCtYPPBbSqD5O+wpI7eFgNTES9
- knF8sy6hGFSirQC2ij8eH+C8OAqfLQo2MPEVeBoY5R1F/HJNlcN/irOJ0a1HZlnJHWZB4
- 7b+iNHrWW2hL5kEMO6q9qKGD0OYmz4aoXVMyfC5ZiBEmWnOgC/8dx9Y3kiUjNKh2qKkDc
- 6SxsTkov8yLmwul2J4CT8G/lCzG9QON2+MLuagKiG4NcY+pHWpZcHiXPP5UjiDG0RIyJV
- O4p6mAQZRRr/5YLk0MVmu+GTBOeFJuT0UsGQBaTHLxdLPUaMV7nPmNFKxuVGoY2VdaA==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789040462;
+ b=iRpUynd7c/Jpu0IUjp4GQuTjFFIU2sl+9O6QSANKTWKZuzSNlQq5pYP30umwTZuq6XpW
+ ymBhL2S8JZm2zF3cJqZUG1R0OI87nS5kjOtqUu5XvmjoZueI+Av1UFgGhps7LRVEGZrba
+ idv2SewEozsXxHj3crcAzRs29CqlpR+mdfg3w5NqfdOvb66bL/AT0e6ubWL3osTG0Z43V
+ pvs6gNmKIGxek0ukdlBmZ3lJ4HAjfYmFmS40uALrc1MQ3pg4P/P7aJV0y1aUB62PpHnEj
+ BhDQ7ra+KG/Pu4n4gzcvSD6g3/31NwHU7Uz8ASZSdwIkerbRN9GCro9L/itAhMIjbow==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1789040460;
+ c=relaxed/relaxed; t=1789040462;
  h=Received-SPF:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
  X-IronPort-AV:Received:Received:Received:Received:From:To:CC:Subject:
  Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
  Content-Type:X-Originating-IP:X-ClientProxiedBy:X-C2ProcessedOrg:
  Content-Transfer-Encoding:X-TBoneOriginalFrom:X-TBoneOriginalTo:
  X-TBoneOriginalCC:X-TBoneDomainSigned;
- bh=cCdgCovM884FfdUWP8JorqJdxM/aXjJe2TbERbkQhls=;
- b=s/oKKbEHFV7PxQqWUGYv67xHccXV3JADNef9VdJdu9HVHhMKZXZQBS9r0lc6RQDZk/i3
- l12EDSIN8plsUb7pf8zJbK+XCQfUU2wPZZTIDZTP6yvXk8+HSwjHgulraY60rtanYnakH
- kNmv6KtdQUB8S9wP1ld5/lBBY101VeLCXu6iwFrcoKe0hoTONK4NGLkjVwYlXBv/8lxkZ
- LTYdl3hdz3jP194Azuc2dZMxwlXNdsmfDGAKCrInX/6MNxFZ0aR2boD2Io62nBXeMLUhG
- /oLzzLqA9CIjRstkAlItg0heF8HdoENZwfdBts7zOa790mAIIA+IYRHXxOMvymi3dKg==
+ bh=HYc1GkjMkoO0IwSEGcDUPrpgIzT7TfqZnoypA7FbSqQ=;
+ b=YwIpmPAtd7wJprntQ2HzZsw7ucn1HjK6rGQmWsd0oCZ816+f8MiHkwP+Mrb3b8H1QRe/
+ 3hvlKe37YlIGgkhZ/ZMvue5S7HJdTrclb4iCnYVZA/kc4mqhdYUlMiiZhVb77b74XrHe6
+ M4AJtRz1ViMpNpBNZw8EaEHK8L5e8rBbBVgzHIRxBBblRi7W0TFo015Fj+aV04NLYDcwX
+ iXyqghBKp4+AS6yVD4WB69onCQ+YAjVdD4pWbCr75+jb60Z1UW8NAwN0dcVKYaYoPNddR
+ RvmBWa3LyETv/q2dGEcgKJxdtWEZY6Q/ToKq7vUkBcBK2dlMbVxnsKIimAeOTnzHUzw==
 ARC-Authentication-Results: i=1; smtp2.osuosl.org;
  dmarc=pass header.from=dspace.de; 
  dkim=pass header.d=dspace.de header.i=@dspace.de header.a=rsa-sha256
- header.s=dkim1 header.b=KVufQaYG; 
+ header.s=dkim1 header.b=J0XaVTy+; 
  arc=none smtp.remote-ip=80.228.58.149
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=80.228.58.149;
  helo=mail.dspace.de; envelope-from=prvs=706d339fd=pkneuper@dspace.de;
@@ -102,32 +102,32 @@ Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=dspace.de
 Authentication-Results: smtp2.osuosl.org;
  dkim=pass (1024-bit key) header.d=dspace.de header.i=@dspace.de
- header.a=rsa-sha256 header.s=dkim1 header.b=KVufQaYG
+ header.a=rsa-sha256 header.s=dkim1 header.b=J0XaVTy+
 Received: from mail.dspace.de (mail2.dspace.de [80.228.58.149])
- by smtp2.osuosl.org (Postfix) with ESMTPS id EB07D40024
- for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Sep 2026 11:40:59 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 3D38D4006B
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Sep 2026 11:41:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=dspace.de; i=@dspace.de; q=dns/txt; s=dkim1; t=1789040460;
+ d=dspace.de; i=@dspace.de; q=dns/txt; s=dkim1; t=1789040461;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=cCdgCovM884FfdUWP8JorqJdxM/aXjJe2TbERbkQhls=;
- b=KVufQaYGJgc0wIPksy9O82NEs7s5p73jzB3ijeEyQFkinCWak2MNpKb/
- vcSsbj78w1IVSfXoK/caAJ7Q7xK6KaLPe2z8eEFHmFgpYF4EWK1S+i9vz
- FntpxjpapKaOUA7TXdRXDCLqEuqx8RsH3Vp3MR9LtRbsvfRMrCOUGZlA5 E=;
-X-CSE-ConnectionGUID: RGGjoQFnRrSdIgTK5XABdQ==
-X-CSE-MsgGUID: WQgWWFUlTiSxiE+/M71TNA==
+ bh=HYc1GkjMkoO0IwSEGcDUPrpgIzT7TfqZnoypA7FbSqQ=;
+ b=J0XaVTy+MsXZR+c2gMAiDw8cBX6ROSkQ7TRiX3+YMoBkriztIyOsm2M8
+ w+HTrq8HzlhkHzOR+gVu1EU6bKZMysWq0gej1JRHk2HIPBz+64U0F/Y0D
+ 5jx6v7iojdqXUw9b1jFOMvntC8MI82KpbIWDff4jF/UKniJm9A88uWQke Q=;
+X-CSE-ConnectionGUID: hHALKpIESwy/OraNpp4jyg==
+X-CSE-MsgGUID: wf3VMeShRv6nmsXOAm5CQw==
 X-IronPort-AV: E=Sophos;i="6.27,95,1787004000"; 
-   d="scan'208";a="5467928"
+   d="scan'208";a="5467930"
 Received: from unknown (HELO Z1-1000) ([10.1.1.222])
  by mail.dspace.de with ESMTP/TLS/ECDHE-RSA-AES128-GCM-SHA256;
  10 Sep 2026 13:39:55 +0200
 Received: from VM-Z1-1000-LIVE.dspace.de (localhost [127.0.0.1])
- by Z1-1000 (Postfix) with ESMTP id 7578960037;
+ by Z1-1000 (Postfix) with ESMTP id AF51E60037;
  Thu, 10 Sep 2026 13:39:55 +0200 (CEST)
 Received: from exchange.dspace.de (EX-DE-PAD-SE.dspace.de [10.100.196.14])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by Z1-1000 (Postfix) with ESMTPS id 6895260036;
+ by Z1-1000 (Postfix) with ESMTPS id A195560036;
  Thu, 10 Sep 2026 13:39:55 +0200 (CEST)
 Received: from PascalKW11-NB.dspace.de (10.71.5.241) by EX-DE-PAD-SE.dspace.de
  (10.100.196.14) with Microsoft SMTP Server (version=TLS1_2,
@@ -143,9 +143,10 @@ To: Tony Nguyen <anthony.l.nguyen@intel.com>,
 CC: Daniel Baldin <dbaldin@dspace.de>, intel-wired-lan@lists.osuosl.org,
  netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
  Pascal Kneuper <PKneuper@dspace.de>
-Subject: [PATCH net 1/2] igb: Preserve RXPBS.CFG_TS_EN in igb_setup_tx_mode
-Date: Thu, 10 Sep 2026 13:38:53 +0200 (CEST)
-Message-ID: <20260910113854.13279-2-PKneuper@dspace.de>
+Subject: [PATCH net 2/2] igb: Quiesce the receive path before enabling i210
+ Rx timestamping
+Date: Thu, 10 Sep 2026 13:38:54 +0200 (CEST)
+Message-ID: <20260910113854.13279-3-PKneuper@dspace.de>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20260910113854.13279-1-PKneuper@dspace.de>
 References: <20260910113854.13279-1-PKneuper@dspace.de>
@@ -182,50 +183,70 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-Commit 05f9d3e1ae6e ("igb: Add support for CBS offload") restores the i21=
-0
-Rx packet buffer size with an unmasked write to RXPBS. Bit 31 of RXPBS is
-CFG_TS_EN, which enables per-packet Rx timestamping. Writing the register
-unconditionally clears this bit on every igb_up() (link down/up, MTU
-change, or driver reset).
+Commit e57b8bdb4833 ("igb: Add 1588 support to I210/I211.") enables
+per-packet Rx timestamping by setting RXPBS.CFG_TS_EN with Rx queues
+running. On i210/i211, CFG_TS_EN makes the DMA engine prepend a 16-byte
+timestamp header to every Rx packet buffer and sets RXDADV_STAT_TSIP in t=
+he
+Rx descriptor so igb_clean_rx_irq() strips it.
 
-Like other drivers (igc, i40e, ice), igb intends timestamping settings to
-persist across link changes: igb_reset() calls igb_ptp_reset() to re-appl=
-y
-tstamp_config and set CFG_TS_EN with queues stopped. igb_up() then clears
-it immediately afterwards, undoing its own restore.
+Setting CFG_TS_EN changes the buffer layout of already-armed descriptors.
+Without a pipeline handshake, descriptor status and packet buffer layout
+disagree for in-flight packets:
 
-igb_ptp_hwtstamp_get() returns cached settings and never reads the
-register, masking the fallback to software timestamps. On an i210, a link
-flap increases PTP path delay from <1us to tens of microseconds.
+  header inserted, no TSIP -> unstripped, frame shifted 16 bytes right
+  TSIP set, no header      -> 16 bytes stripped, buffer tail appended
 
-Fix by masking the buffer size field, as the FQTSS branch already does.
+In both cases the Ethernet header is corrupted, causing protocol demux to
+drop the frame silently. Because igb_alloc_mapped_page() allocates pages
+without __GFP_ZERO, the second case appends uninitialized memory.
 
-Fixes: 05f9d3e1ae6e ("igb: Add support for CBS offload")
+This occurs reliably on i210/i211 under traffic when requesting hardware
+timestamps at runtime, yielding corrupt frames on off-to-on transitions.
+
+Fix by bracketing the CFG_TS_EN transition with igb_down() and igb_up()
+when the interface is running, ensuring the bit is only toggled with Rx
+queues stopped.
+
+Fixes: e57b8bdb4833 ("igb: Add 1588 support to I210/I211.")
 Signed-off-by: Pascal Kneuper <PKneuper@dspace.de>
 ---
- drivers/net/ethernet/intel/igb/igb_main.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/igb/igb_ptp.c | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethe=
-rnet/intel/igb/igb_main.c
-index d4a897a8c82c6..0f3c728a07fb1 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -1947,7 +1947,12 @@ static void igb_setup_tx_mode(struct igb_adapter *=
-adapter)
- 			igb_config_tx_modes(adapter, i);
- 		}
- 	} else {
--		wr32(E1000_RXPBS, I210_RXPBSIZE_DEFAULT);
-+		/* Preserve RXPBS.CFG_TS_EN so Rx timestamping settings
-+		 * persist across link changes.
-+		 */
-+		val =3D rd32(E1000_RXPBS) & E1000_RXPBS_CFG_TS_EN;
-+		wr32(E1000_RXPBS, val | I210_RXPBSIZE_DEFAULT);
+diff --git a/drivers/net/ethernet/intel/igb/igb_ptp.c b/drivers/net/ether=
+net/intel/igb/igb_ptp.c
+index 638d8242b66bb..4da26e997f92c 100644
+--- a/drivers/net/ethernet/intel/igb/igb_ptp.c
++++ b/drivers/net/ethernet/intel/igb/igb_ptp.c
+@@ -1283,9 +1283,26 @@ int igb_ptp_hwtstamp_set(struct net_device *netdev=
+,
+ 			 struct netlink_ext_ack *extack)
+ {
+ 	struct igb_adapter *adapter =3D netdev_priv(netdev);
++	struct e1000_hw *hw =3D &adapter->hw;
++	bool quiesce =3D false;
+ 	int err;
+=20
++	/* CFG_TS_EN changes the Rx buffer layout, so flipping it on a live
++	 * queue leaves the descriptor and the data disagreeing about the
++	 * 16 byte timestamp header for one window, mangling a frame.
++	 */
++	if ((hw->mac.type =3D=3D e1000_i210 || hw->mac.type =3D=3D e1000_i211) =
+&&
++	    netif_running(netdev) &&
++	    !(rd32(E1000_RXPBS) & E1000_RXPBS_CFG_TS_EN)) {
++		quiesce =3D true;
++		igb_down(adapter);
++	}
 +
- 		wr32(E1000_TXPBS, I210_TXPBSIZE_DEFAULT);
- 		wr32(E1000_I210_DTXMXPKTSZ, I210_DTXMXPKTSZ_DEFAULT);
+ 	err =3D igb_ptp_set_timestamp_mode(adapter, config);
++
++	if (quiesce)
++		igb_up(adapter);
++
+ 	if (err)
+ 		return err;
 =20
 --=20
 2.47.3
