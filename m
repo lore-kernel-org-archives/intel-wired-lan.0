@@ -1,282 +1,162 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AFDACC79F9F
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 10 Sep 2026 15:47:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 33C49C79FBF
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 10 Sep 2026 15:48:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 7302C40AFB;
-	Thu, 10 Sep 2026 15:47:01 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id DD97760B89;
+	Thu, 10 Sep 2026 15:48:55 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 127aDH3zCY9a; Thu, 10 Sep 2026 15:48:55 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org E37EF60B8D
+Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789055335;
+	b=SFrLCX0KYvQdB6iYLPgulcBnNws7m1t3/Sv+H7BHIF3Onb2q690L33kjyTtxYSY4sQW9
+	 h3jFZxA7dIhEi9nUFMGZO+K1Iit4ZobPx+cr5JVqkFXLTMHKqkGC5c1F6VzeGbhGjT5Vh
+	 3sqXYRoXqHgRXFdTndQ+I0nPg/Dy3XLDQZmAk403ROvxGdF3m1/Ks+c7BtC2AHf5uCDAZ
+	 5Fl0ZGn/l1wPXTTnFwSuUV0CR9kd0Z8EVAaqA6C6ZAfaK6lXGNO4/rf1qSfLJOplDVrSq
+	 0D+FW4wsEB6h69CzZ6hGmwWzfez2FTzZ8aCIsBLMMxhmi965Eb41/LmI/0r3qZE1woA==
+ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
+	c=relaxed/relaxed; t=1789055335;
+	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
+	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
+	 DKIM-Signature:Received:X-MC-Unique:X-Mimecast-MFC-AGG-ID:Received:
+	 Received:From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:X-Scanned-By:X-Mimecast-MFC-PROC-ID:
+	 X-Mimecast-Originator:Content-Transfer-Encoding:content-type:
+	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
+	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
+	bh=WAXlfc/tf1p3QsrX+UCCT6KufH9ClSZnpXl6HvO2Sbw=;
+	b=Tc5IUa9pjuGNl81pgq0X+05ekst2nNb7lbKhcf5WkFYGV/x6WDV+aM4UpOoO2UIX0IrV
+	 hHCOaPoUSlZ7jkScqYtVQ8UyRiT+1nJIrKYUR3ZgaaTTYMYNr6Mir93aWosj9ta8hGQz0
+	 hHW8ITWuycAFKLAS9dCRRiO8MngPKxibm6jNek0I25Bof/URxKNikRwJwNWo93zlxfMxj
+	 GZtTgU7L3rtijQoC3770L/bR7Md47kZGgsrcsYFXz2/iHgmxNcpVQkX9njRTO0QiEABOh
+	 +IjB4BheWUBWi7eb4jX9KdA550LrXlZ0PFqsMXBd8x4QWSdEbm6A+PdgPmNTn+PW2yQ==
+ARC-Authentication-Results: i=2; smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1789055334;
+	bh=WAXlfc/tf1p3QsrX+UCCT6KufH9ClSZnpXl6HvO2Sbw=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=V6l1RRPBuScbGggjDpsOrxKnqa6FsnwnWBoKzXJFLSMTnfp+T5dxYQJa9EuecR0YB
+	 dfRkEUG8wwzyIReHzt74q0vPBWQN+oa353EbFurGIi7W42cTgducNDoML/9dyW7N+5
+	 TIDgDjzwxmwjwBiuoaYy7Ti9vWIE4K2zjcepuj089Sy+gUenlBensO8I/0l6U5GdiH
+	 jJeUijdCvrMT2MSElcWcWYrqM6mCoD3V5/6q5v+GhnNyzpLIdtMLYem2/xYf4iIHXX
+	 Q5kwvsqIz3fPrlNbP6zEGWonNTc7efyLinz1XPAW0joHTHsF/Zh4KgyfHxgkZRqE1i
+	 HXYVOr7HlLI7w==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp3.osuosl.org (Postfix) with ESMTP id E37EF60B8D;
+	Thu, 10 Sep 2026 15:48:54 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id E29B0362
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Sep 2026 15:48:52 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id D435A40B02
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Sep 2026 15:48:52 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id HSQjLOFovHaR; Thu, 10 Sep 2026 15:47:00 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org CA24B40AFD
-Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789055220;
-	b=ADc6wQkm34dyVSKALDfyfjX5Rk7qbNsjEKj8oVTjbExh1v7UFod1nbwcHWvU9zZZHBGL
-	 W4Dotrfdmui5bh8O0CCI3OxObyMKYy8or+tqE+ilWOYPUyBUisasXwaYBKswKP4qXyd8+
-	 95IYy7AUjT2jE1PbN/EcvF/O9eVRQD9p3g5eEl85ENp+Ts8WwaZuH9X2WGcacmDfKbqHf
-	 FfRYE2BEhOzjLgmjNOKbf/N9zp1ikqxNUnWRNMVwBwU3qAO52WrlA98Aq3b/vE7yuYtXV
-	 J9WiyfSQwyQXHecdrGrvaCaPW5rLpGmCzoiC6328uGM5CiRVwSH2IFVrbs7tVh0keOw==
-ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1789055220;
-	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
-	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:X-Greylist:Received-SPF:Received:
-	 Received:Received:DKIM-Signature:DKIM-Signature:X-ME-Sender:
-	 X-ME-Proxy-Cause:X-ME-Proxy:Feedback-ID:Received:X-Mailer:
-	 MIME-Version:X-ThreadId:Date:From:To:Cc:Message-Id:In-Reply-To:
-	 References:Subject:Content-Type:Content-Transfer-Encoding:X-BeenThere:
-	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=VJHi3AALrojUsaiH2K9JRyFh6yN6vM9XW4bo5EfCLvk=;
-	b=F1QOMuwxVBpB98AL5Hn0ZggX2ugEjJNLJrXVhw5ojfBbi9tScD7CQ9RRnYj9wzyyfPTu
-	 oPP6h/Lxnyb6LIssrq8gpEFcijaHU7+P6uEqP/qbpedFdjy58awJeh/mDRhVuzZC+nlYm
-	 UfMfkdkeMFRr1QsK3MAM/n9c17f/je5C8MGGhx9foXOmgfgwg9EvLl3cje71eDX87wdnk
-	 qq179nozwxK4RoZHKx8zwrqJsHwtK9nBsFqG+pqA4EM9fGBJwyZsmFSBMrPLVSESIsh7s
-	 8qYETsLMKSyOZ7+C2FR12GPb1gIIS1R2DbGG9jm+roENroti8qJxwhdpBkRME/NWN9w==
-ARC-Authentication-Results: i=2; smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1789055220;
-	bh=VJHi3AALrojUsaiH2K9JRyFh6yN6vM9XW4bo5EfCLvk=;
-	h=Date:From:To:Cc:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=0gZCXT/jROJEvzPVJS60rAmvsqdsyhc64r+cxo9OfhKMiwkey/8+Vg4Hy79z6gipT
-	 ytO9Jfv7DVBF85kId/IkfOkq27rfTRKT+VBOTdj1mhWcwBFnvs5xubOOY89sNGB+VX
-	 dgA5jd5FD9q/8Tp/08c5RZFlAMlBwGpfyXM+D0rELCHUudcHGpCBIwLUJlZdxtSEyJ
-	 lm9rKxE8dO/ZPUMH4wrHu1BO2KLCAg9rytJke3eozQD1900XzoJJayLitXcG3tvVwj
-	 u5K8+mxLJcWNRiwAZPQ1sfNnCGqClidPtFA0llK4rcbChtqZ7HGk61ArSaXxGRouR1
-	 kQatKj0DA3Lzg==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id CA24B40AFD;
-	Thu, 10 Sep 2026 15:47:00 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id F2E2E362
- for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Sep 2026 15:46:58 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id F064140332
- for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Sep 2026 15:46:58 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id HEq9bDpcJtOK for <intel-wired-lan@lists.osuosl.org>;
- Thu, 10 Sep 2026 15:46:58 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org 7D85C4032B
-Authentication-Results: smtp2.osuosl.org;
- arc=none smtp.remote-ip=202.12.124.141
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789055218;
- b=mA6oagRM1qgGsiHRpLkl2GIkijafT4CC6K65C58wR0+fL1XIS6u4tLQiCZ0DhrpOIwox
- QaaW9fjgtx/1ELDAr4T0+ESFosfwZN41gwpfb4cJr5PkTrtMMQYJz/SpxKvZyvzPo9IUh
- TBy750B3xCDlkKgLHD8QmPw2+JB0TauMKeNg974d/sjNWHfIPDixn9rq6q+obtsrF3++H
- QM/lLDwz0+qhh/ugZdCba7qq3dJyzAf4tlxXF/QMqICe4n8rMsSDBkYlgiEveRoB6BTXL
- zgmvhzMivLxYhxAQtloGuAcksOX9DGgYKMrnowoVb2fZt9GNXDXNo5VQVibbpQT/UDg==
+ id Qp14RYh64eo9 for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 10 Sep 2026 15:48:51 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 9258A40B01
+Authentication-Results: smtp4.osuosl.org;
+ arc=none smtp.remote-ip=170.10.129.124
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789055331;
+ b=NhE8RYjjfSqNKk4mhJz7QyO69B9hAAQiiXjjlfTqlf5WF9VTAZxNe0vB+6vkSrWLPx4b
+ 86w9A0kdrq2DCzL6NhH7fvn/dP87wOoun+jdXxJMW090w7ilG5jGzd/lGIyuSEgwWYVtj
+ IQJONT/90MMqzZoonfetHYcmfgeJkV3z9q9ejdArFsAStL8aajyc6XdeSj+goihl64rjP
+ ysmES0S/V3LPbgRbcWNfk8grc965gFPquPix+2CzN9t3U6D9D4HlZUK7RtRm2XqmGXCss
+ 7a1dHrN6/YQ7CK7oY3pd40/nl/YUrCk1CKLnwnRaiC3yH9qqQuOCMQLfFhwpxOcFPYw==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1789055218;
- h=X-Greylist:Received-SPF:Received:Received:DKIM-Signature:
- DKIM-Signature:X-ME-Sender:X-ME-Proxy-Cause:X-ME-Proxy:Feedback-ID:
- Received:X-Mailer:MIME-Version:X-ThreadId:Date:From:To:Cc:Message-Id:
- In-Reply-To:References:Subject:Content-Type:
- Content-Transfer-Encoding;
- bh=VJHi3AALrojUsaiH2K9JRyFh6yN6vM9XW4bo5EfCLvk=;
- b=B/Y8umAcmQ/8nl95p7ihguUSdg+BkW9ELnbu2a+suN/b+tz2d8lgc5GwI8/iLuVVLTN7
- qioJn3fDvOC51ptaYv9PYgT35hOqio/JmY2BS7dfiyOuxSmnQsgDroTlhZHL4bKSXWDCF
- 5DYRouYvAYQSjEUfL6naxvhEL0OpEdUwngeMRC+tkncmv/G6Nb81Y01wpbBlPtUpAAYQt
- XVs0aeE1r96QAC5yXq5+1W1yo5xBPXChOuxLLGUqvfFU1TP9R/ih+gzOf6p52/04ls9zr
- VNrG7cRMD5cFyzB6ST0iys6zCDvGS5ND7agWccveiSPt3XWQpERFER67/67TBQQQBlQ==
-ARC-Authentication-Results: i=1; smtp2.osuosl.org;
- dmarc=pass header.from=arndb.de; 
- dkim=pass header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256
- header.s=fm3 header.b=g5YX+XDA; 
- dkim=pass header.d=messagingengine.com header.i=@messagingengine.com
- header.a=rsa-sha256 header.s=fm1 header.b=Mjj1H69q; 
- arc=none smtp.remote-ip=202.12.124.141
-X-Greylist: delayed 561 seconds by postgrey-1.37 at util1.osuosl.org;
- Thu, 10 Sep 2026 15:46:57 UTC
-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=arndb.de
-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key, unprotected) header.d=arndb.de header.i=@arndb.de
- header.a=rsa-sha256 header.s=fm3 header.b=g5YX+XDA; 
- dkim=pass (2048-bit key,
- unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.a=rsa-sha256 header.s=fm1 header.b=Mjj1H69q
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=202.12.124.141;
- helo=flow-b6-smtp.messagingengine.com; envelope-from=arnd@arndb.de;
+ c=relaxed/relaxed; t=1789055331;
+ h=Received-SPF:DKIM-Signature:Received:X-MC-Unique:
+ X-Mimecast-MFC-AGG-ID:Received:Received:From:To:Cc:Subject:Date:
+ Message-ID:In-Reply-To:References:MIME-Version:X-Scanned-By:
+ X-Mimecast-MFC-PROC-ID:X-Mimecast-Originator:
+ Content-Transfer-Encoding:content-type;
+ bh=WAXlfc/tf1p3QsrX+UCCT6KufH9ClSZnpXl6HvO2Sbw=;
+ b=a60soP7E53+jsBE5HhZB8yioHFH3agWwrSSliPlV7HX87sqv5Rh5Llzuy2H1AVK98tZV
+ i0D/RFRUaGM2HhYBJXtORZUyWLl31vZ6iulBRtmJYpdAfTyerJj8IMX/FF3dmJ3v9hSC9
+ tpURjZ4O4RG4yZ5LsBDWpjCAwP0gM99/VGAmRiWZXMsADzddA+W6njNpP/4Gn6hUjAmPL
+ zUB83s89nbpIU5B0t2qLSIJjyTEkJ11+S3CeopnEOVDp7nNJAzJTsw/yRddlfqoYpjb81
+ YT90siNxVRHPn3XJGh17KPPgKrDV+OQFeakh3SSwkkFbYr3yqKMk10Zj1JtnpaYY2pQ==
+ARC-Authentication-Results: i=1; smtp4.osuosl.org;
+ dmarc=pass header.from=redhat.com; 
+ dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=YjfRnziu; 
+ arc=none smtp.remote-ip=170.10.129.124
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=poros@redhat.com;
  receiver=<UNKNOWN> 
-Received: from flow-b6-smtp.messagingengine.com
- (flow-b6-smtp.messagingengine.com [202.12.124.141])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 7D85C4032B
- for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Sep 2026 15:46:56 +0000 (UTC)
-Received: from ams-compute-02.internal (ams-compute-02.internal [10.64.2.62])
- by mailflow.stl.internal (Postfix) with ESMTP id B78891300388;
- Thu, 10 Sep 2026 11:37:29 -0400 (EDT)
-Received: from ams-imap-03 ([10.64.2.23])
- by ams-compute-02.internal (MEProxy); Thu, 10 Sep 2026 11:37:34 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
- :cc:content-transfer-encoding:content-type:content-type:date
- :date:from:from:in-reply-to:in-reply-to:message-id:mime-version
- :references:reply-to:subject:subject:to:to; s=fm3; t=1789054649;
- x=1789061849; bh=VJHi3AALrojUsaiH2K9JRyFh6yN6vM9XW4bo5EfCLvk=; b=
- g5YX+XDAJclx6iQY1Iqpvad/dhrXmtpPU4X7PHlSgR64ReSdtRKtKAHoCH7XVsr5
- hAoaD2CjknoqFaItBRP2Pce1s5t+MBHlX5z6PSL9MFShemil7OeGznVKek97Pboj
- pOYd7bm9YwDodqlP0W6v+izYml6crN4RUubmoSZ24C7XJk6JFapLKhvb8RNOa9fU
- s9DAERYBnqQIx6FjZ9VJdtmLrsrdcXcqAsaEWv+3/dnl5QWZYUgt9eOEPAnHh//o
- GqHfb2N9eRIZ7x6p7Yf4XLM9osYhuuGRF0GCvYc4NhczWcBbp7F3ujKQMS5sGZFE
- njVBCvnGUlw1aVe55lI0Og==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
- messagingengine.com; h=cc:cc:content-transfer-encoding
- :content-type:content-type:date:date:feedback-id:feedback-id
- :from:from:in-reply-to:in-reply-to:message-id:mime-version
- :references:reply-to:subject:subject:to:to:x-me-proxy
- :x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1789054649; x=
- 1789061849; bh=VJHi3AALrojUsaiH2K9JRyFh6yN6vM9XW4bo5EfCLvk=; b=M
- jj1H69qJ9QbYpI2qqgrm0TY1an5n7bAIzQ0T4sIOc382Q5JiSEzvGzcnytPog3mX
- YTl40hPZ5Doi8vrUsnS8gyQP3QmUPDhjisRddU4Mg8XKLI/Ux3ZCO+ZiVFyUrTYQ
- mkyfvndbskAGq/u+yA4ML2PgHbke7KkCVP5yPRG/VCZ9u9If5V66tyjKEaHiZW4W
- DJASGFMLx2pJegmYltp2DTEo5BfCHoo162GdBUoBaBzw4KPSpMHCw/cw77gIvrxO
- frBXjWuRTd2Dm1BkDcyvLUHrL3S3F5aBB07UJ6QjSl1CFAF2eNcVeesYQo4gNvEc
- 2rp6udhsJugr91rgSQmsw==
-X-ME-Sender: <xms:qs6ialjxbEuodcS0_ZTw49mWDlh3-eH5ipz4y--9tvyE15ehv0kuGA>
- <xme:qs6iak2m5qY1JZA52TgCLnb0Zlxl2I7QizMK2xUaH33EcsB7aIS8Gn1OjVrM5licJ
- 6tWlaF6EbXIiUUb37baJ0Zd0PN4oJ0KtYtQwTmputgqJWm-6V4jymhG>
-X-ME-Proxy-Cause: dmFkZTFEwk/pbFsgZVvj1/HzO07XC8c86PahbIj9Ip0Bc489VSmLqZw2fxt9jqTF6ASy2J
- Bh8LpJFRvRMfxgrm0BzqpnQ4+FLZVi6/PYWufUjxT9Vw2yLZMvXhGutXjCdn5zpysql4rf
- 4oXu8f8leUGkFACC3NRJZNhD3z1gLg3BuiiSNulTSbNf/7sZabwsiK4Ivzij5BKUo/pvlm
- N5bsM1GtBKSA2QAmu2L9srOMeJlcR+G3QpuNNzrAlfxtUkOtu1ETj8xY0ae0n16CaydZ7o
- 0SYTEts/JKJ/hF8H5riazj4NnaBJJINfKYCXtU2ogsd4knZf2c6XXMR7LDauOa3DULeriZ
- 0zecyUgKRcqt+NBZFIG8DW19AN2ywWhsRUrQ3XXV5vcRLgJ4+0Xr/XpS4f8hEyG0LtKFqt
- QnpEuZK818HonIlCCpCzRvx5ykclnNC0zhvRgqyrLMdw1J/ipnqJ/ufaaxN1IjTJXgKNYS
- OTydTB/ZaZX67n+6HNlgcl4plIjbODbPBp0bqLPXFArdRv6l/GqG7nWmZuQ2/dwI+RA6rG
- QyZZ8rIoMag4LJSVL6jK/uYEStG2jXNGSqxUE2hRLSUV++qO702qwXCJbFQ7sdrkjKip51
- kT2tH8QDoaWCFZEfJgoWEwICI/2gQcKdPgM7OZxkPWi4zRiW1TF1JGHhqSDw
-X-ME-Proxy: <xmx:sc6ialjamB9SeQnHab_t6ZRsQqT-buxwQbX7Pk1AlPeCCTQb7rOOeQ>
- <xmx:sc6iaglIqAf0vosGUApMblzQyeJj-NLS64wxskaXgk2cV7M71tEuZw>
- <xmx:sc6iaiTuMxs-CFVvJ2UHUpblwBGAL8YpG-Y6W7CwFQlvVLQUZWL9Mg>
- <xmx:sc6iasWedQvENNAVhlBvV-KNGWkAMnU-r3agZilH1yq9Zos-xHWiZQ>
- <xmx:uc6ian8Q2FSkLT9gPSPBqk5JaLSiRD4MeryCzmrJXmDUbfNMGy4g4w1i>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.ams.internal (Postfix, from userid 501)
- id A91DC32A007B; Thu, 10 Sep 2026 11:37:14 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
+Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.from=redhat.com
+Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=YjfRnziu
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ by smtp4.osuosl.org (Postfix) with ESMTP id 9258A40B01
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Sep 2026 15:48:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1789055329;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=WAXlfc/tf1p3QsrX+UCCT6KufH9ClSZnpXl6HvO2Sbw=;
+ b=YjfRnziufy6/BzZzH/nRe6lHhxpD9y16QV/NpfHUSs/Bty5W2gYH4KZIT5SOSHHlSoWvZB
+ GKLZtKZqNnEIYgNgrX4espkMV07GUPKBgiPsOOUlmfH/A+LFs3tu5EuWIsm43KBUlI96Nd
+ Tn3P0O9fb+dRT5Gh2Et0LMN8YUjAu4c=
+Received: from mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-711-1o1SDbTBONCmACAp4nDEcA-1; Thu,
+ 10 Sep 2026 11:48:46 -0400
+X-MC-Unique: 1o1SDbTBONCmACAp4nDEcA-1
+X-Mimecast-MFC-AGG-ID: 1o1SDbTBONCmACAp4nDEcA_1789055324
+Received: from mx-prod-int-10.mail-002.prod.us-west-2.aws.redhat.com
+ (mx-prod-int-10.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.95])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
+ id 4DD2B180059D; Thu, 10 Sep 2026 15:48:44 +0000 (UTC)
+Received: from ShadowPeak.redhat.com (unknown [10.44.48.140])
+ by mx-prod-int-10.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
+ id 45360418; Thu, 10 Sep 2026 15:48:39 +0000 (UTC)
+From: Petr Oros <poros@redhat.com>
+To: netdev@vger.kernel.org
+Cc: Petr Oros <poros@redhat.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>,
+ Priyalee Kushwaha <priyalee.kushwaha@intel.com>,
+ Kiran Patil <kiran.patil@intel.com>,
+ Wojciech Drewek <wojciech.drewek@intel.com>,
+ Michal Swiatkowski <michal.swiatkowski@linux.intel.com>,
+ intel-wired-lan@lists.osuosl.org, linux-kernel@vger.kernel.org
+Subject: [PATCH iwl-next 1/2] ice: fix TC flower filters matching more than
+ the ip_proto key
+Date: Thu, 10 Sep 2026 17:48:23 +0200
+Message-ID: <20260910154824.3603687-2-poros@redhat.com>
+In-Reply-To: <20260910154824.3603687-1-poros@redhat.com>
+References: <20260910154824.3603687-1-poros@redhat.com>
 MIME-Version: 1.0
-X-ThreadId: Ay04W235egbV
-Date: Thu, 10 Sep 2026 17:36:54 +0200
-From: "Arnd Bergmann" <arnd@arndb.de>
-To: "Nicolai Buchwitz" <nb@tipi-net.de>,
- "Fernando Fernandez Mancera" <fmancera@suse.de>
-Cc: Netdev <netdev@vger.kernel.org>, "Simon Horman" <horms@kernel.org>,
- "Jakub Kicinski" <kuba@kernel.org>, "Paolo Abeni" <pabeni@redhat.com>,
- "Eric Dumazet" <edumazet@google.com>,
- "David S . Miller" <davem@davemloft.net>,
- "Jason Gunthorpe" <jgg@ziepe.ca>, "Leon Romanovsky" <leon@kernel.org>,
- "Andrew Lunn" <andrew+netdev@lunn.ch>,
- "Anthony L Nguyen" <anthony.l.nguyen@intel.com>,
- "Przemek Kitszel" <przemyslaw.kitszel@intel.com>,
- "Elad Nachman" <enachman@marvell.com>,
- "Saeed Mahameed" <saeedm@nvidia.com>, "Tariq Toukan" <tariqt@nvidia.com>,
- "Mark Bloch" <mbloch@nvidia.com>, "Ido Schimmel" <idosch@nvidia.com>,
- "Petr Machata" <petrm@nvidia.com>, "Edward Cree" <ecree.xilinx@gmail.com>,
- "Maxime Chevallier" <maxime.chevallier@bootlin.com>,
- "Maxime Coquelin" <mcoquelin.stm32@gmail.com>,
- "Alexandre Torgue" <alexandre.torgue@foss.st.com>,
- "Arend van Spriel" <arend.vanspriel@broadcom.com>,
- "Miri Korenblit" <miriam.rachel.korenblit@intel.com>,
- "Keith Busch" <kbusch@kernel.org>, "Jens Axboe" <axboe@kernel.dk>,
- "Christoph Hellwig" <hch@lst.de>, "Sagi Grimberg" <sagi@grimberg.me>,
- "Chaitanya Kulkarni" <kch@nvidia.com>,
- "Saurav Kashyap" <skashyap@marvell.com>,
- "Javed Hasan" <jhasan@marvell.com>, GR-QLogic-Storage-Upstream@marvell.com,
- "James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>,
- "Martin K. Petersen" <mkp@kernel.org>,
- "Nilesh Javali" <njavali@marvell.com>,
- "Manish Rangankar" <mrangankar@marvell.com>,
- "Varun Prakash" <varun@chelsio.com>,
- "Alexander Viro" <viro@zeniv.linux.org.uk>,
- "Christian Brauner" <brauner@kernel.org>, "Jan Kara" <jack@suse.cz>,
- "David Howells" <dhowells@redhat.com>,
- "Marc Dionne" <marc.dionne@auristor.com>,
- "Trond Myklebust" <trondmy@kernel.org>,
- "Anna Schumaker" <anna@kernel.org>, "Chuck Lever" <cel@kernel.org>,
- "Jeff Layton" <jlayton@kernel.org>, NeilBrown <neil@brown.name>,
- "Olga Kornievskaia" <okorniev@redhat.com>,
- "Dai Ngo" <Dai.Ngo@oracle.com>, "Tom Talpey" <tom@talpey.com>,
- "Marek Lindner" <marek.lindner@mailbox.org>,
- "Simon Wunderlich" <sw@simonwunderlich.de>,
- "Antonio Quartulli" <antonio@mandelbit.com>,
- "Sven Eckelmann" <sven@narfation.org>,
- "Nikolay Aleksandrov" <razor@blackwall.org>,
- "Pablo Neira Ayuso" <pablo@netfilter.org>,
- "Florian Westphal" <fw@strlen.de>, "Phil Sutter" <phil@nwl.cc>,
- "Johannes Berg" <johannes@sipsolutions.net>,
- "Matthieu Baerts" <matttbe@kernel.org>,
- "Mat Martineau" <martineau@kernel.org>,
- "Geliang Tang" <geliang@kernel.org>, "Julian Anastasov" <ja@ssi.bg>,
- "Aaron Conole" <aconole@redhat.com>,
- "Eelco Chaudron" <echaudro@redhat.com>,
- "Ilya Maximets" <i.maximets@ovn.org>,
- "Allison Henderson" <achender@kernel.org>,
- "Jamal Hadi Salim" <jhs@mojatatu.com>, "Jiri Pirko" <jiri@resnulli.us>,
- "Marcelo Ricardo Leitner" <marcelo.leitner@gmail.com>,
- "Xin Long" <lucien.xin@gmail.com>, "D. Wythe" <alibuda@linux.alibaba.com>,
- "Dust Li" <dust.li@linux.alibaba.com>,
- "Sidraya Jayagond" <sidraya@linux.ibm.com>,
- "Mahanta Jambigi" <mjambigi@linux.ibm.com>,
- "Tony Lu" <tonylu@linux.alibaba.com>, "Wen Gu" <guwen@linux.alibaba.com>,
- "Jon Maloy" <jmaloy@redhat.com>,
- "Tung Quang Nguyen" <tung.quang.nguyen@est.tech>,
- "Steffen Klassert" <steffen.klassert@secunet.com>,
- "Herbert Xu" <herbert@gondor.apana.org.au>,
- "Casey Schaufler" <casey@schaufler-ca.com>,
- "Paul Moore" <paul@paul-moore.com>, "James Morris" <jmorris@namei.org>,
- "Serge E. Hallyn" <serge@hallyn.com>,
- "Vikas Gupta" <vikas.gupta@broadcom.com>,
- "Bhargava Marreddy" <bhargava.marreddy@broadcom.com>,
- "Rajashekar Hudumula" <rajashekar.hudumula@broadcom.com>,
- =?UTF-8?Q?Markus_Bl=C3=B6chl?= <markus@blochl.de>,
- "Heiner Kallweit" <hkallweit1@gmail.com>,
- "Florian Fainelli" <florian.fainelli@broadcom.com>,
- "Krzysztof Kozlowski" <krzk@kernel.org>,
- "Qingfang Deng" <qingfang.deng@linux.dev>,
- "Julian Braha" <julianbraha@gmail.com>,
- "Ethan Nelson-Moore" <enelsonmoore@gmail.com>,
- "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
- "Eric Biggers" <ebiggers@kernel.org>, "Ard Biesheuvel" <ardb@kernel.org>,
- "Neal Cardwell" <ncardwell@google.com>,
- "Kuniyuki Iwashima" <kuniyu@google.com>,
- "Willem de Bruijn" <willemb@google.com>, "Alyssa Ross" <hi@alyssa.is>,
- "Joel Granados" <joel.granados@kernel.org>,
- "Oleg Nesterov" <oleg@redhat.com>, linux-rdma@vger.kernel.org,
- linux-kernel@vger.kernel.org,
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- "open list:NETRONOME ETHERNET DRIVERS" <oss-drivers@corigine.com>,
- linux-net-drivers@amd.com, linux-stm32@st-md-mailman.stormreply.com,
- linux-arm-kernel@lists.infradead.org, linux-wireless@vger.kernel.org,
- brcm80211@lists.linux.dev, brcm80211-dev-list.pdl@broadcom.com,
- linux-nvme@lists.infradead.org, linux-scsi@vger.kernel.org,
- target-devel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- linux-afs@lists.infradead.org, linux-nfs@vger.kernel.org,
- b.a.t.m.a.n@lists.open-mesh.org,
- "open list:ETHERNET BRIDGE" <bridge@lists.linux.dev>,
- netfilter-devel@vger.kernel.org, coreteam@netfilter.org,
- mptcp@lists.linux.dev, lvs-devel@vger.kernel.org, dev@openvswitch.org,
- rds-devel@oss.oracle.com, linux-sctp@vger.kernel.org,
- linux-s390@vger.kernel.org,
- "open list:TIPC NETWORK LAYER" <tipc-discussion@lists.sourceforge.net>,
- linux-security-module@vger.kernel.org
-Message-Id: <cda5d4e9-49a5-4d6f-93d4-fb50d74ed5ce@app.fastmail.com>
-In-Reply-To: <aeb37452e976f5d44540ac3a0999d07b@tipi-net.de>
-References: <20260910144914.8025-1-fmancera@suse.de>
- <20260910144914.8025-2-fmancera@suse.de>
- <aeb37452e976f5d44540ac3a0999d07b@tipi-net.de>
-Subject: Re: [PATCH 01/13 net-next] net: ipv4: introduce CONFIG_IPV4 to
- decouple the IPv4 stack
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+X-Scanned-By: MIMEDefang 3.6 on 10.30.177.95
+X-Mimecast-MFC-PROC-ID: 2PffXv6ausd5Y0xWDPvgxcRg7lXKRx_BCFtfHKUD41U_1789055324
+X-Mimecast-Originator: redhat.com
+Content-Transfer-Encoding: 8bit
+content-type: text/plain; charset="US-ASCII"; x-default=true
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -291,32 +171,142 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-On Thu, Sep 10, 2026, at 17:11, Nicolai Buchwitz wrote:
->> diff --git a/net/packet/Kconfig b/net/packet/Kconfig
->> index 2997382d597c..00fda9e08cb0 100644
->> --- a/net/packet/Kconfig
->> +++ b/net/packet/Kconfig
->> @@ -5,6 +5,7 @@
->> 
->>  config PACKET
->>  	tristate "Packet socket"
->> +	depends on IPV4
->
->    depends on IPV4 || !INET
->
-> Otherwise this would break existing configs with INET=n. The same 
-> applies to other affected options that currently permit INET=n.
+ice_parse_cls_flower() stores the ip_proto key from the flow rule but
+never programs a matching lookup unless the filter also matches on L4
+ports or the L2TPv3 session ID. A filter like:
 
-Since that's a lot of symbols that all need the same dependency,
-maybe we could have an intermediate symbol for it:
+  tc filter add dev $pf ingress protocol ip flower skip_sw \
+      ip_proto udp action drop
 
-config IPV4_IF_INET # or any better name you can think of
-      def_bool IPV4 || !INET
+is silently programmed into the hardware as a match on eth_type ipv4
+alone and drops every IPv4 packet, not just UDP.
 
-Similarly, everything that currently has 'depends on INET && IPV4'
-could be simplified to just 'depends on IPV4', and the leftover
-'depends on INET && IPV6' from the days of modular IPV6 can now
-become 'depends on IPV4'. We only needed to list both in the past
-to deal with the IPV6=m case.
+Program the IP protocol match through the protocol field of the IPv4
+header lookup and the next header field of the IPv6 header lookup, the
+same lookups that are already used for ToS and TTL. The OS default and
+comms DDP packages provide no profile that extracts the IPv6 next
+header word, so the IPv6 rule programming currently fails with
+"Required profiles not found" and the filter falls back to software
+evaluation instead of over-matching, and the offload starts working
+with a DDP package that can extract it. Note that the lookup matches
+the next header byte of the base IPv6 header, so packets carrying
+extension headers are not matched in hardware and fall back to
+software evaluation, which under-matches only for skip_sw filters.
 
-       Arnd
+GTP tunnel and PPPoE filters rewrite the parsed ethertype, the IP
+header lookups are not available there, so reject an unconsumed
+ip_proto for them instead of silently widening the match. Filters where
+ip_proto is implied by an L4 ports or L2TPv3 session ID lookup are not
+affected. Based on an earlier unapplied patch from Michal Swiatkowski
+that implemented the IPv4 part [1].
+
+Link: https://lore.kernel.org/intel-wired-lan/20240222123956.2393-3-michal.swiatkowski@linux.intel.com/ [1]
+Fixes: 0d08a441fb1a ("ice: ndo_setup_tc implementation for PF")
+Signed-off-by: Petr Oros <poros@redhat.com>
+---
+ drivers/net/ethernet/intel/ice/ice_tc_lib.c | 37 +++++++++++++++++++--
+ drivers/net/ethernet/intel/ice/ice_tc_lib.h |  1 +
+ 2 files changed, 35 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_tc_lib.c b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
+index d20357c0412731..fbd8cbad150a98 100644
+--- a/drivers/net/ethernet/intel/ice/ice_tc_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
+@@ -78,7 +78,8 @@ static int ice_tc_count_lkups(u32 flags, struct ice_tc_flower_fltr *fltr)
+ 		     ICE_TC_FLWR_FIELD_DEST_IPV6 | ICE_TC_FLWR_FIELD_SRC_IPV6))
+ 		lkups_cnt++;
+ 
+-	if (flags & (ICE_TC_FLWR_FIELD_IP_TOS | ICE_TC_FLWR_FIELD_IP_TTL))
++	if (flags & (ICE_TC_FLWR_FIELD_IP_TOS | ICE_TC_FLWR_FIELD_IP_TTL |
++		     ICE_TC_FLWR_FIELD_IP_PROTO))
+ 		lkups_cnt++;
+ 
+ 	/* are L2TPv3 options specified? */
+@@ -552,7 +553,8 @@ ice_tc_fill_rules(struct ice_hw *hw, u32 flags,
+ 	}
+ 
+ 	if (headers->l2_key.n_proto == htons(ETH_P_IP) &&
+-	    (flags & (ICE_TC_FLWR_FIELD_IP_TOS | ICE_TC_FLWR_FIELD_IP_TTL))) {
++	    (flags & (ICE_TC_FLWR_FIELD_IP_TOS | ICE_TC_FLWR_FIELD_IP_TTL |
++		      ICE_TC_FLWR_FIELD_IP_PROTO))) {
+ 		list[i].type = ice_proto_type_from_ipv4(inner);
+ 
+ 		if (flags & ICE_TC_FLWR_FIELD_IP_TOS) {
+@@ -567,11 +569,19 @@ ice_tc_fill_rules(struct ice_hw *hw, u32 flags,
+ 				headers->l3_mask.ttl;
+ 		}
+ 
++		if (flags & ICE_TC_FLWR_FIELD_IP_PROTO) {
++			list[i].h_u.ipv4_hdr.protocol =
++				headers->l3_key.ip_proto;
++			list[i].m_u.ipv4_hdr.protocol =
++				headers->l3_mask.ip_proto;
++		}
++
+ 		i++;
+ 	}
+ 
+ 	if (headers->l2_key.n_proto == htons(ETH_P_IPV6) &&
+-	    (flags & (ICE_TC_FLWR_FIELD_IP_TOS | ICE_TC_FLWR_FIELD_IP_TTL))) {
++	    (flags & (ICE_TC_FLWR_FIELD_IP_TOS | ICE_TC_FLWR_FIELD_IP_TTL |
++		      ICE_TC_FLWR_FIELD_IP_PROTO))) {
+ 		struct ice_ipv6_hdr *hdr_h, *hdr_m;
+ 
+ 		hdr_h = &list[i].h_u.ipv6_hdr;
+@@ -592,6 +602,11 @@ ice_tc_fill_rules(struct ice_hw *hw, u32 flags,
+ 			hdr_m->hop_limit = headers->l3_mask.ttl;
+ 		}
+ 
++		if (flags & ICE_TC_FLWR_FIELD_IP_PROTO) {
++			hdr_h->next_hdr = headers->l3_key.ip_proto;
++			hdr_m->next_hdr = headers->l3_mask.ip_proto;
++		}
++
+ 		i++;
+ 	}
+ 
+@@ -1737,6 +1752,9 @@ ice_parse_cls_flower(struct net_device *filter_dev, struct ice_vsi *vsi,
+ 		headers->l2_key.n_proto = cpu_to_be16(n_proto_key);
+ 		headers->l2_mask.n_proto = cpu_to_be16(n_proto_mask);
+ 		headers->l3_key.ip_proto = match.key->ip_proto;
++		headers->l3_mask.ip_proto = match.mask->ip_proto;
++		if (match.mask->ip_proto)
++			fltr->flags |= ICE_TC_FLWR_FIELD_IP_PROTO;
+ 	}
+ 
+ 	if (flow_rule_match_key(rule, FLOW_DISSECTOR_KEY_ETH_ADDRS)) {
+@@ -1910,6 +1928,19 @@ ice_parse_cls_flower(struct net_device *filter_dev, struct ice_vsi *vsi,
+ 		}
+ 	}
+ 
++	if (fltr->flags & (ICE_TC_FLWR_FIELD_DEST_L4_PORT |
++			   ICE_TC_FLWR_FIELD_SRC_L4_PORT |
++			   ICE_TC_FLWR_FIELD_L2TPV3_SESSID))
++		fltr->flags &= ~ICE_TC_FLWR_FIELD_IP_PROTO;
++
++	if ((fltr->flags & ICE_TC_FLWR_FIELD_IP_PROTO) &&
++	    headers->l2_key.n_proto != htons(ETH_P_IP) &&
++	    headers->l2_key.n_proto != htons(ETH_P_IPV6)) {
++		NL_SET_ERR_MSG_MOD(fltr->extack,
++				   "IP protocol match is not supported with GTP or PPPoE");
++		return -EOPNOTSUPP;
++	}
++
+ 	/* Ingress filter on representor results in an egress filter in HW
+ 	 * and vice versa
+ 	 */
+diff --git a/drivers/net/ethernet/intel/ice/ice_tc_lib.h b/drivers/net/ethernet/intel/ice/ice_tc_lib.h
+index 8a3ab2f22af9ba..752af65e70b7bf 100644
+--- a/drivers/net/ethernet/intel/ice/ice_tc_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_tc_lib.h
+@@ -38,6 +38,7 @@
+ #define ICE_TC_FLWR_FIELD_CVLAN_PRIO		BIT(28)
+ #define ICE_TC_FLWR_FIELD_VLAN_TPID		BIT(29)
+ #define ICE_TC_FLWR_FIELD_PFCP_OPTS		BIT(30)
++#define ICE_TC_FLWR_FIELD_IP_PROTO		BIT(31)
+ 
+ #define ICE_TC_FLOWER_MASK_32   0xFFFFFFFF
+ 
+-- 
+2.55.0
+
