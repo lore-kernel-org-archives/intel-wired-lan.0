@@ -4,157 +4,157 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7E4EC88E4D
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 11 Sep 2026 18:54:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C0A8C88E53
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 11 Sep 2026 19:00:00 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 9FB586061F;
-	Fri, 11 Sep 2026 18:54:44 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 4243D605F9;
+	Fri, 11 Sep 2026 19:00:00 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id LWcPCdGyOIXF; Fri, 11 Sep 2026 18:54:44 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org DA9B960613
+ id TwtmuPIWSFy9; Fri, 11 Sep 2026 18:59:59 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 5CD5460607
 Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789152883;
-	b=g2Up/U5abmRXP6iFlqzDLFW+4CmTb+yp1EmTcFruUwi0VG9+qU3hla9bybEWyx9E2OyV
-	 3ZZD2zT1p27DF23mAqnNU+9moRNgAYFBtg7LV0ZECFzB1dGNcCrw+W/JPc9vHtg+oVvCh
-	 1XErbjdiR8ClYDoUXBVUMjQzY58rynB0yikWGcvdq9/jydQamk7H9Cg2nZGa+1MNzF/ro
-	 /Lh4J1Lk/Sid3YnMp2tlKLXjCG9wl1SEaiq3fofjnQigSb9Qbs+hpmBTZ4jusFe3aqVKm
-	 qQQKk+QLxIC+/gZtqU1XL55tmnMaHkpygDaC+VlTGKTccA6+ckITpj7dNgbmSH8aw5Q==
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789153199;
+	b=Nd8IlfaL1A/Dv5Zun9CGloina0r7heuGYLGudHMmPFbXHID2jzYKkT9BeWxyVxlPvMwZ
+	 tw08A+3FbhlAiI+s73hRAl3SL/ou4tHun1Im3NB+IXgQlnLNSVhgTYPouG/YITaBrz2nD
+	 dwo4IRA5LmTEXE2sLEIImcC1R6AE+HEnqP1CkFeXI2Vlh8HmCzlJLBHHIJGYaNgjFnnbg
+	 mNd3tzKgf6Kmuhver20LqT3XO3ObYWUNtXPnns8kXJk2c/7cjrry4tbvCPPTQNnXqNCyo
+	 SVgGFS5U7WSona2outDqVG+SXO+QSx7M/j02+12GvLivp5l0khsSX4LhnTECBNUIZ0g==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1789152883;
+	c=relaxed/relaxed; t=1789153199;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
 	 DKIM-Signature:X-SONIC-DKIM-SIGN:X-YMail-OSG:X-Sonic-MF:X-Sonic-ID:
 	 Received:Received:Message-ID:Date:MIME-Version:User-Agent:Subject:To:
 	 Cc:References:Content-Language:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:X-Mailer:X-Mailman-Approved-At:X-BeenThere:
-	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=N0ksFx+o56aUgsrzSCG07cwcgBEXSZlDOBLwLo9KB9k=;
-	b=jMEiF9ODoou/0jnyOaHUYB+tLMyFTK7RMaEDKPLY1DUM1KEZvysCMCjDW+VNUOReOR7v
-	 JXKeGI0FdPtGla4bnFFoOERaf2mxVGpUIk0+vhnBnKlOrkVKYfVFWG6VJ9QcFs8lL8zvF
-	 cgIHlhFuCbI0g1THeme2hVfZFWmq8tsl53Lo5LYAQDuIr30/I1FNzmOnK8P9eEcn7IUZH
-	 io0BnFnm1L8zYZXnUGhudbt+4IasJwd8uoogmqRtzHBqVWIiX9D6cxQjKVqGWIJ9e2yu1
-	 2eunBu2fRmJTBAZOdM6hsUQ69HHyzVF+fjjkqKD9CX3N2POaM/CXv+SMcFuICUfpyzA==
+	 Content-Transfer-Encoding:X-Mailer:X-BeenThere:X-Mailman-Version:
+	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 List-Subscribe:Errors-To;
+	bh=zPVAGvXA6BnDWmfJT3hQO0CB11Qqf66yZudh5n1EjA4=;
+	b=OUbvYMPlfZLQHq+aoelLE0BrbxMaKtxP+mrsSvTJ3u1s75wE6T3VUMDvjndrzoO8HNMW
+	 ub7LX++s/BZtGBEtSiBN9K21QoXg0n+wZM9hO925RfEXxSYJ/70Yex8O/XEJteEbswEUX
+	 MyC1fO0qMSWaK41jjgntQRoZ3/GL+fHaqytoYBpf8sG2nXW9rWEKXGsaB885nLg+AYaBF
+	 5DJ7MAceTCgKd0iHE5jRdUviU9PaJCY0i1jNtoQ8IOUsawvX4AWISi/5DwgbtevA0EDRy
+	 lBovNqABUhc4p0+/5l8ACLZCNn6bXNBAukK5uI24DsvqSV7ncRg/zBXGnJmlsMbShTA==
 ARC-Authentication-Results: i=2; smtp3.osuosl.org; dmarc=none header.from=schaufler-ca.com;
-	dkim=pass header.d=yahoo.com header.i=@yahoo.com header.a=rsa-sha256 header.s=s2048 header.b=TTx2G4le;
+	dkim=pass header.d=yahoo.com header.i=@yahoo.com header.a=rsa-sha256 header.s=s2048 header.b=mtnVsO1V;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1789152883;
-	bh=N0ksFx+o56aUgsrzSCG07cwcgBEXSZlDOBLwLo9KB9k=;
+	s=default; t=1789153199;
+	bh=zPVAGvXA6BnDWmfJT3hQO0CB11Qqf66yZudh5n1EjA4=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=QQgPi0HVjBHcnBtXJ29WYXOGA9NwelklnVjTifhGI0JEtQJgBYkrq7OUqNTK4j1Q9
-	 tBEURSao+NUQxy/31DcVQ9/IWpMQjwM9lPMCxbDnuWnUZO36jyGO4N8YjBhGWMrj3A
-	 zKARy0aqVgr2SrkE47Ho3MqpK0MnTxw4Pra+KmEd/uNLXaZgcJLc8WWSy8jhyVJIMQ
-	 KjNwdGmunOM84CBQOjibeOgO3QK91KMDZ7nJHjAR94fh9Tm1FUOSLXbIXzObonXyND
-	 nlNCk8EObfEeESGWE5wRu6iIoc1EXhH9nfDyYgJIK7ZejTXK8GghnHpwvtxK2Pzl08
-	 3qD3rL2oYLKYw==
+	b=8CvO7scLx+DqAv4VsDb3+bJ7bK5EIRC87xhHDKraUqBx1ss1eOQ4KVOwAMFMb1PlT
+	 s+n9tmRdXw3PP8NFPqv1FfliZspY+hRkFEEVrwSdouuAR5tPYYv24yVozszAmQyT0z
+	 iR3fWmK1PEpQSu+XV/QEWTFU+aDooGzrMyLoEo/1Te4PDOCY8ibBEqKVKQRYIYtVPZ
+	 8wHch0plxXWDAQzwNWJRBe37FQtkFzby5syM+xTpvR57wH25Jjbll2Zj4kP5jqZfw6
+	 KwR8D0B4jyMHFVW/Vm7jqQpG5WteZ0D2XbB+C3mvCpYhFJhCFrYExcXtkdHtCW2sDR
+	 bvD+inmL1WkMw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id DA9B960613;
-	Fri, 11 Sep 2026 18:54:43 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 698562E3
- for <intel-wired-lan@lists.osuosl.org>; Fri, 11 Sep 2026 17:46:12 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 5CD5460607;
+	Fri, 11 Sep 2026 18:59:59 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 9F3A949D
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 11 Sep 2026 18:59:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 4F3856061C
- for <intel-wired-lan@lists.osuosl.org>; Fri, 11 Sep 2026 17:46:12 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 8E87260607
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 11 Sep 2026 18:59:58 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id N-lXQjn4GSXR for <intel-wired-lan@lists.osuosl.org>;
- Fri, 11 Sep 2026 17:46:11 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org E7ABA605E4
+ id 3muuhp1_gR6t for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 11 Sep 2026 18:59:57 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 312BF605F9
 Authentication-Results: smtp3.osuosl.org;
- arc=none smtp.remote-ip=66.163.184.207
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789148771;
- b=biS8Oi8cKTD//vjr3Yby+FnbEQMgork5n8ZHy9LSNHD6xP83HzrbCUVTc7KtIkypPnDM
- A8jhJ8uSg/c+IuEHqsROQWhjsYObYwpM5J7IeNt0pBYvUZ8nXERxeAJM8n3qDYEoXaQbg
- RYwoeH4BHGvfQibjxtHHwWA161h/jTwHS7nsICTmjFWL38q1hLOC/dmAw4V70un03/aw6
- CZ/mh2kGzL1PISYaCfwRePgcMU7nflxatQn1GbfOkrPiRvIUQ2+AzhGEnjZeXiUvABDnc
- rF5lcoopL768S1EO9v7btMWRsHwJrlh+A4wmtmI+MGk8x0lvpPFPdG1CojB6BJjv88w==
+ arc=none smtp.remote-ip=66.163.184.153
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789153197;
+ b=OtXozQj6U8VyGlOvV+gJ/rEk84vF0GdMFjWbdahH72q6siZYDYfZjemWHaBjQ/pebeX/
+ bj20X3xu07dKtOl+43VO+eN/V8aKJYahHX70YTBehxCmXQWrztyQEQrCZu3Hn1IDBgW4l
+ Jcc+kGJgNKSbeqcCui2IrCFoZYMy2miXL5ojAhyQLqF+iHpfSXh9ql7gbiqFa6kgWS52r
+ X/0hhKzVD1dG4Dn8Np0VxdcRUEkdKm8xzQqJ+QiLlkqFvE13C7UzgSVRXe5eDlDIamjBx
+ kOfdoxjQ/rvKFLN3OrdcBdYDUdNLJzc2gMftOMznJ0F7qUAimWKiy605/Pesc4QDORg==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1789148771;
+ c=relaxed/relaxed; t=1789153197;
  h=Received-SPF:DKIM-Signature:X-SONIC-DKIM-SIGN:X-YMail-OSG:X-Sonic-MF:
  X-Sonic-ID:Received:Received:Message-ID:Date:MIME-Version:User-Agent:
  Subject:To:Cc:References:Content-Language:From:In-Reply-To:
  Content-Type:Content-Transfer-Encoding:X-Mailer;
- bh=N0ksFx+o56aUgsrzSCG07cwcgBEXSZlDOBLwLo9KB9k=;
- b=mreCp30j1fHf7Czk6Ub36qzXRow5UnocVdIPEV7tirM6DifyJ3Iq5y00l2QnDXHj9E+R
- dWCNomGaURB+jHigBBvFOZAebM78aT3eunHQDJGhtXdNDg5r1Fu2aLWWQSC1xpPAyKhdr
- vFv7fkApnJSoTUTBrxulTN/ezcU5WJIVFei95Hq9jpy5VzhcmvTfSrNtPWFfuSdS3Gan6
- Q2srizrE0wpFkFhOGohu2eKvvg4HWBSWOfgMAls8ZW2XD01cOiV6/Ls4izr3MZJU6Aonm
- lWO9x3V9MjIydDoBDZgK//CGM7kTWP2SiGPp0eVslW2bsJPo4s8/7SPSlWfvxIWvxCQ==
+ bh=zPVAGvXA6BnDWmfJT3hQO0CB11Qqf66yZudh5n1EjA4=;
+ b=LEYncJz0i+iEBoKwIvRpGL67FJUe3YzSb7XtiRx54bLY/DrvZa6lYyc1svxrYyIGgLwT
+ ePSBKq4BEmaeTVZiCx/T/oD3lxr+USfhJh0659WS7pjOQyjnHEfPBkuBHAP4c5J4bd4Ba
+ 81urp5pjiWaFtYAsVrBpuWilfwocrc/lHS4FfvWXQ8ax/v6MmM2JReFOzwyDXwxthknYR
+ LW0pSehHTw/LU8lN+8AKl0w/TGEnj2b2BXCrN8VNxt5BGh3uIOeW+zius69iOM1745C6u
+ kVnaGEukCBneYjeEIkIqugs55NkK/wHg32NlpYeprLNRyhISLgoOMBLspmPZzomW0FQ==
 ARC-Authentication-Results: i=1; smtp3.osuosl.org;
  dmarc=none header.from=schaufler-ca.com; 
  dkim=pass header.d=yahoo.com header.i=@yahoo.com header.a=rsa-sha256
- header.s=s2048 header.b=TTx2G4le; 
- arc=none smtp.remote-ip=66.163.184.207
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=66.163.184.207;
- helo=sonic301-38.consmr.mail.ne1.yahoo.com;
+ header.s=s2048 header.b=mtnVsO1V; 
+ arc=none smtp.remote-ip=66.163.184.153
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=66.163.184.153;
+ helo=sonic309-27.consmr.mail.ne1.yahoo.com;
  envelope-from=casey@schaufler-ca.com; receiver=<UNKNOWN> 
 Authentication-Results: smtp3.osuosl.org; dmarc=none (p=none dis=none)
  header.from=schaufler-ca.com
 Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=yahoo.com header.i=@yahoo.com
- header.a=rsa-sha256 header.s=s2048 header.b=TTx2G4le
-Received: from sonic301-38.consmr.mail.ne1.yahoo.com
- (sonic301-38.consmr.mail.ne1.yahoo.com [66.163.184.207])
- by smtp3.osuosl.org (Postfix) with ESMTPS id E7ABA605E4
- for <intel-wired-lan@lists.osuosl.org>; Fri, 11 Sep 2026 17:46:10 +0000 (UTC)
+ header.a=rsa-sha256 header.s=s2048 header.b=mtnVsO1V
+Received: from sonic309-27.consmr.mail.ne1.yahoo.com
+ (sonic309-27.consmr.mail.ne1.yahoo.com [66.163.184.153])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 312BF605F9
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 11 Sep 2026 18:59:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048;
- t=1789148769; bh=N0ksFx+o56aUgsrzSCG07cwcgBEXSZlDOBLwLo9KB9k=;
+ t=1789153195; bh=zPVAGvXA6BnDWmfJT3hQO0CB11Qqf66yZudh5n1EjA4=;
  h=Date:Subject:To:Cc:References:From:In-Reply-To:From:Subject:Reply-To;
- b=TTx2G4leGsglVi76Yby6niutgbgnkUWtTmqXQ3CSS3gmjkJ/wkADaUx01IU5BQuBJE0VLswz0TkBPV9GFPsEBlOH0NfD4H5tShMOaxPE03KqaX4wJOXOoa+5PWu4kpej/CDGkq8Pkc4Q8PKExmtNvhGgS7Ni1B1xffgfEqFqUgrC3LD5hCHE3FemcSHN2DqYFcq7wfxu2Ca/k4bR14lk1+CDTjKUjQcvmxI/lQjmpcb4pMxLEOPLUddLPaXhJ3bWRJxrUeoDZnB7yfPMnOZpMTrcLaT8Fxw2NYgpaxlIh300Cp05uetmeoftD1U4ou+3hNyb0iYLvOhpQmN9oZl5dA==
+ b=mtnVsO1VgKbez7SKzhsZplk6k0C9XTTXVlxzDnocNXEcQseScGzBI7NWgOkXr4UILYLp6xbh3FIHjwLdF+94WxMDb6ujNlEcAFFKECqG920WYAFTuiITuNW7RthvaIhN2AGu1tuq2GVpBfCumq35u7066l2/TlrAMDkZmZlUvAigViqjupi7aBGwM9ZfIWBkvefsp7nBcyrkSTSqOsa7ztb5+NPXMFhRnRdMy9gfukC2ZSMaXT2zEFTPBCWkqYo2lirWEQBy5QRK0sCqVkOeCrTj8u7fNeZOIN/CP0VXPWlqAHIOyz7yk4QRsYpt/9dz6e+97O94sev9f7/GzTpfMA==
 X-SONIC-DKIM-SIGN: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048;
- t=1789148769; bh=GjvaKhydn/NekBvaZICghXo106G8iLivzrqFUXtZ0o7=;
+ t=1789153195; bh=8D6wX+F6GVfY3825euMFl9WpyXMjynR9Yldv18g8cqJ=;
  h=X-Sonic-MF:Date:Subject:To:From:From:Subject;
- b=nzJQXoLjn5xHnOsguyrMazLh2SJgot3YStV8P2qsXsiYwRwi22I6EJ7mkIVlYnfbFIKmQGblmT+Q3r5pwlvPDTM9nI4T+nTpg8SpX1Fg1F+arskngpB5pxICbwphc52LpKY2y2GakGJcuHgdHKUz/1qfwoSSTuWVAbMY4+FxfWTZA22tsCvq4jT/uZ/nMWNLXRFaQY/qS8DHoOuACt88u2E4kJpdZ4x1fsNQ9mCdwZpTpOUK0AukVeHP7N/+DvkW50Qejr8CScSiOfoydw3yedP5UYCbuyAFsOE5kNJj4YUYGQ+ViZ/8lBHi5PEyU4HExdg6kr6RFVYffqDUA2UNHA==
-X-YMail-OSG: Z9UMG9YVM1lctHC24HnZvwkpAFOQdH7gglIMIGoN9uePiY6tmM1qasTJ0aPnTzX
- tzt29oMHmILoCJ0h7IC3u49YVUVYpMiAR3DOapJZF7js1zavVTijW7mz6eDy0Aknu2cJAIMBsqct
- C3ya42KOnkk9oeom.b.QTEgcQUSRb.xUyEOV838qqsLQzKYF7X4scufuZH2ZMtPbL4WXhFrvUpaa
- b2h7qJsroiEU4KnSo_4R743CTWkEixpeInkhNH0gSxv83Oy2Qp2WDEFOmBoIryMYglQrGdPXsoBd
- pWMZwxUFVMji3.9WaIrRLWEwU0aCVr.y7dg7LlQywAhwgodXzjq7xYZrwHNyfNkFOZOORAsIxvzh
- T2.QUhV.JpcG1Fb6DrNXHkSYUzD9f0kby6nX1oVX_X3RSxKW_gdPGix0Yg2F.SZCIlWjZiWlfSct
- EHuva2iR3235_wLAiNbAoBnNIA0auBPdbrWlPKgBy8dD1rjj1N.QzBmZteeApzGC5cTnvC6GdB_Y
- pj2GFD41VlRPuSGzC1TI4dE8UtcO9WCWDGJJ.N9ljlE7ridZHp5sXcvrlb2a1bJn8b8g.gM_k0Y.
- rhnpwwCd5hEjjm.jA8eaExquIyZEltU8Mn8S09036R4ZIVIUqtSgx2_UM_72JpAgdr93yUloY4Ni
- ZkPaUGtv8xsIZjdsKhzb9Di_L2bWvEmHR1tEWk0sRpWSJgpkcV4TInr7E.FKZCDYRWAgpQas1uQJ
- 1TOZ6fnSFy0FwYnc34A27vgJO53IRnC3i1fXQzozdz_ciT8l.ZAKAjYby7iyEEUlPZ7AuInZrPza
- IEdzUZNoQry0p.FCLskNePKfkzaolmO7kf1Xy1P9r1wU3jjfCqpzfxKG3gMpYwfVAsVNnOv6gDzl
- McJQL.IE2U_X9ZGVZjg4rkSvsjGUx_bL4lOIDeQWj5nb8EO_hS3ZFeOXVa76rEtJBTamfTTW_7Zc
- elKXzO0c0jsF_iGOvV2sX9TtagZFju13DPJgDpCFgKnK8RfROr.IP761grH7JdkzCRfBscbKj8k7
- Ahwv8KwS_qMFpGCZsVnKIueTdlB7CJitfx_aC17KoiI.w5vP5MeCFnyYnZ36ZuvoA4KiKo_Ncwrm
- CZCI96cIwehGcjN454ZgHYgmbxlMsQdtxl0ALCXIEd231qZxI5r3jKKzqWBRQBT6wyOE.JLSQXU3
- bZlUojN5mC7Gx19NhnLlG.lg751JnoD40Ciw_ysQAywCq2134cpLDvJiqE5XaWXg_KeWNaSx07Rp
- Z.Hp4cWssIRHg5vMk_aZs5Z7gP2r111AT0tPqB.Zl36I7EcMncMSuoK6TpjUpeCFPNA2Uzn6lWpv
- Ayq9XnDzPBBYPg3Z5Yq8pSj2VM5qO2prq6fi4wRQysNvd_1lqrs3VtFc9ydPyX8RD8VYVSxv1uJ1
- FB2N7hJH1gYewxLqD1TrMgTjhWKaalb0ZCqhrFy0PdSKktKHFroGOPZfZWAV4mekQimDDZkSUtnC
- yw.h8nHeNuzHO8V0HTM_P4nsUeGGf6aLnKrOA9cgDr2U7b1pfnZjwOEC9f3OwqLxHVtN7DxbxRBt
- XbRaMJ0t0JXpnmzFjCEwxOIe4YxMA79ojl0uBwAtD0Fy0woxF6BF3RJ1ZPPU0_PUXxNYTPAv797g
- hCvs4V7D7ilhn2pHF7zgioCgAymlDwbbb1kS25sFEgT.ab0mYvR_DTYvZdm8xvptaKga9_3Q_4la
- Nfg7LDwLu90rXbR_jFSVDg8_CRrWzNGZoExyv2KC5Ioxx4w5Z.vFZMm71aSdZqcz97awS9O27LEy
- zOpyEkEiGjFrw1cgZZtyu3Ew0HqIQ0h4xkl52jQ4XgT.30ChKEVFYvIV7iuJxGT28kntbVLk7n5h
- Qgdut7ArndRx8PCSev3URpMnf8AM0zR8NhPyD_xl.PBWGf9W2RDA6RRWpdjmgFHBTId2lKL_nSJl
- LkxGwDO7rDn_SxbCFne8eoKNae0qOWs798diQQVJL0Ddb8aFSC4LFGAwrr_d22T4W8yy.Ndfb49y
- z2dOYbOpJhAl12Ftt1XOzJGQFgwPv5Q_tiwpkT27_1AfToPZ2tfNNwEU5LXsoecZNMjPL637Fs88
- Pm9FtfEyd0XJbD1XOE.f.OBlHHpbiaJgp4mXcZx0q4HZOY4DX10_8VcqfbSEaXrmk1KmYyVyvbHM
- 3QxDwZXAF5FNMwXncGbQWYGe_Azdm2WnLc5rY4RP0yu0DZzoy5yQFXvQ.VZQ0.Ig5LzjCVNNskre
- .fT9yhcSlPWI3IHZaEsNbS3ASejCKAAQtyEkTugxQ5eM1GTORRydzR8ohwGmxc5gursUvWq1obkV
- s1L1HzWgkFSZ7
+ b=bu4h9TPqgz2/xWApTNwcDeX3xsfNIFng8n/Rtz3yUlQCrPCz+m2kDMyd3M9a6Pms/kzWOPV43nupzqMml3jzOYsaiLLPly+AkpJFunibZo005zZSyijIaAunEVowe0JkVkRQWqOp3EyjFNwnYUBwktLOD74qKN3sUJjX3iT+AbTuQVUXuxCWnSHC8A/cGDFK6WSahfUHLR5Es1J3SpdWDOemGlmdMRQbZ7mhtYCUeOSYpeLQzl3jnYI9DzlW5RN8oiwsfwkf4cKnC3dFl7o/M6y2kWAU4NLhB44efnNs/WkreEBGwafOavMDhpRceTX4GcgwwjSW0pqGP8TqOam0tQ==
+X-YMail-OSG: 8IyxdVsVM1mOeDHP02iAS1e9vux4wp6Hm34349yjZZrE7KsVj4bJUTR76BW4BsK
+ t19TLIIWTyEsL_xO6KYI6B3mIpTeWkCM7DlTvfoOQfuCsksf_DXfrnK4xY9kwKnB_FwtGMbXBVdX
+ AwHEtPMyDd0o.V_n5VGZNusTss9eVCLkYUnExyioYPyx.Ad4XLy1Yhw66DZ6.cR7ayiSRijYW.xl
+ 305XtUrCNu_HX0zlFhl1UhhhGTmHJWDT71o9fTQtscG7_EeuKRlbSitXpH3h2TWZBa1RvmugXEHt
+ NXIrMOJrZi6l.PxmX8gxMKPF7q1N60fwVrVibI3BInE.6oUKBezs64Ge8lnfaH6urMLx_mS7NELj
+ fXVYAq93FCVN6TNK0NO4G.DDrLjcDRa6hhwWgZ6gQzEbJo2rpUwMXusCpi7RZb5Xl3sf4c2Idq5Z
+ 0YImN5yN2Urf87vmiFS8KvS6LQ8PAxxZyfXHUJ3TEbGILnbZXPD5AE_DFX2IpeDORzsdcSFaaNsu
+ PJkDjGDNOOvznQ5FlWaMAh4HXH3i3.mQ0coMj6GUf4QwkG4eANVdkaMTdWJZeTV84xjq7hqr6XKn
+ o1scllR7Z5GUkeTy8KNCbUrtqv5E7kUADSyywm2a.wUqCoxo5Q3A_YP0K0NZvpEKIs__FnlhdUI.
+ q6m1Q09A2eYBeXmEIYZVeEkeB6sdw07Xxs8UUJuHZE0QHuKHXMrXD_xXTsGItQCvTPP8CDbX0kKe
+ ImJUDil.4vy3ev72uHxHJEEWTnnuXYA_JydfBvosMnQg1N3bxdnWSWbU2Hkt3TqOn6I.FzGn6QG_
+ wsFBAfZcXdPDj4v8n_Tn.11J7xLNj.C3Aoi_G63Dg8IjAO6.e7VyY4IIR7JohfOWwH7InWSPpd09
+ L29Cgia4I5UJL8gTvOEtfAvKgJVnNCz.yi5pOsZY4j1II_vQDkb6oXyLuPEDAyPzDAFFnOiaNrKy
+ x__Q1X.5B_1hlU32VDdlR0ZzLRLA1TJ22OXVHP7afTQZ2CEoO7JYf46la6agBDr8b5v6ACnNyYi0
+ GhQZCLFp11jCoUSoTlX.swZ.VjvjiKiFxK1Ye.Y6beRQedZ1ShvRS3cGHZHLn0swNHUkffkG9fb3
+ wOfjV.FBc9wUaDKFQWfxyDbjXO0IH0ejj1F4V87qTPUt2sRlRHwco_cjX6g8TQk3W1CWHZtJA8Pg
+ tO3nnFPJrvQPKZpn49aFsX1c5K2ek4fcHTXgnHk4H1.HrFvV3xEMDEis4jnnSAlsgA8Rm6LvLdIz
+ lUg33b0GLbxZzg0mpAIxtqrcQSofu5UyShBm.JhuDp9auiAWoHUZSz0qhhAGEt_GOhTOREfqCBZC
+ G6fI4Yi.C177vKFVtiV63RCPKV3rxhhPlhyBZpV1ZUxEcqMjslksyvWTd6aT7vgXecZzbEB6Bbui
+ PugKq5FvUYO.LajsfrgW6MxwegEMCwQHnJMQsa2Iiv_WjPIMQuqDSEH9zrUbp_k8Xt_MeBiTqXQs
+ nXvD7ppdbgFMJjhFv1sbwFcotEUmdosnZNJTFj_.B9RbrhQTms0KTlTxt_kE8.NgiydL256Tokh1
+ HbALEC9RtboqkogXmLNqhc9AtDZczzRhCNRn7Z2X3503NCMm88agdrjLobSs1H5d7xBdfXfFzDWy
+ Nz0tAs4FjfupGpoHER0xGTafNDNwQhDzAsAi3Ns1zjs3AtY5PvuGfAWSa8fMSFBU03tXksZYFxo1
+ ciJ0G1CvL1rd97I47QzrDWZ_28XKoUL8AUG1lo9hZdautcKmTjHBsHXCLAZuNOQ3VbTsaUcfqmee
+ .irw7XZlKDpogx7TQrdIKjc686.9W3GLbec8PuplPYGKvHJJhuSP9jlcnM383VDSt8cLbmPuXq9q
+ UfjAsSbY4zvrKu6HdDJcxvB8cx34WFQXftbm93mMXhuwnptgfKF5CDKWcQBHwqRHYsXSxAFpKM8S
+ qTa3rFjIKqr1IO0XflZkb9XFSArGJix7oo_Xxz5tbTfxDmTZDSh6g_DFbDgKseITvTHLKJIf.Srg
+ zVnCjD4ejDk1_J0rl97idNrtwcyBVrtsm8.34xwlrjrR25Rurg9citobqWcZ.BDfjnhc_fKhZQyb
+ r8KhLp1zYO8PYT1BKGbEHUeMHroTq.j3oed5iHJ6xgxNJfL4MoCriV4lpnAthSrrU4GyoV4x2VqX
+ oF_R8TC4LfHd6y98CdJloF.SZ2BtSQy89uStonDjpuGCXoEaZ98PKpIPceNx_hW37SyYRbmrBaKQ
+ gu6._.5jHmTHesUwGqpIpKbbNaYhF7Q3yiS79YqO5LS7oubsSfX7dqeASC8h1m47H6U5NdATLY3r
+ Y73pK8ITPNSGyICENKhMFqA--
 X-Sonic-MF: <casey@schaufler-ca.com>
-X-Sonic-ID: b76ab4a0-2ab9-47b3-8cf5-8bdd5faf0803
+X-Sonic-ID: 155296a8-f4ef-4124-9fbd-d64e0f082663
 Received: from sonic.gate.mail.ne1.yahoo.com by
- sonic301.consmr.mail.ne1.yahoo.com with HTTP; Fri, 11 Sep 2026 17:46:09 +0000
-Received: by hermes--production-gq1-678d9dd684-kwnw4 (Yahoo Inc. Hermes SMTP
- Server) with ESMTPA ID 399694003e99ff36e3a7b206375e9b12; 
- Fri, 11 Sep 2026 17:46:02 +0000 (UTC)
-Message-ID: <ee89e26c-3dad-450b-8861-badf19afa141@schaufler-ca.com>
-Date: Fri, 11 Sep 2026 10:46:00 -0700
+ sonic309.consmr.mail.ne1.yahoo.com with HTTP; Fri, 11 Sep 2026 18:59:55 +0000
+Received: by hermes--production-gq1-678d9dd684-n95jq (Yahoo Inc. Hermes SMTP
+ Server) with ESMTPA ID 54d69622036feeec9e5203b92a9973ac; 
+ Fri, 11 Sep 2026 18:59:50 +0000 (UTC)
+Message-ID: <6f01eff3-20c9-488b-84f4-8c6456f2e54d@schaufler-ca.com>
+Date: Fri, 11 Sep 2026 11:59:47 -0700
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH 01/13 net-next] net: ipv4: introduce CONFIG_IPV4 to
@@ -242,14 +242,15 @@ Cc: horms@kernel.org, kuba@kernel.org, pabeni@redhat.com,
  Casey Schaufler <casey@schaufler-ca.com>
 References: <20260910144914.8025-1-fmancera@suse.de>
  <20260910144914.8025-2-fmancera@suse.de>
+ <ee89e26c-3dad-450b-8861-badf19afa141@schaufler-ca.com>
+ <dfd9590c-e029-4432-9a13-c789f708cfee@suse.de>
 Content-Language: en-US
 From: Casey Schaufler <casey@schaufler-ca.com>
-In-Reply-To: <20260910144914.8025-2-fmancera@suse.de>
+In-Reply-To: <dfd9590c-e029-4432-9a13-c789f708cfee@suse.de>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-Mailer: WebService/1.1.26525
  mail.backend.jedi.jws.acl:role.jedi.acl.token.atz.jws.hermes.yahoo
-X-Mailman-Approved-At: Fri, 11 Sep 2026 18:54:42 +0000
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -264,53 +265,78 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-On 9/10/2026 7:48 AM, Fernando Fernandez Mancera wrote:
-> Historically, the IPv4 protocol has been linked to the core INET
-> subsystem. Because shared infrastructure like the TCP/UDP engine,
-> routing or INET hashtables live inside net/ipv4/, it has been impossible
-> to compile a kernel with only IPv6 support.
+On 9/11/2026 11:31 AM, Fernando Fernandez Mancera wrote:
+> On 9/11/26 7:46 PM, Casey Schaufler wrote:
+>> On 9/10/2026 7:48 AM, Fernando Fernandez Mancera wrote:
+>>> Historically, the IPv4 protocol has been linked to the core INET
+>>> subsystem. Because shared infrastructure like the TCP/UDP engine,
+>>> routing or INET hashtables live inside net/ipv4/, it has been
+>>> impossible
+>>> to compile a kernel with only IPv6 support.
+>>>
+>>> This patch introduces the CONFIG_IPV4 Kconfig symbol, which is set to
+>>> 'def_bool y' for now. This does not allow to completely disable the
+>>> IPv4 stack yet but it lays the necessary build-system work for that
+>>> goal.
+>>>
+>>> In addition, multiple subsystems Kconfig symbols across networking
+>>> features like tunnels, drivers and filesystems have been adjusted to
+>>> depend on IPv4. Keep on mind that follow-up work is required to convert
+>>> the Kconfig symbol to bool and remove the dependency on IPv4 where it
+>>> makes sense.
+>>>
+>>> Signed-off-by: Fernando Fernandez Mancera <fmancera@suse.de>
+>>> ---
+>>>   
+>>
+>> ...
+>>
+>>
+>>>   security/smack/Kconfig                        |  1 +
+>>>   54 files changed, 126 insertions(+), 66 deletions(-)
+>>>
+>> ...
+>>
+>>> diff --git a/security/smack/Kconfig b/security/smack/Kconfig
+>>> index 5a8dfad469c3..b4e6d0168bd1 100644
+>>> --- a/security/smack/Kconfig
+>>> +++ b/security/smack/Kconfig
+>>> @@ -3,6 +3,7 @@ config SECURITY_SMACK
+>>>       bool "Simplified Mandatory Access Control Kernel Support"
+>>>       depends on NET
+>>>       depends on INET
+>>> +    depends on IPV4
+>>>       depends on SECURITY
+>>>       select NETLABEL
+>>>       select SECURITY_NETWORK
+>>
+>> Why would this make sense? You're introducing the capability to use
+>> IP6 by itself, which is admirable, but you're disallowing that
+>> configuration
+>> with the Smack LSM. It appears that you've done a mechanical lookup
+>> in the
+>> Kconfig files and applied the minimal change to make the kernel compile,
+>> which probably works for most cases. It does not work for Smack. Unless
+>> there's a strong argument that Smack with IPv6 and without IPv4 is
+>> and always
+>> will be a pointless configuration you have my NAK.
+>>
+>>
 >
-> This patch introduces the CONFIG_IPV4 Kconfig symbol, which is set to
-> 'def_bool y' for now. This does not allow to completely disable the
-> IPv4 stack yet but it lays the necessary build-system work for that
-> goal.
+> Right, that was kind of the point. The idea was to be able to compile
+> core networking without IPv4. There are still plenty of modules that
+> depends on IPv4. It does not mean that they will remain like that
+> forever as I mentioned my idea was a follow-up on the series to avoid
+> having a too long series.
 >
-> In addition, multiple subsystems Kconfig symbols across networking
-> features like tunnels, drivers and filesystems have been adjusted to
-> depend on IPv4. Keep on mind that follow-up work is required to convert
-> the Kconfig symbol to bool and remove the dependency on IPv4 where it
-> makes sense.
+> Anyway, I can make Smack to do not depend on IPv4 on this series if
+> that could grant an ACK.
+
+Yes, that would be acceptable. I apologize in advance for the Smack IPv6
+implementation. Replacing it with a proper CALIPSO stack has been on the
+todo list since CALIPSO was introduced.
+
 >
-> Signed-off-by: Fernando Fernandez Mancera <fmancera@suse.de>
-> ---
->  
-
-...
-
-
->  security/smack/Kconfig                        |  1 +
->  54 files changed, 126 insertions(+), 66 deletions(-)
+> Thanks,
+> Fernando.
 >
-...
-
-> diff --git a/security/smack/Kconfig b/security/smack/Kconfig
-> index 5a8dfad469c3..b4e6d0168bd1 100644
-> --- a/security/smack/Kconfig
-> +++ b/security/smack/Kconfig
-> @@ -3,6 +3,7 @@ config SECURITY_SMACK
->  	bool "Simplified Mandatory Access Control Kernel Support"
->  	depends on NET
->  	depends on INET
-> +	depends on IPV4
->  	depends on SECURITY
->  	select NETLABEL
->  	select SECURITY_NETWORK
-
-Why would this make sense? You're introducing the capability to use
-IP6 by itself, which is admirable, but you're disallowing that configuration
-with the Smack LSM. It appears that you've done a mechanical lookup in the
-Kconfig files and applied the minimal change to make the kernel compile,
-which probably works for most cases. It does not work for Smack. Unless
-there's a strong argument that Smack with IPv6 and without IPv4 is and always
-will be a pointless configuration you have my NAK.
-
