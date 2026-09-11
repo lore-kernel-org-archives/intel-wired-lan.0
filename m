@@ -1,28 +1,28 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EAB7AC88E56
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 11 Sep 2026 13:31:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64D0DC88E50
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 11 Sep 2026 13:31:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id AC10F6067C;
-	Fri, 11 Sep 2026 13:31:00 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 2A41B80F4F;
+	Fri, 11 Sep 2026 13:31:08 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Ze1fS11VB7zZ; Fri, 11 Sep 2026 13:30:59 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org B48736066A
-Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789133457;
-	b=iKoD5k+onJEDDzJDs33wFWfZpjSRNZ0P1gZC0WKBZFKImZvSutCdnmu0GY6Pn1iDXnar
-	 DPI42YEIhVU1efBdhqnAGYdgxhJO3dfTmuw862JuXmP7D8LGqDbPDFnnzJvNkOW9uHY0J
-	 uD9jxjlHNbtV8wZXxbx+TFA7KBIBZQPEMQJVi43BVQ/65Tf6S2z7g4JoUz32ERNaDX5Lv
-	 4kEeN9Qvq1h6DJ6PLjXbgFh1HAVCB8FtmNfF6xC8se6bgRa9YDV5CuMBiXxQ2ktY5yfHi
-	 cdf5I+KKgaN8vktDvGFIoQciON+9oMh55IcVHiO2/JmpzNdTVOEFeNtff8IEP5SaxLQ==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id XTmga_oW_3Og; Fri, 11 Sep 2026 13:31:07 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 304C880F76
+Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789133467;
+	b=H2H4yS1/aQ734cr/7VC4nTaTqmllTjDPCSsPdzMO7O4YEXECVQDUNjkzuJ5TIVMZe47L
+	 y4uhrCeIMAOIGVeX0TOip46eeCY1yAwciieNFZ5FZJPcsoefNruK6Q1xTmuLQUDonScVQ
+	 MwT8jhFQY8rb2KT+2rpHexHCriUFxSJjxzwILFua2m6BcksNlH1NUIOo1sSn0td5Gowbf
+	 hKTxQDjLxly4wR9KQgSysH9QVpggZ3x071PAbTyzWQwV8x6+5euSxYI77rZwv7jgtwKWp
+	 yH5UHSkHI2YaiSeH62pusovxjY1/zCAL520jMcKMRtYQj7r3Ng20I8MhGJyJpUUrmjQ==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1789133457;
+	c=relaxed/relaxed; t=1789133467;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
@@ -32,65 +32,65 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding:
 	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
 	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=qLHyENhhaho3kr7Fue/Pz0TIbAHm+g8DOvlm8TQrfeU=;
-	b=npjrsT6xc3gYRa1nQnot6y/3uhhNqnBSWZY0DZw6cipK9Kjyw2EPaoIYmdm9RkoJVOK9
-	 HKvl3ZA8KZT8gd/JVOlkiM57fhP/7TgUUJeuaq4v5BijArGHNOjZLEW3MZzlObGbc/+uG
-	 qTGvNvi/3jepFYOZfrPOfPGyXR8zCO9t6RknbcB/ZMZ+2BIcF6c/WJloIW5aZ4tE5ZVve
-	 J5pIHBQu0GS2xsP1KpxRSGSmOMxsnbB/Y9BnZ6OqVdAqq2GfEfrTd0w1jzQg/ts26DvWc
-	 n+n+R+F29hK/Vkjh8isfksLHBX9HDhafZgiWmpKuQGnUkKU4byFSG+5Pc2B1iJd5MDw==
-ARC-Authentication-Results: i=2; smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	bh=UHXi1L1JX9b1koc1j68g7RL/sdgttZZqObAm6+trDDs=;
+	b=fTMgTAjay1TfkWy7+DWXt+s5vuk3bgyl4Mv4iZ5D0NwhHu0p7bhYVEWDN9CCWIdv4k5D
+	 DD7n/QHDWCYbQpEo1GsgiAXqfTBMcyug7MdsIOP7gkicImMpiCA5gqi+4T7pzEpmsqoI3
+	 TWVSD4rwzg9zw1H2BlrT5LzTn+tc3GMXpLFSLzxj1fHi09fv+pzAH94ezXgNxNK0Z/RtI
+	 HdHPWwvofXU3DQ4tzvKA37EFrM9UZAe8Un1nrs9rFdlcTjBadGp2NMVWhyt3YJWMBcG6C
+	 JkR9r08YV0Vjk2c+mAwRcOw/oq9pvm2jIhkRRwg/shRKGgoEKj9ry/nIkQiqWZwjbmA==
+ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1789133457;
-	bh=qLHyENhhaho3kr7Fue/Pz0TIbAHm+g8DOvlm8TQrfeU=;
+	s=default; t=1789133467;
+	bh=UHXi1L1JX9b1koc1j68g7RL/sdgttZZqObAm6+trDDs=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=eI8NB4vvkhT/fet7eLnQcJK5lpCyVJ1Y4efJRTCv1TzSTCcy0UUFng8q8n8b3h3em
-	 xz4QJ1ALGttbyKXCVz/SGiUTKTdyyTrSkgOBFIsUmmt4yLkX/Zi3phbaHqLWQetSJL
-	 +WdQA/IZrLTO7xyvpAU1yLcYQR+fe+nY5AZgh3/UXRQptcMflZynoqbcKX0jB9xnxo
-	 +czXK7jMcuXZ7T6n0tCgT/tAfNZYZYmhtwhnXG42zpGOvfnXag+ABtM/aI7Yjgx0DO
-	 BNzFpwvgU4ybexqwm4iH5ZRXwsBUR9z/1/6CtRRfQiYdEsegtTNntS6yWIzCuicB0t
-	 eKsTKRfa75UEA==
+	b=MEIOhaS7ptGk07Gd9BfBWk7GfJm3/YcqqgFfVPK+w3QmrOhvPOPy/wCZDTn3u0ntb
+	 31fo+nTmFhU7tm+44810/SQQkrYuJ5rXeBHZ1qfA7cIMkDJBNdlT2YPtsVydMXToGR
+	 Qxq76mMxm1j0VtoaE6tvo+d8Hz/POs5jJTD1EamFzOm7peEuoiTpNiyi1PyIphCZq3
+	 WHKK6dtbBlKisE+OEsgjr1T4jkgVq7Q9V4IgPTy+E7KuxEMcRecJcrJnu7CUY3NEmD
+	 PKkg1BSReVs9RjhNXlAvgprZuTYx3Ta51z6j5U3y7VCK4cgmB+afFDjehYaVbX51AY
+	 RF0YoqSPMrk9Q==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B48736066A;
-	Fri, 11 Sep 2026 13:30:57 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id E4105786
- for <intel-wired-lan@lists.osuosl.org>; Fri, 11 Sep 2026 13:30:55 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 304C880F76;
+	Fri, 11 Sep 2026 13:31:07 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id B3631786
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 11 Sep 2026 13:31:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id D5FE34080A
- for <intel-wired-lan@lists.osuosl.org>; Fri, 11 Sep 2026 13:30:55 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 9982540607
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 11 Sep 2026 13:31:03 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id NVr837OUs2Nn for <intel-wired-lan@lists.osuosl.org>;
- Fri, 11 Sep 2026 13:30:55 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org AE82840607
+ id Cj4GwP2H-Fvy for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 11 Sep 2026 13:31:02 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org B0E3D4082C
 Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=192.198.163.4
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789133455;
- b=bGYc6/4Zvf0biJtWFfKAifvztEZ7tRGaFergwGScRsxn1aExH9Ul+N8wb4dWhzS2Vuua
- o47/GPXHvqD4WCD9G+UdV2t6+eHMhEvX91E2WJItEi8JnLTQY1NGCblqSjTgWBgiuYnEV
- 83YYtsybu2oTdeJH2kHU0HvOvDbbukquWUXZuBzu9SoolhvjsFxMeI0C9UXScUjSbHAEB
- /hKwUcUDRXOxI6tcS1rn5M4A1zOYzMrXofX5rjM6jkys1jMz2CWRxHT28C0ZajfdH3+QF
- WNmWOAuadM826JF2D31z96efGy5D7xDyPbe+x3zFLJ5rK2zLisMjkADLXq/1BZVftvA==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789133462;
+ b=o+jaHxKGk3HHKA3xa8p7o8rzUh0cGDeBA/0yVlsnhK/440Bni8KKyGkqRgoEr+w2Nx/E
+ 7tW7uNLm5xYs20OWqJCciKnBKw61CzO4aY2rfz+pE6KLOJbQ532c0kkLQUSsSMou3jqvw
+ O5x9YwaH0DATK3kM0QBcNCBlkEa+dAgk4LAnOMb/oiNfm2qDdhYC5gtF+CJSBgKTwzgtC
+ mvcVfRS9lO8k+QN1ACqyIXy0E4eYPnKB8SwvBm7XVj2Z1tO/WqgeSrv7BtbIUb0B8juyr
+ 5n4Xmewhvd2bScyz5y+puqQfesBPfhbheg1YdYwVUqbXBEhofZa5xbbC6V8QNdyGeQQ==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1789133455;
+ c=relaxed/relaxed; t=1789133462;
  h=Received-SPF:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
  X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
  X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:From:To:Cc:Subject:
  Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
  Content-Transfer-Encoding;
- bh=qLHyENhhaho3kr7Fue/Pz0TIbAHm+g8DOvlm8TQrfeU=;
- b=TeB2/ogUd13QohOcg6BsmDV62yJbr+ucB5IkijHB2UKALO1++TbUNGEK2CWtK+BGF4yg
- Nb9nxZB6wgirEvPMYhHX6HtBIYWWtu+AOki9xOJUQQOoj6TwRWm3AHYcp1p0nPkfACxP8
- JFp7zcbLKzPPW3M3otm0HS7QAhv/fiZPa9AkqDXNnUPnHvaOVZE8kk/12Yn81wkOkSIDE
- FT7QZQwPcu4QkP6mMNM/4viKDAAD0ySaXug5LUS0+WudtrN97fdLzbXSOipSN6B4a+CQY
- LoILH5x8F0L7BeMk+55f5XHrbTFX2/n32VnCSkgFH9RgtzrGrVOxCZ7p5Bga7zZQAQg==
+ bh=UHXi1L1JX9b1koc1j68g7RL/sdgttZZqObAm6+trDDs=;
+ b=BC9myWtE7i+d2JwTWqaic65+Am/UnECSzSbryt/59DqI/I0ik693aUfWnlDRa9dVskBT
+ pY9+tQbXMSElJFT3bI8rdFfNGZE5Be8nvHtat32B1fyFqN/B2j74MISyGcPyatVFPkYii
+ M5P5Lth7FaPWBDd8aEvJVX47VFZjW9qQAAE9zdfFAA2uPpAoOk8L8B4pJJ3B5fT8pfi/l
+ blMSuhDaPmB0vvVMILPeHB8P/9JaXyD4PY4ugBec8WeW/biLDSYvkrWHLZVs3iV51yfUP
+ TwHgUrDejmqZ3cNA3ZsxnSg9wUW+t4ZhoftRfjg6KRgzywwB9qtSI0JhmdY5s1ITQ3w==
 ARC-Authentication-Results: i=1; smtp4.osuosl.org;
  dmarc=pass header.from=linux.intel.com; 
  dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=NaGrWb2o; 
+ header.s=Intel header.b=KW3GcapD; 
  arc=none smtp.remote-ip=192.198.163.4
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.4;
  helo=mgamail.intel.com; envelope-from=michal.swiatkowski@linux.intel.com;
@@ -99,46 +99,45 @@ Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=none dis=none)
  header.from=linux.intel.com
 Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=NaGrWb2o
+ header.a=rsa-sha256 header.s=Intel header.b=KW3GcapD
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.4])
- by smtp4.osuosl.org (Postfix) with ESMTPS id AE82840607
- for <intel-wired-lan@lists.osuosl.org>; Fri, 11 Sep 2026 13:30:54 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTPS id B0E3D4082C
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 11 Sep 2026 13:31:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1789133455; x=1820669455;
+ t=1789133463; x=1820669463;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=P7KYpg5UPwC7kIRKVXnoSQn7FyGdFoWe6ZzbbKhMvic=;
- b=NaGrWb2olnhlZdDr+I53RTBztev1vfCoZ0xzU92iQP5ncOpeQm0QpY4+
- NaIBC4EJ/V1WffJkeSA5tGirKtt2axCF9b+oLLSTHnUCKe3latSz2PKnf
- zjfgDqv+mk3XYvzWYC5OJRKLptWjCME1M3qZsoutglMIGYFJnxDoqArmo
- 9t1VGnbGV6vsZXDAYtjz0Kiv8cH7scQmFcFkJwhwCqJ8i+3y7pBsMllHk
- AcMJVjhrLlA0SnzT/x4aQfafwkY46L1etOQ1jQBBhOnNlZUCVPKg59I5v
- tz1ba29NlQq7bzrg4s/t6rT6AMAU3FuJrmeNnQiXbrrxGssaXZ/dO7JkA g==;
-X-CSE-ConnectionGUID: adaUErWiTp+89/HpdXS9zQ==
-X-CSE-MsgGUID: MdlCTv8qT0ehq8M3YvLX7Q==
-X-IronPort-AV: E=McAfee;i="6800,10657,11901"; a="107526"
+ bh=QG3ur83XOtOOg25xuU310Iz7aILIS2X6R2xAAnUmZ/I=;
+ b=KW3GcapD4h0tig7qgFM2lWl1cslxT28ooDmS7YkRidU6ZL9B+Z9rEII1
+ cFi+jg+cmFM6doaNszjysdRqyf0oamdqsc33ergPDi/+omM0WruDUa1jB
+ xZomsuVpTxZ/nvChx8+s/BY2fUGAsJWydo1zyGo096ECQ82ykydbzRbI8
+ R5AiMsI6u8sCC8qIXYKKfL2aai2W6sG5YbTlFbWdSadS2DJ3J5JXWeJA8
+ /Ya8aDqqOzC8g8tzr+xtHdA8lohHO09tVTPVT006YpJMal8w/I/0HrX5x
+ OBGmEM3mWcAZGVn4s/faEwCKEcbjTYBBIm0bHqx28/cTtxPr5qN1MVQnk g==;
+X-CSE-ConnectionGUID: 940GumfmSvSOckgp9e+4UA==
+X-CSE-MsgGUID: 9r/ggyJoRuCi95peLX2p+Q==
+X-IronPort-AV: E=McAfee;i="6800,10657,11901"; a="107539"
 X-IronPort-AV: E=Sophos;i="6.27,97,1787036400"; 
-   d="scan'208";a="107526"
+   d="scan'208";a="107539"
 Received: from orviesa010.jf.intel.com ([10.64.159.150])
  by fmvoesa114.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 11 Sep 2026 06:29:53 -0700
-X-CSE-ConnectionGUID: 3MTAB8GFQdqVJ0Ao1zkAYw==
-X-CSE-MsgGUID: GbYNWh1PTw2ne4lj7vFJ0A==
+ 11 Sep 2026 06:30:01 -0700
+X-CSE-ConnectionGUID: HinyNYxgQR6wH51IcRAerQ==
+X-CSE-MsgGUID: 00BpB9msRE2vg4HMfGhB1w==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,97,1787036400"; d="scan'208";a="270541267"
+X-IronPort-AV: E=Sophos;i="6.27,97,1787036400"; d="scan'208";a="270541287"
 Received: from os-delivery.igk.intel.com ([10.102.21.165])
- by orviesa010.jf.intel.com with ESMTP; 11 Sep 2026 06:29:52 -0700
+ by orviesa010.jf.intel.com with ESMTP; 11 Sep 2026 06:30:00 -0700
 From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org,
  Michal Swiatkowski <michal.swiatkowski@linux.intel.com>,
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
- Madhu Chittim <madhu.chittim@intel.com>
-Subject: [PATCH iwl-next v2 02/10] idpf: fill q_vector interrupt registers one
- by one
-Date: Fri, 11 Sep 2026 14:49:13 +0200
-Message-ID: <20260911124921.2881348-3-michal.swiatkowski@linux.intel.com>
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Subject: [PATCH iwl-next v2 07/10] libie,
+ idpf: move parsing alloc vectors command to libie
+Date: Fri, 11 Sep 2026 14:49:18 +0200
+Message-ID: <20260911124921.2881348-8-michal.swiatkowski@linux.intel.com>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20260911124921.2881348-1-michal.swiatkowski@linux.intel.com>
 References: <20260911124921.2881348-1-michal.swiatkowski@linux.intel.com>
@@ -158,316 +157,256 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-Most structures pointer used in *_intr_reg_init() are already used in
-idpf_vport_intr_req_irq(). Use it by rewriting *_intr_reg_init() to
-fill one q_vector in one call.
+No functional changes. Just moving to make it available from other
+ipu drivers.
 
 Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Reviewed-by: Madhu Chittim <madhu.chittim@intel.com>
 Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 ---
- drivers/net/ethernet/intel/idpf/idpf.h        |  7 +-
- drivers/net/ethernet/intel/idpf/idpf_dev.c    | 91 +++++++++---------
- drivers/net/ethernet/intel/idpf/idpf_txrx.c   |  7 +-
- drivers/net/ethernet/intel/idpf/idpf_vf_dev.c | 92 ++++++++++---------
- 4 files changed, 105 insertions(+), 92 deletions(-)
+ .../net/ethernet/intel/idpf/idpf_virtchnl.c   | 85 +----------------
+ drivers/net/ethernet/intel/libie/irq.c        | 92 +++++++++++++++++++
+ include/linux/net/intel/libie/irq.h           |  9 ++
+ 3 files changed, 104 insertions(+), 82 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf.h b/drivers/net/ethernet/intel/idpf/idpf.h
-index 84b145431693..5eafabacd167 100644
---- a/drivers/net/ethernet/intel/idpf/idpf.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf.h
-@@ -197,6 +197,7 @@ struct idpf_vport_max_q {
-  * struct idpf_reg_ops - Device specific register operation function pointers
-  * @ctlq_reg_init: Mailbox control queue register initialization
-  * @intr_reg_init: Traffic interrupt register initialization
-+ * @noirq_intr_reg_init: Vector without interrupt register initialization
-  * @mb_intr_reg_init: Mailbox interrupt register initialization
-  * @reset_reg_init: Reset register initialization
-  * @trigger_reset: Trigger a reset to occur
-@@ -205,8 +206,10 @@ struct idpf_vport_max_q {
- struct idpf_reg_ops {
- 	void (*ctlq_reg_init)(struct libie_mmio_info *mmio,
- 			      struct libie_ctlq_create_info *cctlq_info);
--	void (*intr_reg_init)(struct idpf_vport *vport,
--			      struct idpf_q_vec_rsrc *rsrc);
-+	void (*intr_reg_init)(struct idpf_adapter *adapter,
-+			      struct idpf_q_vector *q_vector, u16 idx);
-+	void (*noirq_intr_reg_init)(struct idpf_adapter *adapter,
-+				    struct idpf_q_vec_rsrc *rsrc, u16 idx);
- 	void (*mb_intr_reg_init)(struct idpf_adapter *adapter);
- 	void (*reset_reg_init)(struct idpf_adapter *adapter);
- 	void (*trigger_reset)(struct idpf_adapter *adapter,
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_dev.c b/drivers/net/ethernet/intel/idpf/idpf_dev.c
-index 42e65f1285df..cd947fd24ff6 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_dev.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_dev.c
-@@ -58,53 +58,17 @@ static void idpf_mb_intr_reg_init(struct idpf_adapter *adapter)
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
+index 20e471def235..3df6ad291e64 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
+@@ -2229,83 +2229,6 @@ int idpf_send_add_queues_msg(struct idpf_adapter *adapter,
+ 	return err;
  }
  
- /**
-- * idpf_intr_reg_init - Initialize interrupt registers
-- * @vport: virtual port structure
-- * @rsrc: pointer to queue and vector resources
-+ * idpf_noirq_intr_reg_init - Initialize noirq registers
-+ * @adapter: adapter structure
-+ * @rsrc: to store noirq register and value
-+ * @idx: global software irq index used to get hardware information from
-+ *	 irq_info structure
-  */
--static void idpf_intr_reg_init(struct idpf_vport *vport,
--			       struct idpf_q_vec_rsrc *rsrc)
-+static void idpf_noirq_intr_reg_init(struct idpf_adapter *adapter,
-+				     struct idpf_q_vec_rsrc *rsrc, u16 idx)
- {
--	struct idpf_adapter *adapter = vport->adapter;
--	int num_vecs = rsrc->num_q_vectors;
--	struct libie_mmio_info *mmio;
--	u32 rx_itr, tx_itr, val;
--	int i;
+-/**
+- * idpf_create_vectors_info - Save vectors information from firmware
+- * @info: parsed information is stored here
+- * @caps: virtchannel capabilities
+- * @vectors: vector information from firmware to be parsed
+- * @num_vectors: number of vectors
+- *
+- * Returns 0 on success, negative on failure.
+- */
+-static int idpf_create_vectors_info(struct libie_irq_info *info,
+-				    const struct virtchnl2_get_capabilities *caps,
+-				    const struct virtchnl2_alloc_vectors *vectors,
+-				    const u16 num_vectors)
+-{
+-	const struct virtchnl2_vector_chunks *chunks = &vectors->vchunks;
+-	int all_vectors = num_vectors + IDPF_MBX_Q_VEC;
+-	struct libie_hw_vector *vector;
+-	int reg_cnt;
 -
--	mmio = &adapter->ctlq_ctx.mmio_info;
-+	u32 val = adapter->irq_info.vectors[idx].regs.dyn_ctl;
- 
--	for (i = 0; i < num_vecs; i++) {
--		struct idpf_q_vector *q_vector = &rsrc->q_vectors[i];
--		struct idpf_intr_reg *intr = &q_vector->intr_reg;
--		u16 vec_id = rsrc->q_vector_idxs[i];
--		struct idpf_hw_vector *v;
--		u32 spacing;
+-	if (le16_to_cpu(vectors->num_vectors) < num_vectors)
+-		return -EINVAL;
 -
--		v = &adapter->irq_info.vectors[vec_id];
+-	info->vectors = kzalloc_objs(*info->vectors, all_vectors);
+-	if (!info->vectors)
+-		return -ENOMEM;
+-	/* Mailbox irq information are stored in different places. Fill index 0
+-	 * of our vectors info with capabilities and rest with information
+-	 * from vector chunks.
+-	 */
+-	vector = &info->vectors[0];
+-	vector->idx = le16_to_cpu(caps->mailbox_vector_id);
+-	vector->regs.dyn_ctl = le32_to_cpu(caps->mailbox_dyn_ctl);
+-	reg_cnt = IDPF_MBX_Q_VEC;
 -
--		intr->dyn_ctl = libie_pci_get_mmio_addr(mmio, v->regs.dyn_ctl);
--		intr->dyn_ctl_intena_m = PF_GLINT_DYN_CTL_INTENA_M;
--		intr->dyn_ctl_intena_msk_m = PF_GLINT_DYN_CTL_INTENA_MSK_M;
--		intr->dyn_ctl_itridx_s = PF_GLINT_DYN_CTL_ITR_INDX_S;
--		intr->dyn_ctl_intrvl_s = PF_GLINT_DYN_CTL_INTERVAL_S;
--		intr->dyn_ctl_wb_on_itr_m = PF_GLINT_DYN_CTL_WB_ON_ITR_M;
--		intr->dyn_ctl_swint_trig_m = PF_GLINT_DYN_CTL_SWINT_TRIG_M;
--		intr->dyn_ctl_sw_itridx_ena_m =
--			PF_GLINT_DYN_CTL_SW_ITR_INDX_ENA_M;
+-	for (int i = 0; i < le16_to_cpu(chunks->num_vchunks); i++) {
+-		const struct virtchnl2_vector_chunk *chunk = &chunks->vchunks[i];
+-		u32 dyn_spacing, itrn_spacing;
+-		struct libie_vec_regs reg_val;
+-		u16 vec_id;
 -
--		spacing = IDPF_ITR_IDX_SPACING(v->regs.itrn_index_spacing,
--					       IDPF_PF_ITR_IDX_SPACING);
--		rx_itr = PF_GLINT_ITR_ADDR(VIRTCHNL2_ITR_IDX_0, v->regs.itrn,
--					   spacing);
--		tx_itr = PF_GLINT_ITR_ADDR(VIRTCHNL2_ITR_IDX_1, v->regs.itrn,
--					   spacing);
--		intr->rx_itr = libie_pci_get_mmio_addr(mmio, rx_itr);
--		intr->tx_itr = libie_pci_get_mmio_addr(mmio, tx_itr);
+-		reg_val.dyn_ctl = le32_to_cpu(chunk->dynctl_reg_start);
+-		reg_val.itrn = le32_to_cpu(chunk->itrn_reg_start);
+-		reg_val.itrn_index_spacing =
+-			le32_to_cpu(chunk->itrn_index_spacing);
+-
+-		dyn_spacing = le32_to_cpu(chunk->dynctl_reg_spacing);
+-		itrn_spacing = le32_to_cpu(chunk->itrn_reg_spacing);
+-		vec_id = le16_to_cpu(chunk->start_vector_id);
+-
+-		for (int j = 0; j < le16_to_cpu(chunk->num_vectors); j++) {
+-			if (reg_cnt >= all_vectors)
+-				break;
+-
+-			vector = &info->vectors[reg_cnt];
+-
+-			vector->regs = reg_val;
+-			vector->idx = vec_id;
+-
+-			reg_val.dyn_ctl += dyn_spacing;
+-			reg_val.itrn += itrn_spacing;
+-
+-			vec_id += 1;
+-			reg_cnt += 1;
+-		}
 -	}
 -
--	/* Data vector for NOIRQ queues */
+-	if (reg_cnt != all_vectors) {
+-		kfree(info->vectors);
+-		info->vectors = NULL;
+-		return -EINVAL;
+-	}
 -
--	val = adapter->irq_info.vectors[rsrc->q_vector_idxs[i]].regs.dyn_ctl;
- 	rsrc->noirq_dyn_ctl =
- 		libie_pci_get_mmio_addr(&adapter->ctlq_ctx.mmio_info, val);
- 
-@@ -113,6 +77,44 @@ static void idpf_intr_reg_init(struct idpf_vport *vport,
- 	rsrc->noirq_dyn_ctl_ena = val;
- }
- 
-+/**
-+ * idpf_intr_reg_init - Initialize interrupt registers
-+ * @adapter: adapter structure
-+ * @q_vector: q_vector in which the registers should be initialized
-+ * @idx: global software irq index used to get hardware information from
-+ *	 irq_info structure
-+ */
-+static void idpf_intr_reg_init(struct idpf_adapter *adapter,
-+			       struct idpf_q_vector *q_vector, u16 idx)
-+{
-+	struct idpf_hw_vector *v = &adapter->irq_info.vectors[idx];
-+	struct idpf_intr_reg *intr = &q_vector->intr_reg;
-+	struct libie_mmio_info *mmio;
-+	u32 rx_itr, tx_itr;
-+	u32 spacing;
-+
-+	mmio = &adapter->ctlq_ctx.mmio_info;
-+
-+	intr->dyn_ctl = libie_pci_get_mmio_addr(mmio, v->regs.dyn_ctl);
-+	intr->dyn_ctl_intena_m = PF_GLINT_DYN_CTL_INTENA_M;
-+	intr->dyn_ctl_intena_msk_m = PF_GLINT_DYN_CTL_INTENA_MSK_M;
-+	intr->dyn_ctl_itridx_s = PF_GLINT_DYN_CTL_ITR_INDX_S;
-+	intr->dyn_ctl_intrvl_s = PF_GLINT_DYN_CTL_INTERVAL_S;
-+	intr->dyn_ctl_wb_on_itr_m = PF_GLINT_DYN_CTL_WB_ON_ITR_M;
-+	intr->dyn_ctl_swint_trig_m = PF_GLINT_DYN_CTL_SWINT_TRIG_M;
-+	intr->dyn_ctl_sw_itridx_ena_m =
-+		PF_GLINT_DYN_CTL_SW_ITR_INDX_ENA_M;
-+
-+	spacing = IDPF_ITR_IDX_SPACING(v->regs.itrn_index_spacing,
-+				       IDPF_PF_ITR_IDX_SPACING);
-+	rx_itr = PF_GLINT_ITR_ADDR(VIRTCHNL2_ITR_IDX_0, v->regs.itrn,
-+				   spacing);
-+	tx_itr = PF_GLINT_ITR_ADDR(VIRTCHNL2_ITR_IDX_1, v->regs.itrn,
-+				   spacing);
-+	intr->rx_itr = libie_pci_get_mmio_addr(mmio, rx_itr);
-+	intr->tx_itr = libie_pci_get_mmio_addr(mmio, tx_itr);
-+}
-+
+-	info->num = num_vectors + IDPF_MBX_Q_VEC;
+-
+-	return 0;
+-}
+-
  /**
-  * idpf_reset_reg_init - Initialize reset registers
+  * idpf_send_alloc_vectors_msg - Send virtchnl alloc vectors message
   * @adapter: Driver specific private structure
-@@ -171,6 +173,7 @@ static void idpf_reg_ops_init(struct idpf_adapter *adapter)
- {
- 	adapter->dev_ops.reg_ops.ctlq_reg_init = idpf_ctlq_reg_init;
- 	adapter->dev_ops.reg_ops.intr_reg_init = idpf_intr_reg_init;
-+	adapter->dev_ops.reg_ops.noirq_intr_reg_init = idpf_noirq_intr_reg_init;
- 	adapter->dev_ops.reg_ops.mb_intr_reg_init = idpf_mb_intr_reg_init;
- 	adapter->dev_ops.reg_ops.reset_reg_init = idpf_reset_reg_init;
- 	adapter->dev_ops.reg_ops.trigger_reset = idpf_trigger_reset;
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-index 2b21f599f569..00c8fe692821 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-@@ -4054,6 +4054,9 @@ static int idpf_vport_intr_req_irq(struct idpf_vport *vport,
- 	const char *drv_name, *if_name, *vec_name;
- 	int vector, err, irq_num, vidx;
+@@ -2350,8 +2273,8 @@ int idpf_send_alloc_vectors_msg(struct idpf_adapter *adapter, u16 num_vectors)
+ 		goto free_rx_buf;
+ 	}
  
-+	vidx = rsrc->q_vector_idxs[rsrc->num_q_vectors];
-+	adapter->dev_ops.reg_ops.noirq_intr_reg_init(adapter, rsrc, vidx);
-+
- 	drv_name = dev_driver_string(&adapter->pdev->dev);
- 	if_name = netdev_name(vport->netdev);
- 
-@@ -4064,6 +4067,8 @@ static int idpf_vport_intr_req_irq(struct idpf_vport *vport,
- 		vidx = rsrc->q_vector_idxs[vector];
- 		irq_num = adapter->msix_entries[vidx].vector;
- 
-+		adapter->dev_ops.reg_ops.intr_reg_init(adapter, q_vector, vidx);
-+
- 		if (q_vector->num_rxq && q_vector->num_txq)
- 			vec_name = "TxRx";
- 		else if (q_vector->num_rxq)
-@@ -4649,8 +4654,6 @@ int idpf_vport_intr_init(struct idpf_vport *vport, struct idpf_q_vec_rsrc *rsrc)
- 	idpf_vport_intr_map_vector_to_qs(vport, rsrc);
- 	idpf_vport_intr_napi_add_all(vport, rsrc);
- 
--	vport->adapter->dev_ops.reg_ops.intr_reg_init(vport, rsrc);
--
- 	err = idpf_vport_intr_req_irq(vport, rsrc);
+-	err = idpf_create_vectors_info(&adapter->irq_info, &adapter->caps,
+-				       rcvd_vec, num_vectors);
++	err = libie_irq_create_info(&adapter->irq_info, &adapter->caps,
++				    rcvd_vec, num_vectors);
  	if (err)
- 		goto unroll_vectors_alloc;
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_vf_dev.c b/drivers/net/ethernet/intel/idpf/idpf_vf_dev.c
-index c0080842b7e2..df3eabe12b18 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_vf_dev.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_vf_dev.c
-@@ -57,53 +57,17 @@ static void idpf_vf_mb_intr_reg_init(struct idpf_adapter *adapter)
- }
+ 		idpf_send_dealloc_vectors_msg(adapter);
+ 
+@@ -2378,9 +2301,7 @@ int idpf_send_dealloc_vectors_msg(struct idpf_adapter *adapter)
+ 	int buf_size, err;
+ 
+ 	/* dealloc vectors can fail, but irq_info still needs to be cleaned */
+-	kfree(adapter->irq_info.vectors);
+-	adapter->irq_info.vectors = NULL;
+-	adapter->irq_info.num = 0;
++	libie_irq_destroy_info(&adapter->irq_info);
+ 
+ 	buf_size = struct_size(&ac->vchunks, vchunks,
+ 			       le16_to_cpu(ac->vchunks.num_vchunks));
+diff --git a/drivers/net/ethernet/intel/libie/irq.c b/drivers/net/ethernet/intel/libie/irq.c
+index 0f73f8becefb..d26ffeffdcb2 100644
+--- a/drivers/net/ethernet/intel/libie/irq.c
++++ b/drivers/net/ethernet/intel/libie/irq.c
+@@ -2,6 +2,7 @@
+ /* Copyright (C) 2025 Intel Corporation */
+ 
+ #include <linux/net/intel/libie/irq.h>
++#include <linux/net/intel/virtchnl2.h>
  
  /**
-- * idpf_vf_intr_reg_init - Initialize interrupt registers
-- * @vport: virtual port structure
-- * @rsrc: pointer to queue and vector resources
-+ * idpf_vf_noirq_intr_reg_init - Initialize noirq registers
-+ * @adapter: adapter structure
-+ * @rsrc: to store noirq register and value
-+ * @idx: global software irq index used to get hardware information from
-+ *	 irq_info structure
-  */
--static void idpf_vf_intr_reg_init(struct idpf_vport *vport,
--				  struct idpf_q_vec_rsrc *rsrc)
-+static void idpf_vf_noirq_intr_reg_init(struct idpf_adapter *adapter,
-+					struct idpf_q_vec_rsrc *rsrc, u16 idx)
- {
--	struct idpf_adapter *adapter = vport->adapter;
--	int num_vecs = rsrc->num_q_vectors;
--	struct libie_mmio_info *mmio;
--	u32 rx_itr, tx_itr, val;
--	int i;
--
--	mmio = &adapter->ctlq_ctx.mmio_info;
-+	u32 val = adapter->irq_info.vectors[idx].regs.dyn_ctl;
- 
--	for (i = 0; i < num_vecs; i++) {
--		struct idpf_q_vector *q_vector = &rsrc->q_vectors[i];
--		struct idpf_intr_reg *intr = &q_vector->intr_reg;
--		u16 vec_id = rsrc->q_vector_idxs[i];
--		struct idpf_hw_vector *v;
--		u32 spacing;
--
--		v = &adapter->irq_info.vectors[vec_id];
--
--		intr->dyn_ctl = libie_pci_get_mmio_addr(mmio, v->regs.dyn_ctl);
--		intr->dyn_ctl_intena_m = VF_INT_DYN_CTLN_INTENA_M;
--		intr->dyn_ctl_intena_msk_m = VF_INT_DYN_CTLN_INTENA_MSK_M;
--		intr->dyn_ctl_itridx_s = VF_INT_DYN_CTLN_ITR_INDX_S;
--		intr->dyn_ctl_intrvl_s = VF_INT_DYN_CTLN_INTERVAL_S;
--		intr->dyn_ctl_wb_on_itr_m = VF_INT_DYN_CTLN_WB_ON_ITR_M;
--		intr->dyn_ctl_swint_trig_m = VF_INT_DYN_CTLN_SWINT_TRIG_M;
--		intr->dyn_ctl_sw_itridx_ena_m =
--			VF_INT_DYN_CTLN_SW_ITR_INDX_ENA_M;
--
--		spacing = IDPF_ITR_IDX_SPACING(v->regs.itrn_index_spacing,
--					       IDPF_VF_ITR_IDX_SPACING);
--		rx_itr = VF_INT_ITRN_ADDR(VIRTCHNL2_ITR_IDX_0, v->regs.itrn,
--					  spacing);
--		tx_itr = VF_INT_ITRN_ADDR(VIRTCHNL2_ITR_IDX_1, v->regs.itrn,
--					  spacing);
--		intr->rx_itr = libie_pci_get_mmio_addr(mmio, rx_itr);
--		intr->tx_itr = libie_pci_get_mmio_addr(mmio, tx_itr);
--	}
--
--	/* Data vector for NOIRQ queues */
--
--	val = adapter->irq_info.vectors[rsrc->q_vector_idxs[i]].regs.dyn_ctl;
- 	rsrc->noirq_dyn_ctl =
- 		libie_pci_get_mmio_addr(&adapter->ctlq_ctx.mmio_info, val);
- 
-@@ -112,6 +76,44 @@ static void idpf_vf_intr_reg_init(struct idpf_vport *vport,
- 	rsrc->noirq_dyn_ctl_ena = val;
+  * libie_irq_init - init irq for whole device
+@@ -250,6 +251,97 @@ int libie_irq_reserve(struct libie_irq *irq)
  }
+ EXPORT_SYMBOL_NS_GPL(libie_irq_reserve, "LIBIE_IRQ");
  
 +/**
-+ * idpf_vf_intr_reg_init - Initialize interrupt registers
-+ * @adapter: adapter structure
-+ * @q_vector: q_vector in which the registers should be initialized
-+ * @idx: global software irq index used to get hardware information from
-+ *	 irq_info structure
++ * libie_irq_create_info - Save vectors information from firmware
++ * @info: parsed information is stored here
++ * @caps: virtchannel capabilities
++ * @vectors: vector information from firmware to be parsed
++ * @num_vectors: number of vectors
++ *
++ * Return: 0 on success, negative on failure.
 + */
-+static void idpf_vf_intr_reg_init(struct idpf_adapter *adapter,
-+				  struct idpf_q_vector *q_vector, u16 idx)
++int libie_irq_create_info(struct libie_irq_info *info,
++			  const struct virtchnl2_get_capabilities *caps,
++			  const struct virtchnl2_alloc_vectors *vectors,
++			  const u16 num_vectors)
 +{
-+	struct idpf_hw_vector *v = &adapter->irq_info.vectors[idx];
-+	struct idpf_intr_reg *intr = &q_vector->intr_reg;
-+	struct libie_mmio_info *mmio;
-+	u32 rx_itr, tx_itr;
-+	u32 spacing;
++	const struct virtchnl2_vector_chunks *chunks = &vectors->vchunks;
++	struct libie_hw_vector *vector;
++	const int mb_vectors = 1;
++	int reg_cnt, all_vectors;
 +
-+	mmio = &adapter->ctlq_ctx.mmio_info;
++	if (le16_to_cpu(vectors->num_vectors) < num_vectors)
++		return -EINVAL;
 +
-+	intr->dyn_ctl = libie_pci_get_mmio_addr(mmio, v->regs.dyn_ctl);
-+	intr->dyn_ctl_intena_m = VF_INT_DYN_CTLN_INTENA_M;
-+	intr->dyn_ctl_intena_msk_m = VF_INT_DYN_CTLN_INTENA_MSK_M;
-+	intr->dyn_ctl_itridx_s = VF_INT_DYN_CTLN_ITR_INDX_S;
-+	intr->dyn_ctl_intrvl_s = VF_INT_DYN_CTLN_INTERVAL_S;
-+	intr->dyn_ctl_wb_on_itr_m = VF_INT_DYN_CTLN_WB_ON_ITR_M;
-+	intr->dyn_ctl_swint_trig_m = VF_INT_DYN_CTLN_SWINT_TRIG_M;
-+	intr->dyn_ctl_sw_itridx_ena_m =
-+		VF_INT_DYN_CTLN_SW_ITR_INDX_ENA_M;
++	all_vectors = num_vectors + mb_vectors;
++	info->vectors = kzalloc_objs(*info->vectors, all_vectors);
++	if (!info->vectors)
++		return -ENOMEM;
++	/* Mailbox irq information are stored in different places. Fill index 0
++	 * of our vectors info with capabilities and rest with information
++	 * from vector chunks.
++	 */
++	vector = &info->vectors[0];
++	vector->idx = le16_to_cpu(caps->mailbox_vector_id);
++	vector->regs.dyn_ctl = le32_to_cpu(caps->mailbox_dyn_ctl);
++	reg_cnt = mb_vectors;
 +
-+	spacing = IDPF_ITR_IDX_SPACING(v->regs.itrn_index_spacing,
-+				       IDPF_VF_ITR_IDX_SPACING);
-+	rx_itr = VF_INT_ITRN_ADDR(VIRTCHNL2_ITR_IDX_0, v->regs.itrn,
-+				  spacing);
-+	tx_itr = VF_INT_ITRN_ADDR(VIRTCHNL2_ITR_IDX_1, v->regs.itrn,
-+				  spacing);
-+	intr->rx_itr = libie_pci_get_mmio_addr(mmio, rx_itr);
-+	intr->tx_itr = libie_pci_get_mmio_addr(mmio, tx_itr);
++	for (int i = 0; i < le16_to_cpu(chunks->num_vchunks); i++) {
++		const struct virtchnl2_vector_chunk *chunk = &chunks->vchunks[i];
++		u32 dyn_spacing, itrn_spacing;
++		struct libie_vec_regs reg_val;
++		u16 vec_id;
++
++		reg_val.dyn_ctl = le32_to_cpu(chunk->dynctl_reg_start);
++		reg_val.itrn = le32_to_cpu(chunk->itrn_reg_start);
++		reg_val.itrn_index_spacing =
++			le32_to_cpu(chunk->itrn_index_spacing);
++
++		dyn_spacing = le32_to_cpu(chunk->dynctl_reg_spacing);
++		itrn_spacing = le32_to_cpu(chunk->itrn_reg_spacing);
++		vec_id = le16_to_cpu(chunk->start_vector_id);
++
++		for (int j = 0; j < le16_to_cpu(chunk->num_vectors); j++) {
++			if (reg_cnt >= all_vectors)
++				break;
++
++			vector = &info->vectors[reg_cnt];
++
++			vector->regs = reg_val;
++			vector->idx = vec_id;
++
++			reg_val.dyn_ctl += dyn_spacing;
++			reg_val.itrn += itrn_spacing;
++
++			vec_id += 1;
++			reg_cnt += 1;
++		}
++	}
++
++	if (reg_cnt != all_vectors) {
++		kfree(info->vectors);
++		info->vectors = NULL;
++		return -EINVAL;
++	}
++
++	info->num = all_vectors;
++
++	return 0;
 +}
++EXPORT_SYMBOL_NS_GPL(libie_irq_create_info, "LIBIE_IRQ");
 +
- /**
-  * idpf_vf_reset_reg_init - Initialize reset registers
-  * @adapter: Driver specific private structure
-@@ -157,6 +159,8 @@ static void idpf_vf_reg_ops_init(struct idpf_adapter *adapter)
- {
- 	adapter->dev_ops.reg_ops.ctlq_reg_init = idpf_vf_ctlq_reg_init;
- 	adapter->dev_ops.reg_ops.intr_reg_init = idpf_vf_intr_reg_init;
-+	adapter->dev_ops.reg_ops.noirq_intr_reg_init =
-+		idpf_vf_noirq_intr_reg_init;
- 	adapter->dev_ops.reg_ops.mb_intr_reg_init = idpf_vf_mb_intr_reg_init;
- 	adapter->dev_ops.reg_ops.reset_reg_init = idpf_vf_reset_reg_init;
- 	adapter->dev_ops.reg_ops.trigger_reset = idpf_vf_trigger_reset;
++/**
++ * libie_irq_destroy_info - free memory allocated during building irq_info
++ * @info: libie_irq_info struct to be freed
++ */
++void libie_irq_destroy_info(struct libie_irq_info *info)
++{
++	kfree(info->vectors);
++	info->vectors = NULL;
++	info->num = 0;
++}
++EXPORT_SYMBOL_NS_GPL(libie_irq_destroy_info, "LIBIE_IRQ");
++
+ /* Module */
+ 
+ MODULE_DESCRIPTION("Helper functions for managing MSI-X in driver");
+diff --git a/include/linux/net/intel/libie/irq.h b/include/linux/net/intel/libie/irq.h
+index e219fde575d8..8d5873f13871 100644
+--- a/include/linux/net/intel/libie/irq.h
++++ b/include/linux/net/intel/libie/irq.h
+@@ -105,5 +105,14 @@ struct msi_map libie_irq_alloc(struct libie_irq *irq, enum libie_irq_type type);
+ void libie_irq_free(struct libie_irq *irq, struct msi_map map);
+ int libie_irq_reserve(struct libie_irq *irq);
+ void libie_put_irq(struct libie_irq *irq, unsigned int index);
++/* IPU specific functions. */
++struct virtchnl2_get_capabilities;
++struct virtchnl2_alloc_vectors;
++
++void libie_irq_destroy_info(struct libie_irq_info *info);
++int libie_irq_create_info(struct libie_irq_info *info,
++			  const struct virtchnl2_get_capabilities *caps,
++			  const struct virtchnl2_alloc_vectors *vectors,
++			  const u16 num_vectors);
+ 
+ #endif /* __LIBIE_IRQ_H */
 -- 
 2.49.0
 
