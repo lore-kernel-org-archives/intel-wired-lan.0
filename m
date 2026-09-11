@@ -1,28 +1,28 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6BF2CC88E58
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 11 Sep 2026 13:31:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B81A3C88E5A
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 11 Sep 2026 13:31:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 3E1684081F;
-	Fri, 11 Sep 2026 13:31:09 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 85F996068F;
+	Fri, 11 Sep 2026 13:31:10 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id zIn2NSjL4gVx; Fri, 11 Sep 2026 13:31:08 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 46A1340820
-Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789133468;
-	b=jcP29F6yIlxI+C9PdjPdPavvEP4uPIL/h3swuxvQF4EtULa1o/ro4SZbu13f0zqJEHRY
-	 PgPvrCu5biTj9nPyiuR/Pl01XL6ALO7GPk7A5oiLreyRqwLM2WD+g1zkWPAKc6lCdfWIh
-	 rp4SbZXWVbkK+0dSEPqiRGiQSAbbm0Je7+aWS6AQU+BFpBhFI7W8RfonR7Nlcf8Wv3RpL
-	 0SbtJ+8fRG8A2XJIcMHYKqrqXixfsQQ452DQbTN88f9qK+TbJwn+oA8f1HZOB9pQH3lBh
-	 dz0NtLjRxmGhouugDMh4uik3kDXlDimk8OryEjBFFdoel6B4SY2rZjPjiNuMhkZxdlQ==
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id NQHIKzhkwjm9; Fri, 11 Sep 2026 13:31:09 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 2D8436067C
+Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789133469;
+	b=Tk9A4E8LleJL+E0DJvkHV3Oaji/C2zm93lnTzl8Dx8DpaSjgt8m/3Ks+0gUvjkJXzGwV
+	 wP874F58yD954lZw5LP9mRNl8Popv6ykHrhSOJXfnwZ5L3NIncr8E79/JBfc3lb3bp4lY
+	 uUg0GYsphknlukyYqrlPzYpOcfD7hPPURNcCXT/xzavjYr29QJAekDHqFs47Uy+aZPy80
+	 bcKud19xXJhskAFa9QG4MtsfV+0LmOn+lpiwau0CgZ6xQ1LSTxi3jsDUCqNg51yRRrCOu
+	 fQ6RFZ/Ufdb+i4tmL4lVYjEo92Oc9kCTH/Stwhduq4+KJmhT/ZiBVau+C830jKEWkZg==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1789133468;
+	c=relaxed/relaxed; t=1789133469;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
@@ -32,67 +32,65 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding:
 	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
 	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=wSUSg4YeAkx9AUgDdlM4pmD79qBOZpRJo3WywrNqLK4=;
-	b=XfT022HqwCbWRn4hJk7gbtGO56rwdSGLzQ+GWoEpSEZnWOIZPxilp41ejM2DoUS8ZVIN
-	 bB8kKo55XsUSzmRQjQe+dR4ks/ZFjRAppbUedo96i0kL8BRAsuPss6vJ35JB0OEYEEyin
-	 X8NEBjMTesEd3DT4GxPTYAEJPQaTr/5cpXMVmW6Fks81VZ4NqnDnnAxUaNc2cGAbQgIBz
-	 yFGdg9AwhyduKBhIjLouGf6J7YyHrXIrjLOpSeQpp5cXErKQtjXLXY5djYU0BVmyIe9pH
-	 hH370/lvft92SOocb9r/7MYwRC4gOjOBHRceYt3pmtyukCsTX/dXPMJe4OF3JJ9pzxA==
-ARC-Authentication-Results: i=2; smtp4.osuosl.org; dmarc=pass header.from=linux.intel.com;
-	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=NLbq1SBV;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	bh=hrVnJHfJAaor2MDDUROoaKwFE2YQ4s7D1NI1N0Lw4s8=;
+	b=dDWyGrRsN/L1dJKCAi3ZwmvDfKAbpjCvzHnqNGle+q+btOXXoGTwEkt61Ssa+1r+bTrA
+	 cdN3YaSBaId2M8PnuhqL+Fmza7j1qzF6raIS6BdcsMqjrpYwfCmLUirV16FEunPMUOszg
+	 /ioQ9i9ziDEHKWO7GtrX92/zjdVGPTR/TsoizZ8V8fOZ14lfbUCOVplK2PRR2rL1eEVKt
+	 U6X1Ohw3C+H8p5argfUjcpypDZFi4ZMkrLZkmW4jREVh31JOAPEq7lAsE/g/RR4D5k9SO
+	 bi/3oEQ18EwBfQFnhSjH0ubF4EVfzxVlT9Bni+JShKGhFngMFRCFl3svosZf4fy4Dpg==
+ARC-Authentication-Results: i=2; smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1789133468;
-	bh=wSUSg4YeAkx9AUgDdlM4pmD79qBOZpRJo3WywrNqLK4=;
+	s=default; t=1789133469;
+	bh=hrVnJHfJAaor2MDDUROoaKwFE2YQ4s7D1NI1N0Lw4s8=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=0q12MDt3uicGbOYysHe60eTEkQSpoa/S5WyyyEin6EWdU+DGRRjp54wH7lXpErmLU
-	 IvTF8KiDJXm2gJLo6iAWiutLhqz2y9zq4ix5keR3iWaYpz19b1bNAPNBwI7IbxZ4E+
-	 F/f/IWMRthfuQBQMXgmgI1qyL87bPpGB+y4qhMo6U4GOHQizWd35n79nIBLixB3pGN
-	 wYY9NgDjY6Zkzfj9KWXjBxsqLejzmpV1u92CZL/nNC0hDpx4idfgC4VNWeKmS0KsLG
-	 U/vvyKUmJjR7uviSj/Fx3VlpsNKJJlFXKNTZGAPBk+tHJFjNYq851ohRWb4qPSuYsT
-	 X3Y8pJq/GxMiw==
+	b=Dv8ZZgLGxbyVMIQTfKWseacCLPcRPfRhFwVifQdON5uFUaiNDcSgcqyfEWoOsEoWs
+	 99Rp8OKkZ0ChUqvERxZJm9AQjhr0ekM9OFN3jCEuf5rR0a5RDLUo6dnatXHQ24NWo0
+	 2ExCfW65FEK0zYSnnSb9c5WGEE65nQdESj+8pAGD5lEb0qWwlAmkTVHog4OrJOMbWs
+	 hFZJP6GeAkqbqLfZyTXclhMfJfEhq7RcIKeE5dhKIePFo3R/zhMjvUq4LZxPKq85wm
+	 opXHK0lscyBKrtTUiK3kFhnaa2+QzPbbbRJkYGs887oSyT2EE2aRDLUtroZhy6lk7d
+	 DHTpD7Dz6ZGgw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 46A1340820;
-	Fri, 11 Sep 2026 13:31:08 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 2D8436067C;
+	Fri, 11 Sep 2026 13:31:09 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 2C24832F
+ by lists1.osuosl.org (Postfix) with ESMTP id 30C8B1EA0
  for <intel-wired-lan@lists.osuosl.org>; Fri, 11 Sep 2026 13:31:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 121B84082F
+ by smtp4.osuosl.org (Postfix) with ESMTP id 2E14F40827
  for <intel-wired-lan@lists.osuosl.org>; Fri, 11 Sep 2026 13:31:06 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id nFf0Yo7_ujWf for <intel-wired-lan@lists.osuosl.org>;
- Fri, 11 Sep 2026 13:31:05 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org F195F40827
+ id RloA_hQb0iad for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 11 Sep 2026 13:31:04 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org B03E84080A
 Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=192.198.163.4
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789133465;
- b=UQwnnEwtyjh23aUuUJYLlJNddOBnyzbJIDTj4Yq/qJFdeAdrxzLXBbWlg7tRKedJJmxh
- SHm9Bht65If4mixBagD8QQUdxzyguVVyn7hpH3AOrLA9hwWqExhmSyYI0uaPWh8UdrgaM
- 227GG8iQq9kEdiwOenShbAuT7xSfwChtMvcLDrrH0p2RIZIS6SCa/GiGlGn58g/76Rn3o
- sYhi5+Ot0eCSYoEZsoRBx9O3Tkx/6HFp3L2oGwQ1kSJOZAZuOw/f2qLc+i5cQYRzRM1fX
- oYhUbN6hNl/LXQqSg6ZF88Mc50B2nEYfECmJtjiVqF6o/WduZQ9ls8KKhohzY+o/7wQ==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789133464;
+ b=rnQrmqXnELXdzBXSAMDUmVIXLxvIdLMMbcnDd0URUycLMtK2VMueu5WC8wVHVR4Zdo/R
+ /IGEK4tFTiD85Y7Cd+If57cJT3lX940cmoqhhJFSgjxj1VjkWyHXxgPoHxyteI2eUJUK1
+ Dk8KiusPEyXFExX71Rj/MWsmbEVqN/v5U3T0Pgk+Z0qBe/VzbrftEnqmqrCg/1DQv5E/f
+ tOGTOHSOV5RZDRN0embdxBcHwWKUZ1YkLqond1JhDwNlctIlM3/Jk/8HZsoBPSsdLPFVO
+ FlXJ9dCyO/1Jl5qa17N0bv0sxRxqj2ILPRc31c+C4P4ySdpp5ldgLGpAOrqqAikkd0w==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1789133465;
+ c=relaxed/relaxed; t=1789133464;
  h=Received-SPF:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
  X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
  X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:From:To:Cc:Subject:
  Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
  Content-Transfer-Encoding;
- bh=wSUSg4YeAkx9AUgDdlM4pmD79qBOZpRJo3WywrNqLK4=;
- b=QRBL3106xj79tkb4b1Bw+XH2SaZqD/3rfRjjDxl57l0276rmT8L0JfBXxjYBmOOatK5w
- NV2xdCVhPweTSh5S+lNUIPLQ1cz4EiUpvO6o0oaP7Vzj7Eh7RsMV6/UIZm4dbLzpHZe14
- SMb2Ychw0MchBtjy+q5rziw6qDTnIJKIQrxM6l5bZ/tXNN6n1G8k+2S5yqY4EI6cNkExh
- Cjn0kuk76CDs8diyykvmxZtqQ/2FEL4dj1kZVtNzfiOATofClZaNRQStHbbgTmRmi2OUj
- rqPqUKiTvwZsKM3xE425v5wjdPobsIEUzY98M9+ezxk4IMTPK9eYqnuxhOtUsqpVvQw==
+ bh=hrVnJHfJAaor2MDDUROoaKwFE2YQ4s7D1NI1N0Lw4s8=;
+ b=HTNBJM4tmZrvdD/6LOboi6JU0cWMdLIhDZyePfdNY+I+fEQgQoyWXNlMMsuz6vOMnqX9
+ 2CUPJdldCj65X/mM/pJvrVNspqlo0RL9yNnYg6yF8uuh0Bq1PRJXeGiVAAGsta559nXpQ
+ KnxmmXv8no8qusVsImnPJIQtCiFBDofDulJ9UI3JN7OyeyAiueSCbIZJhVhY8/0GyNaGI
+ msMb+QLZmjp0AqKvpKhDKtMAc6RIQO8V+s0B7xoAlKHVC0tCnDU/yFp/2J3kYy4n1PLiB
+ Dis0ce/VCUCzJuTt7KqRD9avSlnAjjwie1Rah7R4a7XRjgJ7rxM0pHVHD5DkuBg5RQA==
 ARC-Authentication-Results: i=1; smtp4.osuosl.org;
  dmarc=pass header.from=linux.intel.com; 
  dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=NLbq1SBV; 
+ header.s=Intel header.b="Rq4+/l/D"; 
  arc=none smtp.remote-ip=192.198.163.4
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.4;
  helo=mgamail.intel.com; envelope-from=michal.swiatkowski@linux.intel.com;
@@ -101,43 +99,44 @@ Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=none dis=none)
  header.from=linux.intel.com
 Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=NLbq1SBV
+ header.a=rsa-sha256 header.s=Intel header.b=Rq4+/l/D
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.4])
- by smtp4.osuosl.org (Postfix) with ESMTPS id F195F40827
+ by smtp4.osuosl.org (Postfix) with ESMTPS id B03E84080A
  for <intel-wired-lan@lists.osuosl.org>; Fri, 11 Sep 2026 13:31:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
  t=1789133465; x=1820669465;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=qHS1b2tjdRdvqr4P/sS38v3L3WhD2s8Lh9q0gj/hIiw=;
- b=NLbq1SBVgrK+p9IfmDDU2CB+iXcOlG//Wjf/T7LJmKZy9sdA5BIHXJhz
- 895oXPQhZeYJdipeiR904D9ixivvIUwg1XkMxI9keLCclJGArpDWzbAoK
- 4PD4/f0VLCOr3/v2zcMWTY57P2V2iDg0T1cvfFoEnwqMEfSOaGAzyjVXv
- FidRPk2zB35YuuIcCe+b8eaUjclVLcAEPE9XngWeHelmBJBLXM38cTENv
- EXOe3OOG6GgiPxwbWlDOqPj2vazwQY5PlV4wll8JJMZD9GmshfhUF2WFr
- jKCNY9mtSKhQzyLOArothput7tCvYHzbnqQkazuD4XOe0KVvjrpQCN1te g==;
-X-CSE-ConnectionGUID: BCy1bl3+QFe8PSlkw3rbzg==
-X-CSE-MsgGUID: 5g/ZIpiYQtaQns7QEHr+nA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11901"; a="107546"
+ bh=zIgV9GBb9s8x2JweMPi74/Mb4p7x6ezycjSZfv7jYog=;
+ b=Rq4+/l/DL3VcAjEMoA5mE+JQ+HJxrBV4wgwazso2clPttYpwso4qMxFG
+ 4ZvjPax+dCt5EPmOHIcWHeZ9Erj+4n3Cbsh1LHyZznCSX7+0IooLU/zAS
+ XiXPEA8LmTOwvJ+uWdyv6nDioZc+SauZi0jiUMX6K0d8z4arSYjhLxeMM
+ I1mBA6MehlPT494pty35FLGjnbm1YMFVazahTKx7vfP5dN8pyUjlhRlb7
+ 4aY0YgUidCCfExrw3U1+2eQu12DPTJ8QolTAL4x3aVsA48+4hgmOtaCye
+ qJbNHrHPzeScMu/GqTazu86H6ZN9dJKXOKWnekJgQFIpNIRwJ2Uu9TkS2 Q==;
+X-CSE-ConnectionGUID: VRuhaWXZQRqeUMMk9W0pSg==
+X-CSE-MsgGUID: I8AIC61gSgmRC3qD7v/CcA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11901"; a="107542"
 X-IronPort-AV: E=Sophos;i="6.27,97,1787036400"; 
-   d="scan'208";a="107546"
+   d="scan'208";a="107542"
 Received: from orviesa010.jf.intel.com ([10.64.159.150])
  by fmvoesa114.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 11 Sep 2026 06:30:04 -0700
-X-CSE-ConnectionGUID: 47hF93LsR8mgeD/zGZZk9A==
-X-CSE-MsgGUID: RJ7LK1itTGehIeud5m0z6A==
+ 11 Sep 2026 06:30:03 -0700
+X-CSE-ConnectionGUID: J1U/PpQETyeB68nOqM7q0Q==
+X-CSE-MsgGUID: IIrl12siQEeV4PGN1lLl9A==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,97,1787036400"; d="scan'208";a="270541296"
+X-IronPort-AV: E=Sophos;i="6.27,97,1787036400"; d="scan'208";a="270541295"
 Received: from os-delivery.igk.intel.com ([10.102.21.165])
- by orviesa010.jf.intel.com with ESMTP; 11 Sep 2026 06:30:03 -0700
+ by orviesa010.jf.intel.com with ESMTP; 11 Sep 2026 06:30:02 -0700
 From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org,
- Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-Subject: [PATCH iwl-next v2 09/10] ixd: support for getting lan memory regions
-Date: Fri, 11 Sep 2026 14:49:20 +0200
-Message-ID: <20260911124921.2881348-10-michal.swiatkowski@linux.intel.com>
+ Michal Swiatkowski <michal.swiatkowski@linux.intel.com>,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Subject: [PATCH iwl-next v2 08/10] ice: use libie_irq for interrupts managing
+Date: Fri, 11 Sep 2026 14:49:19 +0200
+Message-ID: <20260911124921.2881348-9-michal.swiatkowski@linux.intel.com>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20260911124921.2881348-1-michal.swiatkowski@linux.intel.com>
 References: <20260911124921.2881348-1-michal.swiatkowski@linux.intel.com>
@@ -157,328 +156,559 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-Send and parse get lan memory regions command. Map the regions from
-the command response.
+Change interrupts code to fit the libie_irq calls.
 
-It is needed to set number of regions to not zero value even when
-just sending the command. Set it to 1 and add comment about that.
+There is not many difference. Bool for dynamic alloc in libie is changed
+to enum for static and dynamic. Rest code is the same. Instead of custom
+ice_irq_tracker there is libie_irq that tracks the interrupts.
 
-It is possible that get lan memory regions isn't supported. Driver
-should cover this situation by mapping regions needed for running.
+Code fallback to static when there is not more dynamic. Previously
+it first used static part. Getting dynamic first better fit the lib
+code. It isn't breaking current driver code.
 
+Dynamic alloc is always set to true if there is support. In libie_irq
+code check for dynamic support is done inside. LIBIE_IRQ_ANY can be
+always pass in case of getting interrupts for VSI. If there is no
+platform support it is changed to LIBIE_IRQ_STATIC inside libie code.
+
+Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 ---
- drivers/net/ethernet/intel/ixd/ixd.h          |   3 +
- drivers/net/ethernet/intel/ixd/ixd_main.c     | 131 +++++++++++++++---
- drivers/net/ethernet/intel/ixd/ixd_virtchnl.c |  90 +++++++++++-
- 3 files changed, 201 insertions(+), 23 deletions(-)
+ drivers/net/ethernet/intel/Kconfig        |   1 +
+ drivers/net/ethernet/intel/ice/ice.h      |   5 +-
+ drivers/net/ethernet/intel/ice/ice_base.c |   4 +-
+ drivers/net/ethernet/intel/ice/ice_idc.c  |   4 +-
+ drivers/net/ethernet/intel/ice/ice_irq.c  | 181 ++--------------------
+ drivers/net/ethernet/intel/ice/ice_irq.h  |  14 --
+ drivers/net/ethernet/intel/ice/ice_lib.c  |   3 -
+ drivers/net/ethernet/intel/ice/ice_main.c |  15 +-
+ drivers/net/ethernet/intel/libie/irq.c    |  30 +++-
+ include/linux/net/intel/libie/irq.h       |   2 +
+ 10 files changed, 51 insertions(+), 208 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixd/ixd.h b/drivers/net/ethernet/intel/ixd/ixd.h
-index 2a09ccba13d5..4a1590f937b5 100644
---- a/drivers/net/ethernet/intel/ixd/ixd.h
-+++ b/drivers/net/ethernet/intel/ixd/ixd.h
-@@ -63,5 +63,8 @@ bool ixd_check_reset_complete(struct ixd_adapter *adapter);
- void ixd_init_task(struct work_struct *work);
- int ixd_init_dflt_mbx(struct ixd_adapter *adapter);
- void ixd_deinit_dflt_mbx(struct ixd_adapter *adapter);
-+int ixd_iomap_running_regions(struct ixd_adapter *adapter);
-+bool ixd_iomap_is_not_start_region(struct libie_mmio_info *info,
-+				   struct libie_pci_mmio_region *reg);
+diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
+index 1228ae099b15..bd0dd8c28352 100644
+--- a/drivers/net/ethernet/intel/Kconfig
++++ b/drivers/net/ethernet/intel/Kconfig
+@@ -301,6 +301,7 @@ config ICE
+ 	select LIBIE
+ 	select LIBIE_ADMINQ
+ 	select LIBIE_FWLOG if DEBUG_FS
++	select LIBIE_IRQ
+ 	select NET_DEVLINK
+ 	select PACKING
+ 	select PLDMFW
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index 6a158ee882a7..18ee6f0c1abc 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -36,6 +36,7 @@
+ #include <linux/bpf.h>
+ #include <linux/btf.h>
+ #include <linux/auxiliary_bus.h>
++#include <linux/net/intel/libie/irq.h>
+ #include <linux/net/intel/virtchnl.h>
+ #include <linux/cpu_rmap.h>
+ #include <linux/dim.h>
+@@ -351,8 +352,6 @@ struct ice_vsi {
+ 	u32 rx_buf_failed;
+ 	u32 rx_page_failed;
+ 	u16 num_q_vectors;
+-	/* tell if only dynamic irq allocation is allowed */
+-	bool irq_dyn_alloc;
+ 	bool hsplit:1;
  
- #endif /* _IXD_H_ */
-diff --git a/drivers/net/ethernet/intel/ixd/ixd_main.c b/drivers/net/ethernet/intel/ixd/ixd_main.c
-index 5db992d4f9fb..488a919f3b1b 100644
---- a/drivers/net/ethernet/intel/ixd/ixd_main.c
-+++ b/drivers/net/ethernet/intel/ixd/ixd_main.c
-@@ -48,37 +48,124 @@ static void ixd_shutdown(struct pci_dev *pdev)
+ 	u16 vsi_num;			/* HW (absolute) index of this VSI */
+@@ -565,7 +564,7 @@ struct ice_pf {
+ 	struct devlink_port devlink_port;
  
- /**
-  * ixd_iomap_regions - iomap PCI BARs
-- * @adapter: adapter to map memory regions for
-+ * @mmio_info: PCI resources info
-+ * @num: number of regions to map
-+ * @regions: array of regions to map (offset and size)
-  *
-  * Returns: %0 on success, negative on failure
-  */
--static int ixd_iomap_regions(struct ixd_adapter *adapter)
-+static int ixd_iomap_regions(struct libie_mmio_info *mmio_info, int num,
-+			     const struct ixd_bar_region *regions)
- {
--	const struct ixd_bar_region regions[] = {
--		{
--			.offset = PFGEN_RTRIG,
--			.size = PFGEN_RTRIG_REG_LEN,
--		},
--		{
--			.offset = PF_FW_MBX,
--			.size = PF_FW_MBX_REG_LEN,
--		},
--	};
--
--	for (int i = 0; i < ARRAY_SIZE(regions); i++) {
--		struct libie_mmio_info *mmio_info = &adapter->cp_ctx.mmio_info;
-+	for (int i = 0; i < num; i++) {
- 		bool map_ok;
+ 	/* OS reserved IRQ details */
+-	struct ice_irq_tracker irq_tracker;
++	struct libie_irq irq;
+ 	struct ice_virt_irq_tracker virt_irq_tracker;
  
- 		map_ok = libie_pci_map_mmio_region(mmio_info,
- 						   regions[i].offset,
- 						   regions[i].size);
--		if (!map_ok) {
--			dev_err(ixd_to_dev(adapter),
--				"Failed to map PCI device MMIO region\n");
--
--			libie_pci_unmap_all_mmio_regions(mmio_info);
-+		if (!map_ok)
- 			return -EIO;
--		}
-+	}
-+
-+	return 0;
-+}
-+
-+/* Regions needed to reset the device and to talk to the control plane.
-+ * They are mapped in probe and stay mapped for the whole driver life.
-+ */
-+static const struct ixd_bar_region ixd_start_regions[] = {
-+	{
-+		.offset = PFGEN_RTRIG,
-+		.size = PFGEN_RTRIG_REG_LEN,
-+	},
-+	{
-+		.offset = PF_FW_MBX,
-+		.size = PF_FW_MBX_REG_LEN,
-+	},
-+};
-+
-+/**
-+ * ixd_iomap_is_not_start_region - check if the region isn't a start region
-+ * @info: PCI resources info, unused
-+ * @reg: region to check
-+ *
-+ * Return: %true if it isn't a start region, %false otherwise
-+ */
-+bool ixd_iomap_is_not_start_region(struct libie_mmio_info *info,
-+				   struct libie_pci_mmio_region *reg)
-+{
-+	for (unsigned int i = 0; i < ARRAY_SIZE(ixd_start_regions); i++) {
-+		if (reg->bar_idx == 0 &&
-+		    reg->offset == ixd_start_regions[i].offset &&
-+		    reg->size == ixd_start_regions[i].size)
-+			return false;
-+	}
-+
-+	return true;
-+}
-+
-+/**
-+ * ixd_iomap_start_regions - iomap PCI BARs needed for driver startup
-+ * @adapter: adapter to map memory regions for
-+ *
-+ * Returns: %0 on success, negative on failure
-+ */
-+static int ixd_iomap_start_regions(struct ixd_adapter *adapter)
-+{
-+	struct libie_mmio_info *mmio_info = &adapter->cp_ctx.mmio_info;
-+	int err;
-+
-+	err = ixd_iomap_regions(mmio_info, ARRAY_SIZE(ixd_start_regions),
-+				ixd_start_regions);
-+	if (err) {
-+		dev_err(ixd_to_dev(adapter),
-+			"Failed to map startup PCI device MMIO region\n");
-+
-+		libie_pci_unmap_all_mmio_regions(mmio_info);
-+	}
-+
-+	return err;
-+}
-+
-+/**
-+ * ixd_iomap_running_regions - iomap PCI BARs needed for driver when running
-+ * @adapter: adapter to map memory regions for
-+ *
-+ * It should be called only when the GET_LAN_MEMORY_REGIONS virtchnl command
-+ * isn't supported. Calculate the offsets and sizes for the regions before,
-+ * in between, and after the start regions (mailbox and reset registers) and
-+ * map those ranges.
-+ *
-+ * Returns: %0 on success, negative on failure
-+ */
-+int ixd_iomap_running_regions(struct ixd_adapter *adapter)
-+{
-+	struct libie_mmio_info *mmio_info = &adapter->cp_ctx.mmio_info;
-+	resource_size_t start, size;
-+	bool ok = true;
-+
-+	/* Region preceding the mailbox */
-+	size = PF_FW_MBX;
-+	ok &= !size || libie_pci_map_mmio_region(mmio_info, 0, size);
-+
-+	/* Region between the mailbox and the reset registers */
-+	start = PF_FW_MBX + PF_FW_MBX_REG_LEN;
-+	size = PFGEN_RTRIG - start;
-+	ok &= !size || libie_pci_map_mmio_region(mmio_info, start, size);
-+
-+	/* Region after the reset registers */
-+	start = PFGEN_RTRIG + PFGEN_RTRIG_REG_LEN;
-+	size = pci_resource_len(mmio_info->pdev, 0) - start;
-+	ok &= !size || libie_pci_map_mmio_region(mmio_info, start, size);
-+
-+	if (!ok) {
-+		dev_err(ixd_to_dev(adapter),
-+			"Failed to map running PCI device MMIO region\n");
-+
-+		libie_pci_unmap_fltr_regs(mmio_info,
-+					  ixd_iomap_is_not_start_region);
-+
-+		return -EIO;
+ 	u16 ctrl_vsi_idx;		/* control VSI index in pf->vsi array */
+diff --git a/drivers/net/ethernet/intel/ice/ice_base.c b/drivers/net/ethernet/intel/ice/ice_base.c
+index 1667f686ff75..b592d3c389c0 100644
+--- a/drivers/net/ethernet/intel/ice/ice_base.c
++++ b/drivers/net/ethernet/intel/ice/ice_base.c
+@@ -140,7 +140,7 @@ static int ice_vsi_alloc_q_vector(struct ice_vsi *vsi, u16 v_idx)
+ 		}
  	}
  
+-	q_vector->irq = ice_alloc_irq(pf, vsi->irq_dyn_alloc);
++	q_vector->irq = libie_irq_alloc(&pf->irq, LIBIE_IRQ_ANY);
+ 	if (q_vector->irq.index < 0) {
+ 		err = -ENOMEM;
+ 		goto err_free_q_vector;
+@@ -209,7 +209,7 @@ static void ice_free_q_vector(struct ice_vsi *vsi, int v_idx)
+ 	    ice_get_vf_ctrl_vsi(pf, vsi))
+ 		goto free_q_vector;
+ 
+-	ice_free_irq(pf, q_vector->irq);
++	libie_irq_free(&pf->irq, q_vector->irq);
+ 
+ free_q_vector:
+ 	kfree(q_vector);
+diff --git a/drivers/net/ethernet/intel/ice/ice_idc.c b/drivers/net/ethernet/intel/ice/ice_idc.c
+index 102d63c3018b..337ba65b6318 100644
+--- a/drivers/net/ethernet/intel/ice/ice_idc.c
++++ b/drivers/net/ethernet/intel/ice/ice_idc.c
+@@ -239,7 +239,7 @@ int ice_alloc_rdma_qvector(struct iidc_rdma_core_dev_info *cdev,
+ 		return -EINVAL;
+ 
+ 	pf = pci_get_drvdata(cdev->pdev);
+-	map = ice_alloc_irq(pf, true);
++	map = libie_irq_alloc(&pf->irq, LIBIE_IRQ_ANY);
+ 	if (map.index < 0)
+ 		return -ENOMEM;
+ 
+@@ -268,7 +268,7 @@ void ice_free_rdma_qvector(struct iidc_rdma_core_dev_info *cdev,
+ 
+ 	map.index = entry->entry;
+ 	map.virq = entry->vector;
+-	ice_free_irq(pf, map);
++	libie_irq_free(&pf->irq, map);
+ }
+ EXPORT_SYMBOL_GPL(ice_free_rdma_qvector);
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_irq.c b/drivers/net/ethernet/intel/ice/ice_irq.c
+index cd59579568b7..a883b65b4e34 100644
+--- a/drivers/net/ethernet/intel/ice/ice_irq.c
++++ b/drivers/net/ethernet/intel/ice/ice_irq.c
+@@ -5,21 +5,6 @@
+ #include "ice_lib.h"
+ #include "ice_irq.h"
+ 
+-/**
+- * ice_init_irq_tracker - initialize interrupt tracker
+- * @pf: board private structure
+- * @max_vectors: maximum number of vectors that tracker can hold
+- * @num_static: number of preallocated interrupts
+- */
+-static void
+-ice_init_irq_tracker(struct ice_pf *pf, unsigned int max_vectors,
+-		     unsigned int num_static)
+-{
+-	pf->irq_tracker.num_entries = max_vectors;
+-	pf->irq_tracker.num_static = num_static;
+-	xa_init_flags(&pf->irq_tracker.entries, XA_FLAGS_ALLOC);
+-}
+-
+ static int
+ ice_init_virt_irq_tracker(struct ice_pf *pf, u32 base, u32 num_entries)
+ {
+@@ -33,76 +18,11 @@ ice_init_virt_irq_tracker(struct ice_pf *pf, u32 base, u32 num_entries)
  	return 0;
-@@ -109,7 +196,7 @@ static int ixd_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	pci_set_drvdata(pdev, adapter);
- 
--	err = ixd_iomap_regions(adapter);
-+	err = ixd_iomap_start_regions(adapter);
- 	if (err)
- 		goto free_adapter;
- 
-diff --git a/drivers/net/ethernet/intel/ixd/ixd_virtchnl.c b/drivers/net/ethernet/intel/ixd/ixd_virtchnl.c
-index fc3b6d2e28c5..3487183b49c9 100644
---- a/drivers/net/ethernet/intel/ixd/ixd_virtchnl.c
-+++ b/drivers/net/ethernet/intel/ixd/ixd_virtchnl.c
-@@ -3,6 +3,7 @@
- 
- #include "ixd.h"
- #include "ixd_ctlq.h"
-+#include "ixd_lan_regs.h"
- #include "ixd_virtchnl.h"
- 
- /**
-@@ -62,6 +63,14 @@ static int ixd_handle_caps(struct ixd_adapter *adapter, void *recv_buff,
- 	return 0;
  }
  
-+static void ixd_fill_caps(struct ixd_adapter *adapter, void *send_buff,
-+			  void *ctx)
-+{
-+	struct virtchnl2_get_capabilities *caps = send_buff;
-+
-+	caps->other_caps = cpu_to_le64(VIRTCHNL2_CAP_LAN_MEMORY_REGIONS);
-+}
-+
- /**
-  * ixd_req_vc_caps - Request and save device capability
-  * @adapter: The adapter to get the capabilities for
-@@ -74,13 +83,18 @@ static int ixd_req_vc_caps(struct ixd_adapter *adapter)
- 		.opcode = VIRTCHNL2_OP_GET_CAPS,
- 		.send_size = sizeof(struct virtchnl2_get_capabilities),
- 		.ctx = NULL,
--		.send_buff_init = NULL,
-+		.send_buff_init = ixd_fill_caps,
- 		.recv_process = ixd_handle_caps,
- 	};
- 
- 	return ixd_ctlq_do_req(adapter, &req);
+-/**
+- * ice_deinit_irq_tracker - free xarray tracker
+- * @pf: board private structure
+- */
+-static void ice_deinit_irq_tracker(struct ice_pf *pf)
+-{
+-	xa_destroy(&pf->irq_tracker.entries);
+-}
+-
+ static void ice_deinit_virt_irq_tracker(struct ice_pf *pf)
+ {
+ 	bitmap_free(pf->virt_irq_tracker.bm);
  }
  
-+static bool ixd_is_cap_ena(struct ixd_adapter *adapter, u64 cap)
-+{
-+	return (le64_to_cpu(adapter->caps.other_caps) & cap) == cap;
-+}
-+
- /**
-  * ixd_get_vc_ver - Get version info from adapter
-  *
-@@ -160,6 +174,69 @@ static int ixd_req_vc_version(struct ixd_adapter *adapter)
- 	return ixd_ctlq_do_req(adapter, &req);
+-/**
+- * ice_free_irq_res - free a block of resources
+- * @pf: board private structure
+- * @index: starting index previously returned by ice_get_res
+- */
+-static void ice_free_irq_res(struct ice_pf *pf, u16 index)
+-{
+-	struct ice_irq_entry *entry;
+-
+-	entry = xa_erase(&pf->irq_tracker.entries, index);
+-	kfree(entry);
+-}
+-
+-/**
+- * ice_get_irq_res - get an interrupt resource
+- * @pf: board private structure
+- * @dyn_allowed: allow entry to be dynamically allocated
+- *
+- * Allocate new irq entry in the free slot of the tracker. Since xarray
+- * is used, always allocate new entry at the lowest possible index. Set
+- * proper allocation limit for maximum tracker entries.
+- *
+- * Returns allocated irq entry or NULL on failure.
+- */
+-static struct ice_irq_entry *ice_get_irq_res(struct ice_pf *pf,
+-					     bool dyn_allowed)
+-{
+-	struct xa_limit limit = { .max = pf->irq_tracker.num_entries - 1,
+-				  .min = 0 };
+-	unsigned int num_static = pf->irq_tracker.num_static - 1;
+-	struct ice_irq_entry *entry;
+-	unsigned int index;
+-	int ret;
+-
+-	entry = kzalloc_obj(*entry);
+-	if (!entry)
+-		return NULL;
+-
+-	/* only already allocated if the caller says so */
+-	if (!dyn_allowed)
+-		limit.max = num_static;
+-
+-	ret = xa_alloc(&pf->irq_tracker.entries, &index, entry, limit,
+-		       GFP_KERNEL);
+-
+-	if (ret) {
+-		kfree(entry);
+-		entry = NULL;
+-	} else {
+-		entry->index = index;
+-		entry->dynamic = index > num_static;
+-	}
+-
+-	return entry;
+-}
+-
+ #define ICE_RDMA_AEQ_MSIX 1
+ static int ice_get_default_msix_amount(struct ice_pf *pf)
+ {
+@@ -118,8 +38,7 @@ static int ice_get_default_msix_amount(struct ice_pf *pf)
+  */
+ void ice_clear_interrupt_scheme(struct ice_pf *pf)
+ {
+-	pci_free_irq_vectors(pf->pdev);
+-	ice_deinit_irq_tracker(pf);
++	libie_irq_deinit(&pf->irq);
+ 	ice_deinit_virt_irq_tracker(pf);
  }
  
-+static void ixd_fill_lan_mmio_regions(struct ixd_adapter *adapter,
-+				      void *send_buff, void *ctx)
-+{
-+	struct virtchnl2_get_lan_memory_regions *lan = send_buff;
-+
-+	/* Needed to be parsed correctly, this mem_region doesn't matter. */
-+	lan->num_memory_regions = cpu_to_le16(1);
-+}
-+
-+static int ixd_handle_lan_mmio_regions(struct ixd_adapter *adapter,
-+				       void *recv_buff, size_t recv_size,
-+				       void *ctx)
-+{
-+	struct libie_mmio_info *mmio_info = &adapter->cp_ctx.mmio_info;
-+	struct virtchnl2_get_lan_memory_regions *recv_mmio = recv_buff;
-+	int num_regions;
-+
-+	if (recv_size < sizeof(*recv_mmio))
-+		return -EBADMSG;
-+
-+	num_regions = le16_to_cpu(recv_mmio->num_memory_regions);
-+	if (!num_regions)
-+		return -EBADMSG;
-+
-+	if (recv_size < struct_size(recv_mmio, mem_reg, num_regions))
-+		return -EBADMSG;
-+
-+	for (int i = 0; i < num_regions; i++) {
-+		struct virtchnl2_mem_region *reg = &recv_mmio->mem_reg[i];
-+		resource_size_t offset, size;
-+
-+		offset = le64_to_cpu(reg->start_offset);
-+		size = le64_to_cpu(reg->size);
-+
-+		/* Empty regions are used as a padding, skip them. */
-+		if (!size)
-+			continue;
-+
-+		if (!libie_pci_map_mmio_region(mmio_info, offset, size)) {
-+			/* Unmap already mapped */
-+			libie_pci_unmap_fltr_regs(mmio_info,
-+						  ixd_iomap_is_not_start_region);
-+			return -EIO;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static int ixd_req_lan_mmio_regions(struct ixd_adapter *adapter)
-+{
-+	const struct ixd_ctlq_req req = {
-+		.opcode = VIRTCHNL2_OP_GET_LAN_MEMORY_REGIONS,
-+		.send_size = sizeof(struct virtchnl2_get_lan_memory_regions) +
-+			     sizeof(struct virtchnl2_mem_region),
-+		.ctx = NULL,
-+		.send_buff_init = ixd_fill_lan_mmio_regions,
-+		.recv_process = ixd_handle_lan_mmio_regions,
-+	};
-+
-+	return ixd_ctlq_do_req(adapter, &req);
-+}
-+
+@@ -130,7 +49,7 @@ void ice_clear_interrupt_scheme(struct ice_pf *pf)
+ int ice_init_interrupt_scheme(struct ice_pf *pf)
+ {
+ 	int total_vectors = pf->hw.func_caps.common_cap.num_msix_vectors;
+-	int vectors;
++	int err;
+ 
+ 	/* load default PF MSI-X range */
+ 	if (!pf->msix.min)
+@@ -143,97 +62,15 @@ int ice_init_interrupt_scheme(struct ice_pf *pf)
+ 	pf->msix.total = total_vectors;
+ 	pf->msix.rest = total_vectors - pf->msix.max;
+ 
+-	if (pci_msix_can_alloc_dyn(pf->pdev))
+-		vectors = pf->msix.min;
+-	else
+-		vectors = pf->msix.max;
+-
+-	vectors = pci_alloc_irq_vectors(pf->pdev, pf->msix.min, vectors,
+-					PCI_IRQ_MSIX);
+-	if (vectors < 0)
+-		return vectors;
+-
+-	ice_init_irq_tracker(pf, pf->msix.max, vectors);
+-
+-	return ice_init_virt_irq_tracker(pf, pf->msix.max, pf->msix.rest);
+-}
+-
+-/**
+- * ice_alloc_irq - Allocate new interrupt vector
+- * @pf: board private structure
+- * @dyn_allowed: allow dynamic allocation of the interrupt
+- *
+- * Allocate new interrupt vector for a given owner id.
+- * return struct msi_map with interrupt details and track
+- * allocated interrupt appropriately.
+- *
+- * This function reserves new irq entry from the irq_tracker.
+- * if according to the tracker information all interrupts that
+- * were allocated with ice_pci_alloc_irq_vectors are already used
+- * and dynamically allocated interrupts are supported then new
+- * interrupt will be allocated with pci_msix_alloc_irq_at.
+- *
+- * Some callers may only support dynamically allocated interrupts.
+- * This is indicated with dyn_allowed flag.
+- *
+- * On failure, return map with negative .index. The caller
+- * is expected to check returned map index.
+- *
+- */
+-struct msi_map ice_alloc_irq(struct ice_pf *pf, bool dyn_allowed)
+-{
+-	struct msi_map map = { .index = -ENOENT };
+-	struct device *dev = ice_pf_to_dev(pf);
+-	struct ice_irq_entry *entry;
+-
+-	entry = ice_get_irq_res(pf, dyn_allowed);
+-	if (!entry)
+-		return map;
+-
+-	if (pci_msix_can_alloc_dyn(pf->pdev) && entry->dynamic) {
+-		map = pci_msix_alloc_irq_at(pf->pdev, entry->index, NULL);
+-		if (map.index < 0)
+-			goto exit_free_res;
+-		dev_dbg(dev, "allocated new irq at index %d\n", map.index);
+-	} else {
+-		map.index = entry->index;
+-		map.virq = pci_irq_vector(pf->pdev, map.index);
+-	}
+-
+-	return map;
+-
+-exit_free_res:
+-	dev_err(dev, "Could not allocate irq at idx %d\n", entry->index);
+-	ice_free_irq_res(pf, entry->index);
+-	return map;
+-}
+-
+-/**
+- * ice_free_irq - Free interrupt vector
+- * @pf: board private structure
+- * @map: map with interrupt details
+- *
+- * Remove allocated interrupt from the interrupt tracker. If interrupt was
+- * allocated dynamically, free respective interrupt vector.
+- */
+-void ice_free_irq(struct ice_pf *pf, struct msi_map map)
+-{
+-	struct ice_irq_entry *entry;
+-
+-	entry = xa_load(&pf->irq_tracker.entries, map.index);
+-
+-	if (!entry) {
+-		dev_err(ice_pf_to_dev(pf), "Failed to get MSIX interrupt entry at index %d",
+-			map.index);
+-		return;
+-	}
+-
+-	dev_dbg(ice_pf_to_dev(pf), "Free irq at index %d\n", map.index);
++	err = libie_irq_init(&pf->irq, pf->pdev, pf->msix.min, pf->msix.max);
++	if (err)
++		return err;
+ 
+-	if (entry->dynamic)
+-		pci_msix_free_irq(pf->pdev, map);
++	err = ice_init_virt_irq_tracker(pf, pf->msix.max, pf->msix.rest);
++	if (err)
++		libie_irq_deinit(&pf->irq);
+ 
+-	ice_free_irq_res(pf, map.index);
++	return err;
+ }
+ 
  /**
-  * ixd_vc_dev_init - virtchnl device core initialization
-  * @adapter: device information
-@@ -186,5 +263,16 @@ int ixd_vc_dev_init(struct ixd_adapter *adapter)
+diff --git a/drivers/net/ethernet/intel/ice/ice_irq.h b/drivers/net/ethernet/intel/ice/ice_irq.h
+index b2f9dbafd57e..a4ecf50e9ccf 100644
+--- a/drivers/net/ethernet/intel/ice/ice_irq.h
++++ b/drivers/net/ethernet/intel/ice/ice_irq.h
+@@ -4,17 +4,6 @@
+ #ifndef _ICE_IRQ_H_
+ #define _ICE_IRQ_H_
+ 
+-struct ice_irq_entry {
+-	unsigned int index;
+-	bool dynamic;	/* allocation type flag */
+-};
+-
+-struct ice_irq_tracker {
+-	struct xarray entries;
+-	u16 num_entries;	/* total vectors available */
+-	u16 num_static;	/* preallocated entries */
+-};
+-
+ struct ice_virt_irq_tracker {
+ 	unsigned long *bm;	/* bitmap to track irq usage */
+ 	u32 num_entries;
+@@ -28,9 +17,6 @@ struct ice_virt_irq_tracker {
+ int ice_init_interrupt_scheme(struct ice_pf *pf);
+ void ice_clear_interrupt_scheme(struct ice_pf *pf);
+ 
+-struct msi_map ice_alloc_irq(struct ice_pf *pf, bool dyn_only);
+-void ice_free_irq(struct ice_pf *pf, struct msi_map map);
+-
+ int ice_virt_get_irqs(struct ice_pf *pf, u32 needed);
+ void ice_virt_free_irqs(struct ice_pf *pf, u32 index, u32 irqs);
+ #endif
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 93e405dd6f5a..6eb758404f54 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -211,7 +211,6 @@ static void ice_vsi_set_num_qs(struct ice_vsi *vsi)
+ 		vsi->alloc_txq = 1;
+ 		vsi->alloc_rxq = 1;
+ 		vsi->num_q_vectors = 1;
+-		vsi->irq_dyn_alloc = true;
+ 		break;
+ 	case ICE_VSI_VF:
+ 		if (vf->num_req_qs)
+@@ -572,8 +571,6 @@ ice_vsi_alloc_def(struct ice_vsi *vsi, struct ice_channel *ch)
+ 			return -ENOMEM;
+ 	}
+ 
+-	vsi->irq_dyn_alloc = pci_msix_can_alloc_dyn(vsi->back->pdev);
+-
+ 	switch (vsi->type) {
+ 	case ICE_VSI_PF:
+ 	case ICE_VSI_SF:
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 4d63ebba36d6..12f8f2ebf119 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -44,6 +44,7 @@ MODULE_IMPORT_NS("LIBETH_XDP");
+ MODULE_IMPORT_NS("LIBIE");
+ MODULE_IMPORT_NS("LIBIE_ADMINQ");
+ MODULE_IMPORT_NS("LIBIE_FWLOG");
++MODULE_IMPORT_NS("LIBIE_IRQ");
+ MODULE_LICENSE("GPL v2");
+ MODULE_FIRMWARE(ICE_DDP_PKG_FILE);
+ 
+@@ -3357,7 +3358,7 @@ static void ice_free_irq_msix_ll_ts(struct ice_pf *pf)
+ 	synchronize_irq(irq_num);
+ 	devm_free_irq(ice_pf_to_dev(pf), irq_num, pf);
+ 
+-	ice_free_irq(pf, pf->ll_ts_irq);
++	libie_irq_free(&pf->irq, pf->ll_ts_irq);
+ }
+ 
+ /**
+@@ -3378,7 +3379,7 @@ static void ice_free_irq_msix_misc(struct ice_pf *pf)
+ 	synchronize_irq(misc_irq_num);
+ 	devm_free_irq(ice_pf_to_dev(pf), misc_irq_num, pf);
+ 
+-	ice_free_irq(pf, pf->oicr_irq);
++	libie_irq_free(&pf->irq, pf->oicr_irq);
+ 	if (pf->ll_ts_irq.index >= 0)
+ 		ice_free_irq_msix_ll_ts(pf);
+ }
+@@ -3447,7 +3448,7 @@ static int ice_req_irq_msix_misc(struct ice_pf *pf)
+ 		goto skip_req_irq;
+ 
+ 	/* reserve one vector in irq_tracker for misc interrupts */
+-	irq = ice_alloc_irq(pf, false);
++	irq = libie_irq_alloc(&pf->irq, LIBIE_IRQ_STATIC);
+ 	if (irq.index < 0)
+ 		return irq.index;
+ 
+@@ -3458,7 +3459,7 @@ static int ice_req_irq_msix_misc(struct ice_pf *pf)
+ 	if (err) {
+ 		dev_err(dev, "devm_request_threaded_irq for %s failed: %d\n",
+ 			pf->int_name, err);
+-		ice_free_irq(pf, pf->oicr_irq);
++		libie_irq_free(&pf->irq, pf->oicr_irq);
  		return err;
  	}
  
-+	if (ixd_is_cap_ena(adapter, VIRTCHNL2_CAP_LAN_MEMORY_REGIONS))
-+		err = ixd_req_lan_mmio_regions(adapter);
+@@ -3468,7 +3469,7 @@ static int ice_req_irq_msix_misc(struct ice_pf *pf)
+ 		goto skip_req_irq;
+ 	}
+ 
+-	irq = ice_alloc_irq(pf, false);
++	irq = libie_irq_alloc(&pf->irq, LIBIE_IRQ_STATIC);
+ 	if (irq.index < 0)
+ 		return irq.index;
+ 
+@@ -3478,7 +3479,7 @@ static int ice_req_irq_msix_misc(struct ice_pf *pf)
+ 	if (err) {
+ 		dev_err(dev, "devm_request_irq for %s failed: %d\n",
+ 			pf->int_name_ll_ts, err);
+-		ice_free_irq(pf, pf->ll_ts_irq);
++		libie_irq_free(&pf->irq, pf->ll_ts_irq);
+ 		pf->ll_ts_irq.index = -ENOENT;
+ 		return err;
+ 	}
+@@ -3963,7 +3964,7 @@ void ice_deinit_pf(struct ice_pf *pf)
+ 	if (pf->ptp.clock)
+ 		ptp_clock_unregister(pf->ptp.clock);
+ 
+-	if (!xa_empty(&pf->irq_tracker.entries))
++	if (!xa_empty(&pf->irq.entries))
+ 		ice_free_irq_msix_misc(pf);
+ 
+ 	xa_destroy(&pf->dyn_ports);
+diff --git a/drivers/net/ethernet/intel/libie/irq.c b/drivers/net/ethernet/intel/libie/irq.c
+index d26ffeffdcb2..4da763943b14 100644
+--- a/drivers/net/ethernet/intel/libie/irq.c
++++ b/drivers/net/ethernet/intel/libie/irq.c
+@@ -98,6 +98,7 @@ static struct libie_irq_entry *libie_get_irq(struct libie_irq *irq,
+ 					     enum libie_irq_type type)
+ {
+ 	struct libie_irq_entry *entry;
++	struct xa_limit limit;
+ 	unsigned int index;
+ 
+ 	if (!irq->pdev)
+@@ -113,9 +114,26 @@ static struct libie_irq_entry *libie_get_irq(struct libie_irq *irq,
+ 	if (!entry)
+ 		return NULL;
+ 
+-	if (xa_alloc(&irq->entries, &index, entry, irq->limits[type],
+-		     GFP_KERNEL))
+-		goto free_entry;
++	/* If any, first try dynamic */
++	if (type == LIBIE_IRQ_ANY)
++		limit = irq->limits[LIBIE_IRQ_DYNAMIC];
 +	else
-+		/* Fallback to mapping the remaining regions of the whole BAR */
-+		err = ixd_iomap_running_regions(adapter);
++		limit = irq->limits[type];
 +
-+	if (err)
-+		dev_warn(ixd_to_dev(adapter),
-+			 "Getting LAN mmio regions failed, error=%pe\n",
-+			 ERR_PTR(err));
++	if (xa_alloc(&irq->entries, &index, entry, limit, GFP_KERNEL)) {
++		if (type != LIBIE_IRQ_ANY)
++			goto free_entry;
++		/* Dynamic for any type failed, try static */
++		if (xa_alloc(&irq->entries, &index, entry,
++			     irq->limits[LIBIE_IRQ_STATIC], GFP_KERNEL))
++			goto free_entry;
 +
- 	return err;
- }
++		type = LIBIE_IRQ_STATIC;
++	}
++
++	/* If still any it is dynamic */
++	if (type == LIBIE_IRQ_ANY)
++		type = LIBIE_IRQ_DYNAMIC;
+ 
+ 	entry->index = index;
+ 	entry->type = type;
+@@ -149,6 +167,7 @@ EXPORT_SYMBOL_NS_GPL(libie_put_irq, "LIBIE_IRQ");
+  *
+  * For LIBIE_IRQ_DYNAMIC function allocs new interrupt and return it.
+  * For LIBIE_IRQ_STATIC function returns already allocated one.
++ * For LIBIE_IRQ_ANY first try DYNAMIC, if it failed try STATIC
+  *
+  * The function should be called for getting irq information (index and virq)
+  * for specific irq type. Returned information should be stored to use index for
+@@ -202,8 +221,9 @@ EXPORT_SYMBOL_NS_GPL(libie_irq_alloc, "LIBIE_IRQ");
+  * @irq: libie_irq structure
+  * @map: msi_map structure returned from libie_alloc_irq()
+  *
+- * In case of dynamic allocation and LIBIE_IRQ_DYNAMIC type pci_msix_free_irq()
+- * is called. Otherwise only free driver irq entry related resources.
++ * In case of dynamic allocation and LIBIE_IRQ_DYNAMIC (or LIBIE_IRQ_ANY)
++ * type pci_msix_free_irq() is called. Otherwise only free driver irq entry
++ * related resources.
+  *
+  * It is safe to call this function with map that doesn't exist in xarray
+  * as long as the map.virq is 0 or negative. It is true when libie_irq_alloc()
+diff --git a/include/linux/net/intel/libie/irq.h b/include/linux/net/intel/libie/irq.h
+index 8d5873f13871..ff3f30b90ebd 100644
+--- a/include/linux/net/intel/libie/irq.h
++++ b/include/linux/net/intel/libie/irq.h
+@@ -17,6 +17,7 @@
+  * enum libie_irq_type - enum representing types of irq entries
+  * @LIBIE_IRQ_STATIC: irq static allocated from kernel at driver probe
+  * @LIBIE_IRQ_DYNAMIC: irq dynamic allocated during normal driver operation
++ * @LIBIE_IRQ_ANY: use when STATIC or DYNAMIC can be allocated
+  * @LIBIE_IRQ_NUM_TYPES: must be the last one, used to define the array size
+  *
+  * Enum is used to get software irq indexes from some kind of pool. The pool is
+@@ -31,6 +32,7 @@
+ enum libie_irq_type {
+ 	LIBIE_IRQ_STATIC,
+ 	LIBIE_IRQ_DYNAMIC,
++	LIBIE_IRQ_ANY,
+ 	LIBIE_IRQ_NUM_TYPES,
+ };
+ 
 -- 
 2.49.0
 
