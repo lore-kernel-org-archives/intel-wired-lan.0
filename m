@@ -1,28 +1,28 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1F5D8C88E4D
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 11 Sep 2026 11:39:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3072DC88E4A
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 11 Sep 2026 11:39:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id DBCEC4065C;
-	Fri, 11 Sep 2026 11:39:12 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id F29EF80F8B;
+	Fri, 11 Sep 2026 11:39:13 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id tHOmPFPK-jUI; Fri, 11 Sep 2026 11:39:12 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 0CFDE4068B
-Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789126752;
-	b=WdDTqhLuyebRJlQXPS7yZ+jTYWnDnySAH6F4WN9SuUPvUdIk1fhSLsxMQolL7PLLFcR+
-	 25+9K+XH/5BDBoDsB8NoXsazkJZEDPqag89Tx4HwWVzPwqI5ntjCWS2PfPJxwmcq4r7iH
-	 EsK+lvZBcl3/VOFeUMtQnPiXraO8/WJGE0c2cjX2WpdEk+buATJ/3v8N2UKp3tUcJXrEY
-	 m3chH/kwqjraUtxtGMh38VkUfr1F/w3vAE5TYnrnXBzR/vOJeaN3LGk5Eb3e7FmeFxcVW
-	 85wAp9U4qeGIUx8uUMfSWXB05lBi0hZZImd+ajKHMt7uY/oaqsXhJ58ES9v/YqTrasA==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id En6qsQXp4JEg; Fri, 11 Sep 2026 11:39:13 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 10AA080EE3
+Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789126753;
+	b=ShTLNXcFIO1S6Kcljp1V60YRgFw6LgnQcbJWLQ3bq+/FWVsEa5ZK3nE5YeF0JFAJjAHh
+	 VOSqUfDD+TLwHpRaOXBdFxt1kxljw9JvqZ3sJaclIQ2Y4RS9I3wY97vzmc4uxRvWy8rf4
+	 RJXx6QL1uGWs4pkfBeyCCuVOhmwFCRse0r7bKCJdMypvgDvIltxIg93scQ9OVxAtdSRQD
+	 WfkCMTI9SAMooGRDT38409jQ0XSwXzh7OWV/hFof1kFrjx0Owy8h1byEdscXmyQGjjhb+
+	 FKbr8KLJbll7ZYb+y1N16nsxRfw+vh407BIL26zXdOV1a1MALBX3LUE/3N7aztyE5Xw==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1789126752;
+	c=relaxed/relaxed; t=1789126753;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
@@ -33,48 +33,50 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:Precedence:
 	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=Uw5m9NZVROsMt5ausyBHW/zz2kAsd57Cwg9nrsgsFAo=;
-	b=lFQb/IGttQXCBV01JnSC9kzPKP/hAA6shn7muXOz0JcayDoktpgHIe9vkMKPygEKoj8E
-	 VmSJXaYpBJVg9ZLzmiBxbcziXLTSBZRou7uTaTz3oTD25hPultSHHk9HecGSPrq162J+5
-	 RljaHa3HP1jKS8haWpiyliS0GXTsU9Q1uB08Df0od6khgOA3tbix89pnxi3+JH6mJ7EkK
-	 4XWcYKQT+uHTraST8FoVn1w04HF0zTqM1Z1t6OFDqEPplHRjyZYgMOkQIIYZwmrbW+N3Y
-	 12bUvt/KWoW8brsEh35c8fWoWQY4FePn7meslyQIa5QbJwaNo9QNWx0PpLD0pkB8RNQ==
-ARC-Authentication-Results: i=2; smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	bh=Azk8u92AfRE0iieifZX29Gfp02+Y8XjAVGY+qN6czBE=;
+	b=by5PfwZXC2BpBgLp24synJ3dDX3KvdFsC+UaNVfPHmUfIV4a/29q2kpVrSOZhsWjAXof
+	 qGSsEgjiqRRTmWEmsnNKmrFvO4C6XNT8/ibu6Vi88MP6xn0Ybhz6fW8l1gCWuri7jt803
+	 chBuix3WEVfqU529OZdv5ppgXanc8h7G7X79v4rKBGXkVbGM9ncYb7XPGLfwrCrNDnrpD
+	 6Ga1FLcko9bl3HlZsDfUJMvyGetOh0ZQo7mECbCk+GXlOpTR2h0b8jeh3jjDYAqUD9cfi
+	 XmygqX4sofTMjzo5DoGxZQGyONa3N9vldkP96+t0h4O05mVQBWtkfknIEFddyt4ALaw==
+ARC-Authentication-Results: i=2; smtp1.osuosl.org; dmarc=pass header.from=intel.com;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=CaaoLaiz;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1789126752;
-	bh=Uw5m9NZVROsMt5ausyBHW/zz2kAsd57Cwg9nrsgsFAo=;
+	s=default; t=1789126753;
+	bh=Azk8u92AfRE0iieifZX29Gfp02+Y8XjAVGY+qN6czBE=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=IErCVNRYmcvs0SN2WQ7gUnvSr+za1CZdPUTvHSpScGAg0kl/VfguNTfU64lfYyjo4
-	 hBNQPhnU2bmaCwl2ALKQipq7klduOdTSknz3Sr0NAyomu/Fg4YkPvym6oVPXwmXTfx
-	 F3I/0lODMEgT0YrlCIUubjuT18YxSWFpcLNNdcx7wTs6NRo9/wRp9FYeiKkuPelQrf
-	 aYkS8PIQvY/FYEH7mDqLtA6ijHc0/ayoQaE6Y67RjoF10aGDRMxx9Ez8gx41h3cELQ
-	 NRYc0HWlLEjcyc7zmY5T/0sGWKQEaF3XH2ar7DiT/+hiAy+Tzp74fzAEWsEOFiO49K
-	 re2n6wYa9HFmg==
+	b=JM5EEx62zIatTpY+akEKpDAbPb2LJgklCAUKoh0uRuZnvOZg/67P/1njRTIwSg0+T
+	 7H46KjNljxS4LvEtYNMsfk4ypCUdElGCn2bSVNg6nrBEa1DTz9B55LPB7ZHnjjMCei
+	 kQmqCyB94cWjAtrSZhj3oIxoDT47ARu4mz6ZJkHr8LOeAecBRWCYePJyThKw9VMYQ3
+	 ZeXGHFKULarspSdxoI9R/cFFBXT6WqY+BaLUUpWDHjGx9GwuOGh547ri38JnakjDsu
+	 ibblGjLsm8ZsiqFjBJfL6gOoltZf9GgQ+PG6c1YEMT6zNH1bOISttkbl3zUsVFzwWG
+	 USWjOx9yFtJ4g==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 0CFDE4068B;
-	Fri, 11 Sep 2026 11:39:12 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 6AD882E3
+	by smtp1.osuosl.org (Postfix) with ESMTP id 10AA080EE3;
+	Fri, 11 Sep 2026 11:39:13 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 9A53F2E3
  for <intel-wired-lan@lists.osuosl.org>; Fri, 11 Sep 2026 11:39:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 51743401DA
+ by smtp1.osuosl.org (Postfix) with ESMTP id 80D0180E97
  for <intel-wired-lan@lists.osuosl.org>; Fri, 11 Sep 2026 11:39:10 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id NHcLMn51RwpC for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id fOlnuQbxe6TW for <intel-wired-lan@lists.osuosl.org>;
  Fri, 11 Sep 2026 11:39:09 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org 603B540469
-Authentication-Results: smtp2.osuosl.org; arc=none smtp.remote-ip=198.175.65.9
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org A04B380E95
+Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=198.175.65.9
 ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789126749;
- b=dF6zg96mr2aln39evg4XeLUtTBU313gbqrTNLn3P7ZnwhznpHV2SoSzid561sdOaNB5W
- W0bUmYwWWonyigt96WsQ9u8WgiiMhxDFq7pywdfOM3Dn+O9d5rgzj8zifI7piue97RUiC
- vEf5JNHcW/llfUMln6QKmPaA2kdpMOO6qn9t4VHMU3z7/Sn1zt6OoNS+ZK3KFVy5oVn0+
- 6zw9r4deE9dNrGi8Rk8N5fJKl4p6GNOitOKsdWU812sWGVzUTI7Jmt+v6Hc1X4+c0T2pN
- XRPmyb44ezYglh9+QGc9tb0tq8R1R+Bkyn4OUra75VztFR2evC0lnf326JPC6B2dgeQ==
+ b=F87KMh+DS0ttbWlXNwXiIlrz0gwYXKPmAShzCLgQrAM1i/CKLgIkg2GfY9EUJ0SdKq5M
+ roJbnJOzpjXet6GYxvWujHDEYug2TZ7tHRYnO7dC3kZ9CJ6uHVcA0ggMr/30WO/HGXPOT
+ eHd/CEBqaxZlDIMYnWt7gFK3s740+MtsI4k6JlikBnwedf7EQaLIXDbEOjL5WOR9n9d3p
+ sb6g6AIsAZHcobpNcD5C15xD9s+FS8BgDNvTny2ZX0hRGmhIo7iZiJP6nemtsyAfMReCO
+ XbzBTwmcuP3u/hU4GYpIm6sjArjX4rn5W/rBawfoX1KAu7O7e2rA3mfFJb7OmSoTTuw==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
  c=relaxed/relaxed; t=1789126749;
  h=Received-SPF:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
@@ -82,56 +84,56 @@ ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
  X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Received:From:To:Cc:
  Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
  Content-Transfer-Encoding;
- bh=Uw5m9NZVROsMt5ausyBHW/zz2kAsd57Cwg9nrsgsFAo=;
- b=KWoZgMYoJxYIleoL9LpKVMozDNyl6hM8yCScRiZamwhkfxOdefGpvw8HU7dBs96hgKzW
- C0j1nWeRTpVuOLDE+47EbJ0Fm8WiXnCbI674hi4S3Zu+lNyXGGK08YqblyJiJr9VWDKlb
- 4Wvc/2n7PTvX2ndyOcrD0T3G9kemT86vAotcovcH5gLuKVUmsP1qJ78xT6jZlumfpCrCS
- z9+7I09tM4p/U2+/2oAB+gYkYJtxt8IgXDOKBI6wcqHf3poHuCfwwBHnk3P6pMRPI4ZfW
- jfuPpBQm0bs2x2lBWaMy9Q9H46Fncu8VQ/8QNTMyCDFoR3lqh5M2Ris7cjGXYZmC3kg==
-ARC-Authentication-Results: i=1; smtp2.osuosl.org;
+ bh=Azk8u92AfRE0iieifZX29Gfp02+Y8XjAVGY+qN6czBE=;
+ b=WO9JXG1cDWQSvQrPitJ5owVRlQGKi8VszUMfSceO41wRBL+ENoqjmNM1hHaQkunQUVn+
+ Mkk0BYoY55MyhxcfX1hB/qRTaKAaVfh6gWJhgRzrBAqw31oabZ6vfBWAlq4roBbVU4fu3
+ zGlc1lz3F2Nt9GXhJ4IY5ug68oLiqd7cerP2oLUVszt3VZu7GcgG3OZ2C7H2fvxaZDyk/
+ 9zAI7kUcVrYDGLtqdXUyWLmvE3IcTTEWUr4QvA41mALC23WCSqaPFg7m6VjJofgFDHTkR
+ dpVTNW2Zpkwy3vWmsAOZh/Xa+MTpeGUGEK5Kfy/yA32BbCSw0HJbA3gkym1GJX9tjUA==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org;
  dmarc=pass header.from=intel.com; 
  dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=ImoLqvCx; 
+ header.s=Intel header.b=CaaoLaiz; 
  arc=none smtp.remote-ip=198.175.65.9
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.9;
  helo=mgamail.intel.com; envelope-from=przemyslaw.kitszel@intel.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org;
+Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
+Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=ImoLqvCx
+ header.s=Intel header.b=CaaoLaiz
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 603B540469
- for <intel-wired-lan@lists.osuosl.org>; Fri, 11 Sep 2026 11:39:08 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTPS id A04B380E95
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 11 Sep 2026 11:39:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
  t=1789126749; x=1820662749;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=AuaOWD3jGMYAysDk1Aw30zB+BClJT8BRzZUW50HSm5U=;
- b=ImoLqvCxf0q8Svs3qecD9gMDP3p0KqxFrtEbdV8+pd85bHI9BYmLyydr
- lDgFHWPi/VQ6hTOiILixfNSGujdsiMyb3icJDgywKuZ5nzGbDyYhpetdL
- 3xndWbxwqwNiQur53OAW8iUzg3suwsB5IF5HQ2O9lavLuJjgyLlZdWvfv
- kcqlhmTArtchLnr+CYUGl057QukiMUgdDtfPw+tukBJ+Zxb3d0hdbTtUD
- z6mTMKPoWBf26IBA8RX3RfSXp0gEH3BwfpYStM/tH9TsrXhZgJEIy9Nt9
- 2CdxGZPVED/n/uD4WIW9N+0Lb8NYrh1kqrAH1OfwVGvwF6zWbT6wVInrq w==;
-X-CSE-ConnectionGUID: Jx+EkKOAQtu4Z3sLYVoZKQ==
-X-CSE-MsgGUID: yW0aHPTPRHycsbi6YNnong==
-X-IronPort-AV: E=McAfee;i="6800,10657,11901"; a="112359904"
-X-IronPort-AV: E=Sophos;i="6.27,97,1787036400"; d="scan'208";a="112359904"
+ bh=JTi74+5ytxAlM7eF7gR+vF9lG/giPNoL2rgqGMy0XEo=;
+ b=CaaoLaiztcrhSq2JTBnv7FG4oy8J9kmibBZo9REBLm9BjWFk7JdizYX0
+ MTURKXHpaA5WTv2et83ZAKHxRwmJ8iJCZrtz5VrtE1pLrJ5PLMYmeujkD
+ YcAE1SZtNTcrPF6mWjf0soPYk2d3Din8zROz3Gk6nsqpnDqEnVdRlxCot
+ 6O+NeZ5wzbwwTh4VFyTwpeYZDlwNuNmKrW47KMqdx4saILWnwzpqCeAKd
+ OV/NLY9mRe8cwcFnhC/jrI+mPhWpCz661iH0FWXfyPZcCAtG41H5sgPUt
+ 9Xy1mQb/H5Ovn5TEb4SPrL3y4o1Vych+Vfe/F2PuuKzT2hh5hSQJv+58v w==;
+X-CSE-ConnectionGUID: p5RK569zQS+vdhWAYwGqbg==
+X-CSE-MsgGUID: WG0y5J01ScusCucDekS0WQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11901"; a="112359917"
+X-IronPort-AV: E=Sophos;i="6.27,97,1787036400"; d="scan'208";a="112359917"
 Received: from orviesa006.jf.intel.com ([10.64.159.146])
  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 11 Sep 2026 04:39:07 -0700
-X-CSE-ConnectionGUID: 0lrwuez5Rhm/SZ0o0nLzhQ==
-X-CSE-MsgGUID: Qyt2asG6RCmbaOBJYSQfeA==
+ 11 Sep 2026 04:39:09 -0700
+X-CSE-ConnectionGUID: YPzREYnhQUO6lhZMRxk8Zg==
+X-CSE-MsgGUID: 955cymw8TfqdgKwOWtKumw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,97,1787036400"; d="scan'208";a="270135862"
+X-IronPort-AV: E=Sophos;i="6.27,97,1787036400"; d="scan'208";a="270135867"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by orviesa006.jf.intel.com with ESMTP; 11 Sep 2026 04:39:04 -0700
+ by orviesa006.jf.intel.com with ESMTP; 11 Sep 2026 04:39:05 -0700
 Received: from pkitszel-desk.intel.com (unknown [10.245.244.110])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id B6A9728781;
- Fri, 11 Sep 2026 12:39:02 +0100 (IST)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 9AD202877E;
+ Fri, 11 Sep 2026 12:39:03 +0100 (IST)
 From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 To: netdev@vger.kernel.org,
 	Jakub Kicinski <kuba@kernel.org>
@@ -140,9 +142,10 @@ Cc: Tony Nguyen <anthony.l.nguyen@intel.com>,
  Michal Schmidt <mschmidt@redhat.com>, intel-wired-lan@lists.osuosl.org,
  edumazet@google.com, horms@kernel.org, pabeni@redhat.com,
  davem@davemloft.net, Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Subject: [PATCH net v3 3/5] ice: extract ice_vsi_get_num_qs()
-Date: Fri, 11 Sep 2026 13:26:18 +0200
-Message-ID: <20260911113848.44086-4-przemyslaw.kitszel@intel.com>
+Subject: [PATCH net v3 4/5] ice: rebuild ring stats arrays instead of
+ reallocating them in place
+Date: Fri, 11 Sep 2026 13:26:19 +0200
+Message-ID: <20260911113848.44086-5-przemyslaw.kitszel@intel.com>
 X-Mailer: git-send-email 2.51.1
 In-Reply-To: <20260911113848.44086-1-przemyslaw.kitszel@intel.com>
 References: <20260911113848.44086-1-przemyslaw.kitszel@intel.com>
@@ -162,188 +165,191 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-ice_vsi_set_num_qs() mixed two things: deciding how many queues a VSI
-gets, and applying all the side effects of that decision. Split the
-decision out into ice_vsi_get_num_qs(), returning both counts at once.
+ice_vsi_realloc_stat_arrays() resized the ring stats arrays in place
+with krealloc_array(), sizing them from vsi->req_txq/req_rxq. That is
+not what ice_vsi_set_num_qs() computes later in ice_vsi_cfg_def(), so
+after a rebuild the arrays could end up shorter than vsi->alloc_txq /
+vsi->alloc_rxq, and ice_vsi_alloc_ring_stats() then walked past their
+end. Requesting fewer queues than the PF pool can hand out was enough
+to trigger it.
 
-To make that possible, group alloc_txq and alloc_rxq in struct ice_vsi
-with struct_group_tagged(), which gives the return type without adding
-any new storage. Field order changes slightly, num_txq now follows
-alloc_rxq, but nothing depends on it.
+Replace it with ice_vsi_resize_stat_arrays(), which allocates a fresh
+struct ice_vsi_stats instead, sized with ice_vsi_get_num_qs() and the
+queues ice_vsi_decfg() is about to return to the PF pool, which is
+exactly what ice_vsi_set_num_qs() will compute once they are back
+there. Copy the surviving entry pointers over and install the new
+structure, all before ice_vsi_decfg() runs. The entries that did not
+fit are freed together with the old container, via
+__ice_vsi_free_stats() with @free_entries set to false.
 
-ice_vsi_get_num_qs() takes @held_txq and @held_rxq from the start, even
-though the only caller so far passes zero for both. They let a caller
-ask what the counts would be once the queues the VSI currently owns are
-back in the PF pool. A later commit adds the caller that needs this: the
-rebuild path has to size its ring stats arrays before ice_vsi_decfg()
-releases the queues, yet the arrays must match what ice_vsi_set_num_qs()
-computes afterwards.
+Doing the allocation up front also means the failure path is a plain
+unlock and return, with the VSI still fully configured, rather than a
+half-torn-down VSI to unwind.
 
-No functional change intended.
+While at it, skip the stats handling for ICE_VSI_CHNL, which has no
+entry in pf->vsi_stats[] to begin with.
+
 Signed-off-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h     |  6 +-
- drivers/net/ethernet/intel/ice/ice_lib.c | 86 ++++++++++++++----------
- 2 files changed, 55 insertions(+), 37 deletions(-)
+this is an actual fix/improvement, that removes some of the tech debt,
+but there is no Fixes tag, as this was not directly caused by an user
+observable bug, rather as a pre-work / ai-review resolution for the next
+commit
+---
+ drivers/net/ethernet/intel/ice/ice_lib.c | 118 +++++++++++++----------
+ 1 file changed, 69 insertions(+), 49 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index cf1b0ba8dc29..48f4312df4a4 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -403,9 +403,11 @@ struct ice_vsi {
- 	u8 rx_mapping_mode;		 /* ICE_MAP_MODE_[CONTIG|SCATTER] */
- 	u16 *txq_map;			 /* index in pf->avail_txqs */
- 	u16 *rxq_map;			 /* index in pf->avail_rxqs */
--	u16 alloc_txq;			 /* Allocated Tx queues */
-+	struct_group_tagged(ice_vsi_alloc_queues_params, alloc_txq_rxq,
-+		u16 alloc_txq;		 /* Allocated Tx queues */
-+		u16 alloc_rxq;		 /* Allocated Rx queues */
-+	);
- 	u16 num_txq;			 /* Used Tx queues */
--	u16 alloc_rxq;			 /* Allocated Rx queues */
- 	u16 num_rxq;			 /* Used Rx queues */
- 	u16 req_txq;			 /* User requested Tx queues */
- 	u16 req_rxq;			 /* User requested Rx queues */
 diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 9c2863fc696c..998b9eb6e9fe 100644
+index 998b9eb6e9fe..0cd54af40c37 100644
 --- a/drivers/net/ethernet/intel/ice/ice_lib.c
 +++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -153,16 +153,56 @@ static void ice_vsi_set_num_desc(struct ice_vsi *vsi)
- 	}
+@@ -2953,6 +2953,51 @@ ice_vsi_rebuild_get_coalesce(struct ice_vsi *vsi,
+ 	return vsi->num_q_vectors;
  }
  
--static u16 ice_get_rxq_count(struct ice_pf *pf)
-+static u16 ice_get_rxq_count(struct ice_pf *pf, u16 held)
- {
--	return min(ice_get_avail_rxq_count(pf),
--		   netif_get_num_default_rss_queues());
-+	return min_t(u16, ice_get_avail_rxq_count(pf) + held,
-+		     netif_get_num_default_rss_queues());
- }
- 
--static u16 ice_get_txq_count(struct ice_pf *pf)
-+static u16 ice_get_txq_count(struct ice_pf *pf, u16 held)
- {
--	return min(ice_get_avail_txq_count(pf),
--		   netif_get_num_default_rss_queues());
-+	return min_t(u16, ice_get_avail_txq_count(pf) + held,
-+		     netif_get_num_default_rss_queues());
++static void ice_vsi_free_unused_stat_arrays(struct ice_vsi_stats *vsi_stat,
++					    struct ice_vsi_stats *new_vsi_stat)
++{
++	int new_txq = new_vsi_stat->tx_ring_stats_len;
++	int new_rxq = new_vsi_stat->rx_ring_stats_len;
++	int prev_txq = vsi_stat->tx_ring_stats_len;
++	int prev_rxq = vsi_stat->rx_ring_stats_len;
++
++	for (int i = new_txq; i < prev_txq; i++) {
++		if (vsi_stat->tx_ring_stats[i]) {
++			kfree_rcu(vsi_stat->tx_ring_stats[i], rcu);
++			WRITE_ONCE(vsi_stat->tx_ring_stats[i], NULL);
++		}
++	}
++	for (int i = new_rxq; i < prev_rxq; i++) {
++		if (vsi_stat->rx_ring_stats[i]) {
++			kfree_rcu(vsi_stat->rx_ring_stats[i], rcu);
++			WRITE_ONCE(vsi_stat->rx_ring_stats[i], NULL);
++		}
++	}
 +}
 +
-+/* @held_txq, @held_rxq: queues the VSI still owns but is about to return to the
-+ * PF pool, so that the result matches what it will be once they are back there.
-+ */
-+static struct ice_vsi_alloc_queues_params
-+ice_vsi_get_num_qs(struct ice_vsi *vsi, u16 held_txq, u16 held_rxq)
++static void ice_vsi_set_stat_arrays(struct ice_vsi *vsi,
++				    struct ice_vsi_stats *new_vsi_stat)
 +{
-+	struct ice_vsi_alloc_queues_params qs = {};
++	u16 new_txq, new_rxq, prev_txq, prev_rxq;
++	struct ice_vsi_stats *vsi_stat;
 +	struct ice_pf *pf = vsi->back;
 +
-+	switch (vsi->type) {
-+	case ICE_VSI_PF:
-+		qs.alloc_txq = vsi->req_txq ?: ice_get_txq_count(pf, held_txq);
++	new_txq = new_vsi_stat->tx_ring_stats_len;
++	new_rxq = new_vsi_stat->rx_ring_stats_len;
++	vsi_stat = pf->vsi_stats[vsi->idx];
++	pf->vsi_stats[vsi->idx] = new_vsi_stat;
++	if (!vsi_stat)
++		return; /* don't copy if there is no source */
 +
-+		/* only 1 Rx queue unless RSS is enabled */
-+		if (!test_bit(ICE_FLAG_RSS_ENA, pf->flags))
-+			qs.alloc_rxq = 1;
-+		else
-+			qs.alloc_rxq = vsi->req_rxq ?:
-+				       ice_get_rxq_count(pf, held_rxq);
-+		break;
-+	case ICE_VSI_SF:
-+	case ICE_VSI_CTRL:
-+	case ICE_VSI_LB:
-+		qs.alloc_txq = 1;
-+		qs.alloc_rxq = 1;
-+		break;
-+	case ICE_VSI_VF:
-+		qs.alloc_txq = vsi->vf->num_req_qs ?: vsi->vf->num_vf_qs;
-+		qs.alloc_rxq = qs.alloc_txq;
-+		break;
-+	case ICE_VSI_CHNL:
-+		break;
-+	default:
-+		dev_warn(ice_pf_to_dev(pf), "Unknown VSI type %d\n", vsi->type);
-+		return vsi->alloc_txq_rxq;
-+	}
++	prev_txq = vsi_stat->tx_ring_stats_len;
++	prev_rxq = vsi_stat->rx_ring_stats_len;
 +
-+	return qs;
++	memcpy(new_vsi_stat->tx_ring_stats, vsi_stat->tx_ring_stats,
++	       sizeof(*vsi_stat->tx_ring_stats) * min(prev_txq, new_txq));
++	memcpy(new_vsi_stat->rx_ring_stats, vsi_stat->rx_ring_stats,
++	       sizeof(*vsi_stat->rx_ring_stats) * min(prev_rxq, new_rxq));
++}
++
+ /**
+  * ice_vsi_rebuild_set_coalesce - set coalesce from earlier saved arrays
+  * @vsi: VSI connected with q_vectors
+@@ -3039,63 +3084,38 @@ ice_vsi_rebuild_set_coalesce(struct ice_vsi *vsi,
  }
  
  /**
-@@ -180,68 +220,44 @@ static void ice_vsi_set_num_qs(struct ice_vsi *vsi)
- 	if (WARN_ON(vsi_type == ICE_VSI_VF && !vf))
- 		return;
+- * ice_vsi_realloc_stat_arrays - Frees unused stat structures or alloc new ones
+- * @vsi: VSI pointer
++ * ice_vsi_resize_stat_arrays - resize ring stats arrays for new queue count
++ * @vsi: VSI to swap the ring stats arrays of
++ *
++ * Call while @vsi still owns its queues and before ice_vsi_decfg() returns them
++ * to the PF pool, so that the new size is what ice_vsi_set_num_qs() will compute
++ * afterwards. Surviving entries are carried over, the rest is freed.
++ *
++ * Returns 0 on success and negative value on failure
+  */
+-static int
+-ice_vsi_realloc_stat_arrays(struct ice_vsi *vsi)
++static int ice_vsi_resize_stat_arrays(struct ice_vsi *vsi)
+ {
+-	u16 req_txq = vsi->req_txq ? vsi->req_txq : vsi->alloc_txq;
+-	u16 req_rxq = vsi->req_rxq ? vsi->req_rxq : vsi->alloc_rxq;
+-	struct ice_ring_stats **tx_ring_stats;
+-	struct ice_ring_stats **rx_ring_stats;
+-	struct ice_vsi_stats *vsi_stat;
++	struct ice_vsi_alloc_queues_params qs;
++	struct ice_vsi_stats *old_stat;
++	struct ice_vsi_stats *new_stat;
+ 	struct ice_pf *pf = vsi->back;
+-	u16 prev_txq = vsi->alloc_txq;
+-	u16 prev_rxq = vsi->alloc_rxq;
+-	int i;
  
-+	vsi->alloc_txq_rxq = ice_vsi_get_num_qs(vsi, 0, 0);
-+
- 	switch (vsi_type) {
- 	case ICE_VSI_PF:
--		if (vsi->req_txq) {
--			vsi->alloc_txq = vsi->req_txq;
-+		if (vsi->req_txq)
- 			vsi->num_txq = vsi->req_txq;
--		} else {
--			vsi->alloc_txq = ice_get_txq_count(pf);
--		}
-+		if (vsi->req_rxq && test_bit(ICE_FLAG_RSS_ENA, pf->flags))
-+			vsi->num_rxq = vsi->req_rxq;
+-	vsi_stat = pf->vsi_stats[vsi->idx];
++	if (vsi->type == ICE_VSI_CHNL)
++		return 0;
  
- 		pf->num_lan_tx = vsi->alloc_txq;
--
--		/* only 1 Rx queue unless RSS is enabled */
--		if (!test_bit(ICE_FLAG_RSS_ENA, pf->flags)) {
--			vsi->alloc_rxq = 1;
--		} else {
--			if (vsi->req_rxq) {
--				vsi->alloc_rxq = vsi->req_rxq;
--				vsi->num_rxq = vsi->req_rxq;
--			} else {
--				vsi->alloc_rxq = ice_get_rxq_count(pf);
+-	if (req_txq < prev_txq) {
+-		for (i = req_txq; i < prev_txq; i++) {
+-			if (vsi_stat->tx_ring_stats[i]) {
+-				kfree_rcu(vsi_stat->tx_ring_stats[i], rcu);
+-				WRITE_ONCE(vsi_stat->tx_ring_stats[i], NULL);
 -			}
 -		}
--
- 		pf->num_lan_rx = vsi->alloc_rxq;
+-	}
++	qs = ice_vsi_get_num_qs(vsi, vsi->alloc_txq + vsi->num_xdp_txq,
++				vsi->alloc_rxq);
  
- 		vsi->num_q_vectors = max(vsi->alloc_rxq, vsi->alloc_txq);
- 		break;
- 	case ICE_VSI_SF:
--		vsi->alloc_txq = 1;
--		vsi->alloc_rxq = 1;
- 		vsi->num_q_vectors = 1;
- 		vsi->irq_dyn_alloc = true;
- 		break;
- 	case ICE_VSI_VF:
- 		if (vf->num_req_qs)
- 			vf->num_vf_qs = vf->num_req_qs;
--		vsi->alloc_txq = vf->num_vf_qs;
--		vsi->alloc_rxq = vf->num_vf_qs;
- 		/* pf->vfs.num_msix_per includes (VF miscellaneous vector +
- 		 * data queue interrupts). Since vsi->num_q_vectors is number
- 		 * of queues vectors, subtract 1 (ICE_NONQ_VECS_VF) from the
- 		 * original vector count
- 		 */
- 		vsi->num_q_vectors = vf->num_msix - ICE_NONQ_VECS_VF;
- 		break;
- 	case ICE_VSI_CTRL:
--		vsi->alloc_txq = 1;
--		vsi->alloc_rxq = 1;
- 		vsi->num_q_vectors = 1;
- 		break;
- 	case ICE_VSI_CHNL:
--		vsi->alloc_txq = 0;
--		vsi->alloc_rxq = 0;
- 		break;
- 	case ICE_VSI_LB:
--		vsi->alloc_txq = 1;
--		vsi->alloc_rxq = 1;
- 		/* A dummy q_vector, no actual IRQ. */
- 		vsi->num_q_vectors = 1;
- 		break;
- 	default:
--		dev_warn(ice_pf_to_dev(pf), "Unknown VSI type %d\n", vsi_type);
- 		break;
+-	tx_ring_stats = vsi_stat->tx_ring_stats;
+-	vsi_stat->tx_ring_stats =
+-		krealloc_array(vsi_stat->tx_ring_stats, req_txq,
+-			       sizeof(*vsi_stat->tx_ring_stats),
+-			       GFP_KERNEL | __GFP_ZERO);
+-	if (!vsi_stat->tx_ring_stats) {
+-		vsi_stat->tx_ring_stats = tx_ring_stats;
++	new_stat = ice_vsi_new_stat_arrays(qs.alloc_txq, qs.alloc_rxq);
++	if (!new_stat)
+ 		return -ENOMEM;
+-	}
+-	vsi_stat->tx_ring_stats_len = req_txq;
+ 
+-	if (req_rxq < prev_rxq) {
+-		for (i = req_rxq; i < prev_rxq; i++) {
+-			if (vsi_stat->rx_ring_stats[i]) {
+-				kfree_rcu(vsi_stat->rx_ring_stats[i], rcu);
+-				WRITE_ONCE(vsi_stat->rx_ring_stats[i], NULL);
+-			}
+-		}
+-	}
+-
+-	rx_ring_stats = vsi_stat->rx_ring_stats;
+-	vsi_stat->rx_ring_stats =
+-		krealloc_array(vsi_stat->rx_ring_stats, req_rxq,
+-			       sizeof(*vsi_stat->rx_ring_stats),
+-			       GFP_KERNEL | __GFP_ZERO);
+-	if (!vsi_stat->rx_ring_stats) {
+-		vsi_stat->rx_ring_stats = rx_ring_stats;
+-		return -ENOMEM;
++	old_stat = pf->vsi_stats[vsi->idx];
++	ice_vsi_set_stat_arrays(vsi, new_stat);
++	if (old_stat) {
++		ice_vsi_free_unused_stat_arrays(old_stat, new_stat);
++		__ice_vsi_free_stats(old_stat, false);
  	}
+-	vsi_stat->rx_ring_stats_len = req_rxq;
+ 
+ 	return 0;
+ }
+@@ -3127,7 +3147,7 @@ int ice_vsi_rebuild(struct ice_vsi *vsi, u32 vsi_flags)
+ 
+ 	mutex_lock(&vsi->xdp_state_lock);
+ 
+-	ret = ice_vsi_realloc_stat_arrays(vsi);
++	ret = ice_vsi_resize_stat_arrays(vsi);
+ 	if (ret)
+ 		goto unlock;
  
 -- 
 2.51.1
