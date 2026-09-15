@@ -1,28 +1,28 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7ADFC88E77
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 15 Sep 2026 17:18:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C6488C88E7D
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 15 Sep 2026 17:18:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 796076074D;
-	Tue, 15 Sep 2026 17:18:03 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id A16E180CB9;
+	Tue, 15 Sep 2026 17:18:04 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id lR456fMhf0nB; Tue, 15 Sep 2026 17:18:02 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 61BA060760
-Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789492682;
-	b=O9rzKqrpWOAZv0DZKpSwWxg9/GJsoMm12/xlxxaC1VfZTR3kSvbVoolstuS9rM/wdsdy
-	 wvGLnmpj1qsh17OZc0v25QNb/CDXntW4kFm+lzYQvhUznAPHqLc9cFnf2AusLELe2e+Hr
-	 XU0e8Y9aVNMjgGerE8s5K1ULP1KSjvBjTcOYS3ZGnWF091FqlJ1WH1zghfLPCXGpINW20
-	 66MtQLRPr3G/QlT3Fs+9up8VEmzp2ybEtJ0kaZsANEVOZOLa3bwElEYIhQvbau75tU6Mt
-	 99QwnS1moajTUqBptxCP7mI6ojqt7hybs3JBozN1gUI/aWWeIU0BhjB6q6VkSzyrUoA==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 8Y3f1Xy5sUNo; Tue, 15 Sep 2026 17:18:03 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 65CE580C53
+Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789492683;
+	b=fa/byJUcarb7nQzdqMzogW2NN2/1JG/lc3Iwvrh5Hzv35Ys+DOb+/YqrotaMt6BQXtla
+	 9fGbdr4159Ms+d6g5ymDTPYVO9D+/MoJL2XmaRXuIsL6rvpPQhrODiAfbHBdDarqGDYgr
+	 RfhKE0kDohmVUJWpemXOZmm0oNx5x2y3BYXWWK4YYBfbFGJTteDZ0nV9j94Mnc/tH5Lox
+	 U3ZKKSvqhkoi4jHDpqDIdUSvU9xeFXkblCc549OWWVZyXi5vkldcPYNLPm7fb2nBw1SbF
+	 lB0tMs3iABQdwhWW/wJgDZ2RJ1pVl/uQbJtVzzJ++p6QgTJrRFskFZR708nzAxwt3Gg==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1789492682;
+	c=relaxed/relaxed; t=1789492683;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
@@ -32,124 +32,126 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 Content-Transfer-Encoding:X-Mailman-Approved-At:X-BeenThere:
 	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=6A34g5ncwO0UUCNmS7GYn32h6CG74u/Wx3k3q5PSbh8=;
-	b=H4TnkzEKJAlqvgFiJSoSY0eYihNFozUA03hwuDP1zyRM5eat3piado/NI5Tw+Fu5Vhi9
-	 wuYk1C5UXUQaMKtJNixDzERGncOU+Mm0LfbbOT/ubEwGVpiy5KCB236u3TNGks0FIKQ5v
-	 y/5TRThgPDG9qy5pJJpJCA96o04RRAN2+p2uVhxWLyCVJYtRMJiOEO00gX3pgGkcmmChy
-	 /714v4wJXGi9/6G6g0wgo0qEPjnNKneNQgn/wT61p382b2F30WaPUxfQFR5G1NHEWs5oh
-	 yExBpRRPCLKfp722W/jklFwrz7s7hj1VCNRb9l4kOaxkvYJfh/cp9YUeU4qveL0Gyeg==
-ARC-Authentication-Results: i=2; smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	bh=CSHzy5Fr+v+g78gtgBhpLtU/5VBe17dtS9vTkuvViHg=;
+	b=fyWJiFBLDraAgzCjm0yIqmuOlnJWzzuHLv3LWlkHQhtKXpuRjdMHa5zOZ/Rd0FEmvLZv
+	 t7j8iwhwKRaYBBmlbhKAqKzf2bqaP1dRJ7RDZVNxGpzpTKlZuH/x45wrRdBIc4BuksZb5
+	 MMycZa8+vXt1W14rRD5X813swDYUdE/1D93dgUpYreSH0QU34z4uAskPGcIKjCyV8lYuB
+	 JiOpCLLtRHL6MNpQ4grq6uADcaN1VTr+qSzTejZ8pwpvnZchzbpZlk+fhzhiIyxYVK8ci
+	 yhgcCgd+7LSSpTfecLI66AVKWOc4VOx16ObBh4xeAEJZVF4hJ3UcIhsJOwk5YtmAIGA==
+ARC-Authentication-Results: i=2; smtp1.osuosl.org; dmarc=pass header.from=google.com;
+	dkim=pass header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b="dtEiDH/Q";
+	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1789492682;
-	bh=6A34g5ncwO0UUCNmS7GYn32h6CG74u/Wx3k3q5PSbh8=;
+	s=default; t=1789492683;
+	bh=CSHzy5Fr+v+g78gtgBhpLtU/5VBe17dtS9vTkuvViHg=;
 	h=Date:In-Reply-To:References:Subject:From:To:Cc:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=HtESmRBxfmo9snA85Qqo6Hf0OkbITT+Eah871M7MggeDGR6G8x4XI0/YDZMEmHXiI
-	 kwyYiL9RNbsENx29G8Mm0NjAgIOZ1PUxCF9/b0OJS7UxDPhIGcQt5pbSlUCMSRfdrJ
-	 G5Ne+mzTLWdXcxnASyZYO4iTuv/2q57jElmlT8UQLyOCHQyIZ9Gi11F5zVIVCuJ8Qc
-	 ST19d8IQ3nkUDhpunyb0/ZZKw4rctLH4LOzU6fVOenGXu9sYjJTfP4LbbrA++4MTC1
-	 I0cstFltVW5UMGWo1EPlvFDnInjUVQEVbUgfgqTN9dnsxY18Reui0CilFOok/nCVP7
-	 BGzw/0lFDDw/g==
+	b=4/SMmYTjtdEEKS5I5862B7hzFqkkNnE6PliWmW/pNrxkYSpNztphEmbVLeEE/V7dU
+	 2lXv1ctrfORXSH1NrOvLa1K5ru7hcvtZQk0qsuZIrx6mqVd41bAhSmTqFf3r5208hw
+	 auwJ1jEheLHzDnNpVoAL8x21IasFwT5bhvxayn7Qg3OP8qWDVUpIe1mxZn1xfchwRp
+	 kfA8LD8MKjiaXemJkSPJ5wtnHIrgnoS6XLVHqZyJu8oAWtF6mM9VL1iX2+AGFGzNYl
+	 vpjEHbn3Xcuj0BL8x211trYt5/Ex+MmO1fMRE9O+heLfsb9bJq5aAcLnIrhzvzizv1
+	 0rQhQtczzldJw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 61BA060760;
-	Tue, 15 Sep 2026 17:18:02 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 7E18D493
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 08:20:17 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 65CE580C53;
+	Tue, 15 Sep 2026 17:18:03 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 278C2493
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 08:20:19 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 64E2B4018D
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 08:20:17 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 24CE080C4D
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 08:20:19 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id up_Owz-ZEQ7J for <intel-wired-lan@lists.osuosl.org>;
- Tue, 15 Sep 2026 08:20:16 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org 53ED1401A2
-Authentication-Results: smtp2.osuosl.org;
- arc=none smtp.remote-ip="2607:f8b0:4864:20::647"
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789460416;
- b=Uf4UVLP4XhpWZKCGBQ8IM20mkB1NxHo6iw3EfcUfay8OXB7XMkXcSWO3eroSj7cdc5vu
- pYVTM9f21gkB4pcPQcUCF8wliDBtTgy/Uvaqc+WQHewF2QMnLhyOGHs/jVz5hBwDTfqds
- 9gi0DYpRbH7y+mDn8SVqKbbILtk14ow1C7Tk0xP6EWZdZDZgSAtbN1J/B8u+tKWjIbSWQ
- akn/z7blsRtTdFMBwMHkiiKzxXzQ6QgLilSQujangupD0hQS2b6GE1221kwqD/64VTkKm
- chFeWavebgGJNPoyqTTqsNgi+Pz3iBbYMd1+U8zf66KZ6+zolYe8VeVamiD1RqOwWfQ==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id ty104ZGB-oG0 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 15 Sep 2026 08:20:18 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 0D3C880C3F
+Authentication-Results: smtp1.osuosl.org;
+ arc=none smtp.remote-ip="2607:f8b0:4864:20::646"
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789460418;
+ b=OdFNTzgKOERYAfnffPUC6H0d3qww5583cnPHlecWs53EM9C+/XteJOMP7jKeClDusHZX
+ pznTKqzkhzeTjoTaIJ584T4vUXKYrIPwLCD6Wh3CYmfD3vmht4ZVjpNk+UWLfuQyumMdL
+ 0UzrZ97keWIAVSf2AudVB9+YK8KSWUXi2eVEnA9Pys1sxzZej7TBuBFDA5Qdz12SmpTjc
+ FkbFSqKdOOuTQh9BGzVQs3vP2d8rpab45sqiaoygCPq/690IYjayp0ZWdFwG+n55ULmQ9
+ Tt6WvgdYJaiVCYURf+mVeqmrrVC8dchiH+KvElPErEw1fTU6FIc37KxxKTs3B7VcGbg==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1789460416;
+ c=relaxed/relaxed; t=1789460418;
  h=Received-SPF:Received:DKIM-Signature:X-Google-DKIM-Signature:
  X-Forwarded-Encrypted:X-Gm-Message-State:X-Received:Date:In-Reply-To:
  Mime-Version:References:X-Mailer:Message-ID:Subject:From:To:Cc:
  Content-Type:Content-Transfer-Encoding;
- bh=6A34g5ncwO0UUCNmS7GYn32h6CG74u/Wx3k3q5PSbh8=;
- b=U0BGvBp1avR+6ef7TI4BFcNmMApKZVf+fhj5rbAVh7UqeCBicBwF6kNhZH4s5AN9CtX1
- mbrmo72HXJ3KDC9Ol60J7XLmexsn/CTYgbzBwSxG0dp/deHVGUMubU6RlJxlq3L3v/MvF
- lYmssC0TQoCulI2TZETDbZ2dhjRQdqbY/sIE98IBDfYeS8EwO9nMKpxWjVksxoKHGgWp7
- 9LSZg4jnYYRdcKAunGCHhSYW0dUp/FWb7+NoHk/56XHRtx4zW+3mqYgInXfZgFGxtd2W/
- hO6kHEQ/N/WPnLJhm0gRoOOlBuNgrmCxgO10xodACJV8Hkr7YXGlwxOFKfVSBs7QYCQ==
-ARC-Authentication-Results: i=1; smtp2.osuosl.org;
+ bh=CSHzy5Fr+v+g78gtgBhpLtU/5VBe17dtS9vTkuvViHg=;
+ b=eWfy1Z6XjtGUCIVhTKvmzcfskUlKce3kYKDhWyZ0lWn8rf/Vyjq2pHZKZLavSxJ67fLx
+ f23bD4HTpjMCY2WSi+OtrL3s7kJ5kEU/ZNq3X/BKBW1GWZZE2+PZumgI/qFZ6JA1uzki9
+ WvEVBxLxJCzu0z/ve7cGvi6smB6V5pwpAVS57P2RR7ViLN61IK4PzFD7d/1TcRQGEWgjt
+ sLmcwbkeU3Z46vUlsbm3R+8b1nT2nMU8tLcFljQuYPSdiuuabMidrGjjSfjljsMHBtkeM
+ 3H1NiwsPG/43phXCHsJvbHfZTevYLyh3NHU1yTrrWuvTukwsTTwoxMLGK+7i/C7Eszg==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org;
  dmarc=pass header.from=google.com; 
  dkim=pass header.d=google.com header.i=@google.com header.a=rsa-sha256
- header.s=20251104 header.b=GWvXPg5C; 
- arc=none smtp.remote-ip="2607:f8b0:4864:20::647"
+ header.s=20251104 header.b="dtEiDH/Q"; 
+ arc=none smtp.remote-ip="2607:f8b0:4864:20::646"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::647; helo=mail-pl1-x647.google.com;
- envelope-from=3vf-oagukd7woqtdqiqqing.eqokpvgn-yktgf-ncpnkuvu.quwqun.qti@flex--morbo.bounces.google.com;
+ client-ip=2607:f8b0:4864:20::646; helo=mail-pl1-x646.google.com;
+ envelope-from=3wp-oagukd78rtwgtlttlqj.htrnsyjq-1nwji-qfsqnxyx.txztxq.twl@flex--morbo.bounces.google.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org;
+Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp2.osuosl.org;
+Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
- header.a=rsa-sha256 header.s=20251104 header.b=GWvXPg5C
-Received: from mail-pl1-x647.google.com (mail-pl1-x647.google.com
- [IPv6:2607:f8b0:4864:20::647])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 53ED1401A2
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 08:20:15 +0000 (UTC)
-Received: by mail-pl1-x647.google.com with SMTP id
- d9443c01a7336-2db87f759c5so73167135ad.1
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 01:20:15 -0700 (PDT)
+ header.a=rsa-sha256 header.s=20251104 header.b=dtEiDH/Q
+Received: from mail-pl1-x646.google.com (mail-pl1-x646.google.com
+ [IPv6:2607:f8b0:4864:20::646])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 0D3C880C3F
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 08:20:17 +0000 (UTC)
+Received: by mail-pl1-x646.google.com with SMTP id
+ d9443c01a7336-2d94a158dc8so62413545ad.2
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 01:20:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=google.com; s=20251104; t=1789460414; x=1790065214; darn=lists.osuosl.org;
+ d=google.com; s=20251104; t=1789460417; x=1790065217; darn=lists.osuosl.org;
  h=content-transfer-encoding:content-type:cc:to:from:subject
  :message-id:references:mime-version:in-reply-to:date:from:to:cc
  :subject:date:message-id:reply-to:content-type;
- bh=6A34g5ncwO0UUCNmS7GYn32h6CG74u/Wx3k3q5PSbh8=;
- b=GWvXPg5CHjgh6HYcp1HSLHbbMkCAFD4socAxBxmng9rcOA/6+iJ9J6ItV+WsJ2sNoq
- hCR2voIq3q6AC2jCPWP3lBrXTvSDluOOn7/xZFwB6vR0bWFnKkAOaiutcOSBJyAFuoGe
- aBPzff/vh5Gr+sF26yxINNlasWzMKGez4ZzPLXv1TuAZuf8K0erplXvIszsqDhiAD5rn
- q60QG16hAgQuxd/akdbAcxBxWN86BX/3UHPqrXeDml3RniGVh83iTFjhUZV8NTvpmNeK
- bMhxCyqoXQpiqBWbGa405zx5QdGC59FOtU6Ce0jxCesImyiVTloTw5bNaMzxU6ALS1S7
- ofaw==
+ bh=CSHzy5Fr+v+g78gtgBhpLtU/5VBe17dtS9vTkuvViHg=;
+ b=dtEiDH/Q9BXFm22Bm7hLwacuNvrtrS3mJM7xAHotVAeBj0nPbzaTP4LQXb8oKGYWyM
+ FRCzOxzX76XZ+KSSbLGu0xtyHGLLuG6hqNfWwBRJMwzCsmrmbCq4z6xYkFZ8ucbV9RPb
+ l2iZHnhnzBD8rPEojVzDn7Sr8a1/yRHkYeJXggP3EaN2mRbkv2DD4ZfAfNBFZpoYPGto
+ Wruj65tnX80NRymqHbtAIwbWcUK34dlXwljMv8pl2z9xSyfW4Fi43WT59M31GzDzZQ0j
+ cNoJMBsyyiGgSu1vfwyq2YOKTLQKT4R46x60s/At7bFKm6R9W6IodsXz8lHDj/aqjIwB
+ JZIg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1789460414; x=1790065214;
+ d=1e100.net; s=20260707; t=1789460417; x=1790065217;
  h=content-transfer-encoding:content-type:cc:to:from:subject
  :message-id:references:mime-version:in-reply-to:date
  :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
  :content-type;
- bh=6A34g5ncwO0UUCNmS7GYn32h6CG74u/Wx3k3q5PSbh8=;
- b=xvEWM0g+WGnpiAabPZrjIzAa6xnO3mY6Lj/T7MozR6xqK5xgGQtpsY0+aKsRFmhWhz
- EorLdWM7l4bd50ojrAJ0haa7Nw1YFXzBvTlHg8ewfAz5MLaPtsWsIGe+HCmxwrWStQIy
- nctm4hB66wh9r8xB2pI8hXO2f/20hnr90IaivQK7EoF3xNzDJ+CZMrF9/NPS9Im9O8nF
- syBv0ShisdyYgqa2C9JVgsA08eKf1U/bDphvgP1Pu/DCNzbLP3t9Qc062/DFz/bQCw5I
- H7usVYrnWy2MaaCWuK1iaXVVf+rJhzmLVkBB7vpU+bdhzYhVnu0L4X1EKiKTydGIS429
- 5UhA==
+ bh=CSHzy5Fr+v+g78gtgBhpLtU/5VBe17dtS9vTkuvViHg=;
+ b=rhxC+rXdDW51qcve7VrJdZ3QGMywBQqVg6yJsCFYl9Qg0rYkFsiP3z8yNcQnfdGeOp
+ gsR6IE0f77IlZHcMgjb0C5GuPFEKPA+4lIGmOymuRIpYUM0VEly76VTfR+WRzuZB0zYv
+ 0uhrm/f5QoJxmqbYgV1ZtWQbrjsJDJpjJ0c7RA9oHi4dcCYUSnHvnN8W7gKcTuFhNF0v
+ wGnFkBM0vp4kxNluFokyrc19F+txnFiJsOa/w4t40I7TCLi9gQuT5e/0lXGWDhzDKsBQ
+ s0UQfAV9qHknWfKr7cCgkrGeLjKrnSm4QVL+JtD2GLHj1lukXpk/KLWsbkZe+XrVlitn
+ 72Mg==
 X-Forwarded-Encrypted: i=1;
- AKwUvBxlM2+zqOSqf0G7XWwrPgpKbMXbouWmc8wV204iDTDoJghqhzb4GLv+R7PdupDv58/LaIKAM0due0hWl01xYMc=@lists.osuosl.org
-X-Gm-Message-State: AFuF++kXGedfNmZyUfXHZ78hkYs4uM4Noxb5sAaCNGEChPJCcoa0BYdR
- qTBBqhojweRSJy/HQL770VOBoiTYUixAWoBDKYu3lMoqt7djw10usO3sFF7CIDG0WzhBTVGpib8
- P
-X-Received: from plyw21.prod.google.com ([2002:a17:902:d715:b0:2db:8c06:4fa6])
+ AKwUvBx6btIGj8OOWqwwHeC2WpFByQx4FqO5mIvJvb27keV3BjOcTDZuvHViOUhA31vv+uaFXmYMHK85hBTzJQpceYg=@lists.osuosl.org
+X-Gm-Message-State: AFuF++mGSUB6Ec84nrNwQ5ZlOSloAZBk3JkMvMwmVVBtdO/PvPE+iBzr
+ k8/2Qy6MDy1ygCKDudT3GLjPyI7kWWAubqyru/JXFiv8Ig/TRJ9HYCE4cQqnkJtOSNF/aPIsWve
+ l
+X-Received: from plky9.prod.google.com ([2002:a17:902:7009:b0:2dd:3c92:b0a2])
  (user=morbo job=prod-delivery.src-stubby-dispatcher) by
- 2002:a17:902:f712:b0:2db:20fa:9443
- with SMTP id d9443c01a7336-2dd6c6db8c2mr126055895ad.13.1789460413607; Tue, 15
- Sep 2026 01:20:13 -0700 (PDT)
-Date: Tue, 15 Sep 2026 08:18:39 +0000
+ 2002:a17:903:8c5:b0:2c6:90ec:f601
+ with SMTP id d9443c01a7336-2dd6c5f3422mr125997365ad.8.1789460416594; Tue, 15
+ Sep 2026 01:20:16 -0700 (PDT)
+Date: Tue, 15 Sep 2026 08:18:42 +0000
 In-Reply-To: <20260915081910.4142719-1-morbo@google.com>
 Mime-Version: 1.0
 References: <20260915081910.4142719-1-morbo@google.com>
 X-Mailer: git-send-email 2.55.0.1032.g73a4cd73de-goog
-Message-ID: <20260915081910.4142719-23-morbo@google.com>
-Subject: [PATCH 22/28] media: si2165: Use snprintf() to format frontend name
+Message-ID: <20260915081910.4142719-26-morbo@google.com>
+Subject: [PATCH 25/28] EDAC/thunderx: Replace strlcat() with seq_buf
 From: Bill Wendling <morbo@google.com>
 To: linux-kernel@vger.kernel.org
 Cc: Bill Wendling <morbo@google.com>, codemender-patching+linux@google.com, 
@@ -242,17 +244,23 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-si2165_probe() constructs the frontend name by appending the chip name and
-supported delivery system suffixes (" DVB-T", " DVB-C") to
-state->fe.ops.info.name using multiple strlcat() calls.
+The threaded ISR handlers (thunderx_ocx_com_threaded_isr(),
+thunderx_ocx_lnk_threaded_isr(), and thunderx_l2c_threaded_isr()) build
+multi-line error reports by formatting register details into a scratch
+buffer and appending them to "msg" with strlcat().
 
-In preparation for removing the deprecated strlcat() API[1], format the
-complete frontend name in a single snprintf() call.
+In preparation for removing the deprecated strlcat() API[1], refactor the
+ISR handlers to construct error messages using struct seq_buf.
+
+Additionally, fix two bugs in decode_register(): initialize "str[0] =3D '\0=
+'"
+so callers do not append stale buffer contents when no error bits match,
+and stop iterating if snprintf() truncates the buffer to avoid
+underflowing the remaining "size" counter.
 
 Link: https://github.com/KSPP/linux/issues/370 [1]
 Cc: codemender-patching+linux@google.com
-Assisted-by: Developer:Gemini [editor_update_file, make_kernel_build_single=
-_file, shell_command_run]
+Assisted-by: AI:Claude-3-5-Sonnet [editor_update_file, shell_command_run]
 Signed-off-by: Bill Wendling <morbo@google.com>
 ---
 Cc: Russell King <linux@armlinux.org.uk>
@@ -366,42 +374,161 @@ Cc: devel@lists.orangefs.org
 Cc: linux-hardening@vger.kernel.org
 Cc: linux-sound@vger.kernel.org
 ---
- drivers/media/dvb-frontends/si2165.c | 17 +++++++----------
- 1 file changed, 7 insertions(+), 10 deletions(-)
+ drivers/edac/thunderx_edac.c | 64 ++++++++++++++++++++++--------------
+ 1 file changed, 39 insertions(+), 25 deletions(-)
 
-diff --git a/drivers/media/dvb-frontends/si2165.c b/drivers/media/dvb-front=
-ends/si2165.c
-index f1241b63aa5c..bd15eb58fc84 100644
---- a/drivers/media/dvb-frontends/si2165.c
-+++ b/drivers/media/dvb-frontends/si2165.c
-@@ -1243,20 +1243,17 @@ static int si2165_probe(struct i2c_client *client)
- 		chip_name, rev_char, state->chip_type,
- 		state->chip_revcode);
+diff --git a/drivers/edac/thunderx_edac.c b/drivers/edac/thunderx_edac.c
+index e7c335ca0c36..4e3781815b6d 100644
+--- a/drivers/edac/thunderx_edac.c
++++ b/drivers/edac/thunderx_edac.c
+@@ -20,6 +20,7 @@
+ #include <linux/atomic.h>
+ #include <linux/bitfield.h>
+ #include <linux/circ_buf.h>
++#include <linux/seq_buf.h>
 =20
--	strlcat(state->fe.ops.info.name, chip_name,
--		sizeof(state->fe.ops.info.name));
-+	snprintf(state->fe.ops.info.name, sizeof(state->fe.ops.info.name),
-+		 "Silicon Labs %s%s%s",
-+		 chip_name,
-+		 state->has_dvbt ? " DVB-T" : "",
-+		 state->has_dvbc ? " DVB-C" : "");
+ #include <asm/page.h>
 =20
- 	n =3D 0;
--	if (state->has_dvbt) {
-+	if (state->has_dvbt)
- 		state->fe.ops.delsys[n++] =3D SYS_DVBT;
--		strlcat(state->fe.ops.info.name, " DVB-T",
--			sizeof(state->fe.ops.info.name));
--	}
--	if (state->has_dvbc) {
-+	if (state->has_dvbc)
- 		state->fe.ops.delsys[n++] =3D SYS_DVBC_ANNEX_A;
--		strlcat(state->fe.ops.info.name, " DVB-C",
--			sizeof(state->fe.ops.info.name));
--	}
+@@ -47,12 +48,17 @@ static void decode_register(char *str, size_t size,
+ {
+ 	int ret =3D 0;
 =20
- 	/* return fe pointer */
- 	*pdata->fe =3D &state->fe;
++	if (size > 0)
++		str[0] =3D '\0';
++
+ 	while (descr->type && descr->mask && descr->descr) {
+ 		if (reg & descr->mask) {
+ 			ret =3D snprintf(str, size, "\n\t%s, %s",
+ 				       descr->type =3D=3D ERR_CORRECTED ?
+ 					 "Corrected" : "Uncorrected",
+ 				       descr->descr);
++			if (ret < 0 || ret >=3D size)
++				break;
+ 			str +=3D ret;
+ 			size -=3D ret;
+ 		}
+@@ -1115,35 +1121,37 @@ static irqreturn_t thunderx_ocx_com_threaded_isr(in=
+t irq, void *irq_id)
+=20
+ 	while (CIRC_CNT(ocx->com_ring_head, ocx->com_ring_tail,
+ 			ARRAY_SIZE(ocx->com_err_ctx))) {
++		struct seq_buf s;
++
+ 		tail =3D ring_pos(ocx->com_ring_tail,
+ 				ARRAY_SIZE(ocx->com_err_ctx));
+ 		ctx =3D &ocx->com_err_ctx[tail];
+=20
+-		snprintf(msg, OCX_MESSAGE_SIZE, "%s: OCX_COM_INT: %016llx",
+-			ocx->edac_dev->ctl_name, ctx->reg_com_int);
++		seq_buf_init(&s, msg, OCX_MESSAGE_SIZE);
++
++		seq_buf_printf(&s, "%s: OCX_COM_INT: %016llx",
++			       ocx->edac_dev->ctl_name, ctx->reg_com_int);
+=20
+ 		decode_register(other, OCX_OTHER_SIZE,
+ 				ocx_com_errors, ctx->reg_com_int);
+=20
+-		strlcat(msg, other, OCX_MESSAGE_SIZE);
++		seq_buf_puts(&s, other);
+=20
+ 		for (lane =3D 0; lane < OCX_RX_LANES; lane++)
+ 			if (ctx->reg_com_int & BIT(lane)) {
+-				snprintf(other, OCX_OTHER_SIZE,
+-					 "\n\tOCX_LNE_INT[%02d]: %016llx OCX_LNE_STAT11[%02d]: %016llx",
+-					 lane, ctx->reg_lane_int[lane],
+-					 lane, ctx->reg_lane_stat11[lane]);
+-
+-				strlcat(msg, other, OCX_MESSAGE_SIZE);
++				seq_buf_printf(&s,
++					       "\n\tOCX_LNE_INT[%02d]: %016llx OCX_LNE_STAT11[%02d]: %016llx"=
+,
++					       lane, ctx->reg_lane_int[lane],
++					       lane, ctx->reg_lane_stat11[lane]);
+=20
+ 				decode_register(other, OCX_OTHER_SIZE,
+ 						ocx_lane_errors,
+ 						ctx->reg_lane_int[lane]);
+-				strlcat(msg, other, OCX_MESSAGE_SIZE);
++				seq_buf_puts(&s, other);
+ 			}
+=20
+ 		if (ctx->reg_com_int & OCX_COM_INT_CE)
+-			edac_device_handle_ce(ocx->edac_dev, 0, 0, msg);
++			edac_device_handle_ce(ocx->edac_dev, 0, 0, seq_buf_str(&s));
+=20
+ 		ocx->com_ring_tail++;
+ 	}
+@@ -1196,25 +1204,28 @@ static irqreturn_t thunderx_ocx_lnk_threaded_isr(in=
+t irq, void *irq_id)
+=20
+ 	while (CIRC_CNT(ocx->link_ring_head, ocx->link_ring_tail,
+ 			ARRAY_SIZE(ocx->link_err_ctx))) {
++		struct seq_buf s;
++
+ 		tail =3D ring_pos(ocx->link_ring_head,
+ 				ARRAY_SIZE(ocx->link_err_ctx));
+=20
+ 		ctx =3D &ocx->link_err_ctx[tail];
+=20
+-		snprintf(msg, OCX_MESSAGE_SIZE,
+-			 "%s: OCX_COM_LINK_INT[%d]: %016llx",
+-			 ocx->edac_dev->ctl_name,
+-			 ctx->link, ctx->reg_com_link_int);
++		seq_buf_init(&s, msg, OCX_MESSAGE_SIZE);
++
++		seq_buf_printf(&s, "%s: OCX_COM_LINK_INT[%d]: %016llx",
++			       ocx->edac_dev->ctl_name,
++			       ctx->link, ctx->reg_com_link_int);
+=20
+ 		decode_register(other, OCX_OTHER_SIZE,
+ 				ocx_com_link_errors, ctx->reg_com_link_int);
+=20
+-		strlcat(msg, other, OCX_MESSAGE_SIZE);
++		seq_buf_puts(&s, other);
+=20
+ 		if (ctx->reg_com_link_int & OCX_COM_LINK_INT_UE)
+-			edac_device_handle_ue(ocx->edac_dev, 0, 0, msg);
++			edac_device_handle_ue(ocx->edac_dev, 0, 0, seq_buf_str(&s));
+ 		else if (ctx->reg_com_link_int & OCX_COM_LINK_INT_CE)
+-			edac_device_handle_ce(ocx->edac_dev, 0, 0, msg);
++			edac_device_handle_ce(ocx->edac_dev, 0, 0, seq_buf_str(&s));
+=20
+ 		ocx->link_ring_tail++;
+ 	}
+@@ -1880,22 +1891,25 @@ static irqreturn_t thunderx_l2c_threaded_isr(int ir=
+q, void *irq_id)
+=20
+ 	while (CIRC_CNT(l2c->ring_head, l2c->ring_tail,
+ 			ARRAY_SIZE(l2c->err_ctx))) {
++		struct seq_buf s;
++
+ 		tail =3D ring_pos(l2c->ring_tail, ARRAY_SIZE(l2c->err_ctx));
+ 		ctx =3D &l2c->err_ctx[tail];
+=20
+-		snprintf(msg, L2C_MESSAGE_SIZE,
+-			 "%s: %s: %016llx, %s: %016llx",
+-			 l2c->edac_dev->ctl_name, reg_int_name, ctx->reg_int,
+-			 ctx->reg_ext_name, ctx->reg_ext);
++		seq_buf_init(&s, msg, L2C_MESSAGE_SIZE);
++
++		seq_buf_printf(&s, "%s: %s: %016llx, %s: %016llx",
++			       l2c->edac_dev->ctl_name, reg_int_name, ctx->reg_int,
++			       ctx->reg_ext_name, ctx->reg_ext);
+=20
+ 		decode_register(other, L2C_OTHER_SIZE, l2_errors, ctx->reg_int);
+=20
+-		strlcat(msg, other, L2C_MESSAGE_SIZE);
++		seq_buf_puts(&s, other);
+=20
+ 		if (ctx->reg_int & mask_ue)
+-			edac_device_handle_ue(l2c->edac_dev, 0, 0, msg);
++			edac_device_handle_ue(l2c->edac_dev, 0, 0, seq_buf_str(&s));
+ 		else if (ctx->reg_int & mask_ce)
+-			edac_device_handle_ce(l2c->edac_dev, 0, 0, msg);
++			edac_device_handle_ce(l2c->edac_dev, 0, 0, seq_buf_str(&s));
+=20
+ 		l2c->ring_tail++;
+ 	}
 --=20
 2.55.0.1032.g73a4cd73de-goog
 
