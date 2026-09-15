@@ -4,25 +4,25 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8E9CDC88E75
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 15 Sep 2026 17:17:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50545C88E7D
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 15 Sep 2026 17:17:51 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 5CD8C809A7;
-	Tue, 15 Sep 2026 17:17:50 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 1E8D480851;
+	Tue, 15 Sep 2026 17:17:51 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id RxbKeb0KrpeZ; Tue, 15 Sep 2026 17:17:49 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 3050680790
+ id 1yivyjntksaQ; Tue, 15 Sep 2026 17:17:50 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 0F3C280843
 Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789492669;
-	b=k/7QbjjWnJFBFzOXGO+dOHql0JU7meB3Tlau0iQycfoTOYSx9vSSxcDIEu2wkzCcGSGx
-	 RlG1YpzCVGizb+diKhVopGTc2XTipGvIL3RQ+SOyIxJajQFFNQpYx793oNeyFbEoivURs
-	 4870PPFNZnB4Ntm+9rifH2SxE3nk+Q2rz0fmSNJZjlHvLaSfxju5ZHdHrcDvG/uokXAw7
-	 /JpjNzoFzS80xhc+DAslvZMWSYAReeXWswF8VswvIvL5D+Zars5aqA1gvW/W/NEFCv3b4
-	 kiVKVYEmiK3XYraTMICrKaNpQLfBmA5xWCxWnLh300g4AR/lDBEPNX9v5x4jXalknpw==
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789492670;
+	b=dx+OBp3C6QqiwFB2oSAPXyTQCld6eZOTC4QaMsRl4ffMjQxbUXFXhLz0R2gH05rUbhBX
+	 RLl7cERTOQTX0vciWI6SpgefYSs6VsagApn90n+XKKKZjXLGARPzonEMHopsc+cRJb/Ej
+	 QPkozEDIGvhl85eNeDqkKZbzNeRQeCcNl4j1crKLsBnlIRw6+ufKCTMe3wFhDTklOHvUL
+	 x71ILwQQ9o4Zt+exlFMnndfj7T3AK1SaKmGCcWqcjax5i3Qv+nEEm47LtajSvuOAUknHH
+	 nugllOiQ3NOEff1lucMr/lPcU6hPkpYaL6DF5nngDNmaTxhB6SpCSp0aiWxLg9UiAMQ==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1789492669;
+	c=relaxed/relaxed; t=1789492670;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
@@ -32,124 +32,125 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 Content-Transfer-Encoding:X-Mailman-Approved-At:X-BeenThere:
 	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=GmOofVahuDrknmhehkkjM5BCV+g3cc9ELbAHUqasD2M=;
-	b=nyBLsGL32irKnTreZJ+pxCj5Gj2EbGqodDeBEDCdz56qVHrEwIfsyFAEWPETcicO8CVK
-	 f18BSWiI7FSsmw0nLR8bv5KvfEaf3m3MsOutuMJoCuWAAYosJlXlMUF4snbuoNUqu2Blh
-	 LaNUSFOT0a+96HvxaKvDgi/iF8yHmXwrTDmACWt6EHNqakuW+8SfjjO90Dy2EKaDEuqT5
-	 HO9VpZEO7drEji9/sBoqryrHoMSkEzGJnLUbSpA+APc4E0W0ZCL7AVw5jsQcB0eodmEQZ
-	 m31M3ccJTmnAILcxo386GsZyq8hO38d6jPo0zraMjiSB4vAQOKEWjAqfhfNAYD3qnGA==
+	bh=q9qHU7CDEu6zWWmniYe9q2ucwWYfoa3UieeTJM1aJto=;
+	b=IB2V12GvTVvHNOg/qU/m5YSW+3XbvRmgpl3PrdpyjWhvQRRceciyxa0Zlzf5Mr0P5ZP0
+	 qCNo9/HxBNexFTH+IiVYfLoerM9Mnproh+Q49PgVDMZGZlKBJg7UNm+bhVi8Vjc8AEAZH
+	 2VTa43DtY72omsgo0a4KUTshygR/P85ohn8GSD4SJCQbKCPkPhJnbF91aoag8fCfDiyX/
+	 MpYDOifhNNCZhKuUIJ5OcfdkDSd/NAagXjsqYTQnopbW5LQaVPElFV47jSliZ0eJF8Qaz
+	 1qBFYhyGPOo5TCjW2cDqEIo2TkeGDM3Hat7RuLC/PYSWpbHTQGYx5lwi8i8ON0W52SA==
 ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1789492669;
-	bh=GmOofVahuDrknmhehkkjM5BCV+g3cc9ELbAHUqasD2M=;
+	s=default; t=1789492670;
+	bh=q9qHU7CDEu6zWWmniYe9q2ucwWYfoa3UieeTJM1aJto=;
 	h=Date:In-Reply-To:References:Subject:From:To:Cc:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=HKyTVXBKvAz9wXiTvXI9wB8khwmuFzdia8u0sCh1rZPsOrD39xJXeok3uVvaw7PUs
-	 wnDwMYXWS+ma578Q/37MYP1NwsT/+oEYgXROXevl7OLKHiwyPuKCiIuKQEov4Qy/l+
-	 c/FvuVTpatEA+UlLt1T0jrxy0zSpHfNqR+GNjD47eqh+O/bbmWvKwf2+Nb0UHY9eSl
-	 LRLqSaR+cWFmChP+tylBZWX3D8QXV46o3riTm1PSaKLw7qrkNAk3YEZiqmD/inbaGj
-	 /P5jbRtJhAfgJGHGFqECfL6dfBplXR7VcFe9md9OHkPyo/zGz8wxDjIVWlx0p3Zp2C
-	 SdqPkYXtHDAQQ==
+	b=EluRLuXzq5pFrizwFl/rBT6ya11lZIYulxTrJcfW/nur3+wwfhvewzDQxdDCo8aj/
+	 8thscAFzvnQnfhxfBz/UCsKwqBcsgOQGVHm5PStfgE+IrPOEI7v7ArbWwp10lH8dxg
+	 QgsdUySnY7JNKMnJO7Gypw/pN8xYQ0IT+WXcIvYiHBzZIgL5lQRKCYH51iIdOjajQh
+	 AOugJguAsF8U+hz4YlC8TXNe7JFu7xyjzaSbxi98FHSIqpAe0aFN6SNhktT/RD2Mxn
+	 eHsGZntIWj72x5inyrucVX529OHbkrZNp0H130rZHpveosq1mWtrBLbugpgRktgw1W
+	 DJhfOYKl2wkHQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 3050680790;
-	Tue, 15 Sep 2026 17:17:49 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id A9385493
+	by smtp1.osuosl.org (Postfix) with ESMTP id 0F3C280843;
+	Tue, 15 Sep 2026 17:17:50 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id BD0E22E3
  for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 08:19:59 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 9AC45401A2
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 08:19:57 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id AE20D40475
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 08:19:59 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 30KKjLWZRTye for <intel-wired-lan@lists.osuosl.org>;
- Tue, 15 Sep 2026 08:19:56 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org 6DAA44018D
-Authentication-Results: smtp2.osuosl.org;
- arc=none smtp.remote-ip="2607:f8b0:4864:20::645"
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789460396;
- b=semzcZV+jLa7duxTg5fEGU14KfPxZr5QUzKirXiHabJR1W3ozoMu5PEDFDCgFfI0E8xI
- 8Whd37dVWqoGtHJRBAg8WjsSBLPyUw/MQPcNbYK3s0E4U7lyOH4ZTeW59ozpbPofUKrEv
- zcBJxn0rfjhF6y/U1G4uhk1Evlf9V+dHl1tErRDt4a8iYS31lrviIHHn4KMw2wVumb4bm
- laz8ciGDeCqYlCILCEdMAtR10a30862EE1FSaqu7OYcVmqBea0DggdpjvCK4azuQjgBFd
- TsjLw74RFgJ/G+jx8geUkhISFQCqd0OtkYm6dSaJUSfADRXbpYBMyAMkDxCx4/KG69w==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id f2O5DnQK-ccO for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 15 Sep 2026 08:19:58 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 9A9EB403E0
+Authentication-Results: smtp4.osuosl.org;
+ arc=none smtp.remote-ip="2607:f8b0:4864:20::648"
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789460398;
+ b=rgkz0/teAFFCAfPL9Zy27HlhBvJHIGtZ5oKeZNC4XlPXuZC/83qrEm3b0CUkzyMoB0/7
+ 7YX/f3tmg1ZV5rkE3dEcn+MbbK+UQHlcBSkqS0R3kc6DpN8zDu3UjF6fAvdD/Njukvw/t
+ 1BA9h0qVs8lAB1AwAmUXW/kxp38ZP+jW8MWPkTFFC0FkC1UvTplksr9+ovwTNLImVWXiN
+ bBE6LM7dDi6/kZYlcZZF7HzSbdMwJgLrF3RbmbXK/UxeylMMqUFHcOytosnadI0R2yPO9
+ RycLdjx0wynKWHZIMC53A1N8CWv6j4I2Ep0Dr4f8K7OT2D2qb2Sj7ZBy+QuzZZex4wg==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1789460396;
+ c=relaxed/relaxed; t=1789460398;
  h=Received-SPF:Received:DKIM-Signature:X-Google-DKIM-Signature:
  X-Forwarded-Encrypted:X-Gm-Message-State:X-Received:Date:In-Reply-To:
  Mime-Version:References:X-Mailer:Message-ID:Subject:From:To:Cc:
  Content-Type:Content-Transfer-Encoding;
- bh=GmOofVahuDrknmhehkkjM5BCV+g3cc9ELbAHUqasD2M=;
- b=SZ1a+NvM7LS+u1maKIsMJsrJbK3UDkZf1m2lZKIKKKp+dBROZ6QuC1PqE8CEyFvJgIrZ
- D3f7k84+aRnT/qdwjFGQXY8AUBlUAkBkXTjFTX9CgXW6PoPPNoHFrL9vCmAsII/x115RU
- i8Gnw5/+zCqo/PG/QegXia8qc1cUSebHtpwyB25U39aZSG+IgEWSf/8nrfOqtVGy1Lslj
- 4zIMW8QOVZb27eomRIdbeyFo+6LZy7kwbHPArD0UYqwFoQ3/i7AmOq8qAuKaXJYvBax0L
- Pi/KsjVFhOsI4kwx+Le8OVkuNcdLtJlsLxL18z1evi8z0sgH1ZXlHl3rAvECTFW+gsA==
-ARC-Authentication-Results: i=1; smtp2.osuosl.org;
+ bh=q9qHU7CDEu6zWWmniYe9q2ucwWYfoa3UieeTJM1aJto=;
+ b=R7JHalVf8O0UdAZgG/xP4FBQD7+9NyHOnvudLgpLT2wpydSnbjxbZzg/zBHSTPO5WuX5
+ zfxCO7E/b5/sbqsZnA9N22wDYCW+DB4hh3AYTw9DHRUfFo48+pUbim8lRvZfkzmzVV/uV
+ D/HLi1lgAnqu+mvGIeOuxgaIZJB/p52De2rM93UaV/S9MOTrnX3tPsrZ/IEqHAu8t9kfR
+ jZRqKdAijZQOTLlC5Be1dMETKQFvoQSEXYi9U/Ltr0P19z3mazLXkT8EA4HE4GVi+EwjJ
+ u/jFG0+RvPDWxPYyr+i3sgtdKknUs3ID4+/LDVjaH6PD0KJsCXJ3ffuVXiDQEjMOxNw==
+ARC-Authentication-Results: i=1; smtp4.osuosl.org;
  dmarc=pass header.from=google.com; 
  dkim=pass header.d=google.com header.i=@google.com header.a=rsa-sha256
- header.s=20251104 header.b=nOSQ0G3S; 
- arc=none smtp.remote-ip="2607:f8b0:4864:20::645"
+ header.s=20251104 header.b=maaHppDx; 
+ arc=none smtp.remote-ip="2607:f8b0:4864:20::648"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::645; helo=mail-pl1-x645.google.com;
- envelope-from=3qv-oagukd6kvxakxpxxpun.lxvrwcnu-franm-ujwurbcb.xbdxbu.xap@flex--morbo.bounces.google.com;
+ client-ip=2607:f8b0:4864:20::648; helo=mail-pl1-x648.google.com;
+ envelope-from=3rf-oagukd6wyadnasaasxq.oayuzfqx-iudqp-xmzxuefe.aegaex.ads@flex--morbo.bounces.google.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org;
+Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp2.osuosl.org;
+Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
- header.a=rsa-sha256 header.s=20251104 header.b=nOSQ0G3S
-Received: from mail-pl1-x645.google.com (mail-pl1-x645.google.com
- [IPv6:2607:f8b0:4864:20::645])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 6DAA44018D
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 08:19:55 +0000 (UTC)
-Received: by mail-pl1-x645.google.com with SMTP id
- d9443c01a7336-2d6df0a1e18so82540095ad.1
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 01:19:55 -0700 (PDT)
+ header.a=rsa-sha256 header.s=20251104 header.b=maaHppDx
+Received: from mail-pl1-x648.google.com (mail-pl1-x648.google.com
+ [IPv6:2607:f8b0:4864:20::648])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 9A9EB403E0
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 08:19:58 +0000 (UTC)
+Received: by mail-pl1-x648.google.com with SMTP id
+ d9443c01a7336-2dc7337e2a7so52771545ad.0
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 01:19:58 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=google.com; s=20251104; t=1789460395; x=1790065195; darn=lists.osuosl.org;
+ d=google.com; s=20251104; t=1789460397; x=1790065197; darn=lists.osuosl.org;
  h=content-transfer-encoding:content-type:cc:to:from:subject
  :message-id:references:mime-version:in-reply-to:date:from:to:cc
  :subject:date:message-id:reply-to:content-type;
- bh=GmOofVahuDrknmhehkkjM5BCV+g3cc9ELbAHUqasD2M=;
- b=nOSQ0G3S3K6xhnhNkaTiZpcC7L4INgOcWHb34CbH6FQ9zWzKrRDodzC3MAX4GTjiOM
- /flpevrVeVdaY4QvQDQ4MwQqGnyMEUlXUQIjHTxq2jebBvuvSrQC/KCamAsCSSOZLNa/
- eHZuXYmpeRfWtfoSgbvjFsT2RF1icxNnIQ16Kmtblr3pjads/FsJ2gjZMzjdcb395ZaA
- x/y7C8W7j9+6ktufEnR2HhSBk3BAoLyA1E1Yi6YFJBYYleGQufva0DT85H5n+v5EX0M2
- VTNgxYcfyxZokv85gEO6WBlS/WOgvt40W0uRfRd2bSF1PeiRdgwriBOl3a4IocL5Jcht
- 91Fw==
+ bh=q9qHU7CDEu6zWWmniYe9q2ucwWYfoa3UieeTJM1aJto=;
+ b=maaHppDxmW0roWwQV5pu9qZUPqmVmB1gGoRc3aYf1zBaNIUjLB+jLv4Fth4PRQzeVC
+ E0mXqsW8e/Ku79Pfpf/IG+lhJIQFZ65MmjMCoFgGCFE4aaWY4ICNG4HFgbcJpWZHHYsv
+ LyEtMBM1Wowmr0uJ3PdmP5gWySG7BUJY4yC2v1vSJORwihtnfaoS0i5y7tFzOUDveZm5
+ 3yejI90J301hp4uOwFACLfsyqjePlP6z4YS6SS9yFmzXvqUXEOg0hdqccphYlpPNRe0U
+ BqtzhPUSj9nV7cv0hTY6Rjsv6MFufzmYj36mDqrjbBTQTkO4EHIFdZZtxaSAarFzOwQ+
+ 8+5w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1789460395; x=1790065195;
+ d=1e100.net; s=20260707; t=1789460397; x=1790065197;
  h=content-transfer-encoding:content-type:cc:to:from:subject
  :message-id:references:mime-version:in-reply-to:date
  :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
  :content-type;
- bh=GmOofVahuDrknmhehkkjM5BCV+g3cc9ELbAHUqasD2M=;
- b=lD1pCwIDNdnhRplCgFtJvQVKUmlLYSTV80G1xi66ncn9FaFqiS/7dMKBOKeUFSqCil
- g4HZZ8MiL4kgfc2fqlTrT1Y59RmzFMfsZkTgh85moyoJCaIIFfRvStzZUpHbpvyV3hIy
- J5g0CQepthdrf4q88ghIsDFK6NB9udCDs2NbArDCZEX9a0A/gGJCoBpc4yEFXq/9B5yR
- 8dvPyvMl5OXyaKrTmQIMIfeL6aepOsnKUrEJW6ddNJG/tO2Dsio77bVPPE9SMXp6x+9k
- 3Z10A9p2kZf25iXy7x6moMRJB2EBDSC2Z1NijRKm0+9GbsCb8QkssuR7tmjV4VpNkFvT
- 3hfg==
+ bh=q9qHU7CDEu6zWWmniYe9q2ucwWYfoa3UieeTJM1aJto=;
+ b=L05g76qQBzshZH9DcRXHKLr4JsfQu1s4BHjK1NgJq87nHjnWyRJvBXa2WzxcEeHcSE
+ bezsenMlovJSrJmAGtjK90rSii4vG4S6a5gf2P4ZQ7/mBSwu5LyPSbqX+Jpv9/y8geUD
+ kV75ooTyHKfSX/NM4V+nBwa5XGbqBdQUynonmtQkT6KvoFz+W9LqJKezX3dpWWswsEK7
+ FXXoeUC6SayT0b/k3mnf7wLYj+VDc6bibH/yFnWKndTCLNeZqO83W9K5MRA4Ym0LohUU
+ urcYl6Nsvfy0ec9ppLPhW91EFkRnct31Ygn8X44yyrI37BLNWyiVDfhHawlyLKtcKGoU
+ bM0w==
 X-Forwarded-Encrypted: i=1;
- AKwUvBytCB3o2z8y8sdh2qfu+9nYekawQiuUv4/vjXVpgqB7lPXJWzXi4YgWcjd/ikYHLiblJcwS4EiV9EnJ3I4EoEA=@lists.osuosl.org
-X-Gm-Message-State: AFuF++lXhGFYeIXrZ/ZY+vDkg0iHhe8R77zpDdwXMziyxZjOmKaZgB5y
- iCMhTExicp4uTIh9j2IWotWLJUYtElQwHfxbPbGiBPywxygMbvUz9hed9RGBmv/bX6Xagx55ARB
- m
-X-Received: from plrq10.prod.google.com ([2002:a17:902:b10a:b0:2dc:ff56:3f4c])
+ AKwUvBweidk9YDsX9DpO+8JcPPmdrlEndo4GC0fpH/NuhL0fX68q1ERqGtl5nvRJvefviZIBijE32xBaSab/okozXvc=@lists.osuosl.org
+X-Gm-Message-State: AFuF++lcQKiboY+PuTklbmnAZQrAAgfOp+zjLpSUPEJJHSuygvtd2fEh
+ w5LX/1lMDwzU4AMt9MFxdsb4JiRO+T5BDr5S8uUhoBL68z8YKeKGL/1RUngjFn/qcZ94ucMGp/g
+ r
+X-Received: from plhc17.prod.google.com ([2002:a17:903:2351:b0:2cf:ca4d:25e3])
  (user=morbo job=prod-delivery.src-stubby-dispatcher) by
- 2002:a17:902:db0e:b0:2d9:520c:38e7
- with SMTP id d9443c01a7336-2dd6c5c1330mr107218395ad.1.1789460394736; Tue, 15
- Sep 2026 01:19:54 -0700 (PDT)
-Date: Tue, 15 Sep 2026 08:18:24 +0000
+ 2002:a17:903:2408:b0:2d8:d4ce:9f32
+ with SMTP id d9443c01a7336-2dd83869ae3mr512075ad.16.1789460397125; Tue, 15
+ Sep 2026 01:19:57 -0700 (PDT)
+Date: Tue, 15 Sep 2026 08:18:27 +0000
 In-Reply-To: <20260915081910.4142719-1-morbo@google.com>
 Mime-Version: 1.0
 References: <20260915081910.4142719-1-morbo@google.com>
 X-Mailer: git-send-email 2.55.0.1032.g73a4cd73de-goog
-Message-ID: <20260915081910.4142719-8-morbo@google.com>
-Subject: [PATCH 07/28] scsi: bfa: Use snprintf() in bfa_fcs_fabric_psymb_init()
+Message-ID: <20260915081910.4142719-11-morbo@google.com>
+Subject: [PATCH 10/28] of/fdt: Replace strlcat() with snprintf() in
+ early_init_dt_scan_chosen()
 From: Bill Wendling <morbo@google.com>
 To: linux-kernel@vger.kernel.org
 Cc: Bill Wendling <morbo@google.com>, codemender-patching+linux@google.com, 
@@ -242,17 +243,22 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-Similar to bfa_fcs_fabric_nsymb_init(), bfa_fcs_fabric_psymb_init()
-builds the port symbolic name using strscpy() and a chain of seven or
-eight strlcat() calls.
+When CONFIG_CMDLINE_EXTEND is enabled, early_init_dt_scan_chosen() uses
+two strlcat() calls to append a space and CONFIG_CMDLINE to the command
+line buffer.
 
 In preparation for removing the deprecated strlcat() API[1], replace the
-chained strscpy() and strlcat() calls with a single snprintf() call.
+strlcat() calls with a single snprintf() call using the existing string
+length.
+
+Additionally, check for a NULL initial_boot_params pointer and jump to
+"handle_cmdline" so that CONFIG_CMDLINE handling still occurs without
+dereferencing a NULL FDT pointer in fdt_path_offset().
 
 Link: https://github.com/KSPP/linux/issues/370 [1]
 Cc: codemender-patching+linux@google.com
-Assisted-by: Gemini-3.5-Pro:20241215 [editor_update_file, make_kernel_build=
-_single_file]
+Assisted-by: Assistant:Claude-3.5-Sonnet [editor_update_file, shell_command=
+_run]
 Signed-off-by: Bill Wendling <morbo@google.com>
 ---
 Cc: Russell King <linux@armlinux.org.uk>
@@ -366,77 +372,39 @@ Cc: devel@lists.orangefs.org
 Cc: linux-hardening@vger.kernel.org
 Cc: linux-sound@vger.kernel.org
 ---
- drivers/scsi/bfa/bfa_fcs.c | 49 ++++++++++----------------------------
- 1 file changed, 13 insertions(+), 36 deletions(-)
+ drivers/of/fdt.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/scsi/bfa/bfa_fcs.c b/drivers/scsi/bfa/bfa_fcs.c
-index 7a4e0e8c7182..9fe0343c0b32 100644
---- a/drivers/scsi/bfa/bfa_fcs.c
-+++ b/drivers/scsi/bfa/bfa_fcs.c
-@@ -760,49 +760,26 @@ bfa_fcs_fabric_psymb_init(struct bfa_fcs_fabric_s *fa=
-bric)
+diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+index a64afc3ded3d..311021a83f03 100644
+--- a/drivers/of/fdt.c
++++ b/drivers/of/fdt.c
+@@ -1095,6 +1095,9 @@ int __init early_init_dt_scan_chosen(char *cmdline)
+ 	const void *rng_seed;
+ 	const void *fdt =3D initial_boot_params;
 =20
- 	bfa_ioc_get_adapter_model(&fabric->fcs->bfa->ioc, model);
-=20
--	/* Model name/number */
--	strscpy(port_cfg->sym_name.symname, model,
--		BFA_SYMNAME_MAXLEN);
--	strlcat(port_cfg->sym_name.symname, BFA_FCS_PORT_SYMBNAME_SEPARATOR,
--		BFA_SYMNAME_MAXLEN);
--
--	/* Driver Version */
--	strlcat(port_cfg->sym_name.symname, driver_info->version,
--		BFA_SYMNAME_MAXLEN);
--	strlcat(port_cfg->sym_name.symname, BFA_FCS_PORT_SYMBNAME_SEPARATOR,
--		BFA_SYMNAME_MAXLEN);
--
--	/* Host machine name */
--	strlcat(port_cfg->sym_name.symname,
--		driver_info->host_machine_name,
--		BFA_SYMNAME_MAXLEN);
--	strlcat(port_cfg->sym_name.symname, BFA_FCS_PORT_SYMBNAME_SEPARATOR,
--		BFA_SYMNAME_MAXLEN);
--
- 	/*
- 	 * Host OS Info :
- 	 * If OS Patch Info is not there, do not truncate any bytes from the
- 	 * OS name string and instead copy the entire OS info string (64 bytes).
++	if (!fdt)
++		goto handle_cmdline;
++
+ 	node =3D fdt_path_offset(fdt, "/chosen");
+ 	if (node < 0)
+ 		node =3D fdt_path_offset(fdt, "/chosen@0");
+@@ -1133,8 +1136,12 @@ int __init early_init_dt_scan_chosen(char *cmdline)
  	 */
- 	if (driver_info->host_os_patch[0] =3D=3D '\0') {
--		strlcat(port_cfg->sym_name.symname,
--			driver_info->host_os_name,
--			BFA_SYMNAME_MAXLEN);
--		strlcat(port_cfg->sym_name.symname,
--			BFA_FCS_PORT_SYMBNAME_SEPARATOR,
--			BFA_SYMNAME_MAXLEN);
-+		snprintf(port_cfg->sym_name.symname, BFA_SYMNAME_MAXLEN,
-+			 "%s%s%s%s%s%s%s%s",
-+			 model, BFA_FCS_PORT_SYMBNAME_SEPARATOR,
-+			 driver_info->version, BFA_FCS_PORT_SYMBNAME_SEPARATOR,
-+			 driver_info->host_machine_name, BFA_FCS_PORT_SYMBNAME_SEPARATOR,
-+			 driver_info->host_os_name, BFA_FCS_PORT_SYMBNAME_SEPARATOR);
- 	} else {
--		strlcat(port_cfg->sym_name.symname,
--			driver_info->host_os_name,
--			BFA_SYMNAME_MAXLEN);
--		strlcat(port_cfg->sym_name.symname,
--			BFA_FCS_PORT_SYMBNAME_SEPARATOR,
--			BFA_SYMNAME_MAXLEN);
--
--		/* Append host OS Patch Info */
--		strlcat(port_cfg->sym_name.symname,
--			driver_info->host_os_patch,
--			BFA_SYMNAME_MAXLEN);
-+		snprintf(port_cfg->sym_name.symname, BFA_SYMNAME_MAXLEN,
-+			 "%s%s%s%s%s%s%s%s%s",
-+			 model, BFA_FCS_PORT_SYMBNAME_SEPARATOR,
-+			 driver_info->version, BFA_FCS_PORT_SYMBNAME_SEPARATOR,
-+			 driver_info->host_machine_name, BFA_FCS_PORT_SYMBNAME_SEPARATOR,
-+			 driver_info->host_os_name, BFA_FCS_PORT_SYMBNAME_SEPARATOR,
-+			 driver_info->host_os_patch);
- 	}
-=20
- 	/* null terminate */
+ #ifdef CONFIG_CMDLINE
+ #if defined(CONFIG_CMDLINE_EXTEND)
+-	strlcat(cmdline, " ", COMMAND_LINE_SIZE);
+-	strlcat(cmdline, CONFIG_CMDLINE, COMMAND_LINE_SIZE);
++	{
++		size_t len =3D strlen(cmdline);
++
++		if (len < COMMAND_LINE_SIZE)
++			snprintf(cmdline + len, COMMAND_LINE_SIZE - len, " %s", CONFIG_CMDLINE)=
+;
++	}
+ #elif defined(CONFIG_CMDLINE_FORCE)
+ 	strscpy(cmdline, CONFIG_CMDLINE, COMMAND_LINE_SIZE);
+ #else
 --=20
 2.55.0.1032.g73a4cd73de-goog
 
