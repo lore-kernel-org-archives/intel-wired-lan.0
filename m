@@ -4,23 +4,23 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 468C7C982C1
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 15 Sep 2026 17:17:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1FE5EC88E75
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 15 Sep 2026 17:17:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 1627B80C2D;
+	by smtp1.osuosl.org (Postfix) with ESMTP id E323080BF7;
 	Tue, 15 Sep 2026 17:17:56 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id S9Diqr_TDqwk; Tue, 15 Sep 2026 17:17:55 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org E3BD080BF0
+ id EuEt8h7vADz0; Tue, 15 Sep 2026 17:17:56 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org C7E1280AEC
 Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789492675;
-	b=F0xuxik0DEs0cQBbj51RinAda0G3+xFjke/v3W0YUIRxMy8lC6/sCiigWEkFzKCeaov9
-	 Y4CJuZnFzwJa5aKQXEkta1FG8cBIgqn7tYYQukxuYV/yIygAE4d+xh5PbChsB9AhlruvD
-	 GObu5173Mbkw0I97n4Mi1A4cjKFpzWfE5FGVStawg5Sz8B06lcLUI0gPwZnxqJejXBWsi
-	 +bqM6oqZR83j79WxTFGEh4Y88XwIrt4XRjfnJAT8Tjm3wjtEdElIsbowFt3keHDarDshN
-	 /Uqz4JVngWhaj2AUmuUuS1Cgbcs/23qOTZgVttlUzzRWwcqfe9pLPpQU4hetqLGnYMw==
+	b=eAhiQzYLhK8hkahn59/RZ01kxFj6rHJsOqKJS3lMmQ0fBvb1eh0BfTeFMuiIFgb9skkp
+	 8Qcagvde2+AF7W3usEX5G4h2GtciDSv0/yzS5sZyOB9fVzrBEQbSvBDAaqCGbRC8v/S1g
+	 XuqvN43iim87YlfkCfgX1sNStc5JBMsTodRTEsXGJ6oJosU6QPaqFW+/VSlQKcYhO+gn7
+	 Sr/V6qZevD32pNMKiMZZp0jcjRN6Wwry/R01QhYKfofSPx0bnfaMiE3NBOdRsso6M0sLm
+	 f7y4vc7YhJodLQaJQu2mDBzDxwgbauqn3eKCQI/Q4o3fmeg6PeF+yiJelIc+bgpTHug==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	c=relaxed/relaxed; t=1789492675;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
@@ -32,124 +32,125 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 Content-Transfer-Encoding:X-Mailman-Approved-At:X-BeenThere:
 	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=jabuqrMs8PQTYoTuRH1Tce2jM5ZfyHhnXojFxmEofr0=;
-	b=bOdS1aysJ/go5igZaFKnQ/qTp+GFU/kIHDYRUeI9tyGtEPqZ1hPts7DFRE/HpPgFeN4A
-	 NFX3IkcYd3VMzZHmbuj/fPNwsMw9EjkLCUREi/Lm/KhNfiQiVmS01Med20hOzY0Gz0Cse
-	 TwRm0T2cikQ+kGtSkXPSHTy7c1EHqeuO5mWEXFZJxWZ2g8hmTZYwHJwZgRMh08N8Yu7Sa
-	 rtviMqAj3GAHn13lnIzCuyKk3/I3wLviA1+O0uxbPXE6XzQc6VADuxNcuo/0DOJZwUP69
-	 c8xEd0Tb+uDGIUaltIiKxKEpef88KIEKjvfNj38VPeqEz8ywLftfPhBN+sBkWFeG7hg==
+	bh=jD1fGYdmSfmtHfbCTu69NC0iIcRgu3QWne7aaYuG46g=;
+	b=CjAI7Q2R1BvMPX9zDpVoWubgxc5pbwmSyZdqfM7miDffTd+a3LfJlhmunm/Az21rEN4b
+	 vMUaboOdak94VtZYaVKuqM+G60uxE6tOk6gI+ovcZvQQF6aYzabVDyEVKxERvVOkJS4Y9
+	 NpIuQQTIzATXcogHcA5YsgxLGCpL0U3ckCZUKrI3bUgavnHj2dGVxFXq/kPgXI+dw2oCv
+	 4ZRrG8XgNCSfXumES/fOMDiuU4xw6DUiDrNLLU3OQJWHviS70LavUGOar9tXO/0PA6Sr2
+	 DoiJFxmLWeCDmSnHAh61SeEcAZ+Wdp6hfAo+kW5zPd7mbZsMokx/lMgMI9F9Q64KxqA==
 ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1789492674;
-	bh=jabuqrMs8PQTYoTuRH1Tce2jM5ZfyHhnXojFxmEofr0=;
+	s=default; t=1789492675;
+	bh=jD1fGYdmSfmtHfbCTu69NC0iIcRgu3QWne7aaYuG46g=;
 	h=Date:In-Reply-To:References:Subject:From:To:Cc:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=OSbPzE7oBf6KugPYjD+FVjEmyuWdHDFjFve3VV0gtCnLPEpnTD/4f8Xr63QeVSBF4
-	 fHEenDrsFXKf95VHCONLhjyG0O9nBO6790yAj3kslC2SFvd93nDmhdQ8osdZ/3GfPb
-	 vQPbNZuiChhpJXJQMtx0Nv0h5f0KUTE0jhac9x+iJr5UW62CtKobiEBf4As0CFUDpx
-	 i/W79cE35FcNtuVHpI80IwFCkNS73r3lkLiGiwhUjyBVCRu1NunhJZiQZGG16FqxdY
-	 96cooy5hJMx/tKQgreTAXphoSLJU+HyBxo+3egor6WwYXNJK9wVtdfAE+XxTIhY4Oa
-	 J5qrkbyveGUQg==
+	b=gKbi2auBgZ32fI0QEEaYjfvWzg7dclcpzaPKWyBsVxKQBucP+98gJUCHvmBzQIaec
+	 RFdBBo8T48EFDXqH5Ek7jtxQ1qgKulOztSnEee8t8+VCIe79YpFyw76zyt+dQhI6DP
+	 O3/3miWE/oKnVnGYNm2EDlprpPaHl+ClBlQNy96G0mtkFT7LklOy1oTITho50Z1T+D
+	 sJO9cM0as2a+8qSi//isCwMblM9IQCEBsIU4xZN7qsVKFpwJQKIN4jGPtZOpeQsHyJ
+	 +GJbvpajTikNI+hJC2OBErzSutrP3VYbC/MwozSU8gNMOqzso6Pg25DWac4ylf0RO3
+	 Cw0ER/EKeRJjQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id E3BD080BF0;
-	Tue, 15 Sep 2026 17:17:54 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 312942E3
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 08:20:11 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id C7E1280AEC;
+	Tue, 15 Sep 2026 17:17:55 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 4B71C493
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 08:20:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 1711F4018D
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 08:20:11 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 3DE7C40402
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 08:20:12 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id J66VLqBNr08E for <intel-wired-lan@lists.osuosl.org>;
- Tue, 15 Sep 2026 08:20:10 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org 0B669401A2
-Authentication-Results: smtp2.osuosl.org;
- arc=none smtp.remote-ip="2607:f8b0:4864:20::646"
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789460410;
- b=eIbPJO/De/9EXdYHLWAu6LE/38C7TkOeBdtsz7iQ7Hnaz7SnQBY0YwsKsSw7Qj4A2TTD
- Evi4gMu7bw752rW9X3TVSxjo1edvcge0JE5r0Xzob47xRsp4l8V31r208/bA2pe1eSEcK
- cJNHuAgklV8F35vbotiakKjKKayiet6bFDPEAx2+mjUWv6QYwFiJEj6bAI34FxHDLsXHy
- dbZaxYbfUel8Swro1cshga0XP7zYlA7crwOS9Dr9JTYP+66nI+0hOpvgDOsZVsCML0OY3
- xYsp8kG/fLUsErIlm2kxk+nJf5dvUWdX45W+ZYFR/o8/nv8DfnIlFAD0t4tsdFQZDpQ==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id wucy6hOlAxUD for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 15 Sep 2026 08:20:11 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 39AB6403A1
+Authentication-Results: smtp4.osuosl.org;
+ arc=none smtp.remote-ip="2607:f8b0:4864:20::645"
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789460411;
+ b=C6HJNsLzS7ixBdBHdrSVbAA3zgp/mSFbLctoYO1O2eIQcZTq9Tsz3ubzImJODI4ZJOxj
+ K+BWH0vu19s1Hkxpknk5bDI8Ie2z5Y9X96HJI6MpJPHn+BkPPocoFo6D3Z2Ai6E7xztgG
+ VTgdbZRxEVDqlthjjasU/E597k52xj79LoZxaYSd6i9sbbIvH20Q5VKJXL2uYzRVZbZE9
+ Laid3ZitaJMQ85j8+9xd+ymY7or1MOHrn7c8Hf7KU1OekjLwzbC22lbyhdlNAucNTnZFZ
+ 1xBabirBKrS0Bw5O1XsinM4CqcfOteWWBqLrZcdwVoIdThYKlmoUED1j2pKcpxZJ5sw==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1789460410;
+ c=relaxed/relaxed; t=1789460411;
  h=Received-SPF:Received:DKIM-Signature:X-Google-DKIM-Signature:
  X-Forwarded-Encrypted:X-Gm-Message-State:X-Received:Date:In-Reply-To:
  Mime-Version:References:X-Mailer:Message-ID:Subject:From:To:Cc:
  Content-Type:Content-Transfer-Encoding;
- bh=jabuqrMs8PQTYoTuRH1Tce2jM5ZfyHhnXojFxmEofr0=;
- b=Aztqq7IhxpwGLSHQ3cM+vG78AAbgUjShqUap8Bj0vjyOHeXgmpZ5qf/EQiiP4IH6ITNg
- fOvUqXnJYlyLwYWyitC+awDwdx3YyLnkw4VaesJ3uam8U0+Gs4pnBZ62YGA/jwAKJOwxi
- 8Ghrby+A+lwk5JXgfhCj46kreuV+R+Nb2BnHGSIGbcdlSB+V1sUeFPpx+hIavnOsLX9hg
- 5oTK5oQsCzTaU+8xrDMxmcrhqQ0Pc0LhzBXiqFp9ZRiwCnNYh/Oryb0j2VW/b+Qi8XVof
- jqDrgvFccSv5wR+urhedTNUuqSFVVho2W28gpJTy5OLscd2ADop5kFhdxIXlJIdD7zQ==
-ARC-Authentication-Results: i=1; smtp2.osuosl.org;
+ bh=jD1fGYdmSfmtHfbCTu69NC0iIcRgu3QWne7aaYuG46g=;
+ b=lLRfhkzrSZyT7dCj/ouXjTotE+8V1WqMgcrHacXFkeyzJuAmRE0cH+SAvwnQd9DfdCsd
+ NrghFXmAsf3rgG6WiSMxeIeBID3QVPu3zYT5AfmedMOWEJYZcVoonzCQsZljm9sZI7p9U
+ u/oLLOoOKjgENYn9doXeuowNOSLhkGKuIbYFi97rq0cljdiWl4TXOxDpHXOKvc1GaMzg3
+ RH7LDealwKpMOAgH/3waxWU2F1IEPuuTxgfDhujEMcs8gdFzTmEr4uEjomZu+YlU446hw
+ Cw5CSPVDypDrscpW/LS0fhCU4FhTtOI9nBnkLifWntCp1KfNLIc2Y0WPHecZgbqKy8w==
+ARC-Authentication-Results: i=1; smtp4.osuosl.org;
  dmarc=pass header.from=google.com; 
  dkim=pass header.d=google.com header.i=@google.com header.a=rsa-sha256
- header.s=20251104 header.b=hU4NMCGx; 
- arc=none smtp.remote-ip="2607:f8b0:4864:20::646"
+ header.s=20251104 header.b=r7WpkVQu; 
+ arc=none smtp.remote-ip="2607:f8b0:4864:20::645"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::646; helo=mail-pl1-x646.google.com;
- envelope-from=3t_-oagukd7yiknxkckkcha.ykiejpah-senaz-hwjheopo.koqkoh.knc@flex--morbo.bounces.google.com;
+ client-ip=2607:f8b0:4864:20::645; helo=mail-pl1-x645.google.com;
+ envelope-from=3up-oagukd7cjloyldlldib.zljfkqbi-tfoba-ixkifpqp.lprlpi.lod@flex--morbo.bounces.google.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org;
+Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp2.osuosl.org;
+Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
- header.a=rsa-sha256 header.s=20251104 header.b=hU4NMCGx
-Received: from mail-pl1-x646.google.com (mail-pl1-x646.google.com
- [IPv6:2607:f8b0:4864:20::646])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 0B669401A2
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 08:20:08 +0000 (UTC)
-Received: by mail-pl1-x646.google.com with SMTP id
- d9443c01a7336-2cec4226c70so55725915ad.1
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 01:20:08 -0700 (PDT)
+ header.a=rsa-sha256 header.s=20251104 header.b=r7WpkVQu
+Received: from mail-pl1-x645.google.com (mail-pl1-x645.google.com
+ [IPv6:2607:f8b0:4864:20::645])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 39AB6403A1
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 08:20:09 +0000 (UTC)
+Received: by mail-pl1-x645.google.com with SMTP id
+ d9443c01a7336-2d001671a54so82266065ad.2
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 01:20:09 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=google.com; s=20251104; t=1789460408; x=1790065208; darn=lists.osuosl.org;
+ d=google.com; s=20251104; t=1789460409; x=1790065209; darn=lists.osuosl.org;
  h=content-transfer-encoding:content-type:cc:to:from:subject
  :message-id:references:mime-version:in-reply-to:date:from:to:cc
  :subject:date:message-id:reply-to:content-type;
- bh=jabuqrMs8PQTYoTuRH1Tce2jM5ZfyHhnXojFxmEofr0=;
- b=hU4NMCGx+8RGwEN58r+NRm+s8AjyMuERMyJFUggNz9FpI6bPOu/RePvLGicS/5/O8b
- WTtRkU8k9URSes80K2l+TMQfYQJPX5eg0cFtdDyecjHZDLipjmUJUW/N8KCSjvHkNTiC
- 5GpacGNbMdWK6/+MDuh68P8cSBbvnOuCffH/+vwC5xgPVNx/S2HKBIwurREP/NEm3T8r
- fCwWplYRChlPmYMp8SV4doeaQSOHMAoYoILCaQl72kjJEzALcE6oy0DnXyMrVp/8ekF3
- 8TF+axGmICPPzU8cE6M61h4A4WKp5khdU5oBs1vnPl/R0AO327+8QvkFx0w0KCQunDc0
- 4FxA==
+ bh=jD1fGYdmSfmtHfbCTu69NC0iIcRgu3QWne7aaYuG46g=;
+ b=r7WpkVQuINm45qXhSWxIpfXG7MaYlSr9z50cVixVRNzPMdZUSDw5jcrM81DO/oikHH
+ sGraQ8+vtgHDHsxaiKTlhIO43yVXmJmCNt7Yol67CaeXPP0KcgLy9JWJyVNRAEtiJ6H8
+ 9mmlH+jbfX21V7Iw+GOHnL9yvMB7CiugV0yup1naWaZO9aQxqQA1vXJef3IQMdNsV7JT
+ TuqEkTkinpH28OYQty5iRP0+ae+TQZKo9i2fJBClmoCBhYAacVNx6eOjgqsmKUDM1frb
+ GcUdH1nK7hgUDE2gwupHVXY/VQ3eEP1fOQPoAW/HiUrAjYpZMrl0jB2TZH7t1tR0z+tI
+ 3FDQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1789460408; x=1790065208;
+ d=1e100.net; s=20260707; t=1789460409; x=1790065209;
  h=content-transfer-encoding:content-type:cc:to:from:subject
  :message-id:references:mime-version:in-reply-to:date
  :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
  :content-type;
- bh=jabuqrMs8PQTYoTuRH1Tce2jM5ZfyHhnXojFxmEofr0=;
- b=awCaQwLRCs2vRlKYvuC3xQM6vT+UaObfQKSQbirEbe2ZnewFc/0lGzFq05iTQd5/OQ
- jlliv2nBv0eGIA6mkOTprzAitoSA93Cb0zMVlTyEkOtXf7easNFLPFsaE5M99ilqqgrB
- 4c/0PHdnACr1d+xNR6MYCx3HIPHIveE2+I5lulE1tDX8xFnVw/MaV/3OmyVv36zgzSzt
- wgUMJmcwsbH3J48xHv5G+rLvUVFTMxzO3KQ5F3ywDbCwN/KEKwGDNvwOo/GL2L0t4s2c
- u+bXVAkqEoOYMT+YIT8rE3+g24qxytbbOqyClIv7t7qWOPtYL3IQwb10bsVzjPXbIXhw
- Tsaw==
+ bh=jD1fGYdmSfmtHfbCTu69NC0iIcRgu3QWne7aaYuG46g=;
+ b=GSG+b7oAKR1T06ogBr+UHtCO2I0z8I/intD4Q8/apwesQM8y6BBpxAWU6UB1sXa4ij
+ U2ILk3uaMi/Q+y1E7fl0oBdn9ujx4wm0zYMWixRObBSagJCdw5bqIbTa7m6ZgzltMhPU
+ Yy20c+zPj0MVi5hYtXV3aV/ifRy0YSpyod6NK9LZx6TYUdLHNCsrXcdNFpF9VQZCZsYe
+ XSauwkvuQY4HAvxSfwnI1nC1rprC0TVZUCN2XGJzfgf/p/6lmIXlvCu0yVgjxjIrgy6Z
+ dfXDnwgQVeeT9FWNFR1PM+hR4ESM42p76hYe9s9yIs4I9dbACnrYVFReUHd7Y4HL/nDA
+ CC/w==
 X-Forwarded-Encrypted: i=1;
- AKwUvBycYcf9THCIFQ3Re+IWthT0aoYTrhDLOdIStSn8n92GmBbB1eGeCMwy2M3o65XnCZcuueeb0RcW4YS5apYBq/U=@lists.osuosl.org
-X-Gm-Message-State: AFuF++lZPdAmxSdDWikCLIPL0xrLK2Y0D24j3Fm3b8waHyH3puW2Vb1b
- 0ZxCj8OI8OeQrqMvtVcXbNmRqluAiSh9Q5R07RqbCwIopf/CNgfyZKvGmBe4Q9avXlupfBPi3kh
- n
-X-Received: from plde9.prod.google.com ([2002:a17:902:d389:b0:2db:820a:9228])
+ AKwUvBzAHGnRGBvkBH93kUD9eQCfvHYa/MJPZxqfMp7LenU+b/JUK3FIg6Yb1i48NNdS88w4LYxNec8+lmHzuKLExi0=@lists.osuosl.org
+X-Gm-Message-State: AFuF++nTXgPrk9sCdZU0K0s3WYlidxMaXpkNyuXn9UHDkZQYNjAlquf2
+ ebQ4vpUyH0paGg3rxUYfrZi1GcPJ+LRJ08kbQeQOnRF2qOSLAbK8h3nazfv48wM0PrbFBiJyZ4Y
+ u
+X-Received: from plbkq15.prod.google.com ([2002:a17:903:284f:b0:2dd:1c44:fe2])
  (user=morbo job=prod-delivery.src-stubby-dispatcher) by
- 2002:a17:902:f786:b0:2dd:4070:8f5
- with SMTP id d9443c01a7336-2dd6c758602mr148465515ad.21.1789460407562; Tue, 15
- Sep 2026 01:20:07 -0700 (PDT)
-Date: Tue, 15 Sep 2026 08:18:32 +0000
+ 2002:a17:903:1a0c:b0:2d9:464f:d45f
+ with SMTP id d9443c01a7336-2dd6c5ba2f0mr129830935ad.5.1789460408347; Tue, 15
+ Sep 2026 01:20:08 -0700 (PDT)
+Date: Tue, 15 Sep 2026 08:18:33 +0000
 In-Reply-To: <20260915081910.4142719-1-morbo@google.com>
 Mime-Version: 1.0
 References: <20260915081910.4142719-1-morbo@google.com>
 X-Mailer: git-send-email 2.55.0.1032.g73a4cd73de-goog
-Message-ID: <20260915081910.4142719-16-morbo@google.com>
-Subject: [PATCH 15/28] orangefs: Use seq_buf for debug help string generation
+Message-ID: <20260915081910.4142719-17-morbo@google.com>
+Subject: [PATCH 16/28] pinctrl: samsung: Use snprintf() to construct pin bank
+ names
 From: Bill Wendling <morbo@google.com>
 To: linux-kernel@vger.kernel.org
 Cc: Bill Wendling <morbo@google.com>, codemender-patching+linux@google.com, 
@@ -242,23 +243,17 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-orangefs_prepare_debugfs_help_string() constructs the debugfs help text in
-a dynamically allocated buffer using repeated strlcat() calls across
-keyword loops, rescanning the buffer on every append.
+samsung_banks_node_get() constructs each pin bank node name by copying
+bank->name with strscpy() and appending the suffix with strlcat().
 
-In preparation for removing the deprecated strlcat() API[1], use struct
-seq_buf to build the help string. This tracks the write position across
-the loops, allows formatting each keyword line with a single
-seq_buf_printf() call, and checks for truncation via
-seq_buf_has_overflowed().
-
-Additionally, replace the final strlcat() call that copies the completed
-string into debug_help_string with strscpy().
+In preparation for removing the deprecated strlcat() API[1], format the
+node name in a single snprintf() call, which preserves the existing
+truncation check against sizeof(node_name).
 
 Link: https://github.com/KSPP/linux/issues/370 [1]
 Cc: codemender-patching+linux@google.com
-Assisted-by: Gemini:gemini-2.0-flash-exp [shell_command_run, editor_update_=
-file]
+Assisted-by: Gemini:Pro [editor_update_file, make_kernel_build_single_file,=
+ checkpatch_run]
 Signed-off-by: Bill Wendling <morbo@google.com>
 ---
 Cc: Russell King <linux@armlinux.org.uk>
@@ -372,97 +367,26 @@ Cc: devel@lists.orangefs.org
 Cc: linux-hardening@vger.kernel.org
 Cc: linux-sound@vger.kernel.org
 ---
- fs/orangefs/orangefs-debugfs.c | 36 +++++++++++++---------------------
- 1 file changed, 14 insertions(+), 22 deletions(-)
+ drivers/pinctrl/samsung/pinctrl-samsung.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/fs/orangefs/orangefs-debugfs.c b/fs/orangefs/orangefs-debugfs.=
-c
-index 9f94919a6bc6..6e2f9887eab4 100644
---- a/fs/orangefs/orangefs-debugfs.c
-+++ b/fs/orangefs/orangefs-debugfs.c
-@@ -37,6 +37,7 @@
-  */
- #include <linux/debugfs.h>
- #include <linux/slab.h>
-+#include <linux/seq_buf.h>
+diff --git a/drivers/pinctrl/samsung/pinctrl-samsung.c b/drivers/pinctrl/sa=
+msung/pinctrl-samsung.c
+index 5ecc9ed4c44d..0d639eec689c 100644
+--- a/drivers/pinctrl/samsung/pinctrl-samsung.c
++++ b/drivers/pinctrl/samsung/pinctrl-samsung.c
+@@ -1155,8 +1155,7 @@ static void samsung_banks_node_get(struct device *dev=
+, struct samsung_pinctrl_dr
 =20
- #include <linux/uaccess.h>
-=20
-@@ -623,10 +624,10 @@ int orangefs_prepare_debugfs_help_string(int at_boot)
- 	char *client_title =3D "Client Debug Keywords:\n";
- 	char *kernel_title =3D "Kernel Debug Keywords:\n";
- 	size_t string_size =3D  DEBUG_HELP_STRING_SIZE;
--	size_t result_size;
- 	size_t i;
- 	char *new;
- 	int rc =3D -EINVAL;
-+	struct seq_buf s;
-=20
- 	gossip_debug(GOSSIP_UTILS_DEBUG, "%s: start\n", __func__);
-=20
-@@ -640,17 +641,14 @@ int orangefs_prepare_debugfs_help_string(int at_boot)
- 		goto out;
- 	}
-=20
-+	seq_buf_init(&s, new, string_size);
-+
- 	/*
--	 * strlcat(dst, src, size) will append at most
--	 * "size - strlen(dst) - 1" bytes of src onto dst,
--	 * null terminating the result, and return the total
--	 * length of the string it tried to create.
--	 *
- 	 * We'll just plow through here building our new debug
--	 * help string and let strlcat take care of assuring that
-+	 * help string and let seq_buf take care of assuring that
- 	 * dst doesn't overflow.
- 	 */
--	strlcat(new, client_title, string_size);
-+	seq_buf_puts(&s, client_title);
-=20
- 	if (!at_boot) {
-=20
-@@ -665,24 +663,18 @@ int orangefs_prepare_debugfs_help_string(int at_boot)
- 			goto out;
- 		}
-=20
--		for (i =3D 0; i < cdm_element_count; i++) {
--			strlcat(new, "\t", string_size);
--			strlcat(new, cdm_array[i].keyword, string_size);
--			strlcat(new, "\n", string_size);
--		}
-+		for (i =3D 0; i < cdm_element_count; i++)
-+			seq_buf_printf(&s, "\t%s\n", cdm_array[i].keyword);
- 	}
-=20
--	strlcat(new, "\n", string_size);
--	strlcat(new, kernel_title, string_size);
-+	seq_buf_puts(&s, "\n");
-+	seq_buf_puts(&s, kernel_title);
-=20
--	for (i =3D 0; i < num_kmod_keyword_mask_map; i++) {
--		strlcat(new, "\t", string_size);
--		strlcat(new, s_kmod_keyword_mask_map[i].keyword, string_size);
--		result_size =3D strlcat(new, "\n", string_size);
--	}
-+	for (i =3D 0; i < num_kmod_keyword_mask_map; i++)
-+		seq_buf_printf(&s, "\t%s\n", s_kmod_keyword_mask_map[i].keyword);
-=20
- 	/* See if we tried to put too many bytes into "new"... */
--	if (result_size >=3D string_size) {
-+	if (seq_buf_has_overflowed(&s)) {
- 		kfree(new);
- 		goto out;
- 	}
-@@ -692,7 +684,7 @@ int orangefs_prepare_debugfs_help_string(int at_boot)
- 	} else {
- 		mutex_lock(&orangefs_help_file_lock);
- 		memset(debug_help_string, 0, DEBUG_HELP_STRING_SIZE);
--		strlcat(debug_help_string, new, string_size);
-+		strscpy(debug_help_string, new, DEBUG_HELP_STRING_SIZE);
- 		mutex_unlock(&orangefs_help_file_lock);
- 		kfree(new);
- 	}
+ 	bank =3D d->pin_banks;
+ 	for (i =3D 0; i < d->nr_banks; ++i, ++bank) {
+-		strscpy(node_name, bank->name, sizeof(node_name));
+-		len =3D strlcat(node_name, suffix, sizeof(node_name));
++		len =3D snprintf(node_name, sizeof(node_name), "%s%s", bank->name, suffi=
+x);
+ 		if (len >=3D sizeof(node_name)) {
+ 			dev_err(dev, "Too long pin bank name '%s', ignoring\n",
+ 				bank->name);
 --=20
 2.55.0.1032.g73a4cd73de-goog
 
