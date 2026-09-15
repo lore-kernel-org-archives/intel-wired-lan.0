@@ -4,25 +4,25 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E877C88E7B
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 15 Sep 2026 12:56:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E6187C88E53
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 15 Sep 2026 12:56:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2E2796077E;
-	Tue, 15 Sep 2026 12:56:14 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id B4CEE60794;
+	Tue, 15 Sep 2026 12:56:15 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id e6YeS10AWH4P; Tue, 15 Sep 2026 12:56:12 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 6B8E56077C
+ id NmJzFmg7aCn3; Tue, 15 Sep 2026 12:56:15 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 298D360786
 Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789476972;
-	b=lCDQLGBA+OcRjGiEuQTAIYddZxFIUj99kWu8NHmTHgYivEKMW1YxRmaQYoTdn1A+lZH1
-	 EMIJ99LyD5SAwvnnOg1VDwZJPgtXAT5zrNslSYadVCS8mV6KjdjUp4NduR2G2R7WdttqX
-	 HT3bWk2UxvcvgvL6Kvri+AbT7uPu41O7A/hBCCcZeOV0D0NWdVQsK2D0nWS73D5DAMMIe
-	 vKfJ9478Pe17AGp4RUycvRb2XDgef6ntrvtPElzYILhijPlpYMOKXWbrUXSC0RxrG6E8W
-	 SQ/6Byi6VEAFzBdYLmhUHg68nGZIDJOe1XXfnYruNKJzfCFoRuO5BZsx7UxJHt1Kp5g==
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789476975;
+	b=cosrC7xwNycAYlqYIQ+A/86Ghg8XIigO2gVHOqY+vOq9EBP9pJYqE2b/VVcRdZImYW7t
+	 rMAA9sZzPVxhzqlk3x+I2kR6vFU8OZXjcS4d8sRALBdyr0fuSmFsT3YLKlXZKr8h3TzkF
+	 qRcZLSeAy3qvxTJG5ZQhyqZC+c/ijkoquXgBXwhiKGTHnjHpx/MSz/45sV6q9xYEMYBH+
+	 RdMU9BSME207qQQZuHNAa0EH2R/Y7rycebZY6Ddv73LR8k1AeAR2WPEzoysjHDEVmUAX/
+	 FVAXZuj8deKMwbg8HhF1BtIpMnYTa1TUq3SyFPk5t79BNmwKF8n159slij2HsFa/faA==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1789476972;
+	c=relaxed/relaxed; t=1789476975;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
@@ -32,110 +32,112 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 References:MIME-Version:Content-Transfer-Encoding:X-BeenThere:
 	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=4kq2YCiyJkXHBqb9Qmr9XRWDDAzrONZ+YXKObzvbJrA=;
-	b=acF2tNfi6cjJV9HUSRoJDl3lso5NcRHDxVut0BFiKYDsUrRSbb0CqbV+doWuFg+gjNaN
-	 0JihJ9uJAQNNyZReCj9v/PHjMICcjHHSNAitXvXHHenyJK/fUt0IYem8xkfYaaqvGaonM
-	 PCyEREh73gFRIKbPxkNTltWrQ9CK6qE7jOz71FYBMKMVpxmb3OAHaXt3/YKOCgAFtBds8
-	 fAfeJR35UVahr1rhqPPZ3zfV0ECnwsaLv4/uJ3vWeb6/sRyfYtITvr/bvDo06rlhcBuCO
-	 SKF8rrcHXFPpJjk1UOof7D8FV8voRioLwFhGu9j0EzxiomNb7ipiEUez79xDKhS4B2Q==
-ARC-Authentication-Results: i=2; smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	bh=AnwrEzHqLaA/DGUahrUo8iuMuW8GGkjoQoJVIGUoRnQ=;
+	b=sRPta/Y7UYK3Oz2jD0JxQcci5XYMewRcK1uXupRb1Wfb6/88l5H+inyLWE7fDX+rMfnw
+	 38fb9dvyueZvb05xbtDZMR6L39l0PHMKLXncpm0q3N5YK05a33kOpmEUPjdRTjncaPoEU
+	 +yhW0ma+xkydnjBx5DdU4v+JA9Y7u+utWEsKg0Ud8cNfd7RPGG5MNO+BZpn6aNGwWOIvt
+	 E4vURpunq1c5Kdw9iShMdtsCLt/PdDpJ0KhPjOFg/TlIcOGZksUPJS3kCZAQf57pugVwv
+	 2LVAfuncHKSWH+j96Ou3Jpkm/mWWUOLFQ07RWdkIjERgykuvNiZXqAaDZHhvaM9DTHg==
+ARC-Authentication-Results: i=2; smtp3.osuosl.org; dmarc=pass header.from=intel.com;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=cSVEMbV8;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1789476972;
-	bh=4kq2YCiyJkXHBqb9Qmr9XRWDDAzrONZ+YXKObzvbJrA=;
+	s=default; t=1789476975;
+	bh=AnwrEzHqLaA/DGUahrUo8iuMuW8GGkjoQoJVIGUoRnQ=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=8kWeIzgemNAzjjf2ukgn0FXRQtzMdSMnLnWamtyWRAgQWnNS8T657CkcPnRPi41TZ
-	 5j79wT4LVKckWItf5G7hp61k25XxoTyJNtKcxi1NZ4jRarL5waH1ojmh+po2oWBhj5
-	 LTOT4u5FkSOO4KQvgkmczUAqutpuaK6qWCZRwiLWDuP7TkGq68fnc3+Zhqa1JaG6nt
-	 sdkzaL3Jb/Jrn44VJ7jP28KJuIBA7yDqshgfKJQF7sGZlShddvfGelL4+k1RM6aZci
-	 iUDxxC1f3clgJb79QRL8/M6OZt55pR1oG9Zo+GnWD9BA75MHLp+yYuTC9mGjTdssEu
-	 hyPrLsjmeSjrA==
+	b=pnztRSUDx2xOd5kp1BchjNH3gA4flqjQG7U9pkEaarSLxN5M6QUvkTyksSQSPU5sz
+	 NcSr3y6z19ry+fMwoI9lIJKOWVqWC/XQDHYpI2El5EbGuxHn3ot5/sq88/tzZTQQDR
+	 ul38N6YGmxuUMQqYkzGOkrN269YEkxuSQmOZ8g9RHcgiF93zMSWW28dsv4rwUvitlJ
+	 CdAJpFKmJhfmvQjjNyoEqGXkVK4tdcevPYMFeSaR3kkIJKfAG0FQbfdY0OYHINveKX
+	 xS039D4QzApUGsoS4KePBCQP0YG9ovIMVhkHrDOvEPm6Aa//+bc39BoanUZEOdoSEh
+	 z/5wj4DFARE8Q==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 6B8E56077C;
-	Tue, 15 Sep 2026 12:56:12 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 56D5D259
+	by smtp3.osuosl.org (Postfix) with ESMTP id 298D360786;
+	Tue, 15 Sep 2026 12:56:15 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id BDB31259
  for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 12:56:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 3D2A4401DD
+ by smtp3.osuosl.org (Postfix) with ESMTP id A3BD5605E0
  for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 12:56:10 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id pl8_3GEDuJMW for <intel-wired-lan@lists.osuosl.org>;
- Tue, 15 Sep 2026 12:56:09 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org 3FF594002B
-Authentication-Results: smtp2.osuosl.org; arc=none smtp.remote-ip=198.175.65.9
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789476969;
- b=jCZNknlGIYfwmFxcoP39S4GQ4CywMnv9tTKuMdQM22Qk6yJJEWCDiIjSYrjWW2y4JUQz
- kjghqBcDKCC963+g2UK2CsAWiDn337T4VexLLDE0W+Cv8H4AabUctLJ4a3pZva2M1O2Q0
- E6joLSo0cNvg8vmhti2KHMHdfSqLei7ZEPbMRdcAOa9RYbwvT7WwgeEvnsG+h6TeW35ft
- wIRetB9+QZUsqUgx8NCnv+RXvUurxk4Efcapz2a5GIkGqlkznj2oqLtGn7OB9DK+0tpJX
- DmbMHO9IS7PmgdOJylg312tGtiC3HObGTKw53kaOGWq+V3/fDIrSZhLoe53fPCkb5sA==
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id LsEHFkfunQc2 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 15 Sep 2026 12:56:10 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 026556077C
+Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=198.175.65.9
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789476970;
+ b=fUWsJd4NJpfvX6yYy7SKGa594HZnEs8i7L/81y9/GbGEfBTCgta5eINHKaAhRyzvvJ58
+ qHHXQCJUnHgSgzwqlyQenk3vL9vWtiOnwZ21EWC/iVeqs4UdbE4X47o41lOYycjcBZSgF
+ YX95crEadCRrycCcC2Z0Wj88XH6zrD3FMTBXUsGZaopdOXXhBbtWiUhd730SJH35VfBkf
+ ABHlqNCGMu9vKNxrz1QdgtiYhQ/9tHnYH01S6cclLTCjiEB+D+ZZOyP0BblRvHVa6lBjp
+ FVlPRrd97czTV3jmE2HnnUyat3jns6nVluJI1U6tZ7ABTp8F3wGgJ3U4RQ6JLHQOSjw==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1789476969;
+ c=relaxed/relaxed; t=1789476970;
  h=Received-SPF:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
  X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
  X-CSE-MsgGUID:X-ExtLoop1:Received:From:To:Cc:Subject:Date:Message-ID:
  X-Mailer:In-Reply-To:References:MIME-Version:
  Content-Transfer-Encoding;
- bh=4kq2YCiyJkXHBqb9Qmr9XRWDDAzrONZ+YXKObzvbJrA=;
- b=qali9DXK17kB5W4x2Zkz/HyxpxxcvUFEJfKmpuJkfoDTBbRxeX5fDdoxdabVcQdaZa8k
- 1mwy30LyqenA5g8O3wvlKjQjOVzxK7X8DV6d4f775bnSgYVZ20ziyS+CKQtXTAlJR+3pV
- Tttnc+FG7QeBSygL2rwqp/eXJHx9FcD0FVXvN2YZxgUJViICI0aiCUruZcejQT4l9FeCK
- ku7CNfobRC5hBX6v4pXNcc+c2hh9LnQr3ZohOHLE8TqEJqq1lgxC4S2jlkPM9TjNykBq1
- b9KGWPVNlaozELEMIr+pqKl+XHeCQbiBk2Cfqqy+N6Yvz2HgFBIWHEGJtjppZTLCVNw==
-ARC-Authentication-Results: i=1; smtp2.osuosl.org;
+ bh=AnwrEzHqLaA/DGUahrUo8iuMuW8GGkjoQoJVIGUoRnQ=;
+ b=sqpnNgbvFw2b73oCrQ0q9HGm0CMpPi1IPSNKmsmaXBfhr6QTQghWLtYU2BP+Dlrj2Ajt
+ YYl+3wp0xaJnxEXjN1XBpTugA5MLO2vHgWnWXQtUDBRT5BNgcynagiH8wZxDWrL2nEvUQ
+ 5U5KjNjO9C+iAH6xdRCqNMVNkhF88/nhSWkf/LaSqcCFPgB+xOrq6FB+4SOnFrPbOrrsE
+ 4II1rpIgiPcg+kfSpXnByXlBGDlbB2PcGQe0SquJx7vOqya/C7wSEFgRSgbtlACHXACWJ
+ IXD7wrh+a8Dl2SfzTNjonirZi3twJSxPUEj7Lfee6RSw4DecL6wrtLArUS7NgMFySdw==
+ARC-Authentication-Results: i=1; smtp3.osuosl.org;
  dmarc=pass header.from=intel.com; 
  dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=fFiaNLRH; 
+ header.s=Intel header.b=cSVEMbV8; 
  arc=none smtp.remote-ip=198.175.65.9
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.9;
  helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org;
+Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp2.osuosl.org;
+Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=fFiaNLRH
+ header.a=rsa-sha256 header.s=Intel header.b=cSVEMbV8
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 3FF594002B
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 026556077C
  for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 12:56:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1789476969; x=1821012969;
+ t=1789476970; x=1821012970;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=SVi2QyFt7LAfpt1ccmZ+QuM4IbdNUnhyGVGSXCmWt90=;
- b=fFiaNLRHo/1ADviMCKdUup0KXV1WxtptT3O0++OnbSiKP+NsoKuL7U+D
- zQ9KfZFbX38EwoxlSugeslvJlDZBT4GfL4HgGlhNy1Nh4HkFQc0AOyDii
- 4jQpMsaPOK2gF5vWhsb8uTGS35c94lm7oKYUtBuef8GLZUIegi3wWTyZg
- nwNGSkYGVLmLLw4dRBMaAHAsNCIoZ55PgM879yLHDhCWEojy6xe/L4gjb
- iGLjO0sYCMmYLtb9yT6oG3jsr71djdtYD9OBNWh5X+It9lqzHLZoV8M1b
- g5/Pp1+HtJk4RZHcY+BOkUb8CFkd6uaovyjLHjUBqyLCD2pXD71tpyiVw g==;
-X-CSE-ConnectionGUID: em8fHETSRiemVPGMX5Hqsw==
-X-CSE-MsgGUID: h3XcNI2dSaG+Os02PJps5w==
-X-IronPort-AV: E=McAfee;i="6800,10657,11905"; a="112607077"
-X-IronPort-AV: E=Sophos;i="6.27,103,1787036400"; d="scan'208";a="112607077"
+ bh=KehZcwkWdnhWf0oheib2pksWiItrtHlAvJaoTz5VeWw=;
+ b=cSVEMbV8GFxEJa3Ol/CqI7tzj1AIjd6usx4b0LePHGS+pgZ0v4Q+eCW5
+ zQTA5H1RnsqVOf2haGd9IL/Zpc+FiWZyxoIMvORV2DtJOe8PKr8LdUGdW
+ 6BGa4/kHtU42yrYPRYbpdMzCACaAt/t4DpsXgV9AazIoeZoIk9jv0L/fK
+ lvH0mszQHJtlKxTwsgG5yPHIN+OB5Hpsy0M1L73goG9iWIkxwC2iBKcSv
+ miPhT7uQL4a9vQ90P8yd5TJFnTtRuvsGPuoC3NYkWCyXfo4iZy6+tlvde
+ nRbRFbQKuH50NfuQ65j6TvbG2VDSuSxWnvgCLKYWeiXHWJCWtbg0bj9j9 Q==;
+X-CSE-ConnectionGUID: 1kJ4mKEDTKSCex0TNICBKQ==
+X-CSE-MsgGUID: +pnEoVy2RBmI6hb7QyPXdg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11905"; a="112607087"
+X-IronPort-AV: E=Sophos;i="6.27,103,1787036400"; d="scan'208";a="112607087"
 Received: from fmviesa003.fm.intel.com ([10.60.135.143])
  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 15 Sep 2026 05:55:55 -0700
-X-CSE-ConnectionGUID: Hg/7Z68QRw+R9IW5vH3RXw==
-X-CSE-MsgGUID: cE0OiWPZRyW13+J2Pfgjkg==
+ 15 Sep 2026 05:55:58 -0700
+X-CSE-ConnectionGUID: 0drApu48TcSxA8bkTa18UA==
+X-CSE-MsgGUID: O7ePtFbmT6mtTuc3RJveSw==
 X-ExtLoop1: 1
 Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by fmviesa003.fm.intel.com with ESMTP; 15 Sep 2026 05:55:53 -0700
+ by fmviesa003.fm.intel.com with ESMTP; 15 Sep 2026 05:55:56 -0700
 From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 To: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
  aleksandr.loktionov@intel.com
 Cc: netdev@vger.kernel.org,
-	Kiran Patil <kiran.patil@intel.com>
-Subject: [PATCH iwl-net v2 1/5] iavf: fix null pointer dereference in
- iavf_detect_recover_hung
-Date: Tue, 15 Sep 2026 14:55:47 +0200
-Message-ID: <20260915125551.3976068-2-aleksandr.loktionov@intel.com>
+ Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
+Subject: [PATCH iwl-net v2 3/5] iavf: prevent VSI corruption when ring params
+ changed during reset
+Date: Tue, 15 Sep 2026 14:55:49 +0200
+Message-ID: <20260915125551.3976068-4-aleksandr.loktionov@intel.com>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <20260915125551.3976068-1-aleksandr.loktionov@intel.com>
 References: <20260915125551.3976068-1-aleksandr.loktionov@intel.com>
@@ -155,113 +157,40 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-From: Kiran Patil <kiran.patil@intel.com>
+From: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
 
-iavf_watchdog_task() and iavf_reset_task() both run as work items on the
-same ordered adapter->wq, so they can't race with each other. However,
-iavf_set_ringparam() (and other ethtool ops) call iavf_reset_step()
-directly from process context under the netdev instance lock, without
-going through that workqueue at all. iavf_reset_step() can free and
-reallocate adapter->tx_rings and the q_vectors array via
-iavf_reinit_interrupt_scheme() while adapter->state still reads
-__IAVF_RUNNING, so the watchdog task can concurrently call
-iavf_detect_recover_hung() and dereference a NULL q_vector inside
-iavf_force_wb(), or index into a NULL tx_rings array, causing a crash.
+Changing ring parameters via ethtool triggers a VF reset and queue
+reconfiguration. If ethtool is called again before the first reset
+completes, the second reset races with uninitialised queue state and
+can corrupt the VSI resource tree on the PF side.
 
-Guard against this by:
-- returning early if vsi->back->tx_rings itself is NULL, since
-  num_active_queues can still be nonzero while the array is being
-  reallocated;
-- skipping rings whose q_vector is NULL;
-- reading tx_ring->q_vector once with READ_ONCE() into a local variable
-  and reusing that same value for both the NULL check and the
-  iavf_force_wb() call, instead of re-reading the field right before
-  use, which would leave a window for the concurrent reset to swap it
-  from underneath us in between.
+Return -EAGAIN from iavf_set_ringparam() when the adapter is already
+resetting or its queues are disabled.
 
-Also move the tx_ring declaration into the loop body and drop the
-redundant outer NULL initialisation, which the compiler can never
-observe since an array-element address is always non-NULL.
-
-Fixes: 07d44190a389 ("i40e/i40evf: Detect and recover hung queue scenario")
+Fixes: fbb7ddfef253 ("i40evf: core ethtool functionality")
 Cc: stable@vger.kernel.org
-Signed-off-by: Kiran Patil <kiran.patil@intel.com>
+Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
 Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf_txrx.c | 50 ++++++++++++---------
- 1 file changed, 29 insertions(+), 21 deletions(-)
+ drivers/net/ethernet/intel/iavf/iavf_ethtool.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.c b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-index c30abf1..f1c26a9 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-@@ -176,7 +176,6 @@ static void iavf_force_wb(struct iavf_vsi *vsi, struct iavf_q_vector *q_vector)
-  **/
- void iavf_detect_recover_hung(struct iavf_vsi *vsi)
- {
--	struct iavf_ring *tx_ring = NULL;
- 	struct net_device *netdev;
- 	unsigned int i;
- 	int packets;
-@@ -194,29 +193,38 @@ void iavf_detect_recover_hung(struct iavf_vsi *vsi)
- 	if (!netif_carrier_ok(netdev))
- 		return;
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+index 1cd1f3f..3909131 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+@@ -495,6 +495,11 @@ static int iavf_set_ringparam(struct net_device *netdev,
+ 	if ((ring->rx_mini_pending) || (ring->rx_jumbo_pending))
+ 		return -EINVAL;
  
-+	/* tx_rings can be freed/reallocated by a concurrent reset */
-+	if (!vsi->back->tx_rings)
-+		return;
++	if (adapter->state == __IAVF_RESETTING ||
++	    (adapter->state == __IAVF_RUNNING &&
++	     adapter->flags & IAVF_FLAG_QUEUES_DISABLED))
++		return -EAGAIN;
 +
- 	for (i = 0; i < vsi->back->num_active_queues; i++) {
--		tx_ring = &vsi->back->tx_rings[i];
--		if (tx_ring && tx_ring->desc) {
--			/* If packet counter has not changed the queue is
--			 * likely stalled, so force an interrupt for this
--			 * queue.
--			 *
--			 * prev_pkt_ctr would be negative if there was no
--			 * pending work.
--			 */
--			packets = tx_ring->stats.packets & INT_MAX;
--			if (tx_ring->prev_pkt_ctr == packets) {
--				iavf_force_wb(vsi, tx_ring->q_vector);
--				continue;
--			}
-+		struct iavf_ring *tx_ring = &vsi->back->tx_rings[i];
-+		struct iavf_q_vector *q_vector;
- 
--			/* Memory barrier between read of packet count and call
--			 * to iavf_get_tx_pending()
--			 */
--			smp_rmb();
--			tx_ring->prev_pkt_ctr =
--			  iavf_get_tx_pending(tx_ring, true) ? packets : -1;
-+		/* read once, q_vector can be reassigned by a concurrent reset */
-+		q_vector = READ_ONCE(tx_ring->q_vector);
-+		if (!q_vector || !tx_ring->desc)
-+			continue;
-+
-+		/* If packet counter has not changed the queue is
-+		 * likely stalled, so force an interrupt for this
-+		 * queue.
-+		 *
-+		 * prev_pkt_ctr would be negative if there was no
-+		 * pending work.
-+		 */
-+		packets = tx_ring->stats.packets & INT_MAX;
-+		if (tx_ring->prev_pkt_ctr == packets) {
-+			iavf_force_wb(vsi, q_vector);
-+			continue;
- 		}
-+
-+		/* Memory barrier between read of packet count and call
-+		 * to iavf_get_tx_pending()
-+		 */
-+		smp_rmb();
-+		tx_ring->prev_pkt_ctr =
-+		  iavf_get_tx_pending(tx_ring, true) ? packets : -1;
- 	}
- }
- 
+ 	if (ring->tx_pending > IAVF_MAX_TXD ||
+ 	    ring->tx_pending < IAVF_MIN_TXD ||
+ 	    ring->rx_pending > IAVF_MAX_RXD ||
 -- 
 2.52.0
 
