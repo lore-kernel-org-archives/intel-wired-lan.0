@@ -4,255 +4,129 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6FFA4C88E75
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 15 Sep 2026 11:30:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F2EE0C88E7F
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 15 Sep 2026 12:07:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 1395680CD4;
-	Tue, 15 Sep 2026 11:30:14 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 4841280D8A;
+	Tue, 15 Sep 2026 12:07:21 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id jh6ZyEjiG8oo; Tue, 15 Sep 2026 11:30:13 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 2BFD180CA9
-Authentication-Results: smtp1.osuosl.org; arc=fail smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=fail; t=1789471813;
-	b=iNlyWxZlsPup8j7oU7EVatciUpafFNECbMAG9pod7HD6L4mje+suojJgI78cG4MAW3k7
-	 B3zBycL/JFY1N9IKdBS4Jb05Gp4TERPRBNPwmedGkmbSeuFqHG04SfM2pHon3sI8oaDGw
-	 f0P4iLIgJl1H1/87Qr0JWRh8cprB8bxG5UDez4uobrM6J21r9aeUuGCPkgNjCztuWmZIC
-	 d5jji2YsQTZvJVOHqeJQ76VE66Dpr/o56ZlzKC+NM1kM1yjv1TC6PrUE1g55a8Fr0QGRV
-	 zQEuB64+MRvK4cpkDFw4yH5kme/1xO3IAzVlOx26WP3WWK5okiXEDDI/EZ373qyCVFQ==
+ id 1Fp6PoyIVSCj; Tue, 15 Sep 2026 12:07:18 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org B5C8080D81
+Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789474037;
+	b=YEQ9SDyVdvhv/ky0Da4cQpV9b+RHUFWswSKTTM3b+3ELSS9y7ayXg3UBHP7PNMeEPo7l
+	 TBzBDT/FexCbhEiotYRY9CRUh6cl6tsvn/S6zvPu6Cxi1LiZ4+ieoIlKVUo/SSGqg2Jdv
+	 WI+rOywoTz+UT60uFL1MU60GOnjiLYmgIs9ie1BYpruD6LxSe4eBM+yxYnG4JZPOnMBFt
+	 sN4IafsRrI21FBtakPprW7AmMVxwOXZqnnTt0trLYHjGKeXb6IWFWjiM27E7fpvGWvoML
+	 MaQXgtXT9iJG5ZdZEhRXSm+AQ4ng+7MMmnjh/j4aQI3f/PYZvNrWN7QzzooRL7KAWLA==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1789471813;
+	c=relaxed/relaxed; t=1789474037;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:X-Greylist:Received-SPF:Received:
-	 Received:DKIM-Signature:DKIM-Signature:DKIM-Signature:DKIM-Signature:
-	 Received:Received:Date:Message-ID:From:To:Cc:Subject:In-Reply-To:
-	 References:User-Agent:MIME-Version:Content-Type:X-Spamd-Result:
-	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
-	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=psqF+EOKBnDir7oSpdYk0cv/7bWaGxT8GNrr5rPj7yg=;
-	b=P5r1PIE1z1bqMfnoXZmG/lHNX3w7u7cQqFFP4X1anTpJMc0jOP36a7jlpUAHaFShyeWV
-	 3124FUxSmq5kbw4oH4oYl1aVOTKP27oRmCUZ4BrlyPt6YcHlZkV8jcnoUataPo3+bI6Zx
-	 ivmd6fzPRTZuMWiE+zy+/640VVCIfR3sd+tMkmrEydTFN73fgk4nX0RRkKITBgl1uYXHD
-	 Hh+VQBc9HEWF69/N+ypKa1AMuyhDYINFvLR/8xZPzvkKboJqzLg1RUliJHoC6MWTzchpm
-	 3mWfhN45mt9d3nr7BaitIkg2RtI+VmVZDT1vfpJpnQlPZNFGQ0/Nnm1QW0T8bLcHWPw==
-ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=fail smtp.remote-ip=140.211.166.142
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
+	 DKIM-Signature:Received:From:To:Cc:Subject:Date:Message-Id:X-Mailer:
+	 MIME-Version:Content-Transfer-Encoding:X-CM-TRANSID:
+	 X-Coremail-Antispam:X-CM-SenderInfo:X-BeenThere:X-Mailman-Version:
+	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 List-Subscribe:Errors-To;
+	bh=9ul3bUyHD7wGoCm62vRZXHwUVl+wV8Z92XNjrOcvm0M=;
+	b=k8f1aJuBg2oKtVw1cEAzkytsRwsxdj3zLqJw4vHvCbsE6ppqaazbehvA78bhbNk+TwjW
+	 3eRG+NYRUg2mHBgjh9Sct+9FwrFV20t4agDfZC8KyU42ODR4GBtrpub6AKqPkY3L3DiZ5
+	 la60OSVVyc6Hz4xHsN7gHhvNepm7R6xusIFef8wlzQAyg+MSMYK6zXZ9Pw7tDyaWFx8DX
+	 v2Eazi2jzNA2FzGDlrH7oUn/cvJITH5G0Vbh6KzZ4jEqzzTXHtZEsOYYYd3C7u9YJUiFI
+	 hlrC2oBQiRR98vK1hBGSIJZSANyGL/B0lS9t+D0QB/9pAuq2P2cBy7iToS4Xblp0gGA==
+ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1789471813;
-	bh=psqF+EOKBnDir7oSpdYk0cv/7bWaGxT8GNrr5rPj7yg=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=nUvqfctzgSRwofIFHHlSuKs+wvOzb3qiRmagYkcpRqci2yhTmHnv3+byf9JQ2GudC
-	 reG5aA/lTqHFW8Az6GYUOsBZrX0pr6KxFlgm5wEGvBvRoyu/E54XUmwrKJgjsJwobO
-	 iadKGyPfhizACwtBk7e8IQC2u10zr6umGKdaNiQxnDJhFQ2EJhArDB5X522rfl/MK9
-	 VNubypIDI31NAW8fs21moZSqDGFCV34LSKMzT31FL58sGcQ2bCmDDfrvpCwObaZThT
-	 Bm6g+mMAWvaOrqBWm/A2ZIBHvYmUE+1P7tr1qPWtW6vkutIx2nCFzk783X1vWeyGW1
-	 3ieNsEDv4hFlQ==
+	s=default; t=1789474037;
+	bh=9ul3bUyHD7wGoCm62vRZXHwUVl+wV8Z92XNjrOcvm0M=;
+	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=t1AJN1jxzS9oz7zeP55aI9GEfEGlW37cvWLmnJohwZlNRLKli9BuxOr05FKjORCrq
+	 dLFFZJcHkC2156FNUcdjjieclhuVg01t2PZArgyfsVpPLkmXcNjaDnzCXtC0BGNoBb
+	 lfoA9rw7kf+rwucSYkfD/z8ezV9d2QTJq6F7AyFsIBhaYSmtmgBxPnJZekStpmRmE1
+	 2suf4DNp/x2PW9N90Y6jQ+NncwXD8faFCsZdfq47sEn0sO4FThTjtdpQNttokUQzHa
+	 p62byT8hk5YHitJb4PXuiEaqMjn8FqnZpSsK4xBc+qnT9pC3dijdtHSGCHk7kVExSw
+	 4Id8oibFGXePw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 2BFD180CA9;
-	Tue, 15 Sep 2026 11:30:13 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id D293C259
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 11:30:11 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id B5C8080D81;
+	Tue, 15 Sep 2026 12:07:17 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 372BE2D0
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 12:07:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id B87B940533
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 11:30:11 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 2231D40123
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 12:07:16 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id T3lwSgjqwV4f for <intel-wired-lan@lists.osuosl.org>;
- Tue, 15 Sep 2026 11:30:10 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 2803540568
-Authentication-Results: smtp4.osuosl.org;
- arc=none smtp.remote-ip=195.135.223.131
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789471810;
- b=DkdbXMAEpqXCqBilN7aGJyKLxKxp2ECE8aW43UI/6PlcKn5EusCQICig5V36grQZmbEM
- vHBih+7K92KKALqjMzswU/71nYusOnwIH2qN0Br1Lp12NDi7r0ZsMiQDTcHUHkbQZJORH
- DxUP8gIZZEtEbXCVC71nq1QaTgUCFgRL9N0zi5WLPg7/qII05p1ashUWFbTAyVRt2R+ld
- F11p2gLw6kZ2ggvsZHnRzVEPXzNWLh/n/s5m2bv+eR8yNiO0WK600+h8SBaBPbcaLaHpo
- HWH69c2DWGIFMxCnhde2BB8G1EZjDNWnkhAYSrT5BgZ4zL5x270vtbdO8xgt5SxWvPw==
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 84O31nH06p3c for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 15 Sep 2026 12:07:15 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org 41F6A4005E
+Authentication-Results: smtp2.osuosl.org; arc=none smtp.remote-ip=117.135.210.9
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789474035;
+ b=FORrKdlCa3JuSDblO8d/REPwpPZge9LUeoM+mq7x9OYsUv86YGuY+FeIAunkBR9gH/+K
+ OhdZJzyJbiiTdVdLbAstMvebz1Zknm40RLJexky9VcvmS5RLSMAKj5LD2CJEXUUFcOuos
+ ZWDtOYjnhQr0MPXk7ypls+ST8ISxE6Lvp9gvTMCE+9acEBXc2EGxcweFJtskk/WHI1QYe
+ WN7KlNWcauRl634bVgR+h499kpq67swNMyEjQegB6ADrEbwC8xoEKB7iD84JfrWc3W/jF
+ QQ5vKiDRZyS8P6adHv9AvbC5L7uvXN/OEMQOSdjrJXPB9/wzAQwBoT4PT+6SeAOZlCA==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1789471810;
- h=X-Greylist:Received-SPF:Received:DKIM-Signature:DKIM-Signature:
- DKIM-Signature:DKIM-Signature:Received:Received:Date:Message-ID:From:
- To:Cc:Subject:In-Reply-To:References:User-Agent:MIME-Version:
- Content-Type:X-Spam-Level:X-Spam-Score:X-Spam-Flag:X-Spamd-Result;
- bh=psqF+EOKBnDir7oSpdYk0cv/7bWaGxT8GNrr5rPj7yg=;
- b=VO/TtXbI9ZD4vN//zzow8RT5ELBnJ6hNwE8M0b1hwgHbqYJXE42DGCoxA14r/8sSYWsq
- DZv7+MWQ+FSih5u8m0LPvxc37E6owpqVdHpHvY/RD9Vrr1pwKtwP6+NCbH6a7rrqPepzR
- TQs72b/gTlXYbEOv0ejDRaH+vYczk4P2DtFftR76UzrqZEtLG/IEbQPSVzTZINtUA1dVT
- ucPWDozRKK9UYVJrdM15Lbe4EdHx/LcmcxnT6SjEiahZH1dv21NtOTvvQYGqUBYq3uhz3
- AF3U7SNIZPl7p3ygZGnqzQX4ZdehY/0gY0IWGlBykyt40YUY5ps++nuQmG3jOfL4DVg==
-ARC-Authentication-Results: i=1; smtp4.osuosl.org;
- dmarc=pass header.from=suse.de; 
- dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256
- header.s=susede2_rsa header.b=FSRxqY26; 
- dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256
- header.s=susede2_ed25519 header.b=aSsl2yJ1; 
- dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256
- header.s=susede2_rsa header.b=fM3MazBW; 
- dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256
- header.s=susede2_ed25519 header.b=mZlA7k8x; 
- arc=none smtp.remote-ip=195.135.223.131
-X-Greylist: delayed 306 seconds by postgrey-1.37 at util1.osuosl.org;
- Tue, 15 Sep 2026 11:30:10 UTC
-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (1024-bit key, unprotected) header.d=suse.de header.i=@suse.de
- header.a=rsa-sha256 header.s=susede2_rsa header.b=FSRxqY26; 
- dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256
- header.s=susede2_ed25519 header.b=aSsl2yJ1; 
- dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de
- header.a=rsa-sha256 header.s=susede2_rsa header.b=fM3MazBW; 
- dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256
- header.s=susede2_ed25519 header.b=mZlA7k8x
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=195.135.223.131;
- helo=smtp-out2.suse.de; envelope-from=tiwai@suse.de; receiver=<UNKNOWN> 
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 2803540568
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 11:30:09 +0000 (UTC)
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
- (No client certificate requested)
- by smtp-out2.suse.de (Postfix) with ESMTPS id D6D911FD70;
- Tue, 15 Sep 2026 11:24:49 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
- t=1789471494; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=psqF+EOKBnDir7oSpdYk0cv/7bWaGxT8GNrr5rPj7yg=;
- b=FSRxqY266D0vmKnF9nLIRDyWWQM9yhSRf7SWuTSbWdHKmTZfPMBWgLsJq7H8V56FVkky//
- 8MrE9PciUwBdoFcR4M6TLhf0Be1H7UyuT3X6eiMNzlMbbIthbvGQDSnAd0oqm56+IjjTWt
- ZfmEPFx5zXWF3FpvnKWoZi5XGYuzP5E=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
- s=susede2_ed25519; t=1789471494;
- h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=psqF+EOKBnDir7oSpdYk0cv/7bWaGxT8GNrr5rPj7yg=;
- b=aSsl2yJ1+boxtQdbyNVNOLHSB2zJu6wAGQi+9pbebbTp2ClXENyw6idF+ycsnZ57BL4LP5
- ZfcRP6lnX00QOOBw==
-Authentication-Results: smtp-out2.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
- t=1789471489; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=psqF+EOKBnDir7oSpdYk0cv/7bWaGxT8GNrr5rPj7yg=;
- b=fM3MazBW+hs/hKtvuJpOhLlGSwWwaQ2djpqh86ob84pD05SZM2CRj5VxxQICSBHMVzGpmM
- q+b1hMqeOfBJ55X5lnPhdG5/NgEY6B1UbwH5ynoyuWcf7dFOEalvw2kJzBP8r3CSUcnebL
- CgYXNAhYVAwFaBsCwZ7WQRZMQk8ez5c=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
- s=susede2_ed25519; t=1789471489;
- h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=psqF+EOKBnDir7oSpdYk0cv/7bWaGxT8GNrr5rPj7yg=;
- b=mZlA7k8xRY7/6eU8iSFueII5CBhiyVG2bEJOGnMSAtyaRqGo3EYAuYa/xTgran4MSxXe1Y
- Y2dwysvA+85ERcBA==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
- (No client certificate requested)
- by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id E1B7713693;
- Tue, 15 Sep 2026 11:24:46 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
- by imap1.dmz-prg2.suse.org with ESMTPSA id 2riGLf4qqWqtagAAD6G6ig
- (envelope-from <tiwai@suse.de>); Tue, 15 Sep 2026 11:24:46 +0000
-Date: Tue, 15 Sep 2026 13:24:46 +0200
-Message-ID: <877bkmn4e9.wl-tiwai@suse.de>
-From: Takashi Iwai <tiwai@suse.de>
-To: Bill Wendling <morbo@google.com>
-Cc: linux-kernel@vger.kernel.org,	Russell King <linux@armlinux.org.uk>,
- Huacai Chen <chenhuacai@kernel.org>,	WANG Xuerui <kernel@xen0n.name>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,	"James E.J. Bottomley"
- <James.Bottomley@HansenPartnership.com>,	Helge Deller <deller@gmx.de>,
- Thomas Gleixner <tglx@kernel.org>,	Ingo Molnar <mingo@redhat.com>,	Borislav
- Petkov <bp@alien8.de>,	Dave Hansen <dave.hansen@linux.intel.com>,
- x86@kernel.org,	"H. Peter Anvin" <hpa@zytor.com>,	Ian Abbott
- <abbotti@mev.co.uk>,	H Hartley Sweeten <hsweeten@visionengravers.com>,	Tony
- Luck <tony.luck@intel.com>,	Maarten Lankhorst
- <maarten.lankhorst@linux.intel.com>,	Maxime Ripard <mripard@kernel.org>,
- Thomas Zimmermann <tzimmermann@suse.de>,	David Airlie <airlied@gmail.com>,
- Simona Vetter <simona@ffwll.ch>,	Matthew Brost <matthew.brost@intel.com>,
- =?ISO-8859-1?Q?=22Thomas_Hellstr=F6m=22?=
- <thomas.hellstrom@linux.intel.com>,	Rodrigo Vivi <rodrigo.vivi@intel.com>,
- Dmitry Torokhov <dmitry.torokhov@gmail.com>,	Matthias Schwarzott
- <zzam@gentoo.org>,	Mauro Carvalho Chehab <mchehab@kernel.org>,	Tony Nguyen
- <anthony.l.nguyen@intel.com>,	Przemek Kitszel
- <przemyslaw.kitszel@intel.com>,	Andrew Lunn <andrew+netdev@lunn.ch>,
- "David S. Miller" <davem@davemloft.net>,	Eric Dumazet
- <edumazet@google.com>,	Jakub Kicinski <kuba@kernel.org>,	Paolo Abeni
- <pabeni@redhat.com>,	Arend van Spriel <arend.vanspriel@broadcom.com>,	Rob
- Herring <robh@kernel.org>,	Saravana Kannan <saravanak@kernel.org>,
- Krzysztof Kozlowski <krzk@kernel.org>,	Sylwester Nawrocki
- <s.nawrocki@samsung.com>,	Peter Griffin <peter.griffin@linaro.org>,	Alim
- Akhtar <alim.akhtar@samsung.com>,	Linus Walleij <linusw@kernel.org>,	Anil
- Gurumurthy <anil.gurumurthy@qlogic.com>,	Sudarsana Kalluru
- <sudarsana.kalluru@qlogic.com>,	"Martin K. Petersen" <mkp@kernel.org>,
- Trond Myklebust <trondmy@kernel.org>,	Anna Schumaker <anna@kernel.org>,
- Mike Marshall <hubcap@omnibond.com>,	Martin Brandenburg
- <martin@omnibond.com>,	Kees Cook <kees@kernel.org>,	Jiri Pirko
- <jiri@resnulli.us>,	Simon Horman <horms@kernel.org>,	Chuck Lever
- <cel@kernel.org>,	Jeff Layton <jlayton@kernel.org>,	NeilBrown
- <neil@brown.name>,	Olga Kornievskaia <okorniev@redhat.com>,	Dai Ngo
- <Dai.Ngo@oracle.com>,	Tom Talpey <tom@talpey.com>,	Jaroslav Kysela
- <perex@perex.cz>,	Takashi Iwai <tiwai@suse.com>,	Andrew Morton
- <akpm@linux-foundation.org>,	"Mike Rapoport (Microsoft)" <rppt@kernel.org>,
- Kanglong Wang <wangkanglong@loongson.cn>,	Tiezhu Yang
- <yangtiezhu@loongson.cn>,	Qiang Ma <maqianga@uniontech.com>,	Randy Dunlap
- <rdunlap@infradead.org>,	Pengpeng Hou <pengpeng@iscas.ac.cn>,	Ard
- Biesheuvel <ardb@kernel.org>,	Breno Leitao <leitao@debian.org>,	Thorsten
- Blum <blum@kernel.org>,	Harshit Mogalapalli
- <harshit.m.mogalapalli@oracle.com>,	Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>,	Lyude Paul <lyude@redhat.com>,	Ashutosh Desai
- <ashutoshdesai993@gmail.com>,	Imre Deak <imre.deak@intel.com>,	Dmitry
- Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,	Johan Hovold
- <johan@kernel.org>,	Johannes Berg <johannes.berg@intel.com>,	Miri Korenblit
- <miriam.rachel.korenblit@intel.com>,	Alexander Stein
- <alexander.stein@ew.tq-group.com>,	Cryolitia PukNgae
- <cryolitia@uniontech.com>,	Jiaming Zhang <r772577952@gmail.com>,	Will
- Porter <mrwillporter@gmail.com>,	Cen Zhang <zzzccc427@gmail.com>,
- =?ISO-8859-1?Q?=22C=E1ssio_Gabriel=22?= <cassiogabrielcontato@gmail.com>,
- Rong Zhang <i@rong.moe>,	Arun Raghavan <arunr@valvesoftware.com>,
- linux-arm-kernel@lists.infradead.org,	loongarch@lists.linux.dev,
- linux-mips@vger.kernel.org,	linux-parisc@vger.kernel.org,
- linux-edac@vger.kernel.org,	dri-devel@lists.freedesktop.org,
- intel-xe@lists.freedesktop.org,	linux-input@vger.kernel.org,
- linux-media@vger.kernel.org,	intel-wired-lan@lists.osuosl.org,
- netdev@vger.kernel.org,	linux-wireless@vger.kernel.org,
- brcm80211@lists.linux.dev,	brcm80211-dev-list.pdl@broadcom.com,
- devicetree@vger.kernel.org,	linux-samsung-soc@vger.kernel.org,
- linux-gpio@vger.kernel.org,	linux-scsi@vger.kernel.org,
- linux-nfs@vger.kernel.org,	devel@lists.orangefs.org,
- linux-hardening@vger.kernel.org,	linux-sound@vger.kernel.org
-Subject: Re: [PATCH 00/28] Replace remaining strlcat() call sites with
- snprintf()/seq_buf()
-In-Reply-To: <20260915081910.4142719-1-morbo@google.com>
-References: <20260915081910.4142719-1-morbo@google.com>
-User-Agent: Wanderlust/2.15.9 (Almost Unreal) Emacs/30.2 Mule/6.0
-MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
-Content-Type: text/plain; charset=US-ASCII
-X-Spamd-Result: default: False [0.20 / 50.00]; BAYES_HAM(-3.00)[99.99%];
- FORGED_RECIPIENTS(2.00)[m:morbo@google.com,m:linux@armlinux.org.uk,m:kernel@xen0n.name,m:tsbogend@alpha.franken.de,m:James.Bottomley@HansenPartnership.com,m:deller@gmx.de,m:bp@alien8.de,m:hpa@zytor.com,m:hsweeten@visionengravers.com,m:tony.luck@intel.com,m:airlied@gmail.com,m:simona@ffwll.ch,m:matthew.brost@intel.com,m:rodrigo.vivi@intel.com,m:dmitry.torokhov@gmail.com,m:zzam@gentoo.org,m:anthony.l.nguyen@intel.com,m:przemyslaw.kitszel@intel.com,m:davem@davemloft.net,m:edumazet@google.com,m:arend.vanspriel@broadcom.com,m:neil@brown.name,m:rdunlap@infradead.org,m:pengpeng@iscas.ac.cn,m:leitao@debian.org,m:ashutoshdesai993@gmail.com,m:imre.deak@intel.com,m:johannes.berg@intel.com,m:miriam.rachel.korenblit@intel.com,m:alexander.stein@ew.tq-group.com,m:r772577952@gmail.com,m:mrwillporter@gmail.com,m:zzzccc427@gmail.com,m:cassiogabrielcontato@gmail.com,s:brcm80211@lists.linux.dev,s:devel@lists.orangefs.org];
- SUSPICIOUS_RECIPS(1.50)[]; MID_CONTAINS_FROM(1.00)[];
- NEURAL_HAM_LONG(-1.00)[-1.000];
- NEURAL_HAM_SHORT(-0.20)[-0.998]; MIME_GOOD(-0.10)[text/plain];
- RCVD_VIA_SMTP_AUTH(0.00)[]; MIME_TRACE(0.00)[0:+];
- TO_DN_SOME(0.00)[]; TAGGED_RCPT(0.00)[netdev]; ARC_NA(0.00)[];
- RCVD_TLS_ALL(0.00)[];
- DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
- FROM_HAS_DN(0.00)[];
- FREEMAIL_CC(0.00)[vger.kernel.org,armlinux.org.uk,kernel.org,xen0n.name,alpha.franken.de,HansenPartnership.com,gmx.de,redhat.com,alien8.de,linux.intel.com,zytor.com,mev.co.uk,visionengravers.com,intel.com,suse.de,gmail.com,ffwll.ch,gentoo.org,lunn.ch,davemloft.net,google.com,broadcom.com,samsung.com,linaro.org,qlogic.com,omnibond.com,resnulli.us,brown.name,oracle.com,talpey.com,perex.cz,suse.com,linux-foundation.org,loongson.cn,uniontech.com,infradead.org,iscas.ac.cn,debian.org,linuxfoundation.org,oss.qualcomm.com,ew.tq-group.com,rong.moe,valvesoftware.com,lists.infradead.org,lists.linux.dev,lists.freedesktop.org,lists.osuosl.org,lists.orangefs.org];
- R_RATELIMIT(0.00)[to_ip_from(RL638gsp8obb334m9k7xcnfris)];
- FROM_EQ_ENVFROM(0.00)[]; RCVD_COUNT_TWO(0.00)[2];
- TO_MATCH_ENVRCPT_SOME(0.00)[]; RCPT_COUNT_GT_50(0.00)[110];
- DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.de:mid]
+ c=relaxed/relaxed; t=1789474035;
+ h=Received-SPF:DKIM-Signature:Received:From:To:Cc:Subject:Date:
+ Message-Id:X-Mailer:MIME-Version:Content-Transfer-Encoding:
+ X-CM-TRANSID:X-Coremail-Antispam:X-CM-SenderInfo;
+ bh=9ul3bUyHD7wGoCm62vRZXHwUVl+wV8Z92XNjrOcvm0M=;
+ b=f2CpamdkbCprC4D58MNpWanx6pOEoM8MrhpDdi/Koe8+APrl7uC7hORmqBD/JNtLEE0s
+ tq834AtvoHcUwCXh7ZLrzTI5vIo4d/PcfDrIquUWBCn1Ktq3G7VD46c9YKYy4XGao9W3r
+ GvpdTNd9sUCEr9Z2iVziIU523WNCjRPFqDiw8cos1hrllkYhjDKdtvyOyhsSwdOVLguWI
+ McAzqvzvKEphENgt+nPGMLGdqFwkdQ+les9Wz+Q9sn8z+6uEodQ6KhxOcZ8f7wVnxQUCn
+ 9I8NVQ7Vop26J2+GgfFVZSng1HyAOJ4rjgmNTlMkTy2iJot67nHPYSpjnDZVesYez6Q==
+ARC-Authentication-Results: i=1; smtp2.osuosl.org;
+ dmarc=pass header.from=126.com; 
+ dkim=pass header.d=126.com header.i=@126.com header.a=rsa-sha256
+ header.s=s110527 header.b=oGsX1BIo; 
+ arc=none smtp.remote-ip=117.135.210.9
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=117.135.210.9;
+ helo=m16.mail.126.com; envelope-from=xiaolinkui@126.com; receiver=<UNKNOWN> 
+Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=126.com
+Authentication-Results: smtp2.osuosl.org; dkim=pass (1024-bit key,
+ unprotected) header.d=126.com header.i=@126.com header.a=rsa-sha256
+ header.s=s110527 header.b=oGsX1BIo
+Received: from m16.mail.126.com (m16.mail.126.com [117.135.210.9])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 41F6A4005E
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 12:07:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=126.com;
+ s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=9u
+ l3bUyHD7wGoCm62vRZXHwUVl+wV8Z92XNjrOcvm0M=; b=oGsX1BIoMzahTkB1ro
+ /eq6eq5U1rmBR7jy6/K2rQEzrqCXdrsXXyV+FdlcblxR53zl7h6PhSb3ZcwFlqBu
+ iqyx49gBeITYehYRLAUbgWCqlpXH6ohUcQCE9cQyUwN2QnVXd+TE6myFhsnN5SUx
+ WPr1dLHCatipvnP4/agMxw6r4=
+Received: from localhost.localdomain (unknown [])
+ by gzga-smtp-mtada-g0-4 (Coremail) with SMTP id
+ _____wD3Ny8rNKlqchRDBQ--.39588S2; 
+ Tue, 15 Sep 2026 20:03:56 +0800 (CST)
+From: Linkui Xiao <xiaolinkui@126.com>
+To: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Linkui Xiao <xiaolinkui@kylinos.cn>
+Subject: [Intel-wired-lan] [PATCH net] i40e: limit the DDP profile count
+ returned by the firmware
+Date: Tue, 15 Sep 2026 20:03:54 +0800
+Message-Id: <20260915120354.610499-1-xiaolinkui@126.com>
+X-Mailer: git-send-email 2.25.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID: _____wD3Ny8rNKlqchRDBQ--.39588S2
+X-Coremail-Antispam: 1Uf129KBjvJXoWxGw4UWw1Utw18JF1DCF1ftFb_yoW5WF1Dpa
+ y5CryDGr1kJa1jgw45JFW7CF1fu3WxAryagaySg3s8ur98tFs5WFykJFWrKF129rWkurn0
+ yF4kCry8AFsrJwUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+ 9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07UHq2iUUUUU=
+X-CM-SenderInfo: p0ld0z5lqn3xa6rslhhfrp/xtbBqAwd82qpNCzcFAAA3Z
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -267,27 +141,75 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-On Tue, 15 Sep 2026 10:18:17 +0200,
-Bill Wendling wrote:
-> 
-> strlcat() is deprecated: like strcat(), it requires re-scanning the
-> destination string from the beginning on every call, which is O(n^2)
-> when used to build up a string incrementally, and its truncation
-> behavior is easy to get wrong.
+From: Linkui Xiao <xiaolinkui@kylinos.cn>
 
-... but what many of your patches do is to replace strlcat() with
-open-codes, which is more error-prone and easier to get wrong than
-a single strlcat() call.
+i40e_aq_get_ddp_list() writes into a I40E_PROFILE_LIST_SIZE buffer,
+which is sized for I40E_MAX_PROFILE_NUM (16) i40e_profile_info entries
+plus the 4 byte p_count header. i40e_ddp_does_profile_exist() and
+i40e_ddp_does_profile_overlap() then loop over profile_list->p_count
+without bounding it, so a firmware reporting more than 16 profiles makes
+both helpers walk past the end of the on-stack buff[] and compare
+against whatever happens to follow it on the stack.
 
-> See:
-> 
->   https://github.com/KSPP/linux/issues/370
+Clamp the count to the number of entries the buffer can actually hold
+and make the loop counter unsigned to match the field type.
 
-It's clear that strlcat() isn't perfect and sometimes inefficient.
-But blindly deprecating without providing a good alternative doesn't
-sound like a right approach to me.
+Fixes: cdc594e00370 ("i40e: Implement DDP support in i40e driver")
+Signed-off-by: Linkui Xiao <xiaolinkui@kylinos.cn>
+---
+ drivers/net/ethernet/intel/i40e/i40e_ddp.c | 18 ++++++++++++++----
+ 1 file changed, 14 insertions(+), 4 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ddp.c b/drivers/net/ethernet/intel/i40e/i40e_ddp.c
+index daa9f2c42f70..1d6d8b3835a3 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ddp.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ddp.c
+@@ -55,7 +55,7 @@ static int i40e_ddp_does_profile_exist(struct i40e_hw *hw,
+ 	struct i40e_ddp_profile_list *profile_list;
+ 	u8 buff[I40E_PROFILE_LIST_SIZE];
+ 	int status;
+-	int i;
++	u32 i, p_count;
+ 
+ 	status = i40e_aq_get_ddp_list(hw, buff, I40E_PROFILE_LIST_SIZE, 0,
+ 				      NULL);
+@@ -63,7 +63,12 @@ static int i40e_ddp_does_profile_exist(struct i40e_hw *hw,
+ 		return -1;
+ 
+ 	profile_list = (struct i40e_ddp_profile_list *)buff;
+-	for (i = 0; i < profile_list->p_count; i++) {
++	/* Never walk past the end of buff[], the profile count reported by
++	 * the firmware is not guaranteed to fit into the buffer we gave it.
++	 */
++	p_count = min_t(u32, profile_list->p_count, I40E_MAX_PROFILE_NUM);
++
++	for (i = 0; i < p_count; i++) {
+ 		if (i40e_ddp_profiles_eq(pinfo, &profile_list->p_info[i]))
+ 			return 1;
+ 	}
+@@ -110,7 +115,7 @@ static int i40e_ddp_does_profile_overlap(struct i40e_hw *hw,
+ 	struct i40e_ddp_profile_list *profile_list;
+ 	u8 buff[I40E_PROFILE_LIST_SIZE];
+ 	int status;
+-	int i;
++	u32 i, p_count;
+ 
+ 	status = i40e_aq_get_ddp_list(hw, buff, I40E_PROFILE_LIST_SIZE, 0,
+ 				      NULL);
+@@ -118,7 +123,12 @@ static int i40e_ddp_does_profile_overlap(struct i40e_hw *hw,
+ 		return -EIO;
+ 
+ 	profile_list = (struct i40e_ddp_profile_list *)buff;
+-	for (i = 0; i < profile_list->p_count; i++) {
++	/* Never walk past the end of buff[], the profile count reported by
++	 * the firmware is not guaranteed to fit into the buffer we gave it.
++	 */
++	p_count = min_t(u32, profile_list->p_count, I40E_MAX_PROFILE_NUM);
++
++	for (i = 0; i < p_count; i++) {
+ 		if (i40e_ddp_profiles_overlap(pinfo,
+ 					      &profile_list->p_info[i]))
+ 			return 1;
+-- 
+2.25.1
 
-thanks,
-
-Takashi
