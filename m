@@ -1,171 +1,233 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E730CC982C1
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54C8DC88E7D
 	for <intel-wired-lan@archiver.kernel.org>; Tue, 15 Sep 2026 17:18:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B1580606F7;
+	by smtp1.osuosl.org (Postfix) with ESMTP id 24ADE80ADE;
 	Tue, 15 Sep 2026 17:18:08 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id jjmFprHmnrRq; Tue, 15 Sep 2026 17:18:08 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 0C55B60769
-Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=3; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789492688;
-	b=cGiaTQEPAVXVEHgckV5bsz0ij7PvVNQ84EgMIadRJ7Q3C+HjSlEnK3qjV7kt96gg5Xq/
-	 iL5aNr17dmcp9S2xnv8mGVK2dtA7CvTu71Jv3/RA7XYJ4JS/snJHfcG5ajldqCV9zCwkU
-	 Iomogxh2N9fKYEc6WnAbcMUVg6sWMYJLNXZkFOclbJOxMly4yVKGqw+SFbvy8PUk9mUrE
-	 fyFeyAdQ8L4AkaB+T2QxuaA1C11IpgPAwKbFsDNa+C4IuM7mQRKlalyoRVo6HnNEmxvWq
-	 MYIIZAh7CvvN24s4nLGM3DdzHs0uSVy1kp6H+AtRbB6BOypKrjH7q/HuagjDS4TQyDA==
-ARC-Message-Signature: i=3; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1789492688;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id KB0abStoLZno; Tue, 15 Sep 2026 17:18:07 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 18C1880BD6
+Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789492687;
+	b=f7bGXNGiXgXOQSNnTAL8287i9OhRJFqezJEthTfADoK62aMiY66Jj/6kkcdncabbu2Fz
+	 3Fv09w1o291/ILYs2h0IXQcEc5wpGZXEulO+zgFH8K4nVbo5yNfIpCThrauRcSONAii8s
+	 bnRP6GLiWFEBdjmHePbsodBKOfjhiHmDdtP/MHCED4reDlbm0Um97gGY35UrLP6uuOGjq
+	 3ks0eENIXdywvbMI/EQWvbRJZTm+z+P1nFsMI7nCuHKFd4FrSvB2XNYyuojpvtS5ojyQP
+	 bULywQeiFXnwIrhkbnSGdXsXPtQAJv1sdZnboAhoXA/v7SN6gZEWE6I6OfvMo7BVakw==
+ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
+	c=relaxed/relaxed; t=1789492687;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Gm-Message-State:X-Gm-Gg:
-	 X-Received:MIME-Version:From:Date:X-Gm-Features:Message-ID:Subject:To:
-	 Cc:Content-Type:X-Mailman-Approved-At:X-BeenThere:X-Mailman-Version:
-	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
-	 List-Subscribe:Errors-To;
-	bh=lhidRH+9Pkcz5W8FSzL02l8b5bot/SDbfN4RFTRjNFY=;
-	b=RjCipqX+rxLtYI0kxRttK18xhZ+8fSYsyLssnUiBUH+RlU89F1XKO8Lo9LSdTQ3M5hix
-	 /LZeDe0whKapipAdzqN4sU6kiEDN3KIeHctbq7BVlWZYpEpU8iQBIjb3KKbza+SQzWDg7
-	 BoXRZF8jG27DpShQE8/HMpY+0HkOHzEjCH1Le9rLK0XyBN2Vz5KKWBiQp0wl7pve42Mp6
-	 gw6eqtC5DY+WrqLBWFNSzY/0GSpgIN7ws0+Yrgv+pNwjZJmvlKCa2uWPZFNDaftHZpORh
-	 RziB2X3FsYgbSeL25F6X5MLgRbkT3Ka5oDkxFBXWpnqZPxg/Q/OrOlQ6WGD8kiQ31SQ==
-ARC-Authentication-Results: i=3; smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Received:Date:In-Reply-To:Mime-Version:
+	 References:X-Mailer:Message-ID:Subject:From:To:Cc:Content-Type:
+	 Content-Transfer-Encoding:X-Mailman-Approved-At:X-BeenThere:
+	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Errors-To;
+	bh=RYxDJLbbwpCoc34IeHntB/eNfLB4EmZZnrz8tORBuFs=;
+	b=VwwFNVAnsg85+/CJj9xvNQ8ks46W0UpcOIOHfenUQUnmJEIJUs0wncFaRUfkKbVv5OTn
+	 fA0JZhojWoF7NqHYHp0ucFp5BE1yGmiFqWPyWcReNaqV/9yU9/XV4upq6DbA4SRzX6Bm4
+	 1zC8HmWLHaRu/4NGt5GDhY6V4hl+VyZK77e/IeRD9Y8cDDQHJ3C0pMVIQ9clPv1rRZ3cO
+	 K7MooEtA3Hg36t4HhCeTaYJ4QHaukZdpPOOCBusczESJV6srZvGppVlJZxNEo+FHqeNck
+	 zc9IS3iafRRLFZCdlzWMBiKMy+snAlXBcLkfafyKczr0wbVd7NAM8RAlE8f070OZMiw==
+ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1789492688;
-	bh=lhidRH+9Pkcz5W8FSzL02l8b5bot/SDbfN4RFTRjNFY=;
-	h=From:Date:Subject:To:Cc:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=ptBy2e2LKv1sUJv5AnzR1KxZdS+PGeoqHKsZgw7Se6aH9Ll5wZ24nRl1RKYiqtscq
-	 VrKU35nQoxpHmh5kjDPs5NgDor0SWyHQZBBICG61Tp26enoCcxmiRZigjmmE6yfkN8
-	 VBimCEuFc46VPE470HH8jKhFyVpg8BJ1HxyImrX7QAPQm3Zp8mJo/rXm4VL3PO7Dwz
-	 WPjf6vn9bozyDeMr4mkT3jbZFNR0966nsdifJ9LA/vC6Zs6uai419Aj9iiq/pI45C+
-	 +ZxjMk6kzPZyWJWzIYqzza6s8l+DjV0kTKUugdjBEbySWZ87IBRRvNB3K99vrl9P7D
-	 QoPaAbcLJIqdQ==
+	s=default; t=1789492687;
+	bh=RYxDJLbbwpCoc34IeHntB/eNfLB4EmZZnrz8tORBuFs=;
+	h=Date:In-Reply-To:References:Subject:From:To:Cc:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=tcFn0NMYt5M8BfaBZYtAJwOVQdbAvNaxtaSlbcAbwefshzJ+rdnD+JKlHEefaxNw+
+	 JCfNF8JIEUTyBpTBQZgIveG2ioHLlnuwjhinTw459UWdj1EI5oVk5rXaCtX2e+I5ge
+	 d01DbmMJVGLFj4YyJedKbBu/Kob+gBc0W04RBRJmda6OkSusnVLMMkGzUQ/Q21/7X/
+	 fF+jcLOR9cWoI41DZAdwKjOZp6wzlZdInSoL6QKrEnLC1HJWl9XK3BfFkGXHWQyugU
+	 QdOgpYayAtVQIUA2B63S2r8UD5tZTY+p756ottQrKYA65DSPlNqs3/LIDFvTP7IxDw
+	 Ijts4xEoj/NYg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 0C55B60769;
-	Tue, 15 Sep 2026 17:18:08 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 18C1880BD6;
+	Tue, 15 Sep 2026 17:18:07 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id B76A4259
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 08:57:59 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id AF4532E3
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 08:20:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 9D161400D1
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 08:57:59 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 958C6401A2
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 08:20:25 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id dDE6Am0zYTZk for <intel-wired-lan@lists.osuosl.org>;
- Tue, 15 Sep 2026 08:57:59 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org A0AFF4005A
-Authentication-Results: smtp2.osuosl.org; arc=pass header.oldest-pass=0
- smtp.remote-ip="2607:f8b0:4864:34::11"
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789462678;
- b=KGmGPCg/UR7JvyckSNsbatduuHi+RQPfTskRyUfqtBc+QiciSONzjnNjS3VmA6Z8KsuA
- NHgdKz2HERo0fH+fPBen/hjE5VsEj3jIPvQ4M1Y6kTDhqjSZmDPkZKKh8MHuwcgj0StMD
- fdLIjHppgKmofZLCYpQNStqhgESw7eP7b0tqq5ybKYcYDkML3egjMIUOPQdP47TZ9FKWy
- iGHurtY20hIF3/aojvUWmg2VFYGJwMmMRSGJkfAcKFkC4u6cM46kFYaKc9wDrUZlwcW2s
- xORiZrWKAXubTy1cwlZFcf+4/kfz7W6lmG21BeWLKFA6XciT4J1h/d65bfBDl3ESG+w==
-ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1789462678;
+ id xri5oQAe0laO for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 15 Sep 2026 08:20:24 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org 8EA494018D
+Authentication-Results: smtp2.osuosl.org;
+ arc=none smtp.remote-ip="2607:f8b0:4864:20::646"
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789460424;
+ b=Eg6ydKObbCPeXRmy+jzu2+j+zyj4nDCdbNrMu0VO+baWQceZ+uc5X2M3MhWlTUdeADMi
+ 94j8XFtAaaMBVFdZ4NqrdCdiD4/TOnhx/odf3wwpqeuDBtNul2EiUA/Ink53mG2d5/zej
+ 8JU1LBVxMQxJqmG/jFAVjT/oqCbYaORVESTb+CC4QVWmY3Uo2X5sbx6a09ssijYILWxxs
+ fFF38ojyWnIM46/7kVYBzjCLV++prFRAl7l/3wRWSWaXtxFgZ7KOwx90hzmBdtsGxlZfh
+ aEzyRujuC5w2IYe5DcuRoqS3uzRMRxPXKq8iEgdlwFrG0SDolaxp0yLETzXTMnkOvZQ==
+ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
+ c=relaxed/relaxed; t=1789460424;
  h=Received-SPF:Received:DKIM-Signature:X-Google-DKIM-Signature:
- X-Gm-Message-State:X-Gm-Gg:X-Received:MIME-Version:From:Date:
- X-Gm-Features:Message-ID:Subject:To:Cc:Content-Type;
- bh=lhidRH+9Pkcz5W8FSzL02l8b5bot/SDbfN4RFTRjNFY=;
- b=Bo1buIJEyRfdaBhVCYK1cXSw+gC0zniyZ+3VlTYB4MYvv2Ypysbhn7z4YnBhrNbbpFO/
- u/dZS7fyn8LCzBpcWkyvmyrss5i7hrN8VoytwtJUpxr0JBiyMBPnVENYg9jAERkyHtrWu
- wuXjvnFiH8tzmu5o3ghT9X5bUHTYGVhJ+g1gAICNUNa8LS3pCSBejJ2vATtkw/q97gM7A
- cRPGvEXWiOULpSjw/9A3dut4SYs7wXS01AWZl3E4vL1M3iB4l2bOMHudajtlLwE36GH1c
- iYgnVAmZG3Ne/gbf4C4CT/3pvzBKCO5P5PHzMjplrAzt/BcFwKCeNhSruQp48L/s0Fw==
-ARC-Authentication-Results: i=2; smtp2.osuosl.org;
- dmarc=pass header.from=afronta.com; 
- arc=pass header.oldest-pass=0 smtp.remote-ip="2607:f8b0:4864:34::11"
+ X-Forwarded-Encrypted:X-Gm-Message-State:X-Received:Date:In-Reply-To:
+ Mime-Version:References:X-Mailer:Message-ID:Subject:From:To:Cc:
+ Content-Type:Content-Transfer-Encoding;
+ bh=RYxDJLbbwpCoc34IeHntB/eNfLB4EmZZnrz8tORBuFs=;
+ b=blZJVpCKRD4vOh15B6FVb3mV7IIg2Cd7PqHyG3/moNBG8vqACwRU7g5qM++uvjA7LZJF
+ vCC/JjuiSx8quF2EJ0Yg2I93Og+7NfWOoXh1grKWWTT4WxZsSzCt+p1b2KvxwMU69GPjN
+ 0j1ijFpTNj4DoBbibiiKgkxjZoMr0ozJ9AEshrJyXMRa83gdJCfhH185NfDtAgSvrbjON
+ 3Hhzy26LrAFsGXtT+GilMzwveDWb/ydgfAT2k71Io9b7rHqGRqo+iUeKvoViKWhQxE06n
+ y1DRuef+RHg3qxp5TD+PeVFDJBnrjHABIq6h3B86M2891cHsvl0VmDjGceeZHGs2a6A==
+ARC-Authentication-Results: i=1; smtp2.osuosl.org;
+ dmarc=pass header.from=google.com; 
+ dkim=pass header.d=google.com header.i=@google.com header.a=rsa-sha256
+ header.s=20251104 header.b=T40mF4YU; 
+ arc=none smtp.remote-ip="2607:f8b0:4864:20::646"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:34::11; helo=mail-qk2-x11.google.com;
- envelope-from=javier.herrera@afronta.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=quarantine dis=none)
- header.from=afronta.com
-Received: from mail-qk2-x11.google.com (mail-qk2-x11.google.com
- [IPv6:2607:f8b0:4864:34::11])
- by smtp2.osuosl.org (Postfix) with ESMTPS id A0AFF4005A
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 08:57:58 +0000 (UTC)
-Received: by mail-qk2-x11.google.com with SMTP id
- d75a77b69052e-530fa0716f6so28179711cf.3
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 01:57:58 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1789462677; cv=none;
- d=google.com; s=arc-20260327;
- b=PYpqVtPYaS9EhQvp9NHW3MLfecoc4KLTBqVijTpeYIwuuiroatjNZ3qe7n7KBOy7Qq
- T5Ht4IvqxpiXXrqO3Sv/nke21j4PbFalOglygnQ4O61OlpvMzk01nimZnXMrZofguEt2
- Fjdw6D66Gia1JoXyKKx2FtdmlvBb58MgFt7yD2wc8fGtrqPNSYK28Vzsu+qx12XGFl7e
- F0yAW/BnK/tdwvQ/kYKtYIaTeP7bJNdA9nNNodMkO2bVFqhcug0eSDiAkgqbkOWF6Mr9
- TrtCHquqUpKlnzaXUQ3rdn5n0z2TpwNx5NapUWsGfCIQIGpEGNxPcvvQX/jGhyvJdgq5
- vRbA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com;
- s=arc-20260327; 
- h=cc:to:subject:message-id:date:from:mime-version:dkim-signature;
- bh=lhidRH+9Pkcz5W8FSzL02l8b5bot/SDbfN4RFTRjNFY=;
- fh=v7mt88KtZ+XdUNRxHb4uOZZevvFpQJmfu7BAmkEfB3Q=;
- b=WjfvqZyKEfZcSm7rNJRGhhmiH9Ei2b8EogSCp677zxla7sZRaiu6FSKqv8B9RaRdsM
- ULaxI0dlPN7QdHi9pX9MJooihY3dEQoKhtX9oU+sNTSkbECFVBF5rQC6FGfWniVyj7zA
- sseaguIS3m6itXeyWN34K7JLDEJE04iz33SNB7inP0MCqVE39xpM/yGRDYsEDI/Yhw1V
- r0o7QB+vLEqAnST1YtWgnpos59nA3ZFNFe51NwTRo3ilpPEBI8NuJbwSU6SWKBLWJOe8
- NjW+9vVQNdf/A9WoSz77OjJ20INK6oav3pzK4RPzj8mPys1dVZZVb7Jcu1v8pJVOh/PL
- bEhw==; darn=lists.osuosl.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+ client-ip=2607:f8b0:4864:20::646; helo=mail-pl1-x646.google.com;
+ envelope-from=3w_-oagukd8iuwzjwowwotm.kwuqv1mt-4qzml-tivtq010.w02w0t.wzo@flex--morbo.bounces.google.com;
+ receiver=<UNKNOWN> 
+Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
+ header.a=rsa-sha256 header.s=20251104 header.b=T40mF4YU
+Received: from mail-pl1-x646.google.com (mail-pl1-x646.google.com
+ [IPv6:2607:f8b0:4864:20::646])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 8EA494018D
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 08:20:23 +0000 (UTC)
+Received: by mail-pl1-x646.google.com with SMTP id
+ d9443c01a7336-2d6fed0652bso45540135ad.2
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 01:20:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=afronta.com; s=google; t=1789462677; x=1790067477; darn=lists.osuosl.org;
- h=content-type:cc:to:subject:message-id:date:from:mime-version:from
- :to:cc:subject:date:message-id:reply-to:content-type;
- bh=lhidRH+9Pkcz5W8FSzL02l8b5bot/SDbfN4RFTRjNFY=;
- b=fbhmnmwN8SzqvmQusvqNe0jXjRa9TwcKiBIwOKqMMKf/gYiGnmSa50nHi55jlFciiN
- XBGZomRzw45ScUCd6355i0sByyczxUaDYCjRksRt3K98jGTxTGjTg/lOLmKbFU7GEQrI
- Rzxj0RsO1kPKzjPu/iIXHiDFpEZ6/8L6U7jHUawuDmDv3Ubuu45gBgukRp7BvXLLiAMq
- Hp4efbedyKI34DMROgxG/WEoAM7vFmIqyktEcqnfwPgJ+8G6I2vN//T53VvOv998wN7o
- lEiguv8Vjmvr7JtFFfwuOzOGxL48wlZfrk9RBKw5X9RL++NC6sWtqlPUYg+p+QKfeZi8
- 0xdQ==
+ d=google.com; s=20251104; t=1789460422; x=1790065222; darn=lists.osuosl.org;
+ h=content-transfer-encoding:content-type:cc:to:from:subject
+ :message-id:references:mime-version:in-reply-to:date:from:to:cc
+ :subject:date:message-id:reply-to:content-type;
+ bh=RYxDJLbbwpCoc34IeHntB/eNfLB4EmZZnrz8tORBuFs=;
+ b=T40mF4YUVrHSPEXero4cdxPbrJHjWaavP2z9Sjdc/OxyL3GeNIlj8lkV5OzKNDTc87
+ UBebVIZgn6ZF70EG61UnbqOvGnrHlXGbfHDaqHXIymGzOQVmuFIjrj1kp02Dhb7RRj+L
+ ULGiEPRKX7xhkheR/MnkhnXh5AQjddUgq1kmqeDo3okSDR7b8ekl8ufGW+atTkwA7HNb
+ aXeg2+gQm6ay/M4/3a5iSEKnvyfUVBsgY2g0p6UAOuPrJwp2FHD8V9c1q/YBYEBqsmvq
+ 2BEnmQdAkfnQKhB6lcPDLPJYQyjItTiQg4awOmaFeklTyBAOPEczBIZFqu94jnboq81J
+ P2+A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1789462677; x=1790067477;
- h=content-type:cc:to:subject:message-id:date:from:mime-version
- :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
- :reply-to:content-type;
- bh=lhidRH+9Pkcz5W8FSzL02l8b5bot/SDbfN4RFTRjNFY=;
- b=LbrDPGwskU8ZcqDZWgrMkr8Iv1uGNACdJ6PnnQyOCM5tICEYSMnrQS5KDTzdpwpd1K
- bpm5NDlo/Z1ywwyOrN6U9l1wcvSs8ssyp9e+cudv9imHc9KW0S4qxBI5iuNj38RXS48z
- kmhWx9BATQssVTCY/oQnt1qyKmTiJftexz6yUZP7hV9P/AGDcj/6VGhooIfrhUjhf6yR
- ylTfJlSOOWXTXXyfgCgjHkYxTyP5wxwyOss5rmrlZW4q81WSZkfZ0RfmgwAN/AOVgF8I
- UlAC/cipn9aQ919xJaB8pjLHgPufydHma1QA4PP8h7eLqDA4tPv9U3l7tOBf/5ghGJwJ
- g8Zg==
-X-Gm-Message-State: AFuF++lVtLhM++eY4noY/Sm2hm+4wQ6Grs+Vsd+MWJJvE9OwSGpgHCsh
- wVjKx2/z1F6aJwHkDW4+HbvD0euG9zRP5LWAajbv5hgF/jZItOOkOkQJGWdbldPvxWVIOOGUeWb
- khm40Aivno/+qelCOZmzVuLg9oAHVN+Pk5wdC0r9HvwSvbOJXuolB5Wg=
-X-Gm-Gg: AYBFou0y7acNgdnsvyEN7cTtlRByRutTtW5T765+BguEGGg7UBVJAAF7QvzQuXPbI/j
- MYVzkDXwV6UBAuaVJw+MJVKQ0jJzxYyRb8nWKVJZ1m5D3jlvQeBD7rRbu+djXbVMSxMek2YOmA1
- 8h7pJCwxLkVF470SI3g/pzHu+pJII91gFfB2jY0/7kxk97mRiseQg4mv7KASvfuaEe5Qwu8gjN1
- 8prVcxEaXCgWygo41co5dNbevmpqX5970aNByVBD7t6s89AQ9OuEQmo0Qf3/XhAQ3bZRnVE7eJO
- 1sIJrUgDsZDVVDArCPJEwdtCI5+4VzFW/ZVSnyxWyF0qkSkhwiwGMfoJtPiSfxcNJNavoxemLru
- 1VK4t0OvXZw==
-X-Received: by 2002:a05:622a:15c5:b0:530:f729:d7af with SMTP id
- d75a77b69052e-5310d093675mr86900221cf.54.1789462676763; Tue, 15 Sep 2026
- 01:57:56 -0700 (PDT)
-MIME-Version: 1.0
-From: Javier Herrera <javier.herrera@afronta.com>
-Date: Tue, 15 Sep 2026 10:57:45 +0200
-X-Gm-Features: AcwNN1Xje16APL8FB5kW-5dTK80nHClMRqtoCTZOipRNVUfKOw5E0o2_Qmwv9rs
-Message-ID: <CAKRuCQLWEcci9hPgNUmvq44Bd2H30T5_vP=exMjsknXMN5Yh9A@mail.gmail.com>
-Subject: [REGRESSION] e1000e: heavy packet loss on Lenovo ThinkPad P14s Gen 5
- (I219-LM, Meteor Lake) after K1 re-enable; fixed by disable-k1
-To: intel-wired-lan@lists.osuosl.org
-Cc: dima.ruinskiy@intel.com, vitaly.lifshits@intel.com, 
- anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com, 
- netdev@vger.kernel.org, regressions@lists.linux.dev
+ d=1e100.net; s=20260707; t=1789460422; x=1790065222;
+ h=content-transfer-encoding:content-type:cc:to:from:subject
+ :message-id:references:mime-version:in-reply-to:date
+ :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+ :content-type;
+ bh=RYxDJLbbwpCoc34IeHntB/eNfLB4EmZZnrz8tORBuFs=;
+ b=Jv0vqEGxGX/yEyGAHK14TKdccSm8Vf5tn0Mm7fkL06RM9Oh4tUo9H1lJVCtcfX5JYR
+ pt4cV15mQmG8al6nVISRbID2Fey403bx1VMpePBS4vwprhqdwgqzW3UXWSfDB7xWZvaU
+ jQXOl80MOiC9S88tGRHhiL6hlNsnC3J7WMucwURTSyRo6d1eoc+bACQd+srIgVsEZXDF
+ TUe9DyiFra5hfZjNUfrhK3B/L9uCD2ENETwZlBWAqsKDSnPUQpVY1W2eD2Kc1FJ+e94h
+ xfUBSKt10OnC6/B1EVzqI+JGmvrcoUwa6r1x2awXez+9Gk9l5QJ4xR6cx4Z4KUjKU1GR
+ 5ueA==
+X-Forwarded-Encrypted: i=1;
+ AKwUvBwJ9TyKxH7KuNnScgNH22RG/tKnHEzNAUC1Toh2kNrEi3eLpMVI1PTM56+5E2PQ57TP5R3cnRdq0q5+b0F9nkI=@lists.osuosl.org
+X-Gm-Message-State: AFuF++nsJ+uF3QIvmlnv78ziF/my36kjXvJRoCaSJe6dbycikjrhInn+
+ Tusn+cx/Ke5oHDQIsOQ0b8Odfo2v2o/qkjYrte4dwD78IBhEwNXvkIbEuxDvLJdu75P0Z5snEKP
+ 9
+X-Received: from plas19.prod.google.com ([2002:a17:903:2013:b0:2dd:75f1:13f5])
+ (user=morbo job=prod-delivery.src-stubby-dispatcher) by
+ 2002:a17:903:40c6:b0:2d0:cc92:f7a9
+ with SMTP id d9443c01a7336-2dd837a6aeemr1077095ad.4.1789460419151; Tue, 15
+ Sep 2026 01:20:19 -0700 (PDT)
+Date: Tue, 15 Sep 2026 08:18:45 +0000
+In-Reply-To: <20260915081910.4142719-1-morbo@google.com>
+Mime-Version: 1.0
+References: <20260915081910.4142719-1-morbo@google.com>
+X-Mailer: git-send-email 2.55.0.1032.g73a4cd73de-goog
+Message-ID: <20260915081910.4142719-29-morbo@google.com>
+Subject: [PATCH 28/28] drm/xe/pf: Refactor strlcat() to seq_buf in
+ sched_group_engines_read()
+From: Bill Wendling <morbo@google.com>
+To: linux-kernel@vger.kernel.org
+Cc: Bill Wendling <morbo@google.com>, codemender-patching+linux@google.com, 
+ Russell King <linux@armlinux.org.uk>, Huacai Chen <chenhuacai@kernel.org>, 
+ WANG Xuerui <kernel@xen0n.name>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ Helge Deller <deller@gmx.de>, 
+ Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, 
+ Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
+ "H. Peter Anvin" <hpa@zytor.com>, Ian Abbott <abbotti@mev.co.uk>, 
+ H Hartley Sweeten <hsweeten@visionengravers.com>,
+ Tony Luck <tony.luck@intel.com>, 
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, 
+ Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>,
+ Simona Vetter <simona@ffwll.ch>, Matthew Brost <matthew.brost@intel.com>, 
+ "=?UTF-8?q?Thomas=20Hellstr=C3=B6m?=" <thomas.hellstrom@linux.intel.com>,
+ Rodrigo Vivi <rodrigo.vivi@intel.com>, 
+ Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ Matthias Schwarzott <zzam@gentoo.org>, 
+ Mauro Carvalho Chehab <mchehab@kernel.org>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>, 
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>, 
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
+ Arend van Spriel <arend.vanspriel@broadcom.com>, Rob Herring <robh@kernel.org>,
+ Saravana Kannan <saravanak@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, 
+ Sylwester Nawrocki <s.nawrocki@samsung.com>,
+ Peter Griffin <peter.griffin@linaro.org>, 
+ Alim Akhtar <alim.akhtar@samsung.com>, Linus Walleij <linusw@kernel.org>, 
+ Anil Gurumurthy <anil.gurumurthy@qlogic.com>, 
+ Sudarsana Kalluru <sudarsana.kalluru@qlogic.com>,
+ "Martin K. Petersen" <mkp@kernel.org>, 
+ Trond Myklebust <trondmy@kernel.org>, Anna Schumaker <anna@kernel.org>, 
+ Mike Marshall <hubcap@omnibond.com>, Martin Brandenburg <martin@omnibond.com>,
+ Kees Cook <kees@kernel.org>, 
+ Jiri Pirko <jiri@resnulli.us>, Simon Horman <horms@kernel.org>,
+ Chuck Lever <cel@kernel.org>, 
+ Jeff Layton <jlayton@kernel.org>, NeilBrown <neil@brown.name>, 
+ Olga Kornievskaia <okorniev@redhat.com>, Dai Ngo <Dai.Ngo@oracle.com>,
+ Tom Talpey <tom@talpey.com>, 
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
+ Andrew Morton <akpm@linux-foundation.org>,
+ "Mike Rapoport (Microsoft)" <rppt@kernel.org>, 
+ Kanglong Wang <wangkanglong@loongson.cn>, Tiezhu Yang <yangtiezhu@loongson.cn>,
+ Qiang Ma <maqianga@uniontech.com>, Randy Dunlap <rdunlap@infradead.org>, 
+ Pengpeng Hou <pengpeng@iscas.ac.cn>, Ard Biesheuvel <ardb@kernel.org>,
+ Breno Leitao <leitao@debian.org>, Thorsten Blum <blum@kernel.org>,
+ Harshit Mogalapalli <harshit.m.mogalapalli@oracle.com>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lyude Paul <lyude@redhat.com>,
+ Ashutosh Desai <ashutoshdesai993@gmail.com>, Imre Deak <imre.deak@intel.com>, 
+ Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+ Johan Hovold <johan@kernel.org>, Johannes Berg <johannes.berg@intel.com>, 
+ Miri Korenblit <miriam.rachel.korenblit@intel.com>, 
+ Alexander Stein <alexander.stein@ew.tq-group.com>, 
+ Cryolitia PukNgae <cryolitia@uniontech.com>,
+ Jiaming Zhang <r772577952@gmail.com>, 
+ Will Porter <mrwillporter@gmail.com>, Cen Zhang <zzzccc427@gmail.com>, 
+ "=?UTF-8?q?C=C3=A1ssio=20Gabriel?=" <cassiogabrielcontato@gmail.com>,
+ Rong Zhang <i@rong.moe>, 
+ Arun Raghavan <arunr@valvesoftware.com>, linux-arm-kernel@lists.infradead.org, 
+ loongarch@lists.linux.dev, linux-mips@vger.kernel.org, 
+ linux-parisc@vger.kernel.org, linux-edac@vger.kernel.org, 
+ dri-devel@lists.freedesktop.org, intel-xe@lists.freedesktop.org, 
+ linux-input@vger.kernel.org, linux-media@vger.kernel.org, 
+ intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, 
+ linux-wireless@vger.kernel.org, brcm80211@lists.linux.dev, 
+ brcm80211-dev-list.pdl@broadcom.com, devicetree@vger.kernel.org, 
+ linux-samsung-soc@vger.kernel.org, linux-gpio@vger.kernel.org, 
+ linux-scsi@vger.kernel.org, linux-nfs@vger.kernel.org, 
+ devel@lists.orangefs.org, linux-hardening@vger.kernel.org, 
+ linux-sound@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-Mailman-Approved-At: Tue, 15 Sep 2026 17:17:37 +0000
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
@@ -181,95 +243,174 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-Hi,
+Similar to control_read(), sched_group_engines_read() constructs a
+space-separated list of hardware engine names in a stack buffer using
+repeated strlcat() calls inside a loop.
 
-Since commit 578294b8b60d ("e1000e: Reconfigure PLL clock gate timeout and
-re-enable K1 on Meteor Lake") the integrated I219-LM in a Lenovo ThinkPad
-P14s Gen 5 (Intel variant, Core Ultra 9 185H) shows constant packet loss
-and erratic latency on the wired link. Wi-Fi and a USB-C RTL8152 adapter on
-the same cable, switch and router are fine, so the network itself is not
-the problem.
+In preparation for removing the deprecated strlcat() API[1], refactor
+sched_group_engines_read() to use struct seq_buf and seq_buf_printf().
 
-Setting the private flag "disable-k1" fixes it immediately, so this looks
-like another system where the PLL clock gate reconfiguration is not enough
-and the DMI quirk table introduced by that commit should be extended.
+Link: https://github.com/KSPP/linux/issues/370 [1]
+Cc: codemender-patching+linux@google.com
+Assisted-by: Developer:Gemini [editor_update_file, make_kernel_build_single=
+_file, shell_command_run]
+Signed-off-by: Bill Wendling <morbo@google.com>
+---
+Cc: Russell King <linux@armlinux.org.uk>
+Cc: Huacai Chen <chenhuacai@kernel.org>
+Cc: WANG Xuerui <kernel@xen0n.name>
+Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
+Cc: Helge Deller <deller@gmx.de>
+Cc: Thomas Gleixner <tglx@kernel.org>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: x86@kernel.org
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ian Abbott <abbotti@mev.co.uk>
+Cc: H Hartley Sweeten <hsweeten@visionengravers.com>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+Cc: Maxime Ripard <mripard@kernel.org>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: David Airlie <airlied@gmail.com>
+Cc: Simona Vetter <simona@ffwll.ch>
+Cc: Matthew Brost <matthew.brost@intel.com>
+Cc: "Thomas Hellstr=C3=B6m" <thomas.hellstrom@linux.intel.com>
+Cc: Rodrigo Vivi <rodrigo.vivi@intel.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Matthias Schwarzott <zzam@gentoo.org>
+Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
+Cc: Tony Nguyen <anthony.l.nguyen@intel.com>
+Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Cc: Andrew Lunn <andrew+netdev@lunn.ch>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Eric Dumazet <edumazet@google.com>
+Cc: Jakub Kicinski <kuba@kernel.org>
+Cc: Paolo Abeni <pabeni@redhat.com>
+Cc: Arend van Spriel <arend.vanspriel@broadcom.com>
+Cc: Rob Herring <robh@kernel.org>
+Cc: Saravana Kannan <saravanak@kernel.org>
+Cc: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Cc: Peter Griffin <peter.griffin@linaro.org>
+Cc: Alim Akhtar <alim.akhtar@samsung.com>
+Cc: Linus Walleij <linusw@kernel.org>
+Cc: Anil Gurumurthy <anil.gurumurthy@qlogic.com>
+Cc: Sudarsana Kalluru <sudarsana.kalluru@qlogic.com>
+Cc: "Martin K. Petersen" <mkp@kernel.org>
+Cc: Trond Myklebust <trondmy@kernel.org>
+Cc: Anna Schumaker <anna@kernel.org>
+Cc: Mike Marshall <hubcap@omnibond.com>
+Cc: Martin Brandenburg <martin@omnibond.com>
+Cc: Kees Cook <kees@kernel.org>
+Cc: Jiri Pirko <jiri@resnulli.us>
+Cc: Simon Horman <horms@kernel.org>
+Cc: Chuck Lever <cel@kernel.org>
+Cc: Jeff Layton <jlayton@kernel.org>
+Cc: NeilBrown <neil@brown.name>
+Cc: Olga Kornievskaia <okorniev@redhat.com>
+Cc: Dai Ngo <Dai.Ngo@oracle.com>
+Cc: Tom Talpey <tom@talpey.com>
+Cc: Jaroslav Kysela <perex@perex.cz>
+Cc: Takashi Iwai <tiwai@suse.com>
+Cc: Bill Wendling <morbo@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
+Cc: Kanglong Wang <wangkanglong@loongson.cn>
+Cc: Tiezhu Yang <yangtiezhu@loongson.cn>
+Cc: Qiang Ma <maqianga@uniontech.com>
+Cc: Randy Dunlap <rdunlap@infradead.org>
+Cc: Pengpeng Hou <pengpeng@iscas.ac.cn>
+Cc: Ard Biesheuvel <ardb@kernel.org>
+Cc: Breno Leitao <leitao@debian.org>
+Cc: Thorsten Blum <blum@kernel.org>
+Cc: Harshit Mogalapalli <harshit.m.mogalapalli@oracle.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Lyude Paul <lyude@redhat.com>
+Cc: Ashutosh Desai <ashutoshdesai993@gmail.com>
+Cc: Imre Deak <imre.deak@intel.com>
+Cc: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Cc: Johan Hovold <johan@kernel.org>
+Cc: Johannes Berg <johannes.berg@intel.com>
+Cc: Miri Korenblit <miriam.rachel.korenblit@intel.com>
+Cc: Alexander Stein <alexander.stein@ew.tq-group.com>
+Cc: Cryolitia PukNgae <cryolitia@uniontech.com>
+Cc: Jiaming Zhang <r772577952@gmail.com>
+Cc: Will Porter <mrwillporter@gmail.com>
+Cc: Cen Zhang <zzzccc427@gmail.com>
+Cc: "C=C3=A1ssio Gabriel" <cassiogabrielcontato@gmail.com>
+Cc: Rong Zhang <i@rong.moe>
+Cc: Arun Raghavan <arunr@valvesoftware.com>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Cc: loongarch@lists.linux.dev
+Cc: linux-mips@vger.kernel.org
+Cc: linux-parisc@vger.kernel.org
+Cc: linux-edac@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+Cc: intel-xe@lists.freedesktop.org
+Cc: linux-input@vger.kernel.org
+Cc: linux-media@vger.kernel.org
+Cc: intel-wired-lan@lists.osuosl.org
+Cc: netdev@vger.kernel.org
+Cc: linux-wireless@vger.kernel.org
+Cc: brcm80211@lists.linux.dev
+Cc: brcm80211-dev-list.pdl@broadcom.com
+Cc: devicetree@vger.kernel.org
+Cc: linux-samsung-soc@vger.kernel.org
+Cc: linux-gpio@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org
+Cc: linux-nfs@vger.kernel.org
+Cc: devel@lists.orangefs.org
+Cc: linux-hardening@vger.kernel.org
+Cc: linux-sound@vger.kernel.org
+---
+ drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c | 15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
 
-System
-------
-  Laptop:          Lenovo ThinkPad P14s Gen 5 (Intel)
-  DMI sys_vendor:  LENOVO
-  DMI product_name:    21G2CTO1WW
-  DMI product_version: ThinkPad P14s Gen 5
-  DMI board_name:  21G2CTO1WW
-  BIOS:            R2DET43W (1.28), 2026-06-22
-  CPU:             Intel(R) Core(TM) Ultra 9 185H (Meteor Lake)
-  NIC:             00:1f.6 Ethernet Connection (18) I219-LM [8086:550a] (rev 20)
-  dmesg:           MAC: 16, PHY: 12, PBA No: FFFFFF-0FF
-  Kernel:          7.2.3-arch1-3 (Arch Linux)
-  e1000e:          version 7.2.3-arch1-3, firmware-version 1.1-4
-  Link:            1000 Mbps Full Duplex, Flow Control: Rx/Tx
-  Link partner:    consumer GbE switch/router at 192.168.10.1
+diff --git a/drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c b/drivers/gpu/drm/=
+xe/xe_gt_sriov_pf_debugfs.c
+index 5db7fc067c4d..548a50f74422 100644
+--- a/drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c
++++ b/drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c
+@@ -377,8 +377,10 @@ static ssize_t sched_group_engines_read(struct file *f=
+ile, char __user *buf,
+ 	struct xe_hw_engine *hwe;
+ 	enum xe_hw_engine_id id;
+ 	char engines[128];
++	struct seq_buf s;
++	const char *s_str;
+=20
+-	engines[0] =3D '\0';
++	seq_buf_init(&s, engines, sizeof(engines));
+=20
+ 	if (group < num_groups) {
+ 		for_each_hw_engine(hwe, gt, id) {
+@@ -386,15 +388,14 @@ static ssize_t sched_group_engines_read(struct file *=
+file, char __user *buf,
+ 			u16 guc_logical_instance =3D xe_hwe_guc_logical_instance(hwe);
+ 			u32 mask =3D groups[group].engines[guc_class];
+=20
+-			if (mask & BIT(guc_logical_instance)) {
+-				strlcat(engines, hwe->name, sizeof(engines));
+-				strlcat(engines, " ", sizeof(engines));
+-			}
++			if (mask & BIT(guc_logical_instance))
++				seq_buf_printf(&s, "%s ", hwe->name);
+ 		}
+-		strlcat(engines, "\n", sizeof(engines));
++		seq_buf_puts(&s, "\n");
+ 	}
+=20
+-	return simple_read_from_buffer(buf, count, ppos, engines, strlen(engines)=
+);
++	s_str =3D seq_buf_str(&s);
++	return simple_read_from_buffer(buf, count, ppos, s_str, strlen(s_str));
+ }
+=20
+ static const struct file_operations sched_group_engines_fops =3D {
+--=20
+2.55.0.1032.g73a4cd73de-goog
 
-Reproduction
-------------
-Plug the cable and ping the default gateway on the LAN. No suspend/resume
-involved, machine freshly booted and on AC power. Nothing e1000e-related in
-dmesg apart from the link up/down messages; no "Hardware Unit Hang".
-
-Default (K1 enabled):
-
-  $ ping -c 30 192.168.10.1
-  --- 192.168.10.1 ping statistics ---
-  30 packets transmitted, 18 received, 40% packet loss, time 29734ms
-  rtt min/avg/max/mdev = 0.211/0.315/0.384/0.046 ms
-
-The lost packets are spread over the run (seq 6, 8, 9, 11, 13, 14, 16, 19,
-20, 24, 25, 30), not a single burst. DHCP on this link also takes 1-2
-minutes to get a lease, consistent with incoming packets being dropped.
-
-With K1 disabled at runtime:
-
-  # ethtool --set-priv-flags enp0s31f6 disable-k1 on
-  $ ethtool --show-priv-flags enp0s31f6
-  Private flags for enp0s31f6:
-  s0ix-enabled: on
-  disable-k1  : on
-
-  $ ping -c 30 192.168.10.1
-  --- 192.168.10.1 ping statistics ---
-  30 packets transmitted, 30 received, 0% packet loss, time 29713ms
-  rtt min/avg/max/mdev = 0.169/0.251/0.468/0.054 ms
-
-  $ ping -c 30 192.168.10.1
-  --- 192.168.10.1 ping statistics ---
-  30 packets transmitted, 30 received, 0% packet loss, time 29677ms
-  rtt min/avg/max/mdev = 0.101/0.222/0.360/0.064 ms
-
-The result is stable across repeated runs and survives link down/up. I am
-currently working around it with a udev rule that sets the flag on device
-add.
-
-Suggested change
-----------------
-Add the machine to disable_k1_list. Lenovo encodes the model in
-DMI_PRODUCT_VERSION (product_name is the per-configuration machine type
-21G2CTO1WW), so matching on that is more robust:
-
-{
-.ident = "Lenovo ThinkPad P14s Gen 5",
-.matches = {
-DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
-DMI_MATCH(DMI_PRODUCT_VERSION, "ThinkPad P14s Gen 5"),
-},
-},
-
-Only the Intel variant (machine types 21G2/21G3) has an I219-LM, so the
-match cannot hit the AMD version of the same model.
-
-I am happy to test patches or collect more data (register dumps, ethtool
--S, different link partners) if useful.
-
-#regzbot introduced: 578294b8b60d
-
-Thanks,
-Javier Herrera
