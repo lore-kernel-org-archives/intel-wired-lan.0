@@ -1,28 +1,28 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F06D7C88E75
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 15 Sep 2026 17:17:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2157C88E7D
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 15 Sep 2026 17:18:00 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id C1BF880C73;
-	Tue, 15 Sep 2026 17:17:59 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id B665D606F7;
+	Tue, 15 Sep 2026 17:18:00 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id aGCC1EdT7BrG; Tue, 15 Sep 2026 17:17:58 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org A64BB80C53
-Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789492678;
-	b=cJW8RN8G1jWLeNzzZ0AqREgvwuPxAvYmAFvKlVBjRrNavBu/YUmjseEW184iF2f5A0j0
-	 nCIfGMxW704CQmrAjecrr6N2Hpm4KoIIRKqRu6Pl7wKkcKim9CmhpYv+Iiy6QsFzGy1DD
-	 Lz/ojeLy0slGiMbJjNscocsEIKh+4btW0rJh2YHOZTfnnUtFCNviI8/Hgx2n/IK7pc+oz
-	 cz39Mr7cHhrJH71kjfgp60oEzeApkHsMplqnk1z19l4JHMgZ3g9x6N2KDneAYdRTB6yrW
-	 hHWCatVNche5lcV3eaqzMQYo5EfIoqb6Gg1Vg3O4VEKIafqid5JaCsSeDUhs3JgbDsg==
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id KECQ-IdeY-Wj; Tue, 15 Sep 2026 17:17:59 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 9451E6071C
+Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789492679;
+	b=WSeAq7p9nCrOnXGEdC1QxU/oOILEcsP0n7T1BdSGLeUK948KMSscR2jkKvWJf+U1SFNk
+	 P03+1SfN7Lo5UJcsutPOttfa3W3fpcAQa3E2DdYSnyXC7ENeymOBzfjPvyHNsUj0xxdj8
+	 UeSJ4RfJGJPFZjWGFRLe7bhltEi3isJCsQU1NIDj4cHArDhmucw/jR8p7HhY3dx9RGRLv
+	 39gsuDI5KCXDkmzAKdwLu2gHd8w1UXsM+fR1QHtL++1Bed/NbK8M3ayZDZRYYNkgFJs8t
+	 XlFgVnZrL7jtUMlUzjgI8aygplm0VgCBRlnRL/CP3xpNyHWBTFCvYNToJ8/0A0zZRMA==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1789492678;
+	c=relaxed/relaxed; t=1789492679;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
@@ -32,65 +32,67 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 Content-Transfer-Encoding:X-Mailman-Approved-At:X-BeenThere:
 	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=tzVl62qjzRm92BALDDypl3TnCOJSNAaLaOJ/zmWRh10=;
-	b=QHTbY1FfURsCt3RbBx4aIUrLR81h6kxOfhnzk+8DBcCvh16azCMB58GbGG6YkmlY6lX7
-	 xr3pFt0icqwe8wU5bs3MaCzgLOcPCp0jzkOuQbn3w3IqAYzhlHpXp6Qsu4XQe+BbH8Fiu
-	 obt2gLMJl6Jd1UvakiUWsDZjnL1GOx19dGXpLRliG9U31IHla5M/28sSBYZzRTCLPMRsY
-	 IcotWnRUhze6fbjwws/y11JJMjvHTyKyy7suLvDOIH0snelqUtVyCOKuvt76GR4K7BVNj
-	 hVJyH3BcybOBR9RI+CIfRmC2mq5Ku5VYSe25dLydXFwhQs6+Gj1k3fgW3DxOIVW1PZA==
-ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	bh=XkXp/XZtfYpYjiXJEDXdoQGA1NlHq2kVyqBGidLpG58=;
+	b=L81DGMCuBghjgvgr2W2RdZvAigVe6sBNL8gz1alv1oeVOATAVwiA39siig+pcLfP2RH9
+	 dzVpM7Lk6B5LBrLGAbxTn0Wck64a4Bkyy/4rBu+FCT6X3w9Lo+hwgRthfdazoqSpbln5l
+	 +4K0ycdL63bbO+RNd/xCCopCGxcwVcHVUMmA+07R0Pj76WG8CIw5EW2W9dREIz8EAwBeS
+	 QbR626i5PNrYKMYGR4EoB+DRT28Zgwm/GXYtRUVKPTXFWaVPNiqVLOpZthLSElbZwuVkR
+	 NOMWIV8GAUSRmlaCdjLTwphYrwnfUcYnWnB6IrRYvY7U4fxQGwVfSxd9YxzqcYs2K+Q==
+ARC-Authentication-Results: i=2; smtp3.osuosl.org; dmarc=pass header.from=google.com;
+	dkim=pass header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=ZlV2pIuE;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1789492678;
-	bh=tzVl62qjzRm92BALDDypl3TnCOJSNAaLaOJ/zmWRh10=;
+	s=default; t=1789492679;
+	bh=XkXp/XZtfYpYjiXJEDXdoQGA1NlHq2kVyqBGidLpG58=;
 	h=Date:In-Reply-To:References:Subject:From:To:Cc:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=blxeXLXbZVabUXnABDSQlrSmXqi6Nmo8ktdR8PJyrMP2SrPQ/NqbgtEHc23ciUtzB
-	 vkU70r55alYZBnk4Jfq6Hdv840vcd3Jr8hTPk57egK8xagf8BiGq2eXaJyvgRp3LPY
-	 bnPrjgb0y/6nlHXZ9RqiNprXA6YDxU36nI8maxwbfqcKxEg2NsW1bkvQypztsA0Fbk
-	 kYJfQS4WV+ce09uPyu9nzHEUOewAzXV8thyfGRwDUqASKOhz1oVBKNEZpFWWR3EJ2U
-	 VBQx3VgKnD4vbU0beBS2RpA5WbUd9qzIUpLtcrphMLqI1dkCn9qPv9jwQSiSc1fGe+
-	 6GRn6cgbTTw8A==
+	b=CLWavhTvn3Oy7e48922FwJx4JVdvx08AAlCqCwVJ2xBiekdUt7nIc6SeYTcBcNJr4
+	 tr5TZKFaFEWQaKdHgwZIEadnF/gf10luDHGH4xfyQ4yC+UmRXg4cJzHmahcXRYgYAL
+	 leVjo/oAOnEthIwzEZr1Sm5QKufW/oetrTOxm7UXPER52Ww1AjdyGhK4yqIcCeuhHT
+	 sfn1FBXaoKflz7huSLNQxjoNtcYqGIl3Dt7t5tEWIhgWA1oIW1G3jRCfc/AfOAdhWI
+	 0oBEUBbuxXNMPmrWLkbqvM2LH/va2DFEqz/UdvqbkIsTnX9AwsZ2oApF/IZbubE7Sk
+	 9v7DUhAx+31WQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id A64BB80C53;
-	Tue, 15 Sep 2026 17:17:58 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id B644B493
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 08:20:13 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 9451E6071C;
+	Tue, 15 Sep 2026 17:17:59 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 3FE96493
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 08:20:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 97B4B60721
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 08:20:13 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 3D74560721
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 08:20:14 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 7tUzPyqcdpGm for <intel-wired-lan@lists.osuosl.org>;
- Tue, 15 Sep 2026 08:20:12 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 89C3560681
+ id pDs--jhOVezR for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 15 Sep 2026 08:20:13 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 419AC60708
 Authentication-Results: smtp3.osuosl.org;
  arc=none smtp.remote-ip="2607:f8b0:4864:20::648"
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789460412;
- b=KxlJASzO8qJyT/ZGYj1mB4TQUxu7mtWyIyXGaDT9CnUp2w2086Ddoqn5RSb5HRWMeWl6
- nDmfJIPmSk7hx8iRw54o2ycye6l3JzcYgRLqhebw1ovtrzRgdlrmRWL6Zxcaq4AMwsofR
- Behjs5Sg51gt5MEeKhB2UAdtEUV0DjKE+btyGqI5TL9HLWFPDqsUFc3B9D+hqgasnE4y/
- RMAEomNikDL6pHcyZqZ796aoOuvWaIfIlXromYTgeqxQnVUSovtZBgtJVAmSvt9xJSl/q
- SWpZNVC5/4aITyC5PCn2F5UFDkXKIea1496F+1N+1J4glo4b4ehfUQuDgdMLAHwvztw==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789460413;
+ b=lztx5+8ewLJhSS7P7lGt+XmZfkRRmZkU32/wwiKZ8NWF3QqtVDDYAdGq5GTviRVOQWM8
+ FNkJAQZdkSTp/Uf62ddpHooBlyl38fmisLBTB6iKhGfl7oGo0KfxSrfuB2qstGcqWkL0K
+ Rx2Qljzh+ChKyVKBieYpjpA1fryalEqMKFElLbI4JtUxcTH9YjzqxkjmXmTtljfPgJujh
+ R4HaBE8Q88qp59JnUFACeAH6G/EArSWCXjzIt31IUw47GGlzR03oWUzBmYS++zBjLc7Fo
+ s2Y0sEawMqDV7P8d4/xXzhjcfZDJgcB8ffeLip0mzrUvz3p9py4wrRShqAkXx/RWEJQ==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1789460412;
+ c=relaxed/relaxed; t=1789460413;
  h=Received-SPF:Received:DKIM-Signature:X-Google-DKIM-Signature:
  X-Forwarded-Encrypted:X-Gm-Message-State:X-Received:Date:In-Reply-To:
  Mime-Version:References:X-Mailer:Message-ID:Subject:From:To:Cc:
  Content-Type:Content-Transfer-Encoding;
- bh=tzVl62qjzRm92BALDDypl3TnCOJSNAaLaOJ/zmWRh10=;
- b=GE13OMtDVl802yCibKxwyuRMnJT7QsHzKYiV/yE4Rv5cWYm71hyurHimMmU7jMyjgrRf
- 2TVO2TQE18ZAiClMDkUZI3p4wH1XkbHF+pJiau5fZwB37Cgk8lrmOICARTxTk+8L9bu/7
- Saayuf0eOHkWAajpi8lBBXPH5dXky9b11+g0xAYZj2H4DwiYwt7hMPRByAHLIVk8+gIES
- wZi8RzAlZQBrxhK4wTTtgjAeOZP4avEiJewXoiU6Gwfl0t5D8NOuCOuqm22tooc9aHRM8
- fTGLxk3b+PRqupSRGqkZ6AoXrkChBmq24VP30a8bUFBQBQ+pGH7+I4wsnFzlYsQCuAA==
+ bh=XkXp/XZtfYpYjiXJEDXdoQGA1NlHq2kVyqBGidLpG58=;
+ b=aW7fx73ebx3WmcpXlvDk9DzRTR+EnLraMV2Zt33NRNDRr+kInLwfZuQjKAmXyxeuwWr2
+ vfjDV83dpimTnct6jT81UN3xKWVSmj445SVzTvI8NBljQ9PXKjtaZlzjJRhDEcdf6ltSi
+ eEu7C/BkuNxEtZKy+idyeLPYXT6hkx9o3rRn/IdlKi5zo23HlwXuDh7EBKoxxzQBMDxW4
+ Gy59tqtgT0GDUD+IllI373uVvIjOPGVoGLMOMGh6SoZqOO98QI6usORnTgqJuMiAw70yM
+ ARm44Mof6Zp6WstGP1y5cKFZiL08PEO7Czh0TgFKlq3rqn28cKAqgna4kA0PwNE1L5Q==
 ARC-Authentication-Results: i=1; smtp3.osuosl.org;
  dmarc=pass header.from=google.com; 
  dkim=pass header.d=google.com header.i=@google.com header.a=rsa-sha256
- header.s=20251104 header.b=KjPt8kBX; 
+ header.s=20251104 header.b=ZlV2pIuE; 
  arc=none smtp.remote-ip="2607:f8b0:4864:20::648"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
  client-ip=2607:f8b0:4864:20::648; helo=mail-pl1-x648.google.com;
@@ -100,57 +102,56 @@ Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
- header.a=rsa-sha256 header.s=20251104 header.b=KjPt8kBX
+ header.a=rsa-sha256 header.s=20251104 header.b=ZlV2pIuE
 Received: from mail-pl1-x648.google.com (mail-pl1-x648.google.com
  [IPv6:2607:f8b0:4864:20::648])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 89C3560681
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 419AC60708
  for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 08:20:12 +0000 (UTC)
 Received: by mail-pl1-x648.google.com with SMTP id
- d9443c01a7336-2d7443e0f0bso78284875ad.1
+ d9443c01a7336-2d6df0a1e18so82546335ad.1
  for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 01:20:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=google.com; s=20251104; t=1789460411; x=1790065211; darn=lists.osuosl.org;
+ d=google.com; s=20251104; t=1789460412; x=1790065212; darn=lists.osuosl.org;
  h=content-transfer-encoding:content-type:cc:to:from:subject
  :message-id:references:mime-version:in-reply-to:date:from:to:cc
  :subject:date:message-id:reply-to:content-type;
- bh=tzVl62qjzRm92BALDDypl3TnCOJSNAaLaOJ/zmWRh10=;
- b=KjPt8kBXRjRxaBvxIXHlpC9h5ImHZFqxUbEjaNGiK+/8E4GRY5HQeiQr2mZR7lUFe+
- Jqo0S0xiflsYlKih7+q+r4FCnCpBA2xhbvjz9iBJSQzmbtOS45zrh26zv4V+ydvpah38
- VYsaUg76autq+v+MgCK8bt0VkFp350CDF0hUthXYhHtq8hTI8ETxLhIZZgBJnclTc0Su
- wuNjY90JMuxVQknTgQ31KD3DZ5DhD82kDXp47onw1vWtcThlTUXKvSEzmv458CRKBVL0
- WkG5k0Rybz5shDhGHlmMEkEC8lXqoVIjrDlznU4C6L1a72XQs9JEqOB5g9OPDoBhcx16
- sjLQ==
+ bh=XkXp/XZtfYpYjiXJEDXdoQGA1NlHq2kVyqBGidLpG58=;
+ b=ZlV2pIuEigkFMg4N1QpCBPbDK5FpeChgiHwONuncZHXMWPCDsbhvKSWjAnGjdIqsQO
+ 7iYykCe79/q/Ry2T7bx4JPYda47wVONsZFF2wY+5TyvX7Mc3f253LDaLS027b/DnI1sg
+ pm+7irK9Dt7BMIwwIxxiltrDIdEA0fMDvJDbgVcxq0wH9NfVjVJZhDV7VfXxd9x3CbzB
+ QlSU6kdPV5ctNHvlm+3wRiexp6sX0CKW35Ms50NQSI2MyPHJqEg2Z/voMY6wnZ0luqJ9
+ YkFDR/dULZ9mC+ZJprzdI8bLCo5JZoETdOWNrU0W25FHC88pRe6sd0pTF880f+BmGmyx
+ U7CA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1789460411; x=1790065211;
+ d=1e100.net; s=20260707; t=1789460412; x=1790065212;
  h=content-transfer-encoding:content-type:cc:to:from:subject
  :message-id:references:mime-version:in-reply-to:date
  :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
  :content-type;
- bh=tzVl62qjzRm92BALDDypl3TnCOJSNAaLaOJ/zmWRh10=;
- b=wnXWFBf9G27/s2MMQyDn7cCjmxCfkMIPsjH1wnROEjiqFOSA0nxTrBPJ5voQojLpnX
- audm3IrrhISCyx7xiARArc2rs2gcDlAVCQ4/5Jh9GI3me/3MuYFrMTp1ChrAws/1hyoZ
- zhpynUgYjgFzmBs/9fc+qGi7J5+3bqUIpF2JK1L9dKKaAJ743pUhOejUl7L8xpJv2SCE
- qw7vqWaGfj9DOQKehS5v3sugqqgQMYvQkBDJDJFgf0HSprCexP7OaeGcJQos348nnCtr
- LLD4zEobuC6tNSIlA8ytk8gLkdVkrjgGOzRusjTglvC0DM850aQBqumYH4rlrYZ0LrQr
- DwxA==
+ bh=XkXp/XZtfYpYjiXJEDXdoQGA1NlHq2kVyqBGidLpG58=;
+ b=U0RmoheeQgF8FccNgZK/4jMLH5UyMVY9YY7rcvajze/g5O5tDXU5H2Sw/x2qmv9PRA
+ 9NMm+pTmPT5H2HgpFWlAQjVwp5ykxH49mxTCtRv8ugV82ma5CCvmXKXTqxWqHLTatJoO
+ 3+/+bAZsHw75sqJPWTs9kkInbQ8aJN8Zbpd0ElLRyKAlOf5O9dEiNjXgKEgdW9r53V0t
+ 2s5fiLAIglVJ1kVskMhUEWceqeaSQY2DNQ5UOLBot78cY1LS2tP5177rRxs4nThpa9Fa
+ dM6jFwRi5ZvMOKtQyjZXJq97BaBUF3pz9org5W5ipfhvH1z2qZ5YnWcUCFdTNNW4cccA
+ RaGQ==
 X-Forwarded-Encrypted: i=1;
- AKwUvBwIkLwdT5TL+LJqZys5YZNTRLjAHTkjvVqXpPihePygkV6ccY+t4MBVgFFPyypmaACKc2h9q4n6GHsOW15Zd0w=@lists.osuosl.org
-X-Gm-Message-State: AFuF++kxjda5ze9qykoVjbcCP5xGnFiF5QEX/QnOOeYHFJ0uZH/YGfZr
- 0C/S1rbGqRYS+RuDqLnHyQ8LcTRUmuLJfpFWQKqX1cSe1QySv/A03seNSaJcoq/H2OonGmT6WLM
- X
-X-Received: from plbjx4.prod.google.com ([2002:a17:903:1384:b0:2dd:1457:fac8])
+ AKwUvByrSJ7V8b3CiZMcZkwkok8Qxrk0PEYFgz3E9Sgir/XDZEWfboQHZwqsOhhpAlvL4bsYm36K3GMtra+eQ4ajUbM=@lists.osuosl.org
+X-Gm-Message-State: AFuF++m+JeEUuXoihr8WgW7mMou02iGFHO+2We3eRzqIUVXHUeW57131
+ hC4dT+uN/ZFoBKk0knjU1LsX2yzCL2cN4tbVpOlY1toC8z/kYgge82z4+N9oLFZsLNYiez+wWO8
+ v
+X-Received: from plbkc7.prod.google.com ([2002:a17:903:33c7:b0:2dd:630:cea4])
  (user=morbo job=prod-delivery.src-stubby-dispatcher) by
- 2002:a17:903:190d:b0:2dd:4168:7bd3
- with SMTP id d9443c01a7336-2dd6c6c0cb1mr140747065ad.12.1789460411041; Tue, 15
+ 2002:a17:903:1965:b0:2d3:716e:e2ae
+ with SMTP id d9443c01a7336-2dd6c5ef019mr154580855ad.6.1789460411846; Tue, 15
  Sep 2026 01:20:11 -0700 (PDT)
-Date: Tue, 15 Sep 2026 08:18:36 +0000
+Date: Tue, 15 Sep 2026 08:18:37 +0000
 In-Reply-To: <20260915081910.4142719-1-morbo@google.com>
 Mime-Version: 1.0
 References: <20260915081910.4142719-1-morbo@google.com>
 X-Mailer: git-send-email 2.55.0.1032.g73a4cd73de-goog
-Message-ID: <20260915081910.4142719-20-morbo@google.com>
-Subject: [PATCH 19/28] x86/setup: Use snprintf() to concatenate builtin and
- boot command lines
+Message-ID: <20260915081910.4142719-21-morbo@google.com>
+Subject: [PATCH 20/28] parisc: Refactor strlcat() to seq_buf in setup_cmdline()
 From: Bill Wendling <morbo@google.com>
 To: linux-kernel@vger.kernel.org
 Cc: Bill Wendling <morbo@google.com>, codemender-patching+linux@google.com, 
@@ -243,20 +244,16 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-When CONFIG_CMDLINE_BOOL is enabled without CONFIG_CMDLINE_OVERRIDE,
-setup_arch() appends boot_command_line to builtin_cmdline using two
-strlcat() calls before copying the result back to boot_command_line.
+setup_cmdline() uses multiple strlcat() calls to conditionally append
+default console and earlycon parameters to boot_command_line.
 
-In preparation for removing the deprecated strlcat() API[1], format the
-combined command line into a temporary buffer using a single snprintf()
-call and copy the result to both builtin_cmdline and boot_command_line.
-Using a temporary buffer avoids undefined behavior from passing overlapping
-source and destination buffers to snprintf().
+In preparation for removing the deprecated strlcat() API[1], initialize a
+struct seq_buf with the existing boot_command_line contents and use
+seq_buf_printf() to append the console parameters.
 
 Link: https://github.com/KSPP/linux/issues/370 [1]
 Cc: codemender-patching+linux@google.com
-Assisted-by: Developer:Gemini_2.5_Pro [editor_update_file, make_kernel_buil=
-d_single_file, checkpatch_run]
+Assisted-by: CoPilot:Gemini-1.5-Pro [editor_update_file, shell_command_run]
 Signed-off-by: Bill Wendling <morbo@google.com>
 ---
 Cc: Russell King <linux@armlinux.org.uk>
@@ -370,29 +367,57 @@ Cc: devel@lists.orangefs.org
 Cc: linux-hardening@vger.kernel.org
 Cc: linux-sound@vger.kernel.org
 ---
- arch/x86/kernel/setup.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ arch/parisc/kernel/setup.c | 16 ++++++++++------
+ 1 file changed, 10 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index cda6adb9f69c..c40e0edd7c13 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -916,9 +916,11 @@ void __init setup_arch(char **cmdline_p)
- #else
- 	if (builtin_cmdline[0]) {
- 		/* append boot loader cmdline to builtin */
--		strlcat(builtin_cmdline, " ", COMMAND_LINE_SIZE);
--		strlcat(builtin_cmdline, boot_command_line, COMMAND_LINE_SIZE);
--		strscpy(boot_command_line, builtin_cmdline, COMMAND_LINE_SIZE);
-+		char tmp[COMMAND_LINE_SIZE];
+diff --git a/arch/parisc/kernel/setup.c b/arch/parisc/kernel/setup.c
+index d3e17a7a8901..fa3efc82ad87 100644
+--- a/arch/parisc/kernel/setup.c
++++ b/arch/parisc/kernel/setup.c
+@@ -17,6 +17,7 @@
+ #include <linux/init.h>
+ #include <linux/console.h>
+ #include <linux/seq_file.h>
++#include <linux/seq_buf.h>
+ #define PCI_DEBUG
+ #include <linux/pci.h>
+ #undef PCI_DEBUG
+@@ -42,6 +43,7 @@ static char __initdata command_line[COMMAND_LINE_SIZE];
+ static void __init setup_cmdline(char **cmdline_p)
+ {
+ 	extern unsigned int boot_args[];
++	struct seq_buf s;
+ 	char *p;
+=20
+ 	*cmdline_p =3D command_line;
+@@ -54,19 +56,21 @@ static void __init setup_cmdline(char **cmdline_p)
+ 	strscpy(boot_command_line, (char *)__va(boot_args[1]),
+ 		COMMAND_LINE_SIZE);
+=20
++	s.buffer =3D boot_command_line;
++	s.size =3D COMMAND_LINE_SIZE;
++	s.len =3D strlen(boot_command_line);
 +
-+		snprintf(tmp, COMMAND_LINE_SIZE, "%s %s", builtin_cmdline, boot_command_=
-line);
-+		strscpy(builtin_cmdline, tmp, COMMAND_LINE_SIZE);
-+		strscpy(boot_command_line, tmp, COMMAND_LINE_SIZE);
+ 	/* autodetect console type (if not done by palo yet) */
+ 	p =3D boot_command_line;
+ 	if (!str_has_prefix(p, "console=3D") && !strstr(p, " console=3D")) {
+-		strlcat(p, " console=3D", COMMAND_LINE_SIZE);
+-		if (PAGE0->mem_cons.cl_class =3D=3D CL_DUPLEX)
+-			strlcat(p, "ttyS0", COMMAND_LINE_SIZE);
+-		else
+-			strlcat(p, "tty0", COMMAND_LINE_SIZE);
++		seq_buf_printf(&s, " console=3D%s",
++			       PAGE0->mem_cons.cl_class =3D=3D CL_DUPLEX ?
++			       "ttyS0" : "tty0");
  	}
- #endif
- 	builtin_cmdline_added =3D true;
+=20
+ 	/* default to use early console */
+ 	if (!strstr(p, "earlycon"))
+-		strlcat(p, " earlycon=3Dpdc", COMMAND_LINE_SIZE);
++		seq_buf_printf(&s, " earlycon=3Dpdc");
+=20
+ #ifdef CONFIG_BLK_DEV_INITRD
+ 	/* did palo pass us a ramdisk? */
 --=20
 2.55.0.1032.g73a4cd73de-goog
 
