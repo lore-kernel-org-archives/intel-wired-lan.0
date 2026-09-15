@@ -1,28 +1,28 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EB50FC88E7D
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 15 Sep 2026 18:30:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37E9DC88E75
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 15 Sep 2026 18:39:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id A70B060717;
-	Tue, 15 Sep 2026 18:30:27 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id E8F55809C4;
+	Tue, 15 Sep 2026 18:39:40 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Olk4iE29fFl4; Tue, 15 Sep 2026 18:30:27 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org CD5C36071C
-Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789497026;
-	b=mS/tymZQ8YRY3uIWmEvtpz0hUlSa8HOsBfwI9fY8Q85aL/pXh6Yy7MhVH6fg7teuh2ZK
-	 TAyVDwgXpGPBQnD2Rl4omE8WHPOoZ6haf53Z2Q5vAMnR/2RwKYAYh1U5NxzrmfcdFCg2E
-	 VUveS1hDT8ynNvPmy1oVMKLGMTrlN22l+XshcVbGcjG/nBhhw09wTRMhx1+ZCUjMniZsk
-	 zqOkWgLR1WJTV2ShoOHGHB0JpV4qGOtfBdYNQZGsCcuYTxE7gVMUa0Pe7+ywa4EZLfkFt
-	 OfE+eJrUApyKHFSIEIS7gD9h6YWW6TvEytnRUW1nRblII31MMLbAC1ftFmp3BTrNSQw==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id QmXjhvvfOT9d; Tue, 15 Sep 2026 18:39:40 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 536A2809C0
+Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789497580;
+	b=fLBPvAB83puHpuOxjo2Sm4ZY8Nzf0jqY7EYk5DFrGXhP10UT/4mXUv/vEuDVA5f7/LPs
+	 2SSPXzuLBfNuy28FUTEvGCICS7HfU2BOrT6PT34MDWExKgEY/3fWZapBnCgs4UNXt7IW5
+	 7A4CKBdZwa0aUo1xEB8HHb86Hp8Hnn8nRUpOQUx1PQxfGxDacJN2ZK0jnX/XfX/DIy9F0
+	 uzuhve0CALhSJ2Cp7Kixr5dXBQ96EtviePq/M/INnB6DVHy+ZlqvPz5qT6W5ruWBDEd4O
+	 sZC1ZyxrPyxSmFYmULKtXdn0ZDfL9KOgDB+8wUUmSyklrpTIqkWrMnPXm7RIm9Yoo9A==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1789497026;
+	c=relaxed/relaxed; t=1789497580;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
@@ -30,93 +30,93 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 MIME-Version:Content-Type:Content-Disposition:In-Reply-To:X-BeenThere:
 	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=zCJx1lMoPaoDeiIN5oezRLV8MqYpA3JhuUg8Z+dhoag=;
-	b=PM8BZI04pWxvswOy4ghVxE+c4ZP970XVB7TIvEuwUd8gkH9cCKNFVe7DpYqnK41aTNOk
-	 ol0HKr0Xp7qvFntPoLUDdc/RoumyNkn/+BAOvUDw6gmJsYIQnKSUbIcxSE3nKFCfdBoeW
-	 8knsyAQ45ef0ACgRsu+KT7IwrX2y3ashbPVg7KveNmyXxvqHb9zZubhmwuxKcLTWLO1oP
-	 KHtuuMvNwV9dWIqu8Gc+bBrnng/s/iX2nKBjHaD24tQbEfu9FgSaCobc4tZkPhFTtMFWQ
-	 oKtioh3/7DQaVBrbFdKRPBPJn6EByGIEF9aR9w1ulVWlsyE/3SVLd3dpRcAOUmacSIQ==
-ARC-Authentication-Results: i=2; smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	bh=GJPdbx3D50uXJoO9DA6FVACvDwK6YiddMGPdvjxQNDI=;
+	b=sCvm3A/JKpF51ulQdAQLHjpdFmGKDPOKB8L5bxDXzro5Wz0Or7VJT9AhvHghsI+L1XCk
+	 YN/MVzw1E7pPoXjcwKpoIDyLxgD34K2WtvUJHcMqcDvJHWQGVOBW3klpScrM7fUl4iftH
+	 zlS+MAsIzetA8IeGaAIp0WGaH2V/aVBgEw41AJctokFkFLo3SvUJFynHcpEwlpYX7/yAu
+	 p6OSvyxMJ/7KxXSFC3udN8jtODCbiWyH6iY1XL5zV5lS1Ut/5UiZgoLDdG2FSvedmxM60
+	 34TY7CMhqkUQ7salfbLiWxnFwHJCeg4zGSHEBWXvLEgGGePQL+1+BIWv3Biku6/Inxg==
+ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1789497026;
-	bh=zCJx1lMoPaoDeiIN5oezRLV8MqYpA3JhuUg8Z+dhoag=;
+	s=default; t=1789497580;
+	bh=GJPdbx3D50uXJoO9DA6FVACvDwK6YiddMGPdvjxQNDI=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=NcVgTQMI8Oqz2n5NSnjARhtFII5d0wns+jr1HD++KUdYmgiWAa14kA8xSlMXaijB1
-	 ewiUO+gUL6s1GJ/DvCZFNq0iMLYK0/PpKpodA19LzFCvbJA3qcTQMT4UcLEGmY/JTM
-	 r1MtbJcz2MJDK+UQL8kh089j5AgDc7NwykxXlUu4Ejxjx5Hi9i6wDdVMqMrdyM1kXl
-	 VaW55IYOJrIAFtahy3lM5k9eXtMzZAdV6yEPlt3skx1BJLGayzbEOA4PIAWhSeUW6s
-	 1rPk2p49S4ltYt1wm4kgVfFGreSWbDqpQLJyjApBu3etntdLg/emVOSZlq46m0Yu0p
-	 0Xk7vBry7NhMQ==
+	b=pMoTD+2t6G3N54Yfchyi5xy+vAVCUu1aGQ2/IkObdvobdcJjyBpM2Cra9ri+bthIz
+	 OCE9fXrxkk3P4YM+pxrTRrLVCWtaKOd/ds2Hsq9C7bV/4x+RWDVmFBVuFyGG6Xdqca
+	 kT7MI9txrnKaMnB98IsTotBvNFaiXVfkTEpoV32Drv2rQjxDGCJK0iesRmOWg/xqop
+	 rm6OeR4W+Vc2VZ1EPpoICH3g1P1oukJEkqalvIKkT1YrCe/T9QkS/SpNqyglRLdeVH
+	 vI1GXTECU2KhtJL91iqDJpiGABGPgolkS+rJ8WffZ9FqwOAin3Uiq9kWSsZbCTHFOX
+	 cbx/yYjzN98pw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id CD5C36071C;
-	Tue, 15 Sep 2026 18:30:26 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 536A2809C0;
+	Tue, 15 Sep 2026 18:39:40 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 5B3A223F
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 18:30:25 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 7850DEB
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 18:39:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 581E640514
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 18:30:25 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 69FEC402BC
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 18:39:38 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 023bApiHMJCm for <intel-wired-lan@lists.osuosl.org>;
- Tue, 15 Sep 2026 18:30:24 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 6287140506
+ id kbJUGADnTi9G for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 15 Sep 2026 18:39:38 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org AD788402A5
 Authentication-Results: smtp4.osuosl.org; arc=none
  smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789497024;
- b=g1iF3g8nU5/HUtXSR4Px/zpw0UXEk0y+uGcrg9PeOJrPSAyc4lsL7Zzbj2/HmgEuXFcF
- wI6cJbc0aDH/mbcjBJHl/39azoTYpK83W46gcAQeD4++DENCcQtWviGvWoChAiI5WM2m7
- U0CYL5n3GueL/RFIE7kEXm/odDXrxVdgBIOppzgk9KESBtYd9GF8GoFx2zKqea0PFSXrS
- yJZjB5aqDoi0zYYZ8xGn247T7OrW1vx6qvEUgJ/HftNboyuIUE1BBhItrYSeuUCUbhoHl
- YDpsecayol3SozZtwkHiqdwRYGRLVewBfRF+csF04Z6s7siLdyg8lmz0VKyib8aoROQ==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789497577;
+ b=joodwvmGkXUo+XoHF7IoSWbq+m9h10IJCcXl+3mdvuGzoWt3XxOeYQBZqgbfNMRe1Z+J
+ uHvZesKkNCzVT6pyGOI68QuPSlk+1UTAhm/E/8O4umB+MDXnea5olhJARn9SZdM4cjsPQ
+ k/xJVfhvLQ8+d1O7U5XTU+HJL1jUEFUxkzgR+sL9HaQSBanKWBvGSmSWNzoPSFeUR+dSK
+ mr9boRpm1sIOnFApC2AMlOivwa2q80TTsrNemzKOPEdU7LA4NbyeWsWTxxyoVId9Ltfsd
+ CVT0xeCPw4hk6NnE94yxV3tcMAP2n+CKG8dUL4OJeF6lVX9lhVNzMK6NHZGj5+ztA/A==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1789497024;
+ c=relaxed/relaxed; t=1789497577;
  h=Received-SPF:Received:Received:DKIM-Signature:Date:From:To:Cc:
  Subject:Message-ID:References:MIME-Version:Content-Type:
  Content-Disposition:In-Reply-To;
- bh=zCJx1lMoPaoDeiIN5oezRLV8MqYpA3JhuUg8Z+dhoag=;
- b=lBXGmF4CvqN+Ah7dvTa91H8lzTdi7YXsj3iAK8ADEfcUi9pnw7rL+X4smKze+YHQl0Qr
- icYL1wi+NNkdPRCJh6jxhT/EOZLKFpjP11fLCkj+NztE0JTe7c+4NBa+LJ3YU3+l6GGkw
- KICS4CFc1yj6OamipFRQu+AhFtQFOi9WNrqatbs744QEg29/ZCLJ6OOcaxnBDyA51Jc+l
- 6eGyEUl14dmHmtnijeBIm1VrO7qwAPqF2S+IqXkStNeVF6otET02jNb78fXhwYOtWmqpk
- hWjcRsXHJV0wD/UBs9gknkUekjdcBtps+MR8uMGeWIR9CiPky3LDzlU3QmLbqEnYbzQ==
+ bh=GJPdbx3D50uXJoO9DA6FVACvDwK6YiddMGPdvjxQNDI=;
+ b=E1/AEbBLJzyNeZA0WOPXF3Jk5+0FIDOqSgODYayrtOHbKijS+Q6KUr3xeaRpNdt91NrB
+ YrY7o8kM5BXk3UW+UBiLIH56Vq7xivSrsaHvn/SygpeJVNssfjFkKwsZGnEWxzqFduJWf
+ 7gHPyXCjWf0i8G18SUXDIsnGR5k13wdpDNXuCa8oNrTTUeoulC7bIpDrPgmVYda8jz5+L
+ W3h6SlZZpz1fBOBAGVGLq8JSgq/RK3g9RQLPCVBs3/YuY0RP1jK4RJaTa1pw8hM4Bt422
+ IdX/jbRYCWYk3Hh788o61gZGxBPHOsUbMocpSbA6JXhVOOyg/DcrmLu8dZsS46liA3w==
 ARC-Authentication-Results: i=1; smtp4.osuosl.org;
  dmarc=pass header.from=kernel.org; 
  dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=FtG1AIAh; 
+ header.s=k20260515 header.b=iOL9B39Y; 
  arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
  client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
  envelope-from=kees@kernel.org; receiver=<UNKNOWN> 
 Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20260515 header.b=FtG1AIAh
+Authentication-Results: smtp4.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20260515 header.b=iOL9B39Y
 Received: from tor.source.kernel.org (tor.source.kernel.org
  [IPv6:2600:3c04:e001:324:0:1991:8:25])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 6287140506
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 18:30:23 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTPS id AD788402A5
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 18:39:37 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id 2728C600CB;
- Tue, 15 Sep 2026 18:30:22 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CE75C1F00898;
- Tue, 15 Sep 2026 18:30:21 +0000 (UTC)
+ by tor.source.kernel.org (Postfix) with ESMTP id 628B6600E2;
+ Tue, 15 Sep 2026 18:39:35 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 125A81F0089C;
+ Tue, 15 Sep 2026 18:39:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1789497021;
- bh=zCJx1lMoPaoDeiIN5oezRLV8MqYpA3JhuUg8Z+dhoag=;
+ s=k20260515; t=1789497575;
+ bh=GJPdbx3D50uXJoO9DA6FVACvDwK6YiddMGPdvjxQNDI=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To;
- b=FtG1AIAh8Ifu90TvPASnvJLKq/3hHoybYyG8CBtKd2A3Tko5EoQZmhxlykHybSWCY
- H6+cZEX9BUB3VzICpj+OZxPJ673u94nnolr9H+SDA6dBcoGGYAc9yHJcjV+Ep8BP0l
- el5biVBlyvnMpvBBdnmFKteUXHpcuI8Bb8Pu3nE8NtDNIpu6JJu8fFsiOvrLa3Qrgq
- NkHBRSaDsJkBM6eE9SQ++npMsQoPqmrvJCP6/7TZu7tvF19A4a5+2+kwcqpI8v/iuX
- YN51bg9WV0sHN4tZ47tD/7Vxl/N2tA6azTTrtrat6edEQApqlwzt/pVbGgznFVhGNY
- okL3wnYQoU9Ng==
-Date: Tue, 15 Sep 2026 11:30:21 -0700
+ b=iOL9B39YLpHi8j/xTA9excdhrKO592Vs8pzjMn2WO6qs93YmBgp8kN456Jg5lMCy6
+ XJQGOVecXRri/3bcjHRJ3V1TxEOLZnGLdxEXkLCo61bSiTSWlhwLyfpSdI0g6XHGN0
+ zfnbSiswF6ZzNw024O4YR4IzccqeFVoDS+eKWav2JzrUR3XY+RCD/1Z1ycqZximCTE
+ FGEgiuUWvhoS17iVeOKscTJDytdCI3y1YEfkgwLeB5MYcxUTTV2RL6qSmZ8QgffJ33
+ paW7DU7d8WC2zDUgoqcOdITAZn2TffzdgN/2BZFlDYJ2xE6SZwoaQlfH4TZExND7F7
+ 8sLdcjP8y9Ayw==
+Date: Tue, 15 Sep 2026 11:39:34 -0700
 From: Kees Cook <kees@kernel.org>
 To: Bill Wendling <morbo@google.com>
 Cc: linux-kernel@vger.kernel.org, codemender-patching+linux@google.com,
@@ -194,15 +194,15 @@ Cc: linux-kernel@vger.kernel.org, codemender-patching+linux@google.com,
  linux-gpio@vger.kernel.org, linux-scsi@vger.kernel.org,
  linux-nfs@vger.kernel.org, devel@lists.orangefs.org,
  linux-hardening@vger.kernel.org, linux-sound@vger.kernel.org
-Subject: Re: [PATCH 28/28] drm/xe/pf: Refactor strlcat() to seq_buf in
- sched_group_engines_read()
-Message-ID: <202609151126.29464A5E1@keescook>
+Subject: Re: [PATCH 01/28] ALSA: ac97: Refactor snd_ac97_get_name() to use
+ snprintf()
+Message-ID: <202609151134.361FEA04@keescook>
 References: <20260915081910.4142719-1-morbo@google.com>
- <20260915081910.4142719-29-morbo@google.com>
+ <20260915081910.4142719-2-morbo@google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260915081910.4142719-29-morbo@google.com>
+In-Reply-To: <20260915081910.4142719-2-morbo@google.com>
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -217,55 +217,36 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-On Tue, Sep 15, 2026 at 08:18:45AM +0000, Bill Wendling wrote:
-> diff --git a/drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c b/drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c
-
-This is the same file touched as
-https://lore.kernel.org/all/20260915081910.4142719-28-morbo@google.com/
-and doing the same thing, roughly? I think it'd be best to combine
-these, especially since one depends on the other's addition of seq_buf.h
-
-> index 5db7fc067c4d..548a50f74422 100644
-> --- a/drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c
-> +++ b/drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c
-> @@ -377,8 +377,10 @@ static ssize_t sched_group_engines_read(struct file *file, char __user *buf,
->  	struct xe_hw_engine *hwe;
->  	enum xe_hw_engine_id id;
->  	char engines[128];
-> +	struct seq_buf s;
-> +	const char *s_str;
+On Tue, Sep 15, 2026 at 08:18:18AM +0000, Bill Wendling wrote:
+> --- a/sound/pci/ac97/ac97_codec.c
+> +++ b/sound/pci/ac97/ac97_codec.c
+> @@ -1850,10 +1850,12 @@ void snd_ac97_get_name(struct snd_ac97 *ac97, unsigned int id, char *name,
 >  
-> -	engines[0] = '\0';
-> +	seq_buf_init(&s, engines, sizeof(engines));
-
-As with the others, DECLARE_SEQ_BUF should be used.
-
->  	if (group < num_groups) {
->  		for_each_hw_engine(hwe, gt, id) {
-> @@ -386,15 +388,14 @@ static ssize_t sched_group_engines_read(struct file *file, char __user *buf,
->  			u16 guc_logical_instance = xe_hwe_guc_logical_instance(hwe);
->  			u32 mask = groups[group].engines[guc_class];
->  
-> -			if (mask & BIT(guc_logical_instance)) {
-> -				strlcat(engines, hwe->name, sizeof(engines));
-> -				strlcat(engines, " ", sizeof(engines));
-> -			}
-> +			if (mask & BIT(guc_logical_instance))
-> +				seq_buf_printf(&s, "%s ", hwe->name);
+>  	pid = look_for_codec_id(snd_ac97_codec_ids, id);
+>  	if (pid) {
+> -		strlcat(name, " ", maxlen);
+> -		strlcat(name, pid->name, maxlen);
+> +		int l = strlen(name);
+> +
+>  		if (pid->mask != 0xffffffff)
+> -			sprintf(name + strlen(name), " rev %u", id & ~pid->mask);
+> +			snprintf(name + l, maxlen - l, " %s rev %u", pid->name, id & ~pid->mask);
+> +		else
+> +			snprintf(name + l, maxlen - l, " %s", pid->name);
+>  		if (ac97 && pid->patch) {
+>  			if ((modem && (pid->flags & AC97_MODEM_PATCH)) ||
+>  			    (! modem && ! (pid->flags & AC97_MODEM_PATCH)))
+> @@ -1861,6 +1863,7 @@ void snd_ac97_get_name(struct snd_ac97 *ac97, unsigned int id, char *name,
 >  		}
-> -		strlcat(engines, "\n", sizeof(engines));
-> +		seq_buf_puts(&s, "\n");
+>  	} else {
+>  		int l = strlen(name);
+> +
+>  		snprintf(name + l, maxlen - l, " id %x", id & 0xff);
 >  	}
->  
-> -	return simple_read_from_buffer(buf, count, ppos, engines, strlen(engines));
-> +	s_str = seq_buf_str(&s);
-> +	return simple_read_from_buffer(buf, count, ppos, s_str, strlen(s_str));
+>  }
 
-While this is the correct length, it does illustrate why I think we need
-a new seq_buf helper to get the strlen result detected from NUL
-termination like seq_buf_str().
-
--Kees
+I'd rather not open-code the length math here. Can't we use seq_buf()
+instead?
 
 -- 
 Kees Cook
