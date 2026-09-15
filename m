@@ -1,28 +1,28 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 66F34C88E75
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 15 Sep 2026 12:55:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3301FC88E75
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 15 Sep 2026 12:56:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 3524940642;
-	Tue, 15 Sep 2026 12:55:53 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id F33F980E05;
+	Tue, 15 Sep 2026 12:56:13 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 6pvWY0Pqy_tX; Tue, 15 Sep 2026 12:55:52 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 82E8C40656
-Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789476952;
-	b=j9wv9GanmdT5nQeuMDMG3I6vwSPNMvJxnMHKQhUBU9nG2TkFUwfuAq4JHUD9w+8NVrwp
-	 fOujWxCQZ0z3nj3d+7GoYM48uK7L9+kRiT2MM51YfGIyLg9RseoLLfnDY7NqcmAkacqe0
-	 tsXvuCVpxNLoB+6nxNjwuWQtGu9Celo50AC83Q3pOfUuCR5yrBlCpgFw948XxMdPsn4E5
-	 e6gTK74U1Zbn+1+Rn4NYeqhGYIn8HhqfYEOJhe1a5G7OBxNKXmP+drDEwnsRZcIa5ZJha
-	 NBomV1mQf8CTmIcGepwV+mvDsBGTZKLvBF5ktpblq+3OxLtw7AahgQZaRC99D/PmG9A==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id ruOQ7fxTNBLD; Tue, 15 Sep 2026 12:56:13 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 4AB3A80E0D
+Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789476973;
+	b=tOAj2CxRkS3q2kCq0IJKUtHn6+wMlUH8iv3drW435dGNNXdJjmxt26bnHzRoOWEo9cSm
+	 1+jKON1pMijgyurxVlDXTooGI/MTXwduuUsGvg0v/pR7eUfU5zh48ZFAfpVCPu/hhJcRD
+	 Oepc25wVq6IRXLcewKO/nPZRzOnqsPUsV/87gAqH9yZRBReVjVkgG5zSDEmJrYIWRVBx2
+	 fkcohzf4VyRqToda4Af5WO/FoeNFnq3z2k0CAy9QCbsCecmvYb4yDwKPQ/9keuacl87/1
+	 F86pUGDpaV/SBiEHH3Te7vmDPzogIk04IsRbPxwNlZAYMSukqK1a8P9gcT05ghkoR1A==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1789476952;
+	c=relaxed/relaxed; t=1789476973;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
@@ -32,109 +32,106 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:Precedence:
 	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=ynd74VaoML5Z6XxaL6U8qPg3TD/Yoc/jPK5zPPTKJyI=;
-	b=sNKtRTmLe039qi5Kl+yG5UcrTDfc1bEqR0MD+mSMpvey6XT+0T4QU4Worb3i0RX6vMHq
-	 x7VcsBUjX6OT3OYAThw+Ca7a6ZgW6U6BwP5KGbS8mIwyB7mV4csukVgoq78M+63Icirpi
-	 RWA2Yquk69V9gBJ27WpGkt9mbl/Q/91pseGX2YUPWHENkOrxeKF+2yKJmMs18563CTCYG
-	 GtaA1tcXnrdbsCGOAKoOKfXoq3BmoV4wlcTEys0KAgJHrrfBM9lEthOgaiDz4fwu7RtmN
-	 RacQDfLehH8Ke6fPOPPusepWDPpK2dJqFpXuY2K6ZHjW2nw+njHjFUbb/YE9McT4wEw==
-ARC-Authentication-Results: i=2; smtp4.osuosl.org; dmarc=pass header.from=intel.com;
-	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=LIdNlSF9;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	bh=mdDzrSguDKr5HtLuweex4U/m61Fieu2g+gL3DbCEZTk=;
+	b=qx3H1Ry1yLgOpH7hlC9G1VETwj23AlRLvvPvEnqlREWYYX1xE90Ox5bXcPVmRARr8qsP
+	 XlqDQoZVWVY8ofYKSREA2uaxfwXI2CvMutqoZN2QcZ1DLnAK1qgHAbiHffcDbsFs4e0o4
+	 3enKTd7v+Fc12hANyHjfcNqwqqHAUsroLKjmLFlxsZzwtR78R2LxUO+3uzQWNk2YtLLBk
+	 bbMzTMyLuOwNztqVm0GTJVvRIgXiaRKyo6+UXb/Fi2ZLYB3VdAHXJ+hUCUwQzt0aOA82k
+	 kL9XSFGR5CtCHoC7zlQymiftTmtzTH1blVzNrSsaLwE49bqpBM8HG6TeNQ923KDxs/A==
+ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1789476952;
-	bh=ynd74VaoML5Z6XxaL6U8qPg3TD/Yoc/jPK5zPPTKJyI=;
+	s=default; t=1789476973;
+	bh=mdDzrSguDKr5HtLuweex4U/m61Fieu2g+gL3DbCEZTk=;
 	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=zdPxA8zW4XsgwjNpnD2RHX7dp/pj8Xsv0pCX80sX9m1xpIFpCU7QQ4hP9y2Vmy6OS
-	 CWuC958pJCCcpkWB3aFfyUPp5bUTP4Rit+ithMSsHC5EELYTB9BsARLabt1djxvAao
-	 CuplJWsiMkARxadKeDPWowbyXoWJfb1Opl9+NnnjcnG9VPYmW23JWqnCAq7ZqE7Kkm
-	 F/lkLnTGbdunxHZFfgDSU/tvUfLmS45sMoZeep0MOothU8G1mBOhHjv2TMTRi91w/V
-	 5/TfgcMLU9HTNMu55x8HSkwGYvrZeDltP+g1jRkyY536PQHZqWv4KV2hMBIRaapEfr
-	 xIXL6n6vUUAZQ==
+	b=MfXa9zDRwSEr/2am7Qdsr4D5IaMcJ7DR3/DEkNFjt4vb3WzqkQnxdw7vBeDuttr3V
+	 QC0Qzr17iVbDzbAMjwKi/tlbfytM8jcDGmCQZrHUKzfjPOBVtctmijb5umzOU6gUH9
+	 goa5d9DExn++P0/jbX/m0dYXNbp7hWK9DxLZzckdebX7W5jBZXm+7BAh+PPrEGe0Br
+	 djcPW3ybYZMemlw4MBXrbEpo3+flat9gyl8cHd0NK7VtkTSJOe1/CC1hoyhj+srxYl
+	 CiZkNQQQ+YGu8WJiZiacL5Qh5/RFWGtgz9kZWLtlMsJnyLReJFCGXP30T069o5RNOR
+	 C8m7wQYYLCKIg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 82E8C40656;
-	Tue, 15 Sep 2026 12:55:52 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 81A81259
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 12:55:51 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 4AB3A80E0D;
+	Tue, 15 Sep 2026 12:56:13 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 5F895493
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 12:56:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 7F37F40656
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 12:55:51 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 4655B6077E
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 12:56:10 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 8v4TEFBwJT0i for <intel-wired-lan@lists.osuosl.org>;
- Tue, 15 Sep 2026 12:55:51 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org C618140642
-Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=198.175.65.9
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789476950;
- b=EL3ryD6jI3zgfmGy6RdJZUCeiygDtDAcNlqxo0HeoTENbnQ/PrglopOux/itzAAzp+4J
- fQp9CpFnb3PBDRHujrwkGBc8lNpxbE2u6ZpSSvMJufYehdGzmrJ/jYnyqBolm5c+bQHnc
- 6ZltayIkhhLfPMSHySbSQaO2/8vJEcPwKaQOwO2JmW1/HT/ZRw/By0iUxGd/SemO5aQyI
- XNcV7MJ+QbIkCKVbgYqW5VCeD1D0umfJarMhYZijS8hiiiCFX+3Wil/7CpSnwxcxTDR6O
- GicDQGXn2VPc4o16/wpFIOL2AQ6/umqvx0aZC1mAPfTLutFw7Cx+0wnMy9E9zU2vUWg==
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 7IrxGFfnl0eh for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 15 Sep 2026 12:56:09 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 846B1605E0
+Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=198.175.65.9
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789476969;
+ b=H+jTowCCu6v4zpdp3sgENmi4zvVP05bomcFGdHZ0DxA0KohdmodznMEL/fooaBwEjI5O
+ VDrXjhoa8sxQdN4KKyoasVr520/C5U1DG8kGxtOGyjnVnvm2qzA8Yf8ai29cjTWUp13ld
+ XyiGWrf/qK/Q8pIJIL8AGOT4zFRqxzCGmQiJJRW3tjqb3dtsvbc+etUs976B53xaTJThu
+ VUh7POqin4JWq3Bus+mh0ixMFHzSBDUtcddekqGQB8oWJQ2i+s3eunum7u+SDpAjp4Pxq
+ vkOI9BJGkWfjEN+osd7S48lIV+7VUNLHHMs4iTwvUfk7UtNXWY8kt0JrdTjEUoitTyg==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1789476950;
+ c=relaxed/relaxed; t=1789476969;
  h=Received-SPF:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
  X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
  X-CSE-MsgGUID:X-ExtLoop1:Received:From:To:Cc:Subject:Date:Message-ID:
  X-Mailer:MIME-Version:Content-Transfer-Encoding;
- bh=ynd74VaoML5Z6XxaL6U8qPg3TD/Yoc/jPK5zPPTKJyI=;
- b=GsTIqo5EBGf0j2OSxFD114boNdNF1cHbL4hl/dPNSWns1dtVeBOWj8v/DoeB+QxJ8pl+
- 0TS5a25kxGRpXN3tTB2rDODSuUbo12mfuT1LnRXhl/eM1tjhnJR7zNcUhR8jn3VfiMaAn
- xu7gtPf+FJY2JBksjtEazIM2kRSNej93TfQSlWzTDWqivZgQWJbKLmvwP+Jl4FIwPuoAC
- p/6rS2j5PP6yKByHOYcTg4+/lmmgWnj5OV+m9Nx3/+vKzOdSbgAEHAuKTfVWNb/ffZJjd
- 0YYZzBqoy6N3wusQzd4kJApImOXj+aGHLF3JWNaN34/FT53jJY8ZEvfgyZ3dMaC1HGQ==
-ARC-Authentication-Results: i=1; smtp4.osuosl.org;
+ bh=mdDzrSguDKr5HtLuweex4U/m61Fieu2g+gL3DbCEZTk=;
+ b=mOljkr/SxJt2tJIwp29DAC0g3OtzVAgkBpM4y/cx37uAIVmmnLS7wvPnXC14xYvKwGji
+ FOR06owe4bXqiWvmOO4pOVZizTbc4Y9bEyFRgTeXwUSqFupZIurCXiKd/4Py8W9R9pwqo
+ BwO3J+PFSWB3cK/8YMR9kdxhSpE5aMpfCTO97FQRW0J2mp4AGWY6esZg9ojuY+NtjbOCb
+ AQPaD10lo5Nm0arGnRPaPuFO4NkkJI8ZoGStiTJJDIAms8e9easOYnIun130YSgNhn/SL
+ axWTerjpWqFgMbWteyTZ6a+x6v5Q7McmoQedX+ckIWO6hnMPZI+eMjhUTxpl2vbnzLA==
+ARC-Authentication-Results: i=1; smtp3.osuosl.org;
  dmarc=pass header.from=intel.com; 
  dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=LIdNlSF9; 
+ header.s=Intel header.b=b0a+TH6d; 
  arc=none smtp.remote-ip=198.175.65.9
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.9;
  helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org;
+Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp4.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=LIdNlSF9
+Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=b0a+TH6d
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
- by smtp4.osuosl.org (Postfix) with ESMTPS id C618140642
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 12:55:50 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 846B1605E0
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 12:56:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1789476951; x=1821012951;
+ t=1789476970; x=1821012970;
  h=from:to:cc:subject:date:message-id:mime-version:
  content-transfer-encoding;
- bh=rK6IW2BjueDdcIhIO7EvEeSjm2GmE/765EP6oWxFOAU=;
- b=LIdNlSF9UKcL/vONJT3iOe/qfyEFDgouZthK1YQO8XrcZcddbpc8xrfD
- jrd+6w3AA+n7rtamXZPCPpg6zSYGK9s6/Cf668ildBQ52MiQyUTXTkE4u
- IDn/zK4xXy9M6mYuER/emdDDdIzoaalQQPLUUoNBTw9HVKb5dtbVybl94
- 24HIymWaOPRlE7cxNcyaN2vPlVLX2eULfECxWVTeEqaz3H7pCo+VfaDe8
- DzIusoFINNIl5XdDPaG32SeV78oPnjuSnwmoMc443/qQjG0Z8jJmTOSKZ
- /uDXcpaErrrvyHRWnPxpLnBZRD/LaZo49ap+DCQsB/W/j13e2Zxwn0dRq Q==;
-X-CSE-ConnectionGUID: piRAneTRRCSEgDuL6YXIDA==
-X-CSE-MsgGUID: NjUGzgMTSWOTSv9h1XxszQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11905"; a="112607054"
-X-IronPort-AV: E=Sophos;i="6.27,103,1787036400"; d="scan'208";a="112607054"
+ bh=edb5eoknSPUq1qK19ORid7e1f+At9ujZ549j/v/oJaM=;
+ b=b0a+TH6dDItRnL8CnEUkoPm3EQWYTsNxPoAFi1GTZ6zU1JZamRMDsHom
+ Hxv5a1n9jLz9VliIUoi7P0kiV/Tvl1bnLisOLVbAZ+fc642lvJDAb5vnO
+ DPNFAjUYUJ8ojNnaQCpQbmpLdpsWRmDmRHWJ0z0AWwSlWcmaDpqG9k1uA
+ 4c4eyMht/C/ZMmCk9XDiJMRDcokwmbkgZitd7Geup0SdTV3O6+o/y27sS
+ nXPTIFulQt/fH6U+tws/SstworQYK6I7Fg7/4j/MWTtQyLSYsTaf4SYC7
+ mKHbSleifLTOfLoURLNqZpwQsdChFTMjickiCd/J2bfUBfe+z7LyXqBx/ Q==;
+X-CSE-ConnectionGUID: BFJAfK/SRxKw4iZxTIIzcA==
+X-CSE-MsgGUID: 9/WsdRR4T0+WKMKEwmChWw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11905"; a="112607069"
+X-IronPort-AV: E=Sophos;i="6.27,103,1787036400"; d="scan'208";a="112607069"
 Received: from fmviesa003.fm.intel.com ([10.60.135.143])
  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 15 Sep 2026 05:55:50 -0700
-X-CSE-ConnectionGUID: lzVVUaZjRu+Q88XlpnHlSQ==
-X-CSE-MsgGUID: gItMP/fSQ3eQOgq1WniuZg==
+ 15 Sep 2026 05:55:53 -0700
+X-CSE-ConnectionGUID: HIJuEqdDSCOJCqsILxWGTQ==
+X-CSE-MsgGUID: 0OeayaWfQmyBVdXIQwr/cA==
 X-ExtLoop1: 1
 Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by fmviesa003.fm.intel.com with ESMTP; 15 Sep 2026 05:55:48 -0700
+ by fmviesa003.fm.intel.com with ESMTP; 15 Sep 2026 05:55:52 -0700
 From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 To: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
  aleksandr.loktionov@intel.com
 Cc: netdev@vger.kernel.org
-Subject: [PATCH iwl-next] ixgbe: remove ixgbe_ping_all_vfs() from link state
- change handlers
-Date: Tue, 15 Sep 2026 14:55:47 +0200
-Message-ID: <20260915125547.3975992-1-aleksandr.loktionov@intel.com>
+Subject: [PATCH iwl-net v2 0/5] iavf: five correctness fixes
+Date: Tue, 15 Sep 2026 14:55:46 +0200
+Message-ID: <20260915125551.3976068-1-aleksandr.loktionov@intel.com>
 X-Mailer: git-send-email 2.52.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -152,93 +149,58 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-When multiple VFs are brought up simultaneously, a VF can receive a CTS
-(Clear To Send) mailbox message instead of the expected RESET | (N)ACK
-response, because the watchdog fires a gratuitous ping right as the VF
-mailbox transaction is in progress.
+Small batch of iavf bug fixes. Patches address a NULL-pointer dereference
+crash in the hung-tx detector, a spurious free_irq() call in the misc-IRQ
+error path, a VSI-state-corruption race when ethtool changes ring
+parameters during an active reset, an inverted TC-boundary comparison
+that silently steered frames to non-existing traffic classes, and an
+-EINVAL that confused upper layers when a TC flower filter was looked up
+after its qdisc had already been torn down.
 
-Remove the ixgbe_ping_all_vfs() call from both ixgbe_watchdog_link_is_up()
-and ixgbe_watchdog_link_is_down().  Both paths contain an identical call
-with the same race window during VF initialization: link-state changes
-(up or down) can arrive while VFs are mid-initialization, and the
-gratuitous ping from either direction collides with the VF mailbox state
-machine for the same reason.
+All five are genuine correctness fixes with no functional changes for the
+common path. All five are marked for stable given the crash/corruption/
+kernel-warning/misdirection/error-reporting impact on shipping kernels.
 
-Link-state changes are already communicated to VFs through the normal
-mailbox protocol; these extra pings are redundant on both paths.
+This series was originally posted in April without a version tag and
+stalled without being picked up. Re-posting as v2 with the fixes Simon
+Horman requested in review, carrying forward the Tested-by tags collected
+on the unchanged patches.
 
-This removes the last two callers of ixgbe_ping_all_vfs(), so remove
-the now-unused function and its declaration as well.
+Changes since v1:
+- Patch 1: Fixed the Fixes tag, which pointed at an unrelated i40e-only
+  commit (9c6c12595b73); the function was actually introduced into the
+  iavf lineage by 07d44190a389. Simplified the misleading NULL check on
+  tx_ring (an array-element address, never NULL) to a check on
+  tx_ring->q_vector instead, and read it with READ_ONCE() so the watchdog
+  can't observe a torn/re-read value while a concurrent reset swaps it.
+- Patch 4: Reworked the boundary comparison. `tc > adapter->num_tc` still
+  let every in-range tc skip the destination-port requirement and let an
+  out-of-range tc with a destination port fall through and return 0.
+  Now explicitly rejects tc >= adapter->num_tc before checking for a
+  destination port.
+- Patches 2, 3 and 5 are unchanged from v1.
+- Added Cc: stable@vger.kernel.org to all five patches.
 
-Suggested-by: Sebastian Basierski <sebastianx.basierski@intel.com>
 Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c  |  6 ------
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c | 14 --------------
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h |  1 -
- 3 files changed, 21 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 8d3627c..d816aa1 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -8195,9 +8195,6 @@ static void ixgbe_watchdog_link_is_up(struct ixgbe_adapter *adapter)
- 
- 	/* update the default user priority for VFs */
- 	ixgbe_update_default_up(adapter);
--
--	/* ping all the active vfs to let them know link has changed */
--	ixgbe_ping_all_vfs(adapter);
- }
- 
- /**
-@@ -8228,9 +8225,6 @@ static void ixgbe_watchdog_link_is_down(struct ixgbe_adapter *adapter)
- 
- 	e_info(drv, "NIC Link is Down\n");
- 	netif_carrier_off(netdev);
--
--	/* ping all the active vfs to let them know link has changed */
--	ixgbe_ping_all_vfs(adapter);
- }
- 
- static bool ixgbe_ring_tx_pending(struct ixgbe_adapter *adapter)
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-index 431d77d..da641e9 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-@@ -1515,20 +1515,6 @@ static inline void ixgbe_ping_vf(struct ixgbe_adapter *adapter, int vf)
- 	ixgbe_write_mbx(hw, &ping, 1, vf);
- }
- 
--void ixgbe_ping_all_vfs(struct ixgbe_adapter *adapter)
--{
--	struct ixgbe_hw *hw = &adapter->hw;
--	u32 ping;
--	int i;
--
--	for (i = 0 ; i < adapter->num_vfs; i++) {
--		ping = IXGBE_PF_CONTROL_MSG;
--		if (adapter->vfinfo[i].clear_to_send)
--			ping |= IXGBE_VT_MSGTYPE_CTS;
--		ixgbe_write_mbx(hw, &ping, 1, i);
--	}
--}
--
- /**
-  * ixgbe_set_all_vfs - update vfs queues
-  * @adapter: Pointer to adapter struct
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h
-index bc4cab9..f755bfd 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h
-@@ -18,7 +18,6 @@ void ixgbe_restore_vf_multicasts(struct ixgbe_adapter *adapter);
- bool ixgbe_check_mdd_event(struct ixgbe_adapter *adapter);
- void ixgbe_msg_task(struct ixgbe_adapter *adapter);
- int ixgbe_vf_configuration(struct pci_dev *pdev, unsigned int event_mask);
--void ixgbe_ping_all_vfs(struct ixgbe_adapter *adapter);
- void ixgbe_set_all_vfs(struct ixgbe_adapter *adapter);
- int ixgbe_ndo_set_vf_mac(struct net_device *netdev, int queue, u8 *mac);
- int ixgbe_ndo_set_vf_vlan(struct net_device *netdev, int queue, u16 vlan,
+Kiran Patil (2):
+  iavf: fix null pointer dereference in iavf_detect_recover_hung
+  iavf: return 0 when TC flower filter not found after qdisc teardown
+
+Piotr Gardocki (1):
+  iavf: fix error path in iavf_request_misc_irq
+
+Sylwester Dziedziuch (1):
+  iavf: prevent VSI corruption when ring params changed during reset
+
+Avinash Dayanand (1):
+  iavf: fix TC boundary check in iavf_handle_tclass
+
+ drivers/net/ethernet/intel/iavf/iavf_ethtool.c |  5 +++
+ drivers/net/ethernet/intel/iavf/iavf_main.c    | 19 ++++----
+ drivers/net/ethernet/intel/iavf/iavf_txrx.c    | 50 +++++++++++++------------
+ 3 files changed, 45 insertions(+), 29 deletions(-)
+
 -- 
 2.52.0
 
