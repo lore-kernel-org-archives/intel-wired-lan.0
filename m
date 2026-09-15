@@ -4,135 +4,204 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54C78C88E77
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 15 Sep 2026 17:18:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F1686C88E7D
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 15 Sep 2026 18:05:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 24C8580D1F;
-	Tue, 15 Sep 2026 17:18:14 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 94F8A8086E;
+	Tue, 15 Sep 2026 18:05:33 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id QYPIqi4oiIAF; Tue, 15 Sep 2026 17:18:13 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 2D82D80D4A
+ id LxMEaZjls9Li; Tue, 15 Sep 2026 18:05:32 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org AAA1A808A9
 Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789492693;
-	b=c14eDOoqM+0aI82bnvNCc/ZsudP+QNB+JkP4x8SemCX5wAikpTjiuqL3fg++1NqTT1M/
-	 32uHXa3tZ7Xc7d0Qhujn852mWT5C2HSDUuywOVaOzmTxxBZ6PJoCfs5K45HZtTn7Hmbsh
-	 RGxB+l69s6yVERCgognMjWHtqSYu0X7IWdGwS87xjNEKadl/26uNpQJipjYZ+CPWAsNGL
-	 +HzJKBEgvVvOlmM7RRuDt329OremOjkafYTy75P4M5QlUfUTI2Vg67CY3Ey0ZV6kOjKPm
-	 MpcE6jrXEZZ+9kcLIsuIPvxfVuzqgjnq9j1915MmB75f1fCQ8D62s7JtBEb0bQUXMbQ==
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789495532;
+	b=QpiGKEqO13/6IxIC4zvBu32ZlzvpwHOJfW70p3Nu+SyMusmLCZnWQ094MeLtxKTzW9HR
+	 IBRMgNtsFEV+ZusHekfB1oGmProAT+MhYZJidzKl3dZx3kWxkpc7Vgt0nGvFidUadpXyF
+	 BQXpiVTeErOo8/kfZ5bsho7FxlJWCVJ7X9HD/wZVcPBpwcP/kbQ6kgAuIc5yVEl7/ijXo
+	 xvCvGWn8vhw3H+TsSomWm8/9PAJhTtuHfSpv0HZsPYPyf+9CPWv1VIMskkKcl1453IqK7
+	 KhdErujn9R3y7XbOAdspaNBCsRi5sK7VWejUyNC6/GeaqYnHsPpYDSlCbhlS55xxNfw==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1789492693;
+	c=relaxed/relaxed; t=1789495532;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 Received:DKIM-Signature:Subject:From:To:Cc:Date:Message-ID:
-	 In-Reply-To:References:X-sashiko-severity:Content-Type:
-	 Content-Transfer-Encoding:MIME-Version:X-Mailman-Approved-At:
-	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
-	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=C8YtmFrSxxY0AanUwQl01S3XpkP74Rctp5eoGI1AVSo=;
-	b=PEmHtI3qaP8CT9iKLw+pXNVt8fFCD6j6AbWrWje6GEhdVd0N7yMUffDflLAQx+B3dR5p
-	 JKI/ah2yBlBwHfVWQ9mrbVfuJKgcRucMC8n9sztWkKXcB/edokMOPvTjbpe213nwNJm64
-	 8ymjDP/6I8+sDqacQnVcbn1UIHTZb45jsaDVG9flKuzgYv6r4re6GfpZBf30pDc4MCKde
-	 Za+RiONDOkMNkH3l3dUfBnToamicdxJvk5xy5cR6e3+rwNoTHyaOozn+Zx+rMBrk+xDiw
-	 tKJ61N0Kiglmj0d02KsOCTbd15QktmCLT1cjr9D2VU07kLXMaFDN5vy6ezoI2uKeLDA==
-ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	 Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:References:
+	 MIME-Version:Content-Type:Content-Disposition:In-Reply-To:X-BeenThere:
+	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Errors-To;
+	bh=mPeI+6lTU/Y8EitQI5ZfnrfapFmX8wWN22xo6A7UJaE=;
+	b=KLURTkvbQ5j0U3UAE0c1FFJHv/I5J8fJiH/OoZCHa+OwI6kL/kXftuzOWcl9gk5jN8F2
+	 AEUXBwl8w3qbiI7NCDNs7tFQKQS5CjsjmhPghcsvQYWCrArtGCa8YogU32ujUwJ3Yk2EY
+	 SPhdmwWfr9eu6FNbF9Ml0pDsnFkvn2KscD+umzdRpFTwAyr9Dlg8PkMgIYdL0+kz8XXN9
+	 NNCUufWh+z+MZpnPN7Ustsn/PuL01+z3T163EGvJQh0ZtoMj4cc5l9jQ0iBhvcOiiOJ/c
+	 R8NZCJUPRIigm+BnrnAuiRtVSh8nmDsnuEfGG1uKI6QPFnGe6C/W7rMQxgFO5OkB3Iw==
+ARC-Authentication-Results: i=2; smtp1.osuosl.org; dmarc=pass header.from=kernel.org;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jTo4X3Om;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1789492693;
-	bh=C8YtmFrSxxY0AanUwQl01S3XpkP74Rctp5eoGI1AVSo=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References:List-Id:
+	s=default; t=1789495532;
+	bh=mPeI+6lTU/Y8EitQI5ZfnrfapFmX8wWN22xo6A7UJaE=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=Rk8VfzUY7buHZoHG6qejEoChmEAbnca20Gmrc+z3q7nHOZGQNy/3JwcDtn40nBtkF
-	 csnLSKKyf14Lz3kLrPI1Unm6gnYjEayWBFllJmJZvsf/mSzyQVz4O6KJJA1vHrsXQp
-	 zNl0s7EAoYzPB2Ys/c+Q1rig2IdyOsyoKlWnVGR4lb7Ay0uKFH9zjCw8ZqVZ04PNaf
-	 tOHQog5MnIovA0q6qGK8QuZVYpzg6kWQkPK84iRdQ6+LAsWepvl7e6gcq1GJzsmTM5
-	 0tR46J91GDuXWu3rjffepJah1hmm6v0/WZ5uhs59k+1IfMf/JBr7yigsaNUhaHkKBo
-	 YSe0VQ42bxQAA==
+	b=l8aAvf5Fpo5NjqB8mAZzSZ5qlRedXtKZz9nxUAxhoVGdhyjDjfXvaWmgpmWVrkwKq
+	 YiUiaDr1hhtRbfq0wDKHuZGEB/uzfZc4RHv3B3G5f7qdiI9KeIq66KKjDwno71mTgb
+	 rxWqpkWiAzMhVtyvCLU0PfSXCVVFTLDoIkG7k2NIhamiMkKO8rEpcWgcWxY+lP/8Os
+	 OfMTC53V5f3RJbSvazn7D0DLnJ/njB8fQUtxqpVuQbVVFzjTZuepd1mHaJDNVgMdTS
+	 BNj+dKbU0TITW3rLih0O9ptJ6Sof9DNhthQDyCJQ2HX9PCSX/iDMyadNeaYR8snBSB
+	 urwIfzH62W9zQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 2D82D80D4A;
-	Tue, 15 Sep 2026 17:18:13 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 5E3B1259
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 15:35:04 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id AAA1A808A9;
+	Tue, 15 Sep 2026 18:05:32 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id CDF792E3
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 18:05:31 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 5040D401F2
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 15:35:04 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id B3432808A9
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 18:05:31 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id KdTTGGfflkTc for <intel-wired-lan@lists.osuosl.org>;
- Tue, 15 Sep 2026 15:35:03 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org 59627401DD
-Authentication-Results: smtp2.osuosl.org; arc=none
- smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789486503;
- b=GdtpEgtdLWHNjTgJlAxY9kgE4d5wqCFye3QwL6RW3YRTvqusgW8oEkO/sbX+Nn8ymHdr
- FV6yJYyfKbrUcF2LhqlPWiffoFMIrsGGFT26Rru0KDCs9aHByXfP4WvU7kRTbFYJPglZ6
- uQXVrTQ/7FbyDXEoDbXS45Lsqoj+v+5XvZ+MvPdpkjdBqllL9D/WbuMvUtQHlluej7f6X
- rmir1PN+xFjkGGalswKOXfsNb+pksRUVXJKv320yHQQfVRGisINqlEyhX439gfocanU/h
- RfR129ZHOiU/jIxTy92t+VWheV+mDCYWCp5SY0jj/Sfg++JlxPsXlpr8vHhu6tWncHw==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 1kvGwjODA-57 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 15 Sep 2026 18:05:31 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org D6CB68086E
+Authentication-Results: smtp1.osuosl.org;
+ arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789495531;
+ b=QQIUJ7Nk20SOk4DD6MeGPpozMAYVyoiDYEalY07/1Rp+jIRwAEXfdTGUqp0YZj11XLTu
+ 0egH4/a9mI7NQp0rHhVq3n6hb2bluckE+xJFKwofugruoYGSzj7ovVEBvPWGwBAHIVFn+
+ EyoxluWPhJX3eG3YKwAAlxtgLUvClHwhXxhWJJzFES+lmotA/A8L6WT3RDBgjC6L0841/
+ x0NIDABWJs2RYRXnavZjNZFXdYQXXhCRQG0/rwEzirogjWeIJcumxIQzWx89snUBV329g
+ h4B0OV+yicNxxpe4O7UsKCn7MVNwJ25Job3hcNkMJSi9Rh+xSsqJIjZx1psyl+fy4lg==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1789486503;
- h=Received-SPF:Received:Received:DKIM-Signature:Subject:From:To:Cc:
- Date:Message-ID:In-Reply-To:References:X-sashiko-severity:
- Content-Type:Content-Transfer-Encoding:MIME-Version;
- bh=C8YtmFrSxxY0AanUwQl01S3XpkP74Rctp5eoGI1AVSo=;
- b=hOTNl+LLPNa9MaeqWQoa8DliHfsxksG0AsimDBfG6jN/HCSDt1sTR8YPKrgteQfKmt0p
- plbN3V5ChL1rmEnA5RFbwRYbwq24caxdD7lV5xjJlLa4blAiAmMaqqfrw+DpbYyhMiQD4
- lAQT6zXjiwl3uhe0dsqCPL+8pUp2tgX+9zaH6J2eEo1JU3GrSjtblRILIt0Pl2ZFw1bnQ
- mtdvPz0HHz8ePOQ/THrHFNeH4Y4uLFglpdEYnOGPAoSbQ5Huot+3c5CYUcpzE9eGMd7x0
- RqQ/67/DK4NfZNIhbU6jvbvmu5o5jS48D8r+a6o/TR12j3q1BF889fACb2ouhaQhM8Q==
-ARC-Authentication-Results: i=1; smtp2.osuosl.org;
+ c=relaxed/relaxed; t=1789495531;
+ h=Received-SPF:Received:Received:DKIM-Signature:Date:From:To:Cc:
+ Subject:Message-ID:References:MIME-Version:Content-Type:
+ Content-Disposition:In-Reply-To;
+ bh=mPeI+6lTU/Y8EitQI5ZfnrfapFmX8wWN22xo6A7UJaE=;
+ b=RQ8DeaaJl7RnycXgVJU4Zwkv56zx8YJYW+ZLm9s3wD2a23hikWR6ZVo6q+LuCvxxDkYZ
+ Brup02MFreI/GdJsvJ/Raj4znv27D9/utTv35MgkfTlRaCJ0uB51KtYKPlZqRDiTx6kRQ
+ sbZswvqHk8F9l1UWI/O25o6KZP3gFUvnlB6gba212qOtvk8sU/V61r8z3UiITQfxLAv5C
+ UqukL5zDWdVv44TvnbBOciFj16fAnzqoMnlyipzsxu1mls1Hp5dADqQUOtX0XC8E1nkbR
+ DAlkD8NJUmEccptKdAtYrgjUJjPuFa1n4e4s3CsofKQ4+gKHXKgVxa13sZ5Fnc4os2Q==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org;
  dmarc=pass header.from=kernel.org; 
  dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=IW909MCL; 
- arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
- envelope-from=netdev-bot+sashiko@kernel.org; receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.s=k20260515 header.b=jTo4X3Om; 
+ arc=none smtp.remote-ip=172.234.252.31
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
+ helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=<UNKNOWN> 
+Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
+Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=IW909MCL
-Received: from tor.source.kernel.org (tor.source.kernel.org
- [IPv6:2600:3c04:e001:324:0:1991:8:25])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 59627401DD
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 15:35:02 +0000 (UTC)
+ header.s=k20260515 header.b=jTo4X3Om
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id D6CB68086E
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Sep 2026 18:05:30 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id 4A52C600CB;
- Tue, 15 Sep 2026 15:35:01 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 62D371F000FF;
- Tue, 15 Sep 2026 15:35:00 +0000 (UTC)
+ by sea.source.kernel.org (Postfix) with ESMTP id 002F941285;
+ Tue, 15 Sep 2026 18:05:30 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CF23A1F00898;
+ Tue, 15 Sep 2026 18:05:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1789486501;
- bh=C8YtmFrSxxY0AanUwQl01S3XpkP74Rctp5eoGI1AVSo=;
- h=Subject:From:To:Cc:Date:In-Reply-To:References;
- b=IW909MCLfVufJ47Dk81WpQU98oBji+YOqUk+hhsJMij2kDBlow3e5+Mk3Hbr39SeX
- 4SkVw2pKjycEzdiwb87/aZx1HwR/TgIQBDHvwWIYWw1lLj7em2fDkheTDS4V55TyEd
- jpP8mtDcpwR21X6Lq399/aXjiQ7cCCeDPPnwIYo2PEq5Vfr1JCiT+g+XKhDdL/w2fY
- eyLQlhJPQ+lyWtadRBnhM2HrK4JDgy6xX8LPg+8A9LzyNBRdGHKRyYCPq1FVH2N6hE
- NkP8LxAZTxftQp4KtPk85kAkT40FfUIpxG0eKsaJuK6dPR+3xR4DvGSaWL2xvdsx2x
- lF6KcqN0GFxQQ==
-Subject: Re: [PATCH] ixgbe: fix incomplete ACI command buffer backup on retry
-From: netdev-bot+sashiko@kernel.org
-To: xiaolinkui@126.com
-Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
- andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
- pabeni@redhat.com, intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, xiaolinkui@kylinos.cn, kuba@kernel.org
-Date: Tue, 15 Sep 2026 15:34:59 +0000
-Message-ID: <178948649971.22033.11309152117855565563@kernel.org>
-In-Reply-To: <20260912013403.2818191-1-xiaolinkui@126.com>
-References: <20260912013403.2818191-1-xiaolinkui@126.com>
-X-sashiko-severity: Medium
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+ s=k20260515; t=1789495529;
+ bh=mPeI+6lTU/Y8EitQI5ZfnrfapFmX8wWN22xo6A7UJaE=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To;
+ b=jTo4X3Om6pjYJxMpPsXGw742bcwi+fNKt1WirPMCjMB3CN4+QeGCMAad0HowUYo27
+ zkPX73/bpXrtYTMe0XsfHOKvy0auvvNyZSnejxr33FwP5Y4EAzd8YeVUzA5p/dgDEw
+ 5cFlE/iE3GLNGT0ByRP+/biS9WQfT2P4HJ97Jm9P9K/qgKyfL5uH3H46GOijU3awQE
+ U05QkDGXb1dMAlMiuCtrF46H69n28W2iJaBayGHH26y3LSBp2/268of5pUNUCjMz6C
+ lP5HOIiL9QmsIGugbJJQ+XSzW3eNNY7uy3+IQE3mKC77JsHqvgv78X1PoCadcnYcJG
+ U7RPeBeWp4lDg==
+Date: Tue, 15 Sep 2026 11:05:29 -0700
+From: Kees Cook <kees@kernel.org>
+To: Bill Wendling <morbo@google.com>
+Cc: linux-kernel@vger.kernel.org, Russell King <linux@armlinux.org.uk>,
+ Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+ Helge Deller <deller@gmx.de>, Thomas Gleixner <tglx@kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+ Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, Ian Abbott <abbotti@mev.co.uk>,
+ H Hartley Sweeten <hsweeten@visionengravers.com>,
+ Tony Luck <tony.luck@intel.com>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>,
+ Thomas Zimmermann <tzimmermann@suse.de>,
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+ Matthew Brost <matthew.brost@intel.com>,
+ Thomas =?iso-8859-1?Q?Hellstr=F6m?= <thomas.hellstrom@linux.intel.com>,
+ Rodrigo Vivi <rodrigo.vivi@intel.com>,
+ Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ Matthias Schwarzott <zzam@gentoo.org>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ Arend van Spriel <arend.vanspriel@broadcom.com>,
+ Rob Herring <robh@kernel.org>, Saravana Kannan <saravanak@kernel.org>,
+ Krzysztof Kozlowski <krzk@kernel.org>,
+ Sylwester Nawrocki <s.nawrocki@samsung.com>,
+ Peter Griffin <peter.griffin@linaro.org>,
+ Alim Akhtar <alim.akhtar@samsung.com>, Linus Walleij <linusw@kernel.org>,
+ Anil Gurumurthy <anil.gurumurthy@qlogic.com>,
+ Sudarsana Kalluru <sudarsana.kalluru@qlogic.com>,
+ "Martin K. Petersen" <mkp@kernel.org>,
+ Trond Myklebust <trondmy@kernel.org>, Anna Schumaker <anna@kernel.org>,
+ Mike Marshall <hubcap@omnibond.com>,
+ Martin Brandenburg <martin@omnibond.com>,
+ Jiri Pirko <jiri@resnulli.us>, Simon Horman <horms@kernel.org>,
+ Chuck Lever <cel@kernel.org>, Jeff Layton <jlayton@kernel.org>,
+ NeilBrown <neil@brown.name>, Olga Kornievskaia <okorniev@redhat.com>,
+ Dai Ngo <Dai.Ngo@oracle.com>, Tom Talpey <tom@talpey.com>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "Mike Rapoport (Microsoft)" <rppt@kernel.org>,
+ Kanglong Wang <wangkanglong@loongson.cn>,
+ Tiezhu Yang <yangtiezhu@loongson.cn>, Qiang Ma <maqianga@uniontech.com>,
+ Randy Dunlap <rdunlap@infradead.org>, Pengpeng Hou <pengpeng@iscas.ac.cn>,
+ Ard Biesheuvel <ardb@kernel.org>, Breno Leitao <leitao@debian.org>,
+ Thorsten Blum <blum@kernel.org>,
+ Harshit Mogalapalli <harshit.m.mogalapalli@oracle.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Lyude Paul <lyude@redhat.com>, Ashutosh Desai <ashutoshdesai993@gmail.com>,
+ Imre Deak <imre.deak@intel.com>,
+ Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+ Johan Hovold <johan@kernel.org>, Johannes Berg <johannes.berg@intel.com>,
+ Miri Korenblit <miriam.rachel.korenblit@intel.com>,
+ Alexander Stein <alexander.stein@ew.tq-group.com>,
+ Cryolitia PukNgae <cryolitia@uniontech.com>,
+ Jiaming Zhang <r772577952@gmail.com>, Will Porter <mrwillporter@gmail.com>,
+ Cen Zhang <zzzccc427@gmail.com>,
+ =?iso-8859-1?Q?C=E1ssio?= Gabriel <cassiogabrielcontato@gmail.com>,
+ Rong Zhang <i@rong.moe>, Arun Raghavan <arunr@valvesoftware.com>,
+ nikitash.mariiaw@gmail.com, linux-arm-kernel@lists.infradead.org,
+ loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linux-edac@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, intel-xe@lists.freedesktop.org,
+ linux-input@vger.kernel.org, linux-media@vger.kernel.org,
+ intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ linux-wireless@vger.kernel.org, brcm80211@lists.linux.dev,
+ brcm80211-dev-list.pdl@broadcom.com, devicetree@vger.kernel.org,
+ linux-samsung-soc@vger.kernel.org, linux-gpio@vger.kernel.org,
+ linux-scsi@vger.kernel.org, linux-nfs@vger.kernel.org,
+ devel@lists.orangefs.org, linux-hardening@vger.kernel.org,
+ linux-sound@vger.kernel.org
+Subject: Re: [PATCH 00/28] Replace remaining strlcat() call sites with
+ snprintf()/seq_buf()
+Message-ID: <202609151055.AFC6267@keescook>
+References: <20260915081910.4142719-1-morbo@google.com>
 MIME-Version: 1.0
-X-Mailman-Approved-At: Tue, 15 Sep 2026 17:17:36 +0000
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260915081910.4142719-1-morbo@google.com>
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -147,91 +216,46 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-Thank you for your contribution! Sashiko AI review found 2 potential
-issue(s) to consider:
+On Tue, Sep 15, 2026 at 08:18:17AM +0000, Bill Wendling wrote:
+> strlcat() is deprecated: like strcat(), it requires re-scanning the
+> destination string from the beginning on every call, which is O(n^2)
+> when used to build up a string incrementally, and its truncation
+> behavior is easy to get wrong. See:
+> 
+>   https://github.com/KSPP/linux/issues/370
+> 
+> This series removes the remaining strlcat() call sites in the tree
+> (plus the one inside fortify-string.h's strcat() implementation
+> itself), replacing each with snprintf(), scnprintf(), or the seq_buf()
+> API, whichever best fits the surrounding code.
 
-Critical: 0 · High: 0 · Medium: 1 · Low: 1
+Thanks for tackling this!
 
-- [Medium] Commit message overstates the impact of the fixed bug.
-- [Low] Commit message names the wrong ice function as the reference
-  implementation.
+A few global notes:
 
---
+- This series almost certainly needs to be sent as separate single
+  patches to each subsystem maintainer (rather than a giant CC list).
 
-ixgbe: fix incomplete ACI command buffer backup on retry
+- As others noted already, we don't want to do anything as just an
+  open-coded strlen/sprintf; this doesn't gain us anything. If we can't
+  use seq_buf or some other solution, we need to figure out what we _can_
+  do for a given use.
 
-The patch replaces the kmalloc() plus single-byte store in
-ixgbe_aci_send_cmd() with kmemdup() so the whole indirect command buffer
-is saved before an EBUSY retry, skips the backup when buf_size is 0, and
-keys the restore off buf_cpy instead of buf. The code change itself looks
-correct; the questions below are about the changelog only, so the diff
-hunks are snipped.
+- There are some collisions with other in-flight patches, e.g.  Mariia's[1]
 
-> So every retry hands the firmware a buffer whose content, apart from the
-> first byte, is uninitialized slab memory, and on a read command the
-> caller's buffer is overwritten with that garbage when the retry finally
-> gives up.
+- The "Assisted-by:" trailer doesn't need the level of detail you've
+  got, which changed recently[2]. Now the desired trailer would just be:
+    Assisted-by: LLM
 
-[Severity: Medium]
-Can the firmware actually see that garbage?  In
-ixgbe_aci_send_cmd_execute() the buffer only reaches the HIBA registers
-when the descriptor carries LIBIE_AQ_FLAG_RD:
+- Please avoid including the Cc list in the email body (above or below
+  the "---" line), as it ends up being redundant.
 
-drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c:ixgbe_aci_send_cmd_execute() {
-	...
-	if (desc->flags & cpu_to_le16(LIBIE_AQ_FLAG_RD)) {
-		for (i = 0; i < buf_size / 4; i++)
-			IXGBE_WRITE_REG(hw, IXGBE_PF_HIBA(i), ((u32 *)buf)[i]);
-	...
-}
+I'll go look through the individual patches...
 
-The backup/restore path only runs for the opcodes listed in
-ixgbe_should_retry_aci_send_cmd_execute(): disable_rxen, get_phy_caps,
-get_link_status and get_link_topo.  disable_rxen and get_link_topo pass
-(NULL, 0), and the two that do pass a buffer (ixgbe_aci_get_phy_caps()
-and ixgbe_aci_get_link_info()) build their descriptor with
-ixgbe_fill_dflt_direct_cmd_desc(), which sets only LIBIE_AQ_FLAG_SI.
-LIBIE_AQ_FLAG_RD is OR-ed in only by set_phy_cfg, the NVM write,
-nvm_pkg_data and nvm_pass_component_tbl paths, none of which are
-retryable.
+-Kees
 
-Also, on both EBUSY exits ixgbe_aci_send_cmd_execute() returns before the
-"Write a response values to a buf" block, so buf is not touched by an
-EBUSY attempt and the restore is effectively a no-op there.
-
-Would it be more accurate to describe the effect as the caller's output
-buffer being filled with uninitialized slab bytes once retries are
-exhausted, rather than as garbage being handed to the firmware on every
-retry?  As written the message suggests a functional firmware
-interaction problem, which affects how this reads for stable triage.
-
-> Use kmemdup() to copy the whole buffer, exactly like the equivalent
-> ice_sq_send_cmd() already does.
-
-[Severity: Low]
-Is ice_sq_send_cmd() the right reference here?  That function is the
-low-level control queue submit routine, the counterpart of
-ixgbe_aci_send_cmd_execute(), and it has no buffer backup.  The
-kmemdup()-based backup and restore-on-EBUSY logic lives in
-ice_sq_send_cmd_retry() in drivers/net/ethernet/intel/ice/ice_common.c:
-
-drivers/net/ethernet/intel/ice/ice_common.c:ice_sq_send_cmd_retry() {
-	...
-	if (is_cmd_for_retry) {
-		if (buf) {
-			buf_cpy = kmemdup(buf, buf_size, GFP_KERNEL);
-			if (!buf_cpy)
-				return -ENOMEM;
-		}
-	...
-		if (buf_cpy)
-			memcpy(buf, buf_cpy, buf_size);
-	...
-}
-
-Could the changelog name ice_sq_send_cmd_retry() instead?
-
-[ ... ]
+[1] https://lore.kernel.org/all/27956255dde39f58d73a7b51cb53cbe3d7804f54.1786411026.git.mariianikitash@google.com/
+[2] https://git.kernel.org/linus/816d9992d9ed ("coding-assistants: simplify attribution")
 
 -- 
-Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20260912013403.2818191-1-xiaolinkui%40126.com
+Kees Cook
