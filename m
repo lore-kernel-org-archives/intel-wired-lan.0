@@ -1,137 +1,171 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 505E9C982C3
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 16 Sep 2026 14:41:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 67BC7C982C3
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 16 Sep 2026 14:41:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id F41BF40729;
-	Wed, 16 Sep 2026 14:41:47 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 285396068B;
+	Wed, 16 Sep 2026 14:41:58 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id e-6vvobPRTlM; Wed, 16 Sep 2026 14:41:47 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 58CD34072F
-Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789569707;
-	b=YrN3MxOuNbuRmx/QaIyyz28+MkT6JQFHxJ4t20JcHOUEFcLqOfEpVClmrZlRb8/xDumc
-	 il2TdUmzU9s64xXJ6ziWlmMg4aR1eAQorWJZXE+zqsYDe9Pn8wKJTqlalYUo66r14q2/l
-	 tRCSXIF3Aj3ClGYbkWmUvldFdBThsCwKxR2L+qdKLYp8V5XbF0M8eE7wnyNShXULhTgDz
-	 kdVtu7sVr9yEnsC8Xbiq0RAkBEL91cXn/TOa0oMDCxCTwOmXuXvyKuiHSthYfjt88ie/W
-	 Hu2DRiNYC72Sw4xALX1dLxVrCa1s7N4u6CgkX5+Sw4ZXmHdm45bVijp3sOv9+4wH8gg==
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id yHbKR65pB5Dy; Wed, 16 Sep 2026 14:41:57 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 57E62607F8
+Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789569717;
+	b=cBl+pUCeWtTAHqVR6lF8EFNB6SDlf24jHmB3+Vuc2ce3CVRyNoZwgBJz/KogDu7Jqa4K
+	 dh71GRcr3CeWW1BQmtRjCcHJSInApHC6C8r23KqmmzYdJmpfFlegT+nKnQdOv6irWS5i2
+	 kQcShhxjukV3Li/Yk4OPDdbll4/dOGNH+qplW93xqb/VqTwGohGcMCMQUE0Ck5FZ8EcsN
+	 yZ5uErljndEs0eRBAZU9xi1bVSRoKbuiQWOMjU6SAEUOiEa4Uq343QsCOWJ5MWemG5OuP
+	 GkYuAjRk6KTrOYesd8TqEV/rgmdzCBb2pOo3z1ptJ6boR9TiKypSZrZssxcLYoKreIg==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1789569707;
+	c=relaxed/relaxed; t=1789569717;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:References:
-	 MIME-Version:Content-Type:Content-Disposition:In-Reply-To:X-BeenThere:
-	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=JMZc6BTWU0VD/eixJdALpvzLlqy4CkXpMmg9ILvfmgY=;
-	b=OeJebPCS+5HktgIacEmsszNJqC/H1jUl5XDMM79zXCVJbpU5XH5SjnX8dUVBpYzY8VdG
-	 OJUTx3gNfU6P67Ch6jWQJIlEyJ2iWgLkSD4zaHHCdBPCb2L38qZnj4ag0ZS9UY4qhUsw1
-	 LB5rfpdBXVywIEeod0CTzztzrss5QoF2Lrdk4+SMp9+yS6i3d3XgmtVkSHExXVkZkL8uc
-	 COUBJWrWB52N8SGTTs4Cy5kOHksC0yrIuwPXPkHrwcVk7WfXOQKHk8/6u8BHcs3sSfZe1
-	 +JQvcCcwRQEgUlxRniqejPTcdlilDYqAZ5kEkcCy8fEd4/CXJKJuxy+RHXaZIpee9jw==
-ARC-Authentication-Results: i=2; smtp4.osuosl.org; dmarc=pass header.from=kernel.org;
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TjItntIL;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
+	 DKIM-Signature:DKIM-Signature:Received:X-MC-Unique:
+	 X-Mimecast-MFC-AGG-ID:Received:Received:From:To:Cc:Subject:Date:
+	 Message-ID:MIME-Version:X-Scanned-By:X-Mimecast-MFC-PROC-ID:
+	 X-Mimecast-Originator:Content-Transfer-Encoding:content-type:
+	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
+	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
+	bh=sFlWEYEuFEzStzCucMbgaPBHMyfR9qMQvTp/sk32Kd8=;
+	b=bFO5iiG0+8rcTxFEeD6MExgx5Ig5CzjBd84+zohpimfoA5YnbnYxfMWc/kYy7ev5/snJ
+	 JfXk0Ge2cTWqQdDVoEjWanOm4amfVe+8xMwVDQFv1jDyDEguRiD+9/G3MpdMPV7+Gs8bu
+	 WcOh/IEuU40PRGdYEQg2yueIQagItEH8noHu3GlNUS4orizla5IQ29rtkvsppR6GeqhEP
+	 CvLY1WV63KbHH4BB3Oc//6rWreC+NM6t8rJOy6SMX2eZNv+AsFnsbEijHnFf8PxS8/Yhb
+	 ZcuXEIKsCPW1+uMTWOLQqRuXQYpqrkpMNMWP7OFttwgp0z73yYC386wGUaXsyxHzo9w==
+ARC-Authentication-Results: i=2; smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1789569707;
-	bh=JMZc6BTWU0VD/eixJdALpvzLlqy4CkXpMmg9ILvfmgY=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=9Kb1tTOwjOAQVxUJ5BC2pF9j7u0JhIHklzWC4k0BvsbgeNHvAK8wk0YLRMWdg54Dl
-	 uKUD5DgAyTBt2rHe1H/v278f4BhSw+z/G4Ae8yGRdeM3Xym1KLQZXOJnSHOgfG51jm
-	 +xFu/kGlo4m5SjW8SXWyqu6p1vPrhuQi3zxc0QDUvUL7PisMKQijuXr8O2WyGuuw9A
-	 fnkkbCSB7hqeBIMnUuaSxYOO4HpDY3f+2WNpo7aPTT+MHYnU9KVXp5VksZj0w+UC6k
-	 oBz2O+VkJZjI5ksnbt6fDNsTGwHLuQKVlwzUJNrM72KJc1LNRrbZ/VulxZ/yKzRXRn
-	 F5w6udXV4Ic2g==
+	s=default; t=1789569717;
+	bh=sFlWEYEuFEzStzCucMbgaPBHMyfR9qMQvTp/sk32Kd8=;
+	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=QO4LbGLH4l6ze4FPmnFIkpT+hLUcK/uAUE3LmZ2D89FMkeIfn/90Ul2I63m5RQz4V
+	 wnpBOOqyv7Zt/3IVJ3JUh6dTSlKNFu7op9g5TStN/c4J4ohgtqNDOiziHD8Q7T99H8
+	 A+ilkoQ6Y+HofMmm1ErUVNEwe5mkWWsxonGfaH3tfgIEtJzqRRfIrzMLtTGl+xwisf
+	 Lsgl5woBW/XdAU4QAwkxqRqb4zxLP9ccLfilMssxc5FVFovTvg/XKJjH2o8b45P01N
+	 geLGtaI00k1sF1emuYjzfGla2AbwJpdLhWbsG5u28xvKSS2XkQq509kRglNzhj1NuO
+	 +mLzIRkpjWunA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 58CD34072F;
-	Wed, 16 Sep 2026 14:41:47 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id AFAE1DD7
- for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Sep 2026 14:41:45 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 57E62607F8;
+	Wed, 16 Sep 2026 14:41:57 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 30616493
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Sep 2026 14:41:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 93FCA4072F
- for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Sep 2026 14:41:45 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 222F680EA0
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Sep 2026 14:41:56 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 8GKbpvgGJyft for <intel-wired-lan@lists.osuosl.org>;
- Wed, 16 Sep 2026 14:41:45 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 0425E40729
-Authentication-Results: smtp4.osuosl.org; arc=none
- smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789569705;
- b=P3zoDq9TUuypkEavgDmwBwe8ad7Pw6mj8t+AMVqi//jy4uBdlVzAwNcCQ1f8AZkCiUIL
- BXU+0C0kkgdlN2Q/nrYxn7SbqODL+vE3UP/HtDpZ4yVVIFKKUDubVq2UAmLSWd6MKa0s1
- JpOh9DBLadHTVtKeblsjMN5V/k24tbO2gVgsZFHNGdEF1DKygDMLOhD1SSsyiGLIF7k1s
- s6s3XSQ825IXrLg8tKGos53Qao0FM6uLJvMGAVs9H6KI91cHUXxuec1LtKRmsCC995qPG
- NkMpUCt57cY50YK9mArlkhJbKM++JX0Bt/MzL1M74eIrRWPL+ILHjEiJ5KluCw/5eMg==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 2U6bQaLun3DU for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 16 Sep 2026 14:41:55 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 2ECB180E9D
+Authentication-Results: smtp1.osuosl.org;
+ arc=none smtp.remote-ip=170.10.129.124
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789569715;
+ b=nN3ZmDy2hVGRRihrUTDETcoUdYJ4UfoZIwKnzHSObCrauTEFIfjpAFwTKa8zXcuo4k4r
+ VP0tOoXx8pXV9KLto90T3FFViBsDqOL8CcbReu63HSgf10+iweRUvPqILyCJZBbtWZxRj
+ rxs6ngB68d/RtrrsmQs+S3PENsP5vfnNqD9IRwraaS2zfs3HL0AZHCoVy9znVFpnoT4Wq
+ gIhsrX8+5xztBS0coJIyRhhK2THzV8ZN1FVkYPBx5mocIkHJMdYuTjIT72Xls5JHDl8ay
+ e4IlwkYO8l/dfoBCeKHBkLHB7NL+FMALjLC+jS2b9pVqnIFcDt8vKtvD95BcXMeLGkg==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1789569705;
- h=Received-SPF:Received:Received:DKIM-Signature:Date:From:To:Cc:
- Subject:Message-ID:References:MIME-Version:Content-Type:
- Content-Disposition:In-Reply-To;
- bh=JMZc6BTWU0VD/eixJdALpvzLlqy4CkXpMmg9ILvfmgY=;
- b=HQ2xbJQ0MyJyIkP3qg0sAd/Q+4GYDg6SwjtU5zu0cDlJg7DfGEGFQXSDxN0yRps+zb1I
- ajWSqKXK12u445OwgGIeko3ywfj1TyEP79W6rz9UPyDmdBrmCGQdVRhV/RJpo768V/d3p
- evY0f2Wpltbd0igdxYL2pRQK98jGYQulc8nRWDhD5+QJqD3y1h2VG5zN9coE8d3FiSY4V
- ABZzZBFC2N4zD28r0gFKmbFyEJ0nWKFKUkFyq+E3nZqHqwIUEQRHfYAAzcQfDo9R/dMzB
- Gb2cFR5hIoacrKBlr4xyTN++LIvLSFBxJ0uGOQkaIXLCdB0BhNTQoEzrI7Xu0dPGFbw==
-ARC-Authentication-Results: i=1; smtp4.osuosl.org;
- dmarc=pass header.from=kernel.org; 
- dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=TjItntIL; 
- arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
- envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20260515 header.b=TjItntIL
-Received: from sea.source.kernel.org (sea.source.kernel.org
- [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 0425E40729
- for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Sep 2026 14:41:44 +0000 (UTC)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by sea.source.kernel.org (Postfix) with ESMTP id 5E6C740126;
- Wed, 16 Sep 2026 14:41:44 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0184F1F000FF;
- Wed, 16 Sep 2026 14:41:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1789569704;
- bh=JMZc6BTWU0VD/eixJdALpvzLlqy4CkXpMmg9ILvfmgY=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To;
- b=TjItntILXQLRK9sHIRtjWKrQW/zMcQCa43dRQSXmX/GfP4mY4aANGyo20d7d/N+6y
- ZvBB4OgT1RStoynml/jm1JWrwUt6OoijgWNUwjoMmJABpyBw2Zsid1mWhLJBT9hJdN
- /2Cm7aySX/34OJQTDGsyUO7DXIhQRSvs2HjJP9KHnRi5+kYO/7xi7QmHpcN7aW5qTM
- bR1I4iTST7TuwKKqwb7AqGSJuTXhclkTPAjcuocXpROwyADcGcxrKNQZAXlYsSczGM
- IiVG7XmI7RoaMwT4lrsBVUhbs7fI7RCP767k5XgRnYbgWKE8SWYxXBOQO981l8j/YX
- PaWq3Joilm9mQ==
-Date: Wed, 16 Sep 2026 15:41:40 +0100
-From: Simon Horman <horms@kernel.org>
-To: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Cc: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
- netdev@vger.kernel.org
-Subject: Re: [PATCH iwl-next 2/4] ixgbe: add ixgbe_container_is_rx() helper
- and refine RX adaptive ITR
-Message-ID: <20260916144140.GN51261@horms.kernel.org>
-References: <20260915125538.3975870-1-aleksandr.loktionov@intel.com>
- <20260915125538.3975870-3-aleksandr.loktionov@intel.com>
+ c=relaxed/relaxed; t=1789569715;
+ h=Received-SPF:DKIM-Signature:DKIM-Signature:Received:X-MC-Unique:
+ X-Mimecast-MFC-AGG-ID:Received:Received:From:To:Cc:Subject:Date:
+ Message-ID:MIME-Version:X-Scanned-By:X-Mimecast-MFC-PROC-ID:
+ X-Mimecast-Originator:Content-Transfer-Encoding:content-type;
+ bh=sFlWEYEuFEzStzCucMbgaPBHMyfR9qMQvTp/sk32Kd8=;
+ b=QNJrYF2SIKJtJ/TSul0iH7mMhX8TelN0Y6y+8Y8wkrCEgnpxtvFs8ge6hvxl+fe7SJGx
+ 43ZevJ0o8H5aVPkVY1FI31rwTMqnmW2Kj+vbngBRhUyOmmqbTjEppsbILo/NX7qcgU/wy
+ niq1cA7S9ApWNlIWKlzKws+mU2wBuWDn0R3+jeuKpkOneB8YnVIge6t0Xhb69mJgAdTs7
+ /2DOZJB47Fdo0WnQklx/J9UMVMvtD0ycRCVxDDY3ZH87Ep5OtcNGuHoBABrV8FgAAokVT
+ E3+L9wik+nIy/H44eO8M4lUMxrs0dc+24JXL/v4m3ViOUU+9a56nOhoayPUIsFnJQaA==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org;
+ dmarc=pass header.from=redhat.com; 
+ dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b="APR/HxK5"; 
+ dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b="APR/HxK5"; 
+ arc=none smtp.remote-ip=170.10.129.124
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=poros@redhat.com;
+ receiver=<UNKNOWN> 
+Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.from=redhat.com
+Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=APR/HxK5; 
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=APR/HxK5
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ by smtp1.osuosl.org (Postfix) with ESMTP id 2ECB180E9D
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Sep 2026 14:41:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1789569713;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding;
+ bh=sFlWEYEuFEzStzCucMbgaPBHMyfR9qMQvTp/sk32Kd8=;
+ b=APR/HxK5cZMXxMDQUEeOV2SquSZRCs4zl5z2x8dDxXF9MMqofT5a1cMVJZwnrQzimcLJje
+ Xe9VlcbUhpTCMeOxqc8+N8BnW+/roOTBllzo9EmHOerkvXkSGFg7NIZTmFGCplpk6DPADL
+ AxLp4NoH1kke+s2t4AYZwjT1Hu0SX5w=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1789569713;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding;
+ bh=sFlWEYEuFEzStzCucMbgaPBHMyfR9qMQvTp/sk32Kd8=;
+ b=APR/HxK5cZMXxMDQUEeOV2SquSZRCs4zl5z2x8dDxXF9MMqofT5a1cMVJZwnrQzimcLJje
+ Xe9VlcbUhpTCMeOxqc8+N8BnW+/roOTBllzo9EmHOerkvXkSGFg7NIZTmFGCplpk6DPADL
+ AxLp4NoH1kke+s2t4AYZwjT1Hu0SX5w=
+Received: from mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-455-ntJ2QdPXNYyZFbfPHfBWfw-1; Wed,
+ 16 Sep 2026 10:41:47 -0400
+X-MC-Unique: ntJ2QdPXNYyZFbfPHfBWfw-1
+X-Mimecast-MFC-AGG-ID: ntJ2QdPXNYyZFbfPHfBWfw_1789569705
+Received: from mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com
+ (mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.17])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
+ id BA89E18A6962; Wed, 16 Sep 2026 14:41:44 +0000 (UTC)
+Received: from ShadowPeak.redhat.com (unknown [10.44.49.1])
+ by mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
+ id 425E819560AB; Wed, 16 Sep 2026 14:41:38 +0000 (UTC)
+From: Petr Oros <poros@redhat.com>
+To: netdev@vger.kernel.org
+Cc: Petr Oros <poros@redhat.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>,
+ Priyalee Kushwaha <priyalee.kushwaha@intel.com>,
+ Kiran Patil <kiran.patil@intel.com>,
+ Wojciech Drewek <wojciech.drewek@intel.com>,
+ Michal Swiatkowski <michal.swiatkowski@linux.intel.com>,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
+ Simon Horman <horms@kernel.org>, intel-wired-lan@lists.osuosl.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH iwl-next v2 0/2] ice: fix TC flower filter priority violations
+Date: Wed, 16 Sep 2026 16:41:28 +0200
+Message-ID: <20260916144130.2699902-1-poros@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260915125538.3975870-3-aleksandr.loktionov@intel.com>
+X-Scanned-By: MIMEDefang 3.0 on 10.30.177.17
+X-Mimecast-MFC-PROC-ID: jCzKel_gLf_SdNWhRIT4Qa8RWKLFgFOjuxfLl5obgRo_1789569705
+X-Mimecast-Originator: redhat.com
+Content-Transfer-Encoding: 8bit
+content-type: text/plain; charset="US-ASCII"; x-default=true
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -146,37 +180,50 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-On Tue, Sep 15, 2026 at 02:55:36PM +0200, Aleksandr Loktionov wrote:
-> From: Alexander Duyck <alexander.h.duyck@intel.com>
-> 
-> Add an ixgbe_container_is_rx() helper to cleanly distinguish RX from TX
-> ring containers inside ixgbe_update_itr().
-> 
-> Refine the RX-specific latency-detection path:
-> 
->  - Replace the shared "packets < 4 or bytes < 9000" threshold with an
->    RX-specific check of "1..23 packets and bytes < 12112".  When that
->    condition holds, target 8x the observed byte count in the next
->    interval by computing avg_wire_size = (bytes + packets * 24) * 2,
->    clamped to [2560, 12800], and jumping directly to the speed-based
->    ITR calculation.  This provides finer-grained control over low-rate
->    RX latency workloads without affecting TX.
-> 
->  - Remove the separate "no packets" special-case block.  When packets
->    is 0 it falls into the "< 48" branch.  The mode-tracking logic in
->    that branch is extended: fewer than 8 packets forces latency mode;
->    8..47 packets preserves the current mode.  This replaces the old
->    unconditional "add LATENCY flag from ring_container->itr" carried
->    over from the removed block.
-> 
->  - Remove the adjust_by_size label and the associated "halve
->    avg_wire_size in latency mode" step.  The Rx latency path now
->    pre-calculates avg_wire_size independently and the bulk path no
->    longer needs the halving to compensate for incorrect thresholds.
->    Rename the jump target to adjust_for_speed to reflect its purpose.
-> 
-> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-> Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Two fixes for TC flower offload in the legacy switch mode. Both
+address the same user visible failure, all traffic on a port silently
+disappears after installing a filter chain that mixes offloadable and
+non offloadable filters.
 
-Reviewed-by: Simon Horman <horms@kernel.org>
+The first fix covers filters matching on ip_proto alone. The driver
+never programmed the protocol lookup, so a filter like "ip_proto udp
+action drop" was installed in hardware as a match on eth_type ipv4 and
+dropped every IPv4 packet.
+
+The second fix covers the interaction between software only filters and
+offloaded drop filters. The E810 switch gives drop rules absolute
+precedence over forwarding rules regardless of recipe priority, so a
+lower priority drop offloaded into hardware overrides any higher
+priority filter that stayed in software. The driver now tracks filters
+it could not offload and refuses to offload a drop filter that would
+bypass one of them, keeping the drop functional in software instead.
+
+Tested on E810 with the OS default and comms DDP packages, including
+the original reproducer from the report, L2TPv3 pass and drop chains
+with and without session ID matching, and a shared block bound to two
+PF ports.
+
+---
+v2:
+- track one entry per cookie and filter_dev pair so a shared block
+  bound to multiple devices is protected on every binding, and the
+  delete path drops one entry per DESTROY invocation (sashiko review
+  via Simon Horman)
+- collect Reviewed-by from Aleksandr Loktionov on patch 1
+
+v1: https://lore.kernel.org/all/20260910154824.3603687-1-poros@redhat.com/
+
+Petr Oros (2):
+  ice: fix TC flower filters matching more than the ip_proto key
+  ice: don't offload drop filters that bypass higher priority filters
+
+ drivers/net/ethernet/intel/ice/ice.h        |   1 +
+ drivers/net/ethernet/intel/ice/ice_main.c   |   2 +-
+ drivers/net/ethernet/intel/ice/ice_repr.c   |   2 +-
+ drivers/net/ethernet/intel/ice/ice_tc_lib.c | 196 +++++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_tc_lib.h |  24 ++-
+ 5 files changed, 212 insertions(+), 13 deletions(-)
+
+-- 
+2.55.0
 
