@@ -1,166 +1,256 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 56A42C982C1
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 16 Sep 2026 21:44:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E772C982C9
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 16 Sep 2026 21:44:24 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 1161B80E1E;
-	Wed, 16 Sep 2026 21:44:12 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id DCF7740721;
+	Wed, 16 Sep 2026 21:44:23 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id bV2XRy5xCO8K; Wed, 16 Sep 2026 21:44:11 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 36ACC80E28
-Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789595051;
-	b=Ni23hPNkZ9Afmr5gcLLpji8gGNWoADDQtTxnLloAedSrSQS+LJUvuidthvdN/6VKPTBp
-	 Ji5UJM+Hp5ZNEL5X/+8Rszcjf1o14leXjviem2TsP5wWGV4umeXm5tklsjHAjK7s1k/lt
-	 Y995QWcN7AkylHnv1qdXq1CKKM1REkCN56rZEc58idnNK6aRa/l481jblsgxlIrsI0ETo
-	 vBJk3Bh4PW/Q0LjO95Ywh46ky8+BIhvtcQsEmJ67Ib34pibUB/muFbIZzZi9pgMHHN3tS
-	 0bQo/GGGNjbQCB30tCa2s/TH37RcJbHIve2lkCB+oXhMyZ0CosEUzFDyB4Ml4KYAeTw==
-ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1789595051;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id flWTqNaY4367; Wed, 16 Sep 2026 21:44:23 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 3D8D2404F4
+Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=3; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789595063;
+	b=KJZypzCmwJ4R6FX4BFT/WVQ0juml7OCj+APcOe5VIdfPdSn8WgfqiA9jhtGkD5qriY+A
+	 +PEb8e+aPIBW8TjlrK9R7/c5iJCEzk//D/0geiGWb5BcYanAvjVgSjX9HixpSKA6c+pFr
+	 UkrzpB0tZRbV/v+d82eA9XSWSrJZxU1fp8yVNkRjEDl3thIs83KhGYhbhv9LQBFHb9dyc
+	 SciFyxAVe+PnWkFh+ZEmcGTUd2x3fSBSdefJ0j1FB9XRz5Knpm+unALLKi2/dh3LtyHxw
+	 lwVBDeqCYagC3ecZfKiMtEBrlfK5Oi3hwcvLu5xLWXv4fsYPFYvHj0WomCgGK3hawMQ==
+ARC-Message-Signature: i=3; d=osuosl.org; s=arc; a=rsa-sha256;
+	c=relaxed/relaxed; t=1789595063;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
 	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
-	 Date:Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding:
-	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
-	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=FjY+yTooIwgjzGQxDpIA0K3uDvsszA1PxNKQSXHovCI=;
-	b=GGEi0v89W+3A9ie0iJRdPaoRE0RoygUVmbsOGfb+da3sqhq8L/iBPWqrhK1ZgAILdvsv
-	 gMbzENfn+oo0EUPTu0v7MaLtVe6z2ooCfkGxuncTu3cCSviq/3qRe5gLx2sE1yf5KTE75
-	 QmNLxmQ76roC5hk1gYtVtR6RbIzlRITpQXrzG+TaSqJk4X8mARTfcdofgjIQ/pDHA+a8e
-	 HpQiMO6l9YqJgSvtM5bgIpiIoJ4BtTC0hNMh5/KmUSQemJWRMGkfE1tj65tiHUaMkrFEj
-	 chxXo2F5mPDsPG+CXfN0htPvknq23AfQZQpF5cFLaipBp9JWiw/JZoXzrL7o5cml/tA==
-ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:MIME-Version:References:
+	 In-Reply-To:From:Date:X-Gm-Features:Message-ID:Subject:To:Cc:
+	 Content-Type:Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:
+	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 List-Subscribe:Errors-To;
+	bh=+TMWi8xF1c/GpLGSJWBDMGttEHh102/5Ofx0+5TAWdU=;
+	b=S9TxxKMtPz3lC9FobLOKg1LsCbbRqmrS3YaGFYLQN8ZTN9s+V2RczHwY+IfB/uIrQ4U5
+	 ONSA1vUui2CE4Ge639GzbJJ5f20Uxds9z9wzQlkJ9tAOECG5PCVZBzchbl33TXYY9ufRr
+	 ZncUmxAgJdsvMyZEs63R8ST8liSuANegA86IbUnyR5YTxIntZ18bqVJmBx6HLtgHtnnII
+	 bSmcALCLAjM56/dj0USDxf5fWctJILfZGEXWhLeoCW96Vbdnp69mnlrIG3+krkaeBhr5i
+	 m7r13gsI7d7d2LHsRIpFnWJZ8Fg4w9svPnypyypMPGMtcrdOKJInRZFW17i3Nv61VQA==
+ARC-Authentication-Results: i=3; smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1789595051;
-	bh=FjY+yTooIwgjzGQxDpIA0K3uDvsszA1PxNKQSXHovCI=;
-	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=ktq6a04HUNmrUhN1vblcXSo3jQJPHvSWdO6Guh421LYtUv6pmE4u1tvRW/jKjdZsA
-	 nPQ8Z6enSh+fwilv19aiamcFyZLqTzTIrn1QVWdrjxsAwMTxjAFjY4SWebN03VDkc8
-	 6RZkHtpK3FTDHRGWGcuvUHQG5v3ylsRBIaIQcy2lc0NMM9eWjbi2PeJxtXBoO7alLT
-	 Jge7Ia1zws2qI6F+tpz6XuEgbKnl7FgapbkRDeUu0VLUYZEIV+Or78j+i5Xqo8884/
-	 Ccu6FuxcSJp8tvCkyLWf3OPKxI6y+zabW95dqn8InFP0bfenD3VbdfyzSJAC294oFy
-	 rnTgXYE+xpggg==
+	s=default; t=1789595063;
+	bh=+TMWi8xF1c/GpLGSJWBDMGttEHh102/5Ofx0+5TAWdU=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=VDNlsZY5ByRd3WOml7mG6yCtKqTuTIgqlhvGEn6e5OoR4t1sb9FHbB12dqO/6sY9e
+	 K2agOu4FQ1xzJ6/W9v5HxkxkQjIdANfoI6KqTBhtyb5eUAq0lTLtmNdgs2OqCDF+3E
+	 0dxLG0AVKu6hMU/RHpIKqKclIcWFgxHjdXKOKtyL2hI1I4/Dbj/kRRMslmECuSKhxW
+	 guVaUhqvBi+syaZLqnuMKXgGVOxCVQuh3/IfeuNNXd/HUkAuqT+4GwhsGFyqyJTHHh
+	 IvM9nNDsydMtnhchl6gCB0igRmmFZ6B3uiylHeo/BE87a6o52khb8HXHZwRc9a5lRN
+	 QNq2tmlnG/iuQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 36ACC80E28;
-	Wed, 16 Sep 2026 21:44:11 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id B27B32E3
- for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Sep 2026 21:44:09 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 3D8D2404F4;
+	Wed, 16 Sep 2026 21:44:23 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id AF1582EB
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Sep 2026 21:44:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id AFA4D403D3
- for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Sep 2026 21:44:09 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 9CF5580E57
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Sep 2026 21:44:21 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id PQ47L4ydUC5R for <intel-wired-lan@lists.osuosl.org>;
- Wed, 16 Sep 2026 21:44:09 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 67CFF40357
-Authentication-Results: smtp4.osuosl.org;
- arc=none smtp.remote-ip="2a00:1450:4864:31::11"
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789595048;
- b=SKfvz4NROhDsvpbhk7+ZFXNNemFnS/RPMLGi7QqzNJxVGzi2ZkMd01i3k5Bo1uh1YDm9
- jdKL752x6JpLRCJflPWRrF5uuW3xDtqZmLYJZolBjqreAPLsbzSXsy6x4TpnVdOslfxct
- 5NyK6vsZxtGWy2LgiecjjKUaos01nBWFklKe1LCftZzBQvjK9u46OL/dX38hIbqO0yq6y
- JrPrP9oOhEJ8jdlvmyuXg5srA4LIMBa7WNo+xTes6kZAqrXu7DmjUNO7srJ3ME5vvsHdE
- MPdpvP6RYwioI9tFWlgLIUhrJ3pP36rjULjlEB3IFl89Qa/AEqgN76PlJsqxyvUIqMg==
-ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1789595048;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id XWFoXb0I1SNO for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 16 Sep 2026 21:44:21 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org B11F080E1E
+Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0
+ smtp.remote-ip="2a00:1450:4864:3a::d"
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789595059;
+ b=ISu3w2EziDjYuzWrd210DHxH+7dBsgbdScN1j/gEJEAqExUs8/UeSbevtm9sys7HMDNz
+ JoHSJzEb0mZCnWnYptYlP+ir7KGBK65Oh0JlUvxuEWtJGNLjaZkeXdf03jgcs4tLuahG5
+ nc53k3AvAo/UKWhtwBODOD9ocF9d+TANzPEZMTQcchSfp3u+9bmMIzCkZd3VhiR2/7yNC
+ +QwfQHTYG17Q7Pumm3lXRU6kg5MBR5OqyhJOoa0t5vp053mAlnQa/c6OSbGqlD840NFiy
+ hzAvAR/lrpOFkBiWf7jB8hk0af774+nnhcmo/RhUjstAE0y/HT0v6B9HRTNCbKtTohg==
+ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
+ c=relaxed/relaxed; t=1789595059;
  h=Received-SPF:Received:DKIM-Signature:X-Google-DKIM-Signature:
- X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
- From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
- Content-Transfer-Encoding;
- bh=FjY+yTooIwgjzGQxDpIA0K3uDvsszA1PxNKQSXHovCI=;
- b=QN11FgcT84pW01cCTUhp9DDRayLJQmj11lVuVkuNyv53hdzXfxbtR7RaaTKsJg8ZK7wv
- rXm2JqQpMsrOrhk3EKyvSabvaVR07uFFqLWz9XkVDRvnCAY/EGTzv8IgMxQQ7NWHH1Ld4
- ftBuQYYFTcqR+4kH6V2wOK2+/MBcw2Q6a+w4hdSc05YMEAFKZaGs/fOAUU+7FjcaD/PnU
- KEmZZ+3KpUXUFyIZHQQ99U0eupfUY3dY3ZDSziV8kcBFk6BNUTpvKslvaZFlFisu58rWm
- jty/XrQoxtQj2EopvwFjkXI2i2fRRC+eK0/1FP7nwZV4gllNzyRSH8KPWgFP20tlD0Q==
-ARC-Authentication-Results: i=1; smtp4.osuosl.org;
- dmarc=pass header.from=gmail.com; 
- dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20251104 header.b=am0qeYDh; 
- arc=none smtp.remote-ip="2a00:1450:4864:31::11"
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a00:1450:4864:31::11; helo=mail-wm2-x11.google.com;
- envelope-from=emmaonana18@gmail.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp4.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20251104 header.b=am0qeYDh
-Received: from mail-wm2-x11.google.com (mail-wm2-x11.google.com
- [IPv6:2a00:1450:4864:31::11])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 67CFF40357
- for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Sep 2026 21:44:08 +0000 (UTC)
-Received: by mail-wm2-x11.google.com with SMTP id
- 5b1f17b1804b1-49e71974de4so262695e9.1
- for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Sep 2026 14:44:07 -0700 (PDT)
+ X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
+ MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
+ Message-ID:Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
+ bh=+TMWi8xF1c/GpLGSJWBDMGttEHh102/5Ofx0+5TAWdU=;
+ b=WqLYnVaWnkxD/1Q+BuHpXGHbCM8n8PsEIpsorYyzrJSFV2TTersIr+2S/aEnQ/HuTn09
+ jHvp0TsPr7HMWo7D5vt89w5VuZW4E0i5u6be5uz1TqX76DHCskz51B8cZFx8WeLpKKghm
+ kThSZ+KaF90mUHphrNvL5iKmsLUmQo77W33Jzk023LjJp5LjdMfGmmIm0cbI7VeMgnyUQ
+ B1BLN1J9OIpdyBnpE7O8/3nW6gQsFrUwYfJMhebiXzvtf2plos3sqB65T9E0Auoo6Q+wm
+ 6uZAx0fWsi5nmzkWBMeiKcJwzNKCAp/W+UPpjoNr9kIzgUPxDgKQNCQZClg78u0GCiw==
+ARC-Authentication-Results: i=2; smtp1.osuosl.org;
+ dmarc=pass header.from=google.com; 
+ dkim=pass header.d=google.com header.i=@google.com header.a=rsa-sha256
+ header.s=20251104 header.b=ZAgK2oQN; 
+ arc=pass header.oldest-pass=0 smtp.remote-ip="2a00:1450:4864:3a::d"
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2a00:1450:4864:3a::d;
+ helo=mail-vs2-x0d.google.com; envelope-from=morbo@google.com;
+ receiver=<UNKNOWN> 
+Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
+ header.s=20251104 header.b=ZAgK2oQN
+Received: from mail-vs2-x0d.google.com (mail-vs2-x0d.google.com
+ [IPv6:2a00:1450:4864:3a::d])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id B11F080E1E
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Sep 2026 21:44:18 +0000 (UTC)
+Received: by mail-vs2-x0d.google.com with SMTP id
+ ada2fe7eead31-791a9878aa9so83191137.0
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Sep 2026 14:44:18 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1789595057; cv=none;
+ d=google.com; s=arc-20260327;
+ b=oZF6wq5HQJNGfmHOTEWIfTFrHMNo1LJZ45KJIH9K0UBpwc8onIdq074RRaC5kznUj7
+ MKID09SctRSPqLUwp/uLKZHI37t2OgpAJOuxn9eUG6AKC0djieb2m1Dq/L71G4Ptadk7
+ QlbHsvPJg8EgoCaxbb+eHWcJq5qtkGu/8ilsx5Xp7BHpNsaSyqhbzxlCzAzYlQVNTEnC
+ chqOWalSteFkzmwM2ocXsU0O+zkIJ+a1Cg/cqhvcAhE86/CADVQBOwGyVivUwX5qqXAO
+ lzPKVDNI7yAiQqHP4eEPmMDhRIZhOvYpPTVIzsXY/LDr4NJzQfeYou0m+9O1zAkCLpvn
+ R+iw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com;
+ s=arc-20260327; 
+ h=content-transfer-encoding:cc:to:subject:message-id:date:from
+ :in-reply-to:references:mime-version:dkim-signature;
+ bh=+TMWi8xF1c/GpLGSJWBDMGttEHh102/5Ofx0+5TAWdU=;
+ fh=69HwFgKyAByp7H6eVYT922PbW0G9q672ujLLA5bdW3c=;
+ b=l3+ZFsip6H5WQ7w+nX/RWWWouhcpxj4dKaAncdC2qBP5QRLqSaWoZss3taeICGJJ+w
+ Jhscvrp44XEBZt4MJDpHjIygOW1+xsOOIaMPL5Kd276lGzaC3dNP5jbX9cXEAjk9dOT1
+ Gm4lZluVvPdKNFBu1x7IDdzewv/QPmnCRnjg2JmxVm/b6GWtrCdRRQERltfkt2Z4Z4As
+ nRrjB0/SRMqhYvQY3b/KwO5AWc+7pzlmEyVIVpjFL373o456t/Ys4h3bL8RYy5GJ4+jO
+ ufSj1zoaw+AHfgoogsTw9D/5tBXpgTmPKRR/Uxb7sn5pHVkaIguS9zX5/qgLxN7AyvGQ
+ eloA==; darn=lists.osuosl.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20251104; t=1789595046; x=1790199846; darn=lists.osuosl.org;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
- bh=FjY+yTooIwgjzGQxDpIA0K3uDvsszA1PxNKQSXHovCI=;
- b=am0qeYDhywOrqQyjtVOBBI7YZ9hHGEK8RhZVA/l4x2Iq3/cEOzCGsOYvC6ekIcOI63
- JBUdjbFWEMythDloHqasT/RTlDT+NZyc1f524/lwZOUvKF4HAIcxMloQXx0X1JWhUEUh
- o6gE/+/dsTtzKidwd0DsAWNsHQFNlmAa5h14RTkdrJvILFpABxmyt7EVih+EsKARcXWj
- EYYehMyjWGS/6VmGCLszAtgk0KalDA13HUbP5TtiwhHi0jyG1tWS1KjLqfdmJYRVz22+
- sDvyfGmKonZx0IPnWKXJ7gIGrPyKnRalsZEC4qJFcAgEVk4XCShKM34o/FCkDliJiwe9
- ZufQ==
+ d=google.com; s=20251104; t=1789595057; x=1790199857; darn=lists.osuosl.org;
+ h=content-transfer-encoding:content-type:cc:to:subject:message-id
+ :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+ :date:message-id:reply-to:content-type;
+ bh=+TMWi8xF1c/GpLGSJWBDMGttEHh102/5Ofx0+5TAWdU=;
+ b=ZAgK2oQNNBcL7APQyiPRwLme3uexh8xAagUQkJf/vTazktAcpvgh1v5Fl2o7C0TCt/
+ vDaLkOIlPqCIEHhjiPH1gdCqgDzrxIQrgMFlVK5dLVaTmyuuhXnkSG7xJTHTex7tSDhm
+ bThPsjfBImWr/R/Xn9MIiMt2vFcO+PAgrZMDR3Hw8sYj2EWaUIrwv5xNV1FLYbqd+EUF
+ 9szgd0qRoBqE6s1UxTxE4TmfCJOo0gVOZVwedELDRhOa3Yy6C0liZoncz3BPYuBtqghR
+ ZuDCsvfywpYcQOJALGikrvZYm3zh5aCOVeKaUtXlhHS2ST9ibXV0rgZWkWPeVPctvRqn
+ c5vA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1789595046; x=1790199846;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
- :message-id:reply-to:content-type;
- bh=FjY+yTooIwgjzGQxDpIA0K3uDvsszA1PxNKQSXHovCI=;
- b=mq0TXKK+/Fuyi1sPd7ILfzeIeazqjRA906iSKRhOIhyoeRAht0BAmn+gXzhWdQlZsa
- LUG/1XfUfFMtQvAnHmT0278agJ0tgfyZRZDMiNHi0cflmAVcbPQkG+c3vKtJlEzhF9iI
- +ewsaFFO1T8sLUQlXjmJ0mIEfy78JpRQ+D3u3cP+0zjvtJhKDUxL3XWURT6J4P83IPj6
- B4gr+auOpvq5oa7pSSbGCADIVbdt1ge/QWcbFgj8LXSaPPZJKxWe95/QiPUzASsxnS+y
- nllpB52G7Y3UZRx+xvjVZK7Im67iCrcErS8eLE5Nl8zeBdNjeeBjPLnpNhtApuRB959j
- /+6w==
+ d=1e100.net; s=20260707; t=1789595057; x=1790199857;
+ h=content-transfer-encoding:content-type:cc:to:subject:message-id
+ :date:from:in-reply-to:references:mime-version:x-gm-gg
+ :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+ :content-type;
+ bh=+TMWi8xF1c/GpLGSJWBDMGttEHh102/5Ofx0+5TAWdU=;
+ b=mDWH3WNSuX6k/RnlK3LlvEuzxNPFD6NZfKhaR5tTFK7AgTfJLo+Y+7z/m/3HuTuxBH
+ Q5M4fu1NBKkN5u8y12un5p96mR6ipp1M7N49N2G0KRYSLX4bjcwgoblNhFGrpfp08oIA
+ FJv8Fx2lOOw01HJJUZTA5DOFYPff+ZDpgEYef4Dy1hKJvkSrJN3y6+9EZMbgw95boGse
+ AldfTsWDP4ySCxona251RoHjWhIKFbiWv02s9t/pKtt5N9HYGbbNxvpjzWxMsj9IxrUM
+ bIdBYgqXD14JHK8V5AxCeYmxF2PPvh0t5eroMMjbELUDi/Vrd1K6SiUtOakLR4thBeh2
+ ViFw==
 X-Forwarded-Encrypted: i=1;
- AKwUvBykvfcCGnr+LuJvlcT9EvlxmnkOXbKf9T8h9nLnoEmqHIdD3frdysvSHAdaNwU2w2HF1mtdVyg9kej1B7IcRw4=@lists.osuosl.org
-X-Gm-Message-State: AFuF++nOGlDA8xnC3CLwl65C+5Ud1fgUXnmDh0F7oEZHWvmBjWpAVWDP
- loyO+LQdlzL29B3yvRzSl1BIac9IOPVimUjHrHqPG7ovEcjqHouDmG4Q
-X-Gm-Gg: AYBFou1fmDGi8FZ7hJ9BcL8ePyacxylQjTqVFOkJVHUx/C+Kw8Clt3mardgE0Xe+tSx
- mWYsJDMjbgBAM91+NkzVU9lOytTOafqcfYr9J/yaNBAH6Mwj3C8+KzakMMy8wugxnKbfwaJubj1
- sizgz5+WvIcLM6nUxwaCMYQ3xXA6v2ozs7gP6gDb6b1IF4yfek+r4FWcg4VFx8MePdcw5M2YGrz
- zLM0X4mtxPt2siZyFiy9kOE5nCj9inh1SGttRhuYZM6fZSz0apG74KdgRdihI5VM29Q4Raq1mg5
- cjToTyyaiTfQ5DfgX+Qyglo2BAiueXY2Vrmpf41hViXwPZk08AL0su+1QuSeuuABSQJezvCr2Ys
- z/R08vZcJjv/m0ux3ahlsWZCEaZmnXPhTNZNBTQhEVefKeD8L0DxFNtC8haiQCEvkiksy148M6F
- umvO+dQy5XHKCIEbAfXOEieFnFatu7MV7dfdw4+Wmfk1sDqlSMNBK3jxBadtHND64dI4XiRA0gC
- B/s4OkP6e/GYoUrKy8=
-X-Received: by 2002:a05:600c:5489:b0:49c:f9b8:bae0 with SMTP id
- 5b1f17b1804b1-49eb732b2c8mr49393815e9.2.1789595045874; 
- Wed, 16 Sep 2026 14:44:05 -0700 (PDT)
-Received: from Nuel20.localdomain ([105.118.73.8])
- by smtp.gmail.com with ESMTPSA id
- 5b1f17b1804b1-49fbd32c5e1sm35176755e9.5.2026.09.16.14.44.01
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 16 Sep 2026 14:44:04 -0700 (PDT)
-From: Omokefe Emmanuel Onanaroghene <emmaonana18@gmail.com>
-To: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
- netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org
-Cc: corbet@lwn.net, skhan@linuxfoundation.org, rdunlap@infradead.org,
- mchehab@kernel.org, aleksander.lobakin@intel.com,
- aleksandr.loktionov@intel.com, tudor.ambarus@linaro.org,
- emmaonana18@gmail.com, bvanassche@acm.org
-Subject: [PATCH v2] docs: kdoc: fix struct_group_tagged() parsing regression
-Date: Wed, 16 Sep 2026 22:43:57 +0100
-Message-ID: <20260916214357.22573-1-emmaonana18@gmail.com>
-X-Mailer: git-send-email 2.43.0
+ AKwUvBztyDsW7EpUyIZALHC9wNthkJD3vSbc7oHkcyRo9gKdbzkQXZ7w8C7RhCD43/z0ObW6WPRKvW6UrQzWD+Axcmo=@lists.osuosl.org
+X-Gm-Message-State: AFuF++nbFeo+WSk17zK8M7Qlx3ZilG4MxPgs5gF5GiHBOFg7ep3sf2mi
+ Rm5YxBOn/0utmDc1mx5Lpc/QM8xvUkAVCRwL553z5KfnCFSZp85xoYOQ5SGir2PnvJGnDQKfpAX
+ V1BRW6eiygHhhpt4BR4E+BV12DckRNbjToTDEW7s=
+X-Gm-Gg: AYBFou1fjsD2H0kTDdr1APcMMTjqrHtbd1nzHdQcMNCs6235K2VYNDw8uAAQmUlUJ/J
+ wFKvdY7/Gl61Re0j3fy1s8Jq46Zz96mL6fUoQizONCRyjtyTf37RhFykdvzRtP1n1252ZwKfh4s
+ Zc9WAHybSMNWrTL35ZPeD7wsVCVu30nbUYcgpa0ecbJQBugqRFSVFaAgRVdMJf7aqYg+OLUWLtl
+ m2u9XfR+YMdI+HetA2Uq5Rg53hVhk45HbEje3T0vWR7VQGSb+RdGKKOQmYTQk0/ZA1jL66gODxg
+ a8Z08ld3op9kSTBnrz/NhAzn1wXkU6/EBxbORk+e6AyuWB2BLbI/Cbt/3K1ldT4Iv4X2Y96w3Rr
+ 6iysu0guAnB5aPkSRvm75
+X-Received: by 2002:a05:6102:a85:b0:7a2:2a6b:e7b4 with SMTP id
+ ada2fe7eead31-7a22a6be8efmr62586137.2.1789595055938; Wed, 16 Sep 2026
+ 14:44:15 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20260915081910.4142719-1-morbo@google.com>
+ <20260915081910.4142719-26-morbo@google.com>
+ <202609151258.5FC01072@keescook>
+ <20260916010945.GEaqnsWSZ-DTMyTO25@fat_crate.local>
+In-Reply-To: <20260916010945.GEaqnsWSZ-DTMyTO25@fat_crate.local>
+From: Bill Wendling <morbo@google.com>
+Date: Wed, 16 Sep 2026 14:43:59 -0700
+X-Gm-Features: AcwNN1XbboPOY3deKY79Gty15vkSErYIT9HTgeQdVXaDzFhBvm8_kiOA449bIqU
+Message-ID: <CAGG=3QVZRCJ94+DOfSsSDhsrXVYf-ec01NZBy299nYiCAYfXKg@mail.gmail.com>
+Subject: Re: [PATCH 25/28] EDAC/thunderx: Replace strlcat() with seq_buf
+To: Borislav Petkov <bp@alien8.de>
+Cc: Kees Cook <kees@kernel.org>, linux-kernel@vger.kernel.org, 
+ codemender-patching+linux@google.com, Russell King <linux@armlinux.org.uk>, 
+ Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, 
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
+ "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+ Helge Deller <deller@gmx.de>, 
+ Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
+ Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
+ "H. Peter Anvin" <hpa@zytor.com>, Ian Abbott <abbotti@mev.co.uk>, 
+ H Hartley Sweeten <hsweeten@visionengravers.com>,
+ Tony Luck <tony.luck@intel.com>, 
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, 
+ Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>,
+ Simona Vetter <simona@ffwll.ch>, Matthew Brost <matthew.brost@intel.com>, 
+ =?UTF-8?Q?Thomas_Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>, 
+ Rodrigo Vivi <rodrigo.vivi@intel.com>,
+ Dmitry Torokhov <dmitry.torokhov@gmail.com>, 
+ Matthias Schwarzott <zzam@gentoo.org>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>, 
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
+ Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>, 
+ Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, 
+ Arend van Spriel <arend.vanspriel@broadcom.com>, Rob Herring <robh@kernel.org>,
+ Saravana Kannan <saravanak@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, 
+ Sylwester Nawrocki <s.nawrocki@samsung.com>,
+ Peter Griffin <peter.griffin@linaro.org>, 
+ Alim Akhtar <alim.akhtar@samsung.com>, Linus Walleij <linusw@kernel.org>, 
+ Anil Gurumurthy <anil.gurumurthy@qlogic.com>, 
+ Sudarsana Kalluru <sudarsana.kalluru@qlogic.com>,
+ "Martin K. Petersen" <mkp@kernel.org>, 
+ Trond Myklebust <trondmy@kernel.org>, Anna Schumaker <anna@kernel.org>, 
+ Mike Marshall <hubcap@omnibond.com>, Martin Brandenburg <martin@omnibond.com>,
+ Jiri Pirko <jiri@resnulli.us>, 
+ Simon Horman <horms@kernel.org>, Chuck Lever <cel@kernel.org>,
+ Jeff Layton <jlayton@kernel.org>, 
+ NeilBrown <neil@brown.name>, Olga Kornievskaia <okorniev@redhat.com>,
+ Dai Ngo <Dai.Ngo@oracle.com>, 
+ Tom Talpey <tom@talpey.com>, Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.com>, Andrew Morton <akpm@linux-foundation.org>,
+ "Mike Rapoport (Microsoft)" <rppt@kernel.org>, 
+ Kanglong Wang <wangkanglong@loongson.cn>, Tiezhu Yang <yangtiezhu@loongson.cn>,
+ Qiang Ma <maqianga@uniontech.com>, Randy Dunlap <rdunlap@infradead.org>, 
+ Pengpeng Hou <pengpeng@iscas.ac.cn>, Ard Biesheuvel <ardb@kernel.org>,
+ Breno Leitao <leitao@debian.org>, Thorsten Blum <blum@kernel.org>,
+ Harshit Mogalapalli <harshit.m.mogalapalli@oracle.com>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lyude Paul <lyude@redhat.com>,
+ Ashutosh Desai <ashutoshdesai993@gmail.com>, Imre Deak <imre.deak@intel.com>, 
+ Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+ Johan Hovold <johan@kernel.org>, Johannes Berg <johannes.berg@intel.com>, 
+ Miri Korenblit <miriam.rachel.korenblit@intel.com>, 
+ Alexander Stein <alexander.stein@ew.tq-group.com>, 
+ Cryolitia PukNgae <cryolitia@uniontech.com>,
+ Jiaming Zhang <r772577952@gmail.com>, 
+ Will Porter <mrwillporter@gmail.com>, Cen Zhang <zzzccc427@gmail.com>, 
+ =?UTF-8?Q?C=C3=A1ssio_Gabriel?= <cassiogabrielcontato@gmail.com>, 
+ Rong Zhang <i@rong.moe>, Arun Raghavan <arunr@valvesoftware.com>, 
+ linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev, 
+ linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org, 
+ linux-edac@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+ intel-xe@lists.freedesktop.org, linux-input@vger.kernel.org, 
+ linux-media@vger.kernel.org, intel-wired-lan@lists.osuosl.org, 
+ netdev@vger.kernel.org, linux-wireless@vger.kernel.org, 
+ brcm80211@lists.linux.dev, brcm80211-dev-list.pdl@broadcom.com, 
+ devicetree@vger.kernel.org, linux-samsung-soc@vger.kernel.org, 
+ linux-gpio@vger.kernel.org, linux-scsi@vger.kernel.org, 
+ linux-nfs@vger.kernel.org, devel@lists.orangefs.org, 
+ linux-hardening@vger.kernel.org, linux-sound@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -175,106 +265,25 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-kernel-doc reports struct_group_tagged() members as excess because
-the macro transformation rewrites it to an anonymous struct and drops their
-member names.
+On Tue, Sep 15, 2026 at 6:11=E2=80=AFPM Borislav Petkov <bp@alien8.de> wrot=
+e:
+>
+> On Tue, Sep 15, 2026 at 01:00:00PM -0700, Kees Cook wrote:
+> > Seems like seq_buf would be better her? But yes, at the very least, thi=
+s
+> > needs to be scnprintf, not snprintf (or add the checks as you have
+> > here).
+> >
+> > The rest of the seq_buf conversions look right.
+>
+> This driver has been an orphan for a while now (we just made it official)=
+ so
+> I'd prefer it if we don't do anything here.
+>
+I'll remove those changes from future emails.
 
-Keep the tag and member name when transforming struct_group_tagged(). The
-nested members are then recorded as names such as fast.order; accept the
-existing unqualified @order documentation tag during validation.
+> And yes, that mega CC list is just gross.
+>
+Apologies. :-(
 
-Add a regression test based on struct page_pool_params.
-
-Reported-by: Randy Dunlap <rdunlap@infradead.org>
-Link: https://lore.kernel.org/all/0cf8ea5f-418f-45f0-907c-3d1ed4f03e9f@infradead.org/
-Fixes: 2f07ddbd5793 ("docs: xforms_lists: better evaluate struct_group macros")
-Assisted-by: LLM
-Signed-off-by: Omokefe Emmanuel Onanaroghene <emmaonana18@gmail.com>
----
-Changes in v2:
-- Add Assisted-by: LLM as requested by Jonathan Corbet.
-
- tools/lib/python/kdoc/kdoc_parser.py  |  4 ++-
- tools/lib/python/kdoc/xforms_lists.py |  2 +-
- tools/unittests/test_kdoc_parser.py   | 37 +++++++++++++++++++++++++++
- 3 files changed, 41 insertions(+), 2 deletions(-)
-
-diff --git a/tools/lib/python/kdoc/kdoc_parser.py b/tools/lib/python/kdoc/kdoc_parser.py
-index d9ad1ddc87dd..ced09504f3d7 100644
---- a/tools/lib/python/kdoc/kdoc_parser.py
-+++ b/tools/lib/python/kdoc/kdoc_parser.py
-@@ -635,7 +635,9 @@ class KernelDoc:
-                 continue
-             if param_name.startswith("{unnamed_"):
-                 continue
--            if param_name in self.entry.parameterlist:
-+            if param_name in self.entry.parameterlist or \
-+               any(actual.endswith('.' + param_name)
-+                   for actual in self.entry.parameterlist):
-                 continue
- 
-             hint = self.get_suggestions_hint(param_name, self.entry.parameterlist)
-diff --git a/tools/lib/python/kdoc/xforms_lists.py b/tools/lib/python/kdoc/xforms_lists.py
-index e3dda2fe8a53..9e8b3a6b1da1 100644
---- a/tools/lib/python/kdoc/xforms_lists.py
-+++ b/tools/lib/python/kdoc/xforms_lists.py
-@@ -60,7 +60,7 @@ class CTransforms:
-         #
-         (CMatch("struct_group"), r"struct { \2+ };"),
-         (CMatch("struct_group_attr"), r"struct { \3+ };"),
--        (CMatch("struct_group_tagged"), r"struct { \3+ };"),
-+        (CMatch("struct_group_tagged"), r"struct \1 { \3+ } \2;"),
-         (CMatch("__struct_group"), r"struct { \4+ };"),
-     ]
- 
-diff --git a/tools/unittests/test_kdoc_parser.py b/tools/unittests/test_kdoc_parser.py
-index c4a76ed13dbc..1a8287e99f2e 100755
---- a/tools/unittests/test_kdoc_parser.py
-+++ b/tools/unittests/test_kdoc_parser.py
-@@ -418,6 +418,43 @@ class TestSelfValidate(GenerateKdocItem):
-         """
-         self.run_test(self.SOURCE, [self.DEFAULT.copy()], self.EXPORTS)
- 
-+
-+class TestStructGroupTagged(GenerateKdocItem):
-+    def test_nested_struct_group_tagged_members(self):
-+        source = """
-+            /**
-+             * struct page_pool_params - page pool parameters
-+             * @fast: Fast path parameters.
-+             * @order: Order of pages.
-+             * @pool_size: Number of pages.
-+             * @slow: Slow path parameters.
-+             * @netdev: Net device pointer.
-+             * @queue_idx: Queue index.
-+             * @flags: Flags.
-+             */
-+            struct page_pool_params {
-+                struct_group_tagged(page_pool_params_fast, fast,
-+                                    unsigned int order;
-+                                    unsigned int pool_size;
-+                );
-+                struct_group_tagged(page_pool_params_slow, slow,
-+                                    struct net_device *netdev;
-+                                    unsigned int queue_idx;
-+                                    unsigned int flags;
-+                );
-+            };
-+        """
-+
-+        kernel_doc = KernelDoc(self.config, "test.c", self.xforms)
-+        patcher = patch('builtins.open', new_callable=mock_open,
-+                        read_data=dedent(source))
-+        with patcher:
-+            _, entries = kernel_doc.parse_kdoc()
-+
-+        self.assertEqual(len(entries), 1)
-+        self.assertEqual(entries[0].warnings, [])
-+
-+
- #
- # Class and logic to create dynamic tests from YAML
- #
--- 
-2.43.0
-
+-bw
