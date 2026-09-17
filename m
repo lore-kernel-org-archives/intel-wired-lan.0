@@ -1,144 +1,162 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 10B86C982D0
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 17 Sep 2026 09:43:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 549DDC982CF
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 17 Sep 2026 10:52:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id D597B60849;
-	Thu, 17 Sep 2026 09:43:24 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id JBU-I6wCXBXt; Thu, 17 Sep 2026 09:43:23 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 444106084D
-Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789638203;
-	b=eROU8ohif+YjctEXj357I0vAF3QfvJflubTDQVXXJH1db0taPliKw33kHjjYhVuMIDZR
-	 bsed7fBalMz58OXRL56lZ/qTemnXJANcvHBGJ45xhWmjMnO+OpjRhCS1tkO2eDboUbFN6
-	 nHkoAw21z5jVV9LzOn6os3sbrWeiudm0S1ag/eTfirZKpp6LuJWzoc3efbnXQhFToEfZd
-	 Mcwy4nqI7AK+3TtFDp5aTIl4untHC6YhbbuznK99jLRxl3RT2M4ZOI8xEjSKN4sg7xUno
-	 xUZP51ap4hG8jTptg9pYmtd4W3ua9n2epsOvNULwG2QjRISRRbwwuClfu5GpzVHFlMQ==
-ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1789638203;
-	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
-	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
-	 DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-IronPort-AV:
-	 X-IronPort-AV:Received:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-ExtLoop1:
-	 X-IronPort-AV:Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
-	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding:
-	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
-	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=xTUxiiexcpuZgJc3Tn6SduP+wXOTfsQB0kIU50HENPI=;
-	b=spK+hM7xeT7CpAQJRU7irBtiAgqyJh+5zNdODIou4/bBPQIuaG8I+6fQCIJrYYPt+zSN
-	 s9QYGkc6Wjz4LFIy8mJkdDoW1hibJ2jFtl71gpkgJJnxyWTKiwX8n95RbP9hZInccUmaQ
-	 Ya7zbqXw2bA0sH8vWHAg48MzRGAPs2klyg/EezQgtFnooFFQC10vFIrev7djTptKMjgU3
-	 Im1GclKVCI0S+wJqO39BaFjRSzgkhUWOZecwHuLXDrXelpIW5yBq0tYuhyev0GFxHExqI
-	 CZmGd02jMvPDblpQoxpNmWFSTCJlxJyvoaPpf6k7aiWLInnbYIcWk2JaW36slWg6h0A==
-ARC-Authentication-Results: i=2; smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1789638203;
-	bh=xTUxiiexcpuZgJc3Tn6SduP+wXOTfsQB0kIU50HENPI=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=CRsuWRtm6mePeqY+JdsFtSf0bgLTvhzLUDynpdKUBRkDaimS78m8fENtMX9XJqUGc
-	 QT+EhwA6aa8p0bSYLwpABleCgeCH70N5tn9jLdw5sgWOZ4yr4/A4dRDjP8cpIdHY8A
-	 t1cfx8kQMB5dLMy9WexVW14T2GujVTk632EjTLFiP9sl10D05ewj7hUNPTHB1vmK6Z
-	 g09GRYGBKmIqhoQgBlElTrFOfctMeuFiM5JvmKE/yM3+w9Z6uWsBry9+fGd3+5tFcL
-	 CBU2uIs26G2cXGg567WHCAQZi4dC6VzRIUtiBi6UOz9qZoS8qy/SyTkWeKzWSrBnxg
-	 1sj/yx+kuiKYQ==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 444106084D;
-	Thu, 17 Sep 2026 09:43:23 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 3DA4329B
- for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Sep 2026 09:43:21 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 23CB980E17
- for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Sep 2026 09:43:21 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id CD77080816;
+	Thu, 17 Sep 2026 10:52:16 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id szlSbEFjIKih for <intel-wired-lan@lists.osuosl.org>;
- Thu, 17 Sep 2026 09:43:20 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 3EBD780C8E
-Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=192.198.163.9
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789638200;
- b=Bg6yio7SvluHBM8oEWYNtWZAC3xld2wQ69eAxTqXbltKO0fECIKeGERbWWfXJMwdDJH9
- ttdWF8MHyCrtFWMgzS4uSA9PaXYPBVeYBW/Shqn7HLrKEEVbQvC1hjBNGsg6kEOo50uti
- FcgaOjx3p2kWkkJu9YHVbbVvh9l9gbKNukKng4i5tdnyGGJnVcmcxZsKC0sBD84togziU
- SsWegLpZIWtuO1EHLGKYjeqB6OkWLmDopPQiQj7UIJpVQAjnGos7eCZIVOS+gyaSXckhN
- 7/ulphfMIjsLalcMLrc69HtEN9ReOHA4h9OYu/US4EKMst2gLoDWRBfGxu1GUMgGpBA==
+ id TU3gpKyqlsuT; Thu, 17 Sep 2026 10:52:16 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 1A4C6807B3
+Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789642336;
+	b=MI6yGzIi+wo57Zj+pwhtpQku+QXa7OSrYOsA4x5aSkv1Uq8MbntmFUgWtcpUc4ctFkp3
+	 s0x2T9HSSXLE1kD20L79JgXrnMDLBU3nYC6lh6Omdpr0J7P3JRC+1o/DvmNBXmCMh7uet
+	 IxLr3mmR3GKgdMeWCJJTd05+WumIMl7m5Y+AdONXqy23yWWMUFb5F2WJ12+qAb9uti6eX
+	 W8Iy/SJ0XAa6ijaAWVtCyxMbYg8aDDRCOEXLdug7h11A248RQ2FD78YdGSvaOeNp1x3wp
+	 QUTaB89jP7E/YMVd0RogPV3cT/nxxVwvuPR5vBnDyH4rv7V7d3MGvESXazFeEQ71ViA==
+ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
+	c=relaxed/relaxed; t=1789642336;
+	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
+	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Gm-Message-State:X-Gm-Gg:
+	 X-Received:Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
+	 MIME-Version:Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:
+	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 List-Subscribe:Errors-To;
+	bh=Q+A3V8/x5c21vazgS32hcx7O6vB4HwRW8LEwa4hezrA=;
+	b=d2fiiR8ZpLa7ygBULAZdpd9+Mu1jShYHVuHFavWI/i+uxpScOrCtEsTIGxuR4k1vSFd8
+	 MXtAxUes42S8jNyASChuSOWCmaXtX1FxNGgpwSi9QY4v05JDb0wLbuzRH1QJmNx3QKOij
+	 Xseip6GiQ7Rvviuj7HtI6Id8YRaVMRc+6GtrbtNvqrj2okk/UkKX9NRhNpQP5XnCtzSXo
+	 6cg01kjYBl1AkeVSSvSHnzhwMZzj9ofNWIwlqcWoMfSJ2xIcNCq9bWoUk99T2CmVBPuwU
+	 co3fb4x4lTDRe/fqOlssyofO9Ef0Cfao1imaoyWtsQxJQk7xYq+OlDQC4Qs/QG1Gg5A==
+ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1789642336;
+	bh=Q+A3V8/x5c21vazgS32hcx7O6vB4HwRW8LEwa4hezrA=;
+	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=PHlF46Sqd+izdVdpiot/Ft2Rc5b335mIpvlHP8PUE/VPeUMIYkDJlp3Nps2Sxn96f
+	 zGvY3PzZNjkp4qqXWnNg5Kd+DgoFdrlzh5gAHjC5pI8+ZD1zqeUNIkEQO/ZCzldfHU
+	 QQ/jOm7iV/V3R/jmAmAU9nXyQ1gFcV5udbjzu3gvDQlxsC5lqu0azNOXlR4p8VtNFZ
+	 Vs/SqK1GCo+jOrsTVkHtuCW50gEwk2d6D9q7cv8k/I+P/0JwrOx5+Hl6uaoaohW72X
+	 4DfR1ofXM+wOltuG9fzIGivVWDDw+GqheVgg90ja/9JbywdSeDuZl3Ue3XJr6xwCJq
+	 Jht6I+9cLi+oQ==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp1.osuosl.org (Postfix) with ESMTP id 1A4C6807B3;
+	Thu, 17 Sep 2026 10:52:16 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 89DE824D
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Sep 2026 10:52:14 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id 6FDA640050
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Sep 2026 10:52:14 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id japf6Coi0l-9 for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 17 Sep 2026 10:52:13 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org AAD02400F3
+Authentication-Results: smtp2.osuosl.org;
+ arc=none smtp.remote-ip="2607:f8b0:4864:41::e"
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789642333;
+ b=aTQPwZoMAzJh7h9lnFuSHAdbP+LmKr/4p5SUf8nxwhCaJ0x0BkyNwL1Y9CtqRurkrICB
+ y8sUGIyYsyuTC6/w7D6LOT9PtlgqQEUEcM7ZUMJDbU8kCPsLUj9tu6F3Bjsr8MR2xbczu
+ J/yA5Jt0Ba86p0xFOPW8pbrCieoqMS8QJ2ZRxNkLdf7UIkpUMHWQBuJMMoU7esHtNstkW
+ CCI4OyvWZBgKcqDSxRsf6WuIcjKuj5Jo5ukYrsAbedNipSKFp7HwG78YFOaym+3es+1iv
+ e+1OIskQtk4olBEiWp7GIM3wn+nGMU1hc6GP84XS3MvzH9xxv7m2+ETOMsbocz15A8A==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1789638200;
- h=Received-SPF:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
- X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
- X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:From:To:Cc:Subject:
- Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
- Content-Transfer-Encoding;
- bh=xTUxiiexcpuZgJc3Tn6SduP+wXOTfsQB0kIU50HENPI=;
- b=ggML59lbrqWQ8E9sFIp00AmTngGfYsaklvaorwl+oG8hntW0vjGCUV6Ad4ldWs8LNRdn
- MeFW1spPDaK33BRuUqLACpXg0PjgnaW1sm05go2rJ1S+wuOs5qyCB3GeeZalAaO4KHEVT
- mo5HTexWtqxoKxo8vRbTAgj67Q0t9Axkn6VOtNqNu2PjEnZR0LsbtqyvEOnT2KOO/5krC
- JGdq0iyvmqsBLOc0IXurgefbHychPUGFV9xgMLx2l0GCJtOLINtf8DCDe0O6w1SSDIl2E
- pJi4X1FBOiBPIsUt2GuW7aQFAjIzJwFhKRzUoPSFr/WW3QsbpMoCVYMvTivUU8hECsw==
-ARC-Authentication-Results: i=1; smtp1.osuosl.org;
- dmarc=pass header.from=intel.com; 
- dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=E00Cb4mZ; 
- arc=none smtp.remote-ip=192.198.163.9
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.9;
- helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
+ c=relaxed/relaxed; t=1789642333;
+ h=Received-SPF:Received:DKIM-Signature:X-Google-DKIM-Signature:
+ X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
+ Date:Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding;
+ bh=Q+A3V8/x5c21vazgS32hcx7O6vB4HwRW8LEwa4hezrA=;
+ b=Qv3b5xm++f7tt3MRXhbhAhZw2drLwrrd+2cCZJpgaXhnD9OD9XPWx2Qqdmn3VyLH0lYZ
+ Jg5iwgq3vQ6ajH7GbWQLlFV20ptNrkoK2J7cKU/V1cfKFRkkr451HI+jMqNXw7raA4KOD
+ 6xm1y0OmKKdT4DyHSpRmooETaalx01Ocl2FXxwPyQ85G+D4gPAhnH1C+OdWmGrsNxduwP
+ UgeoKecyIssLDBI03zEHeGyoi93qQFY9IIatoLchNrtaLScZsvaas9oT4aLc8B2gCbSJg
+ vo+DFFKp4ZPq9YtLrU+9AwrNUB/NTiS9IA9ZmuX278TowRptf9wPxCw2zURx5oeQ2dQ==
+ARC-Authentication-Results: i=1; smtp2.osuosl.org;
+ dmarc=pass header.from=gmail.com; 
+ dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20251104 header.b=YZdTFXsF; 
+ arc=none smtp.remote-ip="2607:f8b0:4864:41::e"
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2607:f8b0:4864:41::e;
+ helo=mail-yx2-x0e.google.com; envelope-from=tactii@gmail.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=E00Cb4mZ
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 3EBD780C8E
- for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Sep 2026 09:43:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1789638200; x=1821174200;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=/BAU9fM10RY8rU47cWaGcpIhfOTKVAOERSObnvW3YXs=;
- b=E00Cb4mZF8thqThA3XYcuOLnvMd/oNxLtfAg8/2n+hhadFVimioylSWG
- dSIOenMuEDDSC2G/rDKQmxcSV6wFY0alVOayMKTITtja6XJxEj150I4ua
- m4g44pWNDqY+Vf3gENEgxPPOSUp0ze5TDmNjxbKIgznG0b+DUywhlF2sK
- JKFYCJ8vdyUNDallUHIqbHwhRlXQw5ZtiSXep+AIYmNhe5vyz/cqo/v3P
- Ybx8ERjDl+kWhYb9HXIXjmFzYNiEItWM/FEqNURo3F810qsNMEBTUuGiH
- /g/iQHC6cLmEMlJAit+LnSo55JAJgM02iZPbCZoCW5cZhydkNF3p46eUm A==;
-X-CSE-ConnectionGUID: md7QLrZMQzykYjylLg+0SA==
-X-CSE-MsgGUID: pr0ZKO2YSQG79LyVJyTwuA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11905"; a="100706510"
-X-IronPort-AV: E=Sophos;i="6.27,103,1787036400"; d="scan'208";a="100706510"
-Received: from fmviesa006.fm.intel.com ([10.60.135.146])
- by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 17 Sep 2026 02:43:20 -0700
-X-CSE-ConnectionGUID: NUzE5kMeQJOpH/NnhcDf5A==
-X-CSE-MsgGUID: L9mp1qzbS7Ot3OPFZ+KGxw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,103,1787036400"; d="scan'208";a="269400593"
-Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by fmviesa006.fm.intel.com with ESMTP; 17 Sep 2026 02:43:17 -0700
-From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-To: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
- aleksandr.loktionov@intel.com
-Cc: netdev@vger.kernel.org, e02905820face5404ac5eb8193ba94f9823c4606, Mon, Sep,
- 17, 00:00:00, 2001, Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Subject: From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Date: Thu, 17 Sep 2026 11:43:12 +0200
-Message-ID: <20260917094312.1567881-3-aleksandr.loktionov@intel.com>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260917094312.1567881-1-aleksandr.loktionov@intel.com>
-References: <20260917094312.1567881-1-aleksandr.loktionov@intel.com>
+Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20251104 header.b=YZdTFXsF
+Received: from mail-yx2-x0e.google.com (mail-yx2-x0e.google.com
+ [IPv6:2607:f8b0:4864:41::e])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id AAD02400F3
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Sep 2026 10:52:13 +0000 (UTC)
+Received: by mail-yx2-x0e.google.com with SMTP id
+ 00721157ae682-895fd505832so1270837b3.3
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Sep 2026 03:52:13 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20251104; t=1789642332; x=1790247132; darn=lists.osuosl.org;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+ bh=Q+A3V8/x5c21vazgS32hcx7O6vB4HwRW8LEwa4hezrA=;
+ b=YZdTFXsF/zigFmxx6L7k3tHKeyfjrvO61Mza42BbeB1gZVWltgpDxLWmig4CwNuSW9
+ 7OdRAmoRZFXk4Ba9upEfmJ7ley9/ONEibXdNcAlaRP5Nlm0qxAVs3JARVDMiQuQ5qic5
+ dO6stehLH6LMVqi2BZ5kIKLvVyWpajf95THabV+IwD863cuv/n1qLj0Fz4p+IfamBBbx
+ 1Hne0yR6cNsFpmN97CvEbSTx6+Gkr0xJmaeVBIQDGPchko6Zjqz7+f36GTsX9aPCM6sq
+ T20PJ8qwO4nW5+dTEUVlObGpLnWLAf4Z04dqkv/1EVkDjFy1OXc2pkErtvaTjBvazHo7
+ EANA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20260707; t=1789642332; x=1790247132;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to:content-type;
+ bh=Q+A3V8/x5c21vazgS32hcx7O6vB4HwRW8LEwa4hezrA=;
+ b=tCUogmI0oqjqjuU+zfzKiTAiYkMmLFExH+By537HBpg7my81VOTVsgzs3LKkkb10EZ
+ fxxsBZtXG4ObISLBsU515pXmigNP06GjCXr4+S63JQolBuz7meVK/5h+z6yonT1Bk7Wr
+ JOC8T9tZR6IncHIyycM6+XXwGkbJ7a8NXrE3xK9FrmfFK+7LzRzN/SYRrQ12O2u4+kcL
+ Vz1kkzOrznJoZhK3ZLmCOLQ4TGUfnJ7AZur2lQd+XWeCRITDi5MqApWR+EwVBam99vlU
+ UUBtPJ/ErcaYY1XpkkmE12k1e1ZtGTxs7dIWhXqMBomtbY+nLN7DJoQ6Ybd0OvO3OxM9
+ gskQ==
+X-Gm-Message-State: AFuF++lZFaSRPHmZKrT7bqDvMyu35VMaXbxI3xmHzMhhStZR2yq0MMu0
+ I7XoQXo+4KjSkN1k1n3mVIXTTmDBRkK+ndNzk1S9Vx+9mRoVJNTklwLdvsDH5YMAos4=
+X-Gm-Gg: AYBFou2YmjcZ5QynAQ9WGIz13F8KnzvfQ4n++s72qbRcVwkWxlqHVQ1j4Gqico6ivwk
+ HbrWmMg7rzZHLrBaMrR3NEdYVRKYyHqLm1xrNLrfUs+ENryQFRv5aBadCv8chNTytazOJCPqFED
+ aQf9ueXN9PEwYyEFXOsptCFBCxgiajrGiEX9MEMTr67YkSGCGz8sE7TQQ5mbfrxPW4F5omQ141K
+ 1HWtyW4yPjbrT/ojvA/3sk9/jbSdhS6XX9KiqSjApGCcSIl+qh8cfwmuugWl15xOIOrFifHCDiU
+ Cy7DIxvDf6gfwHYhxkhrV36B21uqY60VKF5yNj66vIgn3qPtLwhBAU4k1qBJ5MODrG9//PhNXtR
+ 7OgCesEBBzOhn+VkWc3aBITtWJ7Xofl0PNoRW+2UzddG3HOoG62PpZFxGxGkJwYgg9DKv7bYWKS
+ RmwE7uJ61Eho+LGvSGX56arVCFsrziBcyxGhZuohuUvu7I6Zxkjqe99g/T7gxFMg==
+X-Received: by 2002:a05:690c:c50d:b0:87e:2404:444d with SMTP id
+ 00721157ae682-892264eedcemr20325507b3.59.1789642331820; 
+ Thu, 17 Sep 2026 03:52:11 -0700 (PDT)
+Received: from devobuntu.lan ([2600:6c5c:6b00:316::23])
+ by smtp.gmail.com with ESMTPSA id
+ 00721157ae682-8928ff17829sm13960517b3.40.2026.09.17.03.52.10
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 17 Sep 2026 03:52:11 -0700 (PDT)
+From: Matt Vollrath <tactii@gmail.com>
+To: intel-wired-lan@lists.osuosl.org
+Cc: netdev@vger.kernel.org, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S . Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, Ben Greear <greearb@candelatech.com>,
+ Matt Vollrath <tactii@gmail.com>, stable@vger.kernel.org
+Subject: [PATCH iwl-net v2] e1000e: fix NETIF_F_RXALL buffer overrun
+Date: Thu, 17 Sep 2026 06:51:44 -0400
+Message-ID: <20260917105144.11308-1-tactii@gmail.com>
+X-Mailer: git-send-email 2.43.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -155,211 +173,102 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-On eRoT adapters, firmware rejects partial NVM updates mid-session.
-Detect this proactively before any flash writes by tracking which PLDM
-components have been presented in ice_send_component_table().
+When SBP is set, the card may deliver frames which would otherwise be
+filtered out by LPE being unset. This would allow the device to write
+up to 526 bytes beyond the skb's data allocation: over its own shinfo,
+and beyond. This bug is reachable only when MTU <= 1500 and
+NETIF_F_RXALL is set by ethtool.
 
-All four authentication components must be present for an eRoT update:
-NVM Bank, OROM, NetList, and Manifest.  If any are absent when
-ice_flash_component() is called, reject with -EPERM and a clear
-netlink error message before erasing any flash bank.
+To reproduce, build a kernel with CONFIG_SLUB_DEBUG=y and boot with
+slub_debug=FZP. Enable RXALL with 'ethtool -K <iface> rx-all on'. Leave
+MTU at 1500. Directly link with a remote machine and set the remote
+link to MTU 9000. Send oversized frames from the remote machine with
+'ping -f -M do -s 8972 -p 00'. Unload e1000e on the machine under test.
+Observe slub_debug faults in 'dmesg'. If IOMMU is enabled, you may also
+see IOMMU faults during pings.
 
-NVM_COMP_ID_MANIFEST only exists on eRoT adapters; the Shadow RAM
-pointer backing it (module 0x4E) is unallocated on other hardware.
-Accept it in ice_send_component_table() only when ICE_F_EROT is
-supported, so a non-eRoT adapter still rejects it as an unknown
-component before any flash write, same as before this patch. Its
-activate-select flag is 0, since the ACTIV_SEL bitmask only defines
-bits for NVM, OROM, and NetList.
+Fix this by ensuring that buffers are large enough for an entire 2048
+byte chunk when NETIF_F_RXALL is set. Do this by moving final
+rx_buffer_len determination to one place, right before RCTL.BSIZE is
+determined. This will correctly re-evaluate every time the adapter is
+configured, not just on MTU change.
 
-Duplicate component IDs within a single PLDM image are also rejected
-in ice_send_component_table() before the component table is sent to
-firmware.
-
-Unlike its NVM/OROM/NetList siblings, the manifest bank has no
-ICE_SR_PQC_MANIFEST_BANK_SIZE counterpart: nothing reads the manifest
-area size back via ice_read_sr_area_size(), so only the bank pointer
-is defined.
-
-Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Signed-off-by: Matt Vollrath <tactii@gmail.com>
+Suggested-by: Jakub Kicinski <kuba@kernel.org>
+Assisted-by: Claude:claude-5-1-fable
+Fixes: cf955e6c96cb ("e1000e: Support RXALL feature flag.")
+Cc: stable@vger.kernel.org
 ---
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  1 +
- .../net/ethernet/intel/ice/ice_fw_update.c    | 80 +++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_type.h     |  1 +
- 3 files changed, 82 insertions(+)
+v2:
+* Don't make a new function for setting rx_buffer_len.
+* Rewording.
+* Add steps to reproduce.
+---
+ drivers/net/ethernet/intel/e1000e/netdev.c | 41 +++++++++++-----------
+ 1 file changed, 20 insertions(+), 21 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 42878ab..b240f2c 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -1747,6 +1747,7 @@ struct ice_aqc_nvm_comp_tbl {
- #define NVM_COMP_ID_OROM	0x5
- #define NVM_COMP_ID_NVM		0x6
- #define NVM_COMP_ID_NETLIST	0x8
-+#define NVM_COMP_ID_MANIFEST	0x12
- 
- 	u8 comp_class_idx;
- #define FWU_COMP_CLASS_IDX_NOT_USE 0x0
-diff --git a/drivers/net/ethernet/intel/ice/ice_fw_update.c b/drivers/net/ethernet/intel/ice/ice_fw_update.c
-index 3631461..fe68efa 100644
---- a/drivers/net/ethernet/intel/ice/ice_fw_update.c
-+++ b/drivers/net/ethernet/intel/ice/ice_fw_update.c
-@@ -9,6 +9,18 @@
- #include "ice_lib.h"
- #include "ice_fw_update.h"
- 
-+/* Bitmask values for ice_fwu_priv::seen_components */
-+#define ICE_FWU_COMP_NVM		BIT(0)
-+#define ICE_FWU_COMP_OROM		BIT(1)
-+#define ICE_FWU_COMP_NETLIST		BIT(2)
-+#define ICE_FWU_COMP_MANIFEST		BIT(3)
-+/* Components required for a complete eRoT-authenticated update.
-+ * If firmware adds further authentication components in future
-+ * hardware, this mask must be extended to match.
-+ */
-+#define ICE_FWU_COMP_ALL_EROT		(ICE_FWU_COMP_NVM | ICE_FWU_COMP_OROM | \
-+					 ICE_FWU_COMP_NETLIST | ICE_FWU_COMP_MANIFEST)
-+
- struct ice_fwu_priv {
- 	struct pldmfw context;
- 
-@@ -29,6 +41,9 @@ struct ice_fwu_priv {
- 
- 	/* Track if EMP reset is available */
- 	u8 emp_reset_available;
-+
-+	/* Bitmask of auth components seen in this image (ICE_FWU_COMP_*) */
-+	u8 seen_components;
- };
- 
- /**
-@@ -108,6 +123,9 @@ ice_check_component_response(struct ice_pf *pf, u16 id, u8 response, u8 code,
- 	case NVM_COMP_ID_NETLIST:
- 		component = "fw.netlist";
- 		break;
-+	case NVM_COMP_ID_MANIFEST:
-+		component = "fw.pqc_manifest";
-+		break;
- 	default:
- 		WARN(1, "Unexpected unknown component identifier 0x%02x", id);
- 		return -EINVAL;
-@@ -220,12 +238,28 @@ ice_send_component_table(struct pldmfw *context, struct pldmfw_component *compon
- 	struct ice_pf *pf = priv->pf;
- 	struct ice_hw *hw = &pf->hw;
- 	size_t length;
-+	u8 comp_bit;
- 	int status;
- 
- 	switch (component->identifier) {
- 	case NVM_COMP_ID_OROM:
-+		comp_bit = ICE_FWU_COMP_OROM;
-+		break;
- 	case NVM_COMP_ID_NVM:
-+		comp_bit = ICE_FWU_COMP_NVM;
-+		break;
- 	case NVM_COMP_ID_NETLIST:
-+		comp_bit = ICE_FWU_COMP_NETLIST;
-+		break;
-+	case NVM_COMP_ID_MANIFEST:
-+		if (!ice_is_feature_supported(pf, ICE_F_EROT)) {
-+			dev_err(dev, "Unable to update due to a firmware component with unknown ID %u\n",
-+				component->identifier);
-+			NL_SET_ERR_MSG_MOD(extack,
-+					   "Unable to update due to unknown firmware component");
-+			return -EOPNOTSUPP;
-+		}
-+		comp_bit = ICE_FWU_COMP_MANIFEST;
- 		break;
- 	default:
- 		dev_err(dev, "Unable to update due to a firmware component with unknown ID %u\n",
-@@ -234,6 +268,14 @@ ice_send_component_table(struct pldmfw *context, struct pldmfw_component *compon
- 		return -EOPNOTSUPP;
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 844f31ab37ad..f31dd5886b09 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -3094,6 +3094,23 @@ static void e1000_setup_rctl(struct e1000_adapter *adapter)
+ 		e1e_wphy(hw, 22, phy_data);
  	}
  
-+	if (priv->seen_components & comp_bit) {
-+		dev_err(dev, "Duplicate component in PLDM image: component ID 0x%02x\n",
-+			component->identifier);
-+		NL_SET_ERR_MSG_MOD(extack, "Duplicate component in PLDM image");
-+		return -EOPNOTSUPP;
-+	}
-+	priv->seen_components |= comp_bit;
-+
- 	length = struct_size(comp_tbl, cvs, component->version_len);
- 	comp_tbl = kzalloc(length, GFP_KERNEL);
- 	if (!comp_tbl)
-@@ -623,6 +665,24 @@ ice_switch_flash_banks(struct ice_pf *pf, u8 activate_flags,
- 	return 0;
- }
- 
-+/**
-+ * ice_has_erot_incomplete - check whether an eRoT update is missing a component
-+ * @priv: PLDM firmware update private data
-+ *
-+ * On eRoT adapters all four authentication components must be present.
-+ *
-+ * Return: true when a required component is absent on an eRoT adapter (the
-+ * update must be rejected), false otherwise (including non-eRoT adapters).
-+ */
-+static bool
-+ice_has_erot_incomplete(struct ice_fwu_priv *priv)
-+{
-+	if (!ice_is_feature_supported(priv->pf, ICE_F_EROT))
-+		return false;
-+
-+	return priv->seen_components != ICE_FWU_COMP_ALL_EROT;
-+}
-+
- /**
-  * ice_flash_component - Flash a component of the NVM
-  * @context: PLDM fw update structure
-@@ -667,6 +727,16 @@ ice_flash_component(struct pldmfw *context, struct pldmfw_component *component)
- 		reset_level = NULL;
- 		name = "fw.netlist";
- 		break;
-+	case NVM_COMP_ID_MANIFEST:
-+		module = ICE_SR_PQC_MANIFEST_BANK_PTR;
-+		/* Manifest has no ACTIV_SEL bit of its own; ACTIV_SEL only
-+		 * defines activation bits for NVM, OROM, and NetList, so
-+		 * there is nothing to add to priv->activate_flags here.
-+		 */
-+		flag = 0;
-+		reset_level = NULL;
-+		name = "fw.pqc_manifest";
-+		break;
- 	default:
- 		/* This should not trigger, since we check the id before
- 		 * sending the component table to firmware.
-@@ -676,6 +746,16 @@ ice_flash_component(struct pldmfw *context, struct pldmfw_component *component)
- 		return -EINVAL;
- 	}
- 
-+	/* ice_send_component_table() is called for every component in the
-+	 * PLDM image before pldmfw_flash_image() ever calls this function,
-+	 * so priv->seen_components is already fully populated by the time
-+	 * the first component reaches ice_flash_component().
++	/* NOTE: netdev_alloc_skb reserves 16 bytes, and typically NET_IP_ALIGN
++	 * means we reserve 2 more, this pushes us to allocate from the next
++	 * larger slab size.
++	 * i.e. RXBUFFER_2048 --> size-4096 slab
++	 * However with the new *_jumbo_rx* routines, jumbo receives will use
++	 * fragmented skbs
 +	 */
-+	if (ice_has_erot_incomplete(priv)) {
-+		NL_SET_ERR_MSG_MOD(extack,
-+				   "eRoT adapter requires all four components (NVM, OROM, NetList, Manifest) in a single update");
-+		return -EINVAL;
++	if (adapter->max_frame_size <= 2048)
++		adapter->rx_buffer_len = 2048;
++	else
++		adapter->rx_buffer_len = 4096;
++
++	/* adjust allocation if LPE protects us, and we aren't using SBP */
++	if (adapter->max_frame_size <= (VLAN_ETH_FRAME_LEN + ETH_FCS_LEN) &&
++	    !(adapter->netdev->features & NETIF_F_RXALL))
++		adapter->rx_buffer_len = VLAN_ETH_FRAME_LEN + ETH_FCS_LEN;
++
+ 	/* Setup buffer sizes */
+ 	rctl &= ~E1000_RCTL_SZ_4096;
+ 	rctl |= E1000_RCTL_BSEX;
+@@ -6079,30 +6096,12 @@ static int e1000_change_mtu(struct net_device *netdev, int new_mtu)
+ 
+ 	pm_runtime_get_sync(netdev->dev.parent);
+ 
+-	if (netif_running(netdev))
++	if (netif_running(netdev)) {
+ 		e1000e_down(adapter, true);
+-
+-	/* NOTE: netdev_alloc_skb reserves 16 bytes, and typically NET_IP_ALIGN
+-	 * means we reserve 2 more, this pushes us to allocate from the next
+-	 * larger slab size.
+-	 * i.e. RXBUFFER_2048 --> size-4096 slab
+-	 * However with the new *_jumbo_rx* routines, jumbo receives will use
+-	 * fragmented skbs
+-	 */
+-
+-	if (max_frame <= 2048)
+-		adapter->rx_buffer_len = 2048;
+-	else
+-		adapter->rx_buffer_len = 4096;
+-
+-	/* adjust allocation if LPE protects us, and we aren't using SBP */
+-	if (max_frame <= (VLAN_ETH_FRAME_LEN + ETH_FCS_LEN))
+-		adapter->rx_buffer_len = VLAN_ETH_FRAME_LEN + ETH_FCS_LEN;
+-
+-	if (netif_running(netdev))
+ 		e1000e_up(adapter);
+-	else
++	} else {
+ 		e1000e_reset(adapter);
 +	}
- 	/* Mark this component for activating at the end */
- 	priv->activate_flags |= flag;
  
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index 1375106..847f17e6 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -1154,6 +1154,7 @@ struct ice_aq_get_set_rss_lut_params {
- #define ICE_SR_OROM_BANK_SIZE		0x45
- #define ICE_SR_NETLIST_BANK_PTR		0x46
- #define ICE_SR_NETLIST_BANK_SIZE	0x47
-+#define ICE_SR_PQC_MANIFEST_BANK_PTR	0x4E
- #define ICE_SR_SECTOR_SIZE_IN_WORDS	0x800
+ 	pm_runtime_put_sync(netdev->dev.parent);
  
- /* CSS Header words */
 -- 
-2.52.0
-
+2.43.0
 
