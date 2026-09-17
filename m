@@ -4,171 +4,179 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9C4C8C982C1
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 16 Sep 2026 21:57:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E69FC982C1
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 17 Sep 2026 01:14:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 619258097B;
-	Wed, 16 Sep 2026 21:57:14 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 04A8980E8E;
+	Thu, 17 Sep 2026 01:14:12 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id SMcRHZlY86Xf; Wed, 16 Sep 2026 21:57:14 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org DC0D080806
+ id 4G4C9MvDQt4C; Thu, 17 Sep 2026 01:14:11 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 4701480E9C
 Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789595834;
-	b=ID3xRNytipAfYRa0b4oSnhJ+bJpOvm9nHqlbVFi8aQH9h/Vnfd+U2nDZWbA2kmixMgm9
-	 FG3pYL9/cUqHKBu9heE7oseqPjPaGyZWTsc+k449AF5SUMFEfb1G8egqsBfiIpgfiUm5H
-	 3UvwvR313gi6mHNMHf7chiwdu821cOfb0biNl37PWpuznV/jJI/W012+GPGFjX9A9/qi5
-	 YWI2tEyoh7xrJ+6QZjCEGha15jXOU/KYjXA+VaaufEjgUQ3x46qFNGaqsOqKoWJ7aLfSz
-	 FAnpVF2eVAagR2dgCaNIzpctpNDeVP3ERy04dDD6SM/Qtc0kBplSzd04jotAZJUSdfw==
-ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1789595834;
+ARC-Seal: i=3; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789607651;
+	b=aVfUSEjCxUZaxHtsNFUQBzl0Kvk+14EQEP9PphFE1ND0CaJWT8Pn1eSrbTIGWjXOHJiZ
+	 Iaw+A1/uXjBCwnyIiGAy0STQnEsDIPvFBdw+L4u4c/e8pAMDswkeHuoU3AV6so8CYL4Xw
+	 8/G8W9Do4+GDD7cASWFhC42uG43JnAfmKXcvgb+7L2/z+nahM2JigEcbY4E8HjqnGN9X3
+	 SPXkd4WErMGoCmfSw3ls4JzGimqonQIhShdCWn2RgGHoaYbPfw8bqQbwmm10Z+mtD9oGb
+	 S+xSfDTwgnRUWXXnV81sNa3wtZjXNewYwvi6UCyNDsu+u1h1LE+UA+rQp4ocKeBPvXg==
+ARC-Message-Signature: i=3; d=osuosl.org; s=arc; a=rsa-sha256;
+	c=relaxed/relaxed; t=1789607651;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
 	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
-	 Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:Precedence:
-	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
-	 List-Subscribe:Errors-To;
-	bh=Mpm+rXQ1nRbGhGlarYrHhDYEJtHCvYuH4SNSCHxwBYg=;
-	b=fnPTLEvGnJHJs/AZKiXuBDQxUtybwjCUHw6SQ7b5OUGWZnYtm/+i6dlPdmHpt35ogUQN
-	 2ku9tFVrYMS2rbZQEysSF0s6vAzHIPWtqCMTjygzhvjQkgbjxldY7ikOuZW9YH8IJbUv6
-	 T1OtMCC16E8T5INP/5V+nPyCEPM9mBmN0kj16/6tcMsOY0mXMtIrfgaN95mN2hm9tvwTx
-	 4EERfaUH4qc4DzTSD5am/IKU0bVJyphq+LA240lnSsKsxdTmR9GxMINP6aDPn9rLv8URs
-	 HCvGG7w0LYa1LU6gIrqtIvZ0UAAU+HdAYZ8LDxOiDfX5XnNKZM3MsvU6JH/d2Badejg==
-ARC-Authentication-Results: i=2; smtp1.osuosl.org; dmarc=pass header.from=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=kguY5wMd;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:MIME-Version:References:
+	 In-Reply-To:From:Date:X-Gm-Features:Message-ID:Subject:To:
+	 Content-Type:X-BeenThere:X-Mailman-Version:Precedence:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Errors-To;
+	bh=wTGN7iZGG7qgPMwpmI5YXoFXqkPE5QrJoOdP2J2UgqE=;
+	b=cTmkZDx0UX73z64mqr4815EWirshYK1G7/OHtZGmObsyFwBPkMKUPNYVwsuhgF32hF2k
+	 9YzniH80U0akgaUHiqNgfxBpZcy5lbEqyBDnJMB97EYdvkJ51pL2hbTjvWROf/gP0Yg+3
+	 DztyNJ8SPZMAUh1w+sTrgeshcm/sh4MhGyz/yPztwn3TET3C0JgTqxupfXTACOImww6C2
+	 buc9YdeFK0fTBbgEhRCJzBH9s0zV45zSHFJMEGmkdjiiC9asqK1/Dq0qIbq0I5XN5KDP9
+	 rBnEbg2krExy3O70XtO7FsnSeAYaLV8lxr3uf7e4NI5x1DSwt8HObYvpqUq7W5pYRcg==
+ARC-Authentication-Results: i=3; smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1789595833;
-	bh=Mpm+rXQ1nRbGhGlarYrHhDYEJtHCvYuH4SNSCHxwBYg=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
+	s=default; t=1789607651;
+	bh=wTGN7iZGG7qgPMwpmI5YXoFXqkPE5QrJoOdP2J2UgqE=;
+	h=References:In-Reply-To:From:Date:Subject:To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=oBHA4FoOtkJxa/N9PBFM36KcyOszwqsYK3W++SVJfQE1SAnXxT5bcocQV4nY5Dv4M
-	 0ZJu3LES++PnyCS3lYi9gSKCuRaENUclh+YZc96ymM3G1KGouzbVG7i4v6nlkYbZUi
-	 53Xuqu02GvTueV/NgenRxYlIAwn3m76Wsaqw2c71dRKbkMThF1laIjQpDGXT0uUaxa
-	 wClvwq7bimIlMJkBIskzNgbB2fX/5uKrq5nD6vlCYLVXtRidYlPAkTt1Lfg4oNME15
-	 bZDLD6v1BnLVC21hu7lPURjQszf8RFBw1qtpwX/W75xR2HSRA0dTD1jgK0FQEPtd40
-	 bXXJ8zjJs3tFA==
+	b=HROUnvFQNanlFX17j9Av3Kk58FHF2j2nUvSaMA03QltKQLj4wrjOTjyi0VAIyRDoG
+	 Iof3hNJxg+OYbZQMwOEyN8btrRz7tXrN9F3WBFSuIRo7rL/jurb46NkacxGnbh8eND
+	 +fjtxCPEqKQ2Iwp0iJCsJeLWpiC/FWIDt0zGqQ7aLJxBLoWiMTDWY1L5cV6cbfOfdU
+	 WME+ee4kk9jGOMpVOzmNK8lrWov4CTt4kH4yu+zwUOMvFG0ELxI1HXBedGVuA95mNc
+	 fRzm7GFN1Op8L9AfIGtn1BbrnmTOWw+zspUJx4Rl6y6af6oSe5UlfDGHpt1ScIkRzN
+	 ArHKv0DLRLZcg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id DC0D080806;
-	Wed, 16 Sep 2026 21:57:13 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 239F02EB
- for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Sep 2026 21:57:12 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 4701480E9C;
+	Thu, 17 Sep 2026 01:14:11 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id CD84637A
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Sep 2026 01:14:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 095D9806FA
- for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Sep 2026 21:57:12 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id B73E86062D
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Sep 2026 01:14:08 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id UT7h_zTJYuH5 for <intel-wired-lan@lists.osuosl.org>;
- Wed, 16 Sep 2026 21:57:11 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 3C79680E57
-Authentication-Results: smtp1.osuosl.org;
- arc=none smtp.remote-ip="2a00:1450:4864:31::11"
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789595831;
- b=EwtL5gdTOoVQUbn0YXe0eb+fvarz/9NOWz0ruJ3SUOkgT7sD7lolKoOybPWq8DxX1rXj
- jb2NmOzeIysJ2iL17AEY4RxP0IjHL6+dNX8fCAe3yRvlq6aCJ7PPBVQMwE5Of8D70yu/v
- hDneMAULrcg096kkkzOV5lWw/kXAfUqW+Dk0qpd44zTFYXh2a0xnMrRwFu8/OkosmOlmg
- 44RKZjU67H1A8C7b1V11WJZ8CDev/7fIEKgu1j55ns4+3w1/QsM7WOhdvHT617AhEtU/5
- /nEHQlFRLRkpSkmBD2UeRgbb5jMcR3Lr1ZKGMjB0lsopqZjAyl/bJiUw0t9KPtsG1Jw==
-ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1789595831;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id FTyQLetCP_qf for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 17 Sep 2026 01:14:08 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org B5AEF6062C
+Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0
+ smtp.remote-ip="2a00:1450:4864:33::f"
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789607647;
+ b=gvWwMggbDTWxMzEdVMPIUfcZGQHbreyC8V4HqChps/5h5lm2c2llvvC5id94yH/mcY0i
+ rmyvWhWy5HYa9jr+Cz3OFjY9sJ/YiNE0RxS9RrO+6VOAReKv/SJjbzNq4q28mfyT0KxuU
+ 7efL5JX105DzgIYncmIm9nd0ElFH83poD0xnPyoG9CI7Xv7QbSV9FF9ipp0LP13KZmH3S
+ fqSAcVnJFhJf5cQpqJvhQl86qeWmp+AeEAhJSRBoaya4wPNyuSY5DkT0M3M9tUK629T1h
+ x6uEvTZs6sZrQtI1/Rr+r28IwVEjyqZnmknkwnsn5Uv4YXINSEGgGdgBR9gsxTPWPDg==
+ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
+ c=relaxed/relaxed; t=1789607647;
  h=Received-SPF:Received:DKIM-Signature:X-Google-DKIM-Signature:
- X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
- From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
- MIME-Version:Content-Transfer-Encoding;
- bh=Mpm+rXQ1nRbGhGlarYrHhDYEJtHCvYuH4SNSCHxwBYg=;
- b=UL3StH47lyMGzZhJ6I3f7o4Q5uCZ1iBVSafJLQWw1zK16uLZoY4o5NPkjMzcbv7i7r9W
- FaeumD6oXO/uXivWhk3lkcj0LDy6Jj9oKiP1W3OCMw2b+fiqIJ6oKLBQxP+jlt4EaRkIn
- 2zwJE5+GUn8ih4U7/6xkxYUiylVBKC/kdO6hEu62TAqbyrVbXcJR19WwZv7lXIZaR2gOr
- nCMWI7FwDzA8J4BZ4X4kcEf5JgWvn51upzXuw0qG/abmRaewuYbPGjpV+xJDnbzUF8VrC
- lquYiT7zg+CvSgMfbFsOL7phJNWLbK1yFtXqB8VpalFToa+pkGSDxAFn8b6DDDRDzXg==
-ARC-Authentication-Results: i=1; smtp1.osuosl.org;
+ X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
+ MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
+ Message-ID:Subject:To:Content-Type;
+ bh=wTGN7iZGG7qgPMwpmI5YXoFXqkPE5QrJoOdP2J2UgqE=;
+ b=FJCTiSweEtTt8vZb1jC1CXsIiqwxmwWNIA3SXDNkAQ34Z3m+WjvPgfAs8BY5c9t/4AQL
+ CbxGf/rVnLWr7SX4Z6U7ECRyQtjQgBqNMCazPLV2AX+CRlalCAo4lZ9C3kXSSnloKx1pM
+ SkiS9Nk8ti+iooMh5CrdT0IBorxC/Qhv2CBy5R59+5l+lIFmGM6M72S+x7q7y0K+MK76B
+ 7aVJGhpSkJoh6JvcTVIaG/oPHpyAxtx+HYLVEkL2yfImAkE9La6Tu/QAVRuMilFzRT1uF
+ qU48K7a5wmDYAFGfjflVJJ45ZLek62fzaH13qgDLzTWYSnY7aslTv60pAt2qyi9ykaQ==
+ARC-Authentication-Results: i=2; smtp3.osuosl.org;
  dmarc=pass header.from=gmail.com; 
  dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20251104 header.b=kguY5wMd; 
- arc=none smtp.remote-ip="2a00:1450:4864:31::11"
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a00:1450:4864:31::11; helo=mail-wm2-x11.google.com;
- envelope-from=emmaonana18@gmail.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp1.osuosl.org;
+ header.s=20251104 header.b="KjYD/6A3"; 
+ arc=pass header.oldest-pass=0 smtp.remote-ip="2a00:1450:4864:33::f"
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2a00:1450:4864:33::f;
+ helo=mail-ed2-x0f.google.com; envelope-from=hayatake396@gmail.com;
+ receiver=<UNKNOWN> 
+Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20251104 header.b=kguY5wMd
-Received: from mail-wm2-x11.google.com (mail-wm2-x11.google.com
- [IPv6:2a00:1450:4864:31::11])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 3C79680E57
- for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Sep 2026 21:57:10 +0000 (UTC)
-Received: by mail-wm2-x11.google.com with SMTP id
- 5b1f17b1804b1-49fbca514f8so451505e9.2
- for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Sep 2026 14:57:10 -0700 (PDT)
+Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20251104 header.b=KjYD/6A3
+Received: from mail-ed2-x0f.google.com (mail-ed2-x0f.google.com
+ [IPv6:2a00:1450:4864:33::f])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id B5AEF6062C
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Sep 2026 01:14:06 +0000 (UTC)
+Received: by mail-ed2-x0f.google.com with SMTP id
+ 4fb4d7f45d1cf-6aa135d6e97so507906a12.2
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Sep 2026 18:14:05 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1789607644; cv=none;
+ d=google.com; s=arc-20260327;
+ b=KjZRI3ZOnKi7zQGFdlPETA++5NtmrvusaCQd1pQHSe4VgUU47xQhoJlU8RicM+fty7
+ TfxWaIWXmOFuiOoDnCVfhUm6LbFA1uO6pzmcelZRT3u1SZCAjbKFS5iJYsVu2oQDdCmi
+ qagK9boc9hB1qdwNN5KlE0Lhk8Fg4oZUCXj/bsaewqBWPMFJ6K0PxeAAOBwibLcxsYfb
+ mRNXTRvl1HL3Zap94DV2T1RwZzT1JpkcqHDc686EgkAsQ6S6gu0imyZWoONtOrSUP3Rp
+ l+vkLlKNeeilfpg59yfbVl8z9tQ4TQELHcdsNQvudYzIVIFLYEXOa6HOmlYEk9wAn8xB
+ aR5g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com;
+ s=arc-20260327; 
+ h=to:subject:message-id:date:from:in-reply-to:references:mime-version
+ :dkim-signature;
+ bh=wTGN7iZGG7qgPMwpmI5YXoFXqkPE5QrJoOdP2J2UgqE=;
+ fh=xrfjxzsmzMUme4pJRNwW+R4Rs/Aoywaq0gyH7HsI0GM=;
+ b=eR1Wu1Q8AXHY0IyiiXyjWJ7+IvnG+Evm0YlAfQ6+Vu9E+jXkWNXFIftmz/d4oYHrS0
+ 4x1gidg0FULCmF2zC5algbnO4sm11LLlwlIaxWSLP7nXARdT1xHkpxekuKWZAusejEKc
+ dcPJv6cQ21abHpBN1p7wMCpRk94LulcenKXmHzt7Qs0y46pW57CmRtVtnLEOnftpjFjL
+ rgMCjvd4oAAxBee3uU+1qJ4TS56aGm91uNGd1S2atY22F+ygbIIBJj4RnsgdTGKXnOyH
+ W804pnVitAOVaji8JyKMe0swrBlTb4SYIDmc4xDouCTahVqFGTWHjZwbDR/ApXHJaY/E
+ v0gw==; darn=lists.osuosl.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20251104; t=1789595829; x=1790200629; darn=lists.osuosl.org;
- h=content-transfer-encoding:mime-version:references:in-reply-to
- :message-id:date:subject:cc:to:from:from:to:cc:subject:date
- :message-id:reply-to:content-type;
- bh=Mpm+rXQ1nRbGhGlarYrHhDYEJtHCvYuH4SNSCHxwBYg=;
- b=kguY5wMdamuEghGClLcFg5SZl69/HqXTSjHGxvMYBrPIb4xf3edUiNj/SRFfXp90ZC
- YuOOAtVtWZV5XU25ICZIvK+uk9ts2DTosXMKAnVw9PNo92cmc330ykM+f1/8VzrUBgS3
- oG9h09L35aHi3g/D+HotH6KAfu3SrlbE6/tooZn4f/TPnlKPE++89JOG2pg3x5dm00fU
- j5nbI1K3zmzPqOBwNZmmwYqab0P8WZEnSPsOJ9GNn5IVsVpL5Hy5JWPMc7suULA0+3RJ
- zYRGVvG1gKSsSOWJFWpBQb8IBlBzXZ0DHULUYVnGPKxbfY8+jcbDJlesCKjhDMYruFAc
- uBxg==
+ d=gmail.com; s=20251104; t=1789607644; x=1790212444; darn=lists.osuosl.org;
+ h=content-type:to:subject:message-id:date:from:in-reply-to:references
+ :mime-version:from:to:cc:subject:date:message-id:reply-to
+ :content-type; bh=wTGN7iZGG7qgPMwpmI5YXoFXqkPE5QrJoOdP2J2UgqE=;
+ b=KjYD/6A3J9teqpwIsan7mnNV/ltbYosC7SXt0rpNTtN+IiIG+TG6JbiD49atkD8rXv
+ I50cqJI1p6En8zOnjz+DjQIOAs6UH9HmFqzzcv7hHvdCpEnO7LhPtbleWP9M0mB8APoR
+ NDxy5aJHHY5D/g0jS4Nzv3Q9z8sHZcJHYaaHE5uOyKyKyX35sAxYMDHR9dIlXEY5mZrt
+ Rf3QsH6Z9OUmgdq5k7R2hl40Fkjf9SWFL2G5e3XbW99wUTcfZ83G6zv0uM5Rw4A6yp4L
+ D0DKKggZ6Xj5Y3rkiNgMKV9JOJBQfuWjfO1ipXHyLw/BlgrKVFLwRcjxdESEQc4VIF0B
+ HmiQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1789595829; x=1790200629;
- h=content-transfer-encoding:mime-version:references:in-reply-to
- :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
- :to:cc:subject:date:message-id:reply-to:content-type;
- bh=Mpm+rXQ1nRbGhGlarYrHhDYEJtHCvYuH4SNSCHxwBYg=;
- b=K8r8duo+eJhOUhzkg2pA1y4wKbT1wqNyuZehAbTa6CyvhE54cYKwtVoUSPzUPxFDT0
- atbvYGpVKcomtnVtQRsCFKrA2mL2eZMwPk22EJJCECrQ28uGJygud4Uw3OBTqi6IRKsL
- cmu1hyOB5Fj1gLh7YfWERjYBWElEHkTChVxcGv2USZYboZQZVyKitlrc/2z0GqZPOj3h
- o/9ixNspJsPcqsCEF5fsNcyPlu+r7ZteNJXmObn+arFLvxkV5TXsZlDsyqazU1Xyea1l
- SwxAJl3RFNRQYBqbuqlkkdnyZLgCdiPl2vfipCwwM08zX/hFF7o2dPmpsagwl2zKSg+S
- RtpQ==
+ d=1e100.net; s=20260707; t=1789607644; x=1790212444;
+ h=content-type:to:subject:message-id:date:from:in-reply-to:references
+ :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to:content-type;
+ bh=wTGN7iZGG7qgPMwpmI5YXoFXqkPE5QrJoOdP2J2UgqE=;
+ b=phluPeUqfiqL36qyJbYi+LmOl+6kZ4y7ZMPyBzRlBHt0APq/5FDpju9qJPeaFezrBn
+ EWlvEJgLDbuiCr+77hB6Dn1iiVFv90Yo0Atf7a+5lRUPhKavCWMrlF4K7e6QysMH5A85
+ DZbTbTf1lQ79YKoG1PVx1sC1qeEFjcLwPO1G/IiJ9RbKWw4Mzd3UBodOvnQwVXpIA28U
+ JbMrZROjlSTYOhDKoXoIOrszcvVlJImLqIdOnexNgNWkM/0vfoc98rFbdM950VDdaPAx
+ vdVwaD9J/8AuaWP/VV3mPnzT50W6ouskrN+XFAK0h59CJO/L149CNcoMl7NaSReUoCcQ
+ NiVQ==
 X-Forwarded-Encrypted: i=1;
- AKwUvByzHkoXuEwZirPCegijhdszd43Q5HTNclQHBHkBZcwMQkH4zk6Io+nK+5Xh7pfAdWWsb4qjz57Hq9//m+egkQs=@lists.osuosl.org
-X-Gm-Message-State: AFuF++k2R9Cr4iit2TEP0pjxuviQvuv782jEb/iothg/diQDssvHVuRY
- +MR40rpMrf4u0L1dvOPztCO5ms0Yi3Z32L9tvxZl1sKXqdPm1UlfFnN7
-X-Gm-Gg: AYBFou3PmBw7CpuDjSE3dH96FYNOsv0dQIsk+v8LYivFUPQHl7FAPD1DvuvIPlmb6Po
- pfKi4gNOHrl8EGUYVX8X4z4sjToobtUPCLtaud4Z/eXjX9qrh+djnbdlqEFWkYLnQn820shRh60
- QmFAiNTfqhO8zcGYnm2TNlnt3mqzVllyz1qziurzYlbWiBI8w0dbbn74ZGpLmNVuLbITBWgta5D
- tNsBJu4FYeFsoZKnjMC5ZGw/ayxB+TRZPfyOpV3FZ3DvUo6DAWhTBbRkezHs+Id8w3Sr799IHr8
- UjMghaqc04wASVmezcpOD+wAzRi61ysXChBpgCcwxQm3BqSNornSsV4k6Miwe+Ums3L6BsY/Krx
- wGY7SXOifOsgY8KCJtNiyWxNJgVaNpd+QYsLTNDq7IdofRGTdSJxPYyKWYegFBgaxWqVyVwhbx9
- oIfqVevS4Lhdhv6KuE1z9t/yeaMhbZqjRAuw0YkuXdDwbgyXISSu7IP9ozfCT1FMSXFCYJqsgy6
- ablbLXbXsxNvlBOJkU=
-X-Received: by 2002:a05:600c:3492:b0:49e:7c8b:fdef with SMTP id
- 5b1f17b1804b1-49eb7329b2emr42924465e9.2.1789595828416; 
- Wed, 16 Sep 2026 14:57:08 -0700 (PDT)
-Received: from Nuel20.localdomain ([105.118.73.8])
- by smtp.gmail.com with ESMTPSA id
- 5b1f17b1804b1-49fbd247809sm35546005e9.11.2026.09.16.14.57.02
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 16 Sep 2026 14:57:07 -0700 (PDT)
-From: Omokefe Emmanuel Onanaroghene <emmaonana18@gmail.com>
-To: rdunlap@infradead.org
-Cc: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
- netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org, corbet@lwn.net,
- skhan@linuxfoundation.org, mchehab@kernel.org,
- aleksander.lobakin@intel.com, aleksandr.loktionov@intel.com,
- tudor.ambarus@linaro.org, bvanassche@acm.org, emmaonana18@gmail.com
-Subject: Re: [PATCH v2] docs: kdoc: fix struct_group_tagged() parsing
- regression
-Date: Wed, 16 Sep 2026 22:56:46 +0100
-Message-ID: <20260916215646.23185-1-emmaonana18@gmail.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <f0591ce9-2e8f-4777-90ab-b9159b7d8f20@infradead.org>
-References: <f0591ce9-2e8f-4777-90ab-b9159b7d8f20@infradead.org>
+ AKwUvBwbAyKOiI98Z1wjEt+bXVGcjlZI6bKf//nti0wf70izvCC1HHJwZazxmjZWf3bvcU03ZKnxCkJjhHsiMdz3Zhw=@lists.osuosl.org
+X-Gm-Message-State: AFuF++n48hO/f1YuTzthi5QVTIjWVhhTSLbRkRvv4bqpc9hOefB2fXU8
+ cJRB23UM/ZJs1GCgZOCqa7JeRB5u2R6XM70bt2jeK74AJA+a2aRr5CprUftJ3MD62od8Clxz6pK
+ EEobC4s9ZEO+48FjG19TQwe05oXMJ/ck=
+X-Gm-Gg: AYBFou1rOoUOMfLBSsbKOyIDmJ+irKcG5aidFg0QnBqlQ9Vkc0Dc063WV7n+Q7e+UIG
+ hhtGkvIbO5dzeSHWf8CZMg+JIirftI3vaNp8iRgH6JgR4gtdb/89oGJghXR83XrMgnXnhkiNJYP
+ ffjTiUp0pFmr1DtdZIAzneWVZIQe/9iiIiSENoL/VRCa7KlcoZWzLXJnP4ehHA4kyVrPAojKEfZ
+ hL/FJ9givjFTR4jb3YR/P+K6z95WvKWeTZfJiR5Y/lPmqK3kA5nDPBS43oRFZqOUr2Nsr5IT5J2
+ zy0DU17AtLtWR61OmjTsEh5Wwt2kRRH2u7Rswgo+7J/YccaQDIOHspEq/B3/G47JIBzFYEMjP7g
+ afYrI8UPeZz77EhxXVoFg+I+24/h20Opg5qRGNDCdOTx+
+X-Received: by 2002:a05:6402:4441:b0:6aa:19bd:dc9d with SMTP id
+ 4fb4d7f45d1cf-6aa224027aemr7078573a12.13.1789607643731; Wed, 16 Sep 2026
+ 18:14:03 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20260727225659.Cz3qz%anthony.l.nguyen@intel.com>
+In-Reply-To: <20260727225659.Cz3qz%anthony.l.nguyen@intel.com>
+From: Takeru Hayasaka <hayatake396@gmail.com>
+Date: Thu, 17 Sep 2026 10:13:52 +0900
+X-Gm-Features: AcwNN1WNHJmJROdyw0qXGCsNQNq9b2MdTl530NFBfTrjxcdJ4Itk6wE5bd-Z7-Q
+Message-ID: <CADFiAcLvxVh=E9Esjh1fQBVqtu-t_=8hyTCW0_dfb2VTKiJ6=A@mail.gmail.com>
+Subject: Re: Patch "ice: fix empty PTYPE set for GTP RSS profiles" has been
+ added to net-queue tree
+To: anthony.l.nguyen@intel.com, intel-wired-lan@lists.osuosl.org, 
+ Marcin Szycik <marcin.szycik@linux.intel.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -183,11 +191,12 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-Hi Randy,
+Hi all,
 
-Yes, that was a mistake. 
+Gentle ping on this series, posted about a 2 month ago:
+https://patchwork.ozlabs.org/project/intel-wired-lan/list/?series=513764
 
-I have now sent a corrected v2.
+Please let me know if anything is needed from my side.
 
 Thanks,
-Onana
+Takeru
