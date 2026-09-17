@@ -1,137 +1,166 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0EACDC982D6
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 17 Sep 2026 15:03:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C1CBC982D6
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 17 Sep 2026 16:07:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id A820860613;
-	Thu, 17 Sep 2026 15:03:09 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 3AC8180653;
+	Thu, 17 Sep 2026 16:07:11 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 40MM1JIb6Rsu; Thu, 17 Sep 2026 15:03:08 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 275DE6064D
-Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789657388;
-	b=d8q70XXJanlVQs0bZ5j4qOX62uRZr7IMdlJiCELgSYqk/+qnDDJrDYKzYKxueDhdvsJ3
-	 SbvDARxh7ESiX9IU/DPAhF7ubSiO9EWwtHIHUNyaC/4LE0jJjLUblyz5/Yc7TMfK3JyX8
-	 QTVxOfmbar68u/mxifY9a/x0wh0OZYZBry8R5M+UOCEuekv4tClWa3qgFiGm9RU7u/79I
-	 /PIW9qUcj9Fwh5WdinrMiZ43e4cNHNeXvFrVvrOXzMy26cBhIjwn+TJGVyasdA9yw+bSL
-	 mIitcoNRMQ/VU45XqGgVFRQmQaS+DrC5jFOl+hBOM7fJcJ2XC+boJSiTFLuKXwe/VOw==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id qtroLSMJcP3p; Thu, 17 Sep 2026 16:07:10 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 8D97981097
+Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789661230;
+	b=Zu7FKKQaVBAwhj5GB66tGimrnRrULpEfwOodMFZySoV8CTwuMzOCXLryHyg3UdxZaJnp
+	 dG8SP83sZEv3mCEk8ny1k2Xe+PcXcjB3lKUyG0AWKtqA1bXsQpDRUgMkKAuzl3Zfoc2Iq
+	 Ot+0rhn6QyjaWo/skJp6d0PNhU4q7wJ5q5511fJQBl5q3kmEo3fxIaQNdPE0DXYXDESW8
+	 1M2XpTkVr4sRfEYc28FNub6ND+yo3CbmVk0UfoBEIhSb3NSFnYducPKZl5Ssb1Phli+/e
+	 Xa5Gmrkt6bhyOZdF6zgdoltIAIkw4qJXCe7CgBJHjfMNWMqyKappYyAC0piUnMmvARw==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1789657388;
+	c=relaxed/relaxed; t=1789661230;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:From:
-	 To:Cc:Subject:Date:Message-Id:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Transfer-Encoding:X-HM-Tid:X-HM-MType:
-	 X-HM-Spam-Status:DKIM-Signature:X-BeenThere:X-Mailman-Version:
-	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
-	 List-Subscribe:Errors-To;
-	bh=CVA/CWhw4JetoLTPs+u2MtnfUXnMQ1sROVyIw6FlqyI=;
-	b=gzf45eoMgxUFXMqdLxRFDBX7MmamWVLHmtDySZ0cGs53wn4BUWa1qoJRmhOCzq+Bq0l5
-	 6UH53vd89K02B7yE0lcwD9wXNNf1xc7j0wVrAmKD7Mig/4ulmlzDwhjFQxUA8Q+Y0dKfM
-	 psiQdvJg9nCRTSaT4RVPJ98tQLujYwEUOdsj5E37OSQuEZprI0JuHMmTXQFBYZK1xPWEC
-	 kG+JXKaua5CSSfA/zteD7rurJ1aD1NmHh31eWvzR8zfZBuE8fi3Up507eKYZbLnvP2mwl
-	 iOJt1F6EcvSu9ZihWdbGSIOzXbf7NFgxjvGUQBP1u74RPLJ11KeHlW8PPVNDti04aFg==
-ARC-Authentication-Results: i=2; smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Gm-Message-State:X-Gm-Gg:
+	 X-Received:Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
+	 MIME-Version:Content-Transfer-Encoding:X-Mailman-Approved-At:
+	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
+	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
+	bh=E8d3Fh9qdYf4kz33kMFEhvPXsHkGC1s2BDYeW1CWXTw=;
+	b=YAlecJhp31cD8fM4yZD3hrUxZ2MpDv/kH9NqCthvTF7bXdchIsRAj1CM9qtZ1IIc9kcm
+	 HHXJ0FnLxSEWhhwKi3ppT4G99JZo7mUeLUnsyEGi7AHxuYdhq5IAKCEoAbVAB9HodqGRr
+	 fJ1sG17M0f0ive6e3vRNyG2fztF/XIFqWnqYB5dDUKojB3CbImW2LJ2PZf3e8Oai0pVO7
+	 kFZhEefjDIoLmYsjq+6kzJ/hANlntM7h2NOsWa/21fc+pLZAowBEIBe+WtyPnN4l6v/Gs
+	 O5HQiTFwH4KXfXnGwoqK4NROPvQdQx5R0lVh7m159RwWXI/lct8yV0PWOk5zazMfPew==
+ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1789657388;
-	bh=CVA/CWhw4JetoLTPs+u2MtnfUXnMQ1sROVyIw6FlqyI=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=2+ak9+3guMlxLxSKf6IhqCkLl0ialYw8w+0v37Dqni85MXaCvn6Ybl4/CPqdS2iwy
-	 DKZRT+CGq7ZGeY96t7UvQle2GqoiHu21p3jdeIO1LSabuAasNjoIARjlunsOCvotDS
-	 xZiCa4gVDUsaTOcZIlCwahENiBOpK3kSsWKl+/eVa6Ps1KlqHtiIbfZaCw7vo7oR/H
-	 eYzq7KDj7tds/lRotO9HA7tzY73HB6IAyfcqMeDuQ+BYPAMtfAzTtGrvVU3NUOXjlu
-	 xJCcWxd70iQtUZOJy2p6jPTqDm+nIlo8JEHUqfu5gCW1H/lxMJ2cIcaS5VjMRipoI5
-	 c081JJo+zFYug==
+	s=default; t=1789661230;
+	bh=E8d3Fh9qdYf4kz33kMFEhvPXsHkGC1s2BDYeW1CWXTw=;
+	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=2kYatbCvr0ZNoXG2NNIcpGhupH6ICYU57C7CAK5kTIuFO90/YhkxVVuekjP34XG/M
+	 LK4snNz2mXDF1gTwmnHu9b5bw33ipI6pjfqbHuy2AEFy7teZzke9mjivya7TRoLavy
+	 jgFI0wGLH2+PxXzz4/2Dmy2tD7QLPWQ7y3lzrSkldwqN5yg0aqT2XGj1DOXfThs2jC
+	 oN6T/tOxPoBN/ta8U1HFdEcjlApiulMcvfYmY2oORTJ7mhzel2PPF/FlffLZQ3tpJw
+	 A0cfVC4ct2555Mm+SVYajPZ4ptHyoMW+HGpicFtkdaoY5mXqSzXeuVG4mFZ69iAJ29
+	 LWusihfWyKRcA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 275DE6064D;
-	Thu, 17 Sep 2026 15:03:08 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 2998337A
- for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Sep 2026 15:03:07 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 8D97981097;
+	Thu, 17 Sep 2026 16:07:10 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 4154424D
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Sep 2026 10:52:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 0FB894036E
- for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Sep 2026 15:03:07 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 27D6E4024D
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Sep 2026 10:52:14 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id mYee26ZtUiPD for <intel-wired-lan@lists.osuosl.org>;
- Thu, 17 Sep 2026 15:03:05 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org 30B484007D
+ id 66DIkXuRdhZM for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 17 Sep 2026 10:52:13 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org 6F64340050
 Authentication-Results: smtp2.osuosl.org;
- arc=none smtp.remote-ip=101.71.155.101
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789657385;
- b=JtQ9pr1ew3anxDMWcdQ0ay+1PqzpN6wKIP775tjlvh5teSj0hyGv5Nr9IkyvqZ6PUjuE
- /xp+b7RAKDKv6GF7fKVbZBgH74SHgF/Ofa16xE81IPu//1tSV2c8uvbfioBvb9C5Nj+H2
- oYitU8U3XGbefdd9e1nDYeEWDo05oum8REl3Wpj94aWqyjIOsGkKTJAKxSmYyRo9bpzrY
- S7kMu6INMcLAoORasEJZWBUtauwnr1GIqRSLW7NoqNEaio2soYvzJJZqI3BKbXjEE5HFm
- cKIxfSaC3KD/ulLy7+wp4oIoC162L4EVTiTRQgolrPvYeMcID+QVjJvO8/K6hZJE2ig==
+ arc=none smtp.remote-ip="2607:f8b0:4864:39::f"
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789642333;
+ b=dGQw6p0nAVlFCSCJ1JqhHNfrOfGTKzPb6rJoZ7CDKXubV7Pu5wtOpE6dwzfihi9LSpH3
+ ob26d83a3QC5o/nbbLUpgB1bsTtgHkemlIsj0G/A+uCcmfODXGrbhH7GmuDesHMQbQWXC
+ l1MDu2HGQyxVE+I6/0IA2NrR/5F4zlfYDd+bAtnwluB3YBSFiMY9y/52KZfRfd7xJ3EsZ
+ rtEtV63OQI0AAzaXqrETV5Lc/SE578QPMQzLKk/8SW1zqsP8Pvu+ZlUFmujxJ75TLi01V
+ Ds2LU9rNaOB5zq8zlU9ocOAu108Cj814OOwGmOP03TE+PCZwo1ZWodhw80Q6w6obaew==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1789657385;
- h=Received-SPF:Received:From:To:Cc:Subject:Date:Message-Id:X-Mailer:
- In-Reply-To:References:MIME-Version:Content-Transfer-Encoding:
- X-HM-Tid:X-HM-MType:X-HM-Spam-Status:DKIM-Signature;
- bh=CVA/CWhw4JetoLTPs+u2MtnfUXnMQ1sROVyIw6FlqyI=;
- b=YnMKusq9iMd4ZojJtX9uvmnY/TciYJ/9vPyqWYpujbsgLYWGKIy9oD9yX5kMMIpeIOgX
- j01+ZE204IZiJt3Si46SrbdWm2LOxuPxnZRMTFz2FgM1CMjM+guD+k9GbH3deZXVjS/1S
- gr3zDyRHWa2K2uT1TyHV5P0R7rROpDDdHi/HMXquWHFIINtWk8UEGuE4Tre0GHQoMFrPh
- VdpSpHOC49miF4799kUjXm+aS8TJFl1VvgpwutAVXaoBi2NAkFNeS51iWVaViaJ90WqJx
- I511SS7o0h2JjPPSu4oe4dk9hZ6XDBzsJVXLQsaWU9eLY5egD4KqHdFReiWFX9r/DGw==
+ c=relaxed/relaxed; t=1789642333;
+ h=Received-SPF:Received:DKIM-Signature:X-Google-DKIM-Signature:
+ X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
+ Date:Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding;
+ bh=E8d3Fh9qdYf4kz33kMFEhvPXsHkGC1s2BDYeW1CWXTw=;
+ b=nEWHLDrU0c0/+sP29OOFebWl31oEjUJ2WLxPnlJ8I/7RZ8XjwniQDQVHlKhWeCy9KaDE
+ qcHXDbwQ63kcOAFVIpR1VaQJ9biBHRVkNnrSF25/3TIs9sMftR30DDAMeDoxGo+ch9TSq
+ dIP7K7/+f6gEAKGRh3x8Skk3P6sjMO8NXoDJNtQFw7A/7EOQYX9L1Fc2wP8J0sbo612Z+
+ fn8g2guBkp48PEh2Xm1HReF0To1DcwacX4eWQdchIjmcpcRFaMBejlAPW3szu0wTrdQLP
+ Hikc1YMkspfI8uYKenI2d5Vn7wPPQ3psBHY4uBq2GLwgAWl58WjD4X8/Rm7VFoh6CQw==
 ARC-Authentication-Results: i=1; smtp2.osuosl.org;
- dmarc=pass header.from=seu.edu.cn; 
- dkim=pass header.d=seu.edu.cn header.i=@seu.edu.cn header.a=rsa-sha256
- header.s=default header.b=XzhyC205; 
- arc=none smtp.remote-ip=101.71.155.101
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=101.71.155.101;
- helo=mail-m155101.qiye.163.com; envelope-from=runyu.xiao@seu.edu.cn;
+ dmarc=pass header.from=gmail.com; 
+ dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20251104 header.b=XTY4fFh0; 
+ arc=none smtp.remote-ip="2607:f8b0:4864:39::f"
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2607:f8b0:4864:39::f;
+ helo=mail-pj2-x0f.google.com; envelope-from=luckilystar08@gmail.com;
  receiver=<UNKNOWN> 
 Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=seu.edu.cn
-Authentication-Results: smtp2.osuosl.org; dkim=pass (1024-bit key,
- unprotected) header.d=seu.edu.cn header.i=@seu.edu.cn header.a=rsa-sha256
- header.s=default header.b=XzhyC205
-Received: from mail-m155101.qiye.163.com (mail-m155101.qiye.163.com
- [101.71.155.101])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 30B484007D
- for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Sep 2026 15:03:02 +0000 (UTC)
-Received: from PC-202605011814.localdomain (unknown [222.191.246.242])
- by smtp.qiye.163.com (Hmail) with ESMTP id 4e2966651;
- Thu, 17 Sep 2026 23:02:56 +0800 (GMT+08:00)
-From: Runyu Xiao <runyu.xiao@seu.edu.cn>
-To: anthony.l.nguyen@intel.com
-Cc: alessio.bogani@elettra.eu, przemyslaw.kitszel@intel.com,
- andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com, richardcochran@gmail.com,
- horms@kernel.org, intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, stable@vger.kernel.org,
- runyu.xiao@seu.edu.cn, jianhao.xu@seu.edu.cn
-Subject: [PATCH net v2] igb: initialize PTP state before registering PHC
-Date: Thu, 17 Sep 2026 23:02:47 +0800
-Message-Id: <20260917150247.2562991-1-runyu.xiao@seu.edu.cn>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <cd12af33-ed01-4eca-88e3-703b59c05453@intel.com>
-References: <cd12af33-ed01-4eca-88e3-703b59c05453@intel.com>
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20251104 header.b=XTY4fFh0
+Received: from mail-pj2-x0f.google.com (mail-pj2-x0f.google.com
+ [IPv6:2607:f8b0:4864:39::f])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 6F64340050
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Sep 2026 10:52:12 +0000 (UTC)
+Received: by mail-pj2-x0f.google.com with SMTP id
+ 98e67ed59e1d1-396cccbba92so562349a91.0
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Sep 2026 03:52:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20251104; t=1789642332; x=1790247132; darn=lists.osuosl.org;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+ bh=E8d3Fh9qdYf4kz33kMFEhvPXsHkGC1s2BDYeW1CWXTw=;
+ b=XTY4fFh0i3Y8BpuG6yDNC991252P5uzF7Xp9yl0Mp++DI7h+5NCmzzyuIlk5bR+Rit
+ y+x5vx8ZihOS+fostBpUV6dIMewrRLdBA/HNJYqA/C9UXl9dEtV5SglCl9aqz9XLmvFf
+ 4x9f2lKLL9pjIkANcx60yHeKCue0eNe8QdpoQ/EcT8HRwK5cJe+ZXRxQCYwtbs67QJkn
+ 6uJp0UeWLMWz+PoZZGQCDe0Pa4NT6dGpai1qanqloX3iZxqP/Lktexx8ZkbA3Lg6XFix
+ ePJuEwy/433r5hWVNZdBrvZu1xoNtbF3+i5uawrpZtIHkRbNebJuSaKuQNRyEH4twqow
+ H5fQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20260707; t=1789642332; x=1790247132;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to:content-type;
+ bh=E8d3Fh9qdYf4kz33kMFEhvPXsHkGC1s2BDYeW1CWXTw=;
+ b=pClWAV3UjR1A6sAFxZgU9M3nKC4H0xzYGy42qf3xr99YOprW+3WVF0hlpaI7Y3TCd6
+ 0zbRUgK9is19bAiIxxiD5Bdvt3b038LJLlro7CctQ3jzw/bVyYinfoDha/vZtKmdMqtc
+ m7H2jY68qoR+UK7p4q2rJ4S5hyOgU/0wEi+cAOxDl/UEVy7IzbH3HQZMIKMIHkA0Af5b
+ eUD7gwnI3N0HfbAlECoMK7EbmiMvDIBnTCsG9otu7cCRJJ0WYTkFLA75r0yqoT8rPly3
+ SWa0ODC78F9giX7pLkTALLN1OXDTMET3CM3zjCaL3ZipjSfHkDoldlygXNQ9NJ1LfqR1
+ FqRw==
+X-Gm-Message-State: AFuF++kFv39bC4C/Lwb0Jc1wBlVA0hoMFx1URLB7dxt/y2wFKZE14zQd
+ 6H8kGDktc7/92RahNLl2vE1pRVcl/TkX1qewW2tj1xKFP0FU2DuS80aZsCrPq9PAFGw=
+X-Gm-Gg: AYBFou1BKwkD3R6c7IneR1ny05rjjeJZnfRjc6nC9oABLNYm5cWBNedp5zlCG/hT7Cq
+ koni0I90HPZ93izy+RP83Jr4cjZnEfyvDHsb5y2I8FhGZCzhudd5fSt83zTSE/HykjPyOjVIwEC
+ 4TConmZ1D6Ky5WwkEVAVKvmfmsQJ5jNz7wFO743U/A+ztNNE8SpkVjUtMOeRWaBFnGVAAvijJE7
+ eIpSGgaU2/2s0tpSqhjWc5O+8yLHBCJ1DuKH6MP3h9aQzduyN2SsPGQm3l1F5/wcTRXiIFDWtPv
+ WZnAjR4JC28HIV0kqVxeDNUCLKfOqnWgk1ly6XzDUyqIZitA++W882yHppT/A9fayOAfYkmnjSc
+ lvkAKUpQQLwUTeSTQgYc6kZxNWyGm4EHUy+FfBmC8WXXSyBBbmuXWXVB49ptjw/7kLdwOu5mHGP
+ CQoY23SQa2JiTrokiNtredw90pHmTlgGDjcBiRBscI+2Si0eNjYcahV7klImNoB/joiDHopSBzn
+ QmG1wyr/GQq1ir5FSs0ItDvF7TyurckOVcriSRGk4U+uLW3Ao5oU4XrRTWJ4R76XfwrabcZnAXa
+ qe8=
+X-Received: by 2002:a17:90b:4a51:b0:39d:ecb6:8d40 with SMTP id
+ 98e67ed59e1d1-39e1e277458mr13370263a91.4.1789642331967; 
+ Thu, 17 Sep 2026 03:52:11 -0700 (PDT)
+Received: from C9P9279WY4.bytedance.net
+ (21.186.101.34.bc.googleusercontent.com. [34.101.186.21])
+ by smtp.gmail.com with ESMTPSA id
+ 98e67ed59e1d1-39e361b8e1asm4486019a91.12.2026.09.17.03.52.07
+ (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+ Thu, 17 Sep 2026 03:52:11 -0700 (PDT)
+From: Tian Xun Ng <luckilystar08@gmail.com>
+To: intel-wired-lan@lists.osuosl.org
+Cc: netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
+ przemyslaw.kitszel@intel.com, aleksander.lobakin@intel.com,
+ emil.s.tantilov@intel.com, andrew+netdev@lunn.ch, davem@davemloft.net,
+ edumazet@google.com, kuba@kernel.org, pabeni@redhat.com,
+ Tian Xun Ng <tianxun.ng@bytedance.com>
+Subject: [PATCH iwl-net 0/2] idpf: stop stray device writes after a warm reboot
+Date: Thu, 17 Sep 2026 18:52:03 +0800
+Message-ID: <20260917105205.37561-1-luckilystar08@gmail.com>
+X-Mailer: git-send-email 2.50.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-HM-Tid: 0aa0afe464bc03a1kunmedc4fb9b36b0e0
-X-HM-MType: 10
-X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
- tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVkZSh9DVhpDSB8YGB4YSB8YTFYeHw
- 5VEwETFhoSFyQUDg9ZV1kYEgtZQVlJSUlVSkJKVUlPTVVJT0lZV1kWGg8SFR0UWUFZT0tIVUJCSU
- 5LVUpLS1VKQktCWQY+
-DKIM-Signature: a=rsa-sha256;
- b=XzhyC205B32Mf5pmI+JBcc79zrNKxHnWA4LYoiFwnF/aeRxZa8X/houtANseOcnJRLeobbzXLSdIv6cw6dfTyruIm1O542KeZIvzaykMYQVxbVuCY8CSZs6Ie3fG2sisR7QklGdmDbm7DVZ9fU7btJpwAmvUdql4uUJuae7Kl0w=;
- c=relaxed/relaxed; s=default; d=seu.edu.cn; v=1; 
- bh=CVA/CWhw4JetoLTPs+u2MtnfUXnMQ1sROVyIw6FlqyI=;
- h=date:mime-version:subject:message-id:from;
+X-Mailman-Approved-At: Thu, 17 Sep 2026 16:07:09 +0000
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -146,88 +175,54 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-igb_ptp_init() currently initializes the PTP lock, work items,
-timestamp configuration, and timecounter after ptp_clock_register().
-The PHC is published by that call, so PTP callbacks and timestamp
-interrupts can run before those objects are ready.
+From: Tian Xun Ng <tianxun.ng@bytedance.com>
 
-Initialize the complete PTP state before registering the PHC. Skip the
-setup when CONFIG_PTP_1588_CLOCK is disabled, since the PTP registration
-helper is then a no-op. If PHC registration fails, cancel the work items
-queued by igb_ptp_reset() or a timestamp interrupt before returning.
+After a warm reboot with idpf loaded, the device writes SW_MARKER TX
+completions to DMA addresses that belong to the previous kernel, about
+20 seconds into the next boot. With the IOMMU translating, this shows up
+as a burst of F_TRANSLATION faults from the idpf PCI functions on every
+such boot. In IOMMU pass-through mode the writes corrupt memory the new
+kernel has already reused, and nodes crash in unrelated code (page table
+freeing, slab allocation).
 
-Fixes: b888c510f7b3 ("igb: Avoid starting unnecessary workqueues")
-Cc: stable@vger.kernel.org
-Link: https://lore.kernel.org/netdev/20260830154912.2712900-1-runyu.xiao@seu.edu.cn/
-Assisted-by: LLM
-Signed-off-by: Runyu Xiao <runyu.xiao@seu.edu.cn>
+The cause is in idpf_shutdown(). Since commit 4c9106f4906a ("idpf: fix
+adapter NULL pointer dereference on reboot") it no longer goes through
+idpf_remove(), so idpf_vc_core_deinit() shuts the virtchnl transaction
+manager down before the vports are torn down. The disable and destroy
+messages then fail and the device keeps its queues enabled.
 
----
-v2:
-- Restore all PTP state initialization before PHC registration.
-- Skip PTP setup when CONFIG_PTP_1588_CLOCK is disabled.
-- Cancel both PTP work items when PHC registration fails.
----
- drivers/net/ethernet/intel/igb/igb_ptp.c | 31 +++++++++++++++---------
- 1 file changed, 19 insertions(+), 12 deletions(-)
+Patch 1 keeps the mailbox up for that teardown unless a hard reset is in
+progress or has been detected. Patch 2 restores the function reset that
+idpf_remove() performs on exit.
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_ptp.c b/drivers/net/ethernet/intel/igb/igb_ptp.c
-index 638d8242b..1c5581451 100644
---- a/drivers/net/ethernet/intel/igb/igb_ptp.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ptp.c
-@@ -1307,6 +1307,9 @@ void igb_ptp_init(struct igb_adapter *adapter)
- 	struct e1000_hw *hw = &adapter->hw;
- 	struct net_device *netdev = adapter->netdev;
- 
-+	if (!IS_ENABLED(CONFIG_PTP_1588_CLOCK))
-+		return;
-+
- 	switch (hw->mac.type) {
- 	case e1000_82576:
- 		snprintf(adapter->ptp_caps.name, 16, "%pm", netdev->dev_addr);
-@@ -1378,27 +1381,31 @@ void igb_ptp_init(struct igb_adapter *adapter)
- 		return;
- 	}
- 
-+	spin_lock_init(&adapter->tmreg_lock);
-+	INIT_WORK(&adapter->ptp_tx_work, igb_ptp_tx_work);
-+
-+	if (adapter->ptp_flags & IGB_PTP_OVERFLOW_CHECK)
-+		INIT_DELAYED_WORK(&adapter->ptp_overflow_work,
-+				  igb_ptp_overflow_check);
-+
-+	adapter->tstamp_config.rx_filter = HWTSTAMP_FILTER_NONE;
-+	adapter->tstamp_config.tx_type = HWTSTAMP_TX_OFF;
-+
-+	igb_ptp_reset(adapter);
-+
- 	adapter->ptp_clock = ptp_clock_register(&adapter->ptp_caps,
- 						&adapter->pdev->dev);
- 	if (IS_ERR(adapter->ptp_clock)) {
-+		if (adapter->ptp_flags & IGB_PTP_OVERFLOW_CHECK)
-+			cancel_delayed_work_sync(&adapter->ptp_overflow_work);
-+		cancel_work_sync(&adapter->ptp_tx_work);
-+
- 		adapter->ptp_clock = NULL;
- 		dev_err(&adapter->pdev->dev, "ptp_clock_register failed\n");
- 	} else if (adapter->ptp_clock) {
- 		dev_info(&adapter->pdev->dev, "added PHC on %s\n",
- 			 adapter->netdev->name);
- 		adapter->ptp_flags |= IGB_PTP_ENABLED;
--
--		spin_lock_init(&adapter->tmreg_lock);
--		INIT_WORK(&adapter->ptp_tx_work, igb_ptp_tx_work);
--
--		if (adapter->ptp_flags & IGB_PTP_OVERFLOW_CHECK)
--			INIT_DELAYED_WORK(&adapter->ptp_overflow_work,
--					  igb_ptp_overflow_check);
--
--		adapter->tstamp_config.rx_filter = HWTSTAMP_FILTER_NONE;
--		adapter->tstamp_config.tx_type = HWTSTAMP_TX_OFF;
--
--		igb_ptp_reset(adapter);
- 	}
- }
- 
+Testing:
+- The same two changes, backported to a 6.17 kernel, were run on arm64
+  (64K pages) servers with two idpf functions: no stray device writes in
+  151 warm reboots (130 in IOMMU pass-through mode with page_poison=1,
+  21 with the IOMMU translating), against stray writes after 20 of 20
+  warm reboots on an unpatched control node.
+- Not covered: restarts after a kernel crash, and a device that cannot
+  answer at shutdown; the writes still occur in those cases.
+- This series is those changes ported to the dev-queue branch of
+  tnguy/net-queue. On this tree it is build-tested only: W=1 builds of
+  drivers/net/ethernet/intel/idpf with arm64 defconfig (plus IDPF),
+  allmodconfig and allyesconfig, with no warnings. It has not been run
+  on hardware on this tree.
+
+An LLM coding assistant helped analyse the crash dumps and fault logs,
+locate the shutdown ordering problem, and draft both changes and their
+changelogs. Both patches carry an Assisted-by tag.
+
+Tian Xun Ng (2):
+  idpf: keep the mailbox up while tearing down vports on shutdown
+  idpf: reset the function on shutdown
+
+ drivers/net/ethernet/intel/idpf/idpf_main.c    |  3 +++
+ .../net/ethernet/intel/idpf/idpf_virtchnl.c    | 18 +++++++++++++-----
+ 2 files changed, 16 insertions(+), 5 deletions(-)
+
+
+base-commit: a98bd9f12dc5ed64029d00a8192a28685a54a587
 -- 
-2.34.1
+2.50.1 (Apple Git-155)
+
