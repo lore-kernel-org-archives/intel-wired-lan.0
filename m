@@ -1,152 +1,156 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C1CBC982D6
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 17 Sep 2026 16:07:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8DE01C982D7
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 17 Sep 2026 16:07:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 3AC8180653;
-	Thu, 17 Sep 2026 16:07:11 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 4F547608A8;
+	Thu, 17 Sep 2026 16:07:12 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id qtroLSMJcP3p; Thu, 17 Sep 2026 16:07:10 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 8D97981097
-Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789661230;
-	b=Zu7FKKQaVBAwhj5GB66tGimrnRrULpEfwOodMFZySoV8CTwuMzOCXLryHyg3UdxZaJnp
-	 dG8SP83sZEv3mCEk8ny1k2Xe+PcXcjB3lKUyG0AWKtqA1bXsQpDRUgMkKAuzl3Zfoc2Iq
-	 Ot+0rhn6QyjaWo/skJp6d0PNhU4q7wJ5q5511fJQBl5q3kmEo3fxIaQNdPE0DXYXDESW8
-	 1M2XpTkVr4sRfEYc28FNub6ND+yo3CbmVk0UfoBEIhSb3NSFnYducPKZl5Ssb1Phli+/e
-	 Xa5Gmrkt6bhyOZdF6zgdoltIAIkw4qJXCe7CgBJHjfMNWMqyKappYyAC0piUnMmvARw==
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id mpNwiUPKct7v; Thu, 17 Sep 2026 16:07:11 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 91829608B3
+Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789661231;
+	b=Lnjs5kjrLjLGGIEiYTE5yUOPULcK+16k9FXbwMmyOd50PEyJvgttOWXUSfQp+WuuwwZu
+	 hXsY6gzQUMn0ZSnG5QCgCoiZu2Nkbou9+9aOJOt1Wj38Y14tyzP2qfePIOy4N2fVT1pbs
+	 Hy6WiMxSm/04BD/mfjk7vo5ISaq5PjQRSXTGhAGnEfouPe1Sbj9j1/sMcmwq5tpIn4A3P
+	 YhUeERGaa43vqXYTH4uiFZTjjifhWP7oU1fCpbkx0Ffn0Wg3rSnW+H8UiKqdwINQq3cyi
+	 H+iC8HEGjts4uBqvnvdHYD0oJl9LnBIdH4Fv5K4m0g4DomLplnBi5+bHRfI/lkB6hog==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1789661230;
+	c=relaxed/relaxed; t=1789661231;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
 	 DKIM-Signature:X-Google-DKIM-Signature:X-Gm-Message-State:X-Gm-Gg:
 	 X-Received:Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
-	 MIME-Version:Content-Transfer-Encoding:X-Mailman-Approved-At:
-	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
-	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=E8d3Fh9qdYf4kz33kMFEhvPXsHkGC1s2BDYeW1CWXTw=;
-	b=YAlecJhp31cD8fM4yZD3hrUxZ2MpDv/kH9NqCthvTF7bXdchIsRAj1CM9qtZ1IIc9kcm
-	 HHXJ0FnLxSEWhhwKi3ppT4G99JZo7mUeLUnsyEGi7AHxuYdhq5IAKCEoAbVAB9HodqGRr
-	 fJ1sG17M0f0ive6e3vRNyG2fztF/XIFqWnqYB5dDUKojB3CbImW2LJ2PZf3e8Oai0pVO7
-	 kFZhEefjDIoLmYsjq+6kzJ/hANlntM7h2NOsWa/21fc+pLZAowBEIBe+WtyPnN4l6v/Gs
-	 O5HQiTFwH4KXfXnGwoqK4NROPvQdQx5R0lVh7m159RwWXI/lct8yV0PWOk5zazMfPew==
-ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding:
+	 X-Mailman-Approved-At:X-BeenThere:X-Mailman-Version:Precedence:
+	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 List-Subscribe:Errors-To;
+	bh=JeUTZ5Xfmu3CX5ZC/fWVdot1MmSWPUPNS4TQoJ0nO2A=;
+	b=RCuKiQv9e19Vq8eM4Ak6GptQG23N7q0PdbBXnzWtcTesvvJ0yYEoLCn8RCY5XlWu8MkE
+	 VxtlHXVjpZ+oDvzkiF6PHS+TZceqBqknmNyAepa1eUfamdTbtdrMyxOjAazZ4whIVrc+i
+	 Kq9HuupfFgQbkRaqK9sQY/oMD364Ct2/8OvgSDhNceaKvNbL3KBnXJCPF+ked6sKqbP7/
+	 QRSVZ8MFVvwS2qGdiJPJ6iWzdUFtFVl4Hfs2lCkdDWj1GFcrPr1hkLMLdnqPba21E6gD+
+	 WBEUhi37iVvnDJ+vCvn/6VFKTmnYZGLFkqI+0OqZQmZCL4+rGhS/octJZX9wdXvv2zw==
+ARC-Authentication-Results: i=2; smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1789661230;
-	bh=E8d3Fh9qdYf4kz33kMFEhvPXsHkGC1s2BDYeW1CWXTw=;
-	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=2kYatbCvr0ZNoXG2NNIcpGhupH6ICYU57C7CAK5kTIuFO90/YhkxVVuekjP34XG/M
-	 LK4snNz2mXDF1gTwmnHu9b5bw33ipI6pjfqbHuy2AEFy7teZzke9mjivya7TRoLavy
-	 jgFI0wGLH2+PxXzz4/2Dmy2tD7QLPWQ7y3lzrSkldwqN5yg0aqT2XGj1DOXfThs2jC
-	 oN6T/tOxPoBN/ta8U1HFdEcjlApiulMcvfYmY2oORTJ7mhzel2PPF/FlffLZQ3tpJw
-	 A0cfVC4ct2555Mm+SVYajPZ4ptHyoMW+HGpicFtkdaoY5mXqSzXeuVG4mFZ69iAJ29
-	 LWusihfWyKRcA==
+	s=default; t=1789661231;
+	bh=JeUTZ5Xfmu3CX5ZC/fWVdot1MmSWPUPNS4TQoJ0nO2A=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=1LEPMOlqNTGShFXKPjWp/jmvWYumXNZBZ9kJMsJikzcm4j4wOiwAHqwFW+vXIvhAj
+	 jD32ovWd3qoJmAIitVKkcwyyaU1w0U+JpAX1+BpMU4nc1diPwxPFWqG94kJNcWW8Wk
+	 chY9DUwlu56JOqnME/LhKDKdHd19PqXPUYzS4Zf9rBiL99ghOI5aiubqWJxcGkrNPj
+	 HA0pFDo83094VSsebtZu5Kv1hcBzuXQhiIjjhPPz6Bahnby+tFff0ditr/RVuIPusY
+	 VbZUcUa4cYvEr5RmoV+f8oks5lWNskpH0JDk4ugF7Y9z+7xtO032pwQ6A/OslN41C/
+	 dDwn7sP1AHUIg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 8D97981097;
-	Thu, 17 Sep 2026 16:07:10 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 4154424D
- for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Sep 2026 10:52:14 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 91829608B3;
+	Thu, 17 Sep 2026 16:07:11 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 87A0E42D
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Sep 2026 10:52:19 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 27D6E4024D
- for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Sep 2026 10:52:14 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 7977A402BB
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Sep 2026 10:52:19 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 66DIkXuRdhZM for <intel-wired-lan@lists.osuosl.org>;
- Thu, 17 Sep 2026 10:52:13 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org 6F64340050
-Authentication-Results: smtp2.osuosl.org;
- arc=none smtp.remote-ip="2607:f8b0:4864:39::f"
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789642333;
- b=dGQw6p0nAVlFCSCJ1JqhHNfrOfGTKzPb6rJoZ7CDKXubV7Pu5wtOpE6dwzfihi9LSpH3
- ob26d83a3QC5o/nbbLUpgB1bsTtgHkemlIsj0G/A+uCcmfODXGrbhH7GmuDesHMQbQWXC
- l1MDu2HGQyxVE+I6/0IA2NrR/5F4zlfYDd+bAtnwluB3YBSFiMY9y/52KZfRfd7xJ3EsZ
- rtEtV63OQI0AAzaXqrETV5Lc/SE578QPMQzLKk/8SW1zqsP8Pvu+ZlUFmujxJ75TLi01V
- Ds2LU9rNaOB5zq8zlU9ocOAu108Cj814OOwGmOP03TE+PCZwo1ZWodhw80Q6w6obaew==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id T0BEkfkKbHAm for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 17 Sep 2026 10:52:18 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org C33DE40750
+Authentication-Results: smtp4.osuosl.org;
+ arc=none smtp.remote-ip="2607:f8b0:4864:39::11"
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789642338;
+ b=phkz9k1fPPq1JbOJJt21eg3iDCb2s/4nVlBw2XUpn6My2fxBAa5m1kL1PSEhgHNNGxtH
+ 9n6EdQPQTtbZ6bsnwMDNwWOTpEI8O2joY84LSnQunWr6tFUrMOo1Hp77SmBK/fg2qkxEK
+ eynxPkFMRNALT8a61q9H3t+hdkyZmaBAqQU9YiMvpoUusNxr6bHf/+ECGX98ivXDIWQCm
+ h0xb/AQ5A4Ib+0+/P/p+JWj3Ss6QnH0H9A6KwGJ7SoKWvH2NvMa8uy1UyzP/aSEKhZAX/
+ NxyoKH3JeqsZf82TZmGOEQqOXTPEwjeIVX7bPjnnfUumtS5jURuA4JrOsfyRplMICJQ==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1789642333;
+ c=relaxed/relaxed; t=1789642338;
  h=Received-SPF:Received:DKIM-Signature:X-Google-DKIM-Signature:
  X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
- Date:Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding;
- bh=E8d3Fh9qdYf4kz33kMFEhvPXsHkGC1s2BDYeW1CWXTw=;
- b=nEWHLDrU0c0/+sP29OOFebWl31oEjUJ2WLxPnlJ8I/7RZ8XjwniQDQVHlKhWeCy9KaDE
- qcHXDbwQ63kcOAFVIpR1VaQJ9biBHRVkNnrSF25/3TIs9sMftR30DDAMeDoxGo+ch9TSq
- dIP7K7/+f6gEAKGRh3x8Skk3P6sjMO8NXoDJNtQFw7A/7EOQYX9L1Fc2wP8J0sbo612Z+
- fn8g2guBkp48PEh2Xm1HReF0To1DcwacX4eWQdchIjmcpcRFaMBejlAPW3szu0wTrdQLP
- Hikc1YMkspfI8uYKenI2d5Vn7wPPQ3psBHY4uBq2GLwgAWl58WjD4X8/Rm7VFoh6CQw==
-ARC-Authentication-Results: i=1; smtp2.osuosl.org;
+ Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
+ Content-Transfer-Encoding;
+ bh=JeUTZ5Xfmu3CX5ZC/fWVdot1MmSWPUPNS4TQoJ0nO2A=;
+ b=XR7n8D9oDFzEmgnNaRlod/gqiofWlxD3qJ/JtvsB56HkWrIPgDhp2o+lXAmZrV7wD0cK
+ Geez6jC4vHolXqv+uMPXuKSmLC10sHjNqOkoUDjGoUR+RvtiTefZtIQFSsig1lioFTEis
+ zlSqhwYLX/jgPLzRqsFo9POyjDUKWoxYQGtx1pKb1U3pBJ9Sf1q6WTWZ19BwlSANPo7nj
+ cWM8pP9JMI7jszHrIr4vWfzG9kQsz0IoOVNIvE6kL2bZ5yGg7ig64hNKZKkk4BslXpwnv
+ FYBScNC5ufBsHFIyJjCu/2eqNILydfIyeuiJH9oqTtgUCZ65zAYt5GfmYIVcQnVGExQ==
+ARC-Authentication-Results: i=1; smtp4.osuosl.org;
  dmarc=pass header.from=gmail.com; 
  dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20251104 header.b=XTY4fFh0; 
- arc=none smtp.remote-ip="2607:f8b0:4864:39::f"
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2607:f8b0:4864:39::f;
- helo=mail-pj2-x0f.google.com; envelope-from=luckilystar08@gmail.com;
- receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org;
+ header.s=20251104 header.b=DnsxnCO0; 
+ arc=none smtp.remote-ip="2607:f8b0:4864:39::11"
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2607:f8b0:4864:39::11; helo=mail-pj2-x11.google.com;
+ envelope-from=luckilystar08@gmail.com; receiver=<UNKNOWN> 
+Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp2.osuosl.org;
+Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20251104 header.b=XTY4fFh0
-Received: from mail-pj2-x0f.google.com (mail-pj2-x0f.google.com
- [IPv6:2607:f8b0:4864:39::f])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 6F64340050
- for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Sep 2026 10:52:12 +0000 (UTC)
-Received: by mail-pj2-x0f.google.com with SMTP id
- 98e67ed59e1d1-396cccbba92so562349a91.0
- for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Sep 2026 03:52:12 -0700 (PDT)
+ header.a=rsa-sha256 header.s=20251104 header.b=DnsxnCO0
+Received: from mail-pj2-x11.google.com (mail-pj2-x11.google.com
+ [IPv6:2607:f8b0:4864:39::11])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id C33DE40750
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Sep 2026 10:52:17 +0000 (UTC)
+Received: by mail-pj2-x11.google.com with SMTP id
+ d9443c01a7336-2d747ee1f9bso6074755ad.3
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Sep 2026 03:52:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20251104; t=1789642332; x=1790247132; darn=lists.osuosl.org;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
- bh=E8d3Fh9qdYf4kz33kMFEhvPXsHkGC1s2BDYeW1CWXTw=;
- b=XTY4fFh0i3Y8BpuG6yDNC991252P5uzF7Xp9yl0Mp++DI7h+5NCmzzyuIlk5bR+Rit
- y+x5vx8ZihOS+fostBpUV6dIMewrRLdBA/HNJYqA/C9UXl9dEtV5SglCl9aqz9XLmvFf
- 4x9f2lKLL9pjIkANcx60yHeKCue0eNe8QdpoQ/EcT8HRwK5cJe+ZXRxQCYwtbs67QJkn
- 6uJp0UeWLMWz+PoZZGQCDe0Pa4NT6dGpai1qanqloX3iZxqP/Lktexx8ZkbA3Lg6XFix
- ePJuEwy/433r5hWVNZdBrvZu1xoNtbF3+i5uawrpZtIHkRbNebJuSaKuQNRyEH4twqow
- H5fQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1789642332; x=1790247132;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+ d=gmail.com; s=20251104; t=1789642337; x=1790247137; darn=lists.osuosl.org;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:from:to:cc:subject:date
  :message-id:reply-to:content-type;
- bh=E8d3Fh9qdYf4kz33kMFEhvPXsHkGC1s2BDYeW1CWXTw=;
- b=pClWAV3UjR1A6sAFxZgU9M3nKC4H0xzYGy42qf3xr99YOprW+3WVF0hlpaI7Y3TCd6
- 0zbRUgK9is19bAiIxxiD5Bdvt3b038LJLlro7CctQ3jzw/bVyYinfoDha/vZtKmdMqtc
- m7H2jY68qoR+UK7p4q2rJ4S5hyOgU/0wEi+cAOxDl/UEVy7IzbH3HQZMIKMIHkA0Af5b
- eUD7gwnI3N0HfbAlECoMK7EbmiMvDIBnTCsG9otu7cCRJJ0WYTkFLA75r0yqoT8rPly3
- SWa0ODC78F9giX7pLkTALLN1OXDTMET3CM3zjCaL3ZipjSfHkDoldlygXNQ9NJ1LfqR1
- FqRw==
-X-Gm-Message-State: AFuF++kFv39bC4C/Lwb0Jc1wBlVA0hoMFx1URLB7dxt/y2wFKZE14zQd
- 6H8kGDktc7/92RahNLl2vE1pRVcl/TkX1qewW2tj1xKFP0FU2DuS80aZsCrPq9PAFGw=
-X-Gm-Gg: AYBFou1BKwkD3R6c7IneR1ny05rjjeJZnfRjc6nC9oABLNYm5cWBNedp5zlCG/hT7Cq
- koni0I90HPZ93izy+RP83Jr4cjZnEfyvDHsb5y2I8FhGZCzhudd5fSt83zTSE/HykjPyOjVIwEC
- 4TConmZ1D6Ky5WwkEVAVKvmfmsQJ5jNz7wFO743U/A+ztNNE8SpkVjUtMOeRWaBFnGVAAvijJE7
- eIpSGgaU2/2s0tpSqhjWc5O+8yLHBCJ1DuKH6MP3h9aQzduyN2SsPGQm3l1F5/wcTRXiIFDWtPv
- WZnAjR4JC28HIV0kqVxeDNUCLKfOqnWgk1ly6XzDUyqIZitA++W882yHppT/A9fayOAfYkmnjSc
- lvkAKUpQQLwUTeSTQgYc6kZxNWyGm4EHUy+FfBmC8WXXSyBBbmuXWXVB49ptjw/7kLdwOu5mHGP
- CQoY23SQa2JiTrokiNtredw90pHmTlgGDjcBiRBscI+2Si0eNjYcahV7klImNoB/joiDHopSBzn
- QmG1wyr/GQq1ir5FSs0ItDvF7TyurckOVcriSRGk4U+uLW3Ao5oU4XrRTWJ4R76XfwrabcZnAXa
- qe8=
-X-Received: by 2002:a17:90b:4a51:b0:39d:ecb6:8d40 with SMTP id
- 98e67ed59e1d1-39e1e277458mr13370263a91.4.1789642331967; 
- Thu, 17 Sep 2026 03:52:11 -0700 (PDT)
+ bh=JeUTZ5Xfmu3CX5ZC/fWVdot1MmSWPUPNS4TQoJ0nO2A=;
+ b=DnsxnCO0YQAf6ZKCegfgFnu/DGIlV43jau6md6fLJGv20pYwebCUc16n4OemczWqTI
+ JFozNiVItcxYuI9gc0NHW9x8dv+tAYqG0OFGQfr1H8l2vCk9StzOwZtfv94W7TOCgytd
+ WFy87lsspYaPmbh4NrMYKbG+i+Tv3IUnAP9CC2kMKUCs9KIacuHMbgvNkYIt5p9EiNyi
+ WcJ14xUjX54+QnRCC10kVJAGgpVOKvXYH3KikzJjYE2iunGIJpIufVYwAld9qJS41kTD
+ YsFLXZ/pMxQPIOZYfJHPMkDe04M56/PUp0JLeeHj3pg3puBoD/tezfYeNNft+nQ4v8+0
+ sDwg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20260707; t=1789642337; x=1790247137;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+ :to:cc:subject:date:message-id:reply-to:content-type;
+ bh=JeUTZ5Xfmu3CX5ZC/fWVdot1MmSWPUPNS4TQoJ0nO2A=;
+ b=P5rqYaX5t69ziYlxnLIwWzru9WYDRU1J+V/D5TAzj5OGceuaBFULt+MFm82mJ7UW+y
+ S3lahNNGmf8Y2Jwc46GOeglNxmi+M9KBidzCB4U1JKJHFZJgTlcGwjRvBgTyHkpAQo8O
+ +qLstByIwyfAhT6zvYjblyCmr36yrGsvx/R+/+C0TqCo3ztoXao13bRS0TlnEv3gAAlU
+ P+Rp1PMiYPi3X4NzoDrlY8YGD1P0B7cosN16riPcOIqOwiBdnJizLH4UpPXfgxFUBcQB
+ fPT9m7b1HNHOoh3U4Kpf2EPrWM3jUTunfWi6DnN803gH3Orw4kEdJPDoQJ8g5nQvqYIk
+ LrdA==
+X-Gm-Message-State: AFuF++lr3knOr8x3SzbNFgGUjuo/BiY3sft2CExasle9H6bXLiD4PKTO
+ aR0h30qx1XHldFJBxWugmND0yTjWJsU9xg+O75dC0BNmvQJqAf7rKh8doXgEOsjk
+X-Gm-Gg: AYBFou3T+NAxc0x6yjtkSi5CzqSes3JqOVEClRPbBlviv9ptMMk+ubppfdUfUfjBun+
+ jKW1ktfO3pQlmEZBkDwQ0BLp5qNLtyo/1fhHKgHWD0eWg/i4ehCTb4p+koe4frgv/Rg9pXtIv5U
+ XNF0qOKYXdLGmrwjLv0OZjssrPzNYFZ9VfgHn1xNWmbJO5Q30yiVyJTtAYADccb953Pnowjbog2
+ uTv2NizlIYHPTzp8GZwz9i3IWHd83Jpk35tr1fKm6t518LWp7xT4C8k4YjbKLdcb3o5rXFUokBN
+ l1Trp4LKKdyU6ON0nKwWX4kRaRBVgl7nQD8aFs0xO+dKEvyNXCRPTVLDPP3I3pJoYkmd/ICmO94
+ XqbTHifq5BXbOJkRSIBvw01Qe46zJGmcPku4rB8jes36woKnrXduBbzF3UFRSVnL9XVl5urwTFL
+ gUWc+p4nG/4Yvz2QX0dAmzGp+CBc1COc+d9k54qkqqW08yJ/2PcMDrKKMO2tximApC/HdToTvRA
+ aYhFnq5RJWlEWOUdix16RJJJl3wNB6XX+HQU5XcjkvJFaLNWll7C4iw26HuThMXhFAgyjkISA73
+ 460=
+X-Received: by 2002:a17:90b:3c41:b0:39d:fe64:5733 with SMTP id
+ 98e67ed59e1d1-39e1e5612demr22035813a91.24.1789642337227; 
+ Thu, 17 Sep 2026 03:52:17 -0700 (PDT)
 Received: from C9P9279WY4.bytedance.net
  (21.186.101.34.bc.googleusercontent.com. [34.101.186.21])
  by smtp.gmail.com with ESMTPSA id
- 98e67ed59e1d1-39e361b8e1asm4486019a91.12.2026.09.17.03.52.07
+ 98e67ed59e1d1-39e361b8e1asm4486019a91.12.2026.09.17.03.52.12
  (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
- Thu, 17 Sep 2026 03:52:11 -0700 (PDT)
+ Thu, 17 Sep 2026 03:52:15 -0700 (PDT)
 From: Tian Xun Ng <luckilystar08@gmail.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
@@ -154,10 +158,13 @@ Cc: netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
  emil.s.tantilov@intel.com, andrew+netdev@lunn.ch, davem@davemloft.net,
  edumazet@google.com, kuba@kernel.org, pabeni@redhat.com,
  Tian Xun Ng <tianxun.ng@bytedance.com>
-Subject: [PATCH iwl-net 0/2] idpf: stop stray device writes after a warm reboot
-Date: Thu, 17 Sep 2026 18:52:03 +0800
-Message-ID: <20260917105205.37561-1-luckilystar08@gmail.com>
+Subject: [PATCH iwl-net 1/2] idpf: keep the mailbox up while tearing down
+ vports on shutdown
+Date: Thu, 17 Sep 2026 18:52:04 +0800
+Message-ID: <20260917105205.37561-2-luckilystar08@gmail.com>
 X-Mailer: git-send-email 2.50.1
+In-Reply-To: <20260917105205.37561-1-luckilystar08@gmail.com>
+References: <20260917105205.37561-1-luckilystar08@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Thu, 17 Sep 2026 16:07:09 +0000
@@ -177,52 +184,109 @@ Errors-To: intel-wired-lan-bounces@osuosl.org
 
 From: Tian Xun Ng <tianxun.ng@bytedance.com>
 
-After a warm reboot with idpf loaded, the device writes SW_MARKER TX
-completions to DMA addresses that belong to the previous kernel, about
-20 seconds into the next boot. With the IOMMU translating, this shows up
-as a burst of F_TRANSLATION faults from the idpf PCI functions on every
-such boot. In IOMMU pass-through mode the writes corrupt memory the new
-kernel has already reused, and nodes crash in unrelated code (page table
-freeing, slab allocation).
+Since commit 4c9106f4906a ("idpf: fix adapter NULL pointer dereference
+on reboot"), idpf_shutdown() calls idpf_vc_core_deinit() directly instead
+of idpf_remove(), so IDPF_REMOVE_IN_PROG is not set on shutdown.
+idpf_vc_core_deinit() uses that flag to decide when to shut the virtchnl
+transaction manager down. Without it, libie_ctlq_xn_shutdown() runs
+before idpf_deinit_task() tears the vports down, so every message sent
+during that teardown (disable vport, disable queues, destroy vport)
+fails at once. The device is never told to stop its queues and keeps
+them enabled, with the ring addresses of the kernel that is going away.
 
-The cause is in idpf_shutdown(). Since commit 4c9106f4906a ("idpf: fix
-adapter NULL pointer dereference on reboot") it no longer goes through
-idpf_remove(), so idpf_vc_core_deinit() shuts the virtchnl transaction
-manager down before the vports are torn down. The disable and destroy
-messages then fail and the device keeps its queues enabled.
+After a warm reboot, the first queue reconfiguration of a port that has
+not been opened yet (udev setting the MTU) sends VIRTCHNL2_OP_DEL_QUEUES.
+The device then drains the queues it still considers live and writes
+SW_MARKER TX completions (qid_comptype_gen 0x2800 / 0xa800) to the
+previous kernel's completion rings. With the IOMMU translating, those
+writes fault on every such boot:
 
-Patch 1 keeps the mailbox up for that teardown unless a hard reset is in
-progress or has been detected. Patch 2 restores the function reset that
-idpf_remove() performs on exit.
+  arm-smmu-v3 arm-smmu-v3.17.auto: event: F_TRANSLATION client: 0016:01:00.0 sid: 0x30100 ssid: 0x0 iova: 0xffb70000 ipa: 0x0
+  arm-smmu-v3 arm-smmu-v3.17.auto: unpriv data write s1 "Input address caused fault" stag: 0x0
 
-Testing:
-- The same two changes, backported to a 6.17 kernel, were run on arm64
-  (64K pages) servers with two idpf functions: no stray device writes in
-  151 warm reboots (130 in IOMMU pass-through mode with page_poison=1,
-  21 with the IOMMU translating), against stray writes after 20 of 20
-  warm reboots on an unpatched control node.
-- Not covered: restarts after a kernel crash, and a device that cannot
-  answer at shutdown; the writes still occur in those cases.
-- This series is those changes ported to the dev-queue branch of
-  tnguy/net-queue. On this tree it is build-tested only: W=1 builds of
-  drivers/net/ethernet/intel/idpf with arm64 defconfig (plus IDPF),
-  allmodconfig and allyesconfig, with no warnings. It has not been run
-  on hardware on this tree.
+In IOMMU pass-through mode they land on pages the new kernel has already
+reused. With page_poison=1 that shows as "pagealloc: memory corruption"
+on most boots. Without it, nodes crash in unrelated code, e.g.:
 
-An LLM coding assistant helped analyse the crash dumps and fault logs,
-locate the shutdown ordering problem, and draft both changes and their
-changelogs. Both patches carry an Assisted-by tag.
+  Unable to handle kernel NULL pointer dereference at virtual address 000000000000a830
+  pc : __tlb_remove_table_free+0x48/0x118
+  Call trace:
+   __tlb_remove_table_free
+   tlb_remove_table_rcu
+   rcu_do_batch
 
-Tian Xun Ng (2):
-  idpf: keep the mailbox up while tearing down vports on shutdown
-  idpf: reset the function on shutdown
+or with a slab free pointer that decodes from a slot holding 0x2800:
 
- drivers/net/ethernet/intel/idpf/idpf_main.c    |  3 +++
+  Unable to handle kernel paging request at virtual address 002613b73e862c6e
+  pc : kmem_cache_alloc_noprof+0xc0/0x3d0
+
+The early shutdown exists to avoid waiting for transaction timeouts when
+the mailbox is already gone. That is the hard reset case, where
+idpf_vc_event_task() shuts the transaction manager down and sets
+IDPF_HR_RESET_IN_PROG before idpf_init_hard_reset() calls
+idpf_vc_core_deinit(). Key the early shutdown on a hard reset being in
+progress or detected instead of on remove, so that both remove and
+shutdown keep the mailbox up until the vports are gone.
+
+Hard reset behaviour is unchanged. Remove is unchanged unless a hardware
+reset has been detected, in which case it no longer waits for message
+timeouts. Shutdown now delivers the teardown messages; if the device
+stops responding without a detectable reset, shutdown can wait for the
+transaction timeouts, as remove already does.
+
+Tested on arm64 (64K pages) servers with two idpf functions, with this
+change and the next patch backported to a 6.17 kernel: no stray device
+writes in 151 warm reboots across IOMMU translated and pass-through
+modes, against stray writes after 20 of 20 warm reboots without them.
+
+Fixes: 4c9106f4906a ("idpf: fix adapter NULL pointer dereference on reboot")
+Cc: stable@vger.kernel.org
+Assisted-by: LLM
+Signed-off-by: Tian Xun Ng <tianxun.ng@bytedance.com>
+---
  .../net/ethernet/intel/idpf/idpf_virtchnl.c    | 18 +++++++++++++-----
- 2 files changed, 16 insertions(+), 5 deletions(-)
+ 1 file changed, 13 insertions(+), 5 deletions(-)
 
-
-base-commit: a98bd9f12dc5ed64029d00a8192a28685a54a587
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
+index 1caf52706..646b6e074 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
+@@ -3197,14 +3197,22 @@ int idpf_vc_core_init(struct idpf_adapter *adapter)
+  */
+ void idpf_vc_core_deinit(struct idpf_adapter *adapter)
+ {
+-	bool remove_in_prog;
++	bool reset_in_prog;
+ 
+ 	if (!test_bit(IDPF_VC_CORE_INIT, adapter->flags))
+ 		return;
+ 
+-	/* Avoid transaction timeouts when called during reset */
+-	remove_in_prog = test_bit(IDPF_REMOVE_IN_PROG, adapter->flags);
+-	if (!remove_in_prog)
++	/* Shut the transaction manager down early only when the mailbox is
++	 * already gone, i.e. a hard reset is in progress or has been detected,
++	 * to avoid waiting for transaction timeouts. On remove and on shutdown
++	 * the mailbox still works and must stay up until the vports are torn
++	 * down. Otherwise the disable and destroy messages never reach the
++	 * device, which keeps its queues enabled with ring addresses from this
++	 * kernel after a warm reboot.
++	 */
++	reset_in_prog = test_bit(IDPF_HR_RESET_IN_PROG, adapter->flags) ||
++			idpf_is_reset_detected(adapter);
++	if (reset_in_prog)
+ 		libie_ctlq_xn_shutdown(adapter->xnm);
+ 
+ 	idpf_ptp_release(adapter);
+@@ -3213,7 +3221,7 @@ void idpf_vc_core_deinit(struct idpf_adapter *adapter)
+ 	idpf_rel_rx_pt_lkup(adapter);
+ 	idpf_intr_rel(adapter);
+ 
+-	if (remove_in_prog)
++	if (!reset_in_prog)
+ 		libie_ctlq_xn_shutdown(adapter->xnm);
+ 
+ 	cancel_delayed_work_sync(&adapter->serv_task);
 -- 
 2.50.1 (Apple Git-155)
 
