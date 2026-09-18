@@ -4,142 +4,141 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D418AC982D8
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 18 Sep 2026 13:32:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A4BA3C982DA
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 18 Sep 2026 13:32:53 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 9B9EF60DF1;
-	Fri, 18 Sep 2026 13:32:44 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 62C5160DD9;
+	Fri, 18 Sep 2026 13:32:53 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id J4ABnEdpFHSM; Fri, 18 Sep 2026 13:32:43 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org C2DE660E3F
+ id FhdJWvQ0ihre; Fri, 18 Sep 2026 13:32:52 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org AA22760DF1
 Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789738363;
-	b=NHWZQiIhOIHVULvTqjbsShyeqtmF3eSV20mxkVAItshSQrS8GzqADY44P1C8jatV6fBA
-	 iekMNhXoWcER/7TzIH4vzeM5g37f0ThyLNG/P6LmJyEjQJpei43msRApVpuzOTjqTmY5s
-	 07YONzDRtAUNHKZNfQY2wRXM4Z7f3sLOIMWr/W2XN6xuCUos1jZlVmcNR8cRQKWWHeHsl
-	 Eb6dx9wVaC/NptaVHxnornKvd3SpEpA6ilnFM39NmRgUj6i0XM/vI4alnDtCB6gehc7D6
-	 UVhyvZVmYseYpZR5+dgpz3NlcaiyYz9U100Wyjz6spcc6u1wl3z57x3QrYLe166b7SA==
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789738372;
+	b=rkf8dC81sFNDGZ3EaTaqX5fCz1vmokVBUVNwWlclgDttMyuwT9Ql2Tcmh1M0FvQTrejU
+	 5pIpR1zCnrFj32s2uIJ5JycTpcGIir8gMYVbOS+bLFZ7aPM3Q6nD7ohURXASMEh12bvFG
+	 irIdmzjQYbjHWJPdPxdOF4mKGbZqcE1Vcg6YDgE1ARYgXMJ3eoqCn9i3Ki7e9OMgiztvc
+	 UV5tJHqWWdLeT1P4VxOgTO+sEuJxcttMD72fbjevmOUduZquVWlLyVTtVV+zRoc3LNOQJ
+	 7hsimvZp/CqeUfls1aCtQau9RusIuxti7RHKSrbn/VDVxshRR+D5/irSf2byzvzRdtg==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1789738363;
+	c=relaxed/relaxed; t=1789738372;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
 	 DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-IronPort-AV:
 	 X-IronPort-AV:Received:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-ExtLoop1:
 	 X-IronPort-AV:Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
-	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding:
-	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
-	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=2amdIlBcUnmD+W8TT1ZYD1JibdQE72rUlEG8I1btosw=;
-	b=U5EkLUnDzQ7AJQUqAW94jkMwwchj8VaoLS7CloqL0XmPoq95F9g3WZDXnDW8i8mIgODe
-	 0QKY6k+MMfjmiTt1rrshqBXHl7elmG5CcB+00TQLtUUjNnvCvwp26MHLKH3Wf6//YNd/b
-	 /tzDcbeobz5P0gENEvjjgBgKfGiVRn1PcII7pGBJ1AhoHvXoHiV8nPDl+U7yLbAf5iWN/
-	 WQhiXz9yBv9fgMdpzD/niEVW2xaqAqeuAQHm0n1CIHNBzbgfTmzZ23rq3JLXvnjY+Kjjz
-	 +rymmlRBNMrWgpMEKcSmPqn4OAs5E+C0XZobPPG1eSiLPeCooQVBO/0i7rEwjnjNbwg==
-ARC-Authentication-Results: i=2; smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	 MIME-Version:Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:
+	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 List-Subscribe:Errors-To;
+	bh=LaLsRlQuyQ/J23Q9iDFSFQ8Qys3U+WHe2uQTqZrzBxQ=;
+	b=iToNSrYiq6dmD5OXWG4pj30Mh0bARs9vQ6G2/gtgJMV1qQgXNwUekKMDAhUpHfYEy5Se
+	 va6ZlFubIwP1MwcT/AM8vqdkRSsZnz1uKgiiLYfouR3J2iwe+zi3A4D0rfMfnUfkNYD/b
+	 9ScQWJQwyG+3mZZPr6AZTn8WDU56K2uc8vqfdY5MBC42//EE6WK+wEZiw+MsGgKGvRn49
+	 cR348GqH1bTu3DEauR6lS7MmiDsK79bLn437h+IaxuONB7lFhRwRdmWjFPmufYKtJMTxg
+	 kaERA+R5Fx7XWESxE3YbnX5IciDPiv8CYbJt9I6PyjxKgQo3WE2kUqWry6zWLdB0vWA==
+ARC-Authentication-Results: i=2; smtp3.osuosl.org; dmarc=pass header.from=intel.com;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=esxlML+B;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1789738363;
-	bh=2amdIlBcUnmD+W8TT1ZYD1JibdQE72rUlEG8I1btosw=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=bKz1LmaYrVI6u7eIoIACXHGmh745wh1+1pHcCwIvoI0T36Xp5+AEk9/KH1VgK6R8I
-	 s+jKEy0l4DrLX13vu1Nr/OYH03pQZqfbo7V7YXdv1Ud4VhMUfysQqJniwAOylt/JT9
-	 hdbEBbQwgtrEkBUKD8HXtZxlVP7OmbM5gXZhYeba6EPfG5UXiLjq5sKardfvnw7Y9u
-	 OofQOUaSUoWl+h4r4MObqTDRCxFq7s6k2aZiQNgt7os5FirX2/2s0tPCLsSzoIyVkm
-	 ZSoyhck435XaSuO45tqlFPNL7bYNZtG0YK3uIQb+0M6D44ezsYmpf6byV1cRMrzFbs
-	 u4aAZ572udgSg==
+	s=default; t=1789738372;
+	bh=LaLsRlQuyQ/J23Q9iDFSFQ8Qys3U+WHe2uQTqZrzBxQ=;
+	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=p5h3Ll57OXRZoo0UZDZyYqQtZV8PpedIRPLGiQoYaNlYNFk67DeRzbLjayRwbp9u1
+	 X6QIqyHJHc1krQca7o1FcplFmonc0lNG04aMf4upgVcsiGm+f6GK8qWcJefmqQAC8z
+	 Yob/DDYDuj2ED0IG4xK46a5XbSW8YLqwN6iY9rQY9ncvUf5IOzMS5e3cHRzeoGIBIa
+	 bwetasOyrU/ZXH1ncuufREcfn5+RS/3aRcZ9e6GLzKNIpLzcIYNM2GGLur1wS8xrwb
+	 Qv8PdVvnNrRtxLSprfJR/WSCP85yHN2E4K26PVpGeH//zWmmgvqrr93ZjmHiS6ZKJK
+	 SDx3EySCDsYsQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C2DE660E3F;
-	Fri, 18 Sep 2026 13:32:43 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 2361B279
- for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Sep 2026 13:32:42 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id AA22760DF1;
+	Fri, 18 Sep 2026 13:32:52 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 2F224224
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Sep 2026 13:32:51 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 218B740524
- for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Sep 2026 13:32:42 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 148DE60DD9
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Sep 2026 13:32:51 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id YHL-7Ez8-9F2 for <intel-wired-lan@lists.osuosl.org>;
- Fri, 18 Sep 2026 13:32:41 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org 4E11940348
-Authentication-Results: smtp2.osuosl.org; arc=none smtp.remote-ip=192.198.163.7
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789738361;
- b=Fll4VLzai07dWDzFppOYnLB8n6cU18eyn5yLKXT4m0v11oQU0oRnyoyKq6s0Xsm+0AXl
- TC8uqkzBD8u1K8XYVkN7fZN4SeUdzjlVPPj7FDBUCBltRaMPwizdILvmFlWmm2WOMBd5a
- dMqDYjD/aYLp5vOOv6df3cIMaonEoBLB+kd7A8JqktiNZLSdE+OVoEfD0WKbmjPYnEbHD
- hM67z+4kmcOjUt+IrbSIHj/Gz1RwrTInqmzBoiPX1sSGOUYPotAdLGIro7brzMQL0CMbQ
- ATXrIvwiz9aQIfBJLozlO2NR4mjqGT63sAFhCTXgY7Cilbt8TLqS6yeQW5qwi8b9acA==
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id CdOX7K-3m_1s for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 18 Sep 2026 13:32:50 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 4FC7B60E04
+Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=192.198.163.7
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789738370;
+ b=K789GAi0kz9vgoXc3sltsxRKenOYaY3d7ECQoOzXh0pxynwi2Q9RLE0ckP/6F5kFzE1i
+ UjaoUSmpiFz/E3bPzYu5zYQ222gVJDr4Oq9jNJ0cJPIssSFS6GheAdsrdu8w2aNdBvrCI
+ LzN6tIMCKt0E2eneom7P8hPcGAWA+zM4UUeZdW1F7nJoSC5lc3bsGBx98IBmIX+V3pdhY
+ q1Jd8WD/GZKGCwSxGukvNlhxnXekKcfnC63rNuhjxqyGq8l8FyrvLJATKJmkNpBN7bg99
+ +7qUvp8i6QD3SNCnIlcbFGirU/wy336X68LJFPP+XMnmVfZaVbhKoItWcIZR2TPHu4A==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1789738361;
+ c=relaxed/relaxed; t=1789738370;
  h=Received-SPF:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
  X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
  X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:From:To:Cc:Subject:
- Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
- Content-Transfer-Encoding;
- bh=2amdIlBcUnmD+W8TT1ZYD1JibdQE72rUlEG8I1btosw=;
- b=WDdGblhyDri7BefpMH9IpQsIvIBNAD0LbZ8PhQBKD2SpNBPCKU9FwsQGijzrrkINURZK
- mMIs2jiuHBhZgfzJmAr9XFL/tv9oHJ5xht6zvt71cfXaLPe6zC0AcddH74d5ykElU7zs5
- qlYtMOg0LadGMwznWIU4do/IF32GuvTeMZTkJXlbmFsVuXEq0+6vHlZA7vGnNX0OpJS4l
- r4X2CFoZEnpSbxDWlWQjdwc6tLYon12lrjVM2iW8wX/Mbwvj+gs2/ZmqRfWMpKlIkNNo/
- BDiFF6R9z4YwPvN2no6U8wGPjkKZRVK6DnY7auu3JyZMiN7UmF/1gBDyax4FfjH4hDw==
-ARC-Authentication-Results: i=1; smtp2.osuosl.org;
+ Date:Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding;
+ bh=LaLsRlQuyQ/J23Q9iDFSFQ8Qys3U+WHe2uQTqZrzBxQ=;
+ b=H4Sb58FYJZMv46L1y0n5rVz8sVBDixdlpxX4iehubyjEaOtCOtFKrFWWt8L/xjG7WoNo
+ jPQNQmnCD7JLLl2uvrDJ5l4/EwfO/rzZb0Eof2NiU6y4nm/mZYAoRh8Nz1XbACY0LXD2V
+ uS5GEQxB6QHw0nTwr1JL/Fx+ayhv6qEsDgXlqkb3xMzNRT025cIdp/+PEdYyRZr+LFMmU
+ xgR11cmVBEBo2f0f0ds1iuIMQhT7KQPIulz+cyL6oLHfTeiAKpxkvvQ9Bcu0irrYoGa5l
+ 2EqPgNFjJLuad/Gv1SUEbZR6A9zfO3FbcyuXFpSvJ2epbZGgFSnGUb7om7LRD050NfQ==
+ARC-Authentication-Results: i=1; smtp3.osuosl.org;
  dmarc=pass header.from=intel.com; 
  dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=F2JVOfsH; 
+ header.s=Intel header.b=esxlML+B; 
  arc=none smtp.remote-ip=192.198.163.7
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.7;
  helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org;
+Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp2.osuosl.org;
+Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=F2JVOfsH
+ header.a=rsa-sha256 header.s=Intel header.b=esxlML+B
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 4E11940348
- for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Sep 2026 13:32:41 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 4FC7B60E04
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Sep 2026 13:32:49 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1789738361; x=1821274361;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=BtwOBXqZ/1rbZ6xusRjG+PNwnS2FdwGYUBsaWILvJCc=;
- b=F2JVOfsHMvpvQeJ40ZPL1Jx5Enx1BOBxsXlIZawARO8ooBaud2Z0PlLv
- 7Vm/+R899lOk91eFAZ7mcecDucdJVd5+gwV0NZ5DYajbDb6jEhcofM/9D
- edywagGKs2B86tIDEf4h6CUzKkm7Ef7KYO8uezOvQyX2lkH/iCaK7oQqE
- aMqkIM5R6AS0WlNHdS0XhnfDCJzB2x0LUjJxgPqxFVEjoAjmGkWvlQK6n
- OCpjB6MVRyDL5ElxRXariDdt5/qnRmCe329sdAOI5Pe7YoVBZx6OHXccD
- jdpMB2Q6qWO8fHoQ3YRPfrGluaeh2vYLceKWD0Ym58Nrm/VGhsBpYBikb A==;
-X-CSE-ConnectionGUID: m+ICvcFMQbWFq++rJWhxOA==
-X-CSE-MsgGUID: Zi8aaQ8iSMCdOIhOWkqXaQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11908"; a="115776420"
-X-IronPort-AV: E=Sophos;i="6.27,109,1787036400"; d="scan'208";a="115776420"
+ t=1789738370; x=1821274370;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=x4NN7MqcCe8oyBka/LerpVZGbLjWhhj/Cd4ZI48E7O0=;
+ b=esxlML+BTTvaMrTe7MZL6g7H7ZybR5X7YBYCTN1Y7sTv8qQeG87+9Lsv
+ mO3E40NerOXbtimM2/TqbbyXN3Lti8yMvnPOj+79MTQTki46y/zl4ZWem
+ Rb0euEmPeCMriNBVF3h+DZ1TeIxT0u2WMXkGxruivV+FExIo4eWjgBysm
+ heosPWgTpUz4dIjVs0wvVlufDGAHAhOzZ6VmKIFPfv7KQGUjAnETRepBh
+ V9TIy2JEmk6s48eW7xl/JWDXKq0Ppmfo9toKptQOurhzDMBYNwVyUhwH7
+ c3AstQzS0hN/hlXqwM7bOnQpZS8feLMWTVUP7x7pSoFcDc0VoohuB3cco g==;
+X-CSE-ConnectionGUID: FQM4tApLQrOdP5rHcBblmg==
+X-CSE-MsgGUID: 5y0GsUtFQkqBq5eGOedeWA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11908"; a="115776436"
+X-IronPort-AV: E=Sophos;i="6.27,109,1787036400"; d="scan'208";a="115776436"
 Received: from fmviesa013.fm.intel.com ([10.60.135.153])
  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 18 Sep 2026 06:32:41 -0700
-X-CSE-ConnectionGUID: FkIJlOAET6CCW+QR4Aw3YQ==
-X-CSE-MsgGUID: IuzPXyZUT5ywZmvuHW07tA==
+ 18 Sep 2026 06:32:50 -0700
+X-CSE-ConnectionGUID: Pu9sPPbAQfCkDA012+GsgA==
+X-CSE-MsgGUID: BOd6jJeZS7isXwJZFSknJw==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.27,109,1787036400"; 
-   d="scan'208";a="2835252"
+   d="scan'208";a="2835268"
 Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by fmviesa013.fm.intel.com with ESMTP; 18 Sep 2026 06:32:40 -0700
+ by fmviesa013.fm.intel.com with ESMTP; 18 Sep 2026 06:32:48 -0700
 From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 To: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
  aleksandr.loktionov@intel.com
 Cc: netdev@vger.kernel.org,
-	Lukasz Czapnik <lukasz.czapnik@intel.com>
-Subject: [PATCH iwl-net v3 3/3] ice: support RDMA on 4+-port E830 devices
-Date: Fri, 18 Sep 2026 15:32:34 +0200
-Message-ID: <20260918133234.4169074-4-aleksandr.loktionov@intel.com>
+	Simon Horman <horms@kernel.org>
+Subject: [PATCH iwl-net v3] ice: fix LLDP AQ filter fallback not working on
+ E82x and E830 hardware
+Date: Fri, 18 Sep 2026 15:32:43 +0200
+Message-ID: <20260918133243.4169311-1-aleksandr.loktionov@intel.com>
 X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260918133234.4169074-1-aleksandr.loktionov@intel.com>
-References: <20260918133234.4169074-1-aleksandr.loktionov@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -156,54 +155,107 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-From: Lukasz Czapnik <lukasz.czapnik@intel.com>
+Commit 4d5a1c4e6d49 ("ice: do not add LLDP-specific filter if not
+necessary") restructured ice_vsi_cfg_sw_lldp() to first attempt a
+generic ethernet Rx filter and, on failure, fall back to the specialized
+LLDP filter control AQ command (0x0A0A) via ice_lldp_fltr_add_remove().
+This fallback is gated by ice_fw_supports_lldp_fltr_ctrl(), which only
+accepted E810, causing two distinct omissions.
 
-E810 and E82X devices do not support RDMA on configurations with more
-than 4 ports. This limitation does not apply to E830 devices, which
-have a different hardware design and support RDMA regardless of the
-port count.
+E82x (ICE_MAC_GENERIC, e.g. E822/E823) support the same LLDP filter
+control AQ command with the same minimum firmware API version as E810
+(>= 1.7.1). On E82x systems where the generic ethernet LLDP Rx filter
+cannot be added, the AQ fallback silently returns -EOPNOTSUPP and the
+port is left with no LLDP Rx filter.
 
-Narrow the RDMA capability disable condition to skip E830 devices.
-Move the 'RDMA functionality is not available' notice inside that same
-condition so it is only printed when RDMA is actually being disabled,
-instead of unconditionally whenever num_funcs > 4 -- otherwise E830
-would log a spurious warning even though RDMA stays enabled.
+E830 has been supported since kernel 6.9 and implements the same AQ
+command but requires a higher minimum API version (>= 1.7.11). Starting
+with NVM 1.2 / FW 7.9.1, the generic ethernet LLDP Rx filter path is
+blocked on E830, making the AQ fallback the only viable option. With
+ice_fw_supports_lldp_fltr_ctrl() returning false for E830, no LLDP Rx
+filter is installed after a firmware-update-triggered reset (e.g. NVM
+1.1->1.2 on an E830-CC in HPE DL380 Gen11), and the interface stays
+link-down with complete loss of network connectivity.
 
-Fixes: ba1124f58afd ("ice: Add E830 device IDs, MAC type and registers")
-Signed-off-by: Lukasz Czapnik <lukasz.czapnik@intel.com>
+Replace the single-type if-chain with a switch on hw->mac_type so each
+family's version requirement is explicit. E810 and E82x share the 1.7.1
+constants; E830 gets its own 1.7.11 constants. The default branch returns
+false, covering any future MAC type that does not implement the command.
+
+Fixes: 4d5a1c4e6d49 ("ice: do not add LLDP-specific filter if not necessary")
+Cc: stable@vger.kernel.org
 Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Reviewed-by: Simon Horman <horms@kernel.org>
 ---
- drivers/net/ethernet/intel/ice/ice_common.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+v1 -> v2: rewrite as a single combined patch using a switch on
+hw->mac_type, instead of two separate patches (E82x fix, then a
+follow-up E830 fix layered on top).
+v2 -> v3: no code changes, resending to pick up Reviewed-by.
+---
+ drivers/net/ethernet/intel/ice/ice_common.c | 23 ++++++++++++++++-----
+ drivers/net/ethernet/intel/ice/ice_type.h   |  7 ++++++-
+ 2 files changed, 24 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 0463310..1c4421f 100644
+index 0463310..b31be52 100644
 --- a/drivers/net/ethernet/intel/ice/ice_common.c
 +++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -2510,16 +2510,16 @@ ice_recalc_port_limited_caps(struct ice_hw *hw, struct ice_hw_common_caps *caps)
- 		caps->maxtc = 4;
- 		ice_debug(hw, ICE_DBG_INIT, "reducing maxtc to %d (based on #ports)\n",
- 			  caps->maxtc);
--		if (caps->rdma) {
-+		if (caps->rdma && hw->mac_type != ICE_MAC_E830) {
- 			ice_debug(hw, ICE_DBG_INIT, "forcing RDMA off\n");
- 			caps->rdma = 0;
--		}
- 
--		/* print message only when processing device capabilities
--		 * during initialization.
--		 */
--		if (caps == &hw->dev_caps.common_cap)
--			dev_info(ice_hw_to_dev(hw), "RDMA functionality is not available with the current device configuration.\n");
-+			/* print message only when processing device
-+			 * capabilities during initialization.
-+			 */
-+			if (caps == &hw->dev_caps.common_cap)
-+				dev_info(ice_hw_to_dev(hw), "RDMA functionality is not available with the current device configuration.\n");
-+		}
- 	}
+@@ -6375,15 +6375,28 @@ ice_aq_set_lldp_mib(struct ice_hw *hw, u8 mib_type, void *buf, u16 buf_size,
+ /**
+  * ice_fw_supports_lldp_fltr_ctrl - check NVM version supports lldp_fltr_ctrl
+  * @hw: pointer to HW struct
++ *
++ * Check if firmware supports the LLDP filter control feature (AQ command
++ * 0x0A0A). Different hardware families require different minimum firmware
++ * API versions:
++ * - E810 and E82x: API version >= 1.7.1
++ * - E830: API version >= 1.7.11
+  */
+ bool ice_fw_supports_lldp_fltr_ctrl(struct ice_hw *hw)
+ {
+-	if (hw->mac_type != ICE_MAC_E810)
++	switch (hw->mac_type) {
++	case ICE_MAC_E830:
++		return ice_is_fw_api_min_ver(hw, ICE_FW_API_LLDP_FLTR_MAJ_E830,
++					     ICE_FW_API_LLDP_FLTR_MIN_E830,
++					     ICE_FW_API_LLDP_FLTR_PATCH_E830);
++	case ICE_MAC_E810:
++	case ICE_MAC_GENERIC:
++		return ice_is_fw_api_min_ver(hw, ICE_FW_API_LLDP_FLTR_MAJ,
++					     ICE_FW_API_LLDP_FLTR_MIN,
++					     ICE_FW_API_LLDP_FLTR_PATCH);
++	default:
+ 		return false;
+-
+-	return ice_is_fw_api_min_ver(hw, ICE_FW_API_LLDP_FLTR_MAJ,
+-				     ICE_FW_API_LLDP_FLTR_MIN,
+-				     ICE_FW_API_LLDP_FLTR_PATCH);
++	}
  }
  
+ /**
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index cf147a2..710c519 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -1217,11 +1217,16 @@ struct ice_aq_get_set_rss_lut_params {
+ 
+ #define ICE_SR_WORDS_IN_1KB		512
+ 
+-/* AQ API version for LLDP_FILTER_CONTROL */
++/* AQ API version for LLDP_FILTER_CONTROL - E810 and E82x */
+ #define ICE_FW_API_LLDP_FLTR_MAJ	1
+ #define ICE_FW_API_LLDP_FLTR_MIN	7
+ #define ICE_FW_API_LLDP_FLTR_PATCH	1
+ 
++/* AQ API version for LLDP_FILTER_CONTROL - E830 */
++#define ICE_FW_API_LLDP_FLTR_MAJ_E830		1
++#define ICE_FW_API_LLDP_FLTR_MIN_E830		7
++#define ICE_FW_API_LLDP_FLTR_PATCH_E830	11
++
+ /* AQ API version for report default configuration */
+ #define ICE_FW_API_REPORT_DFLT_CFG_MAJ		1
+ #define ICE_FW_API_REPORT_DFLT_CFG_MIN		7
 -- 
 2.52.0
 
