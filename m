@@ -1,28 +1,28 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 129B4C982DE
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 21 Sep 2026 06:34:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 579F5C982DE
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 21 Sep 2026 06:51:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C3EC160608;
-	Mon, 21 Sep 2026 06:34:51 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 06D9480C81;
+	Mon, 21 Sep 2026 06:51:12 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id lfkDI2nUjhFu; Mon, 21 Sep 2026 06:34:51 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org C664860628
-Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789972490;
-	b=gg0iPDIND98169lyDJ7r8rgBG6CtvQIX7+tQbHvqNtU+0U35fxN6TJNAwGR7jREI8afL
-	 KBoEd8W77CzyDVrEcJ37/0FI4LwmmfMMHkApJJG9OJaMrAEh6s5ghGdzvDHaZo46fwFCW
-	 pUO6KqnZ21zURvN+ms/HZrTOwwAlQbMrvEVITCAIM6vUQ6/dtm6EygnPpCLLu4WL3ZmkO
-	 1zAfi2KakCRxILIKo0s96yXnfpGja1s99lkLhAkolGaF1mUBKZ2U0VYlh0Q4t4IW+WY+U
-	 40w7ZTtOwTuhrY6nB3YX09WMLPyGhPEHqLtrnJu/SHKLDy6DncLDvHFfS5GQcOkVkZg==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id o7KwimW1u7Hn; Mon, 21 Sep 2026 06:51:11 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org D659380D6E
+Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1789973470;
+	b=Eh5vxscCO3edVLXOylkETVIVmlQ0SlrT26oQmIDQLGFYuSmxqRTpDL3JIRGwI8PcJ1IW
+	 vFwzKHprrkRxQxxzfUCf95yVFg7xicExKsjrJWVz+A2NYVgIb6lml2zV/ylXapHFLk0/l
+	 IkyG4RrAG/uiIokPw9SXL44ucG3SGwpSpsabUXd6+6R6nw+pdbEEvdah9n2hdAIFsS7P6
+	 12EVS5Dhe5UnFXtwk7LF7I4LreAei77I4GkNLRPPyB08HyVbhU2VJOmli1wZzGwF+Sp+H
+	 kPbsZxZjg/z41DChpVesu54iQmipRi3/+c9efdbSN2KD5tm/OtgcGIRh3XqvgRA/4HQ==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1789972490;
+	c=relaxed/relaxed; t=1789973470;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
@@ -31,104 +31,106 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 Content-Transfer-Encoding:MIME-Version:X-BeenThere:X-Mailman-Version:
 	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=H4cMmy0ekBDJfQRFfeZWaWIlR0+1gBW66rPbCmzLgEo=;
-	b=KwuOs0FMpwvfJalaoexxAZG16eLUsioEtx/JAiseFi/j47juLBaMCHiVfFXDp+Mu2nui
-	 jO6TH06KhQwMjqYEQr75bRqQihaG5rMkzJRsaycZw1j5KCD9HiWjPQoYoHSHDtmw0S7+F
-	 vmkjEnRbEOh6GUuApGmTww9m84kgvNop4Jl8WXc2tpq8NaZjpmZ3MC+CG4cC2/q3qgR4J
-	 Rt9Z+fUHmeCZDCoTawvqJasFy2/d6KHCYI1Dyj/KWRVgmHcBMF0EtozgPOy1KIlTqd89W
-	 l2CH5HXHdRKOgRrWsJrmR79/gd8n3CCopx6IftpSgCT0ESEhoX50rlhAs0/vjxyZj2A==
-ARC-Authentication-Results: i=2; smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	bh=yrFrf31CzAGMwRVxOb97SRJtR701Pk6b6btKA5i372s=;
+	b=iCTanseh7UWRLamOcNrY56BP7VUuIijCgdpRwIZnOGGDXZwFYBsQyYrzyDxMozG8nUfk
+	 80Q3SXinsDjiWz84ptuNVuSKuk2qk5rfJtyPGCNFrjck8OM52VCoNKSTnRoApp785C0P9
+	 Gz/0hcoobjF90b5Vx3Nmoqc81rHDBQ2CBI1Udv2ORn1fHunkIw+pTDNA4wUXQy9EYnTa7
+	 fVLD5mAEMpVZEweqFKIUXI+mtYDUmNr3h1/KaLziapyJzrHptHst0E6b01Zmsq9wQiBc+
+	 NB2rONfWKp3MWH0EPBF+ABrCUHscsYSU7kzQ2JbT1jlc8QJnkdZcmwsU0XELTDRuKmQ==
+ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1789972490;
-	bh=H4cMmy0ekBDJfQRFfeZWaWIlR0+1gBW66rPbCmzLgEo=;
+	s=default; t=1789973470;
+	bh=yrFrf31CzAGMwRVxOb97SRJtR701Pk6b6btKA5i372s=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=1vCkLky2rbBXzhoMZIstc7tBwyHVLKvIGao7ZStR5wiQZ6n/HrWtgCy6roqV5VYR2
-	 XFffkXirlw5eUy2qfWPzMkN2xwkuCWnkVvETwalmur6vEDkXtBJgkKaTZR2nJFvHIO
-	 tPasAuvQnuN9EA7JrrTGTkHIQLr9BCvV85082twJAxqzrhYdwMDlPyb6RrtjdgIRrJ
-	 2CULO3/8ipatssNSXshrIhIoAKAPmJbg3hIUidcsToPoOcPTAkRee/Ncw1Tt77itBa
-	 JdJKiLSr8ShAAHfMz8d37tRHlmGP99Xu7TxyXZ2awaHRx3avl4VHNeS9GBW6YM9Fmx
-	 dzliCaXUQ4RdQ==
+	b=0HOHr8j/9ZraKZ+FRzttRzY4huog6WdL2s/I5p2DPljod6aeB9WfUKpjQjIiSf80X
+	 DQvg2RRUT3kEW9mkQp36S41oGO+cy6n7zFPR8dlsFGjJlF2i+ZBorWGk4R+plxHiPz
+	 l8lytyMK0MXCO7c4aHdYFUDvxOl6mn/cfWHxNqEeMeWSqvdLbDM2bv9FUUGYaugo9B
+	 xBrIJHhY1DwqL7tE2/J5jHGq1nxNKoq0qPBbsJbrgWB0c1z1Sb+nKLkBE1fLwrKazv
+	 Ta9dgcdIO5utBIDKt769s5KSH98xZeo+toM/DQFQphAATfJ9wmIjvYD+Z9Cr8kZ8FX
+	 XL1FFKnj1q8KA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C664860628;
-	Mon, 21 Sep 2026 06:34:50 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id E0902392
- for <intel-wired-lan@lists.osuosl.org>; Mon, 21 Sep 2026 06:34:49 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id D659380D6E;
+	Mon, 21 Sep 2026 06:51:10 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id B498C28C
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 21 Sep 2026 06:51:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id C67AC40BA1
- for <intel-wired-lan@lists.osuosl.org>; Mon, 21 Sep 2026 06:34:49 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id B24B760617
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 21 Sep 2026 06:51:09 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 1YznMrqB11aT for <intel-wired-lan@lists.osuosl.org>;
- Mon, 21 Sep 2026 06:34:48 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 9785C40BD5
-Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789972488;
- b=oxGfznyJu5eGnxetaZAA3ne8WXFC77kNxQl6JT1Z2e+YunNaZboQKi9GbfJKQH+x4JHM
- +pWNknZa10CusEfsn67Lv6sRe+osMN//QOiYSfKvumMGJZTxA/gFjhqfGb57fueFnIJ65
- 0Q+HCdNaZ1bLyhRgO8id1jpAWuYed3E8hKAGfB3of9JXe1eYo6Z+zjsCQAFk4WusGOxZ4
- OLgLrXzPDhBKB1Pfb4ajdXSYIqPmm18s46qWLsLb9vMfGhRuxsvozsi7Mq8zhVj0ir7vG
- QUd85scgNQVfa6eCQQXnPNLTjV2OckxIO+UIcpVCWxzI5QNQ6/A8wKzSSpLcSYN09TA==
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 1d2fCyz1Bh55 for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 21 Sep 2026 06:51:08 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 87E226060B
+Authentication-Results: smtp3.osuosl.org; arc=none
+ smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1789973468;
+ b=ORMbPKtdqpLOcYhW9BOuxq8XglL6DQk3G1TS/SXXa4Rglbn+Ya7fqvUEFE6uKegkz2eb
+ eKXCQ5j6zd5HfAnVbPu7mNyjt0IcfD08H8kXZPCkeTayJOfvozGoNP7zOrJT9m4XGA9+M
+ mytbIyDZHZ5MFlsy22dI6q/AmqHdLoBX7kPQD7Y/YUMbiPvDYjvrjnF/ZfpwcXsdra4/n
+ YukRJLDWJtKxgO6DevlQln+JLlAOQJOwp0BdnbE1DR2lpLvy7zLX1nI8h/d44yF9DB1Gz
+ 82zlt3bOnTuEMeHYVP6uI6qExzfspkiNC29Bu/opX25tLh1GqXBtpqBzSpixzETZ6fQ==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1789972488;
+ c=relaxed/relaxed; t=1789973468;
  h=Received-SPF:Received:Received:DKIM-Signature:Subject:From:To:Cc:
  Date:Message-ID:In-Reply-To:References:X-sashiko-severity:
  Content-Type:Content-Transfer-Encoding:MIME-Version;
- bh=H4cMmy0ekBDJfQRFfeZWaWIlR0+1gBW66rPbCmzLgEo=;
- b=HXytzsfYNuddfhQICHsD0NCDqpRLr0Cyi3POxnob9SQwYGfXlT4wmQEfit2h8nGjy+4c
- JfTj/gWjr7jXVisqhPLmbLxy3vHfUzBdKPDNc9HYZXeGA6B12k4VzX14mn8EN+yvG19FF
- Gd3pv07VdqQd4mP/5cktMdNfyn/LZ6+iBtOblsCys/j8sMNz/o0Tc9ZxJHZylxHMLIiWe
- dq0QzJIGw5MNvZwj5X/XycYizDiKcHTXYn4ir/BvhJl5pyLiDVdXcKJ/k11BUq+w9E3DN
- W3V7TtyrNBavQtOUAMataYTlstVvG8IN1eddlbPh7AGVzTzoXCcsz658N1b1NECVGiA==
-ARC-Authentication-Results: i=1; smtp4.osuosl.org;
+ bh=yrFrf31CzAGMwRVxOb97SRJtR701Pk6b6btKA5i372s=;
+ b=rL8lZSDD8F1GMXA5ixEMB5Iei7v0MLufC3TUw4yc6KgwAk10E1nrZFgqK+uFVDF4SQfQ
+ ebOIIGIaisVfc0gkrbwPy2fMBZ2YY1XDFtmYnG8G5mEUy2O+YLLtQPHDbQ1ZwCb9e+J1B
+ /o2dPq56tbcBRJ3ws6M1cTGH3G28NBsB8WHS4Qb9lYACJGXTSVJlKGu2NqCJIa0PNfxQp
+ fsA4E+pdFZVGEN7xLB1YAzIzz3m65eUsUHcey/NSbSAeXupdtH6ODqCAkyJEYLoCMp2LH
+ T5JfkuIt9mYeHXOrJLktHdsNrKK01B4GaFyydix5RT7Co1PAzPtqZD9AH9drUlACxuQ==
+ARC-Authentication-Results: i=1; smtp3.osuosl.org;
  dmarc=pass header.from=kernel.org; 
  dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=kTdkoPpn; 
- arc=none smtp.remote-ip=172.105.4.254
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org;
- receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.s=k20260515 header.b=X2o1yf3U; 
+ arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
+ envelope-from=netdev-bot+sashiko@kernel.org; receiver=<UNKNOWN> 
+Authentication-Results: smtp3.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-Authentication-Results: smtp4.osuosl.org; dkim=pass (2048-bit key,
+Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=kTdkoPpn
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 9785C40BD5
- for <intel-wired-lan@lists.osuosl.org>; Mon, 21 Sep 2026 06:34:47 +0000 (UTC)
+ header.s=k20260515 header.b=X2o1yf3U
+Received: from sea.source.kernel.org (sea.source.kernel.org
+ [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 87E226060B
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 21 Sep 2026 06:51:07 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id 35C39600D1;
- Mon, 21 Sep 2026 06:34:46 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 486D51F000FF;
- Mon, 21 Sep 2026 06:34:45 +0000 (UTC)
+ by sea.source.kernel.org (Postfix) with ESMTP id 5B9D840F63;
+ Mon, 21 Sep 2026 06:51:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 895251F000FF;
+ Mon, 21 Sep 2026 06:51:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1789972485;
- bh=H4cMmy0ekBDJfQRFfeZWaWIlR0+1gBW66rPbCmzLgEo=;
+ s=k20260515; t=1789973466;
+ bh=yrFrf31CzAGMwRVxOb97SRJtR701Pk6b6btKA5i372s=;
  h=Subject:From:To:Cc:Date:In-Reply-To:References;
- b=kTdkoPpn4tSPaKK8y+Nmci2AOojndCzKA+QP+L1Qo/osDK6ug1sBOsfF5INz6lV7O
- dgCeLnh8t96fwhr2MzyRi4HXVF/T/NbE5kg1HsVgNBhsizJekRoq7cL1NNdGLGDnyn
- C5R+1DtyQLJvfpYgQwMDRt7iFrEuhVEj1xrjMgcVoBV7y/6n6cf4ZBfLgnIchleRsp
- QAk34EwGYbfDWgFb8b83i7nRKKJdpRl2lhv0/FsqOR0pXNQJsFTNIiUHL4EL9kiygY
- CLTftr3hAYhSgP5RwFCgNeTG+nSEoioEtnHAo7/Z7oRPHss7n++n+1dyTaUv5ptoAP
- snRTyRwwKxJXw==
-Subject: Re: [Intel-wired-lan] [PATCH net v2] i40e: limit the DDP profile
- count returned by the firmware
+ b=X2o1yf3UWx/O/Wfs2sgXcw7A9oUbDTMmCY1FsrvYF2M7TvotQyraSaFEayUrfssUN
+ fa00hrqjtmQ9DWugzLfLAcmkwQ8e/MN99UbjF3qxj8PDecQ6yqXULn/mHjn2NsGIyn
+ l/J/nZkxmcjXMi9F+XaL6n2nfCNj3s2pWO14wcxEDlAf6gpWv2rlwIA0ev4a/9JkIZ
+ B193k4tnt6LJs8J3QJuKVem3/k6zj9GHf70Fs5uBy5hnr4eG+TqllZKPWAlnfEp/QH
+ 7zGAnuXlTyGjvyMCe8NARC0TXpGcytfLIrE4nXXPVMZNx27mePx3SuoAu1/35Ly+nc
+ o3b2cyN3jehSw==
+Subject: Re: [Intel-wired-lan] [PATCH net] ice: roll back the port VLAN when
+ ice_eswitch_br_set_pvid() fails
 From: netdev-bot+sashiko@kernel.org
 To: xiaolinkui@126.com
 Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
  andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
  kuba@kernel.org, pabeni@redhat.com, intel-wired-lan@lists.osuosl.org,
  netdev@vger.kernel.org, linux-kernel@vger.kernel.org, xiaolinkui@kylinos.cn,
- aleksandr.loktionov@intel.com
-Date: Mon, 21 Sep 2026 06:34:44 +0000
-Message-ID: <178997248483.2160803.11710552261264563604@kernel.org>
-In-Reply-To: <20260920063244.1927792-1-xiaolinkui@126.com>
-References: <20260920063244.1927792-1-xiaolinkui@126.com>
-X-sashiko-severity: Medium
+ stable@vger.kernel.org
+Date: Mon, 21 Sep 2026 06:51:05 +0000
+Message-ID: <178997346505.2160803.11431169848249487697@kernel.org>
+In-Reply-To: <20260920064754.1935818-1-xiaolinkui@126.com>
+References: <20260920064754.1935818-1-xiaolinkui@126.com>
+X-sashiko-severity: High
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 MIME-Version: 1.0
@@ -146,10 +148,10 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-Thank you for your contribution! Sashiko AI review found 1 potential
+Thank you for your contribution! Sashiko AI review found 4 potential
 issue(s) to consider.
 
-Critical: 0 · High: 0 · Medium: 1 (1) · Low: 0
+Critical: 0 · High: 2 · Medium: 2 · Low: 0
 
 If you believe none of the issues are legitimate, please reply to each
 issue of Medium severity or higher and explain why the AI is wrong.
@@ -157,171 +159,224 @@ If any of them are legitimate and you plan to respin, please let patchwork
 know by including "pw-bot: cr" as a separate line at the end of your reply
 (one such reply per series is enough).
 
-- [Medium] Incomplete fix in i40e_ddp_does_profile_exist() and
-  i40e_ddp_does_profile_overlap()…
-
-Pre-existing issues:
-- [Medium] This problem wasn't introduced by this patch, but it is the
-  direct enabler of the residual garbage-compare above and would be…
+- [High] Incomplete rollback of the VLAN ops table: the commit message
+  states the patch fixes the case where "in Double VLAN Mode, the inner…
+- [High] ice_eswitch_br_set_pvid() mutates and dispatches through the
+  per-VSI VLAN ops function-pointer table while holding only rtnl_lock,…
+- [Medium] The newly added err_clear_port_vlan label in
+  ice_eswitch_br_set_pvid()…
+- [Medium] The new unwind assumes the VF VSI was not already in port-VLAN
+  mode before ice_eswitch_br_set_pvid() ran, but…
 
 --
 
-i40e: limit the DDP profile count returned by the firmware
+ice: roll back the port VLAN when ice_eswitch_br_set_pvid() fails
 
-The patch clamps the firmware reported profile count in
-i40e_ddp_does_profile_exist() and i40e_ddp_does_profile_overlap() to
-I40E_MAX_PROFILE_NUM so the loops cannot index past the on-stack
-buff[] array, and switches the loop counter to unsigned.  The clamp
-value is the compile time capacity of buff[].
+This adds two unwind labels to ice_eswitch_br_set_pvid() so that a failing
+set_port_vlan() or add_vlan() clears the port VLAN from the VSI context and
+hands the VLAN ops back to ice_port_vlan_off(), instead of returning the
+error with the VF VSI left in port VLAN mode.
 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_ddp.c b/drivers/net/ethernet/intel/i40e/i40e_ddp.c
-> index daa9f2c42f70..26dccd4236c1 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_ddp.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_ddp.c
-> @@ -54,8 +54,8 @@ static int i40e_ddp_does_profile_exist(struct i40e_hw *hw,
->  {
->  	struct i40e_ddp_profile_list *profile_list;
->  	u8 buff[I40E_PROFILE_LIST_SIZE];
-                                        ^^^^
+A few questions about the new unwind path below.
+
+> diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch_br.c b/drivers/net/ethernet/intel/ice/ice_eswitch_br.c
+> index 1d8a6b95ccda..53ce98ba7007 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_eswitch_br.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_eswitch_br.c
+> @@ -679,16 +679,23 @@ ice_eswitch_br_set_pvid(struct ice_esw_br_port *port,
+>  	vlan_ops = ice_get_compat_vsi_vlan_ops(port->vsi);
+>  	err = vlan_ops->set_port_vlan(port->vsi, &port_vlan);
+>  	if (err)
+> -		return err;
+> +		goto err_disable_port_vlan;
+>  
+>  	err = vlan_ops->add_vlan(port->vsi, &port_vlan);
+>  	if (err)
+> -		return err;
+> +		goto err_clear_port_vlan;
+>  
+>  	ice_eswitch_br_port_vlans_flush(port);
+>  	port->pvid = vlan->vid;
+>  
+>  	return 0;
+> +
+> +err_clear_port_vlan:
+> +	vlan_ops->clear_port_vlan(port->vsi);
 
 [Severity: Medium]
-This isn't something introduced by this patch, but since both hunks touch
-these declarations it may be worth handling here: buff[] is 772 bytes of
-uninitialized stack in both i40e_ddp_does_profile_exist() and
-i40e_ddp_does_profile_overlap(), and it is handed to
-i40e_aq_get_ddp_list() as an indirect admin queue buffer.
+Is it intentional to drop the return value of clear_port_vlan() here?  The
+op is declared fallible in struct ice_vsi_vlan_ops:
 
-i40e_asq_send_command_atomic_exec() does not distinguish input from output
-buffers:
+	int (*clear_port_vlan)(struct ice_vsi *vsi);
 
-	/* if buff is not NULL assume indirect command */
-	if (buff != NULL) {
-		dma_buff = &(hw->aq.asq.r.asq_bi[hw->aq.asq.next_to_use]);
-		/* copy the user buff into the respective DMA buff */
-		memcpy(dma_buff->va, buff, buff_size);
+and both implementations can fail.  ice_vsi_clear_outer_port_vlan() and
+ice_vsi_clear_inner_port_vlan() start with:
 
-Does this publish 772 bytes of raw kernel stack into DMA memory that the
-NIC firmware can read?  On completion the same full buff_size is copied
-back:
+	ctxt = kzalloc_obj(*ctxt);
+	if (!ctxt)
+		return -ENOMEM;
 
-		if (buff != NULL)
-			memcpy(buff, dma_buff->va, buff_size);
+	ice_restore_vlan_info(&vsi->info, &vsi->vlan_info);
+	vsi->info.port_based_outer_vlan = 0;
 
-so any byte the firmware did not overwrite still holds the old stack
-image that the clamped loops then compare against.  Would declaring the
-buffer as
+and end with:
 
-	u8 buff[I40E_PROFILE_LIST_SIZE] = {};
+	err = ice_update_vsi(hw, vsi->idx, ctxt, NULL);
+	if (err)
+		dev_err(...);
 
-in both helpers remove both the device visible stack content and the
-comparisons against never written bytes?
+So on an ice_update_vsi() failure vsi->info has already been mutated while
+hardware keeps the port VLAN and the RX_VLAN_PRUNE_ENA bit programmed by
+the preceding set_port_vlan(), with no matching prune filter (add_vlan() is
+the call that failed).
 
->  	int status;
-> -	int i;
->  
->  	status = i40e_aq_get_ddp_list(hw, buff, I40E_PROFILE_LIST_SIZE, 0,
->  				      NULL);
-> @@ -63,7 +63,12 @@ static int i40e_ddp_does_profile_exist(struct i40e_hw *hw,
->  		return -1;
->  
->  	profile_list = (struct i40e_ddp_profile_list *)buff;
-> -	for (i = 0; i < profile_list->p_count; i++) {
-> +	/* Never walk past the end of buff[], the profile count reported by
-> +	 * the firmware is not guaranteed to fit into the buffer we gave it.
-> +	 */
-> +	p_count = min_t(u32, profile_list->p_count, I40E_MAX_PROFILE_NUM);
-> +
-> +	for (i = 0; i < p_count; i++) {
->  		if (i40e_ddp_profiles_eq(pinfo, &profile_list->p_info[i]))
->  			return 1;
->  	}
+Since port->pvid stays 0 and the VLAN was never inserted into port->vlans,
+can any later path retry that clear?  ice_eswitch_br_vlan_cleanup() only
+reaches ice_eswitch_br_clear_pvid() when:
+
+	if (port->pvid == vlan->vid)
+		ice_eswitch_br_clear_pvid(port);
+
+The ops table is then handed back unconditionally, which also restores the
+real dis_rx_filtering().  ice_port_vlan_on() deliberately replaces it while
+a port VLAN is active:
+
+	/* all Rx traffic should be in the domain of the assigned port VLAN,
+	 * so prevent disabling Rx VLAN filtering
+	 */
+	vlan_ops->dis_rx_filtering = noop_vlan;
+
+Could the VF then use virtchnl to clear the prune bit while the hardware
+port VLAN is still programmed?  Would it be better to only call
+ice_vf_vsi_disable_port_vlan() when clear_port_vlan() succeeded, and log or
+propagate the failure otherwise?
+
+[Severity: High]
+Can vlan_ops->clear_port_vlan be NULL by the time this new call runs?
+
+vlan_ops points at the live table (&vsi->outer_vlan_ops or
+&vsi->inner_vlan_ops), not a snapshot, and clear_port_vlan only exists
+while the port VLAN flavour is installed by ice_port_vlan_on():
+
+	vlan_ops->set_port_vlan = ice_vsi_set_outer_port_vlan;
+	vlan_ops->clear_port_vlan = ice_vsi_clear_outer_port_vlan;
+
+ops_unsupported in ice_vsi_vlan_ops.c has no .clear_port_vlan initializer,
+and ice_port_vlan_off() never assigns it either.
+
+The bridge path holds only rtnl (ice_eswitch_br_event_blocking ->
+ice_eswitch_br_port_obj_add -> ice_eswitch_br_port_vlan_add ->
+ice_eswitch_br_vlan_create -> ice_eswitch_br_set_pvid) and
+ice_eswitch_br.c never takes vf->cfg_lock, while set_port_vlan() and
+add_vlan() sleep (kzalloc(GFP_KERNEL) plus an admin queue wait).
+
+A VF-initiated reset runs concurrently under a disjoint lockset:
+
+ice_vc_reset_vf()/ice_process_vflr_event()
+  ice_reset_vf()                      /* vf->cfg_lock + pf->lag_mutex */
+    ice_vf_reconfig_vsi()
+      ice_vsi_cfg()
+        ice_vsi_cfg_def()
+          ice_vsi_init_vlan_ops()     /* reinstalls ops_unsupported */
+
+If that lands inside the window, does the new err_clear_port_vlan label
+dereference a NULL function pointer?  The same missing serialization also
+lets a virtchnl handler fetch one flavour of the ops and execute it after
+the unwind flipped the table back.
+
+> +err_disable_port_vlan:
+> +	ice_vf_vsi_disable_port_vlan(port->vsi);
+
+[Severity: High]
+The commit message says this hand-back addresses the case where "in Double
+VLAN Mode, the inner add_vlan() and del_vlan() stop doing anything".  Does
+ice_port_vlan_off() actually restore those two?
+
+ice_port_vlan_on() sets them in DVM:
+
+	vlan_ops = &vsi->inner_vlan_ops;
+
+	if (ice_is_dvm_ena(&pf->hw)) {
+		vlan_ops->add_vlan = noop_vlan_arg;
+		vlan_ops->del_vlan = noop_vlan_arg;
+		...
+
+ice_port_vlan_off() re-points its local vlan_ops at the outer table before
+it assigns del_vlan, and never touches the inner add_vlan at all:
+
+	vlan_ops = &vsi->inner_vlan_ops;
+
+	vlan_ops->ena_stripping = ice_vsi_ena_inner_stripping;
+	...
+	if (ice_is_dvm_ena(&pf->hw)) {
+		vlan_ops = &vsi->outer_vlan_ops;
+
+		vlan_ops->del_vlan = ice_vsi_del_vlan;
+		...
+
+So after the unwind a DVM VF VSI keeps inner add_vlan/del_vlan ==
+noop_vlan_arg, where ice_vsi_init_unsupported_vlan_ops() installs
+op_unsupported_vlan_arg for a DVM VF VSI without a port VLAN.
+
+Those pointers are live for the VF: ice_vc_process_vlan_msg() calls
+
+	status = vsi->inner_vlan_ops.add_vlan(vsi, &vlan);
+
+and the matching .del_vlan() for legacy VIRTCHNL_OP_ADD_VLAN/DEL_VLAN, with
+DVM explicitly allowed there.  Is the VF's C-tag filter add/del then
+reported as success while ice_fltr_add_vlan() is never issued and
+vsi->num_vlan is not updated, until the VF VSI is rebuilt?
+
+Should ice_port_vlan_off() also restore the inner add_vlan/del_vlan, which
+would additionally cover the same residue on the existing
+ice_eswitch_br_clear_pvid() path, or should the commit message be narrowed
+to what ice_port_vlan_off() really restores?
 
 [Severity: Medium]
-The arithmetic behind the clamp checks out: sizeof(struct
-i40e_profile_info) is 48 and I40E_PROFILE_LIST_SIZE is 48 * 16 + 4, so
-p_info[15] ends exactly at the last byte of buff[] and the out of bounds
-walk described in the commit message is closed.
+What happens here when the VF VSI was already in port VLAN mode before
+ice_eswitch_br_set_pvid() ran?
 
-The remaining question is that the new bound is the static capacity of
-buff[] rather than the extent of data the firmware actually returned.
+ice_vf_vsi_enable_port_vlan() is a plain ops-table overwrite with no
+nesting or refcount:
 
-i40e_aq_get_ddp_list() sets desc.datalen on input but never reports the
-response length back to the caller, and
-i40e_asq_send_command_atomic_exec() copies the full requested buff_size
-back from the reused DMA bounce buffer without consulting the response
-descriptor.
+	void ice_vf_vsi_enable_port_vlan(struct ice_vsi *vsi)
+	{
+		if (WARN_ON_ONCE(!vsi->vf))
+			return;
 
-So if the firmware reports a p_count larger than the number of records it
-actually wrote, but still no larger than 16, do these loops compare
-against p_info[] slots that were never filled?  In
-i40e_ddp_does_profile_overlap() below, i40e_ddp_profiles_overlap() treats
-a zeroed or stale entry as a conflict:
-
-	unsigned int group_id_old = FIELD_GET(0x00FF0000, old->track_id);
-	unsigned int group_id_new = FIELD_GET(0x00FF0000, new->track_id);
-
-	/* 0x00 group must be only the first */
-	if (group_id_new == 0)
-		return true;
-
-which i40e_ddp_load() turns into a hard rejection of a legitimate load:
-
-	if (istatus > 0) {
-		netdev_err(netdev, "DDP profile overlaps with existing one.");
-		return -EINVAL;
+		ice_port_vlan_on(vsi);
 	}
 
-The equality helper can similarly produce a "DDP profile already loaded."
-verdict from stale bytes.
+ice_set_vf_port_vlan() has no switchdev or bridge guard, it just records
+the VLAN and resets the VF:
 
-The other direction is the p_count > 16 case that the commit message
-targets.  Both helpers now silently truncate the scan and return 0, and
-i40e_ddp_load() consumes that as a definitive answer: an add proceeds to
-i40e_write_profile()/i40e_add_pinfo() without having examined every
-reported profile, and the is_add == false path rejects a profile that may
-in fact be loaded:
+	vf->port_vlan_info = ICE_VLAN(local_vlan_proto, vlan_id, qos);
+	...
+	ice_reset_vf(vf, ICE_VF_RESET_NOTIFY);
 
-	} else {
-		if (istatus == 0) {
-			netdev_err(netdev,
-				   "DDP profile for deletion does not exist.");
-			return -EINVAL;
-		}
-	}
+after which ice_vf_vsi_init_vlan_ops() calls ice_port_vlan_on() because
+ice_vf_is_port_vlan_ena(vf) is true, and
+ice_vf_rebuild_host_vlan_cfg() programs it:
 
-Would it be better to derive the iteration bound from the length the
-firmware actually returned, by plumbing the response datalen out of
-i40e_aq_get_ddp_list(), and to return an error instead of silently
-clamping when p_count exceeds I40E_MAX_PROFILE_NUM?
+	if (ice_vf_is_port_vlan_ena(vf)) {
+		err = vlan_ops->set_port_vlan(vsi, &vf->port_vlan_info);
 
-The reachable path here is ethtool -f, so it needs CAP_NET_ADMIN plus
-firmware reporting a count that does not match what it wrote, which is
-the same untrusted firmware assumption the patch already adopts.
+ice_eswitch_br_set_pvid() only inspects the bridge-tracked port->pvid,
+which is still 0 in that configuration, so it proceeds.  On a failing
+set_port_vlan() the new path calls ice_port_vlan_off() while the SR-IOV
+port VLAN is still active in hardware and vf->port_vlan_info is still set,
+which makes dis_rx_filtering the real ice_vsi_dis_rx_vlan_filtering()
+again.  On a failing add_vlan() the clear additionally zeroes
+vsi->info.port_based_{outer,inner}_vlan.
 
-> @@ -109,8 +114,8 @@ static int i40e_ddp_does_profile_overlap(struct i40e_hw *hw,
->  {
->  	struct i40e_ddp_profile_list *profile_list;
->  	u8 buff[I40E_PROFILE_LIST_SIZE];
-> +	u32 i, p_count;
->  	int status;
-> -	int i;
->  
->  	status = i40e_aq_get_ddp_list(hw, buff, I40E_PROFILE_LIST_SIZE, 0,
->  				      NULL);
-> @@ -118,7 +123,12 @@ static int i40e_ddp_does_profile_overlap(struct i40e_hw *hw,
->  		return -EIO;
->  
->  	profile_list = (struct i40e_ddp_profile_list *)buff;
-> -	for (i = 0; i < profile_list->p_count; i++) {
-> +	/* Never walk past the end of buff[], the profile count reported by
-> +	 * the firmware is not guaranteed to fit into the buffer we gave it.
-> +	 */
-> +	p_count = min_t(u32, profile_list->p_count, I40E_MAX_PROFILE_NUM);
+Does the unwind need to restore the actual prior state rather than assume
+"port VLAN off" was the baseline?
+
 > +
-> +	for (i = 0; i < p_count; i++) {
->  		if (i40e_ddp_profiles_overlap(pinfo,
->  					      &profile_list->p_info[i]))
->  			return 1;
+> +	return err;
+>  }
+>  
+>  static struct ice_esw_br_vlan *
 
 -- 
-Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20260920063244.1927792-1-xiaolinkui%40126.com
+Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20260920064754.1935818-1-xiaolinkui%40126.com
