@@ -4,137 +4,141 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A24CEC982FA
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 22 Sep 2026 11:36:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 77998C982FF
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 22 Sep 2026 11:36:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 47E7660760;
-	Tue, 22 Sep 2026 11:36:04 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 217A960796;
+	Tue, 22 Sep 2026 11:36:07 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id e9jBsuOy8JXu; Tue, 22 Sep 2026 11:36:03 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org E6282605F9
+ id qzNpBinUQwV8; Tue, 22 Sep 2026 11:36:05 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org A209560780
 Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790076963;
-	b=nJ4uMNBo1q8lz4IOYDngDYIDMhsFesgjR8IJsmxmcAWoimElGNawQ5+xA98kzP6Jk4zP
-	 +gNMIhDz0VpRlJJzilLPpwZPOXmOxEmFZDfJPVLK/d7vZnJsBBD6N/w25W4ctY3+XxYGv
-	 Irecm61UQYyEvgJ3eB5nvNravx5jqQRYV7oDFgaVszcDX9QzK33y01fxNgbOmGe3yXINn
-	 U1roGpCO5IN9po0C8ZI9jfupDouYqhhj3tK2OcC2CCmkKhtz0k30mQMLYJCTG8LizQHqY
-	 DCKlJGAu0sto0XwBiZuLJAZdhTkBlI6sLlFuVpOlRixN+CJQPXhmUseqMlYm9pS2WUg==
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790076965;
+	b=ZlDBUnhI4bnJxwSDyunAWOBNl8xy/svdghRsrSjdw3GFpFZnSCqGMM2ZR5cXtnNwuMkL
+	 0FmlC4LGZHe4jE30OYStPENqZWe9Q/1l9Hk2nZcYwZv/8gZaHbGniFj8rW/VSED8rtTcC
+	 eXun8qf9tnQVbTCZfN9shS4c9+QJRZ84MECweLcat+clO989ZEz+KFZX6DX+a7rqwKDke
+	 eShYQGWCUv7C/btrqzmEvDH9iEw6lcealSPlvjasO9c47OlAeNlusJNUxrQviaf13yfGM
+	 3yqVQIPuYXTcjodg2TO7+E/3lti8VeFt+hSHQl+o/WV5Ubw9+89nzWqX7WRmnYIPVQA==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1790076963;
+	c=relaxed/relaxed; t=1790076965;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
 	 DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-IronPort-AV:
 	 X-IronPort-AV:Received:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-ExtLoop1:
 	 X-IronPort-AV:Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
-	 MIME-Version:Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:
-	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
-	 List-Subscribe:Errors-To;
-	bh=YBmAB/tVkUeN5IulXsTX9npf9AcMV0UV6INeuhNaOlY=;
-	b=pBkOjWlJiT/hZ6azA1Luz+EB3/+fQJW7iUu3Rl2mcD4yNcMdi1tiFScMTtVRS3FURwyv
-	 PklYOXf4aWfHB6wLotkmQj/bEjweFMKQOA50vG0V0FctGyEWsCjqohYbzNRDhJptiZdeJ
-	 kZTpYgEG/FQldDAYW+tBEqGjW5DydTWFKJ1HCKWxeOtSJN89LabG/9zXYXzcr8gwXh2Ox
-	 nGwqGVf9ZwRNCbl3Ig2kzI38pipMIDUZXXs+/PR4JerpUrP5DQXYXJkera/LFj3veFowZ
-	 OUl/8gx8hhsRcvuYT8KazbqcgDRyWLSOihxD2HhQzfRZqqbcBVEnIEh/bQBJOfXfJzw==
+	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding:
+	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
+	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
+	bh=JqetkN7V+Go1GbZVm60LW04hQbgf7zJheygUQQka3OU=;
+	b=G4G+ioOGzOBN9jrgWAAn51Rn8WiFPVLN0DX7BIYd7V6VEDYsGYISSBKA4Woz78+raZpe
+	 583ymvCHT1563R5hdqCcLOJotjIN3OJqwJsJd05U9uszFNZTOb2Lo337iniDTe+YapMhs
+	 1JL2q3UJN00fSNlxxBJ6kHOctMQC5rchotyuh+/T19eK4eFdxRei6GX+nwCJ06MYDN/XV
+	 +SJWIBZgDlfwtpBdavIn37rGgFyThUfIj5HtsE6cJA7ttpoDj+7DafLSQCeen9XNLcC3E
+	 kuSE43evow/pzB3NZHs9A1URXyP+Upvd8hRQ8euJXUGwCdjPXtXHFjq40NbWC8OkcDA==
 ARC-Authentication-Results: i=2; smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1790076962;
-	bh=YBmAB/tVkUeN5IulXsTX9npf9AcMV0UV6INeuhNaOlY=;
-	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=9RKN3pveSBkgvPTc7dANd32tjrRDzAzmQGaEkFoG6KSGDRzXBWhACyjHmg6rzzXz8
-	 oCWuoIiSV0TNtLHbY9qefh1iic233GH+MYcJbdnMo1zd5OEFnS3VCxF2OEbTFMHRVF
-	 dOCdejjJiHnZa160zQ2zDe6Udhd7KyTAqutwOmfHOnHcR3Nsu9WTXX1IzNdk0KCk95
-	 3J4cXs+L4hsgEx0yjayUDVb/qwzNc+mq+ASmSs2MRP6hSzcsm1BubFZa5se6foOq+8
-	 PQK92efd+GwjB4+Uz8rb1/SkLRKbbYY1ZDGNaJtahsdTShcK4nRq1GVaOIpTQf2YJJ
-	 PvGOcmAkRnDrQ==
+	s=default; t=1790076965;
+	bh=JqetkN7V+Go1GbZVm60LW04hQbgf7zJheygUQQka3OU=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=initRNYye6lzsV/ibHoulGPEpdi6PVeO82zuk/o1QAmy0PmgHzIe//amkt43xJ25w
+	 9YWILBB8syQhuUrlnjkdYW6BmcoSvX7RTz93bk6o5vYaSbvzYdyxIpDb635bXohwWe
+	 brj5/xpDN/youQptcIzyZpJQLBFmBVOMwpcr/Bnf1Ek4W1tTnHNXc2z4gCZm/+zPFW
+	 q6xJe5X0H8edNIffRR8KkPxeYcUMCH53l6H6YbGIlq4rsHtd/yej71ZOMIPJiEj7T3
+	 yCvI/xD4JfGItdA+Nf2fGSLkXnkMgs18SCc0JnIfpHA9QktfGCTgwVgllAPKpglZ7v
+	 r2VSLnmV8eLcA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id E6282605F9;
-	Tue, 22 Sep 2026 11:36:02 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 91367A20
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 11:36:01 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id A209560780;
+	Tue, 22 Sep 2026 11:36:05 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id B555735A
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 11:36:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 8305880C53
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 11:36:01 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 9BBC780C50
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 11:36:02 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ouaIqBVvevdO for <intel-wired-lan@lists.osuosl.org>;
- Tue, 22 Sep 2026 11:36:00 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 8E14D80C4E
+ id mC02NPBHxsUt for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 22 Sep 2026 11:36:02 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org E418280C4E
 Authentication-Results: smtp1.osuosl.org;
  arc=none smtp.remote-ip=192.198.163.15
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790076960;
- b=h4jxix3uWl6RHfNuQ1mGwpEtHLe8KxKjbkKwreciXbCEGmL1EAtcKdVrl2GxG6swrf8x
- qKsETft42TYZc9nZI3VHAWA4/ieuR6Q6rYqwJTGaKLsHNCH8+vnqQjMsDm7aDaskxUrtm
- 3el8HPLvKaR9WJYGwKeVpQu74WT+Pj+orpcvqMV9iAm31ISCuLTABmix6SfXifkYvKrHA
- IHXsS17Wamn3Lkr5/ndLpXzHlC44lrO6mQDNI1moA8DhForpVG6LLWcMlGvIejcTDrmbq
- 9X+s2VewkRQpT2nxomrK6L8EflDebmX9oDopyAMs2HuPyVHoZvQ1sr23U6OQzJ774Bg==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790076962;
+ b=Ro1OGkdsnV79hVgSXnHTFYWTt67LaWR1rvDS8kN6TAh5ppRq0kI0posN+J+eTscCDUWV
+ FxXpLOs1BewtIyOqqqqz1q0vM32XpRJyX9kFESgiVSk68qyNjEJeC8VDaJnIM0y4UMGfP
+ VECi/JeLEktPpWN4YB3IXl/1ZFHer6J31YHjM7IMd/A79+Ebd9WUnjrxpKCXLbUptDqIY
+ UpLt9PG7JQRkXqolntE0/idahyyphZyJquIrRO9o+qLasv9LvvyXn8WqwvXyW/f5jBuQr
+ F+yNdsYsxc+aWb3ouyUgCBWwQqQ0N1Ui5jKcZQeugvcdtDlutUrwzkuKFZjFc+3Cw4A==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1790076960;
+ c=relaxed/relaxed; t=1790076962;
  h=Received-SPF:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
  X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
  X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:From:To:Cc:Subject:
- Date:Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding;
- bh=YBmAB/tVkUeN5IulXsTX9npf9AcMV0UV6INeuhNaOlY=;
- b=FdEjxLsz0f1Q6P1CJw5yksKLmVuewGVzzZ9/tJ+8wir80L5f8BlOxtOQcwEgYDXVnXwB
- UoVj89ZKr2DliQKktOtTiwV9O4ZhUqYZifsuamEZgSxVan/BITvEnEVZm+C6I4QmUnmkC
- 6M7/f8t+lma0lUjEYteoJYOn7wRA3pZo5x6qGGW8zfhBFZPm4hefai7haI7uk6diyl86E
- O0goNK95Sqv5ancSLhMkThtWK7rQq2BaKZYo7hjlLKGp3CIMRgwQWMQx2wA73/9TpPorS
- Zp/8LxCHJY1q81EuHK5Gq51f6uZ+a6DR8eYN+hPp3nd5iVHVTIzZvif+G2FxZUbD2Wg==
+ Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
+ Content-Transfer-Encoding;
+ bh=JqetkN7V+Go1GbZVm60LW04hQbgf7zJheygUQQka3OU=;
+ b=EvXcEPWe20zVGO1etiL/MKwu7ThQvKnBfp3motIjYq2IG9rUd8cRlCj+qN4IasVL82Z4
+ 7umq5bV6/8al3q5N20SoiGON8hiKhSkHb895/HQFPmlNPUvvkFugElfpnuxY7hOQ8Ec/o
+ ct3XzaBMZeVrw8YM22uZWuIBfq7PUjAVauD2k/QuvdOVxt6xi3YeC2jC9rIPu9qiS1dLi
+ g4lS2CdLTlo879xn7wi9jcEG39dSuObDHXtqjD9PvWnv2XDkMhA8xwdphUJcor6hN3d2d
+ WP2IroxR0n6TVCUp0O57hNLgoI6CPUC6KhTYP0D42DW1mgHiGdjlLb1lkjNWUfKEdaQ==
 ARC-Authentication-Results: i=1; smtp1.osuosl.org;
  dmarc=pass header.from=intel.com; 
  dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=N9NacNcF; 
+ header.s=Intel header.b=Bps4lsAw; 
  arc=none smtp.remote-ip=192.198.163.15
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.15;
  helo=mgamail.intel.com; envelope-from=sergey.temerkhanov@intel.com;
  receiver=<UNKNOWN> 
 Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=N9NacNcF
+Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=Bps4lsAw
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 8E14D80C4E
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 11:35:59 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTPS id E418280C4E
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 11:36:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1790076960; x=1821612960;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=Q7Qq1ojA9P4t/8q0aG9ChIfME7AZFSv4Z/bbT5TDIO0=;
- b=N9NacNcF9GH0jyYfT8uQCOJpcLQU/7v+m2ASVyz/pclA9qpZcTuAIUWL
- n4A0dCq/ZPVXCE1XuT+j4cYdziAUoAu5VR227AVTMQp+evyqdoN0/cT+I
- 7QRU3lSDs0ri/QfcU8HdvPSbKlFpoZ+nZha/acD/84cV2s+NK//AX7C8j
- 2LRnlWMM/6cm9HMgQVis2hUcnlrKkhvjC/4ZXroFiKgJ9lqszA6gLX2M7
- g+L6egxd1OnEIIaa3xxg7plfQA18mv6GK13HEJhjKaQ4wHXERacumdIca
- YtzME3TOxwTAZ2E8ID4TrCJXVIJD9jecYRNuMqy0sMYusFFHqgRfmEJvI g==;
-X-CSE-ConnectionGUID: o3mxMNmiTAW8Mytk20NFkA==
-X-CSE-MsgGUID: 4/TIVhUrRjukHiJO5ioicg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11912"; a="90787327"
-X-IronPort-AV: E=Sophos;i="6.27,116,1787036400"; d="scan'208";a="90787327"
+ t=1790076961; x=1821612961;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=EKdSAYxXzsS0D7//wmgMkbjn8Kk+YYSMLuL1v0Aqp4c=;
+ b=Bps4lsAw1BBjcBobuXORGhdcvrcOxJ5ydsp11FWXloKIJyiB5RBlVBqP
+ TG3fO19DBDkhzn8HB+HY+EqT6oyeWPoHS0v+dzmRp0/slBfMQdFz6QIe8
+ COui8RxAIQ0uu32pEJrKKFPTy2N09hC6Wfi4zugrs+tRcWVEIckyALA0r
+ WbM1PrXwc/eBqWT9BYmOoTBYBTo1FG+9fJdXry99CGcMERH8hAhP3Nvcf
+ UMtAbCnHyTEHYbVRiG4jPz8KwKODxJBwAM2bnzJGNntmvIcn1V1qbVE4h
+ 84AzM62d826C587Lx5zwNHx/99ocaehck4MZwtG5bqERWwVRmu653wWX/ A==;
+X-CSE-ConnectionGUID: xlDun/ZoTRC25P+hH7SSvQ==
+X-CSE-MsgGUID: hTrSXHLLSra+we3RU1qAVA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11912"; a="90787334"
+X-IronPort-AV: E=Sophos;i="6.27,116,1787036400"; d="scan'208";a="90787334"
 Received: from fmviesa007.fm.intel.com ([10.60.135.147])
  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 22 Sep 2026 04:35:59 -0700
-X-CSE-ConnectionGUID: qhl5J6QWSouxkDES+jgeQw==
-X-CSE-MsgGUID: hUsLZAzQTHK8bLav/guSVw==
+ 22 Sep 2026 04:36:01 -0700
+X-CSE-ConnectionGUID: K4nx68ibT6OMcZfrQaMv9Q==
+X-CSE-MsgGUID: +Ue86OZIRBSouRcLo686Kg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,116,1787036400"; d="scan'208";a="272591974"
+X-IronPort-AV: E=Sophos;i="6.27,116,1787036400"; d="scan'208";a="272591993"
 Received: from gnrd8.igk.intel.com (HELO GNRD8) ([10.123.232.137])
- by fmviesa007.fm.intel.com with ESMTP; 22 Sep 2026 04:35:59 -0700
+ by fmviesa007.fm.intel.com with ESMTP; 22 Sep 2026 04:36:01 -0700
 From: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org
-Subject: [PATCH iwl-net v2 0/4] ixgbe: fix FCoE/XDP issues and PCI reset
- handling
-Date: Tue, 22 Sep 2026 11:35:54 +0000
-Message-ID: <20260922113558.2288111-1-sergey.temerkhanov@intel.com>
+Subject: [PATCH iwl-net v2 2/4] ixgbe: Fix FCoE refcount taking for
+ unsupported adapters
+Date: Tue, 22 Sep 2026 11:35:56 +0000
+Message-ID: <20260922113558.2288111-3-sergey.temerkhanov@intel.com>
 X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260922113558.2288111-1-sergey.temerkhanov@intel.com>
+References: <20260922113558.2288111-1-sergey.temerkhanov@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -151,38 +155,56 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-This series fixes several ixgbe error and reset codepaths.
+ixgbe_fcoe_enable() increments the FCoE reference count before
+checking whether the device supports FCoE. The unsupported adapters
+shall not take a reference while the ones which have FCoE already
+enabled only need to skip hardware initialization.
 
-The first three patches are prerequisite fixes that make sure that
-the driver does not access hardware during the reset time when it
-is unavailable. These add the required availability checks etc.
+Fixes: 27ab76065c0c ("ixgbe: add a refcnt when turning on/off FCoE offload capability")
+Signed-off-by: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c | 15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
 
-The final patch adds missing handlers for PCI function reset through sysfs
-in the manner that is safe for ixgbe. It implements the PCI reset prepare
-and completion callbacks to quiesce and reinitialize the adapter. This
-prevents TX queue timeouts and other related problems caused by
-inconsistent hardware state after a sysfs-triggered PCI reset.
-
-Previous version: 
-https://lore.kernel.org/netdev/20260617084329.199110-1-sergey.temerkhanov@intel.com/
-v1->v2: Almost complete rework of the series to ensure safe
-	reset procedure
-
-Sergey Temerkhanov (4):
-  ixgbe: Refactor device operations to check whether netdev is available
-  ixgbe: Fix FCoE refcount taking for unsupported adapters
-  ixgbe: Restore previous XDP program on ixgbe_setup_tc() failure
-  ixgbe: Implement PCI reset handler
-
- drivers/net/ethernet/intel/ixgbe/ixgbe.h      |   6 +
- .../net/ethernet/intel/ixgbe/ixgbe_dcb_nl.c   |  13 +-
- .../net/ethernet/intel/ixgbe/ixgbe_ethtool.c  |  34 +--
- drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c |  42 +++-
- drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.h |   1 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 193 +++++++++++++++++-
- drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c  |   4 +-
- 7 files changed, 262 insertions(+), 31 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
+index 54d8b079ada4..6585af527743 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
+@@ -838,15 +838,21 @@ int ixgbe_fcoe_enable(struct net_device *netdev)
+ 	struct ixgbe_fcoe *fcoe = &adapter->fcoe;
+ 	bool running;
+ 
++	/* Unsupported adapters do not take a reference */
++	if (!(adapter->flags & IXGBE_FLAG_FCOE_CAPABLE))
++		return -EINVAL;
++
+ 	/* libfcoe calls ndo_fcoe_disable() even when this callback fails. */
+ 	atomic_inc(&fcoe->refcnt);
+ 
+ 	if (!netif_device_present(netdev))
+ 		return -ENETDOWN;
+ 
+-	if (!(adapter->flags & IXGBE_FLAG_FCOE_CAPABLE))
+-		return -EINVAL;
+-
++	/* If offload is enabled, only skip HW init, but keep the reference.
++	 * ixgbe_fcoe_disable() decreases the refcount for this case and only
++	 * disables the offload when the refcount reaches 0. This handles the case
++	 * where multiple offload interfaces are enabled on the same PF (e.g. VLANs)
++	 */
+ 	if (adapter->flags & IXGBE_FLAG_FCOE_ENABLED)
+ 		return -EINVAL;
+ 
+@@ -892,6 +898,9 @@ int ixgbe_fcoe_disable(struct net_device *netdev)
+ 	struct ixgbe_adapter *adapter = ixgbe_from_netdev(netdev);
+ 	bool running;
+ 
++	if (!(adapter->flags & IXGBE_FLAG_FCOE_CAPABLE))
++		return -EINVAL;
++
+ 	if (!atomic_dec_and_test(&adapter->fcoe.refcnt))
+ 		return -EINVAL;
+ 
 -- 
 2.53.0
 
