@@ -1,28 +1,28 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68510C98307
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 22 Sep 2026 18:08:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B7B4BC98302
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 22 Sep 2026 18:08:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 35BF580E9B;
-	Tue, 22 Sep 2026 18:08:41 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 82E0D606E9;
+	Tue, 22 Sep 2026 18:08:40 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id F2qlOpSANYqh; Tue, 22 Sep 2026 18:08:40 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 8D12A80EAA
-Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790100520;
-	b=NtVSfj95owkB4WXsT3m0zM7ywjL+A9lc7kNtZlMOjO0lIyxQBIIAIMme/600pIsxbHzk
-	 KOM2ycTpfA0A98VTK6U2aVJN5/yR5tHZDg0wM2JWVnNHkAiDrfx0Wuu6nLJ0uRPpWZ2uN
-	 LGtn354CizDpXcNlC9u7mTA/Vb9Jj5m3u10OjLuDgssvxVwUXGMDYIEgyiebvZgL0TFPB
-	 ZY/KSGxzULJHngV+vmHqg7qq61QavUdptj4PG9GEibnivrIC5aAjk0c4x17l0nPNbwQvQ
-	 u/4liIPavTAezsCdJRHZlLERwhONCa0kFm5eD94Vtwct3d8gfTI1J4M1SYMOS3+sDVw==
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id W--4hLukGkD3; Tue, 22 Sep 2026 18:08:39 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 9390960715
+Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790100519;
+	b=r/ws0mdAV3vgSv4wTnD3+4z5IpGYaa7uT22pqRukMulvxwv3ocQY1P4Xu5ZrqUY4t7rn
+	 3IqPJ0c+kJ40pK7acguLjfwgpTr4jD8PgXyoWvA9zJgK1kJcvzyT6S31Gk9iNYxgCPa2w
+	 f4NRKKE8gLDVYrtGvms/VCSWF4L+TRmm4CbuId1bdlhLpibFXnpN7nhCEXKjWdrTW0cFa
+	 S3xt8A2zqRM6JSjBwguapOpPoSWts3knYc+uAqaopYPjn8Pu8QG/m1OFBymqgYQg0mAeA
+	 0SGqT6lDZAdVO8/84dft7HOx6YhRugxeliK0rAMTRFxb036A0gkSk9FdZCMZv+WZ1JQ==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1790100520;
+	c=relaxed/relaxed; t=1790100519;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
@@ -33,66 +33,66 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 X-Mailer:X-Developer-Signature:X-Developer-Key:X-BeenThere:
 	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=evLOSJZng0b9CyOsjFEWUh1l1FRfqz7Y3lUUYqTg3tI=;
-	b=Puzcd1UXQeenFfY47HU1ZaZW7VA38xbBQYHVg5uTnGbTrZ70Ra2BnRMMTSYnCe0HPHqr
-	 20xvhUymFS2DIJZsRqvBX5PRFFHX+96Puc4WU9+4G2QkYUV4Zd28MhWCpr3sSNsCGcEtS
-	 ePkFs/LcgeBp+J1BxXmpmuqY3ayzo3Khy0dFr0RmtxvFOiEvci6zEvwSxgqOMYa0MHzM4
-	 fx0GAO48G4L41N8KnMZoSD1pDjDON2x9tLZ4JqQGsmQbCpbB+aU7p/NkmdwAx/d/dkAIp
-	 u8cknA8tHJbVWBcrgM4+7r5Zl3CXSP9perBMewiYO2vLSYU5JnokRl/Ik2r+BkfnXww==
-ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	bh=wFSGt2XI40dnFNMe43v/3Fib1mKTUlDsA7UFrg0Mbw4=;
+	b=du704RdKc3PdszOcYg1NDx2JJw0mdjhiVSUxCm4sr0vykOR1BH/d89kcLxA0RWPXVKDE
+	 m1Yt++uneFT8eLXgR8Ur5wHhUlgFtzB3UwV0XM+MzLpglo9zlWQhI/MY9YMNNrrI1uMwl
+	 sTzPNwGXLlWXkaM9YsUgJpgtN3JOkEVb/ek9ahn6hi/zUrU2hOjTNrxZoOpBh01B1dsOE
+	 0q8nYKoRA2GEBdUSaeMLzkv8MRAEsG4W2hy9M1OWBT0xZR8PSLZlufv34qWK6jAhogkWk
+	 ELXWhjg1rsQWH4RNb2gk69hx4jKw7irvn5K+tF0cd7+cOVcSG5SS3ZvPAd9Rqlt1ufA==
+ARC-Authentication-Results: i=2; smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1790100520;
-	bh=evLOSJZng0b9CyOsjFEWUh1l1FRfqz7Y3lUUYqTg3tI=;
+	s=default; t=1790100519;
+	bh=wFSGt2XI40dnFNMe43v/3Fib1mKTUlDsA7UFrg0Mbw4=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=6GiwH8uNWuVnKRROZL6lvjqGJkNosjfGF4TGehCwUPczce9VXK8CxWiG+X2eBfLzd
-	 e1r+X/9UwabarO+rDcjR3o292Mc3Nwzm1HpViohyLSIMY9tmQMhqUESdUpuBo0bVLu
-	 8usfvPgPWClf9GgT/4iymvYgfBlSKIiATXColamd+8NPljyzcQZMZXbQIv9JlXlNPW
-	 QsaqmSDw+IrsBXmi39EO1lhQJp51UcKHcTh2pyf//m8Y5ReCOOjH8DcYax+yhnOfRl
-	 gIW2MsJa+B5RdtJoH6U9MdAvkvoz1Oi7/MXXLKLw5vy9EzCfy/6aSH9yc91Uql2KxF
-	 GZfIq9vSWwNoQ==
+	b=sdiPrPESDhR0NC7mh2Gaooes3s5YVUmswsmnihfcRx9F+Iaz2RAhsj7CjO+OMl/gU
+	 9jDsnJW9G/gWQYEsadxVsFkq/3V3hRUNxzvI5a00VJn8q0LA8hVwy18YxjeeEdoHsi
+	 miNrSdfMM61ZY6pFbq5PgqVoWu4Me/wwFaljfg/CJ5DC5cMPsrTCFjMjofqCe2HJH9
+	 Ee7t69TQ8+MLGnp8fwh/IFdM58ZQhURmri+rFV7kK+hWXhNRK/s6+regtJKUSHwv8F
+	 0QuEZ6XopSbs3KtzPUmztq7m5C+rWG5FbSvWPQvyRmTRra90kbnaDcds/QLobmykys
+	 UCvA+nl3jUOlA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 8D12A80EAA;
-	Tue, 22 Sep 2026 18:08:40 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 9390960715;
+	Tue, 22 Sep 2026 18:08:39 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id B3A893A9
+ by lists1.osuosl.org (Postfix) with ESMTP id AFEBB12C
  for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 18:08:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id B22B4406FB
+ by smtp4.osuosl.org (Postfix) with ESMTP id 9695540738
  for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 18:08:28 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 7WA9u0HpZbXM for <intel-wired-lan@lists.osuosl.org>;
- Tue, 22 Sep 2026 18:08:28 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org EBC934075C
+ id CjMXEiUuTYLc for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 22 Sep 2026 18:08:27 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 9D904406FB
 Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=192.198.163.8
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790100508;
- b=DGlhqJEoeQfLCHjeASIOzrNkL5y62J78oi3cfgJ1SC+n8sxhsUv5xV6/LrQS0YWJ5I0H
- SEg8/cVc2KvekFDV2aerdvZ6bYmfrsZSaG4X0oGcmP+5oilEfDscf9r5Amk0rjLvGziPy
- Knxh1EfZa8fCW2GClAEi5fWFv3+z7ncvmG7BFF9eRTz/Oup9rVzBFuqPNYhL1rDitsh0h
- Vt57MY0vB29nub1Bx0Bev1sS/EplNK+y/9PcXiVZFk6uW9yMXuH4Xf+UXJWg0jUM/UVc6
- 9iizcxscC1qY0hbc2HaWo3b6BCZCYvUF7PFf5aRPIiOGntoUhC8R7k7e8cMFgDDckqQ==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790100507;
+ b=JjwrZVpSUEZt0VZPIGtTRjfkonhwwQ0igU0o3jV41T3O/KKdka/jMW7sPTLl2WhbUO6R
+ k0oDaEOYEuxXzFhmGv6UBM6bA4bbOuHW54XO/WXdrWqA4BKWtgihtc+75c5Ps66Ynnq/X
+ 8h/qWyTgBo+wWBNug5ciofwjPG2BIjR64j7qcBM4xyXVIgwSLtPG+pBuQtR0hjgCg5Ujn
+ Rb1NPDfagzxLR3nToocvrXRA0LqQ16l3zO3QiYNYBv5UFUa1KBepTGzdfDySMmg4SkQ79
+ Z4yNk15/eL6h4wb3vApiHsfShfYxfRtGzTIR3R6IBf9t8Gpjjyaol3B7ht3/LLZ8lTw==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1790100508;
+ c=relaxed/relaxed; t=1790100507;
  h=Received-SPF:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
  X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
  X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:From:Date:Subject:
  MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:
  References:In-Reply-To:To:Cc:X-Mailer:X-Developer-Signature:
  X-Developer-Key;
- bh=evLOSJZng0b9CyOsjFEWUh1l1FRfqz7Y3lUUYqTg3tI=;
- b=QEIL+8f+KRpQxsc7EZg09AFGa/ncUJ3AvkTd73Y2XwOXRBzjlhZ3K0vWKrn+poBYW5Z3
- 13l601INH5KNNW/zqCC46NFaJT4nbUhNQL6VrcEjabiWiTSKETHjWELoeQD/FNnFdowIq
- yry2ho6eYl+XMKL1qnkFU9cHzwUQbhfuMbQa/Vaf4wqKNSRiosZNDPMQZu9m6saVHN4+j
- 2PHylqwJW3k3bYHkS3SCKj0jMFyILlEvW+Nruv4MmcXwx/q+83WWLlwk9m6EDGkN5HbYo
- /kaxtK6ja2msG4/5K5hG5I6TaZquZdK1Lf55ro2k1H2bnpUZHNdf1PUUSwQ72G+FPWA==
+ bh=wFSGt2XI40dnFNMe43v/3Fib1mKTUlDsA7UFrg0Mbw4=;
+ b=mn8X12Iov5E+i+NHVf5KjIvrXNMkytcXrBcVhTNMO7ATriI5vkJLnshA2gTBzkYepVU5
+ O7YSk85uhGbJ0XoQTWm9UpMPRuhscxxFWuNQUAkhJd4Y4JX0HZctKyWWOAffZYiKVgWB5
+ E715w0s3ftZghXz6TSljPjToey0b9FsciAICYvljdIFRwMWB9AbeCk1e1kYFYuFGtfWSA
+ suZ7ODOZgKYCIXHMzJIgxaPskJJYtuAzH+6u+ispUwGkSOuhNhuxOQhzjGhFtV9x4RDzN
+ rOr2YTJ28rOZzUtCvyK6ZjgT4MbNkJ/rXo8abTtPavY3nAGJOkF7Gd2aHdo6w6kTKRA==
 ARC-Authentication-Results: i=1; smtp4.osuosl.org;
  dmarc=pass header.from=intel.com; 
  dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=KS4shsev; 
+ header.s=Intel header.b=EQPGBtmu; 
  arc=none smtp.remote-ip=192.198.163.8
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.8;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
@@ -101,45 +101,45 @@ Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=KS4shsev
+ header.a=rsa-sha256 header.s=Intel header.b=EQPGBtmu
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
- by smtp4.osuosl.org (Postfix) with ESMTPS id EBC934075C
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 9D904406FB
  for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 18:08:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1790100508; x=1821636508;
+ t=1790100507; x=1821636507;
  h=from:date:subject:mime-version:content-transfer-encoding:
  message-id:references:in-reply-to:to:cc;
- bh=31BLiW6+gM0P/lNSOno+h9fVruEdC4wIwqDW9dNzsgU=;
- b=KS4shsevrYnm9DFHTwgjeQmd9Ro2AqBw02PR+qpKpw/MZygmUR6vyGUX
- tLHISW1SIpP6m9cHTITh/eqzoOh0i3NVVE0mHhoySMs49DpMYI8bDWwnO
- B0B7EBLwa/jx5fEoUICDCw45fnc8eTyl2AbftuzUZDP8JMTNcehLXAC3s
- ZM24/kyYvHSSlYRd9wufwG838obuLTRviHBsnwSwSU93vF4WqS7+Gxupz
- fOpi4OYYh4AhAKkEeO80n8wMdsd/bC9RL/u6HLr/qWrK+kJ0rf+6Fn/J1
- 1f/DdWI2PM4nrlWJqKwgQtc7i61EAKxxireQ+p3NOc4FyZcgD13eO/SbB A==;
-X-CSE-ConnectionGUID: lB+ammDkSkyo/MVk6UjkqQ==
-X-CSE-MsgGUID: b/ap/eTmTKea0yi3bkBuJw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11913"; a="108232052"
-X-IronPort-AV: E=Sophos;i="6.27,116,1787036400"; d="scan'208";a="108232052"
+ bh=C7Ec1UZI8OuV+n2YbfOkK1M6yHR2cHa3IjtGFNfXmOU=;
+ b=EQPGBtmuIvUabuaEzHnfuY64qxDGQb3VTHGeZ5VYpz9GhhvlkZd6h2qP
+ QUl0C3W2r12hqgCos1qDe+u6yMwj/w6d8WldxOp58D0UZuhKO6GE74lTF
+ hPKfN8Sc2DMI+7VZAW0ZkRuztWPwvnaiXW807q0BuGfeZ9vm+vk9FXyzS
+ 7HBafda6feR4HOQ8IWiyGYa+RJBFfuHfhrpWlS5Ib4QqYkrb2Cf8j9p3m
+ enAJNr3cDjn+PEYuweWiURyEOgBchwmuB5PJ0VldyZ8q5okbw5bQZJP10
+ jcF1cA6FQYh3WsNYo0RVWJn7/8QyvnHgDuNBG6kvFiKSJgsKy0YD1SvjC g==;
+X-CSE-ConnectionGUID: hAQpoqE4SQeNPZ3N3558MA==
+X-CSE-MsgGUID: AC50Ox35Qo2DlhnQTdGDLQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11913"; a="108232046"
+X-IronPort-AV: E=Sophos;i="6.27,116,1787036400"; d="scan'208";a="108232046"
 Received: from fmviesa005.fm.intel.com ([10.60.135.145])
  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  22 Sep 2026 11:04:24 -0700
-X-CSE-ConnectionGUID: T+sVDZZfR16XKOERX5kDxg==
-X-CSE-MsgGUID: uZSB8qFcS3Kb0GA3KTASrw==
+X-CSE-ConnectionGUID: /cu6qgGqRH+evoVu/PnRkw==
+X-CSE-MsgGUID: il3ELlyBTwW+pHd7fvy+BQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,116,1787036400"; d="scan'208";a="281315337"
+X-IronPort-AV: E=Sophos;i="6.27,116,1787036400"; d="scan'208";a="281315331"
 Received: from orcnseosdtjek.jf.intel.com (HELO [10.166.28.109])
  ([10.166.28.109])
  by fmviesa005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  22 Sep 2026 11:04:24 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 22 Sep 2026 11:02:44 -0700
-Subject: [PATCH iwl-net v2 11/15] ice: wait for in-flight Tx timestamps
- before flushing the tracker
+Date: Tue, 22 Sep 2026 11:02:42 -0700
+Subject: [PATCH iwl-net v2 09/15] ice: E825: clear PHY_REG_TX_MEMORY_STATUS
+ prior to soft reset
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260922-jk-e825c-timestamp-processing-logic-fixes-srcu-v2-11-e55b692d0e6b@intel.com>
+Message-Id: <20260922-jk-e825c-timestamp-processing-logic-fixes-srcu-v2-9-e55b692d0e6b@intel.com>
 References: <20260922-jk-e825c-timestamp-processing-logic-fixes-srcu-v2-0-e55b692d0e6b@intel.com>
 In-Reply-To: <20260922-jk-e825c-timestamp-processing-logic-fixes-srcu-v2-0-e55b692d0e6b@intel.com>
 To: Jacob Keller <jacob.e.keller@intel.com>, 
@@ -149,16 +149,16 @@ To: Jacob Keller <jacob.e.keller@intel.com>,
  Maciej Machnikowski <maciej.machnikowski@intel.com>, 
  Przemyslaw Korba <przemyslaw.korba@intel.com>, netdev@vger.kernel.org, 
  Anthony Nguyen <anthony.l.nguyen@intel.com>
-Cc: Jacob Keller <jacob.e.keller@intel.com>, Petr Oros <poros@redhat.com>, 
+Cc: Jacob Keller <jacob.e.keller@intel.com>, 
  Maciek Machnikowski <maciej.machnikowski@intel.com>
 X-Mailer: b4 0.17-dev-8b7ea
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3027;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=9921;
  i=jacob.e.keller@intel.com; h=from:subject:message-id;
- bh=GJLyGkVYnnRRmU5BgwXqkMVcvvTKw8l4fUj+knzvHbY=;
- b=owGbwMvMwCWWNS3WLp9f4wXjabUkhqxNh2WWOidyskz62PdbfdLqvxu+Zimc/i3pedRy4f2t6
- +XXu5g7d5SyMIhxMciKKbIoOISsvG48IUzrjbMczBxWJpAhDFycAjCRDXaMDJsXZAudTPm3r5it
- Uy8nKDDYVvHZi81Ltm/OfOj+9jx3wjOG/9XXheftmf0zZ3KdvQW7EKfYtHIrVh+DBVaneKNsXzP
- sYgEA
+ bh=C7Ec1UZI8OuV+n2YbfOkK1M6yHR2cHa3IjtGFNfXmOU=;
+ b=owGbwMvMwCWWNS3WLp9f4wXjabUkhqxNh6V99vEF19VdbK5zzGpe+3fuEwGGIwzfGRJPueYvs
+ utd+Uy2o5SFQYyLQVZMkUXBIWTldeMJYVpvnOVg5rAygQxh4OIUgInM3MvwV0C94p2t2uu8pe4S
+ Gms1m3hnWf/PfzRPukqaP3r71VPndjIydF2y+njYSiJx+sVtb7e7Feus/vPn2hsDiQOH7ufsimm
+ cxAMA
 X-Developer-Key: i=jacob.e.keller@intel.com; a=openpgp;
  fpr=204054A9D73390562AEC431E6A965D3E6F0F28E8
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -175,93 +175,226 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-From: Petr Oros <poros@redhat.com>
+The current implementation of ice_ptp_reset_ts_memory_eth56g() is flawed.
+It tries to clear the timestamp memory by writing to the
+PHY_REG_TX_MEMORY_STATUS region. This does not work properly, as it does
+not trigger appropriate PHY actions.
 
-ice_ptp_flush_tx_tracker() frees every tracked request, but a request
-whose timestamp is still being captured by the PHY at that moment is
-freed without touching the PHY entry. The ready bit published shortly
-after has no tracked owner, and the PHY does not raise another Tx
-timestamp interrupt until every outstanding ready bit is read, so
-delivery for the whole quad degrades to the periodic work.
+To clear outstanding timestamp memory, the driver must read the timestamps.
+However, naively doing this as part of ice_ptp_reset_ts_memory() is
+problematic. When reading the timestamp index, hardware kicks off a chain
+of actions including clearing the ready bitmap index, and decrementing an
+internal counter if the timestamp index was marked as valid.
 
-Wait up to 10 ms for in-flight captures to publish their ready bits
-before flushing, so the flush clears them together with the rest.
+This can potentially leave the internal hardware counter out of sync with
+the actual number of timestamps. This occurs because the
+PHY_REG_TX_MEMORY_STATUS region is not zero-initialized when the device
+boots up. Instead, it is filled with garbage. On a cold power on, attempts
+to read the stale data result in the hardware triggering a counter
+decrement for a timestamp that never happened. This underflows the counter,
+and prevents new timestamp interrupts from being triggered for real
+timestamp requests.
 
-Note that the ice_ptp_flush_tx_tracker() function was introduced along with
-the original E810 support, but that device does not have a ready bitmap.
-Only later devices (E822, E825, E830) have the bitmap and potential issues
-with internal tracking. Thus, skip the wait for E810 by checking the
-tx->has_ready_bitmap flag.
+We must read the PHY_REG_TX_MEMORY_STATUS in order to clear stale
+timestamps. But doing so may cause a desync with the counter. To prevent
+issues, perform this clearing always and only right before initiating a PHY
+soft reset.
 
-Fixes: 10e4b4a3a3e1 ("ice: check Tx timestamp memory register for ready timestamps")
-Signed-off-by: Petr Oros <poros@redhat.com>
+The soft reset will clear and reset the internal counter and the ready
+bitmap. The reads to PHY_REG_TX_MEMORY_STATUS will reset the region valid
+bits ensuring that no stale data is left behind. This combination ensures
+that we always have a clean slate with no stale data and with the counter
+properly reset to zero.
+
+If a read fails (i.e. due to a transient sideband queue failure) it is not
+treated as a fatal error. There is already a dynamic debug message for each
+read failure. Keep track of the total number of timestamp registers that
+fail for a given port and log a warning message indicating the total number
+of failures. Continuing is acceptable as clearing the memory is a
+precaution against faulty software. Correct software access won't read the
+index twice and won't read it at all except when it has already confirmed
+that the index is valid by reading ice_get_phy_tx_tstamp_ready().
+
+Fixes: 3ec46e157c7f ("ice: perform PHY soft reset for E825C ports at initialization")
 Reviewed-by: Maciek Machnikowski <maciej.machnikowski@intel.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ptp.c | 43 ++++++++++++++++++++++++++++++++
- 1 file changed, 43 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 100 +++++++++++++++-------------
+ 1 file changed, 52 insertions(+), 48 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index 657cd78ec738..142d9e1c1f2e 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -744,6 +744,47 @@ ice_ptp_alloc_tx_tracker(struct ice_ptp_tx *tx)
- 	return 0;
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+index c8a67a307832..e1a5ff5793d1 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+@@ -737,24 +737,6 @@ static int ice_read_port_mem_eth56g(struct ice_hw *hw, u8 port, u16 offset,
+ 	return ice_read_port_eth56g(hw, port, offset, val, ETH56G_PHY_MEM_PTP);
  }
  
-+static bool
-+ice_ptp_is_tracker_drained(struct ice_pf *pf, struct ice_ptp_tx *tx)
-+{
-+	struct ice_hw *hw = &pf->hw;
-+	bool pending = false;
-+	u64 tstamp_ready;
-+	u8 idx;
-+
-+	/* If HW reset is ongoing, we can't access SBQ */
-+	if (hw->reset_ongoing)
-+		return true;
-+
-+	if (ice_get_phy_tx_tstamp_ready(hw, tx->block, &tstamp_ready))
-+		return true;
-+
-+	for_each_set_bit(idx, tx->in_use, tx->len) {
-+		if (!(tstamp_ready & BIT_ULL(idx + tx->offset)))
-+			pending = true;
-+	}
-+
-+	return !pending;
-+}
-+
-+static void
-+ice_ptp_wait_for_tracker_drain(struct ice_pf *pf, struct ice_ptp_tx *tx)
-+{
-+	bool drained;
-+	int err;
-+
-+	if (!tx->has_ready_bitmap)
-+		return;
-+
-+	err = read_poll_timeout(ice_ptp_is_tracker_drained,
-+				drained, drained, 500, 10 * USEC_PER_MSEC, false,
-+				pf, tx);
-+	if (err) {
-+		dev_dbg(ice_pf_to_dev(pf), "Timed out waiting for in-flight Tx timestamps on block %u\n",
-+			tx->block);
-+	}
-+}
-+
+-/**
+- * ice_write_port_mem_eth56g - Write a PHY port memory location
+- * @hw: pointer to the HW struct
+- * @port: Port number to be read
+- * @offset: Offset from PHY port register base
+- * @val: Pointer to the value to read (out param)
+- *
+- * Return:
+- * * %0      - success
+- * * %EINVAL - invalid port number or resource type
+- * * %other  - failed to write to PHY
+- */
+-static int ice_write_port_mem_eth56g(struct ice_hw *hw, u8 port, u16 offset,
+-				     u32 val)
+-{
+-	return ice_write_port_eth56g(hw, port, offset, val, ETH56G_PHY_MEM_PTP);
+-}
+-
  /**
-  * ice_ptp_flush_tx_tracker - Flush any remaining timestamps from the tracker
-  * @pf: Board private structure
-@@ -760,6 +801,8 @@ ice_ptp_flush_tx_tracker(struct ice_pf *pf, struct ice_ptp_tx *tx)
+  * ice_write_quad_ptp_reg_eth56g - Write a PHY quad register
+  * @hw: pointer to the HW struct
+@@ -1134,16 +1116,12 @@ static int ice_read_ptp_tstamp_eth56g(struct ice_hw *hw, u8 port, u8 idx,
+  * @port: the quad to read from
+  * @idx: the timestamp index to reset
+  *
+- * Read and then forcibly clear the timestamp index to ensure the valid bit is
+- * cleared and the timestamp status bit is reset in the PHY port memory of
+- * internal PHYs of the 56G devices.
++ * Read the timestamp index to ensure that the valid bit is cleared and the
++ * timestamp status bit is reset in the PHY port memory.
+  *
+- * To directly clear the contents of the timestamp block entirely, discarding
+- * all timestamp data at once, software should instead use
+- * ice_ptp_reset_ts_memory_quad_eth56g().
+- *
+- * This function should only be called on an idx whose bit is set according to
+- * ice_get_phy_tx_tstamp_ready().
++ * This function should only be called on an index whose bit is set according
++ * to ice_get_phy_tx_tstamp_ready(), or as part of a full sweep when paired
++ * with a PHY soft reset via ice_ptp_phy_soft_reset_eth56g().
+  *
+  * Return:
+  * * %0     - success
+@@ -1152,24 +1130,16 @@ static int ice_read_ptp_tstamp_eth56g(struct ice_hw *hw, u8 port, u8 idx,
+ static int ice_clear_ptp_tstamp_eth56g(struct ice_hw *hw, u8 port, u8 idx)
+ {
+ 	u64 unused_tstamp;
+-	u16 lo_addr;
  	int err;
- 	u8 idx;
  
-+	ice_ptp_wait_for_tracker_drain(pf, tx);
-+
- 	err = ice_get_phy_tx_tstamp_ready(hw, tx->block, &tstamp_ready);
+-	/* Read the timestamp register to ensure the timestamp status bit is
+-	 * cleared.
++	/* Per the PHY spec, reading the timestamp memory location is what
++	 * clears the entry's valid bit and its corresponding (read-only)
++	 * ts_memory_status bit.
+ 	 */
+ 	err = ice_read_ptp_tstamp_eth56g(hw, port, idx, &unused_tstamp);
  	if (err) {
- 		dev_dbg(ice_pf_to_dev(pf), "Failed to get the Tx tstamp ready bitmap for block %u, err %d\n",
+ 		ice_debug(hw, ICE_DBG_PTP, "Failed to read the PHY timestamp register for port %u, idx %u, err %d\n",
+ 			  port, idx, err);
+-	}
+-
+-	lo_addr = (u16)PHY_TSTAMP_L(idx);
+-
+-	err = ice_write_port_mem_eth56g(hw, port, lo_addr, 0);
+-	if (err) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to clear low PTP timestamp register for port %u, idx %u, err %d\n",
+-			  port, idx, err);
+ 		return err;
+ 	}
+ 
+@@ -1177,19 +1147,43 @@ static int ice_clear_ptp_tstamp_eth56g(struct ice_hw *hw, u8 port, u8 idx)
+ }
+ 
+ /**
+- * ice_ptp_reset_ts_memory_eth56g - Clear all timestamps from the port block
++ * ice_ptp_clear_tx_memory_status_eth56g - Reset one port's Tx timestamp memory
+  * @hw: pointer to the HW struct
++ * @port: port number to clear
++ *
++ * Fully reset a single PHY port's Tx timestamp memory. Per the PHY spec, the
++ * only way to clear a timestamp valid bit (and its read-only ts_memory_status
++ * bit) is to read the timestamp memory location, so read every entry for the
++ * port (two 32-bit reads each). This discards all timestamp data on the port,
++ * so it must only be used for a full reset; callers that must preserve
++ * in-flight timestamps clear individual indices via ice_clear_phy_tstamp().
++ *
++ * Due to interactions with an internal HW counter for the number of
++ * outstanding Tx timestamps, this *must* only be called as part of the
++ * ice_ptp_phy_soft_reset_eth56g() procedure. Otherwise, the internal counter
++ * may become out of sync and prevent new timestamp interrupts.
++ *
++ * Failure to read a given index (i.e. due to a transient sideband queue
++ * failure) is not considered fatal as the PHY port is about to be soft reset.
++ * While the soft reset does not clear the timestamp memory, software
++ * shouldn't be reading the timestamp memory without already knowing it is
++ * valid via ice_get_phy_tx_tstamp_ready(), and this sweep is just
++ * a precaution to ensure the memory is in a known state.
+  */
+-static void ice_ptp_reset_ts_memory_eth56g(struct ice_hw *hw)
++static void ice_ptp_clear_tx_memory_status_eth56g(struct ice_hw *hw, u8 port)
+ {
+-	unsigned int port;
++	int err, failed = 0;
++	u8 idx;
+ 
+-	for (port = 0; port < hw->ptp.num_lports; port++) {
+-		ice_write_ptp_reg_eth56g(hw, port, PHY_REG_TX_MEMORY_STATUS_L,
+-					 0);
+-		ice_write_ptp_reg_eth56g(hw, port, PHY_REG_TX_MEMORY_STATUS_U,
+-					 0);
++	for (idx = 0; idx < INDEX_PER_PORT; idx++) {
++		err = ice_clear_ptp_tstamp_eth56g(hw, port, idx);
++		if (err)
++			failed++;
+ 	}
++
++	if (failed)
++		dev_warn(ice_hw_to_dev(hw), "Failed to clear %d PHY timestamp registers for port %u\n",
++			 port, failed);
+ }
+ 
+ /**
+@@ -2295,6 +2289,7 @@ int ice_ptp_read_tx_hwtstamp_status_eth56g(struct ice_hw *hw, u32 *ts_status)
+  *
+  * Trigger a soft reset of the ETH56G PHY by toggling the soft reset
+  * bit in the PHY global register. The reset sequence consists of:
++ *   0. Reading every timestamp memory register to clear its valid bit
+  *   1. Clearing the soft reset bit
+  *   2. Asserting the soft reset bit
+  *   3. Clearing the soft reset bit again
+@@ -2303,6 +2298,12 @@ int ice_ptp_read_tx_hwtstamp_status_eth56g(struct ice_hw *hw, u32 *ts_status)
+  * to settle. This provides a controlled way to reinitialize the PHY
+  * without requiring a full device reset.
+  *
++ * To ensure that the internal counter matches the contents of the
++ * PHY_REG_TX_MEMORY_STATUS, read every timestamp index prior to performing
++ * the soft reset. The PHY_REG_TX_MEMORY_STATUS reads ensure that the region
++ * is cleared, while the soft reset procedure ensures that the timestamp
++ * counter is reset to zero.
++ *
+  * Return: 0 on success, or a negative error code on failure when
+  *         reading or writing the PHY register.
+  */
+@@ -2311,6 +2312,8 @@ int ice_ptp_phy_soft_reset_eth56g(struct ice_hw *hw, u8 port)
+ 	u32 global_val;
+ 	int err;
+ 
++	ice_ptp_clear_tx_memory_status_eth56g(hw, port);
++
+ 	err = ice_read_ptp_reg_eth56g(hw, port, PHY_REG_GLOBAL, &global_val);
+ 	if (err) {
+ 		ice_debug(hw, ICE_DBG_PTP, "Failed to read PHY_REG_GLOBAL for port %d, err %d\n",
+@@ -5802,8 +5805,9 @@ void ice_ptp_reset_ts_memory(struct ice_hw *hw)
+ 		ice_ptp_reset_ts_memory_e82x(hw);
+ 		break;
+ 	case ICE_MAC_GENERIC_3K_E825:
+-		ice_ptp_reset_ts_memory_eth56g(hw);
+-		break;
++		/* E825 hardware must only reset timestamp memory as part of
++		 * the soft reset procedure.
++		 */
+ 	case ICE_MAC_E810:
+ 	default:
+ 		return;
 
 -- 
 2.56.0.rc0.395.gd1f3524e15dc
