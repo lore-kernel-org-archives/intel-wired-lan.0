@@ -4,25 +4,25 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 11A50C982FA
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 53603C98307
 	for <intel-wired-lan@archiver.kernel.org>; Tue, 22 Sep 2026 15:22:42 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id CEBC240709;
-	Tue, 22 Sep 2026 15:22:41 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 0CFAE4070F;
+	Tue, 22 Sep 2026 15:22:42 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id T4yVuM7SKrji; Tue, 22 Sep 2026 15:22:41 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 113A740674
+ id 5aocPHEoS077; Tue, 22 Sep 2026 15:22:40 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 12D5140636
 Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790090561;
-	b=q4UK+i1xGe3kTpbmq3gsplCHBKxB+WyXzfP+J3xAcz9hpXRypAU+lm+W1iexSsU73YzX
-	 IRhp1TwliGi3gTDD2JAcaEbf8IXFFpH9edyFwcGP+hWmL003swR4TvuLktqTfEF3o9e5/
-	 qVIZF2rd4obacOj1b7lAuLr7bmYKOKurIswiZv043rH7drbSui+/6oAF1xPds57c65REP
-	 cIlBoKmODEUOglX21V6Qa/fdtIWESlI48HwuWnLSTmWMuDIXM15+E3Uw7favLAzLjkDUb
-	 N5pCl6Dso5flJ9Qe4UF/r6ka0Vvsr9IsuTv/yAcP1UTsh/Vb7LRuy+aYPG80RQGOigw==
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790090560;
+	b=Vwq1RwprOjYAb6/TZ6f6sNrtypAsVnXjbH0UvFVkSM436g/sqSJIeqX7Sc+3eysSGIb0
+	 A35jQtWnmtsjhJSAORabMhvRd1yX8sQanKM7gK58hN50DH6rd2hq+eG4e7WeCy63hqcwI
+	 ip3lc5iHGTvrxp3mKRN83khMXZeaD1Ad9Wzqphu0Y3q4D2V211Q6P+nIJUlSCb5AQECcW
+	 NkKEwgr4uglHeX3x6U4qJnsVuBLqUfsXHyDlr8KjVmhFdlVAvPgSVBEc6uEjPwEPnb9i3
+	 35GiOf0pkqZnjjFjUNnQ6L/d7ALqtiZHCr+iY+pVQFlnltBLJhY6pyWHW6xJs9YitXw==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1790090561;
+	c=relaxed/relaxed; t=1790090560;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
@@ -32,128 +32,129 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 Content-Type:Content-Transfer-Encoding:X-Mailman-Approved-At:
 	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
 	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=ezI6opJL+TJWnK9b0Jz6azXtBu0v4XKOZOc9c416xu4=;
-	b=TAZdlBLaMzI7MeOSUYh5xpG6yZBvczH0QicWa1CmFPEVFg9qi8phN7tnPeQULkXtZ065
-	 WrZ/owRpmQMjM0fEq4uqAyJr5C5gSZgaH6LUIk1ZODhEMWwhoDiWYVr1OZhcvbRPuiGlU
-	 L3CQ1j59sjLwYYMqSdr2Nt8N842UPQflEjW1mFgitNxiE+oakMKNa/i06kpp9jV1Dc6rW
-	 aRCK7nHQI+ar7nhNtWW1sff5VxW3zz/nX9EsqUnoXfFvLhkM9TyaIKyXdyK9A/oYW8/Oo
-	 Xz8rKnWg5y+DRznGRwtbbSepTVKHyW+u/fHrLU9j8SdgFifNpxYlfkYnvMam/4qPCrg==
+	bh=pi/ltDl53G+OLOHtz8yJJRdSjnsGwK1VjOjXk5caKu4=;
+	b=ahkbDTZAXPi2KtJYjcaGj4wNhxA0SPWjnuiStKawYvhaoV/CxwGgtgWCIi2K/LaFQCW3
+	 QbH6/tSk1rRsC2KF+8XG0gc0hWOH3lUabNb7rJawMD23fTDSdzaJRaGOF0ITJkpi0YmRc
+	 HOE97GTZNWaraWhjKlXbE2fp9C/uxI5Rcns11fcfh0GCM1cwnyhXYOVfgPzCA4gpPlOYy
+	 PKYtKSdcUFFpw5VyMeiKsCdw/Eb6TY1+KeOEZMV6qVHjvo94MvUhFvgh+Mlq3T0uljav2
+	 dsu9xRdTd8/72aPv0b2YK6ByBFo1l0sLe5+QakY/ckMqLzq0iz+QNZ7KcoVz422vj2g==
 ARC-Authentication-Results: i=2; smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1790090561;
-	bh=ezI6opJL+TJWnK9b0Jz6azXtBu0v4XKOZOc9c416xu4=;
+	s=default; t=1790090560;
+	bh=pi/ltDl53G+OLOHtz8yJJRdSjnsGwK1VjOjXk5caKu4=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=PF7j42ly+8XebK5WnSREqrjVKCzmc4q8RK0UN1DeXz9VvzPCSKUV9lqIEbFTIaQdR
-	 2atbrHBOIzElbkyboITUV+kPsuXNt2g7j3xmm7u1vJ5Peu/BojwtsRK3dllMKcRkFP
-	 lSe0nQ8vgU8ChMxOfu+I1JCh5yXtotUN5NqFWOM8HiJF9t4lm7v81orrQYXLObeyw/
-	 sJr8jW+bM32DoLX1VjlGlJguoucHDD2Sc32Oqmyvwqvk519kvSPcoUGC8uJRhTEn1M
-	 5rSSvz5HJsYqusKKylliRGI0POv4IbxWjyr0G2Bv1IDKIj5FSl3x4TfumIHT3pOcI6
-	 8vcYuxojQ5+WQ==
+	b=JlqTIYHecnIU0ycA4WaP1nxPVmxm7VxQMFbUXGTCX6hTo9T8sgSUyGo8a7HJhSfB2
+	 CGi6s/1cWqwtCtXTHSHHMNfUKU2av7ze3gW6rNAh/le9wpbtvWuWlP3egktfaq8/7d
+	 86uS6dl2VxOtMqSqsyf6gAS8zfEhKUfhKvbAZv4AxgZ+Qi4hxSvXAxREl20Ao9azn1
+	 7r8XZ5rgePe0o2I9xawtGk5ng2BxANoEVt3Q1Ok+t5L4Gs3+sOZ8DL+8DLErXbfCjO
+	 Khb8p/6Tvtq9XvmorGnNMmpAMVgH+YwTFEhT1D3vFyhCmGm5aNxm2Kit1May9S4Kpn
+	 DpxVGfsfpcWXQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 113A740674;
-	Tue, 22 Sep 2026 15:22:41 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 5706FD1
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 13:33:48 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 12D5140636;
+	Tue, 22 Sep 2026 15:22:40 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 4A9B4352
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 13:33:47 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 494DC60626
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 13:33:48 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 3C2C180DE5
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 13:33:47 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id n5OCxffzEVp1 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 22 Sep 2026 13:33:47 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org F36D860625
-Authentication-Results: smtp3.osuosl.org;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id S-Bu_YOjtiFc for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 22 Sep 2026 13:33:45 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 2926E80DA2
+Authentication-Results: smtp1.osuosl.org;
  arc=none smtp.remote-ip="2a00:1450:4864:31::11"
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790084027;
- b=IPN6s7eLClPDy+6dZ4cZhS/+Ot9zcvEJBvsKNy31so68GzpxPx9eUk4ECNxD0m9dt0PL
- /BoIGFR33u2kXBfAkUXKVyGnsxXKhjFjot+EOQ9eHA5pwo6TH7vC87x9xpj8BQruVUHug
- jPYxKprkRhKU0j+gWTH0bFiDj/bozsGq8K8/yTYl6oGYPFzVJgtLPaOAyG7qbNBcQ4P8a
- nP3V8a2llg6LzT4T0v+mWL5Czir00uKn1xoc0Z3f/S4sw9vowBNBRHEtkg9xePDkhSHBV
- rW+jzW6xnNZ/F+6bHqP48sUIZso2XnLLippYtn72DwyOwNkhMLnzJd6mdCxdZ7atWXw==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790084025;
+ b=U7fy3hoem7MiutH7YHEIXTrJga9aMXSITxPlwpHwtpnlNWO6rUAXsG9GyPf3MHhcb+HF
+ zys2Tu2X8tHysnz6fVSYiI8DKrWSd0V5Kr/DBlHsCGZ47d0SgmqlpUFz500UoGlgP+Vpm
+ ZqelN+140vmGRCWqXlL6ljjP/pxYMrbFhZVGOkMwKBtTCZ/f4orQZA3mwIiWn/krTYcG5
+ dVuKawG77c7AStd/+I7FOrGrzCoQjx6GAK8eNPq6zqtf2bu1oKfkAfT0xYmUzAGnodY4z
+ tJwsvcD+wD9mWQNE/IZ2HEj+Dc3nEzcqlS99/nxTOIvfpVPzQcgLTFs0SG7bcWs3L/g==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1790084027;
+ c=relaxed/relaxed; t=1790084025;
  h=Received-SPF:Received:DKIM-Signature:X-Google-DKIM-Signature:
  X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
  From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
  MIME-Version:Content-Type:Content-Transfer-Encoding;
- bh=ezI6opJL+TJWnK9b0Jz6azXtBu0v4XKOZOc9c416xu4=;
- b=E9te1n1D0PUCLwIydIrRC+90cJzhFMp7q1CTgaek0B4T6BTTsG/PxP0xIjL0VHlN9HMk
- ijPgybkMWgtUsOexjTRdI3M+AHR9QiWWm6dTaD1yfx5fa+0sJHZ9q+v+cLYzM0kW3IvQs
- 3KSL70CKaXHmS2vHTMr95hrrbituB6NK+ntyqXUmII+8aK5IdgEvuj0pQ03cbGY5SVTar
- 7zq03TM0KYZ8XHuRRUg6UrjA6H+f+DKeKpl5vsroosShEcIOwmaXklQ3WH8YmvkwyBIDR
- ChNKu0dDsUWmPnkEUPXOjMz3yPiqSWISPTiRkadIMr3u1lPFo+rXwASXUnQvjBzA5EQ==
-ARC-Authentication-Results: i=1; smtp3.osuosl.org;
+ bh=pi/ltDl53G+OLOHtz8yJJRdSjnsGwK1VjOjXk5caKu4=;
+ b=gJJp8XNHCwg9RZroYLvQVFDrtQWaI3yDeJR1lbJRSK0ohLFjOk79gBIAATByPa8jTPVz
+ QCTYKcl5C+gsHBTqxletwNO4hX90BRAmo582nvONQaAb3+0o4JMWOfsjv4y3smfgV6F44
+ 2VFKvZ1UMjQ6sLiDLBlDOXyT9vHxU4Qkw9FujYbJB7P4LGw05OsmzxphbrQY8GcgoYMvF
+ A1XuPxK2Sv4VAnw0eW9Yvhz1dvrYwMSPHcnUaVAYx9J2recwGfaXA0rkyob4BxcDF92rr
+ 8cQaRTt7k76uRpfCGISMaOOt0i+U9d84hvY9ZorwhZMkxq45b6+4U/WnCNwZWBL60zQ==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org;
  dmarc=pass header.from=suse.com; 
  dkim=pass header.d=suse.com header.i=@suse.com header.a=rsa-sha256
- header.s=google header.b=T1cNiJIB; 
+ header.s=google header.b="Ncrtg/9G"; 
  arc=none smtp.remote-ip="2a00:1450:4864:31::11"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
  client-ip=2a00:1450:4864:31::11; helo=mail-wm2-x11.google.com;
  envelope-from=petr.pavlu@suse.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp3.osuosl.org; dmarc=pass (p=quarantine dis=none)
+Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=suse.com
-Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256
- header.s=google header.b=T1cNiJIB
+Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com
+ header.a=rsa-sha256 header.s=google header.b=Ncrtg/9G
 Received: from mail-wm2-x11.google.com (mail-wm2-x11.google.com
  [IPv6:2a00:1450:4864:31::11])
- by smtp3.osuosl.org (Postfix) with ESMTPS id F36D860625
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 13:33:46 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 2926E80DA2
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 13:33:44 +0000 (UTC)
 Received: by mail-wm2-x11.google.com with SMTP id
- 5b1f17b1804b1-49e8185e037so24105655e9.3
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 06:33:45 -0700 (PDT)
+ 5b1f17b1804b1-49ccfd61ecaso36622085e9.3
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 06:33:44 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=suse.com; s=google; t=1790084024; x=1790688824; darn=lists.osuosl.org;
+ d=suse.com; s=google; t=1790084022; x=1790688822; darn=lists.osuosl.org;
  h=content-transfer-encoding:content-type:mime-version:references
  :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
  :date:message-id:reply-to:content-type;
- bh=ezI6opJL+TJWnK9b0Jz6azXtBu0v4XKOZOc9c416xu4=;
- b=T1cNiJIB8pnN26y0udqUzrFA/tQ6q5n4WS0J22+rAhjEfLRnv3gQteHbSEdQ76z91J
- aND0VTYPtTA1mV+Og3qm8I8/ZmYHAeqxLv5+Hja1n/76PIzez66EtP8UneFzaQtJsC4d
- S32bMRRLGq2ddnIBjjPOuh0Pi1C3Jzm525q7eMBraUR9MbDPrNJa7SstpQpUq91xQjVJ
- CE3/JYA0WN+X+lDmhw+EXwsqYzd8gUU05bXzGbEbkfE6nM7Y/HqPCmkb+kS5TUbnj7W/
- sLNnFMpZKU+cCdYHdZ1VNcg/5ugFwnI3i6R3IaBuupVqUWvaNBi2EZBux4TDlFByqORU
- A30w==
+ bh=pi/ltDl53G+OLOHtz8yJJRdSjnsGwK1VjOjXk5caKu4=;
+ b=Ncrtg/9GVB4crxlkxw0YExbKVqzumTyHT7EAAmFT0GJLTTQScoE4BQzb7F0V+axdge
+ 9xRSIE6e220zDpFRCBRD9bDpu6CpLQzPMYESkoPkytkkqUdHScYJROh2RwqwjGLEr91K
+ UOmtOrXn2yCrNJzo6LOgim3TCv9DKSirI97iQO6j5OHzB1kgQCkxLaikdAvn6zcpbNNE
+ bPmJlS2crxKGDWMaYGtZqK+bBmzbFuc6/GoVThXLksWnwzEIR+qDpOmcNkupHi860g2p
+ O2fzImaUhF4g8mxDp7+jejqXOzbmX9X0FU2PsDHUGc/JMTlvPcuv5lJByX+dSc1wS8+O
+ dDZg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1790084024; x=1790688824;
+ d=1e100.net; s=20260707; t=1790084022; x=1790688822;
  h=content-transfer-encoding:content-type:mime-version:references
  :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
  :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
  :content-type;
- bh=ezI6opJL+TJWnK9b0Jz6azXtBu0v4XKOZOc9c416xu4=;
- b=2gRSpAp+5ZzjvC8znjVdKz3I9ihAB9icDP/7F1bEcKkiBLHpGDJr4Qu48Egne9XGvs
- LxKq3aSlfdy/duwOOyYWCzUVLucJo1aGkgxSESRoc9zHJLjo6WIAQS0Mk7clMIfXdhrC
- Utt45Wh9mUR4R+M4D+YLYq/ypGD5jvK9pTz5IMWR7gOzJsCeQIbcHInlcRQWe3yOk6GA
- LcEi8+Hv8cjNmHD+WcDKctLPMI9Ir+zqTnjnjUsqmJmt/p6zRfWslprT4gDp+nWStA+j
- n91vrpl+zHfdkbU1DbBcmD9GbZM+ZvtbYcGHWA7XkwZK3N+DT72mgs8UEi12Mg1TlA0c
- HXPw==
+ bh=pi/ltDl53G+OLOHtz8yJJRdSjnsGwK1VjOjXk5caKu4=;
+ b=viBHXUCSgb1sndmQfMze9kFoTr6cS0teqFUTnI6Nko0Ar6MPT0bATe1QOeAM0RjMOW
+ 0j6v0eRCODLhF8t3DXa8j5nhXP285/E6+9Lm7gyW+6hTr89yhZ3yCjQbeDa81IAYFCyX
+ 0rInGIt9ZJNBZyeAM0bq71oe+5Jk5BFY/w0g9uhOzp+L4ZGJ09Cn3yONSAvbMDXZ53M5
+ I+Gvi26Samq79Em0PQyqTk2Ns/B3vuTdG4F4sCDLTxNLLdol1FA00HkWz1oO5/XlBrMY
+ 2vklXvUke7IhKmK140ezNalLXex1RTbuZLNdcuFtIe3Nnma7oxYik4DrP3j4tokv05dg
+ 821w==
 X-Forwarded-Encrypted: i=1;
- AKwUvBxxNI+tJm8ly0x2aCePOSoJRcKiD8jEYEonOWsQElHsNty4bSYSRSHl+GixVhIwP3rebU7EXQPR2Ccwn72UHgM=@lists.osuosl.org
-X-Gm-Message-State: AFuF++mqCZevcB/ZS1M2tMLroY85N3bCjFlLKM1vTgkc3o9d+cNM1RgV
- crkOx2y8/LyKKGU8NZ35FV4TR3jXlGLLhC7SxsezLTDfhtw7zWMySxy+7ZI/JfKwsfg=
-X-Gm-Gg: AYBFou3MF1KBX9WlLWsX+oiQ84jqZh/AL/rYiKx8yWVOdu9T3GWYfALeE67vgBAOHF+
- L5m9n6FmSedXaD1c5FASq+zQKNJqxdJEaDAFJZF+quaNZdSvV/mKR6STsyKiWovRkAszmWIcBGN
- Izhgs9LlFAT827g5Oo6L8zaDr7IzutdrbSx403xNTo9gQv+tyG/hT/sydTwL55mvYqO2r3cDnbp
- V87DZ8T2K3jD+C+ZRunnPv/nGYtzoOdgDxBvz1yF9zMMl3w8Qu249hanIVx1qfkfAXMJ6QnIFWH
- 0h1uohCr6eJ1BzAOTxa4TmwlEyUfwvHe/dmdJbXlZz4/PMKfN49O5L7JVZFKqbkmKNooeaBq+tV
- Le8uCKeWK8fVqexBMH86KZPVglA2QTa+fEbSKfGcE3AgZ3EJBMPLzT3MxxPby0AbIDMfpIiMyuj
- Zk9PTE4UH+KP4Mt57xW+YeMVCNT2XUkNGzY8ernLl/1cVVXJ9fIWKglCBV5AkFkiWV1NUT5z3YM
- ePT7YhllQR8G4PbqjmGUfAz3+rCIuvbOWIerDNpkoOVLhmH6i8RwM8e0OVObCLl7nvnuLM=
-X-Received: by 2002:a05:600c:81c8:b0:49c:fc6c:be08 with SMTP id
- 5b1f17b1804b1-49fc58581bfmr184348345e9.31.1790084023989; 
- Tue, 22 Sep 2026 06:33:43 -0700 (PDT)
+ AKwUvBwSxJaPgYscKvpGw0lgHIB2W/H/a9ER6P9hQi+73ialqDKTVgZ429DZanMy/qgN79gR/tCDzqeqSSzCekpZXTk=@lists.osuosl.org
+X-Gm-Message-State: AFuF++lBdYr0XYsQNlcsppOhvq+D4rFkLezGD8fxpLwdKNd4GjrmMMDw
+ n8p4RBLslsmeHG+h87cHs5gSNhlH+K0Upl+ijbYr2onyfIBE6bOjPKnAvmeSNmIfx1s=
+X-Gm-Gg: AYBFou1CeQ89jbsVFpiGZpG1okDE+icksc6WkDwISYG/nVJHUjZMPSia5Vft/zaIOZI
+ Xw0yXSWh/2tViq/B7jvBLUT6+00PewQS+MGh6gVh4gXJFfjg71Iu7QfG0pw6d7kxrd4n6e3yd6m
+ wIr62dI70ShZ7E27NsRdL0L7umtsbi/k2/CBFly3iCxlCVfGKBVXKVVWnvCSYV8sNHm04aeIVxF
+ fnOB90EPXCBnFT38EA/gDS/+ea10J28TCX2S17AYwsKNRKHnqfloOqhAUIQ6+nycjSwIceeWEfv
+ myzquHom3CD0YHu2tnWhT7rEf8dgXnd0G+TqDXu1UWMy1KX/KuXVtQkvlC9kqhMSSQCezdLQMdF
+ Yf04WrubGzTREpCR1+cnNrPTddDfvEmNlcYEoSK6YZ5mWXEoP1aiGlzrOnJmB/Ci7AdUXhPJU8v
+ xxKwjhhnt+oLxvyXgDxtTjal6T8Ja9BoJelBByqihLRIYIVSErXYPNoU6INQmQtni7dr2EfeCTB
+ ZS/B1Nnjdvdc5mO7T7IkOwNnaaBRht2oGy7Byi0URJeNXdFKZfVxgtZwmPNMM0mc2UEuMmR7iXx
+ gduCBg==
+X-Received: by 2002:a05:600c:3f07:b0:49e:7caa:e7b2 with SMTP id
+ 5b1f17b1804b1-49fc5756f60mr190416265e9.29.1790084022220; 
+ Tue, 22 Sep 2026 06:33:42 -0700 (PDT)
 Received: from zovi.suse.cz
  (dynamic-2a00-1028-838d-271e-8e3b-4aff-fe4c-a100.ipv6.o2.cz.
  [2a00:1028:838d:271e:8e3b:4aff:fe4c:a100])
  by smtp.gmail.com with ESMTPSA id
- 5b1f17b1804b1-49fdace76e8sm70243845e9.1.2026.09.22.06.33.42
+ 5b1f17b1804b1-49fdace76e8sm70243845e9.1.2026.09.22.06.33.40
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 22 Sep 2026 06:33:43 -0700 (PDT)
+ Tue, 22 Sep 2026 06:33:41 -0700 (PDT)
 From: Petr Pavlu <petr.pavlu@suse.com>
 To: Wim Van Sebroeck <wim@linux-watchdog.org>,
  Guenter Roeck <linux@roeck-us.net>, Ian Abbott <abbotti@mev.co.uk>,
@@ -184,9 +185,9 @@ Cc: linux-watchdog@vger.kernel.org, dri-devel@lists.freedesktop.org,
  linux-rtc@vger.kernel.org, linux-usb@vger.kernel.org,
  linux-serial@vger.kernel.org, linux-atm-general@lists.sourceforge.net,
  linux-modules@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] module: Remove obsolete __MODULE_STRING()
-Date: Tue, 22 Sep 2026 15:32:23 +0200
-Message-ID: <20260922-module-string-v1-3-c18766690185@suse.com>
+Subject: [PATCH 2/3] drivers: Replace __MODULE_STRING() with __stringify()
+Date: Tue, 22 Sep 2026 15:32:22 +0200
+Message-ID: <20260922-module-string-v1-2-c18766690185@suse.com>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20260922-module-string-v1-0-c18766690185@suse.com>
 References: <20260922-module-string-v1-0-c18766690185@suse.com>
@@ -212,30 +213,704 @@ __MODULE_STRING() has been an alias for __stringify() since "[PATCH]
 MODULE_PARM support for older modules" [1] in 2002-12. That change also
 moved it to the graveyard section at the end of linux/module.h
 
-Remove __MODULE_STRING() now that all remaining uses have been replaced
-directly with __stringify().
+Replace the remaining uses of __MODULE_STRING() with __stringify() in
+preparation for its removal.
 
 Link: https://git.kernel.org/tglx/history/c/136839a1b4 [1]
 Signed-off-by: Petr Pavlu <petr.pavlu@suse.com>
 ---
- include/linux/module.h | 4 ----
- 1 file changed, 4 deletions(-)
+ drivers/comedi/comedi_fops.c                          |  5 +++--
+ drivers/gpu/drm/drm_fb_helper.c                       |  3 ++-
+ drivers/hwmon/fschmd.c                                |  3 ++-
+ drivers/hwmon/nct7904.c                               |  5 +++--
+ drivers/hwmon/sch56xx-common.c                        |  3 ++-
+ drivers/hwmon/w83793.c                                |  5 +++--
+ drivers/i2c/busses/i2c-kempld.c                       |  3 ++-
+ drivers/net/ethernet/atheros/atl1e/atl1e_param.c      |  9 +++++----
+ drivers/net/ethernet/atheros/atlx/atl1.c              |  3 ++-
+ drivers/net/ethernet/atheros/atlx/atl2.c              | 11 ++++++-----
+ drivers/net/ethernet/intel/e1000/e1000_param.c        | 15 ++++++++-------
+ drivers/net/ethernet/intel/e1000e/param.c             | 16 ++++++----------
+ drivers/net/ethernet/oki-semi/pch_gbe/pch_gbe_param.c |  7 ++++---
+ drivers/platform/cznic/turris-omnia-mcu-watchdog.c    |  3 ++-
+ drivers/rtc/rtc-ds1374.c                              |  3 ++-
+ drivers/thunderbolt/tb.c                              |  3 ++-
+ drivers/thunderbolt/tunnel.c                          |  5 +++--
+ drivers/tty/serial/8250/8250_platform.c               |  3 ++-
+ drivers/usb/atm/speedtch.c                            | 15 ++++++++-------
+ drivers/usb/atm/usbatm.c                              | 17 +++++++++--------
+ 20 files changed, 76 insertions(+), 61 deletions(-)
 
-diff --git a/include/linux/module.h b/include/linux/module.h
-index 96cc98568eea..0d9157a2d487 100644
---- a/include/linux/module.h
-+++ b/include/linux/module.h
-@@ -886,10 +886,6 @@ extern const struct kobj_type module_ktype;
+diff --git a/drivers/comedi/comedi_fops.c b/drivers/comedi/comedi_fops.c
+index c09bbe04be6c..05d14839c5a6 100644
+--- a/drivers/comedi/comedi_fops.c
++++ b/drivers/comedi/comedi_fops.c
+@@ -29,6 +29,7 @@
+ #include <linux/io.h>
+ #include <linux/uaccess.h>
+ #include <linux/compat.h>
++#include <linux/stringify.h>
  
- #define symbol_request(x) try_then_request_module(symbol_get(x), "symbol:" #x)
+ #include "comedi_internal.h"
  
--/* BELOW HERE ALL THESE ARE OBSOLETE AND WILL VANISH */
--
--#define __MODULE_STRING(x) __stringify(x)
--
- #ifdef CONFIG_GENERIC_BUG
- void module_bug_finalize(const Elf_Ehdr *, const Elf_Shdr *,
- 			 struct module *);
+@@ -82,14 +83,14 @@ unsigned int comedi_default_buf_size_kb = CONFIG_COMEDI_DEFAULT_BUF_SIZE_KB;
+ module_param(comedi_default_buf_size_kb, uint, 0644);
+ MODULE_PARM_DESC(comedi_default_buf_size_kb,
+ 		 "default asynchronous buffer size in KiB (default "
+-		 __MODULE_STRING(CONFIG_COMEDI_DEFAULT_BUF_SIZE_KB) ")");
++		 __stringify(CONFIG_COMEDI_DEFAULT_BUF_SIZE_KB) ")");
+ 
+ unsigned int comedi_default_buf_maxsize_kb =
+ 	CONFIG_COMEDI_DEFAULT_BUF_MAXSIZE_KB;
+ module_param(comedi_default_buf_maxsize_kb, uint, 0644);
+ MODULE_PARM_DESC(comedi_default_buf_maxsize_kb,
+ 		 "default maximum size of asynchronous buffer in KiB (default "
+-		 __MODULE_STRING(CONFIG_COMEDI_DEFAULT_BUF_MAXSIZE_KB) ")");
++		 __stringify(CONFIG_COMEDI_DEFAULT_BUF_MAXSIZE_KB) ")");
+ 
+ static DEFINE_MUTEX(comedi_board_minor_table_lock);
+ static struct comedi_device
+diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
+index d4664ed468b2..36009bb02c25 100644
+--- a/drivers/gpu/drm/drm_fb_helper.c
++++ b/drivers/gpu/drm/drm_fb_helper.c
+@@ -31,6 +31,7 @@
+ 
+ #include <linux/console.h>
+ #include <linux/export.h>
++#include <linux/stringify.h>
+ 
+ #include <drm/drm_atomic.h>
+ #include <drm/drm_drv.h>
+@@ -54,7 +55,7 @@ static int drm_fbdev_overalloc = CONFIG_DRM_FBDEV_OVERALLOC;
+ module_param(drm_fbdev_overalloc, int, 0444);
+ MODULE_PARM_DESC(drm_fbdev_overalloc,
+ 		 "Overallocation of the fbdev buffer (%) [default="
+-		 __MODULE_STRING(CONFIG_DRM_FBDEV_OVERALLOC) "]");
++		 __stringify(CONFIG_DRM_FBDEV_OVERALLOC) "]");
+ 
+ /*
+  * In order to keep user-space compatibility, we want in certain use-cases
+diff --git a/drivers/hwmon/fschmd.c b/drivers/hwmon/fschmd.c
+index 019fc32bf318..df9418a86c83 100644
+--- a/drivers/hwmon/fschmd.c
++++ b/drivers/hwmon/fschmd.c
+@@ -35,6 +35,7 @@
+ #include <linux/miscdevice.h>
+ #include <linux/uaccess.h>
+ #include <linux/kref.h>
++#include <linux/stringify.h>
+ 
+ /* Addresses to scan */
+ static const unsigned short normal_i2c[] = { 0x73, I2C_CLIENT_END };
+@@ -43,7 +44,7 @@ static const unsigned short normal_i2c[] = { 0x73, I2C_CLIENT_END };
+ static bool nowayout = WATCHDOG_NOWAYOUT;
+ module_param(nowayout, bool, 0);
+ MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (default="
+-	__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
++	__stringify(WATCHDOG_NOWAYOUT) ")");
+ 
+ enum chips { fscpos, fscher, fscscy, fschrc, fschmd, fschds, fscsyl };
+ 
+diff --git a/drivers/hwmon/nct7904.c b/drivers/hwmon/nct7904.c
+index 976b8a008e44..04e1a8e6db37 100644
+--- a/drivers/hwmon/nct7904.c
++++ b/drivers/hwmon/nct7904.c
+@@ -23,6 +23,7 @@
+ #include <linux/i2c.h>
+ #include <linux/hwmon.h>
+ #include <linux/watchdog.h>
++#include <linux/stringify.h>
+ 
+ #define VENDOR_ID_REG		0x7A	/* Any bank */
+ #define NUVOTON_ID		0x50
+@@ -113,12 +114,12 @@
+ static int timeout;
+ module_param(timeout, int, 0);
+ MODULE_PARM_DESC(timeout, "Watchdog timeout in minutes. 1 <= timeout <= 255, default="
+-			__MODULE_STRING(WATCHDOG_TIMEOUT) ".");
++			__stringify(WATCHDOG_TIMEOUT) ".");
+ 
+ static bool nowayout = WATCHDOG_NOWAYOUT;
+ module_param(nowayout, bool, 0);
+ MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (default="
+-			__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
++			__stringify(WATCHDOG_NOWAYOUT) ")");
+ 
+ static const unsigned short normal_i2c[] = {
+ 	0x2d, 0x2e, I2C_CLIENT_END
+diff --git a/drivers/hwmon/sch56xx-common.c b/drivers/hwmon/sch56xx-common.c
+index a385aae3bb0f..febb8ba7dc2c 100644
+--- a/drivers/hwmon/sch56xx-common.c
++++ b/drivers/hwmon/sch56xx-common.c
+@@ -18,13 +18,14 @@
+ #include <linux/watchdog.h>
+ #include <linux/uaccess.h>
+ #include <linux/slab.h>
++#include <linux/stringify.h>
+ #include "sch56xx-common.h"
+ 
+ /* Insmod parameters */
+ static bool nowayout = WATCHDOG_NOWAYOUT;
+ module_param(nowayout, bool, 0);
+ MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (default="
+-	__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
++	__stringify(WATCHDOG_NOWAYOUT) ")");
+ 
+ #define SIO_SCH56XX_LD_EM	0x0C	/* Embedded uController Logical Dev */
+ #define SIO_UNLOCK_KEY		0x55	/* Key to enable Super-I/O */
+diff --git a/drivers/hwmon/w83793.c b/drivers/hwmon/w83793.c
+index c6ef04c69856..e1f2708b5db6 100644
+--- a/drivers/hwmon/w83793.c
++++ b/drivers/hwmon/w83793.c
+@@ -34,6 +34,7 @@
+ #include <linux/notifier.h>
+ #include <linux/reboot.h>
+ #include <linux/jiffies.h>
++#include <linux/stringify.h>
+ 
+ /* Default values */
+ #define WATCHDOG_TIMEOUT 2	/* 2 minute default timeout */
+@@ -57,13 +58,13 @@ static int timeout = WATCHDOG_TIMEOUT;	/* default timeout in minutes */
+ module_param(timeout, int, 0);
+ MODULE_PARM_DESC(timeout,
+ 	"Watchdog timeout in minutes. 2<= timeout <=255 (default="
+-				__MODULE_STRING(WATCHDOG_TIMEOUT) ")");
++				__stringify(WATCHDOG_TIMEOUT) ")");
+ 
+ static bool nowayout = WATCHDOG_NOWAYOUT;
+ module_param(nowayout, bool, 0);
+ MODULE_PARM_DESC(nowayout,
+ 	"Watchdog cannot be stopped once started (default="
+-				__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
++				__stringify(WATCHDOG_NOWAYOUT) ")");
+ 
+ /*
+  * Address 0x00, 0x0d, 0x0e, 0x0f in all three banks are reserved
+diff --git a/drivers/i2c/busses/i2c-kempld.c b/drivers/i2c/busses/i2c-kempld.c
+index 9b4c7cba62b6..d0438960c272 100644
+--- a/drivers/i2c/busses/i2c-kempld.c
++++ b/drivers/i2c/busses/i2c-kempld.c
+@@ -13,6 +13,7 @@
+ #include <linux/i2c.h>
+ #include <linux/delay.h>
+ #include <linux/mfd/kempld.h>
++#include <linux/stringify.h>
+ 
+ #define KEMPLD_I2C_PRELOW	0x0b
+ #define KEMPLD_I2C_PREHIGH	0x0c
+@@ -66,7 +67,7 @@ struct kempld_i2c_data {
+ static unsigned int bus_frequency = KEMPLD_I2C_FREQ_STD;
+ module_param(bus_frequency, uint, 0);
+ MODULE_PARM_DESC(bus_frequency, "Set I2C bus frequency in kHz (default="
+-				__MODULE_STRING(KEMPLD_I2C_FREQ_STD)")");
++				__stringify(KEMPLD_I2C_FREQ_STD)")");
+ 
+ static int i2c_bus = -1;
+ module_param(i2c_bus, int, 0);
+diff --git a/drivers/net/ethernet/atheros/atl1e/atl1e_param.c b/drivers/net/ethernet/atheros/atl1e/atl1e_param.c
+index 6b1d6df8da97..ff3423a4dc2e 100644
+--- a/drivers/net/ethernet/atheros/atl1e/atl1e_param.c
++++ b/drivers/net/ethernet/atheros/atl1e/atl1e_param.c
+@@ -7,6 +7,7 @@
+  */
+ 
+ #include <linux/netdevice.h>
++#include <linux/stringify.h>
+ 
+ #include "atl1e.h"
+ 
+@@ -181,7 +182,7 @@ void atl1e_check_options(struct atl1e_adapter *adapter)
+ 			.type = range_option,
+ 			.name = "Transmit Ddescription Count",
+ 			.err  = "using default of "
+-				__MODULE_STRING(ATL1E_DEFAULT_TX_DESC_CNT),
++				__stringify(ATL1E_DEFAULT_TX_DESC_CNT),
+ 			.def  = ATL1E_DEFAULT_TX_DESC_CNT,
+ 			.arg  = { .r = { .min = ATL1E_MIN_TX_DESC_CNT,
+ 					 .max = ATL1E_MAX_TX_DESC_CNT} }
+@@ -200,7 +201,7 @@ void atl1e_check_options(struct atl1e_adapter *adapter)
+ 			.type = range_option,
+ 			.name = "Memory size of rx buffer(KB)",
+ 			.err  = "using default of "
+-				__MODULE_STRING(ATL1E_DEFAULT_RX_MEM_SIZE),
++				__stringify(ATL1E_DEFAULT_RX_MEM_SIZE),
+ 			.def  = ATL1E_DEFAULT_RX_MEM_SIZE,
+ 			.arg  = { .r = { .min = ATL1E_MIN_RX_MEM_SIZE,
+ 					 .max = ATL1E_MAX_RX_MEM_SIZE} }
+@@ -220,7 +221,7 @@ void atl1e_check_options(struct atl1e_adapter *adapter)
+ 			.type = range_option,
+ 			.name = "Interrupt Moderate Timer",
+ 			.err  = "using default of "
+-				__MODULE_STRING(INT_MOD_DEFAULT_CNT),
++				__stringify(INT_MOD_DEFAULT_CNT),
+ 			.def  = INT_MOD_DEFAULT_CNT,
+ 			.arg  = { .r = { .min = INT_MOD_MIN_CNT,
+ 					 .max = INT_MOD_MAX_CNT} }
+@@ -239,7 +240,7 @@ void atl1e_check_options(struct atl1e_adapter *adapter)
+ 			.type = range_option,
+ 			.name = "Speed/Duplex Selection",
+ 			.err  = "using default of "
+-				__MODULE_STRING(MEDIA_TYPE_AUTO_SENSOR),
++				__stringify(MEDIA_TYPE_AUTO_SENSOR),
+ 			.def  = MEDIA_TYPE_AUTO_SENSOR,
+ 			.arg  = { .r = { .min = MEDIA_TYPE_AUTO_SENSOR,
+ 					 .max = MEDIA_TYPE_10M_HALF} }
+diff --git a/drivers/net/ethernet/atheros/atlx/atl1.c b/drivers/net/ethernet/atheros/atlx/atl1.c
+index 98a4d089270e..aef5de6287dc 100644
+--- a/drivers/net/ethernet/atheros/atlx/atl1.c
++++ b/drivers/net/ethernet/atheros/atlx/atl1.c
+@@ -56,6 +56,7 @@
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
+ #include <linux/string.h>
++#include <linux/stringify.h>
+ #include <linux/tcp.h>
+ #include <linux/timer.h>
+ #include <linux/types.h>
+@@ -198,7 +199,7 @@ static void atl1_check_options(struct atl1_adapter *adapter)
+ 			.type = range_option,
+ 			.name = "Interrupt Moderator Timer",
+ 			.err = "using default of "
+-				__MODULE_STRING(DEFAULT_INT_MOD_CNT),
++				__stringify(DEFAULT_INT_MOD_CNT),
+ 			.def = DEFAULT_INT_MOD_CNT,
+ 			.arg = {.r = {.min = MIN_INT_MOD_CNT,
+ 					.max = MAX_INT_MOD_CNT} }
+diff --git a/drivers/net/ethernet/atheros/atlx/atl2.c b/drivers/net/ethernet/atheros/atlx/atl2.c
+index 5560d5cc3169..853d2e1eb954 100644
+--- a/drivers/net/ethernet/atheros/atlx/atl2.c
++++ b/drivers/net/ethernet/atheros/atlx/atl2.c
+@@ -29,6 +29,7 @@
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
+ #include <linux/string.h>
++#include <linux/stringify.h>
+ #include <linux/tcp.h>
+ #include <linux/timer.h>
+ #include <linux/types.h>
+@@ -2921,7 +2922,7 @@ static void atl2_check_options(struct atl2_adapter *adapter)
+ 	/* Bytes of Transmit Memory */
+ 	opt.type = range_option;
+ 	opt.name = "Bytes of Transmit Memory";
+-	opt.err = "using default of " __MODULE_STRING(ATL2_DEFAULT_TX_MEMSIZE);
++	opt.err = "using default of " __stringify(ATL2_DEFAULT_TX_MEMSIZE);
+ 	opt.def = ATL2_DEFAULT_TX_MEMSIZE;
+ 	opt.arg.r.min = ATL2_MIN_TX_MEMSIZE;
+ 	opt.arg.r.max = ATL2_MAX_TX_MEMSIZE;
+@@ -2939,7 +2940,7 @@ static void atl2_check_options(struct atl2_adapter *adapter)
+ 	/* Receive Memory Block Count */
+ 	opt.type = range_option;
+ 	opt.name = "Number of receive memory block";
+-	opt.err = "using default of " __MODULE_STRING(ATL2_DEFAULT_RXD_COUNT);
++	opt.err = "using default of " __stringify(ATL2_DEFAULT_RXD_COUNT);
+ 	opt.def = ATL2_DEFAULT_RXD_COUNT;
+ 	opt.arg.r.min = ATL2_MIN_RXD_COUNT;
+ 	opt.arg.r.max = ATL2_MAX_RXD_COUNT;
+@@ -2960,7 +2961,7 @@ static void atl2_check_options(struct atl2_adapter *adapter)
+ 	/* Interrupt Moderate Timer */
+ 	opt.type = range_option;
+ 	opt.name = "Interrupt Moderate Timer";
+-	opt.err = "using default of " __MODULE_STRING(INT_MOD_DEFAULT_CNT);
++	opt.err = "using default of " __stringify(INT_MOD_DEFAULT_CNT);
+ 	opt.def = INT_MOD_DEFAULT_CNT;
+ 	opt.arg.r.min = INT_MOD_MIN_CNT;
+ 	opt.arg.r.max = INT_MOD_MAX_CNT;
+@@ -2973,7 +2974,7 @@ static void atl2_check_options(struct atl2_adapter *adapter)
+ 	/* Flash Vendor */
+ 	opt.type = range_option;
+ 	opt.name = "SPI Flash Vendor";
+-	opt.err = "using default of " __MODULE_STRING(FLASH_VENDOR_DEFAULT);
++	opt.err = "using default of " __stringify(FLASH_VENDOR_DEFAULT);
+ 	opt.def = FLASH_VENDOR_DEFAULT;
+ 	opt.arg.r.min = FLASH_VENDOR_MIN;
+ 	opt.arg.r.max = FLASH_VENDOR_MAX;
+@@ -2986,7 +2987,7 @@ static void atl2_check_options(struct atl2_adapter *adapter)
+ 	/* MediaType */
+ 	opt.type = range_option;
+ 	opt.name = "Speed/Duplex Selection";
+-	opt.err = "using default of " __MODULE_STRING(MEDIA_TYPE_AUTO_SENSOR);
++	opt.err = "using default of " __stringify(MEDIA_TYPE_AUTO_SENSOR);
+ 	opt.def = MEDIA_TYPE_AUTO_SENSOR;
+ 	opt.arg.r.min = MEDIA_TYPE_AUTO_SENSOR;
+ 	opt.arg.r.max = MEDIA_TYPE_10M_HALF;
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_param.c b/drivers/net/ethernet/intel/e1000/e1000_param.c
+index f4154ca7fcb4..5faf6d6280c8 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_param.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_param.c
+@@ -1,6 +1,7 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /* Copyright(c) 1999 - 2006 Intel Corporation. */
+ 
++#include <linux/stringify.h>
+ #include "e1000.h"
+ 
+ /* This is the only thing that needs to be changed to adjust the
+@@ -259,7 +260,7 @@ void e1000_check_options(struct e1000_adapter *adapter)
+ 			.type = range_option,
+ 			.name = "Transmit Descriptors",
+ 			.err  = "using default of "
+-				__MODULE_STRING(E1000_DEFAULT_TXD),
++				__stringify(E1000_DEFAULT_TXD),
+ 			.def  = E1000_DEFAULT_TXD,
+ 			.arg  = { .r = {
+ 				.min = E1000_MIN_TXD,
+@@ -287,7 +288,7 @@ void e1000_check_options(struct e1000_adapter *adapter)
+ 			.type = range_option,
+ 			.name = "Receive Descriptors",
+ 			.err  = "using default of "
+-				__MODULE_STRING(E1000_DEFAULT_RXD),
++				__stringify(E1000_DEFAULT_RXD),
+ 			.def  = E1000_DEFAULT_RXD,
+ 			.arg  = { .r = {
+ 				.min = E1000_MIN_RXD,
+@@ -354,7 +355,7 @@ void e1000_check_options(struct e1000_adapter *adapter)
+ 		opt = (struct e1000_option) {
+ 			.type = range_option,
+ 			.name = "Transmit Interrupt Delay",
+-			.err  = "using default of " __MODULE_STRING(DEFAULT_TIDV),
++			.err  = "using default of " __stringify(DEFAULT_TIDV),
+ 			.def  = DEFAULT_TIDV,
+ 			.arg  = { .r = { .min = MIN_TXDELAY,
+ 					 .max = MAX_TXDELAY }}
+@@ -372,7 +373,7 @@ void e1000_check_options(struct e1000_adapter *adapter)
+ 		opt = (struct e1000_option) {
+ 			.type = range_option,
+ 			.name = "Transmit Absolute Interrupt Delay",
+-			.err  = "using default of " __MODULE_STRING(DEFAULT_TADV),
++			.err  = "using default of " __stringify(DEFAULT_TADV),
+ 			.def  = DEFAULT_TADV,
+ 			.arg  = { .r = { .min = MIN_TXABSDELAY,
+ 					 .max = MAX_TXABSDELAY }}
+@@ -390,7 +391,7 @@ void e1000_check_options(struct e1000_adapter *adapter)
+ 		opt = (struct e1000_option) {
+ 			.type = range_option,
+ 			.name = "Receive Interrupt Delay",
+-			.err  = "using default of " __MODULE_STRING(DEFAULT_RDTR),
++			.err  = "using default of " __stringify(DEFAULT_RDTR),
+ 			.def  = DEFAULT_RDTR,
+ 			.arg  = { .r = { .min = MIN_RXDELAY,
+ 					 .max = MAX_RXDELAY }}
+@@ -408,7 +409,7 @@ void e1000_check_options(struct e1000_adapter *adapter)
+ 		opt = (struct e1000_option) {
+ 			.type = range_option,
+ 			.name = "Receive Absolute Interrupt Delay",
+-			.err  = "using default of " __MODULE_STRING(DEFAULT_RADV),
++			.err  = "using default of " __stringify(DEFAULT_RADV),
+ 			.def  = DEFAULT_RADV,
+ 			.arg  = { .r = { .min = MIN_RXABSDELAY,
+ 					 .max = MAX_RXABSDELAY }}
+@@ -426,7 +427,7 @@ void e1000_check_options(struct e1000_adapter *adapter)
+ 		opt = (struct e1000_option) {
+ 			.type = range_option,
+ 			.name = "Interrupt Throttling Rate (ints/sec)",
+-			.err  = "using default of " __MODULE_STRING(DEFAULT_ITR),
++			.err  = "using default of " __stringify(DEFAULT_ITR),
+ 			.def  = DEFAULT_ITR,
+ 			.arg  = { .r = { .min = MIN_ITR,
+ 					 .max = MAX_ITR }}
+diff --git a/drivers/net/ethernet/intel/e1000e/param.c b/drivers/net/ethernet/intel/e1000e/param.c
+index 3132d8f2f207..c6f400e6cdea 100644
+--- a/drivers/net/ethernet/intel/e1000e/param.c
++++ b/drivers/net/ethernet/intel/e1000e/param.c
+@@ -4,6 +4,7 @@
+ #include <linux/netdevice.h>
+ #include <linux/module.h>
+ #include <linux/pci.h>
++#include <linux/stringify.h>
+ 
+ #include "e1000.h"
+ 
+@@ -238,8 +239,7 @@ void e1000e_check_options(struct e1000_adapter *adapter)
+ 		static const struct e1000_option opt = {
+ 			.type = range_option,
+ 			.name = "Transmit Interrupt Delay",
+-			.err  = "using default of "
+-				__MODULE_STRING(DEFAULT_TIDV),
++			.err  = "using default of " __stringify(DEFAULT_TIDV),
+ 			.def  = DEFAULT_TIDV,
+ 			.arg  = { .r = { .min = MIN_TXDELAY,
+ 					 .max = MAX_TXDELAY } }
+@@ -258,8 +258,7 @@ void e1000e_check_options(struct e1000_adapter *adapter)
+ 		static const struct e1000_option opt = {
+ 			.type = range_option,
+ 			.name = "Transmit Absolute Interrupt Delay",
+-			.err  = "using default of "
+-				__MODULE_STRING(DEFAULT_TADV),
++			.err  = "using default of " __stringify(DEFAULT_TADV),
+ 			.def  = DEFAULT_TADV,
+ 			.arg  = { .r = { .min = MIN_TXABSDELAY,
+ 					 .max = MAX_TXABSDELAY } }
+@@ -278,8 +277,7 @@ void e1000e_check_options(struct e1000_adapter *adapter)
+ 		static struct e1000_option opt = {
+ 			.type = range_option,
+ 			.name = "Receive Interrupt Delay",
+-			.err  = "using default of "
+-				__MODULE_STRING(DEFAULT_RDTR),
++			.err  = "using default of " __stringify(DEFAULT_RDTR),
+ 			.def  = DEFAULT_RDTR,
+ 			.arg  = { .r = { .min = MIN_RXDELAY,
+ 					 .max = MAX_RXDELAY } }
+@@ -301,8 +299,7 @@ void e1000e_check_options(struct e1000_adapter *adapter)
+ 		static struct e1000_option opt = {
+ 			.type = range_option,
+ 			.name = "Receive Absolute Interrupt Delay",
+-			.err  = "using default of "
+-				__MODULE_STRING(DEFAULT_RADV),
++			.err  = "using default of " __stringify(DEFAULT_RADV),
+ 			.def  = DEFAULT_RADV,
+ 			.arg  = { .r = { .min = MIN_RXABSDELAY,
+ 					 .max = MAX_RXABSDELAY } }
+@@ -324,8 +321,7 @@ void e1000e_check_options(struct e1000_adapter *adapter)
+ 		static const struct e1000_option opt = {
+ 			.type = range_option,
+ 			.name = "Interrupt Throttling Rate (ints/sec)",
+-			.err  = "using default of "
+-				__MODULE_STRING(DEFAULT_ITR),
++			.err  = "using default of " __stringify(DEFAULT_ITR),
+ 			.def  = DEFAULT_ITR,
+ 			.arg  = { .r = { .min = MIN_ITR,
+ 					 .max = MAX_ITR } }
+diff --git a/drivers/net/ethernet/oki-semi/pch_gbe/pch_gbe_param.c b/drivers/net/ethernet/oki-semi/pch_gbe/pch_gbe_param.c
+index 81fc5a6e3221..6a1a6678bd1a 100644
+--- a/drivers/net/ethernet/oki-semi/pch_gbe/pch_gbe_param.c
++++ b/drivers/net/ethernet/oki-semi/pch_gbe/pch_gbe_param.c
+@@ -7,7 +7,8 @@
+  */
+ 
+ #include "pch_gbe.h"
+-#include <linux/module.h>	/* for __MODULE_STRING */
++#include <linux/module.h>
++#include <linux/stringify.h>
+ 
+ #define OPTION_UNSET   -1
+ #define OPTION_DISABLED 0
+@@ -440,7 +441,7 @@ void pch_gbe_check_options(struct pch_gbe_adapter *adapter)
+ 			.type = range_option,
+ 			.name = "Transmit Descriptors",
+ 			.err  = "using default of "
+-				__MODULE_STRING(PCH_GBE_DEFAULT_TXD),
++				__stringify(PCH_GBE_DEFAULT_TXD),
+ 			.def  = PCH_GBE_DEFAULT_TXD,
+ 			.arg  = { .r = { .min = PCH_GBE_MIN_TXD,
+ 					 .max = PCH_GBE_MAX_TXD } }
+@@ -456,7 +457,7 @@ void pch_gbe_check_options(struct pch_gbe_adapter *adapter)
+ 			.type = range_option,
+ 			.name = "Receive Descriptors",
+ 			.err  = "using default of "
+-				__MODULE_STRING(PCH_GBE_DEFAULT_RXD),
++				__stringify(PCH_GBE_DEFAULT_RXD),
+ 			.def  = PCH_GBE_DEFAULT_RXD,
+ 			.arg  = { .r = { .min = PCH_GBE_MIN_RXD,
+ 					 .max = PCH_GBE_MAX_RXD } }
+diff --git a/drivers/platform/cznic/turris-omnia-mcu-watchdog.c b/drivers/platform/cznic/turris-omnia-mcu-watchdog.c
+index 3ad146ec1d80..daabd88eb913 100644
+--- a/drivers/platform/cznic/turris-omnia-mcu-watchdog.c
++++ b/drivers/platform/cznic/turris-omnia-mcu-watchdog.c
+@@ -9,6 +9,7 @@
+ #include <linux/device.h>
+ #include <linux/i2c.h>
+ #include <linux/moduleparam.h>
++#include <linux/stringify.h>
+ #include <linux/types.h>
+ #include <linux/units.h>
+ #include <linux/watchdog.h>
+@@ -25,7 +26,7 @@ MODULE_PARM_DESC(timeout, "Watchdog timeout in seconds");
+ static bool nowayout = WATCHDOG_NOWAYOUT;
+ module_param(nowayout, bool, 0);
+ MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (default="
+-			   __MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
++			   __stringify(WATCHDOG_NOWAYOUT) ")");
+ 
+ static int omnia_wdt_start(struct watchdog_device *wdt)
+ {
+diff --git a/drivers/rtc/rtc-ds1374.c b/drivers/rtc/rtc-ds1374.c
+index 8c247215d611..2ed6777e7035 100644
+--- a/drivers/rtc/rtc-ds1374.c
++++ b/drivers/rtc/rtc-ds1374.c
+@@ -26,6 +26,7 @@
+ #include <linux/workqueue.h>
+ #include <linux/slab.h>
+ #include <linux/pm.h>
++#include <linux/stringify.h>
+ #ifdef CONFIG_RTC_DRV_DS1374_WDT
+ #include <linux/fs.h>
+ #include <linux/ioctl.h>
+@@ -381,7 +382,7 @@ MODULE_PARM_DESC(wdt_margin, "Watchdog timeout in seconds (default 32s)");
+ static bool nowayout = WATCHDOG_NOWAYOUT;
+ module_param(nowayout, bool, 0);
+ MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (default ="
+-		__MODULE_STRING(WATCHDOG_NOWAYOUT)")");
++		__stringify(WATCHDOG_NOWAYOUT)")");
+ 
+ static const struct watchdog_info ds1374_wdt_info = {
+ 	.identity       = "DS1374 Watchdog",
+diff --git a/drivers/thunderbolt/tb.c b/drivers/thunderbolt/tb.c
+index 47753a5c0f2e..a2459e44e320 100644
+--- a/drivers/thunderbolt/tb.c
++++ b/drivers/thunderbolt/tb.c
+@@ -11,6 +11,7 @@
+ #include <linux/delay.h>
+ #include <linux/pm_runtime.h>
+ #include <linux/platform_data/x86/apple.h>
++#include <linux/stringify.h>
+ 
+ #include "tb.h"
+ #include "tb_regs.h"
+@@ -47,7 +48,7 @@ static unsigned int asym_threshold = TB_ASYM_THRESHOLD;
+ module_param_named(asym_threshold, asym_threshold, uint, 0444);
+ MODULE_PARM_DESC(asym_threshold,
+ 		"threshold (Mb/s) when to Gen 4 switch link symmetry. 0 disables. (default: "
+-		__MODULE_STRING(TB_ASYM_THRESHOLD) ")");
++		__stringify(TB_ASYM_THRESHOLD) ")");
+ 
+ /**
+  * struct tb_cm - Simple Thunderbolt connection manager
+diff --git a/drivers/thunderbolt/tunnel.c b/drivers/thunderbolt/tunnel.c
+index 7e8284575dff..ad4916748789 100644
+--- a/drivers/thunderbolt/tunnel.c
++++ b/drivers/thunderbolt/tunnel.c
+@@ -11,6 +11,7 @@
+ #include <linux/list.h>
+ #include <linux/ktime.h>
+ #include <linux/string_helpers.h>
++#include <linux/stringify.h>
+ 
+ #include "tunnel.h"
+ #include "tb.h"
+@@ -89,12 +90,12 @@ static int dprx_timeout = TB_DPRX_TIMEOUT;
+ module_param(dprx_timeout, int, 0444);
+ MODULE_PARM_DESC(dprx_timeout,
+ 		 "DPRX capability read timeout in ms, -1 waits forever (default: "
+-		 __MODULE_STRING(TB_DPRX_TIMEOUT) ")");
++		 __stringify(TB_DPRX_TIMEOUT) ")");
+ 
+ static unsigned int dma_credits = TB_DMA_CREDITS;
+ module_param(dma_credits, uint, 0444);
+ MODULE_PARM_DESC(dma_credits, "specify custom credits for DMA tunnels (default: "
+-                __MODULE_STRING(TB_DMA_CREDITS) ")");
++		 __stringify(TB_DMA_CREDITS) ")");
+ 
+ static bool bw_alloc_mode = true;
+ module_param(bw_alloc_mode, bool, 0444);
+diff --git a/drivers/tty/serial/8250/8250_platform.c b/drivers/tty/serial/8250/8250_platform.c
+index af946d12e764..e060e0427fc9 100644
+--- a/drivers/tty/serial/8250/8250_platform.c
++++ b/drivers/tty/serial/8250/8250_platform.c
+@@ -16,6 +16,7 @@
+ #include <linux/moduleparam.h>
+ #include <linux/once.h>
+ #include <linux/platform_device.h>
++#include <linux/stringify.h>
+ 
+ #include <linux/serial_8250.h>
+ 
+@@ -382,6 +383,6 @@ module_param_hw(share_irqs, bool, other, 0644);
+ MODULE_PARM_DESC(share_irqs, "Share IRQs with other non-8250/16x50 devices (unsafe)");
+ 
+ module_param(nr_uarts, uint, 0644);
+-MODULE_PARM_DESC(nr_uarts, "Maximum number of UARTs supported. (1-" __MODULE_STRING(CONFIG_SERIAL_8250_NR_UARTS) ")");
++MODULE_PARM_DESC(nr_uarts, "Maximum number of UARTs supported. (1-" __stringify(CONFIG_SERIAL_8250_NR_UARTS) ")");
+ 
+ MODULE_ALIAS_CHARDEV_MAJOR(TTY_MAJOR);
+diff --git a/drivers/usb/atm/speedtch.c b/drivers/usb/atm/speedtch.c
+index 9d28c652bcd8..95cd8ce99a64 100644
+--- a/drivers/usb/atm/speedtch.c
++++ b/drivers/usb/atm/speedtch.c
+@@ -19,6 +19,7 @@
+ #include <linux/moduleparam.h>
+ #include <linux/slab.h>
+ #include <linux/stat.h>
++#include <linux/stringify.h>
+ #include <linux/timer.h>
+ #include <linux/types.h>
+ #include <linux/usb/ch9.h>
+@@ -77,31 +78,31 @@ static unsigned int num_ModemOption;
+ module_param(altsetting, uint, S_IRUGO | S_IWUSR);
+ MODULE_PARM_DESC(altsetting,
+ 		"Alternative setting for data interface (bulk_default: "
+-		__MODULE_STRING(DEFAULT_BULK_ALTSETTING) "; isoc_default: "
+-		__MODULE_STRING(DEFAULT_ISOC_ALTSETTING) ")");
++		__stringify(DEFAULT_BULK_ALTSETTING) "; isoc_default: "
++		__stringify(DEFAULT_ISOC_ALTSETTING) ")");
+ 
+ module_param(dl_512_first, bool, S_IRUGO | S_IWUSR);
+ MODULE_PARM_DESC(dl_512_first,
+ 		 "Read 512 bytes before sending firmware (default: "
+-		 __MODULE_STRING(DEFAULT_DL_512_FIRST) ")");
++		 __stringify(DEFAULT_DL_512_FIRST) ")");
+ 
+ module_param(enable_isoc, bool, S_IRUGO | S_IWUSR);
+ MODULE_PARM_DESC(enable_isoc,
+ 		"Use isochronous transfers if available (default: "
+-		__MODULE_STRING(DEFAULT_ENABLE_ISOC) ")");
++		__stringify(DEFAULT_ENABLE_ISOC) ")");
+ 
+ module_param(sw_buffering, bool, S_IRUGO | S_IWUSR);
+ MODULE_PARM_DESC(sw_buffering,
+ 		 "Enable software buffering (default: "
+-		 __MODULE_STRING(DEFAULT_SW_BUFFERING) ")");
++		 __stringify(DEFAULT_SW_BUFFERING) ")");
+ 
+ module_param(BMaxDSL, uint, S_IRUGO | S_IWUSR);
+ MODULE_PARM_DESC(BMaxDSL,
+-		"default: " __MODULE_STRING(DEFAULT_B_MAX_DSL));
++		"default: " __stringify(DEFAULT_B_MAX_DSL));
+ 
+ module_param(ModemMode, byte, S_IRUGO | S_IWUSR);
+ MODULE_PARM_DESC(ModemMode,
+-		"default: " __MODULE_STRING(DEFAULT_MODEM_MODE));
++		"default: " __stringify(DEFAULT_MODEM_MODE));
+ 
+ module_param_array(ModemOption, byte, &num_ModemOption, S_IRUGO);
+ MODULE_PARM_DESC(ModemOption, "default: 0x10,0x00,0x00,0x00,0x20");
+diff --git a/drivers/usb/atm/usbatm.c b/drivers/usb/atm/usbatm.c
+index 7b0c791399ea..d4052d206e00 100644
+--- a/drivers/usb/atm/usbatm.c
++++ b/drivers/usb/atm/usbatm.c
+@@ -64,6 +64,7 @@
+ #include <linux/signal.h>
+ #include <linux/slab.h>
+ #include <linux/stat.h>
++#include <linux/stringify.h>
+ #include <linux/timer.h>
+ #include <linux/wait.h>
+ #include <linux/kthread.h>
+@@ -103,26 +104,26 @@ static unsigned int snd_buf_bytes = UDSL_DEFAULT_SND_BUF_SIZE;
+ module_param(num_rcv_urbs, uint, S_IRUGO);
+ MODULE_PARM_DESC(num_rcv_urbs,
+ 		 "Number of urbs used for reception (range: 0-"
+-		 __MODULE_STRING(UDSL_MAX_RCV_URBS) ", default: "
+-		 __MODULE_STRING(UDSL_DEFAULT_RCV_URBS) ")");
++		 __stringify(UDSL_MAX_RCV_URBS) ", default: "
++		 __stringify(UDSL_DEFAULT_RCV_URBS) ")");
+ 
+ module_param(num_snd_urbs, uint, S_IRUGO);
+ MODULE_PARM_DESC(num_snd_urbs,
+ 		 "Number of urbs used for transmission (range: 0-"
+-		 __MODULE_STRING(UDSL_MAX_SND_URBS) ", default: "
+-		 __MODULE_STRING(UDSL_DEFAULT_SND_URBS) ")");
++		 __stringify(UDSL_MAX_SND_URBS) ", default: "
++		 __stringify(UDSL_DEFAULT_SND_URBS) ")");
+ 
+ module_param(rcv_buf_bytes, uint, S_IRUGO);
+ MODULE_PARM_DESC(rcv_buf_bytes,
+ 		 "Size of the buffers used for reception, in bytes (range: 1-"
+-		 __MODULE_STRING(UDSL_MAX_BUF_SIZE) ", default: "
+-		 __MODULE_STRING(UDSL_DEFAULT_RCV_BUF_SIZE) ")");
++		 __stringify(UDSL_MAX_BUF_SIZE) ", default: "
++		 __stringify(UDSL_DEFAULT_RCV_BUF_SIZE) ")");
+ 
+ module_param(snd_buf_bytes, uint, S_IRUGO);
+ MODULE_PARM_DESC(snd_buf_bytes,
+ 		 "Size of the buffers used for transmission, in bytes (range: 1-"
+-		 __MODULE_STRING(UDSL_MAX_BUF_SIZE) ", default: "
+-		 __MODULE_STRING(UDSL_DEFAULT_SND_BUF_SIZE) ")");
++		 __stringify(UDSL_MAX_BUF_SIZE) ", default: "
++		 __stringify(UDSL_DEFAULT_SND_BUF_SIZE) ")");
+ 
+ 
+ /* receive */
 
 -- 
 2.55.0
