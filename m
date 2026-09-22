@@ -1,137 +1,134 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2CD91C98302
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 22 Sep 2026 09:04:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D393C982FA
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 22 Sep 2026 09:12:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id D64B780DEC;
-	Tue, 22 Sep 2026 09:04:24 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 6WgkgHZnTftJ; Tue, 22 Sep 2026 09:04:23 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org B6AF880DCC
-Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790067863;
-	b=jDiNUioYCWhWu8/P60JwboDNChznWxvQdSFskPmeJ45ftVOFB9PFxWK7NWrpJH7e8iwy
-	 5oGxmobaYF9AoksW1UxGW+PgGP2HvWLWK8P8tMXtimEvZTP6EkChSGATBjZmoEaPh7AAL
-	 8DGpGeN5/L0VVGm1I/rGwZnGZUEGi4HhKuAg+2/bUrzCGtbBKgnREieBd1MrxLQwdUDB9
-	 cxmZQnpKie7MiEtAHTpMp5RY5dmxt7x6WR8jP+9l2RQvNlbGE7rEnEkVILkhVK0vTK4+w
-	 u62xQCUIrKUsimT0evCBrdg/eLk7R9c3SPrZymMmQ2MylFSGR/WtClDaoB2TLGtJdMA==
-ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1790067863;
-	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
-	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
-	 DKIM-Signature:Message-ID:Date:MIME-Version:User-Agent:Subject:To:Cc:
-	 References:Content-Language:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:X-CM-TRANSID:X-Coremail-Antispam:
-	 X-CM-SenderInfo:X-BeenThere:X-Mailman-Version:Precedence:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Errors-To;
-	bh=6VtLFD1vg5tvTIM6vKNjHT1kkApQA/KZte/hT3YtnlI=;
-	b=ksgHSTIsKEr+dUOL9euvGrLOLemm/itVFO321FXY01BYwXMRLiX5pAE+jbHAx2NqONXl
-	 WnymEqoWuJzGP2NyPs/OTjnvT3rTpO/fACUiye9fTLTeXm7HzsWsVRXsRFVaNVqPoYhry
-	 kS4ZAaSfpNqgbXc6AIrdQK5kiBILCrAKFUbHDrdD2V5xiOffCmHaMI0vjul6/ajwF+++k
-	 3rLtvP0f9V2Rzt4UAX7lhtmtA7VDlcpAOshRLBsPOGznenm31YwpOEWsVhNcyJWPHZ2e8
-	 AelrpS4WN1pVWLCaaRgBroekqTQ/UnrxCcoZAxIfU/CEaWVS0YyGeZyUE7SJZxWLLGA==
-ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1790067863;
-	bh=6VtLFD1vg5tvTIM6vKNjHT1kkApQA/KZte/hT3YtnlI=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=sDkhmGOZQYD1Gwu0RCBRwe7yAMtRUgPtCHV4AZYCLEoNru/ivZSu4LFG3KR04sMLq
-	 vTcMFNElTTQJ1qEH0kbhexxu6sKtjKQp5VdmV1KcgJD77m7Cv49WY2afrPrcaN+JPf
-	 6JUpQlOY1Tenpe4JKaz0+VGTpNKMuzvrqC+QWkzLjk7QaBz4Fh9qHT9VtnUrANj/7G
-	 gTF7VJw2PjFC7gHQcVMCvLMlHjiIpAkrgf1fjORVH3USvAq+/KJQoGG1/D0VSrSyo3
-	 HpMfF0jbfJdVdpJz04gMt9obroGtwDxyfmMQF+E0CQbB5TOelUKTWnqTFBxzgPYaXD
-	 lYUf3lW6C/ksA==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id B6AF880DCC;
-	Tue, 22 Sep 2026 09:04:23 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id C098312C
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 09:04:21 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id A679A40814
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 09:04:21 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 3085A40768;
+	Tue, 22 Sep 2026 09:12:03 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id O_qowKHXCeyO for <intel-wired-lan@lists.osuosl.org>;
- Tue, 22 Sep 2026 09:04:20 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org C7DEC4070D
+ id RmwdQOK0kUkx; Tue, 22 Sep 2026 09:12:02 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 83A9540813
+Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790068322;
+	b=MZ4b17KlV3+BjuwIu7y/Ew09HZMZDrJncLsajr8s14rvzbE4q+xPLb/nonpWGdHHH8cw
+	 V9WCzQxKiC1bFDHulutfCQklv9CC7QAx76TejH8dgb0S9bjotHV11fPD1X5Wf5hf33GK1
+	 sKi1ezYZOx5Ej2l/Ct4Al+yqkLMPwTfwso32rN2SKOxF8CL3s+Yl03sr1naQVasuGwiAE
+	 ZQoO/gVWu+80QP81mcm86aX3E+Y20ONrdaGwGDq/OcTh7s7yTVuDYcHy3oP9OhEwshUeT
+	 qudEUAxZhlpqKr9Co2kp6F5OwC7WwPSZTfg7PHBuQ2wG6j5dEQCQUiOHbZ1HYK2o0NQ==
+ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
+	c=relaxed/relaxed; t=1790068322;
+	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
+	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
+	 DKIM-Signature:Received:From:To:Cc:Subject:Date:Message-Id:X-Mailer:
+	 MIME-Version:Content-Transfer-Encoding:X-CM-TRANSID:
+	 X-Coremail-Antispam:X-CM-SenderInfo:X-BeenThere:X-Mailman-Version:
+	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 List-Subscribe:Errors-To;
+	bh=JZB0Slkp1cTB3zAnWSwmos8fcy3POuFLh4py+bqB5yk=;
+	b=sNOFn+CHtn9EobnRhEFYitFk1gn4NRnRZ8T5G+GBgPX3tmyEo1KFKnlwiG6ytjpOseoM
+	 cBHc3mTaodjz9EI52rc6R78c8Qui13ZkMOCm6wdpJWzCRk1o4Oi4U5J1HNylyyYEE9/91
+	 bWbOnJAHwco1W1VCbUg0xiIZoJFidj5w6IpG4VfGWS7kBRMyZEN1xzCwxNmbur2hXmCsy
+	 mEUJEnswgC0fiCfQ3fL9s6FzYkNrndcrCD78ZyiiTvutWgcIeOv0elpBQBTXcvcnPVUQG
+	 MajlEQ8sUq+nzrIeo3bSnZTkWHhxbBF6+ia5GJlogvwK+TKoKyHKzekWu1bROSYs4eg==
+ARC-Authentication-Results: i=2; smtp4.osuosl.org; dmarc=pass header.from=126.com;
+	dkim=pass header.d=126.com header.i=@126.com header.a=rsa-sha256 header.s=s110527 header.b=eT14op8Z;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1790068322;
+	bh=JZB0Slkp1cTB3zAnWSwmos8fcy3POuFLh4py+bqB5yk=;
+	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=s6SUO7YOzc7WnTPHnJ1hNHkaSM0z2zz+ZGUMczFWrMlXQAhP8iu8gMlpUqTkEglAN
+	 e1OGrz/E+SZ8/poeh886l3ytQCdTRyagX9Qnb80stbED07bqMlxPNRZXUogG8K/WtM
+	 OT5OnDjqwD707yIM/bDyfcHp3sdAE0wHGkQ5VY2cnossmLHk0QIfG1L/B3oVTTotzy
+	 uATo/+NvdVy6UfCh4IUii5Gmg/AAwXDcHD/QmBODHUbyf2gvT4oq2JMc+KUI40kvCY
+	 Q6mctVCIO0rDIVizs9C99oI+cbRUoBfqdyLNUbu1TmF4wryJshaO65tMBspCaZpDR/
+	 nl30zZNkeMT+A==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 83A9540813;
+	Tue, 22 Sep 2026 09:12:02 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id D412B3A9
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 09:12:01 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id C60A640813
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 09:12:01 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id GEUZxokOlKHY for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 22 Sep 2026 09:12:01 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 349FE40768
 Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=117.135.210.9
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790067860;
- b=pTjZr7YAe+yiskPw6DnN63jTyTRtJ4urxbx/wHKTR2oAsAm2Tn6vMVo/E6n+huDP2O+4
- 3IpzH6WbbODmbzWXglNoa+rUVp247ujfe3wepSJrpIg8gPf/WRmYRH2EFijPFCAaxtgnX
- uiTWzPHGEGcQRoEhRRLKZjbycbt/xnnr9+46wS2+UjWrETRtS8v+XNGNPwRHKd8/P6BI7
- Vpm7c/I4XjKNf4zZ2jy0MJF1Guwgp3ncFLq5fdYX0SLXn8t0nnTDxj/IqC6avNXxLmue8
- MyY9A0Tj93kdD0h6kMyPzzUle325ilvLzFAV2MJZrcxJN4tUiANKdrAznS3DsVhAvHg==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790068321;
+ b=Jr8HnF/LV0tSFTcfsZbCgSOFXunPKqoHRGIoKrnL+9+HyF9pYsWrk41+j8P2TKfRW3I6
+ Ou8cMBPY8qEn2pdstjLaSoen5iD39/WZRYszqEPB14GMdijpJiMoksmLefbHNfnEK1J+4
+ H1YnYEbuaZRXCNh2+GujqInIb1DahbIC8YvK03twKwL5VprA9B6YHw2/3VwG3YJ9pq5tf
+ iyi3fV/o70s748zqk8giNlV4+R8JKoLYVK+jQSHplBYrnZlCwtX341iYbjXdrlv9rTf2k
+ XcujL9MNvXtKNf7k+J4EM5kL0+Yg99y1w2NrZAhm6+GaGYfbbffDSvBkiSihjcGAf1A==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1790067860;
- h=Received-SPF:DKIM-Signature:Message-ID:Date:MIME-Version:User-Agent:
- Subject:To:Cc:References:Content-Language:From:In-Reply-To:
- Content-Type:Content-Transfer-Encoding:X-CM-TRANSID:
- X-Coremail-Antispam:X-CM-SenderInfo;
- bh=6VtLFD1vg5tvTIM6vKNjHT1kkApQA/KZte/hT3YtnlI=;
- b=EYLWH8mC39hVIOuuD7UkYJvsNJhZiFUNUD2+Gy3mqG1TBPQxw2Pm7bMXd53LDZLpLEnL
- arRf1TudrqtL5NOIHCD8LqpkePTOhJeGynLJy30wjzBO3RLD/KTXaWRkaFdkVKe+z1lF8
- 8OyFDzPB/KlDGI9dGG+6eCA+ztNkZZXKDoGaOgVUo7eA8YdcEozyJ9CCWazqcRL20eZe/
- ad4Ptn2o1ydGEkxffqp0sVSb0HRUVXWxmiDygPh9EZkKD+1RvY4IvnGniN8gSBjCYnBgW
- XfPo25uouKpDnSybxUT3C9vtKdmbIw+Grrfnd9Ps/43Rwco1njWGA2Cm6NvwEXqFrpg==
+ c=relaxed/relaxed; t=1790068321;
+ h=Received-SPF:DKIM-Signature:Received:From:To:Cc:Subject:Date:
+ Message-Id:X-Mailer:MIME-Version:Content-Transfer-Encoding:
+ X-CM-TRANSID:X-Coremail-Antispam:X-CM-SenderInfo;
+ bh=JZB0Slkp1cTB3zAnWSwmos8fcy3POuFLh4py+bqB5yk=;
+ b=Imp1ye2pC4nTm9w+ei32Yiq9wZ4x6T5T0xUQyoLbp7iiVG+Fy3xSF4J5M7FtP2k7jybh
+ OymDBR0sjA7KE7OU8fNzJKp9Zp1VKS43/gBIMpx9uBRZIBiBwfLadhfZoWQKkv0GpLmCp
+ uFCDCHx6IVqieSv4xJejAz6WxWNWZq+YkIkkCZorZHp9Oe+IS4AiVJ/763L3hUxIRfWCP
+ W8GWyCrMYTJrSSACspxGE0JVRiO6o/hgLKlj0j1U4kHhQqtd8uMZRx+4nIeBAvYbHGquB
+ H+qJoMj5Ej+0gT2WkAzmT4/0FYN6gQjJlXZbGg/lEkAXHDbtnPHKJCtz/AIDgmtNsYQ==
 ARC-Authentication-Results: i=1; smtp4.osuosl.org;
  dmarc=pass header.from=126.com; 
  dkim=pass header.d=126.com header.i=@126.com header.a=rsa-sha256
- header.s=s110527 header.b=YxeMJOUD; 
+ header.s=s110527 header.b=eT14op8Z; 
  arc=none smtp.remote-ip=117.135.210.9
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=117.135.210.9;
  helo=m16.mail.126.com; envelope-from=xiaolinkui@126.com; receiver=<UNKNOWN> 
 Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=126.com
-Authentication-Results: smtp4.osuosl.org; dkim=pass (1024-bit key,
- unprotected) header.d=126.com header.i=@126.com header.a=rsa-sha256
- header.s=s110527 header.b=YxeMJOUD
+Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (1024-bit key) header.d=126.com header.i=@126.com
+ header.a=rsa-sha256 header.s=s110527 header.b=eT14op8Z
 Received: from m16.mail.126.com (m16.mail.126.com [117.135.210.9])
- by smtp4.osuosl.org (Postfix) with ESMTPS id C7DEC4070D
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 09:04:18 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 349FE40768
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 09:11:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=126.com;
- s=s110527; h=Message-ID:Date:MIME-Version:Subject:To:From:
- Content-Type; bh=6VtLFD1vg5tvTIM6vKNjHT1kkApQA/KZte/hT3YtnlI=;
- b=YxeMJOUDVswV4aSX/zGsIOqW+2onEoHyh74L+dNKTTQ/bqwyBjcviEo/qcpcbV
- 5t+4VlKk6aXVGaRoJK4XZmEBgC506vEmh5W3msN5gGjNf8AxMz3zvSCunY0BaqSh
- 2HaLCz8GM7Os5Tm9D4riuyH1k9OKyy8Pi40SxkjF5zqzY=
-Message-ID: <ef2b48b9-0f57-46e6-8209-8f4b9d6e42dd@126.com>
-Date: Tue, 22 Sep 2026 17:03:42 +0800
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [Intel-wired-lan] [PATCH net v2] i40e: limit the DDP profile
- count returned by the firmware
-To: netdev-bot+sashiko@kernel.org
-Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
- andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com, intel-wired-lan@lists.osuosl.org,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org, xiaolinkui@kylinos.cn,
- aleksandr.loktionov@intel.com
-References: <20260920063244.1927792-1-xiaolinkui@126.com>
- <178997248483.2160803.11710552261264563604@kernel.org>
-Content-Language: en-US
+ s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=JZ
+ B0Slkp1cTB3zAnWSwmos8fcy3POuFLh4py+bqB5yk=; b=eT14op8ZJEjCwld797
+ 9NeAezOI4tg/JlPsp4eTU74QEi8ZGnglumaAZ9qg4QvlMEXKBCcn5qhzDn+08rwE
+ lrnz6dJFjcphyWHnfF8YK7bysyiIofF4sAArEWhHqoriZS+D8pMySqT0Ij9IKrJ7
+ 9ERRHZEgTrofJv37soEks7LkI=
+Received: from localhost.localdomain (unknown [])
+ by gzga-smtp-mtada-g0-1 (Coremail) with SMTP id
+ _____wD3HzY9RrJq0uQVAA--.17646S2; 
+ Tue, 22 Sep 2026 17:11:25 +0800 (CST)
 From: Linkui Xiao <xiaolinkui@126.com>
-In-Reply-To: <178997248483.2160803.11710552261264563604@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-CM-TRANSID: _____wDXtwRvRLJqOwMZAA--.52160S2
-X-Coremail-Antispam: 1Uf129KBjvJXoWxGrykWw1kWw4fXrykCF17KFg_yoW5Ar1rpF
- WYq3yDtrykK3y0kw1Ikr4xWa48uws3AFy5Xw1rKa4vk3y5Krs7Xry0qFs0qa47AFsaqr1I
- yF1293yUAF4DZFJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
- 9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07UZZ2-UUUUU=
-X-CM-SenderInfo: p0ld0z5lqn3xa6rslhhfrp/xtbBlBB0S2qyRHDs-gAA3F
+To: aleksandr.loktionov@intel.com, anthony.l.nguyen@intel.com,
+ przemyslaw.kitszel@intel.com, andrew+netdev@lunn.ch, davem@davemloft.net,
+ edumazet@google.com, kuba@kernel.org, pabeni@redhat.com
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Linkui Xiao <xiaolinkui@kylinos.cn>
+Subject: [PATCH net v3] i40e: limit the DDP profile count returned by the
+ firmware
+Date: Tue, 22 Sep 2026 17:11:23 +0800
+Message-Id: <20260922091123.506598-1-xiaolinkui@126.com>
+X-Mailer: git-send-email 2.25.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID: _____wD3HzY9RrJq0uQVAA--.17646S2
+X-Coremail-Antispam: 1Uf129KBjvJXoWxGw4UWw1Utw18JF1DKw4xtFb_yoWrXr4fpF
+ W5JFWDGryDJa1j93yUGFW7uFyfu3WfAryYga4a93s8urn8tF4kWa48tFWFkFy7ZrWvkr90
+ qFs5Cry8CF4DJwUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+ 9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07Ul-ewUUUUU=
+X-CM-SenderInfo: p0ld0z5lqn3xa6rslhhfrp/xtbBlB3nvmqyRj0E1QAA3i
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -146,59 +143,98 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-Thanks for the review. Both findings are addressed in v3.
+From: Linkui Xiao <xiaolinkui@kylinos.cn>
 
-- [Medium] Incomplete fix in i40e_ddp_does_profile_exist() and
-   i40e_ddp_does_profile_overlap()
+i40e_aq_get_ddp_list() writes into a I40E_PROFILE_LIST_SIZE buffer, which
+is sized for I40E_MAX_PROFILE_NUM (16) i40e_profile_info entries plus the
+4 byte p_count header. i40e_ddp_does_profile_exist() and
+i40e_ddp_does_profile_overlap() then loop over profile_list->p_count
+without bounding it, so a firmware reporting more than 16 profiles makes
+both helpers walk past the end of the on-stack buff[] and compare against
+whatever happens to follow it on the stack.
 
-   Agreed on the clamping half. Silently limiting the count and then
-   returning 0 hands i40e_ddp_load() a definite answer derived from a list
-   that was only partially read: the add path proceeds without having
-   examined every profile the firmware reported, and the is_add == false
-   path reports a profile as missing that may in fact be loaded. Both
-   helpers already have an error return that i40e_ddp_load() turns into
-   "Failed to fetch loaded profiles." and aborts the operation, so v3
-   rejects the list instead: if the firmware reports more profiles than
-   I40E_PROFILE_LIST_SIZE can hold, the helpers return -EIO and no scan
-   happens at all.
+The same buffer is handed to the firmware as an indirect admin queue
+buffer, and the admin queue code copies all of it into the DMA bounce
+buffer before submitting the command, so its uninitialized contents were
+visible to the device as well.
 
-   I did not plumb the response datalen out of i40e_aq_get_ddp_list().
-   For this command the driver has to set desc.datalen to the buffer size
-   it passes in, and i40e_aq_get_ddp_list() does not report the writeback
-   descriptor back to its caller, so the length would have to come either
-   from a new output parameter on that helper (declared in
-   i40e_prototype.h) or from a wb_desc routed through cmd_details. Either
-   way it adds a second firmware supplied number to validate on top of the
-   one this patch is about, and if the firmware leaves the field at the
-   requested 772 bytes the derived bound is exactly the bound we have
-   today. That is a bigger change to the common AQ path than a net fix
-   should carry, so I would rather bound the scan by the size of the
-   buffer the driver owns.
+Zero initialize buff[] and reject the list when the firmware reports more
+profiles than the buffer can hold, instead of answering from a list that
+was only partially read. Both helpers already report errors to
+i40e_ddp_load(), which aborts the operation.
 
-   The remaining half - comparing against p_info[] slots the firmware
-   never filled - cannot be detected independently of the count, because
-   the driver is not told how many records were actually written. If the
-   firmware reports a count of 16 or less while writing fewer records, the
-   unread slots are indistinguishable from real entries. Zero
-   initialization makes the outcome deterministic (an unwritten entry is
-   all zeroes rather than stale stack) but does not make it correct;
-   deriving the bound from the response length would be needed for that,
-   and that is the larger helper change described above.
+Fixes: cdc594e00370 ("i40e: Implement DDP support in i40e driver")
+Signed-off-by: Linkui Xiao <xiaolinkui@kylinos.cn>
+---
+Changes in v3:
+- Zero initialize buff[] in both helpers: the whole buffer is copied into
+  the admin queue DMA bounce buffer and copied back afterwards, so its
+  contents were exposed to the device, and entries the firmware never
+  wrote were compared against. (Sashiko AI review)
+- Reject the list when the firmware reports more profiles than buff[] can
+  hold, instead of silently clamping the scan and then answering from a
+  list that was only partially read. (Sashiko AI review)
+- Dropped the Reviewed-by tag, as the code changed after the review.
 
-- [Medium, pre-existing] uninitialized buff[] handed to
-   i40e_aq_get_ddp_list()
+ drivers/net/ethernet/intel/i40e/i40e_ddp.c | 22 ++++++++++++++++++----
+ 1 file changed, 18 insertions(+), 4 deletions(-)
 
-   Agreed, and fixed as suggested: buff[] is now zero initialized in both
-   helpers. i40e_asq_send_command_atomic_exec() copies the full buff_size
-   into the DMA bounce buffer and copies the full buff_size back on
-   completion, so those 772 bytes of stack were both readable by the
-   firmware and compared against afterwards. Both hunks touch these
-   declarations and the root commit is the same (cdc594e00370), so it is
-   handled here rather than as a separate patch; I can split it out if you
-   would rather have it on its own.
-
-v3 keeps the unsigned loop counter from v2, and drops the Reviewed-by tag,
-as the code changed after the review.
-
-pw-bot: cr
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ddp.c b/drivers/net/ethernet/intel/i40e/i40e_ddp.c
+index daa9f2c42f70..49a98c0e001a 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ddp.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ddp.c
+@@ -53,9 +53,9 @@ static int i40e_ddp_does_profile_exist(struct i40e_hw *hw,
+ 				       struct i40e_profile_info *pinfo)
+ {
+ 	struct i40e_ddp_profile_list *profile_list;
+-	u8 buff[I40E_PROFILE_LIST_SIZE];
++	u8 buff[I40E_PROFILE_LIST_SIZE] = {};
+ 	int status;
+-	int i;
++	u32 i;
+ 
+ 	status = i40e_aq_get_ddp_list(hw, buff, I40E_PROFILE_LIST_SIZE, 0,
+ 				      NULL);
+@@ -63,6 +63,13 @@ static int i40e_ddp_does_profile_exist(struct i40e_hw *hw,
+ 		return -1;
+ 
+ 	profile_list = (struct i40e_ddp_profile_list *)buff;
++	/* The firmware is not required to report a profile count that fits
++	 * into the buffer we gave it; refuse to read such a list instead of
++	 * walking past the end of buff[].
++	 */
++	if (profile_list->p_count > I40E_MAX_PROFILE_NUM)
++		return -EIO;
++
+ 	for (i = 0; i < profile_list->p_count; i++) {
+ 		if (i40e_ddp_profiles_eq(pinfo, &profile_list->p_info[i]))
+ 			return 1;
+@@ -108,9 +115,9 @@ static int i40e_ddp_does_profile_overlap(struct i40e_hw *hw,
+ 					 struct i40e_profile_info *pinfo)
+ {
+ 	struct i40e_ddp_profile_list *profile_list;
+-	u8 buff[I40E_PROFILE_LIST_SIZE];
++	u8 buff[I40E_PROFILE_LIST_SIZE] = {};
+ 	int status;
+-	int i;
++	u32 i;
+ 
+ 	status = i40e_aq_get_ddp_list(hw, buff, I40E_PROFILE_LIST_SIZE, 0,
+ 				      NULL);
+@@ -118,6 +125,13 @@ static int i40e_ddp_does_profile_overlap(struct i40e_hw *hw,
+ 		return -EIO;
+ 
+ 	profile_list = (struct i40e_ddp_profile_list *)buff;
++	/* The firmware is not required to report a profile count that fits
++	 * into the buffer we gave it; refuse to read such a list instead of
++	 * walking past the end of buff[].
++	 */
++	if (profile_list->p_count > I40E_MAX_PROFILE_NUM)
++		return -EIO;
++
+ 	for (i = 0; i < profile_list->p_count; i++) {
+ 		if (i40e_ddp_profiles_overlap(pinfo,
+ 					      &profile_list->p_info[i]))
+-- 
+2.25.1
 
