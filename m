@@ -1,28 +1,28 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41DFBC9830B
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 22 Sep 2026 18:08:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51D3BC98309
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 22 Sep 2026 18:08:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 0F69C407FC;
-	Tue, 22 Sep 2026 18:08:35 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 0D831606E9;
+	Tue, 22 Sep 2026 18:08:34 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ZBGjmAetAl9U; Tue, 22 Sep 2026 18:08:34 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 2F161407FE
-Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790100514;
-	b=X521Quq8b3NIrBvqx2bRc1T73l8Q9yVwhSykreeKCW9Y/AmgHJVuvK34RC8e0HIlidIF
-	 nXUSrrs9t4sGE1Eacf2Lq8nHYA8sy3pTRN201xvcJdcdvdfqDyNmx4hf3XKYaLl6rjMKm
-	 r59c4XgQGdYxJfRaIplH4p2JYHFzF34388aUKtFpJhXO1DDhX7RdVgUuGWBpNs15ntYPv
-	 MXDdXLZ239Zw7puxUcbOjoKNTylEpnH5CG5L07QfWUxj5dCLXiJLEK+u8j6d9LLD23g2u
-	 69VfzSh4NHYKqioxzKTeOWJl9x0D5fQf+Z/nKsHhgLJIuhR71UE1/jGofRBWevbanZg==
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id snTUFOdOsMkc; Tue, 22 Sep 2026 18:08:33 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org C971760715
+Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790100512;
+	b=Q1uYt2gJ3YxlWKHdQk2v6SvDdSCC8XigU7W1BsYcE8sUafVOD9Ht+nqXybPbGjFL4A6A
+	 AqAa1SkoXQWpEDyf6jNKHEuMBPqgnO0HUh5gh8qoEh3agFgUdTzsjLmdKack5NtxMjt5z
+	 +MDQGsksehME909UuECgnmR78sSATs7Rx6syUaIFLfX53f9eNzlTM5ME2N0ZwO9wQufnG
+	 0a6SciQVNiGvwCD8kk9O3H+cZZKLlf0w5AJ79LWsuETlDBAo49nAQyMqzalKw3s7wsAEr
+	 PEPX2A4IN/8wDDSEqZZ0xbzY2LUqeYfB2g/OyWDNd+Sj2V2eKZGl9NYLrXmtyp2NBhg==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1790100514;
+	c=relaxed/relaxed; t=1790100512;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
@@ -33,113 +33,113 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 X-Mailer:X-Developer-Signature:X-Developer-Key:X-BeenThere:
 	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=ahX5HAkoDeu8T7McYkpoFD4xOsEYrA4bs4Xe1aF7Xh8=;
-	b=GLOOyQGKkZSRMPTJ2QpxsyBPinfvHtYDSecJzbWvZaZdTHVzOU+0tZzmP9KAOxMIkjhQ
-	 I6HEysfEuySZNCbotqZ8UTLQpUnSHQ9otWjp5EwsyVpb72dBa+BMnzyQtIuu+JwA4q6Y+
-	 mc5Vr8HIpTe5/6bsQbhy1fBYRta244BZ4darlmwmuyLLfIi+RR1AXsUZAEGBRWr6vTQuT
-	 TcPn9tKV29K+Bdqh6G/9RaRbLJus6ocNzAtZDaiXNxPnNGKpBsuaQBJ1e926DyDuBvohI
-	 rDd/ovEjA5laAV6AfT8ZSH10g2n7dCn5ELBkNDqhTjMt1nZgbddp5UFlzTHLbojjh+A==
-ARC-Authentication-Results: i=2; smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	bh=tZRQwwWKjeUbdOufVOBOG8x8oc7uGND/ObkT6qULc9g=;
+	b=NhOd5ptG64O0OPoevv0PHujALm8QUMAz4WU+zJfBmZEjImVXGbTOjlcpvXynXa+nEEys
+	 nzd9SqY0UZkAmSfCl722Ws2Tzz597dUTsswsQIMqKgQ4sdwYnys40GxnNMZMUjoE9m1Tw
+	 q6YrnGTtgfVqv+SD0zocu+H7fJ/T0GsFgR9H68U7K9Z4PM7nUNZcVg/0DnsUGoIizlNXb
+	 rDZP99pHcN4JKtitiHuVSsSV/M3XcDcBsfOH7UU+tG5DLuRk8+JmEO6bYvQkSmWup0Awd
+	 4J0ejTFRbhEwtEcBonR7PG5Pr3UODSflWFowNJ6Gzv7T3TQc04KfHZOXt1/ObA7bMLg==
+ARC-Authentication-Results: i=2; smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1790100514;
-	bh=ahX5HAkoDeu8T7McYkpoFD4xOsEYrA4bs4Xe1aF7Xh8=;
+	s=default; t=1790100512;
+	bh=tZRQwwWKjeUbdOufVOBOG8x8oc7uGND/ObkT6qULc9g=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=TI3kpeJWv/pGCbE9ZTHmIcbSaIfHz5BW0JEx+I0YkehbYAOnqMCJnnLoLCdbc+w9q
-	 DDC9v+/X9O9quYzoNGUageBmKqolvFosiRjl5yz4bzx7MUOG/luDGu0CJAlAqWG3VM
-	 TrvE8AmwNL+WSsQwDXLKu/SanulrR+W8Xr2fl+VLwGANCShAuuW1O8yzMuq3O0BzL4
-	 d5vT39UIxp2JZbF+I86KeB0mkPpLX8Rni0Hh/dFkX9VDyvS2N8hlMqOqOqhSe2nega
-	 8rrTgcwP5FD1p/x9A/yqw9rQkLQNIom1D/n4cGUk0jOALHiJMX1Mkkj9vp0Et+4yPP
-	 zjeeRysm6aOIg==
+	b=4A77bVv1ExjspvU/mreeZzTtWSkEkr2eYfZlUxmLcx+Q0dvGvceYe5C1yjZ6SB636
+	 X7jFzwJMcIUsn77pauGYdNW0UvrNk/Kzqbp86XnETbEHMmX03+yhuzcg2wheHl/Kfl
+	 kfdoI6s0aYjEsb1NVnO8R2mtHXRX6cfRYL3S9o3Vxo2rGwIj4t6s4jfdtoJ6neuHDM
+	 3FD6vua0jOoZPfv4zuaPiGCcdzqzHhI7rVysbUVdMwMsfxvco4lPsVIr6pm1Tfp64D
+	 dVMCnZAXO2sT/hsRmR11OtZIRIrbRiMkv3pTH6dnpNOyLtXF+EDgUiIPILZYEl7CRl
+	 3UB2Ool9eUCfQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 2F161407FE;
-	Tue, 22 Sep 2026 18:08:34 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 2C18712C
+	by smtp3.osuosl.org (Postfix) with ESMTP id C971760715;
+	Tue, 22 Sep 2026 18:08:32 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 0DDD53A9
  for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 18:08:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 1D73240068
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 18:08:28 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id E855F401E1
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 18:08:27 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id SqtrSqU3qbDt for <intel-wired-lan@lists.osuosl.org>;
- Tue, 22 Sep 2026 18:08:27 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org 0CA3440076
+ id H9JBCNf5QWCI for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 22 Sep 2026 18:08:26 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org 7A6D140068
 Authentication-Results: smtp2.osuosl.org; arc=none smtp.remote-ip=192.198.163.8
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790100507;
- b=J7UKf7nZk+rPgQfBP88E1+wS762ozuAiFxXNG1yRl340Z27MxRao4+rFB861KG/7Jjds
- ziu3FeED1xny9BVReMg+mn0N65aIZxy2taWqcLfCisva1wtsG9Sl67zD5YGia7f66NHme
- 0tmdQpMLAKjtyMSB1TsKRrMpYPnnO2/CduKkth6KORYQ4G9iwlZhqMIKfk55t3J/iHqPs
- KukDFuqqZECQgWAHj9CTqC7WBO7lwum4hVYXe/E4Y2VS1UIsEMZQuZcJXhy4beCroUo/f
- +XvXrGRohJpcHkM0/uj0CPpT1ISqGoELWnUafYkZq9OYZNlSfdDj4n8st80RcZEMUYA==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790100506;
+ b=VMLhBqGYsAbvyr3URY23rywjTcDcCcHAWSov81ACv2L5v0zJH8BS/UW0klU6TTsTVyCI
+ 3hIiqihZrJgsB0ZV9rvPOhlfBtsEEcnCUe8E73hYZGOLHbN/1uwYxGZ5iIWKIzHbbQu+d
+ eLFm/+Ux0gcrfdhnxFqUjpyNiBd90mCiipr8B8bUoLpCts8fFN4UHUrAYQsdBQH+Cdcxk
+ r7UkP9l5mnhDuxe/WvAAxcQA4nulJ46Zu529VKgUR+Q7WyF7hLlxLRBsHtPKlN6JpgCAR
+ AwXPuXNooCr0ySSz69n7fYfqnJ2EobYsWoE8z9iJ1Q/WqFQx3OtsX/pOPANL1iMFV3w==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1790100507;
+ c=relaxed/relaxed; t=1790100506;
  h=Received-SPF:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
  X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
  X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:From:Date:Subject:
  MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:
  References:In-Reply-To:To:Cc:X-Mailer:X-Developer-Signature:
  X-Developer-Key;
- bh=ahX5HAkoDeu8T7McYkpoFD4xOsEYrA4bs4Xe1aF7Xh8=;
- b=aQ4uY9RNDnGhV1cc5rieOsp4rSj3Rk4WfoXhQqw9jMS4QqvlbAT5Ed2BTl1HQ5/FZCJ9
- 5BOI4/FfOGxXbrS8ZocGAu64YAFYUIEdKV2s3A7FWrK0lIOAiK/CJwcTyiq+Jg2wV+veU
- 1Rq9+X6OPvP/IRKgJun4eIHAb4WBXHiTzWYq7Rw/TvBoTW7D+sODgDv9imUrA7Y7xKvJv
- 7tQBz05uFGdfvfQlkorfOfqdBmTV4S9tCWW1hK3D1HGScJiB8qhEqamQrnWkhlNF2CG4c
- leQZiVf9qP3MYZ60R6bdyeiuy9BlndwM+vlsQr9cYqo3uWQSBE3n4xXxZydR8o3ep7w==
+ bh=tZRQwwWKjeUbdOufVOBOG8x8oc7uGND/ObkT6qULc9g=;
+ b=f5BXwIDBX4SWv5RRjlqnGrk73sYfScvZNcvL1+4qmv5DvMAfkA12O2XBN5djwiHco9O+
+ WRuQUJqnfIDuGYkQhuWhdPREifzZHi/Ii2AmbGNcxpQm5me3kutcN4b25DEPZJ79RkZN6
+ WRpE8Z/v95texmBWixaA2AHriwlKfhSh0iQ6Ws6ctXrRlKhYjefYktL1OZccmNRz8tuKZ
+ tXSIuUx9/HuciWv9QDeZRwiWhdWfuk37f38xEhEXw2/l0ue/sdZ30wo5Odexu/TaZIToS
+ OMkgLkO9G+8Lvk55n5yfc4p8o8vRGSozQAx/qBafYVdG84vZemUcBDz2RYooE3XIgpg==
 ARC-Authentication-Results: i=1; smtp2.osuosl.org;
  dmarc=pass header.from=intel.com; 
  dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=mU5tZ8CW; 
+ header.s=Intel header.b=d9mdiYxP; 
  arc=none smtp.remote-ip=192.198.163.8
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.8;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
 Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=mU5tZ8CW
+Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=d9mdiYxP
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 0CA3440076
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 18:08:26 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 7A6D140068
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 18:08:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1790100507; x=1821636507;
+ t=1790100506; x=1821636506;
  h=from:date:subject:mime-version:content-transfer-encoding:
  message-id:references:in-reply-to:to:cc;
- bh=I5AD9LG/RJDbDn+7pcYsp7MZuP0w2/C+lYgiDjHYQRE=;
- b=mU5tZ8CWGgab48K0ede/thWFodEGeWTGm1jvLsqVgErNtcuXGK2T0OWY
- /ExD5jKk8a+Yk+nNkmsCIx9OhNN7OrN0McvuUlAD793LcD7CzbrokZfkn
- onaXLLknSw/Cvjm3jPe8HqqJuE8SgSgq0oNh5ltjK8A3ueL7vZaHLBHjl
- LARm+9MAvH4Sjf87KrQAdLHQ/WUXzmD+v+HkHXqwkH9f1iHP5u8kK+xbY
- AS2u+r3KO6r+l5weVog2kgO63VHh4yrTSlBN09J6FWBeOilVcGdbYpzJ4
- /xPFKxlZDpezSqj6InMk5HKnrogEcAvABTnPhaXrJqGbpNzGULYnVIdgN Q==;
-X-CSE-ConnectionGUID: 6SCb46/oT2+YXDVd6uYrmQ==
-X-CSE-MsgGUID: VIWiZrVdRzmvKBTRNx7nPg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11913"; a="108232034"
-X-IronPort-AV: E=Sophos;i="6.27,116,1787036400"; d="scan'208";a="108232034"
+ bh=NYECuONazlk8YCbgK0NwCbzoitEyEKd1ntrjQDiCHEM=;
+ b=d9mdiYxPba16Hhc+NRc0Mpck6Q+pGqNkKIThguaa7SLxDlMiAF8nfj+a
+ EfxrcK2tl2ELK+aV4in04X2v8FxxBDl00uIQ8SCiFIthyZ3Lj/SFUgnrU
+ ZgUV22s+IltxEIMw/x+cd5H3KNimwk5bGfmrT9KbCfUZf7+BHie7pn6WG
+ L/PKUbCywpsAELBFki8AOUgoTWzIei8eyoIExej/WgDmpAFxdXJXPvoFp
+ KY5LAc1i3mk+BePj2JBQeO5EHOdkH8pgqUSaqQHyDI4XI6uxOHQiq11/G
+ agkxfEcgZ8+gBEq6sBSUNYEcniohz9zzZao82pn7mxNT6hVyEak0SosO1 A==;
+X-CSE-ConnectionGUID: 1C51WqdQQs2yalSrbfFjPQ==
+X-CSE-MsgGUID: 09SjQlNxQt2WTklmlqWJUg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11913"; a="108232025"
+X-IronPort-AV: E=Sophos;i="6.27,116,1787036400"; d="scan'208";a="108232025"
 Received: from fmviesa005.fm.intel.com ([10.60.135.145])
  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  22 Sep 2026 11:04:23 -0700
-X-CSE-ConnectionGUID: IkDdG6CUQkqt8jF6OMJ4lw==
-X-CSE-MsgGUID: sYhxT+gNTaWpQh1vLBQK5w==
+X-CSE-ConnectionGUID: +l5IOKy0TJqmHLROb2YMhQ==
+X-CSE-MsgGUID: zJcVhBfPQf+iVcLPDabslA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,116,1787036400"; d="scan'208";a="281315311"
+X-IronPort-AV: E=Sophos;i="6.27,116,1787036400"; d="scan'208";a="281315291"
 Received: from orcnseosdtjek.jf.intel.com (HELO [10.166.28.109])
  ([10.166.28.109])
  by fmviesa005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 22 Sep 2026 11:04:23 -0700
+ 22 Sep 2026 11:04:22 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 22 Sep 2026 11:02:38 -0700
-Subject: [PATCH iwl-net v2 05/15] ice: E822: keep Tx timestamps disabled
- during offset calibration
+Date: Tue, 22 Sep 2026 11:02:34 -0700
+Subject: [PATCH iwl-net v2 01/15] ice: use reference counting and SRCU for
+ PTP port access
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260922-jk-e825c-timestamp-processing-logic-fixes-srcu-v2-5-e55b692d0e6b@intel.com>
+Message-Id: <20260922-jk-e825c-timestamp-processing-logic-fixes-srcu-v2-1-e55b692d0e6b@intel.com>
 References: <20260922-jk-e825c-timestamp-processing-logic-fixes-srcu-v2-0-e55b692d0e6b@intel.com>
 In-Reply-To: <20260922-jk-e825c-timestamp-processing-logic-fixes-srcu-v2-0-e55b692d0e6b@intel.com>
 To: Jacob Keller <jacob.e.keller@intel.com>, 
@@ -150,17 +150,15 @@ To: Jacob Keller <jacob.e.keller@intel.com>,
  Przemyslaw Korba <przemyslaw.korba@intel.com>, netdev@vger.kernel.org, 
  Anthony Nguyen <anthony.l.nguyen@intel.com>
 Cc: Jacob Keller <jacob.e.keller@intel.com>, 
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>, 
- Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>, 
- Przemyslaw Korba <przemyslaw.korba@intel.com>
+ Maciek Machnikowski <maciej.machnikowski@intel.com>
 X-Mailer: b4 0.17-dev-8b7ea
-X-Developer-Signature: v=1; a=openpgp-sha256; l=6030;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=15273;
  i=jacob.e.keller@intel.com; h=from:subject:message-id;
- bh=LMKv9Rckqm8xrU57YLqEs3ZI+P4/mCmZPP3UNpO2m0w=;
- b=owGbwMvMwCWWNS3WLp9f4wXjabUkhqxNh6U+7THc935+1/EPW7i59E9ai5w8d13n+Aeri6kvD
- TLsVOqOdJSyMIhxMciKKbIoOISsvG48IUzrjbMczBxWJpAhDFycAjCRL6qMDN9lVHINbOYYvLU9
- u3el/rTNbixXdqgGJR5zerx/4+vl8ScZ/gfccZ//5MyZlWfdn/456Lv8zkwHP4cDm60me/y8s3d
- OXBM3AA==
+ bh=NYECuONazlk8YCbgK0NwCbzoitEyEKd1ntrjQDiCHEM=;
+ b=owGbwMvMwCWWNS3WLp9f4wXjabUkhqxNhyU9bQo1tj3bk3KpbdGq528PKN4OE9HpOZekXbhk8
+ /5fjWvqO0pZGMS4GGTFFFkUHEJWXjeeEKb1xlkOZg4rE8gQBi5OAZjI7H8M/0NF7h2XmxG92r7R
+ KOnIpOc6vu86QsOiDeMrYnI9n83lY2f4Z3dkg8P89uVz8/tVZV95cmlYyNyfVmYh196ak/L7vcE
+ UBgA=
 X-Developer-Key: i=jacob.e.keller@intel.com; a=openpgp;
  fpr=204054A9D73390562AEC431E6A965D3E6F0F28E8
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -177,128 +175,417 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-From: Karol Kolacinski <karol.kolacinski@intel.com>
+The ice adapter structure maintains a list of ports associated with the
+adapter. This is used for supporting PTP, where the clock owner must handle
+many operations that require access to the PTP port structures of the
+associated PFs.
 
-Do not clear the tx.calibrating flag immediately after starting the PHY
-timer in ice_ptp_port_phy_restart(). Instead, keep Tx timestamps
-disabled until the offset verification work (ice_ptp_wait_for_offsets)
-has confirmed that the Tx PHY offset is properly configured.
+This is implemented using a linked list and a mutex. This sort of works,
+but a few places within the code do not acquire the mutex when iterating
+the list. This includes ice_ptp_flush_all_tx_tracker(),
+ice_ptp_restart_all_phy(), and ice_ptp_prepare_rebuild_sec().
 
-Previously, tx.calibrating was set to true, then immediately back to
-false right after ice_start_phy_timer_e82x() returned. This allowed Tx
-timestamp requests to be served during the window where offset
-verification was still pending. Timestamps produced during this window
-should have their valid bit cleared, but it is better to prevent requests
-until the driver has confirmed calibration is complete.
+Fixing this is tricky, especially since it is not clear if we can simply
+acquire the lock around the complete iterations.
 
-Move the tx.calibrating = false to ice_ptp_wait_for_offsets(), after
-Tx offset configuration has completed successfully. This ensures that new
-Tx timestamp requests are only accepted after the PHY has properly
-calibrated the Tx offset.
+The pattern of use for the port list is read-mostly with modifications only
+happening during PF initialization when elements are inserted. This
+typically only happens during early boot, though a PF could in principle be
+removed or loaded at arbitrary times via bind and unbind operations.
 
-If ice_start_phy_timer_e82x() fails, do not restore calibrating to false.
-The device is in a state where timestamps cannot succeed properly anyways.
-A dev_err message is already logged on failure to start the timer at the
-end of the function.
+The use of a mutex does mean the driver can sleep while holding it, but it
+still creates complicates with lock ordering and prevents iterating the
+list in any code path that *can't* sleep.
 
-Log a debug message while offset calibration is still pending, including
-the specific Tx/Rx error codes to aid debugging stalled calibration.
-This path is expected on every routine link-up: ov_work is first queued
-with no delay and the vernier offset cannot be computed until at least
-one packet has been transmitted, so the first several invocations
-normally land here. Use dev_dbg() rather than a rate-limited warning to
-avoid emitting KERN_WARNING on every link-up during normal operation.
-Log a debug message when calibration completes successfully.
+Instead, use SRCU primitives for the port linked list, along with a
+reference count on the port. The kref reference counter ensures that a PF
+will have a valid lifetime and not be removed until the reference is
+released. Note that this change focuses solely on the port list and does
+not make an effort to resolve access to ctrl_pf, which is currently being
+investigated by another developer.
 
-Note that sashiko review has previously complained that leaving the
-calibrating flag enabled "permanently" disables Tx timestamps if vernier
-calibration never completes. This is true, but its important to realize
-that timestamps would still fail regardless of whether the flag is set.
-Until vernier calibration completes the device will not report valid
-timestamps regardless. Thus, keeping the calibrating flag set simply
-prevents new timestamp requests from software while it is known that the
-hardware will not complete them.
+Use of sleepable RCU is required because we often iterate the PTP port list
+and perform operations that might sleep. Attempts at implementing regular
+RCU have thus far not proven to be acceptable.
 
-Fixes: 3a7496234d17 ("ice: implement basic E822 PTP support")
-Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-Signed-off-by: Przemyslaw Korba <przemyslaw.korba@intel.com>
+The remove path first removes the port from the list, and we use
+kref_get_unless_zero to ensure that such ports are skipped when iterating
+the list. This ensures that once a port starts removing we will drop
+references and no longer be able to acquire new ones. This avoids loop
+iterations chaining together to indefinitely block removal.
+
+The ice_ptp_release_port_srcu() function is used as the release function for
+the kref_put() call. This uses wake_up_var() to wake the removing thread.
+The waiting thread will block until the final reference has been removed,
+then it will use synchronize_srcu() to ensure any outstanding SRCU critical
+sections have had the necessary grace period.
+
+This flow ensures that accesses to ports via the adapter port list will
+remain valid until both the SRCU critical sections have ended and all the
+references to the ports have been dropped. Strictly speaking, SRCU alone
+might be sufficient for existing code paths, but the reference count allows
+the option for passing a pointer to the port on to other functions if
+necessary in the future.
+
+One major complication of this reference count is that ice_ptp_port is
+embedded inside of other structures and not merely allocated. As a result,
+we can't use the standard pattern of kfree_rcu() to just delay freeing
+until references are dropped, and instead are delaying PF port teardown. If
+any code path leaks the reference, the driver will be unable to teardown.
+Instead, a 15 second timeout with a WARN() is used when waiting to finally
+allow PF teardown to continue. This has the risk of potentially allowing
+use-after-free, assuming some path really is stuck for 15 seconds. However,
+this both less likely and a less bad outcome compared to blocking
+indefinitely on a reference leak.
+
+Fixes: e800654e85b5 ("ice: Use ice_adapter for PTP shared data instead of auxdev")
+Reviewed-by: Maciek Machnikowski <maciej.machnikowski@intel.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ptp.h |  2 +-
- drivers/net/ethernet/intel/ice/ice_ptp.c | 29 +++++++++++++++++++++++------
- 2 files changed, 24 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_adapter.h |  16 +--
+ drivers/net/ethernet/intel/ice/ice_ptp.h     |   4 +
+ drivers/net/ethernet/intel/ice/ice_adapter.c |  11 +-
+ drivers/net/ethernet/intel/ice/ice_ptp.c     | 145 +++++++++++++++++++++------
+ 4 files changed, 134 insertions(+), 42 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice_adapter.h b/drivers/net/ethernet/intel/ice/ice_adapter.h
+index 4f695f32da3d..93f041943bdd 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adapter.h
++++ b/drivers/net/ethernet/intel/ice/ice_adapter.h
+@@ -17,15 +17,19 @@ struct ice_pf;
+ /**
+  * struct ice_port_list - data used to store the list of adapter ports
+  *
+- * This structure contains data used to maintain a list of adapter ports
++ * This structure contains data used to maintain a list of adapter ports.
++ * Writers *must* acquire the lock, and use SRCU safe operations. Readers may
++ * use SRCU or acquire the lock.
+  *
+- * @ports: list of ports
+- * @lock: protect access to the ports list
++ * @list: list of ports
++ * @lock: protect write access to the list
++ * @srcu: Sleepable RCU domain for this adapter
+  */
+ struct ice_port_list {
+-	struct list_head ports;
+-	/* To synchronize the ports list operations */
+-	struct mutex lock;
++	struct list_head list;
++	/* To synchronize write operations on the port list */
++	spinlock_t lock;
++	struct srcu_struct srcu;
+ };
+ 
+ /**
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.h b/drivers/net/ethernet/intel/ice/ice_ptp.h
-index 27ea502b7576..029ee4612d76 100644
+index c4b0da7ce20e..da2003ba3bb0 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp.h
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp.h
-@@ -107,7 +107,7 @@ enum ice_tx_tstamp_work {
-  * @len: length of the tstamps and in_use fields.
-  * @init: if true, the tracker is initialized;
-  * @calibrating: if true, the PHY is calibrating the Tx offset. During this
-- *               window, timestamps are temporarily disabled.
-+ *               window, timestamp requests are disabled.
-  * @has_ready_bitmap: if true, the hardware has a valid Tx timestamp ready
-  *                    bitmap register. If false, fall back to verifying new
-  *                    timestamp values against previously cached copy.
+@@ -5,6 +5,8 @@
+ #define _ICE_PTP_H_
+ 
+ #include <linux/ptp_clock_kernel.h>
++#include <linux/rculist.h>
++#include <linux/kref.h>
+ #include <linux/kthread.h>
+ 
+ #include "ice_ptp_hw.h"
+@@ -138,6 +140,7 @@ struct ice_ptp_tx {
+  * and determine when the port's PHY offset is valid.
+  *
+  * @list_node: list member structure
++ * @ref: reference counter for use with adapter ports list
+  * @tx: Tx timestamp tracking for this port
+  * @ov_work: delayed work task for tracking when PHY offset is valid
+  * @ps_lock: mutex used to protect the overall PTP PHY start procedure
+@@ -149,6 +152,7 @@ struct ice_ptp_tx {
+  */
+ struct ice_ptp_port {
+ 	struct list_head list_node;
++	struct kref ref;
+ 	struct ice_ptp_tx tx;
+ 	struct kthread_delayed_work ov_work;
+ 	struct mutex ps_lock; /* protects overall PTP PHY start procedure */
+diff --git a/drivers/net/ethernet/intel/ice/ice_adapter.c b/drivers/net/ethernet/intel/ice/ice_adapter.c
+index 2dc3629d6d0f..84ac5ee5a739 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adapter.c
++++ b/drivers/net/ethernet/intel/ice/ice_adapter.c
+@@ -6,6 +6,7 @@
+ #include <linux/pci.h>
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
++#include <linux/srcu.h>
+ #include <linux/xarray.h>
+ #include "ice_adapter.h"
+ #include "ice.h"
+@@ -66,18 +67,20 @@ static struct ice_adapter *ice_adapter_new(struct pci_dev *pdev)
+ 		mutex_init(&adapter->cpi_phy_lock[i]);
+ 	refcount_set(&adapter->refcount, 1);
+ 
+-	mutex_init(&adapter->ports.lock);
+-	INIT_LIST_HEAD(&adapter->ports.ports);
++	spin_lock_init(&adapter->ports.lock);
++	INIT_LIST_HEAD(&adapter->ports.list);
++	init_srcu_struct(&adapter->ports.srcu);
+ 
+ 	return adapter;
+ }
+ 
+ static void ice_adapter_free(struct ice_adapter *adapter)
+ {
+-	WARN_ON(!list_empty(&adapter->ports.ports));
++	WARN_ON(!list_empty(&adapter->ports.list));
+ 	for (int i = 0; i < ARRAY_SIZE(adapter->cpi_phy_lock); i++)
+ 		mutex_destroy(&adapter->cpi_phy_lock[i]);
+-	mutex_destroy(&adapter->ports.lock);
++
++	cleanup_srcu_struct(&adapter->ports.srcu);
+ 
+ 	kfree(adapter);
+ }
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index 1bcc78d08d2f..364f0f389d85 100644
+index eaec36ab6ae3..9881a7a9e570 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -1161,6 +1161,7 @@ static int ice_ptp_check_tx_fifo(struct ice_ptp_port *port)
- static void ice_ptp_wait_for_offsets(struct kthread_work *work)
- {
- 	struct ice_ptp_port *port;
-+	unsigned long flags;
- 	struct ice_pf *pf;
- 	struct ice_hw *hw;
- 	int tx_err;
-@@ -1181,9 +1182,26 @@ static void ice_ptp_wait_for_offsets(struct kthread_work *work)
- 	tx_err = ice_ptp_check_tx_fifo(port);
- 	if (!tx_err)
- 		tx_err = ice_phy_cfg_tx_offset_e82x(hw, port->port_num);
-+	if (!tx_err) {
-+		/* Tx offset has been configured, re-enable Tx timestamps */
-+		spin_lock_irqsave(&port->tx.lock, flags);
-+		if (port->tx.calibrating) {
-+			port->tx.calibrating = false;
-+			dev_dbg(ice_pf_to_dev(pf), "PTP Tx offset valid for port %u, Tx timestamps enabled\n",
-+				port->port_num);
-+		}
-+		spin_unlock_irqrestore(&port->tx.lock, flags);
-+	}
-+
- 	rx_err = ice_phy_cfg_rx_offset_e82x(hw, port->port_num);
- 	if (tx_err || rx_err) {
--		/* Tx and/or Rx offset not yet configured, try again later */
-+		/* Tx and/or Rx offset not yet configured, try again later.
-+		 * This is expected during normal link-up: the vernier offset
-+		 * calibration cannot complete until at least one packet has
-+		 * been transmitted, so the first retries routinely land here.
-+		 */
-+		dev_dbg(ice_pf_to_dev(pf), "PTP offset not yet valid for port %u (tx_err=%d rx_err=%d)\n",
-+			port->port_num, tx_err, rx_err);
- 		kthread_queue_delayed_work(pf->ptp.kworker,
- 					   &port->ov_work,
- 					   msecs_to_jiffies(100));
-@@ -1276,11 +1294,10 @@ ice_ptp_port_phy_restart(struct ice_ptp_port *ptp_port)
- 		if (err)
- 			break;
+@@ -1,6 +1,9 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /* Copyright (C) 2021, Intel Corporation. */
  
--		/* Enable Tx timestamps right away */
--		spin_lock_irqsave(&ptp_port->tx.lock, flags);
--		ptp_port->tx.calibrating = false;
--		spin_unlock_irqrestore(&ptp_port->tx.lock, flags);
--
-+		/* Do not clear calibrating flag here. Tx timestamp requests
-+		 * remain disabled until ice_ptp_wait_for_offsets() has
-+		 * verified that the Tx offset calibration has completed.
-+		 */
- 		kthread_queue_delayed_work(pf->ptp.kworker, &ptp_port->ov_work,
- 					   0);
- 		break;
++#include <linux/rculist.h>
++#include <linux/srcu.h>
++#include <linux/wait_bit.h>
+ #include "ice.h"
+ #include "ice_lib.h"
+ #include "ice_trace.h"
+@@ -673,20 +676,33 @@ static void ice_ptp_process_tx_tstamp(struct ice_ptp_tx *tx)
+ 	pf->ptp.tx_hwtstamp_good += tstamp_good;
+ }
+ 
++static void ice_ptp_release_port_srcu(struct kref *ref)
++{
++	wake_up_var(ref);
++}
++
+ static void ice_ptp_tx_tstamp_owner(struct ice_pf *pf)
+ {
++	struct ice_port_list *ports = &pf->adapter->ports;
+ 	struct ice_ptp_port *port;
++	int srcu_idx;
+ 
+-	mutex_lock(&pf->adapter->ports.lock);
+-	list_for_each_entry(port, &pf->adapter->ports.ports, list_node) {
++	srcu_idx = srcu_read_lock(&ports->srcu);
++	list_for_each_entry_srcu(port, &ports->list, list_node,
++				 srcu_read_lock_held(&ports->srcu)) {
+ 		struct ice_ptp_tx *tx = &port->tx;
+ 
+-		if (!tx || !tx->init)
++		if (!tx->init)
++			continue;
++
++		if (!kref_get_unless_zero(&port->ref))
+ 			continue;
+ 
+ 		ice_ptp_process_tx_tstamp(tx);
++
++		kref_put(&port->ref, ice_ptp_release_port_srcu);
+ 	}
+-	mutex_unlock(&pf->adapter->ports.lock);
++	srcu_read_unlock(&ports->srcu, srcu_idx);
+ }
+ 
+ /**
+@@ -806,10 +822,19 @@ ice_ptp_mark_tx_tracker_stale(struct ice_ptp_tx *tx)
+ static void
+ ice_ptp_flush_all_tx_tracker(struct ice_pf *pf)
+ {
++	struct ice_port_list *ports = &pf->adapter->ports;
+ 	struct ice_ptp_port *port;
++	int srcu_idx;
+ 
+-	list_for_each_entry(port, &pf->adapter->ports.ports, list_node)
++	srcu_idx = srcu_read_lock(&ports->srcu);
++	list_for_each_entry_srcu(port, &ports->list, list_node,
++				 srcu_read_lock_held(&ports->srcu)) {
++		if (!kref_get_unless_zero(&port->ref))
++			continue;
+ 		ice_ptp_flush_tx_tracker(ptp_port_to_pf(port), &port->tx);
++		kref_put(&port->ref, ice_ptp_release_port_srcu);
++	}
++	srcu_read_unlock(&ports->srcu, srcu_idx);
+ }
+ 
+ /**
+@@ -1424,16 +1449,22 @@ static void ice_ptp_reset_phy_timestamping(struct ice_pf *pf)
+  */
+ static void ice_ptp_restart_all_phy(struct ice_pf *pf)
+ {
+-	struct list_head *entry;
++	struct ice_port_list *ports = &pf->adapter->ports;
++	struct ice_ptp_port *port;
++	int srcu_idx;
+ 
+-	list_for_each(entry, &pf->adapter->ports.ports) {
+-		struct ice_ptp_port *port = list_entry(entry,
+-						       struct ice_ptp_port,
+-						       list_node);
++	srcu_idx = srcu_read_lock(&ports->srcu);
++	list_for_each_entry_srcu(port, &ports->list, list_node,
++				 srcu_read_lock_held(&ports->srcu)) {
++		if (!kref_get_unless_zero(&port->ref))
++			continue;
+ 
+ 		if (port->link_up)
+ 			ice_ptp_port_phy_restart(port);
++
++		kref_put(&port->ref, ice_ptp_release_port_srcu);
+ 	}
++	srcu_read_unlock(&ports->srcu, srcu_idx);
+ }
+ 
+ /**
+@@ -2694,19 +2725,30 @@ static bool ice_port_has_timestamps(struct ice_ptp_tx *tx)
+ 
+ static bool ice_any_port_has_timestamps(struct ice_pf *pf)
+ {
++	struct ice_port_list *ports = &pf->adapter->ports;
++	bool have_tstamps = false;
+ 	struct ice_ptp_port *port;
++	int srcu_idx;
+ 
+-	scoped_guard(mutex, &pf->adapter->ports.lock) {
+-		list_for_each_entry(port, &pf->adapter->ports.ports,
+-				    list_node) {
+-			struct ice_ptp_tx *tx = &port->tx;
++	srcu_idx = srcu_read_lock(&ports->srcu);
++	list_for_each_entry_srcu(port, &ports->list, list_node,
++				 srcu_read_lock_held(&ports->srcu)) {
++
++		if (!kref_get_unless_zero(&port->ref))
++			continue;
++
++		if (ice_port_has_timestamps(&port->tx))
++			have_tstamps = true;
++
++		kref_put(&port->ref, ice_ptp_release_port_srcu);
++
++		if (have_tstamps)
++			break;
+ 
+-			if (ice_port_has_timestamps(tx))
+-				return true;
+-		}
+ 	}
++	srcu_read_unlock(&ports->srcu, srcu_idx);
+ 
+-	return false;
++	return have_tstamps;
+ }
+ 
+ bool ice_ptp_tx_tstamps_pending(struct ice_pf *pf)
+@@ -2890,14 +2932,18 @@ void ice_ptp_queue_work(struct ice_pf *pf)
+ static void ice_ptp_prepare_rebuild_sec(struct ice_pf *pf, bool rebuild,
+ 					enum ice_reset_req reset_type)
+ {
+-	struct list_head *entry;
++	struct ice_port_list *ports = &pf->adapter->ports;
++	struct ice_ptp_port *port;
++	int srcu_idx;
+ 
+-	list_for_each(entry, &pf->adapter->ports.ports) {
+-		struct ice_ptp_port *port = list_entry(entry,
+-						       struct ice_ptp_port,
+-						       list_node);
++	srcu_idx = srcu_read_lock(&ports->srcu);
++	list_for_each_entry_srcu(port, &ports->list, list_node,
++				 srcu_read_lock_held(&ports->srcu)) {
+ 		struct ice_pf *peer_pf = ptp_port_to_pf(port);
+ 
++		if (!kref_get_unless_zero(&port->ref))
++			continue;
++
+ 		if (!ice_is_primary(&peer_pf->hw)) {
+ 			if (rebuild) {
+ 				/* TODO: When implementing rebuild=true:
+@@ -2909,7 +2955,10 @@ static void ice_ptp_prepare_rebuild_sec(struct ice_pf *pf, bool rebuild,
+ 				ice_ptp_prepare_for_reset(peer_pf, reset_type);
+ 			}
+ 		}
++
++		kref_put(&port->ref, ice_ptp_release_port_srcu);
+ 	}
++	srcu_read_unlock(&ports->srcu, srcu_idx);
+ }
+ 
+ /**
+@@ -3086,11 +3135,11 @@ static int ice_ptp_setup_pf(struct ice_pf *pf)
+ 		return -ENODEV;
+ 
+ 	INIT_LIST_HEAD(&ptp->port.list_node);
+-	mutex_lock(&pf->adapter->ports.lock);
++	kref_init(&ptp->port.ref);
+ 
+-	list_add(&ptp->port.list_node,
+-		 &pf->adapter->ports.ports);
+-	mutex_unlock(&pf->adapter->ports.lock);
++	spin_lock(&pf->adapter->ports.lock);
++	list_add_rcu(&ptp->port.list_node, &pf->adapter->ports.list);
++	spin_unlock(&pf->adapter->ports.lock);
+ 
+ 	/* Seed the per-PHY Tx reference clock usage map for this port.
+ 	 * Only meaningful on E825 (other MAC types don't expose tx-clk
+@@ -3112,13 +3161,45 @@ static int ice_ptp_setup_pf(struct ice_pf *pf)
+ 
+ static void ice_ptp_cleanup_pf(struct ice_pf *pf)
+ {
++	struct ice_port_list *ports = &pf->adapter->ports;
+ 	struct ice_ptp *ptp = &pf->ptp;
++	struct kref *ref;
+ 
+-	if (pf->hw.mac_type != ICE_MAC_UNKNOWN) {
+-		mutex_lock(&pf->adapter->ports.lock);
+-		list_del(&ptp->port.list_node);
+-		mutex_unlock(&pf->adapter->ports.lock);
+-	}
++	if (pf->hw.mac_type == ICE_MAC_UNKNOWN)
++		return;
++
++	/* The PF should not be removed until there are no more outstanding
++	 * references on the PTP port. First, remove the port from the list to
++	 * prevent new references from being acquired. Then, drop the primary
++	 * reference this PF holds on the port. Wait until the references are
++	 * dropped and then finally synchronize_srcu() to ensure the SRCU
++	 * critical sections have finished.
++	 *
++	 * Since this blocks PF removal (and doesn't merely result in a memory
++	 * leak), have a maximum timeout of 15 seconds before continuing
++	 * removal. Since the port is already removed from the list, new
++	 * references will not be acquired. The only way to trigger
++	 * use-after-free should be for a single thread already holding
++	 * a reference becoming blocked for 15 seconds.
++	 *
++	 * This intentionally trades off allowing a possible but unlikely
++	 * use-after-free for avoiding permanently blocking the ability to
++	 * remove the driver due a programming bug resulting in a true
++	 * reference leak.
++	 */
++
++	spin_lock(&ports->lock);
++	list_del_rcu(&ptp->port.list_node);
++	spin_unlock(&ports->lock);
++
++	ref = &ptp->port.ref;
++	kref_put(ref, ice_ptp_release_port_srcu);
++
++	dev_WARN_ONCE(ice_pf_to_dev(pf),
++		      !wait_var_event_timeout(ref, !kref_read(ref), 15 * HZ),
++		      "Timed out waiting for port references to release. Continuing to unload anyways.");
++
++	synchronize_srcu(&ports->srcu);
+ }
+ 
+ /**
 
 -- 
 2.56.0.rc0.395.gd1f3524e15dc
