@@ -1,134 +1,159 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D393C982FA
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 22 Sep 2026 09:12:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F4B8C982FA
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 22 Sep 2026 10:34:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 3085A40768;
-	Tue, 22 Sep 2026 09:12:03 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id CCFC26074A;
+	Tue, 22 Sep 2026 10:34:42 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id RmwdQOK0kUkx; Tue, 22 Sep 2026 09:12:02 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 83A9540813
-Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790068322;
-	b=MZ4b17KlV3+BjuwIu7y/Ew09HZMZDrJncLsajr8s14rvzbE4q+xPLb/nonpWGdHHH8cw
-	 V9WCzQxKiC1bFDHulutfCQklv9CC7QAx76TejH8dgb0S9bjotHV11fPD1X5Wf5hf33GK1
-	 sKi1ezYZOx5Ej2l/Ct4Al+yqkLMPwTfwso32rN2SKOxF8CL3s+Yl03sr1naQVasuGwiAE
-	 ZQoO/gVWu+80QP81mcm86aX3E+Y20ONrdaGwGDq/OcTh7s7yTVuDYcHy3oP9OhEwshUeT
-	 qudEUAxZhlpqKr9Co2kp6F5OwC7WwPSZTfg7PHBuQ2wG6j5dEQCQUiOHbZ1HYK2o0NQ==
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id YiwKbyw_vRid; Tue, 22 Sep 2026 10:34:42 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 34489606EF
+Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790073282;
+	b=EWECEJNUdOb4aLTwA/5hnZl3c/PYk2dm+qCynDfnmRrWYPtJajD0gBQWbS6XiQJvcUcT
+	 Y4WXlVlwDCri70xKGfQwtSejjErRoDhDs4l9/G7f5qdikEGGwOPffcuGcvxionslpmFiI
+	 bhddV1jOd11AG6ZLYPXy4DWizKi3KYUfWltCtaXsfrQSbgYJTJgWS1CeWwikDvovAnKL4
+	 RIMtkt0iqejXMX3T+yHWzG8MuAUWss6m86vwHyqyELZFSvZQ4nRBnhtyc7oOs5IGHiLl4
+	 1NPpi8Of+sm44MIsWDBvI0nNrhL4OtG+zN4Ql6xgGQ24eo3vO+5dGFQ0OPMF1QZZ+bg==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1790068322;
+	c=relaxed/relaxed; t=1790073282;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
-	 DKIM-Signature:Received:From:To:Cc:Subject:Date:Message-Id:X-Mailer:
-	 MIME-Version:Content-Transfer-Encoding:X-CM-TRANSID:
-	 X-Coremail-Antispam:X-CM-SenderInfo:X-BeenThere:X-Mailman-Version:
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Gm-Message-State:X-Gm-Gg:
+	 X-Received:Received:From:To:Subject:Date:Message-ID:X-Mailer:
+	 MIME-Version:Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:
 	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=JZB0Slkp1cTB3zAnWSwmos8fcy3POuFLh4py+bqB5yk=;
-	b=sNOFn+CHtn9EobnRhEFYitFk1gn4NRnRZ8T5G+GBgPX3tmyEo1KFKnlwiG6ytjpOseoM
-	 cBHc3mTaodjz9EI52rc6R78c8Qui13ZkMOCm6wdpJWzCRk1o4Oi4U5J1HNylyyYEE9/91
-	 bWbOnJAHwco1W1VCbUg0xiIZoJFidj5w6IpG4VfGWS7kBRMyZEN1xzCwxNmbur2hXmCsy
-	 mEUJEnswgC0fiCfQ3fL9s6FzYkNrndcrCD78ZyiiTvutWgcIeOv0elpBQBTXcvcnPVUQG
-	 MajlEQ8sUq+nzrIeo3bSnZTkWHhxbBF6+ia5GJlogvwK+TKoKyHKzekWu1bROSYs4eg==
-ARC-Authentication-Results: i=2; smtp4.osuosl.org; dmarc=pass header.from=126.com;
-	dkim=pass header.d=126.com header.i=@126.com header.a=rsa-sha256 header.s=s110527 header.b=eT14op8Z;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	bh=am3y0UKU6tx0D/gCCUAE01TlYxvYCZvkU5m2ed5m51U=;
+	b=FslXqrtcO10hoqT5xpHYWp+pznVnBnR45X2FuULNPe5c5KVik+dcmgUbgNI65cJP1q3Q
+	 DiDRDSoxVpxlsIeENUOTc3WEandui/OiD8HV6D9s9xrf9U3LsW8ZMDDpzIgTbUI6SJz14
+	 Nzd8RnsOTXAiYow1dY3MhTTIuSyXD4gbV5Yy+izCVgNO854hlFTmEZRp2AMWtqiyP9/cn
+	 U5bDuPlPRVoXC+cWIpFFZPfKwJK1+s7M0IOg0YYP+uy6yaihyps7h9S8xOw4HT/AvvbE1
+	 0HjyxmOeIS3JF9davRDj21RYhAv5rsXfF66kpoflii9t3pp572ZeySMPmb0+1470GpQ==
+ARC-Authentication-Results: i=2; smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1790068322;
-	bh=JZB0Slkp1cTB3zAnWSwmos8fcy3POuFLh4py+bqB5yk=;
-	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
+	s=default; t=1790073282;
+	bh=am3y0UKU6tx0D/gCCUAE01TlYxvYCZvkU5m2ed5m51U=;
+	h=From:To:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=s6SUO7YOzc7WnTPHnJ1hNHkaSM0z2zz+ZGUMczFWrMlXQAhP8iu8gMlpUqTkEglAN
-	 e1OGrz/E+SZ8/poeh886l3ytQCdTRyagX9Qnb80stbED07bqMlxPNRZXUogG8K/WtM
-	 OT5OnDjqwD707yIM/bDyfcHp3sdAE0wHGkQ5VY2cnossmLHk0QIfG1L/B3oVTTotzy
-	 uATo/+NvdVy6UfCh4IUii5Gmg/AAwXDcHD/QmBODHUbyf2gvT4oq2JMc+KUI40kvCY
-	 Q6mctVCIO0rDIVizs9C99oI+cbRUoBfqdyLNUbu1TmF4wryJshaO65tMBspCaZpDR/
-	 nl30zZNkeMT+A==
+	b=5CfRK+Cq6yNeZyPTRnyaPkdlvns2yYeKr+05D+HFYe+tmNRAYDus269sBr9Bv11ML
+	 LzXksWVxvQaXuwTziCi8pDiFZ21F+URorztajTTWqpMZ7oPVzyELJBY+TtMHw/u4dG
+	 KDg87rO7xfm8TAKLXK7z5kUKP2QWBYO45/dEeksTT7Yp7UBeCFPfkQhucOVnpGaius
+	 WntVhkHsnfbhXtVWN9oH215RYlpXCmkK2vsdJkiNsN+BioqPN5mDpZoULdWtRsYVYa
+	 QpoIaZPkPdCekuyBmZcdxTc8UnHCzQU2+84sd10AaUvuAHRvd3Kfg1FwT7mOub26sk
+	 5g8tg9EHhr8VQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 83A9540813;
-	Tue, 22 Sep 2026 09:12:02 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id D412B3A9
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 09:12:01 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 34489606EF;
+	Tue, 22 Sep 2026 10:34:42 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id A7BC9352
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 10:34:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id C60A640813
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 09:12:01 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 8567A80DAC
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 10:34:40 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id GEUZxokOlKHY for <intel-wired-lan@lists.osuosl.org>;
- Tue, 22 Sep 2026 09:12:01 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 349FE40768
-Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=117.135.210.9
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790068321;
- b=Jr8HnF/LV0tSFTcfsZbCgSOFXunPKqoHRGIoKrnL+9+HyF9pYsWrk41+j8P2TKfRW3I6
- Ou8cMBPY8qEn2pdstjLaSoen5iD39/WZRYszqEPB14GMdijpJiMoksmLefbHNfnEK1J+4
- H1YnYEbuaZRXCNh2+GujqInIb1DahbIC8YvK03twKwL5VprA9B6YHw2/3VwG3YJ9pq5tf
- iyi3fV/o70s748zqk8giNlV4+R8JKoLYVK+jQSHplBYrnZlCwtX341iYbjXdrlv9rTf2k
- XcujL9MNvXtKNf7k+J4EM5kL0+Yg99y1w2NrZAhm6+GaGYfbbffDSvBkiSihjcGAf1A==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id UpWIYlpJONnh for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 22 Sep 2026 10:34:40 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 904D780D97
+Authentication-Results: smtp1.osuosl.org;
+ arc=none smtp.remote-ip="2a00:1450:4864:31::11"
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790073280;
+ b=ORCsfwO4glE1lsXGP9jCrlJRTqndBpybkEwxa/gFAZfBlkVwLfY9B7LJsiJJoLlinISj
+ JLPWhZusocsQJ/ABNt4gVa/mDNaCZ20qVMjFcaBcxagy5gM5BH78M5tc0aHE/x5JvnTQh
+ QC6zYhZLhbE1epak0pFN8we6yI+dlPLJuVY9c2/Xh7oCCQDYibaO9DhzKrZkc2kR2vIo4
+ KIMzbd/n59Q7Sf1hkc/62870AmYwMgvMZA5/V353TmPgfzhn080q0h/eHypFZCdr/8GCc
+ fo7YiyRqBGZqD+6VJd/Ng85tkI+RCIDCrKIig4xbz3yWaSSqCWYqC4xQKW9d6I17ohw==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1790068321;
- h=Received-SPF:DKIM-Signature:Received:From:To:Cc:Subject:Date:
- Message-Id:X-Mailer:MIME-Version:Content-Transfer-Encoding:
- X-CM-TRANSID:X-Coremail-Antispam:X-CM-SenderInfo;
- bh=JZB0Slkp1cTB3zAnWSwmos8fcy3POuFLh4py+bqB5yk=;
- b=Imp1ye2pC4nTm9w+ei32Yiq9wZ4x6T5T0xUQyoLbp7iiVG+Fy3xSF4J5M7FtP2k7jybh
- OymDBR0sjA7KE7OU8fNzJKp9Zp1VKS43/gBIMpx9uBRZIBiBwfLadhfZoWQKkv0GpLmCp
- uFCDCHx6IVqieSv4xJejAz6WxWNWZq+YkIkkCZorZHp9Oe+IS4AiVJ/763L3hUxIRfWCP
- W8GWyCrMYTJrSSACspxGE0JVRiO6o/hgLKlj0j1U4kHhQqtd8uMZRx+4nIeBAvYbHGquB
- H+qJoMj5Ej+0gT2WkAzmT4/0FYN6gQjJlXZbGg/lEkAXHDbtnPHKJCtz/AIDgmtNsYQ==
-ARC-Authentication-Results: i=1; smtp4.osuosl.org;
- dmarc=pass header.from=126.com; 
- dkim=pass header.d=126.com header.i=@126.com header.a=rsa-sha256
- header.s=s110527 header.b=eT14op8Z; 
- arc=none smtp.remote-ip=117.135.210.9
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=117.135.210.9;
- helo=m16.mail.126.com; envelope-from=xiaolinkui@126.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=126.com
-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (1024-bit key) header.d=126.com header.i=@126.com
- header.a=rsa-sha256 header.s=s110527 header.b=eT14op8Z
-Received: from m16.mail.126.com (m16.mail.126.com [117.135.210.9])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 349FE40768
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 09:11:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=126.com;
- s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=JZ
- B0Slkp1cTB3zAnWSwmos8fcy3POuFLh4py+bqB5yk=; b=eT14op8ZJEjCwld797
- 9NeAezOI4tg/JlPsp4eTU74QEi8ZGnglumaAZ9qg4QvlMEXKBCcn5qhzDn+08rwE
- lrnz6dJFjcphyWHnfF8YK7bysyiIofF4sAArEWhHqoriZS+D8pMySqT0Ij9IKrJ7
- 9ERRHZEgTrofJv37soEks7LkI=
-Received: from localhost.localdomain (unknown [])
- by gzga-smtp-mtada-g0-1 (Coremail) with SMTP id
- _____wD3HzY9RrJq0uQVAA--.17646S2; 
- Tue, 22 Sep 2026 17:11:25 +0800 (CST)
-From: Linkui Xiao <xiaolinkui@126.com>
-To: aleksandr.loktionov@intel.com, anthony.l.nguyen@intel.com,
- przemyslaw.kitszel@intel.com, andrew+netdev@lunn.ch, davem@davemloft.net,
- edumazet@google.com, kuba@kernel.org, pabeni@redhat.com
-Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, Linkui Xiao <xiaolinkui@kylinos.cn>
-Subject: [PATCH net v3] i40e: limit the DDP profile count returned by the
- firmware
-Date: Tue, 22 Sep 2026 17:11:23 +0800
-Message-Id: <20260922091123.506598-1-xiaolinkui@126.com>
-X-Mailer: git-send-email 2.25.1
+ c=relaxed/relaxed; t=1790073280;
+ h=Received-SPF:Received:DKIM-Signature:X-Google-DKIM-Signature:
+ X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Subject:Date:
+ Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding;
+ bh=am3y0UKU6tx0D/gCCUAE01TlYxvYCZvkU5m2ed5m51U=;
+ b=Nbglv44YZO5uYHR8FPn/oRoxDMLit5c58kSmXezgWl74H4oXG0Y2lbc+K3T0D2oqbdb0
+ WCeqKxOPZLZbwVKizrrQZ+wLGZj4tUglwzfTZwNC9PF2ELRvaDGyKdxi4eksmIQsBBNU8
+ aGWJ2uJmVzYfujsrE9FTY3aX21vwxGi94UzQGu4GQ/bUUMibr4TUaW+MNoi2Sm5MgWPKn
+ Gk17UODA5h3GbMqNu35ynbhrFLthAoNF3MJ0S/Xy+xd24co65S/ZRY7VFmSNA1bGAlPH9
+ rGbe3fVlw15KPn27dJasG8n6VM5pIZ5WDb3gkIqzNi9cS1rEkg1IRVNLFDGecamJOgw==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org;
+ dmarc=pass header.from=gmail.com; 
+ dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20251104 header.b=gYBByvXj; 
+ arc=none smtp.remote-ip="2a00:1450:4864:31::11"
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2a00:1450:4864:31::11; helo=mail-wm2-x11.google.com;
+ envelope-from=sashaneftin@gmail.com; receiver=<UNKNOWN> 
+Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20251104 header.b=gYBByvXj
+Received: from mail-wm2-x11.google.com (mail-wm2-x11.google.com
+ [IPv6:2a00:1450:4864:31::11])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 904D780D97
+ for <intel-wired-lan@osuosl.org>; Tue, 22 Sep 2026 10:34:39 +0000 (UTC)
+Received: by mail-wm2-x11.google.com with SMTP id
+ 5b1f17b1804b1-49e83a388f8so23691495e9.1
+ for <intel-wired-lan@osuosl.org>; Tue, 22 Sep 2026 03:34:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20251104; t=1790073277; x=1790678077; darn=osuosl.org;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:to
+ :from:from:to:cc:subject:date:message-id:reply-to:content-type;
+ bh=am3y0UKU6tx0D/gCCUAE01TlYxvYCZvkU5m2ed5m51U=;
+ b=gYBByvXjU22PBhwmmjOVsuMsfrtNmmwjQEMR2e4o7+jlC0OS2fPk7B4F3bOMVzFlpm
+ lXfKxRkNw5Dkk4YzBIAwHTBDWmqwhLE2w2gARMH9wvBT7gcRjqva1AvFMnK1LwD61tAu
+ rWwDEL24weAqA4o/xc6ErNHKrfO7A0i5L5NhECjx3Y+GRjvTGSganTNGUyoM4qUO/Cwq
+ GnDDPLhC9UBQn8WsKoTHidequvgpUaElHCkc74mK0vOXk0HquBnsAfwF5D6MXqIV0z0j
+ +Jnjyd4r9FvNbPPAF4b4VRtTjR4eCQ1VyETikyaYS+6uXSwddFxL1w0GS3IihTM1NDkH
+ Ok+Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20260707; t=1790073277; x=1790678077;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:to
+ :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+ :reply-to:content-type;
+ bh=am3y0UKU6tx0D/gCCUAE01TlYxvYCZvkU5m2ed5m51U=;
+ b=vP8pj9jZtwteByXxC8/8RhDVJcQvC/6m6AxfeGrQ7oEDvOb2B93ni6XX6SX3zEHog+
+ PdXdDft7sncoOQEhVr/s1ZSzlDLnw1YLlBmzO29AsEGbO2EKacOJHvtQfgpMmGf66BPm
+ /M5wIzTngOaNJUeTLiXMeGL5Kk/7NqMP1BgN+C4Cj5jQNPOauYaujt1S1egV9YSmahbY
+ wkN3f6pPE5/U1f8zn1WKINiAAJjNaQRGQ6q9/AS4IQW3Fj4sIjAqbRHyIQBDVNkinIEK
+ QXuqWHtNGlJJAyNyWAQxC9HWZkJVplOqCzhZMedvFgkt7v0mc7qBXWat5qYwP7W68w+R
+ CROQ==
+X-Gm-Message-State: AFuF++lxYj8CwfuNC5GEZEQ4MuN4vCwurpvcHGUzqrLgyoiEURvEUyw6
+ 5ow8bsYlE7WJMkcRiuMUNmP86cJSXSWBO6elsXVA4qTdHMlbsN6Cmbj3ysBIEi9H
+X-Gm-Gg: AYBFou26dFkKAWxI5+aHEBWSzh2Nx2zkR2ZHmzbKfgN+FFTyOAIWNSYO/BtrwT3PVlw
+ YDKC5MrWPjwlksqDHI4R43CIaYLfItqF8gV25hbQ8p8Maoqs1qpYSVhKDhGerXNukBWBSU6uABB
+ DkLCITF1uwVyM1uCw85TuUWZjeLtFm8Ba33khFRdstZ4MrF6qtVo5bDc7V5F/cS6ntGXEYJayBe
+ 3aR2GJJVg2VJ0I2vT6kwPF/Cjy/zeYiCGrt4aVg60hoUDTrfJXBu0DkOdJuJhf2eAShb9iGpqk+
+ nr9VD9ZVmBIxLxWvwvcq8gFoqjX8vcFiyaH23rIJVJYzAlP6ZjmUxBlyCnLdFs3o8V8wXBtkWlf
+ 03BQXOuK7titSdz9eIxpNBAbOpXEDoyHIqVYNyoqyTpHQib0aFqsfT5wmUAfIuETphCE697IAZY
+ 1ieaMvJybPRwEpOsV4nSUeecyXT5F1PHa09PG39xGRUVpDDBuieOsgH2xy3rkOHl/4k7FlEmSro
+ B9/KKzxxQh2nHOTwP+ra+BXwDnUB0ZbgsUSAxf0qCQuIxnS/ZUbSoE0S8+Bew==
+X-Received: by 2002:a05:600c:6095:b0:49d:17d4:aff2 with SMTP id
+ 5b1f17b1804b1-49fc566e558mr196870795e9.1.1790073276922; 
+ Tue, 22 Sep 2026 03:34:36 -0700 (PDT)
+Received: from sashaneftin-pc-GB-BSi5-1135G7.home ([185.175.35.55])
+ by smtp.gmail.com with ESMTPSA id
+ 5b1f17b1804b1-49fd8ccd185sm72579525e9.8.2026.09.22.03.34.35
+ for <intel-wired-lan@osuosl.org>
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 22 Sep 2026 03:34:36 -0700 (PDT)
+From: Sasha Neftin <sashaneftin@gmail.com>
+To: intel-wired-lan@osuosl.org
+Subject: [iwl-net, v1] igc: Fix typo in IGC_NO_QUEUE macro definition
+Date: Tue, 22 Sep 2026 13:34:34 +0300
+Message-ID: <20260922103434.55912-1-sashaneftin@gmail.com>
+X-Mailer: git-send-email 2.43.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: _____wD3HzY9RrJq0uQVAA--.17646S2
-X-Coremail-Antispam: 1Uf129KBjvJXoWxGw4UWw1Utw18JF1DKw4xtFb_yoWrXr4fpF
- W5JFWDGryDJa1j93yUGFW7uFyfu3WfAryYga4a93s8urn8tF4kWa48tFWFkFy7ZrWvkr90
- qFs5Cry8CF4DJwUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
- 9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07Ul-ewUUUUU=
-X-CM-SenderInfo: p0ld0z5lqn3xa6rslhhfrp/xtbBlB3nvmqyRj0E1QAA3i
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -143,98 +168,59 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-From: Linkui Xiao <xiaolinkui@kylinos.cn>
+Correct the macro name from IGC_N0_QUEUE (using digit '0') to
+IGC_NO_QUEUE (using letter 'O') in igc_defines.h and update its
+usage in igc_main.c.
 
-i40e_aq_get_ddp_list() writes into a I40E_PROFILE_LIST_SIZE buffer, which
-is sized for I40E_MAX_PROFILE_NUM (16) i40e_profile_info entries plus the
-4 byte p_count header. i40e_ddp_does_profile_exist() and
-i40e_ddp_does_profile_overlap() then loop over profile_list->p_count
-without bounding it, so a firmware reporting more than 16 profiles makes
-both helpers walk past the end of the on-stack buff[] and compare against
-whatever happens to follow it on the stack.
-
-The same buffer is handed to the firmware as an indirect admin queue
-buffer, and the admin queue code copies all of it into the DMA bounce
-buffer before submitting the command, so its uninitialized contents were
-visible to the device as well.
-
-Zero initialize buff[] and reject the list when the firmware reports more
-profiles than the buffer can hold, instead of answering from a list that
-was only partially read. Both helpers already report errors to
-i40e_ddp_load(), which aborts the operation.
-
-Fixes: cdc594e00370 ("i40e: Implement DDP support in i40e driver")
-Signed-off-by: Linkui Xiao <xiaolinkui@kylinos.cn>
+Fixes: 16ecd8d9af26 ("igc: Remove the obsolete workaround")
+Signed-off-by: Sasha Neftin <sashaneftin@gmail.com>
 ---
-Changes in v3:
-- Zero initialize buff[] in both helpers: the whole buffer is copied into
-  the admin queue DMA bounce buffer and copied back afterwards, so its
-  contents were exposed to the device, and entries the firmware never
-  wrote were compared against. (Sashiko AI review)
-- Reject the list when the firmware reports more profiles than buff[] can
-  hold, instead of silently clamping the scan and then answering from a
-  list that was only partially read. (Sashiko AI review)
-- Dropped the Reviewed-by tag, as the code changed after the review.
+ drivers/net/ethernet/intel/igc/igc_defines.h | 2 +-
+ drivers/net/ethernet/intel/igc/igc_main.c    | 8 ++++----
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
- drivers/net/ethernet/intel/i40e/i40e_ddp.c | 22 ++++++++++++++++++----
- 1 file changed, 18 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ddp.c b/drivers/net/ethernet/intel/i40e/i40e_ddp.c
-index daa9f2c42f70..49a98c0e001a 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ddp.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ddp.c
-@@ -53,9 +53,9 @@ static int i40e_ddp_does_profile_exist(struct i40e_hw *hw,
- 				       struct i40e_profile_info *pinfo)
+diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
+index 3f504751c2d9..ab55b88d4d96 100644
+--- a/drivers/net/ethernet/intel/igc/igc_defines.h
++++ b/drivers/net/ethernet/intel/igc/igc_defines.h
+@@ -721,7 +721,7 @@
+ #define IGC_LP_EEE_1000BT_MASK	BIT(2)
+ #define IGC_LP_EEE_100BT_MASK	BIT(1)
+ 
+-#define IGC_N0_QUEUE		-1
++#define IGC_NO_QUEUE		-1
+ 
+ #define IGC_MAX_MAC_HDR_LEN	127
+ #define IGC_MAX_NETWORK_HDR_LEN	511
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 1fb5f3cbe93c..ba75350291f5 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -4223,8 +4223,8 @@ static void igc_assign_vector(struct igc_q_vector *q_vector, int msix_vector)
  {
- 	struct i40e_ddp_profile_list *profile_list;
--	u8 buff[I40E_PROFILE_LIST_SIZE];
-+	u8 buff[I40E_PROFILE_LIST_SIZE] = {};
- 	int status;
--	int i;
-+	u32 i;
+ 	struct igc_adapter *adapter = q_vector->adapter;
+ 	struct igc_hw *hw = &adapter->hw;
+-	int rx_queue = IGC_N0_QUEUE;
+-	int tx_queue = IGC_N0_QUEUE;
++	int rx_queue = IGC_NO_QUEUE;
++	int tx_queue = IGC_NO_QUEUE;
  
- 	status = i40e_aq_get_ddp_list(hw, buff, I40E_PROFILE_LIST_SIZE, 0,
- 				      NULL);
-@@ -63,6 +63,13 @@ static int i40e_ddp_does_profile_exist(struct i40e_hw *hw,
- 		return -1;
+ 	if (q_vector->rx.ring)
+ 		rx_queue = q_vector->rx.ring->reg_idx;
+@@ -4233,11 +4233,11 @@ static void igc_assign_vector(struct igc_q_vector *q_vector, int msix_vector)
  
- 	profile_list = (struct i40e_ddp_profile_list *)buff;
-+	/* The firmware is not required to report a profile count that fits
-+	 * into the buffer we gave it; refuse to read such a list instead of
-+	 * walking past the end of buff[].
-+	 */
-+	if (profile_list->p_count > I40E_MAX_PROFILE_NUM)
-+		return -EIO;
-+
- 	for (i = 0; i < profile_list->p_count; i++) {
- 		if (i40e_ddp_profiles_eq(pinfo, &profile_list->p_info[i]))
- 			return 1;
-@@ -108,9 +115,9 @@ static int i40e_ddp_does_profile_overlap(struct i40e_hw *hw,
- 					 struct i40e_profile_info *pinfo)
- {
- 	struct i40e_ddp_profile_list *profile_list;
--	u8 buff[I40E_PROFILE_LIST_SIZE];
-+	u8 buff[I40E_PROFILE_LIST_SIZE] = {};
- 	int status;
--	int i;
-+	u32 i;
- 
- 	status = i40e_aq_get_ddp_list(hw, buff, I40E_PROFILE_LIST_SIZE, 0,
- 				      NULL);
-@@ -118,6 +125,13 @@ static int i40e_ddp_does_profile_overlap(struct i40e_hw *hw,
- 		return -EIO;
- 
- 	profile_list = (struct i40e_ddp_profile_list *)buff;
-+	/* The firmware is not required to report a profile count that fits
-+	 * into the buffer we gave it; refuse to read such a list instead of
-+	 * walking past the end of buff[].
-+	 */
-+	if (profile_list->p_count > I40E_MAX_PROFILE_NUM)
-+		return -EIO;
-+
- 	for (i = 0; i < profile_list->p_count; i++) {
- 		if (i40e_ddp_profiles_overlap(pinfo,
- 					      &profile_list->p_info[i]))
+ 	switch (hw->mac.type) {
+ 	case igc_i225:
+-		if (rx_queue > IGC_N0_QUEUE)
++		if (rx_queue > IGC_NO_QUEUE)
+ 			igc_write_ivar(hw, msix_vector,
+ 				       rx_queue >> 1,
+ 				       (rx_queue & 0x1) << 4);
+-		if (tx_queue > IGC_N0_QUEUE)
++		if (tx_queue > IGC_NO_QUEUE)
+ 			igc_write_ivar(hw, msix_vector,
+ 				       tx_queue >> 1,
+ 				       ((tx_queue & 0x1) << 4) + 8);
 -- 
-2.25.1
+2.43.0
 
