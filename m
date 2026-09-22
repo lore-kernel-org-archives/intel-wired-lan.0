@@ -1,28 +1,28 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5306AC982FA
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C6E85C98308
 	for <intel-wired-lan@archiver.kernel.org>; Tue, 22 Sep 2026 18:08:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2090560710;
+	by smtp1.osuosl.org (Postfix) with ESMTP id 8EC5A80EC7;
 	Tue, 22 Sep 2026 18:08:38 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ls-cqSKekY7x; Tue, 22 Sep 2026 18:08:36 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org C35B360766
-Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790100516;
-	b=SgjJct748PaVt91C14/nY6+5D8ZkErMIoZlAaB/1m5NKlyqnj2VC4xAtjht/ZRm/ihBF
-	 U66a989GrY/k6zlg1oOmPODtf78R9LkPG09R+GdzozzJFEJ/UwBOeWaoT5z+NVFtx9yeI
-	 0d8ySnAtTwmxabgy500oKabDCbxTVWRRVU4VQ6YtmZ5Vgvi0A8nEoaj0tZyQXDAVE8BNg
-	 96OKpj06eVw/T21ANAqO6l0cijOxQuk0Fv5WSWK2QBTGvngE/90f038qx9zExXKJH/kcs
-	 geR+VdQ0GxWwf2DD9hlzcdSBH4KwmwT1LyqMMwrb0R9HH69/Ljs9T7hTh+1cWzaqZXQ==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id VaDzr8WoRtpV; Tue, 22 Sep 2026 18:08:37 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org AE40680EC1
+Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790100517;
+	b=cEralrNj97gapiWsoYlTv6ekJ48QyAxjV8Vtn9zTqkr88ILWH3fpI8QdGTsWMXAs/LTr
+	 hRVSDP2sKnTALsw0EZRPIjAMvM0xYmO5JKkbidLYSy2x3IYrEkrSz8edBc/zkxttyyqbt
+	 v/QTNbh0x2AbZCwIYSHsMkQ2gmeqOW7gJpP4D1y11k9xAnXjxjreOF5ZvBuX6zMcpb1CL
+	 YDoOciV1rbF9sco7dT/AxsXJtdIKDyhbfnZvkwFK7PCmthzGJcllFThXK6Ge+DoEMLmb7
+	 8K4+jBcSERe1SgA4lUeuCmm+/R/hQJcSfWaGd7tE9jZiSsSvpIRCVuYRr0tP+6+iOkw==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1790100516;
+	c=relaxed/relaxed; t=1790100517;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
@@ -33,50 +33,48 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 X-Mailer:X-Developer-Signature:X-Developer-Key:X-BeenThere:
 	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=p/tT8T2wAOjsW0vSt53XIleGMxZ5ibgzQPbVrXy4miM=;
-	b=qxKgzJ6DWNDzQ0FP+//69NMq13267dbr3TEQl5AwoOB2SOPLrY/pxtccBtvjBUCc+tdO
-	 rdMfAI5YSm1qi3UsVWYYcJLhQVWYZCzyLJTuk1J3CldCBaf/3AR9jXyDggejvpEnaD0uc
-	 DsjB3f6oeyJb9sYpBcDOEEnI2wAZBS8Y3g3sAezuFa9N2peSO3dBj9RC0Ey47G+YPm/mO
-	 M/hqgJTWCUjLICl1IdFIxee+VCSiOqsAGbeJ/QUvuVVhmHKH5P5fdobKIhjP2IZmkZNM5
-	 RtY2tc2P/C8cls++EFZa92+U4+Gj7AhfwCk7Tw18VWoKJt6ynT0x5nO079mCb0BgLfg==
-ARC-Authentication-Results: i=2; smtp3.osuosl.org; dmarc=pass header.from=intel.com;
-	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=YV0kbY39;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	bh=BCD4gtQyxXiLmzy0Y5znxeJlzjoaPt7PyTjMoxT6x34=;
+	b=DbAeHoIq/2YDT3XriIj3v6ANdD5o9NcWuaFFZ+JEMdnzU53A523QiqxKiU1aknOw7rOG
+	 CQ8VOFJOvbckki17sDVLhDah0o+pHMRE3POut+R4zdEA49pVHyQ0Eu3DRXMDa5h9hwXw0
+	 uvOay/Zh86wbRg8PEEgHU44h7Xw9gwk+ZhDvM0rFuXC3Ijk0T120kR1AERfpdr/lFxfiA
+	 GsPOSZwE/htGxOA+4MQAChCli99A0qzMkXAq5+UjJCWHBof6lgOBms4B+YwAsiqVOStCd
+	 ywoZmU0fN8jToaNJhfolVuGeM02SDK4SocB3qO2HeMmemr+1t/k9X/2fWJsIzApLhIw==
+ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1790100516;
-	bh=p/tT8T2wAOjsW0vSt53XIleGMxZ5ibgzQPbVrXy4miM=;
+	s=default; t=1790100517;
+	bh=BCD4gtQyxXiLmzy0Y5znxeJlzjoaPt7PyTjMoxT6x34=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=jOOr07rH7YTd39uSZmbR89R/pjsQnmfjPVV65LMnzwGMYzfcIGBqXqj1qNstLeQk5
-	 vcl8SdIHQABuSWFDY1Heept+3inruUChu7128sn1KuclxcIW2eurX9bOm+Txc9EV5Z
-	 skMSz5kCCVxxzNEmTn/F3+UjpbOoiX6uvPc6FnJ20LuJOgHdqpJPuHIjOzSwbmLlr0
-	 xLvbimm7DL0iagtYDMkuV4hYDmJALkhQAR/Dz4MnSa0R81uXJlhBc8rKtqKfrFmTuq
-	 h1Xvp1jbXFablCqeJoHtKUnzczJit6u9LJDD3KCGiSlWA+bpPSuQHX2nDoP/1Ocjm9
-	 GIjRxzOyhVTng==
+	b=QiTlZKq9foTUH66SaWESdLKobHqa1d3qj2sPzU5hFcomMbGIHN05vNngaLDHW6Oa4
+	 K++u40tA+KBNX0U60ddIyxFTtZ5stxsAHDW2tV/ra+QaBtQineoIkmkEv1C4Aa641s
+	 a3dqwtsr/jWwziCjtUksFfFSNQQgkaH6+Llcywa3tnPPmHYsL2twaEqL0KUWviCijv
+	 xRbXAxCeYfKhMX8gbhZw5GhryGpmixMZ0eGQwrPYocGkBb8yd4hPSsWEFVATx7qvCX
+	 sLI9aoSJkowSoI2dOCchIYVnjTT/BnRTHMkk5Tb2tvltHgxjr1QMmAurtK3J/zZ2Ni
+	 M+O9H3NCdKpMw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C35B360766;
-	Tue, 22 Sep 2026 18:08:36 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 77E9912C
+	by smtp1.osuosl.org (Postfix) with ESMTP id AE40680EC1;
+	Tue, 22 Sep 2026 18:08:37 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 827303A9
  for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 18:08:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 69E376069C
+ by smtp2.osuosl.org (Postfix) with ESMTP id 67CFD40076
  for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 18:08:28 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id NDPWfj2SCvBK for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id grXwJnI_1eKU for <intel-wired-lan@lists.osuosl.org>;
  Tue, 22 Sep 2026 18:08:27 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org AFC2A6067D
-Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=192.198.163.8
+ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org 78CF94007D
+Authentication-Results: smtp2.osuosl.org; arc=none smtp.remote-ip=192.198.163.8
 ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790100507;
- b=YhbzhznWzCajFd7z6mY++9gLvQIFccgSewcRHtmhyziwT0l1aV0QRLsrtWwONlKRycI2
- UeZedm1xiZ0xaj01n0ui1vgtp4TuaRU3SxxK6Xqbd8gCNDvEtXXSExpXPmshdc6c/lhdu
- ZKJEU5HkTV3LBJL5EN1NEXcWU0LBjAYrwF6lxkXskHIauB4rmzMxILfCHRuhm36vonutR
- XBTuiywTJvd8J4oZMpLYJhecnSgHmK4tw19Fwgx//wNAyxeFeWWB78r+RET//fWc2P9C2
- Rsr467Cr+WZYKsLGzLgPwsoKwH3Yc6F27SdFDOd7ljMrpqYU4gBmrTnfarTX6Dab4kA==
+ b=YrdXO4DmM+cFXd3ukcRTQERjt1pHFZO4r17DaULuq8zJ/fyqyr5ZPskMLJaDq99OsFMP
+ 2ywVmUgyabqjcw5ZCzMZl0p0+M0Lxlt6Y8EE4s0eRB4Qg0ofw0fAdER6olddcejACr1ga
+ QIgYOlROjG2lvT46k2xhn8Te9YvHpuCkGtLZgIGslgbohP3byqdG1ZBjogtTmxGJNrIiU
+ zWd70dIlKKxOS3fK3q64Rw44zE6VOQkO11Lmx7v1ZjXA4ZaqWhiOs3QYZt18ATA5DvNuH
+ valC+3vXq+n912jTcKfXtfUdu2D1/Tz08npSwlPlyfJLmKaZGK2vWhTNcBZQQcT7WbQ==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
  c=relaxed/relaxed; t=1790100507;
  h=Received-SPF:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
@@ -85,63 +83,63 @@ ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
  MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:
  References:In-Reply-To:To:Cc:X-Mailer:X-Developer-Signature:
  X-Developer-Key;
- bh=p/tT8T2wAOjsW0vSt53XIleGMxZ5ibgzQPbVrXy4miM=;
- b=rkamsYKc7APhWMjD7+fjQZoaKaguJIcJvsctAKlTDI3C8T9QxUa7fyELTETITiGgZ2eC
- pvuL0mwixl/Jth62RUF/fNSYE75j0317aIlwBUONym1LOzcCP7VGQRLHZtEFNWnc/tfZ6
- Nf3xBbDrmmmyVuEUMgAD2Q7uq73we8q09kZSK7IygglII4IOhkCuwdny/D77kzw6e4/WB
- CmaL8Ia/4Cz7fnX6sh0DJnaZFE2lD/Vnhm+ElmttHPgEx/+HYKHL6g/dyh60C6XM4tmuk
- /Y1TYUUb2pOx+rU1Trb/UNFNG+78mlynsEzDut+k7+rC4XoFLAtc3qf2/k1Fw6kP+JA==
-ARC-Authentication-Results: i=1; smtp3.osuosl.org;
+ bh=BCD4gtQyxXiLmzy0Y5znxeJlzjoaPt7PyTjMoxT6x34=;
+ b=Qauq5dAj0ER8KAHvykSv1IhSy4IELC7d18ROvOSdImlNxIfdnJbGcI88xUvVZc6Lasqq
+ 50pTERdMhWe4fCWFMyR1h77rVMyOVlUA6Z4lH6zTotKl9Gjqi1nUtXMU1Stn0Gd4HcSEQ
+ nx0g7D1IpRqjpKtpi25byb9D21vmvrWlvL+mXMEJLMphe7SqlT4x50I88B2njvE5Pjvwa
+ 5Qg9XjmSdyfDygL/zVdl1UMWni3xX1iAaRlbMZAE6/TjH1zdHVJjqTYEc7BnN095E1V94
+ rGI8B2WrRSPiRvOc4IRwv65zNI6VgA5HlTtp+J8KX1C6pXi72F2cpoO0U9wnR1khmSA==
+ARC-Authentication-Results: i=1; smtp2.osuosl.org;
  dmarc=pass header.from=intel.com; 
  dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=YV0kbY39; 
+ header.s=Intel header.b=fe8xdBnS; 
  arc=none smtp.remote-ip=192.198.163.8
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.8;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp3.osuosl.org;
+Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=YV0kbY39
+Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=fe8xdBnS
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
- by smtp3.osuosl.org (Postfix) with ESMTPS id AFC2A6067D
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 18:08:26 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 78CF94007D
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 18:08:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
  t=1790100507; x=1821636507;
  h=from:date:subject:mime-version:content-transfer-encoding:
  message-id:references:in-reply-to:to:cc;
- bh=vPWenbyyHGt72pia3E2iY9PCH1ARyceDooGNZ5KZsSo=;
- b=YV0kbY39QXtrtu3PmL1zJxDa3sj3/vF0BOHPmcDuFnOvThNa/a9vItrk
- PXHzXqGj7o/Z3xEzZ4ppoSf1dqIxXHMPJ4NPoyfkCoCTCm+J7XAeS66bF
- 09sn8po/AMB+ZIl+GD0B1YxUiwNu9iXn7TskUDf48HAkKh1iKsChnwuFa
- tiZTJkXNvEyw6B3SAouz1Ww85x6sGGYRSIXlZnjINIM5t+r3GmKzX8MUg
- Q6aAISW3I56SA1BuiRUrAJGDIRZghcqGVPH82SDCcOaBWSmKu8deZi2tC
- Ipxj1xPhsgnjt8OowreLJt0A4vNPz/aDtB6IKwhA6ZqYoMSs6JMI/D2pm w==;
-X-CSE-ConnectionGUID: 0GcMMJd5RQOkkt9L+WhSCQ==
-X-CSE-MsgGUID: nQ/AWvjRRtuVMx/NYLULCw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11913"; a="108232037"
-X-IronPort-AV: E=Sophos;i="6.27,116,1787036400"; d="scan'208";a="108232037"
+ bh=Ckp24sqJcKgxFa8rbNUiMvY34Hz8I1/uzZo8ARccLMQ=;
+ b=fe8xdBnSJoFtk24zJq99+bIh+8V+2FdhOVMkvyvqMiy6U8r228McoVZc
+ BId286Ai7UsMFMbTwPabMZr8tRovhTpsZlTJnZj4VigZ6tRZoUKXuuUa/
+ NdamGKY+c39ExILPPx3waDtIb4tuiFvw9xV261SBOURFUYmkWhFREKPst
+ 0Dr6aZBzmagwxC9yHZQ7vwvkTue+OdiCdh/DgupoDZ1gWUftoublIwUez
+ iXcX1mfwY0Q72ISXbtHnPH6Fg4OZvmC7VqaiMkMIAi5fduK+NZglU++fG
+ B9RAMQAo5nFVVPIB1z/1nZ8rvu8bjgeVDCHMguu2JWfK+b7BQdO77eESa g==;
+X-CSE-ConnectionGUID: O5hQYFTpT4+9te+eYUPMEg==
+X-CSE-MsgGUID: hclpo9R6Q0a78t1daoKORg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11913"; a="108232042"
+X-IronPort-AV: E=Sophos;i="6.27,116,1787036400"; d="scan'208";a="108232042"
 Received: from fmviesa005.fm.intel.com ([10.60.135.145])
  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 22 Sep 2026 11:04:23 -0700
-X-CSE-ConnectionGUID: CMnp7b2zS+m1KQ5NryrXdw==
-X-CSE-MsgGUID: 3zC8NkJ6ShmPk7uUtAN+1w==
+ 22 Sep 2026 11:04:24 -0700
+X-CSE-ConnectionGUID: 0vpD6wXETpeAmo5W7remVA==
+X-CSE-MsgGUID: igAZSAQARhimxV4PB2UDJQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,116,1787036400"; d="scan'208";a="281315315"
+X-IronPort-AV: E=Sophos;i="6.27,116,1787036400"; d="scan'208";a="281315325"
 Received: from orcnseosdtjek.jf.intel.com (HELO [10.166.28.109])
  ([10.166.28.109])
  by fmviesa005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 22 Sep 2026 11:04:23 -0700
+ 22 Sep 2026 11:04:24 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 22 Sep 2026 11:02:39 -0700
-Subject: [PATCH iwl-net v2 06/15] ice: E822: flush offset verification work
- during reset preparation
+Date: Tue, 22 Sep 2026 11:02:41 -0700
+Subject: [PATCH iwl-net v2 08/15] ice: E825: stop clearing
+ PHY_REG_TX_OFFSET_READY
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260922-jk-e825c-timestamp-processing-logic-fixes-srcu-v2-6-e55b692d0e6b@intel.com>
+Message-Id: <20260922-jk-e825c-timestamp-processing-logic-fixes-srcu-v2-8-e55b692d0e6b@intel.com>
 References: <20260922-jk-e825c-timestamp-processing-logic-fixes-srcu-v2-0-e55b692d0e6b@intel.com>
 In-Reply-To: <20260922-jk-e825c-timestamp-processing-logic-fixes-srcu-v2-0-e55b692d0e6b@intel.com>
 To: Jacob Keller <jacob.e.keller@intel.com>, 
@@ -152,18 +150,15 @@ To: Jacob Keller <jacob.e.keller@intel.com>,
  Przemyslaw Korba <przemyslaw.korba@intel.com>, netdev@vger.kernel.org, 
  Anthony Nguyen <anthony.l.nguyen@intel.com>
 Cc: Jacob Keller <jacob.e.keller@intel.com>, 
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>, 
- Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>, 
- Przemyslaw Korba <przemyslaw.korba@intel.com>, 
- Maciek Machnikowski <maciej.machnikowski@intel.com>
+ Maciej Machnikowski <maciej.machnikowski@intel.com>
 X-Mailer: b4 0.17-dev-8b7ea
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1708;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=7881;
  i=jacob.e.keller@intel.com; h=from:subject:message-id;
- bh=T1zzYwQG1f0nawDGBjFAXJfbTFuTGKQqNw4tAUKh1ww=;
- b=owGbwMvMwCWWNS3WLp9f4wXjabUkhqxNh6UrfD4oBf5ZxGHN437n59/NXAI56RtPha+tu1a22
- +NlyhmOjlIWBjEuBlkxRRYFh5CV140nhGm9cZaDmcPKBDKEgYtTACYy/TfDP82pcYcEAvkz76Uz
- Cm/PVv94qS/0fUDzMu8XL4T9tvzf8pWRYcn+jOBD0omumdz1RzLPhPSpm3IWr7GQD9p477THzLx
- ZfAA=
+ bh=Ckp24sqJcKgxFa8rbNUiMvY34Hz8I1/uzZo8ARccLMQ=;
+ b=owGbwMvMwCWWNS3WLp9f4wXjabUkhqxNh6ULzKKae5qFV65Z/UVQketCtVf2Ib7EPyzC6w9Ob
+ 6nUEY7rKGVhEONikBVTZFFwCFl53XhCmNYbZzmYOaxMIEMYuDgFYCIxbQz/U5s+hlUfO/er4ien
+ VeiRlx7GhpPuWJ1RYjtxUXp1yOxnpowMh1ItbGbdLJgXu+D/dat57re2357GJ5v96cxvTl2fJT7
+ WTAA=
 X-Developer-Key: i=jacob.e.keller@intel.com; a=openpgp;
  fpr=204054A9D73390562AEC431E6A965D3E6F0F28E8
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -180,40 +175,175 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-From: Karol Kolacinski <karol.kolacinski@intel.com>
+The ice_stop_phy_timer_eth56g() function is called by the driver for E825
+devices to ensure that the PHY timer has been stopped. The equivalent
+function for older E822 devices performed many steps. However, on E825 it
+only clears the PHY_REG_TX_OFFSET_READY and PHY_REG_RX_OFFSET_READY bits to
+indicate to HW that it should no longer treat the PHY offset as valid.
 
-The offset verification work task for E822 reschedules itself if the device
-driver is resetting. However, it may already be executing and attempting to
-access the PHY when a reset has begun. Flush the work to ensure that any
-current execution has completed and will see the updated reset state. This
-avoids the potential accesses to the PHY state while resetting. It is also
-simpler than attempts to cancel the work which could lead to a race between
-the clock owner PF and the port PF.
+When PHY_REG_TX_OFFSET_READY is cleared, the hardware still captures Tx
+timestamps, but it no longer sets the valid bit for these timestamps. This
+sounds reasonable at first glance. However, this results in the internal
+outstanding timestamp counter becoming out of sync.
 
-Fixes: 95af1f1c4c9f ("ice: reschedule ice_ptp_wait_for_offset_valid during reset")
-Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-Signed-off-by: Przemyslaw Korba <przemyslaw.korba@intel.com>
-Reviewed-by: Maciek Machnikowski <maciej.machnikowski@intel.com>
+When capturing a timestamp, hardware increments its internal counter and
+sets the associated "ready" bit in the timestamp memory status. Then it
+compares the timestamp count to the threshold to determine if it should
+trigger an interrupt to the MAC.
+
+Upon reading the timestamp hardware is supposed to decrement the counter,
+clear the valid bit, and clear the associated bit from the memory status
+register. However, it only performs these steps *if* the valid bit is set.
+
+Since the valid bit is not set while PHY_REG_TX_OFFSET_READY is clear, the
+timestamp counter is not decremented and the memory status is not cleared.
+This leaves the counter out-of-sync until a PHY soft reset.
+
+According to the hardware engineers, the PHY_REG_TX_OFFSET_READY bit has no
+other effects. It only controls whether hardware captures timestamps with
+the valid bit set or not. Since capturing timestamps with the valid bit
+clear is problematic, they recommend simply not clearing
+PHY_REG_TX_OFFSET_READY.
+
+Note that the PHY_REG_RX_OFFSET_READY performs a similar task. However,
+clearing it is fine as there is no associated timestamp counter on the Rx
+side. Receive timestamps are simply inserted into the descriptor. Clearing
+this register clears the valid bit for timestamps until we complete
+calibration and re-enable the register.
+
+Notice that the soft_reset parameter of ice_stop_phy_timer_eth56g() is
+totally unused. It is a relic from a copy-paste of
+ice_stop_phy_timer_e82x() that is unnecessary, so remove it.
+
+Now that we do not clear the PHY_REG_TX_OFFSET_READY, new timestamp
+requests could happen while the PHY is calibrating. To avoid this, set the
+tx.calibrating field of the Tx timestamp tracker when stopping the timer
+and clear it when finishing the restart. This ensures that any new requests
+will be rejected until the PHY timer calibration has completed. Unlike E822
+devices, set the calibrating flag when "stopping" the PHY and clear it
+immediately after the start procedure. The E825 device does not perform
+vernier calibration and thus does not need to wait for hardware to mark the
+offsets as valid.
+
+Fixes: 7cab44f1c35f ("ice: Introduce ETH56G PHY model for E825C products")
+Suggested-by: Maciej Machnikowski <maciej.machnikowski@intel.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ptp.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.h |  2 +-
+ drivers/net/ethernet/intel/ice/ice_ptp.c    | 24 +++++++++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 21 +++++++++++----------
+ 3 files changed, 35 insertions(+), 12 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
+index 16b1988e993d..17000df77ce9 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
++++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
+@@ -378,7 +378,7 @@ int ice_cgu_get_output_pin_state_caps(struct ice_hw *hw, u8 pin_id,
+ 
+ /* ETH56G family functions */
+ int ice_ptp_read_tx_hwtstamp_status_eth56g(struct ice_hw *hw, u32 *ts_status);
+-int ice_stop_phy_timer_eth56g(struct ice_hw *hw, u8 port, bool soft_reset);
++int ice_stop_phy_timer_eth56g(struct ice_hw *hw, u8 port);
+ int ice_start_phy_timer_eth56g(struct ice_hw *hw, u8 port);
+ int ice_phy_cfg_intr_eth56g(struct ice_hw *hw, u8 port, bool ena, u8 threshold);
+ int ice_phy_cfg_ptp_1step_eth56g(struct ice_hw *hw, u8 port);
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index 364f0f389d85..fccea0511eb2 100644
+index 328e90dc51aa..657cd78ec738 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -3015,6 +3015,9 @@ void ice_ptp_prepare_for_reset(struct ice_pf *pf, enum ice_reset_req reset_type)
- 	if (reset_type == ICE_RESET_PFR)
- 		return;
+@@ -1221,6 +1221,7 @@ ice_ptp_port_phy_stop(struct ice_ptp_port *ptp_port)
+ 	struct ice_pf *pf = ptp_port_to_pf(ptp_port);
+ 	u8 port = ptp_port->port_num;
+ 	struct ice_hw *hw = &pf->hw;
++	unsigned long flags;
+ 	int err;
  
-+	if (hw->mac_type == ICE_MAC_GENERIC)
-+		kthread_flush_work(&ptp->port.ov_work.work);
+ 	lockdep_assert_held(&pf->adapter->ps_lock);
+@@ -1236,7 +1237,12 @@ ice_ptp_port_phy_stop(struct ice_ptp_port *ptp_port)
+ 		err = ice_stop_phy_timer_e82x(hw, port, true);
+ 		break;
+ 	case ICE_MAC_GENERIC_3K_E825:
+-		err = ice_stop_phy_timer_eth56g(hw, port, true);
++		/* Disable new Tx timestamp requests */
++		spin_lock_irqsave(&ptp_port->tx.lock, flags);
++		ptp_port->tx.calibrating = true;
++		spin_unlock_irqrestore(&ptp_port->tx.lock, flags);
 +
- 	if (ice_pf_src_tmr_owned(pf) && hw->mac_type == ICE_MAC_GENERIC_3K_E825)
- 		ice_ptp_prepare_rebuild_sec(pf, false, reset_type);
++		err = ice_stop_phy_timer_eth56g(hw, port);
+ 		break;
+ 	default:
+ 		err = -ENODEV;
+@@ -1302,7 +1308,23 @@ ice_ptp_port_phy_restart(struct ice_ptp_port *ptp_port)
+ 					   0);
+ 		break;
+ 	case ICE_MAC_GENERIC_3K_E825:
++		/* ice_ptp_port_phy_stop() may have already disabled
++		 * timestamps, but some restarts occur without first stopping
++		 * the timer, so we ensure that new requests are disabled
++		 * here.
++		 */
++		spin_lock_irqsave(&ptp_port->tx.lock, flags);
++		ptp_port->tx.calibrating = true;
++		spin_unlock_irqrestore(&ptp_port->tx.lock, flags);
++
+ 		err = ice_start_phy_timer_eth56g(hw, port);
++		if (err)
++			break;
++
++		spin_lock_irqsave(&ptp_port->tx.lock, flags);
++		ptp_port->tx.calibrating = false;
++		spin_unlock_irqrestore(&ptp_port->tx.lock, flags);
++
+ 		break;
+ 	default:
+ 		err = -ENODEV;
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+index 3a41c711e751..c8a67a307832 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+@@ -2101,24 +2101,25 @@ static int ice_sync_phy_timer_eth56g(struct ice_hw *hw, u8 port)
+  * ice_stop_phy_timer_eth56g - Stop the PHY clock timer
+  * @hw: pointer to the HW struct
+  * @port: the PHY port to stop
+- * @soft_reset: if true, hold the SOFT_RESET bit of PHY_REG_PS
+  *
+- * Stop the clock of a PHY port. This must be done as part of the flow to
+- * re-calibrate Tx and Rx timestamping offsets whenever the clock time is
+- * initialized or when link speed changes.
++ * Disable Rx timestamping by clearing the PHY_REG_RX_OFFSET_READY. This
++ * causes Rx timestamps to be captured with their valid bit clear, ensuring we
++ * discard any timestamp captured while the PHY is being recalibrated.
++ *
++ * Note this does *not* clear PHY_REG_TX_OFFSET_READY. Clearing it would
++ * cause the Tx timestamps to be captured with their valid bit clear.
++ * Unfortunately the captured timestamps still increment the internal counter
++ * and result in off-by-one accounting. Instead, Tx timestamp requests should
++ * be disabled by other means.
+  *
+  * Return:
+  * * %0     - success
+  * * %other - failed to write to PHY
+  */
+-int ice_stop_phy_timer_eth56g(struct ice_hw *hw, u8 port, bool soft_reset)
++int ice_stop_phy_timer_eth56g(struct ice_hw *hw, u8 port)
+ {
+ 	int err;
+ 
+-	err = ice_write_ptp_reg_eth56g(hw, port, PHY_REG_TX_OFFSET_READY, 0);
+-	if (err)
+-		return err;
+-
+ 	err = ice_write_ptp_reg_eth56g(hw, port, PHY_REG_RX_OFFSET_READY, 0);
+ 	if (err)
+ 		return err;
+@@ -2151,7 +2152,7 @@ int ice_start_phy_timer_eth56g(struct ice_hw *hw, u8 port)
+ 
+ 	tmr_idx = ice_get_ptp_src_clock_index(hw);
+ 
+-	err = ice_stop_phy_timer_eth56g(hw, port, false);
++	err = ice_stop_phy_timer_eth56g(hw, port);
+ 	if (err)
+ 		return err;
  
 
 -- 
