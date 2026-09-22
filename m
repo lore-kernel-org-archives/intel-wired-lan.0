@@ -4,165 +4,198 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54E95C98302
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 22 Sep 2026 15:52:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93322C982FA
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 22 Sep 2026 17:19:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 1557040CA0;
-	Tue, 22 Sep 2026 15:52:50 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 34AAD407E5;
+	Tue, 22 Sep 2026 17:19:58 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id wlSzuyb3qJmm; Tue, 22 Sep 2026 15:52:49 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 78E954052B
+ id 19m3Z9DdCmEM; Tue, 22 Sep 2026 17:19:57 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 8AAA5407D6
 Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790092369;
-	b=jft7jnmRbzZ10bEBk58BLqAKGKxTgVRSbddr0iWjVx2x6Kb8sW6yf+A39/vfo7Y794Ym
-	 O9djyiwHXMQnzEezTLGoUpzbNo6k0MI18Dda3cecgR16S4Ux/D+TgOOL+cU9LI0cIHRbf
-	 vm49sc3c3MbyxnR5ngwlCx/UGVyGX6vrUUOMhfRS6LrAS/+aUFEDDo3QJQU/o18h101O1
-	 3hSvuX5KBrwjOwjhi0CRs+rd0KaS8r43fisROFzJK11nkOjly/5wcpUDgYDUWBzMflia6
-	 ruXKi2/quzuTJbtAZEOJDlxMmBrXFlHM1gHydH3n2gLK+2WExKffshYXTqE1KNDshow==
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790097597;
+	b=MHQOxkjkcHYlhrmPluiBpoC2iVQhGdyFVoQ4c3csPyqtFT84JL10fua38sbNb+GljHpF
+	 OLwRPxjYjQoZYYWgn8eBStosp6wkCYWcQZL/SG28r2wGI/lnUXuPPjIuDzESDtL+S6qan
+	 k6WyVKeDEH7nYdCrXuz32Z0s0HOe4TnjDuesPf8D907hrJvxmE7QsA+z0lSNz9R2hUmqM
+	 UIWefFJ04+EW2Ov8LoXUSKgXCsJ2bcILbrdlVNWaYTeIv5b6dAmDl1KXheOfPnZNEQ/sV
+	 j1V20ldwiSnMOciTG0VbyamuODwPZGHgRBNYaD6hB/bwOpoTT0LGzf5A7ByanjnG0ug==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1790092369;
+	c=relaxed/relaxed; t=1790097597;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
 	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
-	 Date:Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding:
-	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
-	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=nsDs23DcdYwkDSFn0tiJfOUbVshOv/zFLmietT3ibk8=;
-	b=mI2vl+qyo/tJSNNd6vDvIS/yHQO6cAsn0kzaCaZ+Jgpq2EFjQOjlDPNDLQUXv7aKciH0
-	 L4FdwsH8qlZ27yWXMm0gXjpGwpvPlqGb326A+jmfDrGHRO8rc5osgRtrLmtfHxHXTHhI7
-	 ciDk9eePM3U2rjhXVuWmDVLgoZmb6UoLgceEyuSQispa907jWyIBrrR2Cg73IfjfGiroA
-	 2eI1eBExF1v4J4e2UgTdDoeetc/b+fVTsw6NTXqIvqfLbxzLqJVdBcTRarNOhvAUzkQj/
-	 uDBFG89Ayd6z4Pm0SrQGaGFGOhhdHNdO/8rjjxsXJhXgjdILVdyE7fEhEIGxKlQyXwg==
-ARC-Authentication-Results: i=2; smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Sender:Date:From:To:Cc:
+	 Subject:Message-ID:References:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To:X-BeenThere:X-Mailman-Version:
+	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 List-Subscribe:Errors-To;
+	bh=zCRq4hnTSVTOASY3u8FUiAUCCMw+X4n90vfRzUKE6C0=;
+	b=EJmn7v3S11Qkrr3jGF/IaR5GeTbBSNcCE3hT3qkWHWzooyRwzklHbSAkTJCoURGFzhzA
+	 U9ChEPyq1s9drDVJ49S5P9tFc/8GfDnjgH4RGg8HJzCEaiCeY1Xb6+SyIdlYK9PbEmilM
+	 hGXvYeRGzfwe1h1wQKg49JsZK6MWfAiWWUlgxURhNlN1iR/QWPTWiFca0faBtaDwCO6c8
+	 WtFG3DXZII9GSCzLpSHfzijZ6SYBkyaTaHZr3Su/twDCW6x8KfdfpYvdHwzuMrHzOH6Jj
+	 ItDIEqPXYtdEXi4xrC9V2kmMsG/KzljsDl1vprCAhf8fFEH8U1LUr3FWh/ZnmluGUVQ==
+ARC-Authentication-Results: i=2; smtp4.osuosl.org; dmarc=none header.from=roeck-us.net;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=W5wAsMMu;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1790092369;
-	bh=nsDs23DcdYwkDSFn0tiJfOUbVshOv/zFLmietT3ibk8=;
-	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=z0/RLGy66QNgFX+QJWNT8ub2sAZYi3k2s/JswfZM8xjOpXDD9gRTeQQHyiq3NRrV8
-	 fBf/ScWMsWIboumIwLbfKkPazv4X5poHoXvXErBdLwM92ui7V2fz6cWlbfhhjbEbAr
-	 ikgX3Dvntn52LfRn079augMGKtkFIiEMVmrfNEYOFiK9Dv5GCEkg/orpZt2tq6jXLJ
-	 uZyGnI2p6xPpeUzQog5Gj3FeDAHF7K46rFxWe66AHA3cVcMR/v1x8pOpVMu2Np8/ha
-	 QHqU4YDzbY7TkptKWIk4tsshNDqebcPPP2MqVmI/Jy5Mk+y6bmdr5zDw8mVF+TicU9
-	 yt/PYIypBnH2Q==
+	s=default; t=1790097597;
+	bh=zCRq4hnTSVTOASY3u8FUiAUCCMw+X4n90vfRzUKE6C0=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=94gRvpV1FL0g2LKpB9yJmIaOhrJTzCiKZGrDl99GKNmmo54UfDyfzyzZNUTtGXVX7
+	 yQ4YFx59aX0CnQKp29Qu3EP47n5Zn6W3g3CWOIe7a5jZpIqO6mtezdmwPH6/L3fe12
+	 NH5PE6mjUGHRK9gnmkYzSldasPvqA8dPv6lnC2vxW/7D4BYHDKL4DQarDBeazgMLZE
+	 L4hv25wIn7qrYzFsumLiNnp73HrF79x2aKTwjUNFygekcwKEfW2KsmeOhM4OEy1J7a
+	 7OLyJD4NSz0TA8iiNQNBJw2rjEVOZxoRynijGeotRoVYdoImbAH8ywHlZNYxniT7c6
+	 Ugtq2UUwZDppQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 78E954052B;
-	Tue, 22 Sep 2026 15:52:49 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 24A25352
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 15:52:48 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 8AAA5407D6;
+	Tue, 22 Sep 2026 17:19:57 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 6F61DD1
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 17:19:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 167A380CF1
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 15:52:48 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 55219407D6
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 17:19:56 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id i5Xsijp6HnUq for <intel-wired-lan@lists.osuosl.org>;
- Tue, 22 Sep 2026 15:52:47 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 2D1EF80BCC
-Authentication-Results: smtp1.osuosl.org;
- arc=none smtp.remote-ip="2a00:1450:4864:34::10"
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790092367;
- b=FbRvmNy8xSaa4tNng6DEqunEOiFtIKhmbgArBqiufhtgbhYQadL0gz6H0sWnx4VaK7EU
- vnnaiSqTqqMH+6/Jkg0e4pNvrI93Jti+eaJb8qj3errGEasaXsjUJ+NL1mtYJhV66AqYj
- 3s1nAP9Fin5tOiVTUSRMKMySENfNNLBdQGsVegzos73oA9JsSIMJXdWlafDaqHjNJeVwe
- OQkqh1u+IWemrttWf/Aieb76UzLrnhKgdPeMYcXdLCKXkGEs7rejg3WXk4A9Fq5dKsUNk
- OyHCz7THXbcDcjmQjhZZsCEsYmlL8CK3OIya7rYpnR77esYwMzKi1Auy1W+975FC7GQ==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id JQOjZaER_Dku for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 22 Sep 2026 17:19:55 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 45E4A407C6
+Authentication-Results: smtp4.osuosl.org;
+ arc=none smtp.remote-ip="2607:f8b0:4864:39::e"
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790097595;
+ b=EwIZycMaTsQXdsDIzeKIW9FxyYjWaPMS871gBbTQxYb198isrzCWPPlS+iJJWjjbt/Th
+ 90M2Sz3nmT43QfaTCaJDTeGtHQAETHEx6SmeRv+uaN+LrQ8VGX8XP2d9fuh39sp9qs275
+ k6ZLAeFp5ljaC3PzuDUfyqVHMQjikz6fuAAY7QlyDk74eCjS5A/3Wu9OYwWM97WAqUnee
+ /Wfa49tjOqZ9YGbjPfNDfOXHfJGCElUany1txupaOPIWaTC7jlk1YLRxIDnIyzUc02zeg
+ Yo50Wg2t/ILRcIcd0pWz8y0/hTDXXfDXIHYJxyRSG6lBVLM1kTJ6Byp8VZqUtyDgSkA==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1790092367;
+ c=relaxed/relaxed; t=1790097595;
  h=Received-SPF:Received:DKIM-Signature:X-Google-DKIM-Signature:
  X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
- From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
- Content-Transfer-Encoding;
- bh=nsDs23DcdYwkDSFn0tiJfOUbVshOv/zFLmietT3ibk8=;
- b=ZVgb5Sj9ji2Axa74wreoj9XayRK1J8a6gsdP+bsWY61XLu33F4HKO+wxfIdnRF2dfQ4h
- qSu7c+Na0/RH46lHeZv7b8VDy0UkbK3Ap97/8LNkqjLjIyBNPPwYWOpfpPexzeJGdxX31
- +vEsIXVs177RX/uMxUm+WL15amFfumBpKHGqyPwhTBeJlMGUkxNmibNGpT9635HbRQl7k
- /EE6ekh5wsaLGA+seE3Q2n+Fia0CqoiAhQflJyrG4W0VonREGirCACpFVMA64ucd3Grty
- bfnMoERlObn25NRtSs/G6haT9XO26KPLIA9cZxd56gbKj1MfP4jhn/CY8Fl/4wlAIgw==
-ARC-Authentication-Results: i=1; smtp1.osuosl.org;
- dmarc=pass header.from=gmail.com; 
+ Sender:Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+ Content-Type:Content-Disposition:In-Reply-To;
+ bh=zCRq4hnTSVTOASY3u8FUiAUCCMw+X4n90vfRzUKE6C0=;
+ b=G9A6H02M4kP6JHbRRmMR3805YnlG9uVk8Cf1nwbuRb1XtuXjuq618VXs1SFNlPsLb+Gn
+ uCKfeNw27vpNBf5NIXnBnTPDLTQgQzLAEwaml1zPXDc+XsZVKd9YYBVWD/Q/qmL5ry/RF
+ IBk1z03GbA/n5lI+LQzJ8yS0C0DAry3KHcqlcbdx6RECGrrdcxMTddb+3KxFWcD09Mkev
+ aN7cFBdpWCq1k2Orp8LWHz1WSmBp8HfZoJ85Gn4xHX/2RkTTNh6y7Sh0iz8LxxHkYFB1w
+ rbNO/noK8Z9lIL0TlZ+gdZpSAhRnjj37MTwxxpm8SfwSAxac15rLPsuDk/4bc+++cQQ==
+ARC-Authentication-Results: i=1; smtp4.osuosl.org;
+ dmarc=none header.from=roeck-us.net; 
  dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20251104 header.b="ZRbc/G/Q"; 
- arc=none smtp.remote-ip="2a00:1450:4864:34::10"
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a00:1450:4864:34::10; helo=mail-ej2-x10.google.com;
- envelope-from=nsvatoslav515@gmail.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp1.osuosl.org;
+ header.s=20251104 header.b=W5wAsMMu; 
+ arc=none smtp.remote-ip="2607:f8b0:4864:39::e"
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2607:f8b0:4864:39::e;
+ helo=mail-pj2-x0e.google.com; envelope-from=groeck7@gmail.com;
+ receiver=<UNKNOWN> 
+Authentication-Results: smtp4.osuosl.org;
+ dmarc=none (p=none dis=none) header.from=roeck-us.net
+Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20251104 header.b=ZRbc/G/Q
-Received: from mail-ej2-x10.google.com (mail-ej2-x10.google.com
- [IPv6:2a00:1450:4864:34::10])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 2D1EF80BCC
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 15:52:45 +0000 (UTC)
-Received: by mail-ej2-x10.google.com with SMTP id
- a640c23a62f3a-c254f55eff0so640071366b.0
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 08:52:45 -0700 (PDT)
+ header.a=rsa-sha256 header.s=20251104 header.b=W5wAsMMu
+Received: from mail-pj2-x0e.google.com (mail-pj2-x0e.google.com
+ [IPv6:2607:f8b0:4864:39::e])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 45E4A407C6
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 17:19:54 +0000 (UTC)
+Received: by mail-pj2-x0e.google.com with SMTP id
+ 98e67ed59e1d1-396ccb65437so100411a91.3
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Sep 2026 10:19:54 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20251104; t=1790092364; x=1790697164; darn=lists.osuosl.org;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
- bh=nsDs23DcdYwkDSFn0tiJfOUbVshOv/zFLmietT3ibk8=;
- b=ZRbc/G/QxZHRcBIzeYZw+N79NQ3dSGiW6KGRfmnfFdioRw+FNTzGH5v3b5qGwOa5qW
- xXU6sPsuFHfbQ2mq3/tAqb9Zr3SICMvUQh0zKEzzrGx0MtxF2miffdJqQnNjaQvH8MkY
- exwE2TywqDuhz5mjK1IzI11wZPnmDejYSAuanqnfjWEIw/uwkt6fSYF6ikWBCzHmi6BP
- 48m5UB/dTe+a02I6p2WSp9RgnuKjap/1kwlAOmU/t/jbQDvdDOAy3ocp5gQUYeRhyBII
- j0xOFLq9kjNp2vMSmL+Uvllwlsizr4d/YdHxGbjF7Zs1R8EC0Lo9I7wuTOmAFoMVJqIh
- wAag==
+ d=gmail.com; s=20251104; t=1790097594; x=1790702394; darn=lists.osuosl.org;
+ h=in-reply-to:content-disposition:content-type:mime-version
+ :references:message-id:subject:cc:to:from:date:sender:from:to:cc
+ :subject:date:message-id:reply-to:content-type;
+ bh=zCRq4hnTSVTOASY3u8FUiAUCCMw+X4n90vfRzUKE6C0=;
+ b=W5wAsMMuNSD9jrbCzMvMOaiEpmrn9dMw/jwjoQVBhBtnFFHk2GhElnoclWtDrAVr5O
+ KTg7YLQYRWjVSESFWKAf4v0SEFvrehG8rz0t//GGWkCH1S37OhhYGsEpisJxDFYCTYkj
+ 2mdpeqkznimFpBIvN5V4IUL+otWZyyFwjJ2G5zlbvZrWJ65z3an3daF/0y0rQ4zj9I3h
+ l/RzLX5JUVH4dv/QGckQhsry64B+VhJUkyOgnt/KKA/2NrNQA7FChWrlPEYFbjfZOMNr
+ jhK+QY7aodjzSS5BUB/Lmlyq2gduhefxaXx1wv1is4orEw6h055yTFSkctVApykDk/VE
+ 2dbw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1790092364; x=1790697164;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
- :message-id:reply-to:content-type;
- bh=nsDs23DcdYwkDSFn0tiJfOUbVshOv/zFLmietT3ibk8=;
- b=Iey+KOInPImXGyidYMD1OiFTlNr94u2lZZ0cjRrpAyM+H/2lQSVhmQ5IktUPKDRJ5t
- EF4v6aTC25xtxltyWX5+5LJqc8WAIoCU727jNhoiAJ8Z2vniFraTWy+caIDnOjrtUbQ1
- IdXUA0fCjyodQ6d48a7PZPJIcmamCPlAXaOBMjAYCl/N2pdNvpUMHinsfHlTE4IzIBBT
- OV5DJdcYNjw6FfIwxBeB4dYvTX6Rhqjyqc6GJXSFCr5dkXceTlPjPKcrzBqzULEN1B1s
- v1afn0PyvHQ3A9XA+LxWPm2dz6w7m6pwlIl6lp5S579YKk9onzTcDllVpH8Ml8aMiAo2
- sXJg==
+ d=1e100.net; s=20260707; t=1790097594; x=1790702394;
+ h=in-reply-to:content-disposition:content-type:mime-version
+ :references:message-id:subject:cc:to:from:date:sender:x-gm-gg
+ :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+ :content-type;
+ bh=zCRq4hnTSVTOASY3u8FUiAUCCMw+X4n90vfRzUKE6C0=;
+ b=bY+B/S32d3uUGrAxyZ7L9NqGP0ytFrCyKP/Z2uSQlpltERfhhar+TeU3yzKygtBEog
+ DOrfCd7AfFx2N55QOxUMlEAUHvX39kM3UZppWPsdjgVD2P8AbsgeD/IIElyKYYKuTPMV
+ RBdHXCl4FZzwUostC6WgRHEHOSrfoi33g31VCT7jPlBDwaHhy5U4vM5ydqoCQpZJycKe
+ kw1uvSe8XnmV5uyMhM+QhOfW7MQKBDhKxlQQ055iz/sCLUkGj+ADAn6Ow72wriauC2p2
+ O4T6H6UN/f7a4VUXOKboQ7wvFzsLxYIVd/dyZKfHLCphnQBfMYxoi2mZ2XEARyrpuoFD
+ uEpQ==
 X-Forwarded-Encrypted: i=1;
- AKwUvBzF+dOiUwbXfCPtSwMyYt86aRWbYtyjX0jvYLI1Np2aBRkrtG41KIqQUyTlw0htkotfhkN1i76IJOumL7DCjzU=@lists.osuosl.org
-X-Gm-Message-State: AFuF++l06yX1AgUH4TEthwL1ADbBxH4N7gKF9let5UNyl9GlOY+P34nU
- BA64VY1C/HVzduR0T6eIv8tbcU2CBO1vFgDEOTTn3Bcb2EW7seKX6XXf
-X-Gm-Gg: AYBFou0WRridfsCPsNJJc9pYa6rygtwPoeSvjG6cxO0oQ7GLrnDdK4aflg4k15Nz605
- ETw7zFMMVJZYv+OsUNubfsN/vTS+APIhHYO3/bf9rSWQI/wE/aTFqr8a6Zy2RHDIj79xaRWCuC8
- CeKwOvrx22SGhM1a3JI6BzovOJSRNBbkJonUTReig7ET9TYCpf8xBvF0te77h+21jMLJWg2dRBg
- MHFzGa3b9WmmWRBkr75Geb/xVFSROTn53i3UW7LPa7lDyZjYFo2xq6NzANZICajYIEjyp67Zl+T
- tlthtM7TygZ0bxMwnqlOrhMUNegkJmjDuZUfjCA3AeP5z6oDiLUO7KNmZLXRAfY2SLba+THCiPk
- ErH478OlntqPyOWhURg9fZSDkYBzZ/ouR40cGysxdtbtCI+YxXQaOWZ2/Z433ynNUbupWJynJd7
- VdPDn6qfdr/Ai3hB7Jk+24xfN/EoqifQ4oWVHHwSBPAaY+nwuVMrEljJ5+vz/JMrxdNoKv4mS35
- /FBOJCbx8MasOvH
-X-Received: by 2002:a17:906:c14e:b0:c29:5af0:3b44 with SMTP id
- a640c23a62f3a-c2a157fc26emr1145456766b.41.1790092363539; 
- Tue, 22 Sep 2026 08:52:43 -0700 (PDT)
-Received: from localhost.localdomain ([94.240.182.136])
+ AKwUvBwAIN5QYuoLvl+RyA/5ckK/SZ9alR4/c/155Yi4eONqmrbDrrd2aBBuGM2cOeiW3K/rQEq65X2gSG+Kbiv96+A=@lists.osuosl.org
+X-Gm-Message-State: AFuF++nJlAKDvlt3Ue381G9gF6oZqenP9Y1tjJ76qU/Oqs102KRbE6eg
+ fkijJP+fr3sN6WUwE/276pQjzfL9lyCthJu/h9BKPSYMyxRBKngUMrEz
+X-Gm-Gg: AYBFou38tgJN7crDFe94j1VCt/5I3I+Mg+ePwm8+XOTcmsp7wPamwaohP8QDLnl3kZc
+ PoFjZvkNVpXnpNwAJUw6fiAD7BhE9OaUHX5MDrdUfA4qg9TGwllPTs5I5xLhbC1lR44EfdsBYvh
+ tsIfhPBsJkHtpVYI8mtq6LJ31XDt0zk7vBeZfUkenQTFo3swdPdet1iltF301B+M3bonTY9DW9J
+ Ss1c31FmB5aVdISo6F5vRIZWuBRoavQRoc1b69S8sYlYimRwhejqdLrV9TNBxRJc6XjgsHt5r1u
+ G1LdGJNjEl+jgebCzAiX0drDXbcguJ20e4idJCd9MBnzmvLPtvKt2fbb0htW6VfkLb1eApnyvox
+ 79gyRf9hrcpWdm5Q4aBf3IxXlmI9FYIg85ffWiqc0JxNrxLK5+0z97c9GfUo792hDdoWM3CPaWV
+ jVmjNfH5OlT+hNw5YYE71FQJeCgKX/ASRZ9ryqPMmkAjzFgA2qtPkbwqOrd6Zj94P5s04fI3aDO
+ iulBd3zXyEQyw==
+X-Received: by 2002:a17:90b:2b4c:b0:39e:1ff0:331b with SMTP id
+ 98e67ed59e1d1-3a07e4f7b61mr128059a91.2.1790097593735; 
+ Tue, 22 Sep 2026 10:19:53 -0700 (PDT)
+Received: from server.roeck-us.net ([2600:1700:e321:62f0:da43:aeff:fecc:bfd5])
  by smtp.gmail.com with ESMTPSA id
- a640c23a62f3a-c2a9c628056sm109308666b.54.2026.09.22.08.52.42
+ 98e67ed59e1d1-3a07ddaf4f5sm336767a91.4.2026.09.22.10.19.53
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 22 Sep 2026 08:52:43 -0700 (PDT)
-From: Svyatoslav Nikolenko <nsvatoslav515@gmail.com>
-To: kuba@kernel.org, davem@davemloft.net, edumazet@google.com,
- pabeni@redhat.com, anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com
-Cc: andrew+netdev@lunn.ch, ffainelli@freebox.fr, auke-jan.h.kok@intel.com,
- jgarzik@redhat.com, joe@perches.com, aleksandr.loktionov@intel.com,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org,
- syzbot+ca1ef9e2e234b8d3599b@syzkaller.appspotmail.com,
- Svyatoslav Nikolenko <nsvatoslav515@gmail.com>
-Subject: [PATCH net v2] net: e1000: fix warning in iounmap on probe failure
-Date: Tue, 22 Sep 2026 18:52:38 +0300
-Message-ID: <20260922155238.67445-1-nsvatoslav515@gmail.com>
-X-Mailer: git-send-email 2.47.3
+ Tue, 22 Sep 2026 10:19:53 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Date: Tue, 22 Sep 2026 10:19:52 -0700
+From: Guenter Roeck <linux@roeck-us.net>
+To: Petr Pavlu <petr.pavlu@suse.com>
+Cc: Wim Van Sebroeck <wim@linux-watchdog.org>, Ian Abbott <abbotti@mev.co.uk>,
+ H Hartley Sweeten <hsweeten@visionengravers.com>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>,
+ Thomas Zimmermann <tzimmermann@suse.de>,
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+ Rudolf Marek <r.marek@assembler.cz>, Andi Shyti <andi.shyti@kernel.org>,
+ Chris Snook <chris.snook@gmail.com>, Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Marek =?iso-8859-1?Q?Beh=FAn?= <kabel@kernel.org>,
+ Alexandre Belloni <alexandre.belloni@bootlin.com>,
+ Andreas Noever <andreas.noever@gmail.com>,
+ Mika Westerberg <westeri@kernel.org>,
+ Yehezkel Bernat <YehezkelShB@gmail.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jiri Slaby <jirislaby@kernel.org>, Duncan Sands <duncan.sands@free.fr>,
+ Chas Williams <3chas3@gmail.com>, Luis Chamberlain <mcgrof@kernel.org>,
+ Daniel Gomez <da.gomez@kernel.org>,
+ Sami Tolvanen <samitolvanen@google.com>,
+ Aaron Tomlin <atomlin@atomlin.com>, linux-watchdog@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-hwmon@vger.kernel.org,
+ linux-i2c@vger.kernel.org, netdev@vger.kernel.org,
+ intel-wired-lan@lists.osuosl.org, linux-rtc@vger.kernel.org,
+ linux-usb@vger.kernel.org, linux-serial@vger.kernel.org,
+ linux-atm-general@lists.sourceforge.net,
+ linux-modules@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] watchdog: Replace __MODULE_STRING() with __stringify()
+Message-ID: <940e0763-9de3-4d55-90cc-8289d5525b17@roeck-us.net>
+References: <20260922-module-string-v1-0-c18766690185@suse.com>
+ <20260922-module-string-v1-1-c18766690185@suse.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260922-module-string-v1-1-c18766690185@suse.com>
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -177,48 +210,19 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-During a probe failure, the e1000 driver error handling path calls
-iounmap() on hw->ce4100_gbe_mdio_base_virt and hw->hw_addr without
-checking if they were previously mapped. This triggers a kernel warning
-(WARN) rather than a fatal crash when passed an uninitialized pointer.
+On Tue, Sep 22, 2026 at 03:32:21PM +0200, Petr Pavlu wrote:
+> __MODULE_STRING() has been an alias for __stringify() since "[PATCH]
+> MODULE_PARM support for older modules" [1] in 2002-12. That change also
+> moved it to the graveyard section at the end of linux/module.h
+> 
+> Replace the remaining uses of __MODULE_STRING() with __stringify() in
+> preparation for its removal.
+> 
+> Link: https://git.kernel.org/tglx/history/c/136839a1b4 [1]
+> Signed-off-by: Petr Pavlu <petr.pavlu@suse.com>
+> Reviewed-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
 
-This issue was found by Syzbot. The exact kernel configuration (.config)
-and the C reproducer used to trigger this warning are available on the
-Syzbot dashboard.
+Applied to watchdog-next.
 
-Fix this by adding NULL checks before calling iounmap().
-
-Reported-by: syzbot+ca1ef9e2e234b8d3599b@syzkaller.appspotmail.com
-Fixes: 13acde8fffc0a ("e1000: cleanup CE4100 MDIO registers access")
-Fixes: 1dc329180fe22 ("e1000: Use hw, er32, and ew32")
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Signed-off-by: Svyatoslav Nikolenko <nsvatoslav515@gmail.com>
----
-v2:
-  - Expanded commit message to answer reviewer questions (reproduction details)
-  - Added appropriate Fixes tags
-  - Added Reviewed-by tag from Aleksandr Loktionov
-
- drivers/net/ethernet/intel/e1000/e1000_main.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
-index d7f5c6f16142..156903089fa6 100644
---- a/drivers/net/ethernet/intel/e1000/e1000_main.c
-+++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
-@@ -1227,8 +1227,10 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	kfree(adapter->rx_ring);
- err_dma:
- err_sw_init:
--	iounmap(hw->ce4100_gbe_mdio_base_virt);
--	iounmap(hw->hw_addr);
-+	if (hw->ce4100_gbe_mdio_base_virt)
-+		iounmap(hw->ce4100_gbe_mdio_base_virt);
-+	if (hw->hw_addr)
-+		iounmap(hw->hw_addr);
- err_ioremap:
- 	disable_dev = !test_and_set_bit(__E1000_DISABLED, &adapter->flags);
- 	free_netdev(netdev);
--- 
-2.47.3
-
+Thanks,
+Guenter
