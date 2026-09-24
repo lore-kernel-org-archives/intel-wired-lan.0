@@ -1,140 +1,172 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE761C9830E
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 24 Sep 2026 16:51:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B42DDC98321
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 24 Sep 2026 18:07:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 71F9A60B20;
-	Thu, 24 Sep 2026 16:51:59 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 6715080C98;
+	Thu, 24 Sep 2026 18:07:18 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id WvL6xV8C5CL9; Thu, 24 Sep 2026 16:51:58 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 5C94E60B3F
-Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790268718;
-	b=SNb/qLFN3W4N8XNxETpTLcAD+QUpWDKRaSqxxYEC0QuzYHcYPnaEfTx+sPi2GAVtWsmd
-	 o3YyBfQOtjJEbCrU5lH8TKV/mSt4zG480lHoQIFjYdi7kHIJ1td3P39l1nbFCdOEpYeDX
-	 iN/xbw+ZxPeH8XMwXqLSzX+UQd6a6BqH87EQfWZaImI0/mTKdWO8R2yiPj+rTuOsvRM/M
-	 CC+6Jp1VVA7kZuFo2YXsuRvusLUx/EkqtEtf8sSg7h0xq0RmbJQwZ6lkt/co1JOKA5qF2
-	 Ev3fpmIPnsMCUE+5ciZ6J3sp55thJJ0K8cKJR4jVBbRAiNEvqBhG5iy4Jrtl+yn/HGg==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id BS-7WKiT7Dbe; Thu, 24 Sep 2026 18:07:17 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 821DC80EF5
+Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790273237;
+	b=tF8V9LOrcsfU1F+0tjNztGWyeChX2xS7O6bpwSNwQonwhXKUbOikPu48trjPrOKry3NG
+	 roTQv+KuZ8KGSIDlpkDFTZq1Or0xoBeN2+pxGUGJXhk1ptkDpM2P7QTA0DCagpruQ5cEo
+	 dEXSaYjtPPhLcniY38geeqj9vXIybLMSeRfxphx8z4rF0jNPKrUo1j0xiABJJAQ05QKCw
+	 Sa0RPSt3nq+VfvP/E8KkvjFzBEaDRyRtKMTR0t+RDNz72hDyNnu5pc8N9XN/fhYVQf92Z
+	 RquT/59pJRU5b0iacQ84HzmaJ4DdzqNNj4Zg4Kat4LYe3QUZrhjTn80DtxVSnqU3Hfw==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1790268718;
+	c=relaxed/relaxed; t=1790273237;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 Received:DKIM-Signature:Subject:From:To:Cc:Date:Message-ID:
-	 In-Reply-To:References:X-sashiko-severity:Content-Type:
-	 Content-Transfer-Encoding:MIME-Version:X-BeenThere:X-Mailman-Version:
-	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Gm-Message-State:X-Gm-Gg:
+	 X-Received:Received:Message-ID:Date:MIME-Version:User-Agent:Subject:
+	 To:Cc:References:Content-Language:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:Precedence:
+	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=eSSbZnuCtl8KDycVQpA/SGQENb09ic1AWqUQDE6gDSA=;
-	b=myc+JFRVWqpn1wU/ugiqA7gKJlrbaG47+TJ8UYc8dBHljpAihvpj7v/H2cc/qhz29uPY
-	 zqtJLDzt+v3A5JVV7HLLiEsoScjfcwcOyjOFkzuYZIgZ49OnrLj40NfU0gajpawYzMRFg
-	 zFz2laki4JnCVH12P+Kdhr2Tmn41PkYkS8sBJyuH04LK/5ENhuXGpRWzeb0AgV6RvKFNV
-	 LnBZIvCve1FSUoAlOuwJiMJo8sKXVJxuzX2mNoJceV3TYrihpQ4auEPJYNKd4rf3g63vR
-	 AA40px2CXwDCltJKGq8FyKIxv0MH9aPrlQSJRFl7qLDXE3YrgQ2Z5iHG/i8NJAwvTHA==
-ARC-Authentication-Results: i=2; smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	bh=IyXPJ6ar109HpW1pFcFHtHGaxU+O3cC1UHabunMwZ/0=;
+	b=K8EjIyUvT0ce/nlwrYNx5dVfWrkisKUkta2b0lEZ+/sie8w64f/ejIsN4dOy2FeFKL7U
+	 h7sk7yDX7I7EDZHO+svU6OdAVkvorpZMZN+wgehQ3/AfSCt9h8gLi7pOa88tEucu5SmOV
+	 W0pufJIzoaqgHV6tW512XAig14k1LwyTyPI054JP6CQZFPOMAPaaOgl/MVI78wL/8+t6v
+	 DqvXaIP/Pm0aeauoSct/vFkbh5AQ2a234iyblzPUpPsUOvRhsSrUlWhEqlgkfFpcDJZGW
+	 cK/aZs3OjdW53bf6n0XTknmRdaN7br1w7Hp/9JZbLfwU21lC7knYNyLebJ+34wb2sqg==
+ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1790268718;
-	bh=eSSbZnuCtl8KDycVQpA/SGQENb09ic1AWqUQDE6gDSA=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References:List-Id:
+	s=default; t=1790273237;
+	bh=IyXPJ6ar109HpW1pFcFHtHGaxU+O3cC1UHabunMwZ/0=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=jnTVOLa/0yON3WmQGw3QezlOhskiVDC7i7++ouIVfKGeW/ekhCWvEazFjanGzDNuB
-	 Lg+GnHo1BWqRD/MLA2ZOyHFhoh3cOyax+RsGyTAuMYfwqdq/C8Ohs4gJF2ZRGMAP7g
-	 fMgJ3qJmBQASCriH9bzIuLXi2PUbAn+XA+mF1Ot5vlRE1sTA7Ca3AV30xMnuFWndOu
-	 MbFEdaS54YwA0S0fxwYbeEbxQaQD03sAx/gsiC4zFjPNgc+vitHQrG8BfKTliRCsZ6
-	 TCFJLmbUmdJOn7UU+r1aY2Gwz08JYRGye9R7C9prtmSkUvZr2YTmqjrWeVhPfZ5W+w
-	 tah9LzzzUKysQ==
+	b=4TSAcO7Agw3VRsmeMliihcQIo5x3XgVsD994Ccr/RyiL5Z+Q5PEX30WILx5KE4T19
+	 4I74uVJ4pw0xfBkZHpkh/A0L8+aAJwMnIScEu6BwKKsedwCokvEmdT3thHn0Wce0Yl
+	 h7ZXhLa1+4qfU7j1zOmTm5LuxcbRSeHyuy5IWuQ8kQNd5Lvww7y45d9Mz06ijrQctU
+	 vc7FGDnQ3p/GsPaKWh81iRf7Rr/xTA2pfb1/3zZLx2B1NyqDwrBLhMVkUFfwN35R6V
+	 hqkROW1rAgEZ+eymDjFQYLv0zyO6H957y/A0bqPNrAjac/uzP0i00mLQVJmyaD+GLM
+	 C7NEn2PJRImaw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 5C94E60B3F;
-	Thu, 24 Sep 2026 16:51:58 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 821DC80EF5;
+	Thu, 24 Sep 2026 18:07:17 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id BE0A7355
- for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Sep 2026 16:51:56 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id E5670355
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Sep 2026 18:07:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id A417140480
- for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Sep 2026 16:51:56 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id CAC6B404B2
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Sep 2026 18:07:15 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id bxeqWhPqiM08 for <intel-wired-lan@lists.osuosl.org>;
- Thu, 24 Sep 2026 16:51:55 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org 57F6840042
-Authentication-Results: smtp2.osuosl.org; arc=none
- smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790268715;
- b=fewDbX8oXvaYPO0J8Nexzm6apnXYndE0M9vp33laGLELdRoFUckTDMx4U9wCoeCGYcM5
- 2QPjPuQwZafyf+T8HzcHWZ5N91w/Ciqby+vWvc3+QKWRoMCON4NRYoJd2EJqkSL9RplJw
- GPXDJVb6CLT7ewZDWg0QS+vxQZgs0G+dB5ydeDT+Z1ub7QFOyoXycHbw702jkMkV0aVNd
- Z3Ck8kqFmAo85zquuUwC4AQHnmF9yHuqxBae4T4dN3dhWVCP2v6SawnUyVZMtAn5276ct
- X+OY+HLGNCs3qTTIViJ1CSHbkiN3ufk2b9vnSL6grnxWyHy88yuixKXmBxi9Trd1j3w==
+ id w4etkb4xEv6u for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 24 Sep 2026 18:07:15 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org B5F1E40042
+Authentication-Results: smtp2.osuosl.org;
+ arc=none smtp.remote-ip="2607:f8b0:4864:41::11"
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790273234;
+ b=gHk4Q/Gme1vbr0imeYdyM69ID8AMjFnfCr6GExtCcRjJb6b9R7WLhELRNgkazY9ENnRN
+ aoSBIqnOVTIYYX83bo2Qif1nyJIHTxjt8IpCR4lMPb+pYYZn4jorz7Kify3iimXPTLjTB
+ cLt9gXyQjTX+/7RjTcpIJuISKby5OdgRP5FeMvBm08ve9ZMeKfdSlaUKcCjMSD8zt6o3g
+ 6+HVAki/jif0QZhZ+xG7McFGmRgT4JYZ86hlPySee5fmK23cnOE4J0/OEx6Ni6JCj6US/
+ Oc9AZnaWWc0Da85jRLbHvxVEuEtTm98fpIUWfn1MTUs6VdOPRxLgoQy8QfP4av4W1Hg==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1790268715;
- h=Received-SPF:Received:Received:DKIM-Signature:Subject:From:To:Cc:
- Date:Message-ID:In-Reply-To:References:X-sashiko-severity:
- Content-Type:Content-Transfer-Encoding:MIME-Version;
- bh=eSSbZnuCtl8KDycVQpA/SGQENb09ic1AWqUQDE6gDSA=;
- b=Zg/7bVH1yc2PPFvAgYfFnhb6/4x392sIxrGmjqvrlEulUHa+5xsD00PjVIf93WKuFCMJ
- aX78rEZn/m22Qxe7Bn7MYhwANbOuKNAJ3YjQH2MDbjX+yJRB8u0YIjsDg+shCn98NZZQL
- lMKQPRYlu15EY9b2DHny7XOkezDuk+VjVnzuWMrrH7Nes7c88BtK+rB3OjYnWapIsjiju
- lpI3RNhNRBrGppnFhRgTVRwio3t26bE06kxLyymrzaRF5pkhasCZg7MYTFjmGsPr1tQot
- 76AMd6B+m0ZTNMVW5cOsANrx27AxTOOCr51mQm9jLQX2gdGrc4r1NL27w/BuF+/C2Yg==
+ c=relaxed/relaxed; t=1790273234;
+ h=Received-SPF:Received:DKIM-Signature:X-Google-DKIM-Signature:
+ X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Message-ID:Date:
+ MIME-Version:User-Agent:Subject:To:Cc:References:Content-Language:
+ From:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+ bh=IyXPJ6ar109HpW1pFcFHtHGaxU+O3cC1UHabunMwZ/0=;
+ b=KaP5JvZLOaTQoE4ArxEozqNpwOnlD4ALabnxqYQ4jX81d3vkH9VZ659BhzO6tdT7ERy9
+ GKjmfwm4ngO85fB3MlkezEC/+8SEF/+hJGjIMLcq9sxZC0qfS/qP9VwrOKNFRFBNNI1MD
+ 1CfoL/VWUB9Z5Du8DHkPg4JACJwMMqbaxwEK5x17DqycEtI110MZhC/Nh7MRl9BPYLNXd
+ xrnbVfFWP6zT718YglbOfCVkE7cvnPOMLcxRtiHLxgYbv06izqGE/uImQhQZ/P4OftEKB
+ 805wMvFzbQx50wzDp1FIKFsCM+2Sn3bB4+VOYnGGxcNypnd1oNGJZO2gni+FvGv5tWQ==
 ARC-Authentication-Results: i=1; smtp2.osuosl.org;
- dmarc=pass header.from=kernel.org; 
- dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b="W+BQR6E/"; 
- arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ dmarc=pass header.from=gmail.com; 
+ dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20251104 header.b=ifFfGeQo; 
+ arc=none smtp.remote-ip="2607:f8b0:4864:41::11"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
- envelope-from=netdev-bot+sashiko@kernel.org; receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
+ client-ip=2607:f8b0:4864:41::11; helo=mail-yx2-x11.google.com;
+ envelope-from=tactii@gmail.com; receiver=<UNKNOWN> 
+Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=W+BQR6E/
-Received: from tor.source.kernel.org (tor.source.kernel.org
- [IPv6:2600:3c04:e001:324:0:1991:8:25])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 57F6840042
- for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Sep 2026 16:51:54 +0000 (UTC)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id AAA6B601E4;
- Thu, 24 Sep 2026 16:51:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7B8C41F000FF;
- Thu, 24 Sep 2026 16:51:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1790268713;
- bh=eSSbZnuCtl8KDycVQpA/SGQENb09ic1AWqUQDE6gDSA=;
- h=Subject:From:To:Cc:Date:In-Reply-To:References;
- b=W+BQR6E/ARkY77WyRvDCrbfBmdwmPiO5UNnTfMszL7stSF3MSUDw1HtBDuwdUWywk
- ZGYp6+BZBGHcGdXm145sBvqRnJ85ehyTl2OxgGlLbxUBGiaEswePb0yCrlyXVZIEG5
- DfTnShquyK+cdp0uBLKeX4WWnioArkHxhiNSFUFwk8wOPg8DBuvkjfEHbwzhjtrYZ7
- FTyvGTZxORK/NFEjRzTHejx6PtiRUZkEbGp8Lp/yOJgS+RCWWCXEjMuh9h3TreGZQR
- zOXVhEiHv23AWqLFUJLEOcgZS0FaQnqb5pL/CP1dOH8+/w0mi6p7Z92UuhdW8YZlWd
- ort8Ir02wrsTw==
-Subject: Re: [PATCH net v2] net: e1000: fix warning in iounmap on probe failure
-From: netdev-bot+sashiko@kernel.org
-To: nsvatoslav515@gmail.com
-Cc: kuba@kernel.org, davem@davemloft.net, edumazet@google.com,
- pabeni@redhat.com, anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
- andrew+netdev@lunn.ch, ffainelli@freebox.fr, auke-jan.h.kok@intel.com,
- jgarzik@redhat.com, joe@perches.com, aleksandr.loktionov@intel.com,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org,
- syzbot+ca1ef9e2e234b8d3599b@syzkaller.appspotmail.com
-Date: Thu, 24 Sep 2026 16:51:52 +0000
-Message-ID: <179026871201.2160803.192841426910444830@kernel.org>
-In-Reply-To: <20260922155139.67364-1-nsvatoslav515@gmail.com>
-References: <20260922155139.67364-1-nsvatoslav515@gmail.com>
-X-sashiko-severity: Medium
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20251104 header.b=ifFfGeQo
+Received: from mail-yx2-x11.google.com (mail-yx2-x11.google.com
+ [IPv6:2607:f8b0:4864:41::11])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id B5F1E40042
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Sep 2026 18:07:13 +0000 (UTC)
+Received: by mail-yx2-x11.google.com with SMTP id
+ 00721157ae682-85d4ddd179eso1240517b3.3
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Sep 2026 11:07:13 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20251104; t=1790273232; x=1790878032; darn=lists.osuosl.org;
+ h=content-transfer-encoding:content-type:in-reply-to:from
+ :content-language:references:cc:to:subject:user-agent:mime-version
+ :date:message-id:from:to:cc:subject:date:message-id:reply-to
+ :content-type; bh=IyXPJ6ar109HpW1pFcFHtHGaxU+O3cC1UHabunMwZ/0=;
+ b=ifFfGeQoQ+vLyg2u9UrY2fsT7ePnbWci5JKC7fB8FcBqt18u/4x9irf3ojxxctkL3b
+ kLGV6hyeMUbdKPfPdwKYmgx86Og0rTwktiziGa3oMswkEjaPCRRvVUFI+LHacMfnAt+u
+ SL56/OU9S6kcsvj+JJqGFBaaNYfr0vWNafJMDZcqYLGDDqnnszrVAYdnevfZSDUNDlao
+ pYWRUrpur3A+uALq5P7suq4d23bwwjadiuz7lEqeZMdxbYpt6GNXJGKQND6G4RytQgxM
+ VPl/wVZUucLlRUqIxI1bvu0Uz1kl4hAQFLDHKRndToZHhuVHBGpDLuTw91olF60bRMiT
+ lh1Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20260707; t=1790273232; x=1790878032;
+ h=content-transfer-encoding:content-type:in-reply-to:from
+ :content-language:references:cc:to:subject:user-agent:mime-version
+ :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to:content-type;
+ bh=IyXPJ6ar109HpW1pFcFHtHGaxU+O3cC1UHabunMwZ/0=;
+ b=XiySdTwHwYVViN1ntzZURcILfE9efezeSIUTIqxMoCgc7xdTbfwM+dljkds7QQUGsf
+ WhENmV+tnG7Wvb0TPepEj3RMCY7qCRApvKJ1INqdOhzytNlVGyUew3BLZHOHY+isiKrX
+ VeDC7lE7Syfdu7Ar6VFkpQ0FHPmYTwQEnrwGmMC9O4Vnq4Edo0B8tXiHfleuLUlIIn62
+ HkwrdqDv+/6jIpKkQ9IxACg55dQoUz402sGNoMIIPUSfzgP4vo2ckTY0SMGthgFitCRv
+ THHAQvd5kWZtQWZNKHWPz0e//QsvTvb925GtyfKEWFy+9OT+f69vR9xibP+sjqcHAKUV
+ MCMA==
+X-Gm-Message-State: AFuF++mTK9GUZjgAX53Nofy9xxHxu8IcCqMAkQJeBFt+fXk4plnhkrSL
+ MwhA9vlOsi8WEDMFH3Vdg8/S+3hUJEg1AFv3mFo19SHFbuJIkDR2OCUN
+X-Gm-Gg: AYBFou1KO2ow4ST6MMDhD2VOp1THcp0DrWkpMp8ltw6s+Y0sdj1tw56DQJaS6GENUZS
+ ROFMkRVQDE/TAUSTyt+MAn+c0XdxYTd1I0PKEe2P80X4QQgYy/ViVnl0PkJZyL8ypHhiCUb0LVf
+ yokhGIhygoItTztKPghVUp8WHZVD07X/oI/p82kyfy5859SuyzHJ1PoY2sJuokF5NFm7fky7ytt
+ ORed11heC0CFFAwl9TxiciYw4khOQ5vMR1GnSIvfpiMaDB0RLhfrN4rWnlJLX7rCzvXBpqreBMG
+ bbLT+7oAh1FtpP2xgxeRYxfYWS+36ftGJ3aseDHAEUvHJud1a1BTYHAYJ4mH1nKF0En0wYx3su7
+ MQ/t1yuIK4dBQstjZQ4OMJSqansoRecUwHxsYG8QcOteAebG/uE766rv8bOurgyUGtQZZ/SY/sC
+ iioGTN8hxJYzbOg0knnNEkuiMTbUcjbwtkJDnq308FyYdOyboIJ8OqNnpM5sQ7iqnWlYfH66A3P
+ XXrksGtZ8Q=
+X-Received: by 2002:a05:690c:e149:20b0:81e:f5ac:e40 with SMTP id
+ 00721157ae682-8a64707b472mr18946227b3.20.1790273231962; 
+ Thu, 24 Sep 2026 11:07:11 -0700 (PDT)
+Received: from ?IPV6:2600:6c5c:6b00:316::23? ([2600:6c5c:6b00:316::23])
+ by smtp.gmail.com with ESMTPSA id
+ 00721157ae682-8a86102bbafsm308787b3.39.2026.09.24.11.07.10
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Thu, 24 Sep 2026 11:07:11 -0700 (PDT)
+Message-ID: <42cccecf-ff14-41e1-811d-e5a44f3d1aab@gmail.com>
+Date: Thu, 24 Sep 2026 14:07:09 -0400
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH iwl-net] e1000e: fix flow control stuck off after link
+ partner reset
+To: "Craig I. Hagan" <hagan@amazon.com>, anthony.l.nguyen@intel.com,
+ przemyslaw.kitszel@intel.com
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
+ pabeni@redhat.com, andrew+netdev@lunn.ch, linux-kernel@vger.kernel.org
+References: <20260923235832.473-1-hagan@amazon.com>
+Content-Language: en-US
+From: Matt Vollrath <tactii@gmail.com>
+In-Reply-To: <20260923235832.473-1-hagan@amazon.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -149,135 +181,46 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-Thank you for your contribution! Sashiko AI review found 2 potential
-issue(s) to consider.
+On 9/23/26 19:58, Craig I. Hagan wrote:
+> On an I219 (pch_spt+) copper with jumbo MTU enabled, a link partner
+> reset (e.g. a switch reboot) can leave the PHY's pause advertisement
+> bits dropped. Nothing re-asserts them on link-up, so every renegotiation
+> resolves flow control to none. rx_crc_errors climb and traffic stalls until
+> the interface is manually reset. Observed on I219-LM (8086:15b7) at
+> MTU 9000 behind a switch that was power-cycled.
+> 
+> In the watchdog, detect a completed autonegotiation that resolved
+> to no flow control despite pause being requested and the pause bits
+> missing from the advertisement, and schedule reset_task to rebuild
+> the advertisement (as ethtool -r does). Remediation is limited to three
+> attempts, 30s apart, until the next link down.
+> 
+> Remediate via the existing reset path rather than re-asserting the
+> advertisement on link-up; a root-cause rework can follow in net-next.
+> 
+> Fixes: 79849ebc0e06 ("e1000e: initial support for i219")
+> Cc: stable@vger.kernel.org
+> Link: https://github.com/systemd/systemd/issues/25925
+> Assisted-by: LLM
+> Signed-off-by: Craig I. Hagan <hagan@amazon.com>
+> ---
+I was able to repro this on an I219-LM laptop by link cycling with MEI
+runtime PM enabled while the NIC runtime PM was disabled.
 
-Critical: 0 · High: 0 · Medium: 1 · Low: 1
+At 1500 MTU flow control still doesn't end up in the right state, but
+traffic otherwise flows normally. I don't think traffic is stalling
+because flow control is off, I think it's stalling because
+e1000_lv_jumbo_workaround_ich8lan didn't run after the PHY reset.
 
-If you believe none of the issues are legitimate, please reply to each
-issue of Medium severity or higher and explain why the AI is wrong.
-If any of them are legitimate and you plan to respin, please let patchwork
-know by including "pw-bot: cr" as a separate line at the end of your reply
-(one such reply per series is enough).
+I didn't try your patch, but there's a four line fix. Where the watchdog
+resets just the PHY when the MAC exits DMoff state, set FLAG_RESTART_NOW
+instead of resetting the PHY, then goto link_up. This works for me at
+both 1500 and 9000 MTU.
 
-- [Medium] Half of the patch is provably dead code and the commit message
-  over-claims the defect.
-- [Low] The commit carries `Reported-by:
-  syzbot+ca1ef9e2e234b8d3599b@syzkaller.appspotmail.com` and asserts…
+If runtime PM were enabled on your NIC it would reset anyway and avoid
+this error.
 
---
+See:
 
-net: e1000: fix warning in iounmap on probe failure
+https://lore.kernel.org/netdev/20190628224932.3389-16-jeffrey.t.kirsher@intel.com/
 
-This patch adds NULL checks before the two iounmap() calls in the
-err_sw_init/err_dma error unwind path of e1000_probe(), so that a probe
-failure does not pass a NULL pointer to iounmap().  It carries two Fixes:
-tags and a syzbot Reported-by:.
-
-No Link: tags were present in the commit header.
-
-Two questions below, one on the commit message tags and one on the diff.
-
-> net: e1000: fix warning in iounmap on probe failure
->
-> During a probe failure, the e1000 driver error handling path calls
-> iounmap() on hw->ce4100_gbe_mdio_base_virt and hw->hw_addr without
-> checking if they were previously mapped. This triggers a kernel warning
-> (WARN) rather than a fatal crash when passed an uninitialized pointer.
->
-> This issue was found by Syzbot. The exact kernel configuration (.config)
-> and the C reproducer used to trigger this warning are available on the
-> Syzbot dashboard.
->
-> Fix this by adding NULL checks before calling iounmap().
->
-> Reported-by: syzbot+ca1ef9e2e234b8d3599b@syzkaller.appspotmail.com
-> Fixes: 13acde8fffc0a ("e1000: cleanup CE4100 MDIO registers access")
-
-[Severity: Low]
-The Reported-by: line is followed directly by a Fixes: line, with no
-Closes: or Link: URL pointing at the syzbot report.  Could that URL be
-added?
-
-Documentation/process/submitting-patches.rst asks for it:
-
-    The tag should be followed by a Closes: tag pointing to the report,
-    unless the report is not available on the web
-
-and scripts/checkpatch.pl warns on this pattern:
-
-    BAD_REPORTED_BY_LINK
-    "Reported-by: should be immediately followed by Closes: or Link:
-     with a URL to the report"
-
-The commit message says the .config and the C reproducer "are available on
-the Syzbot dashboard", but without the link there is no way to check which
-error path syzbot actually reached, which is relevant to the question
-below.
-
-Also, the description of the value handed to iounmap() as an
-"uninitialized pointer" does not look accurate: the adapter private area
-comes from alloc_etherdev()/alloc_netdev_mqs(), which zero the allocation,
-so hw->ce4100_gbe_mdio_base_virt is deterministically NULL rather than
-garbage.  Could that wording be adjusted?
-
-> diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
-> index d7f5c6f161420..156903089fa6b 100644
-> --- a/drivers/net/ethernet/intel/e1000/e1000_main.c
-> +++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
-> @@ -1227,8 +1227,10 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
->  	kfree(adapter->rx_ring);
->  err_dma:
->  err_sw_init:
-> -	iounmap(hw->ce4100_gbe_mdio_base_virt);
-> -	iounmap(hw->hw_addr);
-> +	if (hw->ce4100_gbe_mdio_base_virt)
-> +		iounmap(hw->ce4100_gbe_mdio_base_virt);
-> +	if (hw->hw_addr)
-> +		iounmap(hw->hw_addr);
->  err_ioremap:
-
-[Severity: Medium]
-Can the new "if (hw->hw_addr)" test ever be false?
-
-hw->hw_addr is assigned in exactly one place in the driver, in
-e1000_probe():
-
-	err = -EIO;
-	hw->hw_addr = pci_ioremap_bar(pdev, BAR_0);
-	if (!hw->hw_addr)
-		goto err_ioremap;
-
-The err_ioremap: label sits below the iounmap(hw->hw_addr) that is being
-guarded here, so the only path that leaves hw_addr NULL skips this code
-entirely.  Every other goto that lands on this label (err_sw_init,
-err_dma, err_mdio_ioremap, err_eeprom, err_register) is reachable only
-after pci_ioremap_bar() already returned a valid mapping.
-
-If that reading is right, the hw_addr half of the change is dead code, and
-the second tag
-
-	Fixes: 1dc329180fe22 ("e1000: Use hw, er32, and ew32")
-
-refers to a defect that is not present.  Should that tag be dropped, along
-with the mention of hw->hw_addr in the commit message, so a stable
-backport is not aimed at a path that cannot trigger?
-
-The ce4100_gbe_mdio_base_virt half does look like a real fix, since that
-mapping is only created for one MAC type:
-
-	if (hw->mac_type == e1000_ce4100) {
-		hw->ce4100_gbe_mdio_base_virt =
-					ioremap(pci_resource_start(pdev, BAR_1),
-						pci_resource_len(pdev, BAR_1));
-
-so on every other device the field stays NULL while the unwind path still
-calls iounmap() on it, and x86 iounmap() does:
-
-	if (WARN_ON_ONCE(!is_ioremap_addr((void __force *)addr)))
-		return;
-
-Would it be clearer to describe only that case in the changelog?
-
--- 
-Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20260922155139.67364-1-nsvatoslav515%40gmail.com
