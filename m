@@ -1,28 +1,28 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C2768C9831D
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 24 Sep 2026 12:59:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63623C9831F
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 24 Sep 2026 12:59:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 9086B40CD6;
-	Thu, 24 Sep 2026 12:59:40 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 2ED7981B8A;
+	Thu, 24 Sep 2026 12:59:41 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id x9PyHwbp5dOS; Thu, 24 Sep 2026 12:59:39 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 9B6AB40CDC
-Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790254779;
-	b=XfxCglUcdpIy6ckls0mH8mEEyeIMcb/KP2YJ+MZCrVRqE94pe+d7QMNZOtkT54Wkkg7v
-	 tK0NdH3V4b6+y89GjEexyz6MLNPcJ4k51WF4qiDZgdb0bd1ar0Enr0/IR7C+eu7OYUXIB
-	 SZZ45JIzAdQvisjly35uCPOSwhm3sAgDEdATb/gkDxg+j4/5bSfCjNMKtbdWbg8DaveKd
-	 +RRwY8f76WMuTdMl2wl/NRXEgQNSm0apvX3G4Bs/MT9cxRMP50hnvxnT7tP9LZ13ejs/O
-	 k6XXiNqxgHdDegekSwP969t1hVdxQZiVbeXb3Ho5zmCs9omYiH9kZAbhN5JMmzQbF2A==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id jOpkOwRVUu99; Thu, 24 Sep 2026 12:59:40 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 88BEB81BBD
+Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790254780;
+	b=hXGCwaBiKGFQQnudCDbKBMmjswUNqhZCnlV3aC7QcNApbMZjF6cCZW4jwLQFBlViBK/a
+	 +doCoPD/QuxkuhfWCjf3vcxT0aCzGTVk5eZLGG7BF+3sWOAjFxWSUq+ujlxh+Zsat287y
+	 j1KfMqbPkea6xYzXa+neHcTBBM5GSYnDqkjOuaz35Gra9nrAerkmPAPU2jYbuzimPw4FE
+	 kbER/4rh+HtgTYDLp/5HsXp2wd2yfSdltHgXuM9HosFOg2pnpEyHgWt3FdZANXCToP2Z4
+	 Ctt37I7dWCByPB9ICXNOSkmn/whVifnsA0sbP4p/HGY6UlTVzTlzA5ao8fAhgBPbVJg==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1790254779;
+	c=relaxed/relaxed; t=1790254780;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
@@ -32,48 +32,48 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding:
 	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
 	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=NMJRkb5P21AHtDGDTdMDmbeEU2mqY4xrFAMSVB8Bw70=;
-	b=tN4C9Rpc/WYTP2A2r43iF2MvQqE2cPS3Dj6bqpUUU854e9n7dAS1gznLw8inU0jN9ec8
-	 Yni9WyQTtJNDcPUSijnKVnnDUlA7xkawy/vcRFz5ZTj/fF6p9adPVQv7ZnVyb0qWGYUmv
-	 e7r+gImBoAKx7zYslb+BmO+38izIC4LoCy3dDlpVqoNW862rrRDHTNb2XwkcWjeiAAAV8
-	 zIUqEafya3FMj/n2hj4S1kDQB8GrY/O6j4YKgcJeoTUf8hvC9PA72LTNK+PslGcGzyOEP
-	 DbcH2WFDYaw0PUO2QfDHxVI8jbVsrRkr9MMV+NIMJfx3DVA4YniO2wyaBB6KUoNeBrg==
-ARC-Authentication-Results: i=2; smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	bh=S0HmbmvUnyNABrS5gZybRJ8qTHLPFlxZP//naxo6VYA=;
+	b=LRW272ZQj94TxOoLE3X+SRnbKhp2AbN0xvMtlF2TfZzIX7x2ceiJovLSxuRJT4lUAo2L
+	 nC35QpPNgtDtoEAaHcRZk1jXzVkxAKe06jwDBgb28tSVxD0aIQViRfLrLTbDWFZOzUuxG
+	 vfl7eqZYcQextJYD6hwnSCzVUIJAc6p/pPl/pCIdxAiNa91Vn+J/Eu51vz0FLkfCY3sRW
+	 R0gGYiMwCAFIuCBq+3TvehXpTzrbcyv/PTQ6BOvwXSNgE/yZfzIjR25A/rcLsEJ7Zdfoz
+	 IkxAPlIT4tJ0zRPewKXU3iZeFavi4NNGtnXMPnXVhx04btcotrDQPMuCuJUIKdRei6A==
+ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1790254779;
-	bh=NMJRkb5P21AHtDGDTdMDmbeEU2mqY4xrFAMSVB8Bw70=;
+	s=default; t=1790254780;
+	bh=S0HmbmvUnyNABrS5gZybRJ8qTHLPFlxZP//naxo6VYA=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=bmYTfeMj8kOqxZJPfi6SVeT38B2IO1u6SnfQUAFPxhPKFnU1WdB2GBgCR53apDgjN
-	 ovYS/UvIjW6+pa2H/yLx0QRHXAe0s16w4WenPZLmDoOgvrnMsHZLgxa6LZMfLjI0XX
-	 wjmq/AUW5GpDQ0oRkBg7m9kNJQMkk0VWFeKgZnQ9zaxYHJ7X0b0NUbQ51McxLdCLMo
-	 d805yDLRdssrSM1+GMY0S2VvgdoiVRgWD6vJyxgY/Ra8Oro7WSdm94t4hmPZOhk8eo
-	 grAV3my5RFEPUeJvOvfyk2zyvHmDTTtOUCspB56olMXYmAPtsU1uu0aGUwWDstZbY6
-	 D4pLLNE7Sv0pg==
+	b=8BGMtl8DMG8LrbTFrSKVrDb2S0S4SG5P1xwGQyga1uJ9UlzoV2t5UtUR+sCa5UUOr
+	 4MEcF3v3D0HkYb6MGPVn9SzzkOji/zeogFfBMmxzqzVwzsaxx0XVCiDYQSukYvEasE
+	 iBWQh3eTWrfDyypH4QY/xpoxeLsJsUTT80hvDTlmdCo2i6L+o7H4IoPi/1fnOhrJ4m
+	 FIxPwgSHV4d3z9FPopMS0sY3EmkX0EDHQbFNtl4YYyZz+XqtN3QQENtoeOP0xjoCEc
+	 x7Kwb0N7sAaSKDPBFoi8VsIFsVK+1XchctESJYcgg5llSNti9kgYBGu6ziaKWBCTDs
+	 941J4EPRyhFXQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 9B6AB40CDC;
-	Thu, 24 Sep 2026 12:59:39 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 60242194
+	by smtp1.osuosl.org (Postfix) with ESMTP id 88BEB81BBD;
+	Thu, 24 Sep 2026 12:59:40 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 7A85C194
  for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Sep 2026 12:59:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 5266660807
+ by smtp2.osuosl.org (Postfix) with ESMTP id 60E89400FB
  for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Sep 2026 12:59:33 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id BtJJFoQlcs0x for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id MYrsYbqnWcYV for <intel-wired-lan@lists.osuosl.org>;
  Thu, 24 Sep 2026 12:59:32 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 4261E6082D
-Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=198.175.65.16
+ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org AC23D40470
+Authentication-Results: smtp2.osuosl.org; arc=none smtp.remote-ip=198.175.65.16
 ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790254772;
- b=SxT8mKYaMZi1eLMvKzE5MDheJySwoMeA0xDuGSqQRy7SHJnOC4N1d+Q8L+X9iRGQLZZr
- /ILWBpIzmT5OZSg7ICRYqTRzhYuHcpSozHaDYjDPpHVHp6M0t5xqsKTibxmPNNjKY/z0w
- gogHC8B9F7ItyBYCTuC+7xJwMAQS8JJyoMKG4a4hImt1Ul56PAeZCo0qoJ7Th/j7vgWK6
- 7k8Yj/YLW+kBTXRX3E84g/szlNjMiTOMsHrVZLhxAZFgYWHp3IjhH8EUHKFDkPymebfNi
- rgENsp0cGEu9syq7GaJFWNOTx6Q9MPxNVqphYASdxqbANAALaxpWtkwCWn1sphZBVkg==
+ b=PwFrjD8k4W6cVKm1WZegOpuuigFV8Vg9A7TRdIXpnwObxZunL8HGkPeQegh5ndlc0zMv
+ dn/+6ctSM5HEbD/3aSM8UCIQKtgc0SXXa1o+TGhReVuKJT5im3WwZ5TVWMF8qquXrCxw6
+ fk3Ty7wwl0k5PiCwLnOZytdHGIXXb61TtLkuWtQTDUx3Xiw+679kH/rbvm34VOmA37C3W
+ oeZrcCgyidnhMXlIjwY4OVHWZWhX2nQcRZrkveb+keVDUpbc6xkPuJhubGzQcLVUoFHEQ
+ uEGoJcOueEnuhIR4PdvarQ8sqf+O/cywQGsU2yU3Y3Y0hnUh1911B8QO0xPKk/c92dA==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
  c=relaxed/relaxed; t=1790254772;
  h=Received-SPF:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
@@ -81,60 +81,59 @@ ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
  X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:From:To:Cc:Subject:
  Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
  Content-Transfer-Encoding;
- bh=NMJRkb5P21AHtDGDTdMDmbeEU2mqY4xrFAMSVB8Bw70=;
- b=A6kGAGFg3SiXZWX1e4Lon8Vulsf3gPNqv6rsrXOm9pVYjlzcb9+0jYYthmpXZYwY0JLj
- 9u2RXF1+j0mo38IocoaN72hY2cu4tNEw4t+kP63z94enJyy3WwvMXQkKdVHs6Z11SO5To
- OBHhZP1YdFrRYbPceZr8s2efXOvRheRPAe4XNJl686KpUU7I4kVhktHne6E54k+MEU+e9
- +iaKcc69FxL5jo+cAeuW2YbzvQvzYQrglbXdoQrPKhUywyJDGwBoICREWBaYYxHfDyB5B
- R6/J3dFVNna8rzUzgvJ8JulfbEOgi5go28RO/Y5bi9lve9P7242P410s2VVRZjblGCg==
-ARC-Authentication-Results: i=1; smtp3.osuosl.org;
+ bh=S0HmbmvUnyNABrS5gZybRJ8qTHLPFlxZP//naxo6VYA=;
+ b=dSfO2HcWeRkKclCChB/X2bgn+kvL0TGJlZvBE1qwWQt+bQuNWPsa1zOiO67tQT48IQcY
+ 2tg/ZLKD8Yu6oFqju0vQPFCLz4M/9yu2RLTtu2zplq1zBD3E5Gwee6L7OMwEqeoauEZRr
+ AatnwJX0O8oM4S8pN46qo3Pp5w4jcT8KeeYbC5MIidHSYdZk8CMmGbiQgmTZLQ4mJPSwb
+ OP3wxJoaey+P0zd6arJ7bXxdDXEJu5F2idPWWn9UmkK2+ZkBWT6amKWqGSmRwJ7CgL3Nx
+ rVMgXV366usboT1hU4QyugNleHoXsXsJF1xFRdrpyFXPF/0QOTs0JCE8ZNCDHeZj6nA==
+ARC-Authentication-Results: i=1; smtp2.osuosl.org;
  dmarc=pass header.from=intel.com; 
  dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=J+kshiA6; 
+ header.s=Intel header.b=m5F+KpdF; 
  arc=none smtp.remote-ip=198.175.65.16
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.16;
  helo=mgamail.intel.com; envelope-from=sergey.temerkhanov@intel.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp3.osuosl.org;
+Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp3.osuosl.org;
+Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=J+kshiA6
+ header.a=rsa-sha256 header.s=Intel header.b=m5F+KpdF
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 4261E6082D
+ by smtp2.osuosl.org (Postfix) with ESMTPS id AC23D40470
  for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Sep 2026 12:59:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1790254772; x=1821790772;
+ t=1790254773; x=1821790773;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=aaf1m91xnzH813tnvwtfaIyDWRoM2cZnDJhUGIqF7gc=;
- b=J+kshiA6h5l/TlJl39XeSg5oSYgSY9eeE0Tj/7VqE7nwx258qYdRMB2C
- AqSbblWEqvXsE16YJPhydbTzqkUvjVFN1KhRSEW77K/4RYGk+GWg1vnct
- HdbgDki3FoyjLTYhfWiKzROMWiGHv3aT3PtLqehMV2orvnABd35Hwne4c
- adTAJO4y3i1sO3+H7Z1wzx2583WUGItJLWrJ8HqgnvU6QXGoNroivVcXZ
- Z+Y0FlG6qFGC9F1PPSbkx/8NjlachyJIq2cn6KZ4esyS536jHP2oluABD
- vy2UHEo2jwb1hPQa5szoVPiKsJ1rfLfWxY3t1Dorer7uq+zx9vlerNAoJ A==;
-X-CSE-ConnectionGUID: IK/m/ZCgSMSVaf6MtQe2sQ==
-X-CSE-MsgGUID: TYKeHRMBRDCXmj3cVyfldA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11914"; a="90249236"
-X-IronPort-AV: E=Sophos;i="6.27,120,1787036400"; d="scan'208";a="90249236"
+ bh=mKsIOdT7NnHNwx01DI9VzOebkFr0BP1VEviARtH2q/E=;
+ b=m5F+KpdFTzvO1hN2Lggoo8OxUcUKyTpwyOW5WAyTu+fELkuG/JzIypcs
+ Rl0n3jlXX8pnsxbWRX1Rmhm2ZzQtoygknSsAvI8FQMJ+YI1AQHmdDu+qv
+ tuG1pIqGUt+iUij1UNdtwnZlfCfStwEhvUszIgjUVfdANWVztKVpRITQd
+ GrSCq1AY0fp82KeiNrkD+70o96GSgN5HtAuFgGb0bqAmS3fpapFwFuCb6
+ pVoUylBOoj15H4D6BbBerYfo9msZpYG6aHVTZYsMqsfr0iXXG7V6X23rA
+ q8o28LSTm+Ku0CKv6Y+gMNqBoG//bUPqKXusfH8xTs8Gnuadetm+B6GdE w==;
+X-CSE-ConnectionGUID: vIJJe4feSn+qjnm6r26FDw==
+X-CSE-MsgGUID: aoMBKAT8RDmeNErclXpSag==
+X-IronPort-AV: E=McAfee;i="6800,10657,11914"; a="90249257"
+X-IronPort-AV: E=Sophos;i="6.27,120,1787036400"; d="scan'208";a="90249257"
 Received: from orviesa001.jf.intel.com ([10.64.159.141])
  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 24 Sep 2026 05:59:24 -0700
-X-CSE-ConnectionGUID: Kstyg882R7m8s9+Ax42aHA==
-X-CSE-MsgGUID: ZQ29WJM5QrKjOd03Hq5+gg==
+ 24 Sep 2026 05:59:26 -0700
+X-CSE-ConnectionGUID: TpJN7cXJRo2WmkSjOOVbaw==
+X-CSE-MsgGUID: bSiv6btbScuyDZd45+odbQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,120,1787036400"; d="scan'208";a="311934428"
+X-IronPort-AV: E=Sophos;i="6.27,120,1787036400"; d="scan'208";a="311934433"
 Received: from gnrd8.igk.intel.com (HELO GNRD8) ([10.123.232.137])
- by orviesa001.jf.intel.com with ESMTP; 24 Sep 2026 05:59:23 -0700
+ by orviesa001.jf.intel.com with ESMTP; 24 Sep 2026 05:59:26 -0700
 From: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org
-Subject: [PATCH iwl-net v5 5/8] ice: Clear the control PF pointer when the
- control PF is removed
-Date: Thu, 24 Sep 2026 12:59:13 +0000
-Message-ID: <20260924125916.2796499-6-sergey.temerkhanov@intel.com>
+Subject: [PATCH iwl-net  v5 8/8] ice: Release control PF lock before RCU wait
+Date: Thu, 24 Sep 2026 12:59:16 +0000
+Message-ID: <20260924125916.2796499-9-sergey.temerkhanov@intel.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260924125916.2796499-1-sergey.temerkhanov@intel.com>
 References: <20260924125916.2796499-1-sergey.temerkhanov@intel.com>
@@ -154,78 +153,51 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-Zero adapter->ctrl_pf when the PF owning it is removed and wait for
-pre-existing RCU readers before its storage can be released. Without
-this the pointer outlives the control PF, so sibling PFs keep
-dereferencing it after it has been torn down.
+Clear ctrl_pf while holding ctrl_pf_lock for write, but release the
+rwsem before waiting for pre-existing RCU readers. The published NULL
+already prevents new readers from acquiring the retiring PF, so holding
+the writer lock through synchronize_rcu() only stalls sleepable users.
 
-The preceding patches make this safe to do: readers already resolve the
-pointer once per critical section, and the PTP paths already reject a
-missing control PF instead of falling back to the caller's own register
-space.
-
-Fixes: e2193f9f9ec9 ("ice: enable timesync operation on 2xNAC E825 devices")
-Fixes: e800654e85b5 ("ice: Use ice_adapter for PTP shared data instead of auxdev")
-Reported-by: Frederick Lawler <fred@cloudflare.com>
-Closes: https://lore.kernel.org/all/aIKWoZzEPoa1omlw@CMGLRV3/
 Signed-off-by: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
-Reviewed-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
 Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Tested-by: Frederick Lawler <fred@cloudflare.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ptp.c | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_ptp.c | 21 +++++++++++++--------
+ 1 file changed, 13 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index 3ee29c0cd726..3ed37bbae161 100644
+index 3ed37bbae161..24d4ab2197c3 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -3300,6 +3300,20 @@ static void ice_ptp_setup_adapter(struct ice_pf *pf)
- 	rcu_assign_pointer(pf->adapter->ctrl_pf, pf);
+@@ -3302,16 +3302,21 @@ static void ice_ptp_setup_adapter(struct ice_pf *pf)
+ 
+ static void ice_ptp_cleanup_adapter(struct ice_pf *pf)
+ {
+-	guard(rwsem_write)(&pf->adapter->ctrl_pf_lock);
++	bool synchronize = false;
+ 
+-	/* Zero out adapter->ctrl_pf pointer when the ctrl_pf itself
+-	 * is being removed to prevent any secondary PFs from accessing
+-	 * it after it is deleted.
+-	 */
+-	if (ice_get_ctrl_pf(pf) == pf) {
+-		rcu_assign_pointer(pf->adapter->ctrl_pf, NULL);
+-		synchronize_rcu();
++	scoped_guard(rwsem_write, &pf->adapter->ctrl_pf_lock) {
++		/* Zero out adapter->ctrl_pf pointer when the ctrl_pf itself
++		 * is being removed to prevent any secondary PFs from accessing
++		 * it after it is deleted.
++		 */
++		if (ice_get_ctrl_pf(pf) == pf) {
++			rcu_assign_pointer(pf->adapter->ctrl_pf, NULL);
++			synchronize = true;
++		}
+ 	}
++
++	if (synchronize)
++		synchronize_rcu();
  }
  
-+static void ice_ptp_cleanup_adapter(struct ice_pf *pf)
-+{
-+	guard(rwsem_write)(&pf->adapter->ctrl_pf_lock);
-+
-+	/* Zero out adapter->ctrl_pf pointer when the ctrl_pf itself
-+	 * is being removed to prevent any secondary PFs from accessing
-+	 * it after it is deleted.
-+	 */
-+	if (ice_get_ctrl_pf(pf) == pf) {
-+		rcu_assign_pointer(pf->adapter->ctrl_pf, NULL);
-+		synchronize_rcu();
-+	}
-+}
-+
  static int ice_ptp_setup_pf(struct ice_pf *pf)
- {
- 	struct ice_ptp *ptp = &pf->ptp;
-@@ -3656,6 +3670,7 @@ void ice_ptp_init(struct ice_pf *pf)
- 	mutex_destroy(&ptp->port.ps_lock);
- 
- err_exit:
-+	ice_ptp_cleanup_adapter(pf);
- 	/* If we registered a PTP clock, release it */
- 	if (pf->ptp.clock) {
- 		ptp_clock_unregister(ptp->clock);
-@@ -3683,6 +3698,7 @@ void ice_ptp_release(struct ice_pf *pf)
- 	if (pf->ptp.state != ICE_PTP_READY) {
- 		mutex_destroy(&pf->ptp.port.ps_lock);
- 		ice_ptp_cleanup_pf(pf);
-+		ice_ptp_cleanup_adapter(pf);
- 		if (pf->ptp.clock) {
- 			ptp_clock_unregister(pf->ptp.clock);
- 			pf->ptp.clock = NULL;
-@@ -3697,6 +3713,8 @@ void ice_ptp_release(struct ice_pf *pf)
- 
- 	ice_ptp_cleanup_pf(pf);
- 
-+	ice_ptp_cleanup_adapter(pf);
-+
- 	ice_ptp_release_tx_tracker(pf, &pf->ptp.port.tx);
- 
- 	ice_ptp_disable_all_extts(pf);
 -- 
 2.53.0
 
