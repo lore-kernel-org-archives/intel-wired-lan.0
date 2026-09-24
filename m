@@ -1,161 +1,285 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44534C98311
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 24 Sep 2026 00:36:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51675C98304
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 24 Sep 2026 01:06:47 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id EACC88136A;
-	Thu, 24 Sep 2026 00:36:36 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 0B8DF60B4E;
+	Thu, 24 Sep 2026 01:06:47 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id uCkuyasbaUMt; Thu, 24 Sep 2026 00:36:35 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org A3C7881E05
-Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790210195;
-	b=jvAcRfE/OtL8O6TA7YkuU1oh2Ncq7jYAFvz2VM2OGRcbyzo8eBJvWkH5lJ0nDy8Q78s6
-	 L4KVysHCHCRKi2hvAUfcqXjTB62cLCz1EbBsUXUAlI6MAVy/VJ9H4hcP8fNdf/WTZWcdn
-	 PtRcp1lu4A7h7eq5COzS9LjbpqksHBCgL+6vEohOiRYS5lQ5yR0wRTPeIVidxLukeRPHE
-	 LVPbTXeodMRkwhQG5zcVCqFm9oXrei2SwtJ8YqE+Se5HEY0egxo5cSjoXC9rXGk/E3FbG
-	 P86NlWiwcGCHhKcCcR+X2OfOK4Ir7TYbms0qhpBJ/NP/5BG+6Wf6J5VWFvyoLIsiFbw==
-ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1790210195;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id yE8v4m6LdllQ; Thu, 24 Sep 2026 01:06:46 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org CF47960B49
+Authentication-Results: smtp3.osuosl.org; arc=fail smtp.remote-ip=140.211.166.142
+ARC-Seal: i=3; d=osuosl.org; s=arc; a=rsa-sha256; cv=fail; t=1790212005;
+	b=d9yhwAOqfqjBwjoZLk7RAEulCgZBBNx7VE6VMWvcFcO258BLvnubWMmQP1sAXj+HMvBN
+	 NKoUgLve8J5szJjb7jKOUlJjr9iE0D4zX1fPy+zYY6q04flRUb8w0ouFSWzqjJgGIG48L
+	 4Ms4vllk248tylSSZA+MaoXxfcHQQu0tUxkxH4dXltPs+wmZPqenytsQHrB41KpNCCJQp
+	 UjhXwH2isJW934M78vgIBAm2poE4ZMIivuSP9xfb49x3P0BImX9RjJrCJYpIkYSBdbmmL
+	 CPnee40oXiYjdL5Qlz/1xH2Eb+M3Gne5U2YxDPkmLsISSe9TASRYjJKUypG0QCuFUeQ==
+ARC-Message-Signature: i=3; d=osuosl.org; s=arc; a=rsa-sha256;
+	c=relaxed/relaxed; t=1790212005;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
 	 DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-IronPort-AV:
-	 Received:Received:X-Farcaster-Flow-ID:Received:Received:From:To:CC:
-	 Subject:Date:Message-ID:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding:Content-Type:X-Originating-IP:
-	 X-ClientProxiedBy:X-Mailman-Approved-At:X-BeenThere:X-Mailman-Version:
-	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
-	 List-Subscribe:Errors-To;
-	bh=B7RBGF5D+3ue1bmia1p4Q+3QlHImTns1+iDejVI5ZF4=;
-	b=NpH/3cxbN9MHmpIGnjT0rjxI8x15gF8+XUJW4uh03hKr2ISH2xmVIYlEPv1Qzekzw/2E
-	 uTO3iMoP9nh8pvHwU47cMmjppnZYSBeQmVquJ+rcFSXupQOiVkTO9SbioLM7who1+EV40
-	 +iv/+/9VYg1MAclCqZ87axHaz5GEgwE9s/77ylOiqpSlhWf3SdP4h443QIQPwrAPgYV66
-	 Jbxz4Js2mRxCUf9Td7dJ9syxKRPaP4VzJXS94kfY9wJ8YCZgxoSq77Qvr78wWlDJrYW0o
-	 UIC/8/gKDNW9SJgkkOuTu5Ii7wX27Uc2rFvPO7xUpR2bkn2ejrXBDEZZA/0ObSoPeWw==
-ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	 X-IronPort-AV:Received:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-ExtLoop1:
+	 X-IronPort-AV:Received:Received:Received:Received:Received:Received:
+	 Message-ID:Date:User-Agent:Subject:To:CC:References:Content-Language:
+	 From:In-Reply-To:Content-Type:Content-Transfer-Encoding:
+	 X-ClientProxiedBy:MIME-Version:X-MS-PublicTrafficType:
+	 X-MS-TrafficTypeDiagnostic:X-MS-Office365-Filtering-Correlation-Id:
+	 X-LD-Processed:X-MS-Exchange-SenderADCheck:
+	 X-MS-Exchange-AntiSpam-Relay:X-Microsoft-Antispam:
+	 X-Microsoft-Antispam-Message-Info:X-Forefront-Antispam-Report:
+	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
+	 X-MS-Exchange-AntiSpam-MessageData-0:X-Exchange-RoutingPolicyChecked:
+	 X-MS-Exchange-CrossTenant-Network-Message-Id:
+	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
+	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
+	 X-MS-Exchange-CrossTenant-FromEntityHeader:
+	 X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
+	 X-MS-Exchange-CrossTenant-UserPrincipalName:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStamped:X-OriginatorOrg:
+	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
+	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
+	bh=SRWrK33UnmKQQ2qh6+3rUQuMH3/EI28AdoeWCZbU5q8=;
+	b=Ls/VwaJmkVovFcS4YLIGQsv5NSoxpDbNEbNeZolIHEKsW/rLLkZxNXOqtiMRoj7Cibg/
+	 OeD2dHcIe3t+mz8tWTfAhPDH5Nod1Oz/1rC6R814O8YXTXnTHcV1E0y5FVpwdXxhOT1z7
+	 u9BFQNE6iNkrsT/tWRLAhUnM0x8ForW/9BlH0nRzI9fyRWeNcKZqQkh3tj5pJndYFngat
+	 dIGKXKiw99M7rFZF8kT6vJA7miac6ekqk1avdMIqpEpPHnB2u8r9AZWskiUSJ/fvCg3gW
+	 s2Plkt5yZ1ocsVSyfijxuC4ygrVZCr3RhQg7bUULPBG2eNRVxN3MicgH8pePNG0f9Og==
+ARC-Authentication-Results: i=3; smtp3.osuosl.org; arc=fail smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1790210195;
-	bh=B7RBGF5D+3ue1bmia1p4Q+3QlHImTns1+iDejVI5ZF4=;
-	h=From:To:CC:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=SI4HtNZaTm1fIf/FOhEhxf2ChBDpLbFq2yTOIq3pdBSpJLS1hmwfD3tanT7IxeHMC
-	 S53bcbY+tv8fYArTnE8ChYI5dXVKA+rHC/lFIJweRBY1Kolq3lJyBUuNSd+QeninPC
-	 /Qo8Nt2F3JStf7GKpwuPtWCAaKttLx/efrJPHwKGm7n+Tlin6Zuk8R0AMELBk4dArS
-	 f+syzljTyHPMyqqCQktbd6fTztxgb5vrRM/eA4eDGwRdmvzT23JYnVHWrLSbCrPZkb
-	 oS46xOe0xlkDbnO3W+JuIYTb012UtCWv+ge10WMvbQfzay2Quvrx46F0mEv99avyQE
-	 ni0n8RT4PBWUQ==
+	s=default; t=1790212005;
+	bh=SRWrK33UnmKQQ2qh6+3rUQuMH3/EI28AdoeWCZbU5q8=;
+	h=Date:Subject:To:CC:References:From:In-Reply-To:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=P+8zDDK0M1+DAYgakfoj/jh6L2lFhXV//TDLf9avtTUC04D7tAKHmhUi1BmoLVTZr
+	 Ck+qR6gUkEaoADrejYgL4MAaLIQoDCTLmoxfZ6Ve5YjCK+1ny3z/gboAmAkIh5/Yi9
+	 fdA0tFU/DPjA6yk+0wxG3pVElDIJ+0uYRu52IqtMkaPm1mkAeFn0+4ewHphZJlR/xh
+	 1JTtyC9gotwSwmjcaPkQtOpYG+2r2votMp3Z+7e7VgrBoYT9/sk6v2xllsHNSQgqad
+	 H1nTUATSNKOz+DdTK4/rpXwqzBnSJjvALfzYvfDTfHeBWQHlKL0jl/k0OldOSIBEaf
+	 0oDNJGWzi4H7A==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id A3C7881E05;
-	Thu, 24 Sep 2026 00:36:35 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id E4C893B7
- for <intel-wired-lan@lists.osuosl.org>; Wed, 23 Sep 2026 23:58:41 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id CF47960B49;
+	Thu, 24 Sep 2026 01:06:45 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id A44A11344
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Sep 2026 01:06:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id CA9EE410E7
- for <intel-wired-lan@lists.osuosl.org>; Wed, 23 Sep 2026 23:58:41 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 95ACC40122
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Sep 2026 01:06:44 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id eyc7qi2Wab3s for <intel-wired-lan@lists.osuosl.org>;
- Wed, 23 Sep 2026 23:58:40 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 28911410E6
-Authentication-Results: smtp4.osuosl.org;
- arc=none smtp.remote-ip=50.112.246.219
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790207920;
- b=gzDG9Ua/OBfT0Lbx70gHG524XDMsXjDMXKGUFRzZYhBml9WxS6Ao2EqIwnMkyRagl275
- aUpW3fItq3JgySaN5nN5+BFiaQYJJ4hDIZhl32LmlwhaqWY6cJTFaIpihOAN1bPfA0ZF6
- uz5hx7Wc1kUipMxCx3RG1P1FoFVM5dBD4aOV22GCZrk5BklubcJI0BMBKe67HYqosCLA/
- oXSVbnImdFpRYPIZ6N1wnaECL+2OxfhGz66QWS3BCM7PiaP/6JMvFILaxgiQGRzUGrcgo
- SI8h2EN21MTjFVid0eHX848OJp9nEygF2X/P/eXTKnjNEx4VPA0Z3mS3Jk79KrYYU6g==
-ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1790207920;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id w-R_6mHDYx6e for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 24 Sep 2026 01:06:44 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org B6E67400AE
+Authentication-Results: smtp2.osuosl.org;
+ arc=fail smtp.remote-ip=192.198.163.18
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=fail; t=1790212004;
+ b=b/ZZbZwwqwx7/chdJNwUIMSHPl1gmLmlA1F7cPV1BbYceX8jIjxrV4HBGEfaIzruqBf2
+ z/QU6yJ6pecTh7i6TOPzPJ8szvrsB9hhgQ6cXWbCtsUk/F7r1nD2LWygRDVE9pmPRCd8R
+ 19rf2wqX8YJjBuKjFwyToYYXxHmj3LsxyTy9bEoFb3ceNgUennbRcUCiakuW1HrPVOlvH
+ LmUpXnjJi8HlSF5V1EiQiYMIM718iLOz/pJg+kAL6hd01NG5peigKYKXLtKXFiHz8qi+q
+ uRDnGyNSTdFopzG0M2HiX3XiJmunq2uQVbes7hkI5mLkks71XOv5LtKPiMXneNzPNoA==
+ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
+ c=relaxed/relaxed; t=1790212004;
  h=Received-SPF:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
- X-IronPort-AV:Received:Received:X-Farcaster-Flow-ID:Received:Received:
- From:To:CC:Subject:Date:Message-ID:X-Mailer:MIME-Version:
- Content-Transfer-Encoding:Content-Type:X-Originating-IP:
- X-ClientProxiedBy;
- bh=B7RBGF5D+3ue1bmia1p4Q+3QlHImTns1+iDejVI5ZF4=;
- b=OvkCykZPEjh0xffhucfeO5uSJ1e+YYZifl8wxGEclw82UK8Bm2BisnCVwUGxelUGa++/
- JT+qBTGQpuGOU/Q3qQ4lZ+5NXuAuPWzV69VGgsDJhKr8oGGIYOmw6oo3Q9ZY3Fwg9bGtL
- 5x3rvglyCWibIawSs/rrXBi9yKRN5xiuEX3RbXqRl/uZgTHyMnRaLGpj8N5AM80HlKIq6
- fVyiZNTZVb7l7bZmQeg0b6+qEZ9V/MQxQxTgNwmTNrbbgzMG1ytnd7wbCBuWc+b18bEze
- DjFpc15IzslN1s9HD6OwbN62hdsC0gO5jrbCdAsjPjwUIOertyYrVO4/CWmLkcpjykA==
-ARC-Authentication-Results: i=1; smtp4.osuosl.org;
- dmarc=pass header.from=amazon.com; 
- dkim=pass header.d=amazon.com header.i=@amazon.com header.a=rsa-sha256
- header.s=amazoncorp2 header.b=QYhZz+vh; 
- arc=none smtp.remote-ip=50.112.246.219
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=50.112.246.219;
- helo=pdx-out-015.esa.us-west-2.outbound.mail-perimeter.amazon.com;
- envelope-from=prvs=7191e218d=hagan@amazon.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=quarantine dis=none)
- header.from=amazon.com
-Authentication-Results: smtp4.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=amazon.com header.i=@amazon.com header.a=rsa-sha256
- header.s=amazoncorp2 header.b=QYhZz+vh
-Received: from pdx-out-015.esa.us-west-2.outbound.mail-perimeter.amazon.com
- (pdx-out-015.esa.us-west-2.outbound.mail-perimeter.amazon.com
- [50.112.246.219])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 28911410E6
- for <intel-wired-lan@lists.osuosl.org>; Wed, 23 Sep 2026 23:58:39 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=amazon.com; i=@amazon.com; q=dns/txt; s=amazoncorp2;
- t=1790207920; x=1821743920;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=B7RBGF5D+3ue1bmia1p4Q+3QlHImTns1+iDejVI5ZF4=;
- b=QYhZz+vhlfBDM1YmuXwvpQzkk7fgaMcq+yNN7szDL7OKYsu96gYpn5UR
- MnZV997z4O2prhkHAW3re0LYdj7mI/USG5BSUFNZAC7kKVQg4etyHefD/
- 6TGQvRdqMgTtWcncKNY3NGBFmiUWdJarM75HHZZ2jS6PLe46giaxkprAr
- LWmMjHx6k5xR8ZM+fU/seWvTOuP1SGZ9W44E0tVRQXwqZ5xJzXMv3zaC7
- C2EysOC1gck0SyeI2ZhXRqLw7B/pwA4eNiFMGpNkXcJg9GArzZwLqgK0/
- 6hevEItlXi8qWJCG6NgWaZkr1klBLgFGHIMkTKYV6yStMIUvKo3khUd1W g==;
-X-CSE-ConnectionGUID: vMIXa8SnRtOon/OV3C8JuA==
-X-CSE-MsgGUID: GHlwm5gQRAqHnjcxn5KkBg==
-X-IronPort-AV: E=Sophos;i="6.27,119,1787011200"; d="scan'208";a="29268731"
-Received: from ip-10-5-0-115.us-west-2.compute.internal (HELO
- smtpout.naws.us-west-2.prod.farcaster.email.amazon.dev) ([10.5.0.115])
- by internal-pdx-out-015.esa.us-west-2.outbound.mail-perimeter.amazon.com with
- ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Sep 2026 23:58:38 +0000
-Received: from EX19MTAUWC001.ant.amazon.com [205.251.233.53:24117]
- by smtpin.naws.us-west-2.prod.farcaster.email.amazon.dev [10.0.59.1:2525] with
- esmtp (Farcaster)
- id 1d62da73-e1e6-463e-a90d-d5bd8a507b09; Wed, 23 Sep 2026 23:58:38 +0000 (UTC)
-X-Farcaster-Flow-ID: 1d62da73-e1e6-463e-a90d-d5bd8a507b09
-Received: from EX19D001UWA001.ant.amazon.com (10.13.138.214) by
- EX19MTAUWC001.ant.amazon.com (10.250.64.174) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.2562.49;
- Wed, 23 Sep 2026 23:58:37 +0000
-Received: from dev-dsk-hagan-1f-c6b5e25f.us-east-1.amazon.com (172.19.159.5)
- by EX19D001UWA001.ant.amazon.com (10.13.138.214) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.2562.49;
- Wed, 23 Sep 2026 23:58:36 +0000
-From: "Craig I. Hagan" <hagan@amazon.com>
-To: <anthony.l.nguyen@intel.com>, <przemyslaw.kitszel@intel.com>
-CC: <intel-wired-lan@lists.osuosl.org>, <netdev@vger.kernel.org>,
- <davem@davemloft.net>, <edumazet@google.com>, <kuba@kernel.org>,
- <pabeni@redhat.com>, <andrew+netdev@lunn.ch>, <linux-kernel@vger.kernel.org>, 
- <hagan@amazon.com>
-Subject: [PATCH iwl-net] e1000e: fix flow control stuck off after link partner
- reset
-Date: Wed, 23 Sep 2026 23:58:32 +0000
-Message-ID: <20260923235832.473-1-hagan@amazon.com>
-X-Mailer: git-send-email 2.47.3
+ X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
+ X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Received:Received:
+ Received:Received:Received:Message-ID:Date:User-Agent:Subject:To:CC:
+ References:Content-Language:From:In-Reply-To:Content-Type:
+ Content-Transfer-Encoding:X-ClientProxiedBy:MIME-Version:
+ X-MS-PublicTrafficType:X-MS-TrafficTypeDiagnostic:
+ X-MS-Office365-Filtering-Correlation-Id:X-LD-Processed:
+ X-MS-Exchange-SenderADCheck:X-MS-Exchange-AntiSpam-Relay:
+ X-Microsoft-Antispam:X-Microsoft-Antispam-Message-Info:
+ X-Forefront-Antispam-Report:
+ X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
+ X-MS-Exchange-AntiSpam-MessageData-0:X-Exchange-RoutingPolicyChecked:
+ X-MS-Exchange-CrossTenant-Network-Message-Id:
+ X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
+ X-MS-Exchange-CrossTenant-OriginalArrivalTime:
+ X-MS-Exchange-CrossTenant-FromEntityHeader:
+ X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
+ X-MS-Exchange-CrossTenant-UserPrincipalName:
+ X-MS-Exchange-Transport-CrossTenantHeadersStamped:X-OriginatorOrg;
+ bh=SRWrK33UnmKQQ2qh6+3rUQuMH3/EI28AdoeWCZbU5q8=;
+ b=fYA7DbMs+yS2NrPQ5z3v9WUlSiSCkipCyPHLbFtao1KouDAXAkIFSVAHYT6VQ11zF4/m
+ GR/kWLKaLad5YBEAPynsdMtZ4VUmHfXL6aCHgXc0WbQ4OMbtoJM8U5TvXAKKX5Mw0r/iA
+ vv3TdUx5TFAJ2ymVB6mLzAPVzIjYLSJT5oSW0kuNXKEe4vTzvvZ8u3AakufHzA6FR9BXX
+ 1EkA3Eo17fDIkHOSjeIDFWgb50geq39u9swTT4+QNhjhjfrM8KBvhAe2kw6CbRmVgD9tj
+ rrwBizehLEulKoLNdYshtG6cr7hPoDZoZJ8tHCYf4XAI9RCiHTLPTemGxlFeyFVfxbw==
+ARC-Authentication-Results: i=2; smtp2.osuosl.org;
+ dmarc=pass header.from=intel.com; 
+ dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=lmfQ+9WK; 
+ arc=fail smtp.remote-ip=192.198.163.18
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.18;
+ helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
+ receiver=<UNKNOWN> 
+Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=lmfQ+9WK
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id B6E67400AE
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Sep 2026 01:06:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1790212004; x=1821748004;
+ h=message-id:date:subject:to:cc:references:from:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=NvkfFbxCtaaGOsjWp5rTJzVzMaTmO3jmGa9W1YXYWp8=;
+ b=lmfQ+9WKsLcnff5B/Nf72B43rFUbvvXGELoHTcOg6rPgeY96FcYRZcja
+ /vSj/E8aRQIY2f5kP1WAXtVV/fvA3bN2vHV8G4/Rm7JPHEUD2htK+SzXZ
+ CdDI8IbrDTRg/NGHfBm/WlZZHCTThorXZWaJVJ6ZvWtFdJeqh2g4LbXIz
+ re1bXxaNyZIpv/Bdygc36DQP6I0XpRcPYG5Aa79mgMv+8Y8vwO1C4HO3/
+ h7df+58UCjrN15zmgmraUx9Nv7tFzz5RAAHUZ5LBkuIobqqw1fwPfsYjZ
+ t7A8irlEvIC10ggw5mvhCPNchV2+ngcEE3Qh7CMF3pbKS8yv/r+2GE7eZ w==;
+X-CSE-ConnectionGUID: QjHnt+IyQMK6v2ARbKaG4A==
+X-CSE-MsgGUID: kfVaxMvWQ6eMfbIA9CULRw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11914"; a="90088345"
+X-IronPort-AV: E=Sophos;i="6.27,119,1787036400"; d="scan'208";a="90088345"
+Received: from fmviesa008.fm.intel.com ([10.60.135.148])
+ by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 23 Sep 2026 18:06:42 -0700
+X-CSE-ConnectionGUID: N4p3fXWRQnmPoug0+aJ+aQ==
+X-CSE-MsgGUID: 6gpsF3cBRrKSuLogpqENBA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,119,1787036400"; d="scan'208";a="274031675"
+Received: from fmsmsx902.amr.corp.intel.com ([10.18.126.91])
+ by fmviesa008.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 23 Sep 2026 18:06:42 -0700
+Received: from FMSMSX901.amr.corp.intel.com (10.18.126.90) by
+ fmsmsx902.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.46; Wed, 23 Sep 2026 18:06:41 -0700
+Received: from fmsedg901.ED.cps.intel.com (10.1.192.143) by
+ FMSMSX901.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.46 via Frontend Transport; Wed, 23 Sep 2026 18:06:41 -0700
+Received: from CH4PR04CU002.outbound.protection.outlook.com (40.107.201.70) by
+ edgegateway.intel.com (192.55.55.81) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.46; Wed, 23 Sep 2026 18:06:29 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=KQvUYHROiBJJ6sxJ8yp+MoEC415UuHlJln+opq9RytcaKde2QxhBcyzU3d/aWc7iKlGmZVRZlnH6cpxUl4lLA/yYtS5GbziCSaB9OHmdRd9L6RTEI5Kuvoz36Bc+ogRqDPMOY4Hca7ALnm9NeCOAW1fYp0aYeDMqvxq3D9sPJOOJD9bdpIIVR3uPqEwUFIDseJN16PM5UyOyr1XEjKwCVGtUUTXlyefYxp6vJX936oo93IwgGSJkU+W2ZrovulsCY85j99SMihxD4aXBRyrROqYEtn+q0B31zs2QjGDvYoKmIRHJ1MTZmVW7NItkyT6EZFm6gqn9KsicQXLZc5tNqg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=SRWrK33UnmKQQ2qh6+3rUQuMH3/EI28AdoeWCZbU5q8=;
+ b=kgpDESdPsqwFtC6k/0ErLAz3jVKsZ2xIThcy6vJyLuwSU2fG3/3AoNMKIv+9Tox8pd5sjY6v3Sj2s9ZCsX5POcNkuUTOY6AEVbA1Dykq3sEFV0evaDUtOvA3uvLXxQ7T6l+7BICqV2wIpKHqVVPsvl33IT4EllH/BniiiXPS7WQwENX1JwxvBH+a0/2zOeRC3ISr0VGw77lGWNfAwK4RYHoIzdQc/VON+jWRPYL+c0CiknE/i1RIcaXLS+81e5TiqwN8Hi+xYPBcQkueb1lX9lIhtVhndzolrLnfSitO2gFJhAzkt0WgX8PQaEYhCMMvJh4eFDrC+bmj96XKYw70gA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Received: from DS0PR11MB7381.namprd11.prod.outlook.com (2603:10b6:8:134::14)
+ by DS0PR11MB7444.namprd11.prod.outlook.com (2603:10b6:8:146::11) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.13; Thu, 24 Sep
+ 2026 01:05:53 +0000
+Received: from DS0PR11MB7381.namprd11.prod.outlook.com
+ ([fe80::4c39:dfe6:d6dc:6f58]) by DS0PR11MB7381.namprd11.prod.outlook.com
+ ([fe80::4c39:dfe6:d6dc:6f58%6]) with mapi id 15.21.0451.014; Thu, 24 Sep 2026
+ 01:05:53 +0000
+Message-ID: <b2596696-2d5f-421c-ad77-2f47d1b0fad4@intel.com>
+Date: Wed, 23 Sep 2026 18:05:51 -0700
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH iwl-net v2 00/15] ice: E82x: timestamp processing logic
+ fixes
+To: Grzegorz Nitka <grzegorz.nitka@intel.com>, Arkadiusz Kubalewski
+ <arkadiusz.kubalewski@intel.com>, Intel Wired LAN
+ <intel-wired-lan@lists.osuosl.org>, Maciej Machnikowski
+ <maciej.machnikowski@intel.com>, Przemyslaw Korba
+ <przemyslaw.korba@intel.com>, Anthony Nguyen <anthony.l.nguyen@intel.com>
+CC: Aleksandr Loktionov <aleksandr.loktionov@intel.com>, Petr Oros
+ <poros@redhat.com>, Paul Menzel <pmenzel@molgen.mpg.de>
+References: <20260922-jk-e825c-timestamp-processing-logic-fixes-srcu-v2-0-e55b692d0e6b@intel.com>
+Content-Language: en-US
+From: Jacob Keller <jacob.e.keller@intel.com>
+In-Reply-To: <20260922-jk-e825c-timestamp-processing-logic-fixes-srcu-v2-0-e55b692d0e6b@intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: MW4PR02CA0027.namprd02.prod.outlook.com
+ (2603:10b6:303:16d::32) To DS0PR11MB7381.namprd11.prod.outlook.com
+ (2603:10b6:8:134::14)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [172.19.159.5]
-X-ClientProxiedBy: EX19D032UWB002.ant.amazon.com (10.13.139.190) To
- EX19D001UWA001.ant.amazon.com (10.13.138.214)
-X-Mailman-Approved-At: Thu, 24 Sep 2026 00:36:33 +0000
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DS0PR11MB7381:EE_|DS0PR11MB7444:EE_
+X-MS-Office365-Filtering-Correlation-Id: e06201e9-99e3-4ebd-140f-08df19d7faf3
+X-LD-Processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+ ARA:13230040|1800799024|23010399003|366016|376014|10067099003|6133799003|56012099006|18002099003|22082099003|11063799006;
+X-Microsoft-Antispam-Message-Info: X2H318txnkLxvdpgxNdqyg9TTOfd/geG97u8UthJRXDQszztIaaL0mzBTRAQth1ale2YXmlA6TfsRHIF9DNMRhyuJov8jzSQZT3ImVQQnZhtpTGK9shH4UYFSSJAOt1tNmq27NQhtlgZjJIxUkz8XENxUUQahTGW2akPdPcugNm3U+on66v+wstk+G8QDBWoLrslUQxRMVf2ATfbzU4brioSDgjZ6VkyF4aKIu1qwTz4PZp7UhHcx3cYmH+zo45w3yWay4N3Kg2LAP9p+KI98NIkR+K7ffv7fbuuNgOCNEdEUCvut1Xu1ZFEKXx/yNC+pUl9fBHDXLQ7UZREbtY0IQuURDjiDTLpvMCjTtjdC5YOlflcBzxMFCqHnwl63s0bnXxT224pF8J17dnYJG9qL9QtS8YGHIW/OYsa9sxa3HnKKyjxfEnQ7I8yvGUSlAdh0fWzpjcI7F/7eZx8VkWXMMQA9zQ3M3HvKFZKmXPIQlkQYa93RbRqylBQ6J0KJOzUuhf9IAsEBZhk5dXeteMiV2GQ3Z4rzksFaexpU+MYrwPPnYgdbK4Q40tVBLHDXPaWF2K0M5dHJo5mn58g3gbzz+CowLRBijvQKj2mw9biLxK0Vw540EzB3zSb3klDPLbVyFeOFwUG9ynQ0upzaRQBDi9gM1JrW9FI/WyZJZeHFVo=
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:DS0PR11MB7381.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230040)(1800799024)(23010399003)(366016)(376014)(10067099003)(6133799003)(56012099006)(18002099003)(22082099003)(11063799006);
+ DIR:OUT; SFP:1101; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?TGRwSm13QlEzVjg5dUN3ZHFYV3cxNk9rVy81WkUxWUxsNWsxVUhZQmtsczlo?=
+ =?utf-8?B?YktRRGFLT2NDTC8vOHJSNDZ5WDFDRnRkV1pYS2RsVjNYUkxwYVprd0xnWG5I?=
+ =?utf-8?B?Z2FDTUFGVUcvUkMvT2U2WlNzNW93L3hDWlRwZ25BbS9RaG9EMXNNS1NraWd5?=
+ =?utf-8?B?aEpieU1NNjBrRktUbStTd1hWdG53TEJ3RnUyOEZHRjl4TGNDWTdRTVJvK0VX?=
+ =?utf-8?B?R2hvUDlNMGhOVDM5TVVPUE83R0hVZzZGOVV5NUNZRlA2ZDVrQUxXZnNSc2gz?=
+ =?utf-8?B?NVpGRHZ4dHgzS0lRRXU2eTY2R241MzlDOUNMZ2Y3elVQeHA1ZVR0Zllmd0Nj?=
+ =?utf-8?B?cGNvYUxqV2lMUTRXOXRHbkJtaDRpanBnOFlSYmhNOEZnN0xaS1VxZUdSY2lU?=
+ =?utf-8?B?ZEZObno0cWkxeC9oMUx0MDVFQ1JMdTVZSS9EenQ3Q3pUdXFSSEZQcy91MFB0?=
+ =?utf-8?B?MW1KQU1LRm90YXRyc3dqRXlad1NqNWYwOU5Pb3V0NXptT2FIT3lrbklmK2pK?=
+ =?utf-8?B?Tlhjdm9tOXFrM2c1MW11aWhrNkpnZkhCS21jYVJodDB5RkJPNW5ZTFNYcXJX?=
+ =?utf-8?B?cVRLUGpZV3FTT24xZFkyZWxTOFlkM0t6WHVRdk16TGE5ZHpvV2FGL0pEZklS?=
+ =?utf-8?B?ZVljeHlaYmpxWTN5dGlqSkpoNWxpNWtjL2c5V1dST0QrYzdzL1lXamtmZjJ4?=
+ =?utf-8?B?WXFPQzcwcHh1aG44WnNaWURQdWIxTGZVZFN1Z1lMRWNSRXZlRVREdUV4eDNQ?=
+ =?utf-8?B?UzlBSUV0WEJpbHVKTUViZjFPazd6SkIyZ25WcmIxM3czWStXWE5BeUtNM0N4?=
+ =?utf-8?B?RllyMFJITTViV2tyTkhlYUVjaGZ1djZWVmlmUVRMbkFkeEJpZUcrRElOaWJC?=
+ =?utf-8?B?VHF6YUNyQzBUQkNIUGhuVFJSem5idE9VYUhncmkvQXUyc0lqM0lCNW9rcE9E?=
+ =?utf-8?B?MDJZTGhVNjNCVG5yUXlyVmlCYnlaV2ZXZ1pVczFpWS9QV05jMnMrSmlrYWZL?=
+ =?utf-8?B?aFdaWlVza1pPdXV1V1o0MzZKRXF4OVp0U2IzVW5GOThJOHhYZWZMUE1jS2Jn?=
+ =?utf-8?B?Qm9vSjhpbE53TFQxTHkvb20vRXJKR3lMQUFvL0xsMnlKTHYxdGFjNnFSY3RS?=
+ =?utf-8?B?S3B3NHhyQXZJTEtMZkIvSVo3Vm5vM1VyUmY2SXdPTEtrMlk4Q002dmgrRDlm?=
+ =?utf-8?B?SkNPQ2U2c1dCV09PZGQ4MkNQUFBkRFMxNS9yQWtXMmZrMFBjNXJnM0FER01w?=
+ =?utf-8?B?K0dVU3F3eWYxMlB3S2ZkTDBoZUtxR3htUTVNSkRZTHJHbHQ2YkNQYVRLOTBh?=
+ =?utf-8?B?YWdSWW1ybGFydlVWSEd1Z2lQVnpOMjBROUh0bkdyTDE1bmhqS3ZEejhiVnZ2?=
+ =?utf-8?B?V08zOVU1NDluaDliTTg3M0tNSmZvd3VSWkJ1cmNyWTV0OXJseDd4NlFuVk40?=
+ =?utf-8?B?WnNOTmZxaDlPK2M5TXRQbnJUaU81dFBBY2RNaEFuZU13N2pJNkdERDFXNngy?=
+ =?utf-8?B?RlNuWTd4Q3lkMzVHc2owckV6VFJ1SHJ0N3ZBbGI1bjROMlpDT2U3NEJjdnl3?=
+ =?utf-8?B?RGNIVWpFS0doQVE0akY0MlVWZlE3eDRFWG11WVNnRkJBUlhDa1NTbXFiMk9t?=
+ =?utf-8?B?Z0htb0VNaUh1bnZvL1V5MHk5QnBVR3RXdGt3ZG1TUTAwY2pZeVY1MUhycnY4?=
+ =?utf-8?B?NDVRamJQTFMxeFVZdkoyT3RqYmM3akMrL2FTOGZmNXlsamk2NUhLRGF3OWVS?=
+ =?utf-8?B?QlQ0ZTBtbUtFNnN2OWJpUng3WkRaeTJTQ1JnNmdRb042RlYwRUNsUnJseGlt?=
+ =?utf-8?B?WCt3U3ZkL3psWlk1TXI0TlB5OVIyaW9JVk9icGxES2tUUURIUDVnZ1ptZ1lr?=
+ =?utf-8?B?MHdjTjBmRUVHelpiRVBFcnhZazIzWS9RbGdicWRNaGk5M0VEQVN6WHZqWTBH?=
+ =?utf-8?B?NzFIU01jMEhURUFWeXRBUHM2c1hRU2c3UkNkS3ZxVFE0T0xUTXZOS1hSZHgz?=
+ =?utf-8?B?RjlWM3VxenhweGpZK0twbWI3ODFOZnRXT0owbXNtNXhTTERuNXNvWlRoZDh2?=
+ =?utf-8?B?OW56WWFHSXZUNW1JWTJ2OHBvQU9MdDF5RVMxS2pycXJJVUFKSVRUYnltTi9Y?=
+ =?utf-8?B?Wkd0bkM2Z3kzVHRWWU93dk85UjgzWEwxbXp2cUNEY05iQXZJeitjWXlwdFhF?=
+ =?utf-8?B?WWNBL2o2YjNIdTFNMkF5a1BtNkNlenBaK1BOb2c0K255ak0rdHV1cVhZVUE4?=
+ =?utf-8?B?TDM4aVRhci9ESmpsSllLOTRnQUdtYmp4Y05HTi9HeTRCaE41Z1I1SUhINURv?=
+ =?utf-8?B?ekdaSmRLdVJnWXJXSHA3MDVybUs1Z2J2OUd0K2NOUnliYnY2SUpRcUVuMlZJ?=
+ =?utf-8?Q?7eTVNrfeN32pGNu0=3D?=
+X-Exchange-RoutingPolicyChecked: iPm71UEEEFsPiRGza1QeW4ORzfiNfuY1N/b+dcx686oYrGvd03hGWS11XkwfhbZ72OMowcGLwg62Q3sPoSxzzIsMTxKDCECKDtkCWMqLuEfi2hoN29U/WKx/zyC5ncouqjaN2cBNebbASIUc6dRcmPxdi2Tyh3X1eh0J4PqCMFKRToUkuC8LotjZkV9YGonheqK1soZ90geq286V7nouu1Fqy9jg0iimy170YcwVdqAi8JlfeOn4ANx/tlB8LQjnW2KnADtmDH4YY5QCsBr1fwyxdSPeuaqulIMjnKZGK8lqpIN4RgpjJnorrEu0sFbte09tvDYTYb5Tc6zQQWXxYw==
+X-MS-Exchange-CrossTenant-Network-Message-Id: e06201e9-99e3-4ebd-140f-08df19d7faf3
+X-MS-Exchange-CrossTenant-AuthSource: DS0PR11MB7381.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Sep 2026 01:05:53.1072 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: /VHUX+2B0s/n4yWSym+LXRHc2PTb+90So7EVCzRsI7ACR+qsCacj+25qapQh+dG4ndpJU6BcDAdVucMe3+HWnSTvDaWXC77OiUkY2vsasQE=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR11MB7444
+X-OriginatorOrg: intel.com
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -170,218 +294,16 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-On an I219 (pch_spt+) copper with jumbo MTU enabled, a link partner
-reset (e.g. a switch reboot) can leave the PHY's pause advertisement
-bits dropped. Nothing re-asserts them on link-up, so every renegotiation
-resolves flow control to none. rx_crc_errors climb and traffic stalls until
-the interface is manually reset. Observed on I219-LM (8086:15b7) at
-MTU 9000 behind a switch that was power-cycled.
+On 9/22/2026 11:02 AM, Jacob Keller wrote:
+> Jake Keller says:
+> 
+> This series contains several related fixes for the ice driver PTP logic
+> relating to timestamp handling and device (re)initialization.
 
-In the watchdog, detect a completed autonegotiation that resolved
-to no flow control despite pause being requested and the pause bits
-missing from the advertisement, and schedule reset_task to rebuild
-the advertisement (as ethtool -r does). Remediation is limited to three
-attempts, 30s apart, until the next link down.
+Sashiko once again still had a few nits, so i'll need to make a v3. To
+help reduce list noise, I'll work with Tony to get a version that fully
+passes our internal Sashiko runs without issues before posting a v3.
 
-Remediate via the existing reset path rather than re-asserting the
-advertisement on link-up; a root-cause rework can follow in net-next.
-
-Fixes: 79849ebc0e06 ("e1000e: initial support for i219")
-Cc: stable@vger.kernel.org
-Link: https://github.com/systemd/systemd/issues/25925
-Assisted-by: LLM
-Signed-off-by: Craig I. Hagan <hagan@amazon.com>
----
- drivers/net/ethernet/intel/e1000e/e1000.h  |  11 ++
- drivers/net/ethernet/intel/e1000e/netdev.c | 132 +++++++++++++++++++++
- 2 files changed, 143 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/e1000e/e1000.h b/drivers/net/ethernet/intel/e1000e/e1000.h
-index 63ebe0037..4353519d4 100644
---- a/drivers/net/ethernet/intel/e1000e/e1000.h
-+++ b/drivers/net/ethernet/intel/e1000e/e1000.h
-@@ -210,6 +210,17 @@ struct e1000_adapter {
- 	/* track device up/down/testing state */
- 	unsigned long state;
- 
-+	/* Flow-control advertisement-latch auto-recovery.
-+	 * These MUST persist across the reinit that remediation triggers
-+	 * (the reinit generates its own carrier-up), so they are NOT reset
-+	 * on link-up. The holdoff and per-episode attempt budget prevent a
-+	 * reset/flap storm against a partner that is still booting or that
-+	 * genuinely never advertises pause.
-+	 */
-+	unsigned long fclatch_last_fix;	/* jiffies of last remediation, 0=none */
-+	u8 fclatch_attempts;		/* attempts in the current link episode */
-+	bool fclatch_gave_up;		/* terminal for episode; re-armed on link-down */
-+
- 	/* Interrupt Throttle Rate */
- 	u32 itr;
- 	u32 itr_setting;
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 844f31ab3..28bd33335 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -38,6 +38,15 @@ static int debug = -1;
- module_param(debug, int, 0);
- MODULE_PARM_DESC(debug, "Debug level (0=none,...,16=all)");
- 
-+/* Flow-control advertisement-latch auto-recovery tunables. Fixed constants
-+ * rather than user knobs: the values only need to be safe, not tunable.
-+ *   MAX_ATTEMPTS : autoneg-restart attempts per link episode before giving up
-+ *   HOLDOFF      : minimum spacing between attempts; longer than a switch's
-+ *                  autoneg settle so we do not fight a still-booting partner
-+ */
-+#define E1000E_FCLATCH_MAX_ATTEMPTS	3	/* autoneg-restarts per link episode */
-+#define E1000E_FCLATCH_HOLDOFF		(30 * HZ)	/* min spacing between attempts */
-+
- static const struct e1000_info *e1000_info_tbl[] = {
- 	[board_82571]		= &e1000_82571_info,
- 	[board_82572]		= &e1000_82572_info,
-@@ -5217,6 +5226,113 @@ static void e1000_watchdog(struct timer_list *t)
- 	/* TODO: make this use queue_delayed_work() */
- }
- 
-+/**
-+ * e1000e_check_fc_latch - re-assert a dropped pause advertisement
-+ * @adapter: board private structure
-+ *
-+ * On the I219/PCH family at jumbo MTU, an upstream switch reboot can bring the
-+ * link back with the PHY's pause-advertisement bits dropped and flow control
-+ * resolved to none, even when a pause mode was requested. The driver does not
-+ * re-assert the advertisement on a plain link-up (e1000_phy_setup_autoneg()
-+ * runs only during a full setup pass), so every later renegotiation resolves
-+ * to none and the link does not recover on its own.
-+ *
-+ * Detect that state from a fresh PHY read and schedule a full reconfigure (the
-+ * reset_task path, as ethtool -r uses) to rebuild the advertisement. reset_task
-+ * bounces the link and re-enters this check, so the attempt count is kept
-+ * across the bounce rather than reset on link-up. Remediation stops after three
-+ * tries per link episode; the give-up state is re-armed only on a real
-+ * link-down (peer/cable change), so a partner that never advertises pause is
-+ * reset three times and then left alone until the link is re-established --
-+ * it cannot flap indefinitely.
-+ */
-+static void e1000e_check_fc_latch(struct e1000_adapter *adapter)
-+{
-+	struct e1000_hw *hw = &adapter->hw;
-+	struct net_device *netdev = adapter->netdev;
-+	u16 bmsr = 0, adv = 0, expected;
-+	unsigned long now;
-+	int rv;
-+
-+	/* Skip while down/resetting or with a reset already pending. */
-+	if (!netif_carrier_ok(netdev) ||
-+	    test_bit(__E1000_DOWN, &adapter->state) ||
-+	    test_bit(__E1000_RESETTING, &adapter->state) ||
-+	    (adapter->flags & FLAG_RESTART_NOW))
-+		return;
-+
-+	/* Limited to I219/PCH copper at jumbo MTU, where the behavior is seen
-+	 * and the RX-side impact matters. Act only when a pause mode was
-+	 * requested but autoneg resolved none. Pause is only meaningful on a
-+	 * full-duplex link, so a half-duplex result legitimately carries no
-+	 * pause bits and must not be treated as the fault.
-+	 */
-+	if (hw->phy.media_type != e1000_media_type_copper ||
-+	    hw->mac.type < e1000_pch_spt ||		/* pch_spt+ (I219 and later) */
-+	    netdev->mtu <= ETH_DATA_LEN ||		/* jumbo only */
-+	    adapter->link_duplex != FULL_DUPLEX ||
-+	    !hw->mac.autoneg || !adapter->fc_autoneg ||
-+	    hw->fc.current_mode != e1000_fc_none)
-+		return;
-+	if (hw->fc.requested_mode != e1000_fc_full &&
-+	    hw->fc.requested_mode != e1000_fc_rx_pause &&
-+	    hw->fc.requested_mode != e1000_fc_tx_pause)
-+		return;
-+
-+	/* Fresh, self-contained reads; act only on a good, autoneg-complete read. */
-+	rv = e1e_rphy(hw, MII_BMSR, &bmsr);
-+	if (!rv)
-+		rv = e1e_rphy(hw, MII_ADVERTISE, &adv);
-+	if (rv || !(bmsr & BMSR_ANEGCOMPLETE))
-+		return;
-+
-+	/* Pause bits we should be advertising for the requested mode (mirrors
-+	 * e1000_phy_setup_autoneg): full/rx use CAP|ASYM, tx uses ASYM only.
-+	 */
-+	if (hw->fc.requested_mode == e1000_fc_tx_pause)
-+		expected = ADVERTISE_PAUSE_ASYM;
-+	else
-+		expected = ADVERTISE_PAUSE_CAP | ADVERTISE_PAUSE_ASYM;
-+
-+	/* The advertisement should carry these bits; missing them while a pause
-+	 * mode was requested is the failure this recovers from.
-+	 */
-+	if ((adv & expected) == expected)
-+		return;
-+
-+	now = jiffies;
-+
-+	/* Give-up is terminal for this link episode; it is re-armed only on a
-+	 * real link-down (see the watchdog link-down path), i.e. when the peer
-+	 * or cabling actually changes -- not on a timer, which cannot tell a
-+	 * recovered switch from the same never-pause partner 60s later.
-+	 */
-+	if (adapter->fclatch_gave_up)
-+		return;
-+	if (adapter->fclatch_last_fix &&
-+	    time_before(now, adapter->fclatch_last_fix + E1000E_FCLATCH_HOLDOFF))
-+		return;				/* within holdoff */
-+
-+	if (adapter->fclatch_attempts >= E1000E_FCLATCH_MAX_ATTEMPTS) {
-+		adapter->fclatch_gave_up = true;
-+		e_warn("flow-control advertisement latch persists after %u autoneg-restart attempts (adv=0x%04x, requested fc=%u); giving up until the link goes down and back up\n",
-+		       adapter->fclatch_attempts, adv, hw->fc.requested_mode);
-+		return;
-+	}
-+
-+	adapter->fclatch_attempts++;
-+	adapter->fclatch_last_fix = now;
-+	e_warn("flow-control advertisement latch detected (adv=0x%04x missing pause for requested fc=%u); forcing autoneg restart (attempt %u/%d)\n",
-+	       adv, hw->fc.requested_mode, adapter->fclatch_attempts,
-+	       E1000E_FCLATCH_MAX_ATTEMPTS);
-+	/* Request the reset via FLAG_RESTART_NOW; the watchdog schedules
-+	 * reset_task on this flag just below the call site. The flag also
-+	 * tells reset_task this is intentional, suppressing its "Reset
-+	 * adapter unexpectedly" warning + register dump.
-+	 */
-+	adapter->flags |= FLAG_RESTART_NOW;
-+}
-+
- static void e1000_watchdog_task(struct work_struct *work)
- {
- 	struct e1000_adapter *adapter = container_of(work,
-@@ -5353,6 +5469,17 @@ static void e1000_watchdog_task(struct work_struct *work)
- 			netdev_info(netdev, "NIC Link is Down\n");
- 			netif_carrier_off(netdev);
- 			netif_stop_queue(netdev);
-+
-+			/* A real link-down ends the current fc-latch episode:
-+			 * re-arm remediation so the next link-up (e.g. the
-+			 * switch finishing its reboot) gets a fresh set of
-+			 * attempts. Our own reset_task bounce does not reach
-+			 * here (it goes through __E1000_DOWN/RESETTING), so
-+			 * this does not defeat the per-episode attempt cap.
-+			 */
-+			adapter->fclatch_attempts = 0;
-+			adapter->fclatch_gave_up = false;
-+			adapter->fclatch_last_fix = 0;
- 			if (!test_bit(__E1000_DOWN, &adapter->state))
- 				mod_timer(&adapter->phy_info_timer,
- 					  round_jiffies(jiffies + 2 * HZ));
-@@ -5384,6 +5511,11 @@ static void e1000_watchdog_task(struct work_struct *work)
- 	adapter->gotc_old = adapter->stats.gotc;
- 	spin_unlock(&adapter->stats64_lock);
- 
-+	/* Auto-recover from a latched pause advertisement (I219/PCH,
-+	 * jumbo) after an upstream switch reboot; see e1000e_check_fc_latch().
-+	 */
-+	e1000e_check_fc_latch(adapter);
-+
- 	/* If the link is lost the controller stops DMA, but
- 	 * if there is queued Tx work it cannot be done.  So
- 	 * reset the controller to flush the Tx packet buffers.
--- 
-2.47.3
+Thanks,
+Jake
 
