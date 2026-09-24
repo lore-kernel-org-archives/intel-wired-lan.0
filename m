@@ -4,25 +4,25 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63623C9831F
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 24 Sep 2026 12:59:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 67150C98314
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 24 Sep 2026 12:59:42 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 2ED7981B8A;
-	Thu, 24 Sep 2026 12:59:41 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 413D681BBD;
+	Thu, 24 Sep 2026 12:59:42 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id jOpkOwRVUu99; Thu, 24 Sep 2026 12:59:40 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 88BEB81BBD
+ id U6tCCp-PUJF1; Thu, 24 Sep 2026 12:59:41 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 6D29781CD0
 Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790254780;
-	b=hXGCwaBiKGFQQnudCDbKBMmjswUNqhZCnlV3aC7QcNApbMZjF6cCZW4jwLQFBlViBK/a
-	 +doCoPD/QuxkuhfWCjf3vcxT0aCzGTVk5eZLGG7BF+3sWOAjFxWSUq+ujlxh+Zsat287y
-	 j1KfMqbPkea6xYzXa+neHcTBBM5GSYnDqkjOuaz35Gra9nrAerkmPAPU2jYbuzimPw4FE
-	 kbER/4rh+HtgTYDLp/5HsXp2wd2yfSdltHgXuM9HosFOg2pnpEyHgWt3FdZANXCToP2Z4
-	 Ctt37I7dWCByPB9ICXNOSkmn/whVifnsA0sbP4p/HGY6UlTVzTlzA5ao8fAhgBPbVJg==
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790254781;
+	b=FRSnG2rcbWeJAlkzIQNL5jZnAFTlysGLhVRbxDbQs9wpeZqOAioOwEZ7rw2XLoVzyoQ7
+	 ur+9H8qznVQTnWLG6BN3UjB8FLN/QLggLveO6uRxZNKYdpJOveKJMVw3WK4qBpneAEIbu
+	 +LYyvbiE8GvjYRupsa6f2rUSpOAVyqoq6yLLs5CSTzzTXFcsUq/RtQO77RlNjlfM3b9ML
+	 un09OPJt0HzlZixfBP/qle/hA1sYkLj7nIs+58DGR7/Lz9sEAJE7pQ9ByvWUYoH54Orl8
+	 JJyDdPAHUm+APzo4meF6rV03P4j/O50F3lKSPm1zxFW2JFm/+LXKh6FBOjNOxgi557A==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1790254780;
+	c=relaxed/relaxed; t=1790254781;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
@@ -32,48 +32,48 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding:
 	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
 	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=S0HmbmvUnyNABrS5gZybRJ8qTHLPFlxZP//naxo6VYA=;
-	b=LRW272ZQj94TxOoLE3X+SRnbKhp2AbN0xvMtlF2TfZzIX7x2ceiJovLSxuRJT4lUAo2L
-	 nC35QpPNgtDtoEAaHcRZk1jXzVkxAKe06jwDBgb28tSVxD0aIQViRfLrLTbDWFZOzUuxG
-	 vfl7eqZYcQextJYD6hwnSCzVUIJAc6p/pPl/pCIdxAiNa91Vn+J/Eu51vz0FLkfCY3sRW
-	 R0gGYiMwCAFIuCBq+3TvehXpTzrbcyv/PTQ6BOvwXSNgE/yZfzIjR25A/rcLsEJ7Zdfoz
-	 IkxAPlIT4tJ0zRPewKXU3iZeFavi4NNGtnXMPnXVhx04btcotrDQPMuCuJUIKdRei6A==
+	bh=Q/0F1lRA0KxFHCz6ZH4xA5oaartOM54tEKJ6UNKgiQU=;
+	b=KKdbfRNzoVraGSRktz6kd4iO/DgJQTSuVUQ+QejqGlFGZliP7gHhWyJqUvOlsclrAu1z
+	 oYLg2bjvPwvNVoF6q+bD6MUbjCoLb2laIXXL3lR7trz5VT6L09LSfYtyHrlYM3l6TyWPC
+	 WV+CpxOGn4DP5eAXBmIL2D+jG9wj3AiVafXmcJajqAAIzkvGTJp68RFoUpnIbdVnh0dsI
+	 FWK/AVDsTQu60pm1IkRcdUXCpbLt6aDN6+OgulJHrYZC/UmKzV6dYLqWvV/0lj7Vbn08o
+	 gv7ekBdOpgD3W4d3diPBquKrc7lnKI8Lwxci8ImQ3Qb816jwOD18fXjutPX0mY64zZA==
 ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1790254780;
-	bh=S0HmbmvUnyNABrS5gZybRJ8qTHLPFlxZP//naxo6VYA=;
+	s=default; t=1790254781;
+	bh=Q/0F1lRA0KxFHCz6ZH4xA5oaartOM54tEKJ6UNKgiQU=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=8BGMtl8DMG8LrbTFrSKVrDb2S0S4SG5P1xwGQyga1uJ9UlzoV2t5UtUR+sCa5UUOr
-	 4MEcF3v3D0HkYb6MGPVn9SzzkOji/zeogFfBMmxzqzVwzsaxx0XVCiDYQSukYvEasE
-	 iBWQh3eTWrfDyypH4QY/xpoxeLsJsUTT80hvDTlmdCo2i6L+o7H4IoPi/1fnOhrJ4m
-	 FIxPwgSHV4d3z9FPopMS0sY3EmkX0EDHQbFNtl4YYyZz+XqtN3QQENtoeOP0xjoCEc
-	 x7Kwb0N7sAaSKDPBFoi8VsIFsVK+1XchctESJYcgg5llSNti9kgYBGu6ziaKWBCTDs
-	 941J4EPRyhFXQ==
+	b=QsFpifpgsMk+93o59JKiaxCtXFTeEkaMMdtrybfbOFnlOh5/X4k4+t1QgDD0HdyAl
+	 mvW9/lzelz3zp7Q7q7pJpN1D47w2+v8KG+PCixiKBnIPJZm1FP9bNw2PEPj1DiiFjF
+	 1dF4JgNcAxMoh/gm+raSjcZg39iuZXG84IETeSjzTZOieeJuUr7u+tNwFd0tA40yxJ
+	 /f4JYRKell5ZO6ubluFfCE8uvA78CNXIzvSNs+1mEl0VlPf0YrxxhkhU1UH33GYghT
+	 OkW+xc8MeVqyHyYsjOccqHVnJJ2npjBmam9P1r+YuTWZcvqSPtoGJAEqB83G3kSwC3
+	 /C+Kwd0xIqKWQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 88BEB81BBD;
-	Thu, 24 Sep 2026 12:59:40 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 7A85C194
+	by smtp1.osuosl.org (Postfix) with ESMTP id 6D29781CD0;
+	Thu, 24 Sep 2026 12:59:41 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 839A11F41
  for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Sep 2026 12:59:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 60E89400FB
+ by smtp3.osuosl.org (Postfix) with ESMTP id 74B5260807
  for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Sep 2026 12:59:33 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id MYrsYbqnWcYV for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id OZFFglqE1BKT for <intel-wired-lan@lists.osuosl.org>;
  Thu, 24 Sep 2026 12:59:32 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org AC23D40470
-Authentication-Results: smtp2.osuosl.org; arc=none smtp.remote-ip=198.175.65.16
+ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org A638960824
+Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=198.175.65.16
 ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790254772;
- b=PwFrjD8k4W6cVKm1WZegOpuuigFV8Vg9A7TRdIXpnwObxZunL8HGkPeQegh5ndlc0zMv
- dn/+6ctSM5HEbD/3aSM8UCIQKtgc0SXXa1o+TGhReVuKJT5im3WwZ5TVWMF8qquXrCxw6
- fk3Ty7wwl0k5PiCwLnOZytdHGIXXb61TtLkuWtQTDUx3Xiw+679kH/rbvm34VOmA37C3W
- oeZrcCgyidnhMXlIjwY4OVHWZWhX2nQcRZrkveb+keVDUpbc6xkPuJhubGzQcLVUoFHEQ
- uEGoJcOueEnuhIR4PdvarQ8sqf+O/cywQGsU2yU3Y3Y0hnUh1911B8QO0xPKk/c92dA==
+ b=eLTdM+ZJ2J4ZSMxOaF98T3dMUata/Ec6EuGyQm024ZQiCSFCT7KRl6vGsLHwN7DV9ii7
+ lYuQblML+EuZHmt9SQOK9i52O4NYFy9IU32iuL+7PdYu0ob/WNHm4UZ9qKKhJE9m2JsCL
+ eVP9rTd1X6TSX9jho8NLcT+uSxHB3m3A82Rdhbk8rhbzs7sB8r+euXqeFpoaQJvaTdett
+ WEgYsJiSOosmm1CMVdk5Hiy5DSugm634SiCDxdnXYzQnEfIeOEqoVx2Y9GAd9A82r8Juu
+ zES3WKmVs3szo/IfV44B5GziFMvNR7YwAxxj82m/Y4w/1a8hLH6vvMSuM50vpa8Kb6w==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
  c=relaxed/relaxed; t=1790254772;
  h=Received-SPF:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
@@ -81,59 +81,59 @@ ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
  X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:From:To:Cc:Subject:
  Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
  Content-Transfer-Encoding;
- bh=S0HmbmvUnyNABrS5gZybRJ8qTHLPFlxZP//naxo6VYA=;
- b=dSfO2HcWeRkKclCChB/X2bgn+kvL0TGJlZvBE1qwWQt+bQuNWPsa1zOiO67tQT48IQcY
- 2tg/ZLKD8Yu6oFqju0vQPFCLz4M/9yu2RLTtu2zplq1zBD3E5Gwee6L7OMwEqeoauEZRr
- AatnwJX0O8oM4S8pN46qo3Pp5w4jcT8KeeYbC5MIidHSYdZk8CMmGbiQgmTZLQ4mJPSwb
- OP3wxJoaey+P0zd6arJ7bXxdDXEJu5F2idPWWn9UmkK2+ZkBWT6amKWqGSmRwJ7CgL3Nx
- rVMgXV366usboT1hU4QyugNleHoXsXsJF1xFRdrpyFXPF/0QOTs0JCE8ZNCDHeZj6nA==
-ARC-Authentication-Results: i=1; smtp2.osuosl.org;
+ bh=Q/0F1lRA0KxFHCz6ZH4xA5oaartOM54tEKJ6UNKgiQU=;
+ b=Dlaw3/C0eKc5k01BS2fHSUlrTQFOJbZ1TG+GVoh5HJYndeIkZ0D03vCm2IFWRJgd+cTt
+ Jaw+a4R6uvKkX1Md2HRXWEgOKnHgpjItN4JZEA4ZPXjVGPZtkGsqKdWRjji6TnVtXrwdB
+ siYayuAZ6odm98HYg9eT/WR/cqcD5YKywJEXTQaIKJlcUIL7nYWAUtSZ5w9T3s39UL+wM
+ 3McaLaOql5JCH6jyUvf95wuZeQWyjCXy0xRQnGGNpJnzw57Az3ef6ylMc9e3UcBqaqJ53
+ 1GV/oCwZ+k+bAXZXCRtZ7rLugX7mj5/hsABgVEdkQhBM3bVLUT8rX6qPfVxBeH5VXIQ==
+ARC-Authentication-Results: i=1; smtp3.osuosl.org;
  dmarc=pass header.from=intel.com; 
  dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=m5F+KpdF; 
+ header.s=Intel header.b=YGdY0InY; 
  arc=none smtp.remote-ip=198.175.65.16
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.16;
  helo=mgamail.intel.com; envelope-from=sergey.temerkhanov@intel.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org;
+Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp2.osuosl.org;
+Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=m5F+KpdF
+ header.a=rsa-sha256 header.s=Intel header.b=YGdY0InY
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
- by smtp2.osuosl.org (Postfix) with ESMTPS id AC23D40470
+ by smtp3.osuosl.org (Postfix) with ESMTPS id A638960824
  for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Sep 2026 12:59:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
  t=1790254773; x=1821790773;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=mKsIOdT7NnHNwx01DI9VzOebkFr0BP1VEviARtH2q/E=;
- b=m5F+KpdFTzvO1hN2Lggoo8OxUcUKyTpwyOW5WAyTu+fELkuG/JzIypcs
- Rl0n3jlXX8pnsxbWRX1Rmhm2ZzQtoygknSsAvI8FQMJ+YI1AQHmdDu+qv
- tuG1pIqGUt+iUij1UNdtwnZlfCfStwEhvUszIgjUVfdANWVztKVpRITQd
- GrSCq1AY0fp82KeiNrkD+70o96GSgN5HtAuFgGb0bqAmS3fpapFwFuCb6
- pVoUylBOoj15H4D6BbBerYfo9msZpYG6aHVTZYsMqsfr0iXXG7V6X23rA
- q8o28LSTm+Ku0CKv6Y+gMNqBoG//bUPqKXusfH8xTs8Gnuadetm+B6GdE w==;
-X-CSE-ConnectionGUID: vIJJe4feSn+qjnm6r26FDw==
-X-CSE-MsgGUID: aoMBKAT8RDmeNErclXpSag==
-X-IronPort-AV: E=McAfee;i="6800,10657,11914"; a="90249257"
-X-IronPort-AV: E=Sophos;i="6.27,120,1787036400"; d="scan'208";a="90249257"
+ bh=XTikmKf6gQDrTZu/kQxT5155ydRKPagkSJygHGDmZuo=;
+ b=YGdY0InYjpEveD2kG0RQbvfLec54dx8UNLIBFGCDc9Agls/xmtmXoleM
+ bKPlT5h9T4YtyVF0NXpm9NhPV17R8YpZX0nlYaN/sreCZTObWmOpegldI
+ HWXuui3hMGXgAU7QYqa5Fj6VyffM2kICK30m+3Pxfw0b5+oaIPbrWq/cm
+ GEVRW8Y6yQNGiNwdbw3PLgEjX6eKGY3yzvUbdpeRKEUOZFi0+3tHlw5Wr
+ ESDFqyuMI93AE4np+CyyIOVcBAd/6M6gmcxJXMelre0mleJAORrWGsTGQ
+ qNU8JBnHgd42oigpkkWo4hTTMCzKQ+U48fZGZURPT1a7nWFD6q9nou18r w==;
+X-CSE-ConnectionGUID: JyKTAx4WTJCLjiP3tlAkSw==
+X-CSE-MsgGUID: HiWs7tBlT026pgCetmXsSQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11914"; a="90249251"
+X-IronPort-AV: E=Sophos;i="6.27,120,1787036400"; d="scan'208";a="90249251"
 Received: from orviesa001.jf.intel.com ([10.64.159.141])
  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  24 Sep 2026 05:59:26 -0700
-X-CSE-ConnectionGUID: TpJN7cXJRo2WmkSjOOVbaw==
-X-CSE-MsgGUID: bSiv6btbScuyDZd45+odbQ==
+X-CSE-ConnectionGUID: pb/ZDq2ZT26kSpfoFx9lKg==
+X-CSE-MsgGUID: /zWNdHnIQeyw/fwM9d1iCw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,120,1787036400"; d="scan'208";a="311934433"
+X-IronPort-AV: E=Sophos;i="6.27,120,1787036400"; d="scan'208";a="311934432"
 Received: from gnrd8.igk.intel.com (HELO GNRD8) ([10.123.232.137])
- by orviesa001.jf.intel.com with ESMTP; 24 Sep 2026 05:59:26 -0700
+ by orviesa001.jf.intel.com with ESMTP; 24 Sep 2026 05:59:25 -0700
 From: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org
-Subject: [PATCH iwl-net  v5 8/8] ice: Release control PF lock before RCU wait
-Date: Thu, 24 Sep 2026 12:59:16 +0000
-Message-ID: <20260924125916.2796499-9-sergey.temerkhanov@intel.com>
+Subject: [PATCH iwl-net  v5 7/8] ice: Annotate PTP control PF lock handoff
+Date: Thu, 24 Sep 2026 12:59:15 +0000
+Message-ID: <20260924125916.2796499-8-sergey.temerkhanov@intel.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260924125916.2796499-1-sergey.temerkhanov@intel.com>
 References: <20260924125916.2796499-1-sergey.temerkhanov@intel.com>
@@ -153,51 +153,124 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-Clear ctrl_pf while holding ctrl_pf_lock for write, but release the
-rwsem before waiting for pre-existing RCU readers. The published NULL
-already prevents new readers from acquiring the retiring PF, so holding
-the writer lock through synchronize_rcu() only stalls sleepable users.
+ice_ptp_lock() conditionally retains ctrl_pf_lock for read when it
+successfully acquires the hardware semaphore. The matching unlock occurs
+in ice_ptp_unlock(). Describe this cross-function handoff with context
+analysis annotations so static analysis can verify callers.
 
 Signed-off-by: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Reviewed-by: Przemyslaw Korba <przemyslaw.korba@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ptp.c | 21 +++++++++++++--------
- 1 file changed, 13 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/ice/ice.h        | 12 ++++++++++
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 26 +++++++++++++--------
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.h |  6 +++--
+ 3 files changed, 32 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index 3ed37bbae161..24d4ab2197c3 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -3302,16 +3302,21 @@ static void ice_ptp_setup_adapter(struct ice_pf *pf)
- 
- static void ice_ptp_cleanup_adapter(struct ice_pf *pf)
- {
--	guard(rwsem_write)(&pf->adapter->ctrl_pf_lock);
-+	bool synchronize = false;
- 
--	/* Zero out adapter->ctrl_pf pointer when the ctrl_pf itself
--	 * is being removed to prevent any secondary PFs from accessing
--	 * it after it is deleted.
--	 */
--	if (ice_get_ctrl_pf(pf) == pf) {
--		rcu_assign_pointer(pf->adapter->ctrl_pf, NULL);
--		synchronize_rcu();
-+	scoped_guard(rwsem_write, &pf->adapter->ctrl_pf_lock) {
-+		/* Zero out adapter->ctrl_pf pointer when the ctrl_pf itself
-+		 * is being removed to prevent any secondary PFs from accessing
-+		 * it after it is deleted.
-+		 */
-+		if (ice_get_ctrl_pf(pf) == pf) {
-+			rcu_assign_pointer(pf->adapter->ctrl_pf, NULL);
-+			synchronize = true;
-+		}
- 	}
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index c454f19a2cb2..8b7891ac25b0 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -1179,4 +1179,16 @@ static inline struct ice_pf *ice_get_ctrl_pf(struct ice_pf *pf)
+ 		rcu_dereference_check(pf->adapter->ctrl_pf,
+ 				      lockdep_is_held(&pf->adapter->ctrl_pf_lock));
+ }
 +
-+	if (synchronize)
-+		synchronize_rcu();
++/* container_of() expands to a statement expression, which clang cannot parse
++ * inside a context analysis attribute argument, so open-code the cast here.
++ */
++#define ice_hw_ctrl_pf_lock(_hw)					\
++	(&((struct ice_pf *)((void *)(_hw) -				\
++			     offsetof(struct ice_pf, hw)))->adapter->ctrl_pf_lock)
++
++bool ice_ptp_lock(struct ice_hw *hw)
++	__cond_acquires_shared(true, ice_hw_ctrl_pf_lock(hw));
++void ice_ptp_unlock(struct ice_hw *hw)
++	__releases_shared(ice_hw_ctrl_pf_lock(hw));
+ #endif /* _ICE_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+index a85aa8f99057..eb7fdd000cf2 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+@@ -5361,15 +5361,16 @@ static void ice_ptp_init_phy_e830(struct ice_ptp_hw *ptp)
+ bool ice_ptp_lock(struct ice_hw *hw)
+ {
+ 	struct ice_pf *pf = container_of(hw, struct ice_pf, hw);
++	struct ice_hw *pri_hw = hw;
+ 	u32 hw_lock;
+ 	int i;
+ 
+-	down_read(&pf->adapter->ctrl_pf_lock);
++	down_read(ice_hw_ctrl_pf_lock(hw));
+ 
+ 	if (!ice_is_primary(hw)) {
+-		hw = ice_get_primary_hw(pf);
+-		if (!hw) {
+-			up_read(&pf->adapter->ctrl_pf_lock);
++		pri_hw = ice_get_primary_hw(pf);
++		if (!pri_hw) {
++			up_read(ice_hw_ctrl_pf_lock(hw));
+ 			return false;
+ 		}
+ 	}
+@@ -5377,7 +5378,8 @@ bool ice_ptp_lock(struct ice_hw *hw)
+ #define MAX_TRIES 15
+ 
+ 	for (i = 0; i < MAX_TRIES; i++) {
+-		hw_lock = rd32(hw, PFTSYN_SEM + (PFTSYN_SEM_BYTES * hw->pf_id));
++		hw_lock = rd32(pri_hw,
++			       PFTSYN_SEM + (PFTSYN_SEM_BYTES * pri_hw->pf_id));
+ 		hw_lock = hw_lock & PFTSYN_SEM_BUSY_M;
+ 		if (hw_lock) {
+ 			/* Somebody is holding the lock */
+@@ -5389,7 +5391,7 @@ bool ice_ptp_lock(struct ice_hw *hw)
+ 	}
+ 
+ 	if (hw_lock)
+-		up_read(&pf->adapter->ctrl_pf_lock);
++		up_read(ice_hw_ctrl_pf_lock(hw));
+ 
+ 	return !hw_lock;
+ }
+@@ -5404,14 +5406,18 @@ bool ice_ptp_lock(struct ice_hw *hw)
+ void ice_ptp_unlock(struct ice_hw *hw)
+ {
+ 	struct ice_pf *pf = container_of(hw, struct ice_pf, hw);
++	struct ice_hw *pri_hw = hw;
+ 
+-	lockdep_assert_held(&pf->adapter->ctrl_pf_lock);
++	lockdep_assert_held(ice_hw_ctrl_pf_lock(hw));
+ 
++	/* ctrl_pf cannot be cleared while ctrl_pf_lock is held for read, so a
++	 * successful ice_ptp_lock() guarantees a primary hw is still there.
++	 */
+ 	if (!ice_is_primary(hw))
+-		hw = ice_get_primary_hw(pf);
++		pri_hw = ice_get_primary_hw(pf);
+ 
+-	wr32(hw, PFTSYN_SEM + (PFTSYN_SEM_BYTES * hw->pf_id), 0);
+-	up_read(&pf->adapter->ctrl_pf_lock);
++	wr32(pri_hw, PFTSYN_SEM + (PFTSYN_SEM_BYTES * pri_hw->pf_id), 0);
++	up_read(ice_hw_ctrl_pf_lock(hw));
  }
  
- static int ice_ptp_setup_pf(struct ice_pf *pf)
+ /**
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
+index 16b1988e993d..ce8eb0672e71 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
++++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
+@@ -293,8 +293,10 @@ extern const struct ice_vernier_info_e82x e822_vernier[NUM_ICE_PTP_LNK_SPD];
+ 
+ /* Device agnostic functions */
+ u8 ice_get_ptp_src_clock_index(struct ice_hw *hw);
+-bool ice_ptp_lock(struct ice_hw *hw);
+-void ice_ptp_unlock(struct ice_hw *hw);
++/* ice_ptp_lock()/ice_ptp_unlock() are declared in ice.h, where struct ice_pf
++ * and struct ice_adapter are complete and ice_hw_ctrl_pf_lock() can be used
++ * in their context analysis annotations.
++ */
+ void ice_ptp_src_cmd(struct ice_hw *hw, enum ice_ptp_tmr_cmd cmd);
+ int ice_ptp_init_time(struct ice_hw *hw, u64 time);
+ int ice_ptp_write_incval(struct ice_hw *hw, u64 incval);
 -- 
 2.53.0
 
