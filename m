@@ -4,173 +4,160 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F02ECA5FA1
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 28 Sep 2026 16:33:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26149CA5FA2
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 28 Sep 2026 17:02:47 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B6C2160607;
-	Mon, 28 Sep 2026 16:33:51 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id C4E22606B8;
+	Mon, 28 Sep 2026 17:02:46 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id k3X2T5XrqVmo; Mon, 28 Sep 2026 16:33:51 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org F30A060615
+ id QvpZfBbDkHgZ; Mon, 28 Sep 2026 17:02:44 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org C1728605FC
 Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790613231;
-	b=VYx+N4WE8+DUCVgYhEivOaIOgGhVYuG/+lHQFKD70JWvj83RzMzVnJgPKjDK7fOL/JKO
-	 donAtw8o08W2KgDMzXPg6SVwVezIqp2V5ea3YXzsot+aa3VhKHT/8Z8Y13WZKAFN+AQZJ
-	 Y9XlB9lFewU67iw/b13xfpxiQTwQ8ufYjWagEn+SPRml2IdqIhz8wYas9Y9nV91nelrAn
-	 eaHJsxnfq4qG3l3Kj2ZPVTBjCPGyaGCe5lMd3XpnU6RJmgH+dzFRu5+poGZTHnJvlLNkK
-	 h9LHwQ0/91sT/9/R11Qkvpt3OPOsPwC7w5iZ9EV+NSIzCHZZlxn94yKT3sI9THfDTaA==
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790614964;
+	b=e/PU7KWBDmZj/XBRs604Oo3MPAe5a1/V0n9HbXvuw49uhJkOC0hkHfl8aqFXGvCQlk47
+	 UtA7M6FGxqf3mZT/NyXKaQ9dfXiGQwiq4dMpLRR1/4/rIaAEkHUok7q51qU0oaLheH/0H
+	 lGlZ/FW7ElyRhQJT9sHRUDo+Gg7euN9r7FZP1h5h8jjtY8PeXAFDGE342WtiM6xoJ5Dtm
+	 o32CaidAjWzengNEOlyZ7F3t3Av+cpjDXL/fmOQ6Oi3ju5FXf9dRCaKZMK0J3FQm/DEOK
+	 8CzyMBDhOs373uXwYFC8N2c8xR/PgfQsN5uRrSOekkAB+i+9UkEXOz6BoFwvfito+gQ==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1790613231;
+	c=relaxed/relaxed; t=1790614964;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:X-Greylist:Received-SPF:Received:
-	 DKIM-Signature:DKIM-Signature:X-Auth-ID:Received:Message-ID:Date:
-	 MIME-Version:User-Agent:Subject:To:Cc:References:Content-Language:
-	 From:Organization:In-Reply-To:Content-Type:Content-Transfer-Encoding:
-	 X-Classification-ID:X-Mailman-Approved-At:X-BeenThere:
-	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=IzFkrAdvi9zqd6RKCBztrtsL6Wwvwdj2Dg+17/rgaYo=;
-	b=fWaNZJtFusOo7M2yYUJiLX69EzUWnY68KETKRRR5ZwwnU1rJZBicRR4zFk7O/EWHUBny
-	 da+3k8tY3Yp71un7xLNCzVGH0Y9ZuzQ3lNXfnuoIT5SWu+wpTtXD289wKartFiMi0KprS
-	 hqmE/rrOijAESq7IrBZTKQ0PlcjiGg9JUPQS0+xsdpiBfqSGg+npSRNs7gpd3eNYBdyKa
-	 rnBhVW1MuT56uHFCDuYu7046DJwkZ89DAZ8hp95v91zsmgbHUEe1mA3ulrbr+1YDUrh2P
-	 luTvOx2t/hzwuPi0ZtnCWd3+SGEKkc+4Oc1zHDyD9XZod57w5M9EJnKuJIm9iWl/IMA==
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
+	 DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-IronPort-AV:
+	 Received:Received:X-Farcaster-Flow-ID:Received:Received:From:To:CC:
+	 Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
+	 Content-Transfer-Encoding:Content-Type:X-Originating-IP:
+	 X-ClientProxiedBy:X-BeenThere:X-Mailman-Version:Precedence:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Errors-To;
+	bh=A6WK9Y80CiMB/rsYyBjNtDkyFYNfAIuXEKudJHh0z+A=;
+	b=bIbpNppek5PIotZ/23RGdkSyAd559G0i7MGHzGGAM5kmaOoqnPYdfzRnhi15oCwuNiu6
+	 PQuNe6R2SL8pj7QWQ79afpCKAxYiEiCtwQk5+FlWdYZuGkL0pFmJvPK9EaklxJjX9YuC6
+	 TWJ+BdSujNoYjPRVnBEa+FQaTFUZbkBB+s14RUE/QMrvzVxeQp/FGiYFpeIZzzgidC+s7
+	 jvoF4lTJH26GYPdeJLqL7ydjdXDHVSZXyBmv473H2jAphHMYtdYeFZp2Ts9vsHrc7S04I
+	 a9XMipgMFE3APiFBRze9hz15AK/QKJwFjncmZFtqdf5rHqswZOvzASu4CHvjc3jjzwA==
 ARC-Authentication-Results: i=2; smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1790613231;
-	bh=IzFkrAdvi9zqd6RKCBztrtsL6Wwvwdj2Dg+17/rgaYo=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:List-Id:
+	s=default; t=1790614964;
+	bh=A6WK9Y80CiMB/rsYyBjNtDkyFYNfAIuXEKudJHh0z+A=;
+	h=From:To:CC:Subject:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=JcUwR1PulPDtjgT8HzNV+TOdLX7Y75eLtqXOCdMXJ9qViRB/a1k7vB8nvfscCN54h
-	 FfDwX5gHyITCINo24uU4E8EjRlW1LhZFCGhgYAZUcqCoyHQn0ML4Vdyu/MllY8SSf7
-	 +MHCm3KA+4Nt4EwAORd00GmynZ8guqvwU/R+tII5BbXdkj9p3Ya6VDLpz68oOzyRjr
-	 BjpL+IlwTbMMMSiICKLIaj6TjfXTngntu/AzkCqDj5K9xaafjuQgMZ3m/aBae2Oy2K
-	 1LTr9pf4NM+k4qRjSibgYzjvehq0rsHfZdWSSlcUw9UEXUaY0YjSmwz+nBlUyIEe6Y
-	 bmPe5uxXNTVHQ==
+	b=wMM20+t4n9F3xdRVJVVpbTuOGAZlmnR2/AI55COXH3zR5igOBqcpvTSO7WucKAp+w
+	 ea0NfhauBkB0rwkNlAAwm1bUW64e4hWp3Jve59oZxZiMmlWrrQDXVr2guv85iiBZ3Y
+	 WQNtHZnHM1Q3Yj+ocCIw00fCkQ6iY1/Q0X7J03kC0AKujHuIu4AcvjmONzajxmDlr0
+	 lIg457OVtIB5sa2lVsHhRH8800SjN86W6HCK/E+3faBOCBiu4kUOb6SF30nZhGILdJ
+	 Xj8ravOofJntPB7S38w7lFlN6YfXhgXeDkz8vloNupfmUdVV75M6AHMk3OwDv7g0aQ
+	 5uHJomZlSMdTQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id F30A060615;
-	Mon, 28 Sep 2026 16:33:50 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id B1E843D8
- for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Sep 2026 16:26:46 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id C1728605FC;
+	Mon, 28 Sep 2026 17:02:44 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id B7B3372
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Sep 2026 17:02:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 9AA674064F
- for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Sep 2026 16:26:46 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id A977580838
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Sep 2026 17:02:43 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id iTtr7PKREu3A for <intel-wired-lan@lists.osuosl.org>;
- Mon, 28 Sep 2026 16:26:46 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org A702540649
-Authentication-Results: smtp4.osuosl.org;
- arc=none smtp.remote-ip=173.203.187.69
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790612805;
- b=l/RFDUnNI2glV8nQN0qVh0gsR8pzKqmBKb7GJzEWriDvqNw5oma9/Lh5z/EFLKtUKIPX
- dJ2T23IcC24KAuqfrrvoWbiJXI5To4uKD1jRZPoY7M69cx1WRztf6NiCo2kM9G/GNweRQ
- kKXUyZj0cSnzMQ4JJ/vVea/PLIEtptuOkIcpWRleS7WgUg0wL32k8EpPFLygX7nGyFlDo
- YALZiZHnxRRTrzGltQM+xpxEuBlYxMw8u/TYRhVpM8MiqONIuVOX9WoVOrH/vGxJ7K0be
- q4mFaOb91TrbG+D1TUG66EN1lRtEwRg4kenGNX22niO/XxMsPPe7U2fCByk+WbV64tQ==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id BOWHXPgHvjd0 for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 28 Sep 2026 17:02:42 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 6B27080821
+Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=44.246.1.125
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790614962;
+ b=MyCZfNYQ8oU25UQCHKhipCbcotGiRswRBLCC2EdSd33e8soYFui1rjhtf/RP3R9ochSx
+ ZiIYc/bbzlOFwCl3vGMAQkuhH+N/mWcesEuXUO9a5eoRvFW2jIEikdB3pzjMjCgRcNS97
+ bDo7Q58y53MSVyr5W6D425xhfD7a4Q2btrkjRs0Vlp+6lnRDXr+E9qXjVcoLm6f0LFokt
+ ORIEVceFQNOLpc1sHwA+ufppMgKtiwhe5aMGfGNmWE+SmfjXY1fFctrbUDVYGh4x2vv9h
+ UMCUN2id/a9MWxAfR7xEpJAX78+KJVfAurnUcbEg+/sJ0ncSEM8p0tkM58eQYxNvYaA==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1790612805;
- h=X-Greylist:Received-SPF:DKIM-Signature:DKIM-Signature:X-Auth-ID:
- Received:Message-ID:Date:MIME-Version:User-Agent:Subject:To:Cc:
- References:Content-Language:From:Organization:In-Reply-To:
- Content-Type:Content-Transfer-Encoding:X-Classification-ID;
- bh=IzFkrAdvi9zqd6RKCBztrtsL6Wwvwdj2Dg+17/rgaYo=;
- b=XXNlBIfSn0SzSJjludDA61Mn6SYorUhjp0sz6EJoyhDtljdfDwsEN0trhtNCbu72CM4S
- fGbPfkxEIiYVsBlF+S0+VE11KB+huOrQMml839XRRF1v/2zQWL5o+pJwNYaffEtXR5MPI
- gGR7jSQ5NU+pzXmqeqRTIJkeStf448NlWt2Aaoo4rIKrYBVN8HjMEz8tBWwjUvEOfR0sm
- ZLjB0sI233oZU/++YOnBi1vHu+tv4Zs1wb9BjfB2/cDjeaX7Do+bGXDIduhWCYay1mCJf
- +5RTcm315RRJJZKP09UeuWdJICAnLOvLmvXL6lP69L2MM5FLNjvrKAt3Tu+ryYK8kHw==
-ARC-Authentication-Results: i=1; smtp4.osuosl.org;
- dmarc=pass header.from=mev.co.uk; 
- dkim=pass header.d=g001.emailsrvr.com header.i=@g001.emailsrvr.com
- header.a=rsa-sha256 header.s=feedback header.b=knMpqU6M; 
- dkim=pass header.d=mev.co.uk header.i=@mev.co.uk header.a=rsa-sha256
- header.s=20221208-6x11dpa4 header.b="dAAx1Q/7"; 
- arc=none smtp.remote-ip=173.203.187.69
-X-Greylist: delayed 511 seconds by postgrey-1.37 at util1.osuosl.org;
- Mon, 28 Sep 2026 16:26:45 UTC
-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=mev.co.uk
-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (1024-bit key, unprotected) header.d=g001.emailsrvr.com
- header.i=@g001.emailsrvr.com header.a=rsa-sha256 header.s=feedback
- header.b=knMpqU6M; dkim=pass (1024-bit key,
- unprotected) header.d=mev.co.uk header.i=@mev.co.uk header.a=rsa-sha256
- header.s=20221208-6x11dpa4 header.b=dAAx1Q/7
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=173.203.187.69;
- helo=smtp69.iad3a.emailsrvr.com; envelope-from=abbotti@mev.co.uk;
- receiver=<UNKNOWN> 
-Received: from smtp69.iad3a.emailsrvr.com (smtp69.iad3a.emailsrvr.com
- [173.203.187.69])
- by smtp4.osuosl.org (Postfix) with ESMTPS id A702540649
- for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Sep 2026 16:26:44 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=g001.emailsrvr.com;
- s=feedback; t=1790612291;
- bh=dcfqKy8RuwJf19ZxcNaKgTpq2Zkz6O8a3A4laJuSYfM=;
- h=Date:Subject:To:From:From;
- b=knMpqU6Mk0kmP+ISs7Cok7X4ebagiVtXT1NiP8qiqgH159TGzqgxajWFaZpSo70uz
- X4JvLjhst970T9CuQ/B1UK7DDj94fUZ9D0EuIcMXbSMkMJeSP20XqvG8xys/G508W2
- FOaJU8N23FUYtqhMknHHcQaVfBr5pD0xTp3BApkM=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=mev.co.uk;
- s=20221208-6x11dpa4; t=1790612291;
- bh=dcfqKy8RuwJf19ZxcNaKgTpq2Zkz6O8a3A4laJuSYfM=;
- h=Date:Subject:To:From:From;
- b=dAAx1Q/7P23kXEJJmdf1NGwU5hwBxkB9RRRgCV8DxfO9tKEKn3op87rBbKCtMQxor
- A7xRjYnmS2/wTvYLr7pPA1i+MhM1dZVN9lyPAynl4YEL0TQoXXoZQxmf7SdxwFhpQQ
- 4DXajLwgB0+U+CoG1uD67D8LZvzt6Rhe9+Cdueqc=
-X-Auth-ID: abbotti@mev.co.uk
-Received: by smtp17.relay.iad3a.emailsrvr.com (Authenticated sender:
- abbotti-AT-mev.co.uk) with ESMTPSA id 02B6C23DAD; 
- Mon, 28 Sep 2026 12:18:06 -0400 (EDT)
-Message-ID: <efbb4382-45eb-41a5-afe3-6c359714aa89@mev.co.uk>
-Date: Mon, 28 Sep 2026 17:18:06 +0100
+ c=relaxed/relaxed; t=1790614962;
+ h=Received-SPF:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+ X-IronPort-AV:Received:Received:X-Farcaster-Flow-ID:Received:Received:
+ From:To:CC:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
+ MIME-Version:Content-Transfer-Encoding:Content-Type:X-Originating-IP:
+ X-ClientProxiedBy;
+ bh=A6WK9Y80CiMB/rsYyBjNtDkyFYNfAIuXEKudJHh0z+A=;
+ b=ofto4Nk6Bv9t3p+mXOUDdf5CGsBKmustPtNFV0yq32tVZ2INLncErJXMv1mTeC72otPJ
+ MofU35WE2b7peXGZ1VfmPH0vICTRsN4X7bSIVx0hWUKCdsk63WYBYA0ioVtCYy91zvP+r
+ U+lqWyhZ49g78g2h6KiiFc46rEE7iJrEzoMOOU+gv1tBafFXyi3z4Q48QtFRlLWtsaMan
+ 6CSSpmvD0WzOCczllVDKUuKveNXRuhhEs4XufbvBll8npuTCReOyaJAq7bvBfbK/vKVmi
+ TB6KSP+zyJlWb5qNcMU5i7BOh726DNiUEE2EJC3O1y8tFgzSFezgfw9yauDLDIAmvWA==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org;
+ dmarc=pass header.from=amazon.com; 
+ dkim=pass header.d=amazon.com header.i=@amazon.com header.a=rsa-sha256
+ header.s=amazoncorp2 header.b="mz5/9ZW4"; 
+ arc=none smtp.remote-ip=44.246.1.125
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=44.246.1.125;
+ helo=pdx-out-002.esa.us-west-2.outbound.mail-perimeter.amazon.com;
+ envelope-from=prvs=7247b4c49=hagan@amazon.com; receiver=<UNKNOWN> 
+Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.from=amazon.com
+Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=amazon.com header.i=@amazon.com header.a=rsa-sha256
+ header.s=amazoncorp2 header.b=mz5/9ZW4
+Received: from pdx-out-002.esa.us-west-2.outbound.mail-perimeter.amazon.com
+ (pdx-out-002.esa.us-west-2.outbound.mail-perimeter.amazon.com [44.246.1.125])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 6B27080821
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Sep 2026 17:02:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=amazon.com; i=@amazon.com; q=dns/txt; s=amazoncorp2;
+ t=1790614962; x=1822150962;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=A6WK9Y80CiMB/rsYyBjNtDkyFYNfAIuXEKudJHh0z+A=;
+ b=mz5/9ZW4nq8xv60ksxm2OlHpvbSyVO1fsbQvUX35vMbbwbTWY4c18r+o
+ bYEIEr8MX9BtO5dgnm6Bg1082D9ulkOvuKNsZ0hUQCEJTVyTTrmmSDbnm
+ QeDaKshCtWb4JghKn/M8zLEooMfv6Rizx2g1bWbUfbsLtbGb1n10EGP5o
+ FlCCO0BpnPbSQAd484IyADo5n41A7NJH6IMSmeAdEbJMyk0cSK3s1bzKc
+ GQT+Sa9sStOYasmRTySFwk/5u3r4iTMFwmX8uNVWC2KZKxrSO2wSCjM8T
+ sxKyEREU42HWaBNRaIN0NzCTsuKMHl813fTnLzAVzWaKL5e6TvqoeY4xe A==;
+X-CSE-ConnectionGUID: +/9tSSI3QKyOYNOTI/JyPw==
+X-CSE-MsgGUID: PdNkOt0MSl6yREab6LDRPQ==
+X-IronPort-AV: E=Sophos;i="6.27,128,1787011200"; d="scan'208";a="29851915"
+Received: from ip-10-5-6-203.us-west-2.compute.internal (HELO
+ smtpout.naws.us-west-2.prod.farcaster.email.amazon.dev) ([10.5.6.203])
+ by internal-pdx-out-002.esa.us-west-2.outbound.mail-perimeter.amazon.com with
+ ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Sep 2026 17:02:41 +0000
+Received: from EX19MTAUWC002.ant.amazon.com [205.251.233.51:5642]
+ by smtpin.naws.us-west-2.prod.farcaster.email.amazon.dev [10.0.53.187:2525]
+ with esmtp (Farcaster)
+ id 719bb9c4-0476-426a-b2aa-bdff1f3c6d8f; Mon, 28 Sep 2026 17:02:40 +0000 (UTC)
+X-Farcaster-Flow-ID: 719bb9c4-0476-426a-b2aa-bdff1f3c6d8f
+Received: from EX19D001UWA001.ant.amazon.com (10.13.138.214) by
+ EX19MTAUWC002.ant.amazon.com (10.250.64.143) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.2562.49;
+ Mon, 28 Sep 2026 17:02:40 +0000
+Received: from dev-dsk-hagan-1f-c6b5e25f.us-east-1.amazon.com (172.19.159.5)
+ by EX19D001UWA001.ant.amazon.com (10.13.138.214) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.2562.49;
+ Mon, 28 Sep 2026 17:02:39 +0000
+From: "Craig I. Hagan" <hagan@amazon.com>
+To: Tony Nguyen <anthony.l.nguyen@intel.com>, Przemek Kitszel
+ <przemyslaw.kitszel@intel.com>
+CC: Andrew Lunn <andrew+netdev@lunn.ch>, "David S . Miller"
+ <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski
+ <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ <intel-wired-lan@lists.osuosl.org>, <netdev@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>, <stable@vger.kernel.org>, Fabio Sabai
+ <sabfabio@amazon.com>, Matt Vollrath <tactii@gmail.com>
+Subject: [PATCH iwl-net v2] e1000e: restore jumbo config after DMoff exit
+Date: Mon, 28 Sep 2026 17:02:34 +0000
+Message-ID: <20260928170234.21877-1-hagan@amazon.com>
+X-Mailer: git-send-email 2.47.3
+In-Reply-To: <20260923235832.473-1-hagan@amazon.com>
+References: <20260923235832.473-1-hagan@amazon.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/3] drivers: Replace __MODULE_STRING() with __stringify()
-To: Petr Pavlu <petr.pavlu@suse.com>,
- Wim Van Sebroeck <wim@linux-watchdog.org>, Guenter Roeck
- <linux@roeck-us.net>, H Hartley Sweeten <hsweeten@visionengravers.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
- Rudolf Marek <r.marek@assembler.cz>, Andi Shyti <andi.shyti@kernel.org>,
- Chris Snook <chris.snook@gmail.com>, Andrew Lunn <andrew+netdev@lunn.ch>,
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- =?UTF-8?Q?Marek_Beh=C3=BAn?= <kabel@kernel.org>,
- Alexandre Belloni <alexandre.belloni@bootlin.com>,
- Andreas Noever <andreas.noever@gmail.com>,
- Mika Westerberg <westeri@kernel.org>, Yehezkel Bernat
- <YehezkelShB@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Jiri Slaby <jirislaby@kernel.org>, Duncan Sands <duncan.sands@free.fr>,
- Chas Williams <3chas3@gmail.com>, Luis Chamberlain <mcgrof@kernel.org>,
- Daniel Gomez <da.gomez@kernel.org>, Sami Tolvanen <samitolvanen@google.com>,
- Aaron Tomlin <atomlin@atomlin.com>
-Cc: linux-watchdog@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-hwmon@vger.kernel.org, linux-i2c@vger.kernel.org,
- netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
- linux-rtc@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-serial@vger.kernel.org, linux-atm-general@lists.sourceforge.net,
- linux-modules@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20260922-module-string-v1-0-c18766690185@suse.com>
- <20260922-module-string-v1-2-c18766690185@suse.com>
-Content-Language: en-US
-From: Ian Abbott <abbotti@mev.co.uk>
-Organization: MEV Ltd.
-In-Reply-To: <20260922-module-string-v1-2-c18766690185@suse.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Classification-ID: 15bec65d-5b3a-44b5-8eff-f2a711d4e1ec-1-1
-X-Mailman-Approved-At: Mon, 28 Sep 2026 16:33:49 +0000
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [172.19.159.5]
+X-ClientProxiedBy: EX19D033UWA003.ant.amazon.com (10.13.139.42) To
+ EX19D001UWA001.ant.amazon.com (10.13.138.214)
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -185,21 +172,57 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-On 2026-09-22 14:32, Petr Pavlu wrote:
-> __MODULE_STRING() has been an alias for __stringify() since "[PATCH]
-> MODULE_PARM support for older modules" [1] in 2002-12. That change also
-> moved it to the graveyard section at the end of linux/module.h
-> 
-> Replace the remaining uses of __MODULE_STRING() with __stringify() in
-> preparation for its removal.
-> 
-> Link: https://git.kernel.org/tglx/history/c/136839a1b4 [1]
-> Signed-off-by: Petr Pavlu <petr.pavlu@suse.com>
-Acked-by: Ian Abbott <abbotti@mev.co.uk>
+On an I219 (pch_spt+) at jumbo MTU, after a link partner reset (e.g. a
+switch reboot) the interface can come back up unable to pass traffic until
+it is manually reset. Observed on I219-LM (8086:15b7) at MTU 9000.
 
+When the MAC exits the DMoff state on link-up, the watchdog resets only
+the PHY. A bare PHY reset does not re-run the jumbo-frame workaround
+(e1000_lv_jumbo_workaround_ich8lan), so the jumbo configuration is left
+unapplied and traffic stalls. This was seen with NIC runtime PM disabled;
+if runtime PM were enabled, the device should go through a full reset on
+resume, avoiding this issue.
+
+Request a full reset (FLAG_RESTART_NOW) instead of the bare PHY reset when
+the MAC exits DMoff, so the normal reset path re-applies the jumbo-frame
+configuration.
+
+Fixes: 2e7256f12cdb ("e1000e: Check the PCIm state")
+Cc: stable@vger.kernel.org
+Reported-by: Fabio Sabai <sabfabio@amazon.com>
+Closes: https://github.com/systemd/systemd/issues/25925
+Suggested-by: Matt Vollrath <tactii@gmail.com>
+Assisted-by: LLM
+Signed-off-by: Craig I. Hagan <hagan@amazon.com>
+---
+v2: Rework per review. Instead of the fc-latch autoneg-restart
+    approach, request a full reset on DMoff exit so the jumbo-frame
+    workaround is re-applied (root cause identified by Matt Vollrath).
+    Drop the diagnostic e_info. v1:
+    https://lore.kernel.org/netdev/20260923235832.473-1-hagan@amazon.com/
+
+ drivers/net/ethernet/intel/e1000e/netdev.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 844f31ab3..df7da86a8 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -5264,9 +5264,11 @@ static void e1000_watchdog_task(struct work_struct *work)
+ 					usleep_range(10000, 20000);
+ 					pcim_state = er32(STATUS);
+ 
+-					/* Checking if MAC exited DMoff state */
+-					if (!(pcim_state & E1000_STATUS_PCIM_STATE))
+-						e1000_phy_hw_reset(&adapter->hw);
++					/* MAC exited DMoff; do a full reset. */
++					if (!(pcim_state & E1000_STATUS_PCIM_STATE)) {
++						adapter->flags |= FLAG_RESTART_NOW;
++						goto link_up;
++					}
+ 				}
+ 			}
+ 
 -- 
--=( Ian Abbott <abbotti@mev.co.uk> || MEV Ltd. is a company  )=-
--=( registered in England & Wales.  Regd. number: 02862268.  )=-
--=( Regd. addr.: S11 & 12 Building 67, Europa Business Park, )=-
--=( Bird Hall Lane, STOCKPORT, SK3 0XA, UK. || www.mev.co.uk )=-
+2.47.3
 
