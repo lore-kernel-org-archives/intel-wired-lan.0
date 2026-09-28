@@ -4,134 +4,162 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4BA80C9833E
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 28 Sep 2026 10:16:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 253F7C9833F
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 28 Sep 2026 12:38:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 1DD7D80DF5;
-	Mon, 28 Sep 2026 10:16:39 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id D16B080CA9;
+	Mon, 28 Sep 2026 12:38:37 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Qby9Gj09FP_x; Mon, 28 Sep 2026 10:16:38 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 3A4CC80CC3
+ id sWegXDUqS4oJ; Mon, 28 Sep 2026 12:38:37 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 152F380D05
 Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790590598;
-	b=QttSOKnc16Zv7uy3yaZbLyQMLmfJDXRmeiFBxCiAvdP4g06gUHR4nucjmO7Pne7vSwIB
-	 HujMWbMNQD/iyNQ2BYs5uP9PyU/hpfcLP07DLJk96ZvRbHWXR424clDSX14liZxj2/B21
-	 sM1uBx11bo8DndpHRnr0aqpdfQnvVx8X9LrokSsnlmCtLgRah8oKuDooXV2ypMGxl9neX
-	 TXXiaJbkOYQ4YryniHIZj0ZIxymGElomgbOoDyEisOWf3Jc3RM6h8HLW9WHr7ckWC5hX8
-	 I7OKBrOoO9wLbbxhtO3djThZgn0DanYjW5IRueFfhev289GZh/T77QQ+9bqf+sLPycQ==
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790599117;
+	b=IfKmTh8xzDzhfX1FgjsE1YSQaQOEAxV/H303TeZC5s5fBqQbTvdtGjhc8Y1df9Ohz81N
+	 h5iOcMOmdLydybIf+pHcr5pO7xU1ZoNmk0Gzp3R2t4zSJtW3ODEd2zB6ZG745EuDpmw8d
+	 RXJ9Ea04BpuoXWwaT3TUIw+1vPuD726IPsrxp3ifmTbspG8wRWC88V+AFItv4LQQR82ox
+	 QWdhgbR448/nduZo9LFZKGKfV1iHnbHA/inEmqt6tcmobOmCjxv3wM5Y0nxJ0931/vN2y
+	 9XybXcBDqcaWfVH+aXm57x5IiAEHekIYOxhxAj9tl3ePZUho2TSTyeu0TlIcPi8H0Gg==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1790590598;
+	c=relaxed/relaxed; t=1790599117;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 Received:DKIM-Signature:Subject:From:To:Cc:Date:Message-ID:
-	 In-Reply-To:References:X-sashiko-severity:Content-Type:
-	 Content-Transfer-Encoding:MIME-Version:X-BeenThere:X-Mailman-Version:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Gm-Message-State:X-Gm-Gg:
+	 X-Received:Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
+	 MIME-Version:Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:
 	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=etan1i0QlkGI9ymPe4sBc1kewwzg4v5oWnGmaGuoq0Q=;
-	b=OdRojRbBD5uhfpFFUam06kUiSaB5RTwJrxE5KjtLkKW/oeCOfVtl/KR8JxBTlZjR/xnI
-	 k67MgBBYeXxUZsgJUsA2SZz64KYh8pCpHkZqFs/p7B2LmfMPAf1IT7nDbuK4TVW93nD5a
-	 Ucc/HhpL12yv8wJv+x5lEKaPhTUL0x8BwbYIZnPG9itPHqTmSAqAODbJVrEHDR2rUehWs
-	 sWBtzqPFxGnIfASrh/w2hK+SpArdRij9mQab4uAaH7lvo2N3PAouBovMqCsQ6+yLz732k
-	 6pxx10lxyCfdqmIcXQJHGZkVgnaQQRjUJdVSrJZ49P6YqC5s6VDIX9hRrz2Uo4qErEw==
+	bh=D+buAjiyG4ncBlcUW+2BpEu2Hb7PWv2fVmuPggXs8iY=;
+	b=mDS04sKt6inhaOdVOrfC73Mfv39vQkJGwQSEXiyfFhMy39U5eeIgcoi0nsVerKH64X4A
+	 500tasFQ8hWfq2AqeL1xLH/c+GDkIg/Be/p1LmGbThMYxv1F5c2QlIIZ+zVjDjLbzZ7ok
+	 aKSa61ooV/W9XCQ+kVpnQlJ2q/5snbb58KTf4orzpz47pUAuUrcNVOrW59F9dnFtpDd7F
+	 VPM45MEOJjGmvNgsQYTHynaGKCFQ2lr5hkXLf58ayXHVh0ok6/jQWmQEq46vnH7H8ZoSK
+	 9aOjQScsR5Y/g4GQfYPJfHAEM9kgWsn8+txW6b/6+Ss4ceTmIO9rmJsUoAGu/g+Kbig==
 ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1790590598;
-	bh=etan1i0QlkGI9ymPe4sBc1kewwzg4v5oWnGmaGuoq0Q=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=WBVKn2MGfkWzBkJPv8/yx+Z5/luMpUIXp3OZs1NRcLJ46Ev8oz1ToAdSH9IllBBEo
-	 GCSkHwHGn+juGZHLXfMe5Nv5XMlPg0NKyOkin7EKTcA1JVJRe2jG3ls2+tTqEjEoqu
-	 Te/SO229ITOL27a/RNhAyp5ZfLJa9+tGzZsaxxwE+DRz3N0jMwDMphKvbT4kiyZnEO
-	 5yG8Va/+eX+fBpPAdByNj8NFCZj5jY8K/tKFaNkkgMNpjsUD4APVDLhtWkYuVAolOf
-	 hIHRWCIymj4KSKWjyTH9+KmAfRTN1QYBOvEbeSgBdbW/6XvqYAiia84PetiZkdT2IR
-	 QLbBw2v7UylTA==
+	s=default; t=1790599117;
+	bh=D+buAjiyG4ncBlcUW+2BpEu2Hb7PWv2fVmuPggXs8iY=;
+	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=hH2xMt3PcUv3ox+gNj/TP35YmG+dlN+OuqVkaA1moS+9t0QtY3ovUeU6O+FboVNcf
+	 0e/5JOLCiOiDG/olIlAExQk8PXPO6VRS39zdIZYDTCRiqHbXqvIThfaTwe/QCOVhtX
+	 U6bDbhFu7s8D2pzHeVoM6VMtP2IrOUXPko2L6PoSLGuCvkNVR/D5juhbC/VqcaHb8W
+	 DmA4dGitwBMWeGSdSTHW4uTTsdOJ+1XcuAL/P5c2t4MzNbzcekGxgJ4BUCjXG4kaSB
+	 42gGKGzbaEeS9U/a07rpGSBED7hmwUoz8nQJ3PLJ7dNFmareiGGsE7o/F4WTrXPi4b
+	 g6aV1wyXQ3UWQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 3A4CC80CC3;
-	Mon, 28 Sep 2026 10:16:38 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id CFA99361
- for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Sep 2026 10:16:36 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 152F380D05;
+	Mon, 28 Sep 2026 12:38:37 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 9E3DB2B6
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Sep 2026 12:38:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id B5801401B1
- for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Sep 2026 10:16:36 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 841BF60672
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Sep 2026 12:38:35 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id xgx9UiH60xqY for <intel-wired-lan@lists.osuosl.org>;
- Mon, 28 Sep 2026 10:16:35 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org 8EF564019A
-Authentication-Results: smtp2.osuosl.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790590595;
- b=VkaYG55/PoJ6JeqcOhbcxqJga6nPERVRyjTqcGNQW3+2Fb3lfIyxwpBslBVIfC6NAtII
- ah14xtZHMjaU6U6tk7nrMI+5MIHoM+6tRyn+2RlNBYLNaIPx2QA/tWXHe56A5Y9/5ZsPQ
- WFDsJQKsHatmPD1LsJw/ayuaShpv9BH3epkPus2JPYtM7gevTVO8cXdsdVkf/sO9B5euo
- cwPOrElGtrGiqD4U8mcJbEHUx84LbjwMFPpZwLA/S8GFLVoRKkVpR7ye4ncEq2Pyy4vz6
- zXDhtw0YIQ3ty8ktfPuIirrxGdc4GnNl2IndO1e74uWMeM4hDxSucd2GWw3exWjJSwg==
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id vutD3BF-3TnH for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 28 Sep 2026 12:38:34 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 5E02460662
+Authentication-Results: smtp3.osuosl.org;
+ arc=none smtp.remote-ip="2a00:1450:4864:33::e"
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790599114;
+ b=P7qqBFDthickalKVBrncPQXvluZtO6cnnkD51fGuPUnABdKZVhajSUDRDv7lhRsq6WOL
+ fRl8TVivRppsULe7Z9uE20yJsUZygYqlSnAQycQNledpYALRptWtQ28YLsmLyg9OzSxPA
+ zghrPGCKkMhUwp86T4a1wNYpgrUcZyF2ycqxHuEI+isuPlqdGO7HieVIBa1V52pQKzl8o
+ L35tYQM22AAZNirxp8qUm5vKXisZICrKggAnHOVVf+ApdAyzC1503dlvVGVY6Yg8Ubar/
+ JoqzFCYDl7hOs+SaqKBHtHpnkC4k38QaXav8YlFwfTBw0QrAmPIdBk8jtzKqX2cK+7A==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1790590595;
- h=Received-SPF:Received:Received:DKIM-Signature:Subject:From:To:Cc:
- Date:Message-ID:In-Reply-To:References:X-sashiko-severity:
- Content-Type:Content-Transfer-Encoding:MIME-Version;
- bh=etan1i0QlkGI9ymPe4sBc1kewwzg4v5oWnGmaGuoq0Q=;
- b=ICftggTHXJwlSRiGN1YB8RNQDkx7l60bz9X9s6Vj+CbgiWwZSPTcosWaZu2+trlzr0s2
- uw1KNtrBTHCtvKHJtN36sgXpbqFHKUk2Ih1D5nbxHdkMWw5JBWGrq8V4Dp4SGNGCYJpIx
- hIlQ338CA4X/p8wHqWCycQZB7f2YKgFrjZTqMXCI0qGptkbw9ZC2qXibYBAOdWVbSHAky
- S5qImI3fuCpt/wYAQ+lV0rZgm6KeJ1oU6fyU36vNPPyHJPfwlAWqWi3PKcOvJY3bzSl+/
- kOHBADFXOpT+bIRxXShYg85swULRLPvYU00Q/fFx2KLOyc/a8WbwFev65YZKJGcLl5w==
-ARC-Authentication-Results: i=1; smtp2.osuosl.org;
- dmarc=pass header.from=kernel.org; 
- dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=ea2IoAqb; 
- arc=none smtp.remote-ip=172.105.4.254
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org;
+ c=relaxed/relaxed; t=1790599114;
+ h=Received-SPF:Received:DKIM-Signature:X-Google-DKIM-Signature:
+ X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
+ Date:Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding;
+ bh=D+buAjiyG4ncBlcUW+2BpEu2Hb7PWv2fVmuPggXs8iY=;
+ b=GXDL/Ne5ANozY79t1iLnfnyNHmP/RWdSZf/hxGTG5yxZKyY7VYkR4BQVfq2j5leMqFAl
+ h+tJVTlLZQq1Fs8OqbOt5PA2QweDkFjcqs8f4R5PTUQFeE4hH+i3Z+AzwEx4+p8+3MwwG
+ 7PJ1xtPlbfJjpYA5y0cVQs/wLVa2AQLAcLhlAJwcc7JRtQ7O5FfCM0E6VpO/CJ5r3dOgg
+ uZ95FShyjXGhm2SZLtw4yRPKCVN/SuQO67fifg1kEOoYk9Ngqns94+OnZdUAMGTxfq3tr
+ 06fvSwrsSjKH4lWcQ46pcNhDxn5nQypetaOzL+YDTJ4t3v25gvFYQ1NEFUwyyoJz0lQ==
+ARC-Authentication-Results: i=1; smtp3.osuosl.org;
+ dmarc=pass header.from=gmail.com; 
+ dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20251104 header.b=I2nfKsTh; 
+ arc=none smtp.remote-ip="2a00:1450:4864:33::e"
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2a00:1450:4864:33::e;
+ helo=mail-ed2-x0e.google.com; envelope-from=nsvatoslav515@gmail.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=ea2IoAqb
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 8EF564019A
- for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Sep 2026 10:16:35 +0000 (UTC)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id 41DDC600CB;
- Mon, 28 Sep 2026 10:16:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 462611F000FF;
- Mon, 28 Sep 2026 10:16:33 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1790590594;
- bh=etan1i0QlkGI9ymPe4sBc1kewwzg4v5oWnGmaGuoq0Q=;
- h=Subject:From:To:Cc:Date:In-Reply-To:References;
- b=ea2IoAqbhQBN298GzM7zylp3SKGP+PY+5jwXn8L7vS99opwR+N/Zm7DwK+j0dpQap
- AjTgk7uKldbJTFRMpOUGiuzIWqE6WbbNQZFIqdnDtS+oOsd62lHMaAUZX0MnpnDrJR
- yjD7nKqP2s3dBg4GVCNcLTVHzcZnevEOjfPr1RkgyouoMtLsMVxiYFbspkcFqCI62I
- Jkr8bjl92VXgKIK9BGycHje20ZPIysXbbs308FqZslmjlx1B/kmCcfeMwH7P+T/Nya
- 2Xr30D89hjEzJzuWa38UfcDLvIi2RJUbsQbt1cYVrLSodPVSSA+wHxSKGzusk1kTYO
- xeGMIrj0zUv1w==
-Subject: Re: [PATCH net v4] net: e1000: fix warning in iounmap on probe failure
-From: netdev-bot+sashiko@kernel.org
-To: nsvatoslav515@gmail.com
-Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+Authentication-Results: smtp3.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20251104 header.b=I2nfKsTh
+Received: from mail-ed2-x0e.google.com (mail-ed2-x0e.google.com
+ [IPv6:2a00:1450:4864:33::e])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 5E02460662
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Sep 2026 12:38:33 +0000 (UTC)
+Received: by mail-ed2-x0e.google.com with SMTP id
+ 4fb4d7f45d1cf-6aaf688ebb0so3133793a12.0
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Sep 2026 05:38:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20251104; t=1790599112; x=1791203912; darn=lists.osuosl.org;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+ bh=D+buAjiyG4ncBlcUW+2BpEu2Hb7PWv2fVmuPggXs8iY=;
+ b=I2nfKsThFvd1RoGsnCxX24hNq76wef589pq5ZKdW+T8bve4svQWkz7ayOYlaKSH3xr
+ /srM8+bmYK/o9VtN5ybAQsusW88U2ngaA/63naQjFQ4cMnAldWCI+LYs0i2tUWI2zflA
+ DWptmcwZ3u7nqwkXD096wJROm2SiU2xabDSl/BMYOWgLYbMVBUdYRUoJiMDPVQikJtgt
+ GpPdIUbH5plzFkgjaHSFXb4Fr7IEEj24iRZ7rgRPaCrYV5yTAmRQpfd9lq3H+HXtqpKE
+ iHLfsPzbNbWyRokTHXj6dJOkTtEVLcMXtzGgTEZl/r3i/ZOKsaBiJtRiR+D7gjuXn8Dt
+ Y3/Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20260707; t=1790599112; x=1791203912;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to:content-type;
+ bh=D+buAjiyG4ncBlcUW+2BpEu2Hb7PWv2fVmuPggXs8iY=;
+ b=C9s7fT1DwOaIfl2btHgLhJ8c8ze1pEpfEei5kIN/ZXArXOSoxl6wp++Xl0O7UKZ547
+ ePwY63Z1Bo3S0FAIAfmhW1ZRNZqaSTjSQ7z+1Nyq1RrDTTuBsLyQKO5WPphlxVf3vM8k
+ j3Id4kzMgbwlVsR7oyZnbKKUgL6U9XaTomXOobjIbLfq5HvmweJrxvzcVUg9okiPepti
+ QDGAjaYujolOwB3+tvveG57WHspVnHsHYpKvIkHKv1BIcjADGz+Nv46Xbdh+AVdwfVY8
+ BvwGsGCAepnmcJpM/GohF+3E02vwQ/9ReP9H5bcg88U7zFT20W62b1flDDgDLL5vfU26
+ ty3A==
+X-Gm-Message-State: AFuF++lC/jT0tIyyYMWdG2Pqv8fgo18E3vIulMTzDATrnNWUJ+Cw+vRc
+ Ka6FHB/daVnqgZA7kuWVB+9/qXFix3fwE9dwUBUP4SYQFNaI/jdUhhQV
+X-Gm-Gg: AYBFou2TXX1jvumIIo0birSgu/nWFCvN0l5Lw9UdWT2GaSmO4WdRdciLdvRqHo+7PIb
+ 3rPuIIXxBxVIJAM60hR4f6FcbG19hWhJ/id29p8lOrTnRkwXZEbpE0RIOb/9tSLX1Z9HGYZgfoh
+ EHQoThvV0tKek2+/jCIMWKzhn40j0cLwkXCpR77gTlwLygrNgzEHwMj+TtJQtJRWlRdbPYWVMPy
+ CLndcCeMNz8OtQc+JEcatB81UPIs4ol+Oqn37+Sf/Os3TYTK8lVwlTruUzFzWQCeUAjCzEnwR5Y
+ PPPRGEoPlodO194lZBfSo8ECCk6PDEYZMhA5Xq8mgvLGn2ekK8McZdEYrPYamwbNmujLeF4ZbEW
+ wPf7tNHpU6Y0KyH5QNruIyxwUiOcrey22aA8jnu60ixKtWsgDLtPE1tgFP6RPs9/jgD5d6R7mJU
+ wYPv8y/vg3iYwineZ+F381EuIq0m6CFN0KqGFBbnyXVKyKohodCyfJ4A/Xbo3r2vrBogfOj9NSm
+ XUs8seOP0u7jOsL1w==
+X-Received: by 2002:a17:907:97c3:b0:c25:9102:ed with SMTP id
+ a640c23a62f3a-c2ac2311b07mr1040138666b.5.1790599111445; 
+ Mon, 28 Sep 2026 05:38:31 -0700 (PDT)
+Received: from localhost.localdomain ([94.240.182.136])
+ by smtp.gmail.com with ESMTPSA id
+ a640c23a62f3a-c2dd69d4f65sm161462966b.22.2026.09.28.05.38.29
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 28 Sep 2026 05:38:30 -0700 (PDT)
+From: Svyatoslav Nikolenko <nsvatoslav515@gmail.com>
+To: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
  andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com, intel-wired-lan@lists.osuosl.org,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- syzbot+ca1ef9e2e234b8d3599b@syzkaller.appspotmail.com, stable@vger.kernel.org, 
- aleksandr.loktionov@intel.com
-Date: Mon, 28 Sep 2026 10:16:32 +0000
-Message-ID: <179059059281.3145.5878621064360703289@kernel.org>
-In-Reply-To: <20260924095955.3471-1-nsvatoslav515@gmail.com>
-References: <20260924095955.3471-1-nsvatoslav515@gmail.com>
-X-sashiko-severity: Medium
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+ kuba@kernel.org, pabeni@redhat.com
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org,
+ Svyatoslav Nikolenko <nsvatoslav515@gmail.com>,
+ syzbot+ca1ef9e2e234b8d3599b@syzkaller.appspotmail.com,
+ stable@vger.kernel.org
+Subject: [PATCH net v5] net: e1000: fix warning in iounmap on probe failure
+Date: Mon, 28 Sep 2026 15:38:13 +0300
+Message-ID: <20260928123814.2605-1-nsvatoslav515@gmail.com>
+X-Mailer: git-send-email 2.47.3
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -146,103 +174,55 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-Thank you for your contribution! Sashiko AI review found 2 potential
-issue(s) to consider.
+In e1000_probe(), the error unwinding path at err_sw_init unconditionally
+calls iounmap(hw->ce4100_gbe_mdio_base_virt). On non-CE4100 hardware,
+hw->ce4100_gbe_mdio_base_virt remains NULL.
+Passing NULL to iounmap() triggers a WARN_ON_ONCE on x86 architectures.
+Furthermore, on CE4100 hardware, if probe fails before or during
+MDIO mapping, ce4100_gbe_mdio_base_virt is also NULL.
 
-Critical: 0 · High: 0 · Medium: 1 · Low: 1
+Fix this by adding a NULL pointer check before calling iounmap() on
+hw->ce4100_gbe_mdio_base_virt. iounmap(hw->hw_addr) remains unconditional
+because every code path reaching err_sw_init occurs after hw->hw_addr has
+been successfully mapped.
 
-If you believe none of the issues are legitimate, please reply to each
-issue of Medium severity or higher and explain why the AI is wrong.
-If any of them are legitimate and you plan to respin, please let patchwork
-know by including "pw-bot: cr" as a separate line at the end of your reply
-(one such reply per series is enough).
-
-- [Medium] The commit message says something different from what the
-  patch does.
-- [Low] The Fixes: tag does not match itself.
-
---
-
-net: e1000: fix warning in iounmap on probe failure
-
-The error unwind in e1000_probe() unconditionally calls iounmap() on
-hw->ce4100_gbe_mdio_base_virt. That pointer is NULL on non-CE4100
-hardware, so the call triggers a WARN_ON_ONCE on x86. The patch makes
-the MDIO unmap conditional.
-
+Reported-by: syzbot+ca1ef9e2e234b8d3599b@syzkaller.appspotmail.com
 Closes: https://syzkaller.appspot.com/bug?extid=ca1ef9e2e234b8d3599b
+Fixes: 13acde8fffc0 ("e1000: cleanup CE4100 MDIO registers access")
+Cc: stable@vger.kernel.org
+Signed-off-by: Svyatoslav Nikolenko <nsvatoslav515@gmail.com>
+---
+v5:
+  - Updated commit message and changelog to accurately describe the NULL pointer
+    check implemented in the diff.
+  - Fixed subject string in the Fixes: tag to match commit 13acde8fffc0.
+v4:
+  - Actually include the code changes (v3 was sent un-staged by mistake)
+v3:
+  - Switched from pointer null-checks to checking hw->mac_type == e1000_ce4100
+  - Removed redundant check for hw->hw_addr since it cannot be NULL here
+  - Added missing Cc: stable tag and Closes tag
+v2:
+  - Expanded commit message to answer reviewer questions (reproduction details)
+  - Added appropriate Fixes tags
 
-> Fix this by conditionally unmapping the CE4100 MDIO base only if the
-> mac_type is e1000_ce4100, matching the exact logic used in e1000_remove().
+ drivers/net/ethernet/intel/e1000/e1000_main.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-[ ... ]
-
-> Fixes: 13acde8fffc0af ("e1000: Fix the CE4100 bus type for the MDIO/PHY registers")
-
-[Severity: Low]
-The subject in this Fixes: tag doesn't match the commit. Commit
-13acde8fffc0af has this subject:
-
-    e1000: cleanup CE4100 MDIO registers access
-
-That commit moved the global MDIO pointer into struct e1000_hw. It also
-changed the error path to iounmap(hw->ce4100_gbe_mdio_base_virt), so the
-hash looks like the right target. Could the subject in the tag be changed
-to match? checkpatch.pl flags this kind of mismatch.
-
-[ ... ]
-
-> v3:
->   - Switched from pointer null-checks to checking hw->mac_type == e1000_ce4100
-
-[ ... ]
-
-> diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
-> index d7f5c6f16142..d7e279b739b8 100644
-> --- a/drivers/net/ethernet/intel/e1000/e1000_main.c
-> +++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
-> @@ -1227,7 +1227,8 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
->  	kfree(adapter->rx_ring);
->  err_dma:
->  err_sw_init:
-> -	iounmap(hw->ce4100_gbe_mdio_base_virt);
-> +	if (hw->ce4100_gbe_mdio_base_virt)
-> +		iounmap(hw->ce4100_gbe_mdio_base_virt);
-
-[Severity: Medium]
-Does the commit message match this hunk? The message and the v3
-changelog both say the unmap now depends on hw->mac_type ==
-e1000_ce4100, "matching the exact logic used in e1000_remove()". The
-code here checks the pointer for NULL instead. e1000_remove() does this:
-
-    if (hw->mac_type == e1000_ce4100)
-        iounmap(hw->ce4100_gbe_mdio_base_virt);
-
-The NULL check actually looks like the more complete fix. In
-e1000_probe(), e1000_init_hw_struct() sets hw->mac_type well before the
-CE4100 MDIO ioremap runs. So on CE4100 hardware, these two gotos reach
-the cleanup with mac_type == e1000_ce4100 and the pointer still NULL:
-
-    err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
-    if (err) {
-        pr_err("No usable DMA config, aborting\n");
-        goto err_dma;
-    }
-    ...
-    err = e1000_sw_init(adapter);
-    if (err)
-        goto err_sw_init;
-
-With a mac_type check, both paths would still call iounmap(NULL).
-
-Could the commit message and changelog be updated to describe the NULL
-check that is actually submitted? Since v3 was sent without the staged
-changes, it would also help to confirm which version is intended. It's
-also not clear which version the Reviewed-by tag from v2 covers.
-
->  	iounmap(hw->hw_addr);
->  err_ioremap:
->  	disable_dev = !test_and_set_bit(__E1000_DISABLED, &adapter->flags);
-
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
+index d7f5c6f16142..d7e279b739b8 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_main.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
+@@ -1227,7 +1227,8 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	kfree(adapter->rx_ring);
+ err_dma:
+ err_sw_init:
+-	iounmap(hw->ce4100_gbe_mdio_base_virt);
++	if (hw->ce4100_gbe_mdio_base_virt)
++		iounmap(hw->ce4100_gbe_mdio_base_virt);
+ 	iounmap(hw->hw_addr);
+ err_ioremap:
+ 	disable_dev = !test_and_set_bit(__E1000_DISABLED, &adapter->flags);
 -- 
-Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20260924095955.3471-1-nsvatoslav515%40gmail.com
+2.47.3
+
