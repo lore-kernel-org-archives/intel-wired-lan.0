@@ -1,134 +1,139 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8A76FC9833E
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 28 Sep 2026 09:16:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 176E7C9833F
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 28 Sep 2026 10:10:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 43AC5406E1;
-	Mon, 28 Sep 2026 09:16:02 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id AD3946067F;
+	Mon, 28 Sep 2026 10:10:22 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 6X39F6XuWTZO; Mon, 28 Sep 2026 09:16:01 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org AA887406E6
-Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790586961;
-	b=c7lp43iY9T1CoBdFXGG6A+5ffj4JojhTCncBOZhkaAjYmH0OSeSKKvUk8y/ydfE2B8Kj
-	 c36/SUY92DXRSme7L02G0VassgCxeeHqg5CMwWyzxfvEHbtARxF2kdcex18PuU4em1g7P
-	 qaBGkACVnaIZ+vqARoAn0yTouVJOoa5B85Wv6wyK83Ayy90xQiKx5E/RWU4jSg9vBf1aw
-	 GlKWvRQ271M7MKsjHftIZDVipmUog4s4C7fqek++avTVEs+ayx0yqKerq1mtu1GuRAI9L
-	 UXzzzHcd2o1A1HZBhwE0nlbw33BwFyQMSCAGTsrEaaG50/F3W2w8toLX5FKwPLusRTQ==
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id wa0BrQWTQfzm; Mon, 28 Sep 2026 10:10:21 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org B540360641
+Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790590221;
+	b=RYTZERnGSDzYlPruWiNhxumS3FZIpCf13lr/4NsslZkCWU63vV2l3dRiskmdfbdQ2fhz
+	 FBpSIqz0PY4Sa6FtF5cajAbnXUYONcrx2VT25rmr/z5UoIhKb94bEbg/n9TQNP0tsbibi
+	 dXboYd/5xnYHwTJ7pzyOelfR0yr3pszV/cyUBij+hVC+ur7O4VuOgE8j4tf2fIzgsvsqi
+	 +1J/R4fO9PG/V3swEpFllpDQrjH5RHJqv0xsfWXxQ1TfDV6IW1OkzVPrDs8isrW9uanuy
+	 +823pRn3ho6vPd1laVU5ELnDWUwbi35bWkzfLYaAWjFOIk28xOlXGo4KiuMwSCty0fg==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1790586961;
+	c=relaxed/relaxed; t=1790590221;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:References:
-	 MIME-Version:Content-Type:Content-Disposition:In-Reply-To:X-BeenThere:
-	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=kSzIqxDU2Z4/O/az/Uu82s65RFvMqhh8MlAp8bqUwPE=;
-	b=SRaZTNhuvbyrnaOmG39VKIIEFzOl/UQegdyKhafsP+C+17qVhNa9IfrEr0t0iV5+HwTb
-	 +8WRO0RmuYwBvxAnSsnVfwCtdAfFy9ThoXCcd0S9cjj56oR9YZWNgRG9YJJh6nTAeeQba
-	 gkS0Wj9VPHdRaD7bJsMAhq9mKxol82AdvWygpG5K3tjTF1AsEnA8dE5FseiVEFY4d8Wiv
-	 SeyxrjqwMNCOuGvRFZnAr0rsNXbz2z3ERHSU5R00AdIRY7ysprd5n5U/CvTEDwBaImWPi
-	 ALhAwEsHFKekIkOgUXTd4L0gV6vWKYJk7c/JKbbMcZWZnzWaSvgKy+uSQCHJ8Yu23uA==
-ARC-Authentication-Results: i=2; smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	 Received:DKIM-Signature:Subject:From:To:Cc:Date:Message-ID:
+	 In-Reply-To:References:X-sashiko-severity:Content-Type:
+	 Content-Transfer-Encoding:MIME-Version:X-BeenThere:X-Mailman-Version:
+	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 List-Subscribe:Errors-To;
+	bh=9MntvWW9bEeKi0i0MyUEHXEi1fIu9h3nvRSRBG6xKOE=;
+	b=RjqOjzLe269VoE8e+xy9DNGkFt8uAynkYTppFlDerNj5kpmnYZH04qFOw/O/4RNMd7eX
+	 hQIYNecEQqB/ydIdKHfjdM8u8O+z4rKzrsca0PBMJdROwd0mRGKyVugkMIkGd4ZCDTOs3
+	 x2DNZvUQW8jwdNfcjpz8B7AXBDptu5tIM3sQt4/CeMeV1b0UMR+uMutIssUKI4sQKvGGT
+	 rz0qlTUcKSZEvXcW2omu87vbyISHGiAaByvLWt5SX0xSUvVDgLn/tdtq44yzh5sbbNnw4
+	 TBmOP+1Wde4u96dpw+mAc/C58w2CTuMaDjrQp2DOeSsFyN5IElwBsl6bTsTR/aPIT3Q==
+ARC-Authentication-Results: i=2; smtp3.osuosl.org; dmarc=pass header.from=kernel.org;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YlX7tEQ6;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1790586961;
-	bh=kSzIqxDU2Z4/O/az/Uu82s65RFvMqhh8MlAp8bqUwPE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-Id:
+	s=default; t=1790590221;
+	bh=9MntvWW9bEeKi0i0MyUEHXEi1fIu9h3nvRSRBG6xKOE=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=6Azww3nVG913a/yaFMWEd/rSoWzab6Z8p/sbgrNDbZNIdVLn0eCmZxfnS/2JpmF0Z
-	 dGosr9Jur5wrZ8vzSXMS+Uwtv68PR9sd5ghWGnzRX1KFjDafLTtePk/rXaCCdnoMOX
-	 wRKErQ2oENy7s22u5ccVsMyhXI9JS7NoEWyY8TQplJRe/DIRF+uIdb9X8pf7/V0Hx6
-	 lukc4vcAupr0kbi24XMrv4+U8s8gQgpJzqx6H4sj+7zU1kHZr39O4FBua4nel8ugwN
-	 P2hHu4U/G3Z1taAFw55E6Te3qR/tODJ4Tw40Ma3WZyg8bo+eF5CS8Gij/bxB2bJpkP
-	 WDxXxhFTaWxww==
+	b=G0aUmZWQg4G7xpBbZewrWXCqRcHAWMvoeJLkol4UEyzmxiorNA8S4DWQosipWSqMI
+	 AxcSW+sV7vde1l0JW4bhiFU9boNORUxKeBsSzpoH8SVlU5oHJRHHzt9DBWCCDtcB8d
+	 w81i6kmd64iA4gUYi1QSEkC6O0iuGYyHFUxVkx5HKY36/ZT5jihJhcmlfwQLdHj3yd
+	 szPWI//ztXNL2dNEvgkX2l/1EQIP7ZzpJoDY1ZqDUaofdV2O/gUEQAVaDgNIeVl6MS
+	 EExI/l2/LNkrajDaGmSNRg8Za35VrTMhh8GCUakjDzLfeim+CS7PCbHb6LAAPciTHl
+	 rFWCoacwescLg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id AA887406E6;
-	Mon, 28 Sep 2026 09:16:01 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 125E124E
- for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Sep 2026 09:16:00 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id B540360641;
+	Mon, 28 Sep 2026 10:10:21 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 2F4A9361
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Sep 2026 10:10:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id EC53380DDB
- for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Sep 2026 09:15:59 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 210FA60641
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Sep 2026 10:10:20 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id jaj6p2Vdc2bS for <intel-wired-lan@lists.osuosl.org>;
- Mon, 28 Sep 2026 09:15:59 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 4847C80DD8
-Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790586959;
- b=jP8gJHcGGh+JoImlPUGSUNHQqwRNDDei5SZFfao8rJkWytGLFRBj0Layse60FDTtBB2i
- JsRp+gfpl7mN4LNcQLlCpuv6bVuq3gRZdybv1sH/ozwnsULY8Kr6kUiQ/oA14PV8TZ43M
- JUfEMgEcVUITtsVmWk+VMgNQa7e5bhmqcDD65u5eq7Ow/cdh7HnhVarUh3ID/5RZurDfA
- 8ktEDOGPAuFMZUcbcVSwKr4naMV+MtNgCRKqw81sIh2EVPMRhjA96/LcHqdjkfwHvrZNS
- IdVrLrm2jsxJeOXAx30QD0NdavnI46H8dNPSifDLl8Oh4CPfMaVtGlXZLDMko88976g==
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id nYCs2zDfsGWK for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 28 Sep 2026 10:10:19 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org F2B7F6067E
+Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790590219;
+ b=ZpmAO2jwaZatst3siMoZ9f+kRXT2ovH0/gy7SLGQBjAMv2/MkHd5s4PlyPgzR8iEAMSD
+ +XyOHuxWxyKLRZLh6ZZekbWqA9HlnWuHnK6u/bshkIyg24Us0gPu262rILxdLSW6au7D1
+ tcLCKeN/EppGYTJ0RrLouTIdJILcjknPboSI8i51UUfnzFX+gPQjKtCHh0/CyOUd3V91K
+ dQuwrrwe52I84x1yQ9ZIruTALCeRYOccZZ1iytFVdlzWjjjFk1/SmBD9/NUOPUhJ3VmD3
+ PE/Fgf5Ue7Okl3PalpOjZvp9wZMwilMdxX3RrHBhK0c+ukWJIVd9rLZBykNypD1G5Xw==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1790586959;
- h=Received-SPF:Received:Received:DKIM-Signature:Date:From:To:Cc:
- Subject:Message-ID:References:MIME-Version:Content-Type:
- Content-Disposition:In-Reply-To;
- bh=kSzIqxDU2Z4/O/az/Uu82s65RFvMqhh8MlAp8bqUwPE=;
- b=msmu61Yc/6ZIFS4nttvqJ2DBtzctg2ufJ5mr/rxPJ27t+QURyNiq606fM+FosXSJpcfs
- oegi0658AzZVUkhrL6ATi2Ojh9h7nMBhofWvvhvKzqi/jmjhtCahsLVuaeXHSIHlFqCx9
- 2HtIpJDejPx3m8LVh3eDTr62DQkHaVkQNrVNPxb5w5HVyzYhH2IpJhmj6KYq0VyVptrKR
- TFbycioXS9RsH6WeFDvWzLLXXC2ZsHzQD6UTWIje2VlXJIBDYy8rCtQc7XmumFzeXnoGW
- PTYheTqr5cF1gEbSq5PSEcT5C36PPvHiH5AIM0FG25eFanooNKtOoDuOaTFcpadM7CA==
-ARC-Authentication-Results: i=1; smtp1.osuosl.org;
+ c=relaxed/relaxed; t=1790590219;
+ h=Received-SPF:Received:Received:DKIM-Signature:Subject:From:To:Cc:
+ Date:Message-ID:In-Reply-To:References:X-sashiko-severity:
+ Content-Type:Content-Transfer-Encoding:MIME-Version;
+ bh=9MntvWW9bEeKi0i0MyUEHXEi1fIu9h3nvRSRBG6xKOE=;
+ b=NDX0DWfVDlwRc3Knn1rQsByO1g6kzsNbCbQO35jiSXCBC3gKGVuPEzpZy9s5r0SCqUb+
+ QRP/L5f2NZBwRoD19Ub5Xm21J4RWklVgZzuPHf6udfUZiwK9BYdTM6OAg7AM5BAcut1Px
+ 7Mm/haUE0WitCYhGoXzswEf9N1xwUMfEl4LgYv7Aj5Lk5vRRGFxH4ZkdoMwBXkf4opb65
+ 4rITppi63mXrXmXdNBLCTKIMz8UEiuHOfddmViqGkfzCCgFaXNOpR/wxbexWclU0nyOft
+ 2sZhYtcnTFjb4yJTxzmxApXsfBZfzfRCpz4/sYbaeuCTB66wqUyG6dCtyEkrEIUR7PQ==
+ARC-Authentication-Results: i=1; smtp3.osuosl.org;
  dmarc=pass header.from=kernel.org; 
  dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=ljpQiG5P; 
+ header.s=k20260515 header.b=YlX7tEQ6; 
  arc=none smtp.remote-ip=172.105.4.254
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org; envelope-from=horms@kernel.org;
+ helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=quarantine dis=none)
+Authentication-Results: smtp3.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=ljpQiG5P
+Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20260515 header.b=YlX7tEQ6
 Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 4847C80DD8
- for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Sep 2026 09:15:58 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTPS id F2B7F6067E
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Sep 2026 10:10:18 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id 590E560052;
- Mon, 28 Sep 2026 09:15:57 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 566101F000FF;
- Mon, 28 Sep 2026 09:15:55 +0000 (UTC)
+ by tor.source.kernel.org (Postfix) with ESMTP id 2E80F60052;
+ Mon, 28 Sep 2026 10:10:17 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 26F851F000FF;
+ Mon, 28 Sep 2026 10:10:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1790586957;
- bh=kSzIqxDU2Z4/O/az/Uu82s65RFvMqhh8MlAp8bqUwPE=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To;
- b=ljpQiG5P227/LcY7idizoYLptGbyQgKSFUC8/2oATpP46sCxkyyiRZO+xBsfikhis
- wHhMaRx2n1sARJHUW5/G4R6prUcGQHvYGrw0yQd2RcG9bqu9e4OcM6OiFloxbNKYRK
- hIHOtNF99l1wcmgq+m14bpB1LuoOAC0EUzG+P4T7A3id3/jKcucFyFl3veZg9PForS
- eWQmq5NDyU4Y7fwKCaC80kiXyVSxNRER0amoFDf7IvyC+h9qF3riQVMYmYwH67SWy5
- HARXCmqAjZ2+Xa4nV8m3goX8w84KTf1HELKMzcl7e74VyIqb7Jjc6seRq8/bQs7e3e
- GYfm/3YK30Vlg==
-Date: Mon, 28 Sep 2026 10:15:51 +0100
-From: Simon Horman <horms@kernel.org>
-To: Yuho Choi <oss.patchbox@gmail.com>
-Cc: Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Alexander Lobakin <aleksander.lobakin@intel.com>,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH net v1] idpf: Fix vport IRQ name leak on request failure
-Message-ID: <20260928091551.GK13925@horms.kernel.org>
-References: <20260923234819.702327-1-oss.patchbox@gmail.com>
+ s=k20260515; t=1790590216;
+ bh=9MntvWW9bEeKi0i0MyUEHXEi1fIu9h3nvRSRBG6xKOE=;
+ h=Subject:From:To:Cc:Date:In-Reply-To:References;
+ b=YlX7tEQ6DPjiU6Ou1ycBzSHAUWiI/6t+uxGq0KekQoUIt5bNPFcisFea6QqI3p6/8
+ bP6/W+oMxqVgPWd/ulgmWlnAQJx5e9OhAGHA2lrNQd8hqVfkc7+v8K90CtbckqWVEf
+ k97YUxnACPiWYmSpm5+qHykloi0/zBEBXUreV7tGbw7+3KutLComTtSQql0H9SF3ob
+ mLUSfB0gm0LCp42ZifW3AtuwX0OTJWbD/TTuV0wNsziouWFwBuTCuFZi4hs/kP587r
+ uBE/NqHWv/0vJlrKK8exe9jngIKZKA8NjWzkbpWQdbWJslLd+dLpfzasNLn1g1UycF
+ OwrhFbWMq/74w==
+Subject: Re: [PATCH net v3] net: e1000: fix warning in iounmap on probe failure
+From: netdev-bot+sashiko@kernel.org
+To: nsvatoslav515@gmail.com
+Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com, intel-wired-lan@lists.osuosl.org,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ syzbot+ca1ef9e2e234b8d3599b@syzkaller.appspotmail.com,
+ aleksandr.loktionov@intel.com, stable@vger.kernel.org
+Date: Mon, 28 Sep 2026 10:10:15 +0000
+Message-ID: <179059021568.3145.6865816311046573732@kernel.org>
+In-Reply-To: <20260924095152.3069-1-nsvatoslav515@gmail.com>
+References: <20260924095152.3069-1-nsvatoslav515@gmail.com>
+X-sashiko-severity: Medium
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260923234819.702327-1-oss.patchbox@gmail.com>
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -143,44 +148,122 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-On Wed, Sep 23, 2026 at 07:48:06PM -0400, Yuho Choi wrote:
-> idpf_vport_intr_req_irq() allocates a name for each vector IRQ before
-> calling request_irq(). On success, the name is released later through
-> kfree(free_irq()), but when request_irq() fails, the error path only
-> unwinds the previous vectors and the name for the failed one is leaked.
-> 
-> Free the allocated name on the request_irq() failure path, as done for
-> the mailbox IRQ in commit 9bff30482c10 ("idpf: Fix mailbox IRQ name leak
-> on request failure").
-> 
-> Fixes: bf9bf7042a38 ("idpf: avoid bloating &idpf_q_vector with big %NR_CPUS")
+Thank you for your contribution! Sashiko AI review found 3 potential
+issue(s) to consider.
 
-I don't believe that commit introduced this problem.
+Critical: 0 · High: 0 · Medium: 1 · Low: 2
 
-> Signed-off-by: Yuho Choi <oss.patchbox@gmail.com>
-> ---
-> Compile-tested only (x86_64 defconfig + CONFIG_IDPF=m, W=1).
-> 
->  drivers/net/ethernet/intel/idpf/idpf_txrx.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-> index 4311ffa30bb1..e7d5e7923371 100644
-> --- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-> +++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-> @@ -4073,6 +4073,7 @@ static int idpf_vport_intr_req_irq(struct idpf_vport *vport,
->  		if (err) {
->  			netdev_err(vport->netdev,
->  				   "Request_irq failed, error: %d\n", err);
-> +			kfree(name);
+If you believe none of the issues are legitimate, please reply to each
+issue of Medium severity or higher and explain why the AI is wrong.
+If any of them are legitimate and you plan to respin, please let patchwork
+know by including "pw-bot: cr" as a separate line at the end of your reply
+(one such reply per series is enough).
 
-name is allocated by kasprintf() which is a wrapper around kvasprintf_const().
-And kvasprintf_const() documents that it's return value should be freed
-using kfree_const(). I don't think it will make any run-time difference
-here, but perhaps it would be best to follow that convention.
+- [Medium] The commit message and v3 changelog describe a different fix
+  from the diff that was submitted.
+- [Low] The new `if (hw->hw_addr)` check before `iounmap(hw->hw_addr)` in
+  e1000_probe() (drivers/net/ethernet/intel/e1000/e1000_main.c:1232) is…
+- [Low] The subject quoted in the Fixes tag is wrong.
 
-Also, for completeness, shouldn't there be error handling for the case
-where the allocation of name fails?
+--
 
->  			goto free_q_irqs;
->  		}
+net: e1000: fix warning in iounmap on probe failure
+
+This patch changes the iounmap() calls in the e1000_probe() error unwind
+so that a NULL hw->ce4100_gbe_mdio_base_virt is never passed to
+iounmap(). On non-CE4100 hardware that pointer stays NULL, and on x86 a
+NULL argument to iounmap() triggers a WARN_ON_ONCE.
+
+Closes: https://syzkaller.appspot.com/bug?extid=ca1ef9e2e234b8d3599b
+
+> Fixes: 13acde8fffc0af ("e1000: Fix the CE4100 bus type for the MDIO/PHY registers")
+
+[Severity: Low]
+The subject quoted here doesn't match the commit it points to. The title
+of 13acde8fffc0af is:
+
+  e1000: cleanup CE4100 MDIO registers access
+
+The SHA itself looks right. That commit added the unconditional
+iounmap(hw->ce4100_gbe_mdio_base_virt) to the probe error path.
+
+Could the tag use the real subject and the usual 12 character abbreviated
+SHA?
+
+> diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
+> index d7f5c6f16142..156903089fa6 100644
+> --- a/drivers/net/ethernet/intel/e1000/e1000_main.c
+> +++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
+> @@ -1227,8 +1227,10 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+>  	kfree(adapter->rx_ring);
+>  err_dma:
+>  err_sw_init:
+> -	iounmap(hw->ce4100_gbe_mdio_base_virt);
+> -	iounmap(hw->hw_addr);
+> +	if (hw->ce4100_gbe_mdio_base_virt)
+> +		iounmap(hw->ce4100_gbe_mdio_base_virt);
+
+[Severity: Medium]
+Is the commit message describing this version of the code? The message
+says:
+
+    Fix this by conditionally unmapping the CE4100 MDIO base only if the
+    mac_type is e1000_ce4100, matching the exact logic used in e1000_remove().
+    The hw->hw_addr iounmap() remains unconditional since it is guaranteed to
+    be valid for all error paths reaching the err_sw_init label.
+
+The v3 changelog says:
+
+  - Switched from pointer null-checks to checking hw->mac_type == e1000_ce4100
+  - Removed redundant check for hw->hw_addr since it cannot be NULL here
+
+The diff has no mac_type check, and iounmap(hw->hw_addr) is still behind
+a NULL check. That looks like the v2 approach.
+
+Was the wrong diff sent with the v3 message, or is the message out of
+date? The Reviewed-by may also have been given for a different version.
+
+The pointer check in the diff looks like the better choice. A mac_type
+check would still reach iounmap(NULL) when the CE4100 ioremap fails in
+e1000_probe():
+
+	if (hw->mac_type == e1000_ce4100) {
+		hw->ce4100_gbe_mdio_base_virt =
+					ioremap(pci_resource_start(pdev, BAR_1),
+						pci_resource_len(pdev, BAR_1));
+
+		if (!hw->ce4100_gbe_mdio_base_virt)
+			goto err_mdio_ioremap;
+	}
+
+err_mdio_ioremap frees the tx and rx rings, then falls through to
+err_sw_init. On that path mac_type is e1000_ce4100 but the MDIO pointer
+is NULL. A mac_type check would therefore still hit
+WARN_ON_ONCE(!is_ioremap_addr(addr)) in the x86 iounmap().
+
+Could the commit message and changelog be updated to describe the NULL
+pointer check, instead of changing the code to match the message?
+
+> +	if (hw->hw_addr)
+> +		iounmap(hw->hw_addr);
+
+[Severity: Low]
+Can hw->hw_addr ever be NULL here? It is mapped earlier in e1000_probe():
+
+	hw->hw_addr = pci_ioremap_bar(pdev, BAR_0);
+	if (!hw->hw_addr)
+		goto err_ioremap;
+
+The err_ioremap label comes after this block. Every other path into
+err_sw_init runs after the mapping has succeeded, so the check is always
+true.
+
+The commit message says the hw_addr iounmap() "remains unconditional",
+and the v3 changelog says this check was removed. Should it be dropped?
+
+>  err_ioremap:
+>  	disable_dev = !test_and_set_bit(__E1000_DISABLED, &adapter->flags);
+>  	free_netdev(netdev);
+
+-- 
+Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20260924095152.3069-1-nsvatoslav515%40gmail.com
