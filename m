@@ -4,25 +4,25 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2ED08CA5FA5
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 29 Sep 2026 14:04:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35CF3CA5FB1
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 29 Sep 2026 14:04:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D5D4D406F2;
-	Tue, 29 Sep 2026 14:04:13 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id CE836405E9;
+	Tue, 29 Sep 2026 14:04:14 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id uZRQ-kVeBBEy; Tue, 29 Sep 2026 14:04:13 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org C8B50404F4
+ id dcB2fMhLZ2ri; Tue, 29 Sep 2026 14:04:13 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org AF2A9406D9
 Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790690652;
-	b=KrSLlq2U+Q2yp/WeBcDxCN1NmD/fIuAHnDhBai6y4MFVmzNB13n/KUkvcRiitl+axOhA
-	 EibievsOh/7DxwZregVhRPDdVnCwu/K/PKahk62Hpg5mBRWU4qnud7b8VJJRTqUAUc9h2
-	 XR/iu4PCbM98NxdJGU151WNaS7/zKQZzSEBb0Bo0sMpIupZz13NxG6gZvPH47GaXwIgUr
-	 VzN5xDKJee558aMO33SdHb6eS2/RTFu+gUhChYnSshP2Mm+V0CdZzbpbYn+ONkLjNWSIj
-	 qTGK4t67BIR1aaWnbhjbuXBkGbSqS49EyCQxbXsPUxAwHzYgJYYzgQlc72dHkNIfHaQ==
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790690653;
+	b=FimZJVIcbXMqo5Rt2YYIyZV0jq4pu1BR8Hg2oiZWW00uyqhNirVM/0454WNYVFNTeEcv
+	 JU+Ul1Zcod+Sa1KBFzIKQFKuf6Xluc3ZyRSZiXJ4iNY2ZzVwJjyUpHb1aFFoVBAezewFk
+	 05X1op3rML/CGbaaRRprCpHNIh93P49QljvYwJ5e9YqDzQyzpZ26/pdenSDAhYBI30HtL
+	 wZHHVfgUrg5XJzaU6XktVnNlNkw1ZglJN/DVJBZk6DSfexJMLbDspaxRa6bisBphC/f7U
+	 YT0I45DXnkwvs12ZUIKsiCfcQFXPrn6xu1rBf07BFX/l1mld+5yXWTsWPHe+6fmXpyg==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1790690652;
+	c=relaxed/relaxed; t=1790690653;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
@@ -31,103 +31,105 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 Content-Transfer-Encoding:MIME-Version:X-BeenThere:X-Mailman-Version:
 	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=J0U2ZuPppH2NjwbCIrXn37RZhk/7ihyg4JkkDJeReJA=;
-	b=JOaNQH8JqaGct0MxgFm3JyiQ8mNn6ZvVJTPqkSvECiz7nWXGIvbMYPWqoNjkdVrQV2oP
-	 OG/qRdBWZKxD9kGvivUlqY4L5GTk2HEmbErqw6g1Om7UqFJrw4NdJ9s8uhr4gB5MPta3u
-	 0+he566lTNJZid6kE/6KYPs1kCAMPb2EVQMwmYqjT/BLpCAGx6Xd52oAGhs1rtJSQWvka
-	 s2sH7FDAGe1RKeah+ZL3OM506SxUlYKHpQ5/x8EbRNDB2yeP2USi35BjQ2GkZY89SWha0
-	 tuqUkWyDPX8pVU3u8+zcBZ6iwT+H4wyT2AhmcXgx/vi4buELhBMV4L50gCBKfsvx+mw==
+	bh=EGsrXk7mGPt8OvlDTwMjjbzt9XQbBGa8qMAsdFFi09g=;
+	b=BrlSGd2aymkwtdfNWBnhCRW4HLHZw6YtgyqKe3DRRwf1EtwPspxfVy1moXoVqIwIOL/9
+	 uIHVVfXulCJlS1Q0SufY4DEgZora3Ry6a2k+YXAcRBTeSUfQaTyLuHYBamxdBUJhUDqW7
+	 2oT0z1TNMKtw/lOGSI7zZ1wuCrAYa9Aivzdkzz5FKT0/PxfkiIVf0q2W/kSAveNkWYj10
+	 gb9s071n8R2IdbRidmK8wqE/3Da7qK+MIzpBqylI1bM0kF28kVM2MrgOQE5n8NBDfa+o4
+	 D95k36TUu39F0QUOcnGY3pNRN7fVowkqVBO/8Y8oubTO7dtXHXUfbk16YAGiMRYlnGQ==
 ARC-Authentication-Results: i=2; smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1790690652;
-	bh=J0U2ZuPppH2NjwbCIrXn37RZhk/7ihyg4JkkDJeReJA=;
+	s=default; t=1790690653;
+	bh=EGsrXk7mGPt8OvlDTwMjjbzt9XQbBGa8qMAsdFFi09g=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=1yjfcrV5XjE6kKgf9LZFyJp714Vzxc6PsdCjjyEZrhUE8VwyTMwtTd4Y0dL3+vDPm
-	 miZ9S3lSpl2oMdVyAot42o1zU/cacZmDtBY3hX37FZ+3NWw7Bygygm9yzQCFAN465z
-	 uvX7U3FCiKEILRmr4Qfrin+pDdSMyyRWIxCh23HgNMkbLdiz7Ng7+4VzZNgcJugZhR
-	 Q8xhRN7mh0pi5nr3dZ583zLLj4fHqiwRNqI23IgzlVxI0GCmpipFliJ5oZKnOcZaxc
-	 3+8w0Mf2B+diL08qfx0PEXZ/EPPAKUkIYLBDWqwjl4D0DkJqtxgPrcpVrXk7jNnqpp
-	 kmPq+g+sHqhfg==
+	b=752g+cBesnqzld0d3Hxr5YCBZTdhybrFsSPx+vIx67651xShWqH4auGymb72cshyx
+	 Sp/iFY03svTa48MB47BCJ0QfCmWoPE/e9R+dqenTaQb40r8L/8I26yjQSy9AD3xy3N
+	 MnptaihsXitTTbjSiO66d1n3yRAxOVCluBQVuGmXdEUYGgB6eBpc3T5Tz4bgBFMEIu
+	 NWIx70LZBbUXW/oheKmVTbm1W1i4poKKoQN8DYGpxCyQgjZu08jHHAPpMQdDnC5vMq
+	 uxLtO63DI+QcMS3SYhIwLVT+kkjZ8Q41AWeyEVpOynd5/Iv1PpVbUrSbNF5KceX1iN
+	 MHkJQGIuFDl+Q==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C8B50404F4;
-	Tue, 29 Sep 2026 14:04:12 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id AF2A9406D9;
+	Tue, 29 Sep 2026 14:04:13 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 78EF734E
+ by lists1.osuosl.org (Postfix) with ESMTP id DF30ED1
  for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Sep 2026 14:04:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 6AB6D40304
+ by smtp2.osuosl.org (Postfix) with ESMTP id C4F6C402E6
  for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Sep 2026 14:04:11 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ZAqVLVX3YSCN for <intel-wired-lan@lists.osuosl.org>;
- Tue, 29 Sep 2026 14:04:10 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org 59008402E6
-Authentication-Results: smtp2.osuosl.org;
- arc=none smtp.remote-ip=172.234.252.31
+ id G44ccRUYboOl for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 29 Sep 2026 14:04:11 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org A493A402EB
+Authentication-Results: smtp2.osuosl.org; arc=none
+ smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
 ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790690650;
- b=PZRXbShCOL0ohbQRJiqtKbhSIK1H77B1sIfORC0E7vqgN0FsFvc5tYiOoPtpNKKvMxZm
- VPEC+OSqC6wCxr9PH2SP+m/9cU+RAlKWvl3paAO4H33/AnLkid+Ku4TCw1dMBsZfzDgDq
- adwi4PNoneJG6XUjDjKuYWGTeIRekl3EUusfymTYxUceYZvIHer6yzEPg6hhYy+OD2Pt+
- ypAkLHb4FHVldqE+IsFt3TfaKjoDFPEwcT7pwXf7Z16VUP5NsYU+XpCk7GLSbZ4zSy9Hk
- pKi0AcBJu/OsKhcWOKtu1G9G2OdHaYEj+PoFTo0QHJU4pGbHSwnaKrMv+B46bxl2ioQ==
+ b=GmBg7dU9A2MngzJrB4a8VtRw5qY+uawhfzIW4n14ADOTWjyq4zqjx09TEf5IpMTff1iz
+ yM589J6XrmTEYML/ZcHqlWjnZYPuKdNtnNx07kvt8X++RD96Abzz2imByTJPLEtJX2/OU
+ 1qSJ046IknREcv3/FESF/3cVUHyg3q8GP9Va7bKR4YD3DvV/YZ29ufk1qAwdd11KW0DaP
+ qLcd62fvbGTDBcER9OpRMHtxXfTYEWq5JEKC1GU0DMPGWWRCnyT+uHYbaA/coxI5MkBBI
+ X2bhPAY8gDtUWLeUQIgoHqhJ3Tw/Kz+0khPUkHCldsMayeI1cfsipG3apP3mVWKtjRQ==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
  c=relaxed/relaxed; t=1790690650;
  h=Received-SPF:Received:Received:DKIM-Signature:Subject:From:To:Cc:
  Date:Message-ID:In-Reply-To:References:X-sashiko-severity:
  Content-Type:Content-Transfer-Encoding:MIME-Version;
- bh=J0U2ZuPppH2NjwbCIrXn37RZhk/7ihyg4JkkDJeReJA=;
- b=n3BajuCHRg2oy93fSLuqdpCw4TBPBTdnJCsmeKE8qAPOT8c1DFrNyA3xAu7dcgRWtWkM
- LoI2IDLLCusF7rHzh78+7GITuwDnPDu/UTbwhA4BWNosja5Gc8s/seLvI4eI02mWsziJk
- XdAodcoGfxtOE+ATkJGYNmFPlSjZ+l6t+7ZAsiL+0hQM0WkMoMDBfBJbZ/+dupJTH/WTv
- o5AGpF2EBbqjt6aL4Fb18qrDvlMiPwphaDwZ6FUNXtiJfgNb//q7Vq1yDWPY2LvjIzeSc
- UPDHVYDwU6W8Gbkqhkc4RWu4Lmp30XKrCwV0f8I+pEvDTvzkd05oPoKJRqeLgLBootA==
+ bh=EGsrXk7mGPt8OvlDTwMjjbzt9XQbBGa8qMAsdFFi09g=;
+ b=hYNYGOdqjj4vQYtzubkc9rBgED8Qmp4zAm78lHQu4ly/1Dt9L1Lkw2J6BqhV9FogOxos
+ XXuMwqC9WzsxViSIiDfr/Sxf15lPOpMP3NweM3Fz9p6vvibKqor14b8MPOkOSbStjEQHh
+ 5M5gTHzKd/Kb6FLJ2GzXjbsmMvWQIHrLUMyJPQ6XsxGMbpVArKJDEYrDi+0KzpwDUWLXA
+ TO9hTFDVQkXjhWJF1fyrF8iiyUPkpCzf8hS6Q0Mc12MThNVsoq7tmqe3mAE10HaNNteiz
+ i6E4Nck+VMUycza9Zb9HqCznapT+ACzty9UyFqV/l76BnjE/SDkrrnwJq/YlYeALiCg==
 ARC-Authentication-Results: i=1; smtp2.osuosl.org;
  dmarc=pass header.from=kernel.org; 
  dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=OuBSky+q; 
- arc=none smtp.remote-ip=172.234.252.31
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
- helo=sea.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org;
- receiver=<UNKNOWN> 
+ header.s=k20260515 header.b=WkG7wXTK; 
+ arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
+ envelope-from=netdev-bot+sashiko@kernel.org; receiver=<UNKNOWN> 
 Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=OuBSky+q
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 59008402E6
+Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20260515 header.b=WkG7wXTK
+Received: from tor.source.kernel.org (tor.source.kernel.org
+ [IPv6:2600:3c04:e001:324:0:1991:8:25])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id A493A402EB
  for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Sep 2026 14:04:09 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by sea.source.kernel.org (Postfix) with ESMTP id 79141436F6;
- Tue, 29 Sep 2026 14:04:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CE91D1F00893;
+ by tor.source.kernel.org (Postfix) with ESMTP id 896C560136;
  Tue, 29 Sep 2026 14:04:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B109C1F000FF;
+ Tue, 29 Sep 2026 14:04:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1790690649;
- bh=J0U2ZuPppH2NjwbCIrXn37RZhk/7ihyg4JkkDJeReJA=;
+ s=k20260515; t=1790690648;
+ bh=EGsrXk7mGPt8OvlDTwMjjbzt9XQbBGa8qMAsdFFi09g=;
  h=Subject:From:To:Cc:Date:In-Reply-To:References;
- b=OuBSky+qok/H9Ha6B6ps/9C1pxy8XJmntR7w+IlGRHZ4JmdxXdQCs6OOaPoSLctCI
- bLSe0JwAla99ICfXUNolYiRUj7qQNqbmb5+QETwA/HRRwo77pgpk9wwFaxgT0Ye5kK
- gUj6M6PygOvOYaCK5PODVpQmr1SJPHwFiERuoxLLziEAb4mN5ZEoqFSTBlN3tDl1fc
- 5ohH7rsqEcXH/lrWYRwkfcwuLlWl2djQPLLPvaclZxBF+/9JXDUH4lFhlmA0ZRcPHm
- tAkjs8Oa2DjlvSOpS9H5iniMytnNjBQqZ56hEaLUCO8r84E4irM5+ToKBsKCKKXMPu
- y0buMK0gk20MA==
-Subject: Re: [PATCH net v5 2/6] ice: extract __ice_vsi_free_stats()
+ b=WkG7wXTK163jlAeBufXNohj0lTB6edtdoRmw3w66jXjNsFE/zY6X4NMLs4k/eXd8I
+ BOmXSO6he1e9HLrl/c/1hVxzOeXPOJ4cXAV4aol14L3LdauHFjx/aDBKJSE7p3ofGi
+ FkXTEcIQJmsWstJexRXvXoOH0S0lSw4VOuNwSneyK6aJdDs207JnSUZto1c9n/B5vY
+ /qlB3K/42o8eH+4IsnCl1/sm/Lt5nBFeu6yYt/Q5WDMpuuJTo1qX/MFdIUY1dmCmmk
+ 5pwVEBSuYARfR4MtY0zibnAEsGiU2TkA6PBWm9t+QyACVtkjyR5WDw2EGCf1Vgw2Ul
+ LHe7V9l26B8KA==
+Subject: Re: [PATCH net v5 1/6] ice: skip stats handling for channel VSIs on
+ rebuild
 From: netdev-bot+sashiko@kernel.org
 To: przemyslaw.kitszel@intel.com
 Cc: netdev@vger.kernel.org, kuba@kernel.org, anthony.l.nguyen@intel.com,
  aleksandr.loktionov@intel.com, mschmidt@redhat.com,
  intel-wired-lan@lists.osuosl.org, edumazet@google.com, horms@kernel.org,
  pabeni@redhat.com, davem@davemloft.net
-Date: Tue, 29 Sep 2026 14:04:08 +0000
-Message-ID: <179069064842.434549.3321384376885392964@kernel.org>
-In-Reply-To: <20260925132636.123300-3-przemyslaw.kitszel@intel.com>
-References: <20260925132636.123300-3-przemyslaw.kitszel@intel.com>
-X-sashiko-severity: Low
+Date: Tue, 29 Sep 2026 14:04:07 +0000
+Message-ID: <179069064725.434549.10623558636835220604@kernel.org>
+In-Reply-To: <20260925132636.123300-2-przemyslaw.kitszel@intel.com>
+References: <20260925132636.123300-2-przemyslaw.kitszel@intel.com>
+X-sashiko-severity: Medium
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 MIME-Version: 1.0
@@ -145,196 +147,103 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-Thank you for your contribution! Sashiko AI review found more severe
-issue(s) in other patches of this series. This mail is only an FYI, in case
-you want to address the nit picks below when you respin.
+Thank you for your contribution! Sashiko AI review found 1 potential
+issue(s) to consider.
 
-Low priority / nit picks for your consideration:
+Critical: 0 · High: 0 · Medium: 1 · Low: 0
 
-- [Low] The commit message understates what the change does and the patch
-  has no Fixes: tag.
+If you believe none of the issues are legitimate, please reply to each
+issue of Medium severity or higher and explain why the AI is wrong.
+If any of them are legitimate and you plan to respin, please let patchwork
+know by including "pw-bot: cr" as a separate line at the end of your reply
+(one such reply per series is enough).
 
-Pre-existing issues:
-- [Critical] Heap out-of-bounds write in ice_vsi_alloc_ring_stats()
-  (drivers/net/ethernet/intel/ice/ice_lib.c).
-- [Medium] The shrink loops in ice_vsi_realloc_stat_arrays()
-  (drivers/net/ethernet/intel/ice/ice_lib.c) still use…
+- [Medium] In ice_vsi_realloc_stat_arrays()
+  (drivers/net/ethernet/intel/ice/ice_lib.c), the new guard skips only…
 
 --
 
-ice: extract __ice_vsi_free_stats()
+ice: skip stats handling for channel VSIs on rebuild
 
-This commit records the length of each ring stats array in struct
-ice_vsi_stats and moves the VSI-independent body of ice_vsi_free_stats()
-into __ice_vsi_free_stats(). The loops that free the entries now stop at
-the recorded length instead of vsi->alloc_txq/alloc_rxq.
+This patch makes ice_vsi_realloc_stat_arrays() return early for
+ICE_VSI_CHNL VSIs. Those VSIs never get an entry in pf->vsi_stats[], so
+this avoids a NULL dereference when a PF reset rebuilds channel VSIs
+while an mqprio hardware offload is active.
 
 > diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-> index 31af378aa0e7a..1414127d32cd8 100644
+> index 9e08db376d3d0..31af378aa0e7a 100644
 > --- a/drivers/net/ethernet/intel/ice/ice_lib.c
 > +++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-> @@ -330,6 +330,32 @@ static void ice_vsi_free_arrays(struct ice_vsi *vsi)
->  	vsi->rxq_map = NULL;
->  }
+> @@ -3031,6 +3031,10 @@ ice_vsi_realloc_stat_arrays(struct ice_vsi *vsi)
+>  	u16 prev_rxq = vsi->alloc_rxq;
+>  	int i;
 >  
-> +/* free single stats memory */
-> +static void __ice_vsi_free_stats(struct ice_vsi_stats *vsi_stat, bool free_entries)
-> +{
-> +	if (!vsi_stat)
-> +		return;
+> +	/* channel VSIs have no entry in pf->vsi_stats[] */
+> +	if (vsi->type == ICE_VSI_CHNL)
+> +		return 0;
 > +
-> +	if (free_entries) {
-> +		for (int i = 0; i < vsi_stat->tx_ring_stats_len; i++) {
-
-[Severity: Low]
-
-The old loop in ice_vsi_free_stats() used ice_for_each_alloc_txq(), so it
-stopped at vsi->alloc_txq. This one stops at the recorded array length.
-Could the old mismatch actually happen?
-
-It looks reachable through ethtool -L with fewer Tx and more Rx queues:
-
-ice_vsi_recfg_qs()
-  ice_vsi_rebuild()
-    ice_vsi_realloc_stat_arrays()
-      krealloc_array(tx_ring_stats, req_txq, ...)   /* shrink succeeds */
-      krealloc_array(rx_ring_stats, req_rxq, ...)   /* grow fails */
-      return -ENOMEM;
-    goto unlock;                                    /* skips ice_vsi_cfg_def() */
-
-After that, vsi->alloc_txq still has the old, larger value. Later,
-ice_vsi_free()->ice_vsi_free_stats() walked tx_ring_stats[] past the end of
-the shrunken kmalloc object. Any non-NULL word it found there, for example
-SLUB redzone poison under slub_debug, was passed to kfree_rcu().
-
-So this patch appears to fix a heap out-of-bounds read and an invalid
-kfree_rcu(). The commit message only says:
-
-  The free path now stops at the recorded length instead of the VSI queue
-  count, so it follows the real allocation rather than a number that can
-  disagree with it.
-
-Could the message describe the memory-safety effect? Should the patch also
-carry a Fixes: tag?
-
-The last patch in the series, "ice: size ring stats arrays from the final
-queue count", has Fixes: 288ecf491b16 for the same class of bug and depends
-on this one. A stable backport would probably pull this patch in anyway.
-
-> +			if (vsi_stat->tx_ring_stats[i]) {
-> +				kfree_rcu(vsi_stat->tx_ring_stats[i], rcu);
-> +				WRITE_ONCE(vsi_stat->tx_ring_stats[i], NULL);
-> +			}
-> +		}
-
-[ ... ]
-
-> @@ -539,11 +545,13 @@ static int ice_vsi_alloc_stat_arrays(struct ice_vsi *vsi)
->  		kzalloc_objs(*vsi_stat->tx_ring_stats, vsi->alloc_txq);
->  	if (!vsi_stat->tx_ring_stats)
->  		goto err_alloc_tx;
-> +	vsi_stat->tx_ring_stats_len = vsi->alloc_txq;
-
-[Severity: Critical]
-
-This is a pre-existing issue, not introduced by this patch. The length is
-only set when the container is new. Earlier in ice_vsi_alloc_stat_arrays()
-there is an early return:
-
-	if (pf->vsi_stats[vsi->idx])
-	/* realloc will happen in rebuild path */
-		return 0;
-
-ice_vsi_alloc_ring_stats() fills the arrays up to the queue count and never
-checks the recorded length:
-
-	ice_for_each_alloc_txq(vsi, i) {
-		...
-		ring_stats = tx_ring_stats[i];
-		if (!ring_stats) {
-			...
-			WRITE_ONCE(tx_ring_stats[i], ring_stats);
-		}
-		...
-	}
-
-On the VF reset path a guest can raise the queue count while the arrays
-keep their old length:
-
-ice_vc_request_qs_msg()
-  ice_reset_vf()
-    ice_vf_reconfig_vsi()
-      ice_vsi_decfg()
-      ice_vsi_cfg()
-        ice_vsi_cfg_def()
-          ice_vsi_alloc_def()
-            ice_vsi_set_num_qs()      /* raises alloc_txq/alloc_rxq */
-          ice_vsi_alloc_stat_arrays() /* early return, arrays not resized */
-          ice_vsi_alloc_ring_stats()  /* reads/writes past tx_ring_stats[] */
-
-The PF rebuild path has the same mismatch. ice_vsi_realloc_stat_arrays()
-sizes the arrays from req_txq or the old alloc_txq before the count is
-recomputed.
-
-Can this write kernel pointers past the kmalloc object? After this patch
-those pointers would also leak, because __ice_vsi_free_stats() stops at
-tx_ring_stats_len.
-
-The commit message says sizing is not authoritative yet. The last patch in
-the series, "ice: size ring stats arrays from the final queue count", fixes
-this: ice_vsi_alloc_stat_arrays() compares the recorded lengths with
-vsi->alloc_txq/alloc_rxq and grows the arrays before
-ice_vsi_alloc_ring_stats() runs.
-
+>  	vsi_stat = pf->vsi_stats[vsi->idx];
 >  
->  	vsi_stat->rx_ring_stats =
->  		kzalloc_objs(*vsi_stat->rx_ring_stats, vsi->alloc_rxq);
->  	if (!vsi_stat->rx_ring_stats)
->  		goto err_alloc_rx;
-> +	vsi_stat->rx_ring_stats_len = vsi->alloc_rxq;
->  
->  	pf->vsi_stats[vsi->idx] = vsi_stat;
->  
-> @@ -3055,6 +3063,7 @@ ice_vsi_realloc_stat_arrays(struct ice_vsi *vsi)
->  		vsi_stat->tx_ring_stats = tx_ring_stats;
->  		return -ENOMEM;
->  	}
-> +	vsi_stat->tx_ring_stats_len = req_txq;
+>  	if (req_txq < prev_txq) {
 
 [Severity: Medium]
 
-This isn't a bug introduced by this patch. The shrink loops earlier in
-ice_vsi_realloc_stat_arrays() still take their upper bound from the queue
-count, not from the new length:
+This guard only checks the VSI type. Can pf->vsi_stats[vsi->idx] also be
+NULL here for a PF, VF or other non-channel VSI?
 
-	u16 prev_txq = vsi->alloc_txq;
-	...
-	if (req_txq < prev_txq) {
-		for (i = req_txq; i < prev_txq; i++) {
-			if (vsi_stat->tx_ring_stats[i]) {
-				kfree_rcu(vsi_stat->tx_ring_stats[i], rcu);
+If an earlier ice_vsi_rebuild() failed inside ice_vsi_cfg_def(), the
+unroll path frees the entry:
 
-Tx is committed here, before the Rx krealloc_array(). If that allocation
-fails, ice_vsi_rebuild() exits through "goto unlock" before ice_vsi_cfg_def()
-runs, so vsi->alloc_txq stays larger than tx_ring_stats_len.
+ice_vsi_cfg_def() {
+    ...
+unroll_vsi_alloc_stat:
+	ice_vsi_free_stats(vsi);
+    ...
+}
 
-On the next rebuild, does this loop read tx_ring_stats[] past the end of the
-array? It would also call kfree_rcu() on whatever it finds there.
+and ice_vsi_free_stats() ends with:
 
-In the opposite case, len larger than alloc_txq, krealloc_array() seems to
-drop the entries in [alloc_txq, len) without freeing them.
+	pf->vsi_stats[vsi->idx] = NULL;
 
-Later in the series, "ice: rebuild ring stats arrays instead of reallocating
-them in place" removes ice_vsi_realloc_stat_arrays(). Its replacement,
-ice_vsi_free_unused_stat_arrays(), frees surplus entries only up to
-tx_ring_stats_len/rx_ring_stats_len. It also allocates a fresh container up
-front, so the partial-failure state can no longer happen.
+ice_vsi_alloc_ring_stats() does the same on its err_out path.
+ice_vsi_rebuild() then returns through goto unlock without restoring the
+entry, and the VSI stays in pf->vsi[].
 
->  
->  	if (req_rxq < prev_rxq) {
->  		for (i = req_rxq; i < prev_rxq; i++) {
+Some callers then call ice_vsi_rebuild() on the same VSI again. One
+example is the fallback in ice_setup_tc_mqprio_qdisc():
 
-[ ... ]
+	ret = ice_vsi_rebuild(vsi, ICE_VSI_FLAG_NO_INIT);
+	if (ret) {
+		...
+		if (ice_vsi_rebuild(vsi, ICE_VSI_FLAG_NO_INIT)) {
+
+The same thing can happen through the unroll path in
+ice_sriov_set_msix_vec_count(), when userspace retries ethtool -L or -G
+through ice_vsi_recfg_qs(), or on a later PF or VF reset.
+
+On that second call vsi_stat is NULL and the type check does not catch
+it. If req_txq < prev_txq, the oops happens at
+vsi_stat->tx_ring_stats[i]. Otherwise it happens at:
+
+	tx_ring_stats = vsi_stat->tx_ring_stats;
+
+ice_vsi_free_stats() and ice_qp_reset_stats() already handle a NULL
+entry. Would a !vsi_stat check here cover both the channel VSI case and
+this one?
+
+The new comment, "channel VSIs have no entry in pf->vsi_stats[]", also
+implies that only channel VSIs can be missing an entry.
+
+A later patch in this series, "ice: rebuild ring stats arrays instead of
+reallocating them in place", appears to fix this. It replaces the
+function with ice_vsi_resize_stat_arrays() -> ice_vsi_install_stat_arrays(),
+and ice_vsi_set_stat_arrays() handles a NULL entry with:
+
+	if (!vsi_stat)
+		return;
+
+Should this patch check for a NULL vsi_stat as well, so that it is a
+complete fix on its own?
 
 -- 
 Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20260925132636.123300-1-przemyslaw.kitszel%40intel.com
