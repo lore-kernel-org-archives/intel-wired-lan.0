@@ -1,280 +1,135 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E10BBCA5FA1
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 29 Sep 2026 07:08:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CC190CA5FA5
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 29 Sep 2026 11:41:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 9016C60606;
-	Tue, 29 Sep 2026 07:08:14 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id M_1zqVdBjjUA; Tue, 29 Sep 2026 07:08:14 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org C9AC3606F5
-Authentication-Results: smtp3.osuosl.org; arc=fail smtp.remote-ip=140.211.166.142
-ARC-Seal: i=3; d=osuosl.org; s=arc; a=rsa-sha256; cv=fail; t=1790665693;
-	b=gpiHG7DIqRT3Y2rXy2K0UBjQQECMIk7Q1mnmFOgEllc/ufwnaa0JCcf3cApvTNRBEo+N
-	 XK9ukedamnoYhBgwafAEFc4sJPOl/s5X8ZLzv7/Vh0wa7qSxz4Kqbnizttj5dJsqZJr39
-	 gXpN3zeut6B+nTS16qhL/NvwKM7NNvUf0hGdHZAw/FQctIcv1CsonMifzkh2nrkrnmkTd
-	 uDuSBG/9SkMty+B+BHdROzrPOKyv0eKvUboxximJDtQqZGq8l2ognqi047dk+bC3g1LaJ
-	 /9U0bfZScY/Fu9J/+c4ALpKHlcjark9VI+CC7fhDZ0YTFYoQNKmA0/fP7TKLgayZ+dw==
-ARC-Message-Signature: i=3; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1790665693;
-	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
-	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
-	 DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-IronPort-AV:
-	 X-IronPort-AV:Received:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-ExtLoop1:
-	 X-IronPort-AV:Received:Received:Received:Received:Received:Received:
-	 From:To:CC:Subject:Thread-Topic:Thread-Index:Date:Message-ID:
-	 References:In-Reply-To:Accept-Language:Content-Language:
-	 X-MS-Has-Attach:X-MS-TNEF-Correlator:x-ms-publictraffictype:
-	 x-ms-traffictypediagnostic:x-ms-office365-filtering-correlation-id:
-	 x-ms-exchange-senderadcheck:x-ms-exchange-antispam-relay:
-	 x-microsoft-antispam:x-microsoft-antispam-message-info:
-	 x-forefront-antispam-report:
-	 x-ms-exchange-antispam-messagedata-chunkcount:
-	 x-ms-exchange-antispam-messagedata-0:Content-Type:
-	 Content-Transfer-Encoding:MIME-Version:
-	 X-Exchange-RoutingPolicyChecked:X-MS-Exchange-CrossTenant-AuthAs:
-	 X-MS-Exchange-CrossTenant-AuthSource:
-	 X-MS-Exchange-CrossTenant-Network-Message-Id:
-	 X-MS-Exchange-CrossTenant-originalarrivaltime:
-	 X-MS-Exchange-CrossTenant-fromentityheader:
-	 X-MS-Exchange-CrossTenant-id:X-MS-Exchange-CrossTenant-mailboxtype:
-	 X-MS-Exchange-CrossTenant-userprincipalname:
-	 X-MS-Exchange-Transport-CrossTenantHeadersStamped:X-OriginatorOrg:
-	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
-	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=0bL0RX9E1XrlsSgQFrKJ3BXF6DMxdV7P/hZ5dT83+2M=;
-	b=XIkE2qKd2RFzRllCBeJZte2W/qVvgCV6F7lP4MGfFVJgIs3C8bvISKU7mDnE8suGa7vV
-	 DLMyUcwHZ1/jYv6fQfbQbN99ssN0yu4KODcFzT3oto4bbe+DAC5LlVo6eIBEmEed019Te
-	 aq5hEFV3UpCPfPkhnCUoIDnPCE4MTYSJJo/gtgXsg4g4yki4oIc5pNYuPS6qlqUpan0WM
-	 ClcKuEsjZ2FmwLyXx2eO+sBl1GC1PEvxO5D+wwp55dpmhGgyowERYE4fkF5jDQ0X28XrH
-	 wbYao2XVLVBKo7jPhcMHidURdo+zniUMapgceYUzw17vF9iGxzRvt4ip08wycU7LDLA==
-ARC-Authentication-Results: i=3; smtp3.osuosl.org; arc=fail smtp.remote-ip=140.211.166.142
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1790665693;
-	bh=0bL0RX9E1XrlsSgQFrKJ3BXF6DMxdV7P/hZ5dT83+2M=;
-	h=From:To:CC:Subject:Date:References:In-Reply-To:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=bQ4f0k5QJ/Y8w2fQrGwHYN/GpWsYZ3ZFHHSJG0qHjzy68t9HVMjoEoAuqO1J3d2KT
-	 AEEVohonjcMX94jww87KF0QXXRpwCNbAcps8JF7mQK8ceIKe+513E3FIoichTENvrn
-	 MJGCCfKiPDt4hIZp6zVnCZkOQ9k7y75lyMqSEkNP4LE4MsYYfh4I3A5JrVgVws+pNa
-	 yFN6TUQpgmL+jYCvMA7R96Wk2cMZS41DAOjjfviis92jgMb8pVfwH3+xiGTodswab5
-	 x26GKX8+x+VQMIcxBv2vLBX7x4wnSrWZeMq0BBdMqtaOhCSgmO5Ueeuta3G2CXT3+R
-	 9RXthkFvYlWyA==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C9AC3606F5;
-	Tue, 29 Sep 2026 07:08:13 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id C839B417
- for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Sep 2026 07:08:12 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id AD8E580984
- for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Sep 2026 07:08:12 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 702BB80C73;
+	Tue, 29 Sep 2026 11:41:09 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id gHbo_NgXX_7w for <intel-wired-lan@lists.osuosl.org>;
- Tue, 29 Sep 2026 07:08:11 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org ACAED80981
-Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0
- smtp.remote-ip=198.175.65.13
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790665691;
- b=MyNLN8IwImNHfZG9ij/p7URTO6FjNF84TwZ3CfGqVDcVZgI72/yAr1TZlIDnAPSOPw7+
- 9cmetleKK+MRxwLcF8+7bkS/TZ64Hm8PEr/SZDBBemTHx3Xu1BPmDimKNSCUkGRBRzluX
- YoEfTZbw1uAGQlj1fAN3HfFsdoI9BerIOaPTEHYvNkFRxqn8Z/7aC18Bxpzs4S2yaAl9B
- YDviz+q97crdchuNRATaWH51yfcGN6iLWpEs7R9AvguaR0bzTNaKu8uLbiIKhdzQu1Y+4
- SlRlYYHrMt0QM0PstltmoPnBMDg1I8ZK9PHaoDPtBsYQdVGpH67lFsv+/n6bimkj6Tw==
+ id jFv-Qg5Kyubr; Tue, 29 Sep 2026 11:41:08 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 71FEC80C77
+Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790682068;
+	b=Pne5Veedn1CrXOgSeUfTM4H64PlEA5G91INfxzqf4/aXjXP5c+cO0pqylLdnSUqYZ5d4
+	 ekN/9zpQqEhPMOmoT575Pj0VXJRclfOgv6dqVhToDHQMGqnvlnY6DAr2TUEf5NvilFQ3N
+	 tgYC2QTXCdO3DvX9joca8AHb1DMoeJwzRVhnBi94TroZRJ5Wv0H+WFkrC4ui4MjVJ88Rw
+	 OhjPLych9Iyr3q5oQPa+U8yPot0aVnTtSsPhh+o4fXYScX5s9UEJp1+w7eNOBhJ0xC+Aa
+	 RndmnbkXQXmnAwOym2/BRajOHWCkJz+JFgqGW7Hg8Y16oAkG+J+y5SnVBbBuXuxuiXA==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1790665691;
- h=Received-SPF:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
- X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
- X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Received:Received:
- Received:Received:Received:From:To:CC:Subject:Thread-Topic:
- Thread-Index:Date:Message-ID:References:In-Reply-To:Accept-Language:
- Content-Language:X-MS-Has-Attach:X-MS-TNEF-Correlator:
- x-ms-publictraffictype:x-ms-traffictypediagnostic:
- x-ms-office365-filtering-correlation-id:x-ms-exchange-senderadcheck:
- x-ms-exchange-antispam-relay:x-microsoft-antispam:
- x-microsoft-antispam-message-info:x-forefront-antispam-report:
- x-ms-exchange-antispam-messagedata-chunkcount:
- x-ms-exchange-antispam-messagedata-0:Content-Type:
- Content-Transfer-Encoding:MIME-Version:
- X-Exchange-RoutingPolicyChecked:X-MS-Exchange-CrossTenant-AuthAs:
- X-MS-Exchange-CrossTenant-AuthSource:
- X-MS-Exchange-CrossTenant-Network-Message-Id:
- X-MS-Exchange-CrossTenant-originalarrivaltime:
- X-MS-Exchange-CrossTenant-fromentityheader:
- X-MS-Exchange-CrossTenant-id:X-MS-Exchange-CrossTenant-mailboxtype:
- X-MS-Exchange-CrossTenant-userprincipalname:
- X-MS-Exchange-Transport-CrossTenantHeadersStamped:X-OriginatorOrg;
- bh=0bL0RX9E1XrlsSgQFrKJ3BXF6DMxdV7P/hZ5dT83+2M=;
- b=JXh+c07z2mI0ReddezM+0QjwFAVyS/BUCrobcmk6EPiT/ubpC6Ot/710brHNJqRhXPxg
- kiaN8Cr0LjZdDZ71GZUGFKLEwF6lpSMrfs2VGynWwejFDqK6gjlUUYzAb/F/6RLBR19sk
- TDfC+36S5/bj+V3zaRkwWB3wJ0PuVWkyEiyayZKVH+G7PFwSRwYvKhH/k4tcm7TH2isBl
- 6gTEoIBbA7cARkVx8255CFO2zXC5McaXI9ZRo3S0k+U3p2xpafafOSmf0qz3Brzy0vQUO
- Ce8LZ4Yh9V+7xk0AYjxLOWdX3XOfnIsQQgbz06UybyZxUwZaguEz39jAp1LqBcBmlKg==
-ARC-Authentication-Results: i=2; smtp1.osuosl.org;
- dmarc=pass header.from=intel.com; 
- dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=BKgwQt3F; 
- arc=pass header.oldest-pass=0 smtp.remote-ip=198.175.65.13
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.13;
- helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
+	c=relaxed/relaxed; t=1790682068;
+	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
+	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
+	 Received:DKIM-Signature:Subject:From:To:Cc:Date:Message-ID:
+	 In-Reply-To:References:X-sashiko-severity:Content-Type:
+	 Content-Transfer-Encoding:MIME-Version:X-BeenThere:X-Mailman-Version:
+	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 List-Subscribe:Errors-To;
+	bh=YajkRf88ajtVJDW2GBmYe9Gx4OdPQQLdhTOJZupqZvk=;
+	b=SeX0tcmFV5y7BKUH9A8N+RJG+S1PNIvswwSRXRsf4O3qqrwtfwLQaxF39KcecXKKT/wr
+	 3H2F2wQCI/IMsgdGU8yOMa77mXRLstz08Hpt9u685D/MbyFCtbZHZ3vOsFK+nozjSB5Ke
+	 6AqWdaJy5B36+1PkUw9SsSN2ecpGx3cYF/sLyfAtHpUEzu2jd2Cu7R3rnNiftNv/PrFlC
+	 kGAwVs6sHNBiuanAOQyz+zth67ecucZqgFqLL0L3mcOVtvJoD0GEUgh5P3eK8GYZxnrA8
+	 cetT2ZzGeLNW0jW57XZTgxIEaEuwK7KDM+R/hewYDCpjzw8YXgGBYVMYAasubNo/h0w==
+ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1790682068;
+	bh=YajkRf88ajtVJDW2GBmYe9Gx4OdPQQLdhTOJZupqZvk=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=g7pMXewW7v4KLLADDO9H4cxXBzojefkgJn/ACsgExZX0VB+gh6SIruo/I6VmTAgzQ
+	 pUYUDRN3crycVkJAyqOILooXWP6zI/f6Ra7l2lDKmxTz4e/oTi44nDjN0rt8ee2OOa
+	 QAngdzb/7HUaxWGsCUVht30dORCHO5cKTluZdloslfl3UxXkVNOtKkDyEg4TUgXPCI
+	 4hJfQfPFEKOcIDDrKqbUnWE2JLuDot3HM4yOVo/pkqCuz4kVz+VmE9HUSc3J/I43Lo
+	 WQO6eQxIxq6Mk+RR6AcXdSKiTXohRhiad2aeqcXSjkP7h9tAdyJLT+UOZtse3siSVZ
+	 av4+CcZt0YOJw==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp1.osuosl.org (Postfix) with ESMTP id 71FEC80C77;
+	Tue, 29 Sep 2026 11:41:08 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 661E82E5
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Sep 2026 11:41:06 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id 573A26071B
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Sep 2026 11:41:06 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id biicQGwni6t8 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 29 Sep 2026 11:41:05 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 175A660774
+Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790682065;
+ b=JPewQWJsPMCoKj6W+nnWB6XDxRz/JpKq88p9eh/D+M7KbLLnpSXhyncJ8f2asScRtEW8
+ uhqsUGfncaVIe64Ywo91dujBaq8pHvfuPLK6erPAJuICrRTF2c2Y33V6LQ1PZB/tTEukR
+ cozwHB5+zjwZ9cWs/FH7BSp2x9C1P7Yb+qJKt6jsmXDi8qANT7YlQXxNf7sFdApwSUiJR
+ 8E7iOdhw9ENea7vFu9pDKO65M2D6jphJojF7h6dnyZo2TRP4o/dIHKgn5nt6iKRVLeSB4
+ gwemQayHWrn7zbaGNL/MealTuF2C7GmAwuJ4Hvg/4GzTh1+6I6pGAJPGUfa63NawIAA==
+ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
+ c=relaxed/relaxed; t=1790682065;
+ h=Received-SPF:Received:Received:DKIM-Signature:Subject:From:To:Cc:
+ Date:Message-ID:In-Reply-To:References:X-sashiko-severity:
+ Content-Type:Content-Transfer-Encoding:MIME-Version;
+ bh=YajkRf88ajtVJDW2GBmYe9Gx4OdPQQLdhTOJZupqZvk=;
+ b=XEP5iV82KEvMBVbVPH1vsltYHBRMlI2OQu3gO2WpR5X7BPUDiWqYU7LrrYI23A4WXJmj
+ bWU5STqC1F/gCIA165UzPOOk6OtdwsD7L8vg4GgwNoF38JTrv5hfKHM+pkiA8wd2yPvaC
+ n+tYO/EYz/IWtXApRj90oKDaJSo8f+cYVI34VsBQiOYZ4/GHrdwGO0Mro9u6QQxncDK3T
+ SQ7jTRN2FMKcUCFMXRWsJDyyZhGFnzWzV6ffcKreDbqyec9BU/ToKAMwbc6IfLD/drDfC
+ AGfT1alnm2GhYgN6tbOWyswonLNQgJjxJLoaYCBNc6rpmkKPn0k9yWT7TkZzaZtRLtw==
+ARC-Authentication-Results: i=1; smtp3.osuosl.org;
+ dmarc=pass header.from=kernel.org; 
+ dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20260515 header.b=m3BD3xoV; 
+ arc=none smtp.remote-ip=172.105.4.254
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
+ helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=BKgwQt3F
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
- by smtp1.osuosl.org (Postfix) with ESMTPS id ACAED80981
- for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Sep 2026 07:08:09 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1790665692; x=1822201692;
- h=from:to:cc:subject:date:message-id:references:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=rPP6mmCHnA9/vGm5ZRqPBYbmjf89j2RwHuknlGYoBrc=;
- b=BKgwQt3FQ3XbwsPR5qF83iXp5fH8r8/MRJ0z8bj9x8M3Gh2sSJykVNof
- VUNYrNRI0U8KEO2nFrBMRVXWrIy7xA9f5gBA6BIh1zCcGZcpXrdoedwFc
- cmYDnsLoNdThygC/SpHVRVsA7UK9738ndDSRTRgyR+a52bcTaIHkDiGia
- AZ7th3whRthc38kyHdtWr/S5cxWrs+k4salIIxmWGeLVyyFvi6jO03eo8
- cn34TQjEoVO8eJR8DDYncDAf8gYklfezKepC5cMfWX3kmqxPXdU20Gx9u
- u/QAFZvYzslWGLLk1CsBulQTvK35gwhr5d1Az4xOxS8KapzovLrHUH+F8 w==;
-X-CSE-ConnectionGUID: ixmtviQ3T4SPgp9JuRI5sQ==
-X-CSE-MsgGUID: lr5xRHJLSum3FrsiO1PSoQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11919"; a="101542402"
-X-IronPort-AV: E=Sophos;i="6.27,130,1787036400"; d="scan'208";a="101542402"
-Received: from fmviesa009.fm.intel.com ([10.60.135.149])
- by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 29 Sep 2026 00:08:09 -0700
-X-CSE-ConnectionGUID: be+PZ8pLQfyjHHKT0xbtyA==
-X-CSE-MsgGUID: ttiK9VMxRTeyILqf/5/2Lw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,130,1787036400"; d="scan'208";a="271771784"
-Received: from fmsmsx903.amr.corp.intel.com ([10.18.126.92])
- by fmviesa009.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 29 Sep 2026 00:08:08 -0700
-Received: from FMSMSX901.amr.corp.intel.com (10.18.126.90) by
- fmsmsx903.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.46; Tue, 29 Sep 2026 00:08:08 -0700
-Received: from fmsedg902.ED.cps.intel.com (10.1.192.144) by
- FMSMSX901.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.46 via Frontend Transport; Tue, 29 Sep 2026 00:08:07 -0700
-Received: from DM1PR04CU001.outbound.protection.outlook.com (52.101.61.30) by
- edgegateway.intel.com (192.55.55.82) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.46; Tue, 29 Sep 2026 00:08:07 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=ef1OxdfPTLfPjLoy37riOrPYynXwTq8ZN7Tie93LV78NqIzHZ1qlcHB9JyL1rbvZmK3F3b1xSduW5Vg2xM0MZknBFFnZWv1qMMyQNInMdvKmffFQsGrmDF/TR7RMJRKxdtsbUtAA4x6HEvHGFY4txrwEBu1veHDF3XAJ+K1CYO3GKo7VQhD/dlwF2kVZnT5JI4TP9Y5PKUwG8jZKGDn9Y4zdFJPyf+MLDIsHFqX4SMGZQJipjM/aMUKxIKaiAvtPUDEGXE27bM7FK2l11bDKQ3s5G+jEbcB3jY+VYUjL4RB1r2YNEoN1TPA+cFwBJMPCms4CS4E4BSwo//9/4AuVaw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=0bL0RX9E1XrlsSgQFrKJ3BXF6DMxdV7P/hZ5dT83+2M=;
- b=LINQi7dEUUyI2Ub+jHASFhaOzkapfbh6Yv50Gd2iAkiENmm3FQX4P9cFpNGrVks47XrytxisnUaQvOYuRqKJO+hi/PCimliV3/tlJSQ2CxTmb85lzFTQQldI7rI1AZxuS8EWxZz0aZr9fghHanaSi91gBJ0Sgktf90fyoOKngqcNsEv1hHxkn8vyDYu2J5Kh0ZNFoXrX/jZB4DSWd1UZJ5iVoMAa7Ql34nKTwQeT6LkQbJyBIQW80ZkPTZK9tDF+s909da6snBhgAyD6rGsoywj8PH4SPf7KeU46eKAiokt4nQXvKp2KRNCqMgnpaju125fMIXjmO11PId+NW6Kg3w==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from IA3PR11MB8986.namprd11.prod.outlook.com (2603:10b6:208:577::21)
- by LV8PR11MB8511.namprd11.prod.outlook.com (2603:10b6:408:1ed::11)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.24; Tue, 29 Sep
- 2026 07:07:41 +0000
-Received: from IA3PR11MB8986.namprd11.prod.outlook.com
- ([fe80::e6f0:6afb:6ef9:ab5c]) by IA3PR11MB8986.namprd11.prod.outlook.com
- ([fe80::e6f0:6afb:6ef9:ab5c%6]) with mapi id 15.21.0451.022; Tue, 29 Sep 2026
- 07:07:41 +0000
-From: "Loktionov, Aleksandr" <aleksandr.loktionov@intel.com>
-To: Hongyan Xu <getshell@seu.edu.cn>, "Nguyen, Anthony L"
- <anthony.l.nguyen@intel.com>, "Kitszel, Przemyslaw"
- <przemyslaw.kitszel@intel.com>
-CC: "andrew+netdev@lunn.ch" <andrew+netdev@lunn.ch>, "davem@davemloft.net"
- <davem@davemloft.net>, "edumazet@kernel.org" <edumazet@kernel.org>,
- "kuba@kernel.org" <kuba@kernel.org>, "pabeni@redhat.com" <pabeni@redhat.com>, 
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "jianhao.xu@seu.edu.cn" <jianhao.xu@seu.edu.cn>
-Subject: RE: [PATCH net] net: e100: cancel timeout work during removal
-Thread-Topic: [PATCH net] net: e100: cancel timeout work during removal
-Thread-Index: AQHdT08Lu9l88thpV0KuKLwQXrVYOLblI8HA
-Date: Tue, 29 Sep 2026 07:07:41 +0000
-Message-ID: <IA3PR11MB898623140BD84D12FE2234D2E58C2@IA3PR11MB8986.namprd11.prod.outlook.com>
-References: <20260928134121.826-1-getshell@seu.edu.cn>
-In-Reply-To: <20260928134121.826-1-getshell@seu.edu.cn>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: IA3PR11MB8986:EE_|LV8PR11MB8511:EE_
-x-ms-office365-filtering-correlation-id: 918e446f-952e-4dd2-7cb2-08df1df85a22
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
- ARA:13230040|1800799024|7416014|366016|376014|23010399003|10067099003|11063799006|56012099006|6133799003|22082099003|18002099003|38070700021;
-x-microsoft-antispam-message-info: x8Q3stj5Z/K7psQji+pp19o4jn2wvMij9buwewfY/6P7ZLJoEC3IZhjahLiPqhiAUPTZnc94SY2pdQZJ3aPBaSfVsaCG1fluLcglgr+FBDDv/SCxb8vy/vQ9yj1ZfYw9rAZmtGdYVJ9B7DFh38x9I9lhcrsJyVQSla8u+3hminQroxwjBSBQRAbNX2V9lxDZwcA7fCwA/EPzLySuM/umgLs+RCzMZW/0qnrr1qv32W3O50O3cLmuYQyW3fc5aMnongP8ObbVLAY7DB9molcGxc+egpgLiDGvkSysfx/fB+67EABdIHnAkdVDI9c7DeOMmBCx8r39i5JklOhWdqHwFIgvVC00UB173RScuhjn1S/T5wyWil7xiOB/Eid5pYKq0FoEVjvM5KugSVlXGdD/95wznF//zrHlGzZTioxuEkWfSJNvw0xeJk6tKXGcAee10NgsxpXiLM5iey8QdkFEpcrjfUOPlcQ9rjLNMD1aq1tlE+KS9uUx+aQjiEWlSj7KrnIVSZiosgAjkNFKX/T+lsormt0AWjz/He9M57Xz6EcLN3YuPzHLrblWoPNUpdyahgFnsiHJNYP5x+IqM81eQOxbmsrwu8XpmnGapOT5F2HCHB5XkEo5de2s01wKknF6fbTFinb+zEUgfrnDahQkovKvDi4/oyOzvKlypaD8SFQM/7vdDYmM1FBkhZb3leDk42TcyouXRY28qxdENfq9c8Zk8JV50EWPjyB+xhD/A7Q=
-x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:IA3PR11MB8986.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230040)(1800799024)(7416014)(366016)(376014)(23010399003)(10067099003)(11063799006)(56012099006)(6133799003)(22082099003)(18002099003)(38070700021);
- DIR:OUT; SFP:1101; 
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?YZKApI8EQRgpnWuo5NL9yzjLGT2hzJTozHZKqJUK8Xli4b0m6uSgxMO93s/9?=
- =?us-ascii?Q?DDdrp+WRxb/EyjOMJz2Rdho9YF5aMqucAVKT634SWEYfoHeT+o1btyr3f0QB?=
- =?us-ascii?Q?cyRVmmXsoXDE3uIZ2w4p7SSYVgO2V2ArAfPu2vu6pAyKfPiZJ7Tatx0Yr18n?=
- =?us-ascii?Q?Oub893nRKrEj+KdUbcI+O6jBQdyouNHACHSVKRdVgletwApBeAERPPq9wDfD?=
- =?us-ascii?Q?M1HSi0vmlz3bllVTMnf1Fu0EgeQzvO65sOoC89jxbBkbSuciyzLFL5XMap8T?=
- =?us-ascii?Q?kwRv1x1ABTHTGMleJdOkUpn1QPo5A4lu6mxHjS1F5/yOfKcb4c8bXeihm5tg?=
- =?us-ascii?Q?x9yUk9Nfm9RwoK9iSMd0SDaSDL4lbHwGMuWUesihqj3JL/WPTG7Sk9AUKpC3?=
- =?us-ascii?Q?Jnl4yDQXBmvuG6hSMxOq+D6bClotHmhrURJu8JLeS98NymxKOhkefDkLijKn?=
- =?us-ascii?Q?SXLL1yCF3BHv7g6Bkicvylkog6CW7avQo/WcqRLL7ka5m8L4xRUPRVMzIsjS?=
- =?us-ascii?Q?KTJDtCOHpAFS2ctBUbc+m1wGhMoIEhFCCKeapBbiJiEqTIsffdlD+CYxF5OR?=
- =?us-ascii?Q?FggOWgmPl2CjPgFYvR1JW4b7kpE+ER/YcHHk2fUI6bx22n9MsG9ATy0J0EGd?=
- =?us-ascii?Q?ZUIRgCDouDUUqwSfZJuATA9okY9qqRK88eIKFvUd6+62CPtPJ++hfpJm/K1H?=
- =?us-ascii?Q?cgmdoaUL3XENXt86b5FjWMKhOT40DnHZFQwCMPjzd0HG5P3SukiRvnJ/KyAO?=
- =?us-ascii?Q?WAIML3H+ncbIFKEkVd5sn6sFAgE2BJyLuE8zrW6lV+xMzJalYNzsey8gnc6k?=
- =?us-ascii?Q?g1+6r/4kjFcC2rDUQbBK8EYgTzStrItEGYSgtBy+YoWF/Fd6pgUtsSjoK4mh?=
- =?us-ascii?Q?BKz1RGDiTn/QSbba2E+BkYKKz2gwFsR97W0yu7cHwoNprO9Km2IrfYOERzS0?=
- =?us-ascii?Q?DKnxiawGf4yTJIO3ekvjAGGDGPVYysAZNqrmzhwrifQ5Pyrmk2xCg9hujdFA?=
- =?us-ascii?Q?wgPo5bBN6R0Rd46A1WJLInCJjf4+wJRjg0EOK0k9nCkEaka60e//jtilYf7e?=
- =?us-ascii?Q?IYM1fMtp+3xhgDIjQCuPZvVv58CpavwI2MK6CsP1+sAKnZwzFrVHCvEvbMEv?=
- =?us-ascii?Q?2X+kwy/rF+neWeKAsK3fHbcE0P1A9jiEa69sLPzNyMPCCKAYuXAdPwSyXtzO?=
- =?us-ascii?Q?20JUe8GXrjmaaHxa5+4eYM+7Y2+Gy24/IvNOCX6b7SD044iiVrRgICsDa0yT?=
- =?us-ascii?Q?MnUuhR6KSQQP2SovPvJH0jB78JfDDvoKJVsUtuotg3s8wv6NjzpshDOyMmVc?=
- =?us-ascii?Q?1etomDcdYvxKaX/7QylPWAy4UBXMhDQWyYKj2i2RFXYvv4DT8qtR/A1cz3dq?=
- =?us-ascii?Q?Ce5c0252t8Yq4qbo7BVpJh24CcNHNIQqc7D13p4InAmCiNKA/3V2iQTHR4pr?=
- =?us-ascii?Q?Urh6J79loyWmfKXf9TTXq2nQok6UX0M3gbcDLHJhF9UTyDRe0+fQ1EdsFtsY?=
- =?us-ascii?Q?CpNCViN1gVVuG/26ITJ+sJV3e7Cjf+q+SLbskivd2x7/88Bt34o0h6PiITMZ?=
- =?us-ascii?Q?30Mln7vs2Fmr74/yhHb/aaOlfDIIZryPkreU1+pYCx3Rm07i1Al2x7vyfDRk?=
- =?us-ascii?Q?p6i/iz7nkWEZ62TBChs2r3kRUhzvFdgaJdcgR/yCKd9+MDeoi91jeU6z0RoC?=
- =?us-ascii?Q?xM0Yr2MJKuMFehT24jr2RzeX2AC90K7RqSc7N1S7zxo3YzPo0DSZFrEgRYRC?=
- =?us-ascii?Q?jNOBaf2JSLNNsVFWJ9NcaIB6GHa00VM=3D?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Authentication-Results: smtp3.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20260515 header.b=m3BD3xoV
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 175A660774
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Sep 2026 11:41:04 +0000 (UTC)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+ by tor.source.kernel.org (Postfix) with ESMTP id EDF5C60136;
+ Tue, 29 Sep 2026 11:41:02 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2B4191F000FF;
+ Tue, 29 Sep 2026 11:41:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+ s=k20260515; t=1790682062;
+ bh=YajkRf88ajtVJDW2GBmYe9Gx4OdPQQLdhTOJZupqZvk=;
+ h=Subject:From:To:Cc:Date:In-Reply-To:References;
+ b=m3BD3xoVf5adZLLJLspFFFQ8xVDWkY7frxQhjiVgDVUJtGNib5/hFeT8BIeafT7sO
+ elqBRpd+jh0AqlZEAMRd9DOOuY4R7USk0vD1GnpMOucxS1Llonzmxpyp0kTsb55DTz
+ RhJNaOZgxxQfqg0YPXLTooImbpbJlcYJzNM1FyyQqcN8NLpbhbHZwRyoRpexmGJ4id
+ Ks2wDdsmCwd/Dnwl2nkXNFFz8bTEoGp2IY5MXUImv3CIkZU43FnFHOc2VJCMGnCw7E
+ 0hUSSyc2woGKrRssUA679fkrCSkDqJptGCRF4FMenC50gX2poxWv6vFTGYOOkRZ7mZ
+ eNHEUMtqGYoYQ==
+Subject: Re: [PATCH net] igc: Disable PCIe L1.2 substate on I225-LMvP and
+ I226-LMvP devices
+From: netdev-bot+sashiko@kernel.org
+To: danividanivi@gmail.com
+Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, bhelgaas@google.com, 
+ linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, kuba@kernel.org
+Date: Tue, 29 Sep 2026 11:41:01 +0000
+Message-ID: <179068206160.434549.1717741783856466607@kernel.org>
+In-Reply-To: <20260925112850.189302-1-danividanivi@gmail.com>
+References: <20260925112850.189302-1-danividanivi@gmail.com>
+X-sashiko-severity: High
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 MIME-Version: 1.0
-X-Exchange-RoutingPolicyChecked: 3SbubgZO/ztQD6RGPpakmlcYwHSOW4uLdF1xBWkSW8pDPB0SmtkrPdTC6Q346utOuHZPIhUhXQ7GZk7R111Kb7spm/6oNbbIspOOglf+Lcx3wKRDA/+O6Qe3pDPPtJtoO9Ksa3LteZA+k42t0cLHBC6ic+9OgtXSh0rbYvk/Ebdau/hx3TyyJhdpO8Qpc0qLqWltJxjJRgLQ2j2LjkirPQ8GgKb1Nnh3UdLO0c8IDoGDPviVFEFR0ikiLjjTVCW/3YElWHQHV/Hu0G4onO5TwdLD6RMlRKqq6ork5fjJ51RVMW1KhLwwpxMEfJq6VLxA1NFId3ctKsKQmAp68X/XBg==
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: IA3PR11MB8986.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 918e446f-952e-4dd2-7cb2-08df1df85a22
-X-MS-Exchange-CrossTenant-originalarrivaltime: 29 Sep 2026 07:07:41.1155 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: EKQoNMkJXyMlWTRJfrXzqkP0Kp+47tkx9Pn/c2cpHwg8xp8xXlVidU7jaxKXdrz1wzAman0iUg2Ibv4iKEVfP/UpOxl7zVwNPfC9S7LLMpM=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV8PR11MB8511
-X-OriginatorOrg: intel.com
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -289,50 +144,218 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
+Thank you for your contribution! Sashiko AI review found 3 potential
+issue(s) to consider.
 
+Critical: 0 · High: 1 (1) · Medium: 1 · Low: 1
 
-> -----Original Message-----
-> From: Hongyan Xu <getshell@seu.edu.cn>
-> Sent: Monday, September 28, 2026 3:41 PM
-> To: Nguyen, Anthony L <anthony.l.nguyen@intel.com>; Kitszel,
-> Przemyslaw <przemyslaw.kitszel@intel.com>
-> Cc: andrew+netdev@lunn.ch; davem@davemloft.net; edumazet@kernel.org;
-> kuba@kernel.org; pabeni@redhat.com; intel-wired-lan@lists.osuosl.org;
-> netdev@vger.kernel.org; linux-kernel@vger.kernel.org;
-> jianhao.xu@seu.edu.cn; Hongyan Xu <getshell@seu.edu.cn>
-> Subject: [PATCH net] net: e100: cancel timeout work during removal
->=20
-> Transmit timeout and command submission paths can queue
-> tx_timeout_task.
-> The worker accesses the MMIO mapping and netdev private state, but
-> device removal releases both without draining a pending instance.
->=20
-> Cancel the work after unregister_netdev(), when the network stack can
-> no longer publish it and after any RTNL serialization used by the
-> worker has completed.
->=20
-> Fixes: 2acdb1e05c1a ("[PATCH] e100: Execute tx_timeout task outside
-> interrupt context")
-> Signed-off-by: Hongyan Xu <getshell@seu.edu.cn>
-> ---
->  drivers/net/ethernet/intel/e100.c | 1 +
->  1 file changed, 1 insertion(+)
->=20
-> diff --git a/drivers/net/ethernet/intel/e100.c
-> b/drivers/net/ethernet/intel/e100.c
-> index 29960762e64a..710c2c30d9ed 100644
-> --- a/drivers/net/ethernet/intel/e100.c
-> +++ b/drivers/net/ethernet/intel/e100.c
-> @@ -2988,6 +2988,7 @@ static void e100_remove(struct pci_dev *pdev)
->  	if (netdev) {
->  		struct nic *nic =3D netdev_priv(netdev);
->  		unregister_netdev(netdev);
-> +		cancel_work_sync(&nic->tx_timeout_task);
->  		e100_free(nic);
->  		pci_iounmap(pdev, nic->csr);
->  		dma_pool_destroy(nic->cbs_pool);
-> --
-> 2.50.1.windows.1
+If you believe none of the issues are legitimate, please reply to each
+issue of Medium severity or higher and explain why the AI is wrong.
+If any of them are legitimate and you plan to respin, please let patchwork
+know by including "pw-bot: cr" as a separate line at the end of your reply
+(one such reply per series is enough).
 
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+- [High] The widened condition in `__igc_resume()` (igc_main.c:7562-7563)
+  makes I225-LMvP and I226-LMvP call the non-locked…
+- [Medium] Adding `IGC_DEV_ID_I226_LMVP` to `igc_is_device_id_i226()`
+  (drivers/net/ethernet/intel/igc/igc_base.c:450) changes more than the…
+- [Low] In `igc_probe()`, `__igc_resume()` and `igc_io_slot_reset()`, the
+  return value of…
 
+Pre-existing issues:
+- [High] This problem wasn't introduced by this patch, but the patch now
+  exposes I226-LMvP to it.
+
+--
+
+igc: Disable PCIe L1.2 substate on I225-LMvP and I226-LMvP devices
+
+This commit adds IGC_DEV_ID_I226_LMVP to igc_is_device_id_i226(). It also
+extends the ASPM L1.2 disable in probe, resume and PCI error recovery to
+IGC_DEV_ID_I225_LMVP. The motivation is BadDLLP errors, link timeouts and
+shutdown hangs seen when I225-LMvP negotiates L1.2 behind Thunderbolt/USB4
+docks.
+
+Link: https://lore.kernel.org/lkml/eb5a9805-3e53-ec22-696e-21c6b8cf0bfc@molgen.mpg.de/T/
+
+> diff --git a/drivers/net/ethernet/intel/igc/igc_base.c b/drivers/net/ethernet/intel/igc/igc_base.c
+> index ab9120a3127f2..6865fef4049ff 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_base.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_base.c
+> @@ -447,6 +447,7 @@ bool igc_is_device_id_i226(struct igc_hw *hw)
+>  	case IGC_DEV_ID_I226_V:
+>  	case IGC_DEV_ID_I226_K:
+>  	case IGC_DEV_ID_I226_IT:
+> +	case IGC_DEV_ID_I226_LMVP:
+>  		return true;
+>  	default:
+>  		return false;
+
+[Severity: Medium]
+Does this change do more than the L1.2 handling the commit message
+describes? igc_is_device_id_i226() also selects I226-specific TSN/Qbv
+register programming in igc_tsn.c. I226-LMvP now takes these paths:
+
+drivers/net/ethernet/intel/igc/igc_tsn.c:igc_tsn_disable_offload() {
+    ...
+	if (igc_is_device_id_i226(hw))
+		igc_tsn_restore_retx_default(adapter);
+    ...
+}
+
+drivers/net/ethernet/intel/igc/igc_tsn.c:igc_tsn_enable_offload() {
+    ...
+	if (igc_is_device_id_i226(hw))
+		igc_tsn_set_retx_qbvfullthreshold(adapter);
+    ...
+		if (igc_is_device_id_i226(hw)) {
+			...
+				tqavctrl |= IGC_TQAVCTRL_FUTSCDDIS;
+			...
+			hrtimer_start(&adapter->hrtimer, expires_time, HRTIMER_MODE_REL);
+		}
+    ...
+}
+
+Before this patch, 0x5503 matched neither igc_is_device_id_i225() nor
+igc_is_device_id_i226(). So none of the following ran on that SKU: the
+RETX_CTL QBVFULLTH/QBVFULLEN workaround, the FutScdDis programming, the
+Qbv hrtimer and the double BASET_L write.
+
+The new behaviour matches the other I226 SKUs, but the subject and body
+only describe an ASPM L1.2 fix. Because of the Fixes: 0325143b59c6 tag,
+these TSN register changes would go into stable trees without any
+mention.
+
+The TSN part also seems to fix an omission from when
+igc_is_device_id_i226() was introduced, not one from 0325143b59c6.
+
+Could the commit message describe the TSN side effects? Alternatively,
+could that part be split into a separate patch with its own Fixes: tag?
+
+[Severity: High]
+This isn't a bug introduced by this patch. However, classifying 0x5503 as
+I226 also exposes I226-LMvP to an existing problem with adapter->hrtimer.
+
+igc_tsn_enable_offload() arms adapter->hrtimer when the taprio base time
+is in the future. The only hrtimer_cancel() for it is in igc_remove().
+
+__igc_shutdown() (system and runtime suspend) and igc_reinit_queues() call
+igc_clear_interrupt_scheme() without cancelling the timer:
+
+igc_clear_interrupt_scheme()
+  igc_free_q_vectors()
+    adapter->num_tx_queues = 0;
+    igc_reset_q_vector()
+      adapter->tx_ring[...] = NULL;
+
+The timer is not cancelled across suspend, so it can still be pending
+when resume runs. On resume or reinit, the queue count is restored before
+the rings exist again:
+
+igc_init_interrupt_scheme()
+  igc_set_interrupt_capability()
+    adapter->num_tx_queues = adapter->rss_queues;
+    pci_enable_msix_range()
+  igc_alloc_q_vectors()
+    /* tx_ring[] repopulated here */
+
+The timer callback loops over num_tx_queues without a NULL check:
+
+drivers/net/ethernet/intel/igc/igc_main.c:igc_qbv_scheduling_timer() {
+    ...
+	for (i = 0; i < adapter->num_tx_queues; i++) {
+		struct igc_ring *tx_ring = adapter->tx_ring[i];
+
+		if (tx_ring->admin_gate_closed) {
+    ...
+}
+
+The callback takes qbv_tx_lock, but the teardown and setup paths don't.
+Suppose the timer expires between igc_set_interrupt_capability() and
+igc_alloc_q_vectors(), or runs at the same time as igc_free_q_vectors().
+Can it then dereference a NULL tx_ring in hardirq context?
+
+> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+> index 1fb5f3cbe93c5..6c4e046610689 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_main.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+> @@ -7172,8 +7172,8 @@ static int igc_probe(struct pci_dev *pdev,
+>  	hw->subsystem_vendor_id = pdev->subsystem_vendor;
+>  	hw->subsystem_device_id = pdev->subsystem_device;
+>  
+> -	/* Disable ASPM L1.2 on I226 devices to avoid packet loss */
+> -	if (igc_is_device_id_i226(hw))
+> +	/* Disable ASPM L1.2 on I226 and I225-LMvP devices to avoid packet loss */
+> +	if (igc_is_device_id_i226(hw) || hw->device_id == IGC_DEV_ID_I225_LMVP)
+>  		pci_disable_link_state(pdev, PCIE_LINK_STATE_L1_2);
+
+[Severity: Low]
+This probably isn't a bug, but the return value of pci_disable_link_state()
+is ignored here. The same is true in __igc_resume(), and for
+pci_disable_link_state_locked() in igc_io_slot_reset().
+
+__pci_disable_link_state() can return -EINVAL when there is no link state
+(for example with pcie_aspm=off). It can also return -EPERM when the OS
+doesn't have ASPM control:
+
+drivers/pci/pcie/aspm.c:__pci_disable_link_state() {
+    ...
+	if (aspm_disabled) {
+		pci_warn(pdev, "can't disable ASPM; OS doesn't have ASPM control\n");
+		return -EPERM;
+	}
+    ...
+}
+
+In those cases L1.2 stays as firmware configured it on the newly covered
+I225-LMvP and I226-LMvP devices.
+
+The PCI core already warns on the -EPERM path. Failing probe, resume or
+recovery would leave the NIC unusable, and the existing I226 handling
+does the same thing. Is continuing silently here the intended behaviour?
+
+> @@ -7559,7 +7559,7 @@ static int __igc_resume(struct device *dev, bool rpm)
+>  	pci_enable_wake(pdev, PCI_D3hot, 0);
+>  	pci_enable_wake(pdev, PCI_D3cold, 0);
+>  
+> -	if (igc_is_device_id_i226(hw))
+> +	if (igc_is_device_id_i226(hw) || hw->device_id == IGC_DEV_ID_I225_LMVP)
+>  		pci_disable_link_state(pdev, PCIE_LINK_STATE_L1_2);
+
+[Severity: High]
+Can this take pci_bus_sem recursively during AER recovery?
+
+__igc_resume() is also the runtime resume path, and igc runtime suspends
+after link loss via igc_runtime_idle(). pcie_do_recovery() runtime
+resumes devices from inside a bus walk that holds pci_bus_sem for read:
+
+pcie_do_recovery()
+  pci_walk_bridge(bridge, pci_pm_runtime_get_sync, NULL)
+    pci_walk_bus()
+      down_read(&pci_bus_sem);
+      pci_pm_runtime_get_sync()
+        pm_runtime_get_sync()
+          igc_runtime_resume()
+            __igc_resume(dev, true)
+              pci_disable_link_state()
+                __pci_disable_link_state()
+                  down_read(&pci_bus_sem);
+
+A writer could queue between the two down_read() calls, for example
+pci_device_add() from enumeration or hotplug, which is plausible behind a
+Thunderbolt dock. The nested reader would then block behind the writer,
+while the writer waits for the outer reader. Would that deadlock AER
+recovery and PCI enumeration? Lockdep would also be expected to report
+recursive locking here.
+
+igc_io_slot_reset() already uses pci_disable_link_state_locked() for this
+reason. The runtime resume step earlier in recovery isn't covered,
+though.
+
+The other I226 IDs already have the same pattern, and this patch extends
+it to both LMvP devices. Could it be fixed for all of them at the same
+time?
+
+-- 
+Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20260925112850.189302-1-danividanivi%40gmail.com
