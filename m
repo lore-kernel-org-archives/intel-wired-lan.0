@@ -1,28 +1,28 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CC190CA5FA5
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 29 Sep 2026 11:41:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2ED08CA5FA5
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 29 Sep 2026 14:04:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 702BB80C73;
-	Tue, 29 Sep 2026 11:41:09 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id D5D4D406F2;
+	Tue, 29 Sep 2026 14:04:13 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id jFv-Qg5Kyubr; Tue, 29 Sep 2026 11:41:08 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 71FEC80C77
-Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790682068;
-	b=Pne5Veedn1CrXOgSeUfTM4H64PlEA5G91INfxzqf4/aXjXP5c+cO0pqylLdnSUqYZ5d4
-	 ekN/9zpQqEhPMOmoT575Pj0VXJRclfOgv6dqVhToDHQMGqnvlnY6DAr2TUEf5NvilFQ3N
-	 tgYC2QTXCdO3DvX9joca8AHb1DMoeJwzRVhnBi94TroZRJ5Wv0H+WFkrC4ui4MjVJ88Rw
-	 OhjPLych9Iyr3q5oQPa+U8yPot0aVnTtSsPhh+o4fXYScX5s9UEJp1+w7eNOBhJ0xC+Aa
-	 RndmnbkXQXmnAwOym2/BRajOHWCkJz+JFgqGW7Hg8Y16oAkG+J+y5SnVBbBuXuxuiXA==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id uZRQ-kVeBBEy; Tue, 29 Sep 2026 14:04:13 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org C8B50404F4
+Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790690652;
+	b=KrSLlq2U+Q2yp/WeBcDxCN1NmD/fIuAHnDhBai6y4MFVmzNB13n/KUkvcRiitl+axOhA
+	 EibievsOh/7DxwZregVhRPDdVnCwu/K/PKahk62Hpg5mBRWU4qnud7b8VJJRTqUAUc9h2
+	 XR/iu4PCbM98NxdJGU151WNaS7/zKQZzSEBb0Bo0sMpIupZz13NxG6gZvPH47GaXwIgUr
+	 VzN5xDKJee558aMO33SdHb6eS2/RTFu+gUhChYnSshP2Mm+V0CdZzbpbYn+ONkLjNWSIj
+	 qTGK4t67BIR1aaWnbhjbuXBkGbSqS49EyCQxbXsPUxAwHzYgJYYzgQlc72dHkNIfHaQ==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1790682068;
+	c=relaxed/relaxed; t=1790690652;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
@@ -31,102 +31,103 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 Content-Transfer-Encoding:MIME-Version:X-BeenThere:X-Mailman-Version:
 	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=YajkRf88ajtVJDW2GBmYe9Gx4OdPQQLdhTOJZupqZvk=;
-	b=SeX0tcmFV5y7BKUH9A8N+RJG+S1PNIvswwSRXRsf4O3qqrwtfwLQaxF39KcecXKKT/wr
-	 3H2F2wQCI/IMsgdGU8yOMa77mXRLstz08Hpt9u685D/MbyFCtbZHZ3vOsFK+nozjSB5Ke
-	 6AqWdaJy5B36+1PkUw9SsSN2ecpGx3cYF/sLyfAtHpUEzu2jd2Cu7R3rnNiftNv/PrFlC
-	 kGAwVs6sHNBiuanAOQyz+zth67ecucZqgFqLL0L3mcOVtvJoD0GEUgh5P3eK8GYZxnrA8
-	 cetT2ZzGeLNW0jW57XZTgxIEaEuwK7KDM+R/hewYDCpjzw8YXgGBYVMYAasubNo/h0w==
-ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	bh=J0U2ZuPppH2NjwbCIrXn37RZhk/7ihyg4JkkDJeReJA=;
+	b=JOaNQH8JqaGct0MxgFm3JyiQ8mNn6ZvVJTPqkSvECiz7nWXGIvbMYPWqoNjkdVrQV2oP
+	 OG/qRdBWZKxD9kGvivUlqY4L5GTk2HEmbErqw6g1Om7UqFJrw4NdJ9s8uhr4gB5MPta3u
+	 0+he566lTNJZid6kE/6KYPs1kCAMPb2EVQMwmYqjT/BLpCAGx6Xd52oAGhs1rtJSQWvka
+	 s2sH7FDAGe1RKeah+ZL3OM506SxUlYKHpQ5/x8EbRNDB2yeP2USi35BjQ2GkZY89SWha0
+	 tuqUkWyDPX8pVU3u8+zcBZ6iwT+H4wyT2AhmcXgx/vi4buELhBMV4L50gCBKfsvx+mw==
+ARC-Authentication-Results: i=2; smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1790682068;
-	bh=YajkRf88ajtVJDW2GBmYe9Gx4OdPQQLdhTOJZupqZvk=;
+	s=default; t=1790690652;
+	bh=J0U2ZuPppH2NjwbCIrXn37RZhk/7ihyg4JkkDJeReJA=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=g7pMXewW7v4KLLADDO9H4cxXBzojefkgJn/ACsgExZX0VB+gh6SIruo/I6VmTAgzQ
-	 pUYUDRN3crycVkJAyqOILooXWP6zI/f6Ra7l2lDKmxTz4e/oTi44nDjN0rt8ee2OOa
-	 QAngdzb/7HUaxWGsCUVht30dORCHO5cKTluZdloslfl3UxXkVNOtKkDyEg4TUgXPCI
-	 4hJfQfPFEKOcIDDrKqbUnWE2JLuDot3HM4yOVo/pkqCuz4kVz+VmE9HUSc3J/I43Lo
-	 WQO6eQxIxq6Mk+RR6AcXdSKiTXohRhiad2aeqcXSjkP7h9tAdyJLT+UOZtse3siSVZ
-	 av4+CcZt0YOJw==
+	b=1yjfcrV5XjE6kKgf9LZFyJp714Vzxc6PsdCjjyEZrhUE8VwyTMwtTd4Y0dL3+vDPm
+	 miZ9S3lSpl2oMdVyAot42o1zU/cacZmDtBY3hX37FZ+3NWw7Bygygm9yzQCFAN465z
+	 uvX7U3FCiKEILRmr4Qfrin+pDdSMyyRWIxCh23HgNMkbLdiz7Ng7+4VzZNgcJugZhR
+	 Q8xhRN7mh0pi5nr3dZ583zLLj4fHqiwRNqI23IgzlVxI0GCmpipFliJ5oZKnOcZaxc
+	 3+8w0Mf2B+diL08qfx0PEXZ/EPPAKUkIYLBDWqwjl4D0DkJqtxgPrcpVrXk7jNnqpp
+	 kmPq+g+sHqhfg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 71FEC80C77;
-	Tue, 29 Sep 2026 11:41:08 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 661E82E5
- for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Sep 2026 11:41:06 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id C8B50404F4;
+	Tue, 29 Sep 2026 14:04:12 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 78EF734E
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Sep 2026 14:04:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 573A26071B
- for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Sep 2026 11:41:06 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 6AB6D40304
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Sep 2026 14:04:11 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id biicQGwni6t8 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 29 Sep 2026 11:41:05 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 175A660774
-Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790682065;
- b=JPewQWJsPMCoKj6W+nnWB6XDxRz/JpKq88p9eh/D+M7KbLLnpSXhyncJ8f2asScRtEW8
- uhqsUGfncaVIe64Ywo91dujBaq8pHvfuPLK6erPAJuICrRTF2c2Y33V6LQ1PZB/tTEukR
- cozwHB5+zjwZ9cWs/FH7BSp2x9C1P7Yb+qJKt6jsmXDi8qANT7YlQXxNf7sFdApwSUiJR
- 8E7iOdhw9ENea7vFu9pDKO65M2D6jphJojF7h6dnyZo2TRP4o/dIHKgn5nt6iKRVLeSB4
- gwemQayHWrn7zbaGNL/MealTuF2C7GmAwuJ4Hvg/4GzTh1+6I6pGAJPGUfa63NawIAA==
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id ZAqVLVX3YSCN for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 29 Sep 2026 14:04:10 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org 59008402E6
+Authentication-Results: smtp2.osuosl.org;
+ arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790690650;
+ b=PZRXbShCOL0ohbQRJiqtKbhSIK1H77B1sIfORC0E7vqgN0FsFvc5tYiOoPtpNKKvMxZm
+ VPEC+OSqC6wCxr9PH2SP+m/9cU+RAlKWvl3paAO4H33/AnLkid+Ku4TCw1dMBsZfzDgDq
+ adwi4PNoneJG6XUjDjKuYWGTeIRekl3EUusfymTYxUceYZvIHer6yzEPg6hhYy+OD2Pt+
+ ypAkLHb4FHVldqE+IsFt3TfaKjoDFPEwcT7pwXf7Z16VUP5NsYU+XpCk7GLSbZ4zSy9Hk
+ pKi0AcBJu/OsKhcWOKtu1G9G2OdHaYEj+PoFTo0QHJU4pGbHSwnaKrMv+B46bxl2ioQ==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1790682065;
+ c=relaxed/relaxed; t=1790690650;
  h=Received-SPF:Received:Received:DKIM-Signature:Subject:From:To:Cc:
  Date:Message-ID:In-Reply-To:References:X-sashiko-severity:
  Content-Type:Content-Transfer-Encoding:MIME-Version;
- bh=YajkRf88ajtVJDW2GBmYe9Gx4OdPQQLdhTOJZupqZvk=;
- b=XEP5iV82KEvMBVbVPH1vsltYHBRMlI2OQu3gO2WpR5X7BPUDiWqYU7LrrYI23A4WXJmj
- bWU5STqC1F/gCIA165UzPOOk6OtdwsD7L8vg4GgwNoF38JTrv5hfKHM+pkiA8wd2yPvaC
- n+tYO/EYz/IWtXApRj90oKDaJSo8f+cYVI34VsBQiOYZ4/GHrdwGO0Mro9u6QQxncDK3T
- SQ7jTRN2FMKcUCFMXRWsJDyyZhGFnzWzV6ffcKreDbqyec9BU/ToKAMwbc6IfLD/drDfC
- AGfT1alnm2GhYgN6tbOWyswonLNQgJjxJLoaYCBNc6rpmkKPn0k9yWT7TkZzaZtRLtw==
-ARC-Authentication-Results: i=1; smtp3.osuosl.org;
+ bh=J0U2ZuPppH2NjwbCIrXn37RZhk/7ihyg4JkkDJeReJA=;
+ b=n3BajuCHRg2oy93fSLuqdpCw4TBPBTdnJCsmeKE8qAPOT8c1DFrNyA3xAu7dcgRWtWkM
+ LoI2IDLLCusF7rHzh78+7GITuwDnPDu/UTbwhA4BWNosja5Gc8s/seLvI4eI02mWsziJk
+ XdAodcoGfxtOE+ATkJGYNmFPlSjZ+l6t+7ZAsiL+0hQM0WkMoMDBfBJbZ/+dupJTH/WTv
+ o5AGpF2EBbqjt6aL4Fb18qrDvlMiPwphaDwZ6FUNXtiJfgNb//q7Vq1yDWPY2LvjIzeSc
+ UPDHVYDwU6W8Gbkqhkc4RWu4Lmp30XKrCwV0f8I+pEvDTvzkd05oPoKJRqeLgLBootA==
+ARC-Authentication-Results: i=1; smtp2.osuosl.org;
  dmarc=pass header.from=kernel.org; 
  dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=m3BD3xoV; 
- arc=none smtp.remote-ip=172.105.4.254
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org;
+ header.s=k20260515 header.b=OuBSky+q; 
+ arc=none smtp.remote-ip=172.234.252.31
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
+ helo=sea.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp3.osuosl.org; dmarc=pass (p=quarantine dis=none)
+Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
+Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=m3BD3xoV
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 175A660774
- for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Sep 2026 11:41:04 +0000 (UTC)
+ header.s=k20260515 header.b=OuBSky+q
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 59008402E6
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Sep 2026 14:04:09 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id EDF5C60136;
- Tue, 29 Sep 2026 11:41:02 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2B4191F000FF;
- Tue, 29 Sep 2026 11:41:02 +0000 (UTC)
+ by sea.source.kernel.org (Postfix) with ESMTP id 79141436F6;
+ Tue, 29 Sep 2026 14:04:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CE91D1F00893;
+ Tue, 29 Sep 2026 14:04:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1790682062;
- bh=YajkRf88ajtVJDW2GBmYe9Gx4OdPQQLdhTOJZupqZvk=;
+ s=k20260515; t=1790690649;
+ bh=J0U2ZuPppH2NjwbCIrXn37RZhk/7ihyg4JkkDJeReJA=;
  h=Subject:From:To:Cc:Date:In-Reply-To:References;
- b=m3BD3xoVf5adZLLJLspFFFQ8xVDWkY7frxQhjiVgDVUJtGNib5/hFeT8BIeafT7sO
- elqBRpd+jh0AqlZEAMRd9DOOuY4R7USk0vD1GnpMOucxS1Llonzmxpyp0kTsb55DTz
- RhJNaOZgxxQfqg0YPXLTooImbpbJlcYJzNM1FyyQqcN8NLpbhbHZwRyoRpexmGJ4id
- Ks2wDdsmCwd/Dnwl2nkXNFFz8bTEoGp2IY5MXUImv3CIkZU43FnFHOc2VJCMGnCw7E
- 0hUSSyc2woGKrRssUA679fkrCSkDqJptGCRF4FMenC50gX2poxWv6vFTGYOOkRZ7mZ
- eNHEUMtqGYoYQ==
-Subject: Re: [PATCH net] igc: Disable PCIe L1.2 substate on I225-LMvP and
- I226-LMvP devices
+ b=OuBSky+qok/H9Ha6B6ps/9C1pxy8XJmntR7w+IlGRHZ4JmdxXdQCs6OOaPoSLctCI
+ bLSe0JwAla99ICfXUNolYiRUj7qQNqbmb5+QETwA/HRRwo77pgpk9wwFaxgT0Ye5kK
+ gUj6M6PygOvOYaCK5PODVpQmr1SJPHwFiERuoxLLziEAb4mN5ZEoqFSTBlN3tDl1fc
+ 5ohH7rsqEcXH/lrWYRwkfcwuLlWl2djQPLLPvaclZxBF+/9JXDUH4lFhlmA0ZRcPHm
+ tAkjs8Oa2DjlvSOpS9H5iniMytnNjBQqZ56hEaLUCO8r84E4irM5+ToKBsKCKKXMPu
+ y0buMK0gk20MA==
+Subject: Re: [PATCH net v5 2/6] ice: extract __ice_vsi_free_stats()
 From: netdev-bot+sashiko@kernel.org
-To: danividanivi@gmail.com
-Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, bhelgaas@google.com, 
- linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, kuba@kernel.org
-Date: Tue, 29 Sep 2026 11:41:01 +0000
-Message-ID: <179068206160.434549.1717741783856466607@kernel.org>
-In-Reply-To: <20260925112850.189302-1-danividanivi@gmail.com>
-References: <20260925112850.189302-1-danividanivi@gmail.com>
-X-sashiko-severity: High
+To: przemyslaw.kitszel@intel.com
+Cc: netdev@vger.kernel.org, kuba@kernel.org, anthony.l.nguyen@intel.com,
+ aleksandr.loktionov@intel.com, mschmidt@redhat.com,
+ intel-wired-lan@lists.osuosl.org, edumazet@google.com, horms@kernel.org,
+ pabeni@redhat.com, davem@davemloft.net
+Date: Tue, 29 Sep 2026 14:04:08 +0000
+Message-ID: <179069064842.434549.3321384376885392964@kernel.org>
+In-Reply-To: <20260925132636.123300-3-przemyslaw.kitszel@intel.com>
+References: <20260925132636.123300-3-przemyslaw.kitszel@intel.com>
+X-sashiko-severity: Low
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 MIME-Version: 1.0
@@ -144,218 +145,196 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-Thank you for your contribution! Sashiko AI review found 3 potential
-issue(s) to consider.
+Thank you for your contribution! Sashiko AI review found more severe
+issue(s) in other patches of this series. This mail is only an FYI, in case
+you want to address the nit picks below when you respin.
 
-Critical: 0 · High: 1 (1) · Medium: 1 · Low: 1
+Low priority / nit picks for your consideration:
 
-If you believe none of the issues are legitimate, please reply to each
-issue of Medium severity or higher and explain why the AI is wrong.
-If any of them are legitimate and you plan to respin, please let patchwork
-know by including "pw-bot: cr" as a separate line at the end of your reply
-(one such reply per series is enough).
-
-- [High] The widened condition in `__igc_resume()` (igc_main.c:7562-7563)
-  makes I225-LMvP and I226-LMvP call the non-locked…
-- [Medium] Adding `IGC_DEV_ID_I226_LMVP` to `igc_is_device_id_i226()`
-  (drivers/net/ethernet/intel/igc/igc_base.c:450) changes more than the…
-- [Low] In `igc_probe()`, `__igc_resume()` and `igc_io_slot_reset()`, the
-  return value of…
+- [Low] The commit message understates what the change does and the patch
+  has no Fixes: tag.
 
 Pre-existing issues:
-- [High] This problem wasn't introduced by this patch, but the patch now
-  exposes I226-LMvP to it.
+- [Critical] Heap out-of-bounds write in ice_vsi_alloc_ring_stats()
+  (drivers/net/ethernet/intel/ice/ice_lib.c).
+- [Medium] The shrink loops in ice_vsi_realloc_stat_arrays()
+  (drivers/net/ethernet/intel/ice/ice_lib.c) still use…
 
 --
 
-igc: Disable PCIe L1.2 substate on I225-LMvP and I226-LMvP devices
+ice: extract __ice_vsi_free_stats()
 
-This commit adds IGC_DEV_ID_I226_LMVP to igc_is_device_id_i226(). It also
-extends the ASPM L1.2 disable in probe, resume and PCI error recovery to
-IGC_DEV_ID_I225_LMVP. The motivation is BadDLLP errors, link timeouts and
-shutdown hangs seen when I225-LMvP negotiates L1.2 behind Thunderbolt/USB4
-docks.
+This commit records the length of each ring stats array in struct
+ice_vsi_stats and moves the VSI-independent body of ice_vsi_free_stats()
+into __ice_vsi_free_stats(). The loops that free the entries now stop at
+the recorded length instead of vsi->alloc_txq/alloc_rxq.
 
-Link: https://lore.kernel.org/lkml/eb5a9805-3e53-ec22-696e-21c6b8cf0bfc@molgen.mpg.de/T/
-
-> diff --git a/drivers/net/ethernet/intel/igc/igc_base.c b/drivers/net/ethernet/intel/igc/igc_base.c
-> index ab9120a3127f2..6865fef4049ff 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_base.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_base.c
-> @@ -447,6 +447,7 @@ bool igc_is_device_id_i226(struct igc_hw *hw)
->  	case IGC_DEV_ID_I226_V:
->  	case IGC_DEV_ID_I226_K:
->  	case IGC_DEV_ID_I226_IT:
-> +	case IGC_DEV_ID_I226_LMVP:
->  		return true;
->  	default:
->  		return false;
-
-[Severity: Medium]
-Does this change do more than the L1.2 handling the commit message
-describes? igc_is_device_id_i226() also selects I226-specific TSN/Qbv
-register programming in igc_tsn.c. I226-LMvP now takes these paths:
-
-drivers/net/ethernet/intel/igc/igc_tsn.c:igc_tsn_disable_offload() {
-    ...
-	if (igc_is_device_id_i226(hw))
-		igc_tsn_restore_retx_default(adapter);
-    ...
-}
-
-drivers/net/ethernet/intel/igc/igc_tsn.c:igc_tsn_enable_offload() {
-    ...
-	if (igc_is_device_id_i226(hw))
-		igc_tsn_set_retx_qbvfullthreshold(adapter);
-    ...
-		if (igc_is_device_id_i226(hw)) {
-			...
-				tqavctrl |= IGC_TQAVCTRL_FUTSCDDIS;
-			...
-			hrtimer_start(&adapter->hrtimer, expires_time, HRTIMER_MODE_REL);
-		}
-    ...
-}
-
-Before this patch, 0x5503 matched neither igc_is_device_id_i225() nor
-igc_is_device_id_i226(). So none of the following ran on that SKU: the
-RETX_CTL QBVFULLTH/QBVFULLEN workaround, the FutScdDis programming, the
-Qbv hrtimer and the double BASET_L write.
-
-The new behaviour matches the other I226 SKUs, but the subject and body
-only describe an ASPM L1.2 fix. Because of the Fixes: 0325143b59c6 tag,
-these TSN register changes would go into stable trees without any
-mention.
-
-The TSN part also seems to fix an omission from when
-igc_is_device_id_i226() was introduced, not one from 0325143b59c6.
-
-Could the commit message describe the TSN side effects? Alternatively,
-could that part be split into a separate patch with its own Fixes: tag?
-
-[Severity: High]
-This isn't a bug introduced by this patch. However, classifying 0x5503 as
-I226 also exposes I226-LMvP to an existing problem with adapter->hrtimer.
-
-igc_tsn_enable_offload() arms adapter->hrtimer when the taprio base time
-is in the future. The only hrtimer_cancel() for it is in igc_remove().
-
-__igc_shutdown() (system and runtime suspend) and igc_reinit_queues() call
-igc_clear_interrupt_scheme() without cancelling the timer:
-
-igc_clear_interrupt_scheme()
-  igc_free_q_vectors()
-    adapter->num_tx_queues = 0;
-    igc_reset_q_vector()
-      adapter->tx_ring[...] = NULL;
-
-The timer is not cancelled across suspend, so it can still be pending
-when resume runs. On resume or reinit, the queue count is restored before
-the rings exist again:
-
-igc_init_interrupt_scheme()
-  igc_set_interrupt_capability()
-    adapter->num_tx_queues = adapter->rss_queues;
-    pci_enable_msix_range()
-  igc_alloc_q_vectors()
-    /* tx_ring[] repopulated here */
-
-The timer callback loops over num_tx_queues without a NULL check:
-
-drivers/net/ethernet/intel/igc/igc_main.c:igc_qbv_scheduling_timer() {
-    ...
-	for (i = 0; i < adapter->num_tx_queues; i++) {
-		struct igc_ring *tx_ring = adapter->tx_ring[i];
-
-		if (tx_ring->admin_gate_closed) {
-    ...
-}
-
-The callback takes qbv_tx_lock, but the teardown and setup paths don't.
-Suppose the timer expires between igc_set_interrupt_capability() and
-igc_alloc_q_vectors(), or runs at the same time as igc_free_q_vectors().
-Can it then dereference a NULL tx_ring in hardirq context?
-
-> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-> index 1fb5f3cbe93c5..6c4e046610689 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_main.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-> @@ -7172,8 +7172,8 @@ static int igc_probe(struct pci_dev *pdev,
->  	hw->subsystem_vendor_id = pdev->subsystem_vendor;
->  	hw->subsystem_device_id = pdev->subsystem_device;
+> diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+> index 31af378aa0e7a..1414127d32cd8 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_lib.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+> @@ -330,6 +330,32 @@ static void ice_vsi_free_arrays(struct ice_vsi *vsi)
+>  	vsi->rxq_map = NULL;
+>  }
 >  
-> -	/* Disable ASPM L1.2 on I226 devices to avoid packet loss */
-> -	if (igc_is_device_id_i226(hw))
-> +	/* Disable ASPM L1.2 on I226 and I225-LMvP devices to avoid packet loss */
-> +	if (igc_is_device_id_i226(hw) || hw->device_id == IGC_DEV_ID_I225_LMVP)
->  		pci_disable_link_state(pdev, PCIE_LINK_STATE_L1_2);
+> +/* free single stats memory */
+> +static void __ice_vsi_free_stats(struct ice_vsi_stats *vsi_stat, bool free_entries)
+> +{
+> +	if (!vsi_stat)
+> +		return;
+> +
+> +	if (free_entries) {
+> +		for (int i = 0; i < vsi_stat->tx_ring_stats_len; i++) {
 
 [Severity: Low]
-This probably isn't a bug, but the return value of pci_disable_link_state()
-is ignored here. The same is true in __igc_resume(), and for
-pci_disable_link_state_locked() in igc_io_slot_reset().
 
-__pci_disable_link_state() can return -EINVAL when there is no link state
-(for example with pcie_aspm=off). It can also return -EPERM when the OS
-doesn't have ASPM control:
+The old loop in ice_vsi_free_stats() used ice_for_each_alloc_txq(), so it
+stopped at vsi->alloc_txq. This one stops at the recorded array length.
+Could the old mismatch actually happen?
 
-drivers/pci/pcie/aspm.c:__pci_disable_link_state() {
-    ...
-	if (aspm_disabled) {
-		pci_warn(pdev, "can't disable ASPM; OS doesn't have ASPM control\n");
-		return -EPERM;
+It looks reachable through ethtool -L with fewer Tx and more Rx queues:
+
+ice_vsi_recfg_qs()
+  ice_vsi_rebuild()
+    ice_vsi_realloc_stat_arrays()
+      krealloc_array(tx_ring_stats, req_txq, ...)   /* shrink succeeds */
+      krealloc_array(rx_ring_stats, req_rxq, ...)   /* grow fails */
+      return -ENOMEM;
+    goto unlock;                                    /* skips ice_vsi_cfg_def() */
+
+After that, vsi->alloc_txq still has the old, larger value. Later,
+ice_vsi_free()->ice_vsi_free_stats() walked tx_ring_stats[] past the end of
+the shrunken kmalloc object. Any non-NULL word it found there, for example
+SLUB redzone poison under slub_debug, was passed to kfree_rcu().
+
+So this patch appears to fix a heap out-of-bounds read and an invalid
+kfree_rcu(). The commit message only says:
+
+  The free path now stops at the recorded length instead of the VSI queue
+  count, so it follows the real allocation rather than a number that can
+  disagree with it.
+
+Could the message describe the memory-safety effect? Should the patch also
+carry a Fixes: tag?
+
+The last patch in the series, "ice: size ring stats arrays from the final
+queue count", has Fixes: 288ecf491b16 for the same class of bug and depends
+on this one. A stable backport would probably pull this patch in anyway.
+
+> +			if (vsi_stat->tx_ring_stats[i]) {
+> +				kfree_rcu(vsi_stat->tx_ring_stats[i], rcu);
+> +				WRITE_ONCE(vsi_stat->tx_ring_stats[i], NULL);
+> +			}
+> +		}
+
+[ ... ]
+
+> @@ -539,11 +545,13 @@ static int ice_vsi_alloc_stat_arrays(struct ice_vsi *vsi)
+>  		kzalloc_objs(*vsi_stat->tx_ring_stats, vsi->alloc_txq);
+>  	if (!vsi_stat->tx_ring_stats)
+>  		goto err_alloc_tx;
+> +	vsi_stat->tx_ring_stats_len = vsi->alloc_txq;
+
+[Severity: Critical]
+
+This is a pre-existing issue, not introduced by this patch. The length is
+only set when the container is new. Earlier in ice_vsi_alloc_stat_arrays()
+there is an early return:
+
+	if (pf->vsi_stats[vsi->idx])
+	/* realloc will happen in rebuild path */
+		return 0;
+
+ice_vsi_alloc_ring_stats() fills the arrays up to the queue count and never
+checks the recorded length:
+
+	ice_for_each_alloc_txq(vsi, i) {
+		...
+		ring_stats = tx_ring_stats[i];
+		if (!ring_stats) {
+			...
+			WRITE_ONCE(tx_ring_stats[i], ring_stats);
+		}
+		...
 	}
-    ...
-}
 
-In those cases L1.2 stays as firmware configured it on the newly covered
-I225-LMvP and I226-LMvP devices.
+On the VF reset path a guest can raise the queue count while the arrays
+keep their old length:
 
-The PCI core already warns on the -EPERM path. Failing probe, resume or
-recovery would leave the NIC unusable, and the existing I226 handling
-does the same thing. Is continuing silently here the intended behaviour?
+ice_vc_request_qs_msg()
+  ice_reset_vf()
+    ice_vf_reconfig_vsi()
+      ice_vsi_decfg()
+      ice_vsi_cfg()
+        ice_vsi_cfg_def()
+          ice_vsi_alloc_def()
+            ice_vsi_set_num_qs()      /* raises alloc_txq/alloc_rxq */
+          ice_vsi_alloc_stat_arrays() /* early return, arrays not resized */
+          ice_vsi_alloc_ring_stats()  /* reads/writes past tx_ring_stats[] */
 
-> @@ -7559,7 +7559,7 @@ static int __igc_resume(struct device *dev, bool rpm)
->  	pci_enable_wake(pdev, PCI_D3hot, 0);
->  	pci_enable_wake(pdev, PCI_D3cold, 0);
+The PF rebuild path has the same mismatch. ice_vsi_realloc_stat_arrays()
+sizes the arrays from req_txq or the old alloc_txq before the count is
+recomputed.
+
+Can this write kernel pointers past the kmalloc object? After this patch
+those pointers would also leak, because __ice_vsi_free_stats() stops at
+tx_ring_stats_len.
+
+The commit message says sizing is not authoritative yet. The last patch in
+the series, "ice: size ring stats arrays from the final queue count", fixes
+this: ice_vsi_alloc_stat_arrays() compares the recorded lengths with
+vsi->alloc_txq/alloc_rxq and grows the arrays before
+ice_vsi_alloc_ring_stats() runs.
+
 >  
-> -	if (igc_is_device_id_i226(hw))
-> +	if (igc_is_device_id_i226(hw) || hw->device_id == IGC_DEV_ID_I225_LMVP)
->  		pci_disable_link_state(pdev, PCIE_LINK_STATE_L1_2);
+>  	vsi_stat->rx_ring_stats =
+>  		kzalloc_objs(*vsi_stat->rx_ring_stats, vsi->alloc_rxq);
+>  	if (!vsi_stat->rx_ring_stats)
+>  		goto err_alloc_rx;
+> +	vsi_stat->rx_ring_stats_len = vsi->alloc_rxq;
+>  
+>  	pf->vsi_stats[vsi->idx] = vsi_stat;
+>  
+> @@ -3055,6 +3063,7 @@ ice_vsi_realloc_stat_arrays(struct ice_vsi *vsi)
+>  		vsi_stat->tx_ring_stats = tx_ring_stats;
+>  		return -ENOMEM;
+>  	}
+> +	vsi_stat->tx_ring_stats_len = req_txq;
 
-[Severity: High]
-Can this take pci_bus_sem recursively during AER recovery?
+[Severity: Medium]
 
-__igc_resume() is also the runtime resume path, and igc runtime suspends
-after link loss via igc_runtime_idle(). pcie_do_recovery() runtime
-resumes devices from inside a bus walk that holds pci_bus_sem for read:
+This isn't a bug introduced by this patch. The shrink loops earlier in
+ice_vsi_realloc_stat_arrays() still take their upper bound from the queue
+count, not from the new length:
 
-pcie_do_recovery()
-  pci_walk_bridge(bridge, pci_pm_runtime_get_sync, NULL)
-    pci_walk_bus()
-      down_read(&pci_bus_sem);
-      pci_pm_runtime_get_sync()
-        pm_runtime_get_sync()
-          igc_runtime_resume()
-            __igc_resume(dev, true)
-              pci_disable_link_state()
-                __pci_disable_link_state()
-                  down_read(&pci_bus_sem);
+	u16 prev_txq = vsi->alloc_txq;
+	...
+	if (req_txq < prev_txq) {
+		for (i = req_txq; i < prev_txq; i++) {
+			if (vsi_stat->tx_ring_stats[i]) {
+				kfree_rcu(vsi_stat->tx_ring_stats[i], rcu);
 
-A writer could queue between the two down_read() calls, for example
-pci_device_add() from enumeration or hotplug, which is plausible behind a
-Thunderbolt dock. The nested reader would then block behind the writer,
-while the writer waits for the outer reader. Would that deadlock AER
-recovery and PCI enumeration? Lockdep would also be expected to report
-recursive locking here.
+Tx is committed here, before the Rx krealloc_array(). If that allocation
+fails, ice_vsi_rebuild() exits through "goto unlock" before ice_vsi_cfg_def()
+runs, so vsi->alloc_txq stays larger than tx_ring_stats_len.
 
-igc_io_slot_reset() already uses pci_disable_link_state_locked() for this
-reason. The runtime resume step earlier in recovery isn't covered,
-though.
+On the next rebuild, does this loop read tx_ring_stats[] past the end of the
+array? It would also call kfree_rcu() on whatever it finds there.
 
-The other I226 IDs already have the same pattern, and this patch extends
-it to both LMvP devices. Could it be fixed for all of them at the same
-time?
+In the opposite case, len larger than alloc_txq, krealloc_array() seems to
+drop the entries in [alloc_txq, len) without freeing them.
+
+Later in the series, "ice: rebuild ring stats arrays instead of reallocating
+them in place" removes ice_vsi_realloc_stat_arrays(). Its replacement,
+ice_vsi_free_unused_stat_arrays(), frees surplus entries only up to
+tx_ring_stats_len/rx_ring_stats_len. It also allocates a fresh container up
+front, so the partial-failure state can no longer happen.
+
+>  
+>  	if (req_rxq < prev_rxq) {
+>  		for (i = req_rxq; i < prev_rxq; i++) {
+
+[ ... ]
 
 -- 
-Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20260925112850.189302-1-danividanivi%40gmail.com
+Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20260925132636.123300-1-przemyslaw.kitszel%40intel.com
