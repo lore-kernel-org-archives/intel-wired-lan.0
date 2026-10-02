@@ -1,160 +1,160 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34683CA5FD4
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  2 Oct 2026 09:35:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1F122CA5FC4
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  2 Oct 2026 10:31:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id CD8BA40C00;
-	Fri,  2 Oct 2026 09:35:38 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id C4C3781202;
+	Fri,  2 Oct 2026 10:31:54 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id DsddqFIIcsuy; Fri,  2 Oct 2026 09:35:38 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 36E3040C9C
-Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790933738;
-	b=sfC1mmnSpB6Z6yyMw5bsEXIv/UILQ43t+7mb0dDpUsdksJ5/xN+0TIJq8wBs0h4MbW7p
-	 bxu3zZc4OVqRAWUuy5lx6PqNnwGAw/BNhKiUyDJS5wBW0gIOQkGnpFJoaTB/hX3Fz5Xmt
-	 bX5Z9KN2tpJbQ35rg7edvW4RoF9o6uvUzEnaD3gdTGLHi7imm9sXNyMlLMh4NVaQyPUdR
-	 EgfNr6nEu6Efr1xnCmFjRadJsrWD405+xMB35dkAcrCsGhyZEacDLsswizyvkFTdN9YYf
-	 k0qLHNSa5qchlJHhUnRFYoq84AUM7sKVWfNrnkvATTPMhSnYBNRcRcv0PfQUrAyEDyQ==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id k1j5BhvljXve; Fri,  2 Oct 2026 10:31:54 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 051BB81205
+Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790937114;
+	b=ZsD4FB43hAahzSHp4ohSHErLcSOl7RQorOH5YlwwT01fRBikBBjlGQ5GS4fznRYQpQIb
+	 Qzbt5gtcXFh0Tlh5VwWWN0GiDPt2npRcChCGsE+cPRYATupQ5NL2y18Hqp/1MKoOFwXNX
+	 5MgVEzvJ+kSfk7YTsPDPfd1c+1oz9HbKvUQSI27PirXKmz1BW2tOoGHnBVV1vTJdhulv4
+	 ehgXCxtueESqOlbu2PKBaTkdgZRWXBqpXPqd7E1jI0yZSf3/mLbkHwK563tCMuxk0BNEt
+	 7nkVJ6AxWntK3OAUayLfGo53QCS+r2e+xXRBQfhKvA1DPp29GlcmL1PpZDnpKaG/hQw==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1790933738;
+	c=relaxed/relaxed; t=1790937114;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Gm-Message-State:X-Gm-Gg:
-	 X-Received:Received:From:To:Subject:Date:Message-ID:X-Mailer:
-	 MIME-Version:Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:
-	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
+	 DKIM-Signature:Received:X-MC-Unique:X-Mimecast-MFC-AGG-ID:Received:
+	 Received:From:To:Cc:Subject:Date:Message-ID:MIME-Version:X-Scanned-By:
+	 X-Mimecast-MFC-PROC-ID:X-Mimecast-Originator:Content-Type:
+	 Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:Precedence:
+	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=I9C+MwkRKEgyp5dd33r0U1X4vGqsk0ZlI4nawwmJ14I=;
-	b=lzJ09Fge9J+fTjF7De+xQMLGWY7a7gi6hbQTMNQTpkaYYrzewmmIi4oSFzcMr+kqIcuh
-	 rb46dFawawRG5OwesyCOMebHG2tlE46Aol64aYJbPjgC7yrr51lRJBmYvWeHduMCwR8cw
-	 +SfjIdvrOEuz2/ajYZMZD9WND7jYew73foTyH8vtd3GJeQxnuM6EMFvBhK/wrvEPr7fcK
-	 vEt2jHr8NF5vzA73xxdob8K6FM/AL4tZYVsLVH178sZ3spaVYXJol0rWJhBjhLnrW5PYz
-	 TxoEmlNFEWd0iNQqgQJ9PscCJCvOxjuCTKs6z8Y7Kergz9UK8hBRRdkUfCEQYMIHFvA==
-ARC-Authentication-Results: i=2; smtp4.osuosl.org; dmarc=pass header.from=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=jnOknNtn;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	bh=UbTwYRHb8DyqJwziSa/wyNcRZN8bf0V0Em3U5wv/Th0=;
+	b=ClaF6nwutv/Minp/UFN2Y4SlOHwjwHgMPnRRylAKawvJIBFpvnyMX7k4rj2+TWznlyjx
+	 /4yKEmChg/TKQdY0f2lOSDZZ6UD5RAkBbsQ6uAwt7wjnZCJLLIQf+EzBoLdYVuktHQGRF
+	 CebMxH7MrA6R3bfoc+UvJASWsrZoANte3S3xQw6CIC6ntsLpu2MhII2ixTak9ctmo7Qf0
+	 cFhRGDno+Fxf5ppZAwKkEBq4Cpqf+OQ/LabwgZbZy+QkYTdBEu33lRoDkO7ismHFHoFc9
+	 W3GLMHkBdumlUtMexYrFq/W/dPISQfbD+OlnjB00p/JfgN3kAY5TQ53Ws35KKO6AHxg==
+ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1790933738;
-	bh=I9C+MwkRKEgyp5dd33r0U1X4vGqsk0ZlI4nawwmJ14I=;
-	h=From:To:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
+	s=default; t=1790937114;
+	bh=UbTwYRHb8DyqJwziSa/wyNcRZN8bf0V0Em3U5wv/Th0=;
+	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=39+O4N1cGKohgA/ctEii/N9IBuLQFrE2rqDHV7GHQignq3Db+vrgsBAQth67RDpk4
-	 eFifeuG+M7+Un6+Xr2LfC12j6UlDPsYBa/A9aMYO5W4ITZBdNvW/kjvDvyZzWEFXdy
-	 QhXDDKI3u/t6UFb1oBml3Gea/V0eDZcTWQ75hGNB2Mzbyo7EEGzLsY8AD3wuPl8EXg
-	 N6bcrILbIONYV08wru0EodbV0jmvlDJpXpn88V5uWnGE28cUQT3rWYJFPgQzlBKqNB
-	 6oFmCHsgzKGIkxjUWuz92vBZmsHyLxzKywvNTj0z8qS0cDuD3cUiEeZs3iEhlQXyi+
-	 xJo1gmVRfqYiA==
+	b=4dQT6cMTnl+ftdTtafG8+Id8jnRmZruGDMGfBYxpqAWl3dpDoNK5UIo3nlGGwKqyn
+	 +VCgxCYmPhcLKF/LlwuysSNW3KjKEept3ta8wrlrAhbd1ntmxGKm8mycY9SYfy0OE+
+	 cUz6wdJB+3Mzm3EwUxDCOdPGFcxX6K5KGVoOvKyU8/0xwRD/1Px87ge4jbSdqRr+hS
+	 UeYJP2hOBujGP/bJY+nxw/j3ZejTy/N8R2E2Ew50oHHXseTJlm8SrMHz4hIJkKhj81
+	 9MWPjseczpS7f4IhDOigvZfekEJVR2lOJssPFFbkMYsvRIabF7pxdLdesAOg/z+z8T
+	 DaAtljXfPXxcA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 36E3040C9C;
-	Fri,  2 Oct 2026 09:35:38 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 00ACB3AC
- for <intel-wired-lan@lists.osuosl.org>; Fri,  2 Oct 2026 09:35:36 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 051BB81205;
+	Fri,  2 Oct 2026 10:31:54 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id A350A34D
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  2 Oct 2026 10:31:52 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id E678C40CA6
- for <intel-wired-lan@lists.osuosl.org>; Fri,  2 Oct 2026 09:35:36 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 951C160828
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  2 Oct 2026 10:31:52 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id zTRbPV7Wivpm for <intel-wired-lan@lists.osuosl.org>;
- Fri,  2 Oct 2026 09:35:36 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 069DD40C00
-Authentication-Results: smtp4.osuosl.org;
- arc=none smtp.remote-ip="2a00:1450:4864:31::10"
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790933736;
- b=bwyZcc4VYMAphPSQFhOhhmWiANDpk17/ssc7fKgPMu8fBnaMzDV6haFPFQzGbSUt4AHN
- sMYEi+1TvYwdu3jxnSgFO601+p8KNv2Dgz7rA3BGURKklrTvHiTmT5ySZ+yL9lCZIH6+U
- 7g7tsfhICRMTu8doIvHICJkqhx+CXKsovReBEISDtob2NKQI4nnXQpBXpdHpc7y7xQU2A
- 2pESFCY9HssvTOmuhxyqD5dukGXQQWhGNKOws/WYP6yP9v6qAl5lTDs2m2ih4vrhwKA5l
- y0uLPWp67DVXmb5dApexFCtwyy4T3DQH5MOc1Jw7N3fBqkG2wOrpgGWSbQ1apMTQrcg==
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id PogR7wGyTgQq for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  2 Oct 2026 10:31:52 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 3D1D66080A
+Authentication-Results: smtp3.osuosl.org;
+ arc=none smtp.remote-ip=170.10.133.124
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790937112;
+ b=PrREW90nV6JtYRmX0k0NBc/NJ/i3R9lyteNWrz1NfLMrJuWPmwOVtx62ZHssAIF7B2uT
+ o/Vpldqe7QDgG+yvtaETl27GwaAHNgoq/klXDrRKbbACerPIPu1Y/U5ihRInYm47ThnHZ
+ 5mmTnNuSk1M8KxUydzrJwMKsi9Zgr+Kr17tdUQeISzHNFmNfd4gnqyxPmk5RN7DN0icfX
+ /pfki64qB4RLLfY0q2Z00ZSZslG1igG3cKlE/fozirz57+I1BASwIX1YMYYJb9WRJ3tzq
+ KKVRAECmKMO6xokjaKdtixT7QjFeNwVVMsiE4VOa5YgGPUVDU5bzsniUMWNGhMYtJyA==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1790933736;
- h=Received-SPF:Received:DKIM-Signature:X-Google-DKIM-Signature:
- X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Subject:Date:
- Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding;
- bh=I9C+MwkRKEgyp5dd33r0U1X4vGqsk0ZlI4nawwmJ14I=;
- b=DZnwZDN71lK70iPuAmpYz3n18lRccrK9wuXgP/bpjBNLmjptM+6hQJZdjO1mxcmWuniC
- ejhZeDXyZX9+bPtgRa1RpjBgaTbL+GUMwXmAqD5lOJ9H+LJNBrByAgDXU0GUQynloZwcQ
- OKb1uA37TtCfYOg88ze5q4WMBRCrguhY9qtAyCGYFKw0J4B+yMiFwxDaYY/hym7ZOIhFb
- NvUzPSoquG+s+/8tXhij0GOtLEoUiJPvHOsB+DxNVFxT1Sdd85DOovOnyd4PT/wLyCLe6
- Gk9Zl5wgj5+lGVRj4oxMwK8PMqcXbuN84s2vjykn74+hmBdMQBPht6L0xXLiCMohhow==
-ARC-Authentication-Results: i=1; smtp4.osuosl.org;
- dmarc=pass header.from=gmail.com; 
- dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20251104 header.b=jnOknNtn; 
- arc=none smtp.remote-ip="2a00:1450:4864:31::10"
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a00:1450:4864:31::10; helo=mail-wm2-x10.google.com;
- envelope-from=sashaneftin@gmail.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp4.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20251104 header.b=jnOknNtn
-Received: from mail-wm2-x10.google.com (mail-wm2-x10.google.com
- [IPv6:2a00:1450:4864:31::10])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 069DD40C00
- for <intel-wired-lan@osuosl.org>; Fri,  2 Oct 2026 09:35:35 +0000 (UTC)
-Received: by mail-wm2-x10.google.com with SMTP id
- 5b1f17b1804b1-49e6598dd44so46808455e9.1
- for <intel-wired-lan@osuosl.org>; Fri, 02 Oct 2026 02:35:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20251104; t=1790933733; x=1791538533; darn=osuosl.org;
- h=content-transfer-encoding:mime-version:message-id:date:subject:to
- :from:from:to:cc:subject:date:message-id:reply-to:content-type;
- bh=I9C+MwkRKEgyp5dd33r0U1X4vGqsk0ZlI4nawwmJ14I=;
- b=jnOknNtnIeJG0S+hP+bgQWD+jjsst+6UWz+f8ruaTlFvfDFOT6uXF0DNexAuxZtyAU
- fFn4Nu5wOkOSUio43Kk3Ivtk5jycvoBmzCYpfssAlWevaXNN7lY59ebW+JfN0TlAEyEL
- uSc8OV78HHIDiseRkemSvsMq/30qxBjZyjGh+Z2vXNw1jCdoOOTxNSn7Pks83sZBmVCK
- kTL5EfXigHlIUxNen0UfDKfjpEVnu7g21fcMT7nsvlGTGwcYxj+1BvTOID1fh0Zc1nyq
- XMnTm0dKx49uM6R3U1Z07zEW5ChGqkX5tLh7i0ke6TkmFAcQzPeLEY+O74GRx9B9T2Xs
- R5pA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1790933733; x=1791538533;
- h=content-transfer-encoding:mime-version:message-id:date:subject:to
- :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
- :reply-to:content-type;
- bh=I9C+MwkRKEgyp5dd33r0U1X4vGqsk0ZlI4nawwmJ14I=;
- b=qJ6gOMY4HlalxtCeFHvRCksMhj6kS+qBMnBLfjFpcRL2UDi0Hx/LtM9D6aFzI6P6BK
- 8WIdufK98CePAvOKElJA9eAhe0Kp9EQPVJyos3bT2lpGo1t2u7dWxYd8h6f3i2SErs0p
- WUc3ieILcT1TJyScyryHIPEpCURZnP/k90IcPmGmVYOEgw2OPYf5sD5b9QG/6Kz2OLmB
- OsFJw4j82KP+pik8zu7QTnp+LvKo5qdwHfRVdfI30Yr+Rc+JDKfrbDRl9cLNCoTW4s5S
- /aprKkC9QK/FVhNrh9qpXsvzPtuQhNgWme5k5wrrDe+ygaqanGCjoSX6JGoUdWvlcfhn
- xotA==
-X-Gm-Message-State: AFuF++kHuCxbliQ6PKqhNhcIpHJ/UlEudZIRTRLfudZNFHqX/meSwfny
- rTGDizS3qfuFayoq4xM80ilOIZPPtGCNeuflKseISdfoHZTzAF5g+KG+F9FgSIr+
-X-Gm-Gg: AYBFou2hxUdDTgf7/7H+0/noiAj1M/grB092mmtcKUWIBthRHcCXilUNlYgURL4znDS
- y6ysk2R95BIm2ty2ySERgQH4M7Gix/xtTnfrX8gjb/Jzrhm5hl/vy4vvViR2XaxEZWoeixHu9US
- IFYuzuw5Y0CdQRYYYprCPxRTdjphhjm6TqH8PT8UYkiEpiOLP8+eWSvuMaYu6HPGuPaP6SoGAJ0
- yB5H9Entfc6LjVhZ6JOtPBnYmQ3XqCNs1EOtIbVCIEUU2z42iqUYINazj1Qh5y8mzn/JfMIx4PH
- lxMjYweSG8jLxQAtfaWO5ZYqUTws+nWj604XGTTejY3YlQWk/E4Cv+CEycROLDMSIS/c63cJLQ2
- JchXpC9eQH+vGJ0fjtGUlT3TlsbGSGfOTAbofsuJemNiSxyZD3nnORAr0m+jS2URWjORYYm30iG
- kfW0zsiPDd5CpksU+6Na2qNDpTSWKL/4bNqdyyVtNnt8/saKwrGJjlVMzUWtNO+TC2RC9SWge99
- /NCDM70mSf4PH3+UIe1sKb6nafjTa4W9ZO6SyASr5L58O9PlkqDxqTVdzoPYiI=
-X-Received: by 2002:a05:600c:c084:b0:4a0:2835:6fd3 with SMTP id
- 5b1f17b1804b1-4a028357000mr25668325e9.17.1790933733001; 
- Fri, 02 Oct 2026 02:35:33 -0700 (PDT)
-Received: from sashaneftin-pc-GB-BSi5-1135G7.home ([185.175.35.55])
- by smtp.gmail.com with ESMTPSA id
- ffacd0b85a97d-48b380fada5sm4134284f8f.24.2026.10.02.02.35.31
- for <intel-wired-lan@osuosl.org>
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 02 Oct 2026 02:35:32 -0700 (PDT)
-From: Sasha Neftin <sashaneftin@gmail.com>
-To: intel-wired-lan@osuosl.org
-Subject: [iwl-next, v1] igb: Fix typo in IGB_NO_QUEUE macro definition
-Date: Fri,  2 Oct 2026 12:35:30 +0300
-Message-ID: <20261002093530.150023-1-sashaneftin@gmail.com>
-X-Mailer: git-send-email 2.43.0
+ c=relaxed/relaxed; t=1790937112;
+ h=Received-SPF:DKIM-Signature:Received:X-MC-Unique:
+ X-Mimecast-MFC-AGG-ID:Received:Received:From:To:Cc:Subject:Date:
+ Message-ID:MIME-Version:X-Scanned-By:X-Mimecast-MFC-PROC-ID:
+ X-Mimecast-Originator:Content-Type:Content-Transfer-Encoding;
+ bh=UbTwYRHb8DyqJwziSa/wyNcRZN8bf0V0Em3U5wv/Th0=;
+ b=pcTx59C3F0/qGuJVl5xGcMFKk3EiUHrOyvWW0Y+ArwzysaDz7zPqO8QjGgxpxoxJFOX/
+ M2zU4QCS3VXPBKoqApjkLxk8RXnI7JxscelpwYqMm+pjq82o/y7fjFpsHQ4AV5MwA1OYk
+ IbR95lsCIUAKu1PlI9N/mS7cMXYH8JTuWC8OdHf2pyqaYFr1s9ZUhRnR5bw+FkPfikqv4
+ y1PB4iM5V/6jZ6NP4/36DTpaj2fvPrLfrQzWa0pKFerDpHhw8eYov+MXAoHpECAX99qWG
+ sEr8+qUjXkj2JpkIoTXrWCHmMbbIzl73OvACDlTGOMltHkmZ6P7LwfEmvnU82wKbUjA==
+ARC-Authentication-Results: i=1; smtp3.osuosl.org;
+ dmarc=pass header.from=redhat.com; 
+ dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=E56lrZ0D; 
+ arc=none smtp.remote-ip=170.10.133.124
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.133.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=poros@redhat.com;
+ receiver=<UNKNOWN> 
+Authentication-Results: smtp3.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.from=redhat.com
+Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=E56lrZ0D
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+ by smtp3.osuosl.org (Postfix) with ESMTP id 3D1D66080A
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  2 Oct 2026 10:31:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1790937109;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding;
+ bh=UbTwYRHb8DyqJwziSa/wyNcRZN8bf0V0Em3U5wv/Th0=;
+ b=E56lrZ0D9Ddlko0icwmfy/m/wVFOsCpN19kEVlmJibkJH/kipAo3xqZboyd3Egvdypyr8v
+ 7/bb3DNQGwkyxyQv827DwiWwWChAP6pjzjcvXqmfVvT55Z3ASyiqdTQ8x2xSxESCw+qmY3
+ SABkydRFY7Kb7a0I5U+uob54B3htOHQ=
+Received: from mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-680-N3yYzrrcMRi4_1DBORVtWA-1; Fri,
+ 02 Oct 2026 06:31:45 -0400
+X-MC-Unique: N3yYzrrcMRi4_1DBORVtWA-1
+X-Mimecast-MFC-AGG-ID: N3yYzrrcMRi4_1DBORVtWA_1790937103
+Received: from mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com
+ (mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.111])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
+ id 92DBC1955D62; Fri,  2 Oct 2026 10:31:42 +0000 (UTC)
+Received: from ShadowPeak.redhat.com (unknown [10.44.32.39])
+ by mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
+ id C1114180034F; Fri,  2 Oct 2026 10:31:36 +0000 (UTC)
+From: Petr Oros <poros@redhat.com>
+To: netdev@vger.kernel.org
+Cc: Petr Oros <poros@redhat.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@kernel.org>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, Alexei Starovoitov <ast@kernel.org>,
+ Daniel Borkmann <daniel@iogearbox.net>,
+ Jesper Dangaard Brouer <hawk@kernel.org>,
+ John Fastabend <john.fastabend@gmail.com>,
+ Stanislav Fomichev <sdf@fomichev.me>,
+ Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>,
+ Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
+ Larysa Zaremba <larysa.zaremba@intel.com>,
+ intel-wired-lan@lists.osuosl.org, linux-kernel@vger.kernel.org,
+ bpf@vger.kernel.org
+Subject: [PATCH iwl-net] ice: keep the VLAN tag of priority-tagged frames with
+ Rx stripping enabled
+Date: Fri,  2 Oct 2026 12:31:08 +0200
+Message-ID: <20261002103108.2513191-1-poros@redhat.com>
 MIME-Version: 1.0
+X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.111
+X-Mimecast-MFC-PROC-ID: EeCRPmo9K5cHXXDS9ki3rfTqF9Bqaq6eg1bg0DpSPuc_1790937103
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
@@ -170,79 +170,196 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-Correct the macro name from IGB_N0_QUEUE (using digit '0') to
-IGB_NO_QUEUE (using letter 'O') in igb_main.c and update its usage in
-igb_main.c.
+With Rx VLAN stripping enabled the hardware also strips tags with VID 0,
+but ice_receive_skb() only puts the stripped tag back when the VID is
+non-zero. Priority-tagged frames reach the stack as untagged and a vlan0
+upper device never sees them, while the same traffic works with rxvlan
+disabled.
 
-The typo in the igc driver was likely copied from this original typo in the
-igb driver, which has now been fixed previously in igc.
+Hit by our QE VLAN test on an E810-XXV, where ping over vlan0 fails and
+tcpdump on the PF shows the peer's priority-tagged ARP requests arriving
+untagged. Reproduced on the net tree with a PF and its VF as the peer in
+both single and double VLAN mode. i40e had the same bug, fixed by commit
+2a508c64ad27 ("i40e: fix VLAN.TCI == 0 RX HW offload").
 
-Signed-off-by: Sasha Neftin <sashaneftin@gmail.com>
+Put the tag in ice_process_skb_fields() keyed on the L2TAG1P/L2TAG2P
+status bits, let ice_get_vlan_tci() report whether a tag was stripped
+(this also fixes the XDP VLAN hint for a zero TCI) and drop the now
+trivial ice_receive_skb().
+
+Fixes: 2b245cb29421 ("ice: Implement transmit and NAPI support")
+Fixes: 714ed949c6f3 ("ice: Implement VLAN tag hint")
+Signed-off-by: Petr Oros <poros@redhat.com>
 ---
- drivers/net/ethernet/intel/igb/igb_main.c | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_txrx.c     |  5 +---
+ drivers/net/ethernet/intel/ice/ice_txrx_lib.c | 26 ++++--------------
+ drivers/net/ethernet/intel/ice/ice_txrx_lib.h | 27 +++++++++++--------
+ drivers/net/ethernet/intel/ice/ice_xsk.c      |  5 +---
+ 4 files changed, 23 insertions(+), 40 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index d4a897a8c82c..73a08ab27221 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -754,13 +754,13 @@ static void igb_write_ivar(struct e1000_hw *hw, int msix_vector,
- 	array_wr32(E1000_IVAR0, index, ivar);
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index 31303ab5be175a..3935ac05a251b4 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -970,7 +970,6 @@ static int ice_clean_rx_irq(struct ice_rx_ring *rx_ring, int budget)
+ 		struct sk_buff *skb;
+ 		unsigned int size;
+ 		u16 stat_err_bits;
+-		u16 vlan_tci;
+ 		bool rxe;
+ 
+ 		/* get the Rx desc from Rx ring based on 'next_to_clean' */
+@@ -1051,8 +1050,6 @@ static int ice_clean_rx_irq(struct ice_rx_ring *rx_ring, int budget)
+ 			continue;
+ 		}
+ 
+-		vlan_tci = ice_get_vlan_tci(rx_desc);
+-
+ 		/* probably a little skewed due to removing CRC */
+ 		total_rx_bytes += skb->len;
+ 
+@@ -1061,7 +1058,7 @@ static int ice_clean_rx_irq(struct ice_rx_ring *rx_ring, int budget)
+ 
+ 		ice_trace(clean_rx_irq_indicate, rx_ring, rx_desc, skb);
+ 		/* send completed skb up the stack */
+-		ice_receive_skb(rx_ring, skb, vlan_tci);
++		napi_gro_receive(&rx_ring->q_vector->napi, skb);
+ 
+ 		/* update budget accounting */
+ 		total_rx_pkts++;
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
+index e695a664e53d18..19307086c238f5 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
+@@ -218,6 +218,7 @@ ice_process_skb_fields(struct ice_rx_ring *rx_ring,
+ 		       struct sk_buff *skb)
+ {
+ 	u16 ptype = ice_get_ptype(rx_desc);
++	u16 vlan_tci;
+ 
+ 	ice_rx_hash_to_skb(rx_ring, rx_desc, skb, ptype);
+ 
+@@ -238,29 +239,13 @@ ice_process_skb_fields(struct ice_rx_ring *rx_ring,
+ 
+ 	ice_rx_csum(rx_ring, skb, rx_desc, ptype);
+ 
++	if (rx_ring->vlan_proto && ice_get_vlan_tci(rx_desc, &vlan_tci))
++		__vlan_hwaccel_put_tag(skb, rx_ring->vlan_proto, vlan_tci);
++
+ 	if (rx_ring->ptp_rx)
+ 		ice_ptp_rx_hwts_to_skb(rx_ring, rx_desc, skb);
  }
  
--#define IGB_N0_QUEUE -1
-+#define IGB_NO_QUEUE -1
- static void igb_assign_vector(struct igb_q_vector *q_vector, int msix_vector)
- {
- 	struct igb_adapter *adapter = q_vector->adapter;
- 	struct e1000_hw *hw = &adapter->hw;
--	int rx_queue = IGB_N0_QUEUE;
--	int tx_queue = IGB_N0_QUEUE;
-+	int rx_queue = IGB_NO_QUEUE;
-+	int tx_queue = IGB_NO_QUEUE;
- 	u32 msixbm = 0;
+-/**
+- * ice_receive_skb - Send a completed packet up the stack
+- * @rx_ring: Rx ring in play
+- * @skb: packet to send up
+- * @vlan_tci: VLAN TCI for packet
+- *
+- * This function sends the completed packet (via. skb) up the stack using
+- * gro receive functions (with/without VLAN tag)
+- */
+-void
+-ice_receive_skb(struct ice_rx_ring *rx_ring, struct sk_buff *skb, u16 vlan_tci)
+-{
+-	if ((vlan_tci & VLAN_VID_MASK) && rx_ring->vlan_proto)
+-		__vlan_hwaccel_put_tag(skb, rx_ring->vlan_proto,
+-				       vlan_tci);
+-
+-	napi_gro_receive(&rx_ring->q_vector->napi, skb);
+-}
+-
+ /**
+  * ice_clean_xdp_tx_buf - Free and unmap XDP Tx buffer
+  * @dev: device for DMA mapping
+@@ -587,8 +572,7 @@ static int ice_xdp_rx_vlan_tag(const struct xdp_md *ctx, __be16 *vlan_proto,
+ 	if (!*vlan_proto)
+ 		return -ENODATA;
  
- 	if (q_vector->rx.ring)
-@@ -775,9 +775,9 @@ static void igb_assign_vector(struct igb_q_vector *q_vector, int msix_vector)
- 		 * or more queues to a vector, we write the appropriate bits
- 		 * into the MSIXBM register for that vector.
- 		 */
--		if (rx_queue > IGB_N0_QUEUE)
-+		if (rx_queue > IGB_NO_QUEUE)
- 			msixbm = E1000_EICR_RX_QUEUE0 << rx_queue;
--		if (tx_queue > IGB_N0_QUEUE)
-+		if (tx_queue > IGB_NO_QUEUE)
- 			msixbm |= E1000_EICR_TX_QUEUE0 << tx_queue;
- 		if (!(adapter->flags & IGB_FLAG_HAS_MSIX) && msix_vector == 0)
- 			msixbm |= E1000_EIMS_OTHER;
-@@ -790,11 +790,11 @@ static void igb_assign_vector(struct igb_q_vector *q_vector, int msix_vector)
- 		 * lower 3 bits as the row index, and the 4th bit as the
- 		 * column offset.
- 		 */
--		if (rx_queue > IGB_N0_QUEUE)
-+		if (rx_queue > IGB_NO_QUEUE)
- 			igb_write_ivar(hw, msix_vector,
- 				       rx_queue & 0x7,
- 				       (rx_queue & 0x8) << 1);
--		if (tx_queue > IGB_N0_QUEUE)
-+		if (tx_queue > IGB_NO_QUEUE)
- 			igb_write_ivar(hw, msix_vector,
- 				       tx_queue & 0x7,
- 				       ((tx_queue & 0x8) << 1) + 8);
-@@ -811,11 +811,11 @@ static void igb_assign_vector(struct igb_q_vector *q_vector, int msix_vector)
- 		 * bit 0 as the column offset, and the remaining bits as the
- 		 * row index.
- 		 */
--		if (rx_queue > IGB_N0_QUEUE)
-+		if (rx_queue > IGB_NO_QUEUE)
- 			igb_write_ivar(hw, msix_vector,
- 				       rx_queue >> 1,
- 				       (rx_queue & 0x1) << 4);
--		if (tx_queue > IGB_N0_QUEUE)
-+		if (tx_queue > IGB_NO_QUEUE)
- 			igb_write_ivar(hw, msix_vector,
- 				       tx_queue >> 1,
- 				       ((tx_queue & 0x1) << 4) + 8);
+-	*vlan_tci = ice_get_vlan_tci(xdp_ext->desc);
+-	if (!*vlan_tci)
++	if (!ice_get_vlan_tci(xdp_ext->desc, vlan_tci))
+ 		return -ENODATA;
+ 
+ 	return 0;
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx_lib.h b/drivers/net/ethernet/intel/ice/ice_txrx_lib.h
+index f17990b68b621d..579ce56c0c3c0a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_txrx_lib.h
+@@ -70,25 +70,32 @@ ice_build_tstamp_desc(u16 tx_desc, u32 tstamp)
+ /**
+  * ice_get_vlan_tci - get VLAN TCI from Rx flex descriptor
+  * @rx_desc: Rx 32b flex descriptor with RXDID=2
++ * @vlan_tci: VLAN TCI stripped by hardware
+  *
+  * The OS and current PF implementation only support stripping a single VLAN tag
+- * at a time, so there should only ever be 0 or 1 tags in the l2tag* fields. If
+- * one is found return the tag, else return 0 to mean no VLAN tag was found.
++ * at a time, so there should only ever be 0 or 1 tags in the l2tag* fields.
++ *
++ * Return: true if a VLAN tag was stripped and stored in @vlan_tci, false
++ * otherwise.
+  */
+-static inline u16
+-ice_get_vlan_tci(const union ice_32b_rx_flex_desc *rx_desc)
++static inline bool
++ice_get_vlan_tci(const union ice_32b_rx_flex_desc *rx_desc, u16 *vlan_tci)
+ {
+ 	u16 stat_err_bits;
+ 
+ 	stat_err_bits = BIT(ICE_RX_FLEX_DESC_STATUS0_L2TAG1P_S);
+-	if (ice_test_staterr(rx_desc->wb.status_error0, stat_err_bits))
+-		return le16_to_cpu(rx_desc->wb.l2tag1);
++	if (ice_test_staterr(rx_desc->wb.status_error0, stat_err_bits)) {
++		*vlan_tci = le16_to_cpu(rx_desc->wb.l2tag1);
++		return true;
++	}
+ 
+ 	stat_err_bits = BIT(ICE_RX_FLEX_DESC_STATUS1_L2TAG2P_S);
+-	if (ice_test_staterr(rx_desc->wb.status_error1, stat_err_bits))
+-		return le16_to_cpu(rx_desc->wb.l2tag2_2nd);
++	if (ice_test_staterr(rx_desc->wb.status_error1, stat_err_bits)) {
++		*vlan_tci = le16_to_cpu(rx_desc->wb.l2tag2_2nd);
++		return true;
++	}
+ 
+-	return 0;
++	return false;
+ }
+ 
+ /**
+@@ -132,7 +139,5 @@ void
+ ice_process_skb_fields(struct ice_rx_ring *rx_ring,
+ 		       union ice_32b_rx_flex_desc *rx_desc,
+ 		       struct sk_buff *skb);
+-void
+-ice_receive_skb(struct ice_rx_ring *rx_ring, struct sk_buff *skb, u16 vlan_tci);
+ 
+ #endif /* !_ICE_TXRX_LIB_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
+index 0643017541c35a..fd2e628a8bc95c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_xsk.c
++++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
+@@ -591,7 +591,6 @@ int ice_clean_rx_irq_zc(struct ice_rx_ring *rx_ring,
+ 		struct xdp_buff *xdp;
+ 		struct sk_buff *skb;
+ 		u16 stat_err_bits;
+-		u16 vlan_tci;
+ 
+ 		rx_desc = ICE_RX_DESC(rx_ring, ntc);
+ 
+@@ -667,10 +666,8 @@ int ice_clean_rx_irq_zc(struct ice_rx_ring *rx_ring,
+ 		total_rx_bytes += skb->len;
+ 		total_rx_packets++;
+ 
+-		vlan_tci = ice_get_vlan_tci(rx_desc);
+-
+ 		ice_process_skb_fields(rx_ring, rx_desc, skb);
+-		ice_receive_skb(rx_ring, skb, vlan_tci);
++		napi_gro_receive(&rx_ring->q_vector->napi, skb);
+ 	}
+ 
+ 	rx_ring->next_to_clean = ntc;
 -- 
-2.43.0
+2.55.0
 
