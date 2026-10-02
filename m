@@ -1,28 +1,28 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E948CA5FC4
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  2 Oct 2026 08:32:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54C7BCA5FD9
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  2 Oct 2026 08:32:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id DB940810AE;
-	Fri,  2 Oct 2026 08:32:28 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1510840A8D;
+	Fri,  2 Oct 2026 08:32:33 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ZABX4KI5gnB3; Fri,  2 Oct 2026 08:32:28 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org F1D66810B8
-Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790929948;
-	b=i2A//TNb+Pmlq9CqbMuXnWShcQdigAdfVQkkyhPO9M1CCvguxlp9JWjYx9T+ASkJyhG7
-	 DPt1qB1MmCE79MtZ/aszWm9U4aDNOO/jD6Q9EcqWhbY9lr2sq1PzA60obDjKnU2dZviAi
-	 vUKtKvvxltt4MPPdtQ2qG3prTmo2/fT1sZlvyPkwClUTaYEMaIaQ0QtpqEpXfGuZkPZz7
-	 jPfwQyxEqcZBVrwG4iq5ZFTkwBYDaiEZBa8/KkA6iQ1neEDPFZzqfmxQRSB4rWMAhOVMt
-	 RmCmUi5IYz9/UFurSDUrWW1GJ3mXqOYx2NT7hJSfg903v4jW6LQMytjC193ggUSw07A==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id G4hQ33RDIDff; Fri,  2 Oct 2026 08:32:32 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org CE93E40B26
+Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1790929951;
+	b=OKkyKIT21EHh3LuSsia2lXFAL+V9XGBgPpoRD4j4LjgVlnWmGj3vqZxC33HJKiCDkom7
+	 RbVX1Fj8AXXzKhvoqSUFUjkVkaprg0NZAaVINUk0kWSfPJXpHuiBPG+7MRwrpAcWSxpLA
+	 /BTK7J6NRLxEZixYeol5yiKk1QnmYocWIDvBSEPNgQ/Whs2PTJ/mTak8fBde3ALbl+Aoi
+	 fmQYch8IU7ALX+KXh4HShWPw24IsgdDbwZHYeiV2RfPnx2vEH2AMGReI9CYVh8TWO8ASy
+	 fwcFVosctOQ8BjHcflxwCr+JbJ6dbLR8fvrc4ecLdMCDYW5JX7QJZjAvxLk5U8ZaMlw==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1790929948;
+	c=relaxed/relaxed; t=1790929951;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
@@ -32,127 +32,125 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 Content-Type:Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:
 	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=5JuY5wMUTyN0P+KeYJB0ZAeckebQaYADB7Uozry53MU=;
-	b=JaJV+daGlGbti63qIKJs0JQIgpdsTWAV+hP1HARLI6tqMx4U2y6C1aE8r+kIIZcKo118
-	 pKs3Oqz3A1cI74Leio1gWZyeOjisUzNQI1ChozsW69hfFdEgYiw2AnoidWpRVZ9M4ykYC
-	 xLYgAvcFY5UOlPtEXw+55G0q15P7FlzeMzLWbAbtM04F7qf7AgwlmhS6qCSmYn2StYypD
-	 SzlkX0IyAQq+c9z6ywIrgAup/EYRwVaiyGcBjOpvsyXHt01lbOyPUgpy1voxEcXzTlQMP
-	 WZJMmTcH/ktIlhgaouTUKtcx06s7Iiey0/AgNhqNK6nY5vLX1zLRckSi9IvVNcS3Wnw==
-ARC-Authentication-Results: i=2; smtp1.osuosl.org; dmarc=pass header.from=suse.com;
-	dkim=pass header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=YJYG0T6l;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	bh=Ys5uWke9XBV3Ke8D3pwy0Lwn7XKjGlruZIy2p0X3uuk=;
+	b=iBqmqUGiCz9XRfszOETLmX3Cn2MbK7iwkS0Z1EYbHapPjMP4i4ptQnzH8XiFVM28YiZo
+	 YNK+ywAtHtKROTFt6C0fsdQgjqBla/lDIZcMwq+mzCzp2PNKXEVfJ81a3oty03FnPLltM
+	 LwTxhT8RqQfZUhWh5gK1r65+yu1m7kqdDMKL9TeIK0J+N4r9wniBnk0ZB1efYCnr14YKw
+	 5eDvNTieBk8M5Iz6w+g2zd/AxKMIml++pymEonM1+cybH8GAQ80tV36hBtZkzARgdWPKJ
+	 TsH5LDHYZdtVxiY445wypAdd9se18L4oVOA9BlBhvI8fhxRwJjvXzi2G1+VQ3YKs61w==
+ARC-Authentication-Results: i=2; smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1790929948;
-	bh=5JuY5wMUTyN0P+KeYJB0ZAeckebQaYADB7Uozry53MU=;
+	s=default; t=1790929951;
+	bh=Ys5uWke9XBV3Ke8D3pwy0Lwn7XKjGlruZIy2p0X3uuk=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=Pc28CDorUrPlm0tEzs75GlDgpL+L7BpI1/f17eoEYqLQLSz3SsVXHCmgcURwv/W4w
-	 rzq/ORnQ3Vhhuq7HPJe2jG2eS0dM8l7ye9gO3ZxHpp+iJRLwjqgUq1FDkJ3dJkXHM7
-	 ryNOHgZQO3YZrWEDvc9whPVQXoFj3oTz/Kcd1hU+YDvBGM17eLL0Ic5BSPLMMugoY3
-	 MLytv2ffnUG7z4g2TlQm96IRgt8HtxkkUnT1gUiCmc1u7qE/ANFoVRIV1r/daDnnG9
-	 1xtPep4I9og8m1dJEp1MWZ6Ia6jzEmHsYBS5TM9QQzxgWrs4Jz4m6pAi0+73I0Yr1U
-	 4XXXqoMw77eKA==
+	b=IvfhU2cQGoIQ5WNqxsX0u655oYg8euHVGVsSAdY9pnfkrMSVjg5zjkxbpcwrumq/3
+	 6MfZp9NEVpFOh6beZHPSKpyaQBSvSwUAF+gD78qaoLCsgJn0qhCvY/wfhJd9g6CCue
+	 Z/JtkHgq26o7ikLJbdgWsH3DRdlhK2rLFqFwy8RLflbmwyUQN9aeN4+kaOASKHfPzb
+	 /vbDMcZJLYVtcKufLhwOZkHh8JZHUjhREF7Zrx7ZA/AfR2vFOB/Dn/ZECajVnpS6jN
+	 dgYJm4Q0OA1gDEfwWqFb4KfPu6S84Le6rr0mfZRLT0mivpriRgKBrrqht+xjM+sWxN
+	 JOYk2vXuZuPaw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id F1D66810B8;
-	Fri,  2 Oct 2026 08:32:27 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id CE93E40B26;
+	Fri,  2 Oct 2026 08:32:31 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 862F634D
- for <intel-wired-lan@lists.osuosl.org>; Fri,  2 Oct 2026 08:32:26 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id B7169282
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  2 Oct 2026 08:32:29 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 6B932810AE
- for <intel-wired-lan@lists.osuosl.org>; Fri,  2 Oct 2026 08:32:26 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 80D9B81130
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  2 Oct 2026 08:32:29 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Ibw7QJG4ULeQ for <intel-wired-lan@lists.osuosl.org>;
- Fri,  2 Oct 2026 08:32:25 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 3A6AD810B8
+ id S20fDIfTBJ_g for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  2 Oct 2026 08:32:28 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 758C681115
 Authentication-Results: smtp1.osuosl.org;
- arc=none smtp.remote-ip="2a00:1450:4864:30::f"
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790929945;
- b=Dcxhrh4hRYWa5z3pJ4ZVp+PTV5BfCggs7nmrP34C3dFAnOT1pP3cWeQDHmiZYQSRumpS
- BBjTm+crmFewZzGPymP4uZZiiNC3tKHoJ/8ho5orh2ulA6krosaMHMHEQv1JToi5FQvpS
- ls3prKVaebHMti6M6f3UFnUYJ8xUChWUb9dWp9z2vP8AbZf7BwsECUYO1C6MdQZG/9f6p
- 1oRNS/Cbw5+0fNEckRs+44/SsBvQPB0UAtbGocmP1vwGCmxlU07twIrCbLiknY/hZgN+K
- 78mX8rJufOjHtMGkDRw9w/Og8nUD6eEYCN/CPx5OnalIAEB3/cfweO8Doj7ajaciaJQ==
+ arc=none smtp.remote-ip="2a00:1450:4864:31::10"
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1790929948;
+ b=qh1I7jgvUwE2T4w8H5pLPGfCZ7jnLPfOJu6UEkMYWR9IO1hisrpZedo3auZzTqXYqkv/
+ FlEWmM680nYthO0/J7l0UkZ93FwdxNoW9fxAzSV4iCbrYkh8uaqTQ2VeS4v6zOkVTO6Ep
+ /onz1bzcxb7s9V3RVLoadwL2cTxROdreTEpe3AVEP0LaXAfleSxxlbh6y3R64biuvmsOy
+ iWnXviPobnmR8O1acbLmKMIy4cAmh3t5YsKkMo1KmQjPe1b0RkqJ9yJW27BFgxvrKQYXH
+ 8K3+NJaYOYDeIHtiNhzB6QN2bzXriNzzJiW+CEOhaw/WYtfsH0l6fB6laIu9VHIOqAA==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1790929945;
+ c=relaxed/relaxed; t=1790929948;
  h=Received-SPF:Received:DKIM-Signature:X-Google-DKIM-Signature:
  X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
  From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
  MIME-Version:Content-Type:Content-Transfer-Encoding;
- bh=5JuY5wMUTyN0P+KeYJB0ZAeckebQaYADB7Uozry53MU=;
- b=O4EFzFCWnlpkNhXGd5/y/NEX/GqT+0W9ewWLoXNGR99MDOlEtswra5MH6z7ZGiynY9ir
- ZDa1odrpuYHr8JOyZHmnHgYrXmqLL5y0zAQzCs5gqNt+uTVjmqpJl0KxXiHxeuVpPOk1L
- f33SI3rnNtug5xypH1MQ1d/LIyL46EIYBANijzSD2WB6GcK4vyTotrEtb4eNnAlF0uRck
- lPL3rh5U7zR0gCQhEHL6ALvT3x6qXrGPzApx4zfXLtPEiGK6U+ZlAXJtdM5cXc1d9alo1
- Cw7rx9Or9XJeLZvt9FwrA8qjmVYYsr1LytOdC6pG/OP4j98H6Y4o3aZeiuOt8jDnI+w==
+ bh=Ys5uWke9XBV3Ke8D3pwy0Lwn7XKjGlruZIy2p0X3uuk=;
+ b=ekdTYGTfkLdmgZU0/0k/oxqcRVrVVoYGVB1aQFUWKjzry9721A3DqHG1KSiCoDQb6THy
+ jFqK6TtdX3IRrOKKIRLSSVt50u8568ATM4L2tRz1qzj1cJnfW1lHQhLiMrAoQUufRmx1Z
+ ryJwAtdZ4yFb22iJKfpAkmjZDg5CUDfJuk32494pggX9j7nC2K4ch5BBDkSf/C7Fb7lo1
+ XL91dCfW83Usaw+URd5EYzjBpsi2cPgsNSoWIvLJiT7MODALspMrgrfNvHslGg5iz+vpG
+ A9zeMCro11gbugVmIKm9nKoF49VeQViTca/F2X/K8wlweHvM649T4fttcyZA7iKzILw==
 ARC-Authentication-Results: i=1; smtp1.osuosl.org;
  dmarc=pass header.from=suse.com; 
  dkim=pass header.d=suse.com header.i=@suse.com header.a=rsa-sha256
- header.s=google header.b=YJYG0T6l; 
- arc=none smtp.remote-ip="2a00:1450:4864:30::f"
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2a00:1450:4864:30::f;
- helo=mail-wr2-x0f.google.com; envelope-from=petr.pavlu@suse.com;
- receiver=<UNKNOWN> 
+ header.s=google header.b="V4y0Qg/3"; 
+ arc=none smtp.remote-ip="2a00:1450:4864:31::10"
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2a00:1450:4864:31::10; helo=mail-wm2-x10.google.com;
+ envelope-from=petr.pavlu@suse.com; receiver=<UNKNOWN> 
 Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=suse.com
 Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com
- header.a=rsa-sha256 header.s=google header.b=YJYG0T6l
-Received: from mail-wr2-x0f.google.com (mail-wr2-x0f.google.com
- [IPv6:2a00:1450:4864:30::f])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 3A6AD810B8
- for <intel-wired-lan@lists.osuosl.org>; Fri,  2 Oct 2026 08:32:24 +0000 (UTC)
-Received: by mail-wr2-x0f.google.com with SMTP id
- ffacd0b85a97d-4887840c529so2521409f8f.1
- for <intel-wired-lan@lists.osuosl.org>; Fri, 02 Oct 2026 01:32:24 -0700 (PDT)
+ header.a=rsa-sha256 header.s=google header.b=V4y0Qg/3
+Received: from mail-wm2-x10.google.com (mail-wm2-x10.google.com
+ [IPv6:2a00:1450:4864:31::10])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 758C681115
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  2 Oct 2026 08:32:27 +0000 (UTC)
+Received: by mail-wm2-x10.google.com with SMTP id
+ 5b1f17b1804b1-49b912df756so55587155e9.3
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 02 Oct 2026 01:32:27 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=suse.com; s=google; t=1790929942; x=1791534742; darn=lists.osuosl.org;
+ d=suse.com; s=google; t=1790929946; x=1791534746; darn=lists.osuosl.org;
  h=content-transfer-encoding:content-type:mime-version:references
  :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
  :date:message-id:reply-to:content-type;
- bh=5JuY5wMUTyN0P+KeYJB0ZAeckebQaYADB7Uozry53MU=;
- b=YJYG0T6lEOLag5XASkf60diL28qs2HXJz8f2KjXD6Trjtci3m/EcwTSxrgyh6R8Nxl
- vr7VPNrjpuhYScrUjpJGngCTDQidUK2HeSrV3GPoajthyb9nFOocrCx5o75k3RNn25wz
- 0lb51bhkrhd/flNxwyUC9y6pFQ/WC1WtDhpvrZ95q4msmmpi3Oe4/KZYRKutXTy8XOCV
- dq7aZIKh4oVe+cISSmgQw+AnMbKLqu2QVg3Ui6eDhM7P2EyYnUO0VIM7LlkfMbspKiwQ
- sEdkyTshlwVPqkK4Kd/A9QkROh2b0LvtMNLnmKE6Q8fapkgRMGXLrbdIUslC2W4hY/lE
- n2Xg==
+ bh=Ys5uWke9XBV3Ke8D3pwy0Lwn7XKjGlruZIy2p0X3uuk=;
+ b=V4y0Qg/3KjvFiptVIoLisUzc0fi3AbDO7MQjeJJPMQuKKEj+DV723ErD//FliRn21j
+ vH425cZoeBPFx2Z1m7Kns9UH06k+hKTePoOgVVGGpFbttUcAWOyUEiZYkHAw9KTikYzi
+ u5m+BmP9JnTqrmpmKt+FNsYmmqYIb80MWAfvbGBo/xHUBRr54jdFOXFQCwocl+sqB8/F
+ 46GAjfbrRXaOCEYXgUjYiUcutUrNg2/m8sIwEhCzpqJZRherj18gclj3zh0yxIQd4Bj8
+ TZKz2aLvDiVdLXfT8ZNlxbP/rdBh9B3kkOeBvHTks+H6S7PYEQFf3QbnC5vq607bqNPT
+ cSXA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1790929942; x=1791534742;
+ d=1e100.net; s=20260707; t=1790929946; x=1791534746;
  h=content-transfer-encoding:content-type:mime-version:references
  :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
  :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
  :content-type;
- bh=5JuY5wMUTyN0P+KeYJB0ZAeckebQaYADB7Uozry53MU=;
- b=PpMMs/seIpfpDUqJPKb0yNSZsHraX6xoPvEeJ8m7Qb4tOy+qGhdBUXM6214THoP4eE
- htjw6cMERkhNLflWQxiLc9AA252E+/ehe/O0jAjAHbhgxciemAh4Fs5FEYY2MNvM3mGA
- 0+bhsBo4j24KSSneQ5yjJ2piSYprVVmmGjY66BACmTBxCfcmUhOjfhMAEoySWMb4Ajnv
- PoJ5/6+FvTbnP6GLwY54LGzQWqIfHIHdyNDyNaDv2S9wzk9IiqQtRTAwOFlxiLqDyw10
- HScF3FNyb8HGkNNGASbo+OihjzELdafA54EhffsQeyTWMeaTBGVvM2O7ynWh4jVo5+Ek
- VtGA==
+ bh=Ys5uWke9XBV3Ke8D3pwy0Lwn7XKjGlruZIy2p0X3uuk=;
+ b=eRTbLBwxyCnPRJ22ODjIRbcvU6vIfZeGDOnn+Ji+RV4W4mZhXwgPnEI5hwxLfzavcY
+ an1Ln6bcH4rVWKK9MoU47YboNfh29dcyZzytYuslzYAov1kw/51nCkvlAOaYNpzar6VE
+ 6lhJFW6241D34HpaQeduwsJphLXKHqTAVSPOFPkpJRlnUFVi/VD5ZbK2zciryF5w22tS
+ F8CqFyncG3ZsL+s7M7bc+2LFKVtSBKU710uy5OplZt/MCMVbVAmcy1jmG3OOhD31ndLv
+ zHPuYhbtns15irhKqBSvdHLDI/eWyyBseYBrBDOphxuTLfvYDmPolLScshFfAb/w8hHB
+ eR/w==
 X-Forwarded-Encrypted: i=1;
- AKwUvBxkQxCTd0CUCZ0MzjhHp2hLPWwygwXAczYmT2AkHNkHWtoYWM/auiWatYna7Nk9wDrE25UbsxijY2RyZS/94yQ=@lists.osuosl.org
-X-Gm-Message-State: AFuF++nOu3FiUdVjsiToGemO5b/AMeyZOqnAazQ3jPO1OKxABuCPKUX+
- TGT9px3p0h3Qj2e+g6enfC3mNvy8nFLP9Oe4NoTGmULdDMVjG5K7qycfV0469prnmLc=
-X-Gm-Gg: AYBFou1hd29p7zP1UL6bkLWJuhCK4AC1iDfecc9FW3wV/qf5SH63ETuFwwYH4elgTA8
- dSsbYXzxgcC1rDFQrK0YvqcPMdVpGoIJxNs5Vqq28c0xGuaEtd7vDvzxlEMWutrBZZ4pZIIwftt
- XD9jPqGv02C/pYYevMSmmkuJlE/dWXF7SvLqxajV9tTVUsNnc5g01Zxy43aX63fe61z9bpiGy9V
- Er/6KAwzHzAYvBIXN/Z/3QpGjKAZNk0pnq50X+2UsJxMchzgcvHZh9q7Oq/uBAqKAcgBpbEAZ+s
- eOhYcmmQQsmx6uVVn/k7rQCOIdkzPyVHc3+z9C9FdgvJPaBf/A5jXhUVOCcF0F8VL2wU72uvum6
- EKpKeS24SO8yHoIMPZQu//nJReb4oFZLmEyyss2dtjIZ1hlDIiqS/Z671dqKA1rQKHiMuxJz3w8
- lT2GBd98u+80eX1xZeE75iSEi0u/PLi1DjEdb/DZNJsjNORj+dJ43FOBtYSPI5SeDgKcA=
-X-Received: by 2002:a05:600c:548c:b0:49e:65f2:db64 with SMTP id
- 5b1f17b1804b1-4a027534bd7mr33259805e9.5.1790929942490; 
- Fri, 02 Oct 2026 01:32:22 -0700 (PDT)
+ AKwUvBxzRBRtAyDy0wIsg6a1M4ZqpKv2dnqveS0ozEUEzo9md44i1XCFvKXHhddpLJEzeM0zGbWnFIbww5fqqg/fMPY=@lists.osuosl.org
+X-Gm-Message-State: AFuF++kWJSIkMDdCN6q7zqmHvVBlziCPmqV7MdSqnk+o6q4Dr0+ref3a
+ ZveczhOJHvBxxhXvTGFccZpt8PYSDW7tRO7UTeCyC6tcBOSgbiM97fwo1qGUz435Poo=
+X-Gm-Gg: AYBFou3FwsBHTxxacn/eM/tIU+iYMp7Jl+wnN4fqEdb8KSRZOj50LFkSLspSrG0d44r
+ 3RfX+ZWntk0lbLapBqt7wTPCoVwbw+ipxG45wRWeK7ft51XRoah6Hhdu9Fgx+YpQdtR+gvN8yxg
+ Qta6N8BQm8hKqwc/NKEYoC2Og7TQlp0T9Jbkljo2GDFWBugH0c0tkyU8f6HkdgpeY5G5L71w2bi
+ bDMVjhAKsdR4jkXFJ1EhSrqlHObfTPTgDDZsmM8E8QKwir8+Bqhzh3yjNHhsuwzb8zRDTG6MS1b
+ JlIeoJty2MHt0YitzATAtMt57nt9nqXs/QKjneXm3jo133qk12ANSH7Z05hfxeYJeZlO+k2kcRG
+ iNDovvFuvxAQogpGVmKsqKcQWuc9/b/HkdbPaYMGQ4facvk1s7XgpqYgigIBtwq028h9+dJUuiH
+ FP7TFXk5q/WDVa+J5ZjExyLkmNclaqo09lZGlh8QnXij42fDY7rhpAysZSoV7WtCiouBA=
+X-Received: by 2002:a05:600c:4307:b0:4a0:b6:4619 with SMTP id
+ 5b1f17b1804b1-4a0274569f9mr25694905e9.0.1790929945843; 
+ Fri, 02 Oct 2026 01:32:25 -0700 (PDT)
 Received: from zovi.suse.cz ([2001:af0:8000:1409:193:86:92:181])
  by smtp.gmail.com with ESMTPSA id
- 5b1f17b1804b1-4a03feed16bsm42507905e9.4.2026.10.02.01.32.21
+ 5b1f17b1804b1-4a03feed16bsm42507905e9.4.2026.10.02.01.32.24
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 02 Oct 2026 01:32:22 -0700 (PDT)
+ Fri, 02 Oct 2026 01:32:25 -0700 (PDT)
 From: Petr Pavlu <petr.pavlu@suse.com>
 To: Wim Van Sebroeck <wim@linux-watchdog.org>,
  Guenter Roeck <linux@roeck-us.net>, Ian Abbott <abbotti@mev.co.uk>,
@@ -184,9 +182,9 @@ Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>,
  linux-rtc@vger.kernel.org, linux-usb@vger.kernel.org,
  linux-serial@vger.kernel.org, linux-atm-general@lists.sourceforge.net,
  linux-modules@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 1/3] hwmon: Replace __MODULE_STRING() with __stringify()
-Date: Fri,  2 Oct 2026 10:31:01 +0200
-Message-ID: <20261002-module-string-v2-1-fc7438acaf4d@suse.com>
+Subject: [PATCH v2 3/3] module: Remove obsolete __MODULE_STRING()
+Date: Fri,  2 Oct 2026 10:31:03 +0200
+Message-ID: <20261002-module-string-v2-3-fc7438acaf4d@suse.com>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20261002-module-string-v2-0-fc7438acaf4d@suse.com>
 References: <20261002-module-string-v2-0-fc7438acaf4d@suse.com>
@@ -211,114 +209,31 @@ __MODULE_STRING() has been an alias for __stringify() since "[PATCH]
 MODULE_PARM support for older modules" [1] in 2002-12. That change also
 moved it to the graveyard section at the end of linux/module.h
 
-Replace the remaining uses of __MODULE_STRING() with __stringify() in
-preparation for its removal.
+Remove __MODULE_STRING() now that all remaining uses have been replaced
+directly with __stringify().
 
 Link: https://git.kernel.org/tglx/history/c/136839a1b4 [1]
+Reviewed-by: Aaron Tomlin <atomlin@atomlin.com>
 Signed-off-by: Petr Pavlu <petr.pavlu@suse.com>
 ---
- drivers/hwmon/fschmd.c         | 3 ++-
- drivers/hwmon/nct7904.c        | 5 +++--
- drivers/hwmon/sch56xx-common.c | 3 ++-
- drivers/hwmon/w83793.c         | 5 +++--
- 4 files changed, 10 insertions(+), 6 deletions(-)
+ include/linux/module.h | 4 ----
+ 1 file changed, 4 deletions(-)
 
-diff --git a/drivers/hwmon/fschmd.c b/drivers/hwmon/fschmd.c
-index 019fc32bf318..df9418a86c83 100644
---- a/drivers/hwmon/fschmd.c
-+++ b/drivers/hwmon/fschmd.c
-@@ -35,6 +35,7 @@
- #include <linux/miscdevice.h>
- #include <linux/uaccess.h>
- #include <linux/kref.h>
-+#include <linux/stringify.h>
+diff --git a/include/linux/module.h b/include/linux/module.h
+index f6f90cd88f15..37de77340032 100644
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -896,10 +896,6 @@ extern const struct kobj_type module_ktype;
  
- /* Addresses to scan */
- static const unsigned short normal_i2c[] = { 0x73, I2C_CLIENT_END };
-@@ -43,7 +44,7 @@ static const unsigned short normal_i2c[] = { 0x73, I2C_CLIENT_END };
- static bool nowayout = WATCHDOG_NOWAYOUT;
- module_param(nowayout, bool, 0);
- MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (default="
--	__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
-+	__stringify(WATCHDOG_NOWAYOUT) ")");
+ #define symbol_request(x) try_then_request_module(symbol_get(x), "symbol:" #x)
  
- enum chips { fscpos, fscher, fscscy, fschrc, fschmd, fschds, fscsyl };
- 
-diff --git a/drivers/hwmon/nct7904.c b/drivers/hwmon/nct7904.c
-index 976b8a008e44..04e1a8e6db37 100644
---- a/drivers/hwmon/nct7904.c
-+++ b/drivers/hwmon/nct7904.c
-@@ -23,6 +23,7 @@
- #include <linux/i2c.h>
- #include <linux/hwmon.h>
- #include <linux/watchdog.h>
-+#include <linux/stringify.h>
- 
- #define VENDOR_ID_REG		0x7A	/* Any bank */
- #define NUVOTON_ID		0x50
-@@ -113,12 +114,12 @@
- static int timeout;
- module_param(timeout, int, 0);
- MODULE_PARM_DESC(timeout, "Watchdog timeout in minutes. 1 <= timeout <= 255, default="
--			__MODULE_STRING(WATCHDOG_TIMEOUT) ".");
-+			__stringify(WATCHDOG_TIMEOUT) ".");
- 
- static bool nowayout = WATCHDOG_NOWAYOUT;
- module_param(nowayout, bool, 0);
- MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (default="
--			__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
-+			__stringify(WATCHDOG_NOWAYOUT) ")");
- 
- static const unsigned short normal_i2c[] = {
- 	0x2d, 0x2e, I2C_CLIENT_END
-diff --git a/drivers/hwmon/sch56xx-common.c b/drivers/hwmon/sch56xx-common.c
-index a385aae3bb0f..febb8ba7dc2c 100644
---- a/drivers/hwmon/sch56xx-common.c
-+++ b/drivers/hwmon/sch56xx-common.c
-@@ -18,13 +18,14 @@
- #include <linux/watchdog.h>
- #include <linux/uaccess.h>
- #include <linux/slab.h>
-+#include <linux/stringify.h>
- #include "sch56xx-common.h"
- 
- /* Insmod parameters */
- static bool nowayout = WATCHDOG_NOWAYOUT;
- module_param(nowayout, bool, 0);
- MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (default="
--	__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
-+	__stringify(WATCHDOG_NOWAYOUT) ")");
- 
- #define SIO_SCH56XX_LD_EM	0x0C	/* Embedded uController Logical Dev */
- #define SIO_UNLOCK_KEY		0x55	/* Key to enable Super-I/O */
-diff --git a/drivers/hwmon/w83793.c b/drivers/hwmon/w83793.c
-index c6ef04c69856..e1f2708b5db6 100644
---- a/drivers/hwmon/w83793.c
-+++ b/drivers/hwmon/w83793.c
-@@ -34,6 +34,7 @@
- #include <linux/notifier.h>
- #include <linux/reboot.h>
- #include <linux/jiffies.h>
-+#include <linux/stringify.h>
- 
- /* Default values */
- #define WATCHDOG_TIMEOUT 2	/* 2 minute default timeout */
-@@ -57,13 +58,13 @@ static int timeout = WATCHDOG_TIMEOUT;	/* default timeout in minutes */
- module_param(timeout, int, 0);
- MODULE_PARM_DESC(timeout,
- 	"Watchdog timeout in minutes. 2<= timeout <=255 (default="
--				__MODULE_STRING(WATCHDOG_TIMEOUT) ")");
-+				__stringify(WATCHDOG_TIMEOUT) ")");
- 
- static bool nowayout = WATCHDOG_NOWAYOUT;
- module_param(nowayout, bool, 0);
- MODULE_PARM_DESC(nowayout,
- 	"Watchdog cannot be stopped once started (default="
--				__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
-+				__stringify(WATCHDOG_NOWAYOUT) ")");
- 
- /*
-  * Address 0x00, 0x0d, 0x0e, 0x0f in all three banks are reserved
+-/* BELOW HERE ALL THESE ARE OBSOLETE AND WILL VANISH */
+-
+-#define __MODULE_STRING(x) __stringify(x)
+-
+ #ifdef CONFIG_GENERIC_BUG
+ void module_bug_finalize(const Elf_Ehdr *, const Elf_Shdr *,
+ 			 struct module *);
 
 -- 
 2.55.0
