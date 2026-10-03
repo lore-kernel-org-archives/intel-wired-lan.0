@@ -4,168 +4,167 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D98BCA5FDD
-	for <intel-wired-lan@archiver.kernel.org>; Sat,  3 Oct 2026 09:52:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 55525CA5FE6
+	for <intel-wired-lan@archiver.kernel.org>; Sat,  3 Oct 2026 09:54:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id CDE3140F22;
-	Sat,  3 Oct 2026 09:52:32 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1F7D240F44;
+	Sat,  3 Oct 2026 09:54:09 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id nQXwcx_kk5Bx; Sat,  3 Oct 2026 09:52:32 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 25F8040F23
+ id AmC2A05WmCpT; Sat,  3 Oct 2026 09:54:08 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 6EE4240F47
 Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1791021152;
-	b=iCywGzJk4mLekFHiFg4HXirLrwjee2CBtTedkkBCsEbKPlOr8rj6NwAqzlpHDGx7dGve
-	 nOzODhX9dOfofyLzpaRE/+bR5ulQDoep96zgKIrZ3D2Lu7WwyCkZkjYVXN58svb1OLdHI
-	 dSDRHSSLMHr19axOe7j7musML5qIYtzK8ekEEmclY+Ds15hEqueLVtDt+WUSBwXo0uUTH
-	 ttOm1mpzSv1SV+h7PpFpLI2jJ9TvNQLYcwa9X5JH2Nee5Sx8c6sKPbxjEXNkfyzEwqFlb
-	 p+yGD/YqVjVB6U8sL3ilZRGgbT5Nm/Dxo8sU92Qin1z6cBHbdGDxeRrZ1o3hkjN8jfw==
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1791021248;
+	b=AxJEXqm3Oh4/O0xsx/f+B7tS37JQyTnEcE7WmiYnd0FU7usgsqwSxRv1HkNxvi5p3e8f
+	 fHqP+EAPadIvX4CUiViUcLB9E8zYl+rmcpwMZakQY6G071k2AzXWDM9pPvrO+Xy7Mcpca
+	 MCfTGgnvr5tue/M8EMVYP9JMcNKcr9BgptmzbF1ShpYrYvDzvhpJ+wLi6kmVy7IsTC9H7
+	 lO6Q9/j5cs47XQrW8WN9f2p/rL6Se+TmrMg69LmN3HWmVPYth9CScPpqajMpGF9imZzkJ
+	 +133rIA8jiMhcuvEpq8nNYH5Q458aVfUP72npYnZxuVvDE/WEh+ri0ph1QCyrEwwV4w==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1791021152;
+	c=relaxed/relaxed; t=1791021248;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
 	 DKIM-Signature:Received:X-MC-Unique:X-Mimecast-MFC-AGG-ID:Received:
-	 X-Google-DKIM-Signature:X-Forwarded-Encrypted:X-Gm-Message-State:
-	 X-Gm-Gg:X-Received:X-Received:Received:Date:From:To:CC:Subject:
-	 User-Agent:In-Reply-To:References:Message-ID:MIME-Version:
-	 X-Mimecast-Spam-Score:X-Mimecast-MFC-PROC-ID:X-Mimecast-Originator:
-	 Content-Type:Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:
-	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 X-Google-DKIM-Signature:X-Gm-Message-State:X-Gm-Gg:X-Received:
+	 X-Received:Received:Date:From:To:CC:Subject:User-Agent:In-Reply-To:
+	 References:Message-ID:MIME-Version:X-Mimecast-Spam-Score:
+	 X-Mimecast-MFC-PROC-ID:X-Mimecast-Originator:Content-Type:
+	 Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:Precedence:
+	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=E+FDqTbxWKBUKoHRzptZ0BLbK5KRgPhFrF++n6X62gs=;
-	b=QUYzsW5nRYlbfCyj1H7l0xQAK6sBRgzsG0SGutxHlmB2S/QsiPhSEodfyIheohdQF5H8
-	 +btjg8UQr9Evy7BIMg56dtoZmcZ/flnzht/JLm/g2AnxaOYPl0LUK0lH0bJUSgh56EWCH
-	 pivvXmmEvq1uWuxu12HCBiuSkhJWD95e9zfSaUH7XPnpN9I0l5VD3vIlg1mJtaQf4f9kG
-	 QjQfOKOrLUF8tetiAHz2s77iPb79dGb0ooXXjOO/HJsgaE38Sw1VaU86SobZJ0CFQ49Bn
-	 KjmMdp+bi7cBBdOj80ta7GfisN+UlSDn42gVd+7b9FtG4THjIV2VVsqIObNCKDMLDMQ==
+	bh=7XCvElq0w4wrnV3KAX4/n12COPeH+q0jHKHuyXoXmrU=;
+	b=bVtsHtki+b8eMfX7XVv5CmEEgKzZE0uz24szDvoj+xX/sKmj4wutLy/XCEgHnm+/jxMH
+	 qUsSiwLwiFmMFvP0i/G8/1zEoEn8p59CEL+XyIilEpx0EyMp+rfdGsGuWmsmbxhv8HVcw
+	 RiGPGhq7zxN6i2s34jd78/qteqipDtDV4Hq+jw9iF0T2pkD1wDviEs8DXT3wMXKqcRuhu
+	 ehLZ/rh49O5xQiAX3FGI7KThDPn6nnzawHkR7/YLbfycS2rZ9ae8fF4oiIwzbZBeirt3b
+	 Xo61VNvaABJyzEpC+gUsEgp7Ot0slxxf29+lzBJFomzfPFjuYiFua1jeO2Rf4pCb9xQ==
 ARC-Authentication-Results: i=2; smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1791021152;
-	bh=E+FDqTbxWKBUKoHRzptZ0BLbK5KRgPhFrF++n6X62gs=;
+	s=default; t=1791021248;
+	bh=7XCvElq0w4wrnV3KAX4/n12COPeH+q0jHKHuyXoXmrU=;
 	h=Date:From:To:CC:Subject:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=iICF+LJ2liS/3NQiYVa0SGI06J2QPWIJ8xgqfOcyxLj0/CIDK7kCbQ1a+lrlu6Xid
-	 pYj+ASUJFXxTs+mWWARgdKKsedb4MGcQLz2mfAP9z5MJswWDrzczify/+ut8o0Yx79
-	 y5rgbl2kL3p6BvYb9WjgNYGEGkmmUvHxSDNBhYhkGgw2dCuk+JfE2cWwrWQsXaN30v
-	 HkGP8/xlLYR+MkoMvi2wzlyVkv1JVcy+691VdOauQ0001sUo2K0WIoEclT/0hI0010
-	 a5jgJ3N1Pmz7F7uhJaIH03HWxX1t0WtgrKsuyNwLN5V4uTOfvyFH1DM+hMF624Kuw4
-	 y1F+EuLLdQ8Iw==
+	b=WKoASsY5LnE72ng8I9sbxTllEV3VZ2K0mVC/HUG+dwJM/6O7oOLKQA4YE4wktcRpl
+	 HIsSKNgwJLtGsTuLR3oUoO8YJrc8qLlbHf+KVZqH1PRc4/6hmreeb5PC9B9zXt00AR
+	 USKQfHQ6CfYfAeLt04rMdGi0hwBbykP9DryL5iN0QnlrLmSeFbV6I8d1fhXUBfnH7B
+	 7j1jbY/qNXjMr+RIqHoTDTq4iVeq4SxCJfxd3YFCDUspRAKSCW6wOTwxWh2nlAFAKd
+	 qlcbzONcXwIt+swbqPLURXToGOWCyYI2Dp8pIWljADo6p04ljOr01nEDwqmZEekFns
+	 9ISupItSf2RYw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 25F8040F23;
-	Sat,  3 Oct 2026 09:52:32 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 12214179
- for <intel-wired-lan@lists.osuosl.org>; Sat,  3 Oct 2026 09:52:31 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 6EE4240F47;
+	Sat,  3 Oct 2026 09:54:08 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 069E2263
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  3 Oct 2026 09:54:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id ECCE580E24
- for <intel-wired-lan@lists.osuosl.org>; Sat,  3 Oct 2026 09:52:30 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id E13766064E
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  3 Oct 2026 09:54:04 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Oq741L-5Qz5Z for <intel-wired-lan@lists.osuosl.org>;
- Sat,  3 Oct 2026 09:52:30 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org 9886B80DDE
-Authentication-Results: smtp1.osuosl.org;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id bbL-25GV8w11 for <intel-wired-lan@lists.osuosl.org>;
+ Sat,  3 Oct 2026 09:54:04 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 86EA160621
+Authentication-Results: smtp3.osuosl.org;
  arc=none smtp.remote-ip=170.10.129.124
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1791021150;
- b=pgt8j84vfq4BFGuzWUNTz+7N0HjLBdnos5/HoR9CqYNfckyRQaMNeLTFDMx0wN3ntAsH
- ZzfqTu6EIfu6kZehJDjqLt6gDYZCUDNpkFAJg5KRMV2cLwwPXlbhexrhn32MX08mCYIEC
- jNhJNryrbTidrcQcA0kZKHX47tj8GH096rW0vSdWqY6PhrJCSy+PIJSoHIZ8hchIUfVgW
- OTrfibQAt9TqU0J62l/v6Uy3kTkJD+WOVoS2cFLg4Bcc6Tsrn3PRxraqxnl9Nupj0uJG0
- frNiW/ijNhktFW8+AsLYul2+JfJ4QfQaoVMnP3lh9dKffn6fKvq3Llwjug2vFiNTjAQ==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1791021244;
+ b=FNPBBgccyOVFEa90qsMPdGX1Tn6d9JDjF2CYGU7rsSwpsPbPVX88eXjs9tFoKc/VbEPm
+ wjVNXRfdEHLG5XN1TDGb2rqAtnA+P929fYT/Oe3Uj9dFt4z/EbEfZ6RZ4Vev25SVpEY2n
+ wpRPL25xd47ulx8eoBHmAdsBFCWAve8dY3+LYk6dzL08dIJ2dNilGxHn4IbZgwJIdjYUG
+ X69Rb8z+anUrEifOKvQzG8GAnV2WKq3GFai3kK4KoXRSszwnPvd9we5gbemI5xDRGYebs
+ goiWXsMTjsHezVAvI//xNv3ij5Ns7lfL+lSFgpDl/kYc2Qy9/q+lzmcNHrH4rnDG2ZA==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1791021150;
+ c=relaxed/relaxed; t=1791021244;
  h=Received-SPF:DKIM-Signature:Received:X-MC-Unique:
  X-Mimecast-MFC-AGG-ID:Received:X-Google-DKIM-Signature:
- X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
- X-Received:Received:Date:From:To:CC:Subject:User-Agent:In-Reply-To:
- References:Message-ID:MIME-Version:X-Mimecast-Spam-Score:
- X-Mimecast-MFC-PROC-ID:X-Mimecast-Originator:Content-Type:
- Content-Transfer-Encoding;
- bh=E+FDqTbxWKBUKoHRzptZ0BLbK5KRgPhFrF++n6X62gs=;
- b=l5S6RLZrhFMW250NxNRPUjP5vtuTJ3owlwO6jkJJawqUB5aWzOjGsiN7qw2t7+kdWSjq
- PR7C5dtIOvDjIg5qE01vFUu1zdDngxnC2+Vl2kc6j3GG3YGQfmw7NwJu9CDJkpkWKp9JZ
- 1XkFmit5Yqp92sCCD2/qlyuD3m5Tbq2lsIdlLSWZFuSJOKwTDXTDQS0H2+LTgzsqbCfj7
- mXe3eYi8dtpKQ7fga6lJ8Ti31ge+lLuoIrhTvnzuMkF696UPKSJCbQRTIA/2Ruh8mz6GW
- /u/TR0FmgtqJpW1vMSUitpCFMODonDKozP+SkWrPISEKBp89kmUt3fdwJMhbmXo3eTw==
-ARC-Authentication-Results: i=1; smtp1.osuosl.org;
+ X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:Date:From:
+ To:CC:Subject:User-Agent:In-Reply-To:References:Message-ID:
+ MIME-Version:X-Mimecast-Spam-Score:X-Mimecast-MFC-PROC-ID:
+ X-Mimecast-Originator:Content-Type:Content-Transfer-Encoding;
+ bh=7XCvElq0w4wrnV3KAX4/n12COPeH+q0jHKHuyXoXmrU=;
+ b=O7Tkj4n7pHMGqu/dXiBhQFADf8BGTc3Iyw0d5ZIEdZXBtqHAikfZkeDHuS/4t+0hV/0T
+ fo8k6sGIUO4Q9rECGsT4VSNuvj0DV5MYh4tPZmDaRG5pGMJPIUdjO+ZVQk6M0apA4gB5B
+ MTIR615mCR+21Jqm8/oF/zOCdPKaYDNbs9zDC3R2S6C6bBfkjuJUge8cYLySKXAyI+rfr
+ OtFKOCq4jp+/6NhuTvbqktMmo/8HMsBlPJesxIe+r0lTArz03bFjhiEN0hDDd0hZaCb4I
+ TNbLcyMi18hyGdaJBwUKXAXBfV8Iln5QP3X0O8A3vHYpZ4e6mRG3DOvWfrLkGccNiuw==
+ARC-Authentication-Results: i=1; smtp3.osuosl.org;
  dmarc=pass header.from=redhat.com; 
  dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b="GRv2b+/T"; 
+ header.s=mimecast20190719 header.b=EARbp0+g; 
  arc=none smtp.remote-ip=170.10.129.124
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
  helo=us-smtp-delivery-124.mimecast.com; envelope-from=ivecera@redhat.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=quarantine dis=none)
+Authentication-Results: smtp3.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=redhat.com
-Authentication-Results: smtp1.osuosl.org; dkim=pass (1024-bit key,
+Authentication-Results: smtp3.osuosl.org; dkim=pass (1024-bit key,
  unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=GRv2b+/T
+ header.s=mimecast20190719 header.b=EARbp0+g
 Received: from us-smtp-delivery-124.mimecast.com
  (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp1.osuosl.org (Postfix) with ESMTP id 9886B80DDE
- for <intel-wired-lan@lists.osuosl.org>; Sat,  3 Oct 2026 09:52:28 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 86EA160621
+ for <intel-wired-lan@osuosl.org>; Sat,  3 Oct 2026 09:54:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1791021147;
+ s=mimecast20190719; t=1791021241;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=E+FDqTbxWKBUKoHRzptZ0BLbK5KRgPhFrF++n6X62gs=;
- b=GRv2b+/TEx7uxmUsUDxqL3anqHEwOQ/XxR7onkjU86NAlGUR0N7AfZOApQM78SLkm63neh
- ZKp+1ORl8ZHK1yVwJR1V5y68LpWcy/SfoUs7RttvaluF86YXK07n6kSXqfUAbFE+U8c/uj
- bhhiTWj7ojHplf/zyKCPKF+HdNORDsM=
-Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
- [209.85.221.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ bh=7XCvElq0w4wrnV3KAX4/n12COPeH+q0jHKHuyXoXmrU=;
+ b=EARbp0+gyJ9Selc0xHpXSCq4hpeq1zG8NukgIC+HsOkvSU0UCK9lEJIlJu+0J6b7m2DrOL
+ 2rJbrPIYqC9rADXLRv3RYHIO8gigPY83Dt9DpYUbeS/HrjGkZwO2mjayLssHCJTFehAHxy
+ LMRIlgW2AIQlE43QPebifRWFb6QueuM=
+Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
+ [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-75-rEreEP2PMXO5e9jbtEqp0Q-1; Sat, 03 Oct 2026 05:52:26 -0400
-X-MC-Unique: rEreEP2PMXO5e9jbtEqp0Q-1
-X-Mimecast-MFC-AGG-ID: rEreEP2PMXO5e9jbtEqp0Q_1791021145
-Received: by mail-wr1-f72.google.com with SMTP id
- ffacd0b85a97d-48c4d7ba211so160856f8f.3
- for <intel-wired-lan@lists.osuosl.org>; Sat, 03 Oct 2026 02:52:26 -0700 (PDT)
+ us-mta-117-UqoxnwuVP9uvDUqAX2qSAQ-1; Sat, 03 Oct 2026 05:54:00 -0400
+X-MC-Unique: UqoxnwuVP9uvDUqAX2qSAQ-1
+X-Mimecast-MFC-AGG-ID: UqoxnwuVP9uvDUqAX2qSAQ_1791021239
+Received: by mail-wm1-f71.google.com with SMTP id
+ 5b1f17b1804b1-4a01eb045feso3883925e9.1
+ for <intel-wired-lan@osuosl.org>; Sat, 03 Oct 2026 02:54:00 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1791021145; x=1791625945;
+ d=1e100.net; s=20260707; t=1791021239; x=1791626039;
  h=content-transfer-encoding:content-type:mime-version:message-id
  :references:in-reply-to:user-agent:subject:cc:to:from:date:x-gm-gg
  :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
  :content-type;
- bh=bGwiD5BsIU7SMUvm8z3LsVJJc+9NsNqtDssS4ilkK84=;
- b=kO9e0p/oJ3zd9mGr9sqb4XOEuqwt4DIdvT1Ma5o+LjubgSTR5GsSWdG8HE7ww+k4/X
- 09FZ206xtSXeVpvVOue7rnamoISigxO+iaA5Ywc9whAifLXsoBYY1olQ364XDeTcM9EE
- cI1TP+QEo0EWcdXsekme0w1eKyboW56T5p/WMiupam20GWfzlxn/7hIyZ8b3J/4U4ria
- 7r03LiQIc1oFNRWjv3kho1Ed0C3fzK8Dw9pN9v4MlrWF2SO5XDMfjb5NBcY7wbDBYySJ
- tEmVCXgDjH7gJhjhb/okEpABwca6yeki8Zos6ly7kdx00BPHdR6a6QD1Fj7AkHp3k+h1
- SQaA==
-X-Forwarded-Encrypted: i=1;
- AKwUvBwQIUXV1ChHMNPGvfXvwn2lQKk76tJF9A8Af2vzjTldqr7JId347ke6px8QyxBDCpRL54hrLDFNnjHQvKX6jwg=@lists.osuosl.org
-X-Gm-Message-State: AFq9FYKK8ItwMINX9h/7cND9hoH8WXFSGBwWZ1iirxtHDCeTKpWJ220s
- V26NmhQaXtbB3QCdJjspdrJBvw9d0QHqA8ocxyMSBenjbP2Dd/LiFkuPoYtT7JmVJMZNaFGGkAK
- /snBPmjl5jt2R78/poI3Vnx4+YWXSXHpmTKqsHib5jRuZKlJwCeisa+3w5oiRyCfBSg87U1s=
-X-Gm-Gg: AYBFou2UJljvKCf9vprJ6RfuRsG9Vb7h6JxXKJhcmnPQcchXqOSiuPmdt33XcPpkLpm
- g/SGNI44l/jQZK24lRzuM5cE6monJxKEYEXQef9j3+CRE2Pe1MUxX+4EpaDDkXVq2qHW2BM/7YW
- bAgiWiXFtBkIQsTj8Z3L3l3wl/BA12w5UqON8eS/fkj3Hh4posGySBn/HifNkuzIs1CGc1UL4ZX
- oOLpgSDbISQrXj0GN3uUb6jU7Q+4dssgizibw9zk/RDI5HTh/4JYjlk6Xh/2xN3/4CABS+brjUk
- 1K6oFUr4yvLLYhFTeDw1k420Iq2QW3cO23niuvmQi+BUcWNysEyY8LnUcTJTgzMjOTTNrsF8TFm
- JpFH9t766S0/ljaiaAoNcD1cZtcq54qmLFhMjo9U=
-X-Received: by 2002:a5d:64c9:0:b0:488:8437:b8b7 with SMTP id
- ffacd0b85a97d-48b126f1596mr9932280f8f.7.1791021145318; 
- Sat, 03 Oct 2026 02:52:25 -0700 (PDT)
-X-Received: by 2002:a5d:64c9:0:b0:488:8437:b8b7 with SMTP id
- ffacd0b85a97d-48b126f1596mr9932244f8f.7.1791021144825; 
- Sat, 03 Oct 2026 02:52:24 -0700 (PDT)
+ bh=pj3fnkRnguG1XzZ2CAsEmH/UIzLjDfjSPrnu5Kpy4iA=;
+ b=cPMxOn2IkRgQpBsJu8nSuFiHm43Q52wAqSHhwVgVBB5TrIBWNUCpVtBHZd+wlonLxe
+ Vjcj2OsIxWk0jDsb7Nok44p56gghYCkpYcRtb7J/6oKUED7WUBBbTd28qCguxzH/KTaV
+ Xvcaz2VduFNF5pupOIFFwSHCfxURzfBdr5vx2iGmoCWjk01BaRNV4ErEOEO+u262aWD+
+ db/Vz1AS+4fzcsYHSaY4uABPtyYJbMeaaqXKr/eWabASp7tsR9JvE5gBhPPxnwL9+QEp
+ zjrcVT7RGB4KS7ffUiTX/Z56Hky2cNNM4jin7knY9HTuuGOtZpcgEXZ7hC33on6TKamZ
+ NuMw==
+X-Gm-Message-State: AFuF++nYyKyuu514HfRZ0D4asps40zWSVczJpet2Pn87aKdimuHyDQXE
+ psqmHZpADdOB/xHlfKcp8RMLw0anoVwRU4kuyU4Z9FsEzN3oDduGRe9HZtgjd5otCRtiauO5ue1
+ 7JU/wDC5E2J+BjNngWQvPlNM3wOQK+J6guQdiKJGXjsAuKYNE0pAYnyR4lBpWaDGLPqBLBxPrpA
+ ryNUqmrr9OUgSciXLTZtITmG8Q+rHH1XUKjbWVMqgNz+D1ogEL
+X-Gm-Gg: AYBFou3uhGBeUCKtTKgMRnAunfdVWoNYAIwgHUm4g8ow3kmuV9loyb1aCY0AMLLRKva
+ 10RjdgrqnTJ1ooeJvhNB4gJPrMDc4w9tdYglzGFVwpaTbTienKajEG3tXZN6jRwIQU/1pkgSO+X
+ Mk+Tr/hPf+1PvvLQxejXzNb+mWVQQvKqZKFFkH7KOSWmGdHo+5bSdqT1rsCToef+vvK5ylhdwjY
+ 2kslCMNujsb4dS7S+cj+5ophsdF4eyj+RosL6QH4sPrw5u1+MzusNiW4teJTw7NuOSsRJqdwy0T
+ mtrz3wvRew5iLl+zXDW66Y3AqMti1PG8ewSGVB/00luLSahQiMj3eUH2GLcGr3NkDMSMdb83gYf
+ +t9/ItyXynTSZckX87RKmp/I2sV2nXlbpwgUwBi4=
+X-Received: by 2002:a05:600c:3c98:b0:4a0:37d:9e21 with SMTP id
+ 5b1f17b1804b1-4a168101d2dmr29369035e9.29.1791021239108; 
+ Sat, 03 Oct 2026 02:53:59 -0700 (PDT)
+X-Received: by 2002:a05:600c:3c98:b0:4a0:37d:9e21 with SMTP id
+ 5b1f17b1804b1-4a168101d2dmr29368635e9.29.1791021238635; 
+ Sat, 03 Oct 2026 02:53:58 -0700 (PDT)
 Received: from ehlo.thunderbird.net ([2a00:e580:bf11:1:2666:d874:79e6:3214])
  by smtp.gmail.com with ESMTPSA id
- ffacd0b85a97d-48b380f0613sm12752818f8f.13.2026.10.03.02.52.24
+ ffacd0b85a97d-48b38104d64sm10844602f8f.29.2026.10.03.02.53.57
  (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Sat, 03 Oct 2026 02:52:24 -0700 (PDT)
-Date: Sat, 03 Oct 2026 11:52:22 +0200
+ Sat, 03 Oct 2026 02:53:57 -0700 (PDT)
+Date: Sat, 03 Oct 2026 11:53:56 +0200
 From: Ivan Vecera <ivecera@redhat.com>
-To: Petr Oros <poros@redhat.com>, netdev@vger.kernel.org
+To: intel-wired-lan@osuosl.org, Petr Oros <poros@redhat.com>,
+ netdev@vger.kernel.org
 CC: Tony Nguyen <anthony.l.nguyen@intel.com>,
  Przemek Kitszel <przemyslaw.kitszel@intel.com>,
  Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>, 
@@ -185,16 +184,16 @@ CC: Tony Nguyen <anthony.l.nguyen@intel.com>,
  Stephen Hemminger <stephen@networkplumber.org>,
  intel-wired-lan@lists.osuosl.org, linux-kernel@vger.kernel.org,
  bpf@vger.kernel.org
-Subject: =?US-ASCII?Q?Re=3A_=5BPATCH_iwl-net_01/10=5D_ice=3A_replay_UDP?=
- =?US-ASCII?Q?_tunnel_ports_after_a_core_or_global_reset?=
+Subject: =?US-ASCII?Q?Re=3A_=5BPATCH_iwl-net_02/10=5D_ice=3A_fix_IRQ_fr?=
+ =?US-ASCII?Q?eeing_in_ice=5Fvsi=5Freq=5Firq=5Fmsix=28=29_error_path?=
 User-Agent: Thunderbird for Android
-In-Reply-To: <20261002130752.2597259-2-poros@redhat.com>
+In-Reply-To: <20261002130752.2597259-3-poros@redhat.com>
 References: <20261002130752.2597259-1-poros@redhat.com>
- <20261002130752.2597259-2-poros@redhat.com>
-Message-ID: <E2F0ABAB-6E8A-4672-8DCC-9F3C07E902A5@redhat.com>
+ <20261002130752.2597259-3-poros@redhat.com>
+Message-ID: <5E5BE0F3-4AB6-4DCB-A730-511D626B9189@redhat.com>
 MIME-Version: 1.0
 X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: Q9O2ocP8MCqlJ_Lf7uP2Cp5uYOApXaRgCJwTd8g0qRM_1791021145
+X-Mimecast-MFC-PROC-ID: NECPYXM9obBuOakprOiUXdj66_Mgw0hWE_ptsyzWNkI_1791021239
 X-Mimecast-Originator: redhat.com
 Content-Type: text/plain;
  charset=utf-8
@@ -213,59 +212,58 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-On October 2, 2026 3:07:43 PM GMT+02:00, Petr Oros <poros@redhat.com> wrote=
+On October 2, 2026 3:07:44 PM GMT+02:00, Petr Oros <poros@redhat.com> wrote=
 :
->A CORER, GLOBR or EMPR reloads the DDP package in ice_rebuild() and
->ice_init_pkg_hints() clears hw->tnl, so every offloaded VXLAN and GENEVE
->port is gone from both the boost TCAM and the driver table. The
->udp_tunnel_nic core is never told about it and still considers the ports
->programmed, so the Rx tunnel offloads silently stop working after the
->reset. With VXLAN port 4789 offloaded, 64 flows that differ only in the
->inner headers are spread over all six Rx queues of the test port by
->RSS, after a CORER they all land in a single queue, the same as without
->the port. Removing the port later trips the WARN_ON() in
->ice_destroy_tunnel() because its table entry is no longer valid:
+>The vectors are requested with the q_vector as dev_id, but the error
+>path frees them with &vsi->q_vectors[vector], which is the address of
+>the array slot. devm_free_irq() finds no matching devres entry, warns
+>and leaves the IRQ requested. The unwind also tries to free vectors that
+>the request loop skipped because they have no rings.
 >
->  WARNING: ice_flex_pipe.c:524 at ice_udp_tunnel_unset_port+0x56/0x280 [ic=
-e]
->  ice 0000:04:00.3 enp4s0f3np3: Error removing UDP tunnel - -5
->  ice 0000:04:00.3 enp4s0f3np3: UDP tunnel port sync failed port 4789 type=
- vxlan: -5
+>Forcing request_irq to fail on the fourth vector during ndo_open gives:
 >
->Call udp_tunnel_nic_reset_ntf() once the main VSI is rebuilt so the core
->programs the ports again. A PF reset keeps the package and the table, so
->it is left alone. No rtnl_lock is needed since commit 1ead7501094c
->("udp_tunnel: remove rtnl_lock dependency").
+>  ice 0000:04:00.2 enp4s0f2np2: MSIX request_irq failed, error: -16
+>  WARNING: kernel/irq/devres.c:191 at devm_free_irq+0x30/0x40
+>  WARNING: kernel/irq/devres.c:191 at devm_free_irq+0x30/0x40
+>  WARNING: kernel/irq/devres.c:191 at devm_free_irq+0x30/0x40
 >
->i40e fixed the same problem in commit 1f190d936948 ("i40e: Reprogram
->port offloads after reset").
+>and the three IRQs stay registered in /proc/interrupts while the
+>interface is down.
 >
->Fixes: a4e82a81f573 ("ice: Add support for tunnel offloads")
+>Pass the q_vector as dev_id and skip the vectors without rings, which
+>the request loop never requested.
+>
+>i40e fixed the same mistake in commit 915470e1b44e ("i40e: fix IRQ
+>freeing in i40e_vsi_request_irq_msix error path").
+>
+>Fixes: cdedef59deb0 ("ice: Configure VSIs for Tx/Rx")
 >Assisted-by: LLM
 >Signed-off-by: Petr Oros <poros@redhat.com>
 >---
-> drivers/net/ethernet/intel/ice/ice_main.c | 5 ++++-
-> 1 file changed, 4 insertions(+), 1 deletion(-)
+> drivers/net/ethernet/intel/ice/ice_main.c | 8 ++++++--
+> 1 file changed, 6 insertions(+), 2 deletions(-)
 >
 >diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ether=
 net/intel/ice/ice_main.c
->index 8c4b0fbc790644..f2121e79fca993 100644
+>index f2121e79fca993..d246cde36ae726 100644
 >--- a/drivers/net/ethernet/intel/ice/ice_main.c
 >+++ b/drivers/net/ethernet/intel/ice/ice_main.c
->@@ -7859,8 +7859,11 @@ static void ice_rebuild(struct ice_pf *pf, enum ice=
-_reset_req reset_type)
-> =09=09ice_rebuild_arfs(pf);
+>@@ -2582,8 +2582,12 @@ static int ice_vsi_req_irq_msix(struct ice_vsi *vsi=
+, char *basename)
+>=20
+> free_q_irqs:
+> =09while (vector--) {
+>-=09=09irq_num =3D vsi->q_vectors[vector]->irq.virq;
+>-=09=09devm_free_irq(dev, irq_num, &vsi->q_vectors[vector]);
+>+=09=09struct ice_q_vector *q_vector =3D vsi->q_vectors[vector];
+>+
+>+=09=09if (!q_vector->tx.tx_ring && !q_vector->rx.rx_ring)
+>+=09=09=09continue;
+>+
+>+=09=09devm_free_irq(dev, q_vector->irq.virq, q_vector);
 > =09}
->=20
->-=09if (vsi && vsi->netdev)
->+=09if (vsi && vsi->netdev) {
-> =09=09netif_device_attach(vsi->netdev);
->+=09=09if (reset_type !=3D ICE_RESET_PFR)
->+=09=09=09udp_tunnel_nic_reset_ntf(vsi->netdev);
->+=09}
->=20
-> =09ice_update_pf_netdev_link(pf);
->=20
+> =09return err;
+> }
 
 Reviewed-by: Ivan Vecera <ivecera@redhat.com>
 
