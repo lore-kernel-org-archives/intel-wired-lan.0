@@ -4,236 +4,144 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64780CA5FCE
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  5 Oct 2026 12:07:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43627CA5FF0
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  5 Oct 2026 15:26:42 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 00102405A9;
-	Mon,  5 Oct 2026 12:07:09 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id DDA43406CF;
+	Mon,  5 Oct 2026 15:26:41 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 6YNjph8Ex7df; Mon,  5 Oct 2026 12:07:09 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 3EED2405AD
+ id 3geFgrVA4blo; Mon,  5 Oct 2026 15:26:40 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 72E74406CE
 Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1791202029;
-	b=kv4fBjP+SfDuoaBJlimv3hPE/12ZrC1UFSgU0s99hPsIkeAaJIB18m+W2Fp/VL0aR1MC
-	 t1Kf9IMKcxyj58wXsWYITgvLXrHEDJnAskyhbTXlgN8yoD0aC7+c99oQ4b6AplUAHEine
-	 n/5lE5svI6iSELaWmq/79MOXkMl8//CDrgZIf4YBkxTbncgEnVnaY7kG2x/up1ovpOv4H
-	 5rAzCVkQ+MILdO49Ue4QgBSQUkAOg8JXjgP9uGFM80J8bK0u2kYT/iIMNuOU49RoUSI4W
-	 ep33ZIv8C3j5fxeUu8GZSQ4KlwD6fqJbQ1VhfEsx6dxtWVuGzA6spmTzJVMgeadYO4w==
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1791214000;
+	b=RXfYiILudB2V0ms71cLmpYpmKjnozY35N8+LDhlc2YAlKi7XVTEfL4TFmzG8FMU3hvMu
+	 V+dtC3z4X1UeRaK/oi6LgOw+cUW/spqS1YDxmjtZWcWA/w+oKIfayNtzFzXDIbktrSCVE
+	 Cy2jgDT2tGCAzR0wvSKiR0e5/Y76qM4nrV6V/zRfsWIfVrGhAFjL2y36IvuvfFsi3Zbt0
+	 SJpFN4hhgsZJ4HZOfmctPJjm11sW4g4YZI42kOSNmFRyjze9XpW6ghcAQ+owDnlr6/r+i
+	 2sI0yOyf7raXFhnp233mVE/j24ld0JgB3Fh131saR1JWX/P2oOJRDy+ptuKaFAlm3Ag==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1791202029;
+	c=relaxed/relaxed; t=1791214000;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
-	 DKIM-Signature:DKIM-Signature:DKIM-Signature:Received:X-MC-Unique:
-	 X-Mimecast-MFC-AGG-ID:Received:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
-	 X-Received:Received:Message-ID:Date:MIME-Version:User-Agent:Subject:
-	 To:Cc:References:From:In-Reply-To:X-Mimecast-Spam-Score:
-	 X-Mimecast-MFC-PROC-ID:X-Mimecast-Originator:Content-Language:
-	 Content-Type:Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:
+	 X-Spam-Status:Received:ARC-Filter:X-Greylist:Received-SPF:Received:
+	 Received:Received:Received:From:To:Cc:Subject:Date:Message-ID:
+	 MIME-Version:Content-Type:X-Rspamd-Bar:X-Rspamd-Report:X-Rspamd-Score:
+	 DKIM-Signature:X-Mailman-Approved-At:X-BeenThere:X-Mailman-Version:
 	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=vhQoza2mV1Z+1STVDq8chd2IZUgXS0fGFoZOu7nkEJQ=;
-	b=U2CygiydESnGayJdgal/PPZy8MR7s+YiS7rq2Dva9rXT33daFd4NNq396wNslOU9SAOa
-	 hziyJflqPp+nEAPl1xH0/VIor/RA4g+VYz2YmjNo6NmJGlR3EGWEcLTDKX0e+coy56blj
-	 RprLc6Dutf1Cj2gJnhbHrZbpKSr7fkmGJin2giglPWQ6nmV1BmYjJumzuIe9kKYVq7qSU
-	 jkt8r7gOVW92B4oYuKru3AomFfKu2awW/HE3J4dLxuK59dR0ufR9UyS4aOgWRG1I8cx2u
-	 8DXEGDHV0B+8iu2D63bg0Di7IAp1WsAQF+3FjhbL3s16QayDMR9ROCAmtvm4Gok0hIA==
-ARC-Authentication-Results: i=2; smtp4.osuosl.org; dmarc=pass header.from=redhat.com;
-	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b="FlfqY/SK";
-	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b="FlfqY/SK";
-	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b="FlfqY/SK";
+	bh=bwrVY5v28PGK1OZtcruzewUpzwm+gzaeGO4vTrGfTfA=;
+	b=CLOBAdUOwZL+tIjfoZhWNaWZrxpGl5u7fz2jn9VzxTyREhqLS+dTm2yHoDvPrGSH8Woo
+	 78mVDUq2QEiVVDsvlFCVUcTHP8FPiVQj8e0Qimlrs5JGjjPppHLge0uXMRuPC9ad7Fk6K
+	 8MRc7vzgv6PDxDEWu5+qFAqPVhR7l7jTyovMXjMAxg1v4EFiLzoQZslx0/t0A6XfeI2U2
+	 ADvTVsQ3pgExcI12VhSsewVUZVCHmLz0ec10VXkEu2oAh7ujz2SUlQOG0yX2MoIXeAbO6
+	 y5Q11G8DCYn8sZ7ioLLYILvt6Ms6ZIv5OtwFsDCt+fxLxx84ys6bwoC9Az0wLAOGNxw==
+ARC-Authentication-Results: i=2; smtp4.osuosl.org; dmarc=none header.from=grothesque.org;
+	dkim=pass header.d=grothesque.org header.i=@grothesque.org header.a=rsa-sha256 header.s=uberspace header.b=vX741BGg;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1791202029;
-	bh=vhQoza2mV1Z+1STVDq8chd2IZUgXS0fGFoZOu7nkEJQ=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=DRtko5tV95kotEDxoE4Kwu2TyjbFf0luhLSTp709KTvZwRhR+AX6r1ZIZ3FaI3Hqz
-	 Xp6p0HZ7C1rulG+sO3SMzOqATUx69cAO1B8abz67e0TpIWyayfH/s5/pBuxAiAkMKq
-	 eIN9bqiLGxWdXQJJVTdY9Oh6SDnoP4gFbUdM/n4fTFxyZ9673MN7e64eK39wIXVRdc
-	 l6q40L5x4WBwbisp5/L4dUBtgcoT5szl4bNVx4g1jW933dzU2SihQm1qOBrRMfvAV1
-	 t0omSqtAJizjxVFHjM/qa/hwbU75gN6CoyMOAS0Z4DSUG7CocRbkAl6GJHi/h2fY8U
-	 OsCnVBCtM7TZQ==
+	s=default; t=1791214000;
+	bh=bwrVY5v28PGK1OZtcruzewUpzwm+gzaeGO4vTrGfTfA=;
+	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=ZCfp6UjOmTleHdTultAcSyXdr7p70Z2KCv+il9G5iBNuw2PIITwA3VaZieCQVLF/b
+	 oOl6uX5j0Elxe7D143trL9zWLccFv+XyvZxB5A3XnteUnilIj7Lm0R/SSKplJx1I/M
+	 lCWqZeJaTIjaWNFN/pd6Qs4eHKkWQwbpU3FJgRiKAxAoFhAbBFDDgoROJGWe0KJDM8
+	 SO7nmgN1DTYWul8i7i3EupZJlvwhUJGWbY6Sl3n44159wX//9y2TpusNDDNJ7tdFdo
+	 yO9NmiShNDG/stpHAUcr9zgL3lytuD2PpdYv4k1u9QKjGsIaP4fl739O5eRH8OQ5Nn
+	 twcQC8e4QEV6Q==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 3EED2405AD;
-	Mon,  5 Oct 2026 12:07:09 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 131D31A6
- for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Oct 2026 12:04:07 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 72E74406CE;
+	Mon,  5 Oct 2026 15:26:40 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id CD49C1D2
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  3 Oct 2026 15:05:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id ECCC1405A9
- for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Oct 2026 12:04:06 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id C9FD440748
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  3 Oct 2026 15:05:05 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 4QooS4eX6L4c for <intel-wired-lan@lists.osuosl.org>;
- Mon,  5 Oct 2026 12:04:06 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 0EF3D405A5
+ id ccygpBXUmLFR for <intel-wired-lan@lists.osuosl.org>;
+ Sat,  3 Oct 2026 15:05:04 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org 793AC4073B
 Authentication-Results: smtp4.osuosl.org;
- arc=none smtp.remote-ip=170.10.129.124
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1791201846;
- b=cQ4IrDRmzV09qfby9dQMarpNY/zfAMf3Gi7nIzjStrWZA0EBnYxpbzbhE5mvV0Yt/TLw
- B6/2pYUOtZ8iI/sLBaA/HjsqBSBwCN9qWaUV8w71EKteOjYoDy6lYO0lYHxNHmuELfQfv
- Sdz/jRpP8qk4DKM1nD21kTgQrydwPjImUm7V06t5aa6+JxK1R9inqy5VpEdjobFnyQsb9
- 2AAoS0EGDq99AkRa1zDRv+ZPLiU+9WZ6/U+3CoPxvp7kxNEIj6mt6f5jhoCxrqPJiSCSd
- UBbwso+1u3S8zh8gnFjoj2X4U1gSc2f3BoqQsnOHEx8eygAXUCiDlj0TiZ9AnupMzrw==
+ arc=none smtp.remote-ip=185.26.156.114
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1791039904;
+ b=FEgm6+1gcZJTOm0l0aYz5RSSOgkQzDsMxOw/Oxb7O179imNdJ4eGRbNZBeakEcP0BryW
+ hxUvdBGsXN77GTBpUNFXyK+4bZ/dYn3/dKlRjRS0q4mpJco1Esm42bRQWYQZvHQRjII28
+ rebVDHDExUExIoAs2SphZ/bJjQ30KdY9AixcevVC8EX1EWTywLWHJcXLYYCTOLAm7jAw6
+ F5dSIL74Ia52AyZhbU9SqJBbmpexNES5xQc+A1H3kpArrAhOhxdVH2SDIS6pSbyH5+a89
+ 0eg4ZUY4xcLIq9UihcG6hHVc0Qeh565VR0K8zORMPADukss0+c+Rxi8pT8GOl18F42A==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1791201846;
- h=Received-SPF:DKIM-Signature:DKIM-Signature:DKIM-Signature:Received:
- X-MC-Unique:X-Mimecast-MFC-AGG-ID:Received:X-Google-DKIM-Signature:
- X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
- X-Received:Received:Message-ID:Date:MIME-Version:User-Agent:Subject:
- To:Cc:References:From:In-Reply-To:X-Mimecast-Spam-Score:
- X-Mimecast-MFC-PROC-ID:X-Mimecast-Originator:Content-Language:
- Content-Type:Content-Transfer-Encoding;
- bh=vhQoza2mV1Z+1STVDq8chd2IZUgXS0fGFoZOu7nkEJQ=;
- b=qsmZmb6ySBWLXJxFjm+754kFYVTizY/hvNteifPN+NIUcU9YEEpm4mT7p5IfUG9u4//X
- 3vlFNm8GnkVDn+NT6oIuTECMUYlrAYIaM6SgQawHjtWQpS9+tFJH/65xhmFETDTgbKZUB
- K0u7OKJ2PmJwkaQTxD1khbnIsExo07ENZFnyDb07RxE8gSBB4sKOD4e+2ToSI7kttGq2d
- wj8pZAPvPcodR4RfWcjeaa6xZDqWfo4wS2+wcHmc23vhTOACtwWVeduwh08zuDVvjFtHT
- Moyx+2dV8612wuIwRJcKjXtTbElRwKHfduZBhkQc8OChoDSEROv6oN8/E7cc178Hsiw==
+ c=relaxed/relaxed; t=1791039904;
+ h=X-Greylist:Received-SPF:Received:Received:Received:From:To:Cc:
+ Subject:Date:Message-ID:MIME-Version:Content-Type:X-Rspamd-Bar:
+ X-Rspamd-Report:X-Rspamd-Score:DKIM-Signature;
+ bh=bwrVY5v28PGK1OZtcruzewUpzwm+gzaeGO4vTrGfTfA=;
+ b=az6hJCHWVIKLvP+GWwPVrLAoxyQWNHI7NBIFOK6UvWqtrSUj6Q4m2NW4Xn+u5ji2eHyB
+ +oHrLUDkz0rSujOMHhViJEfGR/8iTIaETCod3ZDI8Rc3T/eNzTFA7vIibkxsx0LBfTczj
+ iWlzNaF+UkLUoe4e+umHgyT7jwHKf8dVN5+uO1asxr15+zP8Gtu7PPDhEAKNOreIVB9dy
+ j8TE70lrLSf3WWRE/5LpLgoF+Ooo94DqolffQT1EHD4w9fiuPl6z6uznroy1Y9lQs3uOQ
+ VfM6fhfCelM8Hd1QOc7GwNAlCLOTgY6RC3dWwGgJ98D2AZm2ac5Nv2g+WuxlL3jNpTg==
 ARC-Authentication-Results: i=1; smtp4.osuosl.org;
- dmarc=pass header.from=redhat.com; 
- dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b="FlfqY/SK"; 
- dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b="FlfqY/SK"; 
- dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b="FlfqY/SK"; 
- arc=none smtp.remote-ip=170.10.129.124
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
- helo=us-smtp-delivery-124.mimecast.com; envelope-from=poros@redhat.com;
+ dmarc=none header.from=grothesque.org; 
+ dkim=pass header.d=grothesque.org header.i=@grothesque.org header.a=rsa-sha256
+ header.s=uberspace header.b=vX741BGg; 
+ arc=none smtp.remote-ip=185.26.156.114
+X-Greylist: delayed 472 seconds by postgrey-1.37 at util1.osuosl.org;
+ Sat, 03 Oct 2026 15:05:03 UTC
+Authentication-Results: smtp4.osuosl.org; dmarc=none (p=none dis=none)
+ header.from=grothesque.org
+Authentication-Results: smtp4.osuosl.org; dkim=pass (4096-bit key,
+ unprotected) header.d=grothesque.org header.i=@grothesque.org
+ header.a=rsa-sha256 header.s=uberspace header.b=vX741BGg
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=185.26.156.114;
+ helo=mailgate02.uberspace.is; envelope-from=christoph@grothesque.org;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=quarantine dis=none)
- header.from=redhat.com
-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (1024-bit key, unprotected) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=FlfqY/SK; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=FlfqY/SK; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=FlfqY/SK
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp4.osuosl.org (Postfix) with ESMTP id 0EF3D405A5
- for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Oct 2026 12:04:04 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1791201843;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=vhQoza2mV1Z+1STVDq8chd2IZUgXS0fGFoZOu7nkEJQ=;
- b=FlfqY/SKdtJVrkhANBi4UXlojkp8gTj81iF5bZGnOPT3DwH3h+ebN43w2pdFXeFGl0esE6
- G3At9sfBxBGUHvn7CGNbnso7tVX3ZVgu6zMZdZ/0XNr17xvPZ4yJOvCogkjjijofAVuTru
- /qL76AybzRPhU/K0aVWms8MrKoBvHjo=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1791201843;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=vhQoza2mV1Z+1STVDq8chd2IZUgXS0fGFoZOu7nkEJQ=;
- b=FlfqY/SKdtJVrkhANBi4UXlojkp8gTj81iF5bZGnOPT3DwH3h+ebN43w2pdFXeFGl0esE6
- G3At9sfBxBGUHvn7CGNbnso7tVX3ZVgu6zMZdZ/0XNr17xvPZ4yJOvCogkjjijofAVuTru
- /qL76AybzRPhU/K0aVWms8MrKoBvHjo=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1791201843;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=vhQoza2mV1Z+1STVDq8chd2IZUgXS0fGFoZOu7nkEJQ=;
- b=FlfqY/SKdtJVrkhANBi4UXlojkp8gTj81iF5bZGnOPT3DwH3h+ebN43w2pdFXeFGl0esE6
- G3At9sfBxBGUHvn7CGNbnso7tVX3ZVgu6zMZdZ/0XNr17xvPZ4yJOvCogkjjijofAVuTru
- /qL76AybzRPhU/K0aVWms8MrKoBvHjo=
-Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
- [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-399-s3vqS0AxM3Sc89xUpoGRlA-1; Mon, 05 Oct 2026 08:04:02 -0400
-X-MC-Unique: s3vqS0AxM3Sc89xUpoGRlA-1
-X-Mimecast-MFC-AGG-ID: s3vqS0AxM3Sc89xUpoGRlA_1791201841
-Received: by mail-wm1-f72.google.com with SMTP id
- 5b1f17b1804b1-49cdc4080ddso14389135e9.1
- for <intel-wired-lan@lists.osuosl.org>; Mon, 05 Oct 2026 05:04:02 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1791201841; x=1791806641;
- h=content-transfer-encoding:content-type:in-reply-to:from
- :content-language:references:cc:to:subject:user-agent:mime-version
- :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
- :message-id:reply-to:content-type;
- bh=vhQoza2mV1Z+1STVDq8chd2IZUgXS0fGFoZOu7nkEJQ=;
- b=kKYxjGW2VBMw5/0pctVo9qF9Obfdk2r3wHLIMuJD3mookxWrPEwrwCfZ4+/cA9lpqK
- 3as4Yd2yQUAAafMY1h9/gCgGl53/BAehRdycAC0BQTsOt98Xx23ThX9TNdX4XE5Xqq1g
- eDw2K+d3tk1Fz58Nu1pRbotYZj8QBrz9w7dz6Eblw8M2BvpIM6qP4Jc7msGJUHamR6tJ
- kEiQUHQyeH8myTsT+LkTjdWZPW1nvVrpAshoIDR6SM7GyGYC6QKEwxkZxz9MW/1XTtXS
- wiKcSC/MppYko67hOkmEujIzmWQUZ+NZE0KVSIalA9SdEgTUA/ZiakLal2P6oiDcOvht
- J3mw==
-X-Forwarded-Encrypted: i=1;
- AKwUvBwxdXRNo6KZyYoZMPijlS1FrFvB9EprDNIJNHIsHhOTuY0XbwtURXblOUTa/P4OdChufMYcp4GfdqKeKFZem7Q=@lists.osuosl.org
-X-Gm-Message-State: AFuF++k0LLQHH2kFmYbACfcmwwr3EiAP8d3B0RAKdlNew7JJeYA8+kfA
- AbI+E3otsuMyTYlQ6W52hc4hqVpm/4fmJ5ifyhLQ2td/Hcy4C9NelnBObPOw3sieDg8QO1QVtVP
- NU+7oHXDwOxMrkKYcVzuvJOsIkkc5/Cg+hQVKtYSSHKwxqEnNwXPTik9WJpAXZ01VnqhLTM8=
-X-Gm-Gg: AYBFou3yHzAfo6XsV3R5gRe0VtezC+X0m21ieWOngY9rXyi0bgZ5SgHm1UbL3OJvd21
- vjlZ96kX0uWTvDDdOmF5HBsflKfZfda4oBGnVgTW/4LnB+EHj4rU+m44q+o8PvFSRJEH4+og+FT
- 2CaXWz8kFTCvU9ss+B+WuUGmMk5q4XCWFt9gkoB6Xr7Nps+dXqH/GFBoK5Dz5lzc8yJY85FIpWZ
- nFws+HyoxVsP0VIRVr9zItfFp7RX/50eX9Ltu42LZdpDN4XeGApDf7RHayHv06Myc4KVEdG36fh
- e5YA7Ysid3Ap636l+PxsbE3EYrCAXbCrv0YN03XDbGCbF31NLLD1itlpaK40feOYAkhP8/LD6w=
- =
-X-Received: by 2002:a05:600c:2192:b0:4a0:20b4:ba93 with SMTP id
- 5b1f17b1804b1-4a027569390mr123921095e9.16.1791201841009; 
- Mon, 05 Oct 2026 05:04:01 -0700 (PDT)
-X-Received: by 2002:a05:600c:2192:b0:4a0:20b4:ba93 with SMTP id
- 5b1f17b1804b1-4a027569390mr123920585e9.16.1791201840418; 
- Mon, 05 Oct 2026 05:04:00 -0700 (PDT)
-Received: from [192.168.2.83] ([46.175.183.46])
- by smtp.gmail.com with ESMTPSA id
- 5b1f17b1804b1-4a16bcb9a21sm310240445e9.10.2026.10.05.05.03.52
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Mon, 05 Oct 2026 05:03:55 -0700 (PDT)
-Message-ID: <d6c9d9f1-e693-427f-8151-d7a771c63ab2@redhat.com>
-Date: Mon, 5 Oct 2026 14:03:49 +0200
+Received: from mailgate02.uberspace.is (mailgate02.uberspace.is
+ [185.26.156.114])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 793AC4073B
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  3 Oct 2026 15:05:01 +0000 (UTC)
+Received: from dia.uberspace.de (dia.uberspace.de [185.26.156.221])
+ by mailgate02.uberspace.is (Postfix) with ESMTPS id ECB02180C1E
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 03 Oct 2026 16:57:02 +0200 (CEST)
+Received: (qmail 8386 invoked by uid 989); 3 Oct 2026 14:57:02 -0000
+Authentication-Results: dia.uberspace.de;
+	auth=pass (plain)
+Received: from unknown (HELO unknown) (::1)
+ by dia.uberspace.de (Haraka/3.1.1) with ESMTPSA;
+ Sat, 03 Oct 2026 16:57:01 +0200
+From: Christoph Groth <christoph@grothesque.org>
+To: Tony Nguyen <anthony.l.nguyen@intel.com>, Przemek Kitszel
+ <przemyslaw.kitszel@intel.com>
+Cc: intel-wired-lan@lists.osuosl.org, linux-kernel@vger.kernel.org
+Subject: e1000e: I219-V RX CRC errors on ThinkPad P14s Gen6 Intel; disabling
+ K1 restores throughput
+Date: Sat, 03 Oct 2026 16:56:26 +0200
+Message-ID: <87v77ial45.fsf@grothesque.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH iwl-net 03/10] ice: stop the LAN Tx queues when
- ice_vsi_open() fails
-To: Ivan Vecera <ivecera@redhat.com>, intel-wired-lan@osuosl.org,
- netdev@vger.kernel.org
-Cc: Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller"
- <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Alexander Lobakin <aleksander.lobakin@intel.com>,
- Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>,
- Jesper Dangaard Brouer <hawk@kernel.org>,
- John Fastabend <john.fastabend@gmail.com>,
- Stanislav Fomichev <sdf@fomichev.me>, Henry Tieman
- <henry.w.tieman@intel.com>,
- Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>,
- Michal Swiatkowski <michal.swiatkowski@linux.intel.com>,
- Jesse Brandeburg <jbrandeb@kernel.org>,
- Preethi Banala <preethi.banala@intel.com>,
- Kiran Patil <kiran.patil@intel.com>, Dan Nowlin <dan.nowlin@intel.com>,
- Stephen Hemminger <stephen@networkplumber.org>,
- intel-wired-lan@lists.osuosl.org, linux-kernel@vger.kernel.org,
- bpf@vger.kernel.org
-References: <20261002130752.2597259-1-poros@redhat.com>
- <20261002130752.2597259-4-poros@redhat.com>
- <1465AD22-8132-4286-A2AF-ED94E64E12C8@redhat.com>
-From: Petr Oros <poros@redhat.com>
-In-Reply-To: <1465AD22-8132-4286-A2AF-ED94E64E12C8@redhat.com>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: yAv3FPHCcS448fI0IbrsGI8fi8MqbP2rlHZS_As-QYw_1791201841
-X-Mimecast-Originator: redhat.com
-Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; boundary="=-=-=";
+ micalg=pgp-sha512; protocol="application/pgp-signature"
+X-Rspamd-Bar: ---
+X-Rspamd-Report: SIGNED_PGP(-2) MIME_GOOD(-0.2) BAYES_HAM(-1.246969)
+X-Rspamd-Score: -3.446969
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=grothesque.org; s=uberspace; h=from:to:cc:subject:date;
+ bh=4lW/BssFmNITl/QT8rVYhFtSHEp3mpgUMAyeNv+oPt0=;
+ b=vX741BGgH//yFAHdBwp/7itX42TSowBi0OSO6OfoQvC6GUQrZn4GOtbt3sQ96FPZd/dzebKrbN
+ VK5R9jVUEFnVH8tYVkJ7aAO7HN4kXTVnxzA3s3zAUVV45lmGqpC5zPELLmDXFaRZ7SmJwYzJl0ow
+ FBOH6C2bDjjo3E2C810JIP9CZb6G3R99wYznLn/8VwHoIt2Ymg6EDatzFB79L4MZEoDnSxomzO7L
+ CiS2P9muTs+oC6UedS9yB0ZXk2G3Dsuy51YysaBQLNbQtrYUYf4AvxTFqCFzChE7PYejLr5eZav9
+ fkHGDruB3/UORwOfq5OYD2XaJP0Hj1gkKiHP1ECGnbbwN304nZu7kg3iTVmg4VMG0tHBfH3uchQ8
+ ruH0NS0GSJy0kXM9P2wX6s4E0FJygxKJraFI8Ni2ST8S0g8xCq9ddUrCV/DJpAdv3BxycnGWUXE4
+ r/lCO7SLwIT1Ej9sUFA6RfJKgqOYV+fcm5CoEIM3PWl7Y/YJkV0Vvb8LZfaIuU6ad5Eh0w5SZI+p
+ tgx/TiGluP+djaE/FzzESkB5U4B3DIaEFz8Uptad0jlFB+qi08ZWUPfum4Sin1spOR1ie9PRvYOk
+ AE3ntzLDN5BCd5wP9Rqynp5wekwBo9vWf+wWKQOt4kw7Y3GIQhvA6s3Kw3ODRMPbuSWPZTrdVaRO
+ o=
+X-Mailman-Approved-At: Mon, 05 Oct 2026 15:25:30 +0000
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -248,81 +156,160 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
+--=-=-=
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-On 10/3/26 11:54, Ivan Vecera wrote:
-> On October 2, 2026 3:07:45 PM GMT+02:00, Petr Oros <poros@redhat.com> wrote:
->> ice_vsi_cfg_lan() adds the LAN (and XDP) Tx queues to the scheduler and
->> enables them in hardware. If anything after it fails in ice_vsi_open(),
->> for example requesting the MSI-X vectors, the error path only frees the
->> ring memory and leaves the queues configured. Every following open then
->> fails to add the same queues again and the netdev can not be brought up
->> until the driver is reloaded:
->>
->>   ice 0000:04:00.2: Failed to set LAN Tx queue context, error: -5
->>   ice 0000:04:00.2 enp4s0f2np2: Failed to open VSI 0x0010 on switch 0x0002
->>
->> Stop the Tx queues on the error paths that run after ice_vsi_cfg_lan().
->> The ice_up_complete() failure path already does it through ice_down(),
->> so let it skip the new step.
->>
->> There is no i40e counterpart of this fix, i40e does not add its Tx
->> queues through the admin queue. It was found while verifying the
->> previous patch. With the IRQ unwind fixed the warnings were gone, but
->> the netdev still could not be opened again after the forced
->> request_irq failure.
->>
->> Fixes: cdedef59deb0 ("ice: Configure VSIs for Tx/Rx")
->> Assisted-by: LLM
-> Which one?
-It was Claude Code with Claude Fable 5.1
+Hello,
 
-Thanks for the review.
+I noticed that wired Ethernet throughput from WAN is much lower than
+expected on my new ThinkPad P14s Gen6 Intel.  The culprit seems to be
+CRC errors.  This is with current firmware.  I updated everything one or
+two weeks ago.
 
-Petr
->
-> Otherwise...
->
-> Reviewed-by: Ivan Vecera <ivecera@redhat.com>
->
->
->> Signed-off-by: Petr Oros <poros@redhat.com>
->> ---
->> drivers/net/ethernet/intel/ice/ice_main.c | 10 ++++++++--
->> 1 file changed, 8 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
->> index d246cde36ae726..e62a8f544345a3 100644
->> --- a/drivers/net/ethernet/intel/ice/ice_main.c
->> +++ b/drivers/net/ethernet/intel/ice/ice_main.c
->> @@ -7561,13 +7561,13 @@ int ice_vsi_open(struct ice_vsi *vsi)
->>
->> 	err = ice_vsi_cfg_lan(vsi);
->> 	if (err)
->> -		goto err_setup_rx;
->> +		goto err_stop_tx;
->>
->> 	snprintf(int_name, sizeof(int_name) - 1, "%s-%s",
->> 		 dev_driver_string(ice_pf_to_dev(pf)), vsi->netdev->name);
->> 	err = ice_vsi_req_irq_msix(vsi, int_name);
->> 	if (err)
->> -		goto err_setup_rx;
->> +		goto err_stop_tx;
->>
->> 	if (bitmap_empty(pf->txtime_txqs, pf->max_pf_txqs))
->> 		ice_vsi_cfg_netdev_tc(vsi, vsi->tc_cfg.ena_tc);
->> @@ -7593,8 +7593,14 @@ int ice_vsi_open(struct ice_vsi *vsi)
->>
->> err_up_complete:
->> 	ice_down(vsi);
->> +	ice_vsi_free_irq(vsi);
->> +	goto err_setup_rx;
->> err_set_qs:
->> 	ice_vsi_free_irq(vsi);
->> +err_stop_tx:
->> +	ice_vsi_stop_lan_tx_rings(vsi, ICE_NO_RESET, 0);
->> +	if (vsi->xdp_rings)
->> +		ice_vsi_stop_xdp_tx_rings(vsi);
->> err_setup_rx:
->> 	ice_vsi_free_rx_rings(vsi);
->> err_setup_tx:
+Executing =E2=80=98ethtool --set-priv-flags enp0s31f6 disable-k1 on=E2=80=
+=99 works
+around the problem.  There could be a relation to commit 578294b8b60d
+that re-enabled K1 by default.
 
+See below for a shell session demonstrating the problem by downloading
+data for 30 seconds.  With K1 enabled, the transfer generated 125 CRC
+errors while receiving 156 MiB; with K1 disabled, the error counter
+remained unchanged while receiving 2547 MiB (i.e. a 16-fold faster
+download).  The following has been recorded using a freshly booted
+current Debian testing live system.
+
+I=E2=80=99ve been observing the same problem with different recent kernel
+versions, different network cables, routers, and networks.  I also had
+the opportunity to reproduce the problem with a second identical
+computer.
+
+Cheers
+Christoph
+
+=2D---------------------------------------------------------------
+
+root@debian:~# uname -a
+Linux debian 7.2.6+deb14-amd64 #1 SMP PREEMPT_DYNAMIC Debian 7.2.6-1 (2026-=
+09-16) x86_64 GNU/Linux
+root@debian:~# ethtool --show-priv-flags enp0s31f6
+Private flags for enp0s31f6:
+s0ix-enabled: on
+disable-k1  : off
+root@debian:~# ip -s -s link show dev enp0s31f6
+2: enp0s31f6: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel sta=
+te UP mode DEFAULT group default qlen 1000
+    link/ether [hidden] brd ff:ff:ff:ff:ff:ff
+    RX:  bytes packets errors dropped  missed   mcast
+         26981     189      0       0       0      72
+    RX errors:  length    crc   frame    fifo overrun
+                     0      0       0       0       0
+    TX:  bytes packets errors dropped carrier collsns
+         10442      89      0       0       0       0
+    TX errors: aborted   fifo  window heartbt transns
+                     0      0       0       0       2
+    altname enx[hidden]
+root@debian:~# curl --max-time 30 -o /dev/null http://test-debit.free.fr/10=
+485760.rnd
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Curr=
+ent
+                                 Dload  Upload  Total   Spent   Left   Speed
+  1 10.00G   1 153.9M   0      0  5.28M      0   32:18   00:29   31:49  5.5=
+8M
+curl: (28) Operation timed out after 30000 milliseconds with 163226929 out =
+of 10737418240 bytes received
+root@debian:~# ip -s -s link show dev enp0s31f6
+2: enp0s31f6: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel sta=
+te UP mode DEFAULT group default qlen 1000
+    link/ether [hidden] brd ff:ff:ff:ff:ff:ff
+    RX:  bytes packets errors dropped  missed   mcast
+     171179576  112998    250       0       0      96
+    RX errors:  length    crc   frame    fifo overrun
+                     0    125       0       0       0
+    TX:  bytes packets errors dropped carrier collsns
+       1102954   15430      0       0       0       0
+    TX errors: aborted   fifo  window heartbt transns
+                     0      0       0       0       2
+    altname enx[hidden]
+root@debian:~# ethtool --set-priv-flags enp0s31f6 disable-k1 on
+root@debian:~# ethtool --show-priv-flags enp0s31f6
+Private flags for enp0s31f6:
+s0ix-enabled: on
+disable-k1  : on
+root@debian:~# curl --max-time 30 -o /dev/null http://test-debit.free.fr/10=
+485760.rnd
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Curr=
+ent
+                                 Dload  Upload  Total   Spent   Left   Speed
+ 23 10.00G  23  2.38G   0      0 84.23M      0   02:01   00:29   01:32 104.=
+7M
+curl: (28) Operation timed out after 30000 milliseconds with 2670737217 out=
+ of 10737418240 bytes received
+root@debian:~# ip -s -s link show dev enp0s31f6
+2: enp0s31f6: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel sta=
+te UP mode DEFAULT group default qlen 1000
+    link/ether [hidden] brd ff:ff:ff:ff:ff:ff
+    RX:  bytes packets errors dropped  missed   mcast
+    2972820757 1958686    250       0       0     122
+    RX errors:  length    crc   frame    fifo overrun
+                     0    125       0       0       0
+    TX:  bytes packets errors dropped carrier collsns
+      13144890  187359      0       0       0       0
+    TX errors: aborted   fifo  window heartbt transns
+                     0      0       0       0       4
+    altname enx[hidden]
+
+=2D---------------------------------------------------------------
+
+Information from /sys/class/dmi/id/:
+sys_vendor: LENOVO
+product_name: 21QTS28200
+product_version: ThinkPad P14s Gen 6
+board_name: 21QTS28200
+bios_vendor: LENOVO
+bios_version: R2WET44W (1.26 )
+bios_date: 06/30/2026
+
+Information about the Ethernet adapter:
+# lspci -nnvv -s 00:1f.6
+00:1f.6 Ethernet controller [0200]: Intel Corporation Ethernet Connection (=
+24) I219-V [8086:57a1]
+	Subsystem: Lenovo Device [17aa:512b]
+	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Steppi=
+ng- SERR- FastB2B- DisINTx+
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=3Dfast >TAbort- <TAbort- =
+<MAbort- >SERR- <PERR- INTx-
+	Latency: 0
+	Interrupt: pin D routed to IRQ 128
+	IOMMU group: 17
+	Region 0: Memory at af780000 (32-bit, non-prefetchable) [size=3D128K]
+	Capabilities: [c8] Power Management version 3
+		Flags: PMEClk- DSI+ D1- D2- AuxCurrent=3D0mA PME(D0+,D1-,D2-,D3hot+,D3col=
+d+)
+		Status: D0 NoSoftRst+ PME-Enable- DSel=3D0 DScale=3D1 PME-
+	Capabilities: [d0] MSI: Enable+ Count=3D1/1 Maskable- 64bit+
+		Address: 00000000fee00318  Data: 0000
+	Kernel driver in use: e1000e
+	Kernel modules: e1000e
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQJNBAEBCgA3FiEEP6x58QAOdlLG0jena2rszJGp28QFAmrBF5oZHGNocmlzdG9w
+aEBncm90aGVzcXVlLm9yZwAKCRBrauzMkanbxNEsD/9fPmeCISF8DOUMRIwhP1/x
+AqCi8Pes2Lxhv9KAoqiyKOc7spP2KbUzSsZ/StPPiknlKc7w1sxnWGycm01OnBFw
+WIoK5hQ2bmpJrwXaqHbzbbzha2G+nQUokz+HOZdNtUaSo17mi+4v8NSSHysjrCr2
+R4oAy6xu/dVG+7TYZzXnqTOiAuPZJ91hSJUOY8r/CJ5+5+2qnxq2B3B0uNABvVgv
+tqNhOdHtPOQn3Bmfrk5pQS8l2Sz6tcyHeR0P3AAfsTpthCQKakuMqvGQHdjLkJHh
+sEhOIxIYlNnpLWtsiaYp8choUZKETVXEUc6zK4ZdmzTWU2FYlG590ypiiZDZTsyX
+u41f/ZIcQ9azo3a4+nwElKSYJBTtRCwC8QhOojzu9pmIZbcmzjsxO7ijhJdUbYFQ
+IFktfQWNyP3QSVnKhuSqy0al6D+do/dHwDj49cDedcExV4erzudrwMvFM6ypKoAo
+HJRZIntbQKGP1Q4mp5pkEyTs9aJ6kXn95dDAX7WSKPYdmCS760n6YnI+clAD4wMP
+y0AeEOChL7yDaxDs9d3zlewQzDxEWp0N4y7od6cLxh4qkNbiqouy/J+Vf2i1Yt3T
+0kc0FqgSAc+04VZUgLTG1iYEb1WkS+9q/fuuieK5EBR06yRnuOdFO782HqWxbpN+
+BaP/qHE/r3Xjzupuo+p9BQ==
+=XVWp
+-----END PGP SIGNATURE-----
+--=-=-=--
