@@ -1,153 +1,156 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 11FE6CA5FCE
-	for <intel-wired-lan@archiver.kernel.org>; Sun,  4 Oct 2026 15:29:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CDD00CA5FEF
+	for <intel-wired-lan@archiver.kernel.org>; Sun,  4 Oct 2026 15:29:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id A0BE580D1F;
-	Sun,  4 Oct 2026 15:29:09 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 7DB5E40708;
+	Sun,  4 Oct 2026 15:29:10 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 35inUPBeDWD2; Sun,  4 Oct 2026 15:29:09 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org D42CC80D21
-Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1791127748;
-	b=S2yRhlmN3/oCW2yOc0G1FK7IBf3TCM60MlC5FLLX9oH+RuGyA2MY5eU9Y121ZtAMZmbZ
-	 39YbtL2sDji0OUb5oxyp4IEgs46BZ0UTVDVbSwUxNU+qEuYXkytOEBDIUUyf1903Q+Kbn
-	 PRiTgsROeGdCrRdt5Ibf6rjPvNXAHFfIVwNbmqEgju39MNbfRkeZZtvpzA7dJ8vLWZDOa
-	 mALUWB0zfTLvenMxKf0ZkYbUBJCWn0mZu4YD7KrM7xclG1Daf54u9igDc9bZvZVnU/VrE
-	 DhqU4cKtQrmBsJJXCccGCvlSDhlZVS/brYbl6w3iG8AFUFgJuqLoULv6o3SnczgYCUw==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id K8vB-xk0xDr4; Sun,  4 Oct 2026 15:29:10 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp4.osuosl.org C4B6640709
+Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1791127749;
+	b=AMoxwzHe69PkT6RMJfHW6dwI/RTiywTP5OXaAS+QRW3kHtCGKmxG2FDveeAwJch+8JtV
+	 mIKmCzvdOmYmS7RaQja5Ef5iWu+gXCFlPh2RenqQnzdjBWHIj3s31ZadFJRxUqBC5QEGU
+	 dGUZQTlwcaXFSo3/rWEDEIu80p7uI3B+edQiS/9Ea6elHouVZcaCK/3mvNh16+7jOG6RI
+	 Oj0/38QoSJC5V1MSWtLUYFvERUZG65mWg4hErap4U9o/mgTfWN3YYH4WqZNgPdGVLN6Gm
+	 Jb25lG7Fh6Ahas1s02VYNi1Vd/kzygOXBjq8Sy154kepRvlphARB3dKmnPzYV6s3Vpg==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1791127748;
+	c=relaxed/relaxed; t=1791127749;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
 	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
 	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
-	 Date:Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding:
-	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
-	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=da8v9Ff4EAj7a0ycHgkCs+irzmjp0yJ76SMiIUMp9bU=;
-	b=R0Ad1ULfWUfxwfw8QSqORDD0w1W2bRtWPAwuDJQXbKINTDWUN/eCpzwwDf/bGETXtOkP
-	 XK10SZ259JqwhgsUJNZ2uGnaLmXcbshK0QU3gthDfcOnMa1qBF5doDXDQEvGEjfCB0B9L
-	 2OyCSUgibN4Hd0Fiu0L0+Cs/6IczU7ra+69I24uuwTwyGfIr6zy9xrcP5gECI2vgQ7Zd/
-	 FbnPHnFV1SdkseKGSUo2ezUkbv/kU9Ukr2s29RA8TZKtoiv8wQsYNSEUS0iT2hVy1zHYJ
-	 k/VeINbqg96Gra+sRmYQ0Mj0/POnpFGwe7apSglwpgNk3kB6+kivOeUWuRyzhIQClIg==
-ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	 Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
+	 Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:Precedence:
+	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 List-Subscribe:Errors-To;
+	bh=LNNbazBXmL+AGn+X6q34XEzodiqndLswy1F6C+r0wbk=;
+	b=lVI4XT8ZFur6mFJvMmFBhrL25HtdyB35/OYEWbY3bFDh/E7w2C9Hk4d7Wo0I7bz72cET
+	 sM53rxKz4UytgJ0ooRn6AbvrFaIeThYDfCFW82peKh+DEI6hxI4RXNQeZhG8FlMkbx6jd
+	 Ga2GSvsMTK55kaa/VyOatPE9gcalaEAzFbKTHLdxr/lAOXoyIy1P2m6ItrfjuQDjr1bxp
+	 iXnBDH08sbbO7AYE4Ijrt8rZNa9Ld+jptec9caLaWEdTaxde4ES0BeGyIEqp5EbFUjYi6
+	 JnzYbs9C2ilvbiNsSCHXp/k0lkmxbWixYjJoBu65ZOjsX2VJIWiliVTLru5CMqdkwAA==
+ARC-Authentication-Results: i=2; smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1791127748;
-	bh=da8v9Ff4EAj7a0ycHgkCs+irzmjp0yJ76SMiIUMp9bU=;
-	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=i5mZR4zpU1+Z4FTaTpNUmhyfwxc+3Fa3e3H2mfDvUfSKr8ae9fGQWlb97U91igNuM
-	 FEdSObCVtUI0O0HiBSfx5VP4oydgWOReYm4azDfx89a4kmxItdErQ8Vbe+BZhtbe9i
-	 ztIpwFh9qo5WHhZ6cXWs6KYHmL8xpwXYrYFLkSNKFrPprLYNx8HbYC+xpGcKIaqztg
-	 mu4nvPw7jxqKO0EeEbgEKx6/sFjiAZI6q1M9WLSUOfQ+fEERYxhTFC/vSYDNF14cRu
-	 Q/FnOOLnlDGf+u/sCe1IQN9MtmKgPYN+1eLHI+t6ybov+43p81+ZHZzF+a/vTdNGJ7
-	 RUSQiG61p9G8w==
+	s=default; t=1791127749;
+	bh=LNNbazBXmL+AGn+X6q34XEzodiqndLswy1F6C+r0wbk=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=R+nnNAi9hTKyOHKLaaesD9wI8oyLh7S/RSI8lw66hkBkO0pfd6jBVZnY4rPczuxpP
+	 CTGJ8dT7fVnNmr0dZLfpayTzaOiRiv3rItqk9sqpXkt780/q4ZPhzmtgtsfMT1XtjU
+	 7Sdmgf6HfwxRnbhmLoC0K+aUSHNr8VLdcX+u2wXKqa5IZDoqve4lWrwXIrCxIZvDh6
+	 0cZ4uNbxMcVGRbDZbqIN44TkAXWi07pSQMs16Xi6mr2sV3V9qZyVd4xqJDbnFUMnja
+	 cLkyiLE+6fN9EjWErH62Y68MDXkbSl5mU+6xPM9IIs7qG/IltBYNbdsHbaLGMe2f6M
+	 mCePJEhyBmpqQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id D42CC80D21;
-	Sun,  4 Oct 2026 15:29:08 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 1559D263
- for <intel-wired-lan@lists.osuosl.org>; Sun,  4 Oct 2026 15:29:07 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id C4B6640709;
+	Sun,  4 Oct 2026 15:29:09 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 31DDD32F
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  4 Oct 2026 15:29:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id EFA1C40068
- for <intel-wired-lan@lists.osuosl.org>; Sun,  4 Oct 2026 15:29:06 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 233726060C
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  4 Oct 2026 15:29:08 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id jXQNwus82i5R for <intel-wired-lan@lists.osuosl.org>;
- Sun,  4 Oct 2026 15:29:06 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org C618940049
-Authentication-Results: smtp2.osuosl.org;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id fZs9RpkPCpLX for <intel-wired-lan@lists.osuosl.org>;
+ Sun,  4 Oct 2026 15:29:07 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 1023B60607
+Authentication-Results: smtp3.osuosl.org;
  arc=none smtp.remote-ip="2a00:1450:4864:31::11"
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1791127746;
- b=sVOKYHEGHPBHoShDqMPGBE5H+cEVgdQe5I+Mcgz9UfWeg1Sp5xmoaAxFFS2dv+5eWGW/
- dJypt99kIt0oQycfaQTz1Cf1pca64RZ0EGD5WdtPMsXawJZQW1TAJBfa36fODnrxxJ/KJ
- CyXWl6snv4GyU7DzzfLuxLUNfZt8x2XmxZIMUgCTTZubaRNVEML4uEyoTmb4ogvUj3uMo
- 92pPoJ6Z1ynfyrmvJdxluT49kEqNvOvTB4uDA4F2neidjz2B7pLskg5H/uc3ePkvxyKad
- I+M6v0hv2MgNdhiuldaRaSCkc5hWH0egRiC/cZaZRGCHcR5kZhabziwS/43GM2kf20w==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1791127747;
+ b=D3KGS46Gk9iZT9YpnnwJA0cITRMHjQdnuv9PZHywhM12nmO0Jhen14ffjFdGQ68nI+D2
+ R3K3A4DGiaCBc7Fka2/zGlgzuqufynHtyjUcf7txNfFyqFXc4175hY01prLpb51Cm8NIs
+ Pj+x4w3QS5U/eiiefNU6yIYn1lClRLcEkZqHn4/pa0uMS1eSx/xf6suU5+p5i6ezQLYLC
+ F6m/Gz1JhGsEgnf5EZtolVI+WxT9KzN1xaDZ8xm0o4BLbBp8Hrk9hmpaP9pqDO+5+/bmR
+ wnZ3TEM0P6OUbto5nF9xr/wn0bhToJ3wGoYYJqseEPFuiiBd3GfJg79CJ/S+I5DGvGQ==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1791127746;
+ c=relaxed/relaxed; t=1791127747;
  h=Received-SPF:Received:DKIM-Signature:X-Google-DKIM-Signature:
  X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
- From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
- Content-Transfer-Encoding;
- bh=da8v9Ff4EAj7a0ycHgkCs+irzmjp0yJ76SMiIUMp9bU=;
- b=N6BsTIhD/A4SYe8065U0aEza1qKa7xB0DF9afC0gf5CdrBY415noaOIgKI+Z79pWOLtF
- 77SBnVfEX2RiSu1Xjlkh0Vy+1MPwbnI/eRldKWvjAeUJSjwm0qgh8PU45izi2iq1sNdAc
- L77jupUSUVaurazTii2hIXrypRUSMkH8npYx38gyol/lI2WcZvIgzsPFhl7xEtBKo+3dh
- ImOfwtBUIHvvSafVQ5va4sITCAzXoqyQ8YbHIXc4N+hAD/VqLVH0ayLTQaVkSVHQcvc6v
- k5eP8Jl+vuAE7eb70YTMC5jGcDpCq1DBY6ud/TveHm6H/Nu++HK/SUcRld/9K3xjRww==
-ARC-Authentication-Results: i=1; smtp2.osuosl.org;
+ From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
+ MIME-Version:Content-Transfer-Encoding;
+ bh=LNNbazBXmL+AGn+X6q34XEzodiqndLswy1F6C+r0wbk=;
+ b=b+QMxgE29GCN09xupc2SrZNO+Pthmr0ELOZtfWQjqTQjc+g6zhKXTjmB9EauzIkB/ilD
+ n6MNAHW3OMiLD/FRr51/4iRyRe1hFvkIQe9NO1ByR+MrsgcrDYqZVajK0H/fpRBbw2RFa
+ rRaJLgX82kNi1r0Ga/1yR2wtdU4Fa23i08oNl3VE6QQPSrDZBNsY/H/kxA4bJB2jDEyeH
+ uA5fkX5Qf28GKR6y9pNannPDP+yQ6k5gEjwhk6qZERMKHZuj7M/6WiF2MMKSE50iCUyCs
+ eCyMBiqQf/5dB1MUVxRpAck6lGkSmQWeM9VnAmQYVxFrRG4sNIUT0Sqh6xNbTxDfsMg==
+ARC-Authentication-Results: i=1; smtp3.osuosl.org;
  dmarc=pass header.from=gmail.com; 
  dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20251104 header.b=TUSYLBov; 
+ header.s=20251104 header.b=CKMY0jPo; 
  arc=none smtp.remote-ip="2a00:1450:4864:31::11"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
  client-ip=2a00:1450:4864:31::11; helo=mail-wm2-x11.google.com;
  envelope-from=b2rancourt@gmail.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org;
+Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
+Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20251104 header.b=TUSYLBov
+ header.s=20251104 header.b=CKMY0jPo
 Received: from mail-wm2-x11.google.com (mail-wm2-x11.google.com
  [IPv6:2a00:1450:4864:31::11])
- by smtp2.osuosl.org (Postfix) with ESMTPS id C618940049
- for <intel-wired-lan@lists.osuosl.org>; Sun,  4 Oct 2026 15:29:05 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 1023B60607
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  4 Oct 2026 15:29:06 +0000 (UTC)
 Received: by mail-wm2-x11.google.com with SMTP id
- 5b1f17b1804b1-4a024e16179so5658485e9.2
- for <intel-wired-lan@lists.osuosl.org>; Sun, 04 Oct 2026 08:29:05 -0700 (PDT)
+ 5b1f17b1804b1-49d1fb0cf5eso9330355e9.3
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 04 Oct 2026 08:29:06 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20251104; t=1791127743; x=1791732543; darn=lists.osuosl.org;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
- bh=da8v9Ff4EAj7a0ycHgkCs+irzmjp0yJ76SMiIUMp9bU=;
- b=TUSYLBovn/lGzLJVEAVuJ82JIQjMwQmVz1LqUm50ZdXH++rLUtFc5wjvjWJz4PVgVM
- sfIPnEVasXq/PAhT7FpeissVVRsKnHcLY7SwFbxPqTp4ge1i37yXHFXI02kKdC0GBhHF
- ohHDMFk+/KP/q86pPQQ8H7R3cACucIgj3/EqhVT7UeYGtgohJyYtH7dnOhexlXu3yML/
- 9l5Ghu9u6EQSzZb/tTs01+dHPoQJ+zPpNkE0P1ip2Cwyta82byn2USUAtKMT/elv8jNo
- dUtlvQZOZjLe4ii+u6Ly6dj0knx7bWij6YDlLpEWqvDXTb4C0XFHUBurXn7H52niyzYo
- FGVw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1791127743; x=1791732543;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+ d=gmail.com; s=20251104; t=1791127744; x=1791732544; darn=lists.osuosl.org;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:from:to:cc:subject:date
  :message-id:reply-to:content-type;
- bh=da8v9Ff4EAj7a0ycHgkCs+irzmjp0yJ76SMiIUMp9bU=;
- b=tkGjIBKHScnZ9J8lgSERpXwSmoH0EVk4ZeL9CfxbGyUgqLWWgGpNkEGvF9DRCoA+ci
- St/Sv5UGkJ7E3OrQINy+ijggZt0QZqfBa3zvPkdsLtC08N1Jdu/4KCWO3/+DPZ/H0sJZ
- dPW6Ylv2HswQFveL5PnOJvhVPYqU8Gj0a6BC9PYD3549mbDbSAsOeeb79yeYOJVKKvvI
- gm/3sU8EovwkYCSvSrOENg/9ox4T8CPcHmyAv0dthUxOq2QYRQlZetj9uS5HpnKfAZVz
- 0uxQ85VJ+wtcK9gVIMY3B/biLQscqqPNCmhLUoV0rUY1+9UWb/gQjqJrPi9gLrDiWrnr
- 4mdg==
+ bh=LNNbazBXmL+AGn+X6q34XEzodiqndLswy1F6C+r0wbk=;
+ b=CKMY0jPoHYqmimeEunPAd9RBwjspu0sarmNsha0BTUVL2pvQviDUUXpqnzYIuZhJVR
+ bSLqMTM6vAYQTZMsROOjQXEVDLinWmfTzQ/UWTgQHH0k3W9bumyoS8KT6rfv2GRHBwe3
+ WtqKajGOD7Rjt9PC7iY1fqsaEdPXpPBOZXC8Gu+5BnnuE96sO04pR8QlTBDgg5RfXM+s
+ u7PkARJEe8hrEoDhcJyTP4FB01eLe47c07qIW4NAHexquCebyLZMw9FKnAkanQxQQEBJ
+ m/ncK+CD+u2Eg0mGa8Um4ILWVEw3P00ZLOvCHkTaNCFgMrEanICbgBIVVmj6r6DFqHnO
+ GweQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20260707; t=1791127744; x=1791732544;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+ :to:cc:subject:date:message-id:reply-to:content-type;
+ bh=LNNbazBXmL+AGn+X6q34XEzodiqndLswy1F6C+r0wbk=;
+ b=wkBaqWhgX+ee32C++swYj0rHSVEnP6omk/JCcmUWkBF+cp5CZIIB8IV1ln8ECfcpnw
+ 6TvrtNuNSdmAsyfcUZfjEKZ8KrvMpyM75LuQjm4uVgzMnCAW8mgPZxuuvFhniflrdesA
+ W9vn+7kQRMsFx0stPbmGKECdll1b1rIq8SN/gNeuaXk9Hl+26YtqfkHfS58OPe9CnX07
+ uGXxbr/0fwKbgQ83iNVXnbQ91jyzXtvArzo7AnAtL2I5jNKVSG/hvO3wcMyorKNNMjlJ
+ TQ86Gw8arO9DbAppDLk79BOImgAGokSogbn7ae62sd+tLsacwnuULk8W72BN2/u96r2s
+ 6UJw==
 X-Forwarded-Encrypted: i=1;
- AKwUvByJafjvB3Ip09PVhhD+0X7ZYadse/fHHXME7tQ15q4MIwhUR+O4fFeNELQWFm+osErCvuVpX2ldofwfwWbuqE4=@lists.osuosl.org
-X-Gm-Message-State: AFuF++l4sFTWpjUxwydcTjk8P+IUiGXxCTZiOg1bzI5VMWlDnImpXwpy
- o/AEFPzEgxfVIBvp6JqZ+991jWt3Y5Sjpngaj/CHuUyioDUv44RU1DbD
-X-Gm-Gg: AYBFou1hEI4ztzcrTH9exIzrjRbFPlum4opljU6q6lIGlZFGGpLXCHmP6QN6Q8C/tJB
- +L3zcMBnrHLlXcaYimjlrfVO84c2jke7pkUT2NKOalv4Y8aRDOhcdjzS0UhnX8wsQhX4fkoJ+4V
- pOKM+KbABOglroVlZ8fzdl8WrF/SAlxMlFDW66swONSlrdRanfzYyTobbiNcxQA6geQdJmu37jM
- 9KnOwN9k7QDDv9kATCq3Tw3ZMETbE6BOQ4Gn3EgX8sDk19ck6DLOgUL1nmpaqw16m/y8ZPFJ1HB
- easDTwKtkkD9NTa54P1qYqvuiqS218/GeRfIjrb7sd7bNdQlYa8hmMM2ZXSvgQbO00tHWYnf/IF
- 2JPutWMAVFnoXPxeN1uSEYNjFBmqlAlVYgP+Xg1i+P1EdaEN4DsBoBql5kzu8UEfph0A/d+ekuW
- N5K+PixtOciKlYr7/uJLzIR05G+T4bnWNijnmfwHmkl65U2cnIUHFWg+BF6RfI/5fv0TmlwDq1e
- xsUpouHpFFEjI+xbq7Nz+sHZGNbGwTju3kTPUwnOPh0nWTE60monoaAcxbljtNOrekmDxHY1xM=
-X-Received: by 2002:a05:600c:1552:b0:49b:d03:8d3a with SMTP id
- 5b1f17b1804b1-4a02755f84bmr145261655e9.11.1791127743178; 
- Sun, 04 Oct 2026 08:29:03 -0700 (PDT)
+ AKwUvBzPaSvtzUC7fSmis31tHRYtHsSoAY0eNu4QRyIp3MR3+gL6EHTqbIP9kITV1QESnQ7FGSc8zlQUHyNlnBEmLZc=@lists.osuosl.org
+X-Gm-Message-State: AFuF++lMGkEw0t/ztfv0NKq1dHYdFYsYTW/ovc4SZ5yZn+ZiFcyilwy5
+ Xq/kQ5WQmBmz4isCyFHtGEZ4J77W2d7VM4zi+Pt9OzEHurroL7rdkZyC
+X-Gm-Gg: AYBFou3GjwFop5RmD3tOzdkE1+0yeyp6EXi+cbZinNnp3k6mlppX73mduLl2h8I2nfP
+ gkKQzFkk1Q5Rmr0Rj6s8ePIPlIQdcl74AwF/2tJ+yeTPZUrGK0cauv80i51BViINfFknhF3Z4lC
+ CXglHFE748fNBoshNSiQlcX1iLX+QGvXA3BOWx4aU6ehCd577oPfcHt8D/8CZFlHCHdHwqpFowy
+ nlEq7BeGuQmjvryoHwF+VAhdvDRgsCm5U9wQy10+5XsOLH0r3c7Qc/K7HZxSwQvaXtZbkiyA4Tv
+ 9IyyGw6mdshmdg72wSpLCqAutVKjzmGAE5xPp34Wcartru4mH/AArHskZFYi2/UfokhHqNfA16S
+ g338Fe7A7PfWZlFfOutTkjGBuAVFHxxiCoIwfdYZjx2gUMkg7ip32B+F3QWjF/fJijYhZKayx9z
+ oHtvQHHc7B5MZFUYZIbV1Iph0paqG0cZZcsBYKv9g+OUISge/v6HeZU5V5WpOtpw9ZJStYxBDlr
+ h6A5F6IN5W7Y1nKHE4Ze7EnHFca8dfLUJVJPFrAcPuIli0h7oqfmh9MLWisjgaNU6jJLCF+pSk=
+X-Received: by 2002:a05:600c:3545:b0:4a1:242:1353 with SMTP id
+ 5b1f17b1804b1-4a102421468mr124163015e9.5.1791127744379; 
+ Sun, 04 Oct 2026 08:29:04 -0700 (PDT)
 Received: from citron.bnl.ovh ([2001:861:44c1:870::1])
  by smtp.gmail.com with ESMTPSA id
- 5b1f17b1804b1-4a1698f7910sm83819735e9.3.2026.10.04.08.29.02
+ 5b1f17b1804b1-4a1698f7910sm83819735e9.3.2026.10.04.08.29.03
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sun, 04 Oct 2026 08:29:02 -0700 (PDT)
+ Sun, 04 Oct 2026 08:29:03 -0700 (PDT)
 From: Benoit DE RANCOURT <b2rancourt@gmail.com>
 To: Tony Nguyen <anthony.l.nguyen@intel.com>,
  Przemek Kitszel <przemyslaw.kitszel@intel.com>,
@@ -159,10 +162,13 @@ Cc: netdev@vger.kernel.org, Andrew Lunn <andrew+netdev@lunn.ch>,
  Vinicius Costa Gomes <vinicius.gomes@intel.com>,
  Sasha Neftin <sasha.neftin@intel.com>, linux-kernel@vger.kernel.org,
  Benoit DE RANCOURT <b2rancourt@gmail.com>
-Subject: [PATCH iwl-net 0/2] igc: Fix Tx hangs after NETDEV_TX_BUSY with TSO
-Date: Sun,  4 Oct 2026 17:28:38 +0200
-Message-ID: <20261004152840.61222-1-b2rancourt@gmail.com>
+Subject: [PATCH iwl-net 1/2] igc: Fix Tx stop threshold to cover empty frame
+ descriptors
+Date: Sun,  4 Oct 2026 17:28:39 +0200
+Message-ID: <20261004152840.61222-2-b2rancourt@gmail.com>
 X-Mailer: git-send-email 2.55.0
+In-Reply-To: <20261004152840.61222-1-b2rancourt@gmail.com>
+References: <20261004152840.61222-1-b2rancourt@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -179,98 +185,78 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-Since commit db0b124f02ba ("igc: Enhance Qbv scheduling by using first
-flag bit"), igc_xmit_frame_ring() requires count + 5 free descriptors,
-while the queue is only stopped in advance below DESC_NEEDED =
-MAX_SKB_FRAGS + 4. TSO skbs with 16 or 17 fragments then hit
-NETDEV_TX_BUSY. That return skips the tail write deferred by
-xmit_more, so the queue can stay stopped with descriptors the hardware
-never saw, until the Tx watchdog resets the adapter.
+Commit db0b124f02ba ("igc: Enhance Qbv scheduling by using first flag
+bit") raised the number of free descriptors that igc_xmit_frame_ring()
+requires before mapping a packet from count + 3 to count + 5, to leave
+room for the empty frame (one context and one data descriptor) that may
+be inserted ahead of a launch time packet. DESC_NEEDED was left at
+MAX_SKB_FRAGS + 4. igc_tx_map() uses it to stop the queue in advance,
+and TX_WAKE_THRESHOLD is derived from it.
 
-Patch 1 aligns DESC_NEEDED with the admission check. Patch 2 writes the
-tail before returning NETDEV_TX_BUSY, which remains reachable for skbs
-with buffers larger than IGC_MAX_DATA_PER_TXD. Each patch was tested
-alone; together they keep the queue stop logic consistent and the
-remaining busy path safe.
+A queue left running after a transmit therefore only guarantees
+MAX_SKB_FRAGS + 4 free descriptors, while the next skb with a linear
+part and MAX_SKB_FRAGS fragments, each fitting in one data descriptor,
+requires MAX_SKB_FRAGS + 6. igc_xmit_frame_ring() then returns
+NETDEV_TX_BUSY, which the queue stop logic is meant to prevent.
 
-Setup: CWWK router, Pentium Gold 8505, six I226-V (8086:125c rev 04,
-NVM 2017:888d), 7.2.8, default MAX_SKB_FRAGS = 17. Load: CPU saturated
-with busy loops, a remote build routed through the port, two SSH bulk
-streams in each direction and short TCP bursts, 180 seconds of load
-per run observed during a 195-second probe window, TSO enabled on the
-egress port. bpftrace probes on igc_xmit_frame, __igc_maybe_stop_tx
-and igc_poll recorded NETDEV_TX_BUSY returns, the inferred last tail
-write and next_to_clean stalls.
+With TSO this happens routinely. On an I226-V (8086:125c) running 7.2.8
+with MAX_SKB_FRAGS = 17, routed and locally generated TCP traffic on a
+CPU-saturated router produced 10890 NETDEV_TX_BUSY returns in three
+runs of 180 seconds, all for TSO skbs with 16 or 17 fragments, with
+21 or 22 free descriptors in all but 5 cases. Together with deferred
+tail writes (xmit_more), these returns led to 25 Tx timeouts and
+adapter resets in the same runs:
 
-                       runs  Tx timeouts  NETDEV_TX_BUSY  TX_OK returns
-  unpatched 7.2.8         3           25           10890       7.3M
-  patch 2 only            3            0           10751       9.5M
-  patch 1 only            3            0               0       8.8M
-  both patches            3            0               0       9.4M
-  unpatched, TSO off      1            0               0      21.5M
+  igc 0000:08:00.0 terra: NETDEV WATCHDOG: CPU: 1: transmit queue 2 timed out 5353 ms
+  igc 0000:08:00.0 terra: Reset adapter
 
-In all 25 timeout episodes, the stalled queue had pending descriptors
-after a NETDEV_TX_BUSY return. The probes inferred at least 214
-descriptors beyond the last tail write. For that queue, the hardware
-register dump showed TDH = TDT = the next_to_clean value recorded by
-the probe.
+The following patch addresses the lost tail write itself.
 
-With both patches applied, no NETDEV_TX_BUSY occurred, so the flush
-path of patch 2 was not exercised in that run; its effect is shown by
-the patch 2 only runs.
+Raise DESC_NEEDED to MAX_SKB_FRAGS + 6 to match the admission check.
+The additional reservation is currently unconditional, including when
+launch time is disabled; match that existing admission policy in the
+proactive stop threshold. With MAX_SKB_FRAGS = 17, the queue is now
+stopped below 23 free descriptors instead of 21. This also raises the
+completion-based wake threshold from 42 to 46 free descriptors,
+preserving the existing two-times-stop-threshold policy. Throughput
+and latency effects were not measured.
 
-TX_OK returns count igc_xmit_frame() calls returning NETDEV_TX_OK,
-excluding NETDEV_TX_BUSY retries. These are software call counts,
-not hardware packet counters; with TSO disabled, segmentation occurs
-before the driver.
+With this change alone, three runs of the same test on 7.2.8 produced
+no NETDEV_TX_BUSY and no Tx timeout over 8.8M NETDEV_TX_OK returns,
+including 613k TSO skbs with 17 fragments.
 
-Related code, not addressed in this series and not tested:
+As before commit db0b124f02ba, an skb whose linear part or fragments
+exceed IGC_MAX_DATA_PER_TXD may still need more descriptors than
+DESC_NEEDED accounts for.
 
-- bnxt: commit e8d8c5d80f5e ("bnxt: make sure xmit_more + errors does
-  not miss doorbells") rings a pending doorbell on the drop paths. It
-  leaves the busy path alone, reasoning that busy can only happen if
-  start_xmit races with completions that both enable the queue, in
-  which case no kick can be pending; the current code warns "ring busy
-  w/ flush pending!" if that assumption breaks. In igc, patch 1
-  restores that property for skbs whose buffers each fit in one
-  descriptor, and patch 2 covers the remaining case.
+Fixes: db0b124f02ba ("igc: Enhance Qbv scheduling by using first flag bit")
+Cc: stable@vger.kernel.org
+Assisted-by: LLM bpftrace
+Signed-off-by: Benoit DE RANCOURT <b2rancourt@gmail.com>
+---
+ drivers/net/ethernet/intel/igc/igc.h | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-- igc drop paths (skb_put_padto() failure in igc_xmit_frame(), out_drop
-  in igc_xmit_frame_ring(), the DMA mapping error path of igc_tx_map())
-  also return without writing a pending tail, the case bnxt fixed in
-  e8d8c5d80f5e and 00eeab0c644a ("bnxt_en: Write doorbell when
-  linearizing skb fails"). The queue is not stopped there, so pending
-  descriptors are delayed until the next transmit on that queue rather
-  than stranded.
-
-- igb, ixgbe, fm10k, i40e, iavf, ice, e1000e and e1000 also defer the
-  tail write with xmit_more and return NETDEV_TX_BUSY from their
-  admission check without writing it. Their stop thresholds match
-  their admission checks, so this should only be reachable for skbs
-  needing more descriptors than the stop threshold assumes.
-
-Not done:
-- runtime test on a kernel built from this tree; the patches were
-  tested on 7.2.8, where the affected code is identical, and apply
-  cleanly here;
-- launch time (ETF/taprio) and XDP/AF_XDP traffic, which share the
-  ring and the wake threshold;
-- longer runs and other I226/I225 boards;
-- only the igc objects were built with W=1 under allmodconfig, not
-  the full tree.
-
-The analysis and the patches were prepared with an LLM-based coding
-assistant, which also wrote the bpftrace probes; the results above come
-from those probes and the kernel log on real hardware.
-
-Benoit DE RANCOURT (2):
-  igc: Fix Tx stop threshold to cover empty frame descriptors
-  igc: Flush pending Tx descriptors before returning NETDEV_TX_BUSY
-
- drivers/net/ethernet/intel/igc/igc.h      | 8 ++++++--
- drivers/net/ethernet/intel/igc/igc_main.c | 6 +++++-
- 2 files changed, 11 insertions(+), 3 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+index 17f213cc93e4..f1efadbd9f74 100644
+--- a/drivers/net/ethernet/intel/igc/igc.h
++++ b/drivers/net/ethernet/intel/igc/igc.h
+@@ -575,9 +575,13 @@ enum igc_boards {
+ #define IGC_MAX_TXD_PWR		15
+ #define IGC_MAX_DATA_PER_TXD	BIT(IGC_MAX_TXD_PWR)
+ 
+-/* Tx Descriptors needed, worst case */
+ #define TXD_USE_COUNT(S)	DIV_ROUND_UP((S), IGC_MAX_DATA_PER_TXD)
+-#define DESC_NEEDED	(MAX_SKB_FRAGS + 4)
++
++/* Tx descriptor budget for a head and MAX_SKB_FRAGS fragments,
++ * each fitting in one data descriptor: one context descriptor,
++ * two descriptors for an optional empty frame, and two spare entries.
++ */
++#define DESC_NEEDED	(MAX_SKB_FRAGS + 6)
+ 
+ struct igc_rx_buffer {
+ 	union {
 
 base-commit: a83267db14681b3be481e02a4d5a38177507006c
 -- 
