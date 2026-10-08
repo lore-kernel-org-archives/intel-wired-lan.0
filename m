@@ -4,195 +4,196 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 55B65CA600C
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  8 Oct 2026 20:43:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4587CA6017
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  8 Oct 2026 21:03:23 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 101E76069C;
-	Thu,  8 Oct 2026 20:43:48 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 7857C60727;
+	Thu,  8 Oct 2026 21:03:23 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id NQ0Ehz7XyT5X; Thu,  8 Oct 2026 20:43:47 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 26C8D6084A
+ id KVZYdbpeyKkS; Thu,  8 Oct 2026 21:03:22 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 84C6F60808
 Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=3; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1791492227;
-	b=sW9wLWFr7jZka78+ZKYJUwm2zd1ulBA4QMsWDrcWtt89hpMf2xhOgdY0XWCiMxBlQFPz
-	 pjx0cz/AZ6ms7Pqw/shqMN5vKhydoUxBh9LyrVndvG6DolCUXNG3vseUbzGPFhIbNOF0B
-	 CTl3ukaJJpW8X6M/zUaG0cI4ZNmTVakIuWHjm7DL5Pa/LyiehRZxbrfrkufXECRQFcvdM
-	 zH2UdAO6emNCZUY8Nzgda58oxAlVYJw0HtvP6XuqHxkcnJcy6UlqXb6ObhZ7JWeUVFMVY
-	 ISb3y+mIg43nq3oLIt+By+XVA24lEpVfX4ERt6dHB0Jtvma8slEa+1AvEaTuW20C26Q==
-ARC-Message-Signature: i=3; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1791492227;
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1791493402;
+	b=fufvZxIY/g9ff3/d1mZ+W+lVLWBW/WXusg8eRrhy1wmZRtm7DXCMpTgPU1f9rx+TuXig
+	 pHhdYVmmHFNY+DnONFRHtUV/1QkYL5roXQynUfCL9ujwcefkdoiwotI0G26K8eOY0dEI7
+	 1BaotwvPu8kpaD9U12MUSEhDBdBbGOs3LrEiIh8WDFtLDWEWdNJmnQLTq5t5U2roXCJ7y
+	 lP2uuNOMQhEgtOf5sG5d/bRfhqB7knrTWb4bkzRMZpfmetXw/souU5wAURHqBQ4BnWRPe
+	 sELl8jmnFL5bubqYKgAEneG9xVHQO9Me/oJoIL5jLWqVjvVPyIrIyL0xmAGbuX/ixQQ==
+ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
+	c=relaxed/relaxed; t=1791493402;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
 	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:MIME-Version:References:
-	 In-Reply-To:From:Date:X-Gm-Features:Message-ID:Subject:To:Cc:
-	 Content-Type:Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:
-	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
-	 List-Subscribe:Errors-To;
-	bh=A/W/PUrtn/Cc72CQ/8yShHdG2SRzclcrVf4wdHjhRnM=;
-	b=AAK2Eud40Lp3ispvWHSQ1a5FNArAuAMgNaw06G6iN5d5OdCazCn+q5y90/qSBeqO5MCX
-	 g9DtACeL+SfY+D8c1b5GYg3aweaVGUyZF2MRxXv1DUZF8Agvyc4OpknJQQTiuVnm96QdW
-	 TyIv1m5PfGdiltrRKdt7yaWroVAIvf/YNCbrc4pTjG/leqb95P+zAykYtXT+wK7QkpEdS
-	 RapmDLwvkyHfyMdCwCdxRt0+JFPY6dTf4i07NhnuPa0F5obGT5TLMNhJSM7QbIfFCpc1U
-	 U9K3GJIk1mzI2Qq98N9bIK04E8S4SuGxxjNTzzh/rE3G0RXQB2LwwlFNAAgIsODeY1Q==
-ARC-Authentication-Results: i=3; smtp3.osuosl.org; 
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:Subject:Date:
+	 Message-Id:MIME-Version:Content-Type:Content-Transfer-Encoding:
+	 X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:X-Developer-Signature:
+	 X-Developer-Key:X-BeenThere:X-Mailman-Version:Precedence:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Errors-To;
+	bh=veWMGuSVswTQSpRQuCY1UJnPdK7Vk9Kj0h3fikv2+bk=;
+	b=ohQ4jss1wU0sYYw/t7ElNg8ifzmhU7wRMtwrtTa4DiBNsEbqMeaWoTuGGE1VsPmrYHPC
+	 D3L7WaAc0UNQ2vodpADd/g4czDXHvxf/ZNheJB/xpemgIMvK8XOwH+wR/++iuDy6MnHxc
+	 UfL7hlBWDsd0JvYNJMov5m/UAgyM1YlRFcHI/9XQn/Z/ta28yXfEedDFbYZJ/nQGPC5XR
+	 /uyhm+kIJ8nnngmsSTWrXyujCiQZkyqArbJpICk0h5FrgxEeO7U5NyEsLCDkHT4prSc17
+	 Ulu5IgJFYHTtdD7nyQoCSC6XVe4NyF7ut5vpYkGmkDG1NYkK2AWAa3WdWD70F5icIkw==
+ARC-Authentication-Results: i=2; smtp3.osuosl.org; 
+	dmarc=none header.from=toxicpanda.com;
+	dkim=pass header.d=toxicpanda.com header.i=@toxicpanda.com header.a=rsa-sha256 header.s=google header.b=iiWrfWYz;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1791492227;
-	bh=A/W/PUrtn/Cc72CQ/8yShHdG2SRzclcrVf4wdHjhRnM=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=fH7aDGZ4P3qiv6g/OpEPoRWL+LkR38S4F1z/YT88e4JxLGxt2ft5HzKE2iZwGrfE5
-	 XgHqKbtVVsEGF/w8KWY7Lfdxk+hH78xH/1EAsNPObRLizLFerkBG1By4O7ZyUT4hGn
-	 dmYEEerywiG+QNtByuvprMIf2XNiC42Is5pkbOErXQ0nFvnhyKXSr0/Z0z+cneHGk0
-	 BKNmwonIbA/VWzn+hhT274ZC01WnCueAHrYlmoXIAMPjq94OunAstyQ1220kouppUk
-	 H5knDOW7Kr93bDgnnm6EARDt+EJn6PZT804ME+l1ti+ZTUK6p+GabuLun/SW+Bk4eo
-	 MbfpRKGMgDupQ==
+	s=default; t=1791493402;
+	bh=veWMGuSVswTQSpRQuCY1UJnPdK7Vk9Kj0h3fikv2+bk=;
+	h=From:Subject:Date:To:Cc:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=5AwuX6pAFWDbdDGD0dZF2UkMEi60xu+u9nmd1aBDdYUk9UtxnaXBXvZATLCl/YZvt
+	 xox4Vi2Fi93ELbs5ChkdeZ1rmJFYD7JQhLepb5lhoHGDEv+NzLBXqa+a0B3QWyGmPX
+	 uFFXMVvGJgbgAMC2Llny8ECkTU7uVBetjK+9tVGY3TJLjRXZKJEAIots9J/NP/Vmwt
+	 pECK1O05nuwdOvPoWg08AWK00a0QzKWio2Tbv/2jq9wGZryL2PWv9K+tTqvaSQ0DcS
+	 aZGfLzKK+jwTbqb2a3jY6u1Prl1bV/0SIM4sQHQ8sSEmbfYTQxGA/QJYGz8eqMWvMy
+	 j+p2IGMuJZevg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 26C8D6084A;
-	Thu,  8 Oct 2026 20:43:47 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 7C8D634E
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Oct 2026 20:43:45 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 84C6F60808;
+	Thu,  8 Oct 2026 21:03:22 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 042A22E0
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Oct 2026 21:03:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 6E41B403B5
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Oct 2026 20:43:45 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id DE5CC60808
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Oct 2026 21:03:20 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id rQY4OSyyQ7xl for <intel-wired-lan@lists.osuosl.org>;
- Thu,  8 Oct 2026 20:43:44 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org 3BC144032E
-Authentication-Results: smtp2.osuosl.org; arc=pass header.oldest-pass=0
- smtp.remote-ip="2607:f8b0:4864:20::929"
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1791492224;
- b=AM/glRG/httb4itqQ2fTxntqe2PSiQE2S2swqWFfu5Y/VAmOzy5CMXPBtWF+aq/9UgoO
- sX5OntDi9N15bJJhX41q2mRK5hqDLYa/i/PzqI0eJFXqa8Diln/zMZS5xPPc5wpliOWNE
- 68vNpYR6Y5Ush30YT2nJYFxE+1zJuF6wMEqKQge+hDhxtGpVGNuEziYbuZNSXZSodBZVn
- 50I9dp4Tr0sk4jSUEbwvPMNK9rY1yhrWsiCsVAN924fb1utNnKAv8lr68SYaneINqk0d1
- PY22mJi5k0IYUr49IFB8JZWi9TS6PR0OfNyap1taP/7q+n7+Y/VQerILDozH6ifz4PA==
-ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1791492224;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id F9zEWUmAd_me for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  8 Oct 2026 21:03:19 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 69F7E60727
+Authentication-Results: smtp3.osuosl.org;
+ arc=none smtp.remote-ip="2607:f8b0:4864:20::834"
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1791493399;
+ b=qKOWEIZS+8/QZT4RCRBMXzo1Q0TDLswkpjUQ+jynL7Mx7G+Tg+7F/Du53FiVBCFNPcH5
+ TzQNe500E1o4AI+9pQL9Z8xSKW206X/RM9hr2F+vU4fRYBNXtfSeuNQlxUowBmpwXVhcY
+ HjiuCDb9Enjl5ikdaSyq7NHmxAvB2bXovG9Ac3t7hQX8YCTqfBstJ3Hs2+a63rOVInLhM
+ 4G+RI72FYeNrzswQupKNhZrip65fzsKYVVW/OKn6g/AKwhQBdyAXO81vBy6Ef5dROVvb9
+ Bh4fWhCDoIT8pJLy4HA9/dDMMs2aEMloBAlM8cyH34wfmzlKwA9akBO5+nXSyPB33sg==
+ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
+ c=relaxed/relaxed; t=1791493399;
  h=Received-SPF:Received:DKIM-Signature:X-Google-DKIM-Signature:
- X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
- MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
- Message-ID:Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
- bh=A/W/PUrtn/Cc72CQ/8yShHdG2SRzclcrVf4wdHjhRnM=;
- b=Pd5QfrD1c1YlErIiJejQIEtQzIUpehWk8gfk6VftbZHEosqZ4pZMXUoXsrPX8Q+TFjmZ
- +DAPQRdAxZLqxTBP0VApYDSYUyYQNmfIJUdktsu8780qc3tkFl6/7K3CthNTvt3djTcE9
- lDa97yf9OqGy3GGwHnDcq7h7rxtqUpJzts8knen8fgnVyRCebrMJyHs3Pd7iz2ECfwjgK
- E5YnNwxT4/fm4T6zkOQhxmOOU+4cmKmWqWrbfBEqfDtlU7BuoeMK05xfrUjEfKhD+J2yo
- +7J/daF1748Ttqu8WVHVGOdNnsWQM1efs8WO0OJmsLeo1TlbIx9fGqd3Z7k2Hhm2HvQ==
-ARC-Authentication-Results: i=2; smtp2.osuosl.org; 
- dmarc=pass header.from=google.com;
- dkim=pass header.d=google.com header.i=@google.com header.a=rsa-sha256
- header.s=20251104 header.b="lAp86VV/"; 
- arc=pass header.oldest-pass=0 smtp.remote-ip="2607:f8b0:4864:20::929"
+ X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+ From:Subject:Date:Message-Id:MIME-Version:Content-Type:
+ Content-Transfer-Encoding:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:
+ X-Developer-Signature:X-Developer-Key;
+ bh=veWMGuSVswTQSpRQuCY1UJnPdK7Vk9Kj0h3fikv2+bk=;
+ b=rb4mcyiEf6nVfdspDr1DI4DGQaD6iw2rdoVHShfu1Tkawp5y9fzTb/OKEhYfVqqOv68B
+ a5FHpVDQkZGCLjvh1x/i9S04oJxXFAvedpEcOvkvN+gWvTXE7wnErT3DG9nYw8/cc2u5n
+ ontOy8R0U2FfkEGt7gAcd0TMLjQln29+N8YqGWn/ZxdOh6ZFeWhkPjJS6VuwOhBR2KHRA
+ 6Z30bm2EZ4x+Ga3bFv7TyWy91E8LxeChORck3cRXWPb6LDD71HoLxSeU6kF6QhrYrvBpg
+ PDrp2Srrs3Oc8Ag9Xaog7harb/XAYdkNLZthWktEeM9UwZvGlP0KtUGNLy/d92WRuIA==
+ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
+ dmarc=none header.from=toxicpanda.com;
+ dkim=pass header.d=toxicpanda.com header.i=@toxicpanda.com header.a=rsa-sha256
+ header.s=google header.b=iiWrfWYz; 
+ arc=none smtp.remote-ip="2607:f8b0:4864:20::834"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::929; helo=mail-ua1-x929.google.com;
- envelope-from=brianvv@google.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
- header.s=20251104 header.b=lAp86VV/
-Received: from mail-ua1-x929.google.com (mail-ua1-x929.google.com
- [IPv6:2607:f8b0:4864:20::929])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 3BC144032E
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Oct 2026 20:43:43 +0000 (UTC)
-Received: by mail-ua1-x929.google.com with SMTP id
- a1e0cc1a2514c-98929bb8eb0so1108707241.0
- for <intel-wired-lan@lists.osuosl.org>; Thu, 08 Oct 2026 13:43:43 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1791492222; cv=none;
- d=google.com; s=arc-20260327;
- b=FITpsstlXdeyDz8kNnp+WDxNBsttGD+4dvYaqog7PLVVVedkUO8VtOP8E47r0q+sW9
- BCAdx2AT0ULyoOq/iTb5vCETuiuCd4rwvc/l9kA5Xk5H+dO/PFWjvjVVJLLN+YaOOQtp
- dF8AvbYJM4h2sXAQEw4NuV7qZE9FSVZs0kaq2KIuMI0WMBVCLYgbuX0UErZ26iYxMBsK
- qDuM4xKXKsswSUs3V0UeFPd6n46PFf3Z1k50VJfhCreMn2IEWKr7uTXQ1t7kOfOI/CUf
- s0KAJ3sigCDzw9YhkMW20WMJXMe2Jqoeqf5b97BJO0TofGZf2Lg733D+9V/4C78orxMi
- 2FpA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com;
- s=arc-20260327; 
- h=content-transfer-encoding:cc:to:subject:message-id:date:from
- :in-reply-to:references:mime-version:dkim-signature;
- bh=A/W/PUrtn/Cc72CQ/8yShHdG2SRzclcrVf4wdHjhRnM=;
- fh=jLO1X/Xjn/5E5Nlb+IU4H5yNAi2IeZ4EcAxujArt//4=;
- b=BM/MkIsbypwah3UEXKt1fEQ5Kod0CO193/ZTcXYQBi/An5Y/mmrWA2D6U/NYI1d3NO
- 09bhwSa1az2J8/mX6guYjyVvVl/T5PnBYZhFqhdjWB93lxyLvg650+s9eJTuJ8gDryIz
- Q6T1P0StYk3JP3SHoiPm0a61G++yiK+L1Zio/GnZiWIAY42neZ2B+RDptckog520SQNY
- ea701QlGtK2+S97tXfBlRNx6UbE9ILvj3k3cmA51O6fKqWCjdmnAYiZhKJ6V3zD6st2n
- diXHsW4URQdZKNTDR/A4jY898Bm6mbab1dZXGKvrv5bBEhU2GutCAa2zqt2hpxrMl+Cz
- IEXQ==; darn=lists.osuosl.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+ client-ip=2607:f8b0:4864:20::834; helo=mail-qt1-x834.google.com;
+ envelope-from=josef@toxicpanda.com; receiver=<UNKNOWN> 
+Authentication-Results: smtp3.osuosl.org; dmarc=none (p=none dis=none)
+ header.from=toxicpanda.com
+Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=toxicpanda.com header.i=@toxicpanda.com
+ header.a=rsa-sha256 header.s=google header.b=iiWrfWYz
+Received: from mail-qt1-x834.google.com (mail-qt1-x834.google.com
+ [IPv6:2607:f8b0:4864:20::834])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 69F7E60727
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Oct 2026 21:03:18 +0000 (UTC)
+Received: by mail-qt1-x834.google.com with SMTP id
+ d75a77b69052e-53440816851so61717051cf.0
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 08 Oct 2026 14:03:18 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=google.com; s=20251104; t=1791492222; x=1792097022; darn=lists.osuosl.org;
- h=content-transfer-encoding:content-type:cc:to:subject:message-id
- :date:from:in-reply-to:references:mime-version:from:to:cc:subject
- :date:message-id:reply-to:content-type;
- bh=A/W/PUrtn/Cc72CQ/8yShHdG2SRzclcrVf4wdHjhRnM=;
- b=lAp86VV//MmPhwYPZIEKkE79SpgTLG0IQ6FsXyytzLWnpl7QYSNSTM0Zm4VxqyIl5k
- mBjAYmVZkATaVjvZYLg2AOdB+pTm3FcwxZj1dIphj25dl+Nt4XyBsZucU8rNGxwZtNhv
- JZysqMZYi/f6sU5/qlmrEnWT6ZPwLmoIVDKWbdUpIiJ/HRKS7E5llA0r7AKAIcHYUZ+k
- +2mdLZmf6Er/Vy/qf+bdwWmwGUVVMzbWZzKlJq2/B/Zt4byoUcWLfV/vEJ8GoEZSl91+
- o0VtFYIxs7EBfdGrbokeYLUDq3STqSlUdAzpxMtwgCSmZWDoRy+LbXz76Yjv7rfUFeR+
- 2iCA==
+ d=toxicpanda.com; s=google; t=1791493397; x=1792098197; darn=lists.osuosl.org; 
+ h=cc:to:content-transfer-encoding:content-type:mime-version
+ :message-id:date:subject:from:from:to:cc:subject:date:message-id
+ :reply-to:content-type;
+ bh=veWMGuSVswTQSpRQuCY1UJnPdK7Vk9Kj0h3fikv2+bk=;
+ b=iiWrfWYzuYr79HOatqqS46HJUHW18NRB/2IgwZzDdAMnoXOE8hMcRTJ2yv123bwC1i
+ HKGONp9eJFaqZG2AVQEJCiwH+a9dLwgYVvCxqg07xTNxqYVg6SA9PbfXz9JttRVRbwDX
+ K6H8B15rbWQTQr6RbJCWK4SuS7BNgtjt6+cFpBE4PWRJ7GYsYvjG8RyGaK8NXKPO2H1M
+ 8eqoRYKSwrPC2BtUl8JwBVHdiIbN/1ee70+97bI1A4ZnLCBuJgHZDrTKMrSAoVteWK6N
+ jli1dcchjhV4fyo3lE7RBw/By0wyiiMrZoBcl7WBWwpvpIth2LY8TWCOdkNOrYbXHjRr
+ V5XQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1791492222; x=1792097022;
- h=content-transfer-encoding:content-type:cc:to:subject:message-id
- :date:from:in-reply-to:references:mime-version:x-gm-gg
- :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
- :content-type;
- bh=A/W/PUrtn/Cc72CQ/8yShHdG2SRzclcrVf4wdHjhRnM=;
- b=bsSekiD8976vDDJfvsiW9YFPDcSNyrRzY6MwnUC69k11LAFjeNelINa7OolJFZJyJt
- vS0KWDmP6QnWF88VCyMnk9D5GRB9ErYRKnegic1LzwYEjo4E8bDXBB9odWA0619bG4mz
- AsLrqYgTkDdBVt8EmJv2eoZxiRar1uBrxcweLlKKMD0BG75GhH8CBjc6h9I911FwEKcJ
- lKEhgK9YNGjAa4+zAjvdquk8PkHp5ssIXUA+Dw1bcSWvU+JmnnPPmzI9V6MDlz6eI1qk
- y3N2vc9y48xpZO2qHKxfOs09sz5nULgBDD4uEkVp62Ebl+oEjiFfAs30etCNd7JiQgHj
- sUMw==
+ d=1e100.net; s=20260707; t=1791493397; x=1792098197;
+ h=cc:to:content-transfer-encoding:content-type:mime-version
+ :message-id:date:subject:from:x-gm-gg:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to:content-type;
+ bh=veWMGuSVswTQSpRQuCY1UJnPdK7Vk9Kj0h3fikv2+bk=;
+ b=00WbksAG9iEszOQNvl9RXwnOl+lH7pLHvr3IGu9xfhVzW69BEWpxRYm8dB1asXmStA
+ RPU3a1rBus/C8591vFyjImdoK61JxsDakpzPmWR7SIO2ttzzvd1gL26F8NMkNVHxKZr6
+ IlmBrHYf5JY7OiYhvvPXTOPRwVDs5pVir2epUU4ju3qqCtnu1hyAt4+B1Mflm7PFRBLX
+ Gw5gkguCa6oSgQcSRRWqLsVTIFwpfwFSRo/hm70fJ4HnbfXQUh6xB03+3qrlZDKpQWl5
+ aaZOvxbPEW9GrFgxKUcG/9ujYWhcqudGCsNhJYDw/w62CSlDwMXM/OxgPU+y4gk7DnHa
+ c9rw==
 X-Forwarded-Encrypted: i=1;
- AKwUvBwopiR7HaZ+mPJ8aMHvxUUMfVDe9ZeT+vJqkK/KUhnRswn5tpY3/RYtEyoPadBIplwtZcRUSLS1IlXM+evm5OQ=@lists.osuosl.org
-X-Gm-Message-State: AFq9FYLTRQUqeRRriFs7ARbajfGoGOH+gZWhCjsIzhfgkx1KP+4w87z+
- XhKuhp3bsFUCL6HlcQ4FqwvhAmsZwiRgfiObYy/RN+WfsJTZYTcnRIMPJecNlCNTziCWPoYXoBJ
- 4402G2f4M4kBzRv1gpTCMj/t1dTly5PX2GI57P5j/
-X-Gm-Gg: AYBFou3cOnwf69nmPg69M56iSTxbUWY2i/2khRJQ47yhxbgGZkJNIGqtFcRXk22prbF
- sbqxPMuKYSuCy3R9dvl9RIaf4IXTOduk2c5LKOP91UMZG0Lu2ym47JRTmqi/LOGtOabJ1xMALoL
- UqubHgznhqx+31YDP2BQfNZgKsSThLOps4FttCaCF0RmorFpJkysF/dRNrzF3WQQhpW/rEYbFzv
- r4vg6uf5l2zBYm0mKqfmkD6opgzknPUJVkK2g9CoE3eN018uHauTJ/6sqbt0PIMy7mvLUY3GB0p
- payHmIro0VQ1dxka9j+yXxEWbxQEmZ8uGluT1kIFIRHnGnruubEkn/TUQmW5VOw9+gKs8F9MQjn
- 6LwflQEJD
-X-Received: by 2002:a05:6102:5cca:b0:7ae:c2ca:8e1 with SMTP id
- ada2fe7eead31-7cb37282493mr11701137.11.1791492221308; Thu, 08 Oct 2026
- 13:43:41 -0700 (PDT)
+ AKwUvBx+eg8bGC3x/de+9ditK3ExOr7UaRb/AgRmTfXWyUrvb13A4LQRDTg+n0viJCfvZRYVDUoOwLzL6KR5qEgxows=@lists.osuosl.org
+X-Gm-Message-State: AFuF++kgcTGzF0D+I8wdZuvgYM6kxEI36T035YAlCSs8gGIm5KQd6ULL
+ RUd+mIZbbgXXCCZ0btfJPMTs+ZMAdaKpzba2375xTubbSYZHbScY6INVXdgp4LvSHfA=
+X-Gm-Gg: AYBFou18mgFvJWNAtN30s0HIDQwpgfDHh8I87Ce/BWIs9m4MYgrGiIl9FSeTWwkxhHJ
+ tzZ969a80eN2yL8C7foc9wqNHTxysivnW+LoLMvLXENrIXAKCAR+EhmRoeJ/erSLhnjsiKvaOsk
+ X6APMlg94SaBvca1fOvZt009OjwdREbwh9DFCNDbsJBI+qNTBpvgpDxr+JE7P4Y9fNZ5MnbtRJB
+ 2bpTA3jzuvKevPG/aJvvbQ2iEONWyXxGU8b9tG7vQxcAU22Dhy+nihRXZxK0lpbDYvK5PYcBj0a
+ 6/qWbOhuHrXWV+5Um/6E3W+j9jURfPsrZigOlwYzvQQEbNxqaKm3RP6ThV0PSU5VT2MHh/HhMSK
+ w+fgrFSVtKaxTL2sIVH8It7NBk7tMOMDkgeWn7oJryaWlrUsdkEz8jsQ1iY102/60zkzNjh58Jy
+ R+S/O8mNpsuzzvBKLyEu+hsBwK1pfGK4IrZmfiR7axLp2aun2rursCa1ymCCpprLnVOOjP/Hx16
+ D12w2WLtwSyrI0=
+X-Received: by 2002:a05:622a:1f1b:b0:535:70b3:aa38 with SMTP id
+ d75a77b69052e-5357573e670mr108763961cf.74.1791493396306; 
+ Thu, 08 Oct 2026 14:03:16 -0700 (PDT)
+Received: from toxicpanda.com ([153.61.196.247])
+ by smtp.gmail.com with ESMTPSA id
+ d75a77b69052e-5359b7dd1a0sm3101431cf.27.2026.10.08.14.03.15
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 08 Oct 2026 14:03:15 -0700 (PDT)
+From: Josef Bacik <josef@toxicpanda.com>
+Subject: [PATCH net-next v2 00/10] net: stop calling __pskb_pull_tail()
+ from drivers
+Date: Thu, 08 Oct 2026 21:02:47 +0000
+Message-Id: <20261008-b4-pskb-pull-tail-drivers-v2-0-8f2bd9bee138@toxicpanda.com>
 MIME-Version: 1.0
-References: <20261008173334.2881475-1-brianvv@google.com>
- <07ee6c66-034d-4cea-bce9-91c63a1aea86@molgen.mpg.de>
-In-Reply-To: <07ee6c66-034d-4cea-bce9-91c63a1aea86@molgen.mpg.de>
-From: Brian Vazquez <brianvv@google.com>
-Date: Thu, 8 Oct 2026 16:43:29 -0400
-X-Gm-Features: AclHuK9aU2BVIj9HzCVTcUiFNvmt9s4B0i7YOub1a2UyUu9MFQ1Y8cPTxsttm2c
-Message-ID: <CAMzD94QiYANH2e-jr2LDD3yv4ojcArterT69k0aMBP_iZxtzzA@mail.gmail.com>
-Subject: Re: [iwl-net PATCH] idpf: wait for the reset completed state in
- idpf_check_reset_complete()
-To: Paul Menzel <pmenzel@molgen.mpg.de>
-Cc: Brian Vazquez <brianvv.kernel@gmail.com>,
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAPkEyGoC/32OwW6DMBBEfyXac7exLQqip/5HlYPXrMMmxFi2g
+ 4gi/j1Ae6x6nNmdmfeEzEk4w+fhCYknyTKGVZi3A7jehjOjdKsGo0ytlaqRKoz5Shjvw4DFyoB
+ dkolTRu8rT6atK9YW1nxM7GXeu78hcMHAc4HTzyXf6cKubNXbL9nMSMkG12/WEI9UHXfz77Et0
+ 0suY3rs6JPeV34pm38oJ40K2w9tSHlqm4a+yjiLizZ09t2NNzgty/IC68Wn+BcBAAA=
+X-Change-ID: 20261006-b4-pskb-pull-tail-drivers-ff4fb2964e1a
+To: Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
+ Eric Dumazet <edumazet@kernel.org>, "David S. Miller" <davem@davemloft.net>, 
+ Andrew Lunn <andrew+netdev@lunn.ch>
+Cc: Saeed Mahameed <saeedm@nvidia.com>, Tariq Toukan <tariqt@nvidia.com>, 
+ Mark Bloch <mbloch@nvidia.com>, Leon Romanovsky <leon@kernel.org>, 
+ Juergen Gross <jgross@suse.com>, 
+ Stefano Stabellini <sstabellini@kernel.org>, 
+ Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>, 
  Tony Nguyen <anthony.l.nguyen@intel.com>, 
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>, 
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>, 
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- intel-wired-lan@lists.osuosl.org, 
- netdev@vger.kernel.org, Madhu Chittim <madhu.chittim@intel.com>, 
- Joshua Hay <joshua.a.hay@intel.com>,
- Sridhar Samudrala <sridhar.samudrala@intel.com>, 
- linux-kernel@vger.kernel.org, David Decotigny <decot@google.com>,
- Li Li <boolli@google.com>, Emil Tantilov <emil.s.tantilov@intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
+ Manish Chopra <manishc@marvell.com>, Rahul Verma <rahulv@marvell.com>, 
+ GR-Linux-NIC-Dev@marvell.com, Shahed Shaikh <shshaikh@marvell.com>, 
+ Simon Horman <horms@kernel.org>, netdev@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org, 
+ xen-devel@lists.xenproject.org, intel-wired-lan@lists.osuosl.org, 
+ Josef Bacik <josef@toxicpanda.com>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=openssh-sha256; t=1791493384; l=4998;
+ i=josef@toxicpanda.com; h=from:subject:message-id;
+ bh=uEkT7bvpoCXxFRYilwrMqw4m/avYlKD/tw+E4y7qkfI=;
+ b=U1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgUBr36M/n0nWN0DNbnxwzIiCZez6MG
+ JiruuNaSCI/zXsAAAAGcGF0YXR0AAAAAAAAAAZzaGE1MTIAAABTAAAAC3NzaC1lZDI1NTE5AAAA
+ QCXCcPzYE6MckGlWvZs5GlcBhgvsQUwMKctcIvHVU60iM6MoRF4p5/Zxb/dlkHyUCxdBM8d4+e7
+ 75wiNZDfujgQ=
+X-Developer-Key: i=josef@toxicpanda.com; a=openssh;
+ fpr=SHA256:C8kOX2QUJCMqnCX+KEeoqRAjLo9L+ELOSH2NSAJHqGA
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -207,126 +208,100 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-Thanks for the review, Paul.  I answered inline.
+v1: https://lore.kernel.org/all/20261007-b4-pskb-pull-tail-drivers-v1-0-9512b0fb977b@toxicpanda.com/
 
-I will fold the spec reference, device and reproducer into v2 and
-carry them forward.
+v1->v2:
+- New 1/10: skb_drop_empty_frags(). xen-netfront, netxen and qlcnic
+  relied on __pskb_pull_tail() releasing zero-length frags even when
+  there's nothing to pull, which pskb_may_pull() doesn't do (Sashiko).
+- xen-netfront, netxen, qlcnic: call skb_drop_empty_frags() after
+  pskb_may_pull().
+- skb_drop_empty_frags() checked with a boot-time test under KASAN and
+  kmemleak, on cloned and uncloned skbs.
 
-the Reviewed-by tags.
-On Thu, Oct 8, 2026 at 2:31=E2=80=AFPM Paul Menzel <pmenzel@molgen.mpg.de> =
-wrote:
->
-> Dear Brian,
->
->
-> Thank you for your patch.
->
-> Am 08.10.26 um 19:33 schrieb Brian Vazquez:
-> > PFGEN_RSTAT[1:0] / VFGEN_RSTAT[1:0] (PFR_STATE / VFR_STATE) encode the
-> > function reset progress as a 2-bit state, not a flag:
-> >
-> >    00b - reset in progress
-> >    01b - reset completed, written by the control plane
-> >    10b - function active, written by the control plane once the functio=
-n
-> >          has completed VIRTCHNL2_OP_VERSION
-> >    11b - reserved
->
-> For me it=E2=80=99d be helpful if you mentioned the datasheet.
+--- Original email (v1) ---
 
-The state encoding is in the public IDPF specification, "PF Reset
-Status - PFGEN_RSTAT" [1]:
+__pskb_pull_tail() is the slow path behind pskb_may_pull() and
+__skb_linearize(), and drivers shouldn't be calling it directly.  It
+takes the number of bytes to pull relative to the current head and does
+no bounds checking on it.  Ask for more than the skb holds and it BUG()s
+in skb_copy_bits().  Ask for a negative amount, which is what a caller
+computing "len - skb_headlen(skb)" gets once the head is already long
+enough, and skb_copy_bits() is handed a length of nearly 4GB to copy
+into the head.  Under KASAN that shows up as an out-of-bounds read of
+size 4294967288, after which __pskb_pull_tail() returns success with the
+skb's head and paged lengths no longer matching its frags.
 
-[1] https://github.com/oasis-tcs/idpf-specification/blob/main/idpf_specific=
-ation.md
->
-> > idpf_check_reset_complete() tests (reg_val & rstat_m) as a boolean, wit=
-h
-> > rstat_m =3D GENMASK(1, 0), so any non-zero state is taken as "completed=
-",
-> > although only 01b carries that meaning.
-> >
-> > That only works if hardware moves the field to 00b as soon as the reset
-> > is triggered. On the devices tested it does not: PFSWR transitions
-> > PFR_STATE to 00b only when the field currently reads 01b. When the
-> > function is active (10b) the field keeps its value until the control
-> > plane finishes the reset and writes 01b, which takes a few hundred
-> > milliseconds.
->
-> Please mention the device, so it=E2=80=99s easier to reproduce. Also, the
-> command to trigger the reset.
+It also returns NULL on failure with nothing making the caller look at
+it.  Eight network drivers call it directly and four of them don't
+check.  All four are RX paths where a failed pull is followed by
+eth_type_trans() or skb_pull(), which BUG() in __skb_pull() once the
+head is shorter than what they pull.  As far as I can tell none of the
+four can fail today, since the skb is fresh, isn't shared and has room
+in the head, but that only holds because of how each driver happens to
+allocate.
 
-Intel IPU E2100, 8086:1452. An FLR on an active PF is enough:
+pskb_may_pull() and __skb_linearize() take the length the head should
+end up with, check it against skb->len and fail cleanly, which is what
+every one of these callers wants.  Convert all eight drivers to them,
+check the result, and drop the packet on failure.
 
-  # echo 1 > /sys/bus/pci/devices/0000:01:00.0/reset
+The last patch makes skb_condense() check its pull as well.  It can't
+fail there today, but it would undercount truesize if it ever did.
 
-  [  299.685030] idpf 0000:01:00.0: HW reset detected
-  [  299.715710] idpf 0000:01:00.0: Device HW Reset initiated
-  [  362.916087] idpf 0000:01:00.0: Device HW Reset initiated
-  [  364.318246] eth0: (slave eth1): link status definitely up, ...
+The callers left in aoe and xen-netfront are fixed separately, through
+the block and net trees:
 
-Nothing is logged during the 63 s; the VERSION timeout is silent on this pa=
-th.
+  https://lore.kernel.org/r/20261007-b4-aoe-short-packets-v1-1-db5155f7bb9c@toxicpanda.com
+  https://lore.kernel.org/r/20261007-b4-xen-netfront-short-head-v1-1-12d7113a7e4e@toxicpanda.com
 
->
-> > Consequently, on a hard reset of an active function
-> > (IDPF_HR_FUNC_RESET) the first poll sees 10b, returns immediately, the
-> > driver re-creates the mailbox and sends VIRTCHNL2_OP_VERSION while the
-> > reset is still being processed. The control plane tears the mailbox
-> > down underneath it, VERSION is never answered, and the driver sits in a
-> > 60 second virtchnl timeout (-ETIME) before going through a second hard
-> > reset which then succeeds.
-> >
-> > Make idpf_check_reset_complete() wait for the state to be exactly 01b.
-> > This is the stricter reading of the register definition and it does not
-> > depend on how the field got to its current value: functions that are
-> > still in progress (00b) or active (10b) keep polling until the control
-> > plane reports completion.
-> >
-> > Fixes: 8077c727561a ("idpf: add controlq init and reset checks")
-> > Signed-off-by: Brian Vazquez <brianvv@google.com>
-> > ---
-> >   drivers/net/ethernet/intel/idpf/idpf.h     | 2 ++
-> >   drivers/net/ethernet/intel/idpf/idpf_lib.c | 3 ++-
-> >   2 files changed, 4 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/net/ethernet/intel/idpf/idpf.h b/drivers/net/ether=
-net/intel/idpf/idpf.h
-> > index 470bc23c844c..ce8a1bd0ec8b 100644
-> > --- a/drivers/net/ethernet/intel/idpf/idpf.h
-> > +++ b/drivers/net/ethernet/intel/idpf/idpf.h
-> > @@ -166,6 +166,8 @@ struct idpf_netdev_priv {
-> >       spinlock_t stats_lock;
-> >   };
-> >
-> > +#define IDPF_RSTAT_COMPLETE          0x01
-> > +
-> >   /**
-> >    * struct idpf_reset_reg - Reset register offsets/masks
-> >    * @rstat: Reset status register
-> > diff --git a/drivers/net/ethernet/intel/idpf/idpf_lib.c b/drivers/net/e=
-thernet/intel/idpf/idpf_lib.c
-> > index 2c148377540c..a827e0fa67c8 100644
-> > --- a/drivers/net/ethernet/intel/idpf/idpf_lib.c
-> > +++ b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-> > @@ -1870,7 +1870,8 @@ static int idpf_check_reset_complete(struct idpf_=
-adapter *adapter,
-> >                * register for us yet and 0xFFFFFFFF is not a valid valu=
-e for
-> >                * the register, so treat that as invalid.
-> >                */
-> > -             if (reg_val !=3D 0xFFFFFFFF && (reg_val & reset_reg->rsta=
-t_m))
-> > +             if (reg_val !=3D 0xFFFFFFFF &&
-> > +                 (reg_val & reset_reg->rstat_m) =3D=3D IDPF_RSTAT_COMP=
-LETE)
-> >                       return 0;
-> >
-> >               usleep_range(5000, 10000);
->
-> Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
->
->
-> Kind regards,
->
-> Paul
+Once those are in I'd like to stop exporting __pskb_pull_tail() so new
+drivers can't pick it up.
+
+Testing: every touched file builds with W=1 on x86_64 allmodconfig
+(ftmac100 on i386, it's 32-bit only).  e1000e under QEMU, which hits
+the converted TSO workaround on every TSO packet, passes TCP traffic
+between two emulated 82574Ls, and with failslab failing 5% of atomic
+allocations the failed pulls drop the packet and nothing falls over.
+The same setup with jumbo frames and copybreak off makes
+skb_condense() pull frag data into the head tens of thousands of times
+a run.  xen-netfront ran as a Xen HVM guest under QEMU's KVM Xen
+emulation, with the backend changed to spread frames over 18 and 19 RX
+slots, which takes the converted pull in xennet_fill_frags() and its
+overflow path.  The other drivers are compile tested only.
+
+Thanks,
+Josef
+
+---
+Changes in v2:
+- Link to v1: https://patch.msgid.link/20261007-b4-pskb-pull-tail-drivers-v1-0-9512b0fb977b@toxicpanda.com
+
+---
+Josef Bacik (10):
+      net: skbuff: add skb_drop_empty_frags()
+      net: ftmac100: check for failure when pulling in the RX header
+      net/mlx5e: check for failure when pulling the Ethernet header after XDP
+      net: niu: check for failure when pulling in the RX header
+      xen/netfront: check for failure when pulling in xennet_fill_frags()
+      e1000: use pskb_may_pull() in the 82544 TSO workaround
+      e1000e: use pskb_may_pull() in the 82571/2/3 TSO workaround
+      netxen: use pskb_may_pull() to pull excess TX frags into the head
+      qlcnic: use pskb_may_pull() to pull excess TX frags into the head
+      net: skbuff: don't reset truesize in skb_condense() if the pull fails
+
+ drivers/net/ethernet/faraday/ftmac100.c            | 10 ++++-
+ drivers/net/ethernet/intel/e1000/e1000_main.c      |  5 +--
+ drivers/net/ethernet/intel/e1000e/netdev.c         |  4 +-
+ drivers/net/ethernet/mellanox/mlx5/core/en_rx.c    |  9 +++--
+ .../net/ethernet/qlogic/netxen/netxen_nic_main.c   |  3 +-
+ drivers/net/ethernet/qlogic/qlcnic/qlcnic_io.c     |  3 +-
+ drivers/net/ethernet/sun/niu.c                     |  6 ++-
+ drivers/net/xen-netfront.c                         | 26 +++++++------
+ include/linux/skbuff.h                             |  1 +
+ net/core/skbuff.c                                  | 43 +++++++++++++++++++++-
+ 10 files changed, 84 insertions(+), 26 deletions(-)
+---
+base-commit: a5e7d8e446af9803e37a3b6a4d416fb41178348f
+change-id: 20261006-b4-pskb-pull-tail-drivers-ff4fb2964e1a
+
