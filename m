@@ -4,25 +4,25 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BBBC6CA6016
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  8 Oct 2026 21:03:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B91AECA6017
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  8 Oct 2026 21:03:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 7FDEE40921;
-	Thu,  8 Oct 2026 21:03:38 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 7C17A4092A;
+	Thu,  8 Oct 2026 21:03:39 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id OqMOjPnbNOV6; Thu,  8 Oct 2026 21:03:38 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org E174F4092A
+ id Ye-BtAtWcQ0D; Thu,  8 Oct 2026 21:03:39 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org E404D40938
 Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1791493418;
-	b=een2QOn5J22/u9gHh5SMwEEwvcCx+l0A/6PXDGsfjhqLTu8ZUmV4lnnChIsSp4t2i0bM
-	 UyxZhfi1T6mIy+1NfIyEPOeohV7CmpaDJxVgzy0n/CMQ5wCu0QP0z2WUWg4zCv+W/Ge3L
-	 jdTZ9WcFu5pQumvipxh6ks3G67YFAjuCqT9Z41wvtFhNWsGLIInleUomfE8nZGMuZQTNJ
-	 ZS5YyCX0hT1PtH4vX6ntUwwpvtRMBXjG4Ie8ONtcqxpTuVzP6an4JMvlZhA/Hw6SejNhc
-	 W/qsJyKd1Zz6CdOSUk1/9+97C3ZB5nNAw7L4NoNdrlRw9yXVbjCT9ySjH2yuMv5yA4Q==
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1791493419;
+	b=p2Py1Lk4bvfHVZZF37pIeFLix2K27/tx8PcuXwHLifXyJcSxyfk8BDXn2wHcVO6tNGXE
+	 k+8hUykOV9+xsVk+1QepYDh/YPd0uirUhUslhT4rzbACRiG5KDpKEPwe9ARkueJkw/QOo
+	 GzbXEIvxkdWy16u5sKPJz8RYneURhZ+aW1Ioj1Nxw4y9eFt9ke40tFH5TRW7DkMHS92Dl
+	 /Uh6u4ZpPBJXfsNoO8A3tdqoijjcOOTNW1e4hi/5i4qcoO6VtFVkYBVeaZlgL9OyueGmQ
+	 Q90yWY6Y84lGK6DfUmDOJVYXaz1PEJHVQph6kM80Z+XGtp4HFdxQ1dcF2Sv+VChZVIg==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1791493418;
+	c=relaxed/relaxed; t=1791493419;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
@@ -33,138 +33,136 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 X-Developer-Key:X-BeenThere:X-Mailman-Version:Precedence:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Errors-To;
-	bh=jXT5xqnUz/gqqG3F9wxnjnCJ7kPBk+m9Im3cz1NP6m0=;
-	b=i5QNgRiz3DX4ou8iT4uJ9PHlL83ebjxjXBTA7udUnOMOcGXD64pvuNnyco5NljEFfzsx
-	 si6OQGt9eWmCMZZTGX931+jwG8ATAgHPNJHHkj+TliJs5w7FGPGIVMWQp/dhZmhs2Lovq
-	 0FLNdcoo1UupXN3bcSs51IY+lHNjDeYolDCMnRxj/h09ZK8KAZILq3ODmr8JAjbur5q20
-	 bxRlaUdQmQdm5Eaqq1bITRvqmTzR87n2iHwf7XoYopOToiBPmTnZvs3nuSHaJo1lEwbsj
-	 PXMqJXstHK723v4UarSH6fM+57qSpUccp3Zbnveqg5vFOPUlNMm/0hqPd4/cKbOj3xg==
+	bh=jtyJNESs2NfaCrmwRAvvPnxlfOHCunirXFuek+zM5MM=;
+	b=jZNocgg1iim2G6iuZziMVcbOdkSAst/uFCxoW4h/I+EXjUBHuITldyrT7MuWjpubqE4N
+	 BC6O8XImErYN3A1LZDvz+rhPY9I1h4LGL8FYdO2KZNYyq+lVh8WzjUkmGC19sR0pVXb6y
+	 MWVBDh2rn5j/r5zLI1obb/WkWeYaY0S5ucLASrj7sy9i3bHsF3mH7U+SjbAH1cFbtS0ET
+	 /d2s04snKwYxesm3ATGQBxsDqQiSJPLY4WMP+2S92qn18WkurBdDw29WB+PtZkplNKgbA
+	 PNC0vi5Pbd0LOHZScVpQuB5KAukuiNSpEBaRwjBdT+zeZfBkcwxkq21VtlCH/sVQGcw==
 ARC-Authentication-Results: i=2; smtp4.osuosl.org; 
-	dmarc=none header.from=toxicpanda.com;
-	dkim=pass header.d=toxicpanda.com header.i=@toxicpanda.com header.a=rsa-sha256 header.s=google header.b=k+EbU3X6;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1791493417;
-	bh=jXT5xqnUz/gqqG3F9wxnjnCJ7kPBk+m9Im3cz1NP6m0=;
+	s=default; t=1791493418;
+	bh=jtyJNESs2NfaCrmwRAvvPnxlfOHCunirXFuek+zM5MM=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=M4vc8X2XhPTzmty5/C9pZM1eNbOWLR72UcvRi6qs9HUXbEvNDsu9X0cxQt9uFYxLX
-	 8V6QYvsSPVqee9/xvmKIF2PN0QsmouVQCCbiS34P+MLkGWiZg61ng5YfnYku19cE5J
-	 C/8sNYnf5aquDs2JetbrnJBGQWghETCiwkvhH8EFWeajJGYwiDb676SI+DoadO0Vcb
-	 18o/rymNwnPLJQxH/7SO0onGjP6FjNc5pKMzQTT0rBsDpRrVaPegc+aE4dpEUlGn5b
-	 6pz8p8smUyC2QKV0tLJ+KKmhTcrfCPqhnKvj+KAwqNMUUwgfIlmm9c7pg2q5ZHGmKQ
-	 29hGlU/AJ/j2g==
+	b=39P99THHdkPuFBaouk6n8mS19NYnutNsaRZPa33VjR7Zr+0CRtphVx2Ty9a3d8FuR
+	 +JAxftm/ECPucJxu2oclQ2N5tMPtjpCM7FqqVtzq9cePdKDSFrZq2h1mHmncY/W9Aw
+	 5fjWoxrTwTcJjpmr5ZTKyx8BqKQe5GiLIzZCEYSC5ctbb9A0alTZ3dF5vSnagm49pp
+	 DfDd0wy6gLVLOwbdeitqm1aPcj5UfvR0O+BAGgz8wSVzdsVvD0ht+/0v9Q2QBdPEh1
+	 cYbCB4mPOVPNUIY8gEAVAjf3WhiiNUBejUNbhCiGD55+pXcUsvLbh0/wS4bZvS/Ho6
+	 3rtxqKevZ6bKA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id E174F4092A;
-	Thu,  8 Oct 2026 21:03:37 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 36B50356
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Oct 2026 21:03:36 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id E404D40938;
+	Thu,  8 Oct 2026 21:03:38 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id D3C4B2E0
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Oct 2026 21:03:37 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 1C2DF40911
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Oct 2026 21:03:36 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id D1885403B5
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Oct 2026 21:03:37 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id iS_hb4QWOrAf for <intel-wired-lan@lists.osuosl.org>;
- Thu,  8 Oct 2026 21:03:35 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 3515B40932
-Authentication-Results: smtp4.osuosl.org;
- arc=none smtp.remote-ip="2607:f8b0:4864:20::82c"
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1791493415;
- b=NN5Ff82e6FxzAODB/VFr8Efyg1mMw6JIdDDcQtRavEx6zSPF9t0PvBDtvwM7us0Bxr7F
- V5w0M5RmHtxsiNV1oMpU1IO2hqifp0/erU4XPpejHJ1DdHFMwWb73HlZXNS9C5MptJoVu
- zkRY2Wg0O3ZumaF8HLOnjCvztQYCrni125b4Mbory4V+/IlsIw8bU4ZtholTifwk1S8Hx
- vP4f25Z2TGluVnnR62HT+fgDSIHKDU1Amey0pbIOKBaGmfzL43h5ls95vF8IH7WUReTVy
- 65BEstIIYMja9wDbSg5VEmMQimFdBN0azXwmY7oM65Dw+tZzqtLeQ510GproTB5ixvA==
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id YRTIUVWFQfGb for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  8 Oct 2026 21:03:37 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org 0FF22400CB
+Authentication-Results: smtp2.osuosl.org;
+ arc=none smtp.remote-ip="2607:f8b0:4864:20::82b"
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1791493417;
+ b=DR3C/z79g4HUo0Bf3ntTpQFLNvnXGdYFiKVm2XkJlCVPIz9S3BYrEExqCDKGmbPF/W0l
+ 1PSU3Ubf/GzXy+xoCyZKwpuSAZDi7caUoqSKQAwASPzA2PCmolMfC989uOgdV+DHmcydx
+ hi59UMIOAOIb2vPLl6h8VKE8YKOSKA5qkUgO4buj9k3PQ6HFeIfxnrarn+44R2btr2c97
+ QjyC7bsKo8AJnKsQnsPYfrLpJMP2mQZe5vM8dcDc9VoUkwLD+X/nb8lOMmUZmoVr5+i5/
+ VkLv2jPKtV6L+0sblxjfuKMiA9s+kBu2G8n0lbYs6GMh4eDkVjdgnBIGSsHBmOAdEmQ==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1791493415;
+ c=relaxed/relaxed; t=1791493417;
  h=Received-SPF:Received:DKIM-Signature:X-Google-DKIM-Signature:
  X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
  From:Date:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:
  Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
  X-Developer-Signature:X-Developer-Key;
- bh=jXT5xqnUz/gqqG3F9wxnjnCJ7kPBk+m9Im3cz1NP6m0=;
- b=TqX0mY0tgJT0GcHombXhR3Mkoj43cc6RHSwCEfGri2hOJMXZBLONOfVJSESXqQoy9Z9P
- j0stiLgK4ujS86boW1bQzw2K+xPulqYfQP0UHSj3OrxeE7HiN34dVVNj1ZmUA5h5hUTVH
- rQb+DEh34/cG1FJSKsLTjyfOYSQgb4GbIrymg0mG/mm4tKqYi5oF8NbeFgWlaiS4n0MLq
- xxzupIThwOHAeQgiWSFo06N0fgllnVu9160m2U2fMF1GIIOQ3nvd6XZNZ6Vn0liuPEEMd
- Ohx7qdGENRdrkzNC7FAdHUDO93j1li0EERC88z8fPioX+6jgI0sezRTlC31Gy56IElQ==
-ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
+ bh=jtyJNESs2NfaCrmwRAvvPnxlfOHCunirXFuek+zM5MM=;
+ b=mGdDZjmO2LhoJ1DEbqrgOKk+YX7U0lR/sQSA6wzvluRDzG+DTwIjfvHVh5kWw5uV/m9M
+ go2YvIVTbTnP/yNkvRUy7vcwK7zSl17j2iaxNbq7nxoArGAsrF/+PIS2iQIjZf+oviyr7
+ wSmP5WJPoNALktC6CMUNXKlkV/cWm5lUCnDdbePG/NaEtVL733QzAk30BHHE+P3xYmwmi
+ lqLQLA4GjWEulvHBgsqQIvepSnqwLKByzMIXcXwJekwfGVLTzuwcWN6DFLLhUFqK2wWck
+ jEqAgvDcO+AWx7Bk67wglT1QG41CcG3oDuugvJeX7YOfOMXQQeBAbhBVjdVhJ/kFVaw==
+ARC-Authentication-Results: i=1; smtp2.osuosl.org; 
  dmarc=none header.from=toxicpanda.com;
  dkim=pass header.d=toxicpanda.com header.i=@toxicpanda.com header.a=rsa-sha256
- header.s=google header.b=k+EbU3X6; 
- arc=none smtp.remote-ip="2607:f8b0:4864:20::82c"
+ header.s=google header.b=aoJJ3A4n; 
+ arc=none smtp.remote-ip="2607:f8b0:4864:20::82b"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::82c; helo=mail-qt1-x82c.google.com;
+ client-ip=2607:f8b0:4864:20::82b; helo=mail-qt1-x82b.google.com;
  envelope-from=josef@toxicpanda.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org; dmarc=none (p=none dis=none)
+Authentication-Results: smtp2.osuosl.org; dmarc=none (p=none dis=none)
  header.from=toxicpanda.com
-Authentication-Results: smtp4.osuosl.org;
+Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=toxicpanda.com header.i=@toxicpanda.com
- header.a=rsa-sha256 header.s=google header.b=k+EbU3X6
-Received: from mail-qt1-x82c.google.com (mail-qt1-x82c.google.com
- [IPv6:2607:f8b0:4864:20::82c])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 3515B40932
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Oct 2026 21:03:34 +0000 (UTC)
-Received: by mail-qt1-x82c.google.com with SMTP id
- d75a77b69052e-533972e0cccso34166751cf.0
- for <intel-wired-lan@lists.osuosl.org>; Thu, 08 Oct 2026 14:03:34 -0700 (PDT)
+ header.a=rsa-sha256 header.s=google header.b=aoJJ3A4n
+Received: from mail-qt1-x82b.google.com (mail-qt1-x82b.google.com
+ [IPv6:2607:f8b0:4864:20::82b])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 0FF22400CB
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Oct 2026 21:03:36 +0000 (UTC)
+Received: by mail-qt1-x82b.google.com with SMTP id
+ d75a77b69052e-533972e0cccso34167151cf.0
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 08 Oct 2026 14:03:36 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=toxicpanda.com; s=google; t=1791493413; x=1792098213; darn=lists.osuosl.org; 
+ d=toxicpanda.com; s=google; t=1791493415; x=1792098215; darn=lists.osuosl.org; 
  h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
  :content-type:mime-version:subject:date:from:from:to:cc:subject:date
  :message-id:reply-to:content-type;
- bh=jXT5xqnUz/gqqG3F9wxnjnCJ7kPBk+m9Im3cz1NP6m0=;
- b=k+EbU3X6CihMb+uVgDTvDyVMe1FzlplKgCYS+OFWYrSBsshEpvWeBN3GxP2Ol2XRbi
- y1clgLjZPDONAQzJDvmn2tsoW0ULdO49NwZUb0RxmzCu0MgGf9fobPmSdX6BHgCJ+RmJ
- YDo5ObMN10NPSnPq4yidp11A/oE6OsagWy9yQJHcM6+7oZO3ybp52Gaf6RWfojMmY9v8
- 5fzJPkVvba1CC0XJgorT5l/MdJ3RpwdTT15U2GKRPkEwz+eP5t8onP/2YNJfaQ6RGfMq
- 5SrPeEO5RdcZF6W2ruqSnq+KWNY00iIDUtEGV84aDNo/5qJ0stGMviELa9Nf67r1u9GM
- HxwQ==
+ bh=jtyJNESs2NfaCrmwRAvvPnxlfOHCunirXFuek+zM5MM=;
+ b=aoJJ3A4nfkVeZJoAicBpn9igecWvxRJRxS5ZgghQvLGH9cC8zS9Azheg1Bfe42/9q6
+ Y67AXSVSCo90w+pUEwAspbgOAMlcAVbEvk0BO0k5RfpQcv60IKG/sDoI5OPKiPZtHVoj
+ EL/5vo6Go6CeIGzPRYGPzlGuNiJ0ReX6M8eL/XEP+OHfwD/EM2TTvOx5DbwrjtIw7Lvt
+ 5QaxWpHtOh2MlNoSsmv7VGBS0eTwM92p399QvkBnUjeW+nM3GdF+239l7HasWIhnVVI7
+ w1D0vJlXWsjLyn+Xd+pmvW9uYUVUfFbEY6vIPN4D5XtLbfguvALYguFNooBTnMVipKfl
+ sXPw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1791493413; x=1792098213;
+ d=1e100.net; s=20260707; t=1791493415; x=1792098215;
  h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
  :content-type:mime-version:subject:date:from:x-gm-gg
  :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
  :content-type;
- bh=jXT5xqnUz/gqqG3F9wxnjnCJ7kPBk+m9Im3cz1NP6m0=;
- b=hl8yh43urF3944xjOF/V/ThWZn8ab7pCr5iUzeg4LF8F41fHeBDfcBBud5MYxuP/Y6
- EUQFPnSt7zZTEMPcBdLxtJjdSnVwFfk5Rexq/vqaPCsypVnLO4ElX6lvxy0IBC8e0rFz
- 7TcXZVKMjLsbWeVFA+7V8OG7rOS271qQoPyF7Zp5BOZewy4DQ4/LbP44nAxErMI3Pkb5
- XRPOi3XNbistcn/QfXk5D6YxhLRCZdIZ/VT5VssuNhDbXkTVcIt54WMwoaMitwwHR2/E
- mJAUYzG2Dz2/CUAdUvli5w3rm6gJGrQxzWPiY20+HNJwuzDwvo89Qe4KlV2V6pRv5v7T
- 3ysw==
+ bh=jtyJNESs2NfaCrmwRAvvPnxlfOHCunirXFuek+zM5MM=;
+ b=pSZOyLGlXiDXPEL8Lvogmd1iDtJ0tqOO50P4DGs5UJNXELtnKTgFlYT5WnBgmHP6wd
+ MZCsh+QdggSu84P92xkmgNjcYf/JYuTxsEkxAGVuxdWAaUVEeves7LxYFq6udP9iZNwG
+ CF3ham8OMyYA98A10O3MPn7LjncHW/j+7FC9qhTw3pkSyIp/tBWFv3OIjmPdayiepr/g
+ Vm9qpT8sYi4jmRR7LxONRcCzdNIaPvradZVDve2Cp5ve+SlHmGT/XRpoBeJ1WA82D7no
+ 5obcWQ1v5uQe//7nJj1ZkqFmsh5y0QiOq8lyrkwiuyugjxURxFvoUQzIry0sZHjMuCZK
+ Mzng==
 X-Forwarded-Encrypted: i=1;
- AKwUvByBnaawqjCWOaA2mLy3ifEXhF0KvCwK37SrJIDfUMWDNeCFaEvh/N0c+kpCYs1HOCA9XJ3neTsDV60N2bP/JOU=@lists.osuosl.org
-X-Gm-Message-State: AFuF++nH2ASlM+MsLrU4Ko45WhCikY1JQT/HwIEdlkG5zth/xAUyrY6N
- EURmBW3azzSM1EXfpmsWKDks0vVRSa6/mTWR21s+ofkquXxptZZ3/3oS/AojW+DEDdQ=
-X-Gm-Gg: AYBFou25CUU4VgU4OzFe8s0n4vz3B75WUaGsugehykK9RdGqBqBOMQ/rTD6CR3KwNne
- tj6IJ5OAhZR0FDUAfP94fztvtSJBSma+sp1QHHhHhw5v6GZ5sx3AUK+Jm3p6szRtj+vg2G1183n
- i24yu91JPmrnfPYEDW/Nskp2H8hFJkedhQoesh9fArZFcysrXAfcoGmjnoQkuLajcixDrcsC7bJ
- Sq0NwLPKpAdG5mdiVPew9+0n00TW9Gg5egt/bRJyfenIfThqeNLA27XMZf3xY4vImSL2/Mt1vkp
- GbTC9xOAK56KLnsLmVXa/VCUf+hhja2cmQWQt1cfE5/XxTS1LW1mWimk6afFIfYdVesELfLbfV3
- 2+mGR94CG4jq2nuJweGBJVHe7l8NFDKF6Bih6vk7cStyRX3yK4jTLRAIY4SnBDQiD/w/HXzLbwK
- KiK4krxjAxyDpxMb9JXMBBm2h8izq0cTRebCgQCalvZrcjYhF/hgkIzEpJSmm626KpOgV8sJ8IV
- LsHACC4BJSl094=
-X-Received: by 2002:a05:622a:1a91:b0:535:70c4:9a94 with SMTP id
- d75a77b69052e-535757c8eecmr123953171cf.74.1791493413537; 
- Thu, 08 Oct 2026 14:03:33 -0700 (PDT)
-Received: from toxicpanda.com ([153.61.196.246])
+ AKwUvBwWeJdaQamUc+/L787MAo4ViKcuAgNjlMfeaR8MIBBFK0xO098Z66TR/PIvOe2Wi4wcQuuPbJQaBmjnzhJZ6cQ=@lists.osuosl.org
+X-Gm-Message-State: AFuF++mRhO6Jz05GAd/vCrMMEiSgMvm00TT2YWoYw3aeiohqDJfaId1N
+ IsoK949EcFr8CJ2slVAt6VwHL9YbGjqe3WP9fjT+t8IDpOoo/lMlxdSW447IJLqG4IQ=
+X-Gm-Gg: AYBFou2WVJ+SzI14npjlFncLfv6PUDfaakMwO/VcGb02WUzPn3qZZab7HPAqQ+NIafU
+ ApoNAACvJWXbVJkFE/m7BynCabSVTqMgP7JJHDoP/tV6xNzvXZQyooRG4oqaukKLVK5ZTkWas4q
+ DbKg0RftaWYjAdDI0hqE28ooidLcC89qYtTWi8esDiOrQDgPqLirxud+FamzMnrr2XXyRvGmw1c
+ lISS2kZtsNtaNNATu6wkcFjCGG5tM7ukt2HOVhxyKr2/KIb/9lQTfw+Ga3REEUTXGG/u1LecyRg
+ /lNS8RG+yN0c+l6HGSLohNwht9Ui0d8uQdnUpo9AhA1PJi/+mHuPx3lF1DlN8oZG56Yqxwjywop
+ UMVVc9CyHnoMFwqlQkdNclEw5J42SUzQU2KLv83/NVbo9XJR/iH45RfxlZsrqhyG1uelTcLzH7o
+ Ly7qrsZao31dsLn6GwrS4oTqyPZp7kCPWvuGx7MCkezTNgs4WmtDrU7CErhMJVITBHl3XoSj/Um
+ ZvP8l6viPkFdDQ=
+X-Received: by 2002:a05:620a:4613:b0:934:ab73:ac53 with SMTP id
+ af79cd13be357-93e9af42cd2mr1369444185a.0.1791493415593; 
+ Thu, 08 Oct 2026 14:03:35 -0700 (PDT)
+Received: from toxicpanda.com ([153.61.196.241])
  by smtp.gmail.com with ESMTPSA id
- d75a77b69052e-5359b46dda0sm3472151cf.4.2026.10.08.14.03.32
+ af79cd13be357-93eb986c0e9sm24158885a.20.2026.10.08.14.03.34
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 08 Oct 2026 14:03:32 -0700 (PDT)
+ Thu, 08 Oct 2026 14:03:34 -0700 (PDT)
 From: Josef Bacik <josef@toxicpanda.com>
-Date: Thu, 08 Oct 2026 21:02:52 +0000
-Subject: [PATCH net-next v2 05/10] xen/netfront: check for failure when
- pulling in xennet_fill_frags()
+Date: Thu, 08 Oct 2026 21:02:53 +0000
+Subject: [PATCH net-next v2 06/10] e1000: use pskb_may_pull() in the 82544
+ TSO workaround
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261008-b4-pskb-pull-tail-drivers-v2-5-8f2bd9bee138@toxicpanda.com>
+Message-Id: <20261008-b4-pskb-pull-tail-drivers-v2-6-8f2bd9bee138@toxicpanda.com>
 References: <20261008-b4-pskb-pull-tail-drivers-v2-0-8f2bd9bee138@toxicpanda.com>
 In-Reply-To: <20261008-b4-pskb-pull-tail-drivers-v2-0-8f2bd9bee138@toxicpanda.com>
 To: Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
@@ -184,13 +182,13 @@ Cc: Saeed Mahameed <saeedm@nvidia.com>, Tariq Toukan <tariqt@nvidia.com>,
  xen-devel@lists.xenproject.org, intel-wired-lan@lists.osuosl.org, 
  Josef Bacik <josef@toxicpanda.com>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openssh-sha256; t=1791493385; l=2516;
+X-Developer-Signature: v=1; a=openssh-sha256; t=1791493385; l=1221;
  i=josef@toxicpanda.com; h=from:subject:message-id;
- bh=eg6ZiA9VrIpAG1HGYjPkKMEWwjo8D3VwigBhj0jOQMI=;
+ bh=yldyXc+k9IUGHFBVvbXY7100U73O47dmandGyjhHpkE=;
  b=U1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgUBr36M/n0nWN0DNbnxwzIiCZez6MG
  JiruuNaSCI/zXsAAAAGcGF0YXR0AAAAAAAAAAZzaGE1MTIAAABTAAAAC3NzaC1lZDI1NTE5AAAA
- QAYzg3nASJLuLmRvMNvnGKJmwP15K/QJrV/X+gIw+dmiWX6S/LgMrQ8OB+kIWHKPWdMQHYgaFiD
- sh9Hj7FexRAU=
+ QO2CfzCzBOeK9ZW88WGSv+B3RUqXFGdARFKgVlna7gjBWdR0TdJniqj/mr2mdJ20mJNMEnviLw3
+ DiEJcfynbhAc=
 X-Developer-Key: i=josef@toxicpanda.com; a=openssh;
  fpr=SHA256:C8kOX2QUJCMqnCX+KEeoqRAjLo9L+ELOSH2NSAJHqGA
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -207,70 +205,34 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-When the skb already has MAX_SKB_FRAGS frags, xennet_fill_frags() calls
-__pskb_pull_tail() to free up a frag slot.  That frees slots in two
-ways: it pulls the start of the packet into the head, and it releases
-empty frags, even when there's nothing left to pull.  The second part
-is what commit d81c5054a5d1 ("xen/netfront: tolerate frags with no
-data") relies on.  The return value is ignored, which works out only
-because the nr_frags check right after it drops the packet if no slot
-was freed.
-
-Use pskb_may_pull() followed by skb_drop_empty_frags(), and take the
-error path explicitly if either fails.  pskb_may_pull() does nothing if
-the head already holds pull_to bytes, so the BUG_ON() for pull_to <
-skb_headlen(skb), which protected the subtraction, can go.
+e1000_xmit_frame() uses __pskb_pull_tail() to pull up to 4 bytes of
+payload into the head for the 82544 TSO workaround.  It already checks
+the result.  Switch to pskb_may_pull(), which takes the length the head
+should end up with and checks it against the skb, so this driver no
+longer calls __pskb_pull_tail() directly.
 
 Assisted-by: LLM
 Signed-off-by: Josef Bacik <josef@toxicpanda.com>
 ---
- drivers/net/xen-netfront.c | 26 ++++++++++++++------------
- 1 file changed, 14 insertions(+), 12 deletions(-)
+ drivers/net/ethernet/intel/e1000/e1000_main.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
-index 2ed673649c48..007fa3bbc9e6 100644
---- a/drivers/net/xen-netfront.c
-+++ b/drivers/net/xen-netfront.c
-@@ -1174,18 +1174,15 @@ static int xennet_fill_frags(struct netfront_queue *queue,
- 
- 		RING_COPY_RESPONSE(&queue->rx, ++cons, &rx);
- 
--		if (skb_shinfo(skb)->nr_frags == MAX_SKB_FRAGS) {
--			unsigned int pull_to = NETFRONT_SKB_CB(skb)->pull_to;
--
--			BUG_ON(pull_to < skb_headlen(skb));
--			__pskb_pull_tail(skb, pull_to - skb_headlen(skb));
--		}
--		if (unlikely(skb_shinfo(skb)->nr_frags >= MAX_SKB_FRAGS)) {
--			xennet_set_rx_rsp_cons(queue,
--					       ++cons + skb_queue_len(list));
--			kfree_skb(nskb);
--			return -ENOENT;
--		}
-+		/* Out of frag slots: pull the start of the packet into the
-+		 * head and drop empty frags to make room.
-+		 */
-+		if (skb_shinfo(skb)->nr_frags == MAX_SKB_FRAGS &&
-+		    unlikely(!pskb_may_pull(skb, NETFRONT_SKB_CB(skb)->pull_to) ||
-+			     skb_drop_empty_frags(skb, GFP_ATOMIC)))
-+			goto err;
-+		if (unlikely(skb_shinfo(skb)->nr_frags >= MAX_SKB_FRAGS))
-+			goto err;
- 
- 		skb_add_rx_frag(skb, skb_shinfo(skb)->nr_frags,
- 				skb_frag_page(nfrag),
-@@ -1198,6 +1195,11 @@ static int xennet_fill_frags(struct netfront_queue *queue,
- 	xennet_set_rx_rsp_cons(queue, cons);
- 
- 	return 0;
-+
-+err:
-+	xennet_set_rx_rsp_cons(queue, ++cons + skb_queue_len(list));
-+	kfree_skb(nskb);
-+	return -ENOENT;
- }
- 
- static int checksum_setup(struct net_device *dev, struct sk_buff *skb)
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
+index d7f5c6f16142..3a55b211f5a6 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_main.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
+@@ -3155,9 +3155,8 @@ static netdev_tx_t e1000_xmit_frame(struct sk_buff *skb,
+ 				    & 4)
+ 					break;
+ 				pull_size = min((unsigned int)4, skb->data_len);
+-				if (!__pskb_pull_tail(skb, pull_size)) {
+-					e_err(drv, "__pskb_pull_tail "
+-					      "failed.\n");
++				if (!pskb_may_pull(skb, len + pull_size)) {
++					e_err(drv, "pskb_may_pull failed.\n");
+ 					dev_kfree_skb_any(skb);
+ 					return NETDEV_TX_OK;
+ 				}
 
 -- 
 2.55.0
