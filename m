@@ -1,28 +1,28 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F1E28CA600B
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  8 Oct 2026 12:58:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 229B8CA6007
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  8 Oct 2026 12:58:46 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 9B5F36068B;
-	Thu,  8 Oct 2026 12:58:43 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id D7AEA811D0;
+	Thu,  8 Oct 2026 12:58:45 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id PDUuft-tevlH; Thu,  8 Oct 2026 12:58:43 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp3.osuosl.org 81655608CA
-Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1791464322;
-	b=m4ZsTDNn03KvM9cz1fFij2AMOXTgB/d99D2qrxf8Uk7hEffMkkpowSpwSlb/hK6dyukh
-	 8UWe/1uI+6VRBUFJqguN+k/oTbRCMWlzbpdEibqFS38l1Lh0AHgVNwwrw3WHmDBYNzZtm
-	 ta7rU7ayU8jTfr5s6YeokqBxgnhPFeZw3qDQCwZIAZ79njmF4xuwGfLpXFfUXUa9EfA0d
-	 92AWsNnKMGFu51gZ/ounbupgYhSH9q61N64LPLSzwFfXDuxU3dtOrI5CLlSRLfZq+70pC
-	 GF8oUCp9b54WtEtNGM7RWm5b96fg6L13V6wsGc9FM5Jp9g6oqZ/k8OjkFt+YQjXsbUg==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id TuuFsmaqRu9h; Thu,  8 Oct 2026 12:58:45 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp1.osuosl.org CD2148115C
+Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1791464324;
+	b=rYep9GAncOB+sPGZ9yrKzQNDk/zLCPuWZVtER7nYGe6CLsT1qaTtZWgIXQoGbB+s0uoD
+	 ZqWuV4gxnEU26i48NUoUU6QLve3cS95X9yOFKp7dxznlYfJ+4LHE6QejgcpShI2nbiXNG
+	 LlW6QXtP8J3je234F8ERVeRTHVdrK6YJwAIuoWkiIMQu01XBucdP8WGaDw3jLoBNkidrL
+	 E7EIEqgvwQihCdEl2t5ukFLzGsqsMfI6pmdd97MCzjInmM3oUBjBdg7r3heoHrb1PvI/N
+	 7XYjo+ZYFSMsd3w2SxbkTUQ0HzRR/R/xJSrj2MNYnxFq5YS7TwC3y6dR7YCAE/OBn7g==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1791464322;
+	c=relaxed/relaxed; t=1791464324;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
@@ -31,84 +31,84 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 X-CM-TRANSID:X-Coremail-Antispam:X-CM-SenderInfo:X-BeenThere:
 	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=MrcCKlAt0s4Z5C37o82vZjoMrryZh2UceEpNbjZksCE=;
-	b=e11dTXRjpoxSStC0zVu5ywiIJItiR+eHGXfAO1dNXAUkxjkVmSRiAWAGu2vN85hUKWza
-	 xE+jaGe7jZGnbrT7TwljuJnwjw2VzMoWkqbzFtTZ5w9LFDDlbsygM4u0RGhOTv+Dga2tf
-	 Bu58M3kCGO+SL3WQh8rjBhjxXcwcJaC5hiYn1dgnEgFV2/PrSvEGQaHazYUJa2e08Rfrr
-	 XABNePtULWwRJ8zJQRhct7I9ahnlNXAQmvjnuDTz+ubnJf8RC9RRjNBPHYhb9vYotthVJ
-	 ycGEs8i+gG6OR8wKy7zoZHt8Dun8YN5eku7S9cjDeDFQgT+s3YT3Gvb78WzH8tpJ/fg==
-ARC-Authentication-Results: i=2; smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	bh=AhVlIdyB2pGt2fs06BKIwmR0kp8M62CgCW63wZLTG2A=;
+	b=HxedBb1W0dsOtlhyZo27v056ajYOmB0UHO5Jdt71ND5EYCXGXI+RFGggG63PnYq7uRZ5
+	 WQXTVPvHedfSGe1a/vPOKp6an3RqToqfZK+Fca1WDTVmUK6ExFUt/ZnKnTJmQMmR7DvKA
+	 nWU6FOL/LWIJ0ybNo0M/URgW4Aut8rzWQS9FWRBaAf7uMoLrpPYCM9ZePb6A+DSCRgjUx
+	 H+Q1L97maxGAKKBa4dkYg2lV8s3ZyjUgUL7fkzETS7wUdOiyT8V/sOXDMLOrmCYWDXVgZ
+	 NDIFI45nhFvMTE2jGtDZBIC8ptYq7sq7bE79DlnAofXURyrd7bjmkEmVgK1T3UftnZA==
+ARC-Authentication-Results: i=2; smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1791464322;
-	bh=MrcCKlAt0s4Z5C37o82vZjoMrryZh2UceEpNbjZksCE=;
+	s=default; t=1791464324;
+	bh=AhVlIdyB2pGt2fs06BKIwmR0kp8M62CgCW63wZLTG2A=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=OItZX+O8v7yzrbbFZreuOY950eDAcx1gueT1etLNSUx4LOodwP8DFrnlBNYDF/RCm
-	 SU4WDsaiikQdrBiQ876lyTv8eVcFro2lPuhrCX0XK/zaKrI5Akc6lffNVtHEqCwMiW
-	 50Np+se5nlMAFthqfPy4ezQdSszumx9iiY2uP9VmX7AttmwV2hsbLJPrupL5ZnphPV
-	 nkcEKlzoNsjReR2T7CdmrlJG1+gqgBFs3ltSo4Q7030uO2s87zoK1m38R30hR/IscG
-	 LFyDTi4tvCERdas94L7vJ3mHKcaTX6TophBcB7D+JfssmlrKHUXndBdnpkMAZuX2dW
-	 hfziFpGGk9Q6w==
+	b=PH7R2FscNJtyQnUSAjKBZjcjBDLvNjBQiOWNHFKIYB1D3DAz4fo2WqWWG0oAeQA+R
+	 HqfuCZLDagdazkK6XBraDKFFRV7LgznNGr5R7f9mHLDpTe5qlmJXO7Mng+QhK2aUfy
+	 RrzDr05KGj23VTMVTZSZwnxALu91fqdEVJNqUXpEBTJpvbX/4kr1lgrz+VMrwIZ4xe
+	 9INOfWmsxD029BK7IDiswFYuutLm/BA/YS3wNO4iSvjNDvr+DdUjCuE73zz8YsULeq
+	 xtTEJ2ghm16lB2zfR2yY722ozedAgTdrvkstmuJ1onzpk4kpfBkBFWPVqd8+yNchHg
+	 RDjpL/f3tUg3g==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 81655608CA;
-	Thu,  8 Oct 2026 12:58:42 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 5EBA41A6
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Oct 2026 12:58:41 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id CD2148115C;
+	Thu,  8 Oct 2026 12:58:44 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 321621A6
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Oct 2026 12:58:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 44132400E0
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Oct 2026 12:58:41 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 18389400E0
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Oct 2026 12:58:43 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id QSeuuVeHle3w for <intel-wired-lan@lists.osuosl.org>;
- Thu,  8 Oct 2026 12:58:40 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org 2814740059
-Authentication-Results: smtp2.osuosl.org; arc=none smtp.remote-ip=220.197.31.9
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1791464320;
- b=KkxRX70nuPS+1xk4tUt7nAxegw49zVFHBzMnVtkzS/SfFbWHich4UCdwtsTJnvNHxO2S
- 3hoix6BOrRrXX06ikzxFt8gZEw5mmVe0rLBssJhF6LnXyYLBTGoGXeL5026CnmQWS0YJD
- iCo5wDgr3SHcs83l8AklC9dLty+uOir2WRGIyiJV2WUVJaFT5RprLZ5cNvP6ykIm0HPuL
- 3FZZwA3Q5P2EpzKPZDI+t8iCXhl4Cb/a4oGujIkum+C9Q++MbhE1NVMAQ4RFdK22MYcBa
- 12Xsr/qHwUorJuIOudF3TWIF+EWx2vtn5o3yMv8nj9UYINB5aKwvy+5Hr+V12KRa7Ow==
+ id xJihLFlVs_ch for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  8 Oct 2026 12:58:42 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.0 smtp2.osuosl.org DEA3340059
+Authentication-Results: smtp2.osuosl.org; arc=none smtp.remote-ip=117.135.210.6
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1791464322;
+ b=inJlZTpgMAy6Wq5YN0Y1SHI6XgTNIkNJH3vh7HcsjQkWxs5cMt8tlqzfozEBPlqsgNnf
+ PDhlLtwMdt7o23GHd+pqAHiIGMGSM+EvyfVrXTfk148bYvqk8wgu1LafGAXc4m8QOct/+
+ 9D+n3WmBJdqcRBhFw+5KD+VoPYCUd4l6flUG8yS2jdqU/Wb8oP3XAc7EM8HWcnRrYI9I2
+ AGXj0uffE71S3PyVZ7sAyHTOOC84uAECn3Tu07T8BavUvCCMdmN5Qn5csd2g6Pyh5ktPu
+ tHTos0W5i2JZFikefF9PIrdllI8AM1phwwe10921HKtvbP5eQroFKQvN42KsPjKIKpA==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1791464320;
+ c=relaxed/relaxed; t=1791464322;
  h=Received-SPF:DKIM-Signature:Received:From:To:Cc:Subject:Date:
  Message-Id:X-Mailer:In-Reply-To:References:MIME-Version:
  Content-Transfer-Encoding:X-CM-TRANSID:X-Coremail-Antispam:
  X-CM-SenderInfo;
- bh=MrcCKlAt0s4Z5C37o82vZjoMrryZh2UceEpNbjZksCE=;
- b=C3zJv/lx9YOxcJ9Ysr3VSGw3OIcpbenyigpsDmQPoinf8IFdlRPZDV5YzR5U/1j6S1/J
- LhW0pYt3qR03FnEZTKsFu4esd8loOtPADdnrrPa731WrVv/vWTolepBtV+9QMdoU8gJdT
- 2IVLzsYm5tGlj5avGAjT8IHfd/aAVJB7O91gpV979w1E0aw3P6PMVql8omxMzS5R2C5mG
- QEaCRTEwtfYFJjj0Z5atjlpKlFLRDyoKx/KDPKH5JDPLD1tgYuZZ1HRyOzQJ2ipCEByYk
- EQ+z02upMwQPX2Yid6TOqhHIAPz+GUmb+Ic1TIY4Dst0SkVcMM7XKtSgY1F8r/efAVg==
+ bh=AhVlIdyB2pGt2fs06BKIwmR0kp8M62CgCW63wZLTG2A=;
+ b=HpAlveXM6Y1+i7et+n7+kL3IEdDYn3+gLBxNkdLBTQCY3t5TpoFGr07JJ6ggr0v66STX
+ MRowfqQIhJ1XH5AIDNxab9IFzQ4aURzsZxqw8hzgUB506BhX4mXgG2e+HG4EJ9k/2MYPc
+ mgWugaypDIvUsIWsvJe0EWNwJEumIl5FFoIWLQ+SnpnqLRO4TJ/3/h0fn06KtGV38Ps+o
+ 4Cf6Y9f+58DSWzBkt51xKYgD4t5mwM6VfQkEe6BcY/NThiTRoBvwMc14t0vaU7FOBOGGt
+ YmHCP6Sxv62ngSmlPoPpt8YKRsJJEorGEqfbHexlFJRt+NoRECAAMZH3uoEyKcXxUxQ==
 ARC-Authentication-Results: i=1; smtp2.osuosl.org;
  dmarc=pass header.from=126.com; 
  dkim=pass header.d=126.com header.i=@126.com header.a=rsa-sha256
- header.s=s110527 header.b="LiH/tPoO"; 
- arc=none smtp.remote-ip=220.197.31.9
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=220.197.31.9;
+ header.s=s110527 header.b=jO4yRh+f; 
+ arc=none smtp.remote-ip=117.135.210.6
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=117.135.210.6;
  helo=m16.mail.126.com; envelope-from=xiaolinkui@126.com; receiver=<UNKNOWN> 
 Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=126.com
-Authentication-Results: smtp2.osuosl.org; dkim=pass (1024-bit key,
- unprotected) header.d=126.com header.i=@126.com header.a=rsa-sha256
- header.s=s110527 header.b=LiH/tPoO
-Received: from m16.mail.126.com (m16.mail.126.com [220.197.31.9])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 2814740059
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Oct 2026 12:58:38 +0000 (UTC)
+Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (1024-bit key) header.d=126.com header.i=@126.com
+ header.a=rsa-sha256 header.s=s110527 header.b=jO4yRh+f
+Received: from m16.mail.126.com (m16.mail.126.com [117.135.210.6])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id DEA3340059
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Oct 2026 12:58:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=126.com;
- s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=Mr
- cCKlAt0s4Z5C37o82vZjoMrryZh2UceEpNbjZksCE=; b=LiH/tPoO5CDory7wIH
- OY5k7QYbyo3/LrWXisAIPGx7y6V77Gl3y5wDTFY8NYk6aERtO3aZrcPheJ5tFWvd
- pjFUYnDzz1iaO2h5bNGIfykj+t+1m1QTNHpYp7Wovk1ihQ9bump0b4haKSe6JuLi
- Wemt2YCuGvljS8ZxnX/01A73Y=
+ s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=Ah
+ VlIdyB2pGt2fs06BKIwmR0kp8M62CgCW63wZLTG2A=; b=jO4yRh+fjuK5C8rkAz
+ qpP0X7vUNu8tufZChwjsZz8adIQBSym68vNUi3sJvpgyDn15d6wzj8WKQyVhZax5
+ m0uK9CbmzbuKdx5WVyIWnTt4mnHphW/mfLzawDMPGFgJIuoChLDKHCgiUh82M9oL
+ oVr+Pjjsx867rPowaNpuD6vBk=
 Received: from localhost.localdomain (unknown [])
- by gzsmtp4 (Coremail) with SMTP id PykvCgD3v8NWk8dqh6CpBA--.7046S5;
- Thu, 08 Oct 2026 20:58:03 +0800 (CST)
+ by gzsmtp4 (Coremail) with SMTP id PykvCgD3v8NWk8dqh6CpBA--.7046S3;
+ Thu, 08 Oct 2026 20:58:00 +0800 (CST)
 From: Linkui Xiao <xiaolinkui@126.com>
 To: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
  andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
@@ -116,21 +116,21 @@ To: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
 Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
  linux-kernel@vger.kernel.org, Linkui Xiao <xiaolinkui@kylinos.cn>,
  stable@vger.kernel.org
-Subject: [PATCH iwl-net v3 3/3] ice: free the VF MSI-X vectors when VF start
- fails
-Date: Thu,  8 Oct 2026 20:57:54 +0800
-Message-Id: <20261008125754.3520773-4-xiaolinkui@126.com>
+Subject: [PATCH iwl-net v3 1/3] ice: attach and detach VF representors outside
+ of vf->cfg_lock
+Date: Thu,  8 Oct 2026 20:57:52 +0800
+Message-Id: <20261008125754.3520773-2-xiaolinkui@126.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20261008125754.3520773-1-xiaolinkui@126.com>
 References: <20261008125754.3520773-1-xiaolinkui@126.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: PykvCgD3v8NWk8dqh6CpBA--.7046S5
-X-Coremail-Antispam: 1Uf129KBjvJXoWxCF43Xw17GF47WrW5AFy7ZFb_yoWrXw4Upr
- Z5Zr9xKr4kJF17W395Ww1UZas3CayftFWru340kw1Skws8GryaqF1UKryavFyxGa97Aaya
- vw4Dur1ruw1DJaDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
- 9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07UH5lnUUUUU=
-X-CM-SenderInfo: p0ld0z5lqn3xa6rslhhfrp/xtbBlBuHXmrHk1s3YwAA3n
+X-CM-TRANSID: PykvCgD3v8NWk8dqh6CpBA--.7046S3
+X-Coremail-Antispam: 1Uf129KBjvJXoW3AFW8Cr43Aw1fGw4DAr4fKrg_yoW7ZFWDpa
+ yvqFy5Krn5Xa1xW3y5uw48Zrn8uayrKFy5Gr1xGF4Fkan8Gr17Zry3Kay2qry8G397AFya
+ yF4Durn5uFZ8AaDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+ 9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07j1JP_UUUUU=
+X-CM-SenderInfo: p0ld0z5lqn3xa6rslhhfrp/xtbBqRiHXmrHk1hkdgAA3c
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -147,98 +147,138 @@ Errors-To: intel-wired-lan-bounces@osuosl.org
 
 From: Linkui Xiao <xiaolinkui@kylinos.cn>
 
-ice_init_vf_vsi_res() reserves vf->num_msix vectors out of
-pf->virt_irq_tracker with ice_virt_get_irqs() as its very first step,
-but neither of the two error paths below it gives them back. A NULL
-from ice_vf_vsi_setup() returns -ENOMEM straight away, and the
-release_vsi label only releases the VSI.
+ice_free_vfs() and ice_reset_all_vfs() call ice_eswitch_detach_vf()
+and ice_eswitch_attach_vf() with vf->cfg_lock held. Both take the
+devlink instance lock and then register or unregister the representor
+netdev, which takes RTNL. That gives
 
-ice_start_vfs() leaks the same vectors. Its teardown loop undoes the
-queue mappings and the VF VSI of the VFs it already started, and the
-eswitch attach failure path releases the VSI of the VF it is working
-on, but neither calls ice_virt_free_irqs(). The caller then runs
-ice_free_vf_entries(), which drops the last reference on every VF, so
-nothing further down the error path can release the reservation
-either.
+	cfg_lock -> devlink instance lock -> RTNL
 
-The tracker bitmap is only freed in ice_deinit_virt_irq_tracker(), so
-the leaked vectors stay reserved for the whole lifetime of the driver
-instance. Every failed "echo N > sriov_numvfs" permanently shrinks the
-pool that ice_set_per_vf_res() divides up, and after enough retries
-ice_virt_get_irqs() fails with -ENOENT for good even though the
-hardware vectors are idle. ice_dis_vf_mappings() meanwhile re-points
-GLINT_VECT2FUNC of exactly those vectors back at the PF while the
-bitmap still books them to the VF.
+while three other paths take cfg_lock with RTNL already held:
 
-Release the vectors on all three paths, the way ice_free_vfs() does
-for a VF that is torn down normally.
+  - __ice_set_vf_mac(), from ndo_set_vf_mac()
+  - ice_set_vf_port_vlan(), from ndo_set_vf_vlan()
+  - ice_repr_ethtool_reset(), via ice_reset_vf() with
+    ICE_VF_RESET_LOCK
 
-Found by code inspection of the VF setup and teardown error paths. It
-was not triggered and no stack trace or error message was observed.
-Compile-tested only, not run on hardware.
+which is the opposite order, RTNL -> cfg_lock. An "ip link set ... vf
+N mac" on one CPU against "echo 0 > sriov_numvfs" or a PF reset on
+another can therefore deadlock.
 
-Fixes: 4d38cb44bd32 ("ice: manage VFs MSI-X using resource tracking")
+Move the detach and the attach outside of cfg_lock. Representors are
+created and removed under pf->vfs.table_lock only, which both callers
+already hold, and ice_start_vfs() attaches without cfg_lock too.
+Nothing that the detach reads is torn down by moving it: repr->src_vsi
+still points at the VF VSI, which is only released later, under
+cfg_lock.
+
+Both callers raise ICE_VF_DIS in pf->state before entering the loop,
+so a reset that starts after that leaves through ice_is_vf_disabled()
+before it reaches ice_eswitch_update_repr(), and
+ice_check_vf_ready_for_cfg() keeps the ndo handlers and the ethtool
+reset away as well. ICE_VF_DIS does not cover a reset that is already
+inside cfg_lock when the loop gets there, so take cfg_lock once before
+the detach to wait that one out while its representor is still
+attached. Without the wait it could xa_load() the representor that
+ice_repr_destroy() is freeing, and that is free_netdev() + kfree(),
+with no RCU grace period in between.
+
+In ice_reset_all_vfs() the attach moves after mutex_unlock(), so the
+"VSI rebuild failed" path still leaves the VF detached, exactly as it
+did before.
+
+Found by code inspection of the VF setup and teardown paths; the same
+inversion has also been hit out of tree. It was not triggered here
+and no stack trace was captured. Compile-tested only, not run on
+hardware.
+
+Fixes: fff292b47ac1 ("ice: add VF representors one by one")
+Fixes: c9663f79cd82 ("ice: adjust switchdev rebuild path")
 Cc: stable@vger.kernel.org
+Suggested-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Signed-off-by: Linkui Xiao <xiaolinkui@kylinos.cn>
 ---
 Changes in v3:
-- Correct the Fixes: tag. The leak starts at 4d38cb44bd32, which replaced the
-  computed first vector index with a reservation from the bitmap and left the
-  error paths below it unchanged; a203163274a4 only renamed that helper and
-  moved the tracker, so it is not the commit that introduced the leak.
+- New patch. Move the ice_eswitch_detach_vf() and ice_eswitch_attach_vf() calls
+  in ice_free_vfs() and ice_reset_all_vfs() out of vf->cfg_lock, which is where
+  the inversion is: both take the devlink instance lock and then RTNL, while
+  ndo_set_vf_mac(), ndo_set_vf_vlan() and the representor ethtool reset take
+  vf->cfg_lock with RTNL already held.
+  (Przemek Kitszel)
+- Take cfg_lock once before the detach as well, so that a reset that is already
+  inside the lock is waited out instead of being left with a window between the
+  detach and the lock acquisition that follows it.
 - Include how the issue was found, that it has not been triggered, and that the
   change is compile tested only, as netdev-bot asked for.
-- Free the IRQs before the VSI is released on the eswitch attach failure
-  path, as Tomasz asked for, and keep the teardown loop in that same order.
-  The teardown loop hunk now sits inside vf->cfg_lock instead of next to
-  the detach, so the Reviewed-by tags from Tomasz Lichwala and Aleksandr
-  Loktionov are not carried over.
- drivers/net/ethernet/intel/ice/ice_sriov.c | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_sriov.c  | 12 ++++++++++++
+ drivers/net/ethernet/intel/ice/ice_vf_lib.c | 16 ++++++++++++++--
+ 2 files changed, 26 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
-index 470aec8849b6..444d05a9bcb0 100644
+index e04de0215596..471c1e29a865 100644
 --- a/drivers/net/ethernet/intel/ice/ice_sriov.c
 +++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
-@@ -458,8 +458,10 @@ static int ice_init_vf_vsi_res(struct ice_vf *vf)
- 		return -ENOMEM;
+@@ -154,9 +154,21 @@ void ice_free_vfs(struct ice_pf *pf)
+ 	mutex_lock(&vfs->table_lock);
  
- 	vsi = ice_vf_vsi_setup(vf);
--	if (!vsi)
--		return -ENOMEM;
-+	if (!vsi) {
-+		err = -ENOMEM;
-+		goto free_irqs;
-+	}
- 
- 	err = ice_vf_init_host_cfg(vf, vsi);
- 	if (err)
-@@ -469,6 +471,8 @@ static int ice_init_vf_vsi_res(struct ice_vf *vf)
- 
- release_vsi:
- 	ice_vf_vsi_release(vf);
-+free_irqs:
-+	ice_virt_free_irqs(pf, vf->first_vector_idx, vf->num_msix);
- 	return err;
- }
- 
-@@ -501,6 +505,8 @@ static int ice_start_vfs(struct ice_pf *pf)
- 			if (retval) {
- 				dev_err(ice_pf_to_dev(pf), "Failed to attach VF %d to eswitch, error %d",
- 					vf->vf_id, retval);
-+				ice_virt_free_irqs(pf, vf->first_vector_idx,
-+						   vf->num_msix);
- 				ice_vf_vsi_release(vf);
- 				goto teardown;
- 			}
-@@ -537,6 +543,7 @@ static int ice_start_vfs(struct ice_pf *pf)
- 		ice_eswitch_detach_vf(pf, vf);
- 
+ 	ice_for_each_vf(pf, bkt, vf) {
++		/* Detach the representor before cfg_lock: it takes the
++		 * devlink instance lock and then RTNL, while
++		 * __ice_set_vf_mac(), ice_set_vf_port_vlan() and the
++		 * representor ethtool reset take cfg_lock under RTNL.
++		 * Take cfg_lock once ahead of it to wait out a reset that
++		 * is already inside the lock; ICE_VF_DIS, raised above,
++		 * keeps later ones out.
++		 */
  		mutex_lock(&vf->cfg_lock);
-+		ice_virt_free_irqs(pf, vf->first_vector_idx, vf->num_msix);
- 		ice_dis_vf_mappings(vf);
- 		ice_vf_vsi_release(vf);
- 		mutex_unlock(&vf->cfg_lock);
++		mutex_unlock(&vf->cfg_lock);
+ 
+ 		ice_eswitch_detach_vf(pf, vf);
++
++		mutex_lock(&vf->cfg_lock);
++
+ 		ice_dis_vf_qs(vf);
+ 		ice_virt_free_irqs(pf, vf->first_vector_idx, vf->num_msix);
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.c b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
+index a54cb2b8d3c7..b91eec0adf51 100644
+--- a/drivers/net/ethernet/intel/ice/ice_vf_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
+@@ -789,9 +789,21 @@ void ice_reset_all_vfs(struct ice_pf *pf)
+ 
+ 	/* free VF resources to begin resetting the VSI state */
+ 	ice_for_each_vf(pf, bkt, vf) {
++		/* Detach the representor before cfg_lock and attach it after
++		 * releasing it again: both take the devlink instance lock and
++		 * then RTNL, while __ice_set_vf_mac(), ice_set_vf_port_vlan()
++		 * and the representor ethtool reset take cfg_lock under RTNL.
++		 * Take cfg_lock once ahead of the detach to wait out a reset
++		 * that is already inside the lock; ICE_VF_DIS, raised above,
++		 * keeps later ones out.
++		 */
+ 		mutex_lock(&vf->cfg_lock);
++		mutex_unlock(&vf->cfg_lock);
+ 
+ 		ice_eswitch_detach_vf(pf, vf);
++
++		mutex_lock(&vf->cfg_lock);
++
+ 		vf->driver_caps = 0;
+ 		ice_vc_set_default_allowlist(vf);
+ 
+@@ -812,10 +824,10 @@ void ice_reset_all_vfs(struct ice_pf *pf)
+ 		}
+ 		ice_vf_post_vsi_rebuild(vf);
+ 
++		mutex_unlock(&vf->cfg_lock);
++
+ 		if (ice_is_eswitch_mode_switchdev(pf))
+ 			ice_eswitch_attach_vf(pf, vf);
+-
+-		mutex_unlock(&vf->cfg_lock);
+ 	}
+ 
+ 	ice_flush(hw);
 -- 
 2.25.1
 
