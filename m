@@ -4,193 +4,144 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 702E8CA601A
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  8 Oct 2026 21:03:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B586CA6016
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  8 Oct 2026 21:11:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 401EC4087F;
-	Thu,  8 Oct 2026 21:03:48 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id BD4B640911;
+	Thu,  8 Oct 2026 21:11:37 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 6D0Cp22-4mCL; Thu,  8 Oct 2026 21:03:47 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org A363340911
+ id cD-2Mqn6DLr8; Thu,  8 Oct 2026 21:11:37 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 3960040923
 Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1791493427;
-	b=KEBtDQ6hGMQ3qxiPulUAP6r+cv0en63km5L4ypb9yAxItJjahRXPL5jAZ/k4MBtOAEw2
-	 wzZAr+C0vNBX1Z+4k177Mol/LvgqyGdaILV5Ld3ESFnfFJiTn5V2efUspSevMhqBniEkc
-	 xPDKykEtcbbQhxAqX9bgv8fVbkHHH9WsdyaPn3SnBi1aAbYSBRN9N8VQ4DN71ivUIpEyS
-	 rv0KcbFFi+R+GuZkkX7fn7zXzjqV+o2x7Irh1cVVeNjeWhVe5yM/7h0HYu+TlQELwIC9K
-	 QzoOjpRvvTe5KT3QYI06uuFMWQWKjPojUM1pEvLmtCVUNehOmuXup9wVfmzbeRE1Z8w==
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1791493897;
+	b=VecYt9y/k3//vULi5sE0P9n35+36nEBbKlo83Ss5u2H5sPwJhPyjN85AevBlfWqA2aKu
+	 YINvdAeNlXMpXymIqgbJS06d/i4+o5vhxkgGskRBv96p2jk/zGfBGUGfOADMCBmv/uAMt
+	 wRqfX1R+KbfIFZPtZMdQaJyVm+/eEUZGhK8aERHUTzS8vNuzojrnpXpDaLk+VEBnRap3l
+	 oF8haNvhBS2hjoWma/QgRRdjUnq9CktLpUWQHhBw00C9vQANSaC2iYqVHkTk2vjFy5dnI
+	 tP65ESGiZDGdbvUJoQZbo+So7fp9emodNIHXrBh6C5CWEIKsq3lVHSMkA2nGxVFUirw==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1791493427;
+	c=relaxed/relaxed; t=1791493897;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:Date:Subject:
-	 MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:
-	 References:In-Reply-To:To:Cc:X-Mailer:X-Developer-Signature:
-	 X-Developer-Key:X-BeenThere:X-Mailman-Version:Precedence:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Errors-To;
-	bh=D0uSM/A3oRPIUcCVkMNaXKAYlboH4f+zE5JovH6Ln9w=;
-	b=rzPg5d/bmcrNlDHC6bqzZwwh38BIQBUCmQX03RIMjoceZfttJ8aCpuyoIgTS6sC1IyNQ
-	 ryJIyGRdeKRSTrdagSdgtUMILR5tgRhu0WFs1B8VdZqJKi+oatFsoBbBOhXid9PPTR2TL
-	 7CBkUrHfWi9NUkBucbW+Ql5hS2IaMhZWl6ZmqTQ6C17tziwTMwAw1aTLlV/JT3Uxt25BG
-	 L9uyL6B4TNJztjVdMiemI4bkZhDLz2e4K0wj7CzEnvXAD9xParAe+Vw8nCEMNK1uHFdEJ
-	 r+X3kfJKfPPgeyz3OgH9uvBcfJF7gW/NA4bCiOh9cr5dMdtTJgxYST9jvIKp/+f+mdQ==
+	 Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 In-Reply-To:References:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:Precedence:
+	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 List-Subscribe:Errors-To;
+	bh=lO9Q2e8Y8FPOsNAN94Y+ZK3KJEQqlWXugM2M+fiTfDI=;
+	b=hE/pwxtg0nBgEhTa36LOFL38iHsruLmZE1VRs5sdsnTRI8i6rjr27qSIdg6LKoVNDbFp
+	 Ywi6IJ8fDv+xIZK+RdsfiYYC5uwSLocE+TTZv5teEV2yX4/v8pIa5Ky/w4YVY3jqdfgv+
+	 R24eIK9cEsFwp2TUdNW+iPimMSBHAbCQq21eWkkLyCQPbPTW4jxFw9NBKR5WrNzK5LFOX
+	 Xezv1Fn0D/kqsOYcmU0Q9az5RQylJjyYO0QsUuSxOBIq3Wpc28d1aFBMexQaqQxmd2bKr
+	 h+YGLT6RhMCKANt51UtRqoOjy5johwJ8ZmTqlHUk2EJwXdgGhF3FPgsC+nRJTdSJ0FA==
 ARC-Authentication-Results: i=2; smtp4.osuosl.org; 
 	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1791493427;
-	bh=D0uSM/A3oRPIUcCVkMNaXKAYlboH4f+zE5JovH6Ln9w=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:List-Id:
+	s=default; t=1791493897;
+	bh=lO9Q2e8Y8FPOsNAN94Y+ZK3KJEQqlWXugM2M+fiTfDI=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=4DlOvr4SY/6GtyfShI8CKNsUVm1UC3nsMW2AYw40w9QsBt4wNMegXo7l3UTcngoel
-	 qb3bJ7iBoct3uVDMfMnpniNHGzu8VVDjVhvmiXLzQ6kTxkqZgXY5SARICa8BzNLTdG
-	 st2sKGWp2xamlp3ijl7IolD3tn858+nRDjQnOlW9Sd1BjYR57pBjZH7SJc8Cn1kK9+
-	 elJFxrch1phU0l12mDPHbTac/ia/6WpCmsosZ+4J4JzLrNvr43Y8bc1eJl5qZ+VYU+
-	 8ynkJC3QXomiC/vOOsGQExk1YWKKWzxr1QR+IywZBEh2CWVSjbtPQA+fSJlWoRnE+Y
-	 jkjjnp+PGCwDw==
+	b=xnvzdFCwSDzRzRSUElgxwxeuVdGOdT2VfU1562Gj9WlFarri95BPdnv3pBzapvNwH
+	 v8Imoiyr8WIpnojUMVB27QBONMtGlmQQAJJNYmhbToyGXFkecCkgnx2Hg5ehuFCiPW
+	 6IwKbJOsg2T+qK97yHX0ye+VKQGHsoeUY8L7Q/3nund+NCaxbHqBgpYL1SQb1lH1n5
+	 ry77MOp3nAooAGpUt1IC53dXT2xKE6i+1ZQzZDkS5fsJ1f1P3GdPTbktzyfgVr070v
+	 CJGgVqBa85VSko6D2fx8KXRMcb68Hl+8MSxdqyY3aCLsOoUGGH/hbkHc3b1mvF/PcK
+	 fwRFqNSqwfcgA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id A363340911;
-	Thu,  8 Oct 2026 21:03:47 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 8F9AC356
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Oct 2026 21:03:46 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 3960040923;
+	Thu,  8 Oct 2026 21:11:37 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id E39562B2
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Oct 2026 21:11:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 7604B60892
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Oct 2026 21:03:46 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id D531881329
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Oct 2026 21:11:34 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id mVTHq7VyqyGw for <intel-wired-lan@lists.osuosl.org>;
- Thu,  8 Oct 2026 21:03:45 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 9ADC660808
-Authentication-Results: smtp3.osuosl.org;
- arc=none smtp.remote-ip="2607:f8b0:4864:20::f29"
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1791493425;
- b=iK4Y/WEfPlrSerjH27K5T07oIKGrA+aBd2F1IBEPJbDd2YyyI7YNahwfFsAD0DtBOgmm
- Qo74nb1hVHf1xyEDfgQwn2khAu+owCRfvdHmVRbvXo6yYMKQHRgtYxHyjmuqFbAEbv+CE
- 4JX7/5dW43CBMfVLCZaZDHIS4mylulbb3p+3UVJF3uB8dSZNkF2V0tj7gfQjNokGfizEB
- tcGtuJhW+Z17Nu7Exvd3XuH5zpRvCZStSjr9zjxSGWNfB6IvpU2yPwnMbRMpTXseZaKYz
- PzoGhLp9QsibGli/AXymh550088J1iYrm+SNkUohN+pBWRyhZpHnBsL/tTU46D2Uxcw==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Pc6ZB3Ve5RtG for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  8 Oct 2026 21:11:34 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 3B4AC812FE
+Authentication-Results: smtp1.osuosl.org; arc=none
+ smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1791493894;
+ b=ZgO+4Q/rISuEAZCefxlx0wp/8jTpzYH2iceXaARSnwxeZJekGyH8dYZFGxbd+gRlHOGw
+ fnGPrUTS8l+h99D3YuuXlxUxw9QxhQVXxQk7wOpyNA/x7q8+8S7nmM7aUpQfAvCnu44+e
+ JKl7Vhyg3emx1wjy2stYEaa87bFixO5vEwJ8A/jlNizaYznD0FQs5b+ZNBJYYwdp7dwPJ
+ TGwF7h+lf8gmEmmRmi7Nxwyu7OKlI1IcqPjoLXx60tE+GnK/HviKYtPW1tQXHWnlsHgfd
+ 0gKaIEWuMFBew88IseSmNKmHjeE0lsSI8APmQq4Q/OHpbuT1h2M4U3EdG03PRRGmdLw==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1791493425;
- h=Received-SPF:Received:DKIM-Signature:X-Google-DKIM-Signature:
- X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
- From:Date:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:
- Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
- X-Developer-Signature:X-Developer-Key;
- bh=D0uSM/A3oRPIUcCVkMNaXKAYlboH4f+zE5JovH6Ln9w=;
- b=nz6MjGhBdbyuf+t9/P/iYxI/k/3bJXxVS1JMEyZfFslhBa2LjRwiMcIB7fqL+FSgH5B4
- +fuoJ8hS/QzjydkQHVC4FejCsB6tT0RpJpLB8HHzHHFlk79tZsgPYrDEkhKf9DRiBtNdu
- qdaZVDB7Db+ANBjcN3yTsQlXM1Ilcl3tnzBkhZ54VOgYEuNVUwS717aBd8aBAMBsPyPm5
- kKWYhws+Q57uxM/3TO3T2a62glZ4SRu7feEwP5iKvDwLQctb00WZ9ApPRi7MfghHyIm00
- aIUu1/0Bfx7nmGHQjozEqe/fGn+NXRTH9FiqAu0yY+Wo8QqrjH7tIGnO4VOwizkLuSQ==
-ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
- dmarc=none header.from=toxicpanda.com;
- dkim=pass header.d=toxicpanda.com header.i=@toxicpanda.com header.a=rsa-sha256
- header.s=google header.b=TZ0KJ2O1; 
- arc=none smtp.remote-ip="2607:f8b0:4864:20::f29"
+ c=relaxed/relaxed; t=1791493894;
+ h=Received-SPF:Received:Received:DKIM-Signature:Date:From:To:Cc:
+ Subject:Message-ID:In-Reply-To:References:MIME-Version:Content-Type:
+ Content-Transfer-Encoding;
+ bh=lO9Q2e8Y8FPOsNAN94Y+ZK3KJEQqlWXugM2M+fiTfDI=;
+ b=WgntF3NhyOBCa31B6UTgrvjm+18jsfpFu2dgnBBzD39Kk7oqhEePMt1GSoSHGuFTcuLM
+ VVd6tlBakFL/pzd98j8ID6oD6/nlymX7nPaJWGgqN21mvEuzZSwM11xCfmBHvPAlQ3dI4
+ H0+WgRd8nOfmFKOkIQlrbcvdN4J4jgl+6/5ukj2Ex8XSNChNz+XbtydwAxW6bQzwBZsgv
+ FqWxOp/ktfaadOsUhc5kjoYrJ+kZ+qOnmNo6mFhlpdvcJKDJ0aD4X+187ShKB/dvr3k7n
+ Y3wC4wk+mVvGF4bFy7yv4K9jr+T6869TMM9GWLs5WPssaNZBmymZ7vrF1XpuAUS75Bg==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
+ dmarc=pass header.from=kernel.org;
+ dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20260515 header.b=S706qOQl; 
+ arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::f29; helo=mail-qv1-xf29.google.com;
- envelope-from=josef@toxicpanda.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp3.osuosl.org; dmarc=none (p=none dis=none)
- header.from=toxicpanda.com
-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=toxicpanda.com header.i=@toxicpanda.com
- header.a=rsa-sha256 header.s=google header.b=TZ0KJ2O1
-Received: from mail-qv1-xf29.google.com (mail-qv1-xf29.google.com
- [IPv6:2607:f8b0:4864:20::f29])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 9ADC660808
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Oct 2026 21:03:45 +0000 (UTC)
-Received: by mail-qv1-xf29.google.com with SMTP id
- 6a1803df08f44-9199927cb42so17444306d6.2
- for <intel-wired-lan@lists.osuosl.org>; Thu, 08 Oct 2026 14:03:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=toxicpanda.com; s=google; t=1791493424; x=1792098224; darn=lists.osuosl.org; 
- h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
- :content-type:mime-version:subject:date:from:from:to:cc:subject:date
- :message-id:reply-to:content-type;
- bh=D0uSM/A3oRPIUcCVkMNaXKAYlboH4f+zE5JovH6Ln9w=;
- b=TZ0KJ2O1LWwWAZivHu+uFAPeXNjL6JCAvdMhJ16ADYynRygQlfa8r5i9RU+yHQfJJP
- ms504r6DFCku7PXQ/yZZfSO1QAoaMc0Bf0Z/5+XZEpXM2A/MGAvn+PqH1qvJFSm2mqGI
- kZsAB3hB2mk5O0hIWdp67iku3h7xHT/Gyv4PlQJKk/KBbSQC/Qs8XuaoOL/OEDdWBrDm
- Hf5saOqlAGf2ESXTzaFcmjWFmjp7MnxtSS7KKBSFN3BfMByiqMDpDL14pH8JFsKEjmOc
- LmL98VjphbxdN8WvtCAesyofP0SC3e2zI8FpKFdkD4HUT3kCYWNMJXlRiVWs49fAsPMT
- TVnA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1791493424; x=1792098224;
- h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
- :content-type:mime-version:subject:date:from:x-gm-gg
- :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
- :content-type;
- bh=D0uSM/A3oRPIUcCVkMNaXKAYlboH4f+zE5JovH6Ln9w=;
- b=u+sZpt09u9JwOltl7PqJ33jFIq64P7usqBq1a3rePB0EkMelTUHRDIE0WuqYfTeDEo
- i/Qw2bYrNq8Ud7TlSNMJQ/8lNn1R7IMYpU5HCeQ+999PJeu7zERrhQ8ppqSuD+eX80qM
- JRZO/icFcVP4ghnEeyDzj+KY0EALL+is12ihN+yAhrXmC+JxqFkTyKB3y/zBhyNIeNCR
- jcWKV5gXxcO9ROq0xxgBOg7G8LcYqolllPPicGQaAPAbWaEMq3Yn/BSZGHQEuQv75QHL
- 0NOGWv6b4NfpEmQDH+rCZ0n+FEw9iN6mWoRSEIpN5efuqWSVI1srzO5jqsI25l5OKdbw
- /3nw==
-X-Forwarded-Encrypted: i=1;
- AKwUvBwGWa4p0uimu4pIgSfCgo8Nl9OTtY9iOKErxijZdWOh7DI6j9zexBNHd4F05vKPv8VIUMa7+7Qv8tLncOYJF7o=@lists.osuosl.org
-X-Gm-Message-State: AFq9FYJBaHXeTLurMl40oYtrTyLTY3tTBIwkW6XbglIKpB4QjKukd5tP
- 0vv85EOMHyiY0EAoOr9W8ZYnKyzllMLzKka3Vd2jto6+OlRxcLkxGEDf+b9rhYFBO9c=
-X-Gm-Gg: AYBFou04ri56dWN19lnXwQlkHMZt3mGWiurU1BdEN/v43f34UukIkzah7BBJv6xvnr9
- 1wFSUiYhsXJ571zGshm++qYIi1sR3P1F2cjpQ6YbkQ5LQBZebuc7QGJq+RqadVlANgRW98OCjxR
- 9eQezYvD/757fFukHk3ZFMqZitKlrjhSxA/KvGrmFJl4gG/9kVtkvzsay60jtn2QDlBPoBXbO8o
- oPfuAzJk9NNmz/FtOGMr5hlYJ4p3Ps04Aiu5cyAaWml1xNtlo0zkaQgUQi6dknS2kfYemum2sRy
- rKGiA+XeIVIE0cgRmheE3vxHssdN0jHp76i8YmNktcsnjoW4PG3mSfwlGBDk9pTzh4vNS5BpMHq
- 4e62DK09Mu/aqqO1vAOPPxE1JMkHDJhq0boxmDhGzez6LghwjWWdxz1W0tuqUmClJeD2ya7c9hu
- ybWpTS35KwgPnxGqX7/4peWZpVVBNdO6MIsaYZE2uYs3/BYZXxVfDuPt8f+UEcB/74phDnsfxtw
- 6ybVHuVLRZZEAE=
-X-Received: by 2002:a05:6214:ca3:b0:919:952d:7ff9 with SMTP id
- 6a1803df08f44-919978f7ebamr126853616d6.57.1791493423774; 
- Thu, 08 Oct 2026 14:03:43 -0700 (PDT)
-Received: from toxicpanda.com ([153.61.196.247])
- by smtp.gmail.com with ESMTPSA id
- 6a1803df08f44-91b550d394bsm79796d6.41.2026.10.08.14.03.42
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 08 Oct 2026 14:03:43 -0700 (PDT)
-From: Josef Bacik <josef@toxicpanda.com>
-Date: Thu, 08 Oct 2026 21:02:57 +0000
-Subject: [PATCH net-next v2 10/10] net: skbuff: don't reset truesize in
- skb_condense() if the pull fails
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261008-b4-pskb-pull-tail-drivers-v2-10-8f2bd9bee138@toxicpanda.com>
-References: <20261008-b4-pskb-pull-tail-drivers-v2-0-8f2bd9bee138@toxicpanda.com>
+ client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
+ envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
+Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20260515 header.b=S706qOQl
+Received: from sea.source.kernel.org (sea.source.kernel.org
+ [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 3B4AC812FE
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Oct 2026 21:11:33 +0000 (UTC)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+ by sea.source.kernel.org (Postfix) with ESMTP id C9CAC42D5E;
+ Thu,  8 Oct 2026 21:11:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0A0CF1F000FF;
+ Thu,  8 Oct 2026 21:11:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+ s=k20260515; t=1791493892;
+ bh=lO9Q2e8Y8FPOsNAN94Y+ZK3KJEQqlWXugM2M+fiTfDI=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References;
+ b=S706qOQl1KAdCZOgdDVMYgOE4hYOCFoLj0OyQ4qoN9BspPLdeodADinWXSjmhRHPm
+ YK6++L4AqfMMStuF3wzAtgh6ofzYLZyTuNkxuyHRftbWxys9dfl71hAL2ADlumB2j4
+ Tlf+AacXZTvAllcV36WUE+Y/a0IFDRwSp+VV1bOhp608vbuhGe4I50uG/6bjXTuRbU
+ MgtwPQ9PON+9mJdWcdYRCA/L+ckiTY+6L5j/raZg/L3j8/d3+Hj0xoxEow7kB5Iox5
+ crTPl9+UhAUBLNXTGVR130JjQDVJHP9OplaEfsJcnRyehfe3Di3kCPBvhOprydKfRb
+ IRpNlHZe0yUqQ==
+Date: Thu, 8 Oct 2026 14:11:31 -0700
+From: Jakub Kicinski <kuba@kernel.org>
+To: Josef Bacik <josef@toxicpanda.com>
+Cc: Paolo Abeni <pabeni@redhat.com>, Eric Dumazet <edumazet@kernel.org>,
+ "David S. Miller" <davem@davemloft.net>, Andrew Lunn
+ <andrew+netdev@lunn.ch>, Saeed Mahameed <saeedm@nvidia.com>, Tariq Toukan
+ <tariqt@nvidia.com>, Mark Bloch <mbloch@nvidia.com>, Leon Romanovsky
+ <leon@kernel.org>, Juergen Gross <jgross@suse.com>, Stefano Stabellini
+ <sstabellini@kernel.org>, Oleksandr Tyshchenko
+ <oleksandr_tyshchenko@epam.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>, Manish Chopra
+ <manishc@marvell.com>, Rahul Verma <rahulv@marvell.com>,
+ GR-Linux-NIC-Dev@marvell.com, Shahed Shaikh <shshaikh@marvell.com>, Simon
+ Horman <horms@kernel.org>, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org,
+ xen-devel@lists.xenproject.org, intel-wired-lan@lists.osuosl.org
+Subject: Re: [PATCH net-next v2 00/10] net: stop calling __pskb_pull_tail()
+ from drivers
+Message-ID: <20261008141131.0ac356dd@kernel.org>
 In-Reply-To: <20261008-b4-pskb-pull-tail-drivers-v2-0-8f2bd9bee138@toxicpanda.com>
-To: Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
- Eric Dumazet <edumazet@kernel.org>, "David S. Miller" <davem@davemloft.net>, 
- Andrew Lunn <andrew+netdev@lunn.ch>
-Cc: Saeed Mahameed <saeedm@nvidia.com>, Tariq Toukan <tariqt@nvidia.com>, 
- Mark Bloch <mbloch@nvidia.com>, Leon Romanovsky <leon@kernel.org>, 
- Juergen Gross <jgross@suse.com>, 
- Stefano Stabellini <sstabellini@kernel.org>, 
- Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>, 
- Tony Nguyen <anthony.l.nguyen@intel.com>, 
- Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
- Manish Chopra <manishc@marvell.com>, Rahul Verma <rahulv@marvell.com>, 
- GR-Linux-NIC-Dev@marvell.com, Shahed Shaikh <shshaikh@marvell.com>, 
- Simon Horman <horms@kernel.org>, netdev@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org, 
- xen-devel@lists.xenproject.org, intel-wired-lan@lists.osuosl.org, 
- Josef Bacik <josef@toxicpanda.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openssh-sha256; t=1791493385; l=1285;
- i=josef@toxicpanda.com; h=from:subject:message-id;
- bh=G4GQSS/z86H6HrzRjtGCGkhfNcr1ZqkSUEOCEKTi8N4=;
- b=U1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgUBr36M/n0nWN0DNbnxwzIiCZez6MG
- JiruuNaSCI/zXsAAAAGcGF0YXR0AAAAAAAAAAZzaGE1MTIAAABTAAAAC3NzaC1lZDI1NTE5AAAA
- QD7QXznJXVwY4tvhlA2g/ntlgNB9z4EYJ24pFBre8ehTYCPfcNpsZClmKSf0INhwTvOUpctCjRC
- vzNH0Zo1blA8=
-X-Developer-Key: i=josef@toxicpanda.com; a=openssh;
- fpr=SHA256:C8kOX2QUJCMqnCX+KEeoqRAjLo9L+ELOSH2NSAJHqGA
+References: <20261008-b4-pskb-pull-tail-drivers-v2-0-8f2bd9bee138@toxicpanda.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -205,39 +156,16 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-skb_condense() pulls all of the frag data into the head and then sets
-truesize to cover just the head, but it ignores the return value of
-__pskb_pull_tail().  If the pull failed, the frags would still be
-attached and truesize would undercount them.
+On Thu, 08 Oct 2026 21:02:47 +0000 Josef Bacik wrote:
+> v1->v2:
+> - New 1/10: skb_drop_empty_frags(). xen-netfront, netxen and qlcnic
+>   relied on __pskb_pull_tail() releasing zero-length frags even when
+>   there's nothing to pull, which pskb_may_pull() doesn't do (Sashiko).
+> - xen-netfront, netxen, qlcnic: call skb_drop_empty_frags() after
+>   pskb_may_pull().
+> - skb_drop_empty_frags() checked with a boot-time test under KASAN and
+>   kmemleak, on cloned and uncloned skbs.
 
-It can't fail today.  The caller has checked that the head has room,
-that the skb isn't cloned and that the frags are readable, and pulling
-all of data_len eats every frag_list skb whole, so nothing is
-allocated.  Check the result anyway and leave the skb alone on
-failure, so this stays correct if any of that changes.  Use
-__skb_linearize(), which is what this pull is.
-
-Assisted-by: LLM
-Signed-off-by: Josef Bacik <josef@toxicpanda.com>
----
- net/core/skbuff.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-index f798118df112..556d37981f0f 100644
---- a/net/core/skbuff.c
-+++ b/net/core/skbuff.c
-@@ -7158,7 +7158,8 @@ void skb_condense(struct sk_buff *skb)
- 			return;
- 
- 		/* Nice, we can free page frag(s) right now */
--		__pskb_pull_tail(skb, skb->data_len);
-+		if (__skb_linearize(skb))
-+			return;
- 	}
- 	/* At this point, skb->truesize might be over estimated,
- 	 * because skb had a fragment, and fragments do not tell
-
--- 
-2.55.0
-
+Please keep in mind that we ask people to limit themselves to 15
+outstanding patches per tree. You have 18 right now.
+(200 active netdev contributors + an LLM) x 20 patches == insanity :/
