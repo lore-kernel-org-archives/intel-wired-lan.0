@@ -4,130 +4,176 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 294C5CA9EBB
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  9 Oct 2026 20:27:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA56BCA601E
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  9 Oct 2026 20:45:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id DF4B74087F;
-	Fri,  9 Oct 2026 20:27:08 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 2E0C74094D;
+	Fri,  9 Oct 2026 20:45:43 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id C7b2rDW4s1Ad; Fri,  9 Oct 2026 20:27:08 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 328DE408A2
-Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1791577628;
-	b=Eqt2VJnMvwvX3qT82Ooh7BCLwDHjDKeVu0iJGYRlPl6O7lUtDgNJd/cCNBfmxPf41Cpq
-	 pluxAn7Jk2yUrSloLhyA6qpRTHDPvV+6Du1BQdk2YT7yJttytqYJMAWyTl1weTW11PWOR
-	 Y3z9UJuf6t6dAC8CBAa1hQtgVufWm6N/74kBfDk7t5rJN9lmkKifEPgL5Mz3KcZDM9dKW
-	 yLKsUQtDcfJAfFUfkcWNkbwXf2eEJd0J2ZquysEz4IUfE9DzSIe5MNOiiEr0QSewhheFz
-	 EaF4HYqphwbUi0i0JUOwmTl4zoyg6GBRHbl0Al5bBegx1p+aAdfIQdKXosSKK5JCBmQ==
+ id 1fNn6Qyf97y6; Fri,  9 Oct 2026 20:45:42 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 2A4A740931
+Authentication-Results: smtp4.osuosl.org; arc=fail smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=fail; t=1791578742;
+	b=Gqx4/9iCBvS+yGK4T+zgXlhSLT/oBjELEFf7r08+zxiFxEk0WEm/9C89YQQ5NCYVVPqR
+	 6e3vqE9gpYhZND/fc5GloWB12/xadGAb3ssSGfNyHpznKLZK6x6AqRBB9MQferXEfvnkY
+	 NF44HNQm07MiONf3gGm7c3xflhSzRYiWYlqpWNHiRBdNkSv021WbSo+sc+fFoQzqAKmlB
+	 RmIfp9WXXyr1an782ZuYhF1cogsLzNn7y1bsw0jp2ONNc/YQ76ZmttjMxJX+pMx9lIDrx
+	 gRMEAZ/2TQ71/5sSmWWs0QRprSxcB96xkMA8K8V6e9m1C8FyUrS6UIGd70kvYQIrabg==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1791577628;
+	c=relaxed/relaxed; t=1791578742;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 Received:DKIM-Signature:Message-ID:From:Subject:To:Cc:In-Reply-To:
-	 References:Content-Type:Content-Transfer-Encoding:Date:X-BeenThere:
-	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Reply-To:Errors-To;
-	bh=UsBRs59ZQ1eE13208G/HsDxsCoB/iIHyTiY1tVBEGrE=;
-	b=PDk2t3WHU1dDTy8CfOb1Ga4sCoG6Awnruy9Tk/Htw0VIVBtDARSAHyczBeGjredLUD+v
-	 1EnMPXTXxZm0xy7CjZPMQEeBF2cXbIGT0i1p8YUMqW4VWWW5HTDSF2tFSeOOZq7ZUt/Zt
-	 I/j5lKg+E/ij0vtlqh0kTAMvhvUwF+rHadsZoxw5ZsRh6YhPYSOUvMN/w18brSmUq24OC
-	 1VkEkAxF1nrFu0fAnSh4YpD75iIcRtZTk2pisIuzkj14sKHxGy38TxTOu8lV396sKLIt+
-	 yNmiT5D/now1Ono3n+r/7VPvtXXtHjNBpySLzcUZXk8ctBSoRPy/N/p51eIRsIQbU9Q==
+	 X-Spam-Status:Received:ARC-Filter:X-Greylist:Received-SPF:Received:
+	 DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-IPAS-Result:
+	 IronPort-Data:IronPort-HdrOrdr:X-Talos-CUID:X-Talos-MUID:
+	 X-IronPort-Anti-Spam-Filtered:X-IronPort-AV:Received:Received:From:To:
+	 Cc:Subject:Date:Message-Id:X-Mailer:MIME-Version:
+	 Content-Transfer-Encoding:X-Outbound-Client-TLS:
+	 X-Outbound-SMTP-Client:X-Outbound-Node:X-Mailman-Approved-At:
+	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
+	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
+	bh=MFj/mOELH4XfYRBDkKtBQzj+Kmx/9lRFQz4MOlN9PAc=;
+	b=lawgWkH3hgGu3jhCP+AvjVJftl+y+yDj+zxvNov8iZAPaBXKybHUXy2zsRlWVMvbW+4v
+	 xsP0mI+HAPTXpOSVrSfr+VEHRD2keF5PUBryk59388gg5iM6NF3V9hHV9YZ+Z7wi1ABvZ
+	 DI+Z66YPkHV6MjCVu589doanujRPJM4l7CjINopi6k5GhwrAl/YdpM0W3TNxgIR004MQM
+	 s0aoZQbPUnqsOILlLrGtG87ghERvhQpVwzl6R1WP6uiYp4kwAPLQuvK4V6Ewny44aRuBx
+	 W7xENs6ZUFBrdfOq0tEJdw1JEbFEy3Ap7JJTc2/I5gMBvJy07S0PEQF3kXNzF6SN0Uw==
 ARC-Authentication-Results: i=2; smtp4.osuosl.org; 
-	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	arc=fail smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1791577628;
-	bh=UsBRs59ZQ1eE13208G/HsDxsCoB/iIHyTiY1tVBEGrE=;
-	h=From:Subject:To:Cc:In-Reply-To:References:Date:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Reply-To:From;
-	b=k85lOnELn0nKIWfbjh0RlXoAQVIsC48ZfNxqtnBr4HX/1+6mcpnD66+r97Adl10Ef
-	 lKATnn47pLOCAOYK+rJtQvJDCu8vmXTf9DHc+F6ZR0x/BcEnqF9QFZAS4X0dIUm4mo
-	 unsdVrmZkmDODAbRYtNsGeS/Dd3kQ6zg7n6/3f6ZIJ3vlf8zM2+6W7LNNBa572TGK3
-	 hIPe8CDnHGUHpIrjxj0JHASikyxZ0SgS9guI3/XqrG5tKdnNHiPwhGPsugBD+GXkUl
-	 lKN4Spf5DAko9yNFwRpn5LgKA3P1kuL+io9vNbqymDY7wUpSPlOHDKqi5EuG/c9Hpo
-	 33L9oc3+s5TfQ==
+	s=default; t=1791578742;
+	bh=MFj/mOELH4XfYRBDkKtBQzj+Kmx/9lRFQz4MOlN9PAc=;
+	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=6DcFTsCpgmjYk+xTU9n9YOcfYnA/0L5gGMTHwwK90fUS8pB9V2DGJ0HkziX8PN93P
+	 kgIFagWz9pkOQScpC57TxJ4FK0Ic2xZsiWI4vzMPTFms/1DdF6W89ubKxgz+LLOiDL
+	 TUagYNwX5v3G7pbWZJx2+ZssYIbmXbo8u9nBj6wSoeV7g4+0vPN5+R3BassO+v5SEo
+	 44JkdeHQD9GM2r2HdrfgAMC3X5n9fCWL8mK25I/k3cJKoW+oF/toE5mCGYq2igYjMH
+	 RJ+27LviKto2AwrFNDvyEIsXN5A0QKpS33zAzW6yaUz4cwbMV3DhzV7X7WnkS1Sioh
+	 Z0dF164qHuihg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 328DE408A2;
-	Fri,  9 Oct 2026 20:27:08 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 57FA175
- for <intel-wired-lan@lists.osuosl.org>; Fri,  9 Oct 2026 20:27:06 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 2A4A740931;
+	Fri,  9 Oct 2026 20:45:42 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 74FF875
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  9 Oct 2026 20:45:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 3C40E607B2
- for <intel-wired-lan@lists.osuosl.org>; Fri,  9 Oct 2026 20:27:06 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 66F7981460
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  9 Oct 2026 20:45:14 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id reHlXoiWXAz6 for <intel-wired-lan@lists.osuosl.org>;
- Fri,  9 Oct 2026 20:27:05 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 569AE60727
-Authentication-Results: smtp3.osuosl.org; arc=none
- smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1791577625;
- b=pjv8PweRvbJ+YLr+efXl08iZKGbH6M80WNfesKbraoNlBcVWridDSXTQxU7rbQ4vJDfw
- HMHMujTpIn0xKESrKAthmaUED/fXScd+WYSJnhnLS4lXX9eSQa8VqdOzMiBS+E11HS/uj
- EeF0m/eAs2+6tu6b0rYt3irIIlhSHVaKhmZqz8lzXOqsIcWpPD78uNawvgAu8au4Ew8wY
- FDNuYvayubN6/bGvpFrs9I90VsiObyW8M2/cy+3U1DA6SE12jknUEQQOiahpv/w5syuQX
- lET+4yqLwvVLF32Jjo+h+Bsi5RvadIVrjF7PXzesQgDaf4Tr28IhmR92azLYEvFW38w==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id gHvLuBgERB4d for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  9 Oct 2026 20:45:13 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 9C72780DAF
+Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=173.38.203.69
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1791578713;
+ b=pT9bcHxOqnZx+9Edgg/Ece11cQ96uCu9jpulcJe6kbftsQ86LtzXJOoIQyuDiw40+kdD
+ le7IEAQ8zkyrN9S+OA4x+CiaBMmd2yOeaccTi0/KJNrgdnRYIRC/FQimeOfOXdhLwRKwC
+ YHyzLBbEY8TvvGbpDu8+DGsHSVrDwA8FC+Qq9QCMde3WfKO1sIgqkBiSDJ70Qed3LWnAg
+ ztgpPbSLmbkWvqsZ8TUu27tvrB8T2Whollrfz+skYg2c1TAktsXkQnutnVPcnhmOxzkFo
+ NhXb4WJyYZJOoO98MRIWKVHqpHTL30geex/oYdtYNlHholt98OrUhkPxGgT5I3YKJFg==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1791577625;
- h=Received-SPF:Received:Received:DKIM-Signature:Message-ID:From:
- Subject:Reply-To:To:Cc:In-Reply-To:References:Content-Type:
- Content-Transfer-Encoding:Date;
- bh=UsBRs59ZQ1eE13208G/HsDxsCoB/iIHyTiY1tVBEGrE=;
- b=R/knLPQSOChHWEaIFgl/uCvcz/UO5sr+BD19sxgrrVScPjCLZrImF4NUNOjGOvdRwQ7G
- lh2ZZI1rXREVyowoAPSI/64WI03dViUezrX7OkyVk8vAJAZQVz4Khyy/w3KBRdTPs05td
- L31VxSbqefxjs/G+mvoxUfDOQ0JOFbnt0q5QLb386Widjo/QVSCjR+Op2w1iEfAZviRyr
- vy/cs1TMF3e5DLC/S01cKErM/W6lzevlrn8ehXDPbMRbvLk0zkleKaylCUtS2qzXidQ9X
- kjYUTrSn9wFLrITIReWidBJqYiS4wRfq/bWHC26Yin386rXFfbW/XGsQrJdInKdTuMA==
-ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
- dmarc=pass header.from=kernel.org;
- dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=gR+WZG3M; 
- arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
- envelope-from=sashiko-bot@kernel.org; receiver=<UNKNOWN> 
-Authentication-Results: smtp3.osuosl.org; dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=gR+WZG3M
-Received: from sea.source.kernel.org (sea.source.kernel.org
- [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 569AE60727
- for <intel-wired-lan@lists.osuosl.org>; Fri,  9 Oct 2026 20:27:04 +0000 (UTC)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by sea.source.kernel.org (Postfix) with ESMTP id 785D940AC5;
- Fri,  9 Oct 2026 20:27:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2404E1F00893;
- Fri,  9 Oct 2026 20:27:04 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1791577624;
- bh=UsBRs59ZQ1eE13208G/HsDxsCoB/iIHyTiY1tVBEGrE=;
- h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
- b=gR+WZG3MRK0SmV/QptEUDXAC0WePU68+ImSUrBwSZTE0YbxCN4ENqd1rMl86nghpY
- boBI3mHb5wCDmqYZN4yZlT6Yt3hTyvwOjISJyUicXazVo9I5fiO203Dxa7A2sX/Fwp
- vfQoXSD/nUI84QOADdzvR93CR+txEJl+iWSGCPjbqY0Ge8WkX4C8ODidiQmNYLB6A7
- LG1KSNj5Mc8b/FkmqlKkjhkauP9vD0OGZpjagK1qHjV2RE78cy9m+qEPzxLtUIWVoq
- xdze9KlePZCNxRfAxQIIfP4lrqqcKxaopELqP3sGti2axanUAYvZEH/iQE6X6WsXj5
- g9Q1TbnTkXXfA==
-Message-ID: <sashiko-outbox-166033@kernel.org>
-From: sashiko-bot@kernel.org
-Subject: Re: [PATCH iwl-next v2 2/6] ice: count number of VSIS in agg_vsi_list
-To: "Jacob Keller" <jacob.e.keller@intel.com>
-Cc: intel-wired-lan@lists.osuosl.org
-In-Reply-To: <20261009-jk-cleanup-vsi-aggregator-nodes-v2-2-313964c25c7b@intel.com>
-References: <20261009-jk-cleanup-vsi-aggregator-nodes-v2-0-313964c25c7b@intel.com>
- <20261009-jk-cleanup-vsi-aggregator-nodes-v2-2-313964c25c7b@intel.com>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-Date: Fri, 09 Oct 2026 20:27:03 +0000
+ c=relaxed/relaxed; t=1791578713;
+ h=X-Greylist:Received-SPF:DKIM-Signature:X-CSE-ConnectionGUID:
+ X-CSE-MsgGUID:X-IPAS-Result:IronPort-Data:IronPort-HdrOrdr:
+ X-Talos-CUID:X-Talos-MUID:X-IronPort-Anti-Spam-Filtered:X-IronPort-AV:
+ Received:Received:From:To:Cc:Subject:Date:Message-Id:X-Mailer:
+ MIME-Version:Content-Transfer-Encoding:X-Outbound-Client-TLS:
+ X-Outbound-SMTP-Client:X-Outbound-Node;
+ bh=MFj/mOELH4XfYRBDkKtBQzj+Kmx/9lRFQz4MOlN9PAc=;
+ b=Zt3kyBbYEi3qFZ2HtxlPNeqGvO5m8GNtB4M4rzV3C2Y9T6W7EE9zVRAzvQYE6BezseX9
+ 4+ubowwCO4RO692QLKO5BTtm3FnZkbGpCVUo7tdykUywnXsbmRXX0shZ1m+n9w92zRPMJ
+ 5lDCE57/tEhD6inRiMO+vE189YZBIzJXsKl8AEp+1SiyHoVjZFnkIajvpf1jDlf25aK8x
+ 8+Qa1zkLwD/Y07xtooSNY7zi+LpvdRWelAoozMcc/jTwq6uk0ryH+pY5DBpWZD0z8cRtr
+ tupUKR7PXMmwGuMSocNgNIBf8miLJ3F4xpHjAbMq3nrCh2UbDdP+0Qa6sib+h5lL9Dg==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
+ dmarc=pass header.from=cisco.com;
+ dkim=pass header.d=cisco.com header.i=@cisco.com header.a=rsa-sha256
+ header.s=iport01 header.b=HujGnuaV; 
+ arc=none smtp.remote-ip=173.38.203.69
+X-Greylist: delayed 65 seconds by postgrey-1.37 at util1.osuosl.org;
+ Fri, 09 Oct 2026 20:45:11 UTC
+Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=reject dis=none) header.from=cisco.com
+Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=cisco.com header.i=@cisco.com header.a=rsa-sha256
+ header.s=iport01 header.b=HujGnuaV
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=173.38.203.69;
+ helo=aer-iport-7.cisco.com; envelope-from=adiyenga@cisco.com;
+ receiver=<UNKNOWN> 
+Received: from aer-iport-7.cisco.com (aer-iport-7.cisco.com [173.38.203.69])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 9C72780DAF
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  9 Oct 2026 20:45:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=cisco.com; i=@cisco.com; l=1415; q=dns/txt;
+ s=iport01; t=1791578712; x=1792788312;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=MFj/mOELH4XfYRBDkKtBQzj+Kmx/9lRFQz4MOlN9PAc=;
+ b=HujGnuaV3ZpazUDywKUmgt8h1xJ+t5GjoX/1sD9/SZu8kXsInSYzrcii
+ cV+P1vELF3I4STnTIuUdXQ7UIWSiaxYdanOf1FUva+Hm11z/6rXt//yrL
+ 7mvgq5U4HNjf2Dni9TJ1RROe39e0JaDqXAyJ3MUujc1k7RCaQic43Uquu
+ bjao2Xo6OLCP8Pf0u92hCH7K1Pw8ikS+WF8vRDz/PjSaB8KgO6pfCZkdQ
+ Dih17T1qUqJVstNnaX1bVaRCC+pRoA24GYvg3YYvh2wGujXS6HUeyq1pg
+ exAJKfo/VTYQmFkAoevF52qBynahYN07mv2ngHXYSzK957S79crcMNB/q A==;
+X-CSE-ConnectionGUID: nZFgwp0WRs+HGQ2CBEhcGA==
+X-CSE-MsgGUID: 97234tCDSk2KI6OzfUjZFg==
+X-IPAS-Result: =?us-ascii?q?A0DAAgCuUclq/9RK/pBaHgEBCxIMggULgleBVkJJlkqeH?=
+ =?us-ascii?q?RSBag8BAQEPUQQBAYUFjhQCJjUIDgECBAMCAwEBAQEBAQEBAQEBAQoBAQUBA?=
+ =?us-ascii?q?QECAQcFgQ4ThlyQFSsLAUaBSAiDAoJ1A7w+gXkzgQHeSIFoAQsUAYE4jWOFc?=
+ =?us-ascii?q?icVBn2BEIQPb4QFGgtmhXgEgiKBDIJdky5IgR4DWSwBVRMNCgsHBYFmAzUSK?=
+ =?us-ascii?q?hVuMh2BIz4XgQcbBgWBHYEgghYjGTZ6gQlegSspYAEQF4EJggcCglSCAAIBS?=
+ =?us-ascii?q?UEOB0VTCSVDEkcmIggSCQETGjALgRs4PAkoQRcMdAwKGA1IESw3FRkEPm4Hk?=
+ =?us-ascii?q?Qkegh5DewkKlgaSRYE4n1qEKKFcGjOqb5kIpFqEaYFpATqBWU0jFTuCZ1MZD?=
+ =?us-ascii?q?44uFtABPDU/BwIHDwKSBIFtAQE?=
+IronPort-Data: A9a23:Dm+inK6tmuEaOb8yNfNvvQxRtCbGchMFZxGqfqrLsTDasY5as4F+v
+ mFKXG7SOviKYTSmettwOY+yoxhTvpbTn4cwHQNlpSowZn8b8sCt6fZ1gavT04J+CuWZESqLO
+ u1HMoGowPgcFyGa+1H1dOex9RGQ7InQLpLkEunIJyttcgFtTSYlmHpLlvUw6mJSqYDR7zil5
+ 5Wo/KUzBHf/g2QqazpMuvrZwP9SlK2aVA0w7wRWic9j5Dcyp1FNZLoDKKe4KWfPQ4U8NoaSW
+ +bZwbilyXjS9hErB8nNuu6TnpoiG+O60aCm0xK6aoD66vRwjnVaPpUTaJLwXXxqZwChxLid/
+ jniWauYEm/FNoWU8AgUvoIx/ytWZcWq85efSZSzXFD6I0DuKxPRL/tS4E4eO7829flvWV507
+ r84BwlXRTquh+mZ6efuIgVsrpxLwMjDNY4F/3UlxjbDALN/GNbIQr7B4plT2zJYasJmRKqCI
+ ZBENXwwMFKaOkcn1lQ/UPrSmM+hinjufjtXoXqepLE85C7YywkZPL3FboOEIIHSHZw9ckCw9
+ z2cpDjlKT0hN4a86GSi4HyRhN3hknauMG4VPPjinhJwu3WawHATDxsHE1/9p/akm0O4c9NZN
+ 0EQvCEpqMAa7Fa5Q9zsRBmxvziHvwIHSddUO+w89AyJjKHT5m6xB24YQzoEd908ucNzQTUs/
+ luIhM/yQzt0rbqOTTSa7Lj8hTW/JSQYM0ccaiIeCwgI+d/upMc0lB2nczp4OKe4lJjxXDr32
+ T3P9XF4jLQIhslN3KK+lbzavw+RSlHyZlZdzm3qsqiNt2uVuKbNi1SU1GXm
+IronPort-HdrOrdr: A9a23:jApRcqFZiK8YwZtLpLqE3MeALOsnbusQ8zAXPo5KJSC9Ffbo9f
+ xG88506faZslwssRIb6LO90de7IE80nKQdieIs1NyZMzUO1lHEEGgb1+vf6gylPTHi/ehA0q
+ olWa1/BNrsSWVet6/BkWyF+xJK+qjhzEhu7t2uq0tQcQ==
+X-Talos-CUID: =?us-ascii?q?9a23=3AcIi6eGiP6dPFKHCbtQ+OcoayozJudE/zw2jIe3C?=
+ =?us-ascii?q?CEiVJZ4TPYnW9+KhLup87?=
+X-Talos-MUID: 9a23:FLvLLQYNcy2H4eBT5mC2321+H+tT4P6NKR4qg5s7ufuqOnkl
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-AV: E=Sophos;i="6.27,149,1787011200"; d="scan'208";a="61925001"
+Received: from aer-l-core-11.cisco.com ([144.254.74.212])
+ by aer-iport-7.cisco.com with ESMTP/TLS/TLS_AES_256_GCM_SHA384;
+ 09 Oct 2026 20:43:54 +0000
+Received: from bgl-ads-6462.cisco.com (bgl-ads-6462.cisco.com [173.39.34.78])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by aer-l-core-11.cisco.com (Postfix) with ESMTPS id CFCA4180001C9;
+ Fri,  9 Oct 2026 20:43:52 +0000 (GMT)
+From: Aadityarangan Shridhar Iyengar <adiyenga@cisco.com>
+To: intel-wired-lan@lists.osuosl.org
+Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ netdev@vger.kernel.org, adiyenga@cisco.com
+Subject: [PATCH net-next] ixgbevf: Warn when mailbox API negotiation fails
+Date: Sat, 10 Oct 2026 02:13:46 +0530
+Message-Id: <20261009204346.11223-1-adiyenga@cisco.com>
+X-Mailer: git-send-email 2.35.6
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Outbound-Client-TLS: ANONYMOUS; bgl-ads-6462.cisco.com [173.39.34.78];
+ TLSv1.3; TLS_AES_256_GCM_SHA384; 256
+X-Outbound-SMTP-Client: 173.39.34.78, bgl-ads-6462.cisco.com
+X-Outbound-Node: aer-l-core-11.cisco.com
+X-Mailman-Approved-At: Fri, 09 Oct 2026 20:45:40 +0000
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -140,77 +186,42 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Reply-To: sashiko-reviews@lists.linux.dev
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-Thank you for your contribution! Sashiko AI review found 1 potential issue(=
-s) to consider:
-- [Medium] ice: num_vsis inflated and stale entry left on VSI move failure
---
+ixgbevf_negotiate_api() tries supported mailbox API versions from newest
+to oldest. If all attempts fail, it continues without reporting the
+failure, leaving the API version at its reset default. This makes mailbox
+communication failures difficult to diagnose.
 
-commit a9d16d503219ec18b5a73776a1a7f4b0b851cd1b
-Author: Jacob Keller <jacob.e.keller@intel.com>
+Warn when the version list is exhausted and include the error from the
+final attempt. Do not warn about individual failed attempts, since a PF
+rejecting a newer version before accepting an older one is expected.
 
-ice: count number of VSIS in agg_vsi_list
+This is a diagnostic improvement only; negotiation, fallback and recovery
+behavior remain unchanged.
 
-This patch adds a member num_vsis to the ice_sched_agg_info structure to tr=
-ack
-the number of VSIs associated with an aggregator node. The counter is
-incremented when adding a VSI to the list and decremented when removing it,
-avoiding the need to iterate over the agg_vsi_list.
+This is a diagnostic improvement only.
 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/eth=
-ernet/intel/ice/ice_sched.c
-> index bcfc9db69e17e..08d0f685f6c45 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_sched.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_sched.c
+Signed-off-by: Aadityarangan Shridhar Iyengar <adiyenga@cisco.com>
+---
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-[ ... ]
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index 7ce46b4b4821..76c9ac3ac69a 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -2344,6 +2344,10 @@ static void ixgbevf_negotiate_api(struct ixgbevf_adapter *adapter)
+ 		idx++;
+ 	}
+ 
++	if (api[idx] == ixgbe_mbox_api_unknown)
++		netdev_warn(adapter->netdev,
++			    "Mailbox API negotiation with PF failed: %d\n", err);
++
+ 	ixgbevf_set_features(adapter);
+ 
+ 	if (adapter->pf_features & IXGBEVF_PF_SUP_ESX_MBX) {
+-- 
+2.35.6
 
-> @@ -2915,24 +2920,26 @@ ice_sched_assoc_vsi_to_agg(struct ice_port_info *=
-pi, u32 agg_id,
->  		/* add VSI ID into the aggregator list */
->  		agg_vsi_info->vsi_handle =3D vsi_handle;
->  		list_add(&agg_vsi_info->list_entry, &agg_info->agg_vsi_list);
-> +		agg_info->num_vsis++;
->  	}
->  	/* Move VSI node to new aggregator node for requested TC(s) */
->  	ice_for_each_traffic_class(tc) {
->  		if (!ice_is_tc_ena(*tc_bitmap, tc))
->  			continue;
-> =20
->  		/* Move VSI to new aggregator */
->  		status =3D ice_sched_move_vsi_to_agg(pi, vsi_handle, agg_id, tc);
->  		if (status)
->  			break;
-
-[Severity: Medium]
-If ice_sched_move_vsi_to_agg() fails and returns an error here, the loop wi=
-ll
-break. Should the function roll back the agg_info->num_vsis increment and r=
-emove
-the newly added agg_vsi_info from agg_info->agg_vsi_list before returning?
-
-Without a rollback, a stale VSI entry with an empty tc_bitmap remains in the
-aggregator list, permanently inflating the num_vsis counter. If subsequent =
-code
-relies on num_vsis to enforce limits like ICE_MAX_VSIS_IN_AGG_NODE, this co=
-uld
-cause the aggregator to prematurely reject new VSIs.
-
-> =20
->  		set_bit(tc, agg_vsi_info->tc_bitmap);
->  		if (old_agg_vsi_info)
->  			clear_bit(tc, old_agg_vsi_info->tc_bitmap);
->  	}
->  	if (old_agg_vsi_info && !old_agg_vsi_info->tc_bitmap[0]) {
->  		list_del(&old_agg_vsi_info->list_entry);
->  		devm_kfree(ice_hw_to_dev(pi->hw), old_agg_vsi_info);
-> +		old_agg_info->num_vsis--;
->  	}
->  	return status;
->  }
-
---=20
-Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261009-jk-cleanup=
--vsi-aggregator-nodes-v2-0-313964c25c7b@intel.com?part=3D2
