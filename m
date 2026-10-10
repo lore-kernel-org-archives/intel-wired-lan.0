@@ -1,28 +1,28 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 139E9CA6004
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 07364CA9EBE
 	for <intel-wired-lan@archiver.kernel.org>; Sat, 10 Oct 2026 12:16:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id C1B64812C2;
-	Sat, 10 Oct 2026 12:16:09 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id BA5A340952;
+	Sat, 10 Oct 2026 12:16:10 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id iLGcIFGdQj6s; Sat, 10 Oct 2026 12:16:09 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org E8D5B81328
-Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1791634569;
-	b=oJmBejV2vkcG3cEeZ6mIJEKHp1WniHefk92+i5t+fbNw35uCcDBQFSY+fvdevfN9CP3v
-	 Fq66Rmiamp9OSy8BvmBlNu7rqVOp6kNe9V7ETFomilRKqMq+6rFixpgp19KT19z7apza8
-	 a2h82q98LFE4WIZKbTkC91Sbz8cL8hDsLYrlwuMbzVL/tpADPE5L2P+yYws7CAS4KgUjz
-	 v8BT3djkXcaVTl20pPTvKQRmSoRdvAeFI+7MbSIAJgJlsA2p8tdQiQBmWwiP/5eIQFRaR
-	 mlhZikYuQPu4uKRJnBbiTuhfeh1bKrsNJ8EJBrNlK6U0+buppoSExxLfzEavo7VVoNQ==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id XOYvUTIxZmU0; Sat, 10 Oct 2026 12:16:10 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org E123440955
+Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1791634570;
+	b=NMuW0VwxX8sUsfoWqTtdj21/k5ykjIFk4Dac3jnDO+XOZNagvB5zqVN0M0ZxDDrSpxEy
+	 EFxmLxZdCWofILRcr4f72TFxjUCiYTVmOlKKIUgpXUetKa+mwszi0vwGPOVmJXhx8ECPt
+	 VcvoNnGD2pRLwmlwj7EGAJL7T7vWFkmyHp0f6hInQo6g5ZGqjNrabIyWH2ZyBDLXWRCQ8
+	 MAlRIeYRuEAfidoNTKjArDNCNsmK8VXibRO/LvJgRgv7jjx2DXuQ1KFCFl8JaO9aZYUsN
+	 KxvARmRU43OmkGivCCokPzRbC328w9DTCDaViVTpvaRCdgTkNTmt4Y9W+vIPBz0wf/A==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1791634569;
+	c=relaxed/relaxed; t=1791634570;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
@@ -30,104 +30,104 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 References:Content-Type:Content-Transfer-Encoding:Date:X-BeenThere:
 	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Reply-To:Errors-To;
-	bh=+9IYEx+BguKyLrdquehLmmxg4IjSZ8rPmUmqFszTdN8=;
-	b=H3JvBUp6ihtvGreKpzSgvQH+FG1HB3Bw4/T/rWpo7n7YjLD8SK9LJOyytro9Zxn3etFy
-	 pzFQ3PJwc6duywgeCHUm+7LkoFttqXVwiP89BnnbUERt76za36SxzfEW6/swGEOP6GwU0
-	 Vw06wvgPlj1qtHBe/IebAb4zaU+V2TfN4ae7VjicQkWZ7Kpz6w6ZEOKTW6F6egehhrGGt
-	 HuSsUl60Ls/nKekRFWTmr5k/esuwURh/2NrrsvYBpsh6IiPkFUbNmFfdxK9jLrhJQNNx0
-	 YWlKYspwLqUwdDhGTL0lXJ+20enUyAvBwtaJ5DZyLQJF2i4GxOI4RbVlPxbfb6jQQLQ==
-ARC-Authentication-Results: i=2; smtp1.osuosl.org; 
+	bh=3KOm8NOpd68WsJNZnCOWnegjk+4+itiXUHn1rzGL8wM=;
+	b=CL9NTtJsKAJUFwOrSu/eMLNfqwwLwuWLYS+DMB31pWMTm0gkKcKZKxjYGFVbPPNLEj7i
+	 WBnKYIWRZgkyDA+DFi/lR1oq4B+muygPsoay4o4PoqYpkMzaKj7M8NQ6GaYe4Po2yB1Tc
+	 LdKie0pjzztDbAF6Y+NjEBlhB5lRRxjjaonya7A3jO+LsfyyhdxHYkG/7DQdZjgj/dgGW
+	 uACivtwgktacsoTdgRtu1C0xJMjgE+/GAh8MbIvGh2JqgIqlVU/5OG5QKrierH/deFv+v
+	 xvpuG09x9BspU0VeXPKJC0BEpC9j7SagI286nnMyjmwjCRH94T0+LeFMQwKoFvrOAbA==
+ARC-Authentication-Results: i=2; smtp4.osuosl.org; 
 	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
 	s=default; t=1791634569;
-	bh=+9IYEx+BguKyLrdquehLmmxg4IjSZ8rPmUmqFszTdN8=;
+	bh=3KOm8NOpd68WsJNZnCOWnegjk+4+itiXUHn1rzGL8wM=;
 	h=From:Subject:To:Cc:In-Reply-To:References:Date:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Reply-To:From;
-	b=orF1J4dShCV+WamJcOF+7aQgcBgVerNi1bop24KCevzaDKDtdqoA2BxejdLauqHeu
-	 SR6FgQouZmTXcQ8PIXd4/V5RE+CTSDHq20OZCEI9W8Z77ESqPoRMYXXPr7ND4ay3Sg
-	 k7eqqnBP6Yd8pIdCvpJSEzOluMdCufa59cn47QTGw8FLLm6mK0nJ+bTS11oFRZGHLX
-	 t19DHbHdwtEiKcKuZd+/nAfTQ0jsuLvmehrxCXHswiHGS+fYp7eKjTPeAbV5yxIffY
-	 F/GnDavYXI3AyBTBrSnnb3ZmNjkTWO1a8wXMGEt07CiCMi+6Y98+hv41cxhyR7elC0
-	 YJ2/m/XkRbFzQ==
+	b=uDYMKmYYJEVHHU9JwaFaJBMYHXBZN3o15QmI509uL6J4oZDey1NAnFZGWxgsu/b+m
+	 IdjLy9doNNoiTK4Stokk6d1beFcgd/74A+7Ip9xlbNXrETD4FGStQ6WfQDgF5h5ozq
+	 7Io8/FZi5zvxcrgEghlK9ABy8PrEmuCXIlgm6RL2o8rJkz9je/nA29i5DHXC3DU6R6
+	 /yYfcRcBRnmKd2kS/BSNASAJr5gJAo6yLkktK9utuAlCpIj7Vi7DqBKV11eHJcRdAD
+	 cHveJ3sl8wzutJGhoCPLqEje+Y1zUd6BzfgIsjKcmQ1HbUzxpXc9VM/1V9sV+mKi4A
+	 JxSyJ2ykVYS/Q==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id E8D5B81328;
-	Sat, 10 Oct 2026 12:16:08 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 4FB0A22B
- for <intel-wired-lan@lists.osuosl.org>; Sat, 10 Oct 2026 12:16:07 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id E123440955;
+	Sat, 10 Oct 2026 12:16:09 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 1C747156
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 10 Oct 2026 12:16:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 35C7A60629
- for <intel-wired-lan@lists.osuosl.org>; Sat, 10 Oct 2026 12:16:07 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 0E7A24010A
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 10 Oct 2026 12:16:08 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id nsbId4rP4G4D for <intel-wired-lan@lists.osuosl.org>;
- Sat, 10 Oct 2026 12:16:06 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 49E1660663
-Authentication-Results: smtp3.osuosl.org;
- arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1791634566;
- b=K14j2qcy/1rpVpndJwoRacw013UnfsHiTGzFnEN2sL6W2k357BbsaaQSrpKGfOkHl9dL
- 5K/LBCXRnzlBDqDeCUz+g8XiJpaxuPX0WLFvwDmHRxw07kaiXSR9cZKaEGb6FlOYf+fg2
- WOqluxqCSmtaK4SQ7IhXOn0+bW75JLvE0li5agz4Id/rQR/23DtTdfZ5WKOLu6EHBdvqm
- dRnsJsukCAlOCgxw79R6yg4YHWrEL8ANS+b/v2mN+ssImH0A7T2Xc34K9OWL1wZKTwVq3
- DEAuMDfwT3p7D27UWFTX4245fRxhDr77KPZOkSijMVUn5ghlWQwmWe+vJnwHmoFpgeQ==
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id YwEPuaebqT2y for <intel-wired-lan@lists.osuosl.org>;
+ Sat, 10 Oct 2026 12:16:07 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org 3340D40004
+Authentication-Results: smtp2.osuosl.org; arc=none
+ smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1791634567;
+ b=eUvAttzISGvZrGNltOrHykuV73dPAKUCFz7kmGnsrB1huVaQrgpKznl7Jm10Joy/v7pn
+ GMpYi3em2UKgougZ7klZxyEk8Zn9MulwRHaT0x+HlnguFSOnIzd5AsSZHxQHBkiTGI46j
+ xfaT68U+xEEDIXNe0iU5SvejZUssYpl5KLKSSf26uwEDQDO68NnY0S93H413ewWYb5H0S
+ cVlbqlKjXRQYkiF2c5POSJa1RQPDGsDPj9h4e84tigxejySQC+IS8xHBU7FrHrtVRvAuB
+ WbGAdIjYceuyty9o2Klc9zwcEpxJXBBUGgFNb6n31M/IoHA3sl8tWugTS6qLIrCbmgw==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1791634566;
+ c=relaxed/relaxed; t=1791634567;
  h=Received-SPF:Received:Received:DKIM-Signature:Message-ID:From:
  Subject:Reply-To:To:Cc:In-Reply-To:References:Content-Type:
  Content-Transfer-Encoding:Date;
- bh=+9IYEx+BguKyLrdquehLmmxg4IjSZ8rPmUmqFszTdN8=;
- b=EtHZFyZNKZ1myAgVsj83M6qsZqaBButxCAzKLykwOOpguIM7HnE9TFujnIVLlZ1tIowe
- YrNWIfF3ogq0ZkDxjOQBdSy0KR7I1uHSIJGS0zWgCfrI9hgc//1YNkKRkvudIhX53cYR2
- xSuyxMDfeshuCWVxnvGjK3H7DjU6VhjN37D0bhODrx4OKfm77QlR9DnaVfKPVllFJNrgJ
- 7fMOSwmxsRhQxuZF16Ect5I8c0KGL9XfbHwHUfDYh807z1nGkHswzZ8Azk/UjfiKvEw4i
- XmKTVVSo3WGxfkQGf7ztE9rAG0+mLC+bbAE+nuG2en8V940LQ0MIa7rv7ywgHJwBaMw==
-ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
+ bh=3KOm8NOpd68WsJNZnCOWnegjk+4+itiXUHn1rzGL8wM=;
+ b=QbkbsRegjU+9uu1mVDHy7ZL/HXEfhaXbldENhTsaUKYCXqrxNUooqfLkCGkJtbhYnRyl
+ xja2u+PaFTyAOt5I+ppLH3hqNu5h0utgcuxoBSLGBQFzdY3gbk6qqmwv5F6vFR3X3kanC
+ Qm5KxOVIOXYFgUKtbPTlBzLuUSi2z5zA+1OclV7MOxtW1ouymPvqXnqLlRNuJ6QxODF4L
+ 9yweM/NdCrFJRXR/E6+tWsTjyK4Kj3V/4JC/L88HHdNJzJFU7ER70eZ3vKubcWhrZeYgl
+ Lb+TcbxMW62xN+RpONW6kw39PFZCCe+GpxPUg20Fs5DKGFfC7tsFFuVwSDp9HWCjRYw==
+ARC-Authentication-Results: i=1; smtp2.osuosl.org; 
  dmarc=pass header.from=kernel.org;
  dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=n2n1PIA0; 
- arc=none smtp.remote-ip=172.234.252.31
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
- helo=sea.source.kernel.org; envelope-from=sashiko-bot@kernel.org;
- receiver=<UNKNOWN> 
-Authentication-Results: smtp3.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.s=k20260515 header.b=kwdjwv2U; 
+ arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
+ envelope-from=sashiko-bot@kernel.org; receiver=<UNKNOWN> 
+Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
+Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=n2n1PIA0
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 49E1660663
- for <intel-wired-lan@lists.osuosl.org>; Sat, 10 Oct 2026 12:16:05 +0000 (UTC)
+ header.s=k20260515 header.b=kwdjwv2U
+Received: from sea.source.kernel.org (sea.source.kernel.org
+ [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 3340D40004
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 10 Oct 2026 12:16:06 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by sea.source.kernel.org (Postfix) with ESMTP id 8D34942E99;
- Sat, 10 Oct 2026 12:16:05 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 473D41F000FF;
+ by sea.source.kernel.org (Postfix) with ESMTP id 5D76B40449;
+ Sat, 10 Oct 2026 12:16:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0D0211F000FF;
  Sat, 10 Oct 2026 12:16:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1791634565;
- bh=+9IYEx+BguKyLrdquehLmmxg4IjSZ8rPmUmqFszTdN8=;
+ s=k20260515; t=1791634566;
+ bh=3KOm8NOpd68WsJNZnCOWnegjk+4+itiXUHn1rzGL8wM=;
  h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
- b=n2n1PIA0Uc0bMg8tNFXg3m13QTePHtgzqW++n4ua/m9R0by4jIDoxUjUa+VWACuZK
- dJK8q8if568BRKo7IJzcX8NSEjzvLZJg+UF4yPhsOgea5gXCGfFjzbn3B0nvRiqgZn
- 2vfC08y5l29AzrIfTqkHNxDWMxUrIXzT3kDSOKQjpAn6UAgTGPBc7mD3glxPCTDYLN
- v66i9NSCiLi4YK9rq6KCH3tOW8CB38ig1hJzFz4qZ+yYBmVV1iFfd2QlBafTdRKj2q
- BJHqfa2uhoLnHulqTGSnxUlG81c3oD093Nscf2aiFNUJ4GLJ5AKJlBIk2MqTWCUVHs
- 9eLNL1sOvWzEA==
-Message-ID: <sashiko-outbox-166496@kernel.org>
+ b=kwdjwv2UwiBXhaf+f0EDE6TsmeBTo7cdjzTnKHMJsiEa8LIAnohvJjZ8Ijlw4eH4P
+ sR4FafmghO8pbysoYFqlm2UzcOWIg/jfgUUz+44m5AiGJD2Tjv70d2nh4ePNhZJoUB
+ ektboxTGqiP7Jndv9bqiwBKYzSUqRKsnzi1lu1YIWwo/5Dek00UZtXvCem3gx4Xh5o
+ uLozmSv3jSIAXWqnBeAgRzLpaAT/kLCzjDEgl8vPIRW9FBEYJK6zTJEwv0Ry75X2pW
+ CJpyIrFwqOKo+eCPVj62IDR7de6Nz+NzkakBep/T+f8oGb72ouC0rqYCpFGvFyg0B5
+ TZgU0ku4Rs+nA==
+Message-ID: <sashiko-outbox-166501@kernel.org>
 From: sashiko-bot@kernel.org
-Subject: Re: [PATCH net-next v2 02/14] ice: use shared devlink to store
- ice_adapters instead of custom xarray
+Subject: Re: [PATCH net-next v2 06/14] ice: bump to 256qs for VF
 To: "Przemek Kitszel" <przemyslaw.kitszel@intel.com>
 Cc: intel-wired-lan@lists.osuosl.org
-In-Reply-To: <20261009121433.30347-3-przemyslaw.kitszel@intel.com>
+In-Reply-To: <20261009121433.30347-7-przemyslaw.kitszel@intel.com>
 References: <20261009121433.30347-1-przemyslaw.kitszel@intel.com>
- <20261009121433.30347-3-przemyslaw.kitszel@intel.com>
+ <20261009121433.30347-7-przemyslaw.kitszel@intel.com>
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
-Date: Sat, 10 Oct 2026 12:16:04 +0000
+Date: Sat, 10 Oct 2026 12:16:05 +0000
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -143,118 +143,63 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Reply-To: sashiko-reviews@lists.linux.dev
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-Thank you for your contribution! Sashiko AI review found 2 potential issue(=
+Thank you for your contribution! Sashiko AI review found 1 potential issue(=
 s) to consider:
-- [High] ice: DMA UAF due to missing control queue teardown in recovery mode
-- [High] ice: NULL pointer deref in ice_adapter_put() on recovery mode tear=
-down
+- [High] ice: virtchnl error path disables wrong queues when loop index !=
+=3D queue_id
 --
 
-commit 298f011950fb287bfb913324af33c969b5683c8d
+commit a7e9d03ecfb2e4d593b7ee51e67a3a4e87ee7a85
 Author: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Subject: ice: use shared devlink to store ice_adapters instead of custom xa=
-rray
 
-This commit refactors the storage and deduplication logic for ice_adapters
-by moving it to a shared devlink instance. It replaces the custom xarray
-implementation with nested devlink instances for PF devices.
+ice: bump to 256qs for VF
 
-Link: https://lore.kernel.org/all/20260312100407.551173-1-jiri@resnulli.us
+This commit adjusts limits, bitmaps, and arrays in the ice driver to support
+up to 256 VF queues. It updates the requested and default queue limits while
+retaining the legacy 16-queue limit for older virtchnl opcodes.
 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethe=
-rnet/intel/ice/ice_main.c
-> index 454fba07d4ecc..6373cd5ac2884 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_main.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-
+> diff --git a/drivers/net/ethernet/intel/ice/virt/queues.c b/drivers/net/e=
+thernet/intel/ice/virt/queues.c
+> index 2667634e3c8c3..61304493af34b 100644
+> --- a/drivers/net/ethernet/intel/ice/virt/queues.c
+> +++ b/drivers/net/ethernet/intel/ice/virt/queues.c
 [ ... ]
-
-> @@ -4946,7 +4946,12 @@ static int ice_init_devlink(struct ice_pf *pf)
->  		return err;
+> @@ -841,7 +841,7 @@ int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8 *msg)
+>  	if (!vsi)
+>  		goto error_param;
 > =20
->  	ice_devlink_init_regions(pf);
-> -	ice_devlink_register(pf);
-> +	err =3D ice_devlink_register(pf);
-> +	if (err) {
-> +		ice_devlink_destroy_regions(pf);
-> +		ice_devlink_unregister_params(pf);
-> +		return err;
-> +	}
+> -	if (qci->num_queue_pairs > ICE_MAX_QS_PER_VF_VCV1 ||
+> +	if (qci->num_queue_pairs > ICE_MAX_QS_PER_VF ||
+>  	    qci->num_queue_pairs > min_t(u16, vsi->alloc_txq, vsi->alloc_rxq)) {
+>  		dev_err(ice_pf_to_dev(pf), "VF-%d requesting more than supported numbe=
+r of queues: %d\n",
+>  			vf->vf_id, min_t(u16, vsi->alloc_txq, vsi->alloc_rxq));
 
 [Severity: High]
-Can this new error path lead to a DMA use-after-free regression in recovery
-mode?
+With the queue limit raised to 256, does the error handling at the end of
+ice_vc_cfg_qs_msg() disable the correct queues when a failure occurs?
 
-In ice_probe_recovery_mode(), the hardware control queues are created via
-ice_create_all_ctrlq(), which allocates DMA memory using devres. If
-ice_init_devlink() fails and returns an error here, the function exits
-without calling ice_destroy_all_ctrlq().
+Since 256 queue pairs exceed the 4096-byte admin queue buffer limit, the VF
+driver must split queue configurations across multiple virtchnl messages. In
+the second and subsequent messages, the array index i will not match the
+actual queue ID being configured (qci->qpair[i].rxq.queue_id).
 
-The devres framework will unmap and free the DMA memory upon probe failure,
-but the hardware ATQ/ARQ registers might still point to those freed
-physical addresses since the queues were never gracefully disabled. Could
-this allow the active device to continue performing DMA operations on freed
-memory?
+If an error occurs during these later messages, the cleanup path iterates
+using the array index i:
 
-[ ... ]
+error_param:
+    /* disable whatever we can */
+    for (; i >=3D 0; i--) {
+        if (ice_vsi_ctrl_one_rx_ring(vsi, false, i, true))
+            ...
+        if (ice_vf_vsi_dis_single_txq(vf, vsi, i))
+            ...
+    }
 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_adapter.c b/drivers/net/e=
-thernet/intel/ice/ice_adapter.c
-> index 2dc3629d6d0f6..c6301341ccaef 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_adapter.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_adapter.c
-
-[ ... ]
-
-> @@ -93,59 +80,37 @@ static void ice_adapter_free(struct ice_adapter *adap=
-ter)
-
-[ ... ]
-
-> -void ice_adapter_put(struct pci_dev *pdev)
-> +void ice_adapter_put(struct ice_adapter *adapter)
->  {
-> -	struct ice_adapter *adapter;
-> -	unsigned long index;
-> -
-> -	index =3D ice_adapter_xa_index(pdev);
-> -	scoped_guard(mutex, &ice_adapters_mutex) {
-> -		adapter =3D xa_load(&ice_adapters, index);
-> -		if (WARN_ON(!adapter))
-> -			return;
-> -		if (!refcount_dec_and_test(&adapter->refcount))
-> -			return;
-> -
-> -		WARN_ON(xa_erase(&ice_adapters, index) !=3D adapter);
-> -	}
-> -	ice_adapter_free(adapter);
-> +	devlink_shd_put(adapter->devlink);
->  }
-
-[Severity: High]
-Will this trigger a NULL pointer dereference regression if the driver is
-probed in recovery mode?
-
-If the driver probes in recovery mode, pf->adapter is never allocated and
-remains NULL. During ice_remove(), the code checks
-ice_is_recovery_mode(&pf->hw) to determine if it should perform a
-recovery-mode early return or a full teardown.
-
-Since ice_is_recovery_mode() reads a live volatile hardware register, if
-the firmware clears this bit after probe, the check bypasses the early
-return and falls through to normal teardown:
-
-drivers/net/ethernet/intel/ice/ice_main.c:ice_remove() {
-    ...
-    ice_adapter_put(pf->adapter);
-    ice_deinit_hw(&pf->hw);
-    ...
-}
-
-The previous xarray lookup safely returned early on NULL, but the new code
-unconditionally dereferences adapter->devlink. Will this crash on driver
-unload or device unbind when transitioning out of recovery mode?
+Could this use of i instead of the actual queue ID inadvertently disable
+unrelated queues, causing a denial of service to other active queue pairs,
+while leaving the newly configured, partially-initialized queues active?
 
 --=20
 Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261009121433.3034=
-7-1-przemyslaw.kitszel@intel.com?part=3D2
+7-1-przemyslaw.kitszel@intel.com?part=3D6
