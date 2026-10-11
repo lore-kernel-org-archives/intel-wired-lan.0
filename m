@@ -1,28 +1,28 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6029CA9ECA
-	for <intel-wired-lan@archiver.kernel.org>; Sun, 11 Oct 2026 19:04:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C510ACA9EC7
+	for <intel-wired-lan@archiver.kernel.org>; Sun, 11 Oct 2026 19:04:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 3643C80C84;
-	Sun, 11 Oct 2026 19:04:07 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 7F09D60607;
+	Sun, 11 Oct 2026 19:04:08 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id r_kkiCT2zWww; Sun, 11 Oct 2026 19:04:06 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 4DD4680C88
-Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1791745446;
-	b=ONk0fIluy+7IzQs2yaqJty5UOn5O15745mN+Zrh4vUY5uqUcfBW9xqrjUgYJdFWuJTDI
-	 XWsF6cSz1RFfgZbtRQvoqyZRVcSZU2xiFqzNjVkNljJSRXVR+uXe0R1A/f+5vt840Md+2
-	 K57TbrOdlotOLdNewII6jSZMBFEHDXyOjoG8xRyONFPEK6GCPcfeeGuVZdMI9+hqenayU
-	 yDjtvhKmPZI1L7VEFSGVeWSjhvgXAWOw2PdLgSnwxvP0c62200tPR9KEbEoScgvb7kQRY
-	 WO5gGQc5GfSaDJ21rc9rg6wQGxFQCdU5sRAGqSxwyaaJnf0aJ91ogky8E5hu9MS5mcw==
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id rKl63L8eXgaR; Sun, 11 Oct 2026 19:04:07 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 4B0936060E
+Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1791745447;
+	b=Bo9s9XiragGzbB4cfL7SFD2z/CttJ8IVI9FaE5YfRpGw5/DEtjLBvGz+yp+wqBg4YnI9
+	 0RComU/bZCVXbjlLI4fUB0WbHUI2OKyH7QmkoVputHKjTU/Vzc993mIOKSbOFDV3OoMCM
+	 Wc/re0vxNZZwmZLVsJokR6U9wpxv9iGteBcsShO+z+f4/Vw1UVeZ9EW9XqHgu85YLEq2J
+	 GnIgW2A4tiOhk3QkJ0INohNIA+GkjwnSnYsTxqvA+I4jIIh8ba5KOfAnFrYOxP0ccbUH4
+	 conkT8A875v2Cgy15YHQs8eDxxr9iMdpZRtpn9VJvgM7BIPqa7z7mnAjI66zKSoNH+A==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1791745446;
+	c=relaxed/relaxed; t=1791745447;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
@@ -31,95 +31,93 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 Content-Transfer-Encoding:MIME-Version:X-BeenThere:X-Mailman-Version:
 	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=LdxMvCC8JxkBtq+BNVpskgNv+Iemqb0CitObZkcZf3A=;
-	b=Quw9b2MZn2Ev5Rte5V7/T0estte29DNYNeXkRxgxHAl3O2aRnfldtjc4HSrCt0wl0s7o
-	 7DmgI4VEbrOn4VJzcbl1DuQAeov2VwOhMxlJkFzoigEh3NUSLCVz3lkBpp6YjzSi2PrTW
-	 4kIKhxZaOPVEleaCkDln/xIzbdwL/9wgWW8p86NLpNU8+OaO53bT1GASq4ZuV2s07wgGY
-	 CBG9a1RqFUzA7nQ//Yv0z5TSqdlzW5IUUps32fCe5KnakVbzX0/fTNE2Hz8o9trTPpjV6
-	 N+/SE9pK0Hp0BOXwcpdVTdvmVGtdemo2g0uubdcsFPCgM9ODmTJdhQ5kLv01tps2cOw==
-ARC-Authentication-Results: i=2; smtp1.osuosl.org; 
+	bh=xwkEhVzbUvjpITITmAO4h3R+R7/UDQRQJB9aMn4M6nw=;
+	b=mAN5lDEaSXCieen8bO5oRzR/lUoE/iiecyAttMrOeWcrqoKZLUTdykNBAavGNaORo6mc
+	 uQ+UpkL/rBegFKzqglkSyq/dwAQ4cwarRLe8PZJM9bww9nIF/qZIVjizylxMoJOU/0GmZ
+	 2w3njT2HXG8wZJAaPPMl2ux9UgzNxyngBwIQSZnbFlVf2RqreVW7T3lbI0kBXzQsjjNdf
+	 cA9I7Jq7VGHq9uKowc4ZXytjMfx3FxSkmm3b5iUVrzS716CReomeA0R06xHQM7wYjQiXt
+	 Fmre5GXAAjrC7xT5izmaFrq+t0Fkk5CcLRr+e7n/2pleBGrSb4CEyLD5uoa/Bm8dNOw==
+ARC-Authentication-Results: i=2; smtp3.osuosl.org; 
 	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1791745446;
-	bh=LdxMvCC8JxkBtq+BNVpskgNv+Iemqb0CitObZkcZf3A=;
+	s=default; t=1791745447;
+	bh=xwkEhVzbUvjpITITmAO4h3R+R7/UDQRQJB9aMn4M6nw=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=p8eO2OJF8yAlpC6AM7qwSU132Qn4VT3GY0AT/aBzjavrh7eBzRTWc6yaqTq7yUa0l
-	 aX+dM1cs4KEzOyHm7oGNsuwOIJIDq+a80KY4F/hBeQYN0rQUjdyk1Z/fvp+9RqGN3b
-	 MrOUDJslQfBnbWCyWDRUhbY1SCTSwaPSrER62pwmNKmRQQHDZP8at3dkA1EFjMYrCD
-	 Qt76NZphS+u+xGrMd43lr8nLAvV8hL+SRJ3FZHLeqo0wQfhMmvOqdegW7byFx9/Coa
-	 wZeaFnF/7aKZcJgg3kvDzDtyKxhYrYD+nkdWRnLrFmuSkcq6SqmZaB0Vv2KvXtMxUD
-	 nquCfa+iGgrSA==
+	b=V+KC+Ak3m+b/iK/3HgNfndi6gXVSUZQbsfudjUSdUfo6bn1TWGQm18cwYs13IDbwR
+	 RS3iPVIG32Vz4fLUMnXHmky+1OpMYZKWb8W7MqZlKxr31XiCKZgNYr+NcOqUzdWU8N
+	 zNe4OEWfvnCmfKVYY7VRbnt39oeBXhZs9F8bkf5Y4uD1uLXtDCBstArh6AfY1oNeL9
+	 2u/6XJnDbWxUiGHnHDhTBdQbhtZIg21KBLo1iNPLjfluMhKmpsJHRcsS+Nottq0p85
+	 HBpnOTEiuXVJKUPwkgTKRz8CKNEFKgeEpgWLBGFY2/PHmlvFs/iijjqXS0e8ONQX3F
+	 ceTD9NvQOqBfA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 4DD4680C88;
-	Sun, 11 Oct 2026 19:04:06 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id C740F2E0
- for <intel-wired-lan@lists.osuosl.org>; Sun, 11 Oct 2026 19:04:05 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 4B0936060E;
+	Sun, 11 Oct 2026 19:04:07 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id B272675
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 11 Oct 2026 19:04:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id B8C824008B
- for <intel-wired-lan@lists.osuosl.org>; Sun, 11 Oct 2026 19:04:05 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 9763180C8F
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 11 Oct 2026 19:04:06 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id hHR5v9h_3K3N for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id To7h6JbsMqGZ for <intel-wired-lan@lists.osuosl.org>;
  Sun, 11 Oct 2026 19:04:05 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org B061940075
-Authentication-Results: smtp2.osuosl.org; arc=none
- smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 63D3D80C7E
+Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=172.105.4.254
 ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1791745445;
- b=sSFfIVZT76EDra88eAdEpOlxdWLVREe/8vRxHDl4JIFEh+ZMUq52vjszRJ/tWZRuyfth
- zzX5H/ChYA70lvHmtVQ70WXWq++LHuRFhIHpEyxqD2VKTMWwszbjlO/020WOo0PHQE397
- XKE+xBV+rlDVcy5QQdi+Mwj6vTN6PlDJYQTa9OBFDZ9PYCEuZGSVUULV28WPypVEB7uvt
- Yu9KIS1kN46loGw4VmuqZD/elvMpYETn64rYQXlgNz2NqC2hu3gJE78yle7R5RQJfySnA
- X6Em7D3owlR53KSQfDybxesVoSM+Oo7/CVnasS8veCbYUTXFDPri/1+GGBJtXKEUD6A==
+ b=ifWS6fqr/REnyIaEM8C2cKBflDhT5NnNhsaD195KFCBNSeKPyMDZiA1tARlNYv6CNWkV
+ 67jw+C9S7klZYBPO0P8KMcZPIPNuCBoaJkC88UaQggzdeFd8S9dLxS1ZxVOqRebr8HHXG
+ LFKlZsQj8p9LKbFVd/NcRqr3TxXE35qs1Uz0uormCtLemX2JCnX59UkJAXHbnLqQRPzel
+ j5habRECKOCX8xF6cGr+Yh+nb8U98Uhl7rhdnqMIyYM+9IZ2fpEAt5XPNhieWJg/7nj/7
+ YgQwZequ9HcBp0N34Kfh9CE6dDPqXxIuS51LKYNxrSkTPEFdVCgravrE5gCFzJlrNhA==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
  c=relaxed/relaxed; t=1791745445;
  h=Received-SPF:Received:Received:DKIM-Signature:Subject:From:To:Cc:
  Date:Message-ID:In-Reply-To:References:X-sashiko-severity:
  Content-Type:Content-Transfer-Encoding:MIME-Version;
- bh=LdxMvCC8JxkBtq+BNVpskgNv+Iemqb0CitObZkcZf3A=;
- b=DSli8zCqhQvcEem2YEqSkzYlHNt++4nv9emuJVXjyZpjK8bs0V6u4TPM4kHIr57dwdNw
- zsENLJObbshmqwc7BE6NPtdYOpnNxXvYZz8fE8eEeMkbxVPE5Di28frsxMv+iqxiH7g2Q
- U1jiMGz3lpn1XUIhoTceZZGBSLhx/js9+RxRL/T+fQC/1TD77KRgVhkMU+8lznOAGxl27
- JwpOlV4JnEvogvbrMAYvwDpBrSRdDwUqZQ8pbPVC1xwNTOy1QfU4KpFYljwJTGsRouyAV
- M3Myeb17TYOz42xbWcllm1WQYJPaYCDX4iZx/uhkEwUutaXA7TVYK+sprk1NC8wY88A==
-ARC-Authentication-Results: i=1; smtp2.osuosl.org; 
+ bh=xwkEhVzbUvjpITITmAO4h3R+R7/UDQRQJB9aMn4M6nw=;
+ b=FUo7IRxYyvjc1lAL/vZjX4XrRgH1jFYF37t/J0jXRAKxTRLjRSbRBq6Ws/XUQamwtoTM
+ B7Qv7jJFQCKFEsdsHXFR6lN0rA/1MB2ZzU1GdPEdfhkI4SeWiuLlip8uz1jLmRGi82hLR
+ 97KgIyqQJuPkcuZ+hxlEwcTSnbw216wiu2xJQaa3q6xEFenpqxoG0GvxENnRh78g+s8M2
+ AclO31D1PlR6R0p5s8aiI1Nnkd8M5P//UPmnhyU8CyavD86IfuaLSYX9Y1knOI7mxVkjp
+ 7cy5ex73xo0BCHkgJsS6x1omQEy0tVijwVmnZqSUFCbvGyVLgm3U7QrFRp0rZNJfMZA==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
  dmarc=pass header.from=kernel.org;
  dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=UzzUYkcx; 
- arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
- envelope-from=netdev-bot+sashiko@kernel.org; receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.s=k20260515 header.b=T6j22e7N; 
+ arc=none smtp.remote-ip=172.105.4.254
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
+ helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org;
+ receiver=<UNKNOWN> 
+Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
+Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=UzzUYkcx
-Received: from tor.source.kernel.org (tor.source.kernel.org
- [IPv6:2600:3c04:e001:324:0:1991:8:25])
- by smtp2.osuosl.org (Postfix) with ESMTPS id B061940075
- for <intel-wired-lan@lists.osuosl.org>; Sun, 11 Oct 2026 19:04:03 +0000 (UTC)
+ header.s=k20260515 header.b=T6j22e7N
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 63D3D80C7E
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 11 Oct 2026 19:04:04 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id E9B66600E2;
- Sun, 11 Oct 2026 19:04:01 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E6A731F0089B;
- Sun, 11 Oct 2026 19:03:59 +0000 (UTC)
+ by tor.source.kernel.org (Postfix) with ESMTP id F03DE60232;
+ Sun, 11 Oct 2026 19:04:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 435F91F0089C;
+ Sun, 11 Oct 2026 19:04:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1791745441;
- bh=LdxMvCC8JxkBtq+BNVpskgNv+Iemqb0CitObZkcZf3A=;
+ s=k20260515; t=1791745443;
+ bh=xwkEhVzbUvjpITITmAO4h3R+R7/UDQRQJB9aMn4M6nw=;
  h=Subject:From:To:Cc:Date:In-Reply-To:References;
- b=UzzUYkcxQOL0XlmelgcWjoUE8uZ5mu43l+m4m3WaR9oNIw62zCnUniB7tzEWo2BrB
- m/LtSCL5ygDk1oFfZBldkSOb9zcjhLNCiL0ryQ8J7LHAIrimuDA02HRyFG7gcNaeDp
- hJlAHlApw9NQgtB6uGiS1SdyWdNJPYYCIcokj6uBek3AWSfrNQrfwQN9yFCi/AjY1r
- L/H7nT8TTDqifm4cjorAwd2/DDPlx6Ti2F5nrdw4ff/R7AD535cW+u7s/elWHg0P39
- JDkxuf933VY9tJJkaAlHfRXEPptQgd6XeC196sPAtXgJjdRykcwDhXBIS4gDvJqmwz
- RH2OwqBWE9Ddw==
-Subject: Re: [PATCH net-next 2/9] net/mlx5e: check for failure when pulling
- the Ethernet header after XDP
+ b=T6j22e7NaJcS2fr8bxi+2fkNg3yrrBUkW62t0KEMPQPEPq6c0g63GVfOejKgcDELZ
+ nmYI+TGJ0tsychweaRGXM07GIaFEB966dLGXJyiPj6MPWOn/DFHhGqWRvNFsXTA1ra
+ 87Xeej/L81UcUVZorzjZeW51kYQGMzJcfsJTcZoB4zTKj0JyWidBNaJOJ6Ktoxn5FJ
+ GSPMJY8QX27VBcLnNvtiLgJLQ18xB1oxYB/arUS4CmN/96Q3lt5LR2+ABSHrV4KunZ
+ WzUvdS5XWPMRzPg/0rwoxHPa8HFmiuoRrT0YDo5ToOt5LgXojsjM/Jcx4KN/A2GZD8
+ uXYz9dXc4NUqA==
+Subject: Re: [PATCH net-next 4/9] xen/netfront: check for failure when pulling
+ in xennet_fill_frags()
 From: netdev-bot+sashiko@kernel.org
 To: josef@toxicpanda.com
 Cc: kuba@kernel.org, pabeni@redhat.com, edumazet@kernel.org,
@@ -131,11 +129,11 @@ Cc: kuba@kernel.org, pabeni@redhat.com, edumazet@kernel.org,
  horms@kernel.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-rdma@vger.kernel.org, xen-devel@lists.xenproject.org,
  intel-wired-lan@lists.osuosl.org
-Date: Sun, 11 Oct 2026 19:03:59 +0000
-Message-ID: <179174543945.434549.12308757559903944189@kernel.org>
-In-Reply-To: <20261007-b4-pskb-pull-tail-drivers-v1-2-9512b0fb977b@toxicpanda.com>
-References: <20261007-b4-pskb-pull-tail-drivers-v1-2-9512b0fb977b@toxicpanda.com>
-X-sashiko-severity: Low
+Date: Sun, 11 Oct 2026 19:04:01 +0000
+Message-ID: <179174544182.434549.6411289628191595001@kernel.org>
+In-Reply-To: <20261007-b4-pskb-pull-tail-drivers-v1-4-9512b0fb977b@toxicpanda.com>
+References: <20261007-b4-pskb-pull-tail-drivers-v1-4-9512b0fb977b@toxicpanda.com>
+X-sashiko-severity: High
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 MIME-Version: 1.0
@@ -153,119 +151,220 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-Thank you for your contribution! Sashiko AI review found more severe
-issue(s) in other patches of this series. This mail is only an FYI, in case
-you want to address the nit picks below when you respin.
+Thank you for your contribution! Sashiko AI review found 3 potential
+issue(s) to consider.
 
-Low priority / nit picks for your consideration:
+Critical: 0 · High: 2 (2) · Medium: 1 · Low: 0
 
-- [Low] In mlx5e_skb_from_cqe_mpwrq_nonlinear()
-  (drivers/net/ethernet/mellanox/mlx5/core/en_rx.c), the new drop path…
+If you believe none of the issues are legitimate, please reply to each
+issue of Medium severity or higher and explain why the AI is wrong.
+If any of them are legitimate and you plan to respin, please let patchwork
+know by including "pw-bot: cr" as a separate line at the end of your reply
+(one such reply per series is enough).
+
+- [High] The patch now sends pull failures explicitly to an error path
+  that leaks the head skb.
+- [High] net: xen-netfront: memory leak of head SKB on
+  xennet_fill_frags() error path
+- [Medium] In xennet_fill_frags() (drivers/net/xen-netfront.c), replacing
+  __pskb_pull_tail(skb, pull_to - skb_headlen(skb)) with…
+
+Pre-existing issues:
+- [High] This problem wasn't introduced by this patch, but
+  xennet_fill_frags() (drivers/net/xen-netfront.c) reads each follow-on…
+- [High] This problem wasn't introduced by this patch, but in
+  xennet_poll() (drivers/net/xen-netfront.c)…
 
 --
 
-net/mlx5e: check for failure when pulling the Ethernet header after XDP
+xen/netfront: check for failure when pulling in xennet_fill_frags()
 
-This patch replaces the unchecked __pskb_pull_tail() call in
-mlx5e_skb_from_cqe_mpwrq_nonlinear() with pskb_may_pull(). If the pull
-fails, the packet is dropped. The goal is to stop eth_type_trans() from
-hitting BUG() in __skb_pull() when the linear part holds less than
-ETH_HLEN.
+When the skb already has MAX_SKB_FRAGS frags, this patch makes
+xennet_fill_frags() call pskb_may_pull() instead of __pskb_pull_tail(), and
+it now checks the return value. The BUG_ON() on pull_to is removed. Both
+failure exits now share a common err label.
 
-> When an XDP program leaves less than ETH_HLEN in the linear part of a
-> multi-buffer packet, mlx5e_skb_from_cqe_mpwrq_nonlinear() pulls the rest
-> of the Ethernet header in from the frags with __pskb_pull_tail() and
-> ignores the return value.  If that pull fails, eth_type_trans() later
-> finds less than ETH_HLEN in the head and BUG()s in __skb_pull().
-
-> diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en_rx.c b/drivers/net/ethernet/mellanox/mlx5/core/en_rx.c
-> index e3f915beebe1b..b1e1e30a77e22 100644
-> --- a/drivers/net/ethernet/mellanox/mlx5/core/en_rx.c
-> +++ b/drivers/net/ethernet/mellanox/mlx5/core/en_rx.c
-> @@ -2060,9 +2060,12 @@ mlx5e_skb_from_cqe_mpwrq_nonlinear(struct mlx5e_rq *rq, struct mlx5e_mpw_info *w
->  				pagep->frags++;
->  			while (++pagep < frag_page);
+> diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
+> index 2ed673649c488..6e01a883cc64a 100644
+> --- a/drivers/net/xen-netfront.c
+> +++ b/drivers/net/xen-netfront.c
+> @@ -1174,18 +1174,11 @@ static int xennet_fill_frags(struct netfront_queue *queue,
 >  
-> -			if (len < ETH_HLEN)
-> -				__pskb_pull_tail(skb, min(ETH_HLEN - len,
-> -							  skb->data_len));
-> +			if (len < ETH_HLEN &&
-> +			    !pskb_may_pull(skb, min(ETH_HLEN, skb->len))) {
-> +				rq->stats->buff_alloc_err++;
-> +				dev_kfree_skb_any(skb);
-> +				return NULL;
-> +			}
+>  		RING_COPY_RESPONSE(&queue->rx, ++cons, &rx);
+>  
+> -		if (skb_shinfo(skb)->nr_frags == MAX_SKB_FRAGS) {
+> -			unsigned int pull_to = NETFRONT_SKB_CB(skb)->pull_to;
+> -
+> -			BUG_ON(pull_to < skb_headlen(skb));
+> -			__pskb_pull_tail(skb, pull_to - skb_headlen(skb));
+> -		}
+> -		if (unlikely(skb_shinfo(skb)->nr_frags >= MAX_SKB_FRAGS)) {
+> -			xennet_set_rx_rsp_cons(queue,
+> -					       ++cons + skb_queue_len(list));
+> -			kfree_skb(nskb);
+> -			return -ENOENT;
+> -		}
+> +		if (skb_shinfo(skb)->nr_frags == MAX_SKB_FRAGS &&
+> +		    unlikely(!pskb_may_pull(skb, NETFRONT_SKB_CB(skb)->pull_to)))
+> +			goto err;
+> +		if (unlikely(skb_shinfo(skb)->nr_frags >= MAX_SKB_FRAGS))
+> +			goto err;
 
-[Severity: Low]
-Can this new drop path actually be reached? Given how the skb is built
-on the XDP path, it doesn't look like the pull can fail.
+[Severity: Medium]
+Is pskb_may_pull() really equivalent to the old call when pull_to equals
+skb_headlen(skb)?
 
-For an skb with frags and no frag_list, these are the only failure
-returns in __pskb_pull_tail():
+pskb_may_pull_reason() returns before it reaches __pskb_pull_tail():
 
-net/core/skbuff.c:__pskb_pull_tail() {
+    if (likely(len <= skb_headlen(skb)))
+        return SKB_NOT_DROPPED_YET;
+
+The old code still called __pskb_pull_tail(skb, 0) in that case. Its
+pull_pages loop removes every zero-length frag, even with eat == 0:
+
+    if (size <= eat) {
+        skb_frag_unref(skb, i);
+        eat -= size;
+    }
+
+That lowered nr_frags and freed a slot.
+
+xennet_get_responses() accepts zero-length responses, since it only rejects
+status < 0 and offset + status > XEN_PAGE_SIZE. It also allows
+XEN_NETIF_NR_SLOTS_MIN + 1 (19) slots when the first response is at most
+RX_COPY_THRESHOLD bytes.
+
+Take the default MAX_SKB_FRAGS of 17, no XDP, a 64-byte first slot,
+non-empty slots 2-17, a zero-length slot 18 and a non-empty slot 19:
+
+    slot 18: nr_frags == 17, pull 64 bytes, frags[0] consumed -> 16
+             zero-length slot 18 added -> 17
+    slot 19: nr_frags == 17, pull_to == headlen, pskb_may_pull() no-op
+             nr_frags >= MAX_SKB_FRAGS -> goto err
+
+The old code would have dropped the zero-length frag at slot 19 and
+accepted the packet. A zero-length first slot gives the same result,
+because frags[0] is then zero-length.
+
+Are these packets now dropped and counted in rx_errors, when the old code
+assembled them? The commit message says "pskb_may_pull() does nothing if the
+head already holds pull_to bytes", but that does not match the old
+behaviour in this case. These drops also go through the xennet_poll() err
+path discussed below.
+
+[Severity: High]
+This is a pre-existing issue, but in xennet_poll() pull_to comes from the
+first slot's status. It has an upper cap but no lower bound:
+
+    NETFRONT_SKB_CB(skb)->pull_to = rx->status;
+    if (NETFRONT_SKB_CB(skb)->pull_to > RX_COPY_THRESHOLD)
+        NETFRONT_SKB_CB(skb)->pull_to = RX_COPY_THRESHOLD;
+
+Suppose the backend sends a first slot with status below ETH_HLEN and
+XEN_NETRXF_more_data set, followed by non-empty slots.
+handle_incoming_queue() pulls only pull_to bytes and then calls
+eth_type_trans():
+
+    handle_incoming_queue()
+      __pskb_pull_tail(skb, pull_to - skb_headlen(skb))
+      eth_type_trans()
+        eth_skb_pull_mac()
+          skb_pull_inline(skb, ETH_HLEN)
+            __skb_pull()
+              skb->len < skb->data_len -> BUG()
+
+For example, a 5-byte first slot followed by a 1000-byte slot gives len =
+1005, data_len = 1000 and headlen = 5. Pulling ETH_HLEN leaves len = 991,
+which is less than data_len.
+
+Can a backend crash the guest this way? Should pull_to be clamped to at
+least ETH_HLEN? With a single short slot, skb_pull_inline() returns NULL,
+so this only applies when frags follow.
+
+>  
+>  		skb_add_rx_frag(skb, skb_shinfo(skb)->nr_frags,
+>  				skb_frag_page(nfrag),
+
+[Severity: High]
+This isn't a bug introduced by this patch, but xennet_fill_frags() reads
+each follow-on response from the shared ring a second time. It then uses
+offset and status without checking them again:
+
+    RING_COPY_RESPONSE(&queue->rx, ++cons, &rx);
     ...
-	if (!skb_frags_readable(skb))
-		return NULL;
+    skb_add_rx_frag(skb, skb_shinfo(skb)->nr_frags,
+                    skb_frag_page(nfrag),
+                    rx.offset, rx.status, PAGE_SIZE);
 
-	if (eat > 0 || skb_cloned(skb)) {
-		if (pskb_expand_head(skb, 0, eat > 0 ? eat + 128 : 0,
-				     GFP_ATOMIC))
-			return NULL;
-	}
+The only bounds check runs in xennet_get_responses(), on a separate local
+copy that is then thrown away:
+
+    if (unlikely(rx->status < 0 ||
+                 rx->offset + rx->status > XEN_PAGE_SIZE)) {
+
+RING_COPY_() does a volatile load, so this is a fresh read of memory that
+the backend can still write.
+
+Could a backend rewrite the slot between the check and this read? A
+negative status would lower skb->len and skb->data_len and store a huge
+frag size. An offset plus status past the page would create a frag that
+runs past the RX page.
+
+Commit 8446066bf8c1 was meant to make netfront read each response only
+once. Could the copy already validated in xennet_get_responses() be reused
+here?
+
+[ ... ]
+
+> @@ -1198,6 +1191,11 @@ static int xennet_fill_frags(struct netfront_queue *queue,
+>  	xennet_set_rx_rsp_cons(queue, cons);
+>  
+>  	return 0;
+> +
+> +err:
+> +	xennet_set_rx_rsp_cons(queue, ++cons + skb_queue_len(list));
+> +	kfree_skb(nskb);
+> +	return -ENOENT;
+>  }
+
+[Severity: High]
+net: xen-netfront: memory leak of head SKB on xennet_fill_frags() error path
+
+1. Consequence: Memory leak of the main/head SKB and its data on the RX error path. Over time, an attacker triggering this error could exhaust system memory (DoS).
+2. Triggering path: In xennet_poll(), a head SKB is dequeued from tmpq. It is passed to xennet_fill_frags(), which attempts to merge additional fragments. If pskb_may_pull() fails (e.g., due to memory allocation failure) or if nr_frags still exceeds MAX_SKB_FRAGS, xennet_fill_frags() returns -ENOENT without freeing the head SKB. Back in xennet_poll(), this triggers goto err, which loops over the remaining fragments in tmpq using while ((skb = __skb_dequeue(&tmpq))). This loop overwrites the skb local variable, causing the head SKB pointer to be permanently lost and leaked.
+3. Reachability: High. A remote attacker could potentially send highly fragmented packets designed to exceed MAX_SKB_FRAGS to intentionally trigger this error path and exhaust memory.
+
+[Severity: High]
+Does this error path leak the head skb?
+
+This exit frees only nskb and leaves the partly built head skb with the
+caller. In xennet_poll(), the head skb has already been taken off tmpq:
+
+    skb = __skb_dequeue(&tmpq);
     ...
-}
+    if (unlikely(xennet_fill_frags(queue, skb, &tmpq)))
+        goto err;
 
-The frags are always readable here because XDP and memory providers
-can't be used together:
+The err label there only drains tmpq, and it overwrites the local skb
+pointer:
 
-- dev_xdp_attach() returns -EBUSY when dev_get_min_mp_channel_count()
-  is non-zero.
-- The memory provider binding code in netdev_rx_queue.c refuses when
-  dev_xdp_prog_count() is non-zero.
+err:
+    while ((skb = __skb_dequeue(&tmpq)))
+        __skb_queue_tail(&errq, skb);
 
-The skb isn't cloned either, since mlx5e_build_linear_skb() has just
-built it with napi_build_skb().
+The GSO failure path just above calls __skb_queue_head(&tmpq, skb) before
+goto err, but this path does not. The head skb is never freed or requeued.
 
-There is also always enough tailroom, so eat stays negative. The XDP
-setup earlier in this function is:
+That would leak the linear buffer and the page_pool frag pages attached to
+the skb. These include pages moved over from earlier nskbs whose nr_frags
+was set to 0.
 
-	linear_hr = XDP_PACKET_HEADROOM;
-	linear_data_len = 0;
-	linear_frame_sz = MLX5_SKB_FRAG_SZ(linear_hr + MLX5E_RX_MAX_HEAD);
+The leak has existed since commit ad4f15dc2c70 (2018). However, the commit
+message assumes this path drops the packet ("take the error path
+explicitly"), and the change above sends more packets into it.
 
-That leaves about 256 bytes past the linear tail, and the pull is never
-more than ETH_HLEN bytes.
-
-On the commit message's claim that this happens "When an XDP program
-leaves less than ETH_HLEN in the linear part of a multi-buffer packet",
-is that accurate?
-
-The driver always gives XDP an empty linear area. So the pull runs for
-every multi-buffer XDP_PASS packet whose program doesn't adjust the
-head.
-
-An XDP program also can't leave 1 to 13 bytes in the linear part,
-because bpf_xdp_adjust_head() rejects it:
-
-	if (unlikely(data < data_start ||
-		     data > xdp->data_end - ETH_HLEN))
-		return -EINVAL;
-
-When frags are present, bpf_xdp_adjust_tail() only changes the frags,
-so the linear data_end stays where it is. That means len is either 0 or
-at least ETH_HLEN at this point.
-
-If this change is meant as hardening, for example against later changes
-to linear_frame_sz, could the commit message say so?
-
-If there is a real way to make the pull fail, could the message describe
-it and add a Fixes: tag for the commit that added the unchecked
-__pskb_pull_tail()?
-
->  		}
->  	} else {
->  		if (xdp_buff_has_frags(&mxbuf->xdp)) {
+Should the head skb be put back on tmpq, or freed, before goto err in
+xennet_poll()?
 
 -- 
 Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20261007-b4-pskb-pull-tail-drivers-v1-0-9512b0fb977b%40toxicpanda.com
