@@ -4,130 +4,135 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35B31CA9ED1
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 12 Oct 2026 08:30:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 53E62CA9ED1
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 12 Oct 2026 08:34:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id EA0B4605E0;
-	Mon, 12 Oct 2026 08:30:06 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id EFDD860626;
+	Mon, 12 Oct 2026 08:34:26 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id fY7HXKZCVU5L; Mon, 12 Oct 2026 08:30:06 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 363AA605F9
+ id 39okD1CepcpK; Mon, 12 Oct 2026 08:34:26 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 6798E60619
 Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1791793806;
-	b=FT3edUPhfbfGpw7CJq7Gxq+b7YCjngHRxugFGQUESemoIpmS/qIAODHERYCt/c2gWL8k
-	 MznyaKsMobTemrayQdUDqKbNFmas2RXh5bbqdfIaqNJIKOsV+19HUdWU2279uYvbzGbn1
-	 C0H3/TyDvqBfnvhaPIh59KeaCBuUIGp8bFNqBbyFNCXrTx71W1t9zLvGIzwywGV/mxZGw
-	 qXr8gKm7thiqnxGBNOibUZHwV5PDw7yVZvrwdgzei7VYEgq/eonu65AAw+Kwn59Rh9F7C
-	 6GBiVywAGdSeFDw/qS7FVHlp/wgP9/LarIVMa+1tdepEd3T4RXIO3L+AwkBKrw2rLcw==
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1791794066;
+	b=Fv8xPC/8CTcDwVfM7vxwLrUd605KHFyBO0nLf8HfeAxTTblEqENZvB70rtxxyKolDDOj
+	 ZBxHa7r1jQflvUnENeau1isF6Zl27SVVVkvd3JoRQfQhYzMwNj3xe5FyA668p3Cy6C3di
+	 qDsbqZ3/E1AzzWGp3K5DEqqGmG+IO+ZGCsdLXZtb7tlW+2oWpdeY1OSw4TYQ2c/emNK3O
+	 PoOuRv1egUL+y16r/YiCjSKPFsyBHlYlf94mtqBHpscN9hDWIaOyjSG3x8kDUBziN1uoh
+	 odZpe9VCBMLjgaqtVb6pCOjSuVJKu2CcqxZx3rTGHEZj/6Vb/KQpwKjNGIuNb6GUWYQ==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1791793806;
+	c=relaxed/relaxed; t=1791794066;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
-	 DKIM-Signature:Received:From:To:Cc:Subject:Date:Message-Id:X-Mailer:
-	 MIME-Version:Content-Transfer-Encoding:X-CM-TRANSID:
-	 X-Coremail-Antispam:X-CM-SenderInfo:X-BeenThere:X-Mailman-Version:
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
+	 Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:
+	 In-Reply-To:References:Auto-Submitted:Content-Type:
+	 Content-Transfer-Encoding:MIME-Version:X-BeenThere:X-Mailman-Version:
 	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=/arq3bSiNUhGTgx5pBQcL/wrpeLjPO31tz1LQ4YP/D4=;
-	b=GuiNfKimzHfe+qHfyKCizpwDbI7Z2SmU2KH47gpDgPCvT9JtC4VCWLM8SWyNYgp0zlV9
-	 GsQKpvo79hQQCEDDBJE8tdmW/Wp7QrvXH7BgPtJHHkdxz1J9fEjJBWo3bGT4EwQ395W5X
-	 VHxvR0tFt85Pi5tHD6c+Eg0jOCwFHLe6c6IGXxtxmB5pzhHsrFWqxrwCfTTljKqWsjXde
-	 04ROWtkWO1cDMwhNniAyccQwvK0rgJ9ryrBFLYaquIMldaS4MalmmI/zWRZ1eW6b0/LHD
-	 XLnsM47JUf9mOLJ9mv6kPNoEQu0bAelUAGOdi/ESVbHp3SNaCYNxenpdLRJ894MPsJQ==
+	bh=80POjU5WP6ctS0DqN7hA/63JAQ8Agh1hTny2C1kJcvk=;
+	b=M2OV9CT53ByPQsycWe82BOg36b5JLphJckde5rq4D0DvmpQDrlyA7syHOunVf0e7pokx
+	 fc+61hkuNsSe4ZoM+0RWJJN5ZHzg4/W40wNR8tCfq9VanwN2CjWTCq5js3SQyWu0Cmr+j
+	 Z4m1hxPuiU3z36mKGsmIMQiBV3itDjZgsdbwTy/lmNzCJ1CexgPvoB01eUow3NBAUxNW+
+	 jOM6GpUVez1lwHnN12J+kSMGbWahZ4vpcRfQKepQJvxrVR/hvDIKlayA9jA5l+0MYmJor
+	 GK1H56V6CwPoxcGyGuuMvqHe4INhVdJMtZQNVKROGYaz1wKI9aljcooCXuuFQdBWo/w==
 ARC-Authentication-Results: i=2; smtp3.osuosl.org; 
 	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1791793806;
-	bh=/arq3bSiNUhGTgx5pBQcL/wrpeLjPO31tz1LQ4YP/D4=;
-	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=JrkJONmVL0qeEIJMIqtoRYl5sLTuyNoVGBQvuB2IeAA+u44M3INhMmCK0PBtN0qtr
-	 8CKzsFMZJlQKyGb0V87WkUWxrh8lh8304tYWYGflfVKfSzwcZUeR6CF96F/uNcLBNp
-	 3cH43CYNa3cunGnMueoRcqbYv0oblHDNYyL+CJBD1u9UqvGsKZA1ZDaTL+j/2CGwbM
-	 7NueFqjPfgWssUdA2JuxlnBOYNt4IQfcMSLbE6Fj+FGruHc9Xb3BAkI0fvgiCSRvuZ
-	 cXI/YFi/ReAQ7RnReuwa0DgEwp18u1/Sg2ti5OK8Wns7kt5ZYJE0gJvqszWjr12T29
-	 S2xbEPmv/F2hw==
+	s=default; t=1791794066;
+	bh=80POjU5WP6ctS0DqN7hA/63JAQ8Agh1hTny2C1kJcvk=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=UG9SvRmdua7A2hne6nRknV5vqnwUSZNE6sc09oj00S7ABt0uFOxLI7I1yF6x3tTCt
+	 KNjRHXwTHtYWhct5p/pgcV/KMc7aOm1a1/p9zq/Y9LWeSxUHORHQpNuNwKh2girds7
+	 1Q378lmWP1CWHOMkjXviiEF+zAJSitcH/2Nft8T+VHbCMaWudMFM7HneP5CLWlvFxg
+	 2xmg5CsnARvrkFz4ueGVz7tTIC9/CPcnr3YNBQNxXNyxRiEIaKMDf4s0fPAQALWmnk
+	 F+zUKuqeXEA3kuILCiFtatVN6gSyZUz1AW1aqFSVG7qt1Asla3poOJowJy/xKuHX8R
+	 QiliA/0byXuzA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 363AA605F9;
-	Mon, 12 Oct 2026 08:30:06 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 8D9AA9DF
- for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Oct 2026 08:30:04 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 6798E60619;
+	Mon, 12 Oct 2026 08:34:26 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id D08D99CF
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Oct 2026 08:34:23 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 7F40740024
- for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Oct 2026 08:30:04 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id B174F80C86
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Oct 2026 08:34:23 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id FPDCo6lLbu62 for <intel-wired-lan@lists.osuosl.org>;
- Mon, 12 Oct 2026 08:30:03 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org 9B8FA4002B
-Authentication-Results: smtp2.osuosl.org; arc=none smtp.remote-ip=117.135.210.8
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1791793803;
- b=UXukRjSKwrqIdk6iab4uPtNLzI/loaF8KFTpei2D6roiGRTGiEEHvnHPfZtPLEhgL6YQ
- FHHwQ7FdOeiglRlaIDx1L/H0eJAYmlbDZyK/sgdUIzWAZg1Xaend0Ts4XPk6Z2dBu9tXN
- F2XmqOe00qM8wC36FVIPvRtoRcReVub4fvMdVIOxRlMu4V3GOsOmLDH2+egAQq3v2YfV8
- o6arS88gWp/3kQ/LNQlUWbm7Hyt7wma/+hOWZ2BY2CuGnXuO3GwnSbL8fcoPuT0DVpe1I
- zY6uyvbGp4SDxvggNxkDQuFiCTExiCDJpQ9k34g0CqA8f8y1Vo1GLfuckHh1eul3rdw==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id UqW2N1sP87AW for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 12 Oct 2026 08:34:23 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org A31B780C7E
+Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1791794062;
+ b=XyEI6njngzJVS9DXHQNoyTUT8KmPUvmAqVUGe3lKBQTP6vsxZsQLfBbNoEQjpfnZhI/S
+ tbkCRfZ+gHOHUnPVThPQ8yMmGTWO3pcrR7MGWM1bVLIREyO7CjlK8rJ1+wdOTq00T2tU/
+ TVliEOXtjNziaBp/Lb8n9FZY1qEc6+vk5QQaaLWPh44AbnyyTHXQuGB3JyQ2AeB9+sHOG
+ WFgURrQzdpFYqFCWS7x36hTTiSOUhUIysDKitTbGdPkoqfc7dKRYEz8Coqn9xmpMQJ2AJ
+ Ik9Nz8BnstDrl/gjYX5h0gq/Mo/r5993hPexvINN56ws0+rfLmopTnDuuxh09gpHNgQ==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1791793803;
- h=Received-SPF:DKIM-Signature:Received:From:To:Cc:Subject:Date:
- Message-Id:X-Mailer:MIME-Version:Content-Transfer-Encoding:
- X-CM-TRANSID:X-Coremail-Antispam:X-CM-SenderInfo;
- bh=/arq3bSiNUhGTgx5pBQcL/wrpeLjPO31tz1LQ4YP/D4=;
- b=WZw0m1GyDm4ZXvsSvD60YuKcSPGway+iiFdVTb7mo9f6ScCtjDclWPgdlP8cS5hhlg3I
- lj05dfGZNN5kzc7V1xQpS5djT3mh35A6LiGS5yd8xGwXn5y9BvP/2rhhri5pwcKN1EziG
- Yq2v2YFNTJzrFK4gU0xqjwm4G/AKVdQeylcwPPMKX7MpakngPBwKUTRSubUOt3Kh3gBfa
- rGZgbTZV9XWCVBLZNC2nfM/W2e5yLFJcmvuoiSUpH19bdWWYjot95h6SZ43zG+B3nsyj5
- yOPwvA9mrTAcv8P7VJacfkZk1h3NtLQHXcMogCfLSMcZMK82ow3pA2Jt6KqSeXfilrQ==
-ARC-Authentication-Results: i=1; smtp2.osuosl.org; 
- dmarc=pass header.from=126.com;
- dkim=pass header.d=126.com header.i=@126.com header.a=rsa-sha256
- header.s=s110527 header.b=MWJUXpCH; 
- arc=none smtp.remote-ip=117.135.210.8
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=117.135.210.8;
- helo=m16.mail.126.com; envelope-from=xiaolinkui@126.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=126.com
-Authentication-Results: smtp2.osuosl.org; dkim=pass (1024-bit key,
- unprotected) header.d=126.com header.i=@126.com header.a=rsa-sha256
- header.s=s110527 header.b=MWJUXpCH
-Received: from m16.mail.126.com (m16.mail.126.com [117.135.210.8])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 9B8FA4002B
- for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Oct 2026 08:29:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=126.com;
- s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=/a
- rq3bSiNUhGTgx5pBQcL/wrpeLjPO31tz1LQ4YP/D4=; b=MWJUXpCH8MV8b2ZjXV
- T6V1yMhz/BkgyCoZfS27C7lmG/tmk4F2801CG27mceAPC/gDMhnBDdeecqLW/61X
- w3ZZlgVAkHW1vMZrGW8pRUwYIi5sJ18ATp3XP+t551w1x25JtAEbmXuAwQsdWKu1
- +1teoQolx0YcCAEsIFoSHC9fU=
-Received: from localhost.localdomain (unknown [])
- by gzga-smtp-mtada-g0-4 (Coremail) with SMTP id
- _____wD3NzBXmsxquD7DBA--.7129S2; 
- Mon, 12 Oct 2026 16:29:12 +0800 (CST)
-From: Linkui Xiao <xiaolinkui@126.com>
-To: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ c=relaxed/relaxed; t=1791794062;
+ h=Received-SPF:Received:Received:DKIM-Signature:From:To:Cc:Subject:
+ Date:Message-ID:In-Reply-To:References:Auto-Submitted:Content-Type:
+ Content-Transfer-Encoding:MIME-Version;
+ bh=80POjU5WP6ctS0DqN7hA/63JAQ8Agh1hTny2C1kJcvk=;
+ b=k5SnvA8MBlkyLD2Cd5fSamCl8yvFOxduwaFeID05D7VsmvvQCnw0LUTV+jlXoU6a4kHo
+ 7YwM9nx7KGwAi6VLC98/4uJAVj2vchS01WqEPGYDjQ8G2/458Z0onwQMtMAKrGzfgwWUF
+ XM0c1/ncSrcKSY7u2igxqftzzFu6zt6ZVKlJNTC/b7CnOLC2WvNDC3IyzUB6XaKRfZH+z
+ SvMDlE8VyUpZXSFxZbxzFLX4y8Yre4RiUog0+yqk0IOrxlvoHVxzklzkmsvDkqKcRIMt7
+ 7rf+Fr8GANogqdWOLvtJeJxWC42Ipoax2l5OBhej2PueXdF6mew+s7Cr7TiqNOOKk0g==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
+ dmarc=pass header.from=kernel.org;
+ dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20260515 header.b=TU1O25BR; 
+ arc=none smtp.remote-ip=172.105.4.254
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
+ helo=tor.source.kernel.org; envelope-from=netdev-bot+sinfo@kernel.org;
+ receiver=<UNKNOWN> 
+Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20260515 header.b=TU1O25BR
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id A31B780C7E
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Oct 2026 08:34:21 +0000 (UTC)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+ by tor.source.kernel.org (Postfix) with ESMTP id 5416D60DAC;
+ Mon, 12 Oct 2026 08:34:19 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 71EF11F0089B;
+ Mon, 12 Oct 2026 08:34:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+ s=k20260515; t=1791794059;
+ bh=80POjU5WP6ctS0DqN7hA/63JAQ8Agh1hTny2C1kJcvk=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References;
+ b=TU1O25BR+UKhvp7Ujpo7e//H0M2tFSdFcAV6Jo9wfl6vZXBnsSR6BJyQCVERDHjQj
+ va32iT6qEPovrNp7FS0mYz19BBe5b45aLHfJvtgrUiIUBSfMu738c2laZNx02zitQ/
+ BuLjzDth6Bg0CYa6DyE/3ZNJUt6nr27alYFQhPkEO5VZZ7c76NxqFd16MctRMA1msB
+ BITZ+pC2zFd22Kv+c8AFbXpcWzFyFrMw2zyEH+DhUasZvqJS4sBcInbWm53pkwJLW+
+ AftFaA/il5oXFArG8lZXxZe4kWyfFSCrz689wpW9EsWqKV3b2uvMKfoQEhLDuIVdis
+ xJflm8ePbruNQ==
+From: netdev-bot+sinfo@kernel.org
+To: Linkui Xiao <xiaolinkui@126.com>
+Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
  andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com
-Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, Linkui Xiao <xiaolinkui@kylinos.cn>
-Subject: [PATCH iwl-net] ice: do not report success for a VF setting that was
- not applied
-Date: Mon, 12 Oct 2026 16:29:10 +0800
-Message-Id: <20261012082910.283229-1-xiaolinkui@126.com>
-X-Mailer: git-send-email 2.25.1
+ kuba@kernel.org, pabeni@redhat.com, intel-wired-lan@lists.osuosl.org,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Linkui Xiao <xiaolinkui@kylinos.cn>
+Subject: Re: [PATCH iwl-net] ice: do not report success for a VF setting that
+ was not applied
+Date: Mon, 12 Oct 2026 08:34:18 +0000
+Message-ID: <179179405801.2527009.14010952920802573492@kernel.org>
+In-Reply-To: <20261012082910.283229-1-xiaolinkui@126.com>
+References: <20261012082910.283229-1-xiaolinkui@126.com>
+Auto-Submitted: auto-generated
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: _____wD3NzBXmsxquD7DBA--.7129S2
-X-Coremail-Antispam: 1Uf129KBjvJXoWxCFWUArW8tr4kJFyxCw45Wrg_yoWrtr1fpF
- Z5KFWqqr4DXF4I93sIgF4UZFWYka4FqFWUGr95GFyFkws8ArnYvFWFyrZFvFy8A3yxCa43
- tFsru34DuFyDWaDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
- 9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07ULFxUUUUUU=
-X-CM-SenderInfo: p0ld0z5lqn3xa6rslhhfrp/xtbBlRiKYWrMmlh3xAAA3x
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -142,121 +147,20 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-From: Linkui Xiao <xiaolinkui@kylinos.cn>
+Hi!
 
-__ice_set_vf_mac(), ice_set_vf_trust() and ice_set_vf_port_vlan() all
-check that the VF is ready for configuration, take vf->cfg_lock and then
-call ice_reset_vf() to push the new setting into hardware. The result of
-ice_reset_vf() is not looked at, and it could not be: it returns 0 both
-when the reset ran and when it bailed out because the VF is disabled.
+This is an automated message. This series looks like a fix, but its
+commit messages seem to be missing some information:
 
-The check runs before the lock is taken, so a reset can disable the VF
-in between. ice_reset_all_vfs() raises ICE_VF_DIS in pf->state before it
-walks the VF table, rebuilds every VSI and clears the bit again. An
-ndo_set_vf_mac() that passed ice_check_vf_ready_for_cfg() just before
-that then waits for cfg_lock, stores the new address in vf->dev_lan_addr
-and vf->hw_lan_addr and calls ice_reset_vf(), which sees the VF
-disabled, stops its queues and returns 0 without reprogramming anything.
-__ice_set_vf_mac() reports success, so ip link and the devlink port
-function now show a MAC address the hardware never got, and the switch
-keeps enforcing the previous one until something else resets the VF.
+ - What hardware the change was tested on. For driver fixes please
+   mention the device (and if relevant firmware version) used for
+   testing, or say that the change was not tested on real hardware.
 
-ice_set_vf_trust() and ice_set_vf_port_vlan() have the same shape: the
-port VLAN lands in vf->port_vlan_info and the trust flag in vf->trusted
-before the reset is skipped.
+Please do not repost the series just to address the above. Instead,
+reply to this email with the missing information, so that reviewers
+can take it into account. If the series needs another revision for
+other reasons, please include the information in the commit messages
+then.
 
-Re-check ice_is_vf_disabled() once cfg_lock is held and fail with
--EINVAL, the same code ice_check_vf_ready_for_cfg() returns for a
-disabled VF. The VF is being reset or removed at that point, so the
-caller should retry rather than be told the setting is in place.
-Changing what ice_reset_vf() returns on that path is not an option, too
-many callers rely on it meaning "nothing to do".
-
-The race was found by code inspection of the ndo VF handlers, it was not
-reproduced at runtime and no error message was observed.
-
-Fixes: e6ba5273d4ed ("ice: Fix race conditions between virtchnl handling and VF ndo ops")
-Signed-off-by: Linkui Xiao <xiaolinkui@kylinos.cn>
----
- drivers/net/ethernet/intel/ice/ice_sriov.c | 30 ++++++++++++++++++++++
- 1 file changed, 30 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
-index e04de0215596..de0631673149 100644
---- a/drivers/net/ethernet/intel/ice/ice_sriov.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
-@@ -1327,6 +1327,15 @@ int __ice_set_vf_mac(struct ice_pf *pf, u16 vf_id, const u8 *mac)
- 
- 	mutex_lock(&vf->cfg_lock);
- 
-+	/* The VF can have been disabled by a reset after the check above, and
-+	 * ice_reset_vf() then skips the reprogram and still returns 0. Fail
-+	 * here instead of reporting a MAC address that hardware never got.
-+	 */
-+	if (ice_is_vf_disabled(vf)) {
-+		ret = -EINVAL;
-+		goto out_unlock;
-+	}
-+
- 	/* VF is notified of its new MAC via the PF's response to the
- 	 * VIRTCHNL_OP_GET_VF_RESOURCES message after the VF has been reset
- 	 */
-@@ -1345,6 +1354,8 @@ int __ice_set_vf_mac(struct ice_pf *pf, u16 vf_id, const u8 *mac)
- 	}
- 
- 	ice_reset_vf(vf, ICE_VF_RESET_NOTIFY);
-+
-+out_unlock:
- 	mutex_unlock(&vf->cfg_lock);
- 
- out_put_vf:
-@@ -1401,6 +1412,14 @@ int ice_set_vf_trust(struct net_device *netdev, int vf_id, bool trusted)
- 
- 	mutex_lock(&vf->cfg_lock);
- 
-+	/* See __ice_set_vf_mac(), the VF can have been disabled after the
-+	 * check above and ice_reset_vf() would skip the reprogram.
-+	 */
-+	if (ice_is_vf_disabled(vf)) {
-+		ret = -EINVAL;
-+		goto out_unlock;
-+	}
-+
- 	while (!trusted && vf->num_mac_lldp)
- 		ice_vf_update_mac_lldp_num(vf, ice_get_vf_vsi(vf), false);
- 
-@@ -1409,6 +1428,7 @@ int ice_set_vf_trust(struct net_device *netdev, int vf_id, bool trusted)
- 	dev_info(ice_pf_to_dev(pf), "VF %u is now %strusted\n",
- 		 vf_id, trusted ? "" : "un");
- 
-+out_unlock:
- 	mutex_unlock(&vf->cfg_lock);
- 
- out_put_vf:
-@@ -1721,6 +1741,14 @@ ice_set_vf_port_vlan(struct net_device *netdev, int vf_id, u16 vlan_id, u8 qos,
- 
- 	mutex_lock(&vf->cfg_lock);
- 
-+	/* See __ice_set_vf_mac(), the VF can have been disabled after the
-+	 * check above and ice_reset_vf() would skip the reprogram.
-+	 */
-+	if (ice_is_vf_disabled(vf)) {
-+		ret = -EINVAL;
-+		goto out_unlock;
-+	}
-+
- 	vf->port_vlan_info = ICE_VLAN(local_vlan_proto, vlan_id, qos);
- 	if (ice_vf_is_port_vlan_ena(vf))
- 		dev_info(dev, "Setting VLAN %u, QoS %u, TPID 0x%04x on VF %d\n",
-@@ -1729,6 +1757,8 @@ ice_set_vf_port_vlan(struct net_device *netdev, int vf_id, u16 vlan_id, u8 qos,
- 		dev_info(dev, "Clearing port VLAN on VF %d\n", vf_id);
- 
- 	ice_reset_vf(vf, ICE_VF_RESET_NOTIFY);
-+
-+out_unlock:
- 	mutex_unlock(&vf->cfg_lock);
- 
- out_put_vf:
--- 
-2.25.1
-
+The evaluation is done by an LLM so it may be wrong, if you think
+that is the case please reply and explain.
