@@ -4,139 +4,164 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9CC67CA9ECF
-	for <intel-wired-lan@archiver.kernel.org>; Sun, 11 Oct 2026 19:04:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9483ECA9EC5
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 12 Oct 2026 06:30:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 5F003405DC;
-	Sun, 11 Oct 2026 19:04:14 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 4C9E740629;
+	Mon, 12 Oct 2026 06:30:41 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id fAidNcVKHNDx; Sun, 11 Oct 2026 19:04:13 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 84066405E0
+ id 10JKjkxQJNJ3; Mon, 12 Oct 2026 06:30:40 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 709EE4061B
 Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1791745453;
-	b=dZtLgdkc0ud/dgD/Yf+wmF9TDapXfBL50Cm1HEzw8eGAf7nhOz8A6mTohQn72S3MJXGX
-	 ypBCq+ReW+fqQJJCfBIfsmnX5Pb6+8/tzQGvYm0nPhKf7lSSudz3GsnsBTvdUnc0LpJqf
-	 PES+EU466eEE9/cu+fvDhEoJylZ+KbLfsIsFM92U3lgP3kfEd5du2tK7d93t82MSv8Chp
-	 iyTP2EQX19GcrizlMskYkedGOsVMj7LuIhvPEZy1k4VAjLBlkrU2nxCkzxPGMXnxT1kq1
-	 BwbDFbZXl8YdxyqKoG8mNqGHvKtrsmTR7eUjwdx71xZIOahLNQrAMbZEV/9a52a92Zg==
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1791786640;
+	b=B35J5+IeR/Z9nbTfifeEnH/2Kss8LARgYYYqUZgiKU+VEAHGIZ0yhYm3YEFFULfSqlJI
+	 KoCou4chLiB/ljLrxY2EcsZqm7b5gz8crxSHwFY4ArAX9VJWpwi05LuhewadOMMthyq3F
+	 4avFQWdmeK/YYv7YypLaqGV+RCgT5DHQ/bGdvTZegenWOYW9AFnD1sbFOGVzqt3h3wcfo
+	 40yQdgS+9mfH9oeKVUtgZEq7AetYMztXim9qbV17FE4nHMlArj4m/YI4iCP9/jgpYcXKu
+	 zts73404yAk6Q+JxEPPmGKbaeghgeGOKVuSVSLXCupmwDnzv9Ch6XMZ4jVVfgECu8kQ==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1791745453;
+	c=relaxed/relaxed; t=1791786640;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 Received:DKIM-Signature:Subject:From:To:Cc:Date:Message-ID:
-	 In-Reply-To:References:X-sashiko-severity:Content-Type:
-	 Content-Transfer-Encoding:MIME-Version:X-BeenThere:X-Mailman-Version:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Gm-Message-State:X-Gm-Gg:
+	 X-Received:Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
+	 MIME-Version:Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:
 	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=4vxOlSiy9OgWc0Y0eZ4LnuQ00GAjNw7bsz9uahntp8s=;
-	b=N/+dt+TO6j9qqOhahpjo8D1olDK2/xziILxmL9YRbFVoZzQc6CSdBllB1n2wnip0qjDk
-	 c+FaMWo4Wqztrz6+Gp5qH8ZhlulfUPMeQVSf4dU9Vi5+RzpX1VLIAkcbSRzK7E/1rTmyD
-	 u0FSqXeXeIs49gLR8fSzcH1muC3Ax13ORhSIe6/RJ2fK3SFCHM5qmXBZEV8vsvEryilH0
-	 15exn2bwauxYzR+TW3mF2rQMCgN/un0PduwDzYQ4ktiihkQEy4Rzvjp+ZHKC/cAA9doJJ
-	 V6vMgbZjSgb2eNYQjMRKNMPIxNBBQC7LujELVbRdp1p+yr93J9gtsJTyGu61PvZEUeA==
+	bh=WfFi2at/lgAH1/xbqXNWbCEaLwYnM/ZF1CQqtE9gXAU=;
+	b=fx+1CuOp03aDbZsP3QB9Ue4BgxhE8p++3ieOt2jG9o1VP48Ea3kjxGrONynifiYd67zW
+	 cTVsXrvZ2+ak3t/ElTi6w5sE0Mn7RG4yVFsmmwVAq/ho05KapfKzo1dKHSW1sdtGudzQf
+	 BU8A+5kj7bYD9R8Srb3ktKFweVXHQ3Q35TBs+1RtwgdFrIRU7p8JgP4i31uj0GJJGBp29
+	 va7AA6m0Mgm8Lnes2Mi6z6GI9buGqMTnXR0ujJR2cyGI+LSHTSeJGxI7ot0wg+wKqf29a
+	 ySbB9KinJ1MByy/i4AXvFBtsS7iDWll+dbMlnKF7Z/WGA4zEOyI3pmkltbnQe0P4nsA==
 ARC-Authentication-Results: i=2; smtp4.osuosl.org; 
 	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1791745453;
-	bh=4vxOlSiy9OgWc0Y0eZ4LnuQ00GAjNw7bsz9uahntp8s=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=gobSY61NcKwfF9lMqPskB5EEK7p+LoxF+Gl5AQ9AQHqQi9roO2ZMvYYBSpdgx7Wxn
-	 nBAcHzvUXYG9xi2Tl7XQeFvTl+XicjgPv4aPzwL6ZQAAUD6HsCnC5ITlxWcizhPTFh
-	 47xzZRsbjW4EP+35w18p4Vc8N40jioDL1c6LBAZRCXpfavhQFMea7aRAgNdBRjLvry
-	 /hPONlhWB4kxaQdY1ggO4Er8/XZZqEfKRnozuq9wPqrFMsyEdsrrQXdKCMNYTNXDZs
-	 aGYoRFJ0wiOpOEmvX4w9hhcpveGbpDUH46SnDHNNBsKlRB1FRU14dX/9P9r2bD5d3e
-	 v2994tQL8Lwog==
+	s=default; t=1791786640;
+	bh=WfFi2at/lgAH1/xbqXNWbCEaLwYnM/ZF1CQqtE9gXAU=;
+	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=jumRDXFzgB7WCl6kOrYO4Bq9mkvHGd6vrrdh2Rbovm4v5G4tvJ2ia+VX+O4MZBjt5
+	 i8DSM2OW4AGNKlWeKGDer5iGHbUgYMYtkOttyIKr2r0pMzbZ2rAoy/8DMzISFTPibh
+	 cTuOyZUWR/n7c69uZ8FZGG4ztZTY9StvEd+CyYE5ipQAgItSGWtkKUXPE7YsTf1sZw
+	 nPKWOXCQAs49ELssbituSG/xgXCKqS6WfcHPVb+Uzr8yBVan+FyIY3WNKpiGCNKiju
+	 qIqWh0Atqnt7hZnf0fFrgjabtnV2Vfuv4Zc6spXiqsewFO9T0p3rMsf2MElM7umNfO
+	 14mfnkEVXRCGw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 84066405E0;
-	Sun, 11 Oct 2026 19:04:13 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 709EE4061B;
+	Mon, 12 Oct 2026 06:30:40 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 5480B75
- for <intel-wired-lan@lists.osuosl.org>; Sun, 11 Oct 2026 19:04:12 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 3148C9CF
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Oct 2026 06:30:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 5212180C88
- for <intel-wired-lan@lists.osuosl.org>; Sun, 11 Oct 2026 19:04:12 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 2EC0580CEE
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Oct 2026 06:30:39 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ABAPuVPdgS2A for <intel-wired-lan@lists.osuosl.org>;
- Sun, 11 Oct 2026 19:04:11 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 4160D80C8F
-Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1791745451;
- b=JMJmMMFy9vPwxXHb/7dIwLVRKQvjr9bb4T81nRCKO9OaU43B/HuhJAipW8S2q9/aYDyH
- norBySYZojC19HZ4ntXQYOpw7otNXVJEeRFmNSXkfdqQCDZSgGaKizg8D9+LSRR/lA0gE
- EQISDUZCVGsVt024Z0uk3S5yIXuTFyfqlwiKXbuN+FjTWDA7kwMMD+NO0MBZhqfBKZV99
- G6lcbW6/eSlMXWtq5z0lNa7t8cRhALAhhau6Xw97Gu7cPZ6hnDfKy6DTMQlfyHSmzjIBw
- 8CbhrCf4hJooLqA3v30iJ+bg8/YCsS7O+d+vA9bLnvkBnwGtzV/Mi8HNb7JMKzCCwDg==
-ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1791745451;
- h=Received-SPF:Received:Received:DKIM-Signature:Subject:From:To:Cc:
- Date:Message-ID:In-Reply-To:References:X-sashiko-severity:
- Content-Type:Content-Transfer-Encoding:MIME-Version;
- bh=4vxOlSiy9OgWc0Y0eZ4LnuQ00GAjNw7bsz9uahntp8s=;
- b=i3WqdcZxNtcWIyiSShPgXzCoAK6ldyULSIqVKom+o0BHV/XfYgCnv8N41H2Xlk7BV6hj
- J/lNkdp7ZOMiQmjsKQEuP4ah62BoYmNkLYRIIVEfpaykw8BdcPMDeFJ+G91dvTvBT2c8d
- BEvULl2/FxCt50N9c9iWvyv+IqjA2WrbcbR7MJuRrvjg0Lxl6N+nHCdSKEwUraTHKhBhJ
- s/cp5TyZh8FafmYWZjo6Kdxk2aKRmSIiXJ7CmNOwQrgU3DjM3edDp4r5wXuR4R/agSoZu
- eGlGnuSlP7P/mxYEW8tWun7aNnM5KEFj5VlTf3nSWU0CTxuk8Or2RqTPpo1rKKp5M4Q==
-ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
- dmarc=pass header.from=kernel.org;
- dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=CjY4UeAJ; 
- arc=none smtp.remote-ip=172.105.4.254
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org;
- receiver=<UNKNOWN> 
-Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
+ id i91M-ebcA_xx for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 12 Oct 2026 06:30:38 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 4979380CEC
 Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20260515 header.b=CjY4UeAJ
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 4160D80C8F
- for <intel-wired-lan@lists.osuosl.org>; Sun, 11 Oct 2026 19:04:10 +0000 (UTC)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id 9AE8A602C3;
- Sun, 11 Oct 2026 19:04:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DE4261F0089B;
- Sun, 11 Oct 2026 19:04:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1791745449;
- bh=4vxOlSiy9OgWc0Y0eZ4LnuQ00GAjNw7bsz9uahntp8s=;
- h=Subject:From:To:Cc:Date:In-Reply-To:References;
- b=CjY4UeAJxeRG+6zxZ2JMQ37NUAAJU7B0QFD0x9u4mXCWNj3x6vTki4Ex4jmP5nmTr
- nEldysQH5Y/i+i6Ds1cl7TMCoF4zbdO7g9CiGRvRY0SLb70r/ihN0mDoEIRqtoYn3w
- 2uzBXoO+p4seJUiCIHK2K9XYeWjuiQQAxemBKvKRSUv+qTLZogLvdD8pFDes31UBO/
- qqqUxMv4TP2EuoPSEBNUPyElJS9DYJKkxV4am0zKNhEx33NSG7p9azBdb6wpDNxnk6
- PRlz/r8bMcy04afRZ+RkwV6mpYk6jovQOrSnOeAcoCdhP2F5rRABrdly4WqTQ13wd+
- m9WvDT+KPx5QA==
-Subject: Re: [PATCH net-next 8/9] qlcnic: use pskb_may_pull() to pull excess
- TX frags into the head
-From: netdev-bot+sashiko@kernel.org
-To: josef@toxicpanda.com
-Cc: kuba@kernel.org, pabeni@redhat.com, edumazet@kernel.org,
- davem@davemloft.net, andrew+netdev@lunn.ch, saeedm@nvidia.com,
- tariqt@nvidia.com, mbloch@nvidia.com, leon@kernel.org, jgross@suse.com,
- sstabellini@kernel.org, oleksandr_tyshchenko@epam.com,
- anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com, manishc@marvell.com, 
- rahulv@marvell.com, GR-Linux-NIC-Dev@marvell.com, shshaikh@marvell.com,
- horms@kernel.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-rdma@vger.kernel.org, xen-devel@lists.xenproject.org,
- intel-wired-lan@lists.osuosl.org
-Date: Sun, 11 Oct 2026 19:04:07 +0000
-Message-ID: <179174544742.434549.15432453849443944349@kernel.org>
-In-Reply-To: <20261007-b4-pskb-pull-tail-drivers-v1-8-9512b0fb977b@toxicpanda.com>
-References: <20261007-b4-pskb-pull-tail-drivers-v1-8-9512b0fb977b@toxicpanda.com>
-X-sashiko-severity: Low
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+ arc=none smtp.remote-ip="2607:f8b0:4864:20::1035"
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1791786638;
+ b=EdLXkRcCUXJDN3TLzMknl8WyLohM7WCe7mk3G2VNNN1UV1QSAKZyxZoAr5KoqJ1dxOha
+ fq4aQ0fxbEBy9G9OVqvG09Airp5GmoG5j/dvOlx8NwNNxIqYVkGdOKrZNQBJNCdqFflsK
+ RB5urjiGDyrqqRpcPsodj2OiqwU9+mz9EuyeyoegcQacrFhidm41LTZkS3si+PZov4FPn
+ EUJ3Ifkx0PczTOvEFdedUjoCLtN7SE7xZm09CH64GE86BkNY/qw23GbxGqKpRjqznGFwB
+ hSZxl+2zWQaK7bi/SpCXe2hnIrZ5kX93LZB/6DenRkzAmTt/FAG72MmNfSs9RqZpOTQ==
+ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
+ c=relaxed/relaxed; t=1791786638;
+ h=Received-SPF:Received:DKIM-Signature:X-Google-DKIM-Signature:
+ X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
+ Date:Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding;
+ bh=WfFi2at/lgAH1/xbqXNWbCEaLwYnM/ZF1CQqtE9gXAU=;
+ b=UXGWX9P/zfw/cym7Y/4LPFlxb+DujONdQh3Q9n71MiKV8OEKwImj3VhcvschSYToHnRx
+ XBEkMlHw5NDONkNXxKV7EgSA/z+aqAW4e3EjV6VdLb4Bzs7SnhTjmBGBxZnTdx5n5RZg6
+ 00KyYaKp/0Y56eMyWyCs0meCeZI0oQcxXYpzS2QDsmCjDaK1Euh4GzDifTruA8KsDr0DX
+ j644lnJs4D1IXYZRNgdtw+F3rzQU1UGAjl12B5Q3eElwe4eESWkvFKka3QTPs9JdANKJj
+ cxW27ZOJv7Ne+bq98aZYnUu1wQtYTAmmdhfJD/OPazLSeoTFeo7z7niQYBFaFkSBpLw==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
+ dmarc=pass header.from=gmail.com;
+ dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20251104 header.b=Lefh1Ke0; 
+ arc=none smtp.remote-ip="2607:f8b0:4864:20::1035"
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2607:f8b0:4864:20::1035; helo=mail-pj1-x1035.google.com;
+ envelope-from=luckilystar08@gmail.com; receiver=<UNKNOWN> 
+Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20251104 header.b=Lefh1Ke0
+Received: from mail-pj1-x1035.google.com (mail-pj1-x1035.google.com
+ [IPv6:2607:f8b0:4864:20::1035])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 4979380CEC
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Oct 2026 06:30:37 +0000 (UTC)
+Received: by mail-pj1-x1035.google.com with SMTP id
+ 98e67ed59e1d1-3ab450c0873so1339998a91.3
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 11 Oct 2026 23:30:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20251104; t=1791786637; x=1792391437; darn=lists.osuosl.org;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+ bh=WfFi2at/lgAH1/xbqXNWbCEaLwYnM/ZF1CQqtE9gXAU=;
+ b=Lefh1Ke0mr6Q5Wht5uOqA3gaWGr+ijrhRF6E8FtSux3aMgpKs2pthM9FpTotGCNaNm
+ Eke8QztXJtqhYWLI1oXP/g3l7B8YIj1IQthQR8qlB3ywWDr1lATX4VZgRYqviEhhy4Ut
+ d0SOlQL1g+WUemeTbbB72YQRpKZCd8mLMbaUAq+qWIP1YgQ8/ThX8LebeWPfj4OU5wSe
+ 45+1cn+rOAZO5nlbB0YbmYPNrnJMZoHTX/6TBDBupsHz7XwlT0GrXZIYoBmPTcfe3J22
+ zOB9/bd8Ckz62fbdlmobrK0ufA4R399E7sr2HoFwv67N5J5vh4/mdZVTOvpfMIGYoyjs
+ xjLw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20260707; t=1791786637; x=1792391437;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to:content-type;
+ bh=WfFi2at/lgAH1/xbqXNWbCEaLwYnM/ZF1CQqtE9gXAU=;
+ b=CWDmZ1C000Ne/g/rOyKz+TfkXd3IY190rUR4blj/oCpu3TnTr4FWEJD6zK0WNQvf8j
+ HAAxrrMzzlpmk4o8nWLyIPvjIUCYJhDUYO1xvTvh7HQRRxmQaTZSW+fP6Kv1ujMq8ujJ
+ S1IDHJXWdAQbBjSbEcdqlR/jiz9hG3XsyNP6oQsBJX5xgmDLWP9kKPUXui95XCUD2B/2
+ P1CsfmQWlwQLD3zs6gY3095zzYO/zHbDGTzYyhkcGQp4lJFbY5yiFHtZWMkUHwFf3CEw
+ L5dfmIhWpiapo2EYjuOz6WRyq+g6yo24EBhWvmWipGlSRq1A76I3I9t3WdZfzCpNq/6W
+ 5PuQ==
+X-Gm-Message-State: AFq9FYKkc+mHcoeK8BWuwyAjy0aRQl9M25W8d/NoP1CX2ScONcRUbMYo
+ cBmYuD3oL4J8j820NJzF2vIFhK8h17COYg68JLYd3W9Izg15DRI+K/wqtUH6adcu3FE=
+X-Gm-Gg: AYBFou2pLRWlLlNMpmdwJRIrPaX7IGng6smPZq5KwiGJ936TN1oBLcFGgNIZEj3UOez
+ GtjapV/g3weFF1Hu0yFmti3bte/GQBPIEhTfG5BhunSXkHQYfqtyy1Exv+SqtZOUuh4qtLoOfO0
+ Ul5ubUO9sB1tSsiDrwDNP82QavKyZqDAf+PXvsMNkM5EoadBFnnAz6WMnazo9XBshFzQSLL7Hww
+ 3IsXfBVmk2MXAO8C2/M30bJ3ak8VSKe4TExkZV5R48zEp4ycYFlZatzMV/ksErInvGBdmH4EMuT
+ ENNpi7jkOwT+CFGmSQXyWSwdwA7XNdRUkEBx6guchEE8g/GIiAvNNE2kfhD0oZzobXHVffo5NBO
+ lRk4uN1fF7emeh3RgaZmSIjVYH7nhX+MFlhVLdP/GqIagNVvsjvXEph6gvjfLK6vKlxezqca3kv
+ LuMDEC9Plb0IwBZr4ySMyUoXK0Y0dR65JwVd3gAWvkUWm3Nl+c6L/5smNlgw2WOYx9K5WtgBpf5
+ RPCRCAZnObi8sfK2b36WemiSJw6mW9CV6N1al5tcdaLGrPS7WoQrag23e+8zewU7TWB6Cw7L91H
+ Z43ooV72Q+W1Uw==
+X-Received: by 2002:a17:90b:5346:b0:3ab:235b:185b with SMTP id
+ 98e67ed59e1d1-3ab3a77980emr6448875a91.31.1791786637261; 
+ Sun, 11 Oct 2026 23:30:37 -0700 (PDT)
+Received: from C9P9279WY4.bytedance.net
+ (21.186.101.34.bc.googleusercontent.com. [34.101.186.21])
+ by smtp.gmail.com with ESMTPSA id
+ 98e67ed59e1d1-3ab371c32cesm14452767a91.16.2026.10.11.23.30.32
+ (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+ Sun, 11 Oct 2026 23:30:36 -0700 (PDT)
+From: Tian Xun Ng <luckilystar08@gmail.com>
+To: intel-wired-lan@lists.osuosl.org
+Cc: netdev@vger.kernel.org, Emil Tantilov <emil.s.tantilov@intel.com>,
+ anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ aleksander.lobakin@intel.com, aleksandr.loktionov@intel.com,
+ decot@google.com, milena.olech@intel.com, joshua.a.hay@intel.com,
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com, Tian Xun Ng <tianxun.ng@bytedance.com>
+Subject: [PATCH iwl-net v4 0/2] idpf: destroy the vports on shutdown
+Date: Mon, 12 Oct 2026 14:30:25 +0800
+Message-ID: <20261012063027.27750-1-luckilystar08@gmail.com>
+X-Mailer: git-send-email 2.50.1
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -151,93 +176,73 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-Thank you for your contribution! Sashiko AI review found more severe
-issue(s) in other patches of this series. This mail is only an FYI, in case
-you want to address the nit picks below when you respin.
+From: Tian Xun Ng <tianxun.ng@bytedance.com>
 
-Low priority / nit picks for your consideration:
+On shutdown idpf shuts its virtchnl transaction manager down before the
+vports are torn down, so the device is never told that they are gone.
+Patch 2 keeps the mailbox up for that teardown, as remove already does,
+with a short timeout so that an unresponsive control plane cannot hold
+up a reboot for long. Doing so would expose shutdown to an existing
+remove-path race between the async PTP Tx timestamp callback and
+idpf_ptp_release(), which patch 1 closes first.
 
-- [Low] In qlcnic_xmit_frame()
-  (drivers/net/ethernet/qlogic/qlcnic/qlcnic_io.c:681-688), changing…
+An LLM coding assistant helped analyse the problem and draft the changes
+and their messages. Both patches carry an Assisted-by tag.
 
---
+Changes in v4:
+- New patch 1, closing the Tx timestamp callback race that Sashiko
+  pointed out on v3. It already affects remove; with patch 2 it would
+  also reach shutdown.
+- Patch 2: the Tx queue SW marker wait follows the same bail-out as the
+  mailbox transactions, so a control plane that acks DISABLE_QUEUES but
+  posts no markers costs one marker timeout instead of one per queue
+  (Emil).
+- Patch 2: the statistics task stops sending once IDPF_REMOVE_IN_PROG is
+  set (Emil).
+- Patch 2: the shutdown comment now says that a transaction already in
+  flight keeps its own timeout; bounding that would need support in
+  libie.
+- Not changed: if one teardown reply or Tx queue marker takes longer
+  than 500 ms, the rest of the teardown is skipped. On the tested PFs
+  the queue-related messages took at most 240 ms, and the slowest,
+  DEALLOC_VECTORS (about 300 ms), is sent last, after DESTROY_VPORT.
+  With the driver made to treat the first Tx queue marker as missing, so
+  that UNMAP_QUEUE_VECTOR, DESTROY_VPORT and DEALLOC_VECTORS were
+  skipped, 3 of 3 warm reboots were still clean on these devices. A
+  function reset as a fallback was patch 2 of v1; in our tests a
+  function reset on shutdown did not stop the faults, so it was dropped.
+  I can add one for when the timeout fires if that is preferred.
 
-qlcnic: use pskb_may_pull() to pull excess TX frags into the head
+Testing, besides what patch 2 describes: W=1 builds of idpf and libie
+with allmodconfig and allyesconfig showed no new warnings after either
+patch. On one server, modprobe -r idpf and a reload completed without
+warnings or IOMMU faults. These devices do not support PTP, so the path
+that patch 1 changes was not exercised on hardware.
 
-This patch changes qlcnic_xmit_frame() so that it no longer calls
-__pskb_pull_tail(skb, delta) directly when a non-GSO skb has more frags
-than QLCNIC_MAX_FRAGS_PER_TX. It calls pskb_may_pull(skb,
-skb_headlen(skb) + delta) instead. The commit message presents this as
-an equivalent API swap.
+Changes in v3:
+- No new flags: adapter->vc_xn_timeout_ms (60 s from probe) is lowered
+  to 500 ms on shutdown, and idpf_send_mb_msg() fails the rest at once
+  after a shortened transaction times out (Emil).
+- IDPF_REMOVE_IN_PROG is set before the service and event tasks are
+  cancelled (Emil); the comment and message no longer state that a reset
+  does not clear the vports (Emil).
 
-> diff --git a/drivers/net/ethernet/qlogic/qlcnic/qlcnic_io.c b/drivers/net/ethernet/qlogic/qlcnic/qlcnic_io.c
-> index 761ef3bc8193a..4a81d499e51c0 100644
-> --- a/drivers/net/ethernet/qlogic/qlcnic/qlcnic_io.c
-> +++ b/drivers/net/ethernet/qlogic/qlcnic/qlcnic_io.c
-> @@ -682,7 +682,7 @@ netdev_tx_t qlcnic_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
->  		for (i = 0; i < (frag_count - QLCNIC_MAX_FRAGS_PER_TX); i++)
->  			delta += skb_frag_size(&skb_shinfo(skb)->frags[i]);
->  
-> -		if (!__pskb_pull_tail(skb, delta))
-> +		if (!pskb_may_pull(skb, skb_headlen(skb) + delta))
->  			goto drop_packet;
->  
->  		frag_count = 1 + skb_shinfo(skb)->nr_frags;
+v3: https://lore.kernel.org/all/20261009032706.94324-1-luckilystar08@gmail.com/
+v2: https://lore.kernel.org/all/20261007055741.30629-1-luckilystar08@gmail.com/
+v1: https://lore.kernel.org/all/20260917105205.37561-1-luckilystar08@gmail.com/
 
-[Severity: Low]
-Is this exactly equivalent when delta is 0?
+Tian Xun Ng (2):
+  idpf: don't use the Tx timestamp trackers once removal has started
+  idpf: keep the mailbox up while tearing down vports on shutdown
 
-delta is a byte count. It is 0 if all of the leading excess frags of a
-non-GSO skb with more than 14 frags are zero-length.
-
-In that case pskb_may_pull_reason() returns early and never calls
-__pskb_pull_tail():
-
-include/linux/skbuff.h:pskb_may_pull_reason() {
-    ...
-	if (likely(len <= skb_headlen(skb)))
-		return SKB_NOT_DROPPED_YET;
-    ...
-}
-
-The old direct call to __pskb_pull_tail(skb, 0) always reached the
-pull_pages loop. With eat == 0, every zero-size frag matches
-size <= eat, so it is unreferenced and dropped from frags[]:
-
-net/core/skbuff.c:__pskb_pull_tail() {
-    ...
-pull_pages:
-	eat = delta;
-	k = 0;
-	for (i = 0; i < skb_shinfo(skb)->nr_frags; i++) {
-		int size = skb_frag_size(&skb_shinfo(skb)->frags[i]);
-
-		if (size <= eat) {
-			skb_frag_unref(skb, i);
-			eat -= size;
-		} else {
-    ...
-	}
-	skb_shinfo(skb)->nr_frags = k;
-    ...
-}
-
-With the new call, nr_frags does not change. The recomputed frag_count
-stays above QLCNIC_MAX_FRAGS_PER_TX, and nothing checks it again.
-
-After that, qlcnic_map_tx_skb() maps every frag, including the
-zero-length ones. qlcnic_set_tx_frags_len() then writes this frag_count
-into the first descriptor. The descriptor loop programs more than 14
-buffers for a non-TSO packet, which the comment above this block says
-the hardware does not support:
-
-	/* 14 frags supported for normal packet and
-	 * 32 frags supported for TSO packet
-	 */
-
-This needs an unusual skb layout, and no in-tree producer of it is
-known. Even so, could the frag_count be rechecked after the pull, or the
-commit message mention this difference?
+ drivers/net/ethernet/intel/idpf/idpf.h        |  3 +
+ drivers/net/ethernet/intel/idpf/idpf_lib.c    |  3 +
+ drivers/net/ethernet/intel/idpf/idpf_main.c   | 11 +++
+ .../net/ethernet/intel/idpf/idpf_virtchnl.c   | 68 ++++++++++++++++---
+ .../net/ethernet/intel/idpf/idpf_virtchnl.h   |  1 +
+ .../ethernet/intel/idpf/idpf_virtchnl_ptp.c   |  3 +-
+ 6 files changed, 80 insertions(+), 9 deletions(-)
 
 -- 
-Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20261007-b4-pskb-pull-tail-drivers-v1-0-9512b0fb977b%40toxicpanda.com
+2.50.1 (Apple Git-155)
+
