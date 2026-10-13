@@ -1,141 +1,282 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0FD5CC6B12
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 13 Oct 2026 20:59:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 064CACC6B0F
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 13 Oct 2026 21:51:45 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 65EB240448;
-	Tue, 13 Oct 2026 20:59:53 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id B8F9460681;
+	Tue, 13 Oct 2026 21:51:45 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id R4NWF9uhZRWj; Tue, 13 Oct 2026 20:59:52 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 405E8405B4
-Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1791925192;
-	b=UQBluOSCiV5dgzPyHPD21gEQY+xHDX9CWYki35vBoN2CaggvCgIlXaykQPSZZ80RzHwX
-	 v1+0YSUUGCk7UPIoKdyyILbUuAyffAuVUBmgYEOJ2rPrOUOK9ZA58tB4k134kWNIO0f8B
-	 7/3u12mJR8AuNpCaQ2gceATNVz6kbrgdPwTTmIGpJWDwdazPcY1o8higydEjKQiLKa57k
-	 LcBoeWkins7fmpaRa8C/PFbJzQqWFE/qGytnv+wgAO9p8P/kaTLmVSZEwXJV4gtffUnRU
-	 DW2KljmjvQQQh++yn2lOpxYBylObpgHCelFtnCfpA/X20Ld1SrcVeU33U8dX49rpOzw==
-ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1791925192;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id vb2DqTkDuGap; Tue, 13 Oct 2026 21:51:45 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org DC4B46089E
+Authentication-Results: smtp3.osuosl.org; arc=fail smtp.remote-ip=140.211.166.142
+ARC-Seal: i=3; d=osuosl.org; s=arc; a=rsa-sha256; cv=fail; t=1791928305;
+	b=QnWvA3IJX26cHSfGOsBvt7nTeFOGHSdwC1PuOCqILq+myzBqUO2qRHdudyUKIyZ5B/gW
+	 KawdBjBpWDtimyLM8ehMLJ8+pnq5n4ibPfdHA4MlsE4K7UzcJLVuSI3IBd99pKltCogSH
+	 4oyRBLh7cEUePDEd3cfIEcQg21rRk6FUFxobKsLwuYHKHw1x+DjOnAkkfijkPhbzLBm3S
+	 w82SWdBn1jSXeCB4UqIYvdTDUtP/ls+tsDW5NOqlwGyQyMwhmZz8FI2nzxrv2vdoG34M9
+	 Gz/hOdQ+IzkFCHXdnH5Q8wCdRcoY2GQ7NaBDdpy+HS/WsflBgPmd+Ha97U1zSx1iKrA==
+ARC-Message-Signature: i=3; d=osuosl.org; s=arc; a=rsa-sha256;
+	c=relaxed/relaxed; t=1791928305;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
 	 DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-IronPort-AV:
 	 X-IronPort-AV:Received:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-ExtLoop1:
-	 X-IronPort-AV:Received:Received:Date:From:To:Subject:Message-ID:
-	 User-Agent:X-BeenThere:X-Mailman-Version:Precedence:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Errors-To;
-	bh=NAvbxtw52Z+uVQMzfmo9VTSJNTnMD9sJqzUxXmShzvA=;
-	b=fUbm29gvGyZ/cYRxBz+5Q6dj0HHBu+2xk2MTXbMJFCShCIwPGp0OgCrtpA1brvrCzsbC
-	 9s32n2dOWnrNL4I3DJzt/3EzUwJrCZHaJE6LiMA1UQoHCvzL2xvCQelSJOJ9osiXSBnvy
-	 iycdPVxkJbp5A0Q1NBhAT6j/VILjz7+UqVfBIvwtlag5ERqPA0VauBuyYglkn7OYQyy7C
-	 rHWIYg9if+Kmin6m2DSotY/QVyIyMWvbNTjaWKYnKRno/hn4/EhnJoIE9dNorfikfbsxl
-	 DRTIat9Oyh6oTMzPq30JGqLDtfXfuCk+FJ9o/rgdl5IFaCNrhZVodpcHFNe3KgP//zQ==
-ARC-Authentication-Results: i=2; smtp4.osuosl.org; 
-	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	 X-IronPort-AV:Received:Received:Received:Received:Received:Received:
+	 Message-ID:Date:User-Agent:Subject:To:References:Content-Language:
+	 From:In-Reply-To:Content-Type:Content-Transfer-Encoding:
+	 X-ClientProxiedBy:MIME-Version:X-MS-PublicTrafficType:
+	 X-MS-TrafficTypeDiagnostic:X-MS-Office365-Filtering-Correlation-Id:
+	 X-MS-Exchange-SenderADCheck:X-MS-Exchange-AntiSpam-Relay:
+	 X-Microsoft-Antispam:X-Microsoft-Antispam-Message-Info:
+	 X-Forefront-Antispam-Report:
+	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
+	 X-MS-Exchange-AntiSpam-MessageData-0:X-Exchange-RoutingPolicyChecked:
+	 X-MS-Exchange-CrossTenant-Network-Message-Id:
+	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
+	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
+	 X-MS-Exchange-CrossTenant-FromEntityHeader:
+	 X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
+	 X-MS-Exchange-CrossTenant-UserPrincipalName:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStamped:X-OriginatorOrg:
+	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
+	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
+	bh=1N9+qFU+ap5aTSjAFexGzRyk1AAYrsJy6PZzHmZnfMc=;
+	b=XCEQgoqdfPjveXk3Gyxgs0pwaAuOpJRqnWMYgxKJxyx41KEn69+iJeDRczIA8sY7yuZ/
+	 BNgk49FLzBziAU1JlgIQGwD0ZF6aQA2sOB/lwPfq0gFwUS1glcLByGhf931h9o3vRFWWU
+	 zC3tyBsStc/w80Puqz6uLObYItLlEHzUDQbKq5uMDZsdmUzr4Y7DL4+v8Fm0m0aP1DrVl
+	 y7j9/mAQ01zrl4o4U9lw9REvZkkyw9pfK8/Bzj03ehCez2EEAt3QTS1l4giWc2UZnQ1cR
+	 jZ5KKx4Ol2cC8A2XBIHoSrKl+1kpte419xPzY+iwx1P4NVTRlxC06fFkz0dQ8IoCfhw==
+ARC-Authentication-Results: i=3; smtp3.osuosl.org; 
+	arc=fail smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1791925192;
-	bh=NAvbxtw52Z+uVQMzfmo9VTSJNTnMD9sJqzUxXmShzvA=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=rDuNcG68hBaSvgxw3eyBpbHzwnojTVtUYM9Dv3W8S2obgU1Lnj18xGJEVaRfBkGfX
-	 UtQSEXJ9R2J0EmeHGCJNkVEQHcwZ5CTyCSjiH3q5k0IOL+nfvVG3yWyhgNQPV3hpTi
-	 tVgYFnVBasLaw9DCeqJwP747+TkhWDH/mAaeBZoOLl549/Y9f/8BkU7XAYsfGSP8cB
-	 qFnEZTFvvgXxTX9TQxGwEVVyjC/RoUxYG0D+orEwcvdBA3RJAJv1QO8uiYNcD1++js
-	 A0vkXxyE1ELjRszJN5/xMMmOWhNU0ZhJCzf+q+3/YH8GIZrgcUryc20qC855z7ten0
-	 aRIkDteeyCeug==
+	s=default; t=1791928304;
+	bh=1N9+qFU+ap5aTSjAFexGzRyk1AAYrsJy6PZzHmZnfMc=;
+	h=Date:Subject:To:References:From:In-Reply-To:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=FrOazNUs8Oq5pcq3+JEwifAM9sP43t95yvDIfB49VYPOXVbvmW3OVNP86KghgyiuJ
+	 S9gScGAutF4Wz/Jn+TVg79E2HVs+mn9VYbdxcVHdQW+qp5+hsnld0CH8fwVZQJBaHC
+	 Z411QEYVlShma4N1zqZDjmX9VWgK2KIHJ+cNKES978PV00z+P47VbIp6o6LX0PV/79
+	 GmXZt18lin43wtYDyiElC9RBT8c65jLeprbGXlmyShyYL8G0ZqXIazLxgT7x1QA3sn
+	 eO1Eo1wIekAkLSWjlimhZ4QPVf2mzdbw6LFNU6api5+025SgMHuEPPl4jJY3OIAAWq
+	 YNnTzjGe7EcSQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 405E8405B4;
-	Tue, 13 Oct 2026 20:59:52 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 5893D2AC
- for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Oct 2026 20:59:51 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id DC4B46089E;
+	Tue, 13 Oct 2026 21:51:44 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 971A92AE
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Oct 2026 21:51:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 4A21860818
- for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Oct 2026 20:59:51 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 89436809F6
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Oct 2026 21:51:43 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id LANflFr-a0ta for <intel-wired-lan@lists.osuosl.org>;
- Tue, 13 Oct 2026 20:59:50 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org D780160816
-Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=198.175.65.14
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1791925190;
- b=AkHHBjt7hG63XqlLGxtxWRF86TF4XwpB68GComBCPqotp4YW049t4Fg1yBSpSgzfAxBT
- Doe5bil4Il4D9I0qbzDyJQzGsavBntsGWCg7lVCVvn2z5Zdv5CWA7vwuxI5ENjPE+jCch
- D8s1gCy65In0EVvwB2gUJgv7ogOm2TEt1+KrNfYyRyQwJh3wJcYMORSlye1zC5dF8OkUl
- GhSOZrcbcrr8g7zPq1Jo0ZDfbHLQlVYQhpYzF7DI4YnDLvwXGex6qMj/VCIHeYXazMz6/
- 3WboI/qtUjWn0GlLNvEQNVjPScn7vII9TQjr9Ro7wao8gJm6ZLhHRzLV+odiWTiySMQ==
-ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1791925190;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id sTs1vjMKstLi for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 13 Oct 2026 21:51:42 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 4941D809EC
+Authentication-Results: smtp1.osuosl.org;
+ arc=fail smtp.remote-ip=192.198.163.15
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=fail; t=1791928302;
+ b=GFU9UFOqFDC12B5YHJjbI2vscvSXvAiDgdDgY/nBj8R0tb9Ha4Xu7J2I4kbqLqr+ndy4
+ a5tb1l045vXEt6gmYsgQLGw7oCUm5DLlln8XYc8LG1NnztF8EpLzSf1H1QEK8BQBqUxYj
+ 7/Y0/q3s0CuoWEkaNHpNx6GPwTkGWYmRVA0JUTDuZocLuzqKieuEU19S3NboSzKI/lErP
+ 0fLYQuQckMPgIT7XPb5G4O1put+waJbJwzvVDmqvC1O6FVTbOVn+anDc3QEyQN1coHC3l
+ qyEAQf1Oj77FbG/DS7wwsjGs23ma5LeP2adx9CdKJhNU3YVtdXPcu8xYB5xyRo4/PJg==
+ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
+ c=relaxed/relaxed; t=1791928302;
  h=Received-SPF:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
  X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
- X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Received:Date:From:To:
- Subject:Message-ID:User-Agent;
- bh=NAvbxtw52Z+uVQMzfmo9VTSJNTnMD9sJqzUxXmShzvA=;
- b=pZijB6105OY1mESNj2woJfnzDEwS21hOCy26RvDTgq5a+/utdPdKhkzYqwjvwneCeQdD
- uaKL+vwkp/WoNkLeTHIauVTWU4S0cN3/kzfNhq2dJC/hCYnUApnX9Djs39XWssoD5AIfz
- EA04pas5rpzWF3Re+1M02rpgvT43Uh35Or6tn2wY7yy4Q2ypNXGXAlaTBSxdoqZ3pp4pT
- VUV3SSGL3q2loSFBB2WRVcKCvrzgjj9gaP+VmsdfmPExp1jPdsMbalAnsJE4BSWOZIt0o
- 9t7sct+EXHJ4zfdjLcioZN+9tBTZSEGKu9M2030Pn1Qw2T6glD+kqOIsuswQxlGKYtw==
-ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
+ X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Received:Received:
+ Received:Received:Received:Message-ID:Date:User-Agent:Subject:To:
+ References:Content-Language:From:In-Reply-To:Content-Type:
+ Content-Transfer-Encoding:X-ClientProxiedBy:MIME-Version:
+ X-MS-PublicTrafficType:X-MS-TrafficTypeDiagnostic:
+ X-MS-Office365-Filtering-Correlation-Id:X-MS-Exchange-SenderADCheck:
+ X-MS-Exchange-AntiSpam-Relay:X-Microsoft-Antispam:
+ X-Microsoft-Antispam-Message-Info:X-Forefront-Antispam-Report:
+ X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
+ X-MS-Exchange-AntiSpam-MessageData-0:X-Exchange-RoutingPolicyChecked:
+ X-MS-Exchange-CrossTenant-Network-Message-Id:
+ X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
+ X-MS-Exchange-CrossTenant-OriginalArrivalTime:
+ X-MS-Exchange-CrossTenant-FromEntityHeader:
+ X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
+ X-MS-Exchange-CrossTenant-UserPrincipalName:
+ X-MS-Exchange-Transport-CrossTenantHeadersStamped:X-OriginatorOrg;
+ bh=1N9+qFU+ap5aTSjAFexGzRyk1AAYrsJy6PZzHmZnfMc=;
+ b=smBmT953mHiNWCYDGi0uQ4yaKbNnx4Kb+n2WaXN0dp3n7fHR8CH+k3TeyBnWe6kAlvQI
+ Xzhy/YnaPxykWeLjf5chNMabhFK8ZbQqjOTq/tmn0WATgKyF9sH8NHb4/ea32Os+E+IK3
+ oNKQkOlTx5bBhI5JV1wtUiQtC7fy+RMZvZbeNM6YOGmUXDFEnjUZ2tenVj4wPPHK9kthl
+ JOsCfXvqjG4pH+XMb2hbzDXdKkZjMbY22p6wjaZsJHxeJZ0S+/Kj85TJV+5d8R7Jb/kHr
+ lGdf+TlbJIAWKGCyhcgaHHAsJhW884qBWBtHEmt1Uq9G4cUymR07LpQZsy7aRyZ5Crw==
+ARC-Authentication-Results: i=2; smtp1.osuosl.org; 
  dmarc=pass header.from=intel.com;
  dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=G6XqT3Xz; 
- arc=none smtp.remote-ip=198.175.65.14
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.14;
- helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp3.osuosl.org;
+ header.s=Intel header.b=KnBhMid6; 
+ arc=fail smtp.remote-ip=192.198.163.15
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.15;
+ helo=mgamail.intel.com; envelope-from=anthony.l.nguyen@intel.com;
+ receiver=<UNKNOWN> 
+Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=G6XqT3Xz
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
- by smtp3.osuosl.org (Postfix) with ESMTPS id D780160816
- for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Oct 2026 20:59:49 +0000 (UTC)
+Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=KnBhMid6
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 4941D809EC
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Oct 2026 21:51:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1791925190; x=1823461190; h=date:from:to:subject:message-id;
- bh=SAgaj11qiUa0xJY9kBG75QNur0PtkXd4VI8sRWk+CS4=;
- b=G6XqT3Xz6rBkiZwZqkDv2qMwWX9u9SNPc6zjIQ0dSIEL0lKiPvZqSGBP
- /8JRaFQSCoC4vabcMuXdyyU3O/CbM5ow/zNrCJHkMjBWZUSdO700l45pD
- 7kBjK8/DysXYgY9/56rMM5yyZPtaZUtH/EjXXL1qPNyk1FjStnA0TPJRN
- s3gpQXRzNWfnp/eDQDQldyeTTBVU7abBS0CqdCjupWOh8JWbTcF/Ho0b6
- 3IWez37DBX5+W1RonDaudJ5BfuW7o5B0vTm7RITw23Pr5XDKTKt+/qzbP
- wdZDqsgvrediontlnNhwQp1g4i8fGBtJTMyFy5bw+NPOz0J1rHSLICX1r A==;
-X-CSE-ConnectionGUID: 5yYhJf9HRfCTiQ6LVqR31w==
-X-CSE-MsgGUID: 0ZuqAauyTHKdvYqHh1Yv+g==
-X-IronPort-AV: E=McAfee;i="6800,10657,11934"; a="541532"
+ t=1791928303; x=1823464303;
+ h=message-id:date:subject:to:references:from:in-reply-to:
+ content-transfer-encoding:mime-version;
+ bh=eZooBcaIxOjNh1B8j7nEk6C0RGPQ/+6B9iCtvhyzVjw=;
+ b=KnBhMid6c0jYv5c9OAQuWqGCt4Vblyl5Ydsvsk6ZHuA0v1gPCvi2Fouf
+ 3+yoOTVOZsHjck/D8BbPX7crC4SyZvFhIMKoQTuaZRbbYgSi0GX2q+6Ui
+ calPUiJtptBUt6WU3nF4nI/zT+bI2AWbX9fsZkZAHdyCShGvSYhSiUb1M
+ JWcL1aPY/17l0SW8pVEl1GreeSArKAJg3LyFCXH0WmbosLm0zEGgjju/X
+ mRYPmA1S/QSSfEUfKYXyqJDNu9BYTc1Rqe+/4tXBP49wmH18XlpHldZJ2
+ Jd/dBhfZ4OuPAUGdOb1nu9gHnNx2vrA9ICI0Qop3pQN0OTuRWHbajyaq/ g==;
+X-CSE-ConnectionGUID: fMzf4B9qTVOndUuJDCiiyg==
+X-CSE-MsgGUID: 8Z64MPqfQzSxhS6WOVcljA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11934"; a="675461"
 X-IronPort-AV: E=Sophos;i="6.27,156,1787036400"; 
-   d="scan'208";a="541532"
-Received: from fmviesa009.fm.intel.com ([10.60.135.149])
- by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 13 Oct 2026 13:59:49 -0700
-X-CSE-ConnectionGUID: BRE9pbSmTHS/UIcgcMpEGg==
-X-CSE-MsgGUID: fHs+YP/4QuGOC0xai4nrMQ==
+   d="scan'208";a="675461"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+ by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 13 Oct 2026 14:51:39 -0700
+X-CSE-ConnectionGUID: K44kLlu2R4iWTYQL82np9w==
+X-CSE-MsgGUID: AyvQMovKSNSfiTmGuXPeJg==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.27,156,1787036400"; 
-   d="scan'208";a="1601369"
-Received: from lkp-server01.sh.intel.com (HELO 0caa9d2d175c) ([10.239.97.150])
- by fmviesa009.fm.intel.com with ESMTP; 13 Oct 2026 13:59:46 -0700
-Received: from kbuild by 0caa9d2d175c with local (Exim 4.98.2)
- (envelope-from <lkp@intel.com>) id 1xGjb6-00000000DkJ-1SSK;
- Tue, 13 Oct 2026 20:59:44 +0000
-Date: Wed, 14 Oct 2026 04:59:06 +0800
-From: kernel test robot <lkp@intel.com>
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Subject: [tnguy-net-queue:100GbE] BUILD SUCCESS
- 3bf9f7e60efe725537f9877e6cfea8f09b42522d
-Message-ID: <202610140403.GFx2byrl-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+   d="scan'208";a="1344198"
+Received: from fmsmsx903.amr.corp.intel.com ([10.18.126.92])
+ by orviesa006.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 13 Oct 2026 14:51:39 -0700
+Received: from FMSMSX903.amr.corp.intel.com (10.18.126.92) by
+ fmsmsx903.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.49; Tue, 13 Oct 2026 14:51:38 -0700
+Received: from fmsedg901.ED.cps.intel.com (10.1.192.143) by
+ FMSMSX903.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.49 via Frontend Transport; Tue, 13 Oct 2026 14:51:38 -0700
+Received: from DM5PR21CU001.outbound.protection.outlook.com (52.101.62.32) by
+ edgegateway.intel.com (192.55.55.81) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.49; Tue, 13 Oct 2026 14:51:38 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=Q+JxItxWEZ+TmgPLXvhlVWg1XyWNGnR2+YjOJ1btmS98QW8rIakz4P8rrhP0dnWNG9sv62jySQnaeRPNy69UCKNf9guYmNvZFzCimoI1U090SKUrCvjMtPUoRNmQeKOPnut2QV7CDSrY5VnccX5sIBIvxmllLsV2wYK/uXhXHe75C/a0NkjN+f+2CYCBGDZV4WhhqR/Kah8shlzLb4H7Y97hWKGoWx7ThXCNG3eSFfsVdFf5/ZL9m0qWdT2V8C6UFkoPGHhj8jU2UBycHf6np9rUpBpLER0dm/6ADskE+EayjJCj2B0A9NuQ0GWBF/1WpTEwOMDkP6AU2EsFZXemSQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=1N9+qFU+ap5aTSjAFexGzRyk1AAYrsJy6PZzHmZnfMc=;
+ b=RLefNkeqlnam2cB6vcFdU8QvPuqAJWlddFXmJRyHu448s8INdP1kozD5Uu8lgS/k70X2ggOf3vwTm9DJl8BUoKYjdLEV5RNL/ORXlXLu6uJCQEZXA8PNXErj0xGt8GfYW3c+IIygmU0iui6H+gE/mtE5g5KOHOGOBYqr9BTPScWDIy3LCsJITzGU3GG4mL9RmvivqG4BCgAV1UfmnB13GiJ1gvW2XHzyUUUJBh/gokjuCT3mi+9HggsRsVsuKB4xiv5kNWbQwrFd7zm8Q2t5kyOE4vjmopUZJxaxFJ8tLrvXjX1PO850xPW9INO66HSimpiMKvHtd98ZcmkP+8RZOA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Received: from DS0PR11MB8230.namprd11.prod.outlook.com (2603:10b6:8:158::21)
+ by SJ0PR11MB5893.namprd11.prod.outlook.com (2603:10b6:a03:429::13) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.496.23; Tue, 13 Oct
+ 2026 21:51:35 +0000
+Received: from DS0PR11MB8230.namprd11.prod.outlook.com
+ ([fe80::2592:f5a9:a751:be40]) by DS0PR11MB8230.namprd11.prod.outlook.com
+ ([fe80::2592:f5a9:a751:be40%6]) with mapi id 15.21.0496.021; Tue, 13 Oct 2026
+ 21:51:35 +0000
+Message-ID: <6ddf6d9f-6e97-4030-bad4-017ff1c456f1@intel.com>
+Date: Tue, 13 Oct 2026 14:51:34 -0700
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH iwl-next v2 2/2] ice: reject partial NVM update on eRoT
+ adapters
+To: Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
+ <intel-wired-lan@lists.osuosl.org>
+References: <20261008141418.958066-1-aleksandr.loktionov@intel.com>
+ <20261008141418.958066-3-aleksandr.loktionov@intel.com>
+Content-Language: en-US
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+In-Reply-To: <20261008141418.958066-3-aleksandr.loktionov@intel.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: MW4PR04CA0149.namprd04.prod.outlook.com
+ (2603:10b6:303:84::34) To DS0PR11MB8230.namprd11.prod.outlook.com
+ (2603:10b6:8:158::21)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DS0PR11MB8230:EE_|SJ0PR11MB5893:EE_
+X-MS-Office365-Filtering-Correlation-Id: 17c18df8-414f-4539-672a-08df297426e2
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+ ARA:13230040|366016|1800799024|376014|23010399003|6133799003|22082099003|10067099003|18002099003|4143699003|11063799006|261009223027099003|56012099006;
+X-Microsoft-Antispam-Message-Info: Bxwgh6ug+uU7wxW311DY5/aAJuWve6MZlCXbRdgo4pQ5DePslqpTGmssa5YWQXKYcWSGygWOAGNdC045bkzzA/x1ExkjBg1MGNW5tNTj6NEI9NwdVxlifD8acDxBFJ2ZhcnjQuSS2JRYfjVF/ytKpG3beq4XBM/5QUSre8xpA8iZNJzHw9qRD5SvbPGPbsh7ITCFNjacez4RgmBxs25JMJV3JS4TWSIKChGwmkCpEBWVEgswKtaNCkU0EpUfu3ZtlXcPEH4y9CLuS7AjOQ2fmrwwPPb1VjxO/L3lWs9BUT3QOqLvlvqMg7DHbXQRNgN8mOHVcjFa138eVgQ/hrSCvyKj/CbpnPth7LHv5jWUmDRN7V8e9l3lNW5YfEdZpvI01J1g0KJG2iW2X6amnna7pD6ZqmjIVCToTAGCQZmJMEjPWtZAWkF1VvnWjnEvG3K19j+4WAvw8Eov6rmpiPWF9qZfUSEGkM/bqWCyltE7o5RkHjiOrl3atMoGgZLprLPc2rC3dJrz6rtp6SA5SbkzP+FOsOumAncNUFSg9eimZ5VPRcec9nRGTsyY98FXx49fm5HCJfwrofXPP0A4vJy69BIsagWcYHFEv7U36MF9HfF0NxbKqO/tSZJeujhYa9xC
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:DS0PR11MB8230.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230040)(366016)(1800799024)(376014)(23010399003)(6133799003)(22082099003)(10067099003)(18002099003)(4143699003)(11063799006)(261009223027099003)(56012099006);
+ DIR:OUT; SFP:1101; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?VytCVDNEMzZINEdxbXRXL3JuS3Zxb1Z6QWFITFNMSEZ3SVQ2dC8yaWxhZ3Zh?=
+ =?utf-8?B?TVpiS2UrR25xS3FLUjN3K3JrUTRHenpJanc0OVV0UG1aMEcyd21QWHNzbFln?=
+ =?utf-8?B?TFhMTDZOUnBzVFVyaU5xR200SURzelVDVzVMQm1DWEVtT01JVlhPQVcvZi9Z?=
+ =?utf-8?B?V0FCN01nemQ5b21mdW1idlIwMlRQdEFFdCtUQkNYdTFFQ2Z1NkVXU2ZNWWJM?=
+ =?utf-8?B?TjNjRUlzRDRyN3ZIanRtQld6aHl6dXpqLzFKY3Nvam1RVVFlbmhyTkhHY3Jp?=
+ =?utf-8?B?QnFMVnlqZ0RVNFBwVnFNbTZRWmRsSlFzVnpEdmNSaVJ4NkF0d0NoSFVNUVQr?=
+ =?utf-8?B?QTJ0QnhqTnNIcUwreUlnbHk1NGZ2Y0s2LzRQbUhucFJoZzU5cStzTDM3b0Vj?=
+ =?utf-8?B?dHQ5LzZTU04xekxyeERtVkF2TCs3cjhrbWR3b2Q2b1FxN0gzWEVLbktNc0dM?=
+ =?utf-8?B?QUVTRHBBR2FPU0UzemJSOENXMGU0dGhKcC9yYXJyL01IVGhna0diSGsyQmg3?=
+ =?utf-8?B?NndxWXBKZHAwcVdlOXdJNTNEVGhuVFVlcDFBc3prYjk0bk9SdHpoZVVMbCtD?=
+ =?utf-8?B?Nzd4VFNRY0xKdVFmbmxYUmxvSUczaCsvZCs4OU9PbHBTQStlN3EzN084bGwx?=
+ =?utf-8?B?SFlqK3dwV3RwcEN3SGtPM3BQY2ZCV2ZNNXpaYUFybmJldmlDNHVndkxLOXU4?=
+ =?utf-8?B?WmRPRzFBNTg3ZXlnN0NHZTI4eXlEY1ZKN3BQNkJ4T2pOa21OZDI5bFBHYUl0?=
+ =?utf-8?B?bkhXOEF2b05hRFVCVG1wWjhnRExzdVlrVHlpVUwrOWk3bml5Zkd5b01GV1VX?=
+ =?utf-8?B?WFg4RHc0bDZNQ0RMaXhQMGh2bWEyZUFnVVExTFoyZk54Tm5xOTNNY3M2NGhF?=
+ =?utf-8?B?WmdkYW8vRkI1dG0xN3pkL0NnQ1F2NXBRZ3l1RGkwUEpvVHF2MnJuTlZWcXgw?=
+ =?utf-8?B?L080TFlkWnY4TldncXZhREo0enpYZTd5ZjlwRGQ2VU92Q2pHVTVDbjl1dVZi?=
+ =?utf-8?B?N2d1SFlmNmZuSDB6aURRNkZLaEV2akF5eUxzSE5vUDhTcTJXQzI1Yzg2akJK?=
+ =?utf-8?B?Q0tyeElvei9wQnh6ZXgwVGxRNmVwUlBtSVAvK1Q1UzBLcmx0TU9DcHlRaTBY?=
+ =?utf-8?B?YmdLY25xbHpSbTZNSzF4dVJXV0E1UWpvZ0RzRUlSYk9jUFFjY0phQ09mS1Ax?=
+ =?utf-8?B?N3Z1TGp4UENmK1ZFNmdZcHJDdW5CV3E0MUdoUG5ObDVrbmt5MWRuOFlNdkFX?=
+ =?utf-8?B?Z29uS1ArYzNNdGVJb0dZZ3l6a2ZCMi9FV0dFL3U3VGRVa1RNa3NoRFk3WkFV?=
+ =?utf-8?B?cGIxclVxdWVXdHBVNFc3YStWbVE0N202RFN4Y0dibng5MFpFR2RUR1dYZEJl?=
+ =?utf-8?B?MmhNc2RaQnAvbklxYXdDVlFRTlNhRE9ITEF0UG56ZnovaXJYS3NTUDBvNlF3?=
+ =?utf-8?B?WDVxbldLY3YxQ1I3YnlaQnI4VVNWL25wdGdpNU1IbXZBSG5XazRpMVVVUDlU?=
+ =?utf-8?B?ZzVrT1NPZ2FLcG5hSml0MEdrS0lwZU9xdWlIKzVyT0ZLa09wYTg4N215blhx?=
+ =?utf-8?B?WEZiUTQvS1lmdXk4cVZGRjNyM011YUFJTCs1dUxvS2lMNENRL2p3ZG5mbFV1?=
+ =?utf-8?B?T1B4R0pURC9YQ2V0WjJra1JpemlneEcrZFdQbGd1Q2pZUjZOb2tHcmNPWk03?=
+ =?utf-8?B?ditRT25ldm9STWFlc2M3UmZqQk5oY3IxUjd0d1hwVUZPcVVkS0ZOeU42KzNW?=
+ =?utf-8?B?ZGhmbkhXUlFubTVDNVF5UXFML1d0blVEVG84ZzlXTXdwUjV1ekYvK09xQW1P?=
+ =?utf-8?B?N3MrMzFka1ZpZ3h2cm01cFRFVGgrd0huSXNWbFJWMnhBWTY5VmFXazJxcWNQ?=
+ =?utf-8?B?R2h6TU5HeTd1SWZuNHppWGtsaFQwU0wyd3hMREd5TFJEZm9QbHZYV1dWNllJ?=
+ =?utf-8?B?ZEppZy9LMWkyZmRFRGg1VHc4RDczMjVFQzJFdTl2REZDNi9ta0kvZnZSam1w?=
+ =?utf-8?B?UU50Y1U0b3o3YXNyelkrWnNlL0ZyNlJQUXZ5WFJYemVXN0xwek83Zkl1N0RD?=
+ =?utf-8?B?Mkc3M2czQnRSZldqS0YxRU5GaFRYaWROMCtDbDhpY2pYNEZmSk5NcjBEZ1JS?=
+ =?utf-8?B?eGxaMFJtSkQ4UStjczBsZmM3Vk5pOU5kWDhqRFp4Z3dqRG1rcDJmeDZqMFcv?=
+ =?utf-8?B?YTYrc20rMkhVVGpneUFPSTNEQW5tYnBYNUlrRjdyK2JRYlp0a1IxaDcyeEJP?=
+ =?utf-8?B?MHFSTEp1c2pySExqa3BrdHN0WWR4NlN4WFFvTjA1OU1heTE3VUh4NHE0Rm9x?=
+ =?utf-8?B?LytrRlpVMitMUnh0c2lPNU1DT3ZhUHppZXd3aFgzNzZ1U0FjT2tocGQ3YSto?=
+ =?utf-8?Q?hFx1C9+DZ7xrOB3M=3D?=
+X-Exchange-RoutingPolicyChecked: L4PI5p9fKhy8rsjMxwRIelZcFtQ+z4ZcNwgxM/PEtRHDlLnC7lCQaZ0v4Oa8vYcrsqZhk2XHyRYlkY4ynJWCe94Pm6qNFjMBXOTwjl9EsdJL7r2EpFfFq8lXpz8GWi2I78KVREOagVPm28iXE2R/zrKsCa1z0+Pcyx41ae7NmmuaD/2b3s4sR7lUt8fwuMbSj3KAuQyE2IKBcGUzCNRZkR3ZzSC5ci8y2ckyh7C5mvjmqIkkf3kJksSt62P1UpmUweiimRF4jzr3XGF55jSmNEqixAy05tvLTVDFXYARyUvxDerXbwZWdx4E0gLp0qhPbxY6OT5C67obRbiW9ongEg==
+X-MS-Exchange-CrossTenant-Network-Message-Id: 17c18df8-414f-4539-672a-08df297426e2
+X-MS-Exchange-CrossTenant-AuthSource: DS0PR11MB8230.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Oct 2026 21:51:35.7461 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: YRlXxti20aE66qlRoXN4z+R18wRCjtWL6WkEKvhYClh9qDD7i/L+wC9FAe7u88wvbO3XgtgzPKSpLLPj18RV4O6w8NrgeTW1C1tjigabAIg=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR11MB5893
+X-OriginatorOrg: intel.com
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -150,267 +291,79 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 100GbE
-branch HEAD: 3bf9f7e60efe725537f9877e6cfea8f09b42522d  ice: Recalibrate PHY after settime64 on E825-C
 
-elapsed time: 5296m
 
-configs tested: 248
-configs skipped: 8
+On 10/8/2026 7:14 AM, Aleksandr Loktionov wrote:
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+...
 
-tested configs:
-alpha                     allnoconfig    gcc-16.1.0
-alpha                    allyesconfig    gcc-16.1.0
-alpha                       defconfig    gcc-16.1.0
-alpha       randconfig-r2100-20261009    clang-18   cocci
-alpha       randconfig-r2103-20261009    gcc-10.5.0 cocci
-alpha       randconfig-r2200-20261009    gcc-8.5.0  smatch
-alpha       randconfig-r2300-20261009    gcc-8.5.0  sparse
-alpha       randconfig-r2305-20261009    clang-17   sparse
-alpha       randconfig-r2306-20261009    gcc-12.5.0 sparse
-alpha       randconfig-r2308-20261009    gcc-14     sparse
-alpha       randconfig-r2309-20261009    gcc-16.1.0 sparse
-arc                      allmodconfig    gcc-16.1.0
-arc                       allnoconfig    gcc-16.1.0
-arc                      allyesconfig    gcc-16.1.0
-arc                         defconfig    gcc-16.1.0
-arc         randconfig-r2101-20261009    gcc-14.3.0 cocci
-arc         randconfig-r2105-20261009    gcc-13.4.0 cocci
-arc         randconfig-r2200-20261009    gcc-14.3.0 smatch
-arc         randconfig-r2302-20261009    gcc-8.5.0  sparse
-arc         randconfig-r2306-20261009    gcc-8.5.0  sparse
-arc         randconfig-r2306-20261009    gcc-9.5.0  sparse
-arm                       allnoconfig    clang-17
-arm                      allyesconfig    gcc-16.1.0
-arm                         defconfig    clang-24
-arm         randconfig-r2102-20261009    gcc-13.4.0 cocci
-arm         randconfig-r2104-20261008    clang-24   cocci
-arm         randconfig-r2105-20261009    gcc-16.1.0 cocci
-arm         randconfig-r2106-20261008    clang-24   cocci
-arm         randconfig-r2201-20261009    clang-24   smatch
-arm         randconfig-r2300-20261009    gcc-8.5.0  sparse
-arm         randconfig-r2302-20261009    gcc-12     sparse
-arm         randconfig-r2302-20261009    gcc-8.5.0  sparse
-arm         randconfig-r2305-20261009    gcc-8.5.0  sparse
-arm                   stm32_defconfig    gcc-16.1.0
-arm64                     allnoconfig    gcc-16.1.0
-arm64                       defconfig    gcc-16.1.0
-arm64       randconfig-r2105-20261009    clang-24   cocci
-arm64       randconfig-r2202-20261009    gcc-10.5.0 smatch
-arm64       randconfig-r2303-20261009    clang-21   sparse
-csky                     allmodconfig    gcc-16.1.0
-csky                      allnoconfig    gcc-16.1.0
-csky                        defconfig    gcc-16.1.0
-csky        randconfig-r2102-20261009    clang-18   cocci
-csky        randconfig-r2106-20261009    gcc-14.3.0 cocci
-csky        randconfig-r2201-20261009    gcc-14.3.0 smatch
-csky        randconfig-r2300-20261009    clang-24   sparse
-csky        randconfig-r2301-20261009    clang-21   sparse
-csky        randconfig-r2302-20261009    clang-24   sparse
-csky        randconfig-r2308-20261009    clang-22   sparse
-csky        randconfig-r2308-20261009    gcc-16.1.0 sparse
-csky        randconfig-r2309-20261009    gcc-12.5.0 sparse
-hexagon                  allmodconfig    clang-24
-hexagon                   allnoconfig    clang-24
-hexagon                     defconfig    clang-24
-hexagon     randconfig-r2301-20261009    gcc-12     sparse
-hexagon     randconfig-r2308-20261009    gcc-12.5.0 sparse
-hexagon     randconfig-r2309-20261009    gcc-14     sparse
-i386                      allnoconfig    gcc-14
-i386                        defconfig    clang-22
-i386         randconfig-2100-20261009    clang-22   cocci
-i386         randconfig-2101-20261009    clang-22   cocci
-i386         randconfig-2102-20261009    clang-22   cocci
-i386         randconfig-2103-20261009    clang-22   cocci
-i386         randconfig-2200-20261009    gcc-14     smatch
-i386         randconfig-2300-20261009    clang-22   sparse
-i386         randconfig-2301-20261009    clang-22   sparse
-i386         randconfig-2302-20261009    clang-22   sparse
-i386        randconfig-r2304-20261009    gcc-12     sparse
-loongarch                 allnoconfig    clang-20
-loongarch                   defconfig    clang-24
-loongarch   randconfig-r2200-20261009    gcc-16.1.0 smatch
-loongarch   randconfig-r2202-20261009    clang-18   smatch
-loongarch   randconfig-r2303-20261009    clang-17   sparse
-loongarch   randconfig-r2304-20261009    clang-21   sparse
-m68k                     allmodconfig    gcc-16.1.0
-m68k                      allnoconfig    gcc-16.1.0
-m68k                     allyesconfig    gcc-16.1.0
-m68k                  amiga_defconfig    gcc-16.1.0
-m68k                        defconfig    gcc-16.1.0
-m68k        randconfig-r2100-20261009    gcc-8.5.0  cocci
-m68k        randconfig-r2103-20261009    gcc-14.3.0 cocci
-m68k        randconfig-r2201-20261009    gcc-11.5.0 smatch
-m68k        randconfig-r2301-20261009    clang-24   sparse
-m68k        randconfig-r2305-20261009    clang-21   sparse
-m68k        randconfig-r2307-20261009    gcc-12.5.0 sparse
-microblaze                allnoconfig    gcc-16.1.0
-microblaze               allyesconfig    gcc-16.1.0
-microblaze                  defconfig    gcc-16.1.0
-microblaze  randconfig-r2101-20261008    gcc-8.5.0  cocci
-microblaze  randconfig-r2200-20261009    gcc-9.5.0  smatch
-mips                      allnoconfig    gcc-16.1.0
-mips                     allyesconfig    gcc-16.1.0
-mips        randconfig-r2102-20261009    gcc-10.5.0 cocci
-mips        randconfig-r2103-20261009    gcc-12     cocci
-mips        randconfig-r2107-20261009    gcc-14.3.0 cocci
-mips        randconfig-r2303-20261009    clang-24   sparse
-mips        randconfig-r2304-20261009    clang-17   sparse
-mips        randconfig-r2307-20261009    gcc-8.5.0  sparse
-nios2                    allmodconfig    gcc-11.5.0
-nios2                     allnoconfig    gcc-11.5.0
-nios2                       defconfig    gcc-11.5.0
-nios2       randconfig-r2101-20261009    gcc-12     cocci
-nios2       randconfig-r2101-20261009    gcc-8.5.0  cocci
-nios2       randconfig-r2102-20261009    gcc-8.5.0  cocci
-nios2       randconfig-r2103-20261008    gcc-11.5.0 cocci
-nios2       randconfig-r2107-20261008    gcc-8.5.0  cocci
-nios2       randconfig-r2304-20261009    gcc-8.5.0  sparse
-nios2       randconfig-r2308-20261009    gcc-8.5.0  sparse
-openrisc                 allmodconfig    gcc-16.1.0
-openrisc                  allnoconfig    gcc-16.1.0
-openrisc                    defconfig    gcc-16.1.0
-openrisc    randconfig-r2100-20261009    gcc-12     cocci
-openrisc    randconfig-r2101-20261009    gcc-10.5.0 cocci
-openrisc    randconfig-r2102-20261008    gcc-16.1.0 cocci
-openrisc    randconfig-r2107-20261009    clang-24   cocci
-openrisc    randconfig-r2301-20261009    clang-17   sparse
-openrisc    randconfig-r2302-20261009    clang-21   sparse
-openrisc    randconfig-r2305-20261009    clang-24   sparse
-openrisc    randconfig-r2306-20261009    gcc-14     sparse
-parisc                   allmodconfig    gcc-16.1.0
-parisc                    allnoconfig    gcc-16.1.0
-parisc                   allyesconfig    gcc-16.1.0
-parisc                      defconfig    gcc-16.1.0
-parisc      randconfig-r2100-20261008    gcc-16.1.0 cocci
-parisc      randconfig-r2100-20261009    gcc-13.4.0 cocci
-parisc      randconfig-r2103-20261009    gcc-8.5.0  cocci
-parisc      randconfig-r2200-20261009    gcc-12.5.0 smatch
-parisc      randconfig-r2201-20261009    gcc-10.5.0 smatch
-parisc      randconfig-r2301-20261009    gcc-8.5.0  sparse
-parisc      randconfig-r2302-20261009    clang-17   sparse
-parisc      randconfig-r2305-20261009    gcc-8.5.0  sparse
-parisc      randconfig-r2309-20261009    gcc-9.5.0  sparse
-parisc64                    defconfig    gcc-16.1.0
-powerpc                   allnoconfig    gcc-16.1.0
-powerpc           bluestone_defconfig    clang-24
-powerpc             kmeter1_defconfig    gcc-16.1.0
-powerpc     randconfig-r2103-20261009    clang-18   cocci
-powerpc64   randconfig-r2104-20261009    clang-17   cocci
-powerpc64   randconfig-r2104-20261009    gcc-14.3.0 cocci
-powerpc64   randconfig-r2104-20261009    gcc-16.1.0 cocci
-powerpc64   randconfig-r2107-20261009    clang-17   cocci
-powerpc64   randconfig-r2200-20261009    clang-24   smatch
-powerpc64   randconfig-r2301-20261009    gcc-8.5.0  sparse
-powerpc64   randconfig-r2305-20261009    gcc-12     sparse
-riscv                    allmodconfig    clang-24
-riscv                     allnoconfig    gcc-16.1.0
-riscv                    allyesconfig    clang-24
-riscv                       defconfig    clang-24
-riscv        randconfig-1000-20261013    gcc-9.5.0
-riscv        randconfig-1001-20261013    clang-24
-riscv        randconfig-2000-20261009    gcc-16.1.0
-riscv        randconfig-2001-20261009    gcc-16.1.0
-riscv       randconfig-r2105-20261009    clang-17   cocci
-riscv       randconfig-r2106-20261009    clang-24   cocci
-riscv       randconfig-r2300-20261009    gcc-12     sparse
-s390                     allmodconfig    clang-24
-s390                      allnoconfig    clang-24
-s390                        defconfig    clang-18
-s390         randconfig-1000-20261013    gcc-8.5.0
-s390         randconfig-1001-20261013    gcc-8.5.0
-s390         randconfig-2000-20261009    gcc-16.1.0
-s390         randconfig-2001-20261009    gcc-16.1.0
-s390        randconfig-r2104-20261009    clang-24   cocci
-s390        randconfig-r2105-20261008    clang-24   cocci
-s390        randconfig-r2106-20261009    gcc-13.4.0 cocci
-s390        randconfig-r2306-20261009    gcc-16.1.0 sparse
-s390        randconfig-r2308-20261009    gcc-9.5.0  sparse
-sh                       allmodconfig    gcc-16.1.0
-sh                        allnoconfig    gcc-16.1.0
-sh                       allyesconfig    gcc-16.1.0
-sh                edosk7705_defconfig    gcc-16.1.0
-sh                edosk7760_defconfig    gcc-16.1.0
-sh           randconfig-1000-20261013    gcc-12.5.0
-sh           randconfig-1001-20261013    gcc-10.5.0
-sh           randconfig-2000-20261009    gcc-16.1.0
-sh           randconfig-2001-20261009    gcc-16.1.0
-sh          randconfig-r2101-20261009    gcc-13.4.0 cocci
-sh          randconfig-r2105-20261009    gcc-14.3.0 cocci
-sh          randconfig-r2106-20261009    clang-17   cocci
-sh                  rsk7264_defconfig    gcc-16.1.0
-sh                   se7780_defconfig    gcc-16.1.0
-sparc                     allnoconfig    gcc-16.1.0
-sparc                       defconfig    gcc-16.1.0
-sparc        randconfig-2000-20261009    clang-17
-sparc        randconfig-2000-20261009    gcc-8.5.0
-sparc        randconfig-2001-20261009    clang-17
-sparc        randconfig-2001-20261009    gcc-14.3.0
-sparc       randconfig-r2100-20261009    gcc-14.3.0 cocci
-sparc       randconfig-r2106-20261009    gcc-16.1.0 cocci
-sparc       randconfig-r2201-20261009    gcc-11.5.0 smatch
-sparc64                  allmodconfig    clang-20
-sparc64      randconfig-2000-20261009    clang-17
-sparc64      randconfig-2000-20261009    gcc-9.5.0
-sparc64      randconfig-2001-20261009    clang-17
-sparc64      randconfig-2001-20261009    clang-24
-sparc64     randconfig-r2102-20261009    gcc-14.3.0 cocci
-sparc64     randconfig-r2107-20261009    gcc-13.4.0 cocci
-sparc64     randconfig-r2107-20261009    gcc-16.1.0 cocci
-sparc64     randconfig-r2201-20261009    clang-24   smatch
-sparc64     randconfig-r2303-20261009    gcc-12     sparse
-sparc64     randconfig-r2309-20261009    gcc-8.5.0  sparse
-um                       allmodconfig    clang-17
-um                        allnoconfig    clang-17
-um                       allyesconfig    gcc-14
-um           randconfig-2000-20261009    clang-17
-um           randconfig-2000-20261009    clang-21
-um           randconfig-2001-20261009    clang-17
-um          randconfig-r2100-20261009    gcc-10.5.0 cocci
-um          randconfig-r2102-20261009    gcc-12     cocci
-um          randconfig-r2104-20261009    gcc-13.4.0 cocci
-um          randconfig-r2303-20261009    gcc-8.5.0  sparse
-um          randconfig-r2304-20261009    clang-24   sparse
-um          randconfig-r2304-20261009    gcc-8.5.0  sparse
-um          randconfig-r2307-20261009    gcc-9.5.0  sparse
-x86_64                    allnoconfig    clang-22
-x86_64                          kexec    clang-22
-x86_64       randconfig-2100-20261009    clang-22   cocci
-x86_64       randconfig-2101-20261009    clang-22   cocci
-x86_64       randconfig-2102-20261009    clang-22   cocci
-x86_64       randconfig-2103-20261009    clang-22   cocci
-x86_64       randconfig-2200-20261009    gcc-14     smatch
-x86_64       randconfig-2300-20261009    clang-22   sparse
-x86_64       randconfig-2301-20261009    clang-22   sparse
-x86_64       randconfig-2302-20261009    clang-22   sparse
-x86_64      randconfig-r2103-20261009    gcc-13.4.0 cocci
-x86_64      randconfig-r2202-20261009    clang-22   smatch
-x86_64      randconfig-r2300-20261009    clang-21   sparse
-x86_64      randconfig-r2303-20261009    gcc-8.5.0  sparse
-x86_64      randconfig-r2306-20261009    clang-22   sparse
-x86_64      randconfig-r2307-20261009    gcc-14     sparse
-x86_64      randconfig-r2307-20261009    gcc-16.1.0 sparse
-x86_64      randconfig-r2309-20261009    clang-22   sparse
-x86_64                       rhel-9.4    clang-22
-x86_64                   rhel-9.4-bpf    clang-22
-x86_64                  rhel-9.4-func    clang-22
-x86_64            rhel-9.4-kselftests    clang-22
-x86_64                 rhel-9.4-kunit    clang-22
-x86_64                   rhel-9.4-ltp    clang-22
-x86_64                  rhel-9.4-rust    clang-22
-xtensa                    allnoconfig    gcc-16.1.0
-xtensa                   allyesconfig    gcc-16.1.0
-xtensa       randconfig-2000-20261009    clang-17
-xtensa       randconfig-2000-20261009    gcc-10.5.0
-xtensa       randconfig-2001-20261009    clang-17
-xtensa       randconfig-2001-20261009    gcc-8.5.0
-xtensa      randconfig-r2101-20261009    clang-18   cocci
-xtensa      randconfig-r2300-20261009    clang-17   sparse
-xtensa      randconfig-r2307-20261009    clang-22   sparse
+> @@ -220,12 +232,27 @@ ice_send_component_table(struct pldmfw *context, struct pldmfw_component *compon
+>   	struct ice_pf *pf = priv->pf;
+>   	struct ice_hw *hw = &pf->hw;
+>   	size_t length;
+> +	u8 comp_bit;
+>   	int status;
+>   
+>   	switch (component->identifier) {
+>   	case NVM_COMP_ID_OROM:
+> +		comp_bit = ICE_FWU_COMP_OROM;
+> +		break;
+>   	case NVM_COMP_ID_NVM:
+> +		comp_bit = ICE_FWU_COMP_NVM;
+> +		break;
+>   	case NVM_COMP_ID_NETLIST:
+> +		comp_bit = ICE_FWU_COMP_NETLIST;
+> +		break;
+> +	case NVM_COMP_ID_MANIFEST:
+> +		if (!priv->erot_present) {
+> +			dev_err(dev, "Manifest component is not supported on adapters without eRoT\n");
+> +			NL_SET_ERR_MSG_MOD(extack,
+> +					   "Manifest component is not supported on adapters without eRoT");
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Hi Alex,
+
+I don't think this should be reported to both:
+
+"
+A number of driver configuration interfaces pass a Netlink extended ACK 
+(extack) object to the driver (either directly as an argument or as a 
+member of a parameter struct). The drivers should try to report most 
+errors via the extack object. System level exceptions, indicating that 
+system or device is misbehaving or is in bad state, should continue to 
+be reported to system logs.
+
+Messages should be passed either via extack or to system logs. Drivers 
+should not try to report the same information to both.
+"
+https://docs.kernel.org/networking/driver.html#error-message-reporting
+
+> +			return -EOPNOTSUPP;
+> +		}
+> +		comp_bit = ICE_FWU_COMP_MANIFEST;
+>   		break;
+>   	default:
+>   		dev_err(dev, "Unable to update due to a firmware component with unknown ID %u\n",
+
+...
+
+> @@ -1013,12 +1067,37 @@ int ice_devlink_flash_update(struct devlink *devlink,
+>   		return -EOPNOTSUPP;
+>   	}
+>   
+> -	if (!hw->dev_caps.common_cap.nvm_unified_update && !ice_is_recovery_mode(hw)) {
+> +	struct ice_hw_dev_caps *dev_caps __free(kfree) =
+> +		kzalloc_obj(*dev_caps);
+
+__free() is marked as deprecated by netdev now so we should probably 
+avoid it if we can. Also, this is missing the separating newline for 
+declarations.
+
+Thanks,
+Tony
+
+> +	if (!dev_caps)
+> +		return -ENOMEM;
+> +
+
+
+
