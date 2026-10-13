@@ -1,176 +1,284 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C23ADCC6B03
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 13 Oct 2026 12:12:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3AB13CA9ED2
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 13 Oct 2026 12:53:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 6F31B809C2;
-	Tue, 13 Oct 2026 12:12:57 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id E18E7403AE;
+	Tue, 13 Oct 2026 12:53:10 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id uwFhGQMK0HOO; Tue, 13 Oct 2026 12:12:56 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 7E6E5809EC
-Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1791893576;
-	b=qD77me+cDYLgp518Xw+rfY9AVcPCcUdbQeGROGQZMTNw5GyhROdSC3wOnLpZz56d69aN
-	 1K+ABpoyJxX2xGIXeCpl0vUbTa7oZCv7su2zo0CrXPeQ+hRpUxeFgw29kKI9H6IyOmdES
-	 wfTCfWGEyG4XtBE1ECKCElEuOIs7LyU+1wsl3fcS3lfcrkREYnQQ90C8h6w9/JMG0xUnj
-	 5I4GX9RNLXXT9fsCyI/90md6zi7ZifOOnVCc4VJvgCl2Qc89tM4KTTI8mQ9OXNT/Guqn9
-	 knWK2EqV2fhrpAXCZqgL/1bxJ4qLmekOqukb+Xl+riC56C+iuVDUZvTqJqCBveIBI+A==
-ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1791893576;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id IuW9OBEUEQDl; Tue, 13 Oct 2026 12:53:10 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org D1C35403CE
+Authentication-Results: smtp4.osuosl.org; arc=fail smtp.remote-ip=140.211.166.142
+ARC-Seal: i=3; d=osuosl.org; s=arc; a=rsa-sha256; cv=fail; t=1791895989;
+	b=hzUiXphmqf2e3VbkDXwy1rTy3slzFUBu+yhGT5EXzMR97JZRVitVk7Kbe6XsMQIIYHo4
+	 m5GHoYkAiMYEG+HY92V3Sl9WoW5Y4Lk8c2gFeXheDPtuWVjJUDcbggJxJnIjT+OxBvAcl
+	 sCRxXsYYaps9oituf4T5TfecrB6Z4UV3zQTncT3OFEIwVpIruLcEd0EEwdfXxcw4cnA5o
+	 msUjEohUVKerLam0RwJ07w0Llo2B6Agswp1tdKo55U7fXklS2dKUQgtenTGH4v7HkN2O0
+	 m3mWALSafbCYssKGE3Qd+xzAcdOhm7aaeHECzacjBf3nFHUB4dHi06DyNpVSb7WHJhg==
+ARC-Message-Signature: i=3; d=osuosl.org; s=arc; a=rsa-sha256;
+	c=relaxed/relaxed; t=1791895989;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Gm-Message-State:X-Gm-Gg:
-	 X-Received:Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
-	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding:
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
+	 DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-IronPort-AV:
+	 X-IronPort-AV:Received:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-ExtLoop1:
+	 X-IronPort-AV:Received:Received:Received:Received:Received:Received:
+	 Message-ID:Date:User-Agent:Subject:To:CC:References:From:
+	 Content-Language:In-Reply-To:Content-Type:Content-Transfer-Encoding:
+	 X-ClientProxiedBy:MIME-Version:X-MS-PublicTrafficType:
+	 X-MS-TrafficTypeDiagnostic:X-MS-Office365-Filtering-Correlation-Id:
+	 X-MS-Exchange-SenderADCheck:X-MS-Exchange-AntiSpam-Relay:
+	 X-Microsoft-Antispam:X-Microsoft-Antispam-Message-Info:
+	 X-Forefront-Antispam-Report:
+	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
+	 X-MS-Exchange-AntiSpam-MessageData-0:X-Exchange-RoutingPolicyChecked:
+	 X-MS-Exchange-CrossTenant-Network-Message-Id:
+	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
+	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
+	 X-MS-Exchange-CrossTenant-FromEntityHeader:
+	 X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
+	 X-MS-Exchange-CrossTenant-UserPrincipalName:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStamped:X-OriginatorOrg:
 	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
 	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=XgSawlgCCv2bUBiG5qpJyX9qIeKEXbciVx8zpVGh7Rs=;
-	b=qyisJXVcS+VKLYeiVm4Z+FxJF/vKbbAbkJlR4MM0YI3dBtouKKOoc/KMUpLh8apF4MwH
-	 9OO7bIfIWJnaqvc40XYVzXRUA0N3ZAQYRbVjA+d6Z+hoCuBRJQhu4ZwvEG3jfOyqN93DO
-	 a7ONxOwkFKxDHhuI/yP7JKB/kY4TxRDQu+B2hLgQCb+k4J390j75I/MokkEp1+1WnnRMz
-	 oHYVVcVvApnpLbi2ZI+jU7l2LuwoT1m4mrznhQZN2+WZsPtXbwu9fd1dPk8q/uAipNy5U
-	 5Gg5uxq2iZAlrzMFZfimwmn2BHsrpq+AZWRVi1Qpw/K/ka/SeZF4c6L4FQN12z+wFUQ==
-ARC-Authentication-Results: i=2; smtp1.osuosl.org; 
-	dmarc=pass header.from=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=jZDmtUHE;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	bh=Mm+MH7FjeO32mZEX8EBNd5KyQ/ypoI83p98GTvO4QAU=;
+	b=rLYXRHhcXFAR98E8TNloSB9ftI9EtMSov+MkgXnTNhYg1zGhIdTIPH+4qh1BJzD7lCig
+	 VFOcv71bKZ4Gt0GRLsEDxPPq6UKBu5Xcr6nuiAihg4JJagOIxv1LDKERdIhtu3xdzfPuJ
+	 mXnVGk/pwfqNzAscK4OpKiHauVAPvJDkC93PS7bhe658R4ka00MR9bnJWyM5VsJtoSyoK
+	 waYZL4IFvYySEeEHwBKXznIbJnogSfTGKk/zX9s/5vu4g/K57h4zUwVc/QMP4kyYjBXTu
+	 CUVkZjg9gv/2dlonFBFRBkqTN4TfCMNmmme2gqGvymQd38FH7yDpAIVdySKjWnaDc5w==
+ARC-Authentication-Results: i=3; smtp4.osuosl.org; 
+	arc=fail smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1791893576;
-	bh=XgSawlgCCv2bUBiG5qpJyX9qIeKEXbciVx8zpVGh7Rs=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
+	s=default; t=1791895989;
+	bh=Mm+MH7FjeO32mZEX8EBNd5KyQ/ypoI83p98GTvO4QAU=;
+	h=Date:Subject:To:CC:References:From:In-Reply-To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=kbJupCjJfK81LnkZIFMsk/6FKXqkDBtqlVpiM+GIn5/pvlIh6QBz/YWJOiJbqP6Uq
-	 OxVuUiFjXmFutRF5vMlYsBkI4u+Glf3AjzUzsLluDinKo5alLb/DQ1UFQSi4wYH3at
-	 K0M/4i5k6ocjhv3x1tjZV+C48PqpzUJw3pH0AmIjlWqUXtVlcaLpBrFOosvzzwFY4X
-	 Sri/2UdB8OdD1ZKa4/O/DevIc6Nar6royrhv1n5H1tsGUJs1kPngMpCLdmphM0LrI1
-	 hVJXIBTq9l+ldSoKDce1QRxaaURfDNt6bSWxMJeE2MHapyJqubGtyyLg5Mz+aYJuyB
-	 8q/i6ilFssnfQ==
+	b=oqIqUqdYkGoh0k+fdkOjGYKsUKy/VlGP+TI3yoMElvf9jqciYnyrwPHW/KGbu5v+z
+	 Bb56/WhNPhFMvACRqZFqrSOU3Y7dTdrr3GM9MI2mWeDIAvRVGZ/MACV+CYGrnDKlHW
+	 2VdRzwL0KOHMkoqmm5+VniSh9sbWgN/gAH5UZCA4Y9CIv0rSh8kfmUd0YWpQ224BCe
+	 l/5IbonkW0vcuaW3QT/XneDPMZ5hd/2uc5b3V/AsVX2uebmakCUc556EqOQgNp25r+
+	 U8BYo8q7/nhpBH5EMAfy/9mDY0eyUB3pSwxwvtfzy8xFLMHhwf/xNtK5m3DEgovHpw
+	 BgKNqUOpnjLWw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 7E6E5809EC;
-	Tue, 13 Oct 2026 12:12:56 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 92A4B2E0
- for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Oct 2026 12:12:55 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id D1C35403CE;
+	Tue, 13 Oct 2026 12:53:09 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 43E8B75
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Oct 2026 12:53:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 74508809F5
- for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Oct 2026 12:12:55 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 295CB605FD
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Oct 2026 12:53:08 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id DJBR-lgR1HCZ for <intel-wired-lan@lists.osuosl.org>;
- Tue, 13 Oct 2026 12:12:54 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 60797809C2
-Authentication-Results: smtp1.osuosl.org;
- arc=none smtp.remote-ip="2607:f8b0:4864:20::1330"
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1791893574;
- b=ql/w+MxG05YH4NL0vNOCTP3BVdA7G2of6welM82Ruaj5jgUg6QUujTvTfqY49vWwTX8g
- MI4FaavRhGKsslbNo6r4fiWlo+vlmCGLFPGSTHyexxtRr30Y96eRpnMiozo7mupc649PS
- gCHUgK1S5WsoV0FizxqOinP481zR9MatzMq3Cnq1AZ3pYm8UmpRSf81lCoDWI82Cg07bc
- 5zKukOqf64W4gA/FzX0S4l5PRuGJfjc8VNUBRCnXQkcEYN4zVPlxFc7VEprauaC7aJ9jl
- 0kTaOyRn78gV7g7mTaVPHg6DQxn97yG0fP4VQIBmudMuzIyDnoL3RXl6XGL3MaoDp8g==
-ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1791893574;
- h=Received-SPF:Received:DKIM-Signature:X-Google-DKIM-Signature:
- X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
- Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
- Content-Transfer-Encoding;
- bh=XgSawlgCCv2bUBiG5qpJyX9qIeKEXbciVx8zpVGh7Rs=;
- b=f4rWMTcClPv28Je7rQ5/Inbjt43e9gfH+jHi+/CY6XXE4htqTBLgJ4p83gZnAFEC88Ft
- iwBwAQxUw41MdB3juGB73n4Gtt0aPVHpkmOFO8pj3o8/F4tgNC7jSFAVv8C7jeIdeYKeM
- gFi8dmHzfmfqSxnm4M0tlRCX7XTuOBn1ap2riQ4sgY+4Mj0PNalfo9y8Ia0KsDamMfh9N
- MrbHY+PdGuoeZTxpEd2g+60Srg8HBT70GAeP+8+UeFAvCkhf/5Tc7RaqfOlPu8A0pHb/A
- vprh6VcRv7uCl39xRTYweMRaCsNphqNAcaQagHuyogGY4vmBk/1ZUevLQpxhaqkDn5Q==
-ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
- dmarc=pass header.from=gmail.com;
- dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20251104 header.b=jZDmtUHE; 
- arc=none smtp.remote-ip="2607:f8b0:4864:20::1330"
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::1330; helo=mail-dy1-x1330.google.com;
- envelope-from=luckilystar08@gmail.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20251104 header.b=jZDmtUHE
-Received: from mail-dy1-x1330.google.com (mail-dy1-x1330.google.com
- [IPv6:2607:f8b0:4864:20::1330])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 60797809C2
- for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Oct 2026 12:12:54 +0000 (UTC)
-Received: by mail-dy1-x1330.google.com with SMTP id
- 5a478bee46e88-3514b90bb89so5296349eec.1
- for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Oct 2026 05:12:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20251104; t=1791893573; x=1792498373; darn=lists.osuosl.org;
- h=content-transfer-encoding:mime-version:references:in-reply-to
- :message-id:date:subject:cc:to:from:from:to:cc:subject:date
- :message-id:reply-to:content-type;
- bh=XgSawlgCCv2bUBiG5qpJyX9qIeKEXbciVx8zpVGh7Rs=;
- b=jZDmtUHE3w6+bkCK9WuDLjiWrQz0Hk4zw3cXoGvbIV4BTj5MAMJ1cNZlVikxjtEQX5
- 41lU0bctcSr+b5UTBOIofXNF31ErTBZ4mB4LiN9lun5LPtF+yikAoc34HL1l8lEhYTHp
- nFjtBTwGKtU5vfB9n3pBvACsKTZioKSGhbchH3isXwPJLizPLunYJp4hLmNQBLWHO+Kp
- bYsRjhTlVx8On8WZiM+VT8b2RBhfGS7rCtklFNSAGotVAMXyrIH/RO5BtC0pWgLC99hU
- 0TlRkTsXnkaJCpNWhXMlbYbF6+ivH4NOnfLC8HH8Pn3MglE2qYhyLsB+LLVH8U9g4uV8
- Remg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1791893573; x=1792498373;
- h=content-transfer-encoding:mime-version:references:in-reply-to
- :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
- :to:cc:subject:date:message-id:reply-to:content-type;
- bh=XgSawlgCCv2bUBiG5qpJyX9qIeKEXbciVx8zpVGh7Rs=;
- b=K0DUoNwScq+6qKmegq+YqMVbHTWfmuup7V6qJVLRr8/hi5B58CZscq3j47zXl3qAF8
- 0S9387AUmFu5EXkmLCNuVkedXIiJsPcCg68q2SFejyGXG9TaIjtDS/39tB0RaNRuA0DD
- T8H1eD0lIc1+BSgpACU9lRED6D8I7i+KHeIswmPG188oZkmk0gVB2eq6F/vKPI3ZHNR1
- mroYR7XYfe6pju8p5nR8Ri7hDGLqfDIUN6Ol+GZbJy1GiOwWyaDXjonzX7Q5AvFxvErN
- 96cRjS3vYnH1neOT2nfyeuim9ceKWKEV3FZpc1xxBSR0/ExMMXUxzJR5M3VDKjy3a0BR
- 8KRQ==
-X-Gm-Message-State: AFq9FYJIsyhrK/VUM+5VKoo+w1QMhRCs7cQYDLID+Ie5FHm5NjOkb2VZ
- Q5UzoTlz4dcLXGpbZvUyPy5Z7eRp6XWSkGThTCv1tyIeaunIcck6z21ggIRMnEHUq/kgtQ==
-X-Gm-Gg: AYBFou16K8oKxIokugdNN81+tDqnX8S482bBy6MCRAJexErG9PI9ZdXku0RVzRAKyDQ
- YvuXykB5c9czmMnVe+tovrEo4gjT20+rhj+f+W9rrIQGSDzQcx/yTVSvvzwZvxGBYuFIfgSllTn
- L+/nNkAqm5yEnfp+z6V4bFqEfx0maV1y9yyE3SzM8piLl3QNAjmhk7yO3VwxxbefRRYPztdHJDL
- MS+a6KUr9wWxz5Y+vck958uSLdxTeG3cGnaKzsZ9fxFlXYQaCrxS8f55wbekCW+aMchYZLGwuHM
- HXI8O00gO69JIFULoihEVeu2WC1941rQzWQh1zM1E0lwLsV+LmxI7l2qy6oqUzKYkxx0QpnX0uq
- jnLJthFCjRFhQs0G5hBflPyQleMMUeTC2+caJCVmdTP2m1L5uDlz7vO1S3r+kM8dMqIemNyWoyK
- IbkMSQVWR76Terj+/U6WPHcruLnOz8DQntjlPY4kanx0EQv239P8oiwnQ1OYYh2YtqpS6nioxqC
- VBcZjBnCpTdb6qreNL9Ffb0mY7z2IC2SDpaggG/czpGOndvZ6M76l4qTzW2AfPquLkW+ry7v8P7
- cw==
-X-Received: by 2002:a05:693c:87c5:20b0:35c:34f:7da3 with SMTP id
- 5a478bee46e88-35c034f7eadmr4048266eec.21.1791893572852; 
- Tue, 13 Oct 2026 05:12:52 -0700 (PDT)
-Received: from C9P9279WY4.bytedance.net
- (34.224.142.34.bc.googleusercontent.com. [34.142.224.34])
- by smtp.gmail.com with ESMTPSA id
- 5a478bee46e88-3537ca7133asm52304765eec.14.2026.10.13.05.12.48
- (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
- Tue, 13 Oct 2026 05:12:52 -0700 (PDT)
-From: Tian Xun Ng <luckilystar08@gmail.com>
-To: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org, Emil Tantilov <emil.s.tantilov@intel.com>,
- anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
- aleksander.lobakin@intel.com, aleksandr.loktionov@intel.com,
- decot@google.com, milena.olech@intel.com, joshua.a.hay@intel.com,
- alan.brady@intel.com, andrew+netdev@lunn.ch, davem@davemloft.net,
- edumazet@google.com, kuba@kernel.org, pabeni@redhat.com,
- Tian Xun Ng <tianxun.ng@bytedance.com>
-Subject: [PATCH iwl-net v5 3/3] idpf: keep the mailbox up while tearing down
- vports on shutdown
-Date: Tue, 13 Oct 2026 20:12:24 +0800
-Message-ID: <20261013121224.84482-4-luckilystar08@gmail.com>
-X-Mailer: git-send-email 2.50.1
-In-Reply-To: <20261013121224.84482-1-luckilystar08@gmail.com>
-References: <20261013121224.84482-1-luckilystar08@gmail.com>
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 1d-7cPKj4rn7 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 13 Oct 2026 12:53:07 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 0DDFB605F4
+Authentication-Results: smtp3.osuosl.org;
+ arc=fail smtp.remote-ip=192.198.163.19
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=fail; t=1791895987;
+ b=THyvt7/G0a1t2uDTyXGtXZTMj8b7YwfMBRQWmW3whiksY9mdXnH7MApXhsrZeA7Qk2+T
+ 1Y3iKZ45QzuxUDJAXV4xVsxce2CjqWSoGtUBjju5NquV+mW40PFrGzSmV9UZT0pzdBdrH
+ oQ4YanwRbYvrCg1+Rfo3a5ukwG0zepoXmJ/E41u0oDDRZf7gGta4YJbOZDFRHpOONIZpE
+ Bf/bjgpWqoIoau1Pb/Ttz9RVerE/yygWtqptMC2a2lDcfK4wXa9sLOivCbRn68Fi2oONF
+ MTFSZ1uDf72vF8Gtz0ZIHzNVC7d86q6AcaHgmEx9nFIKmxmNovmEn0W2AkjygCc7FKg==
+ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
+ c=relaxed/relaxed; t=1791895987;
+ h=Received-SPF:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+ X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
+ X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Received:Received:
+ Received:Received:Received:Message-ID:Date:User-Agent:Subject:To:CC:
+ References:From:Content-Language:In-Reply-To:Content-Type:
+ Content-Transfer-Encoding:X-ClientProxiedBy:MIME-Version:
+ X-MS-PublicTrafficType:X-MS-TrafficTypeDiagnostic:
+ X-MS-Office365-Filtering-Correlation-Id:X-MS-Exchange-SenderADCheck:
+ X-MS-Exchange-AntiSpam-Relay:X-Microsoft-Antispam:
+ X-Microsoft-Antispam-Message-Info:X-Forefront-Antispam-Report:
+ X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
+ X-MS-Exchange-AntiSpam-MessageData-0:X-Exchange-RoutingPolicyChecked:
+ X-MS-Exchange-CrossTenant-Network-Message-Id:
+ X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
+ X-MS-Exchange-CrossTenant-OriginalArrivalTime:
+ X-MS-Exchange-CrossTenant-FromEntityHeader:
+ X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
+ X-MS-Exchange-CrossTenant-UserPrincipalName:
+ X-MS-Exchange-Transport-CrossTenantHeadersStamped:X-OriginatorOrg;
+ bh=Mm+MH7FjeO32mZEX8EBNd5KyQ/ypoI83p98GTvO4QAU=;
+ b=lKAwc7JVEsyZx4vgFtf7ozx/e4DbQJV8WWF1Oy2WWbfrjz71Yre9Mi8eeJdtSTcwuiiG
+ v+ZTvXl7AbebbTfbGFzekb6E/v9sbpLH+5jdxR2ALEZtv9IwvzcAnJE97Y760l3RXYqgz
+ 4oyxnBs4eojeNiPr6pItgke7YGesqt2dsiqi3g0pNnt8+rZjpos/fouho7T4in0BSfGAS
+ HJ1NNHGLQPwsQWqNvEwDxfx3HeQjUlvGDagXMeSxfboXXec2TTaH08G3KHJg0fTGcvyLF
+ 10YzQ0Q22RnXGSnREw761M3s7hdRkSmA1G64FhRv3hZwNfNIiEetL5j3551G2LrHZew==
+ARC-Authentication-Results: i=2; smtp3.osuosl.org; 
+ dmarc=pass header.from=intel.com;
+ dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=iR0aGmpM; 
+ arc=fail smtp.remote-ip=192.198.163.19
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.19;
+ helo=mgamail.intel.com; envelope-from=przemyslaw.kitszel@intel.com;
+ receiver=<UNKNOWN> 
+Authentication-Results: smtp3.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=iR0aGmpM
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 0DDFB605F4
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Oct 2026 12:53:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1791895987; x=1823431987;
+ h=message-id:date:subject:to:cc:references:from:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=/aLbT23E/iCD1fYFrSNuvNjd3g03N8pAwHt0V2stpac=;
+ b=iR0aGmpMoRF/cEEAxaSnDbwJVCJDaDgPBJSN2dl3x5Qy0+MdjS/SH+oK
+ Oh2gDu0ZziOMriuO3mR5I+G3NQGdmzShLkemtVmGpd1umUMoyb0XgnmVR
+ STnPBK0gqTLzdD9SJmovt9M7+rht+6nnX4YsP36oNZxF9HtsURIXt4LjJ
+ DGqcIoGJ/hsES1WTTI2rfkulaD+XlR9hmVOFY/q7sqXHuZ8EfQJKeXlCg
+ b2OVaTsu07BNIHlcmL74Ujo5YfidLw8Nl+xGdy3mBZlgEjfEWEYSYZUHD
+ FlQniEj9f3QxhsEdx6ea6aG/xK8pSp7EvWkmanxeysgkHWIWsQTHZ/Shx g==;
+X-CSE-ConnectionGUID: 4wZuGT1TTciPbRNeaC7o4w==
+X-CSE-MsgGUID: Gr/P0oD0QDGfyc2wLgjW9Q==
+X-IronPort-AV: E=McAfee;i="6800,10657,11933"; a="721115"
+X-IronPort-AV: E=Sophos;i="6.27,155,1787036400"; 
+   d="scan'208";a="721115"
+Received: from fmviesa007.fm.intel.com ([10.60.135.147])
+ by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 13 Oct 2026 05:53:05 -0700
+X-CSE-ConnectionGUID: Zyn1DpR5QHeh3VpkHd4whw==
+X-CSE-MsgGUID: YStc29k+SASHj3TPGxiYxg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,155,1787036400"; 
+   d="scan'208";a="1481945"
+Received: from fmsmsx901.amr.corp.intel.com ([10.18.126.90])
+ by fmviesa007.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 13 Oct 2026 05:53:06 -0700
+Received: from FMSMSX901.amr.corp.intel.com (10.18.126.90) by
+ fmsmsx901.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.49; Tue, 13 Oct 2026 05:53:04 -0700
+Received: from fmsedg903.ED.cps.intel.com (10.1.192.145) by
+ FMSMSX901.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.49 via Frontend Transport; Tue, 13 Oct 2026 05:53:04 -0700
+Received: from BN8PR05CU002.outbound.protection.outlook.com (52.101.57.13) by
+ edgegateway.intel.com (192.55.55.83) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.49; Tue, 13 Oct 2026 05:53:04 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=HtmmwikOsD4Bsi43mhUX0s5dnaA53XUVNZy+hs5sdk/5FAcZopDIrNzAQ3ZfothygnvorbFGbANvuBz+p3FZTYw3ey7jpkxeQxlrfAb37JCkJQlaE8GNLc7JJYMx3GSqYq0POucA5FZLifB+uDF2Fo5qQXYlTQ+DpOoEs6ifBWm7Cl8ZLw5H2Ccww77YnIy4xS4ZhLlvQaizeTrlV3t3yKjZsamZzKQGTKsDp5qmhiLTiwrIfuiRmcxru7kUpDG/YS6zv+TtdQiP2C9uHKbpcsX/UfPNN6By/ZAKNbYFXQGkI/Qw7mkyc6zimd2U2MEVsL23ycjw5mAOa1IPM6RXrg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=Mm+MH7FjeO32mZEX8EBNd5KyQ/ypoI83p98GTvO4QAU=;
+ b=jWgc1n5i4Bs5tlflns3iNj0SSii+M3lcPcRbJll2NHy0AKmy+Gp3YguCcJjYt+A+qPvjB5E+D1/AnqGQ6vSucWYjKVJd9rnLIYCFVJGbO4yvHELW6bKb2s7L35j3TzljOlhXxhL3u3FhN70r065mn+eRb4fvApJMgkaNYvZRAjoZ8R6fVb9QK+YhoyPSHeehuJbQ/PvJBpfjYOJ7tIqnSCm3lF44g027o+wW7fIT61PG46Ci7tTpYQ/UnTQnQhc2yXovQaGTTPoY6P1vPHt7zF+OrVxq8EGpsg2UGeI0k5g62qQi+xM4W1bB5Wro96tEWrP2qP57rKBoLdux2drrpA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Received: from LV3PR11MB8508.namprd11.prod.outlook.com (2603:10b6:408:1b4::8)
+ by IA1PR11MB7889.namprd11.prod.outlook.com (2603:10b6:208:3fe::20)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.27; Tue, 13 Oct
+ 2026 12:52:56 +0000
+Received: from LV3PR11MB8508.namprd11.prod.outlook.com
+ ([fe80::a1e8:1786:e5d1:8e51]) by LV3PR11MB8508.namprd11.prod.outlook.com
+ ([fe80::a1e8:1786:e5d1:8e51%5]) with mapi id 15.21.0522.011; Tue, 13 Oct 2026
+ 12:52:56 +0000
+Message-ID: <3680a279-d31f-49c3-91f5-cb7a62e38fe0@intel.com>
+Date: Tue, 13 Oct 2026 14:57:44 +0200
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH net-next v2 02/14] ice: use shared devlink to store
+ ice_adapters instead of custom xarray
+To: <sashiko-reviews@lists.linux.dev>
+CC: <intel-wired-lan@lists.osuosl.org>, Tony Nguyen
+ <anthony.l.nguyen@intel.com>
+References: <20261009121433.30347-1-przemyslaw.kitszel@intel.com>
+ <20261009121433.30347-3-przemyslaw.kitszel@intel.com>
+ <sashiko-outbox-166496@kernel.org>
+From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Content-Language: en-US
+In-Reply-To: <sashiko-outbox-166496@kernel.org>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: VIVP296CA0051.AUTP296.PROD.OUTLOOK.COM
+ (2603:10a6:800:353::12) To LV3PR11MB8508.namprd11.prod.outlook.com
+ (2603:10b6:408:1b4::8)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: LV3PR11MB8508:EE_|IA1PR11MB7889:EE_
+X-MS-Office365-Filtering-Correlation-Id: 683823dc-0777-46d5-01cf-08df2928e6fe
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+ ARA:13230040|366016|1800799024|23010399003|376014|6133799003|261009220027099003|10067099003|261009223027099003|22082099003|18002099003|261009223327099003|4143699003|56012099006|261009221727099003|261009221227099003|11063799006;
+X-Microsoft-Antispam-Message-Info: F19UtZvexr/Fwl5jtBd6Gz5WldcHJ6fwTT7bZSoW60BM+7B+mlAHMzsiFL1GiDGNo/1evaNSeeuVO62CRcQUKSmbU9JWz84S6VIvBsNftfmYJCxsY/7BEXNMCpRq8lyZTjoK2Q2rh3R+VeWYZjwcbbQWp3V6QKUAzbcC3hKNsTSXcp4MWmLof77n1P9LCxLIy4II1TpfYI/hTMAueivqDnYkBlzhV8QwjcZfw//I91FWu4GEwXrlNap0+VFC1XutkZzyfnymgUyG7gmXPEtdqHAW2rFQcnoEyc21BU1q0Xe6BetwjPAIfgcWD5ZW7gGRClC4uJjLqUTxhMqpww4BB7K0boYAq+Z9B93M2xoq5CF5pJdzzw0Pxu9uufg3Exn1GAjncNwN1nudfVxsIuMclP3JTsUs5RltwF8m4OWyeCpWwqvO+lOEWHJdNatyq7hF4RaQiunrzXEUazgZ4EvAyzHteqEe3c1i7E6pHYxyEBRbIgurVgvHTSvJyK8oY0ApQynMuHAn3xv4gjg3trEmqLXgpJzeN8JIyRl2YTe/4mzm3kd9YgjEGoxej36MGSxlb0TaQg5Faflt320EohVezjPgG0M+KgN26iewaNBbr+1hGeA37qe6ePaqzSjm1vAL
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:LV3PR11MB8508.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230040)(366016)(1800799024)(23010399003)(376014)(6133799003)(261009220027099003)(10067099003)(261009223027099003)(22082099003)(18002099003)(261009223327099003)(4143699003)(56012099006)(261009221727099003)(261009221227099003)(11063799006);
+ DIR:OUT; SFP:1101; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?dTVwMUpMVUlGWUdvRjY4UE1zTGRPaXNwaThaWVBXMElxd1JTRzVYVjFVR2dr?=
+ =?utf-8?B?dTVxQ3laOUtkbnViVWpVVENrQjJtMS9PQ0o3RW1wbW4xVTJWSXNrNmZWbUhE?=
+ =?utf-8?B?RXVNemRycnFwaVEzK1ZJM0hMbURQeHVPWDR4R3locG1TZFVXMXpMam92Mnlx?=
+ =?utf-8?B?bEFrdXIvTUFuWmQxMENxRkpQUUFRRUpvWE9jdEROSE9UalRndjVVWGp2S0tF?=
+ =?utf-8?B?amJoMmcwUWxwR01lbUJpZHpraHJaMHZMaXZ2YzBnVHprNjFxdnNueFNWUWQw?=
+ =?utf-8?B?cy9WeEM0SGcwOWFVOGdGdkNYSXQrVGxESFd1VmZEZSs0RXBTY29zckR5Mk0w?=
+ =?utf-8?B?SElhaFk3WDNkUVRIcGh1bUxFSnRYaXpNQWs3UWJlRFlabXEwbDl2emNJMk15?=
+ =?utf-8?B?Y0Y4MGNEc2dnYTQxVGNZL2NMSklpQVdDQ3N6MVZndkdCNm8vMkRTNDVpcEVx?=
+ =?utf-8?B?Zkg3OE94Yy9LODBQWkFKUGVFeml3ZzFPNU1rUVBoUEUzYTFPYnNsR2RhaE1F?=
+ =?utf-8?B?RHBnRHZUd0dqVEpSVmxBUi9tZWRTRlM4bXBvWDVDMlhIYWl4cVZNZjRMTnJu?=
+ =?utf-8?B?czdubVE2cC92T0dWZDBITG9KMTdURjhLY0VCUXhVcDBCYVFJZHlmREp1ZERT?=
+ =?utf-8?B?Rk9RdmNXN1o2R2ZNdS9aZVRBUmNsdWlFNlFzZm9Qbm9KekUvc0dmSzYvbm5q?=
+ =?utf-8?B?RjE2d1I2cmNCdzBBTkNsY1I5OWZrTDczbG5BeURMaHNIa014ZE9BWGtaOTh2?=
+ =?utf-8?B?S0dRUGt2SFhzUEFIL3REdmNtZDNHVlVYZ2t1VUNibnlrMm52K2RYNlZ1RFBT?=
+ =?utf-8?B?eksvWU1qS2hjbllxSTlmdlhac25CaEQ4c3VVRk90Mnp2QTViaGJGY0ovNG5H?=
+ =?utf-8?B?a1lYYUJZK1NmMW1OUXhVRDRtbUw3WEx4Ti9wYS9HM2t4ZHJiUGlTN3hLdXR6?=
+ =?utf-8?B?aUJ6ZUNZY1NNNzcrZG83RmQwRUJERmlYc1lGb3Z0dC96aVhLNkoyTGZUL0FZ?=
+ =?utf-8?B?MHdMbytDOTBVRUg4eVZGODhnZnJOZlUxWTQ4blJtNDNudjdOZjJBYVMwak5o?=
+ =?utf-8?B?TDNXbmMzT2NUbmVsTkxseVY0RGw2UnF2NjBBOTRhNXRZMC9KTlJlWUJyTTlM?=
+ =?utf-8?B?RjdIeTVvWXJFM0ZBanNpa0hienhNNHN0S1dUUm9UN0syb3ZqNFcrL25zVnBR?=
+ =?utf-8?B?aTFaSzF3amlZQWl4cituY3ZOOUtROU9tRlkvTDlicnFtUlJKeFlWRThmQ2JT?=
+ =?utf-8?B?c3pVcGQ0UFlIQ1BCdG4wc2Y2aVFHODBjS1RRZ1ZKS0N3SmlWdTNSVUFxZVZk?=
+ =?utf-8?B?R3V3MFRxY3llMWo2L2UzTGFBTFJFWVdCNjBCQWgvL0pmcFRLbHR6UFVPWkM5?=
+ =?utf-8?B?SXRtd1h6QzI4V1BUQXova0ZVaTNkSE5IQUd5bjFzQlFYMHFmdEwyRGhVblg4?=
+ =?utf-8?B?V2tYYnVBQVV5QWwzUlkzdGI5NVEwV1VQaDBCNkJOZWtxTitCcTJhenBuOU0z?=
+ =?utf-8?B?NGg0OGhOR3IxRmV4RlJqbUQxWlhEamNFUERnWkxGM0RnZFZ5cUR6Mk1SODBC?=
+ =?utf-8?B?KzcrYVlBZHo4aTQ1UG1nOHd3R2ZESEMrSy9hb0c2KytXRTNKbkdwQkJxQ1hV?=
+ =?utf-8?B?S1M5aWNyNlVyaCtXNXNWZ3hrL3h6S0N4R0YyVmhldUpOcW9aZllpRUZtSmZq?=
+ =?utf-8?B?RGppSCtaTWZmbG9YYy9HNFhVeXNETnZGaXJNbjc3aHFlZGhjUE1xbGFORUs0?=
+ =?utf-8?B?TEN0Y2NYcUovdTJxcnZBRDdSbzkyazRrVngwQXBhV2JaNUJ0anFKeGhVM0xa?=
+ =?utf-8?B?eklzTnVhVlZZamp6VlYzOXZRR1drdDBnR3p1Z3BsUmVvM2c3RGYxSStCVzFC?=
+ =?utf-8?B?d3pXVDN0RGM1R0xNdjczOWZFeHdtSmpVN09KYUsvR3NwbVNpMFMvdXZZdmZ3?=
+ =?utf-8?B?V0NscGQrK0FaRU1HVEdQcmZGeThCakw4NTZJaFFIdUN3bXkvMFVQZ1NlQWNw?=
+ =?utf-8?B?bkwxK0s5N2N3bXAzTVVLbEJndmpSSDl4aGYyUWRKOUwzVk9sL2Q1d0FUSTVG?=
+ =?utf-8?B?VTA3SFY0TkxDSzVGTmE0VzFZR0lYVTJNMXhQTGdoVS84NDJuSC9zcGtsUEls?=
+ =?utf-8?B?c29iVmVNUjVxS3AyLyt1WkVRclJwTnhwZUJYZ2FydEluUEhCS2F6NFdPRklo?=
+ =?utf-8?B?UkErbnFBU01ORU96bnZjcFZFUXZlNjZQaWNldkRBeXY5NmU1eTc2clJPNzVt?=
+ =?utf-8?B?RUhqYlJmRFpwSDQvR28vQXlHQ2ZIc3k1cDFrckcvd2hCK1hqUGxuRVA2UXBp?=
+ =?utf-8?B?UUpBM0ZuNmxGaVUyUEc5aE1uS0FzWTdzNkV5ZDJ4OU9KUlBHd0VGNU5WRFVW?=
+ =?utf-8?Q?R/ynOw6UJOusFfR0=3D?=
+X-Exchange-RoutingPolicyChecked: ef4N8xV8DZoj3W1pQbvcM9wcJYRhZxXqU74f6xvHVGNgN7zz4sLBICmCiS5L1L0rsOM+ZyDtFpfBssXwEWne8KMnhaay2WNcMWYYfJsDiD9Uyt0Y66Tzu5w0C+27QRcQQFH8UNralN23Np/LmFN3jF8ZpfoiMOaq4WyiebhcpCuDcW8YJeYKcMnAa7UgBOR+KLAelhB+oVxDaXjQotHcHpDadvIIcdItMWG6dX43FxAldFbStS3NMG16WdO8LS6pumf5ZSqtL5iD3JVZSRnl2i6PQrfz3dfAIY+1hhMsEkC+qkLXbAnTiquLgwejlDjUpttlXhgVY57uNv/ho599ng==
+X-MS-Exchange-CrossTenant-Network-Message-Id: 683823dc-0777-46d5-01cf-08df2928e6fe
+X-MS-Exchange-CrossTenant-AuthSource: LV3PR11MB8508.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Oct 2026 12:52:56.3398 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: m9FEuRPFzzh2ktvtJY/+Nbi4o40IbnYGSap1Bfmt2gEB1CGjQy4g6oIlDuVTs+0QALsiQXA2aco/1D21YBXsaA9JzyNLHrN3gMKPpypD18s=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA1PR11MB7889
+X-OriginatorOrg: intel.com
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -185,235 +293,142 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-From: Tian Xun Ng <tianxun.ng@bytedance.com>
+On 10/10/26 2:16 PM, sashiko-bot@kernel.org wrote:
+> Thank you for your contribution! Sashiko AI review found 2 potential issue(s) to consider:
+> - [High] ice: DMA UAF due to missing control queue teardown in recovery mode
+> - [High] ice: NULL pointer deref in ice_adapter_put() on recovery mode teardown
 
-Since commit 4c9106f4906a ("idpf: fix adapter NULL pointer dereference
-on reboot"), idpf_shutdown() calls idpf_vc_core_deinit() directly instead
-of idpf_remove(), so IDPF_REMOVE_IN_PROG is not set on shutdown.
-idpf_vc_core_deinit() uses that flag to decide when to shut the virtchnl
-transaction manager down. Without it, libie_ctlq_xn_shutdown() runs
-before idpf_deinit_task() tears the vports down, so every message sent
-during that teardown (disable vport, disable queues, destroy vport)
-fails at once, and the device is never told that the vports are gone.
+both pre-existing, will make separate -net submissions for them
 
-A reset should clear that state, but on the system where this was found
-the device kept the queues enabled across a warm reboot. The first queue
-reconfiguration in the next kernel (udev setting the MTU) sends
-VIRTCHNL2_OP_DEL_QUEUES, and the device then writes SW_MARKER TX
-completions to the previous kernel's completion rings. With the IOMMU
-translating, those writes fault about 19 s into every such boot:
+> --
+> 
+> commit 298f011950fb287bfb913324af33c969b5683c8d
+> Author: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+> Subject: ice: use shared devlink to store ice_adapters instead of custom xarray
+> 
+> This commit refactors the storage and deduplication logic for ice_adapters
+> by moving it to a shared devlink instance. It replaces the custom xarray
+> implementation with nested devlink instances for PF devices.
+> 
+> Link: https://lore.kernel.org/all/20260312100407.551173-1-jiri@resnulli.us
+> 
+>> diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+>> index 454fba07d4ecc..6373cd5ac2884 100644
+>> --- a/drivers/net/ethernet/intel/ice/ice_main.c
+>> +++ b/drivers/net/ethernet/intel/ice/ice_main.c
+> 
+> [ ... ]
+> 
+>> @@ -4946,7 +4946,12 @@ static int ice_init_devlink(struct ice_pf *pf)
+>>   		return err;
+>>   
+>>   	ice_devlink_init_regions(pf);
+>> -	ice_devlink_register(pf);
+>> +	err = ice_devlink_register(pf);
+>> +	if (err) {
+>> +		ice_devlink_destroy_regions(pf);
+>> +		ice_devlink_unregister_params(pf);
+>> +		return err;
+>> +	}
+> 
+> [Severity: High]
+> Can this new error path lead to a DMA use-after-free regression in recovery
+> mode?
+> 
+> In ice_probe_recovery_mode(), the hardware control queues are created via
+> ice_create_all_ctrlq(), which allocates DMA memory using devres. If
+> ice_init_devlink() fails and returns an error here, the function exits
+> without calling ice_destroy_all_ctrlq().
+> 
+> The devres framework will unmap and free the DMA memory upon probe failure,
+> but the hardware ATQ/ARQ registers might still point to those freed
+> physical addresses since the queues were never gracefully disabled. Could
+> this allow the active device to continue performing DMA operations on freed
+> memory?
 
-  arm-smmu-v3 arm-smmu-v3.12.auto: event: F_TRANSLATION client: 0006:01:00.0 sid: 0x30100 ssid: 0x0 iova: 0x3ef60840 ipa: 0x0
+The new error path cannot be reached in recovery mode. In that mode 
+pf->adapter is NULL, so ice_devlink_register() skips 
+devl_nested_devlink_set() and always returns 0.
 
-In IOMMU pass-through mode they corrupt pages the new kernel has reused.
+The missing ice_destroy_all_ctrlq() is a pre-existing issue that this 
+series does not change:
 
-Set IDPF_REMOVE_IN_PROG at the start of idpf_shutdown(), as
-idpf_remove() does, so that the event task cannot be requeued and the
-vports are destroyed while the mailbox is still up; the first two
-patches keep the Tx timestamp callback and the link event handler away
-from the state released on the way. So that an unresponsive control
-plane does not hold up a reboot for long, cap each transaction sent
-during the teardown at 500 ms instead of 60 s, through a new
-adapter->vc_xn_timeout_ms, and fail later synchronous ones at once after
-the first one times out. If the SW marker of one disabled Tx queue does
-not arrive, the remaining queues of that vport do not wait for theirs,
-but the mailbox messages that follow are still sent: the device has just
-answered DISABLE_QUEUES. A control plane that dies at that point costs
-one marker timeout per vport and one mailbox timeout. The statistics
-task stops sending once IDPF_REMOVE_IN_PROG is set. A request it already
-has waiting, or a reset already running in the event task, keeps its own
-timeouts, as bounding those would need support in libie. If the function
-has already been reset, for instance a VF whose PF went down first,
-idpf_is_reset_detected() fails the messages without waiting.
+ice_init_devlink() could already fail in recovery mode via 
+ice_devlink_register_params().
+The recovery-mode branch of ice_remove() doesn't destroy the control 
+queues either; only ice_deinit_hw() does.
+I will address this in a separate fix for -net rather than in this series.
 
-Tested on two arm64 (64K pages) servers, each with two idpf PFs, with
-this series backported to a 6.17 kernel and the IOMMU translating: 20
-warm reboots without a fault. Each PF's teardown took about 1.2 s for
-six mailbox transactions, with all 64 Tx queue markers received; the
-slowest transaction, VIRTCHNL2_OP_DEALLOC_VECTORS, took about 300 ms.
-With the first Tx queue marker treated as missing, the other 63 queues
-did not wait, all six transactions still completed, the teardown took
-about 2 s per PF, and 3 of 3 warm reboots were clean. With the driver
-made to skip sending the teardown messages, every reboot faulted again.
 
-Fixes: 4c9106f4906a ("idpf: fix adapter NULL pointer dereference on reboot")
-Cc: stable@vger.kernel.org
-Assisted-by: LLM
-Signed-off-by: Tian Xun Ng <tianxun.ng@bytedance.com>
----
- drivers/net/ethernet/intel/idpf/idpf.h        |  5 ++-
- drivers/net/ethernet/intel/idpf/idpf_lib.c    |  3 ++
- drivers/net/ethernet/intel/idpf/idpf_main.c   | 11 +++++++
- .../net/ethernet/intel/idpf/idpf_virtchnl.c   | 33 ++++++++++++++++---
- .../net/ethernet/intel/idpf/idpf_virtchnl.h   |  1 +
- 5 files changed, 47 insertions(+), 6 deletions(-)
+> 
+> [ ... ]
+> 
+>> diff --git a/drivers/net/ethernet/intel/ice/ice_adapter.c b/drivers/net/ethernet/intel/ice/ice_adapter.c
+>> index 2dc3629d6d0f6..c6301341ccaef 100644
+>> --- a/drivers/net/ethernet/intel/ice/ice_adapter.c
+>> +++ b/drivers/net/ethernet/intel/ice/ice_adapter.c
+> 
+> [ ... ]
+> 
+>> @@ -93,59 +80,37 @@ static void ice_adapter_free(struct ice_adapter *adapter)
+> 
+> [ ... ]
+> 
+>> -void ice_adapter_put(struct pci_dev *pdev)
+>> +void ice_adapter_put(struct ice_adapter *adapter)
+>>   {
+>> -	struct ice_adapter *adapter;
+>> -	unsigned long index;
+>> -
+>> -	index = ice_adapter_xa_index(pdev);
+>> -	scoped_guard(mutex, &ice_adapters_mutex) {
+>> -		adapter = xa_load(&ice_adapters, index);
+>> -		if (WARN_ON(!adapter))
+>> -			return;
+>> -		if (!refcount_dec_and_test(&adapter->refcount))
+>> -			return;
+>> -
+>> -		WARN_ON(xa_erase(&ice_adapters, index) != adapter);
+>> -	}
+>> -	ice_adapter_free(adapter);
+>> +	devlink_shd_put(adapter->devlink);
+>>   }
+> 
+> [Severity: High]
+> Will this trigger a NULL pointer dereference regression if the driver is
+> probed in recovery mode?
+> 
+> If the driver probes in recovery mode, pf->adapter is never allocated and
+> remains NULL. During ice_remove(), the code checks
+> ice_is_recovery_mode(&pf->hw) to determine if it should perform a
+> recovery-mode early return or a full teardown.
+> 
+> Since ice_is_recovery_mode() reads a live volatile hardware register, if
+> the firmware clears this bit after probe, the check bypasses the early
+> return and falls through to normal teardown:
+> 
+> drivers/net/ethernet/intel/ice/ice_main.c:ice_remove() {
+>      ...
+>      ice_adapter_put(pf->adapter);
+>      ice_deinit_hw(&pf->hw);
+>      ...
+> }
+> 
+> The previous xarray lookup safely returned early on NULL, but the new code
+> unconditionally dereferences adapter->devlink. Will this crash on driver
+> unload or device unbind when transitioning out of recovery mode?
+> 
 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf.h b/drivers/net/ethernet/intel/idpf/idpf.h
-index 470bc23c8..a789230dd 100644
---- a/drivers/net/ethernet/intel/idpf/idpf.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf.h
-@@ -85,7 +85,7 @@ enum idpf_state {
-  * @IDPF_HR_FUNC_RESET: Hard reset when TxRx timeout
-  * @IDPF_HR_DRV_LOAD: Set on driver load for a clean HW
-  * @IDPF_HR_RESET_IN_PROG: Reset in progress
-- * @IDPF_REMOVE_IN_PROG: Driver remove in progress
-+ * @IDPF_REMOVE_IN_PROG: Driver remove or shutdown in progress
-  * @IDPF_MB_INTR_MODE: Mailbox in interrupt mode
-  * @IDPF_VC_CORE_INIT: virtchnl core has been init
-  * @IDPF_FLAGS_NBITS: Must be last
-@@ -625,6 +625,8 @@ struct idpf_vport_config {
-  * @asq: Send control queue info
-  * @arq: Receive control queue info
-  * @xnm: Xn transaction manager
-+ * @vc_xn_timeout_ms: Upper bound for each Xn transaction timeout, shortened
-+ *		      on shutdown and set to 0 once a shortened one timed out
-  * @num_avail_msix: Available number of MSIX vectors
-  * @num_msix_entries: Number of entries in MSIX table
-  * @msix_entries: MSIX table
-@@ -684,6 +686,7 @@ struct idpf_adapter {
- 	struct libie_ctlq_info *asq;
- 	struct libie_ctlq_info *arq;
- 	struct libie_ctlq_xn_manager *xnm;
-+	u32 vc_xn_timeout_ms;
- 	u16 num_avail_msix;
- 	u16 num_msix_entries;
- 	struct msix_entry *msix_entries;
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_lib.c b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-index 827c795af..e4af4ebd4 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_lib.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-@@ -1358,6 +1358,9 @@ void idpf_statistics_task(struct work_struct *work)
- 	for (i = 0; i < adapter->max_vports; i++) {
- 		struct idpf_vport *vport = adapter->vports[i];
- 
-+		if (test_bit(IDPF_REMOVE_IN_PROG, adapter->flags))
-+			return;
-+
- 		if (vport && !test_bit(IDPF_HR_RESET_IN_PROG, adapter->flags))
- 			idpf_send_get_stats_msg(netdev_priv(vport->netdev),
- 						&vport->port_stats);
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_main.c b/drivers/net/ethernet/intel/idpf/idpf_main.c
-index 129bccaa6..21be83dc8 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_main.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_main.c
-@@ -194,8 +194,18 @@ static void idpf_shutdown(struct pci_dev *pdev)
- {
- 	struct idpf_adapter *adapter = pci_get_drvdata(pdev);
- 
-+	/* As in idpf_remove(): keep the event task from being requeued, and
-+	 * destroy the vports while the mailbox is still up.
-+	 */
-+	set_bit(IDPF_REMOVE_IN_PROG, adapter->flags);
- 	cancel_delayed_work_sync(&adapter->serv_task);
- 	cancel_delayed_work_sync(&adapter->vc_event_task);
-+
-+	/* Bound the teardown transactions started from here on, so that an
-+	 * unresponsive control plane costs a single timeout. A reset or a
-+	 * transaction that is already running keeps its own timeouts.
-+	 */
-+	WRITE_ONCE(adapter->vc_xn_timeout_ms, IDPF_VC_XN_SHUTDOWN_TIMEOUT_MSEC);
- 	idpf_vc_core_deinit(adapter);
- 	idpf_deinit_dflt_mbx(adapter);
- 
-@@ -267,6 +277,7 @@ static int idpf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	adapter->req_rx_splitq = true;
- 
- 	adapter->pdev = pdev;
-+	adapter->vc_xn_timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC;
- 
- 	err = idpf_dev_init(adapter, ent);
- 	if (err) {
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-index 2cfd216ae..331d56fae 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-@@ -194,20 +194,32 @@ static void idpf_prepare_ptp_mb_msg(struct idpf_adapter *adapter, u32 op,
-  * Cleanup the mailbox queue entries of the previously sent message to
-  * unmap and release the buffer.
-  *
-+ * The transaction timeout is capped at adapter->vc_xn_timeout_ms. Once a
-+ * synchronous transaction with a shortened timeout times out, later ones
-+ * fail at once instead of waiting again.
-+ *
-  * Return: 0 if the request was successful, -%EBUSY if reset is detected
-- *	   or Tx control queue is full, other negative error code on failure.
-+ *	   or Tx control queue is full, -%ETIMEDOUT if a shortened transaction
-+ *	   already timed out, other negative error code on failure.
-  */
- int idpf_send_mb_msg(struct idpf_adapter *adapter,
- 		     struct libie_ctlq_xn_send_params *xn_params,
- 		     void *send_buf, size_t send_buf_size)
- {
-+	u32 timeout_ms = READ_ONCE(adapter->vc_xn_timeout_ms);
- 	struct libie_ctlq_msg ctlq_msg = {};
-+	int err = 0;
- 
--	if (idpf_is_reset_detected(adapter)) {
-+	if (idpf_is_reset_detected(adapter))
-+		err = -EBUSY;
-+	else if (!timeout_ms)
-+		err = -ETIMEDOUT;
-+
-+	if (err) {
- 		if (!libie_cp_can_send_onstack(send_buf_size))
- 			kfree(send_buf);
- 
--		return -EBUSY;
-+		return err;
- 	}
- 
- 	idpf_prepare_ptp_mb_msg(adapter, xn_params->chnl_opcode, &ctlq_msg);
-@@ -218,10 +230,15 @@ int idpf_send_mb_msg(struct idpf_adapter *adapter,
- 	xn_params->xnm = adapter->xnm;
- 	xn_params->ctlq = xn_params->ctlq ? xn_params->ctlq : adapter->asq;
- 	xn_params->rel_tx_buf = kfree;
-+	xn_params->timeout_ms = min_t(u64, xn_params->timeout_ms, timeout_ms);
- 
- 	idpf_mb_clean(xn_params->ctlq, false);
- 
--	return libie_ctlq_xn_send(xn_params);
-+	err = libie_ctlq_xn_send(xn_params);
-+	if (err == -ETIMEDOUT && timeout_ms < IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC)
-+		WRITE_ONCE(adapter->vc_xn_timeout_ms, 0);
-+
-+	return err;
- }
- 
- /**
-@@ -371,6 +388,11 @@ static int idpf_wait_for_marker_event_set(const struct idpf_queue_set *qs)
- 	struct net_device *netdev;
- 	struct idpf_tx_queue *txq;
- 	bool markers_rcvd = true;
-+	bool wait_all;
-+
-+	/* On shutdown, once one marker is missing, don't wait for the rest */
-+	wait_all = READ_ONCE(qs->adapter->vc_xn_timeout_ms) >=
-+		   IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC;
- 
- 	for (u32 i = 0; i < qs->num; i++) {
- 		switch (qs->qs[i].type) {
-@@ -380,7 +402,8 @@ static int idpf_wait_for_marker_event_set(const struct idpf_queue_set *qs)
- 			netdev = txq->netdev;
- 
- 			idpf_queue_set(SW_MARKER, txq);
--			idpf_wait_for_sw_marker_completion(txq);
-+			if (markers_rcvd || wait_all)
-+				idpf_wait_for_sw_marker_completion(txq);
- 			markers_rcvd &= !idpf_queue_has(SW_MARKER, txq);
- 			break;
- 		default:
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h
-index 5d27805ff..911a25ad9 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h
-@@ -7,6 +7,7 @@
- #include <linux/net/intel/virtchnl2.h>
- 
- #define IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC	(60 * 1000)
-+#define IDPF_VC_XN_SHUTDOWN_TIMEOUT_MSEC	500
- 
- struct idpf_adapter;
- struct idpf_netdev_priv;
--- 
-2.50.1 (Apple Git-155)
+This is pre-existing, not a regression of this patch. If GL_MNG_FWSM 
+changes after a recovery-mode probe, ice_remove() goes down the full 
+teardown path for a PF that was never fully initialized. It crashes 
+before reaching ice_adapter_put(): ice_unload() calls 
+ice_tc_indir_block_unregister() with a NULL main VSI and dereferences 
+vsi->netdev.
+
+The proper fix is to remember at probe time that the PF is in recovery 
+mode, and check that in ice_remove() instead of reading the register 
+again. A NULL check in ice_adapter_put() would only hide one of the 
+symptoms. I will send that as a separate fix for -net.
+
 
