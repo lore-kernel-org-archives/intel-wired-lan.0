@@ -4,164 +4,193 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 500FDCCA46C
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 16 Oct 2026 15:43:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B7F3CC6B38
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 16 Oct 2026 16:12:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 092F660AC3;
-	Fri, 16 Oct 2026 15:43:49 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id D9C9E60B15;
+	Fri, 16 Oct 2026 16:12:47 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id olai7Axg_1sL; Fri, 16 Oct 2026 15:43:48 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 1E9AA60AD7
+ id gqLPbrZ_CvVl; Fri, 16 Oct 2026 16:12:47 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 2262A60B1E
 Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1792165428;
-	b=EyONRotUQgUgEQ7/jv9vT27glecv89VMJT9kbwua4nZkpc7GbfasukV50M7f3D/+ocdK
-	 KGA1rOG+GIY6jj6mspR5YAEWehtzUcB5fN1bEvdn+q4ILFZpAFTOuxA/xtaJz8wvH802N
-	 I3GxJ7Y6DUrxwQYnXdZEJUKsjNJ8xPWx2S2P77+2GoqblbtBDiygDjM8L6A1BEIdoB01c
-	 TLtHrJcTmR16pcADPlzuEHNcpwxB2o3GQGPr+BQXac0a3dYkSCHgH40tlp4Wl6BgsOpVU
-	 wnlIde+Zvdb8PF2iY+gUxmyhwEp13LZpVkIWpYciw8Z5zmBdXJ5wuUBTBVj8W8dqf5g==
-ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1792165428;
+ARC-Seal: i=3; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1792167167;
+	b=ClpnE543fTukZKTU+JVMZ26WMK9/DC3krBI0X2dciuGytRlnhQZciDqEoLD++UT5xzTt
+	 3Fm0Z5I4Lvnr4g9OgcFgBIwfqZbolhTJy5reYkpG5PAbYxpEgjaO8qNWvplZYJppnG+CR
+	 hSH+NUROmYG/MBk4hAfwxgA7i06cRB+59WH7t6qYesF4pCjMyI+C0qJ8yxDZrWAKXhiF1
+	 HnpPsgmLn2WNRuXf2+ymeXScIPPJs6RrNahkXKRnO2tfbt+vgH/PQ4FsirZ4G+G0nxImI
+	 MTo2UkOzrBJ7s4reoTyoDY92DImleVHPmdTiZgXYB1i9UD4WDhemLGZP9/94uq3zFRA==
+ARC-Message-Signature: i=3; d=osuosl.org; s=arc; a=rsa-sha256;
+	c=relaxed/relaxed; t=1792167167;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
-	 Content-Type:Content-Transfer-Encoding:Message-Id:X-B4-Tracking:
-	 X-Change-ID:To:Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:
-	 X-Endpoint-Received:X-Original-From:X-Mailman-Approved-At:X-BeenThere:
-	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Reply-To:Errors-To;
-	bh=LiPKNagRdI0pnff8t3Ml726KenZ9IWsXjZ+hgXpicLY=;
-	b=q8V+AZSP1qp4O+JRGYpNdUPsC9oGDESXsGed59Gc9Vy9iSZzzBqqrrgegYuAYy8YjwR4
-	 iRZkaFZwNg+PlF1967VDMpab7SnoXOvUD9j7pgoMqDugnYOYuqd+/nD87hJ3aug16KX4c
-	 RW8KNHx1B9Vw5MkEbVFkalEnHjb5+dCFardgr84dsUcjztH4uJlahJpqQeFCecp0izAMb
-	 qnby+OOqZXaj1NM9FoK1ZWNJcjt7F6aRQKla4WDDEcFLfA3LBE+Lzs2ya/uZDHMsyzivR
-	 kJvoiet4TkiKfKj2joChaRPIBLWceXYLD8KVml2z3XVeuZv/yyUW5LsvTnA0fJbsFDw==
-ARC-Authentication-Results: i=2; smtp3.osuosl.org; 
-	dmarc=pass header.from=kernel.org;
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HhO4bKNA;
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:MIME-Version:References:
+	 In-Reply-To:From:Date:X-Gm-Features:Message-ID:Subject:To:Cc:
+	 Content-Type:Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:
+	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 List-Subscribe:Errors-To;
+	bh=1DBXJxHvquUaLKJ+tkdkfcHBt7XZVv/oRHXlHwD+SAo=;
+	b=QrBgz5kybn559kU+3RTaiTF0OwImGxdksCjzVX0pHzkrPVBVUKq1HtMzcKaNxIIJidXa
+	 wC7th/fTWf2/FMYaYtHKy+QnCj/8E5pgLk3442T0NKpHqpwNiKWChner0GLbTUEiVk9yj
+	 P6J6Ch6elxCvJH7aggmAmF06F+PfIqdhEmypCPhspTRx/ozyVy6qFNn5evyX/ceov+Jq9
+	 mT+Z8CBdkEa0Vwcbz/TfO1YrLxtedZiqjxhff4iktCIKm5FG/Z1IDfXisOHPKRjIySotc
+	 EIlxQb9JEvC1eui/fAcXyivzXZ9TV2kT8R3EPN2lP01VpvgRC3wd03iyJkfyoO6ndMA==
+ARC-Authentication-Results: i=3; smtp3.osuosl.org; 
 	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1792165428;
-	bh=LiPKNagRdI0pnff8t3Ml726KenZ9IWsXjZ+hgXpicLY=;
-	h=From:Date:Subject:To:Cc:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Reply-To:From;
-	b=vgKlDBa02boRvhO1HlftT0UJxkpfYCVnKyS+zRK1DM2iLpqLSqe33sg0/eDvdKa7u
-	 xa+97vHf/2lnSs40J30Xedz9F8ju2qzbSfALXZ4037k4w2Jf+GP8K8+GgKPdP4PiHQ
-	 Tauo+QGIVOdVrqCP8EN26QtgUL4Xn/Fg6CPtfa2z592dpLBlf0gp0lWL3aFns1wYs9
-	 c+VTpTk2dicywPXsG+BonZEf30vKXAaH25wR+FyBlFJncg4zSd/JyHau3J3c36Dmxe
-	 D8/xojBjOrGV2EgBd92QwyqtxnP5BnlVaC83xDQ5CYf75lVhoauYRq4wZcSa4kMLUS
-	 ggp/4H7HaO+0g==
+	s=default; t=1792167167;
+	bh=1DBXJxHvquUaLKJ+tkdkfcHBt7XZVv/oRHXlHwD+SAo=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=QTuOiCInOczRPh3DIfpLi5G8YecyH6BV7NRemA+d9e2sPdr52BMg55/W/3zG/jykt
+	 yYkp78VhuZXn3qKks5wq8KLPdaJFBM+DCMKGZeVVp7/DaKzfxgedJnrB3sP08hOBnU
+	 h5Qmww5esTtDTCIIp5kohUX3YE3CnEf7q85iLi/PxednGPZkC+wKir5+iwwBoRPi1X
+	 xoyKVbtiq74MEp+WbKLN/KiC/lfn8DMJaT1t5el+4xhUxMvN/1QbAzDzQ7wDkn7hUF
+	 cVmk1AEmFczTvdN/gxdCP2N4lj/f/1IHvrDNDnGJsorYIUO7AtdqtK7JOfC9sE9lZf
+	 9JNOBLUVyAomg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 1E9AA60AD7;
-	Fri, 16 Oct 2026 15:43:48 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 77D84255
- for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Oct 2026 13:08:08 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 2262A60B1E;
+	Fri, 16 Oct 2026 16:12:47 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 24D1D79D
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Oct 2026 16:12:45 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 66ADB60801
- for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Oct 2026 13:08:08 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 16F88813EE
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Oct 2026 16:12:45 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id hEoeziVzcTMV for <intel-wired-lan@lists.osuosl.org>;
- Fri, 16 Oct 2026 13:08:07 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 797B8607CE
-Authentication-Results: smtp3.osuosl.org;
- arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1792156087;
- b=WDg57R5hqaZm0xTJ2q/ntGNZaawUBdybRPROUSpDUjypSXW4g2ZyWU/LT6Wh5w5c9bMB
- ZhVHEE2DGkowzTlKzf9bkSdTnOhR7LZIzGRcdhGU2ujLj3xcWInRIH7lXzEjYS29hfj4x
- P5yyWYEANg/0ikwjpmBKJG+EmjZtpZ1Ee/j1rNg76eL22bnTVLj+ITptNY1wJMQSnRe2j
- XbfupG+Z56iDsfhGKa2waIermdyYz9Hs6uG042xANsx6krjotcSHcRYv13Cj031vaOJ3m
- svZWjRXGZYYJ/GHeRAJo7JsThKj122/vgcMoR5gvlNaHBpamEaSME2U8V61bVWhjabQ==
-ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1792156087;
- h=Received-SPF:Received:Received:DKIM-Signature:Received:From:Date:
- Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:
- Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:
- X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
- X-Original-From:Reply-To;
- bh=LiPKNagRdI0pnff8t3Ml726KenZ9IWsXjZ+hgXpicLY=;
- b=m2bR9qGfHxS2Ct41B5219o8M6WeATf9008mEGFOJpq0agFJlf5dIui0YlkBAfoL1JUbs
- UANjCEpDFi89xr8a2qP9nIop12BzjznuyUgqCmEJcuTS3MueJSfHjdbolQahRJqQvqkdK
- JvdZxiJC1iWRCwmwlTZswDKPCzHzOgW1Tb8nLGFLkGAWRJEYs4inA2gVOxvgLJpzZjqsf
- oX9x4NkL3pobxCOIoLHzBIf3FoOpxdyFG2U5zmBlz25M+Q3JIpzmokXoN6xNvAdvuIouk
- nPjqKyAdXLln+x3V8cyjSW/XiKH86VYblKxxwuuLpiAvOEW4ML589P9iGzxaswsN7QQ==
-ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
- dmarc=pass header.from=kernel.org;
- dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=HhO4bKNA; 
- arc=none smtp.remote-ip=172.234.252.31
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
- helo=sea.source.kernel.org;
- envelope-from=devnull+choiniere.vincent.hydroquebec.com@kernel.org;
- receiver=<UNKNOWN> 
-Authentication-Results: smtp3.osuosl.org; dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=HhO4bKNA
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 797B8607CE
- for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Oct 2026 13:08:06 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sea.source.kernel.org (Postfix) with ESMTP id 5D07B42AA3;
- Fri, 16 Oct 2026 13:08:06 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 34044C2BCFA;
- Fri, 16 Oct 2026 13:08:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1792156086;
- bh=sYjJ0b0+DR9RbJ933aIA6Pe3CVrOOpnmRI/6zRSn1S0=;
- h=From:Date:Subject:To:Cc:Reply-To:From;
- b=HhO4bKNAtFPxYuifk1wT8CFwwmNJKF3TpdRmqlQs3pImRAfB5c0cVImkaM4r9zft9
- FciZAqMoQdyMeVg47531TiKv+OLE2f5eeWa1eSBeww7++4Ahsfodr/WrG8IKS4jzXb
- lVzflBrwwk8N+qVNE1MdCGDfDUU/KhqAIgUq9HMjtRKAC5T79U9wcYM3AylNqbnpEX
- Y8iUvAPH53LbaqKszpdSI/1KePPZ73VnQ5yUHJDg4lpgSWKJi6Jq9gwT8XgCy0lpll
- VbwEnwbzSohkWJ/ercfh1taYKwtu1dWY/bkoAKAwiOMuy1TRvIxHOpC762Z8cMNa6R
- c+G9PKqlHG5SA==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org
- (localhost.localdomain [127.0.0.1])
- by smtp.lore.kernel.org (Postfix) with ESMTP id 0EEDFCC6B38;
- Fri, 16 Oct 2026 13:08:06 +0000 (UTC)
-From: Vincent Choiniere via B4 Relay
- <devnull+choiniere.vincent.hydroquebec.com@kernel.org>
-Date: Fri, 16 Oct 2026 09:08:06 -0400
-Subject: [PATCH net] ice: fix Tx hang dump using stale tx_buf[0].skb
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id wDkL_nI__Jra for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 16 Oct 2026 16:12:44 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org D2EDE812C2
+Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0
+ smtp.remote-ip="2a00:1450:4864:20::22b"
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1792167164;
+ b=eOZLGnJqUyYcglwHDfVvQ5y/ipNQ/1sCnCJjVIOs/8BKK5b6EVQWnwcHoJwArKkkgnaf
+ /2xOW/emnH3ZxKmHoAG332OXBL37hkd6UarXpzMF3TK2m9A4roouP4++IAYhA/T1AwMF7
+ MJG84dJTXJMXrrtXoucR/HPs41dohIFpFGPeYuvpDpSsOLbgo528uZPyoMFU1vDt1UjBl
+ zneyj63aM7gv4SN62JSD9YnF60Gqo1hH4fX3B4KBPqlGjHZn8z22X0Gb+Dtf1WjYCF9YV
+ oijUijJgBCakws54PfleGVwAxQFxi4WGwYL0Dr5ZtX4/TSkJdCFTnKVi+w11sn87opQ==
+ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
+ c=relaxed/relaxed; t=1792167164;
+ h=Received-SPF:Received:DKIM-Signature:X-Google-DKIM-Signature:
+ X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
+ MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
+ Message-ID:Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
+ bh=1DBXJxHvquUaLKJ+tkdkfcHBt7XZVv/oRHXlHwD+SAo=;
+ b=pSzN2iCv0g+/V2dQIulg0/sR+0LWcDwj8+u1Kh2RvRZnw1jSYyc6r7TrwHc6mTO/WNU1
+ 95RGt2VzuP/EcIDNlMg/aB8mlJKwGkTWQarzqTdmKhI45BFwiTd3LjZvTvHlyWmrPYiuj
+ Y0RvAV656O35hOqqBXChKVojJlo3gDU5Or1CQ6q4YjSxichnPzrz5tWHBEzelZjH+pMhh
+ A7fYWlTiCaGUlPG8NPs4ykn7imzdshUkYoXUDvb7WN48oZGLA3cJ9EWWc0lyX/p+6+Sb2
+ sYxtE2wCMoUc7f9G6QhsRGWfQrb1zUgLs4lG42hurMObOAeF1HhJ7OCcD6nXi4a27oQ==
+ARC-Authentication-Results: i=2; smtp1.osuosl.org; 
+ dmarc=pass header.from=nebusec.ai;
+ dkim=pass header.d=nebusec.ai header.i=@nebusec.ai header.a=rsa-sha256
+ header.s=google header.b=khuwCyGf; 
+ arc=pass header.oldest-pass=0 smtp.remote-ip="2a00:1450:4864:20::22b"
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2a00:1450:4864:20::22b; helo=mail-lj1-x22b.google.com;
+ envelope-from=zihanx@nebusec.ai; receiver=<UNKNOWN> 
+Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.from=nebusec.ai
+Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=nebusec.ai header.i=@nebusec.ai header.a=rsa-sha256
+ header.s=google header.b=khuwCyGf
+Received: from mail-lj1-x22b.google.com (mail-lj1-x22b.google.com
+ [IPv6:2a00:1450:4864:20::22b])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id D2EDE812C2
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Oct 2026 16:12:43 +0000 (UTC)
+Received: by mail-lj1-x22b.google.com with SMTP id
+ 38308e7fff4ca-3a772ec8389so176581fa.3
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Oct 2026 09:12:43 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1792167161; cv=none;
+ d=google.com; s=arc-20260327;
+ b=D+YGCKeCUgJ9/Ovp2DF7SJWl42HJyGKbpWZ3A6inIyLg9EgQ3ZzSZrxRONPlHFYFha
+ dGeCxKavtV0B0O5bIjwaU0T4fzz1gzByqkGQ/CErgjgCEY1fTmXDGy4eI95Y+UTgOrVm
+ 6yzytW8Bkas0eleGY05pB164UsGgAVjJes6D4edn0O4obgPGMpK0r21ZLBaC0fOuuEo+
+ poyYQ1p80xOXC57Fgzr0bVDiss0OfsQzobiwgjOS18hO8i1/nPMtX2QqHro0TJcwQkcf
+ 5x1zbXO49hlS+HIfVj+Ji8lrhfnhNvvUpIc5EiKe61Rvnhj2OJFkwymL0s2HkKC6e34J
+ +Zww==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com;
+ s=arc-20260327; 
+ h=content-transfer-encoding:cc:to:subject:message-id:date:from
+ :in-reply-to:references:mime-version:dkim-signature;
+ bh=1DBXJxHvquUaLKJ+tkdkfcHBt7XZVv/oRHXlHwD+SAo=;
+ fh=4MY/kNsJ+18wrfWQHPpDx58cFiV6BSNAxg7/UbkGfLU=;
+ b=Csu9s4F+q9HET7+COxU3fdPYn5lEvHvXvRLNbLWjmI4qY+X/aTBXArIf1RSexnaCef
+ mfejLUCIvuR/xA96+HGW0K1PSCmew83cw5fg0bm2sxyjOM7YXi/L6EofWTQBpw/oUOed
+ P/xpm0Lo6jbGO+bIg7UlAO56gXcCHylyxpZktPP27HoLSFcA4Wn2FXqbekOZKJHOucoK
+ 8gaZ2JTJx3sdqtK9770VYavyEoC8IFSTjQS+z4pU0BKJ1fwm93F5nUB47Td/eMMspTMZ
+ hKdboiXyPeCJq3vyr4lt7y+kfsp8o2SxGpH8pTggQ+WeWTYLZgMCx5Nu2vTUvjafcmOH
+ NkOw==; darn=lists.osuosl.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=nebusec.ai; s=google; t=1792167161; x=1792771961; darn=lists.osuosl.org;
+ h=content-transfer-encoding:content-type:cc:to:subject:message-id
+ :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+ :date:message-id:reply-to:content-type;
+ bh=1DBXJxHvquUaLKJ+tkdkfcHBt7XZVv/oRHXlHwD+SAo=;
+ b=khuwCyGftTIHlPzAeFOd/NZt/BKWwP10iRW+qt2UKJi3LURopB3Naf+lUAKUXAh6mp
+ RtT0yDjYUavYcrezAk7uB1oMIWRxFV7jbWYo8ugw/lv8t4Q5srbNoUq+TaPo41+N1ui/
+ FDTrq1QOfalMd2ofVcv28ZLd/K4466DGsSA54gEIZaeWDa0UC0iLY62BeLDC1WqQemQ+
+ FUVFKtSH4rI8Xk9KUATunitWMiK7PkK1L6AzOKF81kSgVYWucq5aWH2k6iTOMIBk3A43
+ lyKxpJ5mpbovPKVb5P0WZKmMRxNDjMYz69KrXrdTQ4Bmek3dxRQYg6vWVEHRvaDblP+r
+ l/xA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20260707; t=1792167161; x=1792771961;
+ h=content-transfer-encoding:content-type:cc:to:subject:message-id
+ :date:from:in-reply-to:references:mime-version:x-gm-gg
+ :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+ :content-type;
+ bh=1DBXJxHvquUaLKJ+tkdkfcHBt7XZVv/oRHXlHwD+SAo=;
+ b=fhjtjx3xRbLFSD9rAimwPrVfdSUxpPzcieNsMVDw4qSl9BRG//2Moopkaayci0+yN6
+ 8KKBW4iYfKiVRrJq+zaG1jKr503TP8jn9KyZ8ZVzzPf362tC8gzwjKHOcJ95H9ZEgiBR
+ wL0+yspYASbZse7PNhXHHeKuPoCecZ7oNPnv4Qc8MH1YkSRwbNFiQ77yv/uRhtw4jbJe
+ gAj+rUV5MOQ2givoNOpymYlVElVPNv+iY+bV8v7rF/gwKKuyW9IEcgmb/uRhp9pyWMXH
+ iU875pFW7f2he+OcGmzYmoEmUh20hZwhguI2/5358xJw+GgZfULek2/LcSuxnYSkfwfE
+ AqTw==
+X-Forwarded-Encrypted: i=1;
+ AKwUvBwOy8SB47s2I8aiKa3HHMIG2r1kzyYI1QV5Dgt902d2m7FvnbEVAgkgCrWk76/QsMk0G4Z3mrwZ+EIV78Fwnjc=@lists.osuosl.org
+X-Gm-Message-State: AFq9FYItDiVTthuPjVuOHXQV54muOASJUOO5Djxia+8YIMSPvskGWJMg
+ p1CDFYD5+BHILx4K+6UOVCgJyUapfJPnM8aJohW4N3WMtVjOh84U0BIZKtu2f1Il6Cq3ocTaDOh
+ 6VmgkukBCv84Wh6QcZFYP+qjqCI7Uc/hsnn2naMI4Vuk=
+X-Gm-Gg: AYBFou24I2vVhz0dDI2ua08xLvTWmzi9uQ0dFVYUtplZ+Wtk/f+m3ZwC2CIl/0z07kx
+ UlDq+pgEig2TSIgAfcZFFx0CbKMOby7OuDNespU9JIrehOrKbhaX3pMbVfYvrJuHxFx4WTIL9AX
+ nJGan5gATxLff2UhehbPjyLC8I8V8jBnO3kpgFerR1P21tqCwPP49A6HhR3Haue70l35t+vfmeX
+ YX3lFfGPSG1x7NV1UkAX5JPvMYv71bfBqOLStPPdt5BfLdYrr69bDqyr/QAXkz2kzEWyL//CkRY
+ fjzgGRoRJTH6LF3H2SiFwJNdV++/0h8w5zFBfwb6W4kZ3RfAZ3YT4iixxHqgMjlzEUp05tGkA26
+ DRcJM3RgGeQ==
+X-Received: by 2002:a2e:9a10:0:b0:3a9:c840:10ee with SMTP id
+ 38308e7fff4ca-3ab2927a909mr511431fa.5.1792167160733; Fri, 16 Oct 2026
+ 09:12:40 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261016-ice-tx-hang-dump-v1-1-3df0f5979a51@hydroquebec.com>
-X-B4-Tracking: v=1; b=H4sIALUh0moC/yWMQQrCMBREr1Jm7YemhiBeRVzYZFq/YCxJWgqld
- zfV5ZvhvQ2ZSZlxbTYkLpr1EyuYUwP/fMSRoqEyurZzpjVO1FPKKscnYX5PQut6y2Av5+BQtSl
- x0PWXvCGy4P4f89y/6MsRw75/AVz2cXJ5AAAA
-X-Change-ID: 20261016-ice-tx-hang-dump-e46b4ed483d6
-To: Tony Nguyen <anthony.l.nguyen@intel.com>, 
- Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
- intel-wired-lan@lists.osuosl.org
-Cc: Aleksandr Loktionov <aleksandr.loktionov@intel.com>, 
- Michal Kubiak <michal.kubiak@intel.com>, 
- Andrew Lunn <andrew+netdev@lunn.ch>, 
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>, 
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
- stable@vger.kernel.org, 
- Vincent Choiniere <choiniere.vincent@hydroquebec.com>
-X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1792156085; l=3665;
- i=choiniere.vincent@hydroquebec.com; s=20261016;
- h=from:subject:message-id;
- bh=kt4dx1VrvDe36KXprpuSVG48M5IH9Jew3kkpwsyl//I=;
- b=rpz6gaUYmlu/qQeArQzXjGbdt7hmwbh5F2PXicMHbyd04KAmR7m0AivdHwD8NF8xUWPxaCq66
- vusrlXo13J0B8Xt4KnPmLoDzQSufiqzXYtu2F+evb6a33g6/z8dzX7W
-X-Developer-Key: i=choiniere.vincent@hydroquebec.com; a=ed25519;
- pk=MctQE067DucsZOaNqb+sjY7aQ+urhztuURanagEW3+8=
-X-Endpoint-Received: by B4 Relay for
- choiniere.vincent@hydroquebec.com/20261016 with auth_id=1210
-X-Original-From: Vincent Choiniere <choiniere.vincent@hydroquebec.com>
-X-Mailman-Approved-At: Fri, 16 Oct 2026 15:43:47 +0000
+References: <cover.1792048855.git.zihanx@nebusec.ai>
+ <atCtUFcG9b4ykXY3@strlen.de>
+In-Reply-To: <atCtUFcG9b4ykXY3@strlen.de>
+From: zihan xi <zihanx@nebusec.ai>
+Date: Sat, 17 Oct 2026 00:12:27 +0800
+X-Gm-Features: AclHuK9WXLPZ_WQaM633BzwfDjRGTUWRZmkMt1BFBbMb-E1VSzEd_hb2wxJXXZk
+Message-ID: <CAANe3eTSz3-EE0=9JNFBMFDqZ9NUfScHdi8EN30UVaTiRq0vcg@mail.gmail.com>
+Subject: Re: [PATCH nf v8 0/3] netfilter: bound asynchronous packet duplication
+To: Florian Westphal <fw@strlen.de>
+Cc: netfilter-devel@vger.kernel.org, virtualization@lists.linux.dev, 
+ intel-wired-lan@lists.osuosl.org, bpf@vger.kernel.org, pablo@netfilter.org, 
+ phil@nwl.cc, davem@davemloft.net, edumazet@kernel.org, pabeni@redhat.com, 
+ horms@kernel.org, kaber@trash.net, jengelh@medozas.de, andrew+netdev@lunn.ch, 
+ mst@redhat.com, jasowangio@gmail.com, eperezma@redhat.com, 
+ xuanzhuo@linux.alibaba.com, aleksander.lobakin@intel.com, ast@kernel.org, 
+ daniel@iogearbox.net, hawk@kernel.org, john.fastabend@gmail.com, 
+ sdf@fomichev.me, magnus.karlsson@intel.com, maciej.fijalkowski@intel.com, 
+ willemb@google.com, alice.kernel@fastmail.im, eilaimemedsnaimel@gmail.com, 
+ imv4bel@gmail.com, shiming.cheng@mediatek.com, sd@queasysnail.net, 
+ vega@nebusec.ai, root@tr0jan.top
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -174,97 +203,115 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Reply-To: choiniere.vincent@hydroquebec.com
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-From: Vincent Choiniere <choiniere.vincent@hydroquebec.com>
+On Thu, Oct 15, 2026 at 6:39=E2=80=AFPM Florian Westphal <fw@strlen.de> wro=
+te:
+>
+> Zihan Xi <zihanx@nebusec.ai> wrote:
+> > Hi Linux kernel maintainers,
+> >
+> > We found and validated an issue in netfilter packet duplication. The bu=
+g
+> > is reachable by an unprivileged user in user and network namespaces.
+> > Bounded tests exercised the fixes. Non-duplication packet semantics are
+> > intended to remain unchanged. MIRRED flow offload for affected netdev d=
+up
+> > rules is rejected because it cannot enforce the duplication-depth limit=
+.
+> >
+> > We will provide detailed information about the bug
+> > in this email, along with a PoC to trigger it.
+>
+> Series makes no sense to me, sorry.  I dislike the 2nd patch, I see no
+> reason why we need to make changes all over the place for this...?
+>
+> Also, if we go with 2nd patch, why do we still need the first?
+>
+> > The IPv4 and IPv6 duplication helpers use a task-local guard while a cl=
+oned
+> > packet traverses output hooks. If NFQUEUE suspends that traversal, the
+> > output call can return and clear the guard before a later verdict resum=
+es
+> > the remaining hooks. The resumed packet can reach another duplication
+> > consumer without the original guard. This can cause repeated packet
+> > processing and consume CPU and network resources.
+>
+> "Don't do that, then"?
+>
+> I think the kernel should not crash when misused, but I don't think
+> kernel should have to do extreme stunts to detect such loops.
+>
+> There are probably many other ways to make kernel allocate lots of
+> memory or waste cpu cycles.
+>
+> E.g. via create use of veth and bridges, sched plug, teql, ...
+>
+> > Patch 1 records the
+> > guard in the queue entry and restores it during reinjection. It keeps
+> > bottom halves disabled during the reinjection traversal, restoring the
+> > verdict task state before reenabling them.
+>
+> Its small enough, so I have no objections to this patch.
+>
+> > The netdev nft dup path has a separate synchronous transmit recursion
+> > counter. It does not accompany a duplicated skb through asynchronous
+> > software receive paths. Patch 2 carries a bounded duplication depth thr=
+ough
+> > skb and supported XDP conversions, resets it on reused buffers, and rej=
+ects
+> > MIRRED flow offload where the software depth cannot be enforced. This s=
+cope
+> > covers software skb/XDP continuity, not packet loops through physical
+> > hardware or userspace device round trips.
+>
+> I think it would be better to first go to the drawing board and make ONE
+> facility that governs the recursion part.
+>
+> From a quick glance, the difference is historical from time when
+> per-module pcpu counters were used, so nf_dup netdev could not see the st=
+ate
+> of nft_dup toggle.  Now that its in task struct anyway, maybe its time to
+> just zap the egress recursion counter and first make a patch that
+> uses the bool toggle for both egress and normal dup?
+>
+> I would like to remove code, not add more.
+>
+> > At PRE_ROUTING and LOCAL_IN, the IPv4 and IPv6 helpers decrement TTL or
+> > hop limit on the copy. Patch 3 stops creating copies when the value is
+> > <=3D 1, so the decrement cannot reach zero or wrap a zero value to the
+> > maximum.
+>
+> Thats unrelated problem.  There are other places that do TTL/HL
+> decrements.  I think it makes sense to clean this up in -next and
+> add common helpers and then use those.
 
-ice_tx_hang_reporter_dump() always reads tx_ring->tx_buf[0].skb,
-regardless of next_to_clean. The Tx cleanup path frees the skb and
-marks the buffer empty without clearing the skb pointer, so slot 0 can
-hold a stale pointer. A NULL check alone does not cover this, and
-devlink_fmsg_dump_skb() can fault on the freed skb.
+Hi Florian,
 
-Read tx_buf[next_to_clean] instead, use its skb only if the buffer type
-is ICE_TX_BUF_SKB, and skip the skb dump otherwise.
+Following up on my earlier note, I reviewed the NFQUEUE and netdev
+paths and narrowed the proposed fix.
 
-Observed on an E810 PF passed through to a KVM guest (Ubuntu 7.0.0-14,
-PREEMPT_RT, local scheduler patch): a delayed queue IRQ led to a Tx
-timeout and a page fault in devlink_fmsg_dump_skb():
+For IPv4/IPv6 duplication through NFQUEUE, the queue entry can preserve
+current->in_nf_duplicate from the task that queued the packet. Reinjection
+can restore that value while hook traversal resumes, then restore the
+verdict task's previous value on exit. The reinjection path also needs
+bottom halves disabled across that traversal so the task-local state
+cannot be changed by BH processing during reinjection. The fail-open
+case is synchronous: the queue entry carries the set state, so the
+diagnostic must not warn merely because current->in_nf_duplicate is set
+on entry.
 
- BUG: unable to handle page fault for address: 0000000004cd0c11
- Workqueue: ice ice_service_task [ice]
- RIP: devlink_fmsg_dump_skb+0x2d8/0x5d0
- Call Trace:
-  ice_tx_hang_reporter_dump+0x1ce/0x210 [ice]
-  devlink_health_do_dump+0xcc/0x190
-  devlink_health_report+0x1d7/0x260
-  ice_report_tx_hang+0x7d/0xa0 [ice]
+The netdev duplication path is separate. It uses
+nf_dev_xmit_recursion(), and the current counter does not follow the skb
+through asynchronous software receive paths. My earlier patch 2 tried
+to cover skb/XDP state propagation across those paths, but I agree that
+it was too broad and complex. I have dropped it from this series rather
+than present it as a complete or sufficiently small design. I have also
+dropped the unrelated TTL/hop-limit change.
 
-With this change and auto_dump enabled, starving a queue IRQ thread
-reproduced the Tx timeout; the dump contained the test packet, no Oops
-occurred and the PF recovered.
-
-Fixes: 2a82874a3b7b ("ice: add Tx hang devlink health reporter")
-Link: https://lore.kernel.org/all/20260327072332.130320-1-aleksandr.loktionov@intel.com/
-Cc: stable@vger.kernel.org
-Signed-off-by: Vincent Choiniere <choiniere.vincent@hydroquebec.com>
----
-This complements the NULL check in [1]. With only that check, a non-NULL
-but stale tx_buf[0].skb is still dereferenced by devlink_fmsg_dump_skb().
-I have only reproduced the crash on an Ubuntu 7.0.0-14 kernel with
-PREEMPT_RT and a local scheduler patch, and the skb lifetime against
-concurrent Tx cleanup still needs review. Feedback welcome.
-
-In my case next_to_clean was 0xfc while the reporter read slot 0.
-Upstream v7.0, v7.2 and current net main (191aa4154) all read
-tx_buf[0].skb unconditionally. Before this change, recovery stayed
-stuck until reboot.
-
-[1] https://lore.kernel.org/all/20260327072332.130320-1-aleksandr.loktionov@intel.com/
----
- drivers/net/ethernet/intel/ice/devlink/health.c | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/devlink/health.c b/drivers/net/ethernet/intel/ice/devlink/health.c
-index 8e9a8a817..059859c36 100644
---- a/drivers/net/ethernet/intel/ice/devlink/health.c
-+++ b/drivers/net/ethernet/intel/ice/devlink/health.c
-@@ -390,12 +390,15 @@ static int ice_tx_hang_reporter_dump(struct devlink_health_reporter *reporter,
- 				     struct netlink_ext_ack *extack)
- {
- 	struct ice_tx_hang_event *event = priv_ctx;
--	struct sk_buff *skb;
-+	struct sk_buff *skb = NULL;
-+	struct ice_tx_buf *tx_buf;
- 
- 	if (!event)
- 		return 0;
- 
--	skb = event->tx_ring->tx_buf->skb;
-+	tx_buf = &event->tx_ring->tx_buf[event->next_to_clean];
-+	if (tx_buf->type == ICE_TX_BUF_SKB)
-+		skb = tx_buf->skb;
- 	devlink_fmsg_obj_nest_start(fmsg);
- 	ICE_DEVLINK_FMSG_PUT_FIELD(fmsg, event, head);
- 	ICE_DEVLINK_FMSG_PUT_FIELD(fmsg, event, intr);
-@@ -409,7 +412,8 @@ static int ice_tx_hang_reporter_dump(struct devlink_health_reporter *reporter,
- 	ice_fmsg_put_ptr(fmsg, "skb-ptr", skb);
- 	devlink_fmsg_binary_pair_put(fmsg, "desc", event->tx_ring->desc,
- 				     event->tx_ring->count * sizeof(struct ice_tx_desc));
--	devlink_fmsg_dump_skb(fmsg, skb);
-+	if (skb)
-+		devlink_fmsg_dump_skb(fmsg, skb);
- 	devlink_fmsg_obj_nest_end(fmsg);
- 
- 	return 0;
-
----
-base-commit: 191aa41548b2d2b6af534a6d5cf84a552435c74c
-change-id: 20261016-ice-tx-hang-dump-e46b4ed483d6
+I will send a one-patch v9 series for the NFQUEUE guard preservation
+only. It does not address netdev duplication or claim to provide a
+general facility for bounding every asynchronous duplication path.
 
 Best regards,
---  
-Vincent Choiniere <choiniere.vincent@hydroquebec.com>
-
-
+Zihan
