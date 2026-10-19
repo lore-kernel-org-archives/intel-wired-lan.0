@@ -1,118 +1,125 @@
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 965D2606A323
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 19 Oct 2026 22:56:17 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 11343606A321
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 19 Oct 2026 22:56:19 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=2Ezxp8ZY
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=xzbO8mjq
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 79F468100F;
-	Mon, 19 Oct 2026 22:56:17 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id E2981407BC;
+	Mon, 19 Oct 2026 22:56:18 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id JL8N_mXkYPbk; Mon, 19 Oct 2026 22:56:16 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 9523A81028
-Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1792450576;
-	b=f4jtVbMFD40I+ODE8mTQTq/9nEuWF23H5Xc+ikf+x6dsi3/UAzAL5mffTWYe+DUA94ZA
-	 XoQU6m2Z8q1TJ6KloMP5SRFiMYW8NLZBwSEIzzm+Uo/nEMps636MqMV5CqwW27rfvg9xK
-	 pMMojNFi2ggaj+e6orLd+vhZ4iIROu4obYCUBJY5lDmywZLNOCrJ5A2I228JsvjO1HBbC
-	 2sU1VKlW05jycMJfELDtTn2cnnPSjv/7jMcX/QreD1nVW3d6ypLLFbncUX8CTjLZ9XMEN
-	 5GqPsuWLf4gjX7nCqQAUyTjbO8qJ34MBElAq91XnZWWUW2k7dTrgTBKs6ra6/r+7iLw==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id EPE38Brmo4wC; Mon, 19 Oct 2026 22:56:17 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org B1AAA407CF
+Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1792450577;
+	b=phsKBgTywWGrCQMKd1THjNHfAfGY2gtOx/tQa7P3uZqfcGP6gWy/FKJoQjA5bPwm/Zsj
+	 fMocw5pBfsydKv7SqWKJuHpuyMw07ZnE6+JLB0nTvVvlB1CPUB42kOO8/j0Kv8C6DOWB3
+	 y62DLp6/XtK+evNyCjO08SlCa3xmQdtGOXPsqRNFY2zaNw5KwE9p3fhsX/0oXbCbtLivK
+	 qaCYzqvV/v4Z9ZU2dkzAxjMqZB9ZOyMKHygeA+XKHLC4z59S8i6mvRsY51GswJVzDG/+1
+	 aw4xjeq4PHzRVkw7ALH2NlVbxJkzZhWm86/FbafVNwDUpou3tEPFPATKltltpK7YKvA==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1792450576;
+	c=relaxed/relaxed; t=1792450577;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:X-Greylist:Received-SPF:Received:
-	 Received:MIME-Version:Date:Content-Type:Content-Transfer-Encoding:
-	 From:Message-ID:TLS-Required:Subject:To:X-Originating-IP:
-	 X-Mailman-Approved-At:X-BeenThere:X-Mailman-Version:Precedence:
-	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
-	 List-Subscribe:Errors-To;
-	bh=99uzCEoBsFmFYbzhgh1Nxy/Yb+YsgaZMorIz8cCZkb4=;
-	b=m4jfcKnn0dEz0DflR6VZa8sRcjk5pXeOMDt24F1BoHhlhg81IqNg+tDhlaTLpTOe/dpL
-	 0RUmCVKQick2JOJuO+ptlpySDEN9Z5NFts5FfW14AOQkZIX4N99BTWa0FTzmVRNtyC9Fi
-	 ST1BAeQRFgHw4CQmy9gCNIMj0c6aYCLEtLmVHDi5AIASYT0esFdU1eg+lXTtYrVnO4G2f
-	 b8jWlFyQpNz9ryYa4xNDScdarbaOdCHaSU7noLIyXVFAi7rtX67K8B9jXxx/ejbFZAOBV
-	 XdlyDrOcYDlH4yJV0AckWWzfVJ1yjh2taN8E0Xwf83kmZ8pfNos9A6Pdm2BlVzLofzA==
-ARC-Authentication-Results: i=2; smtp1.osuosl.org; 
-	dmarc=none header.from=adverblaster.de;
+	 Received:Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To:User-Agent:
+	 X-Bm-Milter-Handled:X-Bm-Transport-Timestamp:X-Mailman-Approved-At:
+	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
+	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
+	bh=TeyCY6N7EE9VBYsjwg1WsnXG/9D2AYAUunCAhHquj9U=;
+	b=KoGJuR7wU4EWgR8gJgjlR2PAVrsAf5qJSE/9cohdf9Svk1GSM+uhAX+zIGT8zUN5KCv2
+	 0I1QOTfffjhxy4feMO+YRBnxViPCpI2FYFELThTXaKlRaOsTPm2gGPSkZqltuNTZUogZA
+	 jEScMs1RFlOaqvDHSUBgjCNoDLPUrIA0s2gNIQ31qGaoA1EeozxLgKNfa+lR0Pb8LC5dP
+	 7RvjJUp6IJCO13iMkd+73lntU5KB47rIshqqdQepbKiOZFV1esZK005WBEN75+6/9d/ox
+	 4Zexi8llIpoFHY2WHBEM92i5LZJsdK59OjLh0G5+Va9VXSDCuDCNPQXiIDadLzH537Q==
+ARC-Authentication-Results: i=2; smtp4.osuosl.org; 
+	dmarc=none header.from=proxmox.com;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1792450576;
-	bh=99uzCEoBsFmFYbzhgh1Nxy/Yb+YsgaZMorIz8cCZkb4=;
-	h=Date:From:Subject:To:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=2Ezxp8ZY3Ts/n5jZWk9ZlYRjFBxQ/YYOHGJPQ4pQmiRjxrzGILgqfT0lbnRoLfoX3
-	 9Sm3gT9jzAAmGeVGFRiIJ2GlnsEv2hS1LrrRZqoXeuNoSem7XbocYCKEjlBywHnFqn
-	 RV6KfMk5+t1SNKOPYtP8I/E/gb/CoHGZb08FP8UVdi/OaKeP/dntyKOeHR0YKeHG8Y
-	 4cqXWZ/jhzBpn1mH1CR8awpSbf0xiwd8+8oabYWYS8mbtUh0NiPBnQdBw7XH0K2cyX
-	 617+X47c08dWXSfPQc1Pa2V88a9V4TPTeK1ZNa6e3/GPOBynHCVs9HQfGTetbhNFa6
-	 EG0GKZopl4w3A==
+	s=default; t=1792450577;
+	bh=TeyCY6N7EE9VBYsjwg1WsnXG/9D2AYAUunCAhHquj9U=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=xzbO8mjqsxDPu5CBZKhBwwSCzDWgxG7Clguy9XiN00ggdlbqNDfQg+Dwb2sRShDHO
+	 Ciwuq2hkupantJxKgeHc3U2/zM+0ZBRhmAb3EZHvnnI8Jk1loSF3mJRJlcJYE9iiQU
+	 Sm3+zh30BTPpuIhMb3E88W+E+cglpQM8DiD0cVn0T6Qr2eo197s3v9sCg31lv8zi0S
+	 SZmAgBJcmZfFY6+Atz/ZjO+//y/pS8ySiZ48KP4X4EJ9h5aGa8faQc5Acnhb8T/OMv
+	 OqvoQmqy1w+DnN/83r+TuDLiFCc+3uEYsNXXIh7H4SlvcGoFqog9hz7FLjDyumqzVE
+	 2u8C5cISQ1JtA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 9523A81028;
-	Mon, 19 Oct 2026 22:56:16 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id D6C4E1DE
- for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Oct 2026 11:02:10 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id B1AAA407CF;
+	Mon, 19 Oct 2026 22:56:17 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 832B6263
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Oct 2026 13:46:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id C851380F28
- for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Oct 2026 11:02:10 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 692FC4066D
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Oct 2026 13:46:15 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 5d_35L5rvuDi for <intel-wired-lan@lists.osuosl.org>;
- Mon, 19 Oct 2026 11:02:09 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 1094080A88
-Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=188.68.53.159
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1792407729;
- b=IWlmFGFrc9rFO1VzF0pozgdwmmpQ82OfpVMEImrBOQKJydejtGNKnNvWmciDSj37xMMV
- 6lZoxgvUVp7uOterMpJbKAJBwXh1/lVeh+1H1n2IXDEYxCH/fk3JpWVrnzf+E0n64Qdl1
- C6P1EDUYaryJAka9cNsC1wrFUB1qrkIoYtx9CXsS5UyGRWVnPXJpMlGvNYObpwOAsu0Rx
- pf2FCXZdyitI6JWg+koRjufSm0Ymxwq0H8HpiujTaE7NesW8eADvzcL4F6Uvmew0zsfID
- Z16GR0fTs1T6BX9ww1su3JW8NOCBtvIiJAnNHPCtRgGKO6cim9LHJgKUWdqSuDb9m2A==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Q5HMK_NBtX8h for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 19 Oct 2026 13:46:14 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org ADBA2405A3
+Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=94.136.29.106
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1792417574;
+ b=ZjzFD50jx0na4PaNg5ZcZ0bnnDtO3pnrsulYzrnGnVSIO0kxxd/bdJwBXSFOYQEULbxP
+ hQ5nPYrp4F9HoYFPlwsQYwk1fs3aMBqqxSoM8UJ0a6QkWl5rV4uDTVrLa5vJFijta8flk
+ Qr4ukzvrqvwVPDgOxEP8c5A8t0CehfsmqHfm7YXPXU9ZJmGAipnRYYSTSB6GIPwwqEzY0
+ w/o7+DLGh0Yu7JdL9t7IGGWy7hU3apA0euPGvxvc3iLjqZn9jre9LZsCZfUI8VVYKtbgZ
+ 1oDFR0/mn7+KyJWt+wGwUX9WrpFQd9vKicw+YyU09MpXXpFsK61RIw3AKbQQj25I4EA==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1792407729;
- h=X-Greylist:Received-SPF:Received:MIME-Version:Date:Content-Type:
- Content-Transfer-Encoding:From:Message-ID:TLS-Required:Subject:To:
- X-Originating-IP;
- bh=99uzCEoBsFmFYbzhgh1Nxy/Yb+YsgaZMorIz8cCZkb4=;
- b=dvf4WhWCqSkyv9KXQR7yN2gjJVf3jsuuJGfMeCdC8F9x/YnjeHc/0yuaIAFwZwzEPjDV
- BvKFmV571gHbD5Ft4/VjvB7d1tPOAHPHJ9H48vRXPgjDqKoAe52pipSa/eJsOZpqJ/rZj
- 8UHBKU5bMmYvBHX+9r4Fokue/TtIycN49zznllIADZZhaLDantXYe+jrpGdfHE605iU34
- of6BIkMaVs9HhOVjBiE6xDSOrclwnEZTtzQrapGv7HOVVCq3j3vTBkb9e/wGn2UcFHlV5
- srE8HGawkoCzL2AHKRbsokGkVF+6etZqyJ536d0mN/Hn5wX/rDwtIMx/sgWPvc6aB7A==
-ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
- dmarc=none header.from=adverblaster.de;
- arc=none smtp.remote-ip=188.68.53.159
-X-Greylist: delayed 524 seconds by postgrey-1.37 at util1.osuosl.org;
- Mon, 19 Oct 2026 11:02:09 UTC
-Authentication-Results: smtp1.osuosl.org; dmarc=none (p=none dis=none)
- header.from=adverblaster.de
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=188.68.53.159;
- helo=viki.sutter-it.de; envelope-from=info@adverblaster.de;
+ c=relaxed/relaxed; t=1792417574;
+ h=X-Greylist:Received-SPF:Received:Date:From:To:Cc:Subject:Message-ID:
+ References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To:
+ User-Agent:X-Bm-Milter-Handled:X-Bm-Transport-Timestamp;
+ bh=TeyCY6N7EE9VBYsjwg1WsnXG/9D2AYAUunCAhHquj9U=;
+ b=UCv9kCetjpQYR78iVhw0nyvTtMHgVcU4JUUgQl/pixWSlTH2B5R0RyEuxzK41ySaU2zs
+ CYxuBWuLIQgMIrmzrgKoV8zE17zSE2Kl4WbpsEsUVjAyagHrNsM/GPi6sQ5htthT43qNw
+ 9o8h96+fl87aWNIke9uu+Wmh05/6hsIsvYdctJBDcBYU+KlKznAHnNgtivDpgyRwoKK2g
+ OV4+Eq5KLD0mh3M7AwvpqFW1V+dqskygHI+sM2Ca6E9CEujdamk250KPDjCr+CbrldcjE
+ e8btajLCRlpdcV7VGV7M5S205D/UriLQHu/v8D+aDus/eqq5Y8GxexJM6aEsj+v2X8Q==
+ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
+ dmarc=none header.from=proxmox.com;
+ arc=none smtp.remote-ip=94.136.29.106
+X-Greylist: delayed 601 seconds by postgrey-1.37 at util1.osuosl.org;
+ Mon, 19 Oct 2026 13:46:13 UTC
+Authentication-Results: smtp4.osuosl.org;
+ dmarc=none (p=none dis=none) header.from=proxmox.com
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=94.136.29.106;
+ helo=proxmox-new.maurer-it.com; envelope-from=g.goller@proxmox.com;
  receiver=<UNKNOWN> 
-Received: from viki.sutter-it.de (viki.sutter-it.de [188.68.53.159])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 1094080A88
- for <intel-wired-lan@osuosl.org>; Mon, 19 Oct 2026 11:02:08 +0000 (UTC)
-Received: from mail.isweg.de (viki.sutter-it.de [IPv6:2a03:4000:6:e043::1])
- (Authenticated sender: timo)
- by viki.sutter-it.de (Postfix) with ESMTPSA id 57ED37F76B;
- Mon, 19 Oct 2026 12:53:22 +0200 (CEST)
+Received: from proxmox-new.maurer-it.com (proxmox-new.maurer-it.com
+ [94.136.29.106])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id ADBA2405A3
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Oct 2026 13:46:13 +0000 (UTC)
+Received: from proxmox-new.maurer-it.com (localhost.localdomain [127.0.0.1])
+ by proxmox-new.maurer-it.com (Proxmox) with ESMTP id 70763447B0;
+ Mon, 19 Oct 2026 15:36:08 +0200 (CEST)
+Date: Mon, 19 Oct 2026 15:36:06 +0200
+From: Gabriel Goller <g.goller@proxmox.com>
+To: Andre Brait <andrebrait@gmail.com>
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, 
+ anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com
+Subject: Re: [PATCH iwl-net] e1000e: segment TSO packets whose headers cross
+ a 4 KB boundary
+Message-ID: <atYbzARmBOVuRTdW@luna.proxmox.com>
+References: <20261018203215.77371-1-andrebrait@gmail.com>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Date: Mon, 19 Oct 2026 10:53:22 +0000
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-From: info@adverblaster.de
-Message-ID: <54ed8ffd0c802970d94b92c3de2ddd8e08d2e587@adverblaster.de>
-TLS-Required: No
-Subject: [BUG] ice: VSI open fails (-EIO, "Failure Adding VLAN 0") after S3
- resume on E810-C-Q2 (resend)
-To: intel-wired-lan@osuosl.org
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20261018203215.77371-1-andrebrait@gmail.com>
+User-Agent: NeoMutt/20260504
+X-Bm-Milter-Handled: 55990f41-d878-4baa-be0a-ee34c49e34d2
+X-Bm-Transport-Timestamp: 1792416967724
 X-Mailman-Approved-At: Mon, 19 Oct 2026 22:56:11 +0000
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
@@ -124,97 +131,80 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-3.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
+X-Spam-Status: No, score=-10.4 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,USER_AGENT_SANE_1 autolearn=ham
 	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi,
+Hi Andre,
 
-after resuming from S3 (deep) suspend, both ports of my E810-C-Q2
-are unusable: the VSI rebuild succeeds, but opening the VSI fails
-because adding the VLAN 0 filter returns -EIO. Unloading and
-reloading ice + irdma restores the card every time. The issue
-reproduces reliably on every suspend/resume cycle.
+On 18.10.2026 22:32, Andre Brait wrote:
+> [snip]
+> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+> index 834a5b888..6f95ed19a 100644
+> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> @@ -11,6 +11,7 @@
+>  #include <linux/pagemap.h>
+>  #include <linux/delay.h>
+>  #include <linux/netdevice.h>
+> +#include <linux/sizes.h>
+>  #include <linux/interrupt.h>
+>  #include <linux/tcp.h>
+>  #include <linux/ipv6.h>
+> @@ -7359,6 +7360,34 @@ static int e1000_set_features(struct net_device *netdev,
+>  	return 1;
+>  }
+>  
+> +/**
+> + * e1000_features_check - validate offloads for a packet about to be sent
+> + * @skb: packet to check
+> + * @netdev: network interface device structure
+> + * @features: offload features usable for this packet
+> + *
+> + * The transmit DMA can stop for good when a TSO packet's protocol headers
+> + * cross a 4 KB boundary in the buffer holding them: the descriptor is never
+> + * written back, the driver reports "Detected Hardware Unit Hang", and only a
+> + * reset brings the queue back. Seen on I219-LM/-V (PCH) with forwarded
+> + * guest traffic, which arrives as linear GSO skbs that can start anywhere in a
+> + * page. Let the stack segment those few packets in software instead.
+> + *
+> + * Returns: the features to use for @skb.
+> + */
+> +static netdev_features_t e1000_features_check(struct sk_buff *skb,
+> +					      struct net_device *netdev,
+> +					      netdev_features_t features)
+> +{
+> +	if (skb_is_gso(skb) &&
+> +	    (skb_shinfo(skb)->gso_type & (SKB_GSO_TCPV4 | SKB_GSO_TCPV6)) &&
+> +	    (offset_in_page(skb->data) & (SZ_4K - 1)) +
+> +	    skb_tcp_all_headers(skb) > SZ_4K)
 
-Hardware / software
--------------------
-NIC:      Intel E810-C-Q2 [8086:1592], subsystem [8086:0002], rev 02
-          PBA K91258-011, 2x 100G QSFP28, RoCEv2 (irdma) in use
-Board:    ASUS Pro WS WRX80E-SAGE SE WIFI II, BIOS 1702 (08/22/2025)
-          AMD Threadripper (WRX80)
-Kernel:   7.2.11-1-cachyos (in-tree ice and irdma)
-NVM:      5.10 (0x80022601), fw.mgmt 8.1.1, netlist 4.4.2000-3.29.0,
-          OROM 1.4113.0
-          Also reproduced with NVM 4.90 (0x80020ef2, fw.mgmt 7.9.1)
-DDP:      ICE OS Default Package 1.3.43.0
-Sleep:    mem_sleep =3D deep (S3)
-Config:   MTU 9000, DCB enabled, FW LLDP disabled (DCBx/LLDP in SW mode)
+Hmm, doesn't validate_xmit_skb call validate_xmit_vlan after the
+ndo_features_check, which means that the vlan header can be pushed into the
+packet? Meaning the packet can grow after this check.
 
-Steps to reproduce
-------------------
-1. Boot, link comes up at 100G, RDMA port ACTIVE
-2. systemctl suspend
-3. Resume
+> +		features &= ~NETIF_F_GSO_MASK;
+> +
+> +	return features;
+> +}
+> +
+>  static const struct net_device_ops e1000e_netdev_ops = {
+>  	.ndo_open		= e1000e_open,
+>  	.ndo_stop		= e1000e_close,
+> @@ -7378,7 +7407,7 @@ static const struct net_device_ops e1000e_netdev_ops = {
+>  #endif
+>  	.ndo_set_features	= e1000_set_features,
+>  	.ndo_fix_features	= e1000_fix_features,
+> -	.ndo_features_check	= passthru_features_check,
+> +	.ndo_features_check	= e1000_features_check,
+>  	.ndo_hwtstamp_get	= e1000e_hwtstamp_get,
+>  	.ndo_hwtstamp_set	= e1000e_hwtstamp_set,
+>  };
+> -- 
+> 2.56.0
 
-Expected: both ports operational after resume
-Actual:   "Failed to open VSI", no traffic possible
+Gabriel
 
-Kernel log (resume)
--------------------
-PM: suspend entry (deep)
-ice 0000:61:00.0: PTP reset successful
-ice 0000:61:00.0: VSI rebuilt. VSI index 0, type ICE_VSI_PF
-ice 0000:61:00.0: VSI rebuilt. VSI index 1, type ICE_VSI_CTRL
-ice 0000:61:00.1: PTP reset successful
-ice 0000:61:00.1: VSI rebuilt. VSI index 0, type ICE_VSI_PF
-ice 0000:61:00.1: VSI rebuilt. VSI index 1, type ICE_VSI_CTRL
-PM: suspend exit
-ice 0000:61:00.0: Failure Adding VLAN 0 on VSI 6, status -5
-ice 0000:61:00.0 enp97s0f0np0: Failed to open VSI 0x0006 on switch 0x0001
-ice 0000:61:00.1: Failure Adding VLAN 0 on VSI 8, status -5
-ice 0000:61:00.1 enp97s0f1np1: Failed to open VSI 0x0008 on switch 0x0000
-
-When unloading the driver afterwards:
-ice 0000:61:00.1: Failed to remove Rx LLDP rule on VSI 8 error: -5
-ice 0000:61:00.0: Failed to remove Rx LLDP rule on VSI 6 error: -5
-
-Observation
------------
-During the NVM update to 5.10, the firmware was activated via EMP
-reset while the driver was loaded. That rebuild succeeded, and the
-log shows the DDP package being downloaded again:
-
-ice 0000:61:00.0: The DDP package was successfully loaded: ICE OS
-Default Package version 1.3.43.0
-...
-ice 0000:61:00.0: VSI rebuilt. VSI index 0, type ICE_VSI_PF
-
-The rebuild after resume shows no DDP download at all, and then
-the switch filter commands fail. My guess is that the device loses
-power in S3, the DDP package is lost, and the resume path does not
-reload it. I have not verified this in the code, so please treat it
-as a hint only.
-
-Possibly related: at every boot the kernel logs
-pci_bus 0000:60: Some PCI device resources are unassigned, try
-booting with pci=3Drealloc
-(the NIC is at 0000:61:00.x). In addition, every boot shows
-"Failed to add generic LLDP Rx filter on VSI x error: -5, falling
-back to specialized AQ control" on both ports.
-
-Workaround
-----------
-modprobe -r irdma; modprobe -r ice; modprobe ice; modprobe irdma
-
-I am happy to test patches, provide full logs, or reproduce on a
-mainline kernel if that helps.
-
-Thanks,
-Timo
-
-P.S. Sorry for the noise: my first mail on this topic was sent by
-mistake due to a misconfiguration in my mail client. Please
-disregard it and use this one instead.
