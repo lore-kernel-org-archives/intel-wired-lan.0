@@ -4,199 +4,129 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2FA49CCF2DA
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 19 Oct 2026 06:58:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E115CCF2DA
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 19 Oct 2026 08:39:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 03DD4606EC;
-	Mon, 19 Oct 2026 06:58:34 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id F21166069B;
+	Mon, 19 Oct 2026 08:39:33 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ACjFdUndKJtk; Mon, 19 Oct 2026 06:58:33 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 2FEB8605FD
+ id 2Cg3uF6J17y0; Mon, 19 Oct 2026 08:39:33 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 1B2B260722
 Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1792393113;
-	b=SL953tCp171LAA4y/as20z6zrQTkCQa06fNJajuNabVZvmJc5BPhe5BjxZnVoYEy30hX
-	 XRfJpeyxrkxpOaf6q2LEQJrXhKuscg2rfVU1ht/qDtiFu7eq5i6b1T6sjOI/RYKaTwgtS
-	 BwUN+VKnmDwkm5PdUNO7KuUW662finrigWLvl2RNr6g9VrDtee4BNYwlr8/D3Ae3uBlmN
-	 TmivFRnxskkPk7b58rEsNq4fnv3p8//wT6fKxsuPGJPkt8YhOrbSCJNL3FI2kNSNRa+54
-	 +h+BAE15EwXSf07CjyBkD5jumKlmYR4f8VQ0MoPWU2uZ6lyeHj5If0tHZnCSy70EaVQ==
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1792399173;
+	b=qOZic3P9i9/eOZam8+lhYIEBbOh4HyHFqBnOMGiRC22F4WBmqbw47hxXu4sp3CN1aA1X
+	 BpK9cqZLvkTUP/sooZp2CpVgQcGRtE5HaA0R97/AF7rHpItV75JzkqtLxIRzY+lqtg+Zf
+	 atGWZyT/xQbecKmzBKKCOTeHvO5KYRi1uAynzBPXFcFfv3aEdThoDeVyl1y0GchIBy1Cr
+	 +nanlQyD8GGk2AZj9L+MlBf9+QdtBUDqag/64EfQBVBJB/Xeb5wg7qamDyz7Nwn4Fweuu
+	 xJ6wplKFvNnL9M8uLTv1SgO5VwEUEy2ajlg1Huofd58qK+DUxhs2tAIGvpbIBnWCEOQ==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1792393113;
+	c=relaxed/relaxed; t=1792399173;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
-	 DKIM-Signature:DKIM-Signature:DKIM-Signature:Received:X-MC-Unique:
-	 X-Mimecast-MFC-AGG-ID:Received:Received:From:To:Cc:Subject:Date:
-	 Message-ID:In-Reply-To:References:MIME-Version:X-Scanned-By:
-	 X-Mimecast-MFC-PROC-ID:X-Mimecast-Originator:
-	 Content-Transfer-Encoding:content-type:X-BeenThere:X-Mailman-Version:
-	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
-	 List-Subscribe:Errors-To;
-	bh=ZKK2mK9WchO5j1LrObMA8qjj5chpCR85FD1KEc1M4Jk=;
-	b=d2YGVq4welge/BkhlvbVUUCVvqG2c6TePh5JQHc43fByiyL0nv5Nl1z+I6LRW9gMDzTJ
-	 ru0jdKmJrnhlAjzWUpUO0oBalHGeXK4WYyEC/wUeGdUl6tTf70nMMRzvSrrkvVo3An+dz
-	 kEm2fN8GYNqK9WuJpFC+qP2+3nSURtgODu83CWyLQpOpL5eRgBO70x6DcEkpb+Fom+OR7
-	 MCqeIu9+drsMNi2xBDvwnzgekEHFHUOt+z/fA1/r3+qTWrwxpUZIJnUElXm/rkm/qNi7Z
-	 Rb2TH2yJy0LrrlhIcbXBBYu98Cd/DMi/v5c56HgvNN25auAYMyXGm4zlaHWOhSwajZQ==
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
+	 Received:DKIM-Signature:Message-ID:From:Subject:To:Cc:In-Reply-To:
+	 References:Content-Type:Content-Transfer-Encoding:Date:X-BeenThere:
+	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Reply-To:Errors-To;
+	bh=ARRolzGWF+9JkMPtETvDfAVJklJOhengJAuGm4xchBM=;
+	b=S2oFPChRq343W/Ewv3juf5gRuyCP3aifJ0MZqp9SgEbTyJzF2kcdHab1Q1jMQh4Lap1V
+	 Kc6Yq4OEgEhW+mXJ5cmW6odjXhh7hyQlZqKDdY7RxidpxeVF4/mkTABdHjK1OxCo9hav+
+	 3cru3FPNIWto+0qkN5q6gft4nnYZ2i7i6LUKVkvLLKg3nIepnvpIXuOd1ikwLO0RoCqUk
+	 bCOU0Rm5LoPUfrSplFRj3DTIoW21ofRhnE4mUfRZY8zhOby+KT8G14+WPnoNIz0LPSFDL
+	 1vw+XFoJf1q0gIgFB+aKv3Y5YmWxd5vKu64XDYl02JJeaa5x7U9fVs1cpmffcsUFzsw==
 ARC-Authentication-Results: i=2; smtp3.osuosl.org; 
-	dmarc=pass header.from=redhat.com;
-	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dx1CqXD+;
-	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Z0ubsLNN;
-	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dx1CqXD+;
+	dmarc=pass header.from=kernel.org;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=oi1Ld0op;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1792393113;
-	bh=ZKK2mK9WchO5j1LrObMA8qjj5chpCR85FD1KEc1M4Jk=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
+	s=default; t=1792399173;
+	bh=ARRolzGWF+9JkMPtETvDfAVJklJOhengJAuGm4xchBM=;
+	h=From:Subject:To:Cc:In-Reply-To:References:Date:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=x0n+G/c/ywsN4L9OQMtDolsQE+zAThIsGYeTD+zuSMm7qnZV59QjqAnGGTFpN8X5G
-	 OCT7RKLWF3dg4DoZ6lwr71Pwa6iICp04g+gL7GMNzJa5U/yNuO1+D7cU+Ht2ENameu
-	 7IKFvxdFK6ll8+zC0hiItVaIcDs/v24n2nwjdmJgfUnTySpC0DImCgPu8m/dttUAer
-	 sKtY0m8jSP06L581SrAmhaCEQLIjYk5UsAzw840Bpq+XvZZ3u0Hppjv8PVmvQVEj+5
-	 RLJGNegZUdMcHczpOXQDGyV65nr765qFJO3ttwvcHV41gEEbM+oeHQpFLnfbxKuDIU
-	 XCU3sJrfjSeHQ==
+	 Reply-To:From;
+	b=qzbr5q0oIMOXNvejK0oAHm4yX19d2dRTucaMzfurJUOVERA6l9HCV4CTl2+mVauFH
+	 veSm5N8KXa0wU9YEON6YeQvJ2RFAo3X7HslFgHYP8AcXCzUp/uumh+4CETqG25cvaQ
+	 qp8V3Evpmt/gXJk3ylKp3fnTuzoEIWg6+xCR+TpV3UC8pHV/g8CkF0sDx9VsmHq9Rw
+	 GDeOiAtSS4C+r68bhbCKpBlk7E3JQ0lEDvvZC8IX6cdFg24aW2YRYsgKu5IMduR7yk
+	 Uk87nCYo/kkT1vR4AWSsxlfm65UMESxk97OfLBZYFonayM+auZoTXz1cfW6/lpQRJV
+	 6tzVyB6j3eiNQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2FEB8605FD;
-	Mon, 19 Oct 2026 06:58:33 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 1B2B260722;
+	Mon, 19 Oct 2026 08:39:33 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id A838F2A8
- for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Oct 2026 06:58:32 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id F40DD465
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Oct 2026 08:39:31 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 99A6C605FD
- for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Oct 2026 06:58:32 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id E5E1460722
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Oct 2026 08:39:31 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id DvVknKe-2wBF for <intel-wired-lan@lists.osuosl.org>;
- Mon, 19 Oct 2026 06:58:32 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 5812D605F3
-Authentication-Results: smtp3.osuosl.org;
- arc=none smtp.remote-ip=170.10.133.124
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1792393112;
- b=lK1RlSByjDka6JAMz6Vf+014d91Uf00rBlfqx9Z3aPFTFu1ICYSY5+6wsY1sWeR/HeSs
- aWhiOa5dVWw92q/q2RaxFy/RNNHfI7Jz6A4qVHw5qq5KLyFzXCZ1ZBN57Ogp572QkHBuY
- aIufAAHPYjHqy2QPD/3dBTHPYaG/3yqtIr4L+iGgycWAj/ZFc/PbUluKGvKETustPT73O
- noJHB9YFHf3SCzG2gdQYbfTfPnwzpeZPMfLKLdJgp+IaBC2PfuROFWZSPNJQ6Z1KeFIP+
- 816Hp6kTCeM3sq+R3OO7H0e72O+zhFNYXViHTRLLjrQaaQ9HVnkvzTw3GOc7x2Olpnw==
+ id CmDS-vN3i4X5 for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 19 Oct 2026 08:39:31 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 9FD6D6069B
+Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1792399171;
+ b=e/e6AzRl7i93SerzpSmFGXBhW/02wK33EzEvOk8/xC2+8z2mZRvnl/JE2b0PvjJY0JIs
+ yZqyEzfFH95HFus2dTLbzETJR68Nq8jAC4ZevAfsqofzvI1lX/FniN5/AK3AwFqvMzdY6
+ cgfWJ82DzxVan+7HYM9dOUPH+goZnokD1Z0KgkiLqZSN/7rdNkwyL2x380FZE7FqZNnl6
+ IfVL7V9wgGTgOPgPwqo73wMVEIHFAFIXfuDOLtnM5tGIREDXEYHoGotCeNrSCSr9nwdqQ
+ vAo4v1xLD6UmpdQY5euE/1LhTGALI4lHV56UukNFNF8N2/tUdz1c8OjuXEcZ8x5IQQg==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1792393112;
- h=Received-SPF:DKIM-Signature:DKIM-Signature:DKIM-Signature:Received:
- X-MC-Unique:X-Mimecast-MFC-AGG-ID:Received:Received:From:To:Cc:
- Subject:Date:Message-ID:In-Reply-To:References:MIME-Version:
- X-Scanned-By:X-Mimecast-MFC-PROC-ID:X-Mimecast-Originator:
- Content-Transfer-Encoding:content-type;
- bh=ZKK2mK9WchO5j1LrObMA8qjj5chpCR85FD1KEc1M4Jk=;
- b=KlSbBN/ckkPGQ756+E/1+jdpWW8HXH6vc9I2yxL1WRfh7vd/RrBnmf69q1Pjnl9j+anz
- gg9bkOIQcgGpKyqJ0Tbx54tKT1O6tAMmNcwzwHWN3GX8fa+/GBNHt58tcMzdCRHnw6iUj
- 68oF8qKGjyXnG0nQtKtKXnUOl+9KzmCMqzTO3k+z6taOuvGorLQItKjxTOoBbrdO8Kkr2
- DKdnNVIMnCgCA1NBfaof0mMvX9vHeusdAPM3aBjOcdg/KL/Tu12nsiAiMXiFzRoRF6dvF
- 78UEZWTAWp4EfLTe59Qv4FKHmSn7ML4h5CaqEZWLIFpsAvZSWFZT/HGqkSUT0P98/Fw==
+ c=relaxed/relaxed; t=1792399171;
+ h=Received-SPF:Received:Received:DKIM-Signature:Message-ID:From:
+ Subject:Reply-To:To:Cc:In-Reply-To:References:Content-Type:
+ Content-Transfer-Encoding:Date;
+ bh=ARRolzGWF+9JkMPtETvDfAVJklJOhengJAuGm4xchBM=;
+ b=GkedMTsuSnBnvsQRI3zTJvsp21ecZDz2gCbeENKsfSqhH6cdOdB1t4XTqkuaNCWnXxSQ
+ tWV+5vbURw84hDt09f7Nfviwt5pEQXi1pXudwg3je5WAcg2ZWn4ENtJXAz9vJrsLGEpQg
+ BHbwwgk1uR+guT6HRKiy7o0vGe5ezJNx1EgzCrkttSpMHXspxgulGw/G6KzvwpTgFevsg
+ 7CHVyIaiyhBlC997iv10T8R7/yMfuwulm3yM46gpZF3EGmBITt1qu8QESRmj9xzR0O7vj
+ Yq7+JtO8Sx5yRg6bvrJn9WvU8reRRsMUnUcmeXSIC+wgMzJTOXXWJn04ZWBzJXk5N5Q==
 ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
- dmarc=pass header.from=redhat.com;
- dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=dx1CqXD+; 
- dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=Z0ubsLNN; 
- dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=dx1CqXD+; 
- arc=none smtp.remote-ip=170.10.133.124
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.133.124;
- helo=us-smtp-delivery-124.mimecast.com; envelope-from=poros@redhat.com;
+ dmarc=pass header.from=kernel.org;
+ dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20260515 header.b=oi1Ld0op; 
+ arc=none smtp.remote-ip=172.105.4.254
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
+ helo=tor.source.kernel.org; envelope-from=sashiko-bot@kernel.org;
  receiver=<UNKNOWN> 
 Authentication-Results: smtp3.osuosl.org; dmarc=pass (p=quarantine dis=none)
- header.from=redhat.com
-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (1024-bit key, unprotected) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=dx1CqXD+; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=Z0ubsLNN; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=dx1CqXD+
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.133.124])
- by smtp3.osuosl.org (Postfix) with ESMTP id 5812D605F3
- for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Oct 2026 06:58:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1792392808;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=ZKK2mK9WchO5j1LrObMA8qjj5chpCR85FD1KEc1M4Jk=;
- b=dx1CqXD+mf6WN4YQFkLMwnoYQN6xopFprZGCZpR6XqgExbPqiPD4Hmq27/Dk2kz4Brc3JX
- Q+oIacZ7y8z3yaMNnX3OrM7Er9xoV4bgtgndXMkeWKMqh2wF+YXnonlgJAr1/22iT4Xpdg
- Y6LViauSAWtGQcNp7zZeNj5HACG4ZlU=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1792393109;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=ZKK2mK9WchO5j1LrObMA8qjj5chpCR85FD1KEc1M4Jk=;
- b=Z0ubsLNNaa7CVVYvpjf9b6cqvR4vfjnf5xxN+rafrV9EJDz42mhtLeZZ2Xo2//vKfEMJx1
- UH3siaqg34DJ3GbXCH+8VUuhLsAT2DmcxHSOPS7D4RWWrWGVlBwS3isxZijGxGrEeKkpV0
- Y0tltxF57jgMoz5VApSNKljUhG01eAA=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1792392808;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=ZKK2mK9WchO5j1LrObMA8qjj5chpCR85FD1KEc1M4Jk=;
- b=dx1CqXD+mf6WN4YQFkLMwnoYQN6xopFprZGCZpR6XqgExbPqiPD4Hmq27/Dk2kz4Brc3JX
- Q+oIacZ7y8z3yaMNnX3OrM7Er9xoV4bgtgndXMkeWKMqh2wF+YXnonlgJAr1/22iT4Xpdg
- Y6LViauSAWtGQcNp7zZeNj5HACG4ZlU=
-Received: from mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-642-16VY8XV7NuCJI70W4peeCA-1; Mon,
- 19 Oct 2026 06:53:24 +0000
-X-MC-Unique: 16VY8XV7NuCJI70W4peeCA-1
-X-Mimecast-MFC-AGG-ID: 16VY8XV7NuCJI70W4peeCA_1792392801
-Received: from mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com
- (mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.17])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
- id 2D8DB1955F22; Mon, 19 Oct 2026 06:53:21 +0000 (UTC)
-Received: from poros-thinkpadp16vgen1.tpbc.com (unknown [10.44.48.130])
- by mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
- id 4224A1956086; Mon, 19 Oct 2026 06:53:13 +0000 (UTC)
-From: Petr Oros <poros@redhat.com>
-To: netdev@vger.kernel.org
-Cc: Petr Oros <poros@redhat.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>,
- "David S . Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@kernel.org>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, Dave Ertman <david.m.ertman@intel.com>,
- Shiraz Saleem <shiraz.saleem@intel.com>, Leon Romanovsky <leon@kernel.org>,
- Kamil Maziarz <kamil.maziarz@intel.com>,
- Rafal Rogalski <rafalx.rogalski@intel.com>,
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
- Michal Schmidt <mschmidt@redhat.com>, linux-rdma@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org, linux-kernel@vger.kernel.org,
- stable@vger.kernel.org, Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- Clark Williams <clrkwllms@kernel.org>,
- Steven Rostedt <rostedt@goodmis.org>,
- Mateusz Palczewski <mateusz.palczewski@intel.com>,
- linux-rt-devel@lists.linux.dev
-Subject: [PATCH iwl-net 1/3] ice: avoid RTNL deadlock when notifying the RDMA
- auxiliary driver
-Date: Mon, 19 Oct 2026 08:52:59 +0200
-Message-ID: <20261019065301.3983537-2-poros@redhat.com>
-In-Reply-To: <20261019065301.3983537-1-poros@redhat.com>
-References: <20261019065301.3983537-1-poros@redhat.com>
-MIME-Version: 1.0
-X-Scanned-By: MIMEDefang 3.0 on 10.30.177.17
-X-Mimecast-MFC-PROC-ID: vsMYLT29S_L8xtdPqq0ealOvFdMGdFWWe3QFQRu_14s_1792392801
-X-Mimecast-Originator: redhat.com
-Content-Transfer-Encoding: 8bit
-content-type: text/plain; charset="US-ASCII"; x-default=true
+ header.from=kernel.org
+Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20260515 header.b=oi1Ld0op
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 9FD6D6069B
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Oct 2026 08:39:30 +0000 (UTC)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+ by tor.source.kernel.org (Postfix) with ESMTP id 20236601FB;
+ Mon, 19 Oct 2026 08:39:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 94DDD1F000C4;
+ Mon, 19 Oct 2026 08:39:28 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+ s=k20260515; t=1792399168;
+ bh=ARRolzGWF+9JkMPtETvDfAVJklJOhengJAuGm4xchBM=;
+ h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
+ b=oi1Ld0opU0n8wBf4xCaVxyNqB2vAzs8eTL0P3ikc45I+SV3fNmq7QcFeHfhNp90z8
+ g4qd82wQVjLP7TdP4s8IAsCv5FIh1k+kH34tVpwvmGXwelKzh6zU2Cj7sg44zMZz1S
+ T0PKhDmqrRedhmrGOG8Vohk3lfrNE4rBO7NzVI0lADuOrVNc7JqBS8Et3fc2cuo6E7
+ NArHymYMN5xq/SO2b3CRQEYNxJex2AB9I7tby41n7YhaonO2Wz6UhBJ1ZFIiuCFRDo
+ ea3sDJaWPJleiDemGAcrSDW5pikYLYmWBOudWBsdjv/xY76CqQyUymHuJu2q2+KQPp
+ gxrHqjyGyeG5g==
+Message-ID: <sashiko-outbox-176817@kernel.org>
+From: sashiko-bot@kernel.org
+Subject: Re: [PATCH bpf] xsk: Do not free ZC Rx buffer when the Rx ring is full
+To: "Marcin Knap" <marcin.knap@vecima.com>
+Cc: intel-wired-lan@lists.osuosl.org, bpf@vger.kernel.org
+In-Reply-To: <20261019-xsk-zc-rx-double-free-v1-1-2aa19f6628fb@vecima.com>
+References: <20261019-xsk-zc-rx-double-free-v1-1-2aa19f6628fb@vecima.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Date: Mon, 19 Oct 2026 08:39:28 +0000
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -209,187 +139,114 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Reply-To: sashiko-reviews@lists.linux.dev
 Errors-To: intel-wired-lan-bounces@osuosl.org
 
-ice_send_event_to_aux() blocks on the auxiliary device lock, and the
-dcbnl callers reach it with the RTNL lock held. The RDMA auxiliary probe
-takes the two in the opposite order, because __driver_attach() holds the
-auxiliary device lock across ib_register_device(), which needs the RTNL
-lock:
+Thank you for your contribution! Sashiko AI review found 1 potential issue(=
+s) to consider:
+- [High] xsk: missing xsk_buff_free() on redirect error in gve and octeontx2
+--
 
-  systemd-udevd   state:D
-    really_probe                  <- holds device_lock(&adev->dev)
-    icrdma_probe
-    irdma_ib_register_device
-    ib_register_device
-    setup_device
-    irdma_roce_port_immutable
-    ib_query_port
-    irdma_query_port
-    ib_get_eth_speed              <- blocks on rtnl_lock()
+commit 2859b3e778dcb29dabcd4c998977aac223d207b7
+Author: Marcin Knap <marcin.knap@vecima.com>
 
-  lldpad          state:D
-    rtnetlink_rcv_msg             <- holds rtnl_lock()
-    dcb_doit
-    dcbnl_ieee_set
-    ice_dcbnl_setets
-    ice_pf_dcb_cfg
-    ice_send_event_to_aux         <- blocks on device_lock(&adev->dev)
+xsk: Do not free ZC Rx buffer when the Rx ring is full
 
-Everything else that needs the RTNL lock piles up behind lldpad and the
-boot never completes. The probe side cannot be changed, so use
-device_trylock() and report whether the event reached the driver.
+This commit stops xsk_rcv_zc() from calling xsk_buff_free() when the XSK Rx
+ring is full (-ENOBUFS) so that callers of xdp_do_redirect() do not
+double-free the zero-copy buffer. It also updates i40e and ice to free the
+buffer on their XDP_EXIT paths.
 
-IIDC_RDMA_EVENT_BEFORE_TC_CHANGE has to arrive before the traffic
-classes change, so ice_pf_dcb_cfg() refuses the request with -EBUSY
-rather than run it behind the RDMA driver's back. The critical error and
-MTU change events are sent from the service task, which consumes their
-pending bits before sending, so those are re-armed instead.
-AFTER_TC_CHANGE keeps its fire and forget behaviour, it can be neither
-refused, the hardware has already changed, nor deferred, every lock that
-would serialise a deferred delivery against the dcbnl callers forms
-another cycle.
+> diff --git a/net/xdp/xsk.c b/net/xdp/xsk.c
+> index 33475b180ea6f..0edc160c660fd 100644
+> --- a/net/xdp/xsk.c
+> +++ b/net/xdp/xsk.c
+> @@ -224,21 +224,15 @@ static int xsk_rcv_zc(struct xdp_sock *xs, struct x=
+dp_buff *xdp, u32 len)
+>  	struct list_head *xskb_list;
+>  	u32 contd =3D 0;
+>  	u32 num_desc;
+> -	int err;
+> =20
+> -	if (likely(!frags)) {
+> -		err =3D __xsk_rcv_zc(xs, xskb, len, contd);
+> -		if (err)
+> -			goto err;
+> -		return 0;
+> -	}
+> +	if (likely(!frags))
+> +		return __xsk_rcv_zc(xs, xskb, len, contd);
+> =20
+>  	contd =3D XDP_PKT_CONTD;
+>  	num_desc =3D xdp_get_shared_info_from_buff(xdp)->nr_frags + 1;
+>  	if (xskq_prod_nb_free(xs->rx, num_desc) < num_desc) {
+>  		xs->rx_queue_full++;
+> -		err =3D -ENOBUFS;
+> -		goto err;
+> +		return -ENOBUFS;
+>  	}
+> =20
+>  	__xsk_rcv_zc_safe(xs, xskb, len, contd);
+> @@ -252,9 +246,6 @@ static int xsk_rcv_zc(struct xdp_sock *xs, struct xdp=
+_buff *xdp, u32 len)
+>  	}
+> =20
+>  	return 0;
+> -err:
+> -	xsk_buff_free(xdp);
+> -	return err;
+>  }
 
-Fixes: 348048e724a0 ("ice: Implement iidc operations")
-Cc: stable@vger.kernel.org
-Signed-off-by: Petr Oros <poros@redhat.com>
----
- drivers/net/ethernet/intel/ice/ice_dcb_lib.c |  9 ++++++++-
- drivers/net/ethernet/intel/ice/ice_idc.c     | 20 ++++++++++++++++----
- drivers/net/ethernet/intel/ice/ice_idc_int.h |  2 +-
- drivers/net/ethernet/intel/ice/ice_main.c    | 16 ++++++++++++----
- 4 files changed, 37 insertions(+), 10 deletions(-)
+[Severity: High]
+Does removing xsk_buff_free(xdp) here leak xdp_buffs in gve and octeontx2
+when xdp_do_redirect() fails with -ENOBUFS?
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-index 0bc6dd37568792..2022b46c990cb2 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-@@ -355,8 +355,10 @@ int ice_pf_dcb_cfg(struct ice_pf *pf, struct ice_dcbx_cfg *new_cfg, bool locked)
- 	struct iidc_rdma_event *event;
- 	int ret = ICE_DCB_NO_HW_CHG;
- 	struct ice_vsi *pf_vsi;
-+	bool dcb_ena;
- 
- 	curr_cfg = &pf->hw.port_info->qos_cfg.local_dcbx_cfg;
-+	dcb_ena = test_bit(ICE_FLAG_DCB_ENA, pf->flags);
- 
- 	/* FW does not care if change happened */
- 	if (!pf->hw.port_info->qos_cfg.is_sw_lldp)
-@@ -406,7 +408,12 @@ int ice_pf_dcb_cfg(struct ice_pf *pf, struct ice_dcbx_cfg *new_cfg, bool locked)
- 	}
- 
- 	set_bit(IIDC_RDMA_EVENT_BEFORE_TC_CHANGE, event->type);
--	ice_send_event_to_aux(pf, event);
-+	if (!ice_send_event_to_aux(pf, event)) {
-+		assign_bit(ICE_FLAG_DCB_ENA, pf->flags, dcb_ena);
-+		kfree(event);
-+		ret = -EBUSY;
-+		goto free_cfg;
-+	}
- 	kfree(event);
- 
- 	/* avoid race conditions by holding the lock while disabling and
-diff --git a/drivers/net/ethernet/intel/ice/ice_idc.c b/drivers/net/ethernet/intel/ice/ice_idc.c
-index 102d63c3018b1f..7fd35ce966ea65 100644
---- a/drivers/net/ethernet/intel/ice/ice_idc.c
-+++ b/drivers/net/ethernet/intel/ice/ice_idc.c
-@@ -34,30 +34,42 @@ ice_get_auxiliary_drv(struct iidc_rdma_core_dev_info *cdev)
-  * ice_send_event_to_aux - send event to RDMA AUX driver
-  * @pf: pointer to PF struct
-  * @event: event struct
-+ *
-+ * Return: false when the auxiliary device lock was contended.
-  */
--void ice_send_event_to_aux(struct ice_pf *pf, struct iidc_rdma_event *event)
-+bool ice_send_event_to_aux(struct ice_pf *pf, struct iidc_rdma_event *event)
- {
- 	struct iidc_rdma_core_auxiliary_drv *iadrv;
- 	struct iidc_rdma_core_dev_info *cdev;
-+	bool sent = true;
- 
- 	if (WARN_ON_ONCE(!in_task()))
--		return;
-+		return true;
- 
- 	cdev = pf->cdev_info;
- 	if (!cdev)
--		return;
-+		return true;
- 
- 	mutex_lock(&pf->adev_mutex);
- 	if (!cdev->adev)
- 		goto finish;
- 
--	device_lock(&cdev->adev->dev);
-+	if (!device_trylock(&cdev->adev->dev)) {
-+		dev_dbg(ice_pf_to_dev(pf),
-+			"auxiliary device busy, dropped RDMA event 0x%lx\n",
-+			*event->type);
-+		sent = false;
-+		goto finish;
-+	}
-+
- 	iadrv = ice_get_auxiliary_drv(cdev);
- 	if (iadrv && iadrv->event_handler)
- 		iadrv->event_handler(cdev, event);
- 	device_unlock(&cdev->adev->dev);
- finish:
- 	mutex_unlock(&pf->adev_mutex);
-+
-+	return sent;
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/ice/ice_idc_int.h b/drivers/net/ethernet/intel/ice/ice_idc_int.h
-index 17dbfcfb6a2aff..e7d249d6140d92 100644
---- a/drivers/net/ethernet/intel/ice/ice_idc_int.h
-+++ b/drivers/net/ethernet/intel/ice/ice_idc_int.h
-@@ -9,6 +9,6 @@
- 
- struct ice_pf;
- 
--void ice_send_event_to_aux(struct ice_pf *pf, struct iidc_rdma_event *event);
-+bool ice_send_event_to_aux(struct ice_pf *pf, struct iidc_rdma_event *event);
- 
- #endif /* !_ICE_IDC_INT_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index d88835482d3aac..edb62606d2aae3 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -2313,11 +2313,16 @@ static void ice_service_task(struct work_struct *work)
- 		struct iidc_rdma_event *event;
- 
- 		event = kzalloc_obj(*event);
--		if (event) {
-+		if (!event) {
-+			set_bit(ICE_AUX_ERR_PENDING, pf->state);
-+		} else {
- 			set_bit(IIDC_RDMA_EVENT_CRIT_ERR, event->type);
- 			/* report the entire OICR value to AUX driver */
- 			swap(event->reg, pf->oicr_err_reg);
--			ice_send_event_to_aux(pf, event);
-+			if (!ice_send_event_to_aux(pf, event)) {
-+				pf->oicr_err_reg |= event->reg;
-+				set_bit(ICE_AUX_ERR_PENDING, pf->state);
-+			}
- 			kfree(event);
- 		}
- 	}
-@@ -2336,9 +2341,12 @@ static void ice_service_task(struct work_struct *work)
- 		struct iidc_rdma_event *event;
- 
- 		event = kzalloc_obj(*event);
--		if (event) {
-+		if (!event) {
-+			set_bit(ICE_FLAG_MTU_CHANGED, pf->flags);
-+		} else {
- 			set_bit(IIDC_RDMA_EVENT_AFTER_MTU_CHANGE, event->type);
--			ice_send_event_to_aux(pf, event);
-+			if (!ice_send_event_to_aux(pf, event))
-+				set_bit(ICE_FLAG_MTU_CHANGED, pf->flags);
- 			kfree(event);
- 		}
- 	}
--- 
-2.56.0
+In drivers/net/ethernet/google/gve/gve_rx_dqo.c, the call chain
+gve_rx_poll_dqo() -> gve_rx_dqo() -> gve_rx_xsk_dqo() -> gve_xsk_done_dqo()
+handles XDP_REDIRECT on zero-copy buffers without freeing xdp on error:
 
+	case XDP_REDIRECT:
+		if (unlikely(xdp_do_redirect(priv->dev, xdp, xprog)))
+			goto err;
+		break;
+	}
+	...
+err:
+	u64_stats_update_begin(&rx->statss);
+	if (xdp_act =3D=3D XDP_TX)
+		rx->xdp_tx_errors++;
+	if (xdp_act =3D=3D XDP_REDIRECT)
+		rx->xdp_redirect_errors++;
+	u64_stats_update_end(&rx->statss);
+
+Its caller gve_rx_xsk_dqo() then releases buf_state via
+gve_free_buf_state(rx, buf_state) without freeing xdp, leaking it from
+rx->xsk_pool.
+
+Similarly, in drivers/net/ethernet/marvell/octeontx2/nic/otx2_txrx.c, the
+call chain otx2_napi_handler() -> otx2_rx_napi_handler() ->
+otx2_rcv_pkt_handler() -> otx2_xdp_rcv_pkt_handler() pops xsk_buff from
+pool->xdp[--cq->rbpool->xdp_top] and does not free it if xdp_do_redirect()
+fails:
+
+	case XDP_REDIRECT:
+		cq->pool_ptrs++;
+		if (xsk_buff) {
+			err =3D xdp_do_redirect(pfvf->netdev, xsk_buff, prog);
+			if (!err) {
+				*need_xdp_flush =3D true;
+				return true;
+			}
+			return false;
+		}
+
+Should gve_xsk_done_dqo() and otx2_xdp_rcv_pkt_handler() also be updated
+to free the zero-copy buffer when xdp_do_redirect() fails?
+
+>  static void *xsk_copy_xdp_start(struct xdp_buff *from)
+
+[ ... ]
+
+--=20
+Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261019-xsk-zc-rx-=
+double-free-v1-1-2aa19f6628fb@vecima.com?part=3D1
