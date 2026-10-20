@@ -1,136 +1,291 @@
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 38743606A319
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 20 Oct 2026 06:59:36 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6056B606A320
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 20 Oct 2026 09:18:47 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=9sHlqLKb;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UCeuiimh
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=9Qv8h17f;
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=eWTSWwJ2
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 1BFBD607F6;
-	Tue, 20 Oct 2026 06:59:36 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 4356480BE5;
+	Tue, 20 Oct 2026 09:18:47 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id bCNNIJibwrs6; Tue, 20 Oct 2026 06:59:34 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 27DA96068B
-Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1792479574;
-	b=ZYTWdHImypx6XWgZp5gugfrH52jsO2XMoqElGTVQQ5IO4MJhSP1ln8RqI/cxJrcueeAv
-	 NX16U5fVcerSguvn8u/ge1kfi12BUVwdD+FtmYdytr65mo2wApgZwjAS6HJOCmK5L1Chg
-	 w6PG9IrQgOpsxSPJHXW4bEc+iiixT1sYO9BYZlp2Les7/3VKnXISRTIYIvOA6bSKOky4f
-	 9OTY0kazVqOMNxBZnDZwO8yHCr2p7Hn9bNSZ7r7iKm+15TEtpKRxhZR0HzAZqepba1Jun
-	 itkdfO1elJxS5+E1bd0dTmcDuUh1WOSJHHWDLGnw+wIDsRjdjjLTMvyb8OyWtHowdpg==
-ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1792479574;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id QZAsQFN390Pz; Tue, 20 Oct 2026 09:18:46 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 4E29480C25
+Authentication-Results: smtp1.osuosl.org; arc=fail smtp.remote-ip=140.211.166.142
+ARC-Seal: i=3; d=osuosl.org; s=arc; a=rsa-sha256; cv=fail; t=1792487926;
+	b=HTIUODsRjskNJz4nyhoAFVzg8s7zXyf8kPTTfToLPJtsMeztSEdlCTMoxo6vTDO88Iey
+	 LkVMJA3ptW8lm1e+zNoj6etZXU0yN+HxSFErVB3OOk2YHyXImOACo0oo7gboiV/sLmA62
+	 gvfCFPyQ1Vasp8aJJqg717QlBKkkHxhitMF4nJnjoHkuSBd41KyUXirhiRxLV0lEvVP43
+	 PrH8T5z5Kex81RCTYguxQvHhFmfjUN3XOJapjjiNDaa6G59NICy2aV9HZVIsBKSa/nOAD
+	 CrZ5xxpVIagWay/5Ueo3ZMKWDTktBUbGfmByBGkWMRq0QLLcn7t1RwcUqhr8LUL93wg==
+ARC-Message-Signature: i=3; d=osuosl.org; s=arc; a=rsa-sha256;
+	c=relaxed/relaxed; t=1792487926;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 Received:DKIM-Signature:Message-ID:From:Subject:To:Cc:In-Reply-To:
-	 References:Content-Type:Content-Transfer-Encoding:Date:X-BeenThere:
-	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Reply-To:Errors-To;
-	bh=HjNQOKTa7/o0E+d+gj3w7S25jbHSnzDajJrBidz02oc=;
-	b=fI3mLqM9XRHk846KI3nIKZaAxZsjCtgPbJhE8pe5K5WmNvzXRTVpz29jnq1llXI1cvEG
-	 HifN53NOckk5ukvYRLwoxwAwP7Bt3O03h4GmmEuTDZPnMt51rd+8TZMBpI5UPLvVg6cja
-	 xm3hShKvR577a/a1sWFQ8m8JOQ0YXNKcCZUW/uwcIgWqmLjYsy/gmdGkBskKtRGKgOOc0
-	 fxvxbnsFNUaYPQnXkGuHpVeFEouyY6zUiR2jYapeAjljP9JGRjYRyqauiYR1yP5uw44fy
-	 bMjZKB65JLKP4R0k2fJne45kozsVE8nMaZ1IHJBRZoWDbfV2k2ltnfz+7GNvyxNIJAA==
-ARC-Authentication-Results: i=2; smtp3.osuosl.org; 
-	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
+	 DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-IronPort-AV:
+	 X-IronPort-AV:Received:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-ExtLoop1:
+	 X-IronPort-AV:Received:Received:Received:Received:Received:Received:
+	 Message-ID:Date:User-Agent:From:Subject:To:CC:References:
+	 Content-Language:In-Reply-To:Content-Type:Content-Transfer-Encoding:
+	 X-ClientProxiedBy:MIME-Version:X-MS-PublicTrafficType:
+	 X-MS-TrafficTypeDiagnostic:X-MS-Office365-Filtering-Correlation-Id:
+	 X-MS-Exchange-SenderADCheck:X-MS-Exchange-AntiSpam-Relay:
+	 X-Microsoft-Antispam:X-Microsoft-Antispam-Message-Info:
+	 X-Forefront-Antispam-Report:
+	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
+	 X-MS-Exchange-AntiSpam-MessageData-0:X-Exchange-RoutingPolicyChecked:
+	 X-MS-Exchange-CrossTenant-Network-Message-Id:
+	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
+	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
+	 X-MS-Exchange-CrossTenant-FromEntityHeader:
+	 X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
+	 X-MS-Exchange-CrossTenant-UserPrincipalName:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStamped:X-OriginatorOrg:
+	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
+	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
+	bh=wdECPA+tSgWP98+ShqOszoWHNf0AjVVJJKgyDhye4i0=;
+	b=qNO2r0SknwvHrpMx2WwkM56efIa1qvFAE2oBt6ys/STc/hpNQjvZzlSSvkbMx+03GlzW
+	 jUYw0pLFsUUsd/4xaTJA4R+p7UyajD+wjhlHYYbO4idT+8Enbxncxb85wX6uJMR7iD39w
+	 c8HdFrc8pBQsHFtxcGwzIsNzXzjQAO2QCbkOQpciTE6W7wnWDCluyK561Uyz7Qvto224w
+	 O9wr4JtKRXINv5dr8fTY7Vse+Fcs5KGjxs+3uTMqbN9m/5tQxJ3MJFCbyhA0GZZunCnmB
+	 qVb8Cb85H6rZzTgiBCk/+Rxd0A2na9qS6oPpZNIhi7Kurt6YFbBEGgHrA4DN0kp43TA==
+ARC-Authentication-Results: i=3; smtp1.osuosl.org; 
+	arc=fail smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1792479574;
-	bh=HjNQOKTa7/o0E+d+gj3w7S25jbHSnzDajJrBidz02oc=;
-	h=From:Subject:To:Cc:In-Reply-To:References:Date:List-Id:
+	s=default; t=1792487926;
+	bh=wdECPA+tSgWP98+ShqOszoWHNf0AjVVJJKgyDhye4i0=;
+	h=Date:From:Subject:To:CC:References:In-Reply-To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Reply-To:From;
-	b=9sHlqLKbhmIAfpFpx/cYUsrpuRiKAPUljJPLCTgjdFpEqQAM82fl1D0z3/3eMuE8W
-	 Kr2JikjUVGEqum/soMTOprCsScA9nX4VfbSE+wnNdoz6MDhkpYnc/gMswOZWeJT908
-	 KC7bGLB6JTb0pGv3lLCu5TVZ1QE1HnkMgmkN53cS9wsmyyxFWrKl6FzmrZwPG9BaCM
-	 zlGbvns+n8StkNqA6eB9tSXfIQll28xIITxxFmubdEHSWSbOmlQKTX3YMlkVa/rK+z
-	 CxeK6a+6lwATxjU0arFFaEwlUqmlHeqH2vjcRvhIF9XVNLiHHps5ryuf9mr62AVGvZ
-	 tw12SgGBPHe2g==
+	 From;
+	b=9Qv8h17fBqobZZzGl7E7I1zvnZX+5WvqTz2CWIG5kcmrpU5CtTGgakL7HtOAZu1eT
+	 yI2JqbQNa63Lrx0phZi3KmjZacqLXi4XXXk4m/uXZ7TRDVr/7QM3Xe1EUGH7Cean1K
+	 8NRBvbmIaNiuZpfyBBMdFVMU1IHbL2yNsd5yrzlcvCWC5e9QHxOBwghVwz2fcBrh7o
+	 yNBo6+0FMHiYgaTlU2sW4KoiK5dhaTR5OmpPxxxwlFJVlYFlC1XarJ71H1Goftsdxk
+	 ZvicdUsDc2CIUQrSHI4jYSk0w5y/rjmVDSWJOB+kiDxdkp4ER30byLAT+DTzf8xIIz
+	 5EaMk9JQvKJpg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 27DA96068B;
-	Tue, 20 Oct 2026 06:59:34 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 4E29480C25;
+	Tue, 20 Oct 2026 09:18:46 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id CED9023A
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Oct 2026 06:59:32 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 6224A465
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Oct 2026 09:18:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id B522C4064C
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Oct 2026 06:59:32 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 4868E403E3
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Oct 2026 09:18:44 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id zf92dp3m4IGt for <intel-wired-lan@lists.osuosl.org>;
- Tue, 20 Oct 2026 06:59:31 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 8384E405F4
-Authentication-Results: smtp4.osuosl.org; arc=none
- smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1792479571;
- b=a99YsrKwQ0wk2KP106+u1GXj2DbWvsThxfjGf1xAI/Qb/Nr32ZHMiTo4RoStBNi8tYzn
- 3O9UkoXsynBHmJmI92OFEyPsmtadQRZNTK8f1INkmB7SosdQNVgt+jcUlZ2Gzmp1mgQMC
- IHYHOc2WtJDxGGrpHlfZkPPY0NsI4hZYSH1aBTzKxC6HQkoEdCnZ7+XxemjSsrPPUCXif
- rS9UvP1rX1ct3BnZRoB5+gqyHDvDpYUIS4RFMDT/TtNM5gIiq4+Q0PCf217filrEg4hgg
- kWvRiLHANTrvqh3OZE2R+Qacwzb5RtMexNnVngnUPEpR8wCWoQzCTqJh4s7kN5lOIrQ==
-ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1792479571;
- h=Received-SPF:Received:Received:DKIM-Signature:Message-ID:From:
- Subject:Reply-To:To:Cc:In-Reply-To:References:Content-Type:
- Content-Transfer-Encoding:Date;
- bh=HjNQOKTa7/o0E+d+gj3w7S25jbHSnzDajJrBidz02oc=;
- b=KHMLhE9NtKtYrx6o5t+GWk4t14quXcQq5yRc1mnnOhq7y+xKbO/Eeppvde6heQ1yxRc6
- CwP3kft+GqXhZF7yaMs3R7r1gz4Kcw2v+yOYXb6QzIw5tetZRIVJXongAY5Sr45TGZvRl
- 2U1lGa7BL9brM2jbXJfN4Y3/o1A77dBFiZ9R9Zl3CVcl4iTO6ddx3PKfDiHpg0zfVZo9I
- v4Hh0DU9BDwYSYzM1MBngjiR1A03WG+jp/IFHaAQ14KKEmiaOTAWTgQOjNC/DSZo8PKhr
- yH4a/tFYOikLkHh4805i1HAxRHgXlg8p75i0VFSNAEI1UgL6FCxWT0e9M8dbAXeOfMA==
-ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
- dmarc=pass header.from=kernel.org;
- dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=UCeuiimh; 
- arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
- envelope-from=sashiko-bot@kernel.org; receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
+ id UFfikXiSR1xG for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 20 Oct 2026 09:18:43 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org E8ECF405A9
+Authentication-Results: smtp4.osuosl.org;
+ arc=fail smtp.remote-ip=192.198.163.15
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=fail; t=1792487923;
+ b=O1qOJpe7M9SY7WQe3G3sM0MzFz3kQmoU3hkzuWhxnNQHJxV9THkOHuYq5N9Uix0aXT/4
+ uWoGXCV0xdKEHLqy/TzEJYXQaE3xJRMKrTgk1J0zs+NVRIx8JK6FI0raDAzsf0qSkxv/p
+ 11mL9VMcESZQ+gXx3QjxZvwMMZ26kO0O+zX2pANKaIdkzyg7/mPnEuvQaz5VY6jtY9Ll3
+ J+wC9joaAbimjiUPyijctSYjn0RfwgHKY6/3eqvNNRuBuLchvdztE/UFnVOYwnL7v39WT
+ ENsz+XP7+bAqHQP/N8iUN7ocGPKIZZSMUz88ztjF5W6cmuIygHrJ/O4yqBRHxQ9y2IQ==
+ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
+ c=relaxed/relaxed; t=1792487923;
+ h=Received-SPF:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+ X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
+ X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Received:Received:
+ Received:Received:Received:Message-ID:Date:User-Agent:From:Subject:To:
+ CC:References:Content-Language:In-Reply-To:Content-Type:
+ Content-Transfer-Encoding:X-ClientProxiedBy:MIME-Version:
+ X-MS-PublicTrafficType:X-MS-TrafficTypeDiagnostic:
+ X-MS-Office365-Filtering-Correlation-Id:X-MS-Exchange-SenderADCheck:
+ X-MS-Exchange-AntiSpam-Relay:X-Microsoft-Antispam:
+ X-Microsoft-Antispam-Message-Info:X-Forefront-Antispam-Report:
+ X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
+ X-MS-Exchange-AntiSpam-MessageData-0:X-Exchange-RoutingPolicyChecked:
+ X-MS-Exchange-CrossTenant-Network-Message-Id:
+ X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
+ X-MS-Exchange-CrossTenant-OriginalArrivalTime:
+ X-MS-Exchange-CrossTenant-FromEntityHeader:
+ X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
+ X-MS-Exchange-CrossTenant-UserPrincipalName:
+ X-MS-Exchange-Transport-CrossTenantHeadersStamped:X-OriginatorOrg;
+ bh=wdECPA+tSgWP98+ShqOszoWHNf0AjVVJJKgyDhye4i0=;
+ b=l17pBm3uzzOPELTrdQ503zhtblnOat0/6w3qsXrfWPUIjXU+8UWQg1oKnhjmnNbnEupq
+ BSjb96J00spXGKF5gd+mEUeTDv8ReoVNwiaZUgKajoV+RiC3cfjHB5pVh9Z2/09Q+bzwU
+ jksrj7t3sh5TwJjIPl8+YNBrwBP8Wb7X3YZdUQndQZ1nCEZF4uoywg0tHTu4XLhonyjU5
+ uPZSb1YIQvzU4l/MeKZ8EaljY4HD7PRuJiKOmOxMLgEPsygk1Okuvv6mr+T19n03YHwKh
+ d3D/AnQ0nFz+Dj5XP3c/f1Gc2BEKA8tWRpJzIhemmdGDD9mftxKLn2E64KopXXVP8AQ==
+ARC-Authentication-Results: i=2; smtp4.osuosl.org; 
+ dmarc=pass header.from=intel.com;
+ dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=eWTSWwJ2; 
+ arc=fail smtp.remote-ip=192.198.163.15
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.15;
+ helo=mgamail.intel.com; envelope-from=przemyslaw.kitszel@intel.com;
+ receiver=<UNKNOWN> 
+Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp4.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=UCeuiimh
-Received: from tor.source.kernel.org (tor.source.kernel.org
- [IPv6:2600:3c04:e001:324:0:1991:8:25])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 8384E405F4
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Oct 2026 06:59:31 +0000 (UTC)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id BE80C60D82;
- Tue, 20 Oct 2026 06:59:29 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 26B3B1F01808;
- Tue, 20 Oct 2026 06:59:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1792479569;
- bh=HjNQOKTa7/o0E+d+gj3w7S25jbHSnzDajJrBidz02oc=;
- h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
- b=UCeuiimh//lYl9rjZ9TpN8OyH5D1bJavQvpXlWOIZTDm9552Tp9hGl53gPJVcCLFE
- 3Kxd/cxkDAhh+HcY8NBG7fNeR0FrYnD6wbtVzq78crNct7FMGtVl7/oiNLxcSYHfiC
- ebfKBNWudO5kyiMc7B66iqOqCwqFaqZbFcWJruCHs5fxygBS+yIoTWXJG54kM0XjA9
- QBcRCiqNTeYSX1OxUq+JOQd5ip6PCE1CjzNm3dCf2nAYVwB3+TXaV+wjQgza90UX95
- 4MmWUiAysBBhlvbAVphXImLL60bhm+EjxG8pvuFJVa6++k6tjicn+EWmaX6l44ICdj
- UOBhZpmIzHz2w==
-Message-ID: <sashiko-outbox-178446@kernel.org>
-From: sashiko-bot@kernel.org
-Subject: Re: [PATCH iwl-net 3/3] ice: do not block on the aux device lock in
- ndo_setup_tc
-To: "Petr Oros" <poros@redhat.com>
-Cc: linux-rdma@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
- linux-rt-devel@lists.linux.dev, linux-kernel@vger.kernel.org
-In-Reply-To: <20261019065301.3983537-4-poros@redhat.com>
-References: <20261019065301.3983537-1-poros@redhat.com>
- <20261019065301.3983537-4-poros@redhat.com>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-Date: Tue, 20 Oct 2026 06:59:28 +0000
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=eWTSWwJ2
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id E8ECF405A9
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Oct 2026 09:18:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1792487923; x=1824023923;
+ h=message-id:date:from:subject:to:cc:references:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=uAedrzuvDjDgyMuhP61ekkUtxNJZMAsEBafn5pv492Y=;
+ b=eWTSWwJ2vewm5MnPy1zNHzOFZve7n9+XhwOEKfmYQT0Tk55HHI1YOGVR
+ 9BH6+7artsxL/vEFA+VkxUE/tsZ8pxcFlZBJ0knaW7UkkEwSvrmzerCgj
+ 1zqjOCLBNsor6lGR4wvYYHvjSew9WojNMzmj9c4ul5up6ASAYIs0EdTFo
+ KCH6aUq0wbXpJYGihVQPliGvC7wd++pL5nMevba3vx48s+i2cnvEK06n6
+ hRZVKXE0UbfxWG3mFRK4dPkeDWuJwtBv9dJMns7KDg/tVpQChHSxQf1fu
+ exXsIZvxcanYxl6s69UGfUuPVZTYrvlAPm/+Xy5qxebhcMEo/seJ095oQ w==;
+X-CSE-ConnectionGUID: Tz2iJpAKQO+E16x2UTwpfQ==
+X-CSE-MsgGUID: sTEuOftQQ/C68gwwIzf31A==
+X-IronPort-AV: E=McAfee;i="6800,10657,11940"; a="1197288"
+X-IronPort-AV: E=Sophos;i="6.27,168,1787036400"; 
+   d="scan'208";a="1197288"
+Received: from fmviesa003.fm.intel.com ([10.60.135.143])
+ by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 20 Oct 2026 02:18:42 -0700
+X-CSE-ConnectionGUID: z1u+dOTLRrKkvXryOS0ThA==
+X-CSE-MsgGUID: xGTY40epQTiSawq4zOW7cA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,168,1787036400"; 
+   d="scan'208";a="2806554"
+Received: from fmsmsx901.amr.corp.intel.com ([10.18.126.90])
+ by fmviesa003.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 20 Oct 2026 02:18:41 -0700
+Received: from FMSMSX901.amr.corp.intel.com (10.18.126.90) by
+ fmsmsx901.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.49; Tue, 20 Oct 2026 02:18:41 -0700
+Received: from fmsedg902.ED.cps.intel.com (10.1.192.144) by
+ FMSMSX901.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.49 via Frontend Transport; Tue, 20 Oct 2026 02:18:41 -0700
+Received: from SN4PR0501CU005.outbound.protection.outlook.com (40.93.194.5) by
+ edgegateway.intel.com (192.55.55.82) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.49; Tue, 20 Oct 2026 02:18:40 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=M0680DDycgyd0t/R4soDEaMFMlzlmLLyEOoUbp5SxRzEEReqsfZWNnAJEoN5/6LFrERCo83pL7mI6pWOUXmxo72Wsb4Ti/gkzku6y8Ce120ODAHkUPGSo4oOz59XMAsRq9Nm2X6sx9Hst9GF1hXo3ivVgPp/zEE2rHCwmImqfiWes3vNHdoO6rNqSUnGZH5Wp5c/aHcJVB15xEpYGkclWwDB2lDyEt5V8OyckE+Wj3NnGeXXNxKXJuxiPHYNd+yUgmRhK8Lfwi7+Q8Hoz0zVtOteLrRPtZVtTr4n17/5BKjPV6ZGr3/Ra4ho8wJ2JmZBjfSyblV8wzQg/UvXrzZb1w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=wdECPA+tSgWP98+ShqOszoWHNf0AjVVJJKgyDhye4i0=;
+ b=b6y4TdqoHMIcU0iATSDxpNl8w3H1V6PDuBvuc01kKPkMnNiwcOoFjdBbBd+nCXxFG6ANmJgOOYNPGV0czZyY80gFZMk3ZvVXIdTB4cWSs5iRzZ7Lge3j62+fUBfhPK/9y70jThg7X4ichkIggxgg0//DrwZkyzl6ZwxtbgUWJzz3eksYAA6mf1kGjCGbb/eqaWOG+Lh+WPXC4gkNQtKq+hNvjXuouIQxCDNRtxARAN9vKkk2TuVaoyOUKNZGRf9EtjdKuM50KljrS600HbTEQ1n0e1CDLFbBrqZtLbBBb3WbNeElvyhJgielD1499IWttyOnzTBA7PsWEb1LIk0pdQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Received: from LV3PR11MB8508.namprd11.prod.outlook.com (2603:10b6:408:1b4::8)
+ by CC6PR11MB058488.namprd11.prod.outlook.com (2603:10b6:170:200::16)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.522.19; Tue, 20 Oct
+ 2026 09:18:33 +0000
+Received: from LV3PR11MB8508.namprd11.prod.outlook.com
+ ([fe80::a1e8:1786:e5d1:8e51]) by LV3PR11MB8508.namprd11.prod.outlook.com
+ ([fe80::a1e8:1786:e5d1:8e51%5]) with mapi id 15.21.0522.017; Tue, 20 Oct 2026
+ 09:18:33 +0000
+Message-ID: <62a43d55-f114-45a5-824f-c09f87bea537@intel.com>
+Date: Tue, 20 Oct 2026 11:24:27 +0200
+User-Agent: Mozilla Thunderbird
+From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Subject: Re: [PATCH 2/5] ice: retain the adapter throughout hardware
+ initialization and teardown
+To: Aaron Ma <aaron.ma@canonical.com>, Tony Nguyen
+ <anthony.l.nguyen@intel.com>, Andrew Lunn <andrew+netdev@lunn.ch>, "David S.
+ Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>, "Jakub
+ Kicinski" <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, "Alexander
+ Lobakin" <aleksander.lobakin@intel.com>, Richard Cochran
+ <richardcochran@gmail.com>, <netdev@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>
+CC: Jacob Keller <jacob.e.keller@intel.com>, "moderated list:INTEL ETHERNET
+ DRIVERS" <intel-wired-lan@lists.osuosl.org>
+References: <20261019105155.3793063-1-aaron.ma@canonical.com>
+ <20261019105155.3793063-3-aaron.ma@canonical.com>
+Content-Language: en-US
+In-Reply-To: <20261019105155.3793063-3-aaron.ma@canonical.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: TL0P290CA0015.ISRP290.PROD.OUTLOOK.COM (2603:1096:950:5::7)
+ To LV3PR11MB8508.namprd11.prod.outlook.com
+ (2603:10b6:408:1b4::8)
+X-Archived-By: <archiver.kernel.org>
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: LV3PR11MB8508:EE_|CC6PR11MB058488:EE_
+X-MS-Office365-Filtering-Correlation-Id: dc25f8b4-4ccd-4f59-f3fa-08df2e8b1d2d
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+ ARA:13230040|376014|23010399003|366016|1800799024|7416014|6133799003|18002099003|22082099003|921020|11063799006|4143699003|10067099003|261009223027099003|56012099006;
+X-Microsoft-Antispam-Message-Info: hk9Cu/wJw/NNKQBf8VHr4OW6bNy+BPFtd2brbihkVNiSQhd5twWKotUcrfFmx5ArF2CbqLdHyE8rz/mXhuwUEN7Elik/PqUCJZGsjBbPVXBuW9XuKYz6ISqnpCyuNr3sEfqfxkIj+CFUZrb3cbJRZbCqtQh6p9ozgs4DLc5zccLOhJzGelFSX9zc/+3Xcn+tQhhjyHtRY0mWx3g0Gu0q2esLd1H+P3dOw6DX8u0Km+r77lp2a6sYbyFhK3gGFa51x13I/tB4MJdehFzh+uH6YFIBYmANFQvrzxuw07pivcoJTr4CyoyxdrbJvoyjrkbwipvgIDkxRpxDG3LlQMb1lvsJkiyMX4U8YooFzKnQvpUiWQNDdQAiMXvSIKcG+18VipoKiCxEFSy4FnWJMp9jK9e0BRr8MaAFRx+ZXHdlZA1WbXH0MHwkMP6A3o6AJc47ZHERSIutW2L3WkI/hDeGIJEODP3xKomI/jjMJzP6mFjyLKpQqN316m+H8MqHtvoWVOYBKZseEQwUtg9g4QKxrvXDC5opVH/1vaSKGjBc31BUwTO3zW78xSqz4rivbIaK2nxXyjThp4Zuo7IEbsgKcKVpg7lWx6v2uLevkGjFP1L8LwGKxBt/MItRJ4H7TROKNgEBYTQhLK0F79SwzxdwG05OF2zmF1PV+3ZHryJxhGehVKOSsm04FG6ZxI5miDQ+NQgaD/m/uNNFVBaOcuV5uQ==
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:LV3PR11MB8508.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230040)(376014)(23010399003)(366016)(1800799024)(7416014)(6133799003)(18002099003)(22082099003)(921020)(11063799006)(4143699003)(10067099003)(261009223027099003)(56012099006);
+ DIR:OUT; SFP:1101; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?MWFzdXB3dW4vdVVHTW0va242N0JPS0pMcGtwODEwdEFPTUU5cm5UWlBLL1gz?=
+ =?utf-8?B?Mm1RVWtPMlJIb0tYL3o5eXZTYmxrYVpIcUZCV2lWb0JYM3YvZXdSNE9RNm1V?=
+ =?utf-8?B?bEFBVzY0b1pWL1RtRUdYbTdPZ2JmaEVhTWpWbGdiYVREWmxTVGlNczVXQURo?=
+ =?utf-8?B?aHNld2JkKzFBZEl4VDJIVlYwVzNBWlo3d1pYN2JlUmcxeXZQbFF6RmNTSmNq?=
+ =?utf-8?B?SURjOUZybWRySWZWMkF5TWFKTEk2emhXNGdvTnJ1bWVDMm1TR01MVGRxUXM4?=
+ =?utf-8?B?RHFMVHN1M1k2cENzMk1wRmY0TkhyV0xUSnBvMGJNVnFId0RMSnhGdkI4aVpt?=
+ =?utf-8?B?NTdMUSt6R25NWjROQlByWi94dzkzYmxKU25PSHdOYWNFczFrb0lpbWJhcEpj?=
+ =?utf-8?B?RVBDejFnNGEvVW5GTWdmTmtMNlNwVk4zNXZGNjB6TSsxUTQ4Q2poTVZtSW5t?=
+ =?utf-8?B?WGE0VlNKTlBlc0lzRURyZzhWTGFvYXlCcnRZcytYaVhNdTNYZXViUkpsemM4?=
+ =?utf-8?B?N1MvL2ptZzlSalZhMmQ1TW9ZUk1SekpmOVQvY1FpVyswak1CYW9XR05sY1dy?=
+ =?utf-8?B?QXM5UUp0VFo4c3U3UGN1Sk9DZmgwazZJN29SVGJnRm5KZHREeFYzbVZMN2Ir?=
+ =?utf-8?B?S2RTQnhwMHlPdE56UXlrRnN3cVp0WC94aVZuNHI4Rk9TOENGSjMvM2RpQW9T?=
+ =?utf-8?B?UGRER3pmcnhBaStNTHlCZUtVUDZhdlJadENROWNFVHVoOHRubHpDbEtGT1JF?=
+ =?utf-8?B?dCtkcjliREtSSEZMbm04ejZuL2tnaDJ6TXhXWU5kSENQcE5QV3d5NVlsMTZw?=
+ =?utf-8?B?enRjTmVWZkxKZkFhYTJEMHpJOGhTMi9talg4YjN1b01wQXdkbXRBWDdKeUtO?=
+ =?utf-8?B?M2dhYmxQaiswdUcxMEhJVWo2VG9sczRaRjNHck44MWhFKzR0T21GZS8zNDNs?=
+ =?utf-8?B?ZmNYZktxTXBhSUJKSVBDQjlLZ2tXNUhyQTRER3RyZUdVV0x1K0QvVDEwUjNj?=
+ =?utf-8?B?MnAvQUVlVmwyYVVqZXYvQ1c1UDlZa1kyQlpvTkFJTzdSS0xBdTViK0VoTnEz?=
+ =?utf-8?B?RHFoVzRBVU11SzRpM2o4NXhlMjgybTJMcGRuOFo2U0JFdjJ3ZEhoRkJpR2tZ?=
+ =?utf-8?B?TnFXMktlRE9XQkQ0L3VLU1FKTUZyR0NJcFVRdVdGS0J1cXlLRnZvUlV3MzMv?=
+ =?utf-8?B?bEdwSFBNUFZERnp0OWwyRlVhYkhMZmt4VWlHN3ZaMUw2UFUzTU1EY0VTdnlW?=
+ =?utf-8?B?Q2JPNVU3ZEdaNlNiZ3ZFUUh0bkJjTW5SWjlEeUdQRGFHUGRIaGhtUkpEZ0tO?=
+ =?utf-8?B?QlNCVER2a01GNlN1WE1IMTNlWEwzN1lrbjNURWVUY0J5eGVObGNKRTRUUi80?=
+ =?utf-8?B?WjFUYWhhNnh4aTlwWmY2SnJxaWMyL3hTWjlKcHEyVWZhbDN5WjA5VVBjOWZr?=
+ =?utf-8?B?KzV0cU9DQ2ZVR1BWVU4ySy9qblNibnFmc3gyZlNlb2RqbU94SDdpdjRqYXJF?=
+ =?utf-8?B?VnlDU0Q0eklPOUZxemNNM0tDYzRIWjc0QkNwTWJleFZsRTdvSjNJV2k1UGw3?=
+ =?utf-8?B?NklhRnZsUzYxTWQzUDJpVGJoQ3ZkMUlBS2J2OWxRcnE0a0ZSbThKWURyakcr?=
+ =?utf-8?B?alhGNGwyZ0xxLzR3SFBFL1R5cm9BcUhnQkFKaFJVUlBmODZoRWIwMHNPTU1W?=
+ =?utf-8?B?TUtEQTNiN0Z2UWlDZTBMb0FkcCtNTGFPYkFFM2xKUFVqZWdOcUd5NEd5U2RL?=
+ =?utf-8?B?VGt3Z2l5L0ZrL0d1QjNtY002cUNOT09HZys5OSsya1d3T1dNVG1SaUMzMWow?=
+ =?utf-8?B?S2lJb251aTIrSWRlQ29pMmYydXNpOWpXVlBrV2hsV1UrTVZDaTN1K1lkcUZ0?=
+ =?utf-8?B?UnVQR1BZS1piSGwyRlRSWm5vbmRzZll2cnh1T2x3S0xqN0xObmxIVG9XRTUw?=
+ =?utf-8?B?S2RweUllTmtya1RQZ2czd05kWWt4eTQ5RS9hbk9aT09wMzdoNnBjOURkNTNY?=
+ =?utf-8?B?SGJWcjM5UWZSUjE3bExaNXBISCt1ZUZMeDdScHhNUUxRbTY3djNYcEEyWHVI?=
+ =?utf-8?B?MEtBRjRyV2xUQlgzSzMvRlUvK2VXTzM5OVhiVnM0UWxYL3FaUzdDczJ1S1Bz?=
+ =?utf-8?B?RWxIZjFUZ1FwVkJVNVA4cjk1dUs1TjFUTGloeFI5M1BMVE1TR2NLb1VDSjJ0?=
+ =?utf-8?B?eU1oMjgyMEY3SjROTm90aHBibHZEUTZmL25rTnZudWpSZFFFVnlzVTZvRzJR?=
+ =?utf-8?B?QitTTjdSZDJKUzRROXFsZERXbktGZEJUY0NkanVWM3ZkbVk3WlB5QWNYYjBM?=
+ =?utf-8?B?ek9tVEtWWXJ4MUpka2RzeEp0NnU5Q2s5YU5MbWJOREY0aGs2bFJuOE9PVTRn?=
+ =?utf-8?Q?bkKgz4sf+aX+ec9U=3D?=
+X-Exchange-RoutingPolicyChecked: KjAZll801l2Um60yc664p7WJtSJ5LbGE0k991y0vw4PTdhXpQ2r0FE9HlrTXJ1PulcGz4dP0eQSfKbCHBJFaEpQaJlyYYNn0xduMuxIMccBZ9oGIh7jQbwosFeMrmMTP48XvXk1QyBpxR70iH/cK3hlj84ubSN/sP3OCQeVHhzQt1FayebT27VHxeJOnR2T6pTDRBXllPdGvJ6G/+E3Fz/4Rl4F1vY7QH+nMhgdf+r/3UsvfytP3ean79sAdueZ9W0XHdvNhmyS6pzdJAtJJrb+5vuVYJiaOMlT9pjL8JhCwhBi6dX5WhekWqBs9GdTfHqS4y817GRn8aMKb9pnUaw==
+X-MS-Exchange-CrossTenant-Network-Message-Id: dc25f8b4-4ccd-4f59-f3fa-08df2e8b1d2d
+X-MS-Exchange-CrossTenant-AuthSource: LV3PR11MB8508.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Oct 2026 09:18:33.6965 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: lgGo/BhB34kyPRMCxlPq7wpmhKy7dYIhrIfwA7Jy0uZXGiQjXAgZttciRgJkgUmqd6On6Oa69caSf7Ha2gIzWKIIKP1KBTNXvkFYtqB896M=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CC6PR11MB058488
+X-OriginatorOrg: intel.com
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -141,241 +296,126 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Reply-To: sashiko-reviews@lists.linux.dev
-X-Spam-Status: No, score=-11.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-17.7 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=4.0.1
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_NONE,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
-X-Archived-By: <archiver.kernel.org>
 
-Thank you for your contribution! Sashiko AI review found 4 potential issue(=
-s) to consider:
-- [High] ice: TOCTOU race on cdev->adev in ice_setup_tc() causing NULL dere=
-ference
-- [High] ice: dropped AFTER_TC_CHANGE event and rate tree teardown in ice_p=
-f_dcb_cfg()
-- [High] ice: lock inversion between adev_mutex and tc_mutex in ice_setup_t=
-c()
-- [Medium] ice: ice_setup_tc() aborts non-failable mqprio offload teardown =
-on trylock
---
+On 10/19/26 12:51, Aaron Ma wrote:
+> Adapter-scoped synchronization must be available to Admin Queue users
+> from initial queue creation through the last teardown command. Probe
+> currently obtains its adapter reference only after hardware and package
+> initialization, and error cleanup and removal drop it before hardware
+> teardown.
+> 
+> Acquire the reference before either normal hardware initialization or
+> firmware recovery-mode initialization. Release it after hardware and
+> device cleanup, balancing recovery-mode probe failures and removal too.
+> 
+> This establishes the lifetime prerequisite for moving package ownership
+> exclusion from a module-global mutex to the shared adapter.
+> 
+> Signed-off-by: Aaron Ma <aaron.ma@canonical.com>
 
-commit bc1b4cca10360a37e77b845d47a02beb259d8055
-Author: Petr Oros <poros@redhat.com>
+it was me to move hw init before adapter init, to make hw details
+readily accessible to the adapter
 
-ice: do not block on the aux device lock in ndo_setup_tc
+but I agree that SW lock protection covering HW reinit will be great,
+and my needs could be achieved by other means, even if less elegant
 
-This commit replaces device_lock() with device_trylock() on the RDMA
-auxiliary device in the TC_SETUP_QDISC_MQPRIO path of ice_setup_tc(),
-returning -EBUSY when the lock is contended to avoid deadlocking with
-the RDMA auxiliary driver probe under the RTNL lock.
+so, I'm happy with your patch
+OTOH I have a big series that git-conflicts, would be easiest if your
+series will be merged first (so I will adjust), but I don't want to be
+delayed (will be CCing you on it going forward)
 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethe=
-rnet/intel/ice/ice_main.c
-> index 595a2099c9564..4ed62f1498f1f 100644
+the real thing is of course the 3rd patch not this one
+
+> ---
+>   drivers/net/ethernet/intel/ice/ice_main.c | 31 +++++++++++++----------
+>   1 file changed, 17 insertions(+), 14 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+> index 164428ba116a0..ddebb28b2454f 100644
 > --- a/drivers/net/ethernet/intel/ice/ice_main.c
 > +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-> @@ -9556,7 +9556,11 @@ ice_setup_tc(struct net_device *netdev, enum tc_se=
-tup_type type,
->  		cdev =3D pf->cdev_info;
->  		if (cdev && cdev->adev) {
->  			mutex_lock(&pf->adev_mutex);
-> -			device_lock(&cdev->adev->dev);
-> +			if (!device_trylock(&cdev->adev->dev)) {
-> +				mutex_unlock(&pf->adev_mutex);
-> +				netdev_dbg(netdev, "RDMA auxiliary device is busy, try again\n");
-> +				return -EBUSY;
-> +			}
+> @@ -5242,27 +5242,29 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+>   		hw->debug_mask = debug;
+>   #endif
+>   
+> -	if (ice_is_recovery_mode(hw))
+> -		return ice_probe_recovery_mode(pf);
+> +	adapter = ice_adapter_get(pdev);
+> +	if (IS_ERR(adapter))
+> +		return PTR_ERR(adapter);
+> +	pf->adapter = adapter;
+> +
+> +	if (ice_is_recovery_mode(hw)) {
+> +		err = ice_probe_recovery_mode(pf);
+> +		if (err)
+> +			ice_adapter_put(pdev);
+> +		return err;
+> +	}
+>   
+>   	err = ice_init_hw(hw);
+>   	if (err) {
+>   		dev_err(dev, "ice_init_hw failed: %d\n", err);
+> -		return err;
+> +		goto unroll_adapter;
+>   	}
+>   
+>   	ice_init_dev_hw(pf);
+>   
+> -	adapter = ice_adapter_get(pdev);
+> -	if (IS_ERR(adapter)) {
+> -		err = PTR_ERR(adapter);
+> -		goto unroll_hw_init;
+> -	}
+> -	pf->adapter = adapter;
+> -
+>   	err = ice_init_dev(pf);
+>   	if (err)
+> -		goto unroll_adapter;
+> +		goto unroll_hw_init;
+>   
+>   	err = ice_init(pf);
+>   	if (err)
+> @@ -5287,12 +5289,12 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+>   	ice_deinit(pf);
+>   unroll_dev_init:
+>   	need_dev_deinit = true;
+> -unroll_adapter:
+> -	ice_adapter_put(pdev);
+>   unroll_hw_init:
+>   	ice_deinit_hw(hw);
+>   	if (need_dev_deinit)
+>   		ice_deinit_dev(pf);
+> +unroll_adapter:
+> +	ice_adapter_put(pdev);
+>   	return err;
+>   }
+>   
+> @@ -5377,6 +5379,7 @@ static void ice_remove(struct pci_dev *pdev)
+>   		scoped_guard(devl, priv_to_devlink(pf)) {
+>   			ice_deinit_devlink(pf);
+>   		}
+> +		ice_adapter_put(pdev);
+>   		return;
+>   	}
+>   
+> @@ -5403,11 +5406,11 @@ static void ice_remove(struct pci_dev *pdev)
+>   	ice_setup_mc_magic_wake(pf);
+>   	ice_set_wake(pf);
+>   
+> -	ice_adapter_put(pdev);
+>   	ice_deinit_hw(&pf->hw);
+>   
+>   	ice_deinit_dev(pf);
+>   	ice_aq_cancel_waiting_tasks(pf);
+> +	ice_adapter_put(pdev);
+>   	set_bit(ICE_DOWN, pf->state);
+>   }
+>   
 
-[Severity: High]
-Can cdev->adev become NULL before mutex_lock(&pf->adev_mutex) is
-acquired, causing device_trylock(&cdev->adev->dev) to dereference a NULL
-pointer?
-
-In drivers/net/ethernet/intel/ice/ice_idc.c, ice_unplug_aux_dev() clears
-pf->cdev_info->adev under pf->adev_mutex:
-
-drivers/net/ethernet/intel/ice/ice_idc.c:ice_unplug_aux_dev() {
-	...
-	mutex_lock(&pf->adev_mutex);
-	adev =3D pf->cdev_info->adev;
-	pf->cdev_info->adev =3D NULL;
-	mutex_unlock(&pf->adev_mutex);
-
-	auxiliary_device_delete(adev);
-	auxiliary_device_uninit(adev);
-}
-
-ice_unplug_aux_dev() and ice_plug_aux_dev() can run without rtnl_lock(),
-for example from ice_service_task() in
-drivers/net/ethernet/intel/ice/ice_main.c when ICE_FLAG_UNPLUG_AUX_DEV or
-ICE_FLAG_PLUG_AUX_DEV is processed, from ice_prepare_for_reset(), or from
-the devlink RoCE/iWARP parameter callbacks.
-
-If ice_unplug_aux_dev() clears cdev->adev between the unlocked
-if (cdev && cdev->adev) check and mutex_lock(&pf->adev_mutex) in
-ice_setup_tc() (or in ice_set_channels() in
-drivers/net/ethernet/intel/ice/ice_ethtool.c from the preceding patch in
-this series), cdev->adev will be NULL when device_trylock(&cdev->adev->dev)
-is called. Conversely, if ice_plug_aux_dev() assigns cdev->adev just after
-the unlocked check, ice_setup_tc() skips pf->adev_mutex and reconfigures
-queues concurrently with auxiliary device registration. Should
-pf->adev_mutex be acquired before checking cdev->adev, matching
-ice_send_event_to_aux()?
-
-[Severity: Medium]
-What happens if device_trylock(&cdev->adev->dev) fails when ice_setup_tc()
-is called to tear down an existing MQPRIO offload (when
-mqprio_qopt->qopt.hw =3D=3D 0)?
-
-When an offloaded MQPRIO qdisc is deleted or replaced (on a PF where
-cdev->adev is registered and no RDMA driver is bound),
-mqprio_destroy() -> mqprio_disable_offload() in net/sched/sch_mqprio.c
-invokes ndo_setup_tc() and ignores the return value:
-
-net/sched/sch_mqprio.c:mqprio_disable_offload() {
-	...
-	case TC_MQPRIO_MODE_DCB:
-	case TC_MQPRIO_MODE_CHANNEL:
-		dev->netdev_ops->ndo_setup_tc(dev, TC_SETUP_QDISC_MQPRIO,
-					      &mqprio);
-		break;
-}
-
-If another thread transiently holds device_lock(&cdev->adev->dev) (such as
-a sysfs attribute read or bus probe/rescan), returning -EBUSY here skips
-ice_setup_tc_mqprio_qdisc():
-
-drivers/net/ethernet/intel/ice/ice_main.c:ice_setup_tc_mqprio_qdisc() {
-	...
-	if (!hw) {
-		clear_bit(ICE_FLAG_TC_MQPRIO, pf->flags);
-		vsi->ch_rss_size =3D 0;
-		memcpy(&vsi->mqprio_qopt, mqprio_qopt, sizeof(*mqprio_qopt));
-		goto config_tcf;
-	}
-}
-
-Because the qdisc destruction still completes in the core while
-ice_setup_tc_mqprio_qdisc() is skipped, won't this leave
-ICE_FLAG_TC_MQPRIO set, leak the ADQ channel VSIs on vsi->ch_list by
-skipping ice_remove_q_channels(), and leave netdev TC state and queue
-counts out of sync with no way for userspace to retry the teardown?
-
->  			locked =3D true;
->  			if (cdev->adev->dev.driver) {
->  				netdev_err(netdev, "Cannot change qdisc when RDMA is active\n");
-
-[Severity: High]
-Does holding pf->adev_mutex and cdev->adev->dev.mutex across
-mutex_lock(&pf->tc_mutex) in ice_setup_tc() invert the lock order against
-the DCB paths?
-
-In ice_setup_tc() in drivers/net/ethernet/intel/ice/ice_main.c, when
-cdev->adev->dev.driver is NULL, the lock acquisition order is:
-
-  rtnl_lock -> pf->adev_mutex -> cdev->adev->dev.mutex -> pf->tc_mutex
-
-However, the DCB netlink handlers in
-drivers/net/ethernet/intel/ice/ice_dcb_nl.c (such as ice_dcbnl_setets(),
-ice_dcbnl_setpfc(), ice_dcbnl_setapp(), ice_dcbnl_delapp(), and
-ice_dcbnl_cee_set_all()) acquire pf->tc_mutex before calling
-ice_pf_dcb_cfg() -> ice_send_event_to_aux(), which acquires
-pf->adev_mutex:
-
-drivers/net/ethernet/intel/ice/ice_dcb_nl.c:ice_dcbnl_setets() {
-	...
-	mutex_lock(&pf->tc_mutex);
-	...
-	err =3D ice_pf_dcb_cfg(pf, new_cfg, true);
-	...
-}
-
-And in drivers/net/ethernet/intel/ice/ice_dcb_lib.c,
-ice_dcb_process_lldp_set_mib_change() and ice_dcb_rebuild() run from
-ice_service_task() without rtnl_lock() and acquire pf->tc_mutex before
-both rtnl_lock() and pf->adev_mutex:
-
-drivers/net/ethernet/intel/ice/ice_dcb_lib.c:ice_dcb_process_lldp_set_mib_c=
-hange() {
-	...
-	mutex_lock(&pf->tc_mutex);
-	...
-	rtnl_lock();
-	...
-	ice_pf_dcb_recfg(pf, false);
-		-> ice_send_event_to_aux()
-			-> mutex_lock(&pf->adev_mutex);
-}
-
-Could this trigger a lockdep circular locking dependency warning or an
-ABBA deadlock if ice_dcb_process_lldp_set_mib_change() or
-ice_dcb_rebuild() holds pf->tc_mutex while waiting for rtnl_lock() or
-pf->adev_mutex, at the same time ice_setup_tc() holds rtnl_lock() and
-pf->adev_mutex while waiting for pf->tc_mutex?
-
-[Severity: High]
-Also related to the series change in ice_send_event_to_aux() in
-drivers/net/ethernet/intel/ice/ice_idc.c: when ice_send_event_to_aux() uses
-device_trylock(&cdev->adev->dev), can DCB reconfiguration leave the
-devlink rate tree torn down or leave RDMA QPs permanently suspended?
-
-First, in ice_pf_dcb_cfg() in
-drivers/net/ethernet/intel/ice/ice_dcb_lib.c,
-ice_tear_down_devlink_rate_tree(pf) is called before sending
-IIDC_RDMA_EVENT_BEFORE_TC_CHANGE:
-
-drivers/net/ethernet/intel/ice/ice_dcb_lib.c:ice_pf_dcb_cfg() {
-	...
-	if (ice_dcb_get_num_tc(new_cfg) > 1) {
-		...
-		ice_tear_down_devlink_rate_tree(pf);
-
-		set_bit(ICE_FLAG_DCB_ENA, pf->flags);
-	}
-	...
-	set_bit(IIDC_RDMA_EVENT_BEFORE_TC_CHANGE, event->type);
-	if (!ice_send_event_to_aux(pf, event)) {
-		assign_bit(ICE_FLAG_DCB_ENA, pf->flags, dcb_ena);
-		kfree(event);
-		ret =3D -EBUSY;
-		goto free_cfg;
-	}
-}
-
-If ice_send_event_to_aux() fails its trylock and returns false,
-ICE_FLAG_DCB_ENA is restored, but the devlink rate tree has already been
-torn down.
-
-Second, when IIDC_RDMA_EVENT_BEFORE_TC_CHANGE is delivered,
-icrdma_iidc_event_handler() -> icrdma_prep_tc_change() in
-drivers/infiniband/hw/irdma/icrdma_if.c sets
-iwdev->vsi.tc_change_pending =3D true and suspends RDMA QPs, and
-ice_send_event_to_aux() immediately releases cdev->adev->dev.mutex. Later,
-ice_pf_dcb_recfg() sends IIDC_RDMA_EVENT_AFTER_TC_CHANGE via a separate
-ice_send_event_to_aux() call and ignores the return value:
-
-drivers/net/ethernet/intel/ice/ice_dcb_lib.c:ice_pf_dcb_recfg() {
-	...
-	set_bit(IIDC_RDMA_EVENT_AFTER_TC_CHANGE, event->type);
-	ice_send_event_to_aux(pf, event);
-	kfree(event);
-}
-
-If &cdev->adev->dev is contended when IIDC_RDMA_EVENT_AFTER_TC_CHANGE is
-sent, ice_send_event_to_aux() drops the event, so the RDMA driver never
-receives AFTER_TC_CHANGE to clear tc_change_pending and resume its QPs.
-
-[ ... ]
-
->
-> --=20
-> 2.51.2
->
-
---=20
-Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261019065301.3983=
-537-1-poros@redhat.com?part=3D3
