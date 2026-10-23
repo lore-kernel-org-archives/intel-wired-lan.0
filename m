@@ -1,296 +1,134 @@
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 19BD3606A320
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 23 Oct 2026 14:56:44 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA92B606A337
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 23 Oct 2026 19:28:16 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=2MmKbuS0;
-	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Sw/cuGtE
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=KD94f7FB;
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=K9L3IjIv
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id EE0D540981;
-	Fri, 23 Oct 2026 14:56:43 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id B8EE460A3D;
+	Fri, 23 Oct 2026 19:28:16 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id SxUM2m42TmrA; Fri, 23 Oct 2026 19:28:15 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 8AC9E60A45
+Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1792783695;
+	b=DIdzgeoZC5dP4XwTJmTsvfCoqcRyetH/qulrZ+l5x4POcHc0TNzVWDWyS8WWxjiAhpA3
+	 yrnyyhKkNpAmBEAvXP+mqm1AREUBxoY6oH0KUrBQJZb1e/Ko+kDIfqlR3iyn5KLGiTskW
+	 Lw3J19iMpPRHh+5xdqw2QwP3b/CLbuPLYCsBNq8BQTnRTZBaSYFecVls/RRtyGcqcBxmC
+	 UnUDov8BI0BGmIohPT2Sl8OV2G7yP3OrxY2Mrc7EwukeTZcl+/TWfZX+ppnqRyiqQOzSA
+	 q5GbotkR/kxEYfLd2WCWiyi7loNtF4E543sP4KwkkHpA31D0aQrB/YdK8bXT81q27cA==
+ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
+	c=relaxed/relaxed; t=1792783695;
+	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
+	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
+	 Received:DKIM-Signature:Message-ID:From:Subject:To:Cc:In-Reply-To:
+	 References:Content-Type:Content-Transfer-Encoding:Date:X-BeenThere:
+	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Reply-To:Errors-To;
+	bh=L65+TZ8C/s20AWM+38laNw3uQWtlYumAuKoh7lqRum8=;
+	b=nfivxe5QKngF18fOcluDzK+OOkAwIcN245vqRs4yN2JXRMQ8NFsLU+2Swau7Y8peu98x
+	 DiWodgv+ycVJeZDxtLENqgH5d34/uKy2tSfIbskLGTEFPYkuoOlF2cZ8SPJnxML4TJo1y
+	 35NmXW88qG3uJZsrtOppdwAIfwpCMp4S8wie25a0d+pTbwcQv501RYU8600RNEbIle/kO
+	 U+kt3euCEXkaFE0mYu7KEa/zJx+yPojVKgwNvBj2VG3eUrZ3FUd55FAOJvu8yLpkr25mz
+	 UMiM6OlrTfSON1HBhmTlg5QjifNWqHvwEWs/UyH8k57IV32TA5a8CtoVt6oSELJYaCg==
+ARC-Authentication-Results: i=2; smtp3.osuosl.org; 
+	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1792783695;
+	bh=L65+TZ8C/s20AWM+38laNw3uQWtlYumAuKoh7lqRum8=;
+	h=From:Subject:To:Cc:In-Reply-To:References:Date:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Reply-To:From;
+	b=KD94f7FBcAE8IM4/d/DUU/Ik3iqiWlsgXUjn3OxzabRga2Hh6nO19zgOnCc1Q+N3M
+	 rJwwPoyh052ghAIGMjlKe6d8zli8Yb3kN7L4D60wdT7MkdF2/IV9zt7y/YAoMSi5ts
+	 1uwip0uEnQ7o+syUxiM3NjErKLu1JG7UTm8hpKuOJAROI997Oe/s5FG77bhMB212dY
+	 nPhTvvPdYcdgrGbVp9KWkemK3cx6gvp8twK5iltsK3wkNx7pYC5OERkyirYCilxAHD
+	 3AWzYZjmU9bKjh9NG0uoOcDBTOSNX8Ck0QYCDjhJQsZ2lXUKZiv84Gu83FT6yuBVhx
+	 MheGXIx2ykIMg==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp3.osuosl.org (Postfix) with ESMTP id 8AC9E60A45;
+	Fri, 23 Oct 2026 19:28:15 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 32E06235
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 23 Oct 2026 19:28:14 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id 2467340A5A
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 23 Oct 2026 19:28:14 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id aJcISxXYaIEC; Fri, 23 Oct 2026 14:56:43 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org F1417409A1
-Authentication-Results: smtp4.osuosl.org; arc=fail smtp.remote-ip=140.211.166.142
-ARC-Seal: i=3; d=osuosl.org; s=arc; a=rsa-sha256; cv=fail; t=1792767403;
-	b=sl3KFAqevCfK5W91zKe47Le5LHb+IS6sN4X48enbsroMiy2DST+ruOKQt6pE/0++vhj4
-	 3kMBX3mF7DnK5OV4Ixc6gJFdy/vwgyUsYuEKKPhoOja4LLNorX43MFyE/zuxMX6mzXtbk
-	 Ko8bvHQQrICjZ2QSelLPAlV1zYPLHD6Op2vYizWPKc/mHcBVK8JYCR31cc5u/W7dFHUqy
-	 6rvixn83PnHaUQxJ9dwt9tXd0RFJtGnV77hqTBeGHzgQmndHYjVt8+mU7VViBQf16FQHC
-	 UwvSgMTUU5ksszKrX5ydS2gmqt0hCKn0pYQIlJZ0Sxnp3mfpXSwTfwcBUS+QN4ZeTMg==
-ARC-Message-Signature: i=3; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1792767403;
-	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
-	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
-	 DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-IronPort-AV:
-	 X-IronPort-AV:Received:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-ExtLoop1:
-	 X-IronPort-AV:Received:Received:Received:Received:Received:Received:
-	 From:To:CC:Subject:Thread-Topic:Thread-Index:Date:Message-ID:
-	 References:In-Reply-To:Accept-Language:Content-Language:
-	 X-MS-Has-Attach:X-MS-TNEF-Correlator:x-ms-publictraffictype:
-	 x-ms-traffictypediagnostic:x-ms-office365-filtering-correlation-id:
-	 x-ld-processed:x-ms-exchange-senderadcheck:
-	 x-ms-exchange-antispam-relay:x-microsoft-antispam:
-	 x-microsoft-antispam-message-info:x-forefront-antispam-report:
-	 x-ms-exchange-antispam-messagedata-chunkcount:
-	 x-ms-exchange-antispam-messagedata-0:Content-Type:
-	 Content-Transfer-Encoding:MIME-Version:
-	 X-Exchange-RoutingPolicyChecked:X-MS-Exchange-CrossTenant-AuthAs:
-	 X-MS-Exchange-CrossTenant-AuthSource:
-	 X-MS-Exchange-CrossTenant-Network-Message-Id:
-	 X-MS-Exchange-CrossTenant-originalarrivaltime:
-	 X-MS-Exchange-CrossTenant-fromentityheader:
-	 X-MS-Exchange-CrossTenant-id:X-MS-Exchange-CrossTenant-mailboxtype:
-	 X-MS-Exchange-CrossTenant-userprincipalname:
-	 X-MS-Exchange-Transport-CrossTenantHeadersStamped:X-OriginatorOrg:
-	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
-	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=RnrfelN52PjZk0gZd9Y5uXLnWEDVXG4+u2JR5D5ajrc=;
-	b=sL2uwMRLKugZ3GEYM/IOVT4/DbRJw+kyWIJoeDMnhXcPZeSC4EjpktFU9DJ8G46x0wPS
-	 5L3hVtZ4ppd6lMmqLIEk2RqNLoztvIVpDexa+X4iTKjxEeHOyQQ/DZ9Y4h3cWd5zNxOx2
-	 Fb31B/zfv62AA2amEDqxjYOW9w+MOE7qo4HnIuMgVslACzlNzZJGvcp8JrGBBdo/dVQzK
-	 fNQS5rR8czlThQ4xEyl39c+NQsRwsm6MJMiuIHibbsJ6MDiSJsRsvC4Fj31bvkr3HMgZE
-	 xC11CSMvgG2on2yRlrBNU4zGo7hUCw4lS+5ySTmp0PdeiFg9I3qpQqN1dj0hIbiMUaA==
-ARC-Authentication-Results: i=3; smtp4.osuosl.org; 
-	arc=fail smtp.remote-ip=140.211.166.142
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1792767403;
-	bh=RnrfelN52PjZk0gZd9Y5uXLnWEDVXG4+u2JR5D5ajrc=;
-	h=From:To:CC:Subject:Date:References:In-Reply-To:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=2MmKbuS0H1sYNUqko9t26QUeBAntHYVQQ4VbFG/VL+QI55c5NuK1FEX3FjpjKYdU7
-	 fifCEySGNBU2MCM0hKAVjx0jVPUFNovXX69Rj2AOSfkPEhWgDAgSJBro2gCWL72EtQ
-	 FZoK82smvkhnBdAnRm1864J2nr7lHrTHwXj/qbdvERByHZMBDGQHdQQcoq8VjSZ+PW
-	 640MBKbB8X0N3JbaaIpdKziF3Vcj8+DvtauGMMVuv87x742u0EUMzUn1aZ8qUxlnqn
-	 uqoWw3/bRQgAEkOkBNKcfIvCsiCvziRRnffzAbQcewzbxliSWhKh+U+4arxxyvkoJR
-	 1nFew1LJZT+sQ==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id F1417409A1;
-	Fri, 23 Oct 2026 14:56:42 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id ED7CC49D
- for <intel-wired-lan@lists.osuosl.org>; Fri, 23 Oct 2026 14:56:41 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id D3375401DF
- for <intel-wired-lan@lists.osuosl.org>; Fri, 23 Oct 2026 14:56:41 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id SIm-MRuYD0ZP for <intel-wired-lan@lists.osuosl.org>;
- Fri, 23 Oct 2026 14:56:41 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org CBFD4401D2
-Authentication-Results: smtp2.osuosl.org; arc=pass header.oldest-pass=0
- smtp.remote-ip=198.175.65.9
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1792767401;
- b=WKEQ3I9As19vS7UNMNTEutOdS1SiPBS1DqB+gPh8TPPNRvIBSGCp8QQQCfBUdB1MobbD
- qosUeE0hDNizAZtOplytWG8X+yAHxS/h81+WS7G2YMeM1xad5Rxfg6SU3r2SaN0kdvsna
- 5FNT2b+LI6nHjO+QXcCrztkVD9DFQpjzJeT3q5R69txKadZWTDmi0DXSDw85+18/kEVLs
- JNQ+7IwtezOmqBxE+yp+ecoz0mi45Lizf1qtr45VxjDTZk3wZMjPiMTPkEw0ianSuOcQ4
- iBJ+OcCjlmtQZL6OJTRgmgPs/xd8tQ+re9AFQdFd3OsA+QsBKmTKQnch/EEBX4ZYYgQ==
-ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1792767401;
- h=Received-SPF:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
- X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
- X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Received:Received:
- Received:Received:Received:From:To:CC:Subject:Thread-Topic:
- Thread-Index:Date:Message-ID:References:In-Reply-To:Accept-Language:
- Content-Language:X-MS-Has-Attach:X-MS-TNEF-Correlator:
- x-ms-publictraffictype:x-ms-traffictypediagnostic:
- x-ms-office365-filtering-correlation-id:x-ld-processed:
- x-ms-exchange-senderadcheck:x-ms-exchange-antispam-relay:
- x-microsoft-antispam:x-microsoft-antispam-message-info:
- x-forefront-antispam-report:
- x-ms-exchange-antispam-messagedata-chunkcount:
- x-ms-exchange-antispam-messagedata-0:Content-Type:
- Content-Transfer-Encoding:MIME-Version:
- X-Exchange-RoutingPolicyChecked:X-MS-Exchange-CrossTenant-AuthAs:
- X-MS-Exchange-CrossTenant-AuthSource:
- X-MS-Exchange-CrossTenant-Network-Message-Id:
- X-MS-Exchange-CrossTenant-originalarrivaltime:
- X-MS-Exchange-CrossTenant-fromentityheader:
- X-MS-Exchange-CrossTenant-id:X-MS-Exchange-CrossTenant-mailboxtype:
- X-MS-Exchange-CrossTenant-userprincipalname:
- X-MS-Exchange-Transport-CrossTenantHeadersStamped:X-OriginatorOrg;
- bh=RnrfelN52PjZk0gZd9Y5uXLnWEDVXG4+u2JR5D5ajrc=;
- b=GNq+k8sPWQjj65h5AEfvq/TO4WXyWE20fTgdjrtpNjlsuGqrLsAO4uk/g8J3C3PTlejF
- BgRBUKn/i8YDj2nCTvWCPPfWDPNlvFVmwUVBebO7PqC/1zZfRIs8l93LYd1WBGPe8HKLB
- Aqhhyxhwd9d1QytxEBp3XpCiCh2i1Qyp8jjMkGJjzWwTA+rOwbYVAVq8vExx6w/5rZf9g
- Pl0mBEM2qfi3kGvWf941/NMoCyAkkkYo6zFIXUU19QjMAzJI+y1spV4aUfGmWPh+K4fgJ
- fu2Kk3nPHAO/iX4rpnp7CtJIjYhE/B2AwM2o0hez2SjCDbaO6wF2NFkrLueguSMYFAw==
-ARC-Authentication-Results: i=2; smtp2.osuosl.org; 
- dmarc=pass header.from=intel.com;
- dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b="Sw/cuGtE"; 
- arc=pass header.oldest-pass=0 smtp.remote-ip=198.175.65.9
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.9;
- helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
- receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Sw/cuGtE
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
- by smtp2.osuosl.org (Postfix) with ESMTPS id CBFD4401D2
- for <intel-wired-lan@lists.osuosl.org>; Fri, 23 Oct 2026 14:56:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1792767401; x=1824303401;
- h=from:to:cc:subject:date:message-id:references:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=Lr/7iD6zdWq55EL6dy/S4RuswmyqYSu08XkqypPWS+w=;
- b=Sw/cuGtEic0LnYE8oVN1VJZpRuYCmwMAUm7HvULNCnFcybGSLOSxOgok
- G1h2SHS29JRlU/rwrdd5i8d8bSqFphgXplQlmLqsaJyvo7lHXy3X3e6Zz
- T0aq5wz9DZwGoB89Wa/yvZyEE1pl092SuJ4IbR/3k/t46xFaqNi98ufFU
- K6mOhk9PcaApzmbtkNnKsCcKptfj1RVJx2j/Zwmkf3fnYqVLL6WguHj0V
- d+V74j5LV0y8WzM0wo8tLJSWOM81/SW/eHUvLrATrYtcWeKGHJH+yYu1d
- h2DEjdZ0f7w8blvEC7eWJsO/LHiP0epZeVy+Zsb98yKKa6tLczen9wkQi A==;
-X-CSE-ConnectionGUID: QcZO9/jcTYOJnJQB2bq1zw==
-X-CSE-MsgGUID: zPtnrMx9TtqCSKRnGf30nQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11944"; a="1408405"
-X-IronPort-AV: E=Sophos;i="6.27,174,1787036400"; 
-   d="scan'208";a="1408405"
-Received: from fmviesa012.fm.intel.com ([10.60.135.152])
- by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 23 Oct 2026 07:56:39 -0700
-X-CSE-ConnectionGUID: YwogONWMQXadWQEX98OVjA==
-X-CSE-MsgGUID: 6LteufvBTzC4MT/wRurI3w==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,174,1787036400"; 
-   d="scan'208";a="5421140"
-Received: from orsmsx902.amr.corp.intel.com ([10.22.229.24])
- by fmviesa012.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 23 Oct 2026 07:56:40 -0700
-Received: from ORSMSX901.amr.corp.intel.com (10.22.229.23) by
- ORSMSX902.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.49; Fri, 23 Oct 2026 07:56:38 -0700
-Received: from ORSEDG903.ED.cps.intel.com (10.7.248.13) by
- ORSMSX901.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.49 via Frontend Transport; Fri, 23 Oct 2026 07:56:38 -0700
-Received: from SJ2PR03CU001.outbound.protection.outlook.com (52.101.43.17) by
- edgegateway.intel.com (134.134.137.113) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.49; Fri, 23 Oct 2026 07:56:38 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=K+zcs/8d8IREYpLAtXmGClyRKmHx6enuoX5cQeB0u9q6Nptt7hUyJNSLoNL48CQNrKO127Jx6v37Ergm3Q1dqmwlpzcrRqfgXJtU8GK0pY+Kyy0fxMWJC3TSrKFkfTqtFml3ho21A6JCNqQWyFbkgLKB0102uQu4jc7LJnXRiS8lufp8eRO93br38kioVIfNB6hR3tehIWysV0uVpvVPdmh4kzDiu9MeQ82L02tzMk91c6Fl8EAuvchDeeKFd7BWWo5aPk9raPlr9yXNQrNgA5HvM1qlHAXgJ6q1bgciIcx/Bkn6049ZHvjxBliRZlqJIXYfQuXO4JiG37QnlrgHbg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=RnrfelN52PjZk0gZd9Y5uXLnWEDVXG4+u2JR5D5ajrc=;
- b=Emh5ZH8AGMmHFQSm3s1Whr6dc6q9N5LjxC6j9+BrxJhr/edF9iIGgp0oXnfNmCPx0yBy9REcIwUNwfTGby+N1UEiKrQvtAnVRidgPvDVR8iXKHbdUJznpdAFr9UL4b8dKIlBE1p9hQPxLUVhzRxoM5d5Ir/TfIxNOnVl2SW0+Q/VxfzVQuuGhGF+V/Q71OvrZ8yN9+6cbmzh2nbNmby5wMNmC42T/k2yR9V6UXpO+Judj45S1UemTxCI8PaHlTlqp2OsqumpLJKOz7zMXRbRgzZb4XCL97LBWHgUZd5NNOwB8f97FImd6/5cjvL06iUlv0oz6FVKM+KYVtbwO1GqTg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from CH3PR11MB566895.namprd11.prod.outlook.com
- (2603:10b6:610:34d::22) by LV3PR11MB8694.namprd11.prod.outlook.com
- (2603:10b6:408:21b::11) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.522.18; Fri, 23 Oct
- 2026 14:56:32 +0000
-Received: from CH3PR11MB566895.namprd11.prod.outlook.com
- ([fe80::87f5:c8cf:d52:e584]) by CH3PR11MB566895.namprd11.prod.outlook.com
- ([fe80::87f5:c8cf:d52:e584%7]) with mapi id 15.21.0546.017; Fri, 23 Oct 2026
- 14:56:32 +0000
-From: "Loktionov, Aleksandr" <aleksandr.loktionov@intel.com>
-To: "Oros, Petr" <poros@redhat.com>, "netdev@vger.kernel.org"
- <netdev@vger.kernel.org>
-CC: "Oros, Petr" <poros@redhat.com>, "Nguyen, Anthony L"
- <anthony.l.nguyen@intel.com>, "Kitszel, Przemyslaw"
- <przemyslaw.kitszel@intel.com>, Andrew Lunn <andrew+netdev@lunn.ch>, "David
- S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>, "Jakub
- Kicinski" <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, "Sebastian
- Andrzej Siewior" <bigeasy@linutronix.de>, Clark Williams
- <clrkwllms@kernel.org>, Steven Rostedt <rostedt@goodmis.org>, "Ertman, David
- M" <david.m.ertman@intel.com>, Mateusz Palczewski
- <mateusz.palczewski@intel.com>, Leon Romanovsky <leon@kernel.org>, "Rafal
- Rogalski" <rafalx.rogalski@intel.com>, Shiraz Saleem
- <shiraz.saleem@intel.com>, "intel-wired-lan@lists.osuosl.org"
- <intel-wired-lan@lists.osuosl.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, "linux-rt-devel@lists.linux.dev"
- <linux-rt-devel@lists.linux.dev>
-Subject: RE: [PATCH iwl-net v2 4/5] ice: do not block on the aux device lock
- in ethtool set_channels
-Thread-Topic: [PATCH iwl-net v2 4/5] ice: do not block on the aux device lock
- in ethtool set_channels
-Thread-Index: AQHdYryq1czVLVwGqUSnQdo+qsIBHbcLN9Mg
-Date: Fri, 23 Oct 2026 14:56:32 +0000
-Message-ID: <CH3PR11MB566895CE5BD6E1BBB6B13C3101E5642@CH3PR11MB566895.namprd11.prod.outlook.com>
-References: <20261023070258.730168-1-poros@redhat.com>
- <20261023070258.730168-5-poros@redhat.com>
-In-Reply-To: <20261023070258.730168-5-poros@redhat.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: CH3PR11MB566895:EE_|LV3PR11MB8694:EE_
-x-ms-office365-filtering-correlation-id: 5a86e983-0337-4be0-49be-08df3115d3a8
-x-ld-processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
- ARA:13230040|23010399003|376014|366016|1800799024|7416014|18002099003|261021121427099003|22082099003|10067099003|261021123027099003|38070700021|11063799006|261009223027099003|4143699003|261022105027099003|56012099006|261022075727099003;
-x-microsoft-antispam-message-info: qa6I+9EWf3gjpJhUKnlShPhppGPgh/ANm2AB2+4fLy+vWV2SqBU9o7O6NNzlFT9VbbfYKDZiu/N850YWBcAUCyRiPU6Rz/G16PmtEiPiRG/Os4esBcbNPmyCAPwWEFICFBZRr9N57d69V+qk89HXEohDiRJNnkh22skBCq6OsVVowkSa8H+NUBNgvw5RsLV3T1CnMMBDtVF+bRHCugvE024qIgFWbMqmTCdaQEOMD8YawUGv549fYRjvdbWEPce5vVzVQ265SI7sJvWm1crE+3WBJsUpvaU5/RXFBGV3ROsK7W9KC4mw5Vk0xOt1qlmH2gCpwNxz1uQmpzqZaN7JgGHCydFkem1yUfUsoK4PJnqUh6v26Ns72+G/AuyIEtHwWky/B0nYNARE7jKy8A965q1MU/z5KbuDnqKk11Guf8SpjDpZ5o4Wx28qNpfD36jitV+jrk+bMwx5Px16mvy9gdgvMUKuP1db7AxNle8WU6wiqZhf0T8w73u1CQO6G9y5gDzon+Y8XoiQG9nYH+i/7BAMAaI3o/woUeRXj5ltGktIvn5fFmlgRbq7WaVscSFq0TwZSu354sEbQJ+rSGtXwzy+Z4O0zRlwG+n0NjS3PyJQ/ct7uGoO/d6wXCjCmVlw2TsKKMN57h/VUclk10CEniiCyu+ukOMDu1fTjQyBGHulriO81Dx7IQ8eC/InGgXl
-x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:CH3PR11MB566895.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230040)(23010399003)(376014)(366016)(1800799024)(7416014)(18002099003)(261021121427099003)(22082099003)(10067099003)(261021123027099003)(38070700021)(11063799006)(261009223027099003)(4143699003)(261022105027099003)(56012099006)(261022075727099003);
- DIR:OUT; SFP:1101; 
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?H4iENuD12LimNiAAtMN8AW3p7C6jpvlia2ewuD6Z19x9fv9bsx7y5eE289Gf?=
- =?us-ascii?Q?y6JaLhGhfQHElig4o7Zs1UEEnHXZeuNBzpybWwXkcI7aEkLGhV4wAGPvyaQf?=
- =?us-ascii?Q?QY81yZt9oDm3aE3mxwNFhGg5Y/Wr+JRpiwdLTjBN545vWyzKxr5VXLopHb9q?=
- =?us-ascii?Q?+JUhCtM4rlWUp7GNJPGtrRcbtfl0Tf8GlOasHkBzo1VAo7MQzhSu/xsQLvOC?=
- =?us-ascii?Q?3rFt9DNguQs1OLvIcrdBDRfy+ZPKHMEsgyAgjUb4i0dDc4RHIsJz1JUi/Buz?=
- =?us-ascii?Q?vULrkrEDH57lr/Ax2Sv/vTIcC3PQ2F7wTqPeSerNXPJ3qa5JwiYfynMdNxaN?=
- =?us-ascii?Q?6pwcm7knIlhKcHMUwTAEup8fpKazmw+Ec/lolBv8arM3wEnbxmnzyqG8qviB?=
- =?us-ascii?Q?Y6zcyNc8KIL7iiRjGpRGMZVRWVoqN8GOZUJisZeOUfROlY9xsW2u81FLspu4?=
- =?us-ascii?Q?4iA29zYJhzizeP3W3+EUnEdELTkYI/IyMrlerat72xU5SRG2VUw1dYYHNaqn?=
- =?us-ascii?Q?BrnIaiu9mIonldDY3CM+bDIYBov0DlewSuFfZ304ibN3s2X4lROs5BfPTCEQ?=
- =?us-ascii?Q?qwQmCeVeF5aHFG3FTIWAyWR9nElbAPjesluGA9Cbrmb4K8UbyBe3/8X+Iw9L?=
- =?us-ascii?Q?tNzT68xCfzTsDdaeRFaFmoZK6GjFKXycnepXcWNTFBjIIPRzBtpjE3VfVNXm?=
- =?us-ascii?Q?kNV+jvQ1wAQNRX1UsQ/UjzysTt1hZ5SDXE55y2mbf6huo7c5Eq2UCI983hZA?=
- =?us-ascii?Q?U17kuXIXDYiTTpFc0cUKFDQaNKWGFJEU6ERQ4Flw0I906zAfSXFHbDai9fqt?=
- =?us-ascii?Q?4nr5uH6rBWbDJ1FXrPD2rhtWtD4LY4rddorOnFE0IiPoGQewbU9jEzgI1aRH?=
- =?us-ascii?Q?A8v153p9uqKgUnIo22rtVab1dbI70B7wcXaL5Xxwrdmx9RxkFtmQMOBzq5pv?=
- =?us-ascii?Q?SGLMnXSqD0UPvErd3o5Da+cw4+TvynSNrmzNf3mSHcNWpoSTA6S6CCSwibG/?=
- =?us-ascii?Q?ZQGb6k+qNZD2mjIn5XU3UCyER6HPvF5/OZ6PqNwmKwQNnr/7KXGrv2SfuJpV?=
- =?us-ascii?Q?WbAhWAwoRZzdRdDq/PkcMiD51PiDqD1srNGkiTvquzuHdSad2tQ5EEGb3XGf?=
- =?us-ascii?Q?J/pXcoC9mTHOjmXP1lEIaL3ZensfjQyZgi4yC3JD6IIPG7RK3nqLepUYeSQy?=
- =?us-ascii?Q?M+WcqTygAfgjzP+YYim7+8WXTRDyxLnNwJCIm0/O2CsTl0Qfdj9o1t1hNeX6?=
- =?us-ascii?Q?4H5aY0nF3z8oB+OD76snEVFpWgXpNrAXk8/VtDVE9D+gQbtcIMrn0Vu55GAD?=
- =?us-ascii?Q?PuG6jx1iDqQ6qWcL0r2GCZL5O485w59FMpzxp+g6pkYuU3jtnsZzBzdFmEAD?=
- =?us-ascii?Q?IvjfXrVNdiOSIL7OpbChvCIRlfbBlP1wkkmFrPkMCylVWcGXomEvhUqdn7gw?=
- =?us-ascii?Q?N4NZyXB8xkg6yfBlsvbIKeWBtCCyUw6wpWwCisyoisaOnBw18StZ943p8Qg3?=
- =?us-ascii?Q?V/nFDrgpEOX61tO124Od0tHSPgj1upVeugesDPRg1oNvOgPSEP0T42bgD+v9?=
- =?us-ascii?Q?AIjWk4F37VYBNCVsqt7CAeHYpKQ6tADVa768L4Xab1C2vcAx19xomQ4lFnIr?=
- =?us-ascii?Q?i8rz2qma68fEZmMg8LOUVgzdsrb+UgZpPQ1ejo7sAANNhmYPusd0yLT3Dde2?=
- =?us-ascii?Q?1yO4qzvg40oFtCvj6YGX/SHGW1xL/63+U6thEjXkpqKy7JLsTaosCbqunZIp?=
- =?us-ascii?Q?Hzd+5T8exDz+mqFxZ3ufC0RWaL9RGBM=3D?=
-Content-Type: text/plain; charset="us-ascii"
+ id wFkQXbPHaqR5 for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 23 Oct 2026 19:28:13 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org B741A40A59
+Authentication-Results: smtp4.osuosl.org; arc=none
+ smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1792783693;
+ b=is4peG9e6m96XMXLf+weyq+FnkNvshjtkjqfHRI1GtRvjD57Png72PnZZdIFtMZlfx8z
+ FYNAPiGIGHgraADLyc5p4t67m/muRc0BWKB+u20kT1CP5Udc5q5eH8UmInkORI+XSOIXI
+ SYeiWG97wlHT2YondYBzYRqLx04ILZqR5sIbm2yhnPRnSdEFIomCPPi4plFB1WhE44sxS
+ Q/4/jnecr1rGsNcPjHX6AEn6g01wCx3EhFHHkY68Yjwm6+PRC8x1gw8TGOfwvofVk/1cg
+ SDhNzoPUoU8u98w/03QgS58KUYJS+C3wKhDV6Qy8m5iavo4ByvRz28RAy2OY5+hetkQ==
+ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
+ c=relaxed/relaxed; t=1792783693;
+ h=Received-SPF:Received:Received:DKIM-Signature:Message-ID:From:
+ Subject:Reply-To:To:Cc:In-Reply-To:References:Content-Type:
+ Content-Transfer-Encoding:Date;
+ bh=L65+TZ8C/s20AWM+38laNw3uQWtlYumAuKoh7lqRum8=;
+ b=IBB2RA5BsKObdPaBE0qHWWhk4v2/r0razuFXpRNxyA91xxRD2l9gK4iNwt52vR16dxwX
+ ohXFWekCrwNkuKF7qfM4bRCvHKUyHvYwQ6TN4EfZF8EIIe6Yp1eA4NYcVEgT2A2xpSrip
+ JJ16Dw4mXhxDyQQZ9KCMLjSUGvSf2oeMsXUNl1bH4K14ybgwtEdQiV2h1XSuv8CpHzVki
+ q2UYiqb5ISTKUed5/QUZgADCzfrEGAz9Wak6vOFl9bYrHcZOW30rkzPGbiDb9pjJRmjyF
+ ejAaeeNXMxa7oot/3UUI/xEsLlMBYDlEedvYD23pRXWdmoZZ9dL0IIJrvYwUWMmM05g==
+ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
+ dmarc=pass header.from=kernel.org;
+ dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20260515 header.b=K9L3IjIv; 
+ arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
+ envelope-from=sashiko-bot@kernel.org; receiver=<UNKNOWN> 
+Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+Authentication-Results: smtp4.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20260515 header.b=K9L3IjIv
+Received: from tor.source.kernel.org (tor.source.kernel.org
+ [IPv6:2600:3c04:e001:324:0:1991:8:25])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id B741A40A59
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 23 Oct 2026 19:28:12 +0000 (UTC)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+ by tor.source.kernel.org (Postfix) with ESMTP id 9C6CD601DE;
+ Fri, 23 Oct 2026 19:28:10 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 347251F01825;
+ Fri, 23 Oct 2026 19:28:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+ s=k20260515; t=1792783690;
+ bh=L65+TZ8C/s20AWM+38laNw3uQWtlYumAuKoh7lqRum8=;
+ h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
+ b=K9L3IjIvDDJubxkgnT5a+UHaRcFY/i3Qqj1+DCZ3/jDJNPYPbzqSj6QZc9k1Cg4iU
+ X1dpyRbwNtB+lQt3SpA0XWZXmJq0JDgeEmatecwZs4WuF1Y0thY8qsL578sUsQW+4S
+ oTuWA+rn4jofdw4KbhpTFEZpj+f7BECByRRwbRw0GsNV8EmuL21IFwH7KOt3H/4Qx9
+ Rm2/29sN0QGDaolAjCh8hpA7cozQL5V+S1lr16XVfUhFcqQIEumdFk933bhPhEp1H2
+ mAWgNFNhAuXdA5bKgpDhEX+9DKG9qeVLB86T0QsQSMwwjfAzQgBEt3YKsfuUplCreT
+ 2Q0G613RoBiTw==
+Message-ID: <sashiko-outbox-183115@kernel.org>
+From: sashiko-bot@kernel.org
+Subject: Re: [PATCH iwl-net v1] iavf: reset the VF instead of freeing rings
+ when queue disable fails
+To: "Yuho Choi" <oss.patchbox@gmail.com>
+Cc: intel-wired-lan@lists.osuosl.org
+In-Reply-To: <20261022192753.69765-2-oss.patchbox@gmail.com>
+References: <20261022192753.69765-2-oss.patchbox@gmail.com>
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
-X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
-X-Exchange-RoutingPolicyChecked: hguwTG6fyq46HRNT/lmNOynZf2w/4fJrYSbAeE+GazwL0QD4MPusvqKK09wBKSjKWcLLO6Mg70pcwwjKCN0nkQWIWf59p3hu1y+nYXpv/aFe7iLJISyhDD/CQDLzHecie+m5A5GS/HVSKlfVPy2Z5NLthGi7LI/3gMbOyr40816RgTrpp/8lGr/isHPw0Zy2C4I9vD9TMAxYcraAr2oAf8o4Od2JFOzUzq5XiHL7kpty5QtcmsXteK7YI+Ns2RDGjLZv6acwxRZEJOCWL/x/M3KsKkXaPHf3UyTX8ognkqI32xDpa54bqbtRGmOnK0hYY2z3yDTDHYA394NG2qSYrQ==
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: CH3PR11MB566895.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 5a86e983-0337-4be0-49be-08df3115d3a8
-X-MS-Exchange-CrossTenant-originalarrivaltime: 23 Oct 2026 14:56:32.4645 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: ADSLphac2sZHzBgz23l2Y0kTM1qECvvZRgO+8eTNfNVFHa8nSYJQfMKky7R3gKG1JtzHgcPe77eAjIvF6tkKN/CAvdWhu/7aCkjwUAbo/F4=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV3PR11MB8694
-X-OriginatorOrg: intel.com
+Date: Fri, 23 Oct 2026 19:28:09 +0000
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -301,82 +139,293 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-16.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+Reply-To: sashiko-reviews@lists.linux.dev
+X-Spam-Status: No, score=-11.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS autolearn=unavailable
-	autolearn_force=no version=4.0.1
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_PASS autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
+X-Archived-By: <archiver.kernel.org>
 
+Thank you for your contribution! Sashiko AI review found 4 potential issue(=
+s) to consider:
+- [High] iavf: infinite loop in iavf_remove() when queue disable fails
+- [High] iavf: ring resource leak and dangling NAPI in iavf_disable_vf()
+- [High] iavf: deadlock in iavf_reset_step() when disable queues fails on s=
+uspend
+- [Medium] iavf: pending filter deletions lost when reset is scheduled on q=
+ueue disable failure
+--
 
+commit 362caa9d16f7d9e3e52d1978b838d37d34c2a1f6
+Author: Yuho Choi <oss.patchbox@gmail.com>
 
-> -----Original Message-----
-> From: Petr Oros <poros@redhat.com>
-> Sent: Friday, October 23, 2026 9:03 AM
-> To: netdev@vger.kernel.org
-> Cc: Oros, Petr <poros@redhat.com>; Nguyen, Anthony L
-> <anthony.l.nguyen@intel.com>; Kitszel, Przemyslaw
-> <przemyslaw.kitszel@intel.com>; Andrew Lunn <andrew+netdev@lunn.ch>;
-> David S. Miller <davem@davemloft.net>; Eric Dumazet
-> <edumazet@kernel.org>; Jakub Kicinski <kuba@kernel.org>; Paolo Abeni
-> <pabeni@redhat.com>; Sebastian Andrzej Siewior <bigeasy@linutronix.de>;
-> Clark Williams <clrkwllms@kernel.org>; Steven Rostedt
-> <rostedt@goodmis.org>; Ertman, David M <david.m.ertman@intel.com>;
-> Mateusz Palczewski <mateusz.palczewski@intel.com>; Leon Romanovsky
-> <leon@kernel.org>; Rafal Rogalski <rafalx.rogalski@intel.com>; Shiraz
-> Saleem <shiraz.saleem@intel.com>; Loktionov, Aleksandr
-> <aleksandr.loktionov@intel.com>; intel-wired-lan@lists.osuosl.org;
-> linux-kernel@vger.kernel.org; linux-rt-devel@lists.linux.dev
-> Subject: [PATCH iwl-net v2 4/5] ice: do not block on the aux device lock
-> in ethtool set_channels
->=20
-> ice_set_channels() takes the auxiliary device lock to test whether the
-> RDMA driver is bound, and ethtool ops run with the RTNL lock held. This
-> is the same inversion against the RDMA auxiliary probe as the one fixed
-> in ice_send_event_to_aux(), reached through a different caller.
->=20
-> Use device_trylock() and report the device as busy when it fails. The
-> existing diagnostic is not reused, a contended lock does not mean the
-> RDMA driver is bound. It is a netdev_dbg(), the condition is transient
-> and userspace already learns about it from -EBUSY.
->=20
-> Fixes: a6a0974aae42 ("ice: Prevent set_channel from changing queues
-> while RDMA active")
-> Signed-off-by: Petr Oros <poros@redhat.com>
-> ---
-> v2:
-> - rebased on the new patches 1 and 2, the trylock now sits inside the
->   pointer test done under adev_mutex
->=20
-> v1: https://lore.kernel.org/all/20261019065301.3983537-3-
-> poros@redhat.com/
-> ---
->  drivers/net/ethernet/intel/ice/ice_ethtool.c | 6 +++++-
->  1 file changed, 5 insertions(+), 1 deletion(-)
->=20
-> diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-> b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-> index 5482a64c81c95a..dbc662d6233957 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-> @@ -3947,7 +3947,11 @@ static int ice_set_channels(struct net_device
-> *dev, struct ethtool_channels *ch)
->  		mutex_lock(&pf->adev_mutex);
->  		adev =3D pf->cdev_info->adev;
->  		if (adev) {
-> -			device_lock(&adev->dev);
-> +			if (!device_trylock(&adev->dev)) {
-> +				mutex_unlock(&pf->adev_mutex);
-> +				netdev_dbg(dev, "RDMA auxiliary device is
-> busy, try again\n");
-> +				return -EBUSY;
-> +			}
->  			locked =3D true;
->  			if (adev->dev.driver) {
->  				netdev_err(dev, "Cannot change channels when
-> RDMA is active\n");
-> --
-> 2.56.0
+iavf: reset the VF instead of freeing rings when queue disable fails
 
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+When the PF returns an error for VIRTCHNL_OP_DISABLE_QUEUES, this patch kee=
+ps
+the Tx and Rx ring resources allocated and schedules a VF reset instead of
+freeing the rings immediately in iavf_virtchnl_completion().
+
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/ne=
+t/ethernet/intel/iavf/iavf_virtchnl.c
+> index e6b7e8f82c7c1..178bba609677f 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+> +++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+> @@ -2718,6 +2718,15 @@ void iavf_virtchnl_completion(struct iavf_adapter =
+*adapter,
+>  		adapter->flags &=3D ~IAVF_FLAG_QUEUES_DISABLED;
+>  		break;
+>  	case VIRTCHNL_OP_DISABLE_QUEUES:
+> +		/* If the PF could not stop the queues, the hardware may still
+> +		 * access the rings and Rx buffers. Keep them and request a VF
+> +		 * reset; the reset path releases them after the PF has reset
+> +		 * the VF.
+> +		 */
+> +		if (v_retval) {
+> +			iavf_schedule_reset(adapter, IAVF_FLAG_RESET_NEEDED);
+> +			break;
+> +		}
+
+[Severity: High]
+Can this cause an infinite loop in iavf_remove() when disabling queues fail=
+s?
+
+In drivers/net/ethernet/intel/iavf/iavf_main.c, iavf_close() calls
+iavf_down(), sets adapter->state to __IAVF_DOWN_PENDING, releases
+netdev_lock(netdev), and waits up to 500ms on adapter->down_waitqueue for
+adapter->state to become __IAVF_DOWN.
+
+If iavf_remove() is invoked while adapter->state is __IAVF_DOWN_PENDING
+(either while iavf_close() is sleeping in wait_event_timeout() with the
+netdev lock released, or after the 500ms wait times out), iavf_remove() sets
+__IAVF_IN_REMOVE_TASK and loops until adapter->state leaves
+__IAVF_DOWN_PENDING:
+
+drivers/net/ethernet/intel/iavf/iavf_main.c:iavf_remove() {
+...
+	if (test_and_set_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section))
+		return;
+
+	/* Wait until port initialization is complete.
+	 * There are flows where register/unregister netdev may race.
+	 */
+	while (1) {
+		netdev_lock(netdev);
+		if (adapter->state =3D=3D __IAVF_RUNNING ||
+		    adapter->state =3D=3D __IAVF_DOWN ||
+		    adapter->state =3D=3D __IAVF_INIT_FAILED) {
+			netdev_unlock(netdev);
+			break;
+		}
+		/* Simply return if we already went through iavf_shutdown */
+		if (adapter->state =3D=3D __IAVF_REMOVE) {
+			netdev_unlock(netdev);
+			return;
+		}
+
+		netdev_unlock(netdev);
+		usleep_range(500, 1000);
+	}
+...
+}
+
+When VIRTCHNL_OP_DISABLE_QUEUES fails with a non-zero v_retval,
+iavf_virtchnl_completion() now breaks out without changing adapter->state
+from __IAVF_DOWN_PENDING to __IAVF_DOWN, and calls iavf_schedule_reset().
+However, iavf_schedule_reset() does nothing when __IAVF_IN_REMOVE_TASK is
+already set:
+
+drivers/net/ethernet/intel/iavf/iavf_main.c:iavf_schedule_reset() {
+	if (!test_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section) &&
+	    !(adapter->flags &
+	    (IAVF_FLAG_RESET_PENDING | IAVF_FLAG_RESET_NEEDED))) {
+		adapter->flags |=3D flags;
+		queue_work(adapter->wq, &adapter->reset_task);
+	}
+}
+
+Since reset_task is not queued and adapter->state remains
+__IAVF_DOWN_PENDING, won't iavf_remove() spin forever in the while (1) loop
+before ever reaching unregister_netdev() or iavf_request_reset()?
+
+[Severity: High]
+What happens if the reset scheduled here times out in iavf_reset_step() whi=
+le
+adapter->state is __IAVF_DOWN_PENDING?
+
+When VIRTCHNL_OP_DISABLE_QUEUES fails during iavf_close(), adapter->state is
+__IAVF_DOWN_PENDING and the per-ring Tx and Rx resources remain allocated. =
+If
+the subsequent VF reset never completes in iavf_reset_step(), it calls
+iavf_disable_vf() and returns before reaching continue_reset:
+
+drivers/net/ethernet/intel/iavf/iavf_main.c:iavf_reset_step() {
+...
+	if (i =3D=3D IAVF_RESET_WAIT_COMPLETE_COUNT) {
+		dev_err(&adapter->pdev->dev, "Reset never finished (%x)\n",
+			reg_val);
+		iavf_disable_vf(adapter);
+		return; /* Do not attempt to reinit. It's dead, Jim. */
+	}
+...
+}
+
+In iavf_disable_vf(), iavf_free_all_tx_resources() and
+iavf_free_all_rx_resources() are only called when adapter->state is
+__IAVF_RUNNING:
+
+drivers/net/ethernet/intel/iavf/iavf_main.c:iavf_disable_vf() {
+...
+	if (adapter->state =3D=3D __IAVF_RUNNING) {
+		set_bit(__IAVF_VSI_DOWN, adapter->vsi.state);
+		netif_carrier_off(adapter->netdev);
+		netif_tx_disable(adapter->netdev);
+		adapter->link_up =3D false;
+		iavf_napi_disable_all(adapter);
+		iavf_irq_disable(adapter);
+		iavf_free_traffic_irqs(adapter);
+		iavf_free_all_tx_resources(adapter);
+		iavf_free_all_rx_resources(adapter);
+	}
+...
+	iavf_free_misc_irq(adapter);
+	iavf_free_interrupt_scheme(adapter);
+...
+}
+
+iavf_free_interrupt_scheme() then calls iavf_free_q_vectors() and
+iavf_free_queues():
+
+drivers/net/ethernet/intel/iavf/iavf_main.c:iavf_free_queues() {
+	if (!adapter->vsi_res)
+		return;
+	adapter->num_active_queues =3D 0;
+	kfree(adapter->tx_rings);
+	adapter->tx_rings =3D NULL;
+	kfree(adapter->rx_rings);
+	adapter->rx_rings =3D NULL;
+}
+
+Because adapter->state is __IAVF_DOWN_PENDING rather than __IAVF_RUNNING,
+doesn't this free adapter->q_vectors (and each embedded q_vector->napi) whi=
+le
+the per-ring rx_ring->pp page pools still hold pointers to &q_vector->napi,
+and leak all per-ring descriptor rings (tx_ring->desc, rx_ring->desc), buff=
+er
+metadata arrays (tx_ring->tx_bi, rx_ring->rx_fqes), mapped skbs and Rx page=
+s,
+and rx_ring->pp page pools once adapter->tx_rings and adapter->rx_rings are
+freed and adapter->num_active_queues is set to 0?
+
+[Severity: Medium]
+Does scheduling a reset here lose pending filter deletions that were queued
+by iavf_down()?
+
+When iavf_close() calls iavf_down(), the driver marks active filters for
+deletion (f->remove =3D true, cf->del =3D true, and
+rss->state =3D IAVF_ADV_RSS_DEL_REQUEST) and sets the corresponding
+IAVF_FLAG_AQ_DEL_* flags in adapter->aq_required alongside
+IAVF_FLAG_AQ_DISABLE_QUEUES:
+
+drivers/net/ethernet/intel/iavf/iavf_main.c:iavf_down() {
+...
+	iavf_clear_mac_filters(adapter);
+	iavf_clear_cloud_filters(adapter);
+	iavf_clear_fdir_filters(adapter);
+	iavf_clear_adv_rss_conf(adapter);
+...
+		if (!list_empty(&adapter->mac_filter_list))
+			adapter->aq_required |=3D IAVF_FLAG_AQ_DEL_MAC_FILTER;
+		if (!list_empty(&adapter->cloud_filter_list))
+			adapter->aq_required |=3D IAVF_FLAG_AQ_DEL_CLOUD_FILTER;
+		if (!list_empty(&adapter->fdir_list_head))
+			adapter->aq_required |=3D IAVF_FLAG_AQ_DEL_FDIR_FILTER;
+		if (!list_empty(&adapter->adv_rss_list_head))
+			adapter->aq_required |=3D IAVF_FLAG_AQ_DEL_ADV_RSS_CFG;
+	}
+
+	iavf_schedule_aq_request(adapter, IAVF_FLAG_AQ_DISABLE_QUEUES);
+}
+
+In iavf_process_aq_command(), IAVF_FLAG_AQ_DISABLE_QUEUES is sent before any
+of the IAVF_FLAG_AQ_DEL_* flags. If VIRTCHNL_OP_DISABLE_QUEUES fails and
+iavf_virtchnl_completion() triggers a reset, iavf_reset_step() clears
+adapter->aq_required and marks the remaining entries in
+adapter->mac_filter_list (and adapter->cloud_filter_list when ADQ is active)
+to be re-added:
+
+drivers/net/ethernet/intel/iavf/iavf_main.c:iavf_reset_step() {
+...
+	adapter->aq_required =3D 0;
+...
+	/* re-add all MAC filters */
+	list_for_each_entry(f, &adapter->mac_filter_list, list) {
+		f->add =3D true;
+	}
+...
+}
+
+Won't this leave advanced RSS configurations stuck in
+IAVF_ADV_RSS_DEL_REQUEST on adapter->adv_rss_list_head (causing future
+iavf_set_rxfh_fields() calls for the same packet headers to fail with
+-EBUSY), leave cloud filters with cf->del =3D true on
+adapter->cloud_filter_list without freeing them (causing future
+iavf_configure_clsflower() calls with the same cookie to fail with -EEXIST,
+or re-adding them with cf->add =3D true when ADQ is active), and re-add
+secondary or multicast MAC addresses on adapter->mac_filter_list that
+iavf_clear_mac_filters() had marked with f->remove =3D true?
+
+[Severity: High]
+Can scheduling a reset here deadlock in iavf_reset_step() if
+VIRTCHNL_OP_DISABLE_QUEUES was triggered by iavf_suspend()?
+
+When suspending while the interface is running, iavf_suspend() calls
+iavf_down() without changing adapter->state from __IAVF_RUNNING:
+
+drivers/net/ethernet/intel/iavf/iavf_main.c:iavf_suspend() {
+...
+	if (running)
+		iavf_down(adapter);
+
+	iavf_free_misc_irq(adapter);
+	iavf_reset_interrupt_capability(adapter);
+...
+}
+
+iavf_down() calls iavf_napi_disable_all(adapter), which disables each
+q_vector->napi (setting NAPIF_STATE_SCHED), and schedules
+IAVF_FLAG_AQ_DISABLE_QUEUES.
+
+If VIRTCHNL_OP_DISABLE_QUEUES fails before the admin queue is shut down and
+iavf_virtchnl_completion() schedules adapter->reset_task, iavf_reset_step()
+runs under netdev_lock(netdev), sees adapter->state =3D=3D __IAVF_RUNNING, =
+and
+calls iavf_napi_disable_all(adapter) a second time (since
+adapter->num_msix_vectors is still non-zero):
+
+drivers/net/ethernet/intel/iavf/iavf_main.c:iavf_reset_step() {
+...
+	running =3D adapter->state =3D=3D __IAVF_RUNNING;
+
+	if (running) {
+		netif_carrier_off(netdev);
+		netif_tx_stop_all_queues(netdev);
+		adapter->link_up =3D false;
+		iavf_napi_disable_all(adapter);
+	}
+...
+}
+
+Since the NAPI instances were already disabled by iavf_down(), won't calling
+iavf_napi_disable_all() again cause napi_disable_locked() to loop forever
+waiting for NAPIF_STATE_SCHED to clear while holding netdev_lock(netdev)?
+
+>  		iavf_free_all_tx_resources(adapter);
+>  		iavf_free_all_rx_resources(adapter);
+>  		if (adapter->state =3D=3D __IAVF_DOWN_PENDING) {
+
+--=20
+Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261022192753.6976=
+5-2-oss.patchbox@gmail.com?part=3D1
