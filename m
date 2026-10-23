@@ -2,130 +2,140 @@ Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EB19E606A324
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 23 Oct 2026 14:14:00 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DD599606A31A
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 23 Oct 2026 14:16:40 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=1UKzm3Yf;
-	dkim=pass (2048-bit key, unprotected) header.d=1g4.org header.i=@1g4.org header.a=rsa-sha256 header.s=protonmail header.b=qVPRVx2K
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=UwP1s9ff;
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BoX0zDV3
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C718D405B6;
-	Fri, 23 Oct 2026 14:14:00 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id B61D840959;
+	Fri, 23 Oct 2026 14:16:40 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id NWOXuK0COGXt; Fri, 23 Oct 2026 14:13:59 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org BCE6F405A9
+ id bUaQJ6ZMtXea; Fri, 23 Oct 2026 14:16:40 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 37D18408D3
 Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1792764839;
-	b=JsaaVkYAWBzdNT9lmrTj51euSLjV0kuuyiAjKEYdVb6dLT2QXlX0FY+H4ZzVbcmWoOz5
-	 8OWaRJPj3Y5h3SxlMML4BUVWMfI+GDuinEfMRNE0HpAIUvxEZf1Bdri/zj/3Rcnlzd4zG
-	 g7TuM1NMHeVPTx6zyD1lnqPDVCLp00xuJ3kFAvCEhGJKEIZT3r4RDeBLmbplPY36ClgQ9
-	 AJr4CPxWDCv56lHjXYNym1/ig+uRn3dklyhxrnXKwQi9mSTgnzPwjLP4D0otJz3jrNqe4
-	 XhRr5H4GIeAM8pLEkgWksrr457pKf0GJwNhsX2NEtinqiOPSm1UUZZmtpWBv3z+smAg==
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1792765000;
+	b=d1JjEK/y3ffAD1utFNo3S5LK52jI/ni9Vya7ARt+Tc8KGzqIaO8kTCK4xe0wdQoBV/W4
+	 c97lWYC10o1rrMJ2Cb399G79vZ4zyvSmbQRhg1P8fG5ZPYK9O/nVioz+Lfe6VHtZGwjel
+	 jB8t9AXgN7NqDyK1DwgGRPbFfFdWL+EguDEMa/0t+4godH8aw1wHT3ksJi+YdpgTt61cg
+	 OXudiUBvljcxpazw9+a9I2o3dkpGinRRdI32mb0UOe1YYLh3NMxqibjIiH8TnEOFwdhzx
+	 AlXnJdNMJIPrRFMkrlP8W/V5gncLFcry5qCaoKz8OhpD+JaSxFLQls5e7oV6Z+T+TqA==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1792764839;
+	c=relaxed/relaxed; t=1792765000;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
-	 DKIM-Signature:Date:To:From:Cc:Subject:Message-ID:Feedback-ID:
-	 X-Pm-Message-ID:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
-	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=J1uVLXrP2VUfLCBDBnXOa4nyynN6pF7eavsl/v/DnRE=;
-	b=fbPLqJ2WU0AP6j6MBPKQtUNOE9hDP7C25tpDJZh8ZCnhkZNWEwFth1Zs61aF+LlsGgyU
-	 M9r8G8ljEtHxvZ4v9jvhn0zDai47Dw913dVKlovRiTM5d+tuPjBLWIvKUr+uV0/xJ7ei2
-	 Z45odGeHGyin/v/zW8cFAZT8nd6BebskPqbhM0ZGQ8OvGSHPSMfUsZ0aZrFP9N7sUEw4k
-	 A7gkANfvIOVF1NYsRBHYTLKCDbXrfMWKGAyqbpWRdG1bnppuh+kQpIlHvsL41KCq/sANa
-	 JFILDHuAzd/KJbJLBsUi2VM0+e7f+/pIvJb23gy+JfNi0AhQPD9oluaupa8kV+u4low==
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
+	 Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:
+	 In-Reply-To:References:Auto-Submitted:Content-Type:
+	 Content-Transfer-Encoding:MIME-Version:X-BeenThere:X-Mailman-Version:
+	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 List-Subscribe:Errors-To;
+	bh=PJRu7W6/Or1we5Gv3BgoLEtby0D0Y0UGgfjBHfRc5+k=;
+	b=qPwGFH655HVitk1N8V3TpAOkqIauB/kpHMTEznbg1bnVxvUtjtvwxuloB5PxyMwew2ZK
+	 YWHqHZqPHeQ8btpxaO/PU0zOYGSREJ8Em+C+1/tdlXoszBCDKEx5w1+HZPTM7+p3c834n
+	 7qonDp819PJMlPH1vLXOczA1YWyndpqNTI/pqb6vwBo/yEF25chQKEojaQqVAvZTGDyaR
+	 0b5st5+48riJie1hkD3KDwEMVNorHpADYz/qFAcr3i0q2ntfVMod02lmiJLPAUd/RrzgE
+	 NB7Qq5olxdZB7OUnh/BtqnmAjdjOZLtZSegiOAM82d5f1nJkUj14u8yG2fr2HlHfjwA==
 ARC-Authentication-Results: i=2; smtp4.osuosl.org; 
 	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1792764839;
-	bh=J1uVLXrP2VUfLCBDBnXOa4nyynN6pF7eavsl/v/DnRE=;
-	h=Date:To:From:Cc:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=1UKzm3YfSvyN2XJ8T8Zc5ClFxL3K63lFhV9fq3PglTPQgAyq9fPk2+M/oyCjL0D0c
-	 GKe81Gq6zKibou670O8/GHjpiVVpf00s/r95vCRUgqV7aqpe+mS1zpBOHiGvfhoL74
-	 VQoardMyMbEafXTrzg+kZ7EJABiE5Vi/71kJ9ngKO8BQI8LxE8fxHZ8edhfaJJ9dbS
-	 pFMuntect2xRYMKNpDWzxbof9B1KNK1UD2okeRyIPRuq5t6ncJL9P92j+gOWMLnF6L
-	 VgQkz8c+Ou5ISrImsep97+J2/SNhNpnGsuSyPyqgE9BVG3RPM9YYcZtdpJBS6UKxO9
-	 qKoDgD36PpTew==
+	s=default; t=1792765000;
+	bh=PJRu7W6/Or1we5Gv3BgoLEtby0D0Y0UGgfjBHfRc5+k=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=UwP1s9ffT99k6JgfojciOzNXEDvuIlgFawrDda5FEhkJXl0f8lCv8DwuFrTDagsMd
+	 29S1OJ8kfGWQOAlTK7YHFTT14Tu2ILylYDKhTNQ8CsgSZLC3qQPDvbWDwcHLLecgGj
+	 UY/3XI2QJht+DvTVHdpdA49a4UkSVrMANBKzJY2ySY320eGidbdkarFif5EcKD9ie1
+	 qYfzsuhnFIenNaYCaz6H8PPAHm4JjnOCOypRb3V8gwYOnI2dQu+h4gB3ZIaiw2q9Sn
+	 iWyrnwjs3r6pxkg1SxoIfQ6ybKrpL8TnlZauwgh0M3CUWuDrbx1n9njnWeSP0joPfK
+	 sREQ2lWLO9aoQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id BCE6F405A9;
-	Fri, 23 Oct 2026 14:13:59 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id B9FBD356
- for <intel-wired-lan@lists.osuosl.org>; Fri, 23 Oct 2026 14:13:58 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 37D18408D3;
+	Fri, 23 Oct 2026 14:16:40 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id D30BE371
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 23 Oct 2026 14:16:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id AB4FC80BCD
- for <intel-wired-lan@lists.osuosl.org>; Fri, 23 Oct 2026 14:13:58 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id C14B5401CE
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 23 Oct 2026 14:16:38 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id YjoB5UyKimdS for <intel-wired-lan@lists.osuosl.org>;
- Fri, 23 Oct 2026 14:13:57 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 2684580BB2
-Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=185.70.43.18
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1792764837;
- b=FheSpgmLhkQl98s+flXmzZjNkH2r3B7o5nvqizazZyrksb98vR8vFJ6Zs85j8pArufTV
- QyupYBmfTQIFMXVkMZCoXGSw0Wty8h0aU4bpxvxuZnn8ebOekZhyo1gWafhIEMrZu0Z+1
- kZEVBUA5XoVt13xr5Tdy67s/fyj9nJKzjJMLbbWQlvW1hpHChXCdX3iAJw7oZ0Nn6H/Pv
- jL4Rv42AKnIVxk+gngwAO2ekfuejgM/0Ixj4r3j6NzAF78kgGkLYP6JBqjQwECz9eWZve
- MNXXnw2XhlhioMZaVXThls9lNLyY/DOdDuC2LM/C64/NV8mEAC8XL0Oww9qNv4XTM6g==
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id LCmjjrSKYHaB for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 23 Oct 2026 14:16:38 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org 244AC400D0
+Authentication-Results: smtp2.osuosl.org;
+ arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1792764998;
+ b=HZcLqwMs8TiaSqlYjwzbJuBJmvdvr4tTXTrF3HZD+MxW7HJ1Syj+l3L8a9vf5q9nX/y3
+ 40CFQsXI0hlLdr97KJqDOK9qC+82N1z0gEiddfEMEaOwg31Khh6zekaNveu1CqfyE8hix
+ xtI9kPhBSge48XCCWEWjUgxQKEYZv3Tjcv78HhvOS/wHdXN7DnoeBgby4i/qyLBKsozBS
+ RbT0DdaRFMUWvCy84w8/U5vavCwiejSeWpjjq0EZ9PkF5p1obfbLIY/sb2FKVxSJRvOCU
+ 7yZvCs1UADewz3m/x9WIDGfQdqF9YQTJ89qWef1jeuRvpEAfCfjBWm7UKWyMOqCrtTA==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1792764837;
- h=Received-SPF:DKIM-Signature:Date:To:From:Cc:Subject:Message-ID:
- Feedback-ID:X-Pm-Message-ID:MIME-Version:Content-Type:
- Content-Transfer-Encoding;
- bh=J1uVLXrP2VUfLCBDBnXOa4nyynN6pF7eavsl/v/DnRE=;
- b=cnbpiKGKv0psmrVWP3wTkmTyesMUT9DKIgxweJksUxr/Rtd9/j9sqg5fD1Jtvm39asrF
- nAdbmcKKt5MAhd7rSfL805VcQa8dhxH2KR/2wNiRiksXCxOtsD/UE4mpqQPP9ZuTh81hi
- vlxzkvCk2AnOKJUPFsMikX0eW68FXw6/CX9xGYeeE6QQbCw7K/R5GPiG9zm5J/aWWQmy4
- mOsKmF7J5DlrtyDmBRMFyVQYBvUqrFhTonryjM6KJ4GfXcAC/MSAXVq5wR68LBCbRUmS0
- 80gxz0kY65dp4I2tpn7yXqa/m0Sbnb3UrRoT/gKf2AygeEfGb8B80HXaFyCRtjxfieQ==
-ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
- dmarc=pass header.from=1g4.org;
- dkim=pass header.d=1g4.org header.i=@1g4.org header.a=rsa-sha256
- header.s=protonmail header.b=qVPRVx2K; 
- arc=none smtp.remote-ip=185.70.43.18
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=185.70.43.18;
- helo=mail-4318.protonmail.ch; envelope-from=p@1g4.org; receiver=<UNKNOWN> 
-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=quarantine dis=none) header.from=1g4.org
-Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=1g4.org header.i=@1g4.org header.a=rsa-sha256
- header.s=protonmail header.b=qVPRVx2K
-Received: from mail-4318.protonmail.ch (mail-4318.protonmail.ch [185.70.43.18])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 2684580BB2
- for <intel-wired-lan@lists.osuosl.org>; Fri, 23 Oct 2026 14:13:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=1g4.org;
- s=protonmail; t=1792764832; x=1793024032;
- bh=J1uVLXrP2VUfLCBDBnXOa4nyynN6pF7eavsl/v/DnRE=;
- h=Date:To:From:Cc:Subject:Message-ID:Feedback-ID:From:To:Cc:Date:
- Subject:Reply-To:Feedback-ID:Message-ID:BIMI-Selector;
- b=qVPRVx2KJkZqgOoqwCznUE/sIAqy40GAvv2BXne7a6FOwy/56svtqOm9ImLSjAv/y
- EAOsuS/qfOortQd770yPKCNa6PAPsr70i99AxFWyrn74gFYOtXmf1xrM9InmPe5XEj
- H6o3nf215g9rCjB253xkI7bOZW1isqXveguCK+5qRQqQy3ZVfQVLxBUlS2b1ecK0Yw
- NGcy3TBr0HeRwoIHVRA01YonRSyzMykOCG6rO0/SZfL8LWq9qvnnxlvLvaTqAmBZPP
- Sj0k/5BirM4GL1vmfEpayLjLh0UyHAxzAql2LsPDOygfKnk2g4ZC0l3zLH/636zEO5
- y26YegaRSz0kA==
-Date: Fri, 23 Oct 2026 14:13:42 +0000
-To: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com
-From: Paul Moses <p@1g4.org>
-Cc: andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@kernel.org,
+ c=relaxed/relaxed; t=1792764998;
+ h=Received-SPF:Received:Received:DKIM-Signature:From:To:Cc:Subject:
+ Date:Message-ID:In-Reply-To:References:Auto-Submitted:Content-Type:
+ Content-Transfer-Encoding:MIME-Version;
+ bh=PJRu7W6/Or1we5Gv3BgoLEtby0D0Y0UGgfjBHfRc5+k=;
+ b=jbvS1mMZvM9dvJ7fTKSK7ypDShLUevFLGmeeKmNcJ/ETbm7wJZG4yjzYnfeAxpJzOq1k
+ DNNMF5Au3esMnvj9GrNt6sbugfF0BwPQmfgQPa83ZYg3hJsqkPu6nVc6GzEYVQCYKoR+3
+ aHa16+70+yaQt7LqE9NPdJ8XCDgwR2C9pavuXjefUGt3mjsIDlJ5/um9BLzMsG8eNMy9I
+ 80PMHZvflQcw2QOBK4u5kxnYCEqkTAYHxAV5YCU0HdK9XxwkXPg/KevLNjM1tYKPRN8MV
+ zrd5PWF9SCD9SIf0a46DcLIPBRBwZs6Ze1pWVgHVEfpEjhDt7pN9TYCZnZBmH5XtazA==
+ARC-Authentication-Results: i=1; smtp2.osuosl.org; 
+ dmarc=pass header.from=kernel.org;
+ dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20260515 header.b=BoX0zDV3; 
+ arc=none smtp.remote-ip=172.234.252.31
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
+ helo=sea.source.kernel.org; envelope-from=netdev-bot+sinfo@kernel.org;
+ receiver=<UNKNOWN> 
+Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20260515 header.b=BoX0zDV3
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 244AC400D0
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 23 Oct 2026 14:16:37 +0000 (UTC)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+ by sea.source.kernel.org (Postfix) with ESMTP id D3456402B1;
+ Fri, 23 Oct 2026 14:16:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D29221F01828;
+ Fri, 23 Oct 2026 14:16:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+ s=k20260515; t=1792764996;
+ bh=PJRu7W6/Or1we5Gv3BgoLEtby0D0Y0UGgfjBHfRc5+k=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References;
+ b=BoX0zDV3/cysC/6BALN3iatWQRYpb5H2kDHaE5Re2qQc0McCIndzuUDTM0+z9pDrg
+ TZKYcbIhT0FGAS4dUJN0bT6fkoCrvCVWaRrHO7xzSt0QXd+Sd/eO9TyzFbDn5SXesb
+ 2Y/KxsULEFwwLsVe7EUv/DHyJ3qUTy3NxK/B0h82GAwIAkoIMIg8Yi/RD2aUDo4B+/
+ zir3lmy1WA1jE9Xw0DsN/jdEMiYbqRjL0Y3EGXH2zmFdmvmv0e+yDBAiQlUchYBAbZ
+ EsO/T/2D8YkxF+Phgfcc0PrXVOkUET/p/PlhEh/IvvR/fR4SqLMcIl0YNniFx/8qla
+ 35HO5azHhIYxw==
+From: netdev-bot+sinfo@kernel.org
+To: Paul Moses <p@1g4.org>
+Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@kernel.org,
  kuba@kernel.org, pabeni@redhat.com, ast@kernel.org, daniel@iogearbox.net,
  hawk@kernel.org, john.fastabend@gmail.com, sdf@fomichev.me,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, bpf@vger.kernel.org,
+ intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, bpf@vger.kernel.org, 
  linux-kernel@vger.kernel.org
-Subject: [PATCH net] igc: return XSK frame copies on XDP_TX failure
-Message-ID: <20261023141317.3904442-1-p@1g4.org>
-Feedback-ID: 8253658:user:proton
-X-Pm-Message-ID: 459190e83447046727bfe621ed78266b52582fb8
+Subject: Re: [PATCH net] igc: return XSK frame copies on XDP_TX failure
+Date: Fri, 23 Oct 2026 14:16:35 +0000
+Message-ID: <179276499536.3327.2674391031810316709@kernel.org>
+In-Reply-To: <20261023141317.3904442-1-p@1g4.org>
+References: <20261023141317.3904442-1-p@1g4.org>
+Auto-Submitted: auto-generated
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -136,61 +146,27 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-15.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-6.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS
+	autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Converting an XSK buffer to an XDP frame allocates a page and returns
-the original buffer to its pool. If the TX ring is full or DMA mapping
-fails, igc_xdp_xmit_back() returns an error without freeing the copy.
-The RX cleaner cannot release it, so the page leaks.
+Hi!
 
-Return the copied frame on TX failure. Save the RX memory type before
-conversion so native frames remain RX-owned on failure.
+This is an automated message. This series looks like a fix, but its
+commit messages seem to be missing some information:
 
-Fixes: fc9df2a0b520 ("igc: Enable RX via AF_XDP zero-copy")
-Cc: stable@vger.kernel.org
-Signed-off-by: Paul Moses <p@1g4.org>
----
-Tested on Intel I225-V with baseline and patched kernels. Physical
-pause-frame backpressure caused 46 leaked copies on the baseline.
-With the fix, all 72 rejected copies were returned once and freed,
-and all 192 copies were accounted for.=20
+ - How the issue was discovered, e.g. hit in production, hit during
+   development, syzbot report, manual code inspection, LLM or static
+   analysis tool scan.
 
- drivers/net/ethernet/intel/igc/igc_main.c | 5 +++++
- 1 file changed, 5 insertions(+)
+Please do not repost the series just to address the above. Instead,
+reply to this email with the missing information, so that reviewers
+can take it into account. If the series needs another revision for
+other reasons, please include the information in the commit messages
+then.
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethern=
-et/intel/igc/igc_main.c
-index 1fb5f3cbe93c..39263fd04aa9 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -2487,6 +2487,7 @@ struct igc_ring *igc_get_tx_ring(struct igc_adapter *=
-adapter, int cpu)
-=20
- static int igc_xdp_xmit_back(struct igc_adapter *adapter, struct xdp_buff =
-*xdp)
- {
-+=09enum xdp_mem_type mem_type =3D xdp->rxq->mem.type;
- =09struct xdp_frame *xdpf =3D xdp_convert_buff_to_frame(xdp);
- =09int cpu =3D smp_processor_id();
- =09struct netdev_queue *nq;
-@@ -2504,6 +2505,10 @@ static int igc_xdp_xmit_back(struct igc_adapter *ada=
-pter, struct xdp_buff *xdp)
- =09txq_trans_cond_update(nq);
- =09res =3D igc_xdp_init_tx_descriptor(ring, xdpf);
- =09__netif_tx_unlock(nq);
-+
-+=09if (res && mem_type =3D=3D MEM_TYPE_XSK_BUFF_POOL)
-+=09=09xdp_return_frame(xdpf);
-+
- =09return res;
- }
-=20
---=20
-2.56.GIT
-
-
+The evaluation is done by an LLM so it may be wrong, if you think
+that is the case please reply and explain.
