@@ -2,170 +2,168 @@ Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6B5AB606A31B
-	for <intel-wired-lan@archiver.kernel.org>; Sat, 24 Oct 2026 00:46:48 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C2D00606A31D
+	for <intel-wired-lan@archiver.kernel.org>; Sat, 24 Oct 2026 01:25:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=Qut3Qd1l;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=B98jWev7
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=vZzCem3r;
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=CdybPBuR
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 40DB640ABD;
-	Sat, 24 Oct 2026 00:46:48 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 9D52140A36;
+	Sat, 24 Oct 2026 01:25:58 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id uZayyWPM2_38; Sat, 24 Oct 2026 00:46:47 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 47F4B40AC5
+ id QecfCKAm9jGk; Sat, 24 Oct 2026 01:25:57 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 3416440AC0
 Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1792802807;
-	b=pzQcOqG2KNA1G+BMaAEDzCgM7K94PsDhagFHt6RICTo+fCFeHYdZwghJMs6R0cfbC9tA
-	 FZDoJnUwsx0sBOB0jXtyQkfjZuej4gWKHEijqVIaoMyw+rrgjJazjlwbXooH87xjAu+9a
-	 8etpkVkIh7lbdPhuF6+8x7Tnl3ppF336dMFsa8lYiusuLjPIZ7IyVLIho6/KVQylFWJBB
-	 9MU2CA9D8vbGx1i+mHEFQrsQMMbv74VsrECQ0pOKUe/FTECzNjyy49BfPy1VpYTPFST3T
-	 f/h6L71gJ1Ys1YcCwYuPQlIGgN1PxeuVOpQNYBfS06waUYYjyXx+OXW6ZVOKI+vBppg==
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1792805157;
+	b=kpwQiB4+j79VRMLxiUph9nUUWBKq4HlI3aMnpYwQftUp7UtnrfcGp1pg68/pkx8VW+g5
+	 o0HtKswdQAKsb7zAQpENpV/XTwgFZyIGHffQC8az9WxWzEML1NcnBqwNSw+Y2piOIBb/e
+	 YACOSl1RqE6ZseuaS2fXd1bSqq4uEg4h1pNzNf1E1hO1Xw5egrc7OQsJ9/H0iYMQmilX9
+	 llZ3V5AvHVYMUixUo36S8TbF1IhhZUBJf4FaFU213y2bO9Ml1MPCpNd5PJ4wicEtTJyw/
+	 X1TWA3c7WDtNS2+s+AfpnDZkJt/Oes5F5tZvUyKXpiNt7pFIzbpeFj+x4IRtSWb3jWw==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1792802807;
+	c=relaxed/relaxed; t=1792805157;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Gm-Message-State:X-Gm-Gg:
-	 X-Received:Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
-	 MIME-Version:Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:
-	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
-	 List-Subscribe:Errors-To;
-	bh=MsZrhWTvBYo1vnFa1x2gD9MSo4aFcjCOgnLOkNzEX0U=;
-	b=FYAQndI2wU0RzCDd7MRjGBz3n9o1bWZyneTd2e6gJX8xdu7lXjl99LNJuf0D29ZFjGB9
-	 yL9iMieMeruc8SiOtV7/9Q1rk76ODRp94diwP5ykkblRcO2I+i3fqR2UG8iM6YNdMfFGx
-	 kf8tZ4LWARbzkhlNje9/xq4rBs16jl0kmEPxQegcKy5BVc0QY3u3mJ5wuq9/QkkglWruY
-	 rokdJLSRA21cWYdCvW5geBH7ptXXbYs7IcJC61FYGmkGqCfgNDJizP3++ACfV410ml/hD
-	 DUGdYfUo/gkfqZ0wjmWRAlEfYrss0sUenlvPYnj+XWdu3i6IW2jPLKpyCqfYJ6l27DA==
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
+	 DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-IronPort-AV:
+	 X-IronPort-AV:Received:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-ExtLoop1:
+	 X-IronPort-AV:Received:From:Subject:Date:Message-Id:MIME-Version:
+	 Content-Type:Content-Transfer-Encoding:X-B4-Tracking:X-Change-ID:To:
+	 Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:X-BeenThere:
+	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Errors-To;
+	bh=04gsjwLCnz1GZQQoCjip6AU11BBjP5c97UIJiBbCDD0=;
+	b=PxfcDd9wuTL3nnLxIKNb/a0codN5iie0jtaLt73gvjJQ3CDyjBTaAEVbeJg8+O5qRL2/
+	 3SzkUBx0Vmo8ya2Lzx/jFbVWonKdoIUFVEhydX1wBQCCHJEj2rEyX9QdTNAFSAkhfDQ14
+	 wfpOeAs7kttMtQZKfhkQsbt3MfMM14IdTkixrd0qlx6f6oWEEGQC7n+Kk9TbmuFzeAHLz
+	 3fsCewFzoMrR1ws4jqeMNW1o3lYX7Z7gu2EAmlJFdJ9JsXT9e44+l8FmMoynnzPDbPIRf
+	 weWbOnO9c7XtB1W1kY2xwtdhvx0HdXwHQ3AJc7s/3KS3nvIn0gyluhxr1/JdLauhpiA==
 ARC-Authentication-Results: i=2; smtp4.osuosl.org; 
-	dmarc=pass header.from=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=B98jWev7;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1792802807;
-	bh=MsZrhWTvBYo1vnFa1x2gD9MSo4aFcjCOgnLOkNzEX0U=;
-	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
+	s=default; t=1792805157;
+	bh=04gsjwLCnz1GZQQoCjip6AU11BBjP5c97UIJiBbCDD0=;
+	h=From:Subject:Date:To:Cc:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=Qut3Qd1lVHHP3vxM6OeuX9xkDQQAgjpJqmMI9X9IEyx+IuQXs0Z7Tqkda7HtHpBXH
-	 ANxJ9tIlPlAd0HeinDnECTuDqWFS7ryM0aXhjh6LZPHkHm3mRnWgrbr3gSXAqXKWPI
-	 fwNykzsT6l1e9LIZW++8NMKpkVMP5HHGYMt6CgcAyWXUiA8nTooWoOMn7ZEozg3ToV
-	 I5YnWJ3o3ReQIUcJKkptp74ltLg2ut9kDpp3KNzN5NQOyhibvrPoa1vj9EN57oUIk6
-	 SpcOIpnxmfxxazH2bd2Ked5hM+LHSAPuSEtscgWAOYZxzn8SWDFGWwY6UspgtD9r6H
-	 ykLSrpVbJLcKw==
+	b=vZzCem3rBVQ0HMZs+bVwKzxser5OVqXTX39GqKU0BFMU8af4S9RGEbfn62VhMNkKB
+	 Bi9/iCF73wmPfRu1UMw4QPcsxbqpY//2u8LKqxDv7oOvIulg/48DHszS2AQ7SqMX7z
+	 +tMTUQ6/Sj7CYniEjysY1rvm0w3FNyup4lUetALN8Rqa4RyVjY5cPXpJlvqijBpd+4
+	 TYss8wqv89to/JuN6DC4Dr6pWBH9o5K09fsPZlgNQBKMpZ7fvipn1cs+8qNumsyDqh
+	 aq4th10/Fg6lOP9Eu8z98k/fbq7punjiyHzHCtsQDHfIxG+Vuu+DkR04QJ4xi+lyjZ
+	 L0W9O4WtD/H3A==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 47F4B40AC5;
-	Sat, 24 Oct 2026 00:46:47 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 648403B6
- for <intel-wired-lan@lists.osuosl.org>; Sat, 24 Oct 2026 00:46:46 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 3416440AC0;
+	Sat, 24 Oct 2026 01:25:57 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 8C49F3B6
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 24 Oct 2026 01:25:55 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 560B840AC5
- for <intel-wired-lan@lists.osuosl.org>; Sat, 24 Oct 2026 00:46:46 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 89FED404A1
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 24 Oct 2026 01:25:55 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id bw0ZgWUipnLy for <intel-wired-lan@lists.osuosl.org>;
- Sat, 24 Oct 2026 00:46:45 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 11A6D40ABD
-Authentication-Results: smtp4.osuosl.org;
- arc=none smtp.remote-ip="2a00:1450:4864:20::62f"
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1792802805;
- b=UvjIOg3vHxAgKo4PLWS/EW1UTWyibcM/432fUTHctNGRnQQs0pXQxrSOFmk+HXinsiZC
- MTig0vH5+ZSRrFyB0Hlba8NPfLD4OBSllI/QLGasfjfy9s/O7OOHMZE0roc/CIL7Ogozm
- r2nRTGFdoZ/GcICh4bDydFrENd2Xs5zEHSCDGwh3BpTyLiIfGXFxLgV72DnBVegd1Ah54
- TYZ/tY5QnyKCE5REUOZ4P37jWNDykbG3qNX4oJEiBJb4a4cM5kXBkWM/r9lChhoFpUig6
- T56K3IUCZiTV8a1UTfoVQGE/E25A9iwhTlIFmh/Nq+Kw/3bcX9LtLAk5KPMB73pBivg==
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id FYoDFvzdud7G for <intel-wired-lan@lists.osuosl.org>;
+ Sat, 24 Oct 2026 01:25:54 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org 0444D40068
+Authentication-Results: smtp2.osuosl.org; arc=none smtp.remote-ip=198.175.65.17
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1792805154;
+ b=KtzKVfDprAu3LvMTGPRRm61xM1BJJdcpR1PjO8i1w7W5y8II6WcQKGHIHNH7qgMDechw
+ oheeiPlwbZijhb6uEXfeFmkt6kQdx3vnMiiLDCAl6fPgeT8pnEbvah05rlD0VxYComSjF
+ I+C2nIIYjAfHcmUWlTKO4duPc+zBIEaMeG5cvuiG/2tldtW5J64P+1CfTfN5kSd1GQ5uF
+ 9I84MTSE12KCE5i+T8+i9HzxzL0KmfrRqT/M/eW5UKHXpLDePRYCj5jgaUxc2NCTqZEzC
+ KslEFlzx0QI/QWzxFDtZoSHkBVwaZ/tMPiz2e/RciRpiXtBNr35en3aF2VfRlOXFz1g==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1792802805;
- h=Received-SPF:Received:DKIM-Signature:X-Google-DKIM-Signature:
- X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
- Date:Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding;
- bh=MsZrhWTvBYo1vnFa1x2gD9MSo4aFcjCOgnLOkNzEX0U=;
- b=XFvBlR3HCGdk1/em/GRHbXGD3Zqq74KRpHp9kDPdczJrrc2Pp5xOTJmmmM6zXkhqeaQn
- dd/kEXc78/DKd5Fur3aBgimrDOQdNkzmwVcQ6JLrUZ2WKEaXXBZB5A6HZp2rzZNWZ5Ch6
- PV9BB9Z/LouPxsTIdq+YF5gU8F9qibkft2TrXoDP00Pkr/jMaVAlG6CGOyathNKuwFZ4n
- gAf99P65myZzyANMy2t4v7VJOUptZIaI0zk8NWgYW7OhJiGEHf4LV0sC9ol+1nMxMsBpd
- k3GrIJtFJ4GeJ8hK/Wun7HF/AHeKj9DZs43P8iMD0sLE1X8EYBXtY++aogfkcmCfWvw==
-ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
- dmarc=pass header.from=gmail.com;
- dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20251104 header.b=B98jWev7; 
- arc=none smtp.remote-ip="2a00:1450:4864:20::62f"
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a00:1450:4864:20::62f; helo=mail-ej1-x62f.google.com;
- envelope-from=andrebrait@gmail.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20251104 header.b=B98jWev7
-Received: from mail-ej1-x62f.google.com (mail-ej1-x62f.google.com
- [IPv6:2a00:1450:4864:20::62f])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 11A6D40ABD
- for <intel-wired-lan@lists.osuosl.org>; Sat, 24 Oct 2026 00:46:43 +0000 (UTC)
-Received: by mail-ej1-x62f.google.com with SMTP id
- a640c23a62f3a-c414e5d282eso165111466b.1
- for <intel-wired-lan@lists.osuosl.org>; Fri, 23 Oct 2026 17:46:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20251104; t=1792802802; x=1793407602; darn=lists.osuosl.org;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
- bh=MsZrhWTvBYo1vnFa1x2gD9MSo4aFcjCOgnLOkNzEX0U=;
- b=B98jWev7ZWrUTHNe80cDa+ebWNF/PswLOBT0SRW0SyOmDJLxHHHtbl9TrEiD81uVEH
- 7y64Hn2FNRJB+FtO8sySXSgtlIAp8YEGW7EfqOAyh0KcGp05aUAYmLmrHulreovIPVXm
- pOyk+HMgb7kzDSmdgK4vtm1g69wHs4bLD60+a338CmxxEgndrxzShWeowKCmxiupfm0e
- mBMWrKFEX38vVL2+bav93V8ufIFZv34ybrvi6KFCf8TqNPZdIyQlmJqRL/svuhYtZGxQ
- DCIUmOn9OyNy/UsLfi1V6zjjj0IzPlVZXk3ot8uCu/DPQhl2fo5MSpgLxUQvi3Knb3ik
- lvsA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1792802802; x=1793407602;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
- :message-id:reply-to:content-type;
- bh=MsZrhWTvBYo1vnFa1x2gD9MSo4aFcjCOgnLOkNzEX0U=;
- b=IAQI+FxxeuTmedF6GQgc1ObHOhjecvfRFhiNwPGH+GIoIgI0wrUS86pLDlX9zBFjxx
- b17m0dsOhmHwaUkbVza48j56oKkxPxRjKt9Qhv5OR8YHFU9r5j1as+VPC9RE/+vm36aL
- rnbxa1jDRLBAzi9G7Q8kFQ0Hl64Fjnc0P4ko1mKdZ5yuw2hTIvgfGEoOWIQOZ9pJ7xjN
- otrpO+ifP+kwC9tmbrqx8DPlMhR2akN5NVbI2Ij2F1i1gAPvYwlyRUN7ggZVTbz2iKqo
- +2tPw59b0jnk0xvLUwq+JkuKY6NfGSBO3YuFffmOf0M0/qWFAxbhrmNDbZbts+fXWf3l
- 4LJA==
-X-Gm-Message-State: AFq9FYKaILuzfgudpNQA/IMC+zMzF8E8ah69kwcV8GZd2MQF0WfsyOx3
- CZJOF+A1zdr6TgXu5EWytUDLNnX4m1OTAV8QxIapLkbvxSHpk/vVpa4MCj6QfWMJ
-X-Gm-Gg: AYBFou2OHyEn5WyL8Y5XQNi63K1NLN8I0m0FBBC15OJs91cD8G4doEC3m+bdimUEGTF
- SKT/piPsJtknE6kbpUcsLpb9TWQnMpBCleIeOciLw0mZ/7PCAXW4ttACaeAF7UVaY9QZcnI+zIn
- WFzKKzq0hmOV6pbSsIKjfjPPuhnMuuBF6tMsDYM/5UJbaQw5Y5uXN8FbB5S66G971Y6TzU33I/D
- ZF5cV8ToEYrJiqwq1Rbp20x0OnCz99o+i+8bEZ7iJuWQLqD6r6ElZNpjXlWqhpwtBl7aQkdC7g/
- HHG3b/achfnb60siROIz8UMX9jPnMM1reQnKFa87zlSITiZbLLlruOVPsYf1KYSZ3gmlngiFeQ6
- mDqCt0HcfZDCV7l+OcUbrTnQZgiJCH6YLmsuzG83iOllxwsMH/UwGh6uKHEjIWbNBNXKvy5K+Fq
- /pexL7IsLt1uIqPnH1rPxQl4tT3+MTrn5uoCr/UumtSAZbENYUAlNaI0BS+M1Otje8d/XjoL5Od
- S+r5yXmQ65d3gF0MpiBZUHYrO6sHg7lcKdxSHTKbV0eA4qEHRUJCkwrLGG29SK/eGDhqlfzzi54
- KKODn6Rdl9rQw9VG9Bxgc2x70i76/zeLXPpoVenIy7FGS50N2AbDiioDInFysl/ttdQFL3t59f/
- wdDFNz44Nygt6Br9z+nWz/lUIIcsOdnw=
-X-Received: by 2002:a17:907:6d0a:b0:c31:be58:5dde with SMTP id
- a640c23a62f3a-c46bdea43d2mr54564466b.40.1792802801610; 
- Fri, 23 Oct 2026 17:46:41 -0700 (PDT)
-Received: from localhost.localdomain
- (2a02-a466-79a7-beef-592b-860d-a608-4c37.fixed6.kpn.net.
- [2a02:a466:79a7:beef:592b:860d:a608:4c37])
- by smtp.gmail.com with ESMTPSA id
- a640c23a62f3a-c46bd79b8b7sm25738566b.78.2026.10.23.17.46.38
- (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
- Fri, 23 Oct 2026 17:46:39 -0700 (PDT)
-From: Andre Brait <andrebrait@gmail.com>
-To: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
- przemyslaw.kitszel@intel.com, g.goller@proxmox.com,
- david.laight.linux@gmail.com, Andre Brait <andrebrait@gmail.com>
-Subject: [PATCH iwl-net v3] e1000e: work around TSO erratum that corrupts data
- and hangs Tx
-Date: Sat, 24 Oct 2026 02:46:30 +0200
-Message-ID: <20261024004630.24579-1-andrebrait@gmail.com>
-X-Mailer: git-send-email 2.56.0
+ c=relaxed/relaxed; t=1792805154;
+ h=Received-SPF:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+ X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
+ X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:From:Subject:Date:
+ Message-Id:MIME-Version:Content-Type:Content-Transfer-Encoding:
+ X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:X-Developer-Signature:
+ X-Developer-Key;
+ bh=04gsjwLCnz1GZQQoCjip6AU11BBjP5c97UIJiBbCDD0=;
+ b=mX6pYhmU2BkLUuFPwgXDGp1LZBgLG+ybkL/NvdcPFXbcB1n+hokLxagXN96FRHS71p2t
+ EJVEf2FGS5w6ZyixcJucRbStvh/a4igawpnPO82vG2xLgri88soS5w2SPhr5ZQ1HqPviv
+ V63I9V2V0iOd/piDDKU9lI/WvE09EpbnYVOPBpQqtPxMngc0a0MqEY0Ph9/0QHCdtaiYQ
+ +GBCgCzcO299HKS6y1XN2ecQavx4cXGYLixZ73e8oR4kQtZ2PG4uTKSelO/1S0K/7HzUv
+ 0RQvDpuepqv/F05kG55sjNjwDIgZP2oSxawIxWeAjJl0lTBtEG8R2gBggYsrSDjKP/w==
+ARC-Authentication-Results: i=1; smtp2.osuosl.org; 
+ dmarc=pass header.from=intel.com;
+ dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=CdybPBuR; 
+ arc=none smtp.remote-ip=198.175.65.17
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.17;
+ helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
+ receiver=<UNKNOWN> 
+Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=CdybPBuR
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 0444D40068
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 24 Oct 2026 01:25:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1792805155; x=1824341155;
+ h=from:subject:date:message-id:mime-version:
+ content-transfer-encoding:to:cc;
+ bh=ATyqcapxCuKXEPZHrJIcMn3cIXEHZvPQs5UQ2JRwqs4=;
+ b=CdybPBuRhc/w4lVtxAfY0BTv1+IxOuY+L/+7quP1OLn3jncErQ5L1IEw
+ LLrESf2ReDY+XI/J/9UifIgejwBKwn9b65MkmPYrZAbm6LEwI/B5ir98V
+ 3C3/U3P32v5NuOrAKLIjqdOJNTUc68yGafdvRKw2mE4VG15dWbP8fVvqW
+ hz+Vg5SLCKHiNQvYPr6Yb1vR5bjCgvKQVawL2fIvJoo+7UpjGGiUIkIjp
+ xUYqc535r4wFAq210XuyTburfjg+T1VokIqncjdWkyE8LVkhfmdnxqLUZ
+ VxRzwrXCWIMnE7BidcWiHrj1tycjBmDeTdBe4y/qHclxRluBc5nichFZb Q==;
+X-CSE-ConnectionGUID: s2c9Hb6ZQU6ouY2LRfXkOw==
+X-CSE-MsgGUID: 6rptDXVwRIe7avjfcn8g6g==
+X-IronPort-AV: E=McAfee;i="6800,10657,11944"; a="1579036"
+X-IronPort-AV: E=Sophos;i="6.27,175,1787036400"; 
+   d="scan'208";a="1579036"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+ by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 23 Oct 2026 18:25:53 -0700
+X-CSE-ConnectionGUID: MpXiHhLeSZa5A5cvXgx5GQ==
+X-CSE-MsgGUID: mAnLuXEaSlSAgBFP3m+tqw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,175,1787036400"; 
+   d="scan'208";a="3890845"
+Received: from orcnseosdtjek.amr.corp.intel.com ([10.166.28.128])
+ by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 23 Oct 2026 18:25:52 -0700
+From: Jacob Keller <jacob.e.keller@intel.com>
+Subject: [PATCH iwl-net 0/2] ice: E825 timer adjustment fixes
+Date: Fri, 23 Oct 2026 18:24:28 -0700
+Message-Id: <20261023-jk-e825-e830-timecounter-v1-0-e932602f0d16@intel.com>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yWM0QrCMBAEf6XcsweXk0bxV8SHmq56VVNJUhVK/
+ 92oLwvDMjNTRjJk2jUzJTwt2xgruFVD4dLFM9j6yqSi3okqD1fGVts6a+Fid4RxigWJxQfX9hD
+ FxlPVHwkne//Se7LXjSMKHf5Hno4DQvmGaVk+Cdd5+oUAAAA=
+X-Change-ID: 20261022-jk-e825-e830-timecounter-06c15de02e76
+To: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>, 
+ Sergey Temerkhanov <sergey.temerkhanov@intel.com>, 
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
+ Intel Wired LAN <intel-wired-lan@lists.osuosl.org>, 
+ Przemyslaw Korba <przemyslaw.korba@intel.com>, 
+ Grzegorz Nitka <grzegorz.nitka@intel.com>, 
+ Maciej Machnikowski <maciej.machnikowski@intel.com>
+Cc: Jacob Keller <jacob.e.keller@intel.com>
+X-Mailer: b4 0.17-dev-67df5
+X-Developer-Signature: v=1; a=openpgp-sha256; l=9866;
+ i=jacob.e.keller@intel.com; h=from:subject:message-id;
+ bh=ATyqcapxCuKXEPZHrJIcMn3cIXEHZvPQs5UQ2JRwqs4=;
+ b=owGbwMvMwCWWNS3WLp9f4wXjabUkhqw7nGJJhSacW+YwysRWrlm3MzJwqmTQutMOddP3eHl96
+ nU8+uVGRykLgxgXg6yYIouCQ8jK68YTwrTeOMvBzGFlAhnCwMUpABNpCmD47+ot9fJhiTn7hOX7
+ AlbueP297kjXq0dqWgLOkV0PQ8K11jD8D3J5qXr4wN8p9R1Van/UNmjfMDb0cX51Iu5jv9Hm3/t
+ MWQA=
+X-Developer-Key: i=jacob.e.keller@intel.com; a=openpgp;
+ fpr=204054A9D73390562AEC431E6A965D3E6F0F28E8
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -176,130 +174,196 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-20.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-24.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_NONE,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On I219, a TSO packet whose first buffer is long and has a 4 KB
-boundary just after the TCP checksum field makes the NIC send corrupted
-data and then hang the Tx DMA. Forwarded VM traffic (tun/vhost-net)
-produces such packets, so hosts bridging guests onto an I219 hit it
-within minutes:
+Recently we've had reports of bad timer adjustment on E825. This series
+fixes the issues by replacing direct timer adjustments with a struct
+timecounter to maintain the phase in software instead.
 
-  e1000e 0000:00:1f.6 eno1: Detected Hardware Unit Hang
+To motivate this, the following is an analysis of how the E825 PHY
+timestamps function.
 
-Right before the hang the receiver gets TCP segments carrying data from
-128 bytes earlier in the stream, with a valid checksum.
+    The ice driver maintains PTP clock time in the MAC with a 96-bit
+    register. Timestamps are captured in the PHY which only stores 64
+    bits, only including the lower 32-bits of nanoseconds. The driver
+    performs clock adjustments using a hardware timer command mechanism,
+    where the clock adjustment is programmed into shadow registers in
+    both the MAC and PHY, and then a timer command is initiated to
+    synchronously update the timers.
 
-This is the erratum Intel documents for the 82571/82572 (#76), 82574
-(#17) and 82583V (#7): if the first buffer is larger than
-3 * (max_read_request - 4) bytes and a 4 KB boundary falls just after
-the headers, a read is repeated, wrong data goes out with a correct
-checksum, and the Tx DMA hangs. e1000e never implemented the documented
-workaround.
+    Since the PHY only maintains the lower 32 bits of nanoseconds,
+    adjustments are also limited such that the maximum atomic adjustment
+    is ~2.1 seconds (2^31-1 nanoseconds).
 
-Apply it to all e1000e parts: limit the first data descriptor of a TSO
-packet to 3 * (max_read_request - 4) bytes (372 on the I219, where
-pcie_get_readrq() returns 128). The rest of the linear part goes into
-the next descriptor, and the NIC still segments the packet.
+    For large offsets, the driver uses a non-atomic flow where the
+    current time is read, an adjustment is applied in software, and then
+    written back. This necessarily loses some elapsed time, which
+    applications must deal with. For particular servo configurations,
+    where the parameters are tuned for a very slow servo, this error can
+    take a long time to finish correction.
 
-The split can take one descriptor more than before, which
-e1000_xmit_frame() already reserves: it counts one descriptor more than
-e1000_tx_map() uses, a leftover from e1000, which spends it on a 4-byte
-TSO sentinel that e1000e does not use. Comment that count.
+    On E825, the adjustment in the PHY does not always work reliably.
+    The reason for this is subtle, and is a quirk of how the timestamps
+    are actually generated. The timestamps for Tx and Rx packets come
+    from the PCS timer rather than directly from the PHY timer. The PCS
+    timer is derived from internal PHY signaling.
 
-Tested on I219-LM (8086:15bb), v7.0.14, byte-verified traffic:
+    To keep the PCS timer and PHY timer in sync, every few cycles
+    (testing seems to indicate every 8 cycles) the PHY timer is copied
+    to the PCS timer. On other cycles, the PCS timer is incremented by a
+    value determined from the PCS clock rate.
 
-                                        unpatched        patched
-  packets placed inside the window [1]  hang <12m        no hang
-  guest traffic, TCP timestamps on      hang <27m        60 min ok
-  guest traffic, TCP timestamps off     hang <7m         40 min ok
-  guest traffic, VLAN tag from stack    hang <20m        40 min ok
+    Crucially, the copy of the PHY timer is skipped if the current value
+    of the PHY timer is lower than the PCS timer (*and* on this cycle
+    the regular PCS clock increment is also skipped).
 
-  [1] 785-1013 packets at each of 10 offsets, 54- to 70-byte headers
-  "hang <Xm": every run hung, the slowest within X minutes
+    During normal operation, the PCS timer will tick from its own source
+    for 7 ticks then copy the PCS timer. If the PCS timer is slightly
+    ahead, then PHY timer update is skipped, and the PCS timer skips an
+    update every 8 clock cycles until it is back in alignment with the
+    PHY timer.
 
-Unpatched, data was corrupted at every hang. Patched, no corruption, no
-Tx timeouts or drops, and hardware TSO stayed in use (26.5M segments).
+    Unfortunately, this hardware logic did not take into account manual
+    adjustments to the PHY. If the PHY timer is adjusted backwards, (or
+    if a forward adjustment causes the PHY timer to overflow), the PHY
+    to PCS sync will not occur again until the PCS timer wraps back
+    around to zero. In the worst case, an adjustment could land the PHY
+    timer to just below the PCS timer just after it wraps around. PHY to
+    PCS syncs would stop for ~3.6 seconds.
 
-Developed with an AI coding assistant (Claude); details below the cut.
+    During this time, the Tx and Rx timestamps will read from the PCS
+    timer. These timestamps will be fed into the timestamp extension
+    algorithm which will produce incoherent results, and data will be
+    fed into the PTP application servo. During the invalid window,
+    faulty timestamps will cause the servo to steer incorrectly, likely
+    away from the true target time. After the PCS timer synchronizes
+    again, the timestamps will return to normal. However, the servo may
+    have steered the clock incorrectly. In default ptp4l configurations,
+    direct clock adjustment is only performed once during startup. This
+    forces the application to use frequency slewing to correct any
+    remaining offset. With slow servo parameters, this can take a *very*
+    long time. In some setups, we had reports of taking several minutes
+    to nearly an hour before stabilizing, and in some configurations the
+    servo was unable to ever recover.
 
-Fixes: bc7f75fa9788 ("[E1000E]: New pci-express e1000 driver (currently for ICH9 devices only)")
-Assisted-by: LLM
-Signed-off-by: Andre Brait <andrebrait@gmail.com>
+    Note that adjustments work properly on the MAC timer, and indeed on
+    the first-layer PHY timer value that the driver can read over the
+    sideband queue. Only the PCS timer (which is inaccessible to the
+    driver) fails to adjust. This made tracking the precise origin of
+    the failure difficult.
+
+Testing shows that pretty much all "negative" adjustments and about half
+of the positive adjustments can trigger this failure. It is also
+difficult to see without using extremely slow servo parameters. With a
+servo tuned for fast reaction, the incorrect timestamps will cause some
+difficulty in the first adjustment, but the servo will quickly correct
+and recover within a few seconds at most.
+
+I used the following P/I servo parameters in my testing:
+
+    pi_proportional_const 0.60
+    pi_integral_const 0.001
+    pi_proportional_scale 0.0
+    pi_proportional_exponent -0.3
+    pi_proportional_norm_max 0.7
+    pi_integral_scale 0.0
+    pi_integral_exponent 0.4
+    pi_integral_norm_max 0.3
+
+In particular, the pi_integral_const will force the servo to be very
+slow at reacting.
+
+Even trying to compare the MAC timer with the Tx and Rx timestamps is
+not trivial. There is no mechanism to synchronously read the MAC timer
+along with a timestamp. Additionally, timestamp extension makes this even
+harder to track. The MAC timer is immediately adjusted and the cached PHC
+time is updated. Normally timestamps from before the adjustment should
+reasonably convert, however if the adjustment is large enough the timestamp
+can flip to being detected as "in the past" and in the worst cases the
+resulting extended timestamps will have a second sudden jump of -4.2
+seconds before the PCS timer adjustment is applied and things settle. All
+of this while being fed into a servo trying to steer the clock can make it
+difficult to understand what is going on.
+
+With that background out of the way, here's a summary of the patch content:
+
+First, the timestamp extension logic is refactored to store the cached
+PHC time value inside the ice_adapter structure under a new ice_phc
+structure which will be used to store timecounter data. This change
+reduces the number of threads that need to perform timestamp extension
+and makes introduction of timecounter simpler as it gives a natural
+place for accessing the structure and simplifies modifications to the Rx
+hotpath in particular.
+
+Next, the driver is modified to allow use of a timecounter for
+representing the time instead of directly adjusting the phase in
+hardware. Frequency adjustments continue to be handled in hardware. For
+now, only the E825 and E830 devices are switched. The legacy
+implementation remains for supporting older installations of E810 and
+E822 platform devices. We plan to complete migration in the future, but
+felt that immediate conversion would slow down ability to validate that
+all older installations will behave correctly. Since the E825 device
+timer adjustment logic is completely useless, this can speed up ability
+to adopt the fix. Although E830 does not appear to have the same timer
+command issue, it was decided to convert both since they are the most
+recent devices and undergoing the most testing and active development.
+
+Although I would normally rate conversion to timecounter as a "feature", I
+have submitted this series as a fix due to the severity of the failures
+encountered on E825.We would prefer to be able to avoid delays and help get
+this to critical customers soon.
+
+This series fixes a separate issue from [1] and does not *directly* depend
+on it. The fixes in that series are necessary but not sufficient to
+completely eliminate PHY timer desync issues on E825.
+
+There are some structural conflicts with the ctrl_pf RCU changes at [2]
+which I have tried to integrate, so this won't be a straightforward
+cherry-pick to trees without that series.
+
+One final note, the conversion to timecounter supersedes the changes
+from [3], and that patch has been removed from more recent versions of
+that series. The reset partially helped, but was only applied to the
+non-atomic settime interface. In particular, the settime interface was
+vulnerable to the same PCS issue, but the PHY soft reset *does* clear
+both the PHY and PCS timers back to 0. Performing a reset after the
+adjustment will force both timers back to zero and then perform a
+forward adjustment that won't trigger the failure condition. However,
+attempting to add this reset to *every* timer adjustment comes with
+unnecessary delay since the whole process takes a long time especially
+with the PHY soft reset. It was ultimately deemed as not a proper fix
+suitable for deployment.
+
+Link: [1] https://lore.kernel.org/intel-wired-lan/20260925222824.270640-1-grzegorz.nitka@intel.com/
+Link: [2] https://lore.kernel.org/intel-wired-lan/20261013091235.1423979-1-sergey.temerkhanov@intel.com/
+Link: [3] https://lore.kernel.org/netdev/20261008215614.1987250-16-anthony.l.nguyen@intel.com/
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
+Jacob Keller (2):
+      ice: store cached PHC time in ice_adapter
+      ice: use struct timecounter for E825 and E830
 
-Notes:
-    v3: incorporated the changes David Laight asked for in his review of v2:
-    a comment on the spare descriptor in e1000_xmit_frame() and a matching
-    paragraph in the commit message. The code itself does not change.
-    
-    v2: https://lore.kernel.org/netdev/20261020230211.75665-1-andrebrait@gmail.com/
-    v1: https://lore.kernel.org/netdev/20261018203215.77371-1-andrebrait@gmail.com/
-    
-    The investigation, the test results and how the AI assistant was used
-    are in the v2 notes and at
-    https://github.com/andrebrait/e1000e-i219-tso-hang/tree/3764faf44ab6
+ drivers/net/ethernet/intel/ice/ice_adapter.h |  42 +++
+ drivers/net/ethernet/intel/ice/ice_ptp.h     |  12 +-
+ drivers/net/ethernet/intel/ice/ice_txrx.h    |   4 +-
+ drivers/net/ethernet/intel/ice/ice_adapter.c |  10 +
+ drivers/net/ethernet/intel/ice/ice_ethtool.c |   2 +-
+ drivers/net/ethernet/intel/ice/ice_lib.c     |   2 +-
+ drivers/net/ethernet/intel/ice/ice_ptp.c     | 381 +++++++++++++++++----------
+ 7 files changed, 311 insertions(+), 142 deletions(-)
+---
+base-commit: bfd1885cfb920d10c2739c9f152615ec26e3b045
+base-tree: git://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+change-id: 20261022-jk-e825-e830-timecounter-06c15de02e76
 
- drivers/net/ethernet/intel/e1000e/e1000.h  |  1 +
- drivers/net/ethernet/intel/e1000e/netdev.c | 14 ++++++++++++++
- 2 files changed, 15 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/e1000e/e1000.h b/drivers/net/ethernet/intel/e1000e/e1000.h
-index 63ebe0037..704284188 100644
---- a/drivers/net/ethernet/intel/e1000e/e1000.h
-+++ b/drivers/net/ethernet/intel/e1000e/e1000.h
-@@ -219,6 +219,7 @@ struct e1000_adapter {
- 	/* Tx - one ring per active queue */
- 	struct e1000_ring *tx_ring ____cacheline_aligned_in_smp;
- 	u32 tx_fifo_limit;
-+	u32 tx_hdr_buf_max;
- 
- 	struct napi_struct napi;
- 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 834a5b888..cb3b530d6 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -4143,6 +4143,15 @@ void e1000e_reset(struct e1000_adapter *adapter)
- 	adapter->tx_fifo_limit = min_t(u32, ((er32(PBA) >> 16) << 10) - 96,
- 				       24 << 10);
- 
-+	/* TSO erratum (82571/82572 #76, 82574 #17, 82583V #7, also seen on
-+	 * I219): when the first buffer of a TSO packet is larger than
-+	 * 3 * (max_read_request - 4) bytes and a 4 KB boundary lies just
-+	 * after its headers, the NIC repeats a read, sends wrong data with a
-+	 * correct checksum and then hangs. Keep the headers in a first buffer
-+	 * no larger than that.
-+	 */
-+	adapter->tx_hdr_buf_max = 3 * (pcie_get_readrq(adapter->pdev) - 4);
-+
- 	/* Disable Adaptive Interrupt Moderation if 2 full packets cannot
- 	 * fit in receive buffer.
- 	 */
-@@ -5632,6 +5641,8 @@ static int e1000_tx_map(struct e1000_ring *tx_ring, struct sk_buff *skb,
- 	while (len) {
- 		buffer_info = &tx_ring->buffer_info[i];
- 		size = min(len, max_per_txd);
-+		if (!offset && skb_is_gso(skb))
-+			size = min(size, adapter->tx_hdr_buf_max);
- 
- 		buffer_info->length = size;
- 		buffer_info->time_stamp = jiffies;
-@@ -5905,6 +5916,9 @@ static netdev_tx_t e1000_xmit_frame(struct sk_buff *skb,
- 	/* reserve a descriptor for the offload context */
- 	if ((mss) || (skb->ip_summed == CHECKSUM_PARTIAL))
- 		count++;
-+	/* spare descriptor: e1000_tx_map() splits the linear part of a long
-+	 * TSO packet to keep its headers within tx_hdr_buf_max (TSO erratum)
-+	 */
- 	count++;
- 
- 	count += DIV_ROUND_UP(len, adapter->tx_fifo_limit);
--- 
-2.56.0
+Best regards,
+--  
+Jacob Keller <jacob.e.keller@intel.com>
 
