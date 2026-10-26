@@ -1,143 +1,137 @@
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 13E47606A324
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 26 Oct 2026 07:43:26 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 236FF606A31B
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 26 Oct 2026 07:54:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=XDScGHa9;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JAdFX2VW
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=mNCzfP0u;
+	dkim=pass (2048-bit key, unprotected) header.d=1g4.org header.i=@1g4.org header.a=rsa-sha256 header.s=protonmail header.b=dYr19qWL
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id E31FE60604;
-	Mon, 26 Oct 2026 07:43:25 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id E6F2580D73;
+	Mon, 26 Oct 2026 07:54:04 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id yXfPaM7SHdUz; Mon, 26 Oct 2026 07:43:25 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org D85136063A
-Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793000604;
-	b=PARbmPQyKvUDUSew+y+TvEu85KVscq4yfOZyeZbevVBM0tnPGfduy0X/U7najVZ46dVs
-	 xGg5wNL+JwRxhGRpUK4qA2cFzj22U9HR7O9MrAuJGX7iYD5YMRoEfPAj2BlAqNWimgxqW
-	 w8v6fwmjIUm/axBEYtjsXr5NjyzQaNAAFKLYG59qdvH/ZFQnB0Ylj42X0AGE7bIqNQcR1
-	 relrAMd9lXTlaxctASP/6zw/nY+RffL2+ZBLPcrvJVmuggqxknJL8r6JbMUQI36KKcDxz
-	 GKgUQe1mu58zBOXD2QO70FC6knJAXSVSFjoebsq9b7FDBiLLI1PyLSnMKYXrXNlxrtw==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id R2Ia4jqHZXHg; Mon, 26 Oct 2026 07:54:02 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 8871480C97
+Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793001242;
+	b=OSbAc5+9AvdP3t0AHvRolYXQzdx1Symr1W3J5bbFuEsA2YEPAq4V2TlXjwUl6gYzPPGw
+	 sewYF+5OLth4Efnt+eaGYKiPpEyq7or83RJXveaWubYm36dZk/Q7xVMao2+nNMQ4VwPv9
+	 ErTU8g72QbvaMyG9ytbqAU16y+k1HYJGrxdBhpLGBaGwA/mjbxENWXtN1HXZ9tTU6r/Vr
+	 VVWtKSS67v0nQDlr4+8Pw5lsfZV4QQZGxHnyvMe/trLUA5F55GVID+nPIuTOAKvid8cTE
+	 3mZOCaJNqRuEKdeGail5ZxLtZ04lWNs+57WunX6ItKazRif5EWe7WkdyMayrWCPyJCQ==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1793000604;
+	c=relaxed/relaxed; t=1793001242;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 Received:DKIM-Signature:Subject:From:To:Cc:Date:Message-ID:
-	 In-Reply-To:References:X-sashiko-severity:Content-Type:
-	 Content-Transfer-Encoding:MIME-Version:X-BeenThere:X-Mailman-Version:
-	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 X-Spam-Status:Received:ARC-Filter:X-Greylist:Received-SPF:Received:
+	 DKIM-Signature:Date:To:From:Cc:Subject:Message-ID:In-Reply-To:
+	 References:Feedback-ID:X-Pm-Message-ID:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:Precedence:
+	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=hOfnCH+7CYoZiGAiRuh8IJFPtlhrgdv3kKtPaMkLAdQ=;
-	b=UW7YosozW11w2QVeXp48/ZhC5UavSs8a0kWZYgHez1c0sWEqZ2A4H2CcuZyq1wrI3zgb
-	 FlOTqry/5J1SXUXbH/HbKf5zZCizj/smqGU0QNCOI/vH9N/qUF0EgLQtPYu9MmaCxuzww
-	 CAkVXoeNMIi5PZNVIGbgKSjfh0Lwi9zb4A7zWsK3fJVj4Gu33ZR45h/Xh1CVBNghIL5tA
-	 Ux0hJdgal/r8VS8txdF/UDHwyxmNPzHcERtb45M4yZeqQdL8ObCvUYtGRnIiDFrNPI8+C
-	 7jaRG2SpTF1pE6b89I3QkB2T5hcAsp7t6c+JyT4bdTU61C7X0z+//9M4XKrAV65CYCA==
-ARC-Authentication-Results: i=2; smtp3.osuosl.org; 
+	bh=l0YvXY1ZXOO/2zz78iKHOZrlkKi+Hmc7P2K347btTPE=;
+	b=pH7zMBU8rQZCzwXv2r2VXkfOoZ87pezSJ8dl/DcLI5PX4J84ZijV496HusIQkMbZyCuC
+	 VwCi4OvizTf0HReZWB2OhE98pTw6rCeiHvBAkJiC72bxb9PyNrtdJmH4ryaRNmjP4HiXi
+	 ajbc38MoNIomFrGKNZudP7cB1zVxOvNMCrMwLCl9VZrTcl8moGeRmERRs47zuKpbhCRYV
+	 Gu9F9mYxmH+AZlsy9t2vbr4XKynV5WAgMeOvunUdsczaqA9ewH7H1krkFYGSbL8g+jqsq
+	 JBlnBE2r7QNYuIFgsyN2bOwL6tP0SW/c+eDl4Xd7hJ4a/jPw816DpWPy+AkYemRW0Pg==
+ARC-Authentication-Results: i=2; smtp1.osuosl.org; 
 	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1793000604;
-	bh=hOfnCH+7CYoZiGAiRuh8IJFPtlhrgdv3kKtPaMkLAdQ=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References:List-Id:
+	s=default; t=1793001242;
+	bh=l0YvXY1ZXOO/2zz78iKHOZrlkKi+Hmc7P2K347btTPE=;
+	h=Date:To:From:Cc:Subject:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=XDScGHa9XISIEcbxdQjJp3vKTh7kDAT7OQEn7Os4Bv45g3mcUssWivx3mHlK1Prp6
-	 EtXpjhv80q5T7gK+/4lQJXpdBMK7AstDHEQqoZdtKC4PoSnoqq7b82EY+iliV44Spc
-	 Ir6HHeEjJA+tJh45ph3mzVIU8bxNgvJFQJyBOkI6KTsLgbM04iJXeTIsEOkwoqvTKD
-	 awvpxpGUwce+BiqA/WF3bkZvifE+CaX1E9jcPhFVlS7pTCXsBB3tEPc8WzOQdjudiu
-	 rSPPx7bgH2j4S/q9MHrfCViXuzs4XZiB8Q8Qk2/SFBezE+B2DXI0BIFU7zpd42OH1Q
-	 v6JAkIXS5E+Ug==
+	b=mNCzfP0uq2b9S63iceJS7DDf0y0nXbFzH8tPAuqwyZD7MNTAt/KIKXIdx1bWjTwqk
+	 UARqRSts9SKXzpo4YUXgAaAy8FS2SkoGYJyq1a9biYot/TXFWxJ+fDAH+8R1jigwd2
+	 8AP1w0U+OiYlham1wcUM0FTnq7zaFL8VQPlS9Y64+U+ZLL/MGojfBKXke1f4vfG7Vg
+	 UQ+rWXyEQNuTN4lZMn5WfSvgS/c/AyCjD/nK2qfqn53e8y8FzqTLFMge4dbnf+iiMv
+	 OPWST+pxMe4lbxNW8qQLTghekAM41OrqYstvY10clTgFwK6xoCnmJKWpvlZPIlSKEr
+	 vIu56LH63j5kw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id D85136063A;
-	Mon, 26 Oct 2026 07:43:24 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 8871480C97;
+	Mon, 26 Oct 2026 07:54:02 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 5628F334
- for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Oct 2026 07:43:23 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id B4908334
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Oct 2026 07:54:00 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 53DC1405DC
- for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Oct 2026 07:43:23 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id A627E405D7
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Oct 2026 07:54:00 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id wgdJqHwvku_m for <intel-wired-lan@lists.osuosl.org>;
- Mon, 26 Oct 2026 07:43:22 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 3639D405D6
-Authentication-Results: smtp4.osuosl.org; arc=none
- smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793000602;
- b=sw76YSu6RBLyh9ztrlfl0RvmlLwVKiYPZiPa3V1AcoDPRKupLVHPdl9UbBgFNcEBb3Ug
- cd+ihyeZHPj/cbNvqfQol5576C82sZ+zNcR9a8SQat+xUrqVoq/1S8NVCj6uLiGUQ9kzu
- zcCnNxmzkYrI+0f5ZYHppoDc1lPzrj2xwRwjFxbaSDeaRom7QZOVCg9OrNqXDwN6N0Z4h
- 0LNrUkdveb8dYZRNh8JtRZvIPz2zOUAJhDBBhB3gUVBjWIXpD6raM7IGzto9VbzLyxbi+
- 4n15N53BEftp7EZ/AaBDOoOPfYFvkDaLmtZDB3hPwfKjsZZLBPb478fUUUsqh0uv0cg==
-ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1793000602;
- h=Received-SPF:Received:Received:DKIM-Signature:Subject:From:To:Cc:
- Date:Message-ID:In-Reply-To:References:X-sashiko-severity:
- Content-Type:Content-Transfer-Encoding:MIME-Version;
- bh=hOfnCH+7CYoZiGAiRuh8IJFPtlhrgdv3kKtPaMkLAdQ=;
- b=O3tfoAmCfeZFQ+6nl3rlHV5WQPYvfs5P3yDxN0h9mgHVUsK2u4Uupqm/jcVvlK9Z6ufP
- BIz8kv/qaD3CC3Fj7/uyDtC9IttsVyuvNw6VnCQuZodQUHl7AgOfkOsauEsCZoDgCoG/K
- Kmy6Owkvqrf/pLPi5s7SlGJsa5871CL7hX0xZs2t4pfOnMW4RVIahfWVXOiaDjVnhQveS
- Z+6fmei+dUlL/YjG5v+Rxuu63Kq5hq9Ngz9dTx4vHuDhT9gOTL/iHrNs8A16BMpNUdRks
- gqTf4ApanLjHK4Ya1B8khxbZE6x7Q7aTCJtPQ9bt0hFpz2K1TGHS5quj/OiaMiy7WbA==
-ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
- dmarc=pass header.from=kernel.org;
- dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=JAdFX2VW; 
- arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
- envelope-from=netdev-bot+sashiko@kernel.org; receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
+ id sGGJsxHbkNTm for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 26 Oct 2026 07:53:58 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org A974D405B0
 Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20260515 header.b=JAdFX2VW
-Received: from tor.source.kernel.org (tor.source.kernel.org
- [IPv6:2600:3c04:e001:324:0:1991:8:25])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 3639D405D6
- for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Oct 2026 07:43:21 +0000 (UTC)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id 84294600CB;
- Mon, 26 Oct 2026 07:43:20 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 368C91F01825;
- Mon, 26 Oct 2026 07:43:19 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1793000600;
- bh=hOfnCH+7CYoZiGAiRuh8IJFPtlhrgdv3kKtPaMkLAdQ=;
- h=Subject:From:To:Cc:Date:In-Reply-To:References;
- b=JAdFX2VW5261ezgvvKOnoCW5hSsSCAgV1wUzoQ5lBbc4Pgk7RjwpKp/BBsBXrZuQV
- L90ZaneqOgiEIVT/LV7VqP0Hmn6PKWgzUFnPfxW0Bf7IVTYwcF8xxOihihy6KKEGhW
- J1NVs+Yq7CTZBxKJy8qaxvOiUGTGJs1qZwiQWgPdPfS0roekjD4eDLnDvLQcnTJJdg
- DYZHAudsDg2pEwHDYZR6bQqruYKVi100FFgYGTraG6ir9d4F1skj6A1Haayc5H0ii2
- WKFb2NzBUAoWD8hhMA2R1nJDoS5L82xQuJ85rjDSuRZOdigcJ5biYWDBiDYN9XHpYg
- 6Y+Mf1e1TkhKA==
+ arc=none smtp.remote-ip=109.224.244.119
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793001238;
+ b=llVPoxlfvkA6F/YGQBulxK9GKywO20akra4CiXOyBm0XLKm146aYtOXzRov+ENPxByzZ
+ Fk0V7frXp3hw1W0QKpa/ryX+IR5V1hWk22smDM8A/pQdZ1TLYVA/f8gQmpZ1/cnoXmxNm
+ h/ijOwYI6wLXLczj7NWTiOT5rJtXzmlDNiN1QctsvrDV/mJzeWeHzdG+Rahbzv6tNG15o
+ moJ6rJejW4a8e25BLnMwFHM0gyW5osoPsl/bMwwAw0nh2oL5rEvmDwmkz7fHFdrQKa7t0
+ z36ejPV2XRB47KUNhchK4bhnfbZbCkHZ9ojnitxEkUaEwoiP/9Ftn371zmmiIYFBJhQ==
+ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
+ c=relaxed/relaxed; t=1793001238;
+ h=X-Greylist:Received-SPF:DKIM-Signature:Date:To:From:Cc:Subject:
+ Message-ID:In-Reply-To:References:Feedback-ID:X-Pm-Message-ID:
+ MIME-Version:Content-Type:Content-Transfer-Encoding;
+ bh=l0YvXY1ZXOO/2zz78iKHOZrlkKi+Hmc7P2K347btTPE=;
+ b=JINmvMxPhCff0TSbkkR0I0BKJ6QItJYfl/k3Gbe61LOBDYe3O2GS79+Lmhi8HCgatZq/
+ BGJBTHIjfZAlfXQMu+X7AydipEF4e1eKzfq7KAzz1/uia7V+86hku98nSUoiBYFzqnwe/
+ IeEgQFkhbig2TXKxJQCB0l/OQ0x7/Z+6QDR3Q+dBTRwlZPqTgUhg9OENoZrKCn7yLOfBa
+ rHgEYSzCiFSqBY6KLIgjVwp90ORrcDf0vPnc2MNXx57BzMZeotz4MzfyS9n2/hJGpI8L0
+ 0F5Zb7T3EkA4eCzB0qlN74UmRN7ELBrmCoxsGe4MO7oZ2g+PQdaPf6soXmDW7FgY7Tw==
+ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
+ dmarc=pass header.from=1g4.org;
+ dkim=pass header.d=1g4.org header.i=@1g4.org header.a=rsa-sha256
+ header.s=protonmail header.b=dYr19qWL; 
+ arc=none smtp.remote-ip=109.224.244.119
+X-Greylist: delayed 90100 seconds by postgrey-1.37 at util1.osuosl.org;
+ Mon, 26 Oct 2026 07:53:57 UTC
+Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=quarantine dis=none) header.from=1g4.org
+Authentication-Results: smtp4.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=1g4.org header.i=@1g4.org header.a=rsa-sha256
+ header.s=protonmail header.b=dYr19qWL
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=109.224.244.119;
+ helo=mail-244119.protonmail.ch; envelope-from=p@1g4.org; receiver=<UNKNOWN> 
+Received: from mail-244119.protonmail.ch (mail-244119.protonmail.ch
+ [109.224.244.119])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id A974D405B0
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Oct 2026 07:53:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=1g4.org;
+ s=protonmail; t=1793001233; x=1793260433;
+ bh=l0YvXY1ZXOO/2zz78iKHOZrlkKi+Hmc7P2K347btTPE=;
+ h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
+ Feedback-ID:From:To:Cc:Date:Subject:Reply-To:Feedback-ID:
+ Message-ID:BIMI-Selector;
+ b=dYr19qWLgNxaI6kjQtsrquIulqivtOAvVzDWRfdROAIHuStkIGvXwAXqZIW50JF5x
+ OQclzbLDmLn1a8IaUyIFAfnHNzbvh8YjBM7a5PG63sLjVrdhKVSQEfPzYyx9Is3VES
+ AJ6KWcjVyLqPyikmNd3dLYdNldP5DbGMcmQDrsJXYLmWokCtkC9qNU6vfEjLvmy9pH
+ 8xCD0ZPAYqm7bSRoSd6pw8IW/ywlIufTr/glWjFwHrWXs6tDzE6GdhgI+nd/2AEcW3
+ CKLw5VW/u6MKimAIp+GCt+LXfXGDocjpigmzsDSusw3gGZSfzTN2+baO+Z3qlv7dGO
+ +CbU4XHcT2t0A==
+Date: Mon, 26 Oct 2026 07:53:49 +0000
+To: sashiko-reviews@lists.linux.dev
+From: Paul Moses <p@1g4.org>
+Cc: intel-wired-lan@lists.osuosl.org, bpf@vger.kernel.org
 Subject: Re: [PATCH net] igc: track rx frame boundaries independent of skbs
-From: netdev-bot+sashiko@kernel.org
-To: p@1g4.org
-Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
- andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@kernel.org,
- kuba@kernel.org, pabeni@redhat.com, ast@kernel.org, daniel@iogearbox.net,
- hawk@kernel.org, john.fastabend@gmail.com, sdf@fomichev.me,
- maciej.fijalkowski@intel.com, vedang.patel@intel.com, jithu.joseph@intel.com, 
- andre.guedes@intel.com, intel-wired-lan@lists.osuosl.org,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org, bpf@vger.kernel.org
-Date: Mon, 26 Oct 2026 07:43:18 +0000
-Message-ID: <179300059875.3134.14278423796840357371@kernel.org>
-In-Reply-To: <20261025065154.2037149-1-p@1g4.org>
+Message-ID: <RWzBrfsuLy54ULo85bs7EUhLPBOhR88jVUxVW1TsP7bhhEDQM2T-b9R6X3F9D62O3nN9GVNqK2S9NQG-sqqOIba8bP0oHv0rOUJdn_p1QUo=@1g4.org>
+In-Reply-To: <sashiko-outbox-184616@kernel.org>
 References: <20261025065154.2037149-1-p@1g4.org>
-X-sashiko-severity: Medium
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+ <sashiko-outbox-184616@kernel.org>
+Feedback-ID: 8253658:user:proton
+X-Pm-Message-ID: 88968fa72f3d1b8507b05439ff909c5cb132e4e1
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -148,197 +142,143 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-11.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_PASS autolearn=unavailable autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-10.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS autolearn=unavailable
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Thank you for your contribution! Sashiko AI review found 1 potential
-issue(s) to consider.
 
-Critical: 0 · High: 0 (2) · Medium: 1 · Low: 0
 
-If you believe none of the issues are legitimate, please reply to each
-issue of Medium severity or higher and explain why the AI is wrong.
-If any of them are legitimate and you plan to respin, please let patchwork
-know by including "pw-bot: cr" as a separate line at the end of your reply
-(one such reply per series is enough).
 
-- [Medium] The new split-frame discard paths leave frames out of
-  rx_packets and rx_bytes, which contradicts the rtnl_link_stats64…
 
-Pre-existing issues:
-- [High] In igc_clean_rx_irq(), the FPE mPacket early exit leaks the RX
-  page and its DMA mapping.
-- [High] igc_xdp_set_prog(), igc_xdp_enable_pool() and
-  igc_xdp_disable_pool() tear down and rebuild the RX ring while NAPI…
+On Monday, October 26th, 2026 at 1:52 AM, sashiko-bot@kernel.org <sashiko-b=
+ot@kernel.org> wrote:
 
---
+> Thank you for your contribution! Sashiko AI review found 1 potential issu=
+e(s) to consider:
+> - [High] igc: off-by-one in TSIP length check in igc_clean_rx_irq() and z=
+c variant
+> --
+>=20
+> commit 7b71c87cde8117fd4a451a2a079f34aaf64bd069
+> Author: Paul Moses <p@1g4.org>
+>=20
+> igc: track rx frame boundaries independent of skbs
+>=20
+> This commit tracks RX frame boundaries per ring via rx_in_frame so that
+> inline RX timestamps are stripped only from the first descriptor buffer.
+> It also rejects unsupported split frames before XDP, drains continuation
+> descriptors, and updates NAPI budget accounting in both standard and
+> AF_XDP zero-copy RX paths.
+>=20
+> > diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/et=
+hernet/intel/igc/igc_main.c
+> > index 1fb5f3cbe93c5..9ca5558c762c9 100644
+> > --- a/drivers/net/ethernet/intel/igc/igc_main.c
+> > +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+>=20
+> [ ... ]
+>=20
+> > @@ -2635,21 +2635,34 @@ static int igc_clean_rx_irq(struct igc_q_vector=
+ *q_vector, const int budget)
+> >  =09=09dma_rmb();
+> >
+> >  =09=09rx_buffer =3D igc_get_rx_buffer(rx_ring, size, &rx_buffer_pgcnt)=
+;
+> > +=09=09tsip =3D first && igc_test_staterr(rx_desc, IGC_RXDADV_STAT_TSIP=
+);
+> > +
+> > +=09=09if ((!first && !skb) ||
+> > +=09=09    (first && igc_xdp_is_enabled(adapter) &&
+> > +=09=09     !igc_test_staterr(rx_desc, IGC_RXD_STAT_EOP)) ||
+> > +=09=09    unlikely(tsip && size < IGC_TS_HDR_LEN)) {
+> > +=09=09=09if (first)
+> > +=09=09=09=09dev_core_stats_rx_dropped_inc(rx_ring->netdev);
+> > +=09=09=09xdp_res =3D IGC_XDP_CONSUMED;
+> > +=09=09=09goto xdp_done;
+> > +=09=09}
+> > +
+> >  =09=09truesize =3D igc_get_rx_frame_truesize(rx_ring, size);
+> >
+> >  =09=09pktbuf =3D page_address(rx_buffer->page) + rx_buffer->page_offse=
+t;
+> >
+> > -=09=09if (igc_test_staterr(rx_desc, IGC_RXDADV_STAT_TSIP)) {
+> > +=09=09if (tsip) {
+> >  =09=09=09ctx.rx_ts =3D pktbuf;
+> >  =09=09=09pkt_offset =3D IGC_TS_HDR_LEN;
+> >  =09=09=09size -=3D IGC_TS_HDR_LEN;
+> >  =09=09}
+>=20
+> [Severity: High]
+> Should the length check in igc_clean_rx_irq() be size <=3D IGC_TS_HDR_LEN
+> instead of size < IGC_TS_HDR_LEN?
+>=20
+> When a first descriptor has IGC_RXDADV_STAT_TSIP set and size =3D=3D
+> IGC_TS_HDR_LEN, the buffer contains only the 16-byte inline timestamp
+> header and no packet payload. With size < IGC_TS_HDR_LEN, the check passe=
+s
+> and size -=3D IGC_TS_HDR_LEN leaves size as 0.
+>=20
+> If XDP is disabled and this is a non-EOP descriptor followed by a
+> continuation descriptor of at least 60 bytes (ETH_ZLEN),
+> igc_construct_skb() or igc_build_skb() creates an skb with zero linear
+> headlen, and igc_add_rx_frag() attaches the continuation buffer as a page=
+d
+> fragment where skb->len =3D=3D skb->data_len >=3D 60. Because skb->len >=
+=3D
+> ETH_ZLEN, igc_cleanup_headers() -> eth_skb_pad() does nothing, and
+> igc_process_skb_fields() -> eth_type_trans() -> __skb_pull(skb, ETH_HLEN)
+> then triggers BUG() because skb->len drops below skb->data_len.
+>=20
+> If EOP is set on the 16-byte descriptor, size =3D=3D 0 runs XDP on an emp=
+ty
+> buffer where XDP_TX calls igc_xdp_xmit_back() ->
+> igc_xdp_init_tx_descriptor() with a 0-byte length, and normal RX or
+> XDP_PASS allocates a 0-byte skb that eth_skb_pad() zero-pads to 60 bytes
+> and hands to napi_gro_receive().
+>=20
+> [ ... ]
+>=20
+> > @@ -2829,11 +2855,20 @@ static int igc_clean_rx_irq_zc(struct igc_q_vec=
+tor *q_vector, const int budget)
+> >  =09=09dma_rmb();
+> >
+> >  =09=09bi =3D &ring->rx_buffer_info[ntc];
+> > +=09=09tsip =3D first && igc_test_staterr(desc, IGC_RXDADV_STAT_TSIP);
+> > +=09=09eop =3D igc_test_staterr(desc, IGC_RXD_STAT_EOP);
+> > +
+> > +=09=09if (!first || !eop || unlikely(tsip && size < IGC_TS_HDR_LEN)) {
+> > +=09=09=09if (first)
+> > +=09=09=09=09dev_core_stats_rx_dropped_inc(ring->netdev);
+> > +=09=09=09res =3D IGC_XDP_CONSUMED;
+> > +=09=09=09goto xdp_done;
+> > +=09=09}
+> >
+> >  =09=09ctx =3D xsk_buff_to_igc_ctx(bi->xdp);
+> >  =09=09ctx->rx_desc =3D desc;
+> >
+> > -=09=09if (igc_test_staterr(desc, IGC_RXDADV_STAT_TSIP)) {
+> > +=09=09if (tsip) {
+> >  =09=09=09ctx->rx_ts =3D bi->xdp->data;
+> >
+> >  =09=09=09bi->xdp->data +=3D IGC_TS_HDR_LEN;
+>=20
+> [Severity: High]
+> Similarly, in igc_clean_rx_irq_zc(), should the check be size <=3D
+> IGC_TS_HDR_LEN so a 16-byte TSIP descriptor does not result in size =3D=
+=3D 0
+> after subtracting IGC_TS_HDR_LEN, which would pass a 0-byte xdp_buff to
+> __igc_xdp_run_prog() and igc_dispatch_skb_zc()?
+>=20
+> --
+> Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261025065154.20=
+37149-1-p@1g4.org?part=3D1
+>=20
 
-igc: track rx frame boundaries independent of skbs
+I'm assuming the hardware works as documented, if someone wants
+to followup on hypothetical defensive scenarios, go for it.
 
-The patch adds a per-ring rx_in_frame flag so the inline TSIP timestamp
-header is stripped only from the first buffer of a frame. Split frames
-that are not supported (XDP enabled, AF_XDP zero-copy) are rejected
-before XDP runs, and their continuation descriptors are drained. The RX
-poll functions now return a work_done count that includes discarded
-descriptors, instead of total_packets.
-
-> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-> index 1fb5f3cbe93c5..9ca5558c762c9 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_main.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-> @@ -474,6 +474,7 @@ static void igc_clean_rx_ring(struct igc_ring *ring)
->  		igc_clean_rx_ring_page_shared(ring);
->  
->  	clear_ring_uses_large_buffer(ring);
-> +	ring->rx_in_frame = false;
->  
->  	ring->next_to_alloc = 0;
->  	ring->next_to_clean = 0;
-> @@ -673,6 +674,7 @@ static void igc_configure_rx_ring(struct igc_adapter *adapter,
->  	/* reset next-to- use/clean to place SW in sync with hardware */
->  	ring->next_to_clean = 0;
->  	ring->next_to_use = 0;
-> +	ring->rx_in_frame = false;
->  
->  	if (ring->xsk_pool)
->  		buf_size = xsk_pool_get_rx_frame_size(ring->xsk_pool);
-
-[Severity: High]
-This isn't a bug introduced by this patch, but these new resets assume
-NAPI is not polling the ring. Do the XDP reconfiguration paths actually
-guarantee that?
-
-igc_xdp_set_prog(), igc_xdp_enable_pool() and igc_xdp_disable_pool() all
-clean the ring before they disable NAPI:
-
-drivers/net/ethernet/intel/igc/igc_xdp.c:igc_xdp_set_prog() {
-    ...
-		for (i = 0; i < adapter->num_rx_queues; i++) {
-			igc_disable_rx_ring(adapter->rx_ring[i]);
-			igc_disable_tx_ring(adapter->tx_ring[i]);
-			napi_disable(&adapter->rx_ring[i]->q_vector->napi);
-		}
-    ...
-			napi_enable(&adapter->rx_ring[i]->q_vector->napi);
-			igc_enable_tx_ring(adapter->tx_ring[i]);
-			igc_enable_rx_ring(adapter->rx_ring[i]);
-    ...
-}
-
-igc_disable_rx_ring() does only an RXDCTL write before it calls
-igc_clean_rx_ring(). Also, napi_enable() runs before
-igc_enable_rx_ring()->igc_configure_rx_ring().
-
-Suppose igc_clean_rx_irq() is running on another CPU while
-igc_clean_rx_ring_page_shared() calls dev_kfree_skb(rx_ring->skb) and
-drains the pages. Could the poll then call igc_add_rx_frag() on the freed
-skb, or drop page references a second time through igc_put_rx_buffer()?
-
-When the poll exits, it also writes rx_ring->skb, next_to_clean and
-rx_in_frame back, after the reset. igc_configure_rx_ring() resets
-rx_in_frame but not rx_ring->skb. A later poll could then see
-first == true with a stale non-NULL skb, and the new (!first && !skb)
-check would not catch that.
-
-Triggering this needs a CAP_NET_ADMIN user to attach or detach an XDP
-program, or to bind or unbind an AF_XDP pool while XDP is loaded, while
-RX traffic keeps a poll running on another CPU.
-
-[ ... ]
-
-> @@ -2635,21 +2635,34 @@ static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
->  		dma_rmb();
->  
->  		rx_buffer = igc_get_rx_buffer(rx_ring, size, &rx_buffer_pgcnt);
-> +		tsip = first && igc_test_staterr(rx_desc, IGC_RXDADV_STAT_TSIP);
-> +
-> +		if ((!first && !skb) ||
-> +		    (first && igc_xdp_is_enabled(adapter) &&
-> +		     !igc_test_staterr(rx_desc, IGC_RXD_STAT_EOP)) ||
-> +		    unlikely(tsip && size < IGC_TS_HDR_LEN)) {
-> +			if (first)
-> +				dev_core_stats_rx_dropped_inc(rx_ring->netdev);
-> +			xdp_res = IGC_XDP_CONSUMED;
-> +			goto xdp_done;
-> +		}
-> +
-
-[Severity: Medium]
-Should the frames dropped here still count toward rx_packets and
-rx_bytes?
-
-include/uapi/linux/if_link.h describes rx_packets in rtnl_link_stats64
-as including "packets which host had to drop at various stages of
-processing (even in the driver)".
-
-Take a hardware-good first descriptor that is dropped only because XDP is
-enabled and EOP is not set. It jumps to xdp_done and skips the new
-total_bytes/total_packets block, so only rx_dropped and work_done are
-incremented. igc_clean_rx_irq_zc() does the same for !eop frames.
-igc_update_stats() then exports the ring totals directly as
-net_stats->rx_packets and rx_bytes.
-
-Frames that the XDP program drops are still counted in the same function,
-and before this patch every descriptor was counted. The commit message
-says the exclusion is intentional ("without counting successful RX"), but
-that doesn't match the documented semantics.
-
->  		truesize = igc_get_rx_frame_truesize(rx_ring, size);
->  
->  		pktbuf = page_address(rx_buffer->page) + rx_buffer->page_offset;
-
-[ ... ]
-
-> -		if (igc_fpe_is_pmac_enabled(adapter) &&
-> +		if (first && igc_fpe_is_pmac_enabled(adapter) &&
->  		    igc_fpe_handle_mpacket(adapter, rx_desc, size, pktbuf + pkt_offset)) {
->  			/* Advance the ring next-to-clean */
->  			igc_is_non_eop(rx_ring, rx_desc);
->  			cleaned_count++;
-> +			work_done++;
->  			continue;
->  		}
-
-[Severity: High]
-This is a pre-existing issue, but this block is being modified here. Does
-this early exit leak the RX page and its DMA mapping?
-
-igc_get_rx_buffer() always decrements rx_buffer->pagecnt_bias. This path
-advances next_to_clean and continues, but it never restores the bias and
-never calls igc_put_rx_buffer(). That function is the only place that
-recycles or unmaps the page and clears rx_buffer->page.
-
-The slot still holds the page after next_to_clean has moved past it. If
-igc_reuse_rx_page() later recycles a buffer into that slot, it overwrites
-the page without checking:
-
-drivers/net/ethernet/intel/igc/igc_main.c:igc_reuse_rx_page() {
-    ...
-	new_buff = &rx_ring->rx_buffer_info[nta];
-    ...
-	new_buff->page		= old_buff->page;
-    ...
-}
-
-The old page and its mapping are then lost.
-
-If igc_alloc_rx_buffers() reaches the slot first, igc_alloc_mapped_page()
-reuses the page because bi->page is non-NULL, but the bias is one too
-low. igc_can_reuse_rx_page() would then always see
-(rx_buffer_pgcnt - pagecnt_bias) > 1, so the page is never freed.
-
-igc_fpe_handle_mpacket() returns true for any SMD-V or SMD-R frame. With
-pMAC enabled, the link partner can trigger this with every such frame it
-sends.
-
-The new drop path in this patch already releases the buffer correctly:
-pagecnt_bias++ in the IGC_XDP_CONSUMED case, then igc_put_rx_buffer(),
-cleaned_count++ and igc_is_non_eop(). Could the mPacket case release the
-buffer the same way?
-
--- 
-Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20261025065154.2037149-1-p%401g4.org
+Even if I did change these, where does it end? 
