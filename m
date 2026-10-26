@@ -1,191 +1,149 @@
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B5176606A332
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 26 Oct 2026 13:30:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A4738606A321
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 26 Oct 2026 16:34:30 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=0+ego53M;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lzwtWeRa
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=8IuK8vgc;
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=LRz+KCdf
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 8EAF460635;
-	Mon, 26 Oct 2026 13:30:27 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 858D040756;
+	Mon, 26 Oct 2026 16:34:30 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id eAnGnkU8mSrx; Mon, 26 Oct 2026 13:30:27 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org D77CE60612
-Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=3; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793021426;
-	b=X21USZTlYHT0zixvxihk/no0SO+c9yx1gzQRd+n/KFvMIwKniLfryB/p8Ytz4PzvxWRH
-	 aa5MJKHd5ga34lUwK6Xmdmqo0G5UAvV16OWLCrJz6Tts8tRXqoq/wOY3tNurnB94Has4q
-	 7ri3cBKvzErF8mH0/Jr52kMFzonxtxL7fs5K5Vby9CkyuR7UnxAP1IMxJ44PMEbMpLKcD
-	 xQZ7gLqeXRY8PonKMtp3NCcS5/nZmdgPedxZzGUSvUgyuVntwzHfDGnlf6/Pvx7EcYxNm
-	 em7QGgSLWCRAdABsZwKMV/MwLKqYhDZXDhj5PCEu81W4p1GY9REALENs9a2S9P6FdYQ==
-ARC-Message-Signature: i=3; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1793021426;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id ujBPo3U3pZ7A; Mon, 26 Oct 2026 16:34:30 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org EB53F406C7
+Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793032470;
+	b=IcQo9Yfo0ehWKBHr2mr86O/Z/kpN8B/W3dwwLVX4SEU4lXtBqCW0iNw1rFr/cJdjoUhA
+	 G2QMTAd3vKCvAJdwDsthBYegVWmA4i5Zg7xMzgownY4ZpGVKH5GeXd470mwleVo3TTJXH
+	 fDKUz3pVdPgQq+F9ECBdojH32H1R6W7WDIHKu4Hr3hupJjww1+7vI/X7p1t+vpGzcZFL1
+	 1l40t1xURC2EL6XM4KEuS9DRmU/Pu7Y0C/y0zBfCbWiHmtGx3BrLvePKprCpD6WN3wDDa
+	 RT+IWDTUzHyDNl0Xx3vvl8825cuOCXWsA5Qro2RReEN7Ys5kFNnDT2txomXOxX0MOpA==
+ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
+	c=relaxed/relaxed; t=1793032470;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
-	 Content-Type:Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Content-Transfer-Encoding:X-BeenThere:
-	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Reply-To:Errors-To;
-	bh=CQEmrnzAxzrvt2FH74TyL1gH4vTDIUFyAXmmW2ABe8A=;
-	b=Xl3SzdG2B9TrohBMRh6plkqBmUmndwyZU1h8lHhkXycBzrYJiFJ0e2fa5bHoOIGsWiqP
-	 IfP37gbb+TinRVFNYK2B6QegTJvNE77CKM5UbiNwXlXGiOUdrXMKlJUq7xUaf1A4niZKm
-	 0fo8B+VV9/CJsL/C2r+VyNOfnyE2LqaQY7ECyH6xG81zRXaUYxwLjOWNmQSuvS6THstEA
-	 w2MFgJy7PvRspP/+RJo5AURgHjGbeXsILUd4UqCIFyvfhhRPH9BZjywrZYTePlwJAAwOn
-	 00DcU06mEbqFq61tEDeKjs2W1d9JBHBFIaV3ZB7I3Xb6svGmjZNRbN/DQIkwo5d+dPA==
-ARC-Authentication-Results: i=3; smtp3.osuosl.org; 
-	dmarc=pass header.from=kernel.org;
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lzwtWeRa;
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
+	 DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-IronPort-AV:
+	 X-IronPort-AV:Received:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-ExtLoop1:
+	 X-IronPort-AV:Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
+	 MIME-Version:Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:
+	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 List-Subscribe:Errors-To;
+	bh=QK/PoHM5+wgvodGyNDBQYbqD+owasM27mwqFVXbozAs=;
+	b=D9oKNGyl3y/PBaoUt4E7wUnQ9Ekchd+18cP/aKgOaNMAhFk+7uBIgjCWi1s3J6//buXJ
+	 lYSLeAP/W/0cn8E/SkW3L29V8DlV5MV0Xy0e2QEUh+bQyVRhahclGLEbyEHi4EI0bq+4y
+	 MDqO3YEDhs4uCilSMU7Sc27adSaAfZsBNeudvPbQmu/QiPptAXdM7vT/vV83lvZ889GuP
+	 d3K3y3Y+AfijQVP1DyeEFi1pQSFIziKn4Dg7f+WET+sT8Gsn/gvZ1kCBqtUf+btRUlGeK
+	 FYZxNGnM4TUSnx2otRO1MG++D0KTnmZwQUCZ8r5XqxUkULmLfV8voO53yjln0moZuVQ==
+ARC-Authentication-Results: i=2; smtp4.osuosl.org; 
 	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1793021426;
-	bh=CQEmrnzAxzrvt2FH74TyL1gH4vTDIUFyAXmmW2ABe8A=;
-	h=From:Date:Subject:To:Cc:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Reply-To:From;
-	b=0+ego53MeP1wtY6zbwnzzzzCERiOVaBwwcmXqIpEBlHYmpcqlKzsPfyh4cwNrtKqK
-	 ks/pePFsYzliiHvkonYQwdqmW2JXgksOW8XX8JkUiMUXhpgin4yASJAcAxsCEOYlbL
-	 ATzd/pYTLxE3Kifj7EeMwATHgXZT+Xv0wnKj5r2IJnvYLQ+p0cEz+rxbbA52fYSg+7
-	 HSowrdm7YvA3qBRBCN+jDOVqdqJizsjVU+PwqFK+lJx3vO/inhua6VbM1V97wu1TV+
-	 F3E1M5FoSDGOy+2Hza8OrPACR2eUnUMEZMw0N2bT0mgU+ZqMcJevkz2BVxiLotYkpk
-	 b5M5MgyIri7yg==
+	s=default; t=1793032470;
+	bh=QK/PoHM5+wgvodGyNDBQYbqD+owasM27mwqFVXbozAs=;
+	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=8IuK8vgckvIShuvEPIXGNQfHAQ7OpTKkYPp5TR75VpXtlZJ+DoQubI4N1j96lO5hv
+	 B3cGs+8eEXQmOic2gq9e0Z4sEYv8bY3LodoSHQKaFNB1nQ3Amvv2RramYFF4sNY8rO
+	 HowQhwQtiZztUURXRSTrCdBA19F+AGDYEcKsL+Ri6wqtnRSBdp7AezjUI4q4vB5uQi
+	 lH6Nu80LbB9TZ8KGelCh3wwYkPwxh6rgYWrVxI/0lWG/cJwvMSDmxR0F/T1nl+EcQ9
+	 9+DBEUnScYji7/m+FK2LZ+vQpIlWNvB+7Mc5hQN+WDU8rWxGmYWtzD0OsXsh1B2G8g
+	 xmwIAAvOGU6Vw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id D77CE60612;
-	Mon, 26 Oct 2026 13:30:26 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 70706279
- for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Oct 2026 13:30:25 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id EB53F406C7;
+	Mon, 26 Oct 2026 16:34:29 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 662F1356
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Oct 2026 16:34:29 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 61BD060612
- for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Oct 2026 13:30:25 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 56BED80F44
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Oct 2026 16:34:29 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id B-Cq325KDS_w for <intel-wired-lan@lists.osuosl.org>;
- Mon, 26 Oct 2026 13:30:24 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 92AA560603
-Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0
- smtp.remote-ip=172.105.4.254
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793021424;
- b=Z4+/6Ptz4DDueszJsobdrmh4asdzHaTIz18upkGC9Yky75gX9tH5Fri1g1HLapUCQVMX
- jY99pgFWxf59hrsyH0CEvtt3OqQJCKYEFP5Y4op+SZ4/sg77bTdkdj5Kn6hpP7qmOxKTF
- 31WvhtxfGcHPyV1liUEarFLCYAB/dWGD0dpKcKhrvesa+7T61OjyepZ3NERCxDkMJSo0l
- Of4k06OYxtFoGChdsRwPkHF5sTCqDmt5qJCaGAIstOubKG5QJgE8m47hn3BQlEu4n+S4B
- 0XbVf/JNO+Q2LtGCzzaRr/LL8Yz7Ia4oCmisW1CjeVUqx2XyooHhTX8xX19tH3kQHWg==
-ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1793021424;
- h=Received-SPF:Received:Received:DKIM-Signature:Received:From:Date:
- Subject:MIME-Version:Content-Type:Message-Id:X-B4-Tracking:
- X-Change-ID:To:Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:
- X-Endpoint-Received:X-Original-From:Reply-To:
- Content-Transfer-Encoding;
- bh=CQEmrnzAxzrvt2FH74TyL1gH4vTDIUFyAXmmW2ABe8A=;
- b=FdEEcGRFRcyw9FCQ6Gz0wWKDeXL7BsbI9ThgWnzjm3YGJboElKMmtrxw/4qU1OyIrAvV
- rClM8zXR4USxbI7gZ3kq43pcWk/CUEbQyNNRmVdRgb+/ZIxzkG069vUoISRvRyXoc3bZh
- VNKW9XB5U1uUlHmZIMtkQKT9DhzP/ZbAa+rVY4xdzMw+lXCFU9wYGXiN6gP6rYgVoufFh
- L8pBTI8EHKEV7ebrdP9jshgEQYtCj7QTvGyyKL0hLM2yfBG9fDIbkPBW/ZR8v55RNULat
- bWBV+yD/G1ODch5MibjaSWikidMsV3MlQ8LjxzDZk0/cZDXTXfy/eSrqLUeq82FykTg==
-ARC-Authentication-Results: i=2; smtp3.osuosl.org; 
- dmarc=pass header.from=kernel.org;
- dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=lzwtWeRa; 
- arc=pass header.oldest-pass=0 smtp.remote-ip=172.105.4.254
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org;
- envelope-from=devnull+choiniere.vincent.hydroquebec.com@kernel.org;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id PR4GGj1kjInX for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 26 Oct 2026 16:34:28 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 06FB180DB9
+Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=198.175.65.9
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793032468;
+ b=S6uvyLDi5cmwEL1VZP5jG4AGWJL6E0Bbw+s7USTYjpI70rRbvvuJUPxAKJetT0+QY7jF
+ Mg9vOqfOWCcRwSCgYIS+X1N8SDni5uzkLm4ekZ4I5wyjvZPXtc6Oh9N2qc280jR1XmOrB
+ KiPnUVk8xCT3TrKe6CxxRoYyPxW+NyYaDffRMkAbVyTuVrUgm9RVlcHJYXa3xwqLbAf+C
+ iTtqYhPeM31L3EmK1YVgNp6cVuBXKjya62lODrXx60PfJ+8mtfa9XksHB1ak+4Aj0GruL
+ oIC9K6r+queEsu7ssiF5098FBHkhAHJ24TAxTVzFzgXbY5i02tPprRhvPoLow4Fh49Q==
+ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
+ c=relaxed/relaxed; t=1793032468;
+ h=Received-SPF:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+ X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
+ X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:From:To:Cc:Subject:
+ Date:Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding;
+ bh=QK/PoHM5+wgvodGyNDBQYbqD+owasM27mwqFVXbozAs=;
+ b=E7k7Q2ha7ny1KFCVd/MrkVTjt2lfyVL4pptIqMleIAWVeIhPXmLAmEJmOxzeOV9IyEgB
+ Vm65/uSih8K4VFjQOiEo1a0U7mnpkPB3570b/B6y/MrHuG7Ar+GvcvtMCWkxdDUptZ/pG
+ OllynU0WvfRqFZ9wtMZjI9M86tMNuv+tHPdwj6Sa/aZ2bNNqT/NVn8VNQbh+CWqg31OBP
+ JZwHgXId/4dnCpPbNml9eY4+O0x+TJ23ey2ILZZT2ZOeJW784VzVNAozwHpOv27121+Ap
+ YO4szzNWwP+KmjILFgXbDfvscjyhpACWPiVThW2a7MPVdxfh5En12g1k2aZj7/j4ApA==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
+ dmarc=pass header.from=intel.com;
+ dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=LRz+KCdf; 
+ arc=none smtp.remote-ip=198.175.65.9
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.9;
+ helo=mgamail.intel.com; envelope-from=przemyslaw.korba@intel.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp3.osuosl.org; dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=lzwtWeRa
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 92AA560603
- for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Oct 2026 13:30:24 +0000 (UTC)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id 53190601EF;
- Mon, 26 Oct 2026 13:30:23 +0000 (UTC)
-Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
-ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
- t=1793021423;
- b=OX6+fGx5vbo2yu//1D/rwmYrvRYG8phmJHmI3OPViwEzj/++AaUBj0D/+0jUPbR5puIL
- SVkaBM6nG/ZMpc3+XmSZGMGGaS8CB/e6d7HbHwWjeqgPt1trgkTuYez2RigqrB80lwIEK
- 6mTM0Xd7FafP/iYBjHwK+jI0jz/bjcMUJ4+zv8nQabToCQLr6noE8f0+05NZu/ddfyQeS
- sDfY7yR0vPVWAG5ihFTCmOkjHnkmIbgy2Hgs7ki8tqaR6fZckNQxX39+5Z1hNmVxpLxg2
- /4VLwI6Q9QX04jJFfmAJbXI8K6PO1l67/0QijnGS622+sIbmNIP6R1UNKJX3BgOjzag==
-ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
- c=relaxed/relaxed; t=1793021423;
- h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
- Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:
- X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
- X-Original-From:Reply-To:Content-Transfer-Encoding;
- bh=CQEmrnzAxzrvt2FH74TyL1gH4vTDIUFyAXmmW2ABe8A=;
- b=K7WgO9uOSVsjNAaUPhlbHZUnDCZctDxSP8TGfZNoYoe/mKZgPNvlBoKw4YfgV9zXvQQ+
- EmGTW9OwA5MM1ZLAVBq2v1ps9/FhrDYGdwF3DncfJnJiVfKmhUV/Jgu4vtyINxG/RLbbH
- 5BfYKK4MjqENhsPa1vP03uXVfF36c0hDYLqQ6myfPQfzf2zYQ+ZkJvspihKcRxtaJK4T4
- 2SyxW7DZfr7Xs/oftyYrZ8UDbd9cr1zcY9p8kZKWXF8blFhXAgJrIkZuEsS4Wu4dLCofJ
- 1EDBfXwWm+dBSbrK0+jhjXVJ/IGSBaKdpj68zoJssgnz0KVV5FDa/cBk4uG6s5yojuw==
-ARC-Authentication-Results: i=1; smtp.kernel.org; 
- arc=none smtp.remote-ip=100.80.115.77
-Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
- (No client certificate requested)
- by smtp.kernel.org (Postfix) with ESMTPS id 72BE41F01825;
- Mon, 26 Oct 2026 13:30:22 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1793021423;
- bh=CQEmrnzAxzrvt2FH74TyL1gH4vTDIUFyAXmmW2ABe8A=;
- h=From:Date:Subject:To:Cc:Reply-To;
- b=lzwtWeRaMrmft/zLO/PTQb7aek4d3nHTw6AFajjHJtgPj8eoTf1PTz63CSu+P2XXy
- N6Znt8WzPsXjyVhWC4ykfDAXUsuf5G+VMQl53TfbyQl0eR2Vt6iAZuezF9huAWDYHq
- 2vd+2XrxmQfeBA4SaPA5RGpzVb3zG+Bs3urrH/dBBg/J6oWN83S8KvS/etSQop+r3t
- rIrre4S1Ayt9Y5b/rUdKFeSz8X+PuUlu86cD2jmTOTJ96U3++21uNiF+JlFDX6dPVP
- C6cbFhm7HYyUub5K4fz6Ef5EIVOgw8VdFfGxDqGNwzd8Qo7uYnCviE8ErkECc/SlTH
- aTEO3HJ6DSCVA==
-Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
- by lkml.kernel.org (Postfix) with ESMTP id 0362444D1A;
- Mon, 26 Oct 2026 13:30:22 +0000 (UTC)
-From: Vincent Choiniere via B4 Relay
- <devnull+choiniere.vincent.hydroquebec.com@kernel.org>
-Date: Mon, 26 Oct 2026 09:30:22 -0400
-Subject: [PATCH iwl-net] ice: fix NULL dereference after disabling RDMA
+Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=LRz+KCdf
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 06FB180DB9
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Oct 2026 16:34:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1793032469; x=1824568469;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=86qXUPydmouqTil5Ze3OwFmndJELU168k/JBbzKnthc=;
+ b=LRz+KCdfms2IB2BZM9n1nWX+N90N8A8wsfRbkkvI0wGmCdqorH0gyjwN
+ hLdQ98dJrMtMfVxHnC7Y7H4tW6gqCuDn1FxTkcFsgmFXdceopA6//DGA5
+ tdEJdniP2jhfIeObNgV7VfJHeWxxZcukxedwZvafNSz/TUEb2OMtIEufz
+ 4TQ4sHWyNBoBx8w9h8mUOvorfTYIhSS7+dTj6XuaEhL6mh6MKcON6uq6L
+ ZhGOpzOex9mulCJc01CZhrm8stZN+WdDA0YnJi9+kcE5oW0A+EW4pAj/q
+ SVw9fq5h1eCRm3KL4BPMz3kD/pPUb/xswl/1F4uZfoJMTAviq1xcBGKw2 w==;
+X-CSE-ConnectionGUID: ZStVcisKRGGeHnbfgGPtDQ==
+X-CSE-MsgGUID: VUxZhSrkS2u3N/lYPSUE9g==
+X-IronPort-AV: E=McAfee;i="6800,10657,11947"; a="1588004"
+X-IronPort-AV: E=Sophos;i="6.27,179,1787036400"; 
+   d="scan'208";a="1588004"
+Received: from fmviesa007.fm.intel.com ([10.60.135.147])
+ by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 26 Oct 2026 09:34:27 -0700
+X-CSE-ConnectionGUID: JxvY31gbThOuoZxQAIXDEA==
+X-CSE-MsgGUID: 5vmTiWMiQ7a4iUWv6/9t6g==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,179,1787036400"; 
+   d="scan'208";a="4707988"
+Received: from pae-d-dell-r7525-263.igk.intel.com ([172.28.191.240])
+ by fmviesa007.fm.intel.com with ESMTP; 26 Oct 2026 09:34:25 -0700
+From: Przemyslaw Korba <przemyslaw.korba@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ aleksandr.loktionov@intel.com, arkadiusz.kubalewski@intel.com,
+ konstantin.ilichev@intel.com,
+ Przemyslaw Korba <przemyslaw.korba@intel.com>,
+ Milena Olech <milena.olech@intel.com>
+Subject: [PATCH iwl-net 0/2] ixgbe: fix Rx timestamp in packet handling
+Date: Mon, 26 Oct 2026 17:36:38 +0100
+Message-ID: <20261026163658.2733471-2-przemyslaw.korba@intel.com>
+X-Mailer: git-send-email 2.43.0
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261026-ice-deinit-rdma-null-v1-1-7d2130d1809a@hydroquebec.com>
-X-B4-Tracking: v=1; b=H4sIAO1V32oC/yWMwQrCMBAFf6Xs2YUmwQr+inhokxddiaskaRVK/
- 92ox2GYWakgCwodu5UyFiny0AZm15G/jnoBS2hMtreD6e2exYMDRKVyDveRdU6JB+OimeBcPFh
- q6TMjyvu3PZG8Eisqnf+izNMNvn6ntG0fbZLQUIEAAAA=
-X-Change-ID: 20261025-ice-deinit-rdma-null-613f1be33f72
-To: Tony Nguyen <anthony.l.nguyen@intel.com>, 
- Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
- Andrew Lunn <andrew+netdev@lunn.ch>, 
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>, 
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>
-Cc: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>, 
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, 
- linux-kernel@vger.kernel.org, stable@vger.kernel.org, 
- Vincent Choiniere <choiniere.vincent@hydroquebec.com>
-X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1793021421; l=3312;
- i=choiniere.vincent@hydroquebec.com; s=20261016;
- h=from:subject:message-id;
- bh=k9KyR/hu9YHlPLJ6ekmbRPgwMefAd5BueodKK2/VMpU=;
- b=8bwOLo9nJW2N0lkprTPvo4m7YK3bCgAvaOdITw89TeFZE4NqbPiFYxMcXYABPUonNi9ZXkF/N
- SSg99Pxr0XBDc4xD+agc0rCZRcm5RqV9IGR1Q9in27Ko8MdWDYYRiTp
-X-Developer-Key: i=choiniere.vincent@hydroquebec.com; a=ed25519;
- pk=MctQE067DucsZOaNqb+sjY7aQ+urhztuURanagEW3+8=
-X-Endpoint-Received: by B4 Relay for
- choiniere.vincent@hydroquebec.com/20261016 with auth_id=1210
-X-Original-From: Vincent Choiniere <choiniere.vincent@hydroquebec.com>
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -196,96 +154,40 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Reply-To: choiniere.vincent@hydroquebec.com
 X-Spam-Status: No, score=-19.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,USER_AGENT_GIT autolearn=unavailable
+	MAILING_LIST_MULTI,SPF_HELO_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-From: Vincent Choiniere <choiniere.vincent@hydroquebec.com>
+This series fixes two issues with Rx timestamp in packet (TSIP) handling
+in the ixgbe driver on X550 and newer devices, including E610.
 
-ice_deinit_rdma() checks ice_is_rdma_ena() before dereferencing
-pf->cdev_info. While the enable_rdma devlink driverinit parameter is
-registered, that helper returns the parameter value. Once the parameter
-is unregistered, it falls back to ICE_FLAG_RDMA_ENA.
+Patch 1 clears TSYNCRXCTL.TSIP_UT_EN when Rx timestamping is disabled.
+The bit was never cleared, so frames kept the 8 byte timestamp trailer
+after timestamping was turned off, with nothing left to trim it.
 
-When enable_rdma is set to false and applied by a devlink reload,
-ice_init_rdma() returns early, leaving pf->cdev_info NULL. During driver
-removal, ice_remove() calls ice_deinit_devlink() before ice_unload().
-The parameters are therefore unregistered before ice_deinit_rdma()
-runs. On an RDMA-capable device, ice_is_rdma_ena() then returns true,
-allowing ice_deinit_rdma() to dereference the NULL pointer.
+Patch 2 enables TSIP for VLAN tagged frames by setting the per user
+priority mask in TSYNCRXCTL. Without it, tagged frames carry no
+timestamp in the packet and the driver falls back to the latched
+RXSTMPL/RXSTMPH registers, handing out stale timestamps. This made
+ptp4l over an 802.1Q interface fail to converge.
 
-This can cause a panic during reboot, module removal or PCI unbind.
-Reproduced on an E810 PF with Ubuntu kernel 7.0.0-14 (PREEMPT_RT):
+Signed-off-by: Przemyslaw Korba <przemyslaw.korba@intel.com>
+Reviewed-by: Milena Olech <milena.olech@intel.com>
 
- devlink dev param set pci/0000:02:00.0 name enable_rdma value false \
-         cmode driverinit
- devlink dev reload pci/0000:02:00.0 action driver_reinit
- systemctl reboot
+Przemyslaw Korba (2):
+  ixgbe: clear Rx timestamp in packet enable bit on disable
+  ixgbe: fix Rx hardware timestamping for VLAN tagged packets
 
- BUG: kernel NULL pointer dereference, address: 0000000000000018
- RIP: 0010:ice_deinit_rdma+0x30/0x60 [ice]
-  ice_unload+0x3f/0x150 [ice]
-  ice_remove+0xb5/0x1d0 [ice]
-  ice_shutdown+0x1b/0x60 [ice]
-  pci_device_shutdown
-  device_shutdown
-  kernel_restart
- Kernel panic - not syncing: Attempted to kill init!
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c  | 7 +++++--
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h | 1 +
+ 2 files changed, 6 insertions(+), 2 deletions(-)
 
-Check pf->cdev_info before dereferencing it, as
-ice_rdma_update_vsi_filter() already does. This preserves the existing
-enable_rdma semantics without changing other ice_is_rdma_ena() callers.
 
-Fixes: 87181cd6985f ("ice: enable_rdma devlink param")
-Cc: stable@vger.kernel.org
-Signed-off-by: Vincent Choiniere <choiniere.vincent@hydroquebec.com>
----
-Testing was performed on an E810 PF passed through to a KVM guest,
-using Ubuntu kernel 7.0.0-38 (PREEMPT_RT). Two kernels differing only
-by this patch were compared. Each test set enable_rdma=false and
-applied it with devlink reload driver_reinit before the removal step.
-
-  Removal path      Without patch           With patch
-  reboot (x3)       NULL deref, panic (3/3) clean (3/3)
-  rmmod ice         NULL deref              clean
-  PCI unbind        NULL deref              clean
-
-Additional checks on the patched kernel:
-  - Reboot without a preceding devlink reload completed cleanly.
-  - irdma devices returned after PCI unbind/bind.
-  - irdma devices returned after an enable_rdma false -> true reload
-    cycle.
-
-No KASAN or kmemleak testing was performed.
-
-The exact target tree (net, 7076f684d5132e6a) was not built or tested.
-ice_deinit_rdma() and ice_is_rdma_ena() are unchanged there compared
-with the tested code.
----
- drivers/net/ethernet/intel/ice/ice_idc.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_idc.c b/drivers/net/ethernet/intel/ice/ice_idc.c
-index 102d63c30..09dfcffeb 100644
---- a/drivers/net/ethernet/intel/ice/ice_idc.c
-+++ b/drivers/net/ethernet/intel/ice/ice_idc.c
-@@ -454,7 +454,7 @@ int ice_init_rdma(struct ice_pf *pf)
-  */
- void ice_deinit_rdma(struct ice_pf *pf)
- {
--	if (!ice_is_rdma_ena(pf))
-+	if (!ice_is_rdma_ena(pf) || !pf->cdev_info)
- 		return;
- 
- 	xa_erase(&ice_aux_id, pf->aux_idx);
-
----
-base-commit: 7076f684d5132e6a6145e1da2fa74771ecd052e5
-change-id: 20261025-ice-deinit-rdma-null-613f1be33f72
-
+base-commit: b7e46a73815485bc5deb94945e50594a8bf6b499
+-- 
+2.43.0
 
