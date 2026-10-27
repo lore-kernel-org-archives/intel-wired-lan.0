@@ -1,29 +1,29 @@
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 79ADC606A320
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 27 Oct 2026 06:42:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5E0FB606A323
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 27 Oct 2026 06:43:38 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=v7y3ROcQ;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RcQd5Rgx
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=s3WcLN3I;
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=oeyLHW12
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 51B1D40575;
-	Tue, 27 Oct 2026 06:42:54 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 40E5980C4E;
+	Tue, 27 Oct 2026 06:43:38 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id NvbuW5FL5ky4; Tue, 27 Oct 2026 06:42:53 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org BE5B04057C
-Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793083373;
-	b=lj3NL8LBwA7EhinaTLv4hGNXcCu6rrtGMm0SgcmLaMdh96/i69plw9ARg9Is2xU/U8lM
-	 ty8gycOFvzUtbZu908hI9aY6DABntVObCrlERNkrEUYwt020gr6FjW/QtkcALP2ut6Kk0
-	 qeZwZSbMVHcaZuAHIWvpdwSjnAMcgEisY65lMb5CMwwaBkJdNs1vVWOslBP4G+imI/ZyX
-	 PDNO46Pr6YZZOFdvPvCKRkWVwfFHNZ5CCCQrVb+3q6tVC541VrIgS2uem6Cj06QXKItG7
-	 EKzxun6FJHIHm1xNG1U6VP7GeZR7vZwEbv/Gr7xBdLxQXN8aMovJJSwDE3o6e7pZMXw==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 0ZWWnbd1bSrw; Tue, 27 Oct 2026 06:43:37 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org ADC1D80C2A
+Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793083417;
+	b=ib6uHQVRafA0aXgYljC5LU5I8nAnsnjSlScPcmc8hQA4D7qBdXAt2lRLTTWKYlYMOLPH
+	 ogpDrtSkBYxymc1B/2TCMVNiGa56fSwcNkR66xa0orwLuGHVXlDVSKIFfwn+Vz5exCNHB
+	 wbnV95UsZhC8KIAiP2ddASZ4YlV4ZahVglBEJ8HL8+eYfPIr4/2o4PbaS66VUIhEpNRnq
+	 EJlzwGNYj5roZBLt0+aJInBftIn3DopGbgGAGP+Snu7vlMyS21EZqEMaglw1dkHlAUuKx
+	 +ELIh2aK8ahBLiMe+BsVy4bUjcgqtG9ZnIbPbT7AQHNb9GI6RhsLvnJpXWDcWZzhJcA==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1793083373;
+	c=relaxed/relaxed; t=1793083417;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
@@ -33,117 +33,117 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding:X-BeenThere:
 	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=pRiCUUjLhGU4QryeqhGvx/oq8Ldr8tbhEqJVg4ZBW9A=;
-	b=WAblHWW23CeKtf5LKCnP9GJKBwbyiGB73GoCcMx1g2EyNDXDhj9qZr4MBv9jj8xvB7oC
-	 U+612DP/POZvs5B2sBOBzFfRrY3R6W2HEXeb/3DOP9RtPaUbA7N8VVHCcm+OWFyqcoU+P
-	 bu7Ns+Ale8OA4N6o55EbfLmdWNgvPxXHce2cQTPa8qBUyn80CUxgeihLM0FKYDzXjKgls
-	 AmPQCPq3KIz9j9rFROATokXGg7v7lyrTYRctPJ37I/I4qU3xOd3F8ahgJD+mMkvxfavv2
-	 cDICkyGJg5SsQ6BhNBcY/o+EDCjTCd7d86b1wnpHorr3GDSYgqtIYEx9i4apJTCwatQ==
-ARC-Authentication-Results: i=2; smtp4.osuosl.org; 
+	bh=1rV7sJ5OuvWmQzcl5Y+LhIg6Y4llgh/mlRpgtM99hK0=;
+	b=TpeMj5tiyq38cFMIc3D2summq2wsscsqhFXN7d+PVaR5qofd4uZ1Ra+Rv69qRjEzlmMp
+	 p1hVH8CNAaEqfXYTb5mSQGS7w3lbvsNNgFPMmQFwbSKzq2OkqbwplHgALaA60sMRi6e1O
+	 Dd54Gs4lsCTUr5jt7TbTqV+w0ujOubiC6oWOfv5/AK1y7ijvS2CnnLKw6foF2H3t0l/ph
+	 geb7GBcoi1K2gJwipoLXTSSGdIy2bq+4DMoBOOgzKILfeSukV+UOAYAUk0hPSGxxg2n44
+	 NiByJF4LGW0sV4BdJvYxaDCT1K1+PYPYSONv4KODBXmkpaPK6FvCxykmUJU/1gMrG6A==
+ARC-Authentication-Results: i=2; smtp1.osuosl.org; 
+	dmarc=pass header.from=kernel.org;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=oeyLHW12;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1793083373;
-	bh=pRiCUUjLhGU4QryeqhGvx/oq8Ldr8tbhEqJVg4ZBW9A=;
+	s=default; t=1793083417;
+	bh=1rV7sJ5OuvWmQzcl5Y+LhIg6Y4llgh/mlRpgtM99hK0=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=v7y3ROcQwDF0S5GmBjwc9gw7cPMBM4/zCewp5VSylqVxJ5PnowhsWIi/QoONFM5RF
-	 3XH80R/wXbwVmvQzr077CsSzFwjhqBnA1I2EBylhchQrSUvWjF4Czu9QlW16a0Gd1v
-	 mqcvXjakqme+qoaAhSKYuefYOlxHIZw20ri0fsum/WNZ8sQoroP871XHjXRraXOSet
-	 zytGXH1etuGdjz/ZFrfLaZaOJ8v2tiWMeruHkJ2xoO40zlgL3bxt9n9H/2+3VoCDVB
-	 +7yT2GbOnwQB0PogSFf3eDqQSs/isaXWjhupCeGcJlu0t5S1Le72GWPP1kqUbPqCv0
-	 qhTf0PMJAlwpA==
+	b=s3WcLN3I31GUept3zge6ojJRGKoJUapgwmqR34s7dGQbyJJy1j4JVxRjvlKCaqx60
+	 NoX71UypVGC7J/zikomxi9mCWGrwqfi6R57fYh4aGDH+d9xM9mN4ynFTFdmWm4IE1f
+	 ZPNZmW7Z/UUDDUn/YLZaFTa22NXXY5S2KZkwuDjQaBgEiKJXvx/ZFQbKszzTijBWcn
+	 cHGjUAN4jDpfqCUngKthCuYHJ+a7b2O1FrE9vGOPUbzI6OJ8ICH2hgZZzn+UkfAlCq
+	 gmhV5Xkz8ESd3ITpDhBjtGBNoHxiLTdUDiaAyb8dgwwiKUvTEwTnUeMy0Hukmcpr/X
+	 DLEkUQbcy8eXw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id BE5B04057C;
-	Tue, 27 Oct 2026 06:42:53 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 32A6C120
- for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Oct 2026 06:42:52 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id ADC1D80C2A;
+	Tue, 27 Oct 2026 06:43:37 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 4919D4BC
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Oct 2026 06:43:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 1896360687
- for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Oct 2026 06:42:52 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 3B07380C12
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Oct 2026 06:43:36 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 3-ZETtZ4Jtgo for <intel-wired-lan@lists.osuosl.org>;
- Tue, 27 Oct 2026 06:42:51 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 5FF23605F9
-Authentication-Results: smtp3.osuosl.org; arc=none
- smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793083371;
- b=KbTnL8NI02ZjO9n24nZ7WEMOSenXlp1ovOK95hEI76PTf5RkGJhuCAew73uCS52jN9Nz
- Y9S7NCsyOfld0LVpTj5LsjuoodcFYpAq1OqiUB2YMuHat3CzsJXasBABQXSTz7V45VuTi
- w36H1KwhnPzkHPNZ0X4S/RopIaDwq7tLl/LMwLbZuSDXJcYvo2/Lp4l493FMI6LFk36N7
- Ezq21cU9lX5js+SC4IXrwmR/R2eYtOkd0LDRikqEgHb0/p2LAux2FoUwrjeGhwJIypRF8
- EUwvV6Id59FFkxXrH8SrJawxeFU9OeGfVkdkbmM+Cu3rHSCrstXUBDLsTHkdrZz/gug==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id DuowSixysCSi for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 27 Oct 2026 06:43:35 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 8D8E680BB7
+Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793083415;
+ b=rX5AiiXm+XL0dLnBew29zhOMn3Thd5O2Do2S5p5dviHMtXb5HgZvDsHrLdpSWPB1etMS
+ CfDFdGA+XhMXRkgf35tQyuYir3gtN9qSAtvzZ7fWyDYi2K0pMmnPDDzTKJga1Z/MR6E/H
+ wxJkMB9Tofxn6zjwey1+iQyW2RmQDW98qi1ySczGCkZybiMQypAwBbuiyQCBk2H1b9+Dd
+ uHlQ39rrcMR/0qWsNLS+gYLNiFIASFl3SM/epEW0cLAJE1R0GEyG9udSOb8YJa3Jxxy3C
+ jibp4e4OsaQ7ZPBENWTh7nYnCZ/nNg0Lk4uAP8K8OEIpakSCdqUU93I1+6VoSvm7vbg==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1793083371;
+ c=relaxed/relaxed; t=1793083415;
  h=Received-SPF:Received:Received:DKIM-Signature:Received:
  X-Forwarded-Encrypted:X-Gm-Message-State:X-Received:MIME-Version:
  References:In-Reply-To:From:Date:X-Gmail-Original-Message-ID:
  X-Gm-Features:Message-ID:Subject:To:Cc:Content-Type:
  Content-Transfer-Encoding;
- bh=pRiCUUjLhGU4QryeqhGvx/oq8Ldr8tbhEqJVg4ZBW9A=;
- b=G6XeLmMmGOYHpSSU7EQG2pMWO3lZamfYyz/y8hmyeNzjN7lN9h9ON+GtCZuzOIRpyVMV
- ZskRAHiN4GvLlao1iFO7DZSFEqlph0jXpHWzqQKHWuPHGCzIL4Zj3Qs8dCO4In4G8RsJ0
- 9h8uNH8aMRTei0o9k+c8tYgr/EgcZ2cmygTgTCoTKWo2/zhpqlK6mInxw6dRsyZlCTmB3
- HRS9ClfIp6SMZ9DQK/Q+1vumx+xIj9Y+wYmKhbU2KfuxRT0EPpKA7Cdv7R3ufNIxcQjQp
- EkFYj76TIJDterb2pjT5JAl2zna3yiuyz6BQqZiSkhPUECk19yXZKGaJQME+DJYYEYw==
-ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
+ bh=1rV7sJ5OuvWmQzcl5Y+LhIg6Y4llgh/mlRpgtM99hK0=;
+ b=hZP9srwWbYY1hqAGBbNRZsj8Vm1vONyWj5Mv6NGhagpHGo252B9SY1yBl+slx2xxZpAO
+ 7h8TwqW0mYigYRrY3PLNXUBox6u+3ls1oXDG5GtXY5KH7DrbdM3En5lKEHO0kOFGlztGX
+ cT1SJZWGCiyofpikblbPUIwQxVZgzVSsv+X0GMkn5YmwMV4na2IHMS5gW+WH5hTssaTfU
+ 0MGjps8uiqSkswrRs3H6MRcTATOd71tyX9ppcecOVob1JVR5adC+/KnihO5V0znShBhOA
+ YRzi0xWia5FhT31cG5jq0PghKpQbNgaB0m/JAc9FO2fjURnpKn2JnS7agPlBsp40AKw==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
  dmarc=pass header.from=kernel.org;
  dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=RcQd5Rgx; 
- arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
- envelope-from=edumazet@kernel.org; receiver=<UNKNOWN> 
-Authentication-Results: smtp3.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.s=k20260515 header.b=oeyLHW12; 
+ arc=none smtp.remote-ip=172.105.4.254
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
+ helo=tor.source.kernel.org; envelope-from=edumazet@kernel.org;
+ receiver=<UNKNOWN> 
+Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
+Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=RcQd5Rgx
-Received: from sea.source.kernel.org (sea.source.kernel.org
- [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 5FF23605F9
- for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Oct 2026 06:42:50 +0000 (UTC)
+ header.s=k20260515 header.b=oeyLHW12
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 8D8E680BB7
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Oct 2026 06:43:35 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by sea.source.kernel.org (Postfix) with ESMTP id 9B87A43F5D
- for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Oct 2026 06:42:50 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7775B1F031E9
- for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Oct 2026 06:42:50 +0000 (UTC)
+ by tor.source.kernel.org (Postfix) with ESMTP id 70AFC60213
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Oct 2026 06:43:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0FA9C1F031ED
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Oct 2026 06:43:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1793083370;
- bh=pRiCUUjLhGU4QryeqhGvx/oq8Ldr8tbhEqJVg4ZBW9A=;
+ s=k20260515; t=1793083413;
+ bh=1rV7sJ5OuvWmQzcl5Y+LhIg6Y4llgh/mlRpgtM99hK0=;
  h=References:In-Reply-To:From:Date:Subject:To:Cc;
- b=RcQd5Rgx2hQVnLWed84Onq61jdm8RewlmVFnETkOabWqsAIYlP3t6v4NDguMWicf4
- XIoPv6Q/N2BjvVqNIdr0SJ4Q3tJrBxXi68L/8eqMPN8VxsDzTXBEyTU8ubCCCsPGAY
- cNzztg1U8597P0XqYS9yQ72n9R4sE77DtrOwpuyGA2TEC1rjOR8Pp7Et4MSElyd3Yo
- tGLt6gc98IH3gRI9dGsPCN0m2TxrII9PhM37Jmv7c8jshDscyh2A2II6jxlrQTgG8k
- 8AYM3VgfN69mc04S0LIOcwWoYgPM8M20Ej+ABvrkFormUoOgBdW3LhTe4V7jY1wlgD
- FRQ4Oro1Oi57g==
-Received: by mail-oa1-f48.google.com with SMTP id
- 586e51a60fabf-4a75a5fa32dso837308fac.1
- for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Oct 2026 23:42:50 -0700 (PDT)
+ b=oeyLHW12ZBVJE6WwsG5A6uwis/ZOX7lxJXy+K6wLdbIGwF5dWUB7rRaEIA2sOn484
+ KEbamJPaydrLoq1Vo0IljG+Srs4rgLh9IaAnlw+HVuHY+mZXRMVsXdp3zfmn8Kb112
+ 5mifVnj/u5mFKtH47GvCltgVRGPlXKvHccHv5zRgknF6rxSgxUIdYgJ3jJ+NPWp4aP
+ fs7r2yLCNDTnTn72pKo6w41h8TUnttVlWG57bPK6kHWwk1zruD4Gy5SW1BDZWws8aw
+ QuE+d7omHnJ64LXfWtKiZOm4e8pfJ2lvjvygxhS6zK5Wx9SePtpSZAjFEgZpBtZTu6
+ 9NccuSBZLvfkw==
+Received: by mail-oi1-f175.google.com with SMTP id
+ 5614622812f47-53ec92375d2so1703654b6e.1
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Oct 2026 23:43:33 -0700 (PDT)
 X-Forwarded-Encrypted: i=1;
- AKwUvByn5qRE7GunWD4hNlAx/m+RJ/hEbxPgSiqPNHEfHB889jPcU82PeMjmaK3veVH7zV4tmHUsksnWzRJ20XWFKek=@lists.osuosl.org
-X-Gm-Message-State: AFq9FYLJA1zXXfgPP6Cm5nCNytuQIfSDjSReRooy4CxJDvtpyBvlBSAY
- oaE4z3ktXIHYa3uKdUCNtOreon0Eb+VafvROM/HWiwuWyzahQ82pU8Xzr/6sNn2H70shh781YIS
- 99j/+x+GV8r692tGi0LWdnvCSK/TTdiw=
-X-Received: by 2002:a05:6870:c22b:b0:48f:e25e:e202 with SMTP id
- 586e51a60fabf-4a83f5b8983mr5062981fac.61.1793083369809; Mon, 26 Oct 2026
- 23:42:49 -0700 (PDT)
+ AKwUvBz16/qqGH8yJXqOIDpDJvktoKvI6P5fqiIhATJROXafZf9EfEsOc1sb1yX8dQG8zjnousoxywb2TS+0txgYbmA=@lists.osuosl.org
+X-Gm-Message-State: AFq9FYKTYtyw5/LhZFpRh7+14KYKibbnBOHC+Ut316pA4WlpxD1noCc7
+ pQ49SwQqoVWyz2h2SyqM+a+C+Y426Avi4TaaensEjAlQxbsdnyU+exofkXLx/2dEPA8QentDXQz
+ aJBMJVGCF1XEbSeN3IGtltkknp8s1j2I=
+X-Received: by 2002:a05:6808:220a:b0:4ed:7045:d3bc with SMTP id
+ 5614622812f47-55c002d9ed3mr5982970b6e.32.1793083412383; Mon, 26 Oct 2026
+ 23:43:32 -0700 (PDT)
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 References: <20261026091549.605810-1-p@1g4.org>
- <20261026091549.605810-2-p@1g4.org>
-In-Reply-To: <20261026091549.605810-2-p@1g4.org>
+ <20261026091549.605810-3-p@1g4.org>
+In-Reply-To: <20261026091549.605810-3-p@1g4.org>
 From: Eric Dumazet <edumazet@kernel.org>
-Date: Tue, 27 Oct 2026 07:42:39 +0100
-X-Gmail-Original-Message-ID: <CAL4WiioPvWBTb7uq2ny=AApqoDst6fFr6pVYDjw+LfP9UB9q2Q@mail.gmail.com>
-X-Gm-Features: AclHuK95zom0Wqqrue6m7-lKPoAo3R_113cwV3WAYgHulj4dz6QgUcVJPRpgglw
-Message-ID: <CAL4WiioPvWBTb7uq2ny=AApqoDst6fFr6pVYDjw+LfP9UB9q2Q@mail.gmail.com>
-Subject: Re: [PATCH net 2/3] igc: prepare TSO and checksum offloads before TX
+Date: Tue, 27 Oct 2026 07:43:21 +0100
+X-Gmail-Original-Message-ID: <CAL4WiiredhAG-x2Ls8moMLprzOt2Ua0E-eDSXk7Che0QHQ3E0g@mail.gmail.com>
+X-Gm-Features: AclHuK8M6VbpWDO_HbzkaGdWK1HEj-x4xPb3ExTmDRcyeOQYYZiLPbtFqH9A-VI
+Message-ID: <CAL4WiiredhAG-x2Ls8moMLprzOt2Ua0E-eDSXk7Che0QHQ3E0g@mail.gmail.com>
+Subject: Re: [PATCH net 3/3] igb: prepare TSO and checksum offloads before TX
  timestamps
 To: Paul Moses <p@1g4.org>
 Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com, 
@@ -168,31 +168,33 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 X-Spam-Status: No, score=-11.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	SPF_HELO_PASS autolearn=unavailable autolearn_force=no version=4.0.1
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 Le lun. 26 oct. 2026 =C3=A0 10:16, Paul Moses <p@1g4.org> a =C3=A9crit :
 >
-> igc_request_tx_tstamp() takes an extra skb reference before transmit
-> preparation. For GSO packets, igc_tso() calls skb_cow_head(), which can
-> reach pskb_expand_head() with a shared skb when the header is cloned.
-> Commit c7d8bc3dd511 ("net: skbuff: don't BUG() on bad arguments to
-> pskb_expand_head()") replaced the BUG_ON() with -EINVAL, causing TSO
-> preparation to fail and the packet to be dropped.
+> igb_xmit_frame_ring() takes an extra skb reference for TX timestamping
+> before transmit preparation. For GSO packets, igb_tso() calls
+> skb_cow_head(), which can reach pskb_expand_head() with a shared skb
+> when the header is cloned. Commit c7d8bc3dd511 ("net: skbuff: don't BUG()
+> on bad arguments to pskb_expand_head()") replaced the BUG_ON() with
+> -EINVAL, causing TSO preparation to fail and the packet to be dropped.
 >
-> For non-GSO packets with CHECKSUM_PARTIAL, igc_tx_csum() falls back to
+> For non-GSO packets with CHECKSUM_PARTIAL, igb_tx_csum() falls back to
 > skb_checksum_help() for unsupported checksum offsets. This can also
-> reach pskb_expand_head() through skb_ensure_writable(). igc_tx_csum()
+> reach pskb_expand_head() through skb_ensure_writable(). igb_tx_csum()
 > ignores the error, allowing transmission to continue without completing
 > the checksum.
 >
-> Move TSO and checksum preparation before TX timestamp reservation so
-> the extra skb reference cannot interfere with either operation.
+> Move TSO and checksum preparation before taking the timestamp reference.
+> Add the timestamp bit to first->tx_flags without overwriting the offload
+> flags.
 >
-> Fixes: 2c344ae24501 ("igc: Add support for TX timestamping")
-> Fixes: f38b782dccab ("igc: Add support for TSO")
+> Fixes: 1f6e8178d685 ("igb: Prevent dropped Tx timestamps via work items a=
+nd interrupts.")
+> Fixes: 6e033700887b ("igb: Add support for generic Tx checksums")
 > Signed-off-by: Paul Moses <p@1g4.org>
-> ---
 
 Reviewed-by: Eric Dumazet <edumazet@kernel.org>
