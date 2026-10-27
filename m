@@ -1,29 +1,29 @@
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C123B606A320
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 27 Oct 2026 12:17:16 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4A310606A31F
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 27 Oct 2026 12:17:18 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=xg2BC3UN;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=c/x5zjto
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=TZJjSlaB;
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=S3ncMLtN
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id A0EA6606BA;
-	Tue, 27 Oct 2026 12:17:16 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 2719180D9C;
+	Tue, 27 Oct 2026 12:17:18 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id k3ZNGu6WnkUV; Tue, 27 Oct 2026 12:17:15 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org A140360711
-Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793103435;
-	b=RkN2TrYjtvjh6KWPnsFFAW+TAcNXjcrutMrL+fsSqjjzxPYCPmErfTPRdn7luLs2mjpr
-	 OIMDQjkdbodKnZfrImuC1c0BTbqalLgIOYD2tQqJm2mlvnShmoxo9tL6+U2KYeC4WmTwl
-	 fxwPx8UJ4Jc4qor+w/wqDMfDGMUerkDYEku8FUut+9qd8DYY5DUKVae3rexCS6+3MrRUl
-	 wdnscWHIfwaYrFe9T+9lWL3MctbH0yJgZBLLl8FuueVkW9gpXUvXgZZl8csaUOFI55/r7
-	 +dy+Ffp9Z6Vdj7n/0w45wPSiYyfkkiyOVQt0MFkx+yrdwhJlhCu5WY9aZ/eHS2ote8w==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 23XOSGLxLLif; Tue, 27 Oct 2026 12:17:17 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org EC36580D9E
+Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793103437;
+	b=Rh/H5A9IEdVQEAh7rjnFkk0A2vFN1pLfXogTYZa3F90+N/K5RcSOIoy0wM10m847gGIS
+	 PZQzPQ9mtkO1ffZWKCoHxu6LHInVE2IRkiPWlttqPxT4IEIVROHSLi08kTfh5hzvy5V/f
+	 opGH+X6pzZNFyvaQNaXoJ+xLU4qEoVF/rGV7UopGTNH4N+XFAkRgNyg3o8eWFNMSkhCJz
+	 YbOOcKTR++ESgtYxmFGN+EdwR4ZR4uoLYW3FbcDjkifwPgbpKiXp1n7MNWHOk+vTg+ndG
+	 3sKkT2Cnjz2nXz0T63bOjW6XkqICneVe9MVihHIdzDf9Rs1cAUtsUGFPoJHm4yKER8w==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1793103435;
+	c=relaxed/relaxed; t=1793103437;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
@@ -32,95 +32,96 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 Content-Transfer-Encoding:MIME-Version:X-BeenThere:X-Mailman-Version:
 	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=YhcjD1YBMzA5Xs7JoqVBnf/2Enan5NxfdYZ+s0ul08c=;
-	b=WTVLIxeG1A0j2+lypka4qJ/UG6FTD2gVNEK9svEYSEegWUEOBbkjOq4/ZGrjZoacyKEN
-	 nV2yKAo2Z11XAtAN/G8yTbwUmE+94eFP9XJsVGVU681emh3pdM4arYULhlo+cGNYAatiB
-	 PYxASJITXjtaZNkBqczymRjYH6qlysHy1O9Cnvl5NKcn26EGBlqn6Cxe8ziulku66uO/e
-	 z4+sGUi4s4EYPipJoIM7OOAQuK4uVEy62GR+MFQjWzlhvTIccvGAB2/DwkNr6mvYRiebF
-	 L0P+dnB/EBtQOYeBjSJ1qZkSfZRgdz/LI4XWc8frOgARF5fXiyLkggvBUwEqNXmCu2w==
-ARC-Authentication-Results: i=2; smtp3.osuosl.org; 
+	bh=zhLcwSooW/Zl3/4kxoQ1C8DWBsgBlBQ47JW1CBaiEPo=;
+	b=jdQgXnvq/c+qiKWqb9L4rlT/doaBwHbi6t4WhvaT0Ko2xCMgPIj6NaRcKi6V+pFHrF9m
+	 CfUWO8zRYi6JVq35P7V+KGzEMiHtDbrcNFSjYgaO9oiQd1qH2tPpNUDsYDPpOHo2oqVkr
+	 1v0k/QMOMdq8TLdkoldzd7JkO68BYQN1ZVDTbEe1sQ2EmgS18H/WtAgWVFxOrIOZE5KHc
+	 NHlHK0U6+4DA7JdhJAAzVMFJLPbHt029EvlhDdQ2/O6yZ77/rt0IgLnm2NVwTRr4KDN9h
+	 wKMoaaorriHF9RYHkgfMqBVJz+H3XpdoBS7IfRL8K7Fx/gDzFvwKfCp7rWGvhm/q9XA==
+ARC-Authentication-Results: i=2; smtp1.osuosl.org; 
 	dmarc=pass header.from=kernel.org;
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="c/x5zjto";
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=S3ncMLtN;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1793103435;
-	bh=YhcjD1YBMzA5Xs7JoqVBnf/2Enan5NxfdYZ+s0ul08c=;
+	s=default; t=1793103437;
+	bh=zhLcwSooW/Zl3/4kxoQ1C8DWBsgBlBQ47JW1CBaiEPo=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=xg2BC3UNlC1ZFjDgeiVbs85sOy2396lawCWy/zfRE4D+O00QvKmVbyPr4+RA+4lZc
-	 CxwiLN1Otl7rdWI3wGCWF8LBKpgzsn6gZC6p4U4pfkfyQQb3rMm0rAz98UN4580Qk5
-	 RWNFy/NN4V1HDZze/Eo2ifKuC5/4syD+g9cWoN5UDgcJ912T2ZHJmcs1ZcO4zmcJI0
-	 xmPLsM1q8LDhJ9T7NSOvtlV3kSBlH/tcTB6u2xl/HnmAa6AfoQVgIa9OAyCoGelKgz
-	 CHQWECtyA3GgaE+4LV1pEHdmAoj1G8Sgi0Gqer3x2gXSA8wQwPrgoF53a4RaMTB4yb
-	 ulSDwfA/qU8pw==
+	b=TZJjSlaBnkMBLvTor/ScgkOjF4wEX8PLVQo1c8RyMMHDdguz8BkcVgyjAzC67KAfP
+	 7gy1eJrXAfkciWce3Ig3iHow6334upbqL+XZEPX3qzWwPMqShXpFdvX9SEND6Z5tG+
+	 4r2QcfZv66FhuNTJ6nMFLCAfBtsGu3qomTxJrrKkQb5aqB8rLpbsyE1iuCDMVq07hi
+	 8tqiX9+588QC70FFmYS3eJs4iyyNwJ/AfWB/Q31eBVCPPMvSus080T11X1sqsxVi2U
+	 Ti5I58DIj3DvYJntwQ2Fv3LnrwacJz1RYsKPjI/ZgAA+uG90Phe/jCZbGQSMOakE69
+	 b7oA0gtunDGlg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id A140360711;
-	Tue, 27 Oct 2026 12:17:15 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 5CDB13D9
- for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Oct 2026 12:17:13 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id EC36580D9E;
+	Tue, 27 Oct 2026 12:17:16 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 387A54BC
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Oct 2026 12:17:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 4F2E560711
- for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Oct 2026 12:17:13 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 2A48B80D8F
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Oct 2026 12:17:15 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id XsLVBR8_MUv0 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 27 Oct 2026 12:17:12 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 2A7AC606BA
-Authentication-Results: smtp3.osuosl.org;
- arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793103432;
- b=drVlOw8O+qtQ4TgkbgTMCTWYM1LMbefbWmUeuH8C5ASC/0RJRpBAyCNBihxc/hryKMXE
- fDS7r7skt6kA4NoNtjJcabYDquW0y4U5yw/kPvQcmk9iIaGzjKdEMpp8ZAfNUbKPzrc1a
- qPjbiWco4T6Qef/rv/QF9qsAB6rrJ2B+XdgqVArFkHjKYucF1ouwMh+jw4npCsCFPyPzZ
- 426hckcsuI56d8ZtOF4r/adEl7DiN/yADF1EVod+BSsDSNLwEr/bP9CWdg/tiXSa4aqz/
- i3p5tSTZvHP+WzcuPIgCB/fqiGgH4DQDzqDmB4QzyUGpt5vrF0gve5NMk0LaG+/kuWA==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 51h01MT1Z_78 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 27 Oct 2026 12:17:13 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org BB90680C48
+Authentication-Results: smtp1.osuosl.org; arc=none
+ smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793103433;
+ b=g1uwqlVm2V3FWbCvk+8+XPL5LJv/3TJHft7YUsW0sOVh2WsKFoanPX3b12556prS9oZ6
+ ZDGrBFxLMdFlGn9FrOFbMzfH1uy+W7cy9lYTdiwfmHLeniT7zJ6rkB4XH1fhfgHUBupGR
+ kAVRpF+LXKKvUPkC8XabzbnRgmmAPf0+Af8h5T8ONVm/sN1uGOFH4DX5tu2gWBLq7uTsT
+ EhRYMacXsAUFml2aNuH8gtH0Jy866gGXo96xVGeGvX/8EYUpyO1b/AX51hO61gbBhYycM
+ uzFeYYDOyW4GjxbZ9cYtAxUV4wzU8Wu4HagDC9SqNe7QP1tOc4xRZFjc3aSUZI4eHcA==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1793103432;
+ c=relaxed/relaxed; t=1793103433;
  h=Received-SPF:Received:Received:DKIM-Signature:Subject:From:To:Cc:
  Date:Message-ID:In-Reply-To:References:X-sashiko-severity:
  Content-Type:Content-Transfer-Encoding:MIME-Version;
- bh=YhcjD1YBMzA5Xs7JoqVBnf/2Enan5NxfdYZ+s0ul08c=;
- b=p1dGqCjn+4iP8SfaOCU8T3QP6ZeMCaO+wO5SqejVPxfqn4YcJrpUirzK1kya9b9tgSFG
- f4C+sn1hMqiSd+C0mtuT7SJA4zkacNG2LPSl9B4rXyxZM05m3S5Jip2NW4upsrFPMUWUW
- ZEXnh9kFWo6CHH7Eg/HG2l31WfhSeQVjU86mFuXjyOjOa0A/3oH/SDSKBN3pzSmBH/P0f
- OoHVOk+822blwkAPZJ3QX7dqUDBuLeMLsAc0/feP8Oltki22h5ol7QMIIpELq2t36vrtu
- NrpdLGq4PqiuAGOHwKV4k/SHlbwklS20rCdFHcSTQloxI+Afhm9Exa6YlX4NZz1Y6lg==
-ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
+ bh=zhLcwSooW/Zl3/4kxoQ1C8DWBsgBlBQ47JW1CBaiEPo=;
+ b=mbF+KExUZotcpwSvuCsur7v8ToLB1swQUhzCvB7E2ueYGVGrfXvgO05xqwkuUw3xjcUe
+ BCt5AB7fX6IPfQVYfHcFHyBOmb105E5AwG9022VmxjG2QYZTvB+VEiGubV8kzjn6jgEus
+ QqYIrDIph4S+YSE6uVr6ERHdhGu/lQ8ToClxt+YJXXxiRNnFoH5AonX5YnZ/mJJFC7iOj
+ IaiWFYZQJ/KwlBlbUvkZZo8qaTANOh46/ncjDWiIK0R0d8Ih5zgPzTJO1KJ29zfAdnLBE
+ i3Ob3GfLBn2QbFnjXbhk6CEqskbq9rCa8ecV/lMxbxdP5A1WGq9Q+gBmuNot1ScinkA==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
  dmarc=pass header.from=kernel.org;
  dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b="c/x5zjto"; 
- arc=none smtp.remote-ip=172.234.252.31
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
- helo=sea.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org;
- receiver=<UNKNOWN> 
-Authentication-Results: smtp3.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.s=k20260515 header.b=S3ncMLtN; 
+ arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
+ envelope-from=netdev-bot+sashiko@kernel.org; receiver=<UNKNOWN> 
+Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
+Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=c/x5zjto
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 2A7AC606BA
- for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Oct 2026 12:17:11 +0000 (UTC)
+ header.s=k20260515 header.b=S3ncMLtN
+Received: from sea.source.kernel.org (sea.source.kernel.org
+ [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id BB90680C48
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Oct 2026 12:17:13 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by sea.source.kernel.org (Postfix) with ESMTP id 0138743B32;
+ by sea.source.kernel.org (Postfix) with ESMTP id A705841AAA;
+ Tue, 27 Oct 2026 12:17:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 81A7A1F031E1;
  Tue, 27 Oct 2026 12:17:11 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DA4581F01825;
- Tue, 27 Oct 2026 12:17:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1793103430;
- bh=YhcjD1YBMzA5Xs7JoqVBnf/2Enan5NxfdYZ+s0ul08c=;
+ s=k20260515; t=1793103432;
+ bh=zhLcwSooW/Zl3/4kxoQ1C8DWBsgBlBQ47JW1CBaiEPo=;
  h=Subject:From:To:Cc:Date:In-Reply-To:References;
- b=c/x5zjtoSUWG3kSbfh2U+NnRQ109lCtJVwu5+uOcfnNbifpj61anmMJ8cnZRp0/eh
- 7Uo0BhRmcPNF8Pef1y50r3+x4i4HMz99vhb5uyo+hIOl3Kv3xKARsl+XbbvMgf4zQ1
- b4+PkKXNNQ8YLkJhuoZfK/MomyirEV027P/LxDA/Xm5FYDlZe6GXeu4hksqXWEcaOJ
- 0A+VLqY2n0W7PX7seGzH78MN+cuvqrLzE2iExxPS6FCaeEkFQjBbpEgeQYMcNI2kKr
- vj/YRwmAHAQ62WAPiGhiBu6f7fhGE1mk5ziMYm0QTvb75F4FCIPZudCvuJB8gHHFTx
- 35eXFNx2CIZrA==
-Subject: Re: [PATCH net 2/3] igc: prepare TSO and checksum offloads before TX
+ b=S3ncMLtNu4FMHy2PpFAjdjOCUSrJb2RF3maO6lPfRtSaOva6SVFNNs7XKxenyjyp0
+ YeB6odigs4l6WHBhzKULdaiTUSAeUGwV+PTsT8084GG1oOLNVRHoK9cEFWfBXAqXAg
+ Ri0kqjOCbZ0uXwBH4hm856pkXOr+182RePhWqNvEHykUzLLQYU1aFFiCj8h21kG9fi
+ H6B5b/yfFbdvfcLvHJsrRE0HYlgtTcXc7lvV18GynSnGDtHd0+3xmbrEjI83dqBbJ3
+ tPC8zXnO6v1M5RlKUS4UJ3txp515dtBJzFN7jWNfLyi4liejTBtjejQxQK5mv6jv/A
+ wU7IzFb1e/pKw==
+Subject: Re: [PATCH net 3/3] igb: prepare TSO and checksum offloads before TX
  timestamps
 From: netdev-bot+sashiko@kernel.org
 To: p@1g4.org
@@ -132,10 +133,10 @@ Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
  faizal.abdul.rahim@linux.intel.com, horms@kernel.org,
  vinicius.gomes@intel.com, sasha.neftin@intel.com, matthew.vick@intel.com,
  aduyck@mirantis.com
-Date: Tue, 27 Oct 2026 12:17:09 +0000
-Message-ID: <179310342944.3134.10071026023246764321@kernel.org>
-In-Reply-To: <20261026091549.605810-2-p@1g4.org>
-References: <20261026091549.605810-2-p@1g4.org>
+Date: Tue, 27 Oct 2026 12:17:11 +0000
+Message-ID: <179310343105.3134.12907560938189136535@kernel.org>
+In-Reply-To: <20261026091549.605810-3-p@1g4.org>
+References: <20261026091549.605810-3-p@1g4.org>
 X-sashiko-severity: Medium
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -161,7 +162,7 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 Thank you for your contribution! Sashiko AI review found 2 potential
 issue(s) to consider.
 
-Critical: 0 · High: 0 (1) · Medium: 2 · Low: 0
+Critical: 0 · High: 0 (1) · Medium: 1 (2) · Low: 1
 
 If you believe none of the issues are legitimate, please reply to each
 issue of Medium severity or higher and explain why the AI is wrong.
@@ -169,132 +170,242 @@ If any of them are legitimate and you plan to respin, please let patchwork
 know by including "pw-bot: cr" as a separate line at the end of your reply
 (one such reply per series is enough).
 
-- [Medium] The commit message misstates what the patch fixes.
-- [Medium] igc_tx_csum() (drivers/net/ethernet/intel/igc/igc_main.c:1200)
-  still ignores the return value of skb_checksum_help().
+- [Medium] igb_tx_csum() still ignores the return value of
+  skb_checksum_help() (igb_main.c:6170, `default:…
+- [Low] The commit message says the bug's effect is a dropped packet (TSO
+  path) or an incomplete checksum (csum path), because commit…
 
 Pre-existing issues:
-- [High] This problem wasn't introduced by this patch, but ixgbe has the
-  same skb_get()-before-skb_cow_head() ordering and the series leaves it…
+- [High] This problem wasn't introduced by this patch, but
+  ixgbe_xmit_frame_ring() has the same ordering bug this series fixes in…
+- [Medium] This problem wasn't introduced by this patch, but on the
+  igb_tx_map() failure path, cleanup_tx_tstamp in igb_xmit_frame_ring()…
+- [Medium] This problem wasn't introduced by this patch, but the
+  cleanup_tx_tstamp path in igb_xmit_frame_ring() calls…
 
 --
 
-igc: prepare TSO and checksum offloads before TX timestamps
+igb: prepare TSO and checksum offloads before TX timestamps
 
-In igc_xmit_frame_ring(), this patch moves the igc_tso() and igc_tx_csum()
-calls ahead of the TX hardware timestamp reservation. As a result, the
-extra skb reference that igc_request_tx_tstamp() takes no longer exists
-while the headers are being prepared.
+This patch moves the VLAN flag setup, igb_tso() and igb_tx_csum() in
+igb_xmit_frame_ring() ahead of the skb_get() taken for hardware TX
+timestamping. Offload preparation therefore no longer runs on a shared skb.
+The timestamp flag is then ORed into first->tx_flags so the offload flags
+are kept.
 
-> Commit c7d8bc3dd511 ("net: skbuff: don't BUG() on bad arguments to
-> pskb_expand_head()") replaced the BUG_ON() with -EINVAL, causing TSO
-> preparation to fail and the packet to be dropped.
+> igb_xmit_frame_ring() takes an extra skb reference for TX timestamping
+> before transmit preparation. For GSO packets, igb_tso() calls
+> skb_cow_head(), which can reach pskb_expand_head() with a shared skb
+> when the header is cloned. Commit c7d8bc3dd511 ("net: skbuff: don't BUG()
+> on bad arguments to pskb_expand_head()") replaced the BUG_ON() with
+> -EINVAL, causing TSO preparation to fail and the packet to be dropped.
 
-[Severity: Medium]
-Is this description accurate for the tree this patch applies to?
-c7d8bc3dd511 does not appear to be an ancestor of this commit, and
-pskb_expand_head() in net/core/skbuff.c still has:
+[Severity: Low]
+Does this description match the tree this patch applies to?
 
-	BUG_ON(skb_shared(skb));
+Commit c7d8bc3dd511 doesn't appear to be an ancestor of this patch.
+pskb_expand_head() here still has:
 
-Before this patch, igc_request_tx_tstamp() does tstamp->skb = skb_get(skb),
-which leaves skb->users at 2. If the header is cloned (for example an
-AF_PACKET tap clone from dev_queue_xmit_nit(), or a bridge or mirred
-clone), these paths are taken:
-
-  igc_tso()->skb_cow_head()->__skb_cow()->pskb_expand_head()
-  igc_tx_csum()->skb_checksum_help()->skb_ensure_writable()->pskb_expand_head()
-
-Both would hit that BUG_ON() instead of returning -EINVAL.
-
-The stable trees that the Fixes: tags (2c344ae24501, f38b782dccab) point
-at would behave the same way. Could the commit message say that in those
-kernels the symptom is a BUG(), not a dropped packet or a missing checksum?
-
-> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-> index f1bf4e462a511..cd4c9815fca7c 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_main.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-> @@ -1678,6 +1678,12 @@ static netdev_tx_t igc_xmit_frame_ring(struct sk_buff *skb,
->  			goto out_drop;
->  	}
->  
-> +	tso = igc_tso(tx_ring, first, launch_time, first_flag, &hdr_len);
-> +	if (tso < 0)
-> +		goto out_drop;
-> +	else if (!tso)
-> +		igc_tx_csum(tx_ring, first, launch_time, first_flag);
-
-[Severity: Medium]
-The commit message says "igc_tx_csum() ignores the error, allowing
-transmission to continue without completing the checksum". After this
-patch, igc_tx_csum() still throws away the return value:
-
-drivers/net/ethernet/intel/igc/igc_main.c:igc_tx_csum() {
+net/core/skbuff.c:pskb_expand_head() {
     ...
-	default:
-		skb_checksum_help(skb);
-		goto csum_failed;
+	BUG_ON(skb_shared(skb));
     ...
 }
 
-The reorder removes the shared skb trigger, but skb_checksum_help() can
-still fail in other ways:
+The same is true for the stable kernels the Fixes: tags point at.
 
-- -ENOMEM from __skb_linearize() for shared frags
-- -ENOMEM from skb_ensure_writable()->pskb_expand_head(GFP_ATOMIC) when
-  the header is cloned
-- -EINVAL or -EFAULT for bad offsets or unreadable frags
+So before this patch, both paths described in the message would hit BUG().
+They would not drop the packet or skip the checksum:
 
-In each case ip_summed is left as CHECKSUM_PARTIAL with no checksum
-written, and igc_xmit_frame_ring() continues to igc_tx_map(). Does the
-frame then go out with only the pseudo-header seed in the L4 checksum
-field?
+igb_xmit_frame_ring() /* skb_get() */
+  igb_tso()->skb_cow_head()->__skb_cow()->pskb_expand_head()
 
-The default branch can be reached because igc_probe() advertises
-NETIF_F_HW_CSUM. That lets CHECKSUM_PARTIAL skbs with any csum_offset
-arrive, for example packets forwarded from tun/tap vnet_hdr guests.
+igb_xmit_frame_ring() /* skb_get() */
+  igb_tx_csum()->skb_checksum_help()->skb_ensure_writable()
+    ->pskb_expand_head()
 
-Could igc_tx_csum() return an error and goto out_drop on failure, the
-same way the igc_tso() < 0 case is handled?
+The code change looks right. Could the message say that the effect is a
+BUG()? Once hardware TX timestamping is enabled, an SO_TIMESTAMPING sender
+can trigger it.
+
+> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+> index d4a897a8c82c6..04c0053dbaae8 100644
+> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+> @@ -6559,6 +6559,21 @@ netdev_tx_t igb_xmit_frame_ring(struct sk_buff *skb,
+>  	first->bytecount = skb->len;
+>  	first->gso_segs = 1;
+>  
+> +	if (skb_vlan_tag_present(skb)) {
+> +		tx_flags |= IGB_TX_FLAGS_VLAN;
+> +		tx_flags |= (skb_vlan_tag_get(skb) << IGB_TX_FLAGS_VLAN_SHIFT);
+> +	}
+> +
+> +	/* record initial flags and protocol */
+> +	first->tx_flags = tx_flags;
+> +	first->protocol = protocol;
+> +
+> +	tso = igb_tso(tx_ring, first, &hdr_len);
+> +	if (tso < 0)
+> +		goto out_drop;
+> +	else if (!tso)
+> +		igb_tx_csum(tx_ring, first);
+
+[Severity: Medium]
+The commit message says igb_tx_csum() ignores the error from
+skb_checksum_help(). This patch removes the shared skb trigger, but can
+that ignored error still happen?
+
+igb_tx_csum() still does:
+
+	default:
+		skb_checksum_help(skb);
+		goto csum_failed;
+
+igb advertises NETIF_F_HW_CSUM. A non-GSO CHECKSUM_PARTIAL skb with an
+unusual csum_offset therefore ends up here, for example one sent through
+AF_PACKET or tun with a vnet_hdr.
+
+skb_checksum_help() can still return early without writing the checksum or
+setting CHECKSUM_NONE:
+
+skb_checksum_help()
+  skb_ensure_writable()
+    pskb_expand_head(skb, 0, 0, GFP_ATOMIC)  /* -ENOMEM, cloned header */
+
+The other early returns are a __skb_linearize() failure, the -EINVAL
+headlen offset checks, and !skb_frags_readable().
+
+On failure igb_tx_csum() jumps to csum_failed. Because igb_tx_csum() returns
+void, igb_xmit_frame_ring() cannot drop the packet. igb_tx_map() then sends
+a frame whose L4 checksum field holds only the pseudo-header partial sum.
+
+Could igb_tx_csum() return an error so the caller can goto out_drop? That
+would match how an igb_tso() failure is handled here, and what
+validate_xmit_skb() does when skb_checksum_help() fails.
 
 > +
->  	if (unlikely(test_bit(IGC_RING_FLAG_TX_HWTSTAMP, &tx_ring->flags) &&
->  		     skb_shinfo(skb)->tx_flags & SKBTX_HW_TSTAMP)) {
->  		unsigned long flags;
+>  	if (unlikely(skb_shinfo(skb)->tx_flags & SKBTX_HW_TSTAMP)) {
+>  		struct igb_adapter *adapter = netdev_priv(tx_ring->netdev);
+>  
+> @@ -6567,6 +6582,7 @@ netdev_tx_t igb_xmit_frame_ring(struct sk_buff *skb,
+>  					   &adapter->state)) {
+>  			skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
+>  			tx_flags |= IGB_TX_FLAGS_TSTAMP;
+> +			first->tx_flags |= IGB_TX_FLAGS_TSTAMP;
+>  
+>  			adapter->ptp_tx_skb = skb_get(skb);
+>  			adapter->ptp_tx_start = jiffies;
 
 [Severity: High]
-This is a pre-existing issue and was not introduced by this patch, but
-ixgbe seems to have the same ordering, and this series does not touch it.
-Later in the series, igb is fixed by "igb: prepare TSO and checksum
-offloads before TX timestamps". ixgbe_xmit_frame_ring() still takes the
-timestamp reference before any header preparation:
+This isn't a bug introduced by this patch, but does ixgbe_xmit_frame_ring()
+have the same ordering problem that this series fixes in igb and igc?
 
 drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:ixgbe_xmit_frame_ring() {
     ...
 			adapter->ptp_tx_skb = skb_get(skb);
+			adapter->ptp_tx_start = jiffies;
+			schedule_work(&adapter->ptp_tx_work);
     ...
 			if (skb_cow_head(skb, 0))
 				goto out_drop;
     ...
 	tso = ixgbe_tso(tx_ring, first, &hdr_len, &ipsec_tx);
-    ...
+	if (tso < 0)
+		goto out_drop;
 	else if (!tso)
 		ixgbe_tx_csum(tx_ring, first, &ipsec_tx);
     ...
 }
 
-ixgbe_tso() also calls skb_cow_head(skb, 0) itself. Once HWTSTAMP_TX_ON is
-enabled and a socket asks for SOF_TIMESTAMPING_TX_HARDWARE on a GSO skb
-with a cloned header, this path runs while skb->users is 2:
+After skb_get(), three paths can call pskb_expand_head() on the now shared
+skb when its header is cloned:
 
-  ixgbe_tso()->skb_cow_head()->__skb_cow()->pskb_expand_head()
+  the DCB software VLAN skb_cow_head()
+  ixgbe_tso()->skb_cow_head()->__skb_cow()
+  ixgbe_tx_csum()->skb_checksum_help()->skb_ensure_writable()
 
-Wouldn't that hit BUG_ON(skb_shared(skb)) in pskb_expand_head()? The DCB
-software VLAN skb_cow_head() call and ixgbe_tx_csum() also run after the
-reference is taken.
+In this tree that hits BUG_ON(skb_shared(skb)) in pskb_expand_head(). Once
+c7d8bc3dd511 is applied, it becomes a dropped TSO packet or an ignored
+checksum failure instead.
+
+The series doesn't touch ixgbe. Should ixgbe get the same reordering?
 
 [ ... ]
+
+> @@ -6577,21 +6593,6 @@ netdev_tx_t igb_xmit_frame_ring(struct sk_buff *skb,
+
+[ ... ]
+
+>  	if (igb_tx_map(tx_ring, first, hdr_len))
+>  		goto cleanup_tx_tstamp;
+
+[Severity: Medium]
+This is a pre-existing issue, but on 82576 can the cleanup_tx_tstamp path
+race with igb_ptp_tx_work()?
+
+igb_xmit_frame_ring() {
+    ...
+cleanup_tx_tstamp:
+	if (unlikely(tx_flags & IGB_TX_FLAGS_TSTAMP)) {
+		...
+		dev_kfree_skb_any(adapter->ptp_tx_skb);
+		adapter->ptp_tx_skb = NULL;
+		if (adapter->hw.mac.type == e1000_82576)
+			cancel_work_sync(&adapter->ptp_tx_work);
+    ...
+}
+
+The skb is freed before the work is synchronized. igb_ptp_tx_work() checks
+and uses the same pointer without a lock:
+
+igb_ptp_tx_work() {
+	if (!adapter->ptp_tx_skb)
+		return;
+
+	if (time_is_before_jiffies(adapter->ptp_tx_start +
+				   IGB_PTP_TX_TIMEOUT)) {
+		dev_kfree_skb_any(adapter->ptp_tx_skb);
+    ...
+	tsynctxctl = rd32(E1000_TSYNCTXCTL);
+	if (tsynctxctl & E1000_TSYNCTXCTL_VALID)
+		igb_ptp_tx_hwtstamp(adapter);
+    ...
+}
+
+igb_ptp_tx_hwtstamp() copies adapter->ptp_tx_skb and later calls
+skb_tstamp_tx() and dev_kfree_skb_any() on that copy.
+
+The work can be running on another CPU, either scheduled by
+igb_tsync_interrupt() on E1000_TSICR_TXTS or rescheduled by itself. If it
+passes the NULL check before the xmit CPU frees the skb, could it use or
+free an skb that has already been freed?
+
+To hit this, the worker would need a stale TSYNCTXCTL_VALID bit or a stale
+ptp_tx_start, so it may be hard to trigger. The code comes from commit
+74344e32fcc0. This patch makes it harder to reach, because igb_tso()
+failures now return before IGB_TX_FLAGS_TSTAMP is set.
+
+[Severity: Medium]
+This is also pre-existing and not introduced by this patch, but is
+cancel_work_sync() safe to call in this path?
+
+igb_xmit_frame_ring() runs as ndo_start_xmit. BH is disabled under
+rcu_read_lock_bh(), and the txq _xmit_lock is held. ptp_tx_work is a regular
+work item, so __cancel_work_sync() calls might_sleep(). It can also block in
+__flush_work() if the work is running.
+
+With CONFIG_DEBUG_ATOMIC_SLEEP, each igb_tx_map() DMA mapping failure on a
+timestamped 82576 packet would print a "sleeping function called from
+invalid context" splat.
+
+If the work is running at that moment, the xmit path would really sleep in
+atomic context. That can happen because igb_ptp_tx_hwtstamp() clears
+__IGB_PTP_TX_IN_PROGRESS before it calls skb_tstamp_tx(). A new timestamp
+request can then start while the previous worker is still running.
+
+After this patch, only an igb_tx_map() failure reaches this path. This code
+also comes from commit 74344e32fcc0.
 
 -- 
 Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20261026091549.605810-1-p%401g4.org
