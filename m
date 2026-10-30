@@ -2,28 +2,28 @@ Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A0FF2606A31C
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 30 Oct 2026 04:54:08 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 891DB606A31D
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 30 Oct 2026 04:54:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=P1Z2gBL0;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MOwF+Umb
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=00VVeTLG;
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ke7wnBA2
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 8530360A9A;
-	Fri, 30 Oct 2026 04:54:08 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 6CF4F60AA6;
+	Fri, 30 Oct 2026 04:54:09 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ZCIoEL93flrX; Fri, 30 Oct 2026 04:54:07 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 9AC4860667
+ id 2_A8V6Jd-4u9; Fri, 30 Oct 2026 04:54:08 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 9757260667
 Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793336047;
-	b=cn7jtjQl47BrkI/osZRFZjQ3V9e596zQY43IIR446SUj4yieWXxraNuO9i6rhhlT1H07
-	 q/chO9cJtBehSELDy1uKxnzo2iKP/5y5r20QM0oca7jzFEOSq76K2ath7IIBVUjZooMvS
-	 FHmGBlzzK5OTNIdFuaA53JNdBvU4HJg1t7AsDMIx9Qhp9lKJ0zBVHH0vDLeP702lHGriX
-	 gk+pSM1mphntmyo80KhNXclqh+kcHvec20uzDdK0fNIP+33q83Fo/v270LrHk2seugflB
-	 DiqXuHpgPSbZmUcBBGmbK/D+JcwB/kTNH8/w7z4xff+ETlwm4hjgCx+L0istka3z/+Q==
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793336048;
+	b=hRqeiH/NcJfp31QItpvNz/OMuQcjJtjEXk2EtGEU/hFaSHh72njAKAt2wwRk2S7H5wv3
+	 3gv6n0gubeYTFKN7wGnOZY/rkvb1puXLWKY85sGaF5YPujZSqJmBPNPOKhNtCKfAsKBqD
+	 WFdBBsUD/S1RXaPJ3TG85/Y3YfA8oY5OfVhAn1KjNQ37XYnmgdZJUKxdsWcG++YZSEcim
+	 4e1xJRG9bBtY5pv28kJq3IE09eZgssX2Zqw3ORMrgriM8+172QRnVMVJcvtNSvdNsxcsi
+	 DOcT9CjBWpIUhXLuvT96NeXcM7sWDFfuInxg4Di+y5A3XNcO00As4iu/GL/EGlzMVyQ==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1793336047;
+	c=relaxed/relaxed; t=1793336048;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
@@ -31,104 +31,104 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 References:Content-Type:Content-Transfer-Encoding:Date:X-BeenThere:
 	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Reply-To:Errors-To;
-	bh=JRdsfpJ2IqxmA70DTVEZFY/7+VSmFcTF4f9qYMGtPIg=;
-	b=ikd4Fo5tYkwZJC8HLL/F3AfdVFjn8i24cQC7HQfUM2C61qAW3Al9t4Xi324/U5KXQIg9
-	 A8XnPZ0yN8NvIaV+I4xfNrIsItxNWosM49kVPueSJwGaMBdHKcI75VhEGX64AIlhi5fuM
-	 W0RmAdEmvpOWE8HbLAHdHxC91FrOEETFHtVRjphWWfkw/UIjmYrQE1R8tqa7MUe2biq51
-	 UUqAGpGU2mPEkhsAWaDxvHWE+ZXqjAqNz8+5QZb+Uu6L1vn+DSh2R0GKKzlA6Jp07C+lO
-	 ZaLRLkG9l4sz1y/TrZRftX9sguEDhZ0zMq0OjmWXytyFQHTbi36jN+7921e0YfMrOnQ==
+	bh=nLBjb4F3OeLFw5lNrBCe2Q7rzGMDWKNlWqk4bpqN4kA=;
+	b=XWX8G57WAXpUrH/7+XvDD2ZHpRPUMZZOujmgsyC6FTlk/LxJUjWsUnKUZFwpQNWM9uQZ
+	 F3oz2vzT6UgyppyN64rozeAJOguV3SEL2RF8+m1xhd0TUcl5AvwzKlIoStnDZ8vJLAXu5
+	 I+aLrOwam/75bEJNOFt67bSM+HJjaxVG148H7bJAs1QSdyzfB6Be2Snz/IYKvruVGbNpm
+	 Ux+5yzQl7/i2hij2Au0fjDraYv7RYXSqRArNJlJhVZ+zIpfQcNo01/jw3/DV9JzudMp/1
+	 oVezLtRyYeFoskses7slwiRqijNQ9A8fe6T+djN3T5pH3Y5gH27CqGB+HzFWnJU4SHQ==
 ARC-Authentication-Results: i=2; smtp3.osuosl.org; 
 	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1793336047;
-	bh=JRdsfpJ2IqxmA70DTVEZFY/7+VSmFcTF4f9qYMGtPIg=;
+	s=default; t=1793336048;
+	bh=nLBjb4F3OeLFw5lNrBCe2Q7rzGMDWKNlWqk4bpqN4kA=;
 	h=From:Subject:To:In-Reply-To:References:Date:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Reply-To:From;
-	b=P1Z2gBL0e+HZhz6a6U8D4lzZbcveRRLJ1mdVC15YvELGismADxgaAXu4HuVA9ZCJX
-	 TJXlD3mm9zH5iL+1VGMKwZFB+YVUsyZ9AEwobMMLXMNujt+bSwGpSle3aB07BlEzqH
-	 we+eLZGUAW2ukeZSKqNIobcPnDJZa6y3J7jf6443HxgfPTH6tNPha4r54xGq1u4Xht
-	 egSgSIIE2StV+R5rD0NJQQSK8+HiuepbcS1mHLl5wkK9XhKH983nOEmcng/oTCgKM/
-	 qEce4wqeph5079/VT8TRguFs12hs++4At7vCDKfalp9uLF4nz6Wft1V5immVSiHJBU
-	 lzfO2Qg3HhUag==
+	b=00VVeTLGxuLih8HTb7UfkySNzdMTS+lcE6jOROBaRkElrr5HMVk9ph5Km8Kiz25fN
+	 F4Ir14f3pZAh8LKEWJhWLAt2ADANeaz0Elj5QNz3VjbIH7bqCXf8mp+3S+duVn1axy
+	 MzRtdobQzfCT86FpxZBlKtd2DauvxGpBQYOfVclr9iAi6fuN4nG/ml4oliyMtH4IBI
+	 UuCAy/XF1Rsp66ASaRITFOdRFano0+JOasLbgg4Vobra8caHmKqsEPDTOBO/W6/3OB
+	 1EXmHgTPm1GA/Ipxda0qv9clf742E/RXWlNS7f77CmPq1r62B1XlJJT5p+1Zyqo2d+
+	 qxdYUk+hc9mHA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 9AC4860667;
-	Fri, 30 Oct 2026 04:54:07 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id BF46FD38
- for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 04:54:05 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 9757260667;
+	Fri, 30 Oct 2026 04:54:08 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 01BD9D38
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 04:54:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id B0F0A40A68
- for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 04:54:05 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id E7114810BA
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 04:54:06 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 9SoFLmz_T6HT for <intel-wired-lan@lists.osuosl.org>;
- Fri, 30 Oct 2026 04:54:04 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 801D840A6E
-Authentication-Results: smtp4.osuosl.org; arc=none
- smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793336044;
- b=MmZo9rvR0DZVV+JWv7Nao9N2wOxJfT7XY+uvOcQJXg6u1FNxQpOh/6sRc3+ydTCZp9Nq
- m+KAxlHumjMFRl6y67iaXKdVIxaBRBTQ/eYCkAKmsI+Pgeh7w7mhs4SrvHr9/kth88QgM
- PqM2SgTlAwScM+yOKRddkeXI7yFS5Y8rZ+oR3MHPCOMvVF6DCz3QlI4UkFwGbMYl5fvj5
- 98xcYZ5p20KygeTHEISIOjpocieFKtnJV/N0xXGBu17SFcaGF/Wsj6U9UYne/cs957itR
- 9/5icZvW7Ewo70a6ZRZSePHggAZDOUduqrgQZl4o3rOeiJG36bQYDNVpwz9lavD1NJw==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id fajCQf-6R1g1 for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 30 Oct 2026 04:54:06 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 0B3F9810A8
+Authentication-Results: smtp1.osuosl.org; arc=none
+ smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793336046;
+ b=rR1kgQWJQs5Uiab7PY0SaI9562ycNTrGH2YdvOZD38UkTAf2qhLMLuP9mrWXRO9GRvcc
+ FKyB8jYajFqUqtkYwUaat90NWwtlDbDie1DTHbmrCcev2HYIZ73QIG+bQv08u05GzgtDW
+ JV++yEF/P2159s8XgzVRKgbVLy2MN+eDrDRXHIOX4WOvI6xbQBiE7uR8yvz+Wd9Vqss7+
+ oqJsxcNuTboHhX7IBNi/K7SxZL1NZB1gaCP8AvT0+DtYoKResqgGNBy1GqpFW+6gvkdWx
+ vYSip0XKvvQQODoX22mReJxPQcW2zs9J0kynz1cFrf9+eOuaH/J0YVKyhPSo9xAjSww==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1793336044;
+ c=relaxed/relaxed; t=1793336046;
  h=Received-SPF:Received:Received:DKIM-Signature:Message-ID:From:
  Subject:Reply-To:To:In-Reply-To:References:Content-Type:
  Content-Transfer-Encoding:Date;
- bh=JRdsfpJ2IqxmA70DTVEZFY/7+VSmFcTF4f9qYMGtPIg=;
- b=P3aNzKdpPEFo6zfdh3P+BukzKn1/z6Ijpgsclt7bfzy/RdemFGvJpPI98EMMJKKyi67e
- u97SGm3iKcJpwkHTbyLFz/7eOK2eylp9C/r3VUzQJ+KlTYIUQBmf07Gi3lwgsRUhXJ4Xy
- TLYBbEDxGeK8LSjAxSP0Gxn6ZyBA4+WNIJRxgrV1opPP0weloDPgs5zNrrYz5cVaOFGv1
- PNHuRwZaN88iRhmgoOy2ndKt1oKLu5bdu1I+mixWkg8skbYQqKUuMR61RzZvint2PIfN6
- 3PFIPfku9PrL3OCraQpN8AdkhzCf813unajbbDhakNlZ/UptOYSdLb+s/q3M5kWoWGA==
-ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
+ bh=nLBjb4F3OeLFw5lNrBCe2Q7rzGMDWKNlWqk4bpqN4kA=;
+ b=U9BWHL02+abyYSuL9gGDX6a9mR0k5YDCsza+P+lACbpv1xmGJmVw+FnFA+wDYAeDFNnT
+ zHoVH5m5vN9KQV+9u1YoVZrvdQpYuIXJgZZMB0xpI++bbWxO1duxanDPwaulGY2Xsq9Gm
+ uLNIPTSjS2U9xwdLd9L1rltfr3D9pukE2Ia+42plPHXCfrUkV2gho5qFobYOrvjMyazM1
+ HoP3oI1BeWDRRSLgwQ+j6OSDMHnYLL9lMrXNSvjKkhcrECGsGXVRGYYQov9wOi+gEzXXg
+ vd8rS6+RTlhtiSeiHt5OTGDmu9/dX5ZvHzosicri0mBDezAbah25PFqbgbx1caAvysA==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
  dmarc=pass header.from=kernel.org;
  dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=MOwF+Umb; 
- arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ header.s=k20260515 header.b=Ke7wnBA2; 
+ arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
+ client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
  envelope-from=sashiko-bot@kernel.org; receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=quarantine dis=none)
+Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-Authentication-Results: smtp4.osuosl.org;
+Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20260515 header.b=MOwF+Umb
-Received: from tor.source.kernel.org (tor.source.kernel.org
- [IPv6:2600:3c04:e001:324:0:1991:8:25])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 801D840A6E
- for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 04:54:03 +0000 (UTC)
+ header.a=rsa-sha256 header.s=k20260515 header.b=Ke7wnBA2
+Received: from sea.source.kernel.org (sea.source.kernel.org
+ [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 0B3F9810A8
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 04:54:05 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id 00F0E600DA;
- Fri, 30 Oct 2026 04:54:03 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 81CA41F000C1;
- Fri, 30 Oct 2026 04:54:02 +0000 (UTC)
+ by sea.source.kernel.org (Postfix) with ESMTP id 615A240551;
+ Fri, 30 Oct 2026 04:54:05 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1F5891F000C1;
+ Fri, 30 Oct 2026 04:54:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1793336042;
- bh=JRdsfpJ2IqxmA70DTVEZFY/7+VSmFcTF4f9qYMGtPIg=;
+ s=k20260515; t=1793336045;
+ bh=nLBjb4F3OeLFw5lNrBCe2Q7rzGMDWKNlWqk4bpqN4kA=;
  h=From:Subject:Reply-To:To:In-Reply-To:References:Date;
- b=MOwF+UmbfUlutLb7FP/KK8gX2TLqBXS7zCHESWoxQ5JPxOIF2FrYkxYygmaYMUxv9
- mbs8UhUGy1B0Gm1FensBMWl2/RaLms285B3k3sF8FKO/ZlwFlzuwYl4VCS+tq/e0xy
- Ssn6OHaol+/6/80aR90cH+2gJ8TmL8XAIgGSkg+GGY3NqOPNTooP8NHoKlLrV0wOyp
- NcsoysExca/x7XcnRys2HvSC8Ih9CJHg71HsfeEVKYUUGG7PTcBF5aEc0pUDytTahz
- iQ+4bitSFBCbtBl3uSU7qvl6WT95Ty+nXkwa2NIG8Xu479Aa4CXEVlsPMPAf/0mxr3
- s5F9IGpXVVzKg==
-Message-ID: <sashiko-outbox-190396@kernel.org>
+ b=Ke7wnBA236mNSRXZoUBZN5M0ix8EvZqZPlI9FvenYRXS5AFXKSxbe8oM18KczDdex
+ MeMFvwCgIybL3YYbVzWA8uusizXa7Cd4fYSTxN37FIQlOyJwMjjuZpiU2Wc4+IZLJ/
+ 2FcZftDT45T7NyrgI5lm5hc7javr52oQ4dLZKQsKrE7UGga5gFGteJsys3Q8Euoc02
+ 4rELEbezkVXrOFjSMhZuaH8t5bBEWsRIDkprRe6xDDtvXAcCcGwh0quwGNppzts/Gh
+ 0sggRL971Mg2WRTa5Avr160uQjs58pW9EKAKZfbkS92cgwkxz8iizDbugYauWrKrxa
+ T6bY9XxzGgQIQ==
+Message-ID: <sashiko-outbox-190400@kernel.org>
 From: sashiko-bot@kernel.org
-Subject: Re: [PATCH v12 net-next 1/9] octeontx2-af: npc: cn20k: debugfs
- enhancements
+Subject: Re: [PATCH v12 net-next 6/9] octeontx2: cn20k: Coordinate default
+ rules with NIX LF lifecycle
 To: "Ratheesh Kannoth" <rkannoth@marvell.com>, intel-wired-lan@lists.osuosl.org,
  linux-rdma@vger.kernel.org
-In-Reply-To: <20260508034912.4082520-2-rkannoth@marvell.com>
-References: <20260508034912.4082520-2-rkannoth@marvell.com>
+In-Reply-To: <20260508034912.4082520-7-rkannoth@marvell.com>
+References: <20260508034912.4082520-7-rkannoth@marvell.com>
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
-Date: Fri, 30 Oct 2026 04:54:02 +0000
+Date: Fri, 30 Oct 2026 04:54:04 +0000
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -149,136 +149,46 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 X-Archived-By: <archiver.kernel.org>
 
-Thank you for your contribution! Sashiko AI review found 3 potential issue(=
+Thank you for your contribution! Sashiko AI review found 1 potential issue(=
 s) to consider:
-- [Medium] High-order kmalloc via single_open_size() will fail due to memor=
-y fragmentation.
-- [Low] Unnecessary acquisition of `stats_lock` in `npc_mcam_mismatch_show(=
-)`.
-- [Low] Unreachable dead code in `npc_mcam_dstats_show()` due to confusing =
-logic.
+- [Medium] Undocumented logic change in `rvu_npc_install_allmulti_entry`.
 --
 
-commit 90a879ef1db5083da555645f4bdb9581acc62dc8
+commit 905a3173f74be8db2d23362cf0c4656c9ea8d645
 Author: Ratheesh Kannoth <rkannoth@marvell.com>
 
-octeontx2-af: npc: cn20k: debugfs enhancements
+octeontx2: cn20k: Coordinate default rules with NIX LF lifecycle
 
-This commit improves MCAM visibility and field debugging for CN20K NPC.
-It extends the mcam_layout debugfs entry, adds a dstats entry to report
-recently hit MCAM indices, and adds a mismatch entry to list allocated
-but unmapped entries.
+This commit adds a new flag NIX_LF_DONT_FREE_DFT_IDXS to prevent the AF
+from freeing CN20K default NPC rule indexes during PF hw reinit or teardown.
+It also updates rvu_mbox_handler_nix_lf_alloc to improve error handling.
 
-> diff --git a/drivers/net/ethernet/marvell/octeontx2/af/cn20k/debugfs.c b/=
-drivers/net/ethernet/marvell/octeontx2/af/cn20k/debugfs.c
-> index 6f13296303cb5..9a4c2ea5b19e4 100644
-> --- a/drivers/net/ethernet/marvell/octeontx2/af/cn20k/debugfs.c
-> +++ b/drivers/net/ethernet/marvell/octeontx2/af/cn20k/debugfs.c
+> diff --git a/drivers/net/ethernet/marvell/octeontx2/af/rvu_npc.c b/driver=
+s/net/ethernet/marvell/octeontx2/af/rvu_npc.c
+> --- a/drivers/net/ethernet/marvell/octeontx2/af/rvu_npc.c
+> +++ b/drivers/net/ethernet/marvell/octeontx2/af/rvu_npc.c
+> @@ -990,7 +990,7 @@ void rvu_npc_install_allmulti_entry(struct rvu *rvu, =
+u16 pcifunc, int nixlf,
+>  	u16 vf_func;
+> =20
+>  	/* Only CGX PF/VF can add allmulticast entry */
+> -	if (is_lbk_vf(rvu, pcifunc) && is_sdp_vf(rvu, pcifunc))
+> +	if (is_lbk_vf(rvu, pcifunc) || is_sdp_vf(rvu, pcifunc))
 
-[ ... ]
+Is this logic change intended to be part of this commit?
 
-> +#define DEFINE_OCTEONTX2_DEBUGFS_ATTRIBUTE_WITH_SIZE(__name, __size)		\
-> +static int __name ## _open(struct inode *inode, struct file *file)		\
-> +{										\
-> +	return single_open_size(file, __name ## _show, inode->i_private,	\
-> +				__size);					\
-> +}										\
-> +__OCTEONTX2_DEBUGFS_ATTRIBUTE_FOPS(__name)
-> +
-> +static DEFINE_MUTEX(stats_lock);
-> +
-> +static u64 dstats[MAX_NUM_BANKS][MAX_SUBBANK_DEPTH * MAX_NUM_SUB_BANKS] =
-=3D {};
-> +static int npc_mcam_dstats_show(struct seq_file *s, void *unused)
-> +{
+The commit message focuses on coordinating default rules with the NIX LF
+lifecycle, but this silently changes the condition from a logical AND to a
+logical OR. While this appears to correctly fix a bug where the condition
+could never be true (since a device cannot simultaneously be both an LBK VF
+and an SDP VF), including an undocumented bug fix in a patch about a
+different topic obscures the commit's intent.
 
-[ ... ]
+Should this be split into a separate patch, or explicitly mentioned in the
+commit message?
 
-> +			if (!stats)
-> +				continue;
-> +			if (stats =3D=3D dstats[bank][idx])
-> +				continue;
-> +
-> +			if (stats < dstats[bank][idx])
-> +				dstats[bank][idx] =3D 0;
-> +
-> +			pf =3D 0xFFFF;
-> +			map =3D xa_load(&npc_priv->xa_idx2pf_map, mcam_idx);
-> +			if (map)
-> +				pf =3D xa_to_value(map);
-> +
-> +			if (stats > dstats[bank][idx])
-> +				delta =3D stats - dstats[bank][idx];
-> +			else
-> +				delta =3D stats;
-
-Is this else block reachable?
-
-The loop previously skips to the next iteration if stats =3D=3D dstats[bank=
-][idx].
-If stats < dstats[bank][idx], the code sets dstats[bank][idx] to 0. Since
-stats is also checked to be non-zero earlier, stats will always be strictly
-greater than dstats[bank][idx] by the time it reaches this condition.
-
-> +
-> +			snprintf(buff, sizeof(buff), "%u\t%#04x\t%llu\n",
-> +				 mcam_idx, pf, delta);
-> +			seq_puts(s, buff);
-> +
-> +			dstats[bank][idx] =3D stats;
-> +		}
-> +	}
-> +
-> +	mutex_unlock(&stats_lock);
-> +	return 0;
-> +}
-> +
-> +/*  "%u\t%#04x\t%llu\n" needs less than 64 characters to print */
-> +#define TOTAL_SZ (MAX_NUM_BANKS * MAX_NUM_SUB_BANKS * MAX_SUBBANK_DEPTH =
-* 64)
-> +DEFINE_OCTEONTX2_DEBUGFS_ATTRIBUTE_WITH_SIZE(npc_mcam_dstats, TOTAL_SZ);
-
-Will this single_open_size() allocation reliably succeed on a running syste=
-m?
-
-Because single_open_size() uses kmalloc(), it requires a physically
-contiguous memory block. TOTAL_SZ is the product of multiple maximum
-hardware limits, which can be hundreds of kilobytes. This could result
-in a high-order allocation that fails with an out of memory error due to
-fragmentation.
-
-Would standard seq_open() be safer here, as it allows the buffer to grow
-dynamically using kvmalloc()?
-
-> +
-> +static int npc_mcam_mismatch_show(struct seq_file *s, void *unused)
-> +{
-> +	struct npc_priv_t *npc_priv;
-> +	struct npc_subbank *sb;
-> +	int mcam_idx, sb_off;
-> +	struct rvu *rvu;
-> +	char buff[64];
-> +	void *map;
-> +	int rc;
-> +
-> +	npc_priv =3D npc_priv_get();
-> +	rvu =3D s->private;
-> +
-> +	seq_puts(s, "index\tsb idx\tkw type\n");
-> +	mutex_lock(&stats_lock);
-
-Does this function need to acquire stats_lock?
-
-The stats_lock mutex protects the static dstats array during dstats_show.
-This loop only reads npc_priv->en_map (which is manipulated safely via
-atomic bitops) and xa_idx2pf_map (which uses internal XArray RCU for safe
-lookups). It does not appear to access dstats or any other shared state
-that requires this mutex.
-
-> +	for (int bank =3D npc_priv->num_banks - 1; bank >=3D 0; bank--) {
-> +		for (int idx =3D npc_priv->bank_depth - 1; idx >=3D 0; idx--) {
-> +			mcam_idx =3D bank * npc_priv->bank_depth + idx;
+>  		return;
 
 --=20
 Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20260508034912.4082=
-520-1-rkannoth@marvell.com?part=3D1
+520-1-rkannoth@marvell.com?part=3D6
