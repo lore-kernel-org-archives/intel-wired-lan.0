@@ -1,29 +1,29 @@
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4F3F3606A324
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  2 Nov 2026 22:32:52 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1A49F606A324
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  2 Nov 2026 22:32:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=OFalk2SW;
-	dkim=pass (2048-bit key, unprotected) header.d=x6u.co header.i=@x6u.co header.a=rsa-sha256 header.s=google header.b=Wo2DJI+Z
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=szK8trSC;
+	dkim=pass (2048-bit key, unprotected) header.d=x6u.co header.i=@x6u.co header.a=rsa-sha256 header.s=google header.b=CE9tyou+
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 306C680CDA;
+	by smtp3.osuosl.org (Postfix) with ESMTP id F01E8606E5;
 	Mon,  2 Nov 2026 22:32:52 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ewiicK0gs8m9; Mon,  2 Nov 2026 22:32:51 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 4DAFB80D02
-Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793658771;
-	b=EghUA3NMxLnhOg3hgwSwfwuV0lVsIe5IDxH2uEuqa910DUBNmWzuQXvwi2CoO84UDxXI
-	 O6U7LNKNSjtY3NVQt8nhxiHDSlo9oIi+5mS4Xo2EGStjpQLK/YN5TFqbWOERppMlW1QUo
-	 o3174jMMNyI9Nz7C+rHIWX2hjvwRUo+1vOj/Hf9eQlh84vJ2vUQDuB/cDsryx2Kz5wVgr
-	 gMRJ0lj3LMLrJRYX9xDJAcF1D3BJPAm4E4RslJLXWsHHEyc41wU3nqkfR6kv0ES4Vum8P
-	 rhtN4HgkGHFd+EZPYs+c/hbgPwK+E7ld3RefVz6lsNBZkJ2CYUYY7UOkSil6rAR4F6w==
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id z4rozpLpjueN; Mon,  2 Nov 2026 22:32:52 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 43CA060705
+Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793658772;
+	b=Bympau1oUoXma83CwWEQEgA6eeV9iJIKq+7Q4snXgM/AKIW4oqNhd80FEp7BNNfJ3z/+
+	 OmtWX4joT1OGMrEwYXkm24M96kc2jPRYRWQ+sgGzuA6xvK33MKsQs9d04N2XuQuR3FxoF
+	 4suvj86b0J+zFkSbPmT1CX6eQljznc6KM2Uh3c/nixsv0VV3658lBKz+qxj/vTeaDtUCy
+	 iqoBN+GH4EF3kzDGEAfR+LUniMy7wgyo5FpNGwykwUSPXJeZr6VY2P9hn2avRWg+Qo7jQ
+	 bCRT8BOpFUjy4tUeyfDkP0LAFs/lrNofP0qKJaC1leHAXrNste5azgN21+3uHeyDNCQ==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1793658771;
+	c=relaxed/relaxed; t=1793658772;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
@@ -33,129 +33,131 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 Content-Transfer-Encoding:X-Mailman-Approved-At:X-BeenThere:
 	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=knp/tm/TZZVuxSSAFhZ+sMDH3dqo4kKd8WvgszJHIrU=;
-	b=p9B+QGQBbMzRVR8lmzeL9p6maQZNs2ev+7+RtO8Pnnt81/40ZP2n3L9e7Qq6aKmIK0PV
-	 zPk6GtyF2ErLYrRYSUMPIlZiuBWi326/Za/wvZrfPlZnn8LS1zfgXGwo4aKPDb/JTA4U6
-	 KVh9cEioeuN5ccfn3fO8LNdFrZAKeebmU7HCvvjPT9AbQF79693j7ILkrcZNrml5U27Vt
-	 po7lCH1yRxAQzASVEA4BMKuf9PJ9ddZgbslHmDLeSS5K3/Z2ZNEUDXHy0zX2EwevbWp2A
-	 eChT4bUBQmLm+w1ps964OHUppzBeLYS0Q9QfbYf29ZuJX/W2Kkbi2Tg+bR4Z3ycghTQ==
-ARC-Authentication-Results: i=2; smtp1.osuosl.org; 
+	bh=L7ar4WAN3UXBnRdyQx7m5lT8b0DpMHKQHo9PR1aXr18=;
+	b=CAIAfMMFvppvH77PKv2rqHFAoz6+IVBB1oKkByLHS5z82UYDm+anDo+D9IzXbeEaErOp
+	 qD0PPaZEwAXGOMiPVHCi6yQqvdp6kGKS6lyORM12UVg+pn/5+GcCGPF/a4hV/ukYkZiW/
+	 T3NkX9ALMPEbN2wSj4vML/bjuCwCXMk2txEnBXBT2XmqddKHHwyopRWPsW1ISVfRU50i+
+	 mtnBUswvXjS5egWEqadgRaKe29jOpsBdIID+juzXv+/v4p0Uo9oUob6B6/dQwZnCmIbwo
+	 V/+epUIUfkltogTxO/tw9D2XrQsE7ABZhrhxTOGW1qfIMFnoSDp5Mp9L9Yje80muwxg==
+ARC-Authentication-Results: i=2; smtp3.osuosl.org; 
+	dmarc=none header.from=x6u.co;
+	dkim=pass header.d=x6u.co header.i=@x6u.co header.a=rsa-sha256 header.s=google header.b=CE9tyou+;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1793658771;
-	bh=knp/tm/TZZVuxSSAFhZ+sMDH3dqo4kKd8WvgszJHIrU=;
+	s=default; t=1793658772;
+	bh=L7ar4WAN3UXBnRdyQx7m5lT8b0DpMHKQHo9PR1aXr18=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=OFalk2SWCpfo7i5dZtO9Fh/3xQAbfAVX4QaW7Q+5sR1E0mglRhBjCqBvV0xDkXx5F
-	 Yg6CdEP6HhFKsVMdJQqeJCm1YEfZDjOT4fmoy9PZI7xygiH2Pg8EaI3PcqN8KHqKtL
-	 LjIpJrPC/j0GXXB12a49JdDBicqomk7BU+2jm9n/BxUoq+l3GoSc7PGeGRHvWZHaKl
-	 dInvN/gMEcKsllFE7zXx9fRfu9iL2hlGeMCyqnyjFL8xUwz5pjFbsXohk/v+ebeq9y
-	 LlmIvrnAAzsUxlKpDrimDwRyLeXVO6gYmxXZ9sf0QKVjwFRvLD0WNFbxFo1WLhx6Sa
-	 QwTQGV4oQ0HIw==
+	b=szK8trSCilLipCO19ck/sd3alWRPPyW9nrbo6/lFSR3J2awfSYjFo8LLs8T8MnzNw
+	 CEZvRHw5MTUiFBeRLmRJnt5OE99qKTdrKd7W7Z3vBQPBeAZhDlM7aKdmzOqZraRg2n
+	 2go6C8DZvmoyqVW3c5m1wc7mdxwjvmUVT7+PgF5lc1OZrdABFQRAXQZG93LH0xFlXv
+	 c1RpgpAew95dX24FzXfUhTKnOPQ1Lny8T86YNE9PSjus9jVtYxWf9AXsNh+DktvdnK
+	 gXdB/oCp0vhzDPhd1CVoXFF2F1suTlIfijb1+GgTmWzps4MODn3IEcU0MUMV99mRA5
+	 Eu8rySGN1o5HQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 4DAFB80D02;
-	Mon,  2 Nov 2026 22:32:51 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 0E8872AC
- for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 18:15:54 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 43CA060705;
+	Mon,  2 Nov 2026 22:32:52 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id A5CC6235
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 18:15:55 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id E95BC40083
- for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 18:15:53 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 8BB2060A90
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 18:15:55 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id VmOTZ7-zxSS5 for <intel-wired-lan@lists.osuosl.org>;
- Fri, 30 Oct 2026 18:15:53 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org 08A70400B3
-Authentication-Results: smtp2.osuosl.org;
- arc=none smtp.remote-ip="2607:f8b0:4864:20::92c"
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793384153;
- b=aHKcKa4d22r5qwMGpJ0Cyx1Hxn0aQvEg2wVrQEWjGp3M2JHR6vHNput2+H47skDoiqnm
- ZRWwfpp7/sUKeiTytupOsZmoHrix8Wib0Ac/LxH4a8RV6Q1gnEH/hlO4kcfPAl5ZY4iyC
- 9XGxijQz0BWRYh53bGiME5u8y+lqdzWanZxAcDa7TE7U7sBUFFwMQtwzBG5fZhELHzVgP
- fhOON6P0DnlrxOzr/afLtSaNsik+5+SULQpXVIyKmYWpdQO9yIwDoBTfpQ1xF3IUxvcdT
- hEv0NSWsOwR+qJGHBYzyEFcH5r/jA4qSV6sMmAiZ9Y54iIWHxccl/mNEZyYn7dBUDKw==
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id s2aNMX_TEV85 for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 30 Oct 2026 18:15:54 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 8D86460A86
+Authentication-Results: smtp3.osuosl.org;
+ arc=none smtp.remote-ip="2607:f8b0:4864:20::e34"
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793384154;
+ b=MqR5eGIwLWcfXtpwVn1cxJCqo/jlMt8cUTOBNwtX6soaSs77CC/ba88dqzkJ/rKJKv0j
+ qWToI1Gj0FGQ7TJGTkBKmILWqmNqMrHzZpCGisa5iwL7/JmNbP5LdWGZYPtjeWpxfkSUz
+ FeiXXmASQbyXsoVceAf+fw3J3o6hrqcrWymxXE3Aj3ktBynUdG0WEeTXozDrsESP7Jg/j
+ hmp+GubrhHcctWX5olduXPizjyxhJ4ukPy3imqV8ZICKaO6NpWfJRuvUaSHLAd72Tn1mx
+ Qdkp6jSVWyKUCdoflt6OkfQjB3L+lg9KphtvfbEHmkxNv1SdiDMVCf+dWi41LzpRiAQ==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1793384153;
+ c=relaxed/relaxed; t=1793384154;
  h=Received-SPF:Received:DKIM-Signature:X-Google-DKIM-Signature:
  X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
  From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
  MIME-Version:Content-Transfer-Encoding;
- bh=knp/tm/TZZVuxSSAFhZ+sMDH3dqo4kKd8WvgszJHIrU=;
- b=PF8tMSxkKfI4042zU553nUltcfGUWhn25jHY5JEq7DcxOp1IqOs0bQV1GSQAf6SEevHv
- jLMgBw5pN7VLc6EOp61PWfepqULfxX309/oNiWPymwU04HYkG4XiP4EwcOdEG7eUDcQSb
- 9le/RUvnVW6CZM/yeozyrSRkBGvjjruR6sfYpXJ7jAGRHYjWQYRefDUpzn3MfWMrdu9vs
- XFSjvkA0XmffsxJFkD2DDYtRt8AFSBhxdi1wYumcyYYbriM48wdBt8a+HmS0IbEgp8NJW
- VIks9dCy7hDcSKnX2CfsaL9i7BFI9/8YjsfgQKYQ0BOcsIKrQJYady34D8oqeG0nZAw==
-ARC-Authentication-Results: i=1; smtp2.osuosl.org; 
+ bh=L7ar4WAN3UXBnRdyQx7m5lT8b0DpMHKQHo9PR1aXr18=;
+ b=D0lBKB7MT4W8SqpFkZd3lYKcnk/IJaWSOxgqnn67HYACJHvTDKGOobX0zL9MiLtN1ksa
+ DIShpYOWtjQKNEiatOL9sw3NOA9o33ymin0Qta2tD5qcqzPuQ0fJPdiDf1UKz7LeQ8ZL5
+ frt0yrZ1A2uhS5EXSwHu1w8vy3G/EY+EuQoOZlbupitb/4BIV0+RInCk3/b3cfcNh8X4l
+ R1d5K34/rFsbsEYF0itwUV31xOFcUOLgqJkRLKl8rN3xMnQg2HH6VEust5asEr57d+oef
+ 7d4BsSUNr5/R6Viky1fMTqcrir08It1SXueTo+1L9Jcw27MA5G5+546C/tiM5f8a0eQ==
+ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
  dmarc=none header.from=x6u.co;
  dkim=pass header.d=x6u.co header.i=@x6u.co header.a=rsa-sha256 header.s=google
- header.b=Wo2DJI+Z; 
- arc=none smtp.remote-ip="2607:f8b0:4864:20::92c"
+ header.b=CE9tyou+; 
+ arc=none smtp.remote-ip="2607:f8b0:4864:20::e34"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::92c; helo=mail-ua1-x92c.google.com;
+ client-ip=2607:f8b0:4864:20::e34; helo=mail-vs1-xe34.google.com;
  envelope-from=dhu@x6u.co; receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org;
+Authentication-Results: smtp3.osuosl.org;
  dmarc=none (p=none dis=none) header.from=x6u.co
-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=x6u.co header.i=@x6u.co header.a=rsa-sha256
- header.s=google header.b=Wo2DJI+Z
-Received: from mail-ua1-x92c.google.com (mail-ua1-x92c.google.com
- [IPv6:2607:f8b0:4864:20::92c])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 08A70400B3
- for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 18:15:52 +0000 (UTC)
-Received: by mail-ua1-x92c.google.com with SMTP id
- a1e0cc1a2514c-9906a5410f5so1930756241.0
- for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 11:15:52 -0700 (PDT)
+Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=x6u.co header.i=@x6u.co header.a=rsa-sha256
+ header.s=google header.b=CE9tyou+
+Received: from mail-vs1-xe34.google.com (mail-vs1-xe34.google.com
+ [IPv6:2607:f8b0:4864:20::e34])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 8D86460A86
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 18:15:53 +0000 (UTC)
+Received: by mail-vs1-xe34.google.com with SMTP id
+ ada2fe7eead31-7cc1cf48a39so293196137.1
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 11:15:53 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=x6u.co; s=google; t=1793384151; x=1793988951; darn=lists.osuosl.org;
+ d=x6u.co; s=google; t=1793384153; x=1793988953; darn=lists.osuosl.org;
  h=content-transfer-encoding:mime-version:references:in-reply-to
  :message-id:date:subject:cc:to:from:from:to:cc:subject:date
  :message-id:reply-to:content-type;
- bh=knp/tm/TZZVuxSSAFhZ+sMDH3dqo4kKd8WvgszJHIrU=;
- b=Wo2DJI+ZegdsOuN4HcVFkNcU5ISFvUtHHBpiRFFEOxXwZZQcp+irZrtdHccFiuzebT
- 7hGmNDNyc7IhzAYN9sQaa2UMG448LujGMddKA6J7OIFF1dBb4GO9/S2cKh/ZSTHrNbba
- wMgAx45p4+OQ4Vj0T+MrT0kbveEWwYr4X75M7eq0B7ke3++iK87kb36O221VgLbtKErD
- ltR0emRnX25PPaLOd7garis2IYWN09WCM4opvgxaymTwDAIIIbcTd7j3nKDyM7e6nNEv
- aIYA+Kwwh3Ix4ZKmY1Za3qknkf58cj9Qtp9ODIGhf+xZ8kY9LdIXwYFq82mEvauh/HhI
- EGwA==
+ bh=L7ar4WAN3UXBnRdyQx7m5lT8b0DpMHKQHo9PR1aXr18=;
+ b=CE9tyou+zSXuPzXGicgQ2LgNJCxxfkkcCtQn6TDootspqi4URmfwhrCXYFo/ogK1en
+ HGhGUZYOJvoaOWoWoucuD4V0KsGZQlzfT3lFfrZb0DTziZj2QnADTuDP/2lvvVnFdJLB
+ jnFDhv4N4c0Qb4UAQHN1DjxLazllcvQuEtFj8qoqRUYdFX6VZSYL5wWjKN1/34F1AHTH
+ kWQhakSA42B0bvYYm/hvOCLALoVYC1LNCzTki2aOfXKuvEfiYjBdBEi1A/HmQAnBTwF6
+ O9pdf8xFEqxuyM82lu6mWVTjfF7MZILn900+QKYSEuif3W0Bq1auplHNS5iZowEfMb9E
+ k4Sw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1793384151; x=1793988951;
+ d=1e100.net; s=20260707; t=1793384153; x=1793988953;
  h=content-transfer-encoding:mime-version:references:in-reply-to
  :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
  :to:cc:subject:date:message-id:reply-to:content-type;
- bh=knp/tm/TZZVuxSSAFhZ+sMDH3dqo4kKd8WvgszJHIrU=;
- b=oZTBF9T3vvrkwkvsLsph5SXJknZ29XtRUFq8GVP1OnTSTF4Fs08heHgD457FtndwnG
- bOJZZYyJ+wLG//UDdYJzlinha0HiyimchWI5+7MqPHUGiosacYA4zzfWs+nA0CshDjfa
- 7NdfJ2k+F523472tSdJOiDTijTuyWJn0Y4zQnv9NcaW5YZfwYfIlSvua1cNUQWvm1PtN
- zZI4eqqQGcZ+udXG/M1VxxypebhP2Y0p9DaBwRimw//2K61pePac2ty/QcDzUr3IKGgo
- 1GNOrIpi0hOjAE8TyrF0FAwVPDVfEnfxQFFQKfUNueuHvFO/Y2FhHu1F9TmjL8l4Dqjn
- hemw==
+ bh=L7ar4WAN3UXBnRdyQx7m5lT8b0DpMHKQHo9PR1aXr18=;
+ b=yjIcy316D75PhFsL9mAQvtORZ8ssPLlpkW3Zn9scmTBX7px1wEuxTRH+FbMZXcokWD
+ TMPX6ouZJUiqrdQGx3t2wgpFXdS4cwy1bpP/WSaX3YFcE2JkbFw+NwV4+SqmbLnpQlPQ
+ x0R5lqWX4waCWyjJpZa4hz7Jri6bTEFPtGMntankZh01LH2GP61G03gdSAsmRgsLGbdx
+ NwGX08IuwS4kWcf/tuc/hOLNdKUE69w0b3fmEiA/EH2ooMfAHOvz4MeyytclKtDHWQTN
+ 9AFeWpspy42vmDVdoztEODKBOt/ErYJ/Thj9X5nBa94OoUxGvG6IS/YsRrA+KDf9frkW
+ ctZQ==
 X-Forwarded-Encrypted: i=1;
- AKwUvBwbcWiqMllXqbvIbNhENNahc1hZ+BdLUAHiAEfnOnFk8n5oTRjjQGTL06HLLr2u7/7t9LNVlTRlX+Cv83hpNy8=@lists.osuosl.org
-X-Gm-Message-State: AFq9FYK+6eZo3EOiVngY34tCg2GS6jyzmpYVVVqir+mK2ND5jYlPWD73
- l+MkdVl4ri5EGMPZUxed/ZMfro3ouPBjrR8RaRHhOXmRFLvP2xxLRSPRuI/POkEkQYT6
-X-Gm-Gg: AYBFou2HYAS5OSGyMa+bnFD7g/D5kSO09KZmgVVkKkKiojgiaQuNZmQRGTq1d1AMACe
- O9hwJoOLyDAe8He+57XQYpBGSHFiOi3vayrpE2ZHz94g/ryJobNVmkKbV5Llh2VbkQ5benjQxpg
- tOUe1rSg5bH3r/5Y+dKclFFF0a5jxwVAzG1n1w/q8hOEM9adC9ie1dJsnxDX5NrsBX9g7T7PC6R
- 8wuS/p3e3oFfsDWkYk2JUVc9mK6Dkqw/ZLRK7nUsBg4Uo4yQAOUWAWhCUSlOUoAmZHM/RKLzgZ2
- SFcOHnpBHHkEqfWuX2t4X5eCvgGVDhqmxZ9bRnVt4dhhpq9jMLgx6SITMNjVj64Nh2JHkOq0OqX
- o//4UL41nKHvgQMclOiXGglET7q7QgiGEbHnPZbSoBd+RIAInG17FiYkRoML1cIqOt6rBkBU4Uy
- IlacKPi+KA87gLGz+cXisakZqhfQ3RdqSdPN8b6HkNZw6ex9enAHnhWHDYICA+owcaXO/w/xBMS
- lcLfLQkgAz/EsSMoL/X5SamffMzw4mcQEs991Q7woR5m0sESVuF5svhU0QkIHol4708M6JEK48i
- N9InHKqspOeHwA+8unPXGC8hseTPnem7hTUZ+3M7iBfWyLaqexq6zjo5DkDK3jHJyG7SxgjXfpL
- HXWHjKln/af3nsm44Qfr6czZCrk/DpCNxB12Do9gGOMdB
-X-Received: by 2002:a05:6102:5106:b0:7c1:e804:3c91 with SMTP id
- ada2fe7eead31-7d072c398bdmr931456137.8.1793384151354; 
- Fri, 30 Oct 2026 11:15:51 -0700 (PDT)
+ AKwUvBwBgieog8ExxWqy5h+0yQvoL6olYTZ8x6ZsRI95S493VR4UmTP2rSUE02NdvwmQYVmK4XZVYTTYCVYN6zV2j4Q=@lists.osuosl.org
+X-Gm-Message-State: AFq9FYKHdCsdsVkDVXeYBoHV1UPecch6ySxnjeBUghAsL3j8YDyklbW6
+ pUCuqGs0uOmDolpJJCdujgIlyret9Fl3wZemv693tioMz/2h+M8KdmeXUFFfSfkxkreT
+X-Gm-Gg: AYBFou0vZWXcWUZv+6uqY04S/2wpKrAzaWcpCwexisptcLPs7uWldwosSF256RKcBEL
+ JfOJRz/sG59SUxbfNga9HX5gCD7cFedlgY8NU7DmiG9SBTKyvMeX4RnWAYp5ntw83WngGBgpT8+
+ lrJYeYvxnx7fQHf8+sjQAiStNv9cySq2KIj8BEr3cclIlSZhbnFsHytdA+nWjEX0exMpm5BoTos
+ 3lT0MHMCEp5hsRublxK/tsWIRkIybA7fmiPvhEX0wrQEUNk4lJKl1+4NQ3MX/w0pg5jUeZWEVe6
+ 1VuXtUX/fkW2FbTdFqm5W8jF8I3gFl+ctBwcFcVrikpCc0GBR+DrguafZk+k3wKaCocneA05pjK
+ 1KOaH8TcQ0MC+i+DXiAUwFamh16nbgWgcwBZyM6hFylgjbvt7vnRIF3s9WUYdZHdSd3iZ1C/+cL
+ 1+7vyIVvWkL3rqvdyN4kOArEBjtg77gjnuvUknwwikeWbNGxnO47Ry8uk85gDUHKF2Ik4ppezb3
+ kIcBwRDFZgI1E1iXRryLWgNaBspB4CME3Ed6l2CvDhfRV8u6urVZjo3qg0+99pfFe7aiS4moFnH
+ W+iemffbHQsUMGsBYv8Hpe8Ff9rd3B4eTuAomuuYG8ef1EiWCCJiXdx+kp4MztkMsXq9kLFiwAv
+ v7z5opgGZ0NyrTIgpfRob+Nn0IcnFD/99VNHzaz2TIdI=
+X-Received: by 2002:a05:6102:8097:b0:7c3:3890:6076 with SMTP id
+ ada2fe7eead31-7d0725cfd65mr1551425137.6.1793384152685; 
+ Fri, 30 Oct 2026 11:15:52 -0700 (PDT)
 Received: from worldpeace10.c.googlers.com.com
  (109.243.150.34.bc.googleusercontent.com. [34.150.243.109])
  by smtp.gmail.com with ESMTPSA id
- ada2fe7eead31-7d07754c1c6sm3077931137.3.2026.10.30.11.15.50
+ ada2fe7eead31-7d07754c1c6sm3077931137.3.2026.10.30.11.15.52
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 30 Oct 2026 11:15:50 -0700 (PDT)
+ Fri, 30 Oct 2026 11:15:52 -0700 (PDT)
 From: David Hu <dhu@x6u.co>
 To: Mustafa Ismail <mustafa.ismail@intel.com>,
  Shiraz Saleem <shiraz.saleem@intel.com>, Leon Romanovsky <leon@kernel.org>,
@@ -163,10 +165,10 @@ To: Mustafa Ismail <mustafa.ismail@intel.com>,
 Cc: Jacob Moroni <jmoroni@google.com>, intel-wired-lan@lists.osuosl.org,
  linux-rdma@vger.kernel.org, linux-kernel@vger.kernel.org,
  David Hu <xuehaohu@google.com>
-Subject: [PATCH rdma-next v4 5/6] RDMA/irdma: Support UMEM attribute for CQ
+Subject: [PATCH rdma-next v4 6/6] RDMA/irdma: Support UMEM attribute for SRQ
  creation
-Date: Fri, 30 Oct 2026 18:15:11 +0000
-Message-ID: <20261030181512.2056056-6-dhu@x6u.co>
+Date: Fri, 30 Oct 2026 18:15:12 +0000
+Message-ID: <20261030181512.2056056-7-dhu@x6u.co>
 X-Mailer: git-send-email 2.56.0.317.g454f8302e1-goog
 In-Reply-To: <20261030181512.2056056-1-dhu@x6u.co>
 References: <20261030181512.2056056-1-dhu@x6u.co>
@@ -186,246 +188,132 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 X-Spam-Status: No, score=-18.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=4.0.1
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 From: David Hu <xuehaohu@google.com>
 
-Support the standard 1-step queue buffer creation model for CQ by
-`UVERBS_ATTR_CREATE_CQ_BUF_UMEM`, `IRDMA_IB_ATTR_CREATE_CQ_SHADOW_BUF_UMEM`
-via `ib_umem_get_attr()`.
+Support the standard 1-step queue buffer creation for SRQ by
+`UVERBS_ATTR_CREATE_SRQ_BUF_UMEM` via `ib_umem_get_attr()`.
 
-Set up hardware pble directly from the pinned CQ and shadow umems via
+Set up hardware pble directly from the pinned SRQ umem via
 `irdma_setup_q_pbl_from_umem()`.
 
-Proper umem and pble cleanup are added into existing `irdma_cq_free_rsrc()`
-upon CQ destruction.
+Proper umem and pble cleanup, and error unwind are added into existing
+`irdma_srq_free_rsrc()` upon SRQ destruction.
 
-We maintain backward compatibility for legacy 2-step registration if UMEM
-attributes are not provided.
-
-`irdma_resize_cq()` will have a possibility to deal with a pble/mr that
-is created via one-step logic, after this change. Therefore, a proper
-cleanup is added.
+We maintain backward compatibility for the legacy 2-step registration if
+the UMEM attribute is not provided.
 
 Signed-off-by: David Hu <xuehaohu@google.com>
 ---
- drivers/infiniband/hw/irdma/verbs.c | 132 +++++++++++++++++++++++-----
- 1 file changed, 111 insertions(+), 21 deletions(-)
+ drivers/infiniband/hw/irdma/verbs.c | 68 ++++++++++++++++++++++++-----
+ 1 file changed, 58 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/infiniband/hw/irdma/verbs.c b/drivers/infiniband/hw/irdma/verbs.c
-index 9f4905fdb791..41e56ab8aa6d 100644
+index 41e56ab8aa6d..7e8a5e481730 100644
 --- a/drivers/infiniband/hw/irdma/verbs.c
 +++ b/drivers/infiniband/hw/irdma/verbs.c
-@@ -2028,13 +2028,24 @@ static void irdma_cq_free_rsrc(struct irdma_pci_f *rf, struct irdma_cq *iwcq)
- 		if (iwcq->iwpbl) {
- 			iwmr = iwcq->iwpbl->iwmr;
+@@ -1996,9 +1996,16 @@ static void irdma_srq_free_rsrc(struct irdma_pci_f *rf, struct irdma_srq *iwsrq)
+ 		iwsrq->kmem.va = NULL;
+ 	} else {
+ 		/* Not called in any failure path, so iwpbl is valid. */
+-		struct irdma_mr *iwmr = iwsrq->iwpbl->iwmr;
++		if (iwsrq->iwpbl) {
++			struct irdma_mr *iwmr = iwsrq->iwpbl->iwmr;
  
--			refcount_dec(&iwmr->user_ring_refs);
+-		refcount_dec(&iwmr->user_ring_refs);
 +			if (iwmr && refcount_dec_and_test(&iwmr->user_ring_refs)) {
 +				ib_umem_release(iwmr->region);
-+				if (iwcq->iwpbl->pbl_allocated)
-+					irdma_free_pble(rf->pble_rsrc, &iwcq->iwpbl->pble_alloc);
++				if (iwsrq->iwpbl->pbl_allocated)
++					irdma_free_pble(rf->pble_rsrc, &iwsrq->iwpbl->pble_alloc);
 +				kfree(iwmr);
 +			}
- 		}
- 
- 		if (iwcq->iwpbl_shadow) {
- 			iwmr = iwcq->iwpbl_shadow->iwmr;
- 
--			refcount_dec(&iwmr->user_ring_refs);
-+			if (iwmr && refcount_dec_and_test(&iwmr->user_ring_refs)) {
-+				ib_umem_release(iwmr->region);
-+				if (iwcq->iwpbl_shadow->pbl_allocated)
-+					irdma_free_pble(rf->pble_rsrc,
-+							&iwcq->iwpbl_shadow->pble_alloc);
-+				kfree(iwmr);
-+			}
- 		}
- 	}
- 
-@@ -2161,6 +2172,7 @@ static int irdma_resize_cq(struct ib_cq *ibcq, unsigned int entries,
- 	struct irdma_dma_mem kmem_buf;
- 	struct irdma_cq_mr *cqmr_buf;
- 	struct irdma_pbl *iwpbl_buf = NULL;
-+	struct irdma_pbl *old_iwpbl = NULL;
- 	struct irdma_device *iwdev;
- 	struct irdma_pci_f *rf;
- 	struct irdma_cq_buf *cq_buf = NULL;
-@@ -2273,17 +2285,12 @@ static int irdma_resize_cq(struct ib_cq *ibcq, unsigned int entries,
- 
- 	spin_lock_irqsave(&iwcq->lock, flags);
- 	if (udata) {
--		struct irdma_pbl *old_iwpbl = iwcq->iwpbl;
-+		old_iwpbl = iwcq->iwpbl;
- 
- 		/* Only update if the resize was successful. Otherwise, HW is
- 		 * still pointing to the old PBL.
- 		 */
- 		iwcq->iwpbl = iwpbl_buf;
--		if (old_iwpbl) {
--			struct irdma_mr *old_iwmr = old_iwpbl->iwmr;
--
--			refcount_dec(&old_iwmr->user_ring_refs);
--		}
- 	}
- 	if (cq_buf) {
- 		cq_buf->kmem_buf = iwcq->kmem;
-@@ -2298,6 +2305,21 @@ static int irdma_resize_cq(struct ib_cq *ibcq, unsigned int entries,
- 	ibcq->cqe = info.cq_size - 1;
- 	spin_unlock_irqrestore(&iwcq->lock, flags);
- 
-+	/* Old pble/umem is cleaned up outside spinlock's atomic context
-+	 * since both of them take sleepable lock.
-+	 */
-+	if (old_iwpbl) {
-+		struct irdma_mr *old_iwmr = old_iwpbl->iwmr;
-+
-+		if (old_iwmr && refcount_dec_and_test(&old_iwmr->user_ring_refs)) {
-+			ib_umem_release(old_iwmr->region);
-+			if (old_iwpbl->pbl_allocated)
-+				irdma_free_pble(rf->pble_rsrc,
-+						&old_iwpbl->pble_alloc);
-+			kfree(old_iwmr);
 +		}
-+	}
-+
- 	return 0;
- error:
- 	if (iwpbl_buf) {
-@@ -2746,14 +2768,18 @@ static int irdma_setup_umode_cq(struct irdma_device *iwdev,
- 				struct irdma_cq_init_info *info,
- 				struct uverbs_attr_bundle *attrs)
+ 	}
+ 
+ 	irdma_free_rsrc(rf, rf->allocated_srqs, srq->srq_uk.srq_id);
+@@ -2425,6 +2432,7 @@ static int irdma_setup_umode_srq(struct irdma_device *iwdev,
+ 				 struct ib_udata *udata,
+ 				 struct uverbs_attr_bundle *attrs)
  {
-+	struct irdma_cq_uk_init_info *ukinfo = &info->cq_uk_init_info;
- 	struct ib_udata *udata = &attrs->driver_udata;
- 	struct irdma_create_cq_req req = {};
- 	struct irdma_pci_f *rf = iwdev->rf;
-+	struct irdma_sc_dev *dev = &rf->sc_dev;
++	struct irdma_srq_uk_init_info *ukinfo = &info->srq_uk_init_info;
+ 	struct irdma_create_srq_req req = {};
  	struct irdma_ucontext *ucontext;
- 	struct irdma_cq_mr *cqmr_shadow;
- 	struct irdma_cq_mr *cqmr;
- 	unsigned long flags;
-+	bool cqe_64byte_ena;
- 	int err_code;
-+	u8 cqe_size;
+ 	struct irdma_srq_mr *srqmr;
+@@ -2440,14 +2448,49 @@ static int irdma_setup_umode_srq(struct irdma_device *iwdev,
+ 	if (ret)
+ 		return ret;
  
- 	iwcq->user_mode = true;
- 	ucontext = rdma_udata_to_drv_context(udata, struct irdma_ucontext,
-@@ -2767,26 +2793,87 @@ static int irdma_setup_umode_cq(struct irdma_device *iwdev,
- 	if (err_code)
- 		return err_code;
- 
--	spin_lock_irqsave(&ucontext->cq_reg_mem_list_lock, flags);
--	iwcq->iwpbl = irdma_get_pbl((unsigned long)req.user_cq_buf,
--				    &ucontext->cq_reg_mem_list);
--	spin_unlock_irqrestore(&ucontext->cq_reg_mem_list_lock, flags);
--	if (!iwcq->iwpbl)
+-	spin_lock_irqsave(&ucontext->srq_reg_mem_list_lock, flags);
+-	iwpbl = irdma_get_pbl((unsigned long)req.user_srq_buf,
+-			      &ucontext->srq_reg_mem_list);
+-	spin_unlock_irqrestore(&ucontext->srq_reg_mem_list_lock, flags);
+-	if (!iwpbl)
 -		return -EPROTO;
-+	cqe_64byte_ena = dev->hw_attrs.uk_attrs.feature_flags & IRDMA_FEATURE_64_BYTE_CQE ?
-+			 true : false;
-+	cqe_size = cqe_64byte_ena ? 64 : 32;
-+
-+	if (uverbs_attr_is_valid(attrs, UVERBS_ATTR_CREATE_CQ_BUF_UMEM)) {
++	if (attrs && uverbs_attr_is_valid(attrs, UVERBS_ATTR_CREATE_SRQ_BUF_UMEM)) {
++		struct irdma_mem_reg_req srq_req = {};
 +		struct ib_umem *umem;
-+		struct irdma_mem_reg_req cq_req = {};
-+		u8 shadow_pgcnt = (rf->sc_dev.hw_attrs.uk_attrs.feature_flags &
-+				   IRDMA_FEATURE_CQ_RESIZE) ? 0 : IRDMA_SHADOW_PGCNT;
-+		u32 min_size;
++		u32 total;
++		u8 shift;
+ 
+-	iwsrq->iwpbl = iwpbl;
++		irdma_get_wqe_shift(ukinfo->uk_attrs, ukinfo->max_srq_frag_cnt, 0, &shift);
++		srq_req.rq_pages =
++			DIV_ROUND_UP((ukinfo->srq_size << shift) * IRDMA_QP_WQE_MIN_SIZE,
++				     IRDMA_HW_PAGE_SIZE);
++		total = srq_req.rq_pages + IRDMA_SHADOW_PGCNT;
 +
-+		cq_req.cq_pages = DIV_ROUND_UP(ukinfo->cq_size * cqe_size,
-+					       IRDMA_HW_PAGE_SIZE);
-+		min_size = (cq_req.cq_pages + shadow_pgcnt) << IRDMA_HW_PAGE_SHIFT;
-+
-+		umem = ib_umem_get_cq_buf(&iwdev->ibdev, attrs, min_size,
-+					  IB_ACCESS_LOCAL_WRITE);
++		umem = ib_umem_get_attr(&iwdev->ibdev, attrs,
++					UVERBS_ATTR_CREATE_SRQ_BUF_UMEM,
++					total << IRDMA_HW_PAGE_SHIFT,
++					IB_ACCESS_LOCAL_WRITE);
 +		if (IS_ERR(umem))
 +			return PTR_ERR(umem);
 +
-+		iwcq->iwpbl = irdma_setup_q_pbl_from_umem(iwdev, umem, NULL,
-+							  IRDMA_MEMREG_TYPE_CQ, &cq_req);
-+		if (IS_ERR(iwcq->iwpbl)) {
-+			err_code = PTR_ERR(iwcq->iwpbl);
-+			iwcq->iwpbl = NULL;
++		iwsrq->iwpbl = irdma_setup_q_pbl_from_umem(iwdev, umem,
++							   iwsrq->ibsrq.pd,
++							   IRDMA_MEMREG_TYPE_SRQ,
++							   &srq_req);
++		if (IS_ERR(iwsrq->iwpbl)) {
++			ret = PTR_ERR(iwsrq->iwpbl);
++			iwsrq->iwpbl = NULL;
 +			ib_umem_release(umem);
-+			return err_code;
++			return ret;
 +		}
++		iwpbl = iwsrq->iwpbl;
 +	} else {
-+		if (!req.user_cq_buf)
++		if (!req.user_srq_buf)
 +			return -EINVAL;
 +
-+		spin_lock_irqsave(&ucontext->cq_reg_mem_list_lock, flags);
-+		iwcq->iwpbl = irdma_get_pbl((unsigned long)req.user_cq_buf,
-+					    &ucontext->cq_reg_mem_list);
-+		spin_unlock_irqrestore(&ucontext->cq_reg_mem_list_lock, flags);
-+		if (!iwcq->iwpbl)
++		spin_lock_irqsave(&ucontext->srq_reg_mem_list_lock, flags);
++		iwpbl = irdma_get_pbl((unsigned long)req.user_srq_buf,
++				      &ucontext->srq_reg_mem_list);
++		spin_unlock_irqrestore(&ucontext->srq_reg_mem_list_lock, flags);
++		if (!iwpbl)
 +			return -EPROTO;
++
++		iwsrq->iwpbl = iwpbl;
 +	}
+ 	srqmr = &iwpbl->srq_mr;
  
- 	cqmr = &iwcq->iwpbl->cq_mr;
+ 	if (iwpbl->pbl_allocated) {
+@@ -2615,7 +2658,12 @@ static int irdma_create_srq(struct ib_srq *ibsrq,
+ 	if (iwsrq->user_mode && iwsrq->iwpbl) {
+ 		struct irdma_mr *iwmr = iwsrq->iwpbl->iwmr;
  
- 	if (rf->sc_dev.hw_attrs.uk_attrs.feature_flags &
- 	    IRDMA_FEATURE_CQ_RESIZE) {
--		spin_lock_irqsave(&ucontext->cq_reg_mem_list_lock, flags);
--		iwcq->iwpbl_shadow =
--			irdma_get_pbl((unsigned long)req.user_shadow_area,
--				      &ucontext->cq_reg_mem_list);
--		spin_unlock_irqrestore(&ucontext->cq_reg_mem_list_lock, flags);
-+		if (uverbs_attr_is_valid(attrs, IRDMA_IB_ATTR_CREATE_CQ_SHADOW_BUF_UMEM)) {
-+			struct ib_umem *shadow_umem;
-+			struct irdma_mem_reg_req shadow_req = {
-+				.cq_pages = IRDMA_SHADOW_PGCNT,
-+			};
-+
-+			shadow_umem =
-+				ib_umem_get_attr(&iwdev->ibdev, attrs,
-+						 IRDMA_IB_ATTR_CREATE_CQ_SHADOW_BUF_UMEM,
-+						 IRDMA_SHADOW_AREA_SIZE << 3,
-+						 IB_ACCESS_LOCAL_WRITE);
-+			if (IS_ERR(shadow_umem))
-+				return PTR_ERR(shadow_umem);
-+
-+			iwcq->iwpbl_shadow =
-+				irdma_setup_q_pbl_from_umem(iwdev, shadow_umem, NULL,
-+							    IRDMA_MEMREG_TYPE_CQ,
-+							    &shadow_req);
-+			if (IS_ERR(iwcq->iwpbl_shadow)) {
-+				err_code = PTR_ERR(iwcq->iwpbl_shadow);
-+				iwcq->iwpbl_shadow = NULL;
-+				ib_umem_release(shadow_umem);
-+				return err_code;
-+			}
-+		} else {
-+			if (!req.user_shadow_area)
-+				return -EINVAL;
- 
--		if (!iwcq->iwpbl_shadow)
--			return -EPROTO;
-+			spin_lock_irqsave(&ucontext->cq_reg_mem_list_lock, flags);
-+			iwcq->iwpbl_shadow =
-+				irdma_get_pbl((unsigned long)req.user_shadow_area,
-+					      &ucontext->cq_reg_mem_list);
-+			spin_unlock_irqrestore(&ucontext->cq_reg_mem_list_lock, flags);
- 
-+			if (!iwcq->iwpbl_shadow)
-+				return -EPROTO;
+-		refcount_dec(&iwmr->user_ring_refs);
++		if (iwmr && refcount_dec_and_test(&iwmr->user_ring_refs)) {
++			ib_umem_release(iwmr->region);
++			if (iwsrq->iwpbl->pbl_allocated)
++				irdma_free_pble(rf->pble_rsrc, &iwsrq->iwpbl->pble_alloc);
++			kfree(iwmr);
 +		}
- 		cqmr_shadow = &iwcq->iwpbl_shadow->cq_mr;
- 		info->shadow_area_pa = cqmr_shadow->cq_pbl.addr;
- 	} else {
-@@ -2872,6 +2959,9 @@ static int irdma_create_user_cq(struct ib_cq *ibcq,
- 	if (err_code)
- 		return err_code;
- 
-+	if (attr->cqe > rf->max_cqe * 2)
-+		return -EINVAL;
-+
- 	if (udata->outlen < IRDMA_CREATE_CQ_MIN_RESP_LEN)
- 		return -EINVAL;
- 
+ 	}
+ 	irdma_free_rsrc(rf, rf->allocated_srqs, iwsrq->srq_num);
+ 	return err_code;
 -- 
 2.56.0.317.g454f8302e1-goog
 
