@@ -2,197 +2,144 @@ Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A2DE606A31F
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 30 Oct 2026 08:16:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EEF3D606A32C
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 30 Oct 2026 08:47:57 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=vv8VmXYm;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GxCTz2HF
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=32XW0TzE;
+	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QjMA/2B8
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 343B7810B5;
-	Fri, 30 Oct 2026 08:16:33 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id D2076810E6;
+	Fri, 30 Oct 2026 08:47:57 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id pso8xpLUa_3y; Fri, 30 Oct 2026 08:16:32 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 1F737810D7
-Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=3; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793348192;
-	b=PZSFX47LfAYlOeyTNCOAZvQmqQ9BV2IxDbmTIUQeVPYdCl6+N86WT0io973EVMOJJorH
-	 kSrgWV1fSsCtBbOOYkfzbmI+yapO4OigZFYFcic3M4MvrVLIQz2EpcWMAmzMwDmZF13UJ
-	 99uwN/84jKK8crfdNQ4oqb8YieOBeQ70FDL2WhlG6y7gFhodmfDzQ8bXmLHBJOKFMKA0J
-	 0usf8VIS6fAEZEqb7cxCqp9GEZGYMZd2TtBSkXXtgFWjlsrX6jTltiTaQ0zyZpMPze4GU
-	 49mJFhNrImtogXqpXHYiQR+mpKpUUzr864PR36KspLeePiGro1DVPfLAU4U0dZfRX9w==
-ARC-Message-Signature: i=3; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1793348192;
+ id yP821rKDu56Y; Fri, 30 Oct 2026 08:47:57 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org ED0B8810EA
+Authentication-Results: smtp1.osuosl.org; arc=fail smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=fail; t=1793350077;
+	b=H04m+kRwzQgCGZsnbtX7ckceXv0aRXZvs4//7ydIMI3NzJsJojaSiLBlIHJGiHnFicAN
+	 6z2Lg3e3Q41G6wXen73z0TzbiJzr6E9L5JJhHlgwkN/yv3bPy9+qywMageaEYyUQRce8I
+	 +UOrpX0kR25BYt7PffjhqbAJ/ohX2QVGIjM6BsBH0VwHeagWUaE/C5njkdZNHRQoioTit
+	 VcjgmDz1fKUL+QACWeqq9NNyUMR0Kc5afYA0fASgn/dlC8HtDMyXcFANR8dRJdUwEvkbc
+	 XJUvtPwy6NF8JE4gqHHhkC7OEj11yXdRnmUC3kOTsLvEX0PGFDj95mnyqM6Xfo7aPVg==
+ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
+	c=relaxed/relaxed; t=1793350077;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
-	 Content-Type:Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Content-Transfer-Encoding:X-BeenThere:
+	 Received:DKIM-Signature:Content-Type:MIME-Version:Message-Id:
+	 In-Reply-To:References:Subject:From:To:Cc:Date:X-BeenThere:
 	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Reply-To:Errors-To;
-	bh=nxb4ICs48/EH3I4EV/LG2u9tIdfwalBWWFtzW7PUfTc=;
-	b=RIFUApkF2szZ77Jmi08K3ukmBKa62LnY0z0qZD22H7oQ2cfug6tZhrCygBKXl7xtojpd
-	 7KwNktyJTiyivJlUxjVEsOroNNNqCDbRbDX49ucfPn8vBk2yK4W3rjg5tn0KJV1N38GG5
-	 Vuty4DzJoLsZcuXWqy1KwyBlLltaDsYou9FmqpHHkIvJ4BNElsrw9lCMh8T1wDgvXAW6Q
-	 8ASGm/qKkbTespGPrprh4epfL0uYHGSzhYPMzf8tVZlPM0Z7sLO8ScaDS2aA1i25S0wnn
-	 pOf1mG1vtk/IRUojms5rjf4mpF0yWf3Gvnsef0YhxDt1UyvnhK7HW73+E6bbKgxdn6g==
-ARC-Authentication-Results: i=3; smtp1.osuosl.org; 
-	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+	 List-Post:List-Help:List-Subscribe:Errors-To;
+	bh=KrD/LT25yUr4hzgtq3ozTYQoswHyYhMKqnTj9MrA7yQ=;
+	b=j+HAew4xxFMLSv5WM5zXXYaFbvyiswGDshWbKOPUlg7YjvRlgR9gI3uODLeLcx3TmKm6
+	 /TROD1DLV9xQx9smFFz3O11utEXqWCrkjWe4hHmjoocksBitxiopfIb69N0jMyRQyT5cr
+	 hNzPHYvmsNwcXaWQD5Ctl3Y3k6dCbyqiH8WosxVR14d15jM2z7v1vCOwb12z6lTItreS1
+	 jt+zfuTeKWYxtZvVic4+hBd0BgFhM0IEX6vsRR6ZR79egLIx2YxI5xIJJ7d+5HTe+XlJk
+	 oif/jrLnfzNquoWIUKcQd+ZzBJafTxDoaEjuWWAPETsexWNVsFaHMLAja+xJ5Zc8ihQ==
+ARC-Authentication-Results: i=2; smtp1.osuosl.org; 
+	arc=fail smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1793348192;
-	bh=nxb4ICs48/EH3I4EV/LG2u9tIdfwalBWWFtzW7PUfTc=;
-	h=From:Date:Subject:To:Cc:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Reply-To:From;
-	b=vv8VmXYm+tpdqWVBFx29wYkGP+xphrwiDmhuwh0LFXV7pbumHixmWINpuTjYU24hs
-	 kkuo5mhnXFLfh9cfU1b3qW3PwlydxNVZGzqqYZuvc+hQGGZ2+CGytot/uGGuLeYFnb
-	 fKueKcrqmPH/WbPAhjMXKKXK02mas2hOwrf88yUk9TP29/gpBh3oyrriFRTZzGm96Q
-	 hRCPedcYikzg1eM4mmUGg0AbT8I4IIe9gq3dpgZTRZNcO+e46Y3+qTywdcWZHw8YRl
-	 aWzzklKT5RqBuqjzKyGPMIIAJiWeekxT5S0ACN0CqHulS9hEf0oEaI35QdnmKL8O1j
-	 FUw0EhBwnvM9A==
+	s=default; t=1793350077;
+	bh=KrD/LT25yUr4hzgtq3ozTYQoswHyYhMKqnTj9MrA7yQ=;
+	h=In-Reply-To:References:Subject:From:To:Cc:Date:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=32XW0TzE9LjlVpynTTw3FpTgO11iiM76sXU2VLdqon/FJNYMG3xn9TODUcLcTuCmO
+	 IC5FkwEaWFzuLbyfc5F6Vra9Jn6qe8x2mU291/gKeTlLG3WxjVzUR+Nttym4U1W0vf
+	 PtxX6uASlOGGUJDXAEXC0Tprc4YOPXVArbGUXhq2xVfChOXGdswNx5Syab+XFaRLe9
+	 5L3r6Cd3pnUjwcbZUVNefrkJ1hlZJy8WaXHpMtqAc2FBSlWe3Bw2jWzopd64ulF52D
+	 w+UJ8+a6PBWe8u1Skyq4I6d4rHMeprNP05OHyZA4e0psSbiuUeTvBGQr36wSLqK7nQ
+	 SIYbJPavC/T+w==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 1F737810D7;
-	Fri, 30 Oct 2026 08:16:32 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id EBC482C7
- for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 08:16:30 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id ED0B8810EA;
+	Fri, 30 Oct 2026 08:47:56 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 89945473
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 08:47:55 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id E8D7840AA1
- for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 08:16:30 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 7A93040AAB
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 08:47:55 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id hqB1Iz-mG5P7 for <intel-wired-lan@lists.osuosl.org>;
- Fri, 30 Oct 2026 08:16:29 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 8BFD540A98
-Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0
- smtp.remote-ip=172.234.252.31
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793348189;
- b=FlfJksZ3JfOZYSsFKLYx1ktc3Xqm26mH2gvqiiqFiaGnTC9YBtSBCvJ6WHKCviXmmnpC
- s6+LitlQZpNI36SdQmgsUnNKvENI/mvczQYGFzHWgvjHLcf+2gNwhxwnA1PPrkamX01dO
- ICpH05k8d/KNxoockP7trDevTjSjnzZ1gtCk6eHonMy7zdxvJilpcmKU2xl41h1LJHtnn
- QxgGq5LuCqTCpxDGn2XtfKUyWedoAGcv2erb5GZZ+XOlHZsr/45McZSyNXNcQcKyw3bEn
- jqt917xysHlwEmfItieHjKAxkiwvWk15xCgq5i8yamWwL9htO1JIG33d39M8mAZu1Cg==
-ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1793348189;
- h=Received-SPF:Received:Received:DKIM-Signature:Received:From:Date:
- Subject:MIME-Version:Content-Type:Message-Id:X-B4-Tracking:
- X-Change-ID:To:Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:
- X-Endpoint-Received:X-Original-From:Reply-To:
- Content-Transfer-Encoding;
- bh=nxb4ICs48/EH3I4EV/LG2u9tIdfwalBWWFtzW7PUfTc=;
- b=f5dAMosSqLC7REoJ/om/Rc3vGnshfwz+dClOAvT6IXFyLSq7wCsLXsQTnPCx6U6RJI/v
- wsGXFz6dmrvJEtlpXKsmSOSte23Ro0vPqhHS4OO3QLIjh80VdcTd241u32PL96T3SV/Ih
- 83zdrZSYIbLCIEH2fcSahumzyndXD2HX+cB2Wqo8VEI7mLrFrQ5p8h04VtCnSdd3bBnWr
- 89JhgYaqkKVUID7o3AIwaJvkwZuyhZ2CIJoN1kb0uhLkh8C76Zeqo8ajUWtqWpyy3FdN6
- rgqxVMvNvPWx+C2+Vqhu0OsUqY2sprnyXbYemOyWSX23Ylgret5MixKv9SVQRLjvT3A==
-ARC-Authentication-Results: i=2; smtp4.osuosl.org; 
+ id loCzjn0yMVbn for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 30 Oct 2026 08:47:54 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 6209B40A91
+Authentication-Results: smtp4.osuosl.org; arc=none
+ smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793350074;
+ b=UBkBTPtggBFkbzPQCgm0fogvoeFv5dkRNPgt2sOHIXymG8iBAjQMvDibHmMi5xBpY04T
+ 0c7SybhX2jIVGPRoTF4jYGFrEt/z4m59vnZM3uqjJSDY4pyFH46SchRzg1G6fdKtP+az5
+ Z8+J3VL8jBfSY+WH6ljDe6XQm0MBRyWJTIzBfCn7YadKVUY8UOZSYTeuvicWLeREBrvZG
+ xEZPqxCJz47vwL2zt6moP8gZX8hIKKu5o201/sMPfHyE7/kv3N1KZ0FdUnbl59SMpK0hU
+ fspsRN1GC3LlUIqMdohSy9PnpHvRQw/HQr1hGN7ogU4J1Q4OxbkQoH0DkXFlqyzzSRg==
+ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
+ c=relaxed/relaxed; t=1793350074;
+ h=Received-SPF:Received:Received:DKIM-Signature:Content-Type:
+ MIME-Version:Message-Id:In-Reply-To:References:Subject:From:To:Cc:
+ Date; bh=KrD/LT25yUr4hzgtq3ozTYQoswHyYhMKqnTj9MrA7yQ=;
+ b=aFOsgokCQWDxM6l/uJI64r3+dIdSQbxDaePYKH4vctb6V5nc8eUp5uqZyUozxuMgxh6O
+ f4xlCjYco1Oja1enMWMzXwaY9VA88pmyhWDFVmG5L6h4jL5dvsdep+u4ZTPN3gFs6w55r
+ SSXkmQndk3ZHlP249sT0nZLlW97iM9vg5TKTYtlV0jHjutKbH8BKh+WVeviesKpCmiwdL
+ 9cKAdrHVXFyb/vWCkEdJ8X+JUnkT4Ep1h6J9ijFUR1d0cW6Cqk+9ZIlKATTbLc399IX2N
+ wTIj6b09/CsQL8QhMOp8T11beHWbw+68yR40+Luq9fwYB2PTuRQwJXlj8VJTVnHuFLQ==
+ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
  dmarc=pass header.from=kernel.org;
  dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=GxCTz2HF; 
- arc=pass header.oldest-pass=0 smtp.remote-ip=172.234.252.31
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
- helo=sea.source.kernel.org;
- envelope-from=devnull+marcin.knap.vecima.com@kernel.org; receiver=<UNKNOWN> 
+ header.s=k20260515 header.b="QjMA/2B8"; 
+ arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
+ envelope-from=bot+bpf-ci@kernel.org; receiver=<UNKNOWN> 
 Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
 Authentication-Results: smtp4.osuosl.org; dkim=pass (2048-bit key,
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=GxCTz2HF
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 8BFD540A98
- for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 08:16:27 +0000 (UTC)
+ header.s=k20260515 header.b=QjMA/2B8
+Received: from tor.source.kernel.org (tor.source.kernel.org
+ [IPv6:2600:3c04:e001:324:0:1991:8:25])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 6209B40A91
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 08:47:53 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by sea.source.kernel.org (Postfix) with ESMTP id 9BA0D40882;
- Fri, 30 Oct 2026 08:16:27 +0000 (UTC)
-Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
-ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
- t=1793348187;
- b=ktgjPCVtkgx+UJUxOWm6fSy6sX3RrxFJqMZE1nZmdkMVHoOKvMtT/fZkM/atRLz+VOeM
- jYNXNQJmHRoYsnwTC3OvvLJuDwyv6JayAbhhIpLiwZYOogSboQz/r2/dKaLGGs5hvQixA
- 4fDBPiquQBDGqAFDOWf00c+JrQVxTF40insE9uUgNKFMI1u5jWqM2SjF6rfY5RvhszEH+
- 7r+sYHd+EqRon/VDoMmrn3GrBPyk7A+c7iW8Yw9LFJ1hQdFIIC5gYxoodUW0Nm7dk33SC
- ZbRBOtAYXrXitiD1B/4j6aHHEY7cqX50PGyQwTbWk6YFfvoPR3HbcIdCTsCMFmVDeYw==
-ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
- c=relaxed/relaxed; t=1793348187;
- h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
- Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:
- X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
- X-Original-From:Reply-To:Content-Transfer-Encoding;
- bh=nxb4ICs48/EH3I4EV/LG2u9tIdfwalBWWFtzW7PUfTc=;
- b=B1tHP2rBHe5NGFezdb3tSeKSbH0EsyztrQ2o9cPc4x1exAxRx0IoV/8tUq/5/hDkr+KU
- YPu/SSPQ43qHvLU5/prTdswYDgMHjvFzODd/mNdKj33KTaH0beZKUrVEm9Tr5Wd5W7mIt
- d8tT4zhSeLHZUc5SBVc0T7GRjdpBc+jTQlkExIrnYLbXDhY/ezXDdIIe71+ePT1Q9xXG7
- wpBt3fTzhg7aLJ9l7a2oCDq6dtD3TR/vk0CH6t9wUledN417jMN2/BBzo4BsOcIfDfIiU
- xbkbiFLNycEzifPI7A4wSAYinXElJBGLxeyUhGrTZ2rVbokraVDOJjSlh3RYaChYCzg==
-ARC-Authentication-Results: i=1; smtp.kernel.org; 
- arc=none smtp.remote-ip=100.80.115.77
-Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
- (No client certificate requested)
- by smtp.kernel.org (Postfix) with ESMTPS id C674D1F000C1;
- Fri, 30 Oct 2026 08:16:26 +0000 (UTC)
+ by tor.source.kernel.org (Postfix) with ESMTP id 4E2C960619;
+ Fri, 30 Oct 2026 08:47:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6C8B01F000C1;
+ Fri, 30 Oct 2026 08:47:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1793348187;
- bh=nxb4ICs48/EH3I4EV/LG2u9tIdfwalBWWFtzW7PUfTc=;
- h=From:Date:Subject:To:Cc:Reply-To;
- b=GxCTz2HFnhjMHn9BaJehym9NHJiHfz70aN+nvDttXwy94/7hTA7D8x/w8zjwLjiSn
- vjVJazyvgt7Y71gqXT2DNKmGgpjBgtspTs1azQE6unS5yKF8rUtwipuJwwMZ3BuJLy
- AwFY3Iif4KI+CtwVGAGH1RtezmkkHNd3/fNho1W/7/Fd5SN1DbXekB6gyYcu6M/RQB
- hXp5vrWg2UJkDbdRXIqBG2+LtsXx4yy8UVY/dWxPONJa5TRSGSobKQ7vjnkjyHdVbH
- Y0FDS9Ii9DmmEd6uxXXNEirmem5/HqmfHq6p6d1rYR8Q3pejEvRLwvqZjlgQU/gJfM
- LUuZHtUg/Nd5g==
-Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
- by lkml.kernel.org (Postfix) with ESMTP id 25F3D436CC;
- Fri, 30 Oct 2026 08:16:26 +0000 (UTC)
-From: Marcin Knap via B4 Relay <devnull+marcin.knap.vecima.com@kernel.org>
-Date: Fri, 30 Oct 2026 09:14:17 +0100
-Subject: [PATCH bpf v2] xsk: Do not free ZC Rx buffer when the Rx ring is full
+ s=k20260515; t=1793350072;
+ bh=KrD/LT25yUr4hzgtq3ozTYQoswHyYhMKqnTj9MrA7yQ=;
+ h=In-Reply-To:References:Subject:From:To:Cc:Date;
+ b=QjMA/2B8CZscQfaFu/WT/U6Y2M4NWtO4+THO4uTPFwCSiZ1smfQcK0uUxM4zrg9Vb
+ LqswBte6CIMZ2ITHE67rlkTTB33tqXHR1JIa9KsVGLgxQd5EFYsQMyX+iFqGQLT/qe
+ /giQal94WXwHFMPz28VqsVj/Bu1RG8X0FwmqEsYZe1h5Cb93gu9P5KmZ5B79A4FimV
+ 24IF9UBSwNFykEF1OSWahsjUocfMdi/tzsrj8DxUgIkVritNttSW5oBlqb5X7q5UK2
+ doJVCkexnpQ/EQ4EJKCTaBSj/5CVv6fbThRkmpbjyUrY7X85S/84vYPTxrOtk4Y1F5
+ 9L1CdTdw7Oh6g==
+Content-Type: multipart/mixed; boundary="===============2292663351581088568=="
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261030-xsk-zc-rx-double-free-v2-1-cf01d4a9f3f7@vecima.com>
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/4WNQQ6CMBBFr0Jm7RimKhFX3sOwaMtUqkJJC02Vc
- HcBD+Dy/7z//gSBveUAl2wCz9EG67oliF0GupHdndHWSwaRi4JyKjGFJ340+oS1G9WL0XhmJHl
- Q+anU9ZEMLNves7Fp895A9QaqXxlG9WA9rMYVa2wYnH9v75E2+M9RJCQUUlJpikKcjbpG1raVe
- +1aqOZ5/gLbBU1M0gAAAA==
-X-Change-ID: 20261019-xsk-zc-rx-double-free-1a3b059cd41f
-To: Tony Nguyen <anthony.l.nguyen@intel.com>, 
- Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
- Andrew Lunn <andrew+netdev@lunn.ch>, 
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>, 
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
- Magnus Karlsson <magnus.karlsson@intel.com>, 
- Maciej Fijalkowski <maciej.fijalkowski@intel.com>, 
- Stanislav Fomichev <sdf@fomichev.me>, Simon Horman <horms@kernel.org>, 
- Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
- Jesper Dangaard Brouer <hawk@kernel.org>, 
- John Fastabend <john.fastabend@gmail.com>, jtollet@cisco.com
-Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, 
- linux-kernel@vger.kernel.org, bpf@vger.kernel.org, 
- Marcin Knap <marcin.knap@vecima.com>, 
- Joshua Washington <joshwash@google.com>, 
- Harshitha Ramamurthy <hramamurthy@google.com>, 
- Sunil Goutham <sgoutham@marvell.com>, Geetha sowjanya <gakula@marvell.com>, 
- Ratheesh Kannoth <rkannoth@marvell.com>, 
- Subbaraya Sundeep <sbhatta@marvell.com>, 
- Bharat Bhushan <bbhushan2@marvell.com>
-X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1793348185; l=7209;
- i=marcin.knap@vecima.com; s=20261019; h=from:subject:message-id;
- bh=zjCC53eamxy9uMwrekd/GVBEJYRREa6qEen7NhdsQgY=;
- b=JMsIQYe1NE5OYniKA2lvB97Xsdw88oJQPtAmSCDaKi15sBjcyt+WyWBhB9YeXee+577TW/01w
- /fa+Lx6zDrDB5c+neYFJxGKWLQW+14dC7+7u0rC92WOgK05a3sJFBL1
-X-Developer-Key: i=marcin.knap@vecima.com; a=ed25519;
- pk=rCvVOuopf4s4BHtLE+FRnv0x83PoFHgBPo9mtNlvzLk=
-X-Endpoint-Received: by B4 Relay for marcin.knap@vecima.com/20261019 with
- auth_id=1237
-X-Original-From: Marcin Knap <marcin.knap@vecima.com>
-Content-Transfer-Encoding: 8bit
+Message-Id: <36d13f061c48206a13e7a38cb846f4c71e0a15fcf0459ab56a2b01f67a57172e@mail.kernel.org>
+In-Reply-To: <20261030-xsk-zc-rx-double-free-v2-1-cf01d4a9f3f7@vecima.com>
+References: <20261030-xsk-zc-rx-double-free-v2-1-cf01d4a9f3f7@vecima.com>
+Subject: Re: [PATCH bpf v2] xsk: Do not free ZC Rx buffer when the Rx ring is
+ full
+From: bot+bpf-ci@kernel.org
+To: marcin.knap@vecima.com, anthony.l.nguyen@intel.com,
+ przemyslaw.kitszel@intel.com, andrew+netdev@lunn.ch, davem@davemloft.net,
+ edumazet@kernel.org, kuba@kernel.org, pabeni@redhat.com,
+ magnus.karlsson@intel.com, maciej.fijalkowski@intel.com, sdf@fomichev.me,
+ horms@kernel.org, ast@kernel.org, daniel@iogearbox.net, hawk@kernel.org,
+ john.fastabend@gmail.com, jtollet@cisco.com
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, bpf@vger.kernel.org, marcin.knap@vecima.com,
+ joshwash@google.com, hramamurthy@google.com, sgoutham@marvell.com,
+ gakula@marvell.com, rkannoth@marvell.com, sbhatta@marvell.com,
+ bbhushan2@marvell.com, ast@kernel.org, andrii@kernel.org, daniel@iogearbox.net,
+ martin.lau@kernel.org, eddyz87@gmail.com, yonghong.song@linux.dev,
+ mason@kernel.org, ihor.solodrai@linux.dev
+Date: Fri, 30 Oct 2026 08:47:51 +0000 (UTC)
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -203,199 +150,99 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Reply-To: marcin.knap@vecima.com
-X-Spam-Status: No, score=-18.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-From: Marcin Knap <marcin.knap@vecima.com>
+--===============2292663351581088568==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
 
-When an XDP program redirects a zero-copy buffer to an XSK and the
-socket's Rx ring is full, xsk_rcv_zc() frees the buffer and returns
--ENOBUFS to xdp_do_redirect().
+> xsk: Do not free ZC Rx buffer when the Rx ring is full
 
-A failed xdp_do_redirect() leaves the buffer owned by the caller, and
-most drivers rely on that: mlx5e treats the failure as XDP_DROP and
-releases the buffer when the Rx WQE is refilled, while i40e, ice,
-ixgbe, igb, igc, stmmac, idpf and others free it themselves. The
-buffer is therefore freed twice. It gets reused for another Rx
-descriptor, the second free puts an in-use buffer back on the pool
-free list, and the same UMEM frame is later handed to user space
-twice. ixgbe and igb keep the buffer in the ring on their need_wakeup
--ENOBUFS (XDP_EXIT) path and run it through XDP again on the next poll,
-after the core has freed it.
+TL;DR: Commit message only: the code change looks correct, but the "freed
+twice" claim seems inaccurate for drivers that free immediately (i40e, ice,
+etc.); only deferred-release drivers like mlx5e are affected.
 
-Leave the buffer with the caller on both the single-buffer and the
-multi-buffer -ENOBUFS paths, as xsk_rcv() and xsk_rcv_check() already
-do. A few drivers relied on the core freeing the buffer, so make them
-free it:
+>     xsk: Do not free ZC Rx buffer when the Rx ring is full
+>
+>     When an XDP program redirects a zero-copy buffer to an XSK and the
+>     socket's Rx ring is full, xsk_rcv_zc() frees the buffer and returns
+>     -ENOBUFS to xdp_do_redirect().
+>
+>     A failed xdp_do_redirect() leaves the buffer owned by the caller, and
+>     most drivers rely on that: mlx5e treats the failure as XDP_DROP and
+>     releases the buffer when the Rx WQE is refilled, while i40e, ice,
+>     ixgbe, igb, igc, stmmac, idpf and others free it themselves. The
+>     buffer is therefore freed twice. It gets reused for another Rx
+>     descriptor, the second free puts an in-use buffer back on the pool
+>     free list, and the same UMEM frame is later handed to user space
+>     twice. ixgbe and igb keep the buffer in the ring on their need_wakeup
+>     -ENOBUFS (XDP_EXIT) path and run it through XDP again on the next poll,
+>     after the core has freed it.
+>
+>     Leave the buffer with the caller on both the single-buffer and the
+>     multi-buffer -ENOBUFS paths, as xsk_rcv() and xsk_rcv_check() already
+>     do. A few drivers relied on the core freeing the buffer, so make them
+>     free it:
+>
+>     - i40e and ice consume the descriptor on XDP_EXIT without freeing it.
+>     - gve DQO counts the redirect error without freeing the buffer.
+>     - octeontx2 returns false on a failed redirect, so the caller goes on
+>       to build an skb from the already freed buffer. Free the buffer and
+>       report it as consumed instead.
+>
+>     Seen on Mellanox ConnectX-6 DX MT2892 (FW 22.47.1026) with AF_XDP
+>     zero-copy on 7.3.0-rc6 when the user-space consumer could not keep up
+>     with the Rx ring. With this change no duplicate frames were seen with
+>     striding RQ on or off.
+>
+>     Fixes: 269009893146 ("xsk: recycle buffer in case Rx queue was full")
+>     Signed-off-by: Marcin Knap <marcin.knap@vecima.com>
 
-- i40e and ice consume the descriptor on XDP_EXIT without freeing it.
-- gve DQO counts the redirect error without freeing the buffer.
-- octeontx2 returns false on a failed redirect, so the caller goes on
-  to build an skb from the already freed buffer. Free the buffer and
-  report it as consumed instead.
+The changelog says that for i40e, ice, ixgbe, igb, igc, stmmac, idpf and the
+others the buffer is "freed twice" and that "the second free puts an in-use
+buffer back on the pool free list".  Is this accurate for those drivers?
 
-Seen on Mellanox ConnectX-6 DX MT2892 (FW 22.47.1026) with AF_XDP
-zero-copy on 7.3.0-rc6 when the user-space consumer could not keep up
-with the Rx ring. With this change no duplicate frames were seen with
-striding RQ on or off.
+All of them call xsk_buff_free() on the redirect failure path straight after
+xdp_do_redirect() returns, before any xp_alloc() can run.  xp_free() starts
+with:
 
-Fixes: 269009893146 ("xsk: recycle buffer in case Rx queue was full")
-Signed-off-by: Marcin Knap <marcin.knap@vecima.com>
----
-Tested on mlx5 (ConnectX-6 DX) in zero-copy single-buffer mode.
-The i40e and ice changes and the multi-buffer path are build-tested
-only, as I don't have that hardware available.
----
-Changes in v2:
-- Also free the buffer on zero-copy redirect failure in gve DQO and
-  octeontx2, which relied on the core freeing it (AI review).
-- Audited the remaining zero-copy drivers against Björn's table.
-  ixgbe and igb no longer run XDP on a freed buffer after
-  XDP_EXIT; making them drop and consume the descriptor (R2) is
-  left for a follow-up unless you prefer it in this patch.
-- Rebased on current bpf.
-- Link to v1: https://patch.msgid.link/20261019-xsk-zc-rx-double-free-v1-1-2aa19f6628fb@vecima.com
+    void xp_free(struct xdp_buff_xsk *xskb)
+    {
+        if (!list_empty(&xskb->list_node))
+            return;
+        ...
 
-To: Joshua Washington <joshwash@google.com>
-To: Harshitha Ramamurthy <hramamurthy@google.com>
-To: Andrew Lunn <andrew+netdev@lunn.ch>
-To: "David S. Miller" <davem@davemloft.net>
-To: Eric Dumazet <edumazet@kernel.org>
-To: Jakub Kicinski <kuba@kernel.org>
-To: Paolo Abeni <pabeni@redhat.com>
-To: Tony Nguyen <anthony.l.nguyen@intel.com>
-To: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-To: Sunil Goutham <sgoutham@marvell.com>
-To: Geetha sowjanya <gakula@marvell.com>
-To: Ratheesh Kannoth <rkannoth@marvell.com>
-To: Subbaraya Sundeep <sbhatta@marvell.com>
-To: Bharat Bhushan <bbhushan2@marvell.com>
-To: Magnus Karlsson <magnus.karlsson@intel.com>
-To: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-To: Stanislav Fomichev <sdf@fomichev.me>
-To: Simon Horman <horms@kernel.org>
-To: Alexei Starovoitov <ast@kernel.org>
-To: Daniel Borkmann <daniel@iogearbox.net>
-To: Jesper Dangaard Brouer <hawk@kernel.org>
-To: John Fastabend <john.fastabend@gmail.com>
-Cc: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: intel-wired-lan@lists.osuosl.org
-Cc: bpf@vger.kernel.org
----
- drivers/net/ethernet/google/gve/gve_rx_dqo.c           |  4 +++-
- drivers/net/ethernet/intel/i40e/i40e_xsk.c             |  1 +
- drivers/net/ethernet/intel/ice/ice_xsk.c               |  1 +
- drivers/net/ethernet/marvell/octeontx2/nic/otx2_txrx.c |  3 ++-
- net/xdp/xsk.c                                          | 15 +++------------
- 5 files changed, 10 insertions(+), 14 deletions(-)
+and the xsk_buff_free() from the old xsk_rcv_zc() err label has already put
+list_node on pool->free_list.  So wouldn't the second free simply return
+early here?
 
-diff --git a/drivers/net/ethernet/google/gve/gve_rx_dqo.c b/drivers/net/ethernet/google/gve/gve_rx_dqo.c
-index 82ed5e48b00a..cc544420df11 100644
---- a/drivers/net/ethernet/google/gve/gve_rx_dqo.c
-+++ b/drivers/net/ethernet/google/gve/gve_rx_dqo.c
-@@ -686,8 +686,10 @@ static void gve_xsk_done_dqo(struct gve_priv *priv, struct gve_rx_ring *rx,
- 			goto err;
- 		break;
- 	case XDP_REDIRECT:
--		if (unlikely(xdp_do_redirect(priv->dev, xdp, xprog)))
-+		if (unlikely(xdp_do_redirect(priv->dev, xdp, xprog))) {
-+			xsk_buff_free(xdp);
- 			goto err;
-+		}
- 		break;
- 	}
- 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-index 51a05ce4c7ce..a11ee1f3fa38 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-@@ -360,6 +360,7 @@ static void i40e_handle_xdp_result_zc(struct i40e_ring *rx_ring,
- 		return;
- 
- 	if (xdp_res == I40E_XDP_EXIT) {
-+		xsk_buff_free(xdp_buff);
- 		*failure = true;
- 		return;
- 	}
-diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
-index 0643017541c3..7c1dd4c87a71 100644
---- a/drivers/net/ethernet/intel/ice/ice_xsk.c
-+++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
-@@ -636,6 +636,7 @@ int ice_clean_rx_irq_zc(struct ice_rx_ring *rx_ring,
- 		if (likely(xdp_res & (ICE_XDP_TX | ICE_XDP_REDIR))) {
- 			xdp_xmit |= xdp_res;
- 		} else if (xdp_res == ICE_XDP_EXIT) {
-+			xsk_buff_free(first);
- 			failure = true;
- 			first = NULL;
- 			break;
-diff --git a/drivers/net/ethernet/marvell/octeontx2/nic/otx2_txrx.c b/drivers/net/ethernet/marvell/octeontx2/nic/otx2_txrx.c
-index 90af9b9044aa..6d10c132f61c 100644
---- a/drivers/net/ethernet/marvell/octeontx2/nic/otx2_txrx.c
-+++ b/drivers/net/ethernet/marvell/octeontx2/nic/otx2_txrx.c
-@@ -1555,7 +1555,8 @@ static bool otx2_xdp_rcv_pkt_handler(struct otx2_nic *pfvf,
- 				*need_xdp_flush = true;
- 				return true;
- 			}
--			return false;
-+			xsk_buff_free(xsk_buff);
-+			return true;
- 		}
- 
- 		err = xdp_do_redirect(pfvf->netdev, &xdp, prog);
-diff --git a/net/xdp/xsk.c b/net/xdp/xsk.c
-index 781ba46eb152..89bac2feeff2 100644
---- a/net/xdp/xsk.c
-+++ b/net/xdp/xsk.c
-@@ -224,21 +224,15 @@ static int xsk_rcv_zc(struct xdp_sock *xs, struct xdp_buff *xdp, u32 len)
- 	struct list_head *xskb_list;
- 	u32 contd = 0;
- 	u32 num_desc;
--	int err;
- 
--	if (likely(!frags)) {
--		err = __xsk_rcv_zc(xs, xskb, len, contd);
--		if (err)
--			goto err;
--		return 0;
--	}
-+	if (likely(!frags))
-+		return __xsk_rcv_zc(xs, xskb, len, contd);
- 
- 	contd = XDP_PKT_CONTD;
- 	num_desc = xdp_get_shared_info_from_buff(xdp)->nr_frags + 1;
- 	if (xskq_prod_nb_free(xs->rx, num_desc) < num_desc) {
- 		xs->rx_queue_full++;
--		err = -ENOBUFS;
--		goto err;
-+		return -ENOBUFS;
- 	}
- 
- 	__xsk_rcv_zc_safe(xs, xskb, len, contd);
-@@ -252,9 +246,6 @@ static int xsk_rcv_zc(struct xdp_sock *xs, struct xdp_buff *xdp, u32 len)
- 	}
- 
- 	return 0;
--err:
--	xsk_buff_free(xdp);
--	return err;
- }
- 
- static void *xsk_copy_xdp_start(struct xdp_buff *from)
+For a multi-buffer frame, xskb_list is already emptied by then, and the head
+hits the same early return.
+
+The corruption described seems to happen only where the second release comes
+later, after the buffer may have been reallocated:
+
+- mlx5e releases the buffer on WQE refill.
+- ixgbe and igb keep the buffer in the ring on XDP_EXIT and run XDP on it
+  again.
+- dpaa2 calls dpaa2_eth_recycle_buf(), which hands the address back to the
+  hardware pool while the buffer is also on free_list.
+- octeontx2 builds an skb from the freed buffer.
+
+The code change itself looks correct.  Could the changelog be reworded to
+name the drivers with a deferred second release, or the reuse after free, as
+the ones affected, instead of the drivers that free the buffer immediately?
+
 
 ---
-base-commit: fb7bd3a2aad70a76232a7168a505386d0a1396af
-change-id: 20261019-xsk-zc-rx-double-free-1a3b059cd41f
+AI reviewed your patch. Please fix the bug or email reply why it's not a bug.
+See: https://github.com/kernel-patches/vmtest/blob/master/ci/claude/README.md
 
-Best regards,
---  
-Marcin Knap <marcin.knap@vecima.com>
-
-
+CI run summary: https://github.com/kernel-patches/bpf/actions/runs/41025962641
+--===============2292663351581088568==--
