@@ -2,147 +2,141 @@ Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C78A9606A32F
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 30 Oct 2026 13:37:22 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A3E31606A324
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 30 Oct 2026 16:47:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=ct/OjhAl;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gNgiXmC1
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=PEysK/Vl;
+	dkim=pass (2048-bit key, unprotected) header.d=1g4.org header.i=@1g4.org header.a=rsa-sha256 header.s=protonmail header.b=FVn/2D+f
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 98C5981118;
-	Fri, 30 Oct 2026 13:37:22 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 8068A81233;
+	Fri, 30 Oct 2026 16:47:54 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 164oN1bYB4Ry; Fri, 30 Oct 2026 13:37:21 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 2364A8110C
+ id 63XOe37NUo1W; Fri, 30 Oct 2026 16:47:53 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 8455D81240
 Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793367441;
-	b=eDVwblVWanmix8RamWLrS3/u6RKuCWoAKoB1naPKXABy5+NnJQydDWraz70CR/WEdFFM
-	 Qoy6MsHwszzRE4jqp9cOpiMiIp20hyzqkpa7FNBIHK+G+8Qe5FkJI4582uVbihszbJW2w
-	 Ka6cQGG56qqKAIXQHQA3f8QRao7IMPPLJDd4EoemDHxmBk9M2ydpl75E7oVNHX4e53Uzi
-	 dX2EnkAjbAjSVi+B+FaEqQefqTxILlehSrffBUklJTAifyRFiZ1VLX1eHQT+2TDKiF6lD
-	 EWxcB3KP7MnXNbxYTpcLps8+jJpAJJF1q1CXNY7bKMjsnhBSoEHngClVwe4RrUZ/kmQ==
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793378873;
+	b=OUZA/4B6f2dvHFWlE/gmwuiZEIN97N7t0QK0OM2NgDmREn52bYivQBniUaOMLFKYGu3J
+	 eEOEUcTxsgjBpalUYs/mz0QecyfeTmSbz6/82OvLH36Ym51CV5ERgnAGWDJcvhc1oXPfm
+	 LHVAokJQwBIM232XE6nhoIqB8NN6wxLlGO/nipqWx2Y/7XHQLbO533TGn2F85tFWLG2IP
+	 CKm9QA4CL9BuawQjpiRuLUDlJ7BhNLwXy1IDdt2N51rJ68y47tzxnVLeRR+nTmaww6nWJ
+	 9mU06ld2hWVtrcQO2C0lPv1q1rCW28qY+o13lxxQfoyfb7luRnzKta5ZgNJhIp9zLmw==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1793367441;
+	c=relaxed/relaxed; t=1793378873;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 Received:DKIM-Signature:From:To:Cc:Subject:In-Reply-To:References:
-	 Date:Message-ID:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
-	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=8tJ3mHvsCbcK0uC2z5FiKSUzFDveTQLdd2jjhlDidfw=;
-	b=P4F9UgAR6zCUXEdUHF6es3EGM9ZgID1kkLQ8BkMd71jp2QE5SjHokNqA82X7/t/wEi2m
-	 5ZnMqjq+HGOEsIgtdKslZBoPFGCJE9XJHcz6HhYVKrmd8Hx07MvrK8fs5riaFjGUf662I
-	 h43uwvW2ANmIyXQ9jjRk3YgdqzqlE/aGU9YHPHIYBRue53eEMxsGE5U8dqb2DYirCh/wn
-	 /dPG5HFGvTv73zKUGNunHfbrwnKr0pB0omfkQEvRkZTQE97Cigr/RhdBO3xf7QobqoS5G
-	 0bJ/ipBzfi07R6W/AWaYxI9t1f7H3nNH+oRMKHgLxqQy6e2zCqq469z23GagdnWysMg==
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
+	 DKIM-Signature:Date:To:From:Cc:Subject:Message-ID:In-Reply-To:
+	 References:Feedback-ID:X-Pm-Message-ID:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:Precedence:
+	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 List-Subscribe:Errors-To;
+	bh=PQ4G7FWKXf3yOQR/cwzdiaA0meyXV45WbDf7zl6Ty7Y=;
+	b=hBEOUHWpSM6eKV2cVTZysyY3LrJztpoTS7ZjXnVltE4wqsBchNN46nAFosaBjJUegF3F
+	 Zme91jSPFKKnJa0EQUEllxFcebmgqDxh9lMWdOW8j+3uZfNHKH+lnZTFo8eRQzKCOcADu
+	 eLfqn4fRcTdjBM4WPkxIc2KlK6/3vLzv/GG5JdjWrHJIeQgeybJItE4vPsvO4YPR9cxUF
+	 myWVNmYIzrNhLdEbq6zCGO5H8HjgfBD8W6RSAhUb0itQYydwU1WNCBIX9gkf9mnTJOd6l
+	 fApPaqxgmvI9aCVkXtabhaB9cQstluU90JL77CTnSCKLQhcCVgj3hUVkaxFVIUe4SbA==
 ARC-Authentication-Results: i=2; smtp1.osuosl.org; 
+	dmarc=pass header.from=1g4.org;
+	dkim=pass header.d=1g4.org header.i=@1g4.org header.a=rsa-sha256 header.s=protonmail header.b="FVn/2D+f";
 	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1793367441;
-	bh=8tJ3mHvsCbcK0uC2z5FiKSUzFDveTQLdd2jjhlDidfw=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:List-Id:
+	s=default; t=1793378873;
+	bh=PQ4G7FWKXf3yOQR/cwzdiaA0meyXV45WbDf7zl6Ty7Y=;
+	h=Date:To:From:Cc:Subject:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=ct/OjhAlqhf7Zu5aPWfwuA7gwMDlsh+JBfCasF6bJhpFQ4D1I2Jz63MFN4k1bS6Cp
-	 CnjoPSqoDIhP2xI98/68TKbDUyzzJhfIdJ93nExJ4G47Czc7PFBHjjWsLfHIZPzt49
-	 Wph8IKkdP/Ac8sTpX2g4SXzkIWJ6NuxWhIHt7e9uCZjXMWdNmV+rT7WzZEYKYPZ3Lw
-	 LUII/FnwbxwKkU+kzBs/4GYQ5u2SYTMJaNHwWj7IkVitbAG8hnOTOEMhCyq7q2JASe
-	 ksmaU7JpEeYPqO9csDjbawZmyJXW7E7eqR+WOmW6pVAgMVzMl68mzPsmI8G8aoTnBf
-	 so5jNTrSll4zQ==
+	b=PEysK/VllZod/qn7wLM9qkdlpQckoTS+pSUiwfdmROBYWp4Z3qZkW6xlFdmxM5R64
+	 1DdOfkZKMsOA7A3TAnMnZZCZFGskGwX9Kd1gKrwqVQvZKcRkzWEPSQQF000TnULsx0
+	 jA4Fy31arJ1XAPmz5lBkeFP6qR1cd+FHZVL8vfDGFXdrHvia+yn7aMHbzkg0QYQ+bF
+	 aNZTyUlx+vGK95tgx3w+NrYVoVwsAHU19JHl9fup1tdRbIRovLezLiQiX9wAdFcpSR
+	 k1SHJslpU/ZdzEhe8MB+CMYsuIsfXQCfsUvrRpG/FN+2vD6hs47Obws3Y93yznPvrg
+	 SdCTzT6BIWxiA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 2364A8110C;
-	Fri, 30 Oct 2026 13:37:21 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id EB764D38
- for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 13:37:19 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 8455D81240;
+	Fri, 30 Oct 2026 16:47:53 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 0B40A156
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 16:47:52 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id DD17240243
- for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 13:37:19 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id E50E281240
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 16:47:51 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id VyaHyzwlrpXB for <intel-wired-lan@lists.osuosl.org>;
- Fri, 30 Oct 2026 13:37:19 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org EBF1E400D5
-Authentication-Results: smtp2.osuosl.org; arc=none
- smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793367439;
- b=lu9ghxmKJIlc60A2zErbaMelGK7jvrNEFEoEogxFvfmem33XeR1t/VcjMXi+4kS4BO8g
- WeJNcRU26GD83q3pOGF9UPJorE5xfL+9SvPph+lnMuj8ts64LZeuk3MhHXAU1DK9otdmk
- 4vsqgBwpoz3AghIxQEyoDNs9iSQKRI6GyAequk9qNNI09UOLKcs5/YkNVHEqGQOEOeydL
- 6/U0b5zXl2191RPSGFi0RWW2+RU3nNGm3sfszIy3c8DfSoGEafJJHFDLxXmVoN9K9Tgjn
- I+V1ZHaUHtVSpJPpoYbV1OpV/Fl3djrAu6WLRRrTAYbbN5m/KU7nCwp3MLhcYjiD7Jw==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id x1lDJ5TG9rfd for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 30 Oct 2026 16:47:50 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 196F981233
+Authentication-Results: smtp1.osuosl.org;
+ arc=none smtp.remote-ip=79.135.106.100
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793378870;
+ b=XZJqmwML8kyHseRRIO98gJ7ECs2XN3bjnkLW4bHCui6kUVjqTicZfsUEcsGAM4VNHndK
+ WYl3XlIs1xMPhH5tVAZ4otajNXLx0C6BdvC/mm+KuGraa0SELmvUYpBBUN/gYdAP19zqB
+ 6VHHCGzLqFnsimUzHbI5E9XquNckOikgqpn1pb2aGhENi+aKpyMI0DuRBeQjLnrTfLAj/
+ BMpENUwHNOgCXd7giUoFA7nbKCnaUeMQJAiEFjh4YtWBt8UMGduRCoZwZRS0wUl9XLeSH
+ s3P1dAQk+x+ofvMnx2lfu9pu5gxhfcucI1H9Vu/oeLXZZE9nZCP3GHEiI+LHRp6X22A==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1793367439;
- h=Received-SPF:Received:Received:DKIM-Signature:From:To:Cc:Subject:
- In-Reply-To:References:Date:Message-ID:MIME-Version:Content-Type:
- Content-Transfer-Encoding;
- bh=8tJ3mHvsCbcK0uC2z5FiKSUzFDveTQLdd2jjhlDidfw=;
- b=S0s4qk8/kwlAElUCC/d6frWKR+7fu4PH7R3zXnKePbCYqgOxW7QgTEITCdn7Mnbi7gmv
- M1yixJ0rY/fTgZ6lK9aeQL8Znu3/h0ECXFaLW7W18vzmr7yqZVtenlLxz2vgXwPRVL+0H
- 2IMz1pfyCLOdzKAKn9OmZQ1P9E2vXKRw6Yof3R1wNQ181TmOqgenyTKGPohfcvla/Zork
- kub09jSP6GIFHSlAfdCLybrRtenipB2ttBBC1Ar3ADyIa285cvgUtqTLKNc2ipcXs4CQy
- 897/BFA68lbU97BZpnfDAasePZPhAO7GPLcoUAwAfnw7Z+dCOMSp8PDYpBMv8TFWH/A==
-ARC-Authentication-Results: i=1; smtp2.osuosl.org; 
- dmarc=pass header.from=kernel.org;
- dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=gNgiXmC1; 
- arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
- envelope-from=bjorn@kernel.org; receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=gNgiXmC1
-Received: from sea.source.kernel.org (sea.source.kernel.org
- [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
- by smtp2.osuosl.org (Postfix) with ESMTPS id EBF1E400D5
- for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 13:37:16 +0000 (UTC)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by sea.source.kernel.org (Postfix) with ESMTP id 941E6435F9;
- Fri, 30 Oct 2026 13:37:15 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EED6A1F00A02;
- Fri, 30 Oct 2026 13:37:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1793367435;
- bh=8tJ3mHvsCbcK0uC2z5FiKSUzFDveTQLdd2jjhlDidfw=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date;
- b=gNgiXmC1hJbmntbn8phJg0ee50nGdaXjCJiFZtfcwCb84nlmG2+I+G+swfz1cbYwA
- mY70cuTfDvF9VNaKUyVrakM6NBJiqWEIGKYaMwvHjmZ8tmc8Ysz/j4uBRznu8hRT/I
- yN+BnVieh5JO7BlbF2r/8BXu/3H84N0fyGavQlBlcQ0RGHLqG0nWL03rxTQ/AU2rZU
- QQDVFy4ogb/lpeX7tmDxNJCLMsHGEdkqw1oYI/6W66inTlQnbxY1OE5C9U9OPbyk8I
- TCxIi/nnjTP0BRsxVDY274yuz+Jp43YGCHVJkJ1h4+j+kXRmcE+IB2cjxwVFvPnSVV
- 3UlzcFxZ75wPA==
-From: =?utf-8?B?QmrDtnJuIFTDtnBlbA==?= <bjorn@kernel.org>
-To: Marcin Knap via B4 Relay <devnull+marcin.knap.vecima.com@kernel.org>,
- Tony Nguyen <anthony.l.nguyen@intel.com>, Przemek Kitszel
- <przemyslaw.kitszel@intel.com>, Andrew Lunn <andrew+netdev@lunn.ch>,
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet
- <edumazet@kernel.org>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni
- <pabeni@redhat.com>, Magnus Karlsson <magnus.karlsson@intel.com>, Maciej
- Fijalkowski <maciej.fijalkowski@intel.com>, Stanislav Fomichev
- <sdf@fomichev.me>, Simon Horman <horms@kernel.org>, Alexei Starovoitov
- <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Jesper Dangaard
- Brouer <hawk@kernel.org>, John Fastabend <john.fastabend@gmail.com>,
- jtollet@cisco.com
-Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, bpf@vger.kernel.org, Marcin Knap
- <marcin.knap@vecima.com>, Joshua Washington <joshwash@google.com>,
- Harshitha Ramamurthy <hramamurthy@google.com>, Sunil Goutham
- <sgoutham@marvell.com>, Geetha sowjanya <gakula@marvell.com>, Ratheesh
- Kannoth <rkannoth@marvell.com>, Subbaraya Sundeep <sbhatta@marvell.com>,
- Bharat Bhushan <bbhushan2@marvell.com>
-Subject: Re: [PATCH bpf v2] xsk: Do not free ZC Rx buffer when the Rx ring
- is full
-In-Reply-To: <20261030-xsk-zc-rx-double-free-v2-1-cf01d4a9f3f7@vecima.com>
-References: <20261030-xsk-zc-rx-double-free-v2-1-cf01d4a9f3f7@vecima.com>
-Date: Fri, 30 Oct 2026 14:37:11 +0100
-Message-ID: <87jymz48e0.fsf@all.your.base.are.belong.to.us>
+ c=relaxed/relaxed; t=1793378870;
+ h=Received-SPF:DKIM-Signature:Date:To:From:Cc:Subject:Message-ID:
+ In-Reply-To:References:Feedback-ID:X-Pm-Message-ID:MIME-Version:
+ Content-Type:Content-Transfer-Encoding;
+ bh=PQ4G7FWKXf3yOQR/cwzdiaA0meyXV45WbDf7zl6Ty7Y=;
+ b=Ec4qZ45BYx24YYk8fnJTVBDX135smzQlKH8uf8SFa7tADAkBUvSVJgclJ4O8bhkCJxit
+ C2kT6iD5XASgoZGPYsB4TnzxFMEqPTySh/5XmVr1N//nMhU1khK6ngJaHGIYvPnGR1+7g
+ 1JEsLxU4v6TM7izIl4BqRTtQ2mqYlV/bOCJam4shFzO7qniPwLyiZPqSicSz2fY+7cxLL
+ Bj+OC4ahjOId/yF9YDTo6LtWrAt0itCO1a7wHOtFqlkCgH3USRh8tZHxhJ4UxyPOQVo1T
+ GjV4brhN0UCbdg/xKHJNIRtfUvabSl07I/jDcHoSMXYe+ieqUEQrQnAFG9CS2Pw3HUA==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
+ dmarc=pass header.from=1g4.org;
+ dkim=pass header.d=1g4.org header.i=@1g4.org header.a=rsa-sha256
+ header.s=protonmail header.b="FVn/2D+f"; 
+ arc=none smtp.remote-ip=79.135.106.100
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=79.135.106.100;
+ helo=mail-106100.protonmail.ch; envelope-from=p@1g4.org; receiver=<UNKNOWN> 
+Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=quarantine dis=none) header.from=1g4.org
+Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=1g4.org header.i=@1g4.org header.a=rsa-sha256
+ header.s=protonmail header.b=FVn/2D+f
+Received: from mail-106100.protonmail.ch (mail-106100.protonmail.ch
+ [79.135.106.100])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 196F981233
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 16:47:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=1g4.org;
+ s=protonmail; t=1793378865; x=1793638065;
+ bh=PQ4G7FWKXf3yOQR/cwzdiaA0meyXV45WbDf7zl6Ty7Y=;
+ h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
+ Feedback-ID:From:To:Cc:Date:Subject:Reply-To:Feedback-ID:
+ Message-ID:BIMI-Selector;
+ b=FVn/2D+flZn6H8vP2GLlWJUdJLMxbEZltl2dwzm79NEaRK/Z8naG14DvxyU87xkwk
+ wJO5ki6kmYY5rUMMh3rZcD9lXOQ6Eywmf3ICN9PhejJ6h0yjmtQZ0am8E6+jtSZF+N
+ ALA6WuLnApuJghH8566r/GXuGLyN66TtU75wZKR+/9AHzEda5jNO85vpBRxQ0OEjHa
+ c8dYnXKlVocWkNRmD2v1i386uaAVdDfFukRaqgMxIE9hz0Hccsq/FL66gTMUZhZDQL
+ hxiuA1cIhwUm/R7BUPmewtmLU6RtBFQTwxLKFBVUhKxWZZpda5w1hbOn54MWJi9bUx
+ knwa1R4xP7qpQ==
+Date: Fri, 30 Oct 2026 16:47:36 +0000
+To: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+From: Paul Moses <p@1g4.org>
+Cc: netdev-bot+sashiko@kernel.org, intel-wired-lan@lists.osuosl.org,
+ netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
+ przemyslaw.kitszel@intel.com, andrew+netdev@lunn.ch, davem@davemloft.net,
+ edumazet@kernel.org, kuba@kernel.org, pabeni@redhat.com, ast@kernel.org,
+ daniel@iogearbox.net, hawk@kernel.org, john.fastabend@gmail.com,
+ sdf@fomichev.me, vedang.patel@intel.com, jithu.joseph@intel.com,
+ andre.guedes@intel.com, aleksandr.loktionov@intel.com,
+ avigailx.dahan@intel.com, linux-kernel@vger.kernel.org, bpf@vger.kernel.org,
+ stable@vger.kernel.org
+Subject: Re: [PATCH net v3 1/2] igc: only strip RX timestamp header from first
+ buffer
+Message-ID: <K-58hRuSyY_aSjvzkpmwBMeDzvfjQyLMRjMsDlEL1M60FHZJTS1WXTaTrh79pf1igf7bt5MCaORbxYVJJliJ0FhGCzjtiEVvagd50w65Ssg=@1g4.org>
+In-Reply-To: <auSDQtz8l8hzzr86@boxer>
+References: <20261028083344.3047350-2-p@1g4.org>
+ <179331704005.3134.12545545223659652020@kernel.org> <auSDQtz8l8hzzr86@boxer>
+Feedback-ID: 8253658:user:proton
+X-Pm-Message-ID: 4c2a5fe1fa4764ac796a6e023df421e8b58cd007
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -157,75 +151,171 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-15.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-10.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Marcin Knap via B4 Relay <devnull+marcin.knap.vecima.com@kernel.org>
-writes:
-
-> From: Marcin Knap <marcin.knap@vecima.com>
->
-> When an XDP program redirects a zero-copy buffer to an XSK and the
-> socket's Rx ring is full, xsk_rcv_zc() frees the buffer and returns
-> -ENOBUFS to xdp_do_redirect().
->
-> A failed xdp_do_redirect() leaves the buffer owned by the caller, and
-> most drivers rely on that: mlx5e treats the failure as XDP_DROP and
-> releases the buffer when the Rx WQE is refilled, while i40e, ice,
-> ixgbe, igb, igc, stmmac, idpf and others free it themselves. The
-> buffer is therefore freed twice. It gets reused for another Rx
-> descriptor, the second free puts an in-use buffer back on the pool
-> free list, and the same UMEM frame is later handed to user space
-> twice. ixgbe and igb keep the buffer in the ring on their need_wakeup
-> -ENOBUFS (XDP_EXIT) path and run it through XDP again on the next poll,
-> after the core has freed it.
->
-> Leave the buffer with the caller on both the single-buffer and the
-> multi-buffer -ENOBUFS paths, as xsk_rcv() and xsk_rcv_check() already
-> do. A few drivers relied on the core freeing the buffer, so make them
-> free it:
->
-> - i40e and ice consume the descriptor on XDP_EXIT without freeing it.
-> - gve DQO counts the redirect error without freeing the buffer.
-> - octeontx2 returns false on a failed redirect, so the caller goes on
->   to build an skb from the already freed buffer. Free the buffer and
->   report it as consumed instead.
->
-> Seen on Mellanox ConnectX-6 DX MT2892 (FW 22.47.1026) with AF_XDP
-> zero-copy on 7.3.0-rc6 when the user-space consumer could not keep up
-> with the Rx ring. With this change no duplicate frames were seen with
-> striding RQ on or off.
->
-> Fixes: 269009893146 ("xsk: recycle buffer in case Rx queue was full")
-> Signed-off-by: Marcin Knap <marcin.knap@vecima.com>
-> ---
-> Tested on mlx5 (ConnectX-6 DX) in zero-copy single-buffer mode.
-> The i40e and ice changes and the multi-buffer path are build-tested
-> only, as I don't have that hardware available.
-> ---
-> Changes in v2:
-> - Also free the buffer on zero-copy redirect failure in gve DQO and
->   octeontx2, which relied on the core freeing it (AI review).
-> - Audited the remaining zero-copy drivers against Bj=C3=B6rn's table.
->   ixgbe and igb no longer run XDP on a freed buffer after
->   XDP_EXIT; making them drop and consume the descriptor (R2) is
->   left for a follow-up unless you prefer it in this patch.
-> - Rebased on current bpf.
-> - Link to v1: https://patch.msgid.link/20261019-xsk-zc-rx-double-free-v1-=
-1-2aa19f6628fb@vecima.com
-
-Thank you for catching, and cleaning up the drivers.
-
-I can follow-up with the documentation [1], or if you respin, feel free
-to add it yourself.
-
-Reviewed-by: Bj=C3=B6rn T=C3=B6pel <bjorn@kernel.org>
 
 
-[1] https://gist.github.com/fb-bjorn/d6835c49650bc3433b427a9c9708fbe2
 
+
+On Friday, October 30th, 2026 at 6:45 AM, Maciej Fijalkowski <maciej.fijalk=
+owski@intel.com> wrote:
+
+> On Thu, Oct 29, 2026 at 11:37:20PM +0000, netdev-bot+sashiko@kernel.org w=
+rote:
+> > Thank you for your contribution! Sashiko AI review found 1 potential
+> > issue(s) to consider.
+> >
+> > Critical: 0 =C2=B7 High: 1 =C2=B7 Medium: 0 =C2=B7 Low: 0
+> >
+> > If you believe none of the issues are legitimate, please reply to each
+> > issue of Medium severity or higher and explain why the AI is wrong.
+> > If any of them are legitimate and you plan to respin, please let patchw=
+ork
+> > know by including "pw-bot: cr" as a separate line at the end of your re=
+ply
+> > (one such reply per series is enough).
+> >
+> > - [High] At this commit by itself, the new first-buffer test `!skb &&
+> >   igc_test_staterr(rx_desc, IGC_RXDADV_STAT_TSIP)` in igc_clean_rx_irq(=
+)=E2=80=A6
+> >
+> > --
+> >
+> > igc: only strip RX timestamp header from first buffer
+> >
+> > igc_clean_rx_irq() used to subtract IGC_TS_HDR_LEN from every descripto=
+r
+> > with TSIP set, which truncated multi-buffer packets. With this patch th=
+e
+> > timestamp header is only stripped when skb is NULL, which the commit tr=
+eats
+> > as marking the first buffer of a new packet.
+> >
+> > Link: https://lore.kernel.org/all/20260625-igb-rx-ts-fix-v3-1-99b3efa08=
+dca@aweta.nl/
+> >
+> > > diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/=
+ethernet/intel/igc/igc_main.c
+> > > index 1fb5f3cbe93c5..41b293dc10c3a 100644
+> > > --- a/drivers/net/ethernet/intel/igc/igc_main.c
+> > > +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+> > > @@ -2639,7 +2639,8 @@ static int igc_clean_rx_irq(struct igc_q_vector=
+ *q_vector, const int budget)
+> > >
+> > >  =09=09pktbuf =3D page_address(rx_buffer->page) + rx_buffer->page_off=
+set;
+> > >
+> > > -=09=09if (igc_test_staterr(rx_desc, IGC_RXDADV_STAT_TSIP)) {
+> > > +=09=09if (!skb &&
+> > > +=09=09    igc_test_staterr(rx_desc, IGC_RXDADV_STAT_TSIP)) {
+> > >  =09=09=09ctx.rx_ts =3D pktbuf;
+> > >  =09=09=09pkt_offset =3D IGC_TS_HDR_LEN;
+> > >  =09=09=09size -=3D IGC_TS_HDR_LEN;
+> >
+> > [Severity: High]
+> >
+> > Is skb =3D=3D NULL a reliable first-buffer marker when an XDP program i=
+s
+> > attached? The commit message says:
+> >
+> >     Only consume the timestamp header when skb is NULL, which identifie=
+s the
+> >     first buffer of a new packet.
+> >
+> > Suppose igc_xdp_run_prog() returns IGC_XDP_CONSUMED, IGC_XDP_TX or
+> > IGC_XDP_REDIRECT for the first, non-EOP buffer of a multi-descriptor fr=
+ame.
+> > Then no skb is built, and igc_clean_rx_irq() moves on to the continuati=
+on
+> > descriptor with skb still NULL:
+> >
+> > =09=09/* fetch next buffer in frame if non-eop */
+> > =09=09if (igc_is_non_eop(rx_ring, rx_desc))
+> > =09=09=09continue;
+> >
+> > The continuation descriptor still has TSIP set, so this check strips
+> > IGC_TS_HDR_LEN a second time. If that descriptor holds fewer than 16 by=
+tes,
+> > can the unsigned size wrap here?
+> >
+> > The continuation buffer then goes through the new-frame path:
+> >
+> > =09=09if (!skb) {
+> > =09=09=09xdp_init_buff(&ctx.xdp, truesize, &rx_ring->xdp_rxq);
+> > =09=09=09xdp_prepare_buff(&ctx.xdp, pktbuf - igc_rx_offset(rx_ring),
+> > =09=09=09=09=09 igc_rx_offset(rx_ring) + pkt_offset,
+> > =09=09=09=09=09 size, true);
+> >
+> > In that case the XDP program would see a data_end about 4 GiB past data=
+.
+> > On XDP_PASS, the same size would reach igc_build_skb() or
+> > igc_construct_skb(), and the __skb_put() there does not check it.
+> >
+> > At this commit, XDP with multi-descriptor frames looks possible on kern=
+els
+> > with PAGE_SIZE >=3D 8192. igc_set_rx_mode() only clamps RLPML under the
+> > small-page #if:
+> >
+> > #if (PAGE_SIZE < 8192)
+> > =09if (adapter->max_frame_size <=3D IGC_MAX_FRAME_BUILD_SKB)
+> > =09=09rlpml =3D IGC_MAX_FRAME_BUILD_SKB;
+> > #endif
+> > =09wr32(IGC_RLPML, rlpml);
+> >
+> > On large-page kernels, RLPML therefore stays at MAX_JUMBO_FRAME_SIZE wh=
+ile
+> > igc_rx_bufsz() returns IGC_RXBUFFER_2048. igc_xdp_set_prog() only check=
+s
+> > dev->mtu > ETH_DATA_LEN, not the hardware receive length limit.
+> >
+> > This needs RX hardware timestamping enabled, an XDP program that return=
+s a
+> > non-PASS verdict for a first buffer, and a peer that sends frames large=
+r
+> > than about 2032 bytes.
+> >
+> > The next patch in this series, "igc: fix AF_XDP receive buffer size for=
+ 2K
+> > UMEM chunks", adds igc_set_rlpml(). It caps RLPML at 1526 bytes wheneve=
+r
+> > XDP is enabled, whatever PAGE_SIZE is. It is called from igc_setup_rctl=
+()
+> > and igc_xdp_set_prog(). With that change, XDP frames always fit in a si=
+ngle
+> > descriptor, and skb =3D=3D NULL becomes a correct first-buffer marker.
+>=20
+> Wow - finally.
+>=20
+> >
+> > This patch is tagged Cc: stable and could be backported on its own. Sho=
+uld
+> > it depend on that follow-up change, or should the two patches be swappe=
+d in
+> > the series?
+>=20
+> How would we make sure both commits from this set get actually backported
+> together?
+>=20
+> >
+> > --
+> > Sashiko AI review =C2=B7 https://netdev-ai.bots.linux.dev/sashiko/#/pat=
+chset/20261028083344.3047350-1-p%401g4.org
+>=20
+
+I did forget to tag yours for stable, so maybe the will satisfy it?
+
+I think ultimately, it sees all related bugs as one big problem in
+an effort to catch adjacent. My understanding has been that unless
+there's true interdependence of patches, ie. kernel will be left broken
+unless taken together, a series in itself adequately satisfies this require=
+ment.
+
+Should I do a v4 to add the tag? Or can this be rectified through=20
+intel's process?
+
+Paul
