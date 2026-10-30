@@ -1,29 +1,29 @@
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2324E606A321
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 30 Oct 2026 04:53:51 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 67CDF606A32C
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 30 Oct 2026 04:54:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=xqSig5pj;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XazF95TF
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=RNFEf58F;
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WnuySN2q
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 052CE60AA4;
-	Fri, 30 Oct 2026 04:53:51 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 41CA140AA4;
+	Fri, 30 Oct 2026 04:54:05 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id pDS2iDZKUzis; Fri, 30 Oct 2026 04:53:50 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 37B5D60A9D
-Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793336030;
-	b=NE/MeObUe8qr9WOK+Y7qNtcUGpHkphe4pPzmnNFoHDTStWqbS2KuzGL8mdPomTo+M8BU
-	 4PcpqUPtg/gYeujs7mg72sCQVHTS8qBi93OzFHrHDXxrWfzC22cGkKTeXFBj/uR1N316+
-	 6+ccnBqTGsZ1DUAKL341e0BYzDPfO5AJ1EHojgcOGHsHZz8Q9w3YxydbHmo7BoweOZLdB
-	 EFa4Tk+0VDJyPU0DzswzFbdry/JWVuABf60LDuXfo4cGXm3ze1r3pZCL/dxxUK7lb9sz3
-	 U3wCGcok7s+JF9Pgu5dfflTKGuRcBM8KwTFnDhovq74cQnFYbaqmkGGt7d1+ARey4mw==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id TigK0YHEt0mk; Fri, 30 Oct 2026 04:54:04 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 5C0FC40A68
+Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793336044;
+	b=PVDnGdJDJsqqKnJLkPg7X/hfNH1dUc8pu0/VfBGDcU0mr+zCpNwKrXKpLrKh25i1TYvF
+	 +Wv1dEbr76DqM5txzTT+zq9Y6BXKvR5DjD1/X4wAf7O9MBlDCa73ak2plceniv8pgDESr
+	 +F6IpgZ6hyD530U76XIQHifC5ZFHbeMKMZTLCFXJinSPYkkBT58y2sP9AQEL94D7cw1lq
+	 qsrAc00y2X+T/FKuEqshoygZ/xyZascUaDsJpOPf2SMBMltOjWPz+ot0wUAdOnxfX3okp
+	 Ug+37RMg781eE7eHek5aOPnjYQVyn+m88CBpDiDVF9gxWJ/g17Scn+sBY5OOrberSww==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1793336030;
+	c=relaxed/relaxed; t=1793336044;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
@@ -31,101 +31,104 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 References:Content-Type:Content-Transfer-Encoding:Date:X-BeenThere:
 	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Reply-To:Errors-To;
-	bh=N7Q7nE6qjU6gMqqBtzhUD4/bOBQxK7M4+pmcfP33ye0=;
-	b=jJ4/sNrcD2YajIRamFjv2tQwKGycYrdZ1xB4EAMCZZIzSB4V2/0gdWW+zipNpeIGv54Q
-	 agAtCerPXVAu9xgb6R4y04GTGJuWHDI3l7WliKdPYMUDi8Lh42cK3mFEXmbHqizPFB9UU
-	 niavVRpectEZRN4je7ayl4ziKannBBFeaDZm0AyEeVXmYIL9PHF1XOT+7KDcAqBQZTJtC
-	 DoWTGF/x+0NsL4jgT6kah8exDSUn+0nJsHi9Wj2nxK3ciVr+AhI8f6gPePvMTwygbB7BB
-	 UbbjCe4oYMqHVeZ5PSIffSP2FDQh5gSb93YyK1FvmCdeAe674oTSrtDR5WGnECLGtnQ==
-ARC-Authentication-Results: i=2; smtp3.osuosl.org; 
+	bh=M2lzqkeLdt2NTPhtbCzlSYHPAELmvEyLktsEo5jEYPQ=;
+	b=luZCx+oT6jmGWxlttGOKCVv+jjwewVsk7jrrS4Sas7MeaTvQAbXhi3V35y7nGBsC0uqB
+	 8B1Hl9S9fPwgRPndIHcmqz7y/33pf6dCfJN59r0sr2/W20TvKboPVE6YF4pVSvPCVGDLY
+	 e2aqEH08IbRN1y22R9dbGSG9ynKFjo6cC7jhQmuviXYVLTGg1hjCSeRisgTSgvZ46NNcV
+	 MyxxFmZqynkxbjeNjc5EJP1TunK2yTZA25CFUusrx8aMDHJBEghPORsCwCUbvo46H4gG1
+	 9E8K+Nzwqaiv07x4jDEzAzT6H3pn/yLdy9q/xZ4+wwYVTVcc9Yl9l7ihFShpjgZTcxw==
+ARC-Authentication-Results: i=2; smtp4.osuosl.org; 
 	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1793336030;
-	bh=N7Q7nE6qjU6gMqqBtzhUD4/bOBQxK7M4+pmcfP33ye0=;
+	s=default; t=1793336044;
+	bh=M2lzqkeLdt2NTPhtbCzlSYHPAELmvEyLktsEo5jEYPQ=;
 	h=From:Subject:To:In-Reply-To:References:Date:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Reply-To:From;
-	b=xqSig5pjF5lNQ81FdTXNg63z6dA3/fsWr95qpw20d4o3H16DNOwkDjHf7Q12zi4hL
-	 H74kxNGk8S6AIU7frZXV/I6Koh1H4VAZbscBZtmEASmGdekw71/JZ+gu8g+UDm4ND3
-	 1phQhZhfbUYJBHDv8NZnIcAlGkvAfl96uFovdx88WbApLrbz2r1z3/kIrQFhpSvOBZ
-	 2J5e5/dOHP5Mns9AOpYhv/rmNDmKyXETQry5EPZTpNA7Km7uahI8EsRmuG6ig4lnSH
-	 SZBgkhZnkSdM4sPVUO27N4LqtD8wakt55RuIX7VS4XW8ghP2GOXU2MGyAIngw0ejkJ
-	 0RY48KUTrwBBg==
+	b=RNFEf58F275CcNiBCTs/RDJcKdXwcui/+O4rmx4BHRX4aPJGj6VEN5MB8OCJB/yFY
+	 dDDoHN4YKoEalYaz+Ogx55MuYnMTlb3Hblg3UayqoVLWHEkoUKV3XgSSPx2HGxSASx
+	 AmnJolW+EH444S07FwhGSEqbX+bIqTHs0QzaJaFWdUvZDmbeRWHBaEir3py2Jqv65O
+	 ClSMqxgkewyD8CFaviC0CPQ24TH6xfi8rQHawfAZuOd1z4JqJYe9YqbSmPkcLwkxJ1
+	 YeKbZ3YYUSb8Ek9KKP4OHwNJeaG6QzSZXs+E0fMZwNFau5MRVCZ8ExlLI2v+q0+IgG
+	 Snk41oCaC75sw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 37B5D60A9D;
-	Fri, 30 Oct 2026 04:53:50 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 43F9FD38
- for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 04:53:49 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 5C0FC40A68;
+	Fri, 30 Oct 2026 04:54:04 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 04D73D43
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 04:54:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 419BD4051A
- for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 04:53:49 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id EADB880DCE
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 04:54:01 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 7BshxjhizNch for <intel-wired-lan@lists.osuosl.org>;
- Fri, 30 Oct 2026 04:53:48 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org 45F50402F6
-Authentication-Results: smtp2.osuosl.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793336028;
- b=fAy77xLXfPuOWShKv3QixRqAdhUY9igbKxbHJSpCQcqMxEBwuvnNqssirJwPQADS0IQT
- UFvajikqPdnFoeb0LaMwpkeW2tB4p3+F1uhtCs9OFb1k5Kn1X+OnjLywhgdB5BR+TkP/A
- j6CgHKxCDwfNkFh+n/cS2faZjJsBKdjAvUn+QyViLkIXBfbSA/rRSqwvjc9JdgqLnRiIo
- h0YmIfsMd/dO/9l8uh95i38Pil+nWpWSEBtmM7v5DNV2zcd2TpKk6dl6w1d4phDx5K34D
- aFlm3xSLQZgVwsTcjo50V4U1drGneoYK2sne8DcjosWfxOStZk4iaquokuqGDPEMCvA==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id jvx_B5xtfJlc for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 30 Oct 2026 04:54:01 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 1570D80E13
+Authentication-Results: smtp1.osuosl.org; arc=none
+ smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793336041;
+ b=fhjAE3oYgcgexqKolLURuyZuYa67sVqn+wBL0u2TzQHlUgThCeVIB6JBu7wDJwKFvh8p
+ iiIW9Efbwr1w7Gkc/dYCuo2CGpOIL3IIc+8sjCsGEaocVGiqlSweCohUfS8i9YyfTajCt
+ gPT4QqbOQ2KqS5zWxpvtFOYYrmE6SMkI0d2lQpUPVfsHJHfog7fpz2oXSQCpn7RYjVFme
+ xl8KG//ymQFrZM5w6TPINuVOPAZKizqbZxciwEowuEDRkJmdCatdfjPN6c4keYRIFr20X
+ 3iplRf70H3ojMLtmm6rgU0HyUHt0AjvKnL8INgDo0MOXxfMP0OWYU8XcNyObWfbeUuA==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1793336028;
+ c=relaxed/relaxed; t=1793336041;
  h=Received-SPF:Received:Received:DKIM-Signature:Message-ID:From:
  Subject:Reply-To:To:In-Reply-To:References:Content-Type:
  Content-Transfer-Encoding:Date;
- bh=N7Q7nE6qjU6gMqqBtzhUD4/bOBQxK7M4+pmcfP33ye0=;
- b=q2/1m2TRZnjCznVgFjuuJn84LjhSnldST1EsxQ4CGg7LBtT2mV5/RVcQkMKr+08r3pcW
- UnSaeHwvy+WJatyxIog/yvJiSisMah0GwntkPYG6oJIQgNzCPzAJCfmZ5lVYDDJAiUAtw
- B0PYFK1fTa5XsYARTCRwylkNhaozxob3P33OaS2iybneDi49o3HLBs5H1RBpKZcSthE8d
- biNvbqNFFUkmlRGpyQCi79RZOUtBUGYbv/iA/Iy6uWXtH6CCbAz0HVrlVDJ+7GEpm/1wK
- BXij6KYCym2AK1jZh1VtAap3p+xMJ88RVKy4H9rjKG2LSeOGut4jCjE+gQopVV3EBfg==
-ARC-Authentication-Results: i=1; smtp2.osuosl.org; 
+ bh=M2lzqkeLdt2NTPhtbCzlSYHPAELmvEyLktsEo5jEYPQ=;
+ b=jfSj8tc/MLvQIRquMMLbLX/bGL5/vGAvq57sDq8Z6iDlc+KTLcZ1GxKkzySq61yXmcLe
+ AoYxY9QbNIo18W+3FG1tJicaEbOYDK4m9Zl9WHROp6YNn9KJaUxcsnOXjmxMq3ESQIr/I
+ wRdoB0jb/mIMkG27Icy32IANM8xfnwkS6mgwGLI8VS9556uoOXUske3P56l+pVvo7uLsQ
+ cOCEmznQTp6DdKB2eT3m7o4SeJDjqu2HRH1Jk16ZAuDODUIxxG2btdtZGiZ/6Opy7JMVN
+ 10codJjYVwYrcbvKX9/IS/9WbU/X74dXz2iw9REX/R8TFsuBk32ANqexNiTQv7pZGVg==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
  dmarc=pass header.from=kernel.org;
  dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=XazF95TF; 
- arc=none smtp.remote-ip=172.105.4.254
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org; envelope-from=sashiko-bot@kernel.org;
- receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.s=k20260515 header.b=WnuySN2q; 
+ arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
+ envelope-from=sashiko-bot@kernel.org; receiver=<UNKNOWN> 
+Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-Authentication-Results: smtp2.osuosl.org;
+Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20260515 header.b=XazF95TF
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 45F50402F6
- for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 04:53:47 +0000 (UTC)
+ header.a=rsa-sha256 header.s=k20260515 header.b=WnuySN2q
+Received: from sea.source.kernel.org (sea.source.kernel.org
+ [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 1570D80E13
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 04:54:00 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id 159D2605C4;
- Fri, 30 Oct 2026 04:53:46 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 98AF31F000C1;
- Fri, 30 Oct 2026 04:53:45 +0000 (UTC)
+ by sea.source.kernel.org (Postfix) with ESMTP id 4069043AEA;
+ Fri, 30 Oct 2026 04:54:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0156E1F000C1;
+ Fri, 30 Oct 2026 04:53:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1793336025;
- bh=N7Q7nE6qjU6gMqqBtzhUD4/bOBQxK7M4+pmcfP33ye0=;
+ s=k20260515; t=1793336040;
+ bh=M2lzqkeLdt2NTPhtbCzlSYHPAELmvEyLktsEo5jEYPQ=;
  h=From:Subject:Reply-To:To:In-Reply-To:References:Date;
- b=XazF95TFN4Ugome9BjkotSxq1uOXRjrbbKXtCaYeWoI2fiz1suM+hofX1Ms/2P/06
- qZNTjgRcCocJUvU+SylocEzXsxlTLBACRoBxHnYL7el9dbqnIdlIsHD5iz3lbcHEjn
- NWM/gGbk3fA1tEfu3RC+/l3mBi6eJ/rnp2riuQtennKbipbxrTdqdSD0gqy3WGMVGA
- UQiQqcOswablwqrKXuvMrPUk6nMhcdB4LtfMqkOqod9UFdb7uDuOzM3HmG8NdvJacC
- PVfQBTZQudW9RG0hhX4qyA4B6QkMgad1hYf9DYBqv/IWnSv1E7CsIKqoOlyFZJcGH0
- euFwXXugBE8DQ==
-Message-ID: <sashiko-outbox-190345@kernel.org>
+ b=WnuySN2qvhjloJ3k1aGE9M9qu2P6deAGvcJeBxpzREJbOQHY/NETV9UcXdPuYB2x2
+ JwhX2onAqfzqeVR4v1VubOdeYgQ3Hw9bAuVCH0Ib32W3FcaG+bwr755hFcUjti6j+P
+ K77fvTdJaaTvaxVFDnYmidFu3pnqqygvszF1sMA6nbRIrkq1P4/e+w3wMcs3hPzbVC
+ LGYSpJuCmB1MRxBHADpTHpOX6lVR1y0iq+ZXsId1OA2kiLNqcSOmOttibouMapsGpQ
+ ywuLN4Ua84krFv9uROMKM9lC2zmT7ACgyGr+gDbbz9yAzCIGeCl7csJKKdGzvBLmvz
+ jH+ltJpsyYphg==
+Message-ID: <sashiko-outbox-190392@kernel.org>
 From: sashiko-bot@kernel.org
-Subject: Re: [PATCH iwl-net v1 2/2] ice: use NETIF_F_HW_CSUM instead of IP/IPV6
-To: "Michal Swiatkowski" <michal.swiatkowski@linux.intel.com>,
+Subject: Re: [PATCH iwl-next 4/8] ixgbe: increase SECRX_RDY polling
+ frequency in ixgbe_disable_rx_buff_generic
+To: "Aleksandr Loktionov" <aleksandr.loktionov@intel.com>,
  intel-wired-lan@lists.osuosl.org
-In-Reply-To: <20260428070647.777141-3-michal.swiatkowski@linux.intel.com>
-References: <20260428070647.777141-3-michal.swiatkowski@linux.intel.com>
+In-Reply-To: <20260508031226.3601800-5-aleksandr.loktionov@intel.com>
+References: <20260508031226.3601800-5-aleksandr.loktionov@intel.com>
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
-Date: Fri, 30 Oct 2026 04:53:45 +0000
+Date: Fri, 30 Oct 2026 04:53:59 +0000
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -140,80 +143,76 @@ Reply-To: sashiko-reviews@lists.linux.dev
 X-Spam-Status: No, score=-10.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_PASS autolearn=ham autolearn_force=no version=4.0.1
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 X-Archived-By: <archiver.kernel.org>
 
-Thank you for your contribution! Sashiko AI review found 3 potential issue(=
+Thank you for your contribution! Sashiko AI review found 1 potential issue(=
 s) to consider:
-- [Critical] Replacing NETIF_F_IPV6_CSUM with NETIF_F_HW_CSUM bypasses the =
-kernel's software checksum fallback for IPv6 extension headers, causing har=
-dware to silently corrupt checksums.
-- [High] Advertising NETIF_F_HW_CSUM forces the kernel to offload checksums=
- for non-IP protocols, which the driver's Tx path unconditionally drops.
-- [High] Unconditionally advertising NETIF_F_HW_CSUM forces non-TCP/UDP/SCT=
-P packets into a buggy software fallback in the driver's Tx hot path that i=
-gnores errors, leading to silently corrupted packets.
+- [High] Unbounded or excessively long hardware polling timeout due to usin=
+g `usleep_range` with a fixed iteration count.
 --
 
-commit f1566dd32ecb941ad20b193c17ecae7df05ca815
-Author: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+commit 8a91d1965e0f71698f5b5eb20f1c8e612eb2947a
+Author: Maciej Rabeda <maciej.rabeda@intel.com>
 
-ice: use NETIF_F_HW_CSUM instead of IP/IPV6
+ixgbe: increase SECRX_RDY polling frequency in ixgbe_disable_rx_buff_generic
 
-This commit replaces the IP and IPV6 checksum offload flags with HW_CSUM
-in the ice driver to allow hardware checksumming for IPv6 packets with
-extension headers. It also removes the mutual exclusivity check between
-TSO and GCS.
+This commit replaces a 40-iteration busy-wait loop with a 4000-iteration
+sleeping loop in ixgbe_disable_rx_buff_generic() to reduce stalls when
+the security block is quickly ready.
 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethe=
-rnet/intel/ice/ice_main.c
-> index 5f92377d4dfc..33f252a6a22f 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_main.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-> @@ -3491,9 +3491,8 @@ void ice_set_netdev_features(struct net_device *net=
-dev)
->  			NETIF_F_RXHASH;
+> The worst-case is now ~80 ms (4000 * 20
+> us) plus scheduler latency, which is acceptable since SECRX_RDY
+> failing to assert is a non-fatal informational condition (the function
+> just logs a debug message).
+
+Is this worst-case calculation accurate?
+
+Because usleep_range() yields the CPU, scheduler latency and timer resoluti=
+on
+limits apply per iteration, rather than once for the entire loop. On a busy
+system or one without high-resolution timers, usleep_range(10, 20) might
+sleep for 1 to 10 ms per iteration.
+
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/ne=
+t/ethernet/intel/ixgbe/ixgbe_common.c
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+> @@ -2683,7 +2683,7 @@ int prot_autoc_write_generic(struct ixgbe_hw *hw, u=
+32 reg_val, bool locked)
+>  **/
+>  int ixgbe_disable_rx_buff_generic(struct ixgbe_hw *hw)
+>  {
+> -#define IXGBE_MAX_SECRX_POLL 40
+> +#define IXGBE_MAX_SECRX_POLL 4000
+>  	int i;
+>  	int secrxreg;
 > =20
->  	csumo_features =3D NETIF_F_RXCSUM	  |
-> -			 NETIF_F_IP_CSUM  |
->  			 NETIF_F_SCTP_CRC |
-> -			 NETIF_F_IPV6_CSUM;
-> +			 NETIF_F_HW_CSUM;
+> @@ -2695,8 +2695,7 @@ int ixgbe_disable_rx_buff_generic(struct ixgbe_hw *=
+hw)
+>  		if (secrxreg & IXGBE_SECRXSTAT_SECRX_RDY)
+>  			break;
+>  		else
+> -			/* Use interrupt-safe sleep just in case */
+> -			udelay(1000);
+> +			usleep_range(10, 20);
+>  	}
 
-By advertising NETIF_F_HW_CSUM, the network stack assumes the driver can ha=
-ndle
-checksums for any protocol and passes non-IP packets (e.g., from AF_PACKET
-injected frames) to the driver with CHECKSUM_PARTIAL.
+Could this loop stall for 4 to 40 seconds if the hardware is unresponsive
+and the SECRX_RDY bit fails to assert?
 
-Since ice_tx_csum() strictly parses the L3 header and expects IPv4 or IPv6,
-returning -1 for other protocols, will this regression cause non-IP packets=
- to
-be silently dropped instead of falling back to software checksums in the ke=
-rnel?
+With 4000 iterations, a 1 to 10 ms delay per iteration would result in a
+multi-second stall. Since this function is used during device initialization
+and reset paths, this could freeze network interface configuration and
+potentially trigger khungtaskd panics if the RTNL lock is held.
 
-Additionally, skb_csum_hwoffload_help() relies on NETIF_F_IPV6_CSUM to
-safely fall back to software checksums when IPv6 extension headers are
-present.
-
-Does using NETIF_F_HW_CSUM bypass this safeguard, potentially causing
-legacy hardware (like E810) or E830 without GCS descriptors to compute
-incorrect pseudo-headers and silently corrupt IPv6 packets with extension
-headers?
-
-Finally, for protocols other than TCP, UDP, or SCTP, the driver falls back =
-to
-calling skb_checksum_help(skb) in the default case of ice_tx_csum().
-
-However, the driver appears to ignore the return value of skb_checksum_help=
-().
-
-If skb_checksum_help() fails (e.g., due to -ENOMEM during pskb_expand_head(=
-)),
-could this result in the packet being transmitted with an uncomputed checks=
-um?
+Would it be safer to use an absolute time check, such as readx_poll_timeout=
+()
+or ktime_get(), to enforce a maximum timeout instead of multiplying the loop
+count by the requested sleep duration?
 
 --=20
-Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20260428070647.7771=
-41-1-michal.swiatkowski@linux.intel.com?part=3D2
+Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20260508031226.3601=
+800-1-aleksandr.loktionov@intel.com?part=3D4
