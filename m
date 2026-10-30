@@ -1,29 +1,29 @@
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C9A91606A31E
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 30 Oct 2026 04:54:11 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D567B606A31D
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 30 Oct 2026 04:54:12 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=xCs4ogLO;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ecAWO65x
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=m2TUZml/;
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kICIbNhh
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id AA40E40A74;
-	Fri, 30 Oct 2026 04:54:11 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id B920B60AA0;
+	Fri, 30 Oct 2026 04:54:12 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id jF3cOKGTzaST; Fri, 30 Oct 2026 04:54:10 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org A40DE40AA1
-Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793336050;
-	b=OEt3PGyeWihZ69Ef0qiqUHYf8cRtqapYhXt8Wfp5GuZIm/2uLfPBEuCA4nUH0KIHg7b+
-	 fug2LW964IJ6n3hbXPLKjuEgX90OZkpOFBrilGMcX7SQChMo/S5xsSII6vJF8g/uwO4MQ
-	 ab/qHc7QORRxe9MeR1oEsG/SrsFhk6haajlfl3LAzRSYiI5VnMt32QbwbaH/OXmCoxXLM
-	 7g8VIMpf22YleSwDwJAdo7B62Q5BBv2Kn4Z7Ti9grF0XcJiGbKIC4pH/jKS5Ws4eCQq1+
-	 p2/vQmJ1rDh8sNpb6fogK5Ua/g59Yy60SKuX7/SfCo0VoBqOGtnEZCDQH8Z+80a3O3w==
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id lLTSKdjnZ9yB; Fri, 30 Oct 2026 04:54:11 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 87E8B60AA1
+Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793336051;
+	b=XPzlAk6qdCOiNwAbufDxr6kSVMofFSRCy03tWHvrkkFzQaZX3h4pyR55qw8yX2eh8Ebi
+	 59q+so57+3pAMxbi+uExHheztq8QGpkKtCCcw1d/jTDPnJyhoBwYIr5RDafWSNT7rxFuI
+	 7JN36KYr+HKfPX2YanHoja5c2VHExK1IEs95i3enYug3MYWnaQN2wWO9ToR9doVkdaqdV
+	 JSJemf8H7OScFuM1WOat0fOIM2sr5H4VlEVu1f13AnpkMhwkpjI/pxEUt+cqZmvimIbfQ
+	 i1J6+gNDKij7e3YdmVokg5UGQ1QT1tDTuvHqBaHgtRsl3XrCna9fmchQCKvrYDiOErg==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1793336050;
+	c=relaxed/relaxed; t=1793336051;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
@@ -31,104 +31,103 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 References:Content-Type:Content-Transfer-Encoding:Date:X-BeenThere:
 	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Reply-To:Errors-To;
-	bh=WZUqRIwrWV03ww6mCmoTaLg7G36LVvV1oA7ZJfK8ASY=;
-	b=WOqN5W61efSXEnReZIm3Imt3dbT+/a1H8AWs6k9k/No81SeaO2iAJsURv/GcY0KqO07B
-	 ilmqmkhvRpW85sHeo2A1cIy1oP+jYOpnb00chflcPc5toJZsKdExnqoJxOdyCk3J50vTC
-	 8XaJqRg0YTXu2n505WBOmda+S7IqhtZutaL1/kSPxTfHWjSEB88BMszJ3f3+CYJL2U+n8
-	 Z5YHicw36nZ/PFtc6D5lHbVpZCZysussZbU0PslMG7jN/4CQsY78YG7TlvRTgSInXvBG6
-	 PHzCb2er0K1v4Q0iTBvz6Qy5be6nNnERiXAsVtmeJq/u4LakGRk7fidKqP1lqGI0ZnA==
-ARC-Authentication-Results: i=2; smtp4.osuosl.org; 
+	bh=lMJW8cai72jO0PLtgQZThN8PGr82BqFszCODZ+WLfWo=;
+	b=oxSxxvdCPP5gP8m+qH2ClX7PghQ1oHT3iH9zvsmNIfKTVPbg3TBIkQWXkqaJlaInyC4F
+	 mC8HkDmc6J+NykmqncS2R7u4fvsb2orSTqsqmalFq66kcFiDC0Q66RqYtxCU51RYl5e6U
+	 ARq6amUbUoq5o66+PZfJOWk1bl3hKpIwuZlssz18bGLY7RU36FUpaaEmm2U9mvy0RCNym
+	 fHwOmzQMFKvU6F1fW3uAhfMKqGrStz+6QVEhvCzE4rFIAkgcYmMB7ZumRHdeoPAOhl9no
+	 flgB9ivLpYPYLQa0TGSFHMw9ZKZHHYEfGq/9ZD/qUhH8Rih+cf1lTHoDsW3uXNouXLw==
+ARC-Authentication-Results: i=2; smtp3.osuosl.org; 
 	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1793336050;
-	bh=WZUqRIwrWV03ww6mCmoTaLg7G36LVvV1oA7ZJfK8ASY=;
+	s=default; t=1793336051;
+	bh=lMJW8cai72jO0PLtgQZThN8PGr82BqFszCODZ+WLfWo=;
 	h=From:Subject:To:In-Reply-To:References:Date:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Reply-To:From;
-	b=xCs4ogLOy+RJVV/3dwotdyOUryxNKZa3N6dV9xQdnjlAVC8Adz6XpaCEm9bVhQ51I
-	 YyxENubIp6vQhLz8FW9K2AjezRyN0vxeYHZRwgb85iGFLBPiz0NuavKNH1vG93jwB2
-	 uKUpVdVwWIRDIaBXLo4+LoCcQ5e/QHroggolHwmAIoEhyupICnIrcCbjf5ES8SQb7J
-	 Kagj1rgM2ksPZ+EN5GXLjaQoEwxtjGlOP060kofVnahYX1gqECMOb7EKuKS8ODWMAA
-	 BRtrijbBqBjeT7dd2So845AdFaqNK7iw1Pj8DGe9PyDWyiDjrtT1QLzq6h8rdpGXdQ
-	 bkX9zYSPEwNmQ==
+	b=m2TUZml/8KvNR0OvE5vLwUAjdzOMrACjXGCydOXR3NDHtkKSlSEELkBcTwn2+FiXz
+	 Xko9emSQBynhdUmLv+v8QCjfjJUpiW9WdqEUqLjZ66ZTlT/nPS2VkrZm9eErmTm7Gy
+	 VYyTtWi7rVrw9MlT8Bae0YxRlcahmDZe06nyLDNwLimPJWdEkJ8ZZZX1LXxU4SghrT
+	 ATDdz8BHRDj4fF9Dxqw82Zfi52/BfD2M/6gENetelkSlFiPINmKjkgMnWCZSqB482V
+	 hP2/vjSaOQJhuxqy8/aJl//wRXY7uYilUkPSuHztjQZjW1zd2NCNjgZDCalX/j+INU
+	 eiMj15MzJxVeg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id A40DE40AA1;
-	Fri, 30 Oct 2026 04:54:10 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 41E7AD38
+	by smtp3.osuosl.org (Postfix) with ESMTP id 87E8B60AA1;
+	Fri, 30 Oct 2026 04:54:11 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id D24E41DE
  for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 04:54:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 3F395810A8
+ by smtp4.osuosl.org (Postfix) with ESMTP id B848840AAE
  for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 04:54:07 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id XpREfl8aOzl4 for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 0zQeAyedsVMd for <intel-wired-lan@lists.osuosl.org>;
  Fri, 30 Oct 2026 04:54:06 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 20F2A810B8
-Authentication-Results: smtp1.osuosl.org; arc=none
- smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 780AC406EE
+Authentication-Results: smtp4.osuosl.org;
+ arc=none smtp.remote-ip=172.234.252.31
 ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793336046;
- b=bP5rH//VRi0dj3j+f3KjIUFelsSACmHmFRcokW1lsB08VrzXYpOscvN0O1Phpvakf+oQ
- U4jk5nh0SiG7A8IO4nxvb+m3KzJ6D3UnbY73ZhFpBb7CvW38kQpkkBaXaciU3CZ0L1USD
- PCdOBNVO4y73evz04SKYj5ooDxgEskvHNvtzp9qpYjukqFZv61TZXNQJ6KO3oc18WSfMG
- sWSs5+Ev3I0e6Ejg01yTGVU7zs4n9ltTDa2iKAuWKCWuvYwOrIKE3f5LbWWLFQrCn5/w1
- eoFpBkT3qloamY2oyyLDDvio27Rhj5E/D2Z+h8PUMIiQOEbutqR97mkcaz9v6EYk3SQ==
+ b=idfrcopCbcxq4cCu0LPLI9wXg5C5rXQ/tUCPDkswDpNrrf37CPgZC90H0U7h3DzZtbFm
+ fLOPyMYp9fkwWezNEkWzZuCXdJZHyV/CvKRcCw/gtprd098gYD2L1WRLyAj8ArN9/har8
+ WNF1z4iXyP+AaPdS1+9RsgxH3u5nXQVb0edRHGpJwJOfXyh+DzBhbEqZyopxL4OruWc/e
+ iSZTqEIWOjtk8fVoJkizqj4/+w8aPNo9vOJskiNjrCSaCwI+DZUGZ77dvlr0fECLDxsN/
+ 3pp4nvyrmnH2d6gzreixo5RbFU18c/DPFJOey8mgWttwNQSozPw2Gt8au9MpdLmlz3g==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
  c=relaxed/relaxed; t=1793336046;
  h=Received-SPF:Received:Received:DKIM-Signature:Message-ID:From:
  Subject:Reply-To:To:In-Reply-To:References:Content-Type:
  Content-Transfer-Encoding:Date;
- bh=WZUqRIwrWV03ww6mCmoTaLg7G36LVvV1oA7ZJfK8ASY=;
- b=l2aVqV8PDAAhW7SuGhc6F1mM7ZuNXYgDw1xoLzxiux4MwX+A5jWN/Gi8A34w43V0ROFz
- BQVPv2s84EkHnhfb4EhIzeEp4z3/Aj2tNYhCelERoyYhfgc7vu9Ys0GP9PqrY9CTGgXwf
- LOo6RQwMJ1cXW5eEUdDFObM1Lk+AxYR9hWEWHiA8IrrM6Rvy8IJcg4L8PsBcI4wScvbhM
- Bnx+JOqn6CLVbfooCg8SHuXmIEbnksrdFYh8nfy0d9gyTSK+z+4FKerkD4ZyZMTo0vMBO
- SoaEzp14nwbbwByCmBVFAIqQyIYf1/TRHwYVX/n9Y2qORrd0LdsAr5KJFm44n4BoZjg==
-ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
+ bh=lMJW8cai72jO0PLtgQZThN8PGr82BqFszCODZ+WLfWo=;
+ b=mCuDL4GP32Lf6Q9Snh+R1KhfCPg09a7qDTilHmsjiHwg0Bb2hlTTtjodyWdz0uzgI8zu
+ 1NMp50OAh6MiaJ4+lTLU87b0vRlCiU6oaqytArGaBeFyHN44EC86vc6SNCEFzbnqnoVXc
+ 7GxKcnqDCdQAS8HsGwTHAFtHJ1trUZGwcfoPaHc2gBE/WiE9tjVWoyztWCTFbgFU4oLdF
+ rjnHsutBUpE2ufdv6o2rJgNnGSnXZv0fob9BTYrvWN+qDWtgv6wmNMMMkIFA+LtRNdXfz
+ JT7eAhvUeW2EI046Tt5jZd6X8gsNQ1LohtlF0SlJ0xCIGadbd1gdp4xiBA0EsR8M5Bw==
+ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
  dmarc=pass header.from=kernel.org;
  dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=ecAWO65x; 
- arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
- envelope-from=sashiko-bot@kernel.org; receiver=<UNKNOWN> 
-Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.s=k20260515 header.b=kICIbNhh; 
+ arc=none smtp.remote-ip=172.234.252.31
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
+ helo=sea.source.kernel.org; envelope-from=sashiko-bot@kernel.org;
+ receiver=<UNKNOWN> 
+Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-Authentication-Results: smtp1.osuosl.org;
+Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20260515 header.b=ecAWO65x
-Received: from tor.source.kernel.org (tor.source.kernel.org
- [IPv6:2600:3c04:e001:324:0:1991:8:25])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 20F2A810B8
- for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 04:54:05 +0000 (UTC)
+ header.a=rsa-sha256 header.s=k20260515 header.b=kICIbNhh
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 780AC406EE
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Oct 2026 04:54:06 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id D830A60267;
- Fri, 30 Oct 2026 04:54:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6619E1F0093A;
- Fri, 30 Oct 2026 04:54:04 +0000 (UTC)
+ by sea.source.kernel.org (Postfix) with ESMTP id 0D6D143EF9;
+ Fri, 30 Oct 2026 04:54:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BC9751F00A02;
+ Fri, 30 Oct 2026 04:54:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1793336044;
- bh=WZUqRIwrWV03ww6mCmoTaLg7G36LVvV1oA7ZJfK8ASY=;
+ s=k20260515; t=1793336045;
+ bh=lMJW8cai72jO0PLtgQZThN8PGr82BqFszCODZ+WLfWo=;
  h=From:Subject:Reply-To:To:In-Reply-To:References:Date;
- b=ecAWO65xSqaOmUOJm7wwdpmUdEj/wCwxMGf3L1PFyzc2VjXjPmJ85w7j3NNmZzkvg
- AWJKUoqPf/dbNTHWapNNCLL/3lum2pQegsxVRRs1Fr1b6kmrJ8WDcvsi6EtGy6vtuk
- uMaUhSJt1Dz1KGgMxuKgpKN/TCoOqsPS/AAEFDaxpKm3rQrhphLfSMraZbxmSPa8bc
- zHQQp3Mi2DdFBOaj5rwL6nesAxxbapJ6M+5V9pF60LIH6Fn5FfxfeiLRIPh8CRNQtl
- 2smIT/U4jLMYbgYjtE7rsH9mL91HmDnAElmeSOiHMf1Xi3pfmN1ao24MAIYgkWsUqj
- vTLCrs9STSZYQ==
-Message-ID: <sashiko-outbox-190399@kernel.org>
+ b=kICIbNhhsHGkkLNYvpCJGqaWx1t/MGt6swh3s1PSGjFBCNERBPMeROf9tuwcWxtM3
+ L+Qb2tbHRzgdmT1U5Vipe2uQfpuTTMfiAPK1GHswku0hbti0DZXB+y3zQ8626sEB3q
+ iJFlc6yKvxj8pX/0NVZm52rqO/jzc7YcP/kZNhjDROeEQ7pmpI2weBVEK2dOStYBU7
+ VycOrNMwTWLGCnm/rKBdnfautCIK9W2YcNF+NpfnmYxC+FwoRpVolHbSTTuSy6Mvce
+ YkuJvOdpjf8K2cN9AGetvw6F+KOAzAyccK8u8eXFrh4n5J1rKYGg2r4ptJYpOxOD1C
+ pYjH8tJ+/WpFQ==
+Message-ID: <sashiko-outbox-190401@kernel.org>
 From: sashiko-bot@kernel.org
-Subject: Re: [PATCH v12 net-next 5/9] octeontx2-af: npc: cn20k: add subbank
- search order control
+Subject: Re: [PATCH v12 net-next 7/9] octeontx2-af: npc: Support for custom
+ KPU profile from filesystem
 To: "Ratheesh Kannoth" <rkannoth@marvell.com>, intel-wired-lan@lists.osuosl.org,
  linux-rdma@vger.kernel.org
-In-Reply-To: <20260508034912.4082520-6-rkannoth@marvell.com>
-References: <20260508034912.4082520-6-rkannoth@marvell.com>
+In-Reply-To: <20260508034912.4082520-8-rkannoth@marvell.com>
+References: <20260508034912.4082520-8-rkannoth@marvell.com>
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
-Date: Fri, 30 Oct 2026 04:54:04 +0000
+Date: Fri, 30 Oct 2026 04:54:05 +0000
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -143,141 +142,244 @@ Reply-To: sashiko-reviews@lists.linux.dev
 X-Spam-Status: No, score=-10.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_PASS autolearn=unavailable autolearn_force=no version=4.0.1
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 X-Archived-By: <archiver.kernel.org>
 
-Thank you for your contribution! Sashiko AI review found 3 potential issue(=
+Thank you for your contribution! Sashiko AI review found 5 potential issue(=
 s) to consider:
-- [High] Missing xa_erase() during search order update causes stale duplica=
-te entries in tracking xarrays.
-- [High] Missing error rollback in npc_cn20k_search_order_set() leaves inte=
-rnal allocator structures in a permanently corrupted state.
-- [Low] Format string mismatch in rvu_af_dl_npc_srch_order_validate() cause=
-s potentially garbled logs.
+- [High] Global Data Corruption and Data Race via shared static array
+- [High] Integer underflow and missing bounds checks in legacy firmware par=
+sers
+- [High] Fragile firmware ABI heavily coupled to internal kernel structure =
+size
+- [High] Filesystem profile loading truncates KPU programming, breaking def=
+ault parsing rules
+- [Medium] Missing endianness conversion for u16 fields
 --
 
-commit 360483b7660f8774a4adf83ec93cc5565c7337b4
+commit c9233fb2ae7b0ce301cfbbff2b1cd306d7c325ba
 Author: Ratheesh Kannoth <rkannoth@marvell.com>
 
-octeontx2-af: npc: cn20k: add subbank search order control
+octeontx2-af: npc: Support for custom KPU profile from filesystem
 
-This commit adds a runtime parameter srch_order to control the search
-order of MCAM subbanks during allocation in the octeontx2 driver. It
-allows configuring the priority of the 32 subbanks for the CN20K NPC.
+This commit provides a mechanism to load a custom KPU (Key Parse Unit)
+profile directly from the filesystem at module load time.
 
-> diff --git a/drivers/net/ethernet/marvell/octeontx2/af/cn20k/npc.c b/driv=
-ers/net/ethernet/marvell/octeontx2/af/cn20k/npc.c
-> index e9aad0ad3fa68..6f8f42234b068 100644
-> --- a/drivers/net/ethernet/marvell/octeontx2/af/cn20k/npc.c
-> +++ b/drivers/net/ethernet/marvell/octeontx2/af/cn20k/npc.c
+> diff --git a/drivers/net/ethernet/marvell/octeontx2/af/npc.h b/drivers/ne=
+t/ethernet/marvell/octeontx2/af/npc.h
+> index cefc5d70f3e49..c8c0cb68535c7 100644
+> --- a/drivers/net/ethernet/marvell/octeontx2/af/npc.h
+> +++ b/drivers/net/ethernet/marvell/octeontx2/af/npc.h
+> @@ -265,6 +265,19 @@ struct npc_kpu_profile_cam {
+>  	u16 dp2_mask;
+>  } __packed;
+> =20
+> +struct npc_kpu_profile_cam2 {
+> +	u8 state;
+> +	u8 state_mask;
+> +	u16 dp0;
+> +	u16 dp0_mask;
+> +	u16 dp1;
+> +	u16 dp1_mask;
+> +	u16 dp2;
+> +	u16 dp2_mask;
+
+Since the firmware image is little-endian, should these fields be defined as
+__le16?
+
+When they are accessed as host-order integers without le16_to_cpu() convers=
+ion,
+will this lead to incorrect packet parsing rules and silent data corruption=
+ on
+big-endian architectures?
+
 [ ... ]
-> @@ -3906,6 +3906,56 @@ static void npc_unlock_all_subbank(void)
->  		mutex_unlock(&npc_priv.sb[i].lock);
+
+> diff --git a/drivers/net/ethernet/marvell/octeontx2/af/rvu_npc.c b/driver=
+s/net/ethernet/marvell/octeontx2/af/rvu_npc.c
+> index 5fa9e1c7ae9fa..a0f97e683145f 100644
+> --- a/drivers/net/ethernet/marvell/octeontx2/af/rvu_npc.c
+> +++ b/drivers/net/ethernet/marvell/octeontx2/af/rvu_npc.c
+[ ... ]
+> @@ -1788,26 +1872,168 @@ static void npc_prepare_default_kpu(struct rvu *=
+rvu,
+>  	npc_cn20k_update_action_entries_n_flags(rvu, profile);
 >  }
 > =20
-> +int npc_cn20k_search_order_set(struct rvu *rvu,
-> +			       u64 narr[MAX_NUM_SUB_BANKS], int cnt)
+> -static int npc_apply_custom_kpu(struct rvu *rvu,
+> -				struct npc_kpu_profile_adapter *profile)
+> +static int npc_alloc_kpu_cam2_n_action2(struct rvu *rvu, int kpu_num,
+> +					int num_entries)
 > +{
-> +	struct npc_mcam *mcam =3D &rvu->hw->mcam;
-> +	struct npc_subbank *sb;
-> +	struct xarray *xa;
-> +	int sb_idx, rc;
+> +	struct npc_kpu_profile_adapter *adapter =3D &rvu->kpu;
+> +	struct npc_kpu_profile *kpu;
 > +
-> +	if (cnt !=3D npc_priv.num_subbanks) {
-> +		dev_err(rvu->dev, "Number of entries(%u) !=3D %u\n",
-> +			cnt, npc_priv.num_subbanks);
+> +	kpu =3D &adapter->kpu[kpu_num];
+> +
+> +	kpu->cam2 =3D devm_kcalloc(rvu->dev, num_entries,
+> +				 sizeof(*kpu->cam2), GFP_KERNEL);
+> +	if (!kpu->cam2)
+> +		return -ENOMEM;
+> +
+> +	kpu->action2 =3D devm_kcalloc(rvu->dev, num_entries,
+> +				    sizeof(*kpu->action2), GFP_KERNEL);
+
+Will this cause data corruption and a use-after-free across devices?
+
+In npc_prepare_default_kpu(), the device's profile->kpu pointer is initiali=
+zed
+to point to the statically defined npc_kpu_profiles global array.
+
+Here, we are assigning device-scoped devm_kcalloc memory directly into this
+globally shared array. If multiple RVU devices probe concurrently, they mig=
+ht
+data-race on this shared state. Additionally, upon device unbind, devres wi=
+ll
+free the memory, leaving dangling pointers in the global array.
+
+[ ... ]
+> +static int npc_apply_custom_kpu_from_fw(struct rvu *rvu,
+> +					struct npc_kpu_profile_adapter *profile)
+>  {
+>  	size_t hdr_sz =3D sizeof(struct npc_kpu_profile_fwdata), offset =3D 0;
+> +	const struct npc_kpu_profile_fwdata *fw;
+>  	struct npc_kpu_profile_action *action;
+> -	struct npc_kpu_profile_fwdata *fw;
+>  	struct npc_kpu_profile_cam *cam;
+>  	struct npc_kpu_fwdata *fw_kpu;
+> -	int entries;
+> -	u16 kpu, entry;
+> +	int entries, entry, kpu;
+> =20
+> -	if (is_cn20k(rvu->pdev))
+> -		return npc_cn20k_apply_custom_kpu(rvu, profile);
+> +	fw =3D rvu->kpu_fwdata;
+> +
+> +	for (kpu =3D 0; kpu < fw->kpus; kpu++) {
+> +		if (rvu->kpu_fwdata_sz < hdr_sz + offset) {
+> +			dev_warn(rvu->dev,
+> +				 "Profile size mismatch on KPU%i parsing\n",
+> +				 kpu + 1);
+> +			return -EINVAL;
+> +		}
+> +
+> +		fw_kpu =3D (struct npc_kpu_fwdata *)(fw->data + offset);
+> +		if (fw_kpu->entries > KPU_MAX_CST_ENT)
+> +			dev_warn(rvu->dev,
+> +				 "Too many custom entries on KPU%d: %d > %d\n",
+> +				 kpu, fw_kpu->entries, KPU_MAX_CST_ENT);
+> +		entries =3D min_t(int, fw_kpu->entries, KPU_MAX_CST_ENT);
+> +		cam =3D (struct npc_kpu_profile_cam *)fw_kpu->data;
+> +		offset +=3D sizeof(*fw_kpu) + fw_kpu->entries * sizeof(*cam);
+
+Is there a missing bounds check here for negative values?
+
+Since fw_kpu->entries is read as a signed int, a malicious firmware blob
+providing a negative value (e.g., -1) could cause the offset calculation to
+underflow the unsigned size_t offset.
+
+This would wrap the offset backwards, allowing the boundary check
+(rvu->kpu_fwdata_sz < hdr_sz + offset) to incorrectly pass in the next
+iteration, resulting in an out-of-bounds access.
+
+[ ... ]
+> +static int npc_apply_custom_kpu_from_fs(struct rvu *rvu,
+> +					struct npc_kpu_profile_adapter *profile)
+> +{
+> +	size_t hdr_sz =3D sizeof(struct npc_kpu_profile_fwdata), offset =3D 0;
+> +	const struct npc_kpu_profile_fwdata *fw;
+> +	struct npc_kpu_profile_action *action;
+> +	struct npc_kpu_profile_cam2 *cam2;
+> +	struct npc_kpu_fwdata *fw_kpu;
+> +	int entries, ret, entry, kpu;
+> =20
+>  	fw =3D rvu->kpu_fwdata;
+> =20
+> +	/* Binary blob contains ikpu actions entries at start of data[0] */
+> +	profile->ikpu2 =3D devm_kcalloc(rvu->dev, 1,
+> +				      sizeof(ikpu_action_entries),
+> +				      GFP_KERNEL);
+> +	if (!profile->ikpu2)
+> +		return -ENOMEM;
+> +
+> +	action =3D (struct npc_kpu_profile_action *)(fw->data + offset);
+> +
+> +	if (rvu->kpu_fwdata_sz < hdr_sz + sizeof(ikpu_action_entries))
 > +		return -EINVAL;
-> +	}
 > +
-> +	mutex_lock(&mcam->lock);
-> +	npc_lock_all_subbank();
-> +	restrict_valid =3D false;
-> +
-> +	for (sb_idx =3D 0; sb_idx < cnt; sb_idx++) {
-> +		sb =3D &npc_priv.sb[sb_idx];
-> +
-> +		xa =3D &npc_priv.xa_sb_free;
-> +		if (sb->flags & NPC_SUBBANK_FLAG_USED)
-> +			xa =3D &npc_priv.xa_sb_used;
-> +
-> +		sb->arr_idx =3D narr[sb_idx];
-> +
-> +		rc =3D xa_err(xa_store(xa, sb->arr_idx,
-> +				     xa_mk_value(sb_idx), GFP_KERNEL));
+> +	/* The firmware layout does dependent on the internal size of
+> +	 * ikpu_action_entries.
+> +	 */
+> +	memcpy((void *)profile->ikpu2, action, sizeof(ikpu_action_entries));
+> +	offset +=3D sizeof(ikpu_action_entries);
 
-If the new index assignment swaps indices between a free subbank and a used
-subbank, is the old index in the original xarray ever overwritten?
+Will this create a fragile firmware ABI coupled to the internal kernel
+structure size?
 
-Since xa_erase() is not called on the old arr_idx, this might leave the
-subbank mapped at both its old and new arr_idx if they don't overwrite each
-other.
+Because ikpu_action_entries is a kernel-internal static array, its size
+depends on the number of port kinds (NPC_MAX_PKIND) defined in the specific
+kernel version compiling it.
 
-Can this result in stale duplicate entries?
+If future kernel versions add elements to this array, the parser will expec=
+t a
+larger initial block than the firmware file actually provides. This would
+misalign all subsequent read offsets, causing the driver to interpret garba=
+ge
+memory.
 
-> +		if (rc)
-> +			goto fail;
-
-If xa_store() fails (for example, due to -ENOMEM from GFP_KERNEL) and retur=
-ns
-an error, the code jumps to the fail label. Are the successful modifications
-made to previously processed subbanks rolled back?
-
-If not, could this leave the system in a torn state where restrict_valid is
-false, and some subbanks have updated indices while others keep their old
-ones?
-
-> +	}
-> +
-> +	for (int i =3D 0; i < cnt; i++)
-> +		subbank_srch_order[i] =3D (u32)narr[i];
-> +
-> +fail:
-> +	npc_unlock_all_subbank();
-> +	mutex_unlock(&mcam->lock);
-> +
-> +	return rc;
-> +}
 [ ... ]
-> diff --git a/drivers/net/ethernet/marvell/octeontx2/af/rvu_devlink.c b/dr=
-ivers/net/ethernet/marvell/octeontx2/af/rvu_devlink.c
-> index a42404e6db7cc..aa3ecab5ebd88 100644
-> --- a/drivers/net/ethernet/marvell/octeontx2/af/rvu_devlink.c
-> +++ b/drivers/net/ethernet/marvell/octeontx2/af/rvu_devlink.c
-[ ... ]
-> @@ -1619,12 +1620,83 @@ static int rvu_devlink_eswitch_mode_set(struct de=
-vlink *devlink, u16 mode,
-[ ... ]
-> +static int rvu_af_dl_npc_srch_order_validate(struct devlink *devlink, u3=
-2 id,
-> +					     union devlink_param_value *val,
-> +					     struct netlink_ext_ack *extack)
+> +static int npc_load_kpu_profile_from_fs(struct rvu *rvu)
 > +{
-> +	struct rvu_devlink *rvu_dl =3D devlink_priv(devlink);
-> +	struct rvu *rvu =3D rvu_dl->rvu;
-> +	bool restricted_order;
-> +	unsigned long w =3D 0;
-> +	u64 *arr;
-> +	u32 sz;
+> +	struct npc_kpu_profile_adapter *profile =3D &rvu->kpu;
+> +	const char *kpu_profile =3D rvu->kpu_pfl_name;
+> +	const struct firmware *fw =3D NULL;
+> +	int ret, fw_kpus =3D 0;
+> +	char path[512] =3D "kpu/";
 > +
-> +	npc_cn20k_search_order_get(&restricted_order, &sz);
-> +	if (sz !=3D val->u64arr.size) {
+> +	if (strlen(kpu_profile) > sizeof(path) - strlen("kpu/") - 1) {
+> +		dev_err(rvu->dev, "kpu profile name is too big\n");
+> +		return -ENOSPC;
+> +	}
+> +
+> +	strcat(path, kpu_profile);
+> +
+> +	if (request_firmware_direct(&fw, path, rvu->dev))
+> +		return -ENOENT;
+> +
+> +	dev_info(rvu->dev, "Loading KPU profile from filesystem: %s\n",
+> +		 path);
+> +
+> +	rvu->kpu_fwdata =3D fw->data;
+> +	rvu->kpu_fwdata_sz =3D fw->size;
+> +
+> +	ret =3D npc_apply_custom_kpu(rvu, profile, true, &fw_kpus);
+> +	release_firmware(fw);
+> +	rvu->kpu_fwdata =3D NULL;
+> +
+> +	if (ret) {
+> +		rvu->kpu_fwdata_sz =3D 0;
 > +		dev_err(rvu->dev,
-> +			"Wrong size %llu, should be %u\n",
-> +			val->u64arr.size, sz);
-
-The size field in devlink array values is a 32-bit unsigned integer (u32),
-but the error message uses the %llu format specifier.
-
-On some architectures, could this cause printk to consume 8 bytes from the
-arguments and read garbage from adjacent memory?
-
-> +		return -EINVAL;
+> +			"Loading KPU profile from filesystem failed\n");
+> +		return ret;
 > +	}
 > +
-> +	arr =3D val->u64arr.val;
+> +	rvu->kpu.kpus =3D fw_kpus;
+> +	profile->kpus =3D fw_kpus;
+
+Does this truncate the hardware programming loop in npc_parser_profile_init=
+()?
+
+By explicitly updating profile->kpus to fw_kpus, the hardware programming l=
+oop
+will only configure up to fw_kpus. Since all KPUs are disabled at the begin=
+ning
+of npc_parser_profile_init(), the remaining hardware KPUs will be left
+completely disabled, breaking network parsing for traffic reliant on default
+KPU logic.
 
 --=20
 Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20260508034912.4082=
-520-1-rkannoth@marvell.com?part=3D5
+520-1-rkannoth@marvell.com?part=3D7
