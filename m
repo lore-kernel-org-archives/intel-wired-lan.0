@@ -1,29 +1,29 @@
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A9E69606B0F1
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  2 Nov 2026 15:35:22 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 203C3606B0F1
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  2 Nov 2026 15:35:24 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=c0O55vsK;
-	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=dm5fjoQj
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=ZufP4E90;
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=XS2pZ9k0
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 80B49607FA;
-	Mon,  2 Nov 2026 15:35:22 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id F2F3D8108A;
+	Mon,  2 Nov 2026 15:35:23 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id dVHUUtSQdKxc; Mon,  2 Nov 2026 15:35:22 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org DE60D607F3
-Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793633722;
-	b=VogTQp8hiKN8LAG0ScWNbXHTRPN9e87vpthg87bcCEh4wbFrUog0JrCEHiOPpcs9kIKc
-	 RKcVXv0w/hU70a6Pm+Y9Sbxk48QXVvnSo0v6+yY/+aMbk94XF2a2hXKvAK4LYEKnkGMA7
-	 Kl8+SgbsHkRE2xjcr1n2vncG8Ruu1BjkbLV6VE2+yzOLguWWqDVWx+JaUIhj98+FPXToO
-	 CLqNFAT2tdLfvlehxirk0bZLpUDxxxnIaCOxThCmAoEQbw71RNElTk/k8olqPAxrKHSgE
-	 NJKV6maiuUYhgLbxF+316pYwCIEJZTSW1yJt1y2D4aMei8tu7goViwLjzMvm3N96wCg==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id AgUXxfyjyTa4; Mon,  2 Nov 2026 15:35:23 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 34E4281090
+Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793633723;
+	b=A4RspRauoujyWa+fmRca5eIHXfT4sHk/a/ITPPwoU5Z/Ic/JaYQHjbrFAjPsBt91+zSr
+	 BFHip92qkU1PFjxvV18XaGC6YSfo04U9AyepVbTH0RcJFF84nZbxHS7HGCeJ6p28rAK6L
+	 2+Oy+qaA0oADEcQGRpUGA6y8OgMTnDmgRyDU2oCcfluwJiUh6PaYJDO+9fpGDd/G24i5i
+	 xmUwwGsBm/pO4DQklEoyK+6ZJaIsSz6paeB1SWFyOXfKUt7/e1SpddmhtSHUcO0G4ktxr
+	 GQImjU9tC6CD8Y8xXxS3ZSzY/kqTUnS5MObhb6aw0Zu6BV9sPs30QNlkmXZGZUkNyUQ==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1793633722;
+	c=relaxed/relaxed; t=1793633723;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
@@ -33,111 +33,111 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding:
 	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
 	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=Nnr98Ips5/sDTLsCTy1NRIc6cmGwTSY4qBvs0caazIQ=;
-	b=VDNINzE/bclhoec+Ry1eZ62hm/GuIAcBPzCLQrRns422E5an0GS+dCo+056U+6KdwahA
-	 Wx0EBdzfGMPP0Dsfwg0v1FoW82Fsgr8M6xceMsCypQacpxc70V8DUVMVDv88HPAkgQnhr
-	 Qw87pPB4Y+I9+u5Zep6LU3DKB+zW0amE81bjOVMhtS7R3wT1WF99vkdjaWg4Ukh2bg9lr
-	 YYgD8F1pf0z5BLw/OFXt32fMT35WljwRqjBYKKXKTgKHVWEfyObECGCFQWo42vmCosXaN
-	 UCPkx+qnAYTvTUQFv3Ir6OKPuRP1UPZ3F24rTwQaCgui9kxukkNagSPrhfGsRJEyKKw==
-ARC-Authentication-Results: i=2; smtp3.osuosl.org; 
+	bh=2WaRQZc+Q4ZEeFmN74uLGmR8XwggSYLXrdxJ9V4dwaw=;
+	b=WVT0B7dUuW5CR1NV99QqwMC0LoVnAZXNajnLnafc62h4rccUbXXw6xvnpKZzPG0Wj7hN
+	 juO/CPSmerPEHXvPDp36fT/e+KsOEkTU2Jcg0laFiUevdfeHF5TpK2sLdRCwbV9Ri0tqJ
+	 9/IdtpdatcmMaGgW0jCWO3nROfZLUowRSLz4zgJy2Rqh72N+XaIAyysILQD1rm9dkneaL
+	 JGr1VmbwyxSn+tx606ypo7TJlzj7cgrObIDZjdYPe2Gnff7KnoenHzQ0jNlGKg+r1QrVO
+	 NVr9dNtGaQf+nufB21Erd0btVYnnmSXta7xuZWc7cDyZCJ1TLhnlV5/mR20iOSuVKAQ==
+ARC-Authentication-Results: i=2; smtp1.osuosl.org; 
 	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1793633721;
-	bh=Nnr98Ips5/sDTLsCTy1NRIc6cmGwTSY4qBvs0caazIQ=;
+	s=default; t=1793633723;
+	bh=2WaRQZc+Q4ZEeFmN74uLGmR8XwggSYLXrdxJ9V4dwaw=;
 	h=From:To:Subject:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=c0O55vsKXY6xDfyc8C5h7179gUiUuZ7AHWN/7I5w6b2CRFOJ8ci70KkHd5FCCgi7S
-	 WiNSvEoUUQ9LO25EuO1UImHUZfrPUZuY8z5nCKtcFNUjzGKyk2t7y9k0zL74j3uBAW
-	 uPrywV0QOseFsg0hbx+RJjLhRTZU2JKh1x76BkhPKT9wOcnrSmeO5J/C5AFroWYosS
-	 SqnlVEeppLyk2N0Ep1lOBMqtVQ6GaCADp0w+4qjscBzduBkYEWfL2P7YimEyX1lUbg
-	 +viZbq8I63cT1x2KqcpOhXugZh9GT8TWIDS3atbWPTLEUUwmrhIUk2zgv4u1cKcQHu
-	 gWUSZJoV6mMJw==
+	b=ZufP4E90OJMdIbkEAscvaQOT51yjqKUEl+jAyFbnLIixkwNoeN2ZPp91q80KqWp/R
+	 Y/CL8/8eDM+CNFw0bHxoyZLejJvhA7YO5J2oGhLiqDUcOqKugbwaZKst8yO76NNvcb
+	 bg0AjVDFBxRtNsqJ19pBG2CfwPN/3F635U6BCMNkJxzwSPoz7RJIJ4eEos309yksF0
+	 hXQXxNn3L07K+890GhMeqGp9A9ZVd+Gk5ioG9Wat8HjX83VJmy6WkL9ehEGbklb1gf
+	 To41za7DWQsUhGv7A9Via+5he8J5ak/tF+cgjy0XjyYpPCeOS3HfHaq/rNqqEZteid
+	 VFxUyMNOjqB6A==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id DE60D607F3;
-	Mon,  2 Nov 2026 15:35:21 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 43758EF4
- for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Nov 2026 15:35:19 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 34E4281090;
+	Mon,  2 Nov 2026 15:35:23 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id ACAC4D3A
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Nov 2026 15:35:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 34E944007E
- for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Nov 2026 15:35:19 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 9E7B6406B3
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Nov 2026 15:35:20 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id saflgJ8mM-_A for <intel-wired-lan@lists.osuosl.org>;
- Mon,  2 Nov 2026 15:35:18 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org 6DA56400D6
-Authentication-Results: smtp2.osuosl.org; arc=none smtp.remote-ip=192.198.163.9
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793633718;
- b=ai1IDgc71jiWiyH9lrMI2AZ/nmTbLdPrcfmptUtyXXhii3msY52+IX2F1Voef/Zf9L+c
- FpWv5zjBYFSO7OsFC6/KkkCLUTLvDfxAF9wV+GcDKEOy1zdBUDGov+3QCf9pR9fIE9nVz
- HETTyts8wZ5ioV3eGCtcmzVOxCDws97LyMeXucPujU2rwqZyUGcRWPkGGCsIOcy3YOpzo
- eX0aBmdYCkymB6xp1g8z/E6y28sMs8ppTeo0bJGES8XfRjfdrDMS5C8o4weeDdT8/PKca
- YlJZYmc53LITIvAc/I7lOzD3MrUbfMU6VqL0SI+Ag2FpJ8ZheyhFwAIGp7AQISeJH4A==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id OyOX7GwSzkbN for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  2 Nov 2026 15:35:20 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org D77FF40695
+Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=192.198.163.9
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793633720;
+ b=oO09+SQt3JrXhlolkcNSm+/KafJwzxAewCyuC+6ukPy5QSWlijQcRvf6C3YklA08Rzqq
+ I605OwJheQ15lWyU2HrD+RC+SLpCA4GYXClYvTaI7LAsItOw8Dk4j/cqaZPXkvlihGUNi
+ qCYS+GEFsdwEj2Qi5XPlszZfdQEwslrEkO5VHHDtq7SHrgAdaB23LthqgAVs9ISUYnkCK
+ BrVf2AueGpgWEYGechepH9SPsNySke7FkpgNpD/zrxhpOgNcYWKviVMCIlDpTHNRi7qNT
+ Vjpu976SKVMlAN8fuHdJzHVw5V2bf9dTAhN2wjcc3gwwRv2z/kZFy2NMwQKhVoNsEIQ==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1793633718;
+ c=relaxed/relaxed; t=1793633720;
  h=Received-SPF:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
  X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
  X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:From:To:Subject:Date:
  Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
  Content-Transfer-Encoding;
- bh=Nnr98Ips5/sDTLsCTy1NRIc6cmGwTSY4qBvs0caazIQ=;
- b=koef/zh9hDpeUYvtaZUzcvPumhvq2O10rH1SnPd8OU7VN04CRKw5yCVt59CLqIyVms1c
- jlQJHOL976pETJ2UiUz6Vb+J+w9/qa9+hRn5VfY08OPlUVHf4XteLZpF+RbjQpHcKhy/Q
- wOeak6pXC3V8qsDD2uj28JhYXLfqcgt+ZvOtWbx6CwDmC68bCZO+0q1kZcPJFPvcQe+dm
- +gsN16QNo5mPvuBSUZot5NbH2r1NDQC7rvJOLd1D77DggdkWvAmcm2EMroZuiOy3DNJNf
- xkVlsq+AVbvA0KZmTQW+Lxn0jehx7xQnhjFUtnfiRmzMee5FIY4W2NIkRANOXYlRxug==
-ARC-Authentication-Results: i=1; smtp2.osuosl.org; 
+ bh=2WaRQZc+Q4ZEeFmN74uLGmR8XwggSYLXrdxJ9V4dwaw=;
+ b=NlvXukgzud0YCNaTUQEUHoYpXED9bd3uQe8jSTjN2sD6YxEqUBY7/fIAVTLHQ20zHGMX
+ 924u8AKOVhymTlAhXRsB2o5htsfMsD3Rl3a4DJbaZqTisJTM8a+HlkmP5q2Zp9lcADWbx
+ 3FmLzcTb1flOc45BPfbTKrgmU8X5VUkrgceFgpHEbKe7nG3Dh+dQg85B/smIjzgYhad+a
+ LIxOG9ODzINl7bJBWLVYybHc1oUwMcFEPjV15Z285B0MCKRk4ToNQqQs+An4nhnuwuWD4
+ KhW0GNZEQrvAYxiDlOzlMFYkklGCab4qarE8TelXBUNClHFTUKhokA0oiRy90Fm9xsw==
+ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
  dmarc=pass header.from=intel.com;
  dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=dm5fjoQj; 
+ header.s=Intel header.b=XS2pZ9k0; 
  arc=none smtp.remote-ip=192.198.163.9
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.9;
  helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org;
+Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp2.osuosl.org;
+Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=dm5fjoQj
+ header.a=rsa-sha256 header.s=Intel header.b=XS2pZ9k0
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 6DA56400D6
- for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Nov 2026 15:35:16 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTPS id D77FF40695
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Nov 2026 15:35:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1793633719; x=1825169719;
+ t=1793633720; x=1825169720;
  h=from:to:subject:date:message-id:in-reply-to:references:
  mime-version:content-transfer-encoding;
- bh=EIX6/hiK0qWbnVeAK5gKf8yXA00GBK0gaBIUXSs2i8A=;
- b=dm5fjoQjXR7ywZsmehUFeb9qI4ERYg4JGdAmB08vhte9Ad7MfkbqpsjG
- Y8D/Ttp3nP6iJmmMu0o8bZ/4BHLhPJivh6mAxEjORbfI2QaJWopK4QFbT
- nzZFZufHmTuQsc5Ptw5/U82oSmeMXOus81zBwpnRTRKzimgom1sE6xyDZ
- 0ndtMuT5ZS0oJtPW5x9J9I8ulhxDlL+Sq6ih5KJ61kGgEewpX3rwWzKeb
- 722Is4g1IICOlTTQIcu7QDTFECI99fzPqSQ+ptd4YI/XAFVkEs4GWTwgk
- 44Wg8YtaYIt6cURvhd1D+zz+JzoWu2XCPZHi1vhhRJIWojziOzYzEUY56 w==;
-X-CSE-ConnectionGUID: ULs/x4NaRW24azRsl6U3vg==
-X-CSE-MsgGUID: NdSiCWM4QcCfgWGPmoQrOg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11954"; a="2210862"
+ bh=kUTERZJMLouxqhq6OyVayF/XBYtAE8bS5huDFpgWRLc=;
+ b=XS2pZ9k0e4Ny2D60g2470sqGjv46Z/xubk5beJKdAhVdmyT40bsgckA/
+ Q3jxSHW9qrMXV8Y8H/TRdMb2Fb4g/haGJjGsDxHjyQJsxn4P4M5gp7FIT
+ r1hX36iM0C4jdUj9+UWxHFr/qXNsGnVqhXkESgJTd9dNCWEfJ7ePXdLFk
+ tzBalY88p+Ru8iPVK7aEqt/K/5FpphinOcZ+3JFcmfmnsvSOUBDLtZ3tv
+ ULWEJn6l2t+7JXz0ImPUGlHOlqx+iuWdyCt5uJKI+uOCJS3SATegwh1E+
+ +wsOWq251FvdvpmfmxVAPvTWZDBEyJFW3CxOGIXj8ReNkNmlq4WDZVQDu g==;
+X-CSE-ConnectionGUID: t94Rbz94TjmP8HhargR4mw==
+X-CSE-MsgGUID: Nrgs4z6LQrecx3s+L4vB6w==
+X-IronPort-AV: E=McAfee;i="6800,10657,11954"; a="2210872"
 X-IronPort-AV: E=Sophos;i="6.27,191,1787036400"; 
-   d="scan'208";a="2210862"
+   d="scan'208";a="2210872"
 Received: from orviesa008.jf.intel.com ([10.64.159.148])
  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 02 Nov 2026 07:35:17 -0800
-X-CSE-ConnectionGUID: OA7OED4bST25VfcS/ZUiFQ==
-X-CSE-MsgGUID: nWq71kReS/C2QDA1wvtyiA==
+ 02 Nov 2026 07:35:19 -0800
+X-CSE-ConnectionGUID: 3WExDr+hRb6ZV2Obwswswg==
+X-CSE-MsgGUID: vijiAQ2MSTC/SgihnB3wlA==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.27,191,1787036400"; 
-   d="scan'208";a="5999761"
+   d="scan'208";a="5999784"
 Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by orviesa008.jf.intel.com with ESMTP; 02 Nov 2026 07:35:16 -0800
+ by orviesa008.jf.intel.com with ESMTP; 02 Nov 2026 07:35:19 -0800
 From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 To: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
  aleksandr.loktionov@intel.com
-Subject: [PATCH iwl-next v1 2/4] i40e: fix raw ip4/ip6 flow match docs
-Date: Mon,  2 Nov 2026 16:35:09 +0100
-Message-ID: <20261102153512.1601855-3-aleksandr.loktionov@intel.com>
+Subject: [PATCH iwl-next v1 4/4] ixgbe: document raw ip4 flow match
+Date: Mon,  2 Nov 2026 16:35:11 +0100
+Message-ID: <20261102153512.1601855-5-aleksandr.loktionov@intel.com>
 X-Mailer: git-send-email 2.56.0
 In-Reply-To: <20261102153512.1601855-1-aleksandr.loktionov@intel.com>
 References: <20261102153512.1601855-1-aleksandr.loktionov@intel.com>
@@ -162,38 +162,105 @@ X-Spam-Status: No, score=-18.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-The raw ip4/ip6 flows match only the other-IP traffic.
-Fix the stale examples and rejected qualifiers.
+The raw ip4 flow matches all IPv4 traffic except TCP, UDP and SCTP.
+Fix the stale docs.
 
 Assisted-by: LLM
 Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 ---
- .../device_drivers/ethernet/intel/i40e.rst           | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ .../device_drivers/ethernet/intel/ixgbe.rst   | 54 +++++++++++++++----
+ 1 file changed, 43 insertions(+), 11 deletions(-)
 
-diff --git a/Documentation/networking/device_drivers/ethernet/intel/i40e.rst b/Documentation/networking/device_drivers/ethernet/intel/i40e.rst
-index 92015b3..b47db47 100644
---- a/Documentation/networking/device_drivers/ethernet/intel/i40e.rst
-+++ b/Documentation/networking/device_drivers/ethernet/intel/i40e.rst
-@@ -137,6 +137,18 @@ only a source IP address, a source address plus a destination port, or any
- combination of one or more of those four fields. The raw ip4 and ip6 flows
- reject any port qualifier.
+diff --git a/Documentation/networking/device_drivers/ethernet/intel/ixgbe.rst b/Documentation/networking/device_drivers/ethernet/intel/ixgbe.rst
+index 1e5f169..1cb9935 100644
+--- a/Documentation/networking/device_drivers/ethernet/intel/ixgbe.rst
++++ b/Documentation/networking/device_drivers/ethernet/intel/ixgbe.rst
+@@ -329,13 +329,36 @@ The src-ip value that is written to the filter will be 0.4.1.2, not 172.0.0.0
+ as might be expected. Similarly, the dst-ip value written to the filter will be
+ 0.21.1.1, not 172.0.0.0.
  
-+NOTE: A flow type selects the packet type the hardware classifies. The i40e
-+driver programs an ip4 filter for the "other IPv4" and "fragmented IPv4"
-+packet types, and an ip6 filter for the "other IPv6" and "fragmented IPv6"
-+packet types. A filter created with ethtool(8) in one of those two flow types
-+matches only traffic the hardware did not classify as TCP, UDP or SCTP: ICMP
-+and ICMPv6 frames, IPv4 and IPv6 fragments, and IP traffic with a next
-+protocol the hardware does not classify. It matches no non-fragmented TCP, UDP
-+or SCTP frame, even if you also add tcp4, udp4, sctp4, tcp6, udp6 or sctp6
-+filters; use those flow types to steer TCP, UDP or SCTP traffic. The driver
-+also rejects an l4proto qualifier on an ip4 or ip6 filter, and a tos qualifier
-+on an ip4 filter.
++NOTE: An ip4 filter matches every IPv4 packet that matches the remaining
++fields, regardless of what the packet carries above IP: TCP, UDP, SCTP, ICMP,
++an IPv4 fragment, or IPv4 with a protocol number the hardware does not
++classify. The driver leaves the L4 packet type as a don't-care, and on every
++MAC it behaves this way; the only measurement that was done was on an Ethernet
++Controller E610. The i40e and ice drivers are the opposite: there an ip4
++filter matches only traffic the hardware did not classify as TCP, UDP or SCTP,
++and matches no non-fragmented TCP, UDP or SCTP frame.
 +
- NOTE: The Linux i40e driver allows you to filter traffic based on a
- user-defined flexible two-byte pattern and offset by using the ethtool user-def
- and mask fields. Only L3 and L4 flow types are supported for user-defined
++An l4proto qualifier turns an ip4 filter into a protocol specific filter:
++l4proto 6, 17 and 132 program a TCP, UDP or SCTP filter, and the driver
++rejects any other protocol number. The ports of such a filter then take part
++in the match; for SCTP this depends on hardware that programs an SCTP port
++mask. Without an l4proto qualifier the driver rejects a port on an ip4 filter.
++It accepts a tos qualifier and ignores it, because it programs no tos mask: a
++filter with a tos qualifier matches its address regardless of the tos value of
++the packet. The driver implements no IPv6 flow type and rejects ip6, tcp6,
++udp6 and sctp6 filters. Filters can be programmed while ntuple offload,
++described below, or hw-tc-offload is enabled; either one keeps the Flow
++Director in perfect mode.
++
+ To enable or disable the Intel Ethernet Flow Director::
+ 
+   # ethtool -K ethX ntuple <on|off>
+ 
+-When disabling ntuple filters, all the user programmed filters are flushed from
+-the driver cache and hardware. All needed filters must be re-added when ntuple
+-is re-enabled.
++Turning the ntuple offload off does not drop the programmed filters while
++hw-tc-offload is enabled, because either feature keeps the Flow Director in
++perfect mode. With both features off, the filters stay in the driver cache and
++ixgbe programs them again in hardware when either one is turned back on, so
++they do not have to be added again after such a toggle.
+ 
+ To add a filter that directs packet to queue 2, use -U or -N switch::
+ 
+@@ -362,6 +385,10 @@ Where:
+   <port> - the port number to match on
+   <queue> - the queue to direct traffic towards (-1 discards the matched traffic)
+ 
++The two port parameters apply to tcp4, udp4 and sctp4, and to an ip4 filter
++that carries an l4proto qualifier. The driver rejects a port on a raw ip4
++filter without one, and it accepts no IPv6 flow type.
++
+ Use the following command to delete a filter::
+ 
+   ethtool -U <device> delete <N>
+@@ -375,21 +402,26 @@ directed to 192.168.0.5, port 80, and sends it to queue 7::
+   ethtool -U enp130s0 flow-type tcp4 src-ip 192.168.0.1 dst-ip 192.168.0.5 \
+   src-port 5300 dst-port 80 action 7
+ 
+-For each flow-type, the programmed filters must all have the same matching
+-input set. For example, issuing the following two commands is acceptable::
++All the filters programmed on one port share a single classification mask, so
++they must all match on the same fields regardless of flow type. For example,
++issuing the following two commands is acceptable::
+ 
+-  ethtool -U enp130s0 flow-type ip4 src-ip 192.168.0.1 src-port 5300 action 7
+-  ethtool -U enp130s0 flow-type ip4 src-ip 192.168.0.5 src-port 55 action 10
++  ethtool -U enp130s0 flow-type tcp4 src-ip 192.168.0.1 src-port 5300 action 7
++  ethtool -U enp130s0 flow-type tcp4 src-ip 192.168.0.5 src-port 55 action 10
+ 
+ Issuing the next two commands, however, is not acceptable, since the first
+ specifies src-ip and the second specifies dst-ip::
+ 
+-  ethtool -U enp130s0 flow-type ip4 src-ip 192.168.0.1 src-port 5300 action 7
+-  ethtool -U enp130s0 flow-type ip4 dst-ip 192.168.0.5 src-port 55 action 10
++  ethtool -U enp130s0 flow-type tcp4 src-ip 192.168.0.1 src-port 5300 action 7
++  ethtool -U enp130s0 flow-type tcp4 dst-ip 192.168.0.5 src-port 55 action 10
+ 
+ The second command will fail with an error. You may program multiple filters
+-with the same fields, using different values, but, on one device, you may not
+-program two TCP4 filters with different matching fields.
++with the same fields, using different values, but on one port you may not
++program two filters that need different fields. A plain ip4 filter needs
++different fields from the protocol specific flow types, so the driver will not
++program it on a port that already holds a tcp4, udp4 or sctp4 filter, and the
++reverse is also true. An ip4 filter that carries an l4proto qualifier is one of
++the protocol-specific filters and shares their mask.
+ 
+ Matching on a sub-portion of a field is not supported by the ixgbe driver, thus
+ partial mask fields are not supported.
 -- 
 2.56.0
 
