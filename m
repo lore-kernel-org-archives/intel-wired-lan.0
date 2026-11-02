@@ -1,287 +1,141 @@
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 00F6F606A333
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  2 Nov 2026 22:16:21 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E90D7606A329
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  2 Nov 2026 22:28:23 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=pcDdc+G2;
-	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=lfRHgF9p
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=8i6dFBLL;
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=o0xbMNSR
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D6F8240503;
-	Mon,  2 Nov 2026 22:16:20 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id C1B22809E7;
+	Mon,  2 Nov 2026 22:28:23 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Q7KHvPwLQ2Ho; Mon,  2 Nov 2026 22:16:20 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 3E29B40506
-Authentication-Results: smtp4.osuosl.org; arc=fail smtp.remote-ip=140.211.166.142
-ARC-Seal: i=3; d=osuosl.org; s=arc; a=rsa-sha256; cv=fail; t=1793657780;
-	b=TH/j56+l1jOCAOwSYlgjUHXe16we+wO+wEqNefvfl+0aXu2hRERAMHS8I7UmKZ4wTDJP
-	 Bjnp2E0DmPYBg5k5V3U84JQl3E58qLAJZdf9ou5VWyHM+yLWsGF4o/TqMYLX/BlcimIlS
-	 g+zC/OW63s9C85WljQfJlEBfrKZ0yQDHL0Z9bLG3oDF0L+QBbR7t+mJEw56FEDeRFwRe0
-	 wQ2J1GLFPm9A+e8VtleVlA7jE9wM2JeJ2QZPGzAgxNbit6w+oybwMNylHY7DEu09SqtVB
-	 1yyFD2OaVoSq97Re/NBQYoTU3wJHCW/by9GZhOn+rAjs1Wr/1b00FFTWO3hQJyWCgvQ==
-ARC-Message-Signature: i=3; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1793657780;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id WOMVXFMp3dKK; Mon,  2 Nov 2026 22:28:23 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org F30B080C6E
+Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793658503;
+	b=siW6QFthn3JHQ6Hyyq63UN/zYlZ9JlSplOw2jg94wWsQzLgt1HnpG1MUXqxhWpTSq+HQ
+	 8muu40AgI3pgPqWDCRuAdvS35jAk8JkSWCqKyuPE2bg/KvcYkFeYXNP/S71NhQTpoY891
+	 hwarezGgcdWbneH5yPWdaizj2DnvFT6z7mzLjB0pGeAVAFCPrECye+DTbVfvtqV77HDby
+	 gE6Wymggm8iB7PLfs/18FL6nqMxHq+5Ezj6QoON5rxbsT40HbsPy4z+ZPVK/77aqRQbBO
+	 NSrhUQiVsJUki14dMCfcZae3ZpNU1MpIrzVhuadxecRrvgQtNHo0kjVImNgxPMUdsBg==
+ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
+	c=relaxed/relaxed; t=1793658503;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
-	 DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-IronPort-AV:
-	 X-IronPort-AV:Received:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-ExtLoop1:
-	 X-IronPort-AV:Received:Received:Received:Received:Received:Received:
-	 Message-ID:Date:User-Agent:Subject:To:CC:References:From:
-	 Content-Language:In-Reply-To:Content-Type:Content-Transfer-Encoding:
-	 X-ClientProxiedBy:MIME-Version:X-MS-PublicTrafficType:
-	 X-MS-TrafficTypeDiagnostic:X-MS-Office365-Filtering-Correlation-Id:
-	 X-MS-Exchange-SenderADCheck:X-MS-Exchange-AntiSpam-Relay:
-	 X-Microsoft-Antispam:X-Microsoft-Antispam-Message-Info:
-	 X-Forefront-Antispam-Report:
-	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
-	 X-MS-Exchange-AntiSpam-MessageData-0:X-Exchange-RoutingPolicyChecked:
-	 X-MS-Exchange-CrossTenant-Network-Message-Id:
-	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
-	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
-	 X-MS-Exchange-CrossTenant-FromEntityHeader:
-	 X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
-	 X-MS-Exchange-CrossTenant-UserPrincipalName:
-	 X-MS-Exchange-Transport-CrossTenantHeadersStamped:X-OriginatorOrg:
-	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
-	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=ygEa354wjp7dfC7MBduD1c9+E19IFP4yGJgNEGtT0ME=;
-	b=kpPgT0g560gxkXRkxNuUJ28jVgPwwfQijevetxCg5wBaNrJiYR8bqipMkwRom2W9KKnJ
-	 eku9amayECCUlc0Gjtd7iK9DgkFXxvxxjD8LrCCpvPTe0x5/Dr7cYVPRRBNGge2QFh9Xs
-	 HrPSPCPoOcgf0BlxvZwR/GO8+z5KRH9bzbSA4b5cpe1oBtdfSSYdab1On5ThTLKjKoNy+
-	 3I10XY2gI5pS6nKDccrt4FqAVnpArLFr+lrr/rughEAhCbLZobyWaxS0xCNgSMNWIF1Vb
-	 +ABUVZf3pxTQrV4p35B+6eNOyE3nGi/TeT0w3sxCXk5ekzp7D0S0LxgDDguG8ExV5dQ==
-ARC-Authentication-Results: i=3; smtp4.osuosl.org; 
-	arc=fail smtp.remote-ip=140.211.166.142
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
+	 Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 MIME-Version:Content-Type:Content-Disposition:In-Reply-To:X-BeenThere:
+	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Errors-To;
+	bh=pLrc6IvsxvZox2frClEyQ8V7DfzXsEUEs896JOGYWfk=;
+	b=J5XUCUPleCAXs1EZVmILBpLMljLFOja7JfVVec/EtdkHwzMfz4hXDGPOlCKwAE383pkL
+	 NFEmR2oRnaBG0tMe0a0d46DJsFFE1dy4MTYtRDPmHDvNoXsOUIPXaKD0juPUmSchdLUjn
+	 nBrFn6Nulu5vB7INfwU0w11s3GgMCteoea+ygI9dPYZGZh5nyH8GIAUYmlYPAgb7BjH0b
+	 cYySN+Q34WMcATn/0DJ2HKw4MtRWajboOOXRZHe/HJhEgSw5+8jytQGvzZBORSvWvE87k
+	 qUG8Gxj6lmvnf9uB5II+71F4Efh1hpDhr9uezSMPnAyj0rmGEmlm6V+CURcQmATQh6w==
+ARC-Authentication-Results: i=2; smtp1.osuosl.org; 
+	dmarc=pass header.from=kernel.org;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=o0xbMNSR;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1793657780;
-	bh=ygEa354wjp7dfC7MBduD1c9+E19IFP4yGJgNEGtT0ME=;
-	h=Date:Subject:To:CC:References:From:In-Reply-To:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=pcDdc+G2ZqU2MvnA2YDNZQxLVRr4DN7onU+g76JIcx4skK8kl70kgUalr6qOfCkE/
-	 N+xAhOi5mX9xVDUg+wXTseBljK5KbOuyXt2dUNElautLitfP8tWDz55NWQjwW6ewEA
-	 a8VBiD2dLMOAXA+/z12jqjVjPjAukYI5yi+L9pxaE4hmQ/fUGJB1qCO82b6DeyoLjO
-	 4VsVtby6svUpNppoBeJDPbM/W6oZJ/lq17QTVdykwJLy/vwFUj6IxNoqhizrmxSO6r
-	 achJOWsq5f9HNeF+UnMVi/9O/r5d5ButtSdCF3FLmWWxN5bPsGKVEITSRFAu4XnkB9
-	 tlFP1wICyaO3g==
+	s=default; t=1793658503;
+	bh=pLrc6IvsxvZox2frClEyQ8V7DfzXsEUEs896JOGYWfk=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:List-Id:List-Unsubscribe:
+	 List-Archive:List-Post:List-Help:List-Subscribe:From;
+	b=8i6dFBLLP1TlapIAnewgaBQj2aSwP4/seAHppKRHPa0LBQg7dmvWxLhO5Cmuu+HHM
+	 RXA9uQDFVgXOO8A3NsmAdUXuVwRK66oSC5D681ZpDUR8am56u3n/bAu4CauHMlYoyi
+	 gR7mIFmkwOGqr8HyH9ccroyYFedVC3y5o8WGzUJfaStx3Knjz0E/IhSHBtB+nNyctN
+	 IvUzQMeSLqgPN6Jnt1UWfeBG+ULhHpq/poiwVyfOP2KWE47zGuXB/DLEosh+5o+Frv
+	 I4o2BCo1tZpJhS+8wOX1srIL+YOuMOaD5dQLnKsOPzUcaac9Vlrw1IzjlqdF4RYS/r
+	 BPsGIHwKeTzDQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 3E29B40506;
-	Mon,  2 Nov 2026 22:16:20 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 0B33FA15
- for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Nov 2026 22:16:18 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id F30B080C6E;
+	Mon,  2 Nov 2026 22:28:22 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id F3DFD356
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Nov 2026 22:28:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id EFFA9401DF
- for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Nov 2026 22:16:17 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id E548A80C6E
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Nov 2026 22:28:21 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id s7cOXfTXaxIr for <intel-wired-lan@lists.osuosl.org>;
- Mon,  2 Nov 2026 22:16:17 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org 1CCD740098
-Authentication-Results: smtp2.osuosl.org;
- arc=fail smtp.remote-ip=192.198.163.16
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=fail; t=1793657777;
- b=J83frv5nae6XTQ1HztD0WISgfM6juevC/2KQHc3+twZajVyzfai+4+dhMCfXG6I5877A
- WFGpFDM4f3fOGgwI/4C9gEZF8c8XRvOTnnLLp4Glf56qk07xh6KdOIGAButjfgiaSZ+rb
- GjP8FPXnBy4Jb7RflzGIijvALS/eSFA5p+s+g2T8MqejBvlRQ3cfqJZNox1J8hrR0BKMu
- i/SJUjSkzsJytC6T+CECNK/+Y+fXKXk+Fnb0fcFzUHgelkYdBG6vsT2XO4uHYpV/gVB3y
- 0a+6NBjNXPUJI8p1rSQHwe/CSXpz9qRvZ1bg9qrmL90gbE3YElSUTgeTe+t4LRbOnrQ==
-ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1793657777;
- h=Received-SPF:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
- X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
- X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Received:Received:
- Received:Received:Received:Message-ID:Date:User-Agent:Subject:To:CC:
- References:From:Content-Language:In-Reply-To:Content-Type:
- Content-Transfer-Encoding:X-ClientProxiedBy:MIME-Version:
- X-MS-PublicTrafficType:X-MS-TrafficTypeDiagnostic:
- X-MS-Office365-Filtering-Correlation-Id:X-MS-Exchange-SenderADCheck:
- X-MS-Exchange-AntiSpam-Relay:X-Microsoft-Antispam:
- X-Microsoft-Antispam-Message-Info:X-Forefront-Antispam-Report:
- X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
- X-MS-Exchange-AntiSpam-MessageData-0:X-Exchange-RoutingPolicyChecked:
- X-MS-Exchange-CrossTenant-Network-Message-Id:
- X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
- X-MS-Exchange-CrossTenant-OriginalArrivalTime:
- X-MS-Exchange-CrossTenant-FromEntityHeader:
- X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
- X-MS-Exchange-CrossTenant-UserPrincipalName:
- X-MS-Exchange-Transport-CrossTenantHeadersStamped:X-OriginatorOrg;
- bh=ygEa354wjp7dfC7MBduD1c9+E19IFP4yGJgNEGtT0ME=;
- b=cce9kphPG6GeIvXdQHQKPBShzWNqlsDdHSHkNPKmWN67Wc5Pf5AF+CQhnMFfmMvUDuHq
- Mj8X03OJZwdVA8d3STTjCM5IFKgfR37hxd8A4fpAAIQdCQT9XBkugRQnuo2Q7qBY5syir
- CGINncnGC6LDVlcRpKErrkCgMXdRh70sc23zrY7Em9Pl6eROGkHH+jTRxfob8AnY4Y8Hu
- AXNGvrISq2xc0z0Ss2BP1lJSW3YaKRkjXFp8z6I9jQeiFqCGkWIN/gDh6cxqETNKcimyt
- c1D32rs4wRVPbdngPn3Z+fWUEppFu8mYhbPTo5vs0xR6zpzRQnzTOP/wsIkD59ZCU0A==
-ARC-Authentication-Results: i=2; smtp2.osuosl.org; 
- dmarc=pass header.from=intel.com;
- dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=lfRHgF9p; 
- arc=fail smtp.remote-ip=192.198.163.16
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.16;
- helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 6MtTNiSnfUIh for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  2 Nov 2026 22:28:21 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org ED657809E7
+Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793658501;
+ b=XAzMJ1uemaf7py4bbp8vwtoM2wsebAL0vyAJC0w6aj5yuCoga+1RscT0PdUfO0j9LK/0
+ fOAj8AYTgWxnAuL+PFZn2+vLUcuqmCROd1M/LjRm89g79ylr4pxuj5YROpvxfngqgZiu4
+ Su0NqBtqb4JjT11rBrb82heSn+BsvCRM3xZowka80F2zlfbhrrYOHfl6dvRz4V3HmIsdF
+ 6PdSAUqM8t6F/DFNPeKCF6hcjN7EBKwNo1FhvmHYf8XpV5qzMAg/RJ9zys4QvSyS1S+yE
+ aC8BI1XST6S3hr+xfn8Yu59ncg7yHkzrOcixFE/o/7uUSyaCJyeC6p6xOZaHFjUlZrw==
+ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
+ c=relaxed/relaxed; t=1793658501;
+ h=Received-SPF:Received:Received:DKIM-Signature:Date:From:To:Cc:
+ Subject:Message-ID:MIME-Version:Content-Type:Content-Disposition:
+ In-Reply-To;
+ bh=pLrc6IvsxvZox2frClEyQ8V7DfzXsEUEs896JOGYWfk=;
+ b=kG3yhJktiaPvdHcjKeKo2pPtf6kzcw8CoTy889j9UaGiu+P6MWq8EARNqJqpxFlLCjPJ
+ b6J+xcl/cOiZgeyuANtAgo1UuyQN9Pw5M/r1/fhJlTTjCGnYyixq+ZSih17hfXztCweLy
+ rlOSkyLmjYP/CvHfpAk0QB79NbdL+ZhisC7naIXptmWbDOJNwXCvIGpw+TWbM44GsKE8x
+ 6f72ge3z/SVviDuwOP/858WWTN3ek39UV1tArNDZr8o3Ye53PRDr/Yg87Om4KQfRVQH+Y
+ /QQ9t9+OD/Ge2U5oI0pPs1kSIJl6sby5qaMPf8JFUCrxpfgPSzz8PRYUuN9haVvGaGA==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
+ dmarc=pass header.from=kernel.org;
+ dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20260515 header.b=o0xbMNSR; 
+ arc=none smtp.remote-ip=172.105.4.254
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
+ helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=lfRHgF9p
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 1CCD740098
- for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Nov 2026 22:16:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1793657778; x=1825193778;
- h=message-id:date:subject:to:cc:references:from:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=ZLYlLqCV+jXPIiv8PrH4JKLwfhKtwm279Lx1uLmzYkI=;
- b=lfRHgF9p2/catAGPqgYrdOhLSEx34aGrwv25vZ1/obu5J39cPZK77Fiu
- mjh8yURu5c4U3xo+LvkB6b4aLuUZvHalrza6qE21zvQQJWVygWIkgTKL0
- ukuB3zAfZkvO9PEVXTL5/JREU9rhUHzl2hQWSA1VufJW5d8ctWrHUY1Aa
- sIK9iUpvA//ZfJuvdUcp2LARu1TmH+Me3IveEbLvgl1r0dgcTdyQ5qy4z
- 7eGqWbWLxZ5IbUxqOUdKGtcl0Ky3Q3bRhypaKcGwNfXKVPtr1M3Ccgasb
- SSvF9BweyLctsGnpTPcIZ+supv8TEkYox2h1LKPEravNvN5M9JJ9MDZX7 A==;
-X-CSE-ConnectionGUID: kDkXOSR4THeIW8ui1Kh1ew==
-X-CSE-MsgGUID: GwjIfNAZQmC0CngNgbopEA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11954"; a="2382272"
-X-IronPort-AV: E=Sophos;i="6.27,192,1787036400"; 
-   d="scan'208";a="2382272"
-Received: from orviesa008.jf.intel.com ([10.64.159.148])
- by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 02 Nov 2026 14:16:17 -0800
-X-CSE-ConnectionGUID: CEcB+fkWQ1K7AK6A8YmnRw==
-X-CSE-MsgGUID: cGOuCcl4TeerMdUF0r9USw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,192,1787036400"; 
-   d="scan'208";a="6098705"
-Received: from orsmsx902.amr.corp.intel.com ([10.22.229.24])
- by orviesa008.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 02 Nov 2026 14:16:16 -0800
-Received: from ORSMSX902.amr.corp.intel.com (10.22.229.24) by
- ORSMSX902.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.56; Mon, 2 Nov 2026 14:16:15 -0800
-Received: from ORSEDG902.ED.cps.intel.com (10.7.248.12) by
- ORSMSX902.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.56 via Frontend Transport; Mon, 2 Nov 2026 14:16:15 -0800
-Received: from PH7PR06CU001.outbound.protection.outlook.com (52.101.201.35) by
- edgegateway.intel.com (134.134.137.112) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.56; Mon, 2 Nov 2026 14:16:15 -0800
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=no5H2t/lGTUr4zzDOFwFK9LbddlyArgRkJnHg6RMz0SNVnrbyQhNLQanIV/FX0Ul5fW5ws5Uf+o8YxI1iIcPBwH5LqmYHlsH9QlJ0Ufx/9xlaz8oogbQqtLb5GYUwIcdqbzBXJwSk9Aw5J1bt12j4vWSkH9/eCYR4zCjJ3mmRKb8rCLHwVkSTT90wawZmwt0no56BOsmKl0Yn117g/M0wiJJ/lC+rvUN9EJtL8WGbBJieETX/oKaaZWP56cyc4KB/Fv6cMYn6xgEqhHSQ9AbJ4zd24JFjza3kYswfMMbdi4RMZyjn3fZwFXiZg7Pz7fbDelRghwUgKMbIete8tF6/Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=ygEa354wjp7dfC7MBduD1c9+E19IFP4yGJgNEGtT0ME=;
- b=jt8xZ4Toqv1ek9CksZ5G5xS4EI4QvazfNbPL2Jt+r+JK7oXmLoBddc9ItETQ/K3u1Z4N0bT3w26/N1v4mkpsQy70EeI2fNf7ePnvR0h3Qg+oT0nb57N9iFTmU2pwD2nr4ZIFNVIyOfT0NwKkACXTeAdfE57u6e8cwdnlkbcfkFw4lmasVTDvPUNTtnV42Z98z3Fsx1v3sLZp7W88+y17o8+UgPb5jIjG92ihHK0+LhyHaJb3peuYG4VIXvIL/s+XIOVipHmA3RdsEhxSTc1tupfXyQ09/Eojk+VLqqIuCu2gnMqH9URBMktuQyiavYPRhTdS1PP36GsqH94KMuDfew==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Received: from DS0PR11MB7381.namprd11.prod.outlook.com (2603:10b6:8:134::14)
- by PH0PR11MB7472.namprd11.prod.outlook.com (2603:10b6:510:28c::12) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.569.12; Mon, 2 Nov
- 2026 22:16:03 +0000
-Received: from DS0PR11MB7381.namprd11.prod.outlook.com
- ([fe80::4c39:dfe6:d6dc:6f58]) by DS0PR11MB7381.namprd11.prod.outlook.com
- ([fe80::4c39:dfe6:d6dc:6f58%6]) with mapi id 15.21.0569.011; Mon, 2 Nov 2026
- 22:16:02 +0000
-Message-ID: <c4c4833b-b0e9-4d79-9e7b-7db9eee67535@intel.com>
-Date: Mon, 2 Nov 2026 14:15:39 -0800
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH net 2/5] e1000e: do not cache the hwtstamp config before
- it is applied
-To: Linkui Xiao <xiaolinkui@126.com>, <anthony.l.nguyen@intel.com>,
- <przemyslaw.kitszel@intel.com>, <andrew+netdev@lunn.ch>,
- <davem@davemloft.net>, <edumazet@kernel.org>, <kuba@kernel.org>,
- <pabeni@redhat.com>
-CC: <intel-wired-lan@lists.osuosl.org>, <netdev@vger.kernel.org>,
- <linux-kernel@vger.kernel.org>, Linkui Xiao <xiaolinkui@kylinos.cn>,
- <stable@vger.kernel.org>
-References: <20261028090455.2291659-1-xiaolinkui@126.com>
-From: Jacob Keller <jacob.e.keller@intel.com>
-Content-Language: en-US
-In-Reply-To: <20261028090455.2291659-1-xiaolinkui@126.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: MW4PR04CA0151.namprd04.prod.outlook.com
- (2603:10b6:303:85::6) To DS0PR11MB7381.namprd11.prod.outlook.com
- (2603:10b6:8:134::14)
+Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20260515 header.b=o0xbMNSR
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id ED657809E7
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Nov 2026 22:28:20 +0000 (UTC)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+ by tor.source.kernel.org (Postfix) with ESMTP id 446D8600D1;
+ Mon,  2 Nov 2026 22:28:19 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BEBCB1F00A16;
+ Mon,  2 Nov 2026 22:28:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+ s=k20260515; t=1793658499;
+ bh=pLrc6IvsxvZox2frClEyQ8V7DfzXsEUEs896JOGYWfk=;
+ h=Date:From:To:Cc:Subject:In-Reply-To;
+ b=o0xbMNSROg9/PhI4EqQSPzRQ+s8Ia33KoO6eIdPfjUOpHDY59v0XgycrL12PCpw1X
+ kj+d3U4x/Tm4TBNzOh6yWQeWS/Pwy2uxoAuAU/5Q6msUXdc4M3B1lTsCSZLn3WuLrp
+ /orWGlt8Am0+awWt1D/AbkHLrjI/lq7t/c2QTnKXIQc1Ueykunl7fiamNrNif2r0WS
+ INkafWu1EGLsu43RccLnzsr9iFcwtrxx8giZgrraYSJuBCBjLMMrnMPsQ/qhyRpJ2N
+ BVnXmFWnFuSWmPrtMreyM9huw6xem2KMTsQl5+4009y3i4PZxlgsT23WyBdc+8Mky8
+ iBlvbGMZXo7eg==
+Date: Mon, 2 Nov 2026 16:28:17 -0600
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Li Yifan <yifan2.li@intel.com>
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ Mika Westerberg <mika.westerberg@linux.intel.com>,
+ Vinicius Costa Gomes <vinicius.gomes@intel.com>,
+ Dima Ruinskiy <dima.ruinskiy@intel.com>,
+ Li Lili <lili.li@intel.com>, Wang Jie <jie.wang@intel.com>
+Subject: Re: [PATCH iwl-net] igc: Disable PTM after the last device reset on
+ remove
+Message-ID: <20261102222817.GA983941@bhelgaas>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS0PR11MB7381:EE_|PH0PR11MB7472:EE_
-X-MS-Office365-Filtering-Correlation-Id: 9d568fd5-a72b-4995-9808-08df392ed4f6
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
- ARA:13230040|366016|376014|23010399003|7416014|1800799024|6133799003|10067099003|22082099003|261102123227099003|18002099003|56012099006|11063799006|261022105027099003|261021121427099003|261026121527099003|261026140227099003|261021123027099003|261022075727099003|261009223027099003|261028144727099003;
-X-Microsoft-Antispam-Message-Info: /hKuDaFug0MtZxqIh6uC5tjw4fiHjqRwvyeKZtuIkwpl/P8Bts7ypwwg7tBENZcfTazy6EVxmwcRzgojLl8jjDvlkgX8Am2mXhu0WXrucv8c8DJpcmFXotxz+jzCp3yx9rny7solSTocG1hRl21HUAlXKJNJmSNry+u5DIMo+3ThmeLMY8HjP5HeRDubIsdKt5u6QMsGMdmSXkF9aPHG49YPDYNvgFO2ZCmFdYPeiEGcZ5Ow/emFnE+RPzIl0BLp7W+kPx6szSgcH0ET80aSamtYCyfDH4sXcDvpztwbmrxr7ElrGi21E+u4hvQ9Sr04W2lijIAEx2ti0/9TbMnNH+UVyY8qoP0uReghi3Z7OvQFL07NtIgr5d9GGZENvuPmzdd8xkVIoK2hBX84eptnyorA7F7vH5qQMuJMFH0twd/MKqFN/0QdEEqyebfb+RG4Ca3q6XdxR2aeYZSOaBwzoRKCVrksJrrQo+Hisu454zAPMK1aTlYYynAISAFZ/yblel2VZKptce6QLXSMFW+vi/7uKiL9rfhSbBepucs5zs0Z3zWxLaib+dyghEJsxk2WRoTmitj534ioJTCdaofI7dEtlbC1gyXf2Nf9OsYinGmFa+K7NzFFE6Wobd6ylfVLEnAgeKpX5gWzb2MjCcoJInjK31wVE8531qlyZW1HtMA=
-X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:DS0PR11MB7381.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230040)(366016)(376014)(23010399003)(7416014)(1800799024)(6133799003)(10067099003)(22082099003)(261102123227099003)(18002099003)(56012099006)(11063799006)(261022105027099003)(261021121427099003)(261026121527099003)(261026140227099003)(261021123027099003)(261022075727099003)(261009223027099003)(261028144727099003);
- DIR:OUT; SFP:1101; 
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?ZVNOVURiUVoyOHRCdVh5WE12L3RrRmJjOU5JNko2bWFCbkxta3dFeElSS0N6?=
- =?utf-8?B?eEdwYmZoMmxYRHpBRHRWUVJBdkxRdzZzQXZCQVhHMzZSMFhlc0lzT2Z6SW10?=
- =?utf-8?B?d1UrN3AwUFQ2Qm45dzJuTWZtaFVZYWhZTWYzV3V1V29RK2N5L0FOTkllYUE0?=
- =?utf-8?B?S2doNnNGU3VwZldqWjlVVWZDaXVRTHJ3YTd5WktlS015YWJYdDVHaHNDVlh4?=
- =?utf-8?B?bStkdE9memJhZ0lKdlV3WXQ2L3J2UFhmaVhsOWx3RkxMTFgwM1QxMlF3Z2lp?=
- =?utf-8?B?b1hHcGp1T2VsK1I5L3F1b2prY2FqR2ZxRGhIcTVkR1d3ODhsNVZLTHJVVHdt?=
- =?utf-8?B?REJZRE1hL29QVzhpdE5ubm5BWHo3eERDalBDMXVaYTUzbm9SVUg1VGJRUTdx?=
- =?utf-8?B?YkdSMjU1L0x4dXdHa2dwRmI4bkJjdXhkS2VRRTdlZ3JESlYrdEJONU8zdEVC?=
- =?utf-8?B?dzJIeWJ1QlVTY2RZMUNGaUIyN2xONnM5MGhUWGV6aHZlWktyeHh5MVFQK2J5?=
- =?utf-8?B?SGxQZnJ4dmNmSTFkVmgwWVphWmxNVEk0OGJ3Y1M3c0dHVWRENDZJQ3BRcXcv?=
- =?utf-8?B?T085cDNua1ZNa01ZSmxFRVZLMkdKZ0kvZ0FzQ2tkYVZ3MTVtbFFsekZITVdq?=
- =?utf-8?B?L1lUeUxBc0dRblA4b0x2MllKb2lSQzhIUXZyaVF5R3BydFhQTkxDMjBIeWlp?=
- =?utf-8?B?ZENCMy9MTTZMTmJyb2hyNjBSV20xSkRnZ0sxdVpiODg0VWdUTm4rSnpRcGtL?=
- =?utf-8?B?TGt4VjZjRTNXd0lCeDNmYlZ4MkZPMmxiS0pIVjUzaWxlcnVGa0NmR01ncVlW?=
- =?utf-8?B?OXFjSE1FRmZ4YW12ZCtGOXlTZkJseFFiZ055aEZqd2Y0NGpwMDR1NEk2ZVlJ?=
- =?utf-8?B?WE0zb1c0UzhHdlNQZHp3bkdXeXhmQXd4OGdCMzE1VEFEMHYvVlBBc0xFOFBx?=
- =?utf-8?B?Z3l6T3plWlhpOWdxaW9Tc0NjQ2RoN2ZUWGhaREJpVkFiNm5JazE2OGh0cUVJ?=
- =?utf-8?B?MUxuaVFjRHNZcmliT0ZXQTNVckJWOVhyOVVGay9uNVFxcjQ3QVhBVjdZa0dY?=
- =?utf-8?B?VUNRc0EzdDZZUys5bVFPSDNSSFQ3Y0VsOEg2Szk1amRRWXVCNHdjSk1NSEky?=
- =?utf-8?B?YjZkVC9nY284ZkEvSjd3MGxIUmlkdkN2MDBkVlVQR0xobzBqcUZzUU1YNDVG?=
- =?utf-8?B?TXp4SHFRaEtLMXZQRE9CV3RWRXVOSjlOelZ3M2h5Z29yODhWS21zdExMNEl4?=
- =?utf-8?B?cjJtRy9RdE9QczFZdFpCK1g2UnNka09aL1lwTmNCbTl2SlRmcVhzWWtzQmpx?=
- =?utf-8?B?cUJVVFlaUmExZXh3dFlJYnhxYVhubDVhK1N2ZHByWVluMUF1QUY5RllpTjho?=
- =?utf-8?B?WmlGalZYdHFlNEhFS1o4aWlzc012aUxwZ0t5QXU0aThJOVNraG9xMUszdUxB?=
- =?utf-8?B?ajVWc1MrRjNPMXZ3dW5yUmh1VjJJWUVhcUpybE5QbzBhNmtaT0RnVGxqRDh5?=
- =?utf-8?B?YzQ0Z2c3VFcrRllzRDJXUGJMMXQ2dDNML3B5aGhoUGpyYVFyNVY4RFFFaGht?=
- =?utf-8?B?QmFDN0ljRFlhSFh5YVNHQ21rN0E1NllpTmhhdUxtYm9tVi9jZGVjZmR3UzVU?=
- =?utf-8?B?NzZzV2RnbmRMRWVncWJwV1I2ckZOQVFpaUFMdzgzNjZWd2Q0WlNjZzZGMHV0?=
- =?utf-8?B?S0ZYa2loRnRIUEVMZHBqMnk0SkpIMDZraCtyQ0JBQ3UyK1VlMGY1MzF5bFIw?=
- =?utf-8?B?L3FmQzlEbWJHYmhTN29lQ0dWLzN4L2VFYkYyWExHakM0Qlh6YVl5UFZJVml0?=
- =?utf-8?B?NVZxQWlscExGOWxZZHJ6dHh4U1lwVWVRTUs5dmowSHUrZlpEdjFjbzFGL0N4?=
- =?utf-8?B?REVlM3doUUJ1TVFkQUh5a05xUkdkelJuV3FJcE1Pd0p3LzRuRExENVRCNWhJ?=
- =?utf-8?B?Y09wZWNkUU40cHlUWFh2ZTdoUGJRN0FFYnVzSU9zQTFIeml3WnIySUlOMFln?=
- =?utf-8?B?WDMrUldVQ0lrZXZYQkxFT3dYd1E0dVM5UmxZNmZ5UUpGY0R3ZDUybXpJTko0?=
- =?utf-8?B?MXA3KzRodnUyZTlYZnI1dlNNMWlVR3BSSnlrWWd6NTZ6c1c3bE1zQVNHRmhB?=
- =?utf-8?B?M2FqL2lPTFBMc1Fyb1NuVVVYQ09mMFFlb1ZEdzJBQ2xxU0lVdTg1V1NPZ2Zz?=
- =?utf-8?B?TklSdTFNMnFFaWxKREpUQWgramlkUzh2ZnMzdlRRbmhIREMzSFdsSXFIQmJ2?=
- =?utf-8?B?RHE5SEJNa1FRYU5IeVlEZjdGbTBuL255RldTOTFjaS8xdDZ0aTJCZFB3dXhN?=
- =?utf-8?B?NFlUSjh4YThCbmNlZlR6b3N2bzlkU0ZVclpRdno4aGJ6aVJSRWsrUT09?=
-X-Exchange-RoutingPolicyChecked: t6uXo7qbmWD/33K7j1cWQVOnQ013XrrMXxdY3a72w5hFREznfzRnRdUVqIhp4PaS3h+yzubptMc24tURnR/urqugB8uWpvqbOxni2eDBvqyl+p4VR6M0fZBi4nZFZxfuB9e5ICtikZfqmA1vRU8QvKixlfH/DzhhdzCjnLb6ZEmjXxWAt9tu66Ys92IIIyHMInd64SIeMzeUh74bEVJAquilzo6jv4/qY8tG+0/89j4ByfVSkCsDQR16AFs/BRxUKozdInY68qMJsjvrXOICiJKX3HyDT2kWsf9MQOJBQkzASHzgFPLUKELpNGG8JdIPBJuTIt2mbgtdt5kgNEpDDQ==
-X-MS-Exchange-CrossTenant-Network-Message-Id: 9d568fd5-a72b-4995-9808-08df392ed4f6
-X-MS-Exchange-CrossTenant-AuthSource: DS0PR11MB7381.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 02 Nov 2026 22:15:41.5577 (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: wLkyjaPZKm5Uhco4sCWGr9jrG/QM+ZWjJVwinkOpsRV1JJTmwYlI6UfDG0rppEQgzEmascrmjapyBM4bRCyO01ahwD/RoUb0Oy9NtcI5Jqc=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR11MB7472
-X-OriginatorOrg: intel.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261031021928.1714612-1-yifan2.li@intel.com>
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -292,79 +146,163 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-17.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-15.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=4.0.1
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On 10/28/2026 2:04 AM, Linkui Xiao wrote:
-> From: Linkui Xiao <xiaolinkui@kylinos.cn>
-> 
-> e1000e_config_hwtstamp() stores the requested configuration in
-> adapter->hwtstamp_config right after the rx filter has been
-> translated, but the two register writes that follow are verified by
-> reading the registers back and each of them can fail with -EAGAIN.
-> 
-> When one of them does, the driver is left holding a configuration the
-> hardware never accepted:
-> 
->  - e1000e_hwtstamp_get() hands it back to user space, so an
->    application that reads the configuration back is told that
->    hardware time stamping is in effect while it is not;
-> 
->  - e1000e_systim_reset() re-applies it after every reset, including
->    the ones the watchdog triggers, and keeps failing;
-> 
->  - e1000_watchdog() starts polling TSYNCRXCTL_VALID for the cached rx
->    filter, and e1000_xmit_frame() still parks skbs that ask for a Tx
->    time stamp because it only looks at FLAG_HAS_HW_TIMESTAMP, so they
->    are eventually dropped by e1000e_tx_hwtstamp_work() with a
->    "clearing Tx timestamp hang" warning.
-> 
-> Cache the configuration only once both registers have been verified,
-> so that adapter->hwtstamp_config always describes what the hardware
-> is programmed with.
-> 
+On Sat, Oct 31, 2026 at 10:19:28AM +0800, Li Yifan wrote:
+> I225/I226 have a hardware issue: after a PTM dialog, the next device
+> reset through the RST bit of the Device Control register (CTRL.RST)
 
-Any idea why this got marked as patch 2 out of 5? This doesn't appear on
-either netdev or iwl with any other patches.
+I assume this Device Control is a device-specific register, not the
+Device Control in the PCIe Capability, right?
 
-I'm going ahead and applying it to Intel Wired LAN regardless, since the
-fix looks good.
+> can make the device send a PTM Request. The device sends it even if
+> PTM is disabled in its PTM Control register (PCI config space), the EN
+> bit of its PTM_CTRL register (MMIO) is clear
 
-Thanks,
-Jake
+And I guess PTM_CTRL is another device-specific register.  The
+architected PTM Enable bit in the PTM Capability in config space is
+supposed to be enough to prevent the device from issuing PTM Requests,
+so I guess the device-specific control is only relevant because it's
+not enough to work around this hardware defect.
 
-> Fixes: 62d7e3a2d006 ("e1000e: Validate hwtstamp_config completely before applying it")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Linkui Xiao <xiaolinkui@kylinos.cn>
+> and Bus Master Enable is
+> clear, so the driver cannot stop it. Commit c080fe262f9e ("igc: Fix
+> possible system crash when loading module") disables PTM before bus
+> mastering because of a related issue (PTM Requests with bus mastering
+> disabled), but that does not stop the request at CTRL.RST.
+
+c080fe262f9e and this both mention Bus Master Enable, but I don't
+think it's relevant to either change.  Bus Master Enable controls
+ability to issue Memory and I/O Read/Write Requests.  PTM Requests are
+PCIe Messages (not Read/Write Requests) so Bus Master Enable should
+not affect them.
+
+If this is a documented erratum, can we include an identifier or a
+pointer to it?
+
+> The request is harmless while the upstream port has PTM enabled. Since
+> commit e1092d5e15e6 ("PCI/PTM: Do not enable PTM automatically for Root
+> and Switch Upstream Ports"), pci_disable_ptm() also disables PTM on the
+> upstream port when the last user goes away. igc_remove() calls
+> pci_disable_ptm() before unregister_netdev(). If the interface is up,
+> unregister_netdev() then resets the device through igc_close() ->
+> igc_down() -> igc_reset(). The upstream port now handles the PTM
+> Request as an Unsupported Request. On an Intel Nova Lake-S system with
+> an I226-LM, this triggers DPC on "modprobe -r igc". Recovery fails
+> because the driver is unbinding, and the next probe fails:
+> 
+>   pcieport 0000:80:1d.0: DPC: containment event, status:0x1f01: unmasked uncorrectable error detected
+>   pcieport 0000:80:1d.0:    [20] UnsupReq               (First)
+>   pcieport 0000:80:1d.0: AER:   TLP Header: 0x34000000 0x81000052 0x00000000 0x00000000
+> 
+> Message code 0x52 in the TLP header is a PTM Request from 81:00.0.
+> 
+> Reset the device while the upstream port still has PTM enabled, so
+> that the PTM Request gets a response. Then disable PTM and bus
+> mastering. With this order, a later reset sends no PTM Request (tested
+> on I226-LM). igc_ptp_stop() has already cleared IGC_PTP_ENABLED, so no
+> new PTM dialog starts after this reset.
+
+IGC_PTP_ENABLED is just a software flag, and it appears to be related
+to PTP, not directly related to PTM, so there are some dots missing
+between it and hardware PTM messages.
+
+> If the interface is down,
+> unregister_netdev() does not reset the device, so reset it explicitly.
+> PTM is still disabled before bus mastering, as the related fix above
+> requires.
+
+Which fix requires PTM disable before bus mastering disable?  And why
+is that required?
+
+> Skip the reset if the device cannot respond: error recovery is in
+> progress or has failed (pci_channel_offline()), the device is gone
+> (pci_device_is_present()), or igc_rd32() has already reported "PCIe
+> link lost" (IGC_REMOVED()). Otherwise the reset accesses a device in
+> error recovery, or polls all-ones register values for about two
+> seconds until igc_disable_pcie_master() times out.
+> 
+> Call pci_disable_ptm() only if PTM is enabled. pci_enable_ptm() can
+> fail in probe, for example if the upstream port does not support
+> PTM, and probe continues without PTM. The PCI/PTM change above
+> also made pci_disable_ptm() use a reference count: it decrements
+> dev->ptm_enable_cnt without a check, and then does the same for the
+> upstream port. Before, it did nothing if PTM was not enabled. After
+> a failed pci_enable_ptm(), the count of the device becomes negative
+> and stays negative after the driver unbinds. pcie_ptm_enabled()
+> returns true for a negative count, so after the next probe
+> igc_is_crosststamp_supported() reports PTM support and igc_ptp_reset()
+> starts PTM cycles on a device that does not have PTM enabled. Commit
+> 650f197d8ea6 ("idpf: disable PTM on probe failure and on remove")
+> adds the same check to idpf.
+
+This sounds like a bug in the PCI core PTM support, i.e., maybe
+pci_disable_ptm() should be checking for PTM being enabled?
+Otherwise I'm afraid lots of drivers might trip over this.
+
+> Fixes: e1092d5e15e6 ("PCI/PTM: Do not enable PTM automatically for Root and Switch Upstream Ports")
+> Suggested-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+> Co-developed-by: Li Lili <lili.li@intel.com>
+> Signed-off-by: Li Lili <lili.li@intel.com>
+> Signed-off-by: Li Yifan <yifan2.li@intel.com>
+> Tested-by: Wang Jie <jie.wang@intel.com>
 > ---
->  drivers/net/ethernet/intel/e1000e/netdev.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  drivers/net/ethernet/intel/igc/igc_main.c | 19 ++++++++++++++++---
+>  1 file changed, 16 insertions(+), 3 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index 35f5590228eb..7ae33273734f 100644
-> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -3715,8 +3715,6 @@ static int e1000e_config_hwtstamp(struct e1000_adapter *adapter,
->  		return -ERANGE;
->  	}
+> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+> index b8ac2f4fea5a..3ee8b05f0515 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_main.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+> @@ -7406,9 +7406,6 @@ static void igc_remove(struct pci_dev *pdev)
 >  
-> -	adapter->hwtstamp_config = *config;
+>  	igc_ptp_stop(adapter);
+>  
+> -	pci_disable_ptm(pdev);
+> -	pci_clear_master(pdev);
 > -
->  	/* enable/disable Tx h/w time stamping */
->  	regval = er32(TSYNCTXCTL);
->  	regval &= ~E1000_TSYNCTXCTL_ENABLED;
-> @@ -3763,6 +3761,8 @@ static int e1000e_config_hwtstamp(struct e1000_adapter *adapter,
->  	er32(RXSTMPH);
->  	er32(TXSTMPH);
+>  	set_bit(__IGC_DOWN, &adapter->state);
 >  
-> +	adapter->hwtstamp_config = *config;
-> +
->  	return 0;
->  }
+>  	timer_delete_sync(&adapter->watchdog_timer);
+> @@ -7427,6 +7424,22 @@ static void igc_remove(struct pci_dev *pdev)
+>  	igc_release_hw_control(adapter);
+>  	unregister_netdev(netdev);
 >  
+> +	/* After a PTM dialog, I225/I226 can send a PTM Request at the next
+> +	 * CTRL.RST, even with PTM and bus mastering disabled on the device.
+> +	 * Reset the device while PTM is still enabled on the upstream port,
+> +	 * so that the request gets a response. unregister_netdev() resets the
+> +	 * device only if the interface was up. Skip the reset if the device
+> +	 * cannot respond (error recovery, surprise removal or an earlier
+> +	 * "PCIe link lost"). Then disable PTM before bus mastering.
+> +	 */
+> +	if (!pci_channel_offline(pdev) && pci_device_is_present(pdev) &&
+> +	    !IGC_REMOVED(adapter->hw.hw_addr))
 
+All these tests look racy.  .reset_hw() really should be able to
+detect and deal with any errors that happen if it tries to access a
+device that is no longer responding.
+
+> +		adapter->hw.mac.ops.reset_hw(&adapter->hw);
+> +
+> +	if (pcie_ptm_enabled(pdev))
+> +		pci_disable_ptm(pdev);
+> +	pci_clear_master(pdev);
+
+I don't think bus mastering has any connection to PTM, so why are we
+moving pci_clear_master()?
+
+>  	igc_clear_interrupt_scheme(adapter);
+>  	pci_iounmap(pdev, adapter->io_addr);
+>  	pci_release_mem_regions(pdev);
+> 
+> base-commit: c550c1c9727726dcae121221c252013153fa5945
+> -- 
+> 2.43.0
+> 
