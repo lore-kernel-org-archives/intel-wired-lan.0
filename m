@@ -1,167 +1,195 @@
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 00BCE606A32C
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  3 Nov 2026 16:23:39 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 89E44606A32C
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  3 Nov 2026 16:28:41 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=WZ4hAfCy;
-	dkim=pass (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=S/4fV7ta
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=hwy6yPr5;
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=le0whQKd
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id D52DA606C1;
-	Tue,  3 Nov 2026 16:23:38 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 6519F8081C;
+	Tue,  3 Nov 2026 16:28:41 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 2AGlaXdSfFsi; Tue,  3 Nov 2026 16:23:38 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 1D8C1606C2
-Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793723018;
-	b=TWd1Dz7b7+hQ84257h7awARK4YvxZCnudHv2LoFPt6n82LY9/LDGEi0+8VXwTbeWv0UL
-	 c5HMY5+/SzjEp0l/Ua0egYZNZYHkopgEGzVxT/+Y1Ekjyjxf6F81NS7Zc020G1COvOX4l
-	 UNi/EaoenpOhPeYODf9hzk/Q2IDPeKSnKM6qXNHIimCNhHGmsShMVQjLIllhMxgJSJxxr
-	 HdhYtH/Kl1lcoHDrv8bH2Rsme8rrOToyl+sraxh2gg42aKa72FIbLFZS6xJOC+SVMA+Wc
-	 fsXrYwI53Vo2AhfRSYIVdeel1PRTGhCDr4V2J9/aPVG63H82ml066RstW2F3bag/Y7w==
-ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1793723018;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id aBTC8FVGlYLE; Tue,  3 Nov 2026 16:28:40 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 6C5FE806F6
+Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=3; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793723320;
+	b=mldNtx46zVE9Aw9pjYas8hdN5LjBsIzjAscSxzflU+NxZEFBidHDqLou81Wh1GCNaC8h
+	 lLBMeOrQW+ppVTZWL8w1PN/pTecH3phP5WVYQjv5rPKHI8jXUI9YUbu/6zDM6vbs+jptt
+	 6QtXF0NyTDGDR8odfKIVVp+o8LDBTsEwW+fZd/iOkiH5ZDlXvanySTQOWYVI7BOt3Z9cI
+	 3XhWB9Ypolht3ABCJHjLXZ11Z3+OZ2s9WgM4lMDNxo84l8Hu29Tx1nQdMNrTSGp24COtq
+	 dYKCzdn/ybTfn8fzf3s4qfFwsC5Avub1D0gH1hna+uqcjLe06W7IMTtTA1+tuNO3Fxw==
+ARC-Message-Signature: i=3; d=osuosl.org; s=arc; a=rsa-sha256;
+	c=relaxed/relaxed; t=1793723320;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Gm-Message-State:X-Received:
-	 Date:In-Reply-To:Mime-Version:References:X-Mailer:Message-ID:Subject:
-	 From:To:Cc:Content-Type:X-BeenThere:X-Mailman-Version:Precedence:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Gm-Message-State:X-Gm-Gg:
+	 X-Received:MIME-Version:References:In-Reply-To:From:Date:
+	 X-Gm-Features:Message-ID:Subject:To:Cc:Content-Type:
+	 Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:Precedence:
 	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=wEvpZVnmD8tz2rAl92pJSmTNVQbWDPHgUyrWXimakhw=;
-	b=XgFj+/eOQx1ac2HjV0nJ8z/C99vMwbVexIvYDKeECXDS7dudYID7tCPZ8nFlV6tmJp7Z
-	 8xLO/I7WL4uV1vIQOUtyaf9CigfWtA8si1lKq7LoiToLIQ1rQQajEFRKUOGAyT74xIMRW
-	 mYxJmfBMzcUe1as4JU3BURGMUxiELCmxLjivkgtQABdMQYPRt8FSaDB9AOB6+gRWLbJtf
-	 sKr8lDmF9XxbBvZcvJoL8MifiLgwmTD+GYz1eRHHJkng4/DeIm+Vhp7dlKvCaAaBfoxr5
-	 5LB05ohyc3WDHrg6IyQAp6QGcY/3BR3tMTC7P0Resbn+1D0ahWbElB9FuKGAIVx9ZuQ==
-ARC-Authentication-Results: i=2; smtp3.osuosl.org; 
+	bh=iNrqawb7znOhdynzk3QZawC3lApb5SKPQ8U0JnSF1mQ=;
+	b=jKvcqkaF3m0lT5wnU5H/AmBQH7LIWVnQIWAGBOFnZ/e4DLyQVxZGsV7BNDEbPCEUU9W1
+	 99PosIFFjWRq7Ri3rU3VLN2ZhmkWNVuOrK72eyIh4uWh3i0vto34KAdC79ePACH3Vz2JS
+	 REcqD/1GClEVuyTBKr05S3zX12drU1rODOi0gNejp6v85RQJRIWZLJXCPbDV8wbFVygva
+	 +7kZ7ebxG8d11PAPd12oeGwxY6MhtIamb211Iibcp+2Lksbq+khKHO702yXUQt9NeT5aD
+	 V0aU0fQ6IzTe02MbxQD9Doq7Aszk06clAW4VeONDQahGDZQThuoQDznza1R85Y5lmKQ==
+ARC-Authentication-Results: i=3; smtp1.osuosl.org; 
 	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1793723018;
-	bh=wEvpZVnmD8tz2rAl92pJSmTNVQbWDPHgUyrWXimakhw=;
-	h=Date:In-Reply-To:References:Subject:From:To:Cc:List-Id:
+	s=default; t=1793723320;
+	bh=iNrqawb7znOhdynzk3QZawC3lApb5SKPQ8U0JnSF1mQ=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=WZ4hAfCy0VjRqQYpVTyUXp6bAGrZOYExmUvBStKuM3bPF7B3afFwxorruj8cUh8Pd
-	 XRTHj3a7isgRuEyRmacO2QsyEEWpvWSNRITdcikCjREvMBMWUXYo2sSlkoiEJ5P+sJ
-	 TnaLlUuBw11IUo+nApbMrnRPOTwDHul0bmBXPjfrlsufF5o4wIml+iPq3M9aVyLkhC
-	 8UFStq3SsZaP5XjuoF1TOlCoKSb4NJadqC+oeP8Raukw49DyXYTUixNsiwb9Xovl5R
-	 Y3WXFkKwfmzLTCh0ceRUzMkQyo9SQAURs1oi//jKkAXZafjulF384rNjiF89dOYhSR
-	 ZO1zX1aOn5DLQ==
+	b=hwy6yPr5fgT8ujXx/oNIm+ryGjSbEZqxa8q+ZDiepyNkQIQ+G7o+okBk1YRR7Gifn
+	 twYqSpFTfUpsvppeVwzkXgMS+ViOdBEn4Jyl042/dvy78cLDO0GG4L4wA/9zswtC4i
+	 vMqpKBJBZSiT/QxmHavJ5zFVJeB9TPKYEjkGMns3ZHSyHWerQwERGUJ2AMs1ZaaPv8
+	 r6ptIOleDGbvfelHViGdD9+O95XS++7n5SrmuQbd3XnVYPldNaNnahSCGJ4j28+Q7O
+	 M3fYuRGwn1aAPjmJMP30X5mL4KLSJDk1Q2Ke5yBiuRVY+DSvT45gJEvjYErITbURkL
+	 XVEPrGydWVotw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 1D8C1606C2;
-	Tue,  3 Nov 2026 16:23:38 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 1A50E235
- for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Nov 2026 16:23:35 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 6C5FE806F6;
+	Tue,  3 Nov 2026 16:28:40 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id D71FD2AC
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Nov 2026 16:28:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id F2EE440718
- for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Nov 2026 16:23:34 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id C885B400BE
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Nov 2026 16:28:38 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ZXH4kL6KXVss for <intel-wired-lan@lists.osuosl.org>;
- Tue,  3 Nov 2026 16:23:34 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org DD84340704
-Authentication-Results: smtp4.osuosl.org;
- arc=none smtp.remote-ip="2a00:1450:4864:20::648"
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793723014;
- b=Wi6lcDtM2G9DL/3dvczOJmJRM9MvRfYHp3YjBXofVqt352UyN2P9sBTDGQO7z2GMaaba
- 0FO76rrCWhJvj5jJWQUjfXcHGXJ/IvLZFsl9v6eteslBlCRw2dDxJXKkSeA6IBKwNLWwh
- o0keiLaUSpTgkYfu9ctRTg+3KaJ47RV661mEhIY38s5RbzUeqQqIB2da4IPOWBaf0YurN
- u2BiUWN3hycxKb4vtTD3wia0KRVc/wZ2gbxbv+Jr27E4kKBS2M+FyQjIpBY7bRDRbO5iU
- kOqAiBpXXZmsh2FoOodukFWkAG7Zd30YbPh7H1sOM1jIeokpujrmfh+w2vCArLge6+g==
-ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1793723014;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id H0QSg7dsmepE for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  3 Nov 2026 16:28:38 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org 8406840062
+Authentication-Results: smtp2.osuosl.org; arc=pass header.oldest-pass=0
+ smtp.remote-ip="2a00:1450:4864:20::430"
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793723318;
+ b=kyXj0ruhu3tO6zHW/MSNO8eqg1z3dLzmXGejLmvmx068NGIYWkqGnb3x3JMnrh8LZLLr
+ fVHu/MXzZUHOFwoV/4LK2JyqEPYUusNOLU4DLKQ5ZF9VywIiYuNJizhINc5TlxqawRnSO
+ x4SSEmoXTHip9AzcmE3RpdljRa3Fn6EYVWjpHtOWpigzg60vI3as10FEG/lEUxNgOLFAE
+ +JpVKYnVqVI8vdtzaMLRLqogM4P/uWerw7kwYRzPf3yh5Yj6/p/2P9aTIBKvHp5Ts8hOk
+ X+0acD7L3x8DvYqAxdvwdIGglu9W76We69wbwVXlxv9dU7z6uEwXS4J8oXg5hJ5GctQ==
+ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
+ c=relaxed/relaxed; t=1793723318;
  h=Received-SPF:Received:DKIM-Signature:X-Google-DKIM-Signature:
- X-Gm-Message-State:X-Received:Date:In-Reply-To:Mime-Version:
- References:X-Mailer:Message-ID:Subject:From:To:Cc:Content-Type;
- bh=wEvpZVnmD8tz2rAl92pJSmTNVQbWDPHgUyrWXimakhw=;
- b=eMkNNq5nc3j4Ots9u8ptknCfg14RhcTkgHlOTlyyWmolqtOqBKbzYptzUDOOqR9MPYZv
- 0XNYcMoPYRw0YrVrEV4HCGCiOdZiGa3vbyHKECAT+QvXjCMTv0gf/qvzUZqdkOb5DOc51
- dtxILTJXmnWToHQE/aXZxpELY6tm/SF6gWpfdciTJKsG3fo5xbbeNeEaM/T2vQ4SU4P3L
- KL0joGqbtVrGMWTNl8TejgrOJav4H0uhByMUUz9BiHOZ4FiOBanOL6xdIxrfPGTjeFQp8
- oi4gS6eYn03ah9OraMbww+PTrxWBAeiUx/HSL8QJX1+9L2cteRFSbLM/DBHPfRDCx1w==
-ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
- dmarc=pass header.from=google.com;
- dkim=pass header.d=google.com header.i=@google.com header.a=rsa-sha256
- header.s=20260707 header.b="S/4fV7ta"; 
- arc=none smtp.remote-ip="2a00:1450:4864:20::648"
+ X-Gm-Message-State:X-Gm-Gg:X-Received:MIME-Version:References:
+ In-Reply-To:From:Date:X-Gm-Features:Message-ID:Subject:To:Cc:
+ Content-Type:Content-Transfer-Encoding;
+ bh=iNrqawb7znOhdynzk3QZawC3lApb5SKPQ8U0JnSF1mQ=;
+ b=StiA8bOSS7eRRxjbCp8I9R7/v5CTYVp0VAcExYsJHTNVqKa2VyAwb3VL9Fk6hJBbWRrb
+ yENZOc/0qtzdZrI4kCuXjI/mP/3SchvOLs5fA754CZZ1sVU7+Oks2McEYPal0p02Pqkkb
+ lfLXoNYwSRFqCeA7Gk2NhIjtVHdYd+7RXD4BwHXGQEn0ocQUNuWEZan2+a5FH8ki4/f7q
+ rr5mpckUhTv+P3xwxMIWRoxui1dWw2sO6SHvDd6xV/JDrI/uXQJDslNCeXDxPwK5BpT91
+ rBkXURs7F09ecewcmRZ9O3EfrOSMaqHHgCBeuXy1Hs4iC5Wn3EqMq1BgIiLbAyq67fg==
+ARC-Authentication-Results: i=2; smtp2.osuosl.org; 
+ dmarc=pass header.from=gmail.com;
+ dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20260707 header.b=le0whQKd; 
+ arc=pass header.oldest-pass=0 smtp.remote-ip="2a00:1450:4864:20::430"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a00:1450:4864:20::648; helo=mail-ej1-x648.google.com;
- envelope-from=3gwrqagykd54jpgxxmemmejc.amkglrcj-ugpcb-j8ljgqrq.mqsmqj.mpe@flex--lrizzo.bounces.google.com;
- receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
- header.a=rsa-sha256 header.s=20260707 header.b=S/4fV7ta
-Received: from mail-ej1-x648.google.com (mail-ej1-x648.google.com
- [IPv6:2a00:1450:4864:20::648])
- by smtp4.osuosl.org (Postfix) with ESMTPS id DD84340704
- for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Nov 2026 16:23:33 +0000 (UTC)
-Received: by mail-ej1-x648.google.com with SMTP id
- a640c23a62f3a-c429d9d05f0so346745066b.1
- for <intel-wired-lan@lists.osuosl.org>; Tue, 03 Nov 2026 08:23:33 -0800 (PST)
+ client-ip=2a00:1450:4864:20::430; helo=mail-wr1-x430.google.com;
+ envelope-from=alexander.duyck@gmail.com; receiver=<UNKNOWN> 
+Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20260707 header.b=le0whQKd
+Received: from mail-wr1-x430.google.com (mail-wr1-x430.google.com
+ [IPv6:2a00:1450:4864:20::430])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 8406840062
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Nov 2026 16:28:37 +0000 (UTC)
+Received: by mail-wr1-x430.google.com with SMTP id
+ ffacd0b85a97d-48e00eee27dso2353237f8f.0
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 03 Nov 2026 08:28:36 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1793723315; cv=none;
+ d=google.com; s=arc-20260327;
+ b=qVvzL8lelxPOdByzGHAvTSH4UD/sjyraizDa1Pokcn+p6kFlDQz//gxG+jfz8sTE+w
+ no58+Wb4gJEOTXVqkhXSG+XdThl/z88VMK1RMl2NvCpGmEQS+arlkl+5R9fy5DywA6lM
+ V5WZ0kL77x85Getb7V7Z9/0YmqZlQFI9AG8fkhd6dhWHXyB6zVzADttek3HK8Iddbym0
+ 97rWuEJugfI9+ghkC6rMu0uSGBc8kR7kV9BHiOebwTQv+miN92GissAKRxFf2nchfTMd
+ VhS7DVdcpbriywmoDF4Kwcysb9Id7ZvFYlZUWgQ3pil/xSdncA5uaR2nwi+XE2L3aGYK
+ HHhw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com;
+ s=arc-20260327; 
+ h=content-transfer-encoding:cc:to:subject:message-id:date:from
+ :in-reply-to:references:mime-version:dkim-signature;
+ bh=iNrqawb7znOhdynzk3QZawC3lApb5SKPQ8U0JnSF1mQ=;
+ fh=CQPwpG3DzXKRlNfMsrUW62mfB15zNMlN9JfRXliDAb4=;
+ b=K67o8Imn3KzQF+NXam0iV6YbWxN1CdH2k+Rl9GYJ6OZDjuBWzhQQfagttRR+MOrk9U
+ /BeLWq8Shq6i+4+OjkmG8uSyhgIz3UZhjhUQ9gINT2bMehLU8mrK423WuPoreG2jDKah
+ tFPtoBdgBVWkEwXyn2wsV+uZLz3sRW0IrPdVGXswVkcjSKVfqakXSXieoYYqHrv9W89m
+ SRxb5clv8e+6AZxjxfH4qjWPZTR2vtfy+m5OCRuxr7nNv3wMgnQL3c2+ZjFbR4MLTY1f
+ rAbRtJjuo/PRCUAxShSAYED2LsPaWfuWxUaW0yIbsQhRhc7WPY/EttMFAcmPHK0JBolj
+ MVlQ==; darn=lists.osuosl.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=google.com; s=20260707; t=1793723011; x=1794327811; darn=lists.osuosl.org;
- h=content-type:cc:to:from:subject:message-id:references:mime-version
- :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
- :content-type; bh=wEvpZVnmD8tz2rAl92pJSmTNVQbWDPHgUyrWXimakhw=;
- b=S/4fV7talMfRUfo1ztdY8Oa1KxHyu+Jeu1LcMTsa3k7y4e2zXSrUTPARp5RXtplT55
- t+T2Uulk/U0JWrGtMCdGSqNrpY8P+ch7s/Ne3neSb1DbBdAh5IXOgl7kG7mx4GDQpgeP
- E/lgX6z2rfKsYIws1EznAeI/1X4a9m4U7B7dLAT8aCrg2fjLqX7X2sXSl1up1wBmPqdN
- eZ4DE5+zMEF/hXRVbT9OGjldjma3Ba+5/uOgFrrbHLOhqkPtisTw4PfO8GARq/Mg9lM/
- +MRDXUIBQccv/xU0RNRH+GBRfxzr2KUUv3Mem7fdlCnRx15BkGAF+YedbDO1W9ec6nnR
- xsww==
+ d=gmail.com; s=20260707; t=1793723315; x=1794328115; darn=lists.osuosl.org;
+ h=content-transfer-encoding:content-type:cc:to:subject:message-id
+ :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+ :date:message-id:reply-to:content-type;
+ bh=iNrqawb7znOhdynzk3QZawC3lApb5SKPQ8U0JnSF1mQ=;
+ b=le0whQKdO6XksTX4j4z1+aZIThTiNC7RhZF6cZEfqj1ti0KfcyY85mEwWi99bDITSZ
+ j4W/cGyh96T/H0rCCLHT7fgQX54YT5C5CGdDvgAjnf64872L12SOEHbfXv5B1lEx8iEc
+ UB4+hj3qJrfY8xyL1uVSCRTjFCUbhRzCJ28G7AldrVIipOWpqYXD7f90VM9q6nefvom3
+ 0UqxEO9K/8SypsWEgnENmebdS0jr3o8RMrO7y9VOATZtP+sPtCwxvHo3AVktmZrs9GSa
+ FxltAFhKvT8XkYzHVeJbuJNzjqyUtUANZCEcj4+5cxj8M5T6O9t27YYz8AZnerC9l5XO
+ 1+nQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1793723011; x=1794327811;
- h=content-type:cc:to:from:subject:message-id:references:mime-version
- :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
- :message-id:reply-to:content-type;
- bh=wEvpZVnmD8tz2rAl92pJSmTNVQbWDPHgUyrWXimakhw=;
- b=eDpD2LICZWTc9dzJng+QOyt/uUk3xCbHtIcnj7kjg4WOgBF1eRlQIvDOfiwQ5/AxAg
- WE2QxTOnukEoFIVZvGyzgEdovbNirBvwZ+/Dv5PnEtewu48h6WYZcgN+GgTwT+elMdlE
- KfHhwq3bi/viVRCqUeqXMnazwc/oZX2DWNj5W1zakrYfAh8rqxY6Lv+qwLwg5TPUOHu9
- wiqBlIykx0wVxooCsvkfzQWc7XYJ2G72jvt6Ing6m0+eMVzObsXH2ReYLM+Qtc/ZK+XF
- 0s5gXyJBT59IL7jtYnLcD+LuEsZnYkAasvS1Nqw1BrV0Ej+UsFzn7OR3/lsopdmzUI8z
- JK4g==
-X-Gm-Message-State: APuU4Z/k7yZCohPxL/ikdh5qQcbuRqDG7cLwj+1hTjhrlJGvLPynwfAD
- kg4qHbW1+IdkMljPfrUBcH081IzYpxsjuHJf3t+cEKKgTU+SwYqfRhZsoBN3pxFAFt9jKefcrx6
- 6dJPb+OwH8bBuXjuEHQPKTsU7LYmrRHuap6+eZmIFOSd6c4qCb9GC2LNht8TCYdXGiWZgiDti41
- VRFVNtYvvEKJE7E46wkXYKrVHQBmEFfHq055MCKQiQD2eY6SIo8g==
-X-Received: from ejbxj21.prod.google.com ([2002:a17:906:d335:b0:c31:9985:b124])
- (user=lrizzo job=prod-delivery.src-stubby-dispatcher) by
- 2002:a17:906:7951:b0:c29:22cf:b0f5
- with SMTP id a640c23a62f3a-c4ca7ab1133mr1128153266b.33.1793723011159; Tue, 03
- Nov 2026 08:23:31 -0800 (PST)
-Date: Tue,  3 Nov 2026 16:23:25 +0000
-In-Reply-To: <20261103162326.3615979-1-lrizzo@google.com>
+ d=1e100.net; s=20260707; t=1793723315; x=1794328115;
+ h=content-transfer-encoding:content-type:cc:to:subject:message-id
+ :date:from:in-reply-to:references:mime-version:x-gm-gg
+ :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+ :content-type;
+ bh=iNrqawb7znOhdynzk3QZawC3lApb5SKPQ8U0JnSF1mQ=;
+ b=o6BdOLYOeDDh58u/pWcDTYmDxUFVlR7SE2VWTfiPt61pE56FivA7ksDcKwl3iOg6Je
+ klpqDk2P0smtLWYcynhzgiWWE6BQAJBvGv4eGu/2eanB7en0m2tW4y5lCZ1P7/PXFZ5C
+ +zrYM4QCJTItaOBy3xR09Jz6dvIZHMo5X15KU1oq97E9BTD1hL78df4ajTYGjpgRpTig
+ w03jVxTKgbrKwfzPT4gF9YF0OBeCy8H8iTy+A3WUSzqJx129arkVvn48IsoeA/PHYkOG
+ c2Iiv9zJan/EguZ7gnqCHzzqvYzmN4NlmZqmewUn1JPTLvMWmBzVamnAf0pgfRDk6TvP
+ V2Ew==
+X-Gm-Message-State: APuU4Z9JWfdlTtA9D7UTPj5nMd2xo3iOAHH9PJallfe0qs7vxExYfiyO
+ LBMsQmxNPpdhZ85niRGrQjjOLPzgSbsV7nsLHbI5USGaO21pK8RkZhnbAkCx7pi41zv/FF+owGf
+ VP/HzzciDSSLHmfUjwj3WaDR4xu/bcoQ=
+X-Gm-Gg: AYBFou05FuZECI92AeW0nH/W2fsI2v2XtSen0Vr2WcYFnz62pMfjf1Q5V7ewoklIKBL
+ qVWsTaRMlSFFepo2MgwSkV99lfsuy3B7Rpcht6nOjsWl7O3pRVeSLNM2aH78enCBsk9u4pQaRTf
+ +Tp1BOT/UCO5rMI87DBV2kUER3WkauX4k2DezlHbJfF7Kkz78q+8x9GcPjiVBJBkgNRGIbKthMu
+ kYHXzGa6ZVu9xGPFCtGDg7vrEGfUEUsTF+8nNf7jc3GUsyjX0wwHQO3e2x4zgBgrmuu1FNwkGpt
+ 6puFjV8fD3Nlr8D1tYuGWKdjO3A2Fp0ftR4wiHt/hQwAmhmo15Zclef4QZ/gVsjKFDHMRHAlFCl
+ XKzidR42Zv+tX0P2nV8yB4YnPjEjM7CEX3uY/nNKF0z7EDjZ1d0CusR+FVbiwaUH2ghbur4dFGE
+ RFRGqEmjludgsTYp78xCdHG6oKRiox2eDZzsTcbEfvVALiPKxsD5T2Ag==
+X-Received: by 2002:a05:6000:2404:b0:48c:7386:af18 with SMTP id
+ ffacd0b85a97d-48e6e2c1e2amr29659218f8f.8.1793723314831; Tue, 03 Nov 2026
+ 08:28:34 -0800 (PST)
 X-Archived-By: <archiver.kernel.org>
-Mime-Version: 1.0
-References: <20261103162326.3615979-1-lrizzo@google.com>
-X-Mailer: git-send-email 2.56.0.385.gac671c819a-goog
-Message-ID: <20261103162326.3615979-3-lrizzo@google.com>
-Subject: [PATCH iwl-next v3 2/2] idpf: use GFP_KERNEL for the initial Rx ring
- fill
-From: Luigi Rizzo <lrizzo@google.com>
-To: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org, Tony Nguyen <anthony.l.nguyen@intel.com>, 
- Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
- Alexander Lobakin <aleksander.lobakin@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>, 
- "David S . Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>, 
- Luigi Rizzo <rizzo.unipi@gmail.com>, Brian Vazquez <brianvv@google.com>, 
- Joshua Hay <joshua.a.hay@intel.com>, Larysa Zaremba <larysa.zaremba@intel.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Simon Horman <horms@kernel.org>, 
- linux-kernel@vger.kernel.org, Luigi Rizzo <lrizzo@google.com>
+MIME-Version: 1.0
+References: <20261028170239.28606-1-tactii@gmail.com>
+ <31444b89635e8520c262ae915235991c3c075a0a.camel@gmail.com>
+ <8df82d18-da9e-4077-8ed4-316e5314882a@gmail.com>
+ <CAKgT0UfcR12X-+O5XvzqCV4Hh5rHs5dPZSps5t=1rPC5SU88eQ@mail.gmail.com>
+ <bf1f9ee0-c7ec-4e6b-bf22-14e64413118d@gmail.com>
+In-Reply-To: <bf1f9ee0-c7ec-4e6b-bf22-14e64413118d@gmail.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Tue, 3 Nov 2026 08:27:58 -0800
+X-Gm-Features: AclHuK-P7m9VOIbcOGQMmiHqx-bxMRQC6xGVDdY-66Tx-Pag-hb_2xV8nBD-_BU
+Message-ID: <CAKgT0UfTMsJok7ZOBukzrVKvTC9qV38jdfWH6yKDEPJSEsB3CQ@mail.gmail.com>
+Subject: Re: [PATCH iwl-net v2] e1000e: fix Tx descriptor field wrapping
+To: Matt Vollrath <tactii@gmail.com>
+Cc: intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>, netdev@vger.kernel.org, 
+ Andrew Lunn <andrew+netdev@lunn.ch>, "David S . Miller" <davem@davemloft.net>, 
+ Eric Dumazet <edumazet@kernel.org>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, 
+ Andre Brait <andrebrait@gmail.com>, stable@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -172,125 +200,243 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-26.4 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,USER_AGENT_GIT,USER_IN_DEF_DKIM_WL
-	autolearn=unavailable autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-12.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS autolearn=unavailable
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-When idpf fills its Rx rings at open or on queue reconfiguration, the
-allocation runs in process context, right after page_pool_create() and
-before the queues' NAPI is enabled. Allocating tens of thousands of
-buffers across all queues with GFP_ATOMIC is needlessly restrictive
-when the caller may sleep.
+On Mon, Nov 2, 2026 at 8:32=E2=80=AFPM Matt Vollrath <tactii@gmail.com> wro=
+te:
+>
+> On 10/31/26 12:53, Alexander Duyck wrote:
+> > On Fri, Oct 30, 2026 at 12:00=E2=80=AFPM Matt Vollrath <tactii@gmail.co=
+m> wrote:
+> >>
+> >> On 10/29/26 12:47, Alexander H Duyck wrote:
+> >>> On Wed, 2026-10-28 at 13:02 -0400, Matt Vollrath wrote:
+> >>>> When an skb arrives at the driver and the header length exceeds the =
+u8
+> >>>> hdr_len, tucss and tucso fields in e1000_context_desc, wrapped value=
+s
+> >>>> are sent to the card. If TSO is enabled, some header lengths will ca=
+use
+> >>>> the card to hang.
+> >>>>
+> >>>> This was reproduced on an I218-V with an unprivileged Python script.
+> >>>
+> >>> Can you elaborate on what the script did to trigger this? I am
+> >>> wondering if it can even get there with a valid frame supported by th=
+e
+> >>> interface since most of these e1000e parts don't support tunnels and
+> >>> such.
+> >>
+> >> I will send you the script OOB. To be clear, this is a security fix,
+> >> not a correctness fix for rarely used paths. The rules say I have to
+> >> post the fix publicly because an LLM found it in a
+> >> function-by-function scan.
+> >
+> > I got the script, will try to take a look at it over this weekend.
+> >
+> >>> Also did it have separate cases for the CSUM vs the GSO? I would
+> >>> suspect this is more a CSUM issue than a GSO issue.
+> >>
+> >> I have only reproduced hardware hang when TSO is enabled on the nic.
+> >> Otherwise it likely just mangles the packet, but I have not confirmed
+> >> that.
+> >>
+> >>>> Fix it by disabling GSO and checksum offload when the header length =
+(and
+> >>>> checksum offset) would exceed the field widths. Compensate for a
+> >>>> software-inserted VLAN tag.
+> >>>>
+> >>>> Because of a quirk in the ordering of ndo_features_check, the skb's
+> >>>> transport_header field may be stale. If the skb carries
+> >>>> CHECKSUM_PARTIAL, use csum_start to find the header. Otherwise, ther=
+e's
+> >>>> no reliable interface, so don't offload it.
+> >>>>
+> >>>> Fixes: bc7f75fa9788 ("[E1000E]: New pci-express e1000 driver (curren=
+tly for ICH9 devices only)")
+> >>>
+> >>> I am pretty sure this Fixes tag is bogus. This is the introduction of
+> >>> the e1000e driver which was in 2007. The ndo_features_check didn't
+> >>> exist until 2014 sometime after that if I am not mistaken.
+> >>
+> >> My understanding is the Fixes tag should point at the commit where the
+> >> bug was introduced. A comment on the Cc: stable tag indicates how far
+> >> back the fix can backport. I didn't bother because this patch should
+> >> apply back to 5.0 (skb_is_gso_tcp()) and the oldest LTS is 5.10.
+> >
+> > I get that, but at the same time the fixes tag is pointing at the
+> > driver when what more likely happened is that the stack evolved past
+> > what the driver can handle as evidenced by the fact that the fix would
+> > never be able to backport that far as the function it was adding was
+> > introduced sometime after the additional stack complexity was added.
+>
+> The Fixes tag seems correct to me. To confirm it I reproduced the hanging
+> hdr_len values against 2.6.24 on top of Fedora 8. It was more or less the
+> same script, just with different headers. I can't confirm that it hangs
+> the limited set of hardware supported in the first driver commit. Maybe
+> Intel could test it in their lab.
+>
+> It's worth finding new core complexities causing problems in drivers, but
+> in this case the mechanism predates the driver. It really has been a
+> security bug for 19 years. The switch was enabling TSO6 when e1000e was
+> spawned from e1000.
+>
+> The fix not being able to backport all the way to the Fixes tag was a
+> choice. It has nothing to do with the bug not being a bug that far back.
+> I'm not spending time supporting Linux 2.6 or any pre-LTS kernel, nor is
+> anybody at Intel or kernel.org, as far as I know.
+>
+> The attack surface and details of exploit have changed over time, but
+> that's not a story that a single Fixes tag can tell. It's the story of
+> IPv6 headers.
 
-In splitq mode, idpf_rx_post_buf_desc() is only used for this initial
-fill, so switch its header and payload allocations to
-__libeth_rx_alloc(..., GFP_KERNEL).
+The thing is this has had cycles where you could do it and where you
+couldn't. My thought is that it would have made more sense to tag:
+Fixes: f2701b185e05 ("e1000e: Enable TSO for stacked VLAN")
 
-In singleq mode, add a gfp_t parameter to
-idpf_rx_singleq_buf_hw_alloc_all() and pass GFP_KERNEL from
-idpf_rx_buf_alloc_singleq() and GFP_ATOMIC from idpf_rx_singleq_clean().
+Basically there were a number of efforts to fix this in the 20-teens
+as all the extra headers for tunnels is when this started to really
+become an issue. In addition the driver ended up being moved at some
+point between so this likely went from being fixed to being broken
+again in a few cycles over the years.
 
-Signed-off-by: Luigi Rizzo <lrizzo@google.com>
----
- drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c | 7 ++++---
- drivers/net/ethernet/intel/idpf/idpf_txrx.c         | 9 ++++++---
- drivers/net/ethernet/intel/idpf/idpf_txrx.h         | 2 +-
- 3 files changed, 11 insertions(+), 7 deletions(-)
+> >>> Much of the complexity that enabled frames to build up massive header=
+s
+> >>> wasn't until much later when the network tunnels and OVS started bein=
+g
+> >>> added.
+> >>
+> >> The repro script should work back to 4.10.
+> >
+> > Okay. However, that still only goes back as far as 2017 if I am not
+> > mistaken. The diff you are blaming is from 2007. I suspect we should
+> > be looking at blaming whatever introduced the ability to push the
+> > headers this far as the driver itself isn't likely the root cause for
+> > the issue, but instead a header change was.
+> >
+> >>>> Cc: stable@vger.kernel.org
+> >>>> Assisted-by: LLM
+> >>>> Signed-off-by: Matt Vollrath <tactii@gmail.com>
+> >>>> ---
+> >>>>    drivers/net/ethernet/intel/e1000e/netdev.c | 34 +++++++++++++++++=
+++++-
+> >>>>    1 file changed, 33 insertions(+), 1 deletion(-)
+> >>>>
+> >>>> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/ne=
+t/ethernet/intel/e1000e/netdev.c
+> >>>> index 6f85dab5c55c5..370776657d100 100644
+> >>>> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> >>>> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> >>>> @@ -7355,6 +7355,38 @@ static int e1000_set_features(struct net_devi=
+ce *netdev,
+> >>>>       return 1;
+> >>>>    }
+> >>>>
+> >>>> +static netdev_features_t e1000_features_check(struct sk_buff *skb,
+> >>>> +                                          struct net_device *netdev=
+,
+> >>>> +                                          netdev_features_t feature=
+s)
+> >>>> +{
+> >>>> +    /* Do not offload packets whose header lengths exceed the u8 fi=
+elds
+> >>>> +     * in the descriptor.
+> >>>> +     */
+> >>>> +    unsigned int hdr_len =3D 0;
+> >>>> +
+> >>>> +    if (skb->ip_summed =3D=3D CHECKSUM_PARTIAL) {
+> >>>> +            const struct tcphdr *th =3D (const void *)skb_checksum_=
+start(skb);
+> >>>> +
+> >>>> +            hdr_len =3D skb_checksum_start_offset(skb);
+> >>>> +            if (skb_is_gso(skb) && skb_is_gso_tcp(skb))
+> >>>> +                    hdr_len +=3D __tcp_hdrlen(th);
+> >>>> +            else
+> >>>> +                    hdr_len +=3D skb->csum_offset;
+> >>>> +    } else if (skb_is_gso(skb)) {
+> >>>> +            /* Work around untrustworthy header offsets in this cas=
+e. */
+> >>>> +            return features & ~(NETIF_F_CSUM_MASK | NETIF_F_GSO_MAS=
+K);
+> >>>> +    }
+> >>>
+> >>> Most drivers currently assume if the CHECKSUM_PARTIAL isn't set then
+> >>> the frame must not be TCP/UDP GSO since for those normally the checks=
+um
+> >>> and offsets should be populated. Have you identified cases where we a=
+re
+> >>> seeing TCP/UDP GSO w/o the checksum being set up?
+> >>
+> >> It looks like this particular case is never reached by normal traffic.
+> >> It has to be GSO without NEEDS_CSUM. This is only produced by a buggy,
+> >> hostile or niche setup.
+> >>
+> >> When CHECKSUM_PARTIAL is not set, the csum_start/csum_offset fields ar=
+e
+> >> used for csum instead, or left zeroed.
+> >>
+> >> The transport_header field is unreliable when a packet is being routed=
+,
+> >> so you would need to parse the packet from the top to find where the
+> >> transport header ends.
+> >>
+> >> Rather than walk all the headers for hdr_len, it seemed prudent to jus=
+t
+> >> categorically deny offload for these exceptional cases. I could be
+> >> convinced otherwise.
+> >
+> > The point I was trying to get at is that the stack shouldn't be
+> > allowing those sort of frames through in the first place. Basically if
+> > checksum partial isn't set the stack should be rejecting the frame for
+> > UDP/TCP GSO, not the drivers.
+>
+> I agree that this patch demonstrates how obtuse it is for an
+> ndo_features_check to reliably measure header length, which is something
+> that several drivers need to do in the hook. The issues being worked
+> around should be fixed in core.
+>
+> GSO without NEEDS_CSUM is the biggest offender, no driver is checking for
+> that in their implementation of ndo_features_check.
 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c
-index e3ddf18dcbf51..ab5a1e20a37ce 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c
-@@ -885,11 +885,12 @@ static void idpf_rx_buf_hw_update(struct idpf_rx_queue *rxq, u32 val)
-  * idpf_rx_singleq_buf_hw_alloc_all - Replace used receive buffers
-  * @rx_q: queue for which the hw buffers are allocated
-  * @cleaned_count: number of buffers to replace
-+ * @gfp: GFP_KERNEL for the initial fill, GFP_ATOMIC from NAPI
-  *
-  * Returns false if all allocations were successful, true if any fail
-  */
- bool idpf_rx_singleq_buf_hw_alloc_all(struct idpf_rx_queue *rx_q,
--				      u16 cleaned_count)
-+				      u16 cleaned_count, gfp_t gfp)
- {
- 	struct virtchnl2_singleq_rx_buf_desc *desc;
- 	const struct libeth_fq_fp fq = {
-@@ -908,7 +909,7 @@ bool idpf_rx_singleq_buf_hw_alloc_all(struct idpf_rx_queue *rx_q,
- 	do {
- 		dma_addr_t addr;
- 
--		addr = libeth_rx_alloc(&fq, nta);
-+		addr = __libeth_rx_alloc(&fq, nta, gfp);
- 		if (addr == DMA_MAPPING_ERROR)
- 			break;
- 
-@@ -1095,7 +1096,7 @@ static int idpf_rx_singleq_clean(struct idpf_rx_queue *rx_q, int budget)
- 
- 	page_pool_nid_changed(rx_q->pp, numa_mem_id());
- 	if (cleaned_count)
--		idpf_rx_singleq_buf_hw_alloc_all(rx_q, cleaned_count);
-+		idpf_rx_singleq_buf_hw_alloc_all(rx_q, cleaned_count, GFP_ATOMIC);
- 
- 	u64_stats_update_begin(&rx_q->stats_sync);
- 	u64_stats_add(&rx_q->q_stats.packets, rs.packets);
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-index 885df6294ad94..0da095738d8d8 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-@@ -599,6 +599,9 @@ static void idpf_post_buf_refill(struct idpf_sw_queue *refillq, u16 buf_id)
-  * @bufq: buffer queue to post to
-  * @buf_id: buffer id to post
-  *
-+ * Only used for the initial fill, from process context, so it allocates
-+ * with GFP_KERNEL.
-+ *
-  * Return: %false if buffer could not be allocated, %true otherwise.
-  */
- static bool idpf_rx_post_buf_desc(struct idpf_buf_queue *bufq, u16 buf_id)
-@@ -617,7 +620,7 @@ static bool idpf_rx_post_buf_desc(struct idpf_buf_queue *bufq, u16 buf_id)
- 		fq.fqes = bufq->hdr_buf;
- 		fq.truesize = bufq->hdr_truesize;
- 
--		addr = libeth_rx_alloc(&fq, buf_id);
-+		addr = __libeth_rx_alloc(&fq, buf_id, GFP_KERNEL);
- 		if (addr == DMA_MAPPING_ERROR)
- 			return false;
- 
-@@ -628,7 +631,7 @@ static bool idpf_rx_post_buf_desc(struct idpf_buf_queue *bufq, u16 buf_id)
- 	fq.fqes = bufq->buf;
- 	fq.truesize = bufq->truesize;
- 
--	addr = libeth_rx_alloc(&fq, buf_id);
-+	addr = __libeth_rx_alloc(&fq, buf_id, GFP_KERNEL);
- 	if (addr == DMA_MAPPING_ERROR)
- 		return false;
- 
-@@ -674,7 +677,7 @@ static bool idpf_rx_post_init_bufs(struct idpf_buf_queue *bufq,
-  */
- static int idpf_rx_buf_alloc_singleq(struct idpf_rx_queue *rxq)
- {
--	if (idpf_rx_singleq_buf_hw_alloc_all(rxq, rxq->desc_count - 1))
-+	if (idpf_rx_singleq_buf_hw_alloc_all(rxq, rxq->desc_count - 1, GFP_KERNEL))
- 		goto err;
- 
- 	return 0;
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.h b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-index fe0c913f9bb95..82f0a63f23c34 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-@@ -1129,7 +1129,7 @@ netdev_tx_t idpf_tx_singleq_frame(struct sk_buff *skb,
- 				  struct idpf_tx_queue *tx_q);
- netdev_tx_t idpf_tx_start(struct sk_buff *skb, struct net_device *netdev);
- bool idpf_rx_singleq_buf_hw_alloc_all(struct idpf_rx_queue *rxq,
--				      u16 cleaned_count);
-+				      u16 cleaned_count, gfp_t gfp);
- bool idpf_rx_process_skb_fields(struct sk_buff *skb,
- 				const struct libeth_xdp_buff *xdp,
- 				struct libeth_rq_napi_stats *rs);
--- 
-2.56.0.385.gac671c819a-goog
+The point is that it shouldn't need to. It looks like this is
+something that was broken over time to first enable FCoE and then
+GSO_FRAGLIST. The way it used to work is the code required
+CHECSUM_PARTIAL only.
 
+> Using a potentially stale transport header is next in line. Several
+> drivers are getting this wrong. I'm working on a fix, a simple reorder.
+>
+> >>>   From what I can tell it looks like the only valid cases for it not =
+to
+> >>> be set and instead it is set to CHECKSUM_UNNECESSARY on a GSO frame a=
+re
+> >>> FCoE and SCTP (GSO_FRAGS) which are both non-TCP/UDP specialty cases
+> >>> anyway.
+> >>
+> >> FCoE was switched to CHECKSUM_PARTIAL in 253aab0597d9e
+> >
+> > This is part of the problem. It pushed through the ability for
+> > CHECKSUM_UNECESSARY to be valid in an outgoing TCP frame, and then was
+> > reverted back to using CHECKSUM_PARTIAL. That is what is partially
+> > what is allowing the non-partial checksum through for GSO frames.
+> >
+> > I will probably look at submitting a diff for this next week to look
+> > at limiting this as there are a number of drivers that already expect
+> > all TSO/USO frames to have CHECKSUM_PARTIAL always set before they
+> > start processing the frames.
+>
+> That would be great.
+
+The one thing that it should change about your patch is that you won't
+need to do the clearing of CHECKSUM_PARTIAL. Basically if that isn't
+set you can assume there will be no offload requested as GSO will not
+allow it through unless GSO_FRAGLIST
+
+I will try to push my patch out sometime today and try to remember to
+CC you on it.
