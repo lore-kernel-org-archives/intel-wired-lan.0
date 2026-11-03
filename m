@@ -2,28 +2,28 @@ Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E9008606D827
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  3 Nov 2026 14:39:56 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 057B6606A324
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  3 Nov 2026 14:40:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=6SNw13U5;
-	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=PEEXYBaB
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=zWVLFF0G;
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=naGGBBEm
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id CC5E260841;
-	Tue,  3 Nov 2026 14:39:56 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id DD0A46083F;
+	Tue,  3 Nov 2026 14:39:59 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id wT3ETYXtK3od; Tue,  3 Nov 2026 14:39:54 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org C0F18607BE
+ id zTrEz5p9amse; Tue,  3 Nov 2026 14:39:59 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 05A9E60844
 Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793716794;
-	b=CIfYP3gBp0t40V+73vhIcaSROxrzpgq7M3HmyBzWmW21YmcLOIqfBtlA98eVShMuGOKH
-	 kQxxzHSVG5/DrWpKaaepuVahJIk1d305ypoykmMsGPnv+lRT0jgVsK4eSl99tj8sSPRBu
-	 gvuQ2gfWLh+BlDJv7kgllyPAjoHpFZgDh5mwRtGX8LDb2x1I3Z5DK90tZYJ9tyRk+eP7F
-	 r1TI+wzbZdqGgpO2BpKXpOSFWwJYNnrYMOyA+o0mL4hrxdgcKedu0Cp3i7zArylukN+Ne
-	 p3sWPAKsiCd8Up4aVTL94XPc7EYUSA+EATOfxvy5yRH1+CROos9ZLkGvIP+B/d/RpKw==
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793716799;
+	b=oVorPAlxvKYdyOB6Zt33FXW+yyWKYERcfqaU54UPPsHSxZhDyDiVcFpUts6fLklkF7OM
+	 qi8M8JpUzmDcJyqXha85nJKwY+3vJ1UmyX38LM7SHeJfYwjd3Bhn7+/ZUjor0AEBkgTZU
+	 CC9uNb+XBg+yTr5CS3rXFx8tCe1oeARKY7WkzYCCg9MbSW/0ejAIfYKZVbpiiRpg3P4b1
+	 sHrXeJtv/MUn2BSM5I1ha43QZdmosamOo3iJt0HqeMvXt8BbBbZPQqJmAlTfa6sMbY4K6
+	 KI0LR7Rg2eLDTEm1YxgAjGrKcx9Xou0lZFWRvhEIEq41qcrKuZn2gvad3XAkxnFIyog==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1793716794;
+	c=relaxed/relaxed; t=1793716799;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
@@ -34,108 +34,110 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:Precedence:
 	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=KNzQRlqQm5MpoUtIBb/pVv9eXGoBbxC+11RPAIam9fk=;
-	b=bdsO48wYpreN/S7TvGfrgYiS5YTQXzMltIu1jnI7zD0swghsz6UHoUvJ4ZsD9eXgsbrF
-	 jb/3oNU4Luc7cUYl0J/uiz5pREIVzcV5gZPJpRFql+LtgmvCqSsjeEy6rfAQM7zIxFQT6
-	 PrZC0Q5Pkm4oGmhDEpeaDjtNA65aiyoWdGIVtpDLiB85XljRmTOwD0rhaALlPiZ3Ko3cD
-	 kO3LKAfX2nK7rJnizEvdLoYRS7ocTd9Vb2Npf1itjDS22GduWkQTfiLi4y3dywPW1dmQe
-	 +Rg46JqQRFIbLBI2xEB6KU10oBNqQczN1JeSQzobKT6z1Zx5PaVfMgZtCZJ/t6vDBvg==
+	bh=Z/bTXQiBtdn3V+QsRxLR4PyUW948SeM/v5h8ak0ysSM=;
+	b=OeH5OLR28bQ+KJ03gt9KuzoAXmYpau/h0URpNmrDUg4FAQQOnVk1RSSmq1bdS4GzL1aJ
+	 nmSQJWwd34XqqxdjeJPy57DW5orirZIEecbJlIzQJNvPXGURFeoHeuCQLF0LCKKlfTUl2
+	 MPH+QpOhJmlFfYKh7MT8txvEz+/SoGbquDrz2Ivvq5x6LoOPHDAHwuac3oKpJY/VZ8WS2
+	 vwbaJf2ve7mxP5LiGJIWl7DJmfKU7n32yzZeyaXcXdw2R3JdhLwHqEt2WPeEVGDNl6aYa
+	 RN4oa7eANIDnjG4VFA2oqW0xcGufP5h+xqdLNK3Rr3Cba5fQAg+dE952tsDaDYF4pAA==
 ARC-Authentication-Results: i=2; smtp3.osuosl.org; 
+	dmarc=pass header.from=intel.com;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=naGGBBEm;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1793716794;
-	bh=KNzQRlqQm5MpoUtIBb/pVv9eXGoBbxC+11RPAIam9fk=;
+	s=default; t=1793716799;
+	bh=Z/bTXQiBtdn3V+QsRxLR4PyUW948SeM/v5h8ak0ysSM=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=6SNw13U5rdACto2/fA3+/QKDP50A0pLhcsWL5ly6tR27Xk4Mk+ZAOZ+VUIFdJeNHx
-	 TLyoVPl0nMA+2mAzf5JeQV0oi+lg9ej9PAPk6ARC0Jl7vDjuHEuOuf/lOb4cyaRk5W
-	 VHupnknDwY4G4dttBc+49K2W/Yh5psB6tFiKxiaYbSbPNxCeRIHIFY4MMXVvF70hPf
-	 bEYgEsQIvtCFlyCERW7LfE8DE8AzB2g0SevgON6N2XUpJcKTJDJikHPOcpSJox/jUj
-	 iNjL3uJINJemqRsXIzjphiLSTSgxc6RzoqUnNbQTsXX14Y4BEdzN7DsVw0X24dnrej
-	 ypTOuttxlWAzA==
+	b=zWVLFF0GTUb7O5nLY5abJDAACj1PL004dEf4K14k/nnKRktQ9f898QPbcNDoRi0oI
+	 CXCwGOB/8s3HGA1266fo309rb8ogu1mDuw6tgmdCYVL9H8/LLkA4q7u73Zihydsblu
+	 PmGRZ0RIypC9MB3O5+RyGXgpART46pOz3SRS+VH+eB6OQLmfZXG0bo4EAUpjHdXEqR
+	 f2yKqde5F0Kgd5Ogh9q0crepAbNg36hTj2XXxRHSHH/0zIxMl/RMRPwuvSIJRGEili
+	 uZmyTd63aRhpCLgNZMqgqE1C7YYCoNicIpy6K/U/NG0fzNXxPPtnBs1ksIJgHMelDG
+	 7EoK0YQMruVrw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C0F18607BE;
-	Tue,  3 Nov 2026 14:39:54 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 9CE89235
- for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Nov 2026 14:39:52 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 05A9E60844;
+	Tue,  3 Nov 2026 14:39:59 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 422C3356
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Nov 2026 14:39:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 82B02406FA
- for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Nov 2026 14:39:52 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 28260607BE
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Nov 2026 14:39:57 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id nD8IDXQTenfg for <intel-wired-lan@lists.osuosl.org>;
- Tue,  3 Nov 2026 14:39:51 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 41FBB4070A
-Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=198.175.65.12
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793716791;
- b=Sp+bxMO+BCU65nZKbCS9blrW++1UIU3SQ+1KmE2uMqBCL1DoN2ZKKsJtvBmkD9cgy+Xk
- elI55u1gp4P3E4ss9aRViV+F5x2dbh0IZNWiLdxPPu8vogple+6rUvtTm7ObKOn3n2t1q
- UihfUDs02kYYbB8lqFqPIdekt5DUuSGJ/1Ink9OdZJ3t/8BSOBIjPCOl6QYox5Uu+rihA
- 5wA3DRfjL8D7OZEfFeVOqCtJqQQydjdua3ouCj7WuIcJDz/oBBrCVMtoSTpWCKhoPy6ak
- 9EcdxXeSkj0oe2vjFVcXkkxbTU5d7K1zuWiKi0/+SWXVXo1UAH2SlDIHYfGJHjH7y+g==
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 3Wt00Hiq3jUQ for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  3 Nov 2026 14:39:56 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 0ECB760838
+Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=198.175.65.12
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793716796;
+ b=niIya2O/mppBRZ+hXW+jJyz0FyDSw4xc1o/A7XBeoRP9c6Yoja59Mgx50LkUpYU9zVku
+ 6Pq5fbbN5aeGxGKqub9AdU90mQrRGR6W0dZdS9+CNywrp5+/O1lCWPcrAYe/yMT0s4vUL
+ 2khj5qUIlomiReSxcOyBSZzs768WlIxMLeLrYd1cvHXZXaQb9gz4VQSv7AbJjufu1XHc5
+ 24im9mtLpNUpbYsLb5eQEX2pDuGahs+oJe0jM4potg9NKL/jtdZq7A49ewNs7uW+Uff8a
+ l1scsK08jWzlRHeyINdPmt1lm6rPbRsXHYw4veqSjTfnrdEbVs5AAUbfXHozpxe/E6g==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1793716791;
+ c=relaxed/relaxed; t=1793716796;
  h=Received-SPF:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
  X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
  X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Received:From:To:Cc:
  Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
  Content-Transfer-Encoding;
- bh=KNzQRlqQm5MpoUtIBb/pVv9eXGoBbxC+11RPAIam9fk=;
- b=qFolzIG5bUV0XDaeVu8e9Wtz+mtlP/hp6yJCxKXIC4ZFXe5Y/G7LfxWjywCTxzC88Sqx
- 2XIX8lruu/njcZitCNaGsjpfYLXCCuhiNWN/r2PprU2X6RyyEsurC75XSsLTgPp5NyJAI
- osjll7/enXbDt4tgxpaB+UgV+GGI+Ebo+2E9Qi+xGf6WwutkUaLUxniC+odhg3fGryNSD
- lOQiI52kRW+X99tpk3Gaoc37AZbhjSKQ0GxK5J4C10Ol14UDs86IFKJM6XMESiZoXClxE
- SLLb5rq73UcS1cgeyiCmQOA7vjEaFePk0Gvp1mkvqMXBayJmTzeMSf7HgHYpY/9CCnA==
-ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
+ bh=Z/bTXQiBtdn3V+QsRxLR4PyUW948SeM/v5h8ak0ysSM=;
+ b=kgR6fR6xnXtfTEXglnXPzljDUIObJ+2Zbx4erQ2ewqAadlzeK9rIb+FEYyVP/B34Ts+/
+ wLcyZDdpeiXCM3KjJ5vvHYiQXai3g659AlZiZ7ZNtS8ZliQKH1VCIG7F0wlizepPgES/y
+ RS7UQYxd8BsLqLNqNDdpZ6tR4cneDlmiT9+SMMxqwPickGZnXZC+n/NOOn5y31hQ1FowY
+ VH1Vk/6Llh+HlWljSrIX/6kDFhfGPVGqWo13TW7HeWGNI9SJIbzGqTXhK0+DA9+fQMFJH
+ tAgpmsY+P5bQVj5ZJY1b3Ais/iIjh7fdQMUdE0u069Mo7rEfbbQzdP3rOzonMZxAONQ==
+ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
  dmarc=pass header.from=intel.com;
  dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=PEEXYBaB; 
+ header.s=Intel header.b=naGGBBEm; 
  arc=none smtp.remote-ip=198.175.65.12
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.12;
  helo=mgamail.intel.com; envelope-from=przemyslaw.kitszel@intel.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org;
+Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp4.osuosl.org;
+Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=PEEXYBaB
+ header.a=rsa-sha256 header.s=Intel header.b=naGGBBEm
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 41FBB4070A
- for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Nov 2026 14:39:50 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 0ECB760838
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Nov 2026 14:39:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1793716791; x=1825252791;
+ t=1793716796; x=1825252796;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=UCQ/iBpx7rr25JaoOqKtihqOvNZtNeX2zAy5GzhxztY=;
- b=PEEXYBaBPdzQYhLJVJN8ErgJIV6rvbqY6cc1+ab+7cGK/W9sGvgUVnkL
- M2Y/DJrW5Onx7V3TpxhZTRYu4g/Ycl9XtnqUy+f4dhOKoODwmlnmpUAaQ
- 7G1A1FdmT/D6xgxe029nWa1S8/h99O0MKyZ9VOWdQ8pB3XYPiHWZH/2J3
- zbpsstKeVh1f9h/FRWv3sTjvNRPH0H+gZve+PdBxwUgjOzhXcLHtEIMwL
- jEa2lPi7+S1Ku/BMXADTV4nemjrlAgQEYG7bPozyiwHF3ah91L6AoWtQR
- UVWOnd1/sr4B6Y1w3MI6EpichrP8NiNMumUnGO0aLIsLl0cJfxQpKvtvl g==;
-X-CSE-ConnectionGUID: PtRRSI3AQLi3DEGM3O99Mw==
-X-CSE-MsgGUID: 2OYewhUNSi+BfjAHVla0MQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11955"; a="2324001"
+ bh=dwtiphzBe6LmFgtXrFbRpt9Pf5VmYTg1nNbmtG0woNw=;
+ b=naGGBBEmnUdwq4WQdjsamHyWKe693xblbT4k/jkE3xmSe3L1Q2PkWUQF
+ zpCg0UObwzlogs7nW1GwANgl4dL8ZbJiBaeGQPiibiwnODmcErOvYOQBE
+ YnFa0GRPUE8WTljYJETIgOU1P8iTDmR127YDAErBinfrEQQpDKFLQ1h1y
+ sPGRnasAEGEKay02kzl4ZG7zBqSoxMgvH1Taem6rFdEuzWpCaCO3dbfl5
+ Zp5Pvdl45Ss79TivXmuatvw88XZppmSm4kyKWKgtGm9SWhlnPaBATgruV
+ 3fKVpAWGR4Nq+HeN5odzUc5noS+m0eTrQYjtKt+AdpuVdXaRUI5GCYNp5 w==;
+X-CSE-ConnectionGUID: HTMjqaqrT5+kRn+OBW1Q1Q==
+X-CSE-MsgGUID: T1penctdTyia0c/OL3z1Uw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11955"; a="2324023"
 X-IronPort-AV: E=Sophos;i="6.27,193,1787036400"; 
-   d="scan'208";a="2324001"
+   d="scan'208";a="2324023"
 Received: from fmviesa013.fm.intel.com ([10.60.135.153])
  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 03 Nov 2026 06:39:49 -0800
-X-CSE-ConnectionGUID: LU864/xPQECCQEKcmbn9Qg==
-X-CSE-MsgGUID: vKKE43I3TIacxtdzmSOqDg==
+ 03 Nov 2026 06:39:54 -0800
+X-CSE-ConnectionGUID: oBrV0P4vRfqqZERB0knGrw==
+X-CSE-MsgGUID: grsxIwv3SzWntMBqLfQw0w==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.27,193,1787036400"; 
-   d="scan'208";a="8289856"
+   d="scan'208";a="8289898"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmviesa013.fm.intel.com with ESMTP; 03 Nov 2026 06:39:43 -0800
+ by fmviesa013.fm.intel.com with ESMTP; 03 Nov 2026 06:39:49 -0800
 Received: from vecna.igk.intel.com (vecna.igk.intel.com [10.123.220.17])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 3D8E6312EA;
- Tue,  3 Nov 2026 14:39:39 +0000 (GMT)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id A441A312EB;
+ Tue,  3 Nov 2026 14:39:44 +0000 (GMT)
 From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 To: netdev@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>,
  Jiri Pirko <jiri@resnulli.us>
@@ -155,13 +157,11 @@ Cc: intel-wired-lan@lists.osuosl.org, Simon Horman <horms@kernel.org>,
  Saeed Mahameed <saeedm@nvidia.com>, Leon Romanovsky <leon@kernel.org>,
  Tariq Toukan <tariqt@nvidia.com>, Mark Bloch <mbloch@nvidia.com>,
  Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Jedrzej Jagielski <jedrzej.jagielski@intel.com>,
- Sergey Temerkhanov <sergey.temerkhanov@intel.com>,
- Grzegorz Nitka <grzegorz.nitka@intel.com>
-Subject: [PATCH iwl-next v4 02/15] ice: use shared devlink to store
- ice_adapters instead of custom xarray
-Date: Tue,  3 Nov 2026 15:14:43 +0100
-Message-ID: <20261103141646.303620-3-przemyslaw.kitszel@intel.com>
+ Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+Subject: [PATCH iwl-next v4 05/15] ice: rename ICE_MAX_RSS_QS_PER_VF to
+ ICE_MAX_QS_PER_VF_VCV1
+Date: Tue,  3 Nov 2026 15:14:46 +0100
+Message-ID: <20261103141646.303620-6-przemyslaw.kitszel@intel.com>
 X-Mailer: git-send-email 2.54.0
 In-Reply-To: <20261103141646.303620-1-przemyslaw.kitszel@intel.com>
 References: <20261103141646.303620-1-przemyslaw.kitszel@intel.com>
@@ -181,347 +181,260 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 X-Spam-Status: No, score=-18.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=4.0.1
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_NONE,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Refactor our storage and deduplication logic of ice_adapters by moving
-it to be handled by shared devlink instance, recently added by
-Jiri Pirko [1].
+Rename ICE_MAX_RSS_QS_PER_VF to ICE_MAX_QS_PER_VF_VCV1, in preparation for
+the next patch that will extend the max to 256, using old value of 16 for
+the "v1" variant of virtchnl opcodes.
 
-We wanted the devlink instance for whole device anyway - later in the
-series I will add devlink resources under it.
-
-Make the shared devlink a parent (wrt. nesting) of the actual PF devices.
-
-[1] commit 411ad0605875 ("Merge branch 'devlink-introduce-shared-devlink-instance-for-pfs-on-same-chip'")
-[1] https://lore.kernel.org/all/20260312100407.551173-1-jiri@resnulli.us
-
-Reviewed-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+Suggested-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+Suggested-by: Jacob Keller <jacob.e.keller@intel.com>
 Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 Signed-off-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 ---
-CC: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
-CC: Grzegorz Nitka <grzegorz.nitka@intel.com>
+ drivers/net/ethernet/intel/ice/ice_lag.h     |  2 +-
+ drivers/net/ethernet/intel/ice/ice_vf_lib.h  |  9 +++---
+ drivers/net/ethernet/intel/ice/ice_lib.c     |  2 +-
+ drivers/net/ethernet/intel/ice/ice_sriov.c   |  4 +--
+ drivers/net/ethernet/intel/ice/ice_vf_lib.c  | 12 ++++----
+ drivers/net/ethernet/intel/ice/virt/queues.c | 30 ++++++++++----------
+ 6 files changed, 30 insertions(+), 29 deletions(-)
 
-v2:
- * propagate the error from devlink_shd_get() with ERR_CAST()
- * minor kdoc updates
- * check devl_nested_devlink_set() return value, ice_devlink_register()
-   returns int now (Sashiko)
- * prefix the shared devlink id with "ice:", to avoid collisions with
-   ids used by other drivers (Sashiko)
-
-Sashiko suggestions I don't want to apply:
- S: all PFs without DSN get index 0, and so share one instance
- me: pre-existing, and DSN 0 is only on pre-production samples
----
- .../net/ethernet/intel/ice/devlink/devlink.h  |   2 +-
- drivers/net/ethernet/intel/ice/ice_adapter.h  |  12 +-
- .../net/ethernet/intel/ice/devlink/devlink.c  |  11 +-
- drivers/net/ethernet/intel/ice/ice_adapter.c  | 106 ++++++------------
- drivers/net/ethernet/intel/ice/ice_main.c     |  11 +-
- 5 files changed, 57 insertions(+), 85 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/devlink/devlink.h b/drivers/net/ethernet/intel/ice/devlink/devlink.h
-index 1af3b0763fbb..62af38d11fd9 100644
---- a/drivers/net/ethernet/intel/ice/devlink/devlink.h
-+++ b/drivers/net/ethernet/intel/ice/devlink/devlink.h
-@@ -7,7 +7,7 @@
- struct ice_pf *ice_allocate_pf(struct device *dev);
- struct ice_sf_priv *ice_allocate_sf(struct device *dev, struct ice_pf *pf);
+diff --git a/drivers/net/ethernet/intel/ice/ice_lag.h b/drivers/net/ethernet/intel/ice/ice_lag.h
+index f77ebcd61042..4bfffecbdc97 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lag.h
++++ b/drivers/net/ethernet/intel/ice/ice_lag.h
+@@ -52,7 +52,7 @@ struct ice_lag {
+ 	u8 bond_lport_sec; /* lport values for secondary PF */
  
--void ice_devlink_register(struct ice_pf *pf);
-+int ice_devlink_register(struct ice_pf *pf);
- void ice_devlink_unregister(struct ice_pf *pf);
- int ice_devlink_register_params(struct ice_pf *pf);
- void ice_devlink_unregister_params(struct ice_pf *pf);
-diff --git a/drivers/net/ethernet/intel/ice/ice_adapter.h b/drivers/net/ethernet/intel/ice/ice_adapter.h
-index c61bd645e460..cdad45e8e81b 100644
---- a/drivers/net/ethernet/intel/ice/ice_adapter.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adapter.h
-@@ -8,7 +8,8 @@
- #include <linux/mutex.h>
- #include <linux/srcu.h>
- #include <linux/spinlock_types.h>
--#include <linux/refcount_types.h>
-+
-+#include <net/devlink.h>
+ 	/* q_home keeps track of which interface the q is currently on */
+-	u8 q_home[ICE_MAX_SRIOV_VFS][ICE_MAX_RSS_QS_PER_VF];
++	u8 q_home[ICE_MAX_SRIOV_VFS][ICE_MAX_QS_PER_VF_VCV1];
  
- #include "ice_type.h"
+ 	/* placeholder VSI for hanging VF queues from on secondary interface */
+ 	struct ice_vsi *sec_vf[ICE_MAX_SRIOV_VFS];
+diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.h b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
+index fa436b3b1eac..4959ecee0c21 100644
+--- a/drivers/net/ethernet/intel/ice/ice_vf_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
+@@ -19,7 +19,8 @@
+ #define ICE_MAX_SRIOV_VFS		256
  
-@@ -35,31 +36,30 @@ struct ice_port_list {
+ /* VF resource constraints */
+-#define ICE_MAX_RSS_QS_PER_VF	16
++/* for "old" virtchnl opcodes that accept up to 16 queues */
++#define ICE_MAX_QS_PER_VF_VCV1	16
  
- /**
-  * struct ice_adapter - PCI adapter resources shared across PFs
-- * @refcount: Reference count. struct ice_pf objects hold the references.
-+ * @devlink: ice adapter's devlink (whole dev devlink)
-  * @ptp_gltsyn_time_lock: Spinlock protecting access to the GLTSYN_TIME
-  *                        register of the PTP clock.
-  * @txq_ctx_lock: Spinlock protecting access to the GLCOMM_QTX_CNTX_CTL register
-  * @cpi_phy_lock: Per-PHY mutex serializing CPI REQ/ACK transactions.
-  *               Index 0 = PHY0, index 1 = PHY1. Used on E825C devices.
-  * @ctrl_pf: Control PF of the adapter
-  * @ports: Ports list
-- * @index: 64-bit index cached for collision detection on 32bit systems
-  */
- struct ice_adapter {
--	refcount_t refcount;
-+	struct devlink *devlink;
-+
- 	/* For access to the GLTSYN_TIME register */
- 	spinlock_t ptp_gltsyn_time_lock;
- 	/* For access to GLCOMM_QTX_CNTX_CTL register */
- 	spinlock_t txq_ctx_lock;
- 	/* Serialize CPI REQ/ACK transactions per PHY (E825C only) */
- 	struct mutex cpi_phy_lock[ICE_E825_MAX_PHYS];
+ struct ice_pf;
+ struct ice_vf;
+@@ -161,8 +162,8 @@ struct ice_vf {
+ 	u8 dev_lan_addr[ETH_ALEN];
+ 	u8 hw_lan_addr[ETH_ALEN];
+ 	struct ice_time_mac legacy_last_added_umac;
+-	DECLARE_BITMAP(txq_ena, ICE_MAX_RSS_QS_PER_VF);
+-	DECLARE_BITMAP(rxq_ena, ICE_MAX_RSS_QS_PER_VF);
++	DECLARE_BITMAP(txq_ena, ICE_MAX_QS_PER_VF_VCV1);
++	DECLARE_BITMAP(rxq_ena, ICE_MAX_QS_PER_VF_VCV1);
+ 	struct ice_vlan port_vlan_info;	/* Port VLAN ID, QoS, and TPID */
+ 	struct virtchnl_vlan_caps vlan_v2_caps;
+ 	struct ice_mbx_vf_info mbx_info;
+@@ -205,7 +206,7 @@ struct ice_vf {
+ 	u16 lldp_recipe_id;
+ 	u16 lldp_rule_id;
  
- 	struct ice_pf *ctrl_pf;
- 	struct ice_port_list ports;
--	u64 index;
+-	struct ice_vf_qs_bw qs_bw[ICE_MAX_RSS_QS_PER_VF];
++	struct ice_vf_qs_bw qs_bw[ICE_MAX_QS_PER_VF_VCV1];
  };
  
- struct ice_adapter *ice_adapter_get(struct pci_dev *pdev);
--void ice_adapter_put(struct pci_dev *pdev);
-+void ice_adapter_put(struct ice_adapter *adapter);
- 
- #endif /* _ICE_ADAPTER_H */
-diff --git a/drivers/net/ethernet/intel/ice/devlink/devlink.c b/drivers/net/ethernet/intel/ice/devlink/devlink.c
-index 8c2b63eef82b..fa64b9744779 100644
---- a/drivers/net/ethernet/intel/ice/devlink/devlink.c
-+++ b/drivers/net/ethernet/intel/ice/devlink/devlink.c
-@@ -1747,11 +1747,20 @@ struct ice_sf_priv *ice_allocate_sf(struct device *dev, struct ice_pf *pf)
-  *
-  * Return: zero on success or an error code on failure.
-  */
--void ice_devlink_register(struct ice_pf *pf)
-+int ice_devlink_register(struct ice_pf *pf)
- {
- 	struct devlink *devlink = priv_to_devlink(pf);
-+	struct ice_adapter *adapter = pf->adapter;
-+	int err;
- 
-+	if (adapter) {
-+		err = devl_nested_devlink_set(adapter->devlink, devlink);
-+		if (err)
-+			return err;
-+	}
- 	devl_register(devlink);
-+
-+	return 0;
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/ice/ice_adapter.c b/drivers/net/ethernet/intel/ice/ice_adapter.c
-index 536923b6ae97..0cdb13e7bd89 100644
---- a/drivers/net/ethernet/intel/ice/ice_adapter.c
-+++ b/drivers/net/ethernet/intel/ice/ice_adapter.c
-@@ -1,19 +1,14 @@
- // SPDX-License-Identifier: GPL-2.0-only
- // SPDX-FileCopyrightText: Copyright Red Hat
- 
--#include <linux/cleanup.h>
--#include <linux/mutex.h>
- #include <linux/pci.h>
- #include <linux/slab.h>
- #include <linux/spinlock.h>
- #include <linux/srcu.h>
--#include <linux/xarray.h>
-+
- #include "ice_adapter.h"
- #include "ice.h"
- 
--static DEFINE_XARRAY(ice_adapters);
--static DEFINE_MUTEX(ice_adapters_mutex);
--
- #define ICE_ADAPTER_FIXED_INDEX	BIT_ULL(63)
- 
- #define ICE_ADAPTER_INDEX_E825C	\
-@@ -41,56 +36,41 @@ static u64 ice_adapter_index(struct pci_dev *pdev)
+ /* Flags for controlling behavior of ice_reset_vf */
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 8319956754b7..e18128bce959 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -1026,7 +1026,7 @@ static void ice_vsi_set_rss_params(struct ice_vsi *vsi)
+ 		 * For VSI_LUT, LUT size should be set to 64 bytes.
+ 		 */
+ 		vsi->rss_table_size = ICE_LUT_VSI_SIZE;
+-		vsi->rss_size = ICE_MAX_RSS_QS_PER_VF;
++		vsi->rss_size = ICE_MAX_QS_PER_VF_VCV1;
+ 		vsi->rss_lut_type = ICE_LUT_VSI;
+ 		break;
+ 	case ICE_VSI_LB:
+diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
+index c49f48b5ae38..dcd6d48ea38d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sriov.c
++++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
+@@ -398,15 +398,15 @@ static int ice_set_per_vf_res(struct ice_pf *pf, u16 num_vfs)
  	}
- }
  
--static unsigned long ice_adapter_xa_index(struct pci_dev *pdev)
-+static int ice_adapter_init(void *priv, void *init_param)
+ 	num_txq = min_t(u16, num_msix_per_vf - ICE_NONQ_VECS_VF,
+-			ICE_MAX_RSS_QS_PER_VF);
++			ICE_MAX_QS_PER_VF_VCV1);
+ 	avail_qs = ice_get_avail_txq_count(pf) / num_vfs;
+ 	if (!avail_qs)
+ 		num_txq = 0;
+ 	else if (num_txq > avail_qs)
+ 		num_txq = rounddown_pow_of_two(avail_qs);
+ 
+ 	num_rxq = min_t(u16, num_msix_per_vf - ICE_NONQ_VECS_VF,
+-			ICE_MAX_RSS_QS_PER_VF);
++			ICE_MAX_QS_PER_VF_VCV1);
+ 	avail_qs = ice_get_avail_rxq_count(pf) / num_vfs;
+ 	if (!avail_qs)
+ 		num_rxq = 0;
+diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.c b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
+index a54cb2b8d3c7..be87a83d2599 100644
+--- a/drivers/net/ethernet/intel/ice/ice_vf_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
+@@ -528,8 +528,8 @@ static void ice_vf_rebuild_host_cfg(struct ice_vf *vf)
+ static void ice_set_vf_state_qs_dis(struct ice_vf *vf)
  {
--	u64 index = ice_adapter_index(pdev);
--
--#if BITS_PER_LONG == 64
--	return index;
--#else
--	return (u32)index ^ (u32)(index >> 32);
--#endif
--}
-+	struct ice_adapter *adapter = priv;
-+	struct devlink *devlink;
- 
--static struct ice_adapter *ice_adapter_new(struct pci_dev *pdev)
--{
--	struct ice_adapter *adapter;
--	int err;
-+	devlink = shd_priv_to_devlink(adapter);
-+	adapter->devlink = devlink;
- 
--	adapter = kzalloc_obj(*adapter);
--	if (!adapter)
--		return NULL;
--
--	err = init_srcu_struct(&adapter->ports.srcu);
--	if (err) {
--		kfree(adapter);
--		return NULL;
--	}
--
--	adapter->index = ice_adapter_index(pdev);
- 	spin_lock_init(&adapter->ptp_gltsyn_time_lock);
- 	spin_lock_init(&adapter->txq_ctx_lock);
- 	for (int i = 0; i < ARRAY_SIZE(adapter->cpi_phy_lock); i++)
- 		mutex_init(&adapter->cpi_phy_lock[i]);
--	refcount_set(&adapter->refcount, 1);
- 
- 	spin_lock_init(&adapter->ports.lock);
- 	INIT_LIST_HEAD(&adapter->ports.list);
- 
--	return adapter;
-+	return init_srcu_struct(&adapter->ports.srcu);
+ 	/* Clear Rx/Tx enabled queues flag */
+-	bitmap_zero(vf->txq_ena, ICE_MAX_RSS_QS_PER_VF);
+-	bitmap_zero(vf->rxq_ena, ICE_MAX_RSS_QS_PER_VF);
++	bitmap_zero(vf->txq_ena, ICE_MAX_QS_PER_VF_VCV1);
++	bitmap_zero(vf->rxq_ena, ICE_MAX_QS_PER_VF_VCV1);
+ 	clear_bit(ICE_VF_STATE_QS_ENA, vf->vf_states);
  }
  
--static void ice_adapter_free(struct ice_adapter *adapter)
-+static void ice_adapter_fini(void *priv)
- {
-+	struct ice_adapter *adapter = priv;
-+
- 	WARN_ON(!list_empty(&adapter->ports.list));
- 	for (int i = 0; i < ARRAY_SIZE(adapter->cpi_phy_lock); i++)
- 		mutex_destroy(&adapter->cpi_phy_lock[i]);
- 
- 	cleanup_srcu_struct(&adapter->ports.srcu);
--
--	kfree(adapter);
- }
- 
-+static const struct devlink_ops ice_adapter_devlink_ops = {
-+	.shd_init = ice_adapter_init,
-+	.shd_fini = ice_adapter_fini,
-+};
-+
- /**
-  * ice_adapter_get - Get a shared ice_adapter structure.
-  * @pdev: Pointer to the pci_dev whose driver is getting the ice_adapter.
-@@ -102,59 +82,37 @@ static void ice_adapter_free(struct ice_adapter *adapter)
+@@ -1238,13 +1238,13 @@ bool ice_is_vf_trusted(struct ice_vf *vf)
+  * ice_vf_has_no_qs_ena - check if the VF has any Rx or Tx queues enabled
+  * @vf: the VF to check
   *
-  * Context: Process, may sleep.
-  * Return:  Pointer to ice_adapter on success.
-- *          ERR_PTR() on error. -ENOMEM is the only possible error.
-+ *          ERR_PTR() on error.
+- * Returns true if the VF has no Rx and no Tx queues enabled and returns false
+- * otherwise
++ * Return: true if the VF has no Rx and no Tx queues enabled and returns false
++ * otherwise.
   */
- struct ice_adapter *ice_adapter_get(struct pci_dev *pdev)
+ bool ice_vf_has_no_qs_ena(struct ice_vf *vf)
  {
- 	struct ice_adapter *adapter;
--	unsigned long index;
--	int err;
--
--	index = ice_adapter_xa_index(pdev);
--	scoped_guard(mutex, &ice_adapters_mutex) {
--		adapter = xa_load(&ice_adapters, index);
--		if (adapter) {
--			refcount_inc(&adapter->refcount);
--			WARN_ON_ONCE(adapter->index != ice_adapter_index(pdev));
--			return adapter;
--		}
--		err = xa_reserve(&ice_adapters, index, GFP_KERNEL);
--		if (err)
--			return ERR_PTR(err);
--
--		adapter = ice_adapter_new(pdev);
--		if (!adapter) {
--			xa_release(&ice_adapters, index);
--			return ERR_PTR(-ENOMEM);
--		}
--		xa_store(&ice_adapters, index, adapter, GFP_KERNEL);
--	}
-+	struct devlink *devlink;
-+	char devlink_id[32];
-+	u64 index;
-+
-+	index = ice_adapter_index(pdev);
-+	snprintf(devlink_id, sizeof(devlink_id), "ice:%llx", index);
-+	devlink = devlink_shd_get(devlink_id, &ice_adapter_devlink_ops,
-+				  sizeof(*adapter), NULL, pdev->dev.driver);
-+	if (IS_ERR(devlink))
-+		return ERR_CAST(devlink);
-+
-+	adapter = devlink_shd_get_priv(devlink);
-+
- 	return adapter;
+-	return bitmap_empty(vf->rxq_ena, ICE_MAX_RSS_QS_PER_VF) &&
+-		bitmap_empty(vf->txq_ena, ICE_MAX_RSS_QS_PER_VF);
++	return bitmap_empty(vf->rxq_ena, ICE_MAX_QS_PER_VF_VCV1) &&
++	       bitmap_empty(vf->txq_ena, ICE_MAX_QS_PER_VF_VCV1);
  }
  
  /**
-  * ice_adapter_put - Release a reference to the shared ice_adapter structure.
-- * @pdev: Pointer to the pci_dev whose driver is releasing the ice_adapter.
-+ * @adapter: the ice_adapter to release reference to
-  *
-  * Releases the reference to ice_adapter previously obtained with
-  * ice_adapter_get.
-  *
-  * Context: Process, may sleep.
-  */
--void ice_adapter_put(struct pci_dev *pdev)
-+void ice_adapter_put(struct ice_adapter *adapter)
+diff --git a/drivers/net/ethernet/intel/ice/virt/queues.c b/drivers/net/ethernet/intel/ice/virt/queues.c
+index a22780575086..2667634e3c8c 100644
+--- a/drivers/net/ethernet/intel/ice/virt/queues.c
++++ b/drivers/net/ethernet/intel/ice/virt/queues.c
+@@ -171,8 +171,8 @@ static int ice_vf_cfg_q_quanta_profile(struct ice_vf *vf, u16 quanta_size,
+ static bool ice_vc_validate_vqs_bitmaps(struct virtchnl_queue_select *vqs)
  {
--	struct ice_adapter *adapter;
--	unsigned long index;
--
--	index = ice_adapter_xa_index(pdev);
--	scoped_guard(mutex, &ice_adapters_mutex) {
--		adapter = xa_load(&ice_adapters, index);
--		if (WARN_ON(!adapter))
--			return;
--		if (!refcount_dec_and_test(&adapter->refcount))
--			return;
--
--		WARN_ON(xa_erase(&ice_adapters, index) != adapter);
--	}
--	ice_adapter_free(adapter);
-+	devlink_shd_put(adapter->devlink);
- }
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 454fba07d4ec..6373cd5ac288 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -4946,7 +4946,12 @@ static int ice_init_devlink(struct ice_pf *pf)
- 		return err;
+ 	if ((!vqs->rx_queues && !vqs->tx_queues) ||
+-	    vqs->rx_queues >= BIT(ICE_MAX_RSS_QS_PER_VF) ||
+-	    vqs->tx_queues >= BIT(ICE_MAX_RSS_QS_PER_VF))
++	    vqs->rx_queues >= BIT(ICE_MAX_QS_PER_VF_VCV1) ||
++	    vqs->tx_queues >= BIT(ICE_MAX_QS_PER_VF_VCV1))
+ 		return false;
  
- 	ice_devlink_init_regions(pf);
--	ice_devlink_register(pf);
-+	err = ice_devlink_register(pf);
-+	if (err) {
-+		ice_devlink_destroy_regions(pf);
-+		ice_devlink_unregister_params(pf);
-+		return err;
-+	}
- 	ice_health_init(pf);
+ 	return true;
+@@ -335,7 +335,7 @@ int ice_vc_ena_qs_msg(struct ice_vf *vf, u8 *msg)
+ 	 * programmed using ice_vsi_cfg_txqs
+ 	 */
+ 	q_map = vqs->rx_queues;
+-	for_each_set_bit(vf_q_id, &q_map, ICE_MAX_RSS_QS_PER_VF) {
++	for_each_set_bit(vf_q_id, &q_map, ICE_MAX_QS_PER_VF_VCV1) {
+ 		if (!ice_vc_isvalid_q_id(vsi, vf_q_id)) {
+ 			v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+ 			goto error_param;
+@@ -348,7 +348,7 @@ int ice_vc_ena_qs_msg(struct ice_vf *vf, u8 *msg)
+ 	}
  
- 	return 0;
-@@ -5291,7 +5296,7 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
- unroll_dev_init:
- 	need_dev_deinit = true;
- unroll_adapter:
--	ice_adapter_put(pdev);
-+	ice_adapter_put(adapter);
- unroll_hw_init:
- 	ice_deinit_hw(hw);
- 	if (need_dev_deinit)
-@@ -5404,7 +5409,7 @@ static void ice_remove(struct pci_dev *pdev)
- 	ice_setup_mc_magic_wake(pf);
- 	ice_set_wake(pf);
+ 	q_map = vqs->tx_queues;
+-	for_each_set_bit(vf_q_id, &q_map, ICE_MAX_RSS_QS_PER_VF) {
++	for_each_set_bit(vf_q_id, &q_map, ICE_MAX_QS_PER_VF_VCV1) {
+ 		if (!ice_vc_isvalid_q_id(vsi, vf_q_id)) {
+ 			v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+ 			goto error_param;
+@@ -484,7 +484,7 @@ int ice_vc_dis_qs_msg(struct ice_vf *vf, u8 *msg)
+ 	if (vqs->tx_queues) {
+ 		q_map = vqs->tx_queues;
  
--	ice_adapter_put(pdev);
-+	ice_adapter_put(pf->adapter);
- 	ice_deinit_hw(&pf->hw);
+-		for_each_set_bit(vf_q_id, &q_map, ICE_MAX_RSS_QS_PER_VF) {
++		for_each_set_bit(vf_q_id, &q_map, ICE_MAX_QS_PER_VF_VCV1) {
+ 			if (!ice_vc_isvalid_q_id(vsi, vf_q_id)) {
+ 				v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+ 				goto error_param;
+@@ -499,7 +499,7 @@ int ice_vc_dis_qs_msg(struct ice_vf *vf, u8 *msg)
  
- 	ice_deinit_dev(pf);
+ 	q_map = vqs->rx_queues;
+ 	if (q_map) {
+-		for_each_set_bit(vf_q_id, &q_map, ICE_MAX_RSS_QS_PER_VF) {
++		for_each_set_bit(vf_q_id, &q_map, ICE_MAX_QS_PER_VF_VCV1) {
+ 			if (!ice_vc_isvalid_q_id(vsi, vf_q_id)) {
+ 				v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+ 				goto error_param;
+@@ -542,7 +542,7 @@ ice_cfg_interrupt(struct ice_vf *vf, struct ice_vsi *vsi,
+ 	q_vector->num_ring_tx = 0;
+ 
+ 	qmap = map->rxq_map;
+-	for_each_set_bit(vsi_q_id_idx, &qmap, ICE_MAX_RSS_QS_PER_VF) {
++	for_each_set_bit(vsi_q_id_idx, &qmap, ICE_MAX_QS_PER_VF_VCV1) {
+ 		vsi_q_id = vsi_q_id_idx;
+ 
+ 		if (!ice_vc_isvalid_q_id(vsi, vsi_q_id))
+@@ -557,7 +557,7 @@ ice_cfg_interrupt(struct ice_vf *vf, struct ice_vsi *vsi,
+ 	}
+ 
+ 	qmap = map->txq_map;
+-	for_each_set_bit(vsi_q_id_idx, &qmap, ICE_MAX_RSS_QS_PER_VF) {
++	for_each_set_bit(vsi_q_id_idx, &qmap, ICE_MAX_QS_PER_VF_VCV1) {
+ 		vsi_q_id = vsi_q_id_idx;
+ 
+ 		if (!ice_vc_isvalid_q_id(vsi, vsi_q_id))
+@@ -681,7 +681,7 @@ int ice_vc_cfg_q_bw(struct ice_vf *vf, u8 *msg)
+ 		goto err;
+ 	}
+ 
+-	if (qbw->num_queues > ICE_MAX_RSS_QS_PER_VF ||
++	if (qbw->num_queues > ICE_MAX_QS_PER_VF_VCV1 ||
+ 	    qbw->num_queues > min_t(u16, vsi->alloc_txq, vsi->alloc_rxq)) {
+ 		dev_err(ice_pf_to_dev(vf->pf), "VF-%d trying to configure more than allocated number of queues: %d\n",
+ 			vf->vf_id, min_t(u16, vsi->alloc_txq, vsi->alloc_rxq));
+@@ -773,7 +773,7 @@ int ice_vc_cfg_q_quanta(struct ice_vf *vf, u8 *msg)
+ 		goto err;
+ 	}
+ 
+-	if (end_qid > ICE_MAX_RSS_QS_PER_VF ||
++	if (end_qid > ICE_MAX_QS_PER_VF_VCV1 ||
+ 	    end_qid > min_t(u16, vsi->alloc_txq, vsi->alloc_rxq)) {
+ 		dev_err(ice_pf_to_dev(vf->pf), "VF-%d trying to configure more than allocated number of queues: %d\n",
+ 			vf->vf_id, min_t(u16, vsi->alloc_txq, vsi->alloc_rxq));
+@@ -841,7 +841,7 @@ int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8 *msg)
+ 	if (!vsi)
+ 		goto error_param;
+ 
+-	if (qci->num_queue_pairs > ICE_MAX_RSS_QS_PER_VF ||
++	if (qci->num_queue_pairs > ICE_MAX_QS_PER_VF_VCV1 ||
+ 	    qci->num_queue_pairs > min_t(u16, vsi->alloc_txq, vsi->alloc_rxq)) {
+ 		dev_err(ice_pf_to_dev(pf), "VF-%d requesting more than supported number of queues: %d\n",
+ 			vf->vf_id, min_t(u16, vsi->alloc_txq, vsi->alloc_rxq));
+@@ -1019,16 +1019,16 @@ int ice_vc_request_qs_msg(struct ice_vf *vf, u8 *msg)
+ 	if (!req_queues) {
+ 		dev_err(dev, "VF %d tried to request 0 queues. Ignoring.\n",
+ 			vf->vf_id);
+-	} else if (req_queues > ICE_MAX_RSS_QS_PER_VF) {
++	} else if (req_queues > ICE_MAX_QS_PER_VF_VCV1) {
+ 		dev_err(dev, "VF %d tried to request more than %d queues.\n",
+-			vf->vf_id, ICE_MAX_RSS_QS_PER_VF);
+-		vfres->num_queue_pairs = ICE_MAX_RSS_QS_PER_VF;
++			vf->vf_id, ICE_MAX_QS_PER_VF_VCV1);
++		vfres->num_queue_pairs = ICE_MAX_QS_PER_VF_VCV1;
+ 	} else if (req_queues > cur_queues &&
+ 		   req_queues - cur_queues > tx_rx_queue_left) {
+ 		dev_warn(dev, "VF %d requested %u more queues, but only %u left.\n",
+ 			 vf->vf_id, req_queues - cur_queues, tx_rx_queue_left);
+ 		vfres->num_queue_pairs = min_t(u16, max_allowed_vf_queues,
+-					       ICE_MAX_RSS_QS_PER_VF);
++					       ICE_MAX_QS_PER_VF_VCV1);
+ 	} else {
+ 		/* request is successful, then reset VF */
+ 		vf->num_req_qs = req_queues;
 -- 
 2.54.0
 
