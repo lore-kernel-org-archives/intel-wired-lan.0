@@ -2,28 +2,28 @@ Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B0988606A326
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  3 Nov 2026 14:39:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E9008606D827
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  3 Nov 2026 14:39:56 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=Qx6tDXq1;
-	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=hiuAg5iP
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=6SNw13U5;
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=PEEXYBaB
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 8FC3F60847;
-	Tue,  3 Nov 2026 14:39:54 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id CC5E260841;
+	Tue,  3 Nov 2026 14:39:56 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id n8UC0Ts2ZO8k; Tue,  3 Nov 2026 14:39:53 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org BAF496083A
+ id wT3ETYXtK3od; Tue,  3 Nov 2026 14:39:54 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org C0F18607BE
 Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793716793;
-	b=XmOb86N3oX4pNgWrxsJPP2d6pd4xRCJbeoxDAtXZB7yB372BZJ24kVZtwH6eL7bCLWj4
-	 6dTJNTTNI5gff6/DwDcIuYheipNiG6yoTNqNZqnqq9P5Ki2BU+E3bCj7/LqhzfK34C1vk
-	 aHlB888Oo8zNAbd3jYU0echgnqbatzF1Z7b+zT9xeAWZCAqtR0jNVUfizMTRbDolobD4z
-	 tsetvL/JSE38FRwpL/G5m/pM/xhpphKpIgsDoQxzw+Tijueo45y6Iw6qZhAg/vNP2uUqM
-	 hw4RSQkQ9lHwvl262HM7TsUCrPnMhqfgjVhaEj1QsohtSOhhkL9eq539IPNtuEAfWXw==
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793716794;
+	b=CIfYP3gBp0t40V+73vhIcaSROxrzpgq7M3HmyBzWmW21YmcLOIqfBtlA98eVShMuGOKH
+	 kQxxzHSVG5/DrWpKaaepuVahJIk1d305ypoykmMsGPnv+lRT0jgVsK4eSl99tj8sSPRBu
+	 gvuQ2gfWLh+BlDJv7kgllyPAjoHpFZgDh5mwRtGX8LDb2x1I3Z5DK90tZYJ9tyRk+eP7F
+	 r1TI+wzbZdqGgpO2BpKXpOSFWwJYNnrYMOyA+o0mL4hrxdgcKedu0Cp3i7zArylukN+Ne
+	 p3sWPAKsiCd8Up4aVTL94XPc7EYUSA+EATOfxvy5yRH1+CROos9ZLkGvIP+B/d/RpKw==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1793716793;
+	c=relaxed/relaxed; t=1793716794;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
@@ -34,49 +34,49 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:Precedence:
 	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=zOFfHGv1oKAPKzpH3l+ZqRr3Q/KSmoXPTyv2QFeWXDY=;
-	b=eNSxabpjadzoBFG462D96kXz5foMDzMdt4K3koDmgq8JtsZxJnYusKlIy7xmrPskgDfO
-	 yt79dF21Ffsq+VvIxPl0ssATsBy2hZR/1evIyIVQpdfCiqpUyapQ626qvpc2wspzMflQa
-	 Wd9yK7g2G2hrryE0jCxoDydGthbKux/Vv50asWh9TFmpBdonuS9GfRy2o/rmlScV7vC4E
-	 MK8Ye7cSqVQ+2ngTpEiIrQvv0tXR17kpX1oQfSkZ09vC+qun1JKPID2DJAs5RrvuvXjUO
-	 /LZNdfm7zf/cuLzwKcCC8HHAdXXgd2kdl/S3sjXLDu+e6bzKkfx0YChziCXyg3kEk6Q==
+	bh=KNzQRlqQm5MpoUtIBb/pVv9eXGoBbxC+11RPAIam9fk=;
+	b=bdsO48wYpreN/S7TvGfrgYiS5YTQXzMltIu1jnI7zD0swghsz6UHoUvJ4ZsD9eXgsbrF
+	 jb/3oNU4Luc7cUYl0J/uiz5pREIVzcV5gZPJpRFql+LtgmvCqSsjeEy6rfAQM7zIxFQT6
+	 PrZC0Q5Pkm4oGmhDEpeaDjtNA65aiyoWdGIVtpDLiB85XljRmTOwD0rhaALlPiZ3Ko3cD
+	 kO3LKAfX2nK7rJnizEvdLoYRS7ocTd9Vb2Npf1itjDS22GduWkQTfiLi4y3dywPW1dmQe
+	 +Rg46JqQRFIbLBI2xEB6KU10oBNqQczN1JeSQzobKT6z1Zx5PaVfMgZtCZJ/t6vDBvg==
 ARC-Authentication-Results: i=2; smtp3.osuosl.org; 
 	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1793716793;
-	bh=zOFfHGv1oKAPKzpH3l+ZqRr3Q/KSmoXPTyv2QFeWXDY=;
+	s=default; t=1793716794;
+	bh=KNzQRlqQm5MpoUtIBb/pVv9eXGoBbxC+11RPAIam9fk=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=Qx6tDXq1pcbt09RS9p1bjO+ZRCCzGnewXYujz4v0vh/rke2OaAme1brlSmZ/Su0lt
-	 SRVA4JnLV6CzngvvnT2aqt0jK8YcPXXTLgNsq/lOBU/JNEgHM6FQKE9i+EXIAzfTTX
-	 pvmdQChuz/ehSW90IHbc2GF0wXHcww2omI90c5wpbuvmhpq6l/ThiagQklW8KbQGR/
-	 G8hvn2u8Dym27KDbBsB66za/sOykEZu+D/jjWW3cjUV52PJxcfVoVUAjSFY4TgS6Sn
-	 hsd+HuqDnMPKNkRKiTtmI4lLFGXQ7SwYgb/MAQrauNKBoqPepiTX37XIgEX+by0mys
-	 gDFww5e9LBUxQ==
+	b=6SNw13U5rdACto2/fA3+/QKDP50A0pLhcsWL5ly6tR27Xk4Mk+ZAOZ+VUIFdJeNHx
+	 TLyoVPl0nMA+2mAzf5JeQV0oi+lg9ej9PAPk6ARC0Jl7vDjuHEuOuf/lOb4cyaRk5W
+	 VHupnknDwY4G4dttBc+49K2W/Yh5psB6tFiKxiaYbSbPNxCeRIHIFY4MMXVvF70hPf
+	 bEYgEsQIvtCFlyCERW7LfE8DE8AzB2g0SevgON6N2XUpJcKTJDJikHPOcpSJox/jUj
+	 iNjL3uJINJemqRsXIzjphiLSTSgxc6RzoqUnNbQTsXX14Y4BEdzN7DsVw0X24dnrej
+	 ypTOuttxlWAzA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id BAF496083A;
-	Tue,  3 Nov 2026 14:39:53 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id EEADF356
- for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Nov 2026 14:39:51 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id C0F18607BE;
+	Tue,  3 Nov 2026 14:39:54 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 9CE89235
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Nov 2026 14:39:52 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id EC39180FB9
- for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Nov 2026 14:39:51 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 82B02406FA
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Nov 2026 14:39:52 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id LKZKXvFoNVW1 for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id nD8IDXQTenfg for <intel-wired-lan@lists.osuosl.org>;
  Tue,  3 Nov 2026 14:39:51 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 254AD8100D
-Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=198.175.65.12
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 41FBB4070A
+Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=198.175.65.12
 ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793716791;
- b=qyuw+lRYabsvg27YxSwvrd8plfxguBJGMl/EsJNZKe1T2+cr1rbo9kQnllp+HGihopy4
- nK55/WvmkqFUdxl34wFwGtRieM9m2X171ww0Kf6Xd/kcuhLTjrKybQNPYAoP64l3vgxRN
- Qt5zGYNtJCiSWic9ln4BGkIkJ0Tw00Zdgh9ysPGgr0FyS7M3Ds45Msafmlc7AwgseZ3BF
- 7H6OiCr9Wu1UcNBx+hoWumfdEUFZJ2zOg/FLUjeLAhpa9yhgViJpkVK6xBwBRa16Lhjay
- QITt6jrC6kDjn+OiG20lenS+JB5LGnOrUEsoOdAnPk8TTB3wLVqcgt+9gQsV4Jh0COw==
+ b=Sp+bxMO+BCU65nZKbCS9blrW++1UIU3SQ+1KmE2uMqBCL1DoN2ZKKsJtvBmkD9cgy+Xk
+ elI55u1gp4P3E4ss9aRViV+F5x2dbh0IZNWiLdxPPu8vogple+6rUvtTm7ObKOn3n2t1q
+ UihfUDs02kYYbB8lqFqPIdekt5DUuSGJ/1Ink9OdZJ3t/8BSOBIjPCOl6QYox5Uu+rihA
+ 5wA3DRfjL8D7OZEfFeVOqCtJqQQydjdua3ouCj7WuIcJDz/oBBrCVMtoSTpWCKhoPy6ak
+ 9EcdxXeSkj0oe2vjFVcXkkxbTU5d7K1zuWiKi0/+SWXVXo1UAH2SlDIHYfGJHjH7y+g==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
  c=relaxed/relaxed; t=1793716791;
  h=Received-SPF:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
@@ -84,58 +84,58 @@ ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
  X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Received:From:To:Cc:
  Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
  Content-Transfer-Encoding;
- bh=zOFfHGv1oKAPKzpH3l+ZqRr3Q/KSmoXPTyv2QFeWXDY=;
- b=ghDUu65Owl4S8IhMfh7CpnJ6tlSxkE8hWeQe5Jg5m3D3zcBsXy0OBCJvnOwzvMnxGXXd
- H7GE3KWG7W9S0EeRoJL9P01y2jFaUfsBqOPg9/193+PD7hnjRLMreAM4sLhyuatUNsc2h
- dlArEqG82opicDihyW5NzrPINrvenIpWWZUEXU1OW73v9sARitkvhRKhtDw3fD9S464fX
- 2OHxNEYbxycncP5ilTkjlVx6qDsP6uKn3tk3iuax3oR1nzU/sO08wK0OwrVf0CLy6ANi7
- iAHrEV2nwGj5OWTClq3bG0B4KDu6mQcR5E/zpbA+Mg5FwDWfJaN+CfdD8aPkv97YZvg==
-ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
+ bh=KNzQRlqQm5MpoUtIBb/pVv9eXGoBbxC+11RPAIam9fk=;
+ b=qFolzIG5bUV0XDaeVu8e9Wtz+mtlP/hp6yJCxKXIC4ZFXe5Y/G7LfxWjywCTxzC88Sqx
+ 2XIX8lruu/njcZitCNaGsjpfYLXCCuhiNWN/r2PprU2X6RyyEsurC75XSsLTgPp5NyJAI
+ osjll7/enXbDt4tgxpaB+UgV+GGI+Ebo+2E9Qi+xGf6WwutkUaLUxniC+odhg3fGryNSD
+ lOQiI52kRW+X99tpk3Gaoc37AZbhjSKQ0GxK5J4C10Ol14UDs86IFKJM6XMESiZoXClxE
+ SLLb5rq73UcS1cgeyiCmQOA7vjEaFePk0Gvp1mkvqMXBayJmTzeMSf7HgHYpY/9CCnA==
+ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
  dmarc=pass header.from=intel.com;
  dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=hiuAg5iP; 
+ header.s=Intel header.b=PEEXYBaB; 
  arc=none smtp.remote-ip=198.175.65.12
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.12;
  helo=mgamail.intel.com; envelope-from=przemyslaw.kitszel@intel.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp1.osuosl.org;
+Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp1.osuosl.org;
+Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=hiuAg5iP
+ header.a=rsa-sha256 header.s=Intel header.b=PEEXYBaB
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 254AD8100D
- for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Nov 2026 14:39:51 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 41FBB4070A
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Nov 2026 14:39:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
  t=1793716791; x=1825252791;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=DlaWBN9NMhq7QScxwJI/p54ObnWTuqBPVaehENFxK0s=;
- b=hiuAg5iPMR+2x9++tFghOTpYAqDYW4U4WyZfEhTKXqsHef2KpHe4Kv6F
- MJJR9m7lVFMJUbBsi831uSuale4JS5IjyYY4wGF0CatoNHBl+W1u6+fe1
- 28i4kFw+8jilAQFtKVMu5bmkxja3zvWfkRAjVJgnxz5lwSezyTdVKLDTS
- 8Pa//NLwRsi+6PEfWNoDH2WyhcR0r05S7UCa1rW/b+t92mguLE/bkzCfg
- kYV/h1vSPDubpAOy1jcVmXWGDsjRHKpgfX78smvazkdBxqBJ7AwNrKtH2
- 8AhIeeaGvJe4q26tzybP7Tg44aCayzFz1zN6wkaCHvSmuhrZ1AdsxDmD6 w==;
-X-CSE-ConnectionGUID: RFARNOc0TnGljIuW2M8SCw==
-X-CSE-MsgGUID: lzAqlPOXTcqqwRAbfHw5pA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11955"; a="2324011"
+ bh=UCQ/iBpx7rr25JaoOqKtihqOvNZtNeX2zAy5GzhxztY=;
+ b=PEEXYBaBPdzQYhLJVJN8ErgJIV6rvbqY6cc1+ab+7cGK/W9sGvgUVnkL
+ M2Y/DJrW5Onx7V3TpxhZTRYu4g/Ycl9XtnqUy+f4dhOKoODwmlnmpUAaQ
+ 7G1A1FdmT/D6xgxe029nWa1S8/h99O0MKyZ9VOWdQ8pB3XYPiHWZH/2J3
+ zbpsstKeVh1f9h/FRWv3sTjvNRPH0H+gZve+PdBxwUgjOzhXcLHtEIMwL
+ jEa2lPi7+S1Ku/BMXADTV4nemjrlAgQEYG7bPozyiwHF3ah91L6AoWtQR
+ UVWOnd1/sr4B6Y1w3MI6EpichrP8NiNMumUnGO0aLIsLl0cJfxQpKvtvl g==;
+X-CSE-ConnectionGUID: PtRRSI3AQLi3DEGM3O99Mw==
+X-CSE-MsgGUID: 2OYewhUNSi+BfjAHVla0MQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11955"; a="2324001"
 X-IronPort-AV: E=Sophos;i="6.27,193,1787036400"; 
-   d="scan'208";a="2324011"
+   d="scan'208";a="2324001"
 Received: from fmviesa013.fm.intel.com ([10.60.135.153])
  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 03 Nov 2026 06:39:50 -0800
-X-CSE-ConnectionGUID: ynvnUJhrQU6oss3N+z5CuA==
-X-CSE-MsgGUID: be/1P5egStSVbxbJ6PXFlQ==
+ 03 Nov 2026 06:39:49 -0800
+X-CSE-ConnectionGUID: LU864/xPQECCQEKcmbn9Qg==
+X-CSE-MsgGUID: vKKE43I3TIacxtdzmSOqDg==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.27,193,1787036400"; 
-   d="scan'208";a="8289864"
+   d="scan'208";a="8289856"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmviesa013.fm.intel.com with ESMTP; 03 Nov 2026 06:39:45 -0800
+ by fmviesa013.fm.intel.com with ESMTP; 03 Nov 2026 06:39:43 -0800
 Received: from vecna.igk.intel.com (vecna.igk.intel.com [10.123.220.17])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 0D8BF312E9;
- Tue,  3 Nov 2026 14:39:43 +0000 (GMT)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 3D8E6312EA;
+ Tue,  3 Nov 2026 14:39:39 +0000 (GMT)
 From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 To: netdev@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>,
  Jiri Pirko <jiri@resnulli.us>
@@ -154,11 +154,14 @@ Cc: intel-wired-lan@lists.osuosl.org, Simon Horman <horms@kernel.org>,
  Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>,
  Saeed Mahameed <saeedm@nvidia.com>, Leon Romanovsky <leon@kernel.org>,
  Tariq Toukan <tariqt@nvidia.com>, Mark Bloch <mbloch@nvidia.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Subject: [PATCH iwl-next v4 04/15] ice: add helpers for Global RSS LUT alloc,
- free, vsi_update
-Date: Tue,  3 Nov 2026 15:14:45 +0100
-Message-ID: <20261103141646.303620-5-przemyslaw.kitszel@intel.com>
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Jedrzej Jagielski <jedrzej.jagielski@intel.com>,
+ Sergey Temerkhanov <sergey.temerkhanov@intel.com>,
+ Grzegorz Nitka <grzegorz.nitka@intel.com>
+Subject: [PATCH iwl-next v4 02/15] ice: use shared devlink to store
+ ice_adapters instead of custom xarray
+Date: Tue,  3 Nov 2026 15:14:43 +0100
+Message-ID: <20261103141646.303620-3-przemyslaw.kitszel@intel.com>
 X-Mailer: git-send-email 2.54.0
 In-Reply-To: <20261103141646.303620-1-przemyslaw.kitszel@intel.com>
 References: <20261103141646.303620-1-przemyslaw.kitszel@intel.com>
@@ -183,183 +186,342 @@ X-Spam-Status: No, score=-18.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Add AQ commands for RSS Global LUT allocation and free operations.
-The new functions are used by subsequent commits.
+Refactor our storage and deduplication logic of ice_adapters by moving
+it to be handled by shared devlink instance, recently added by
+Jiri Pirko [1].
 
-Add programming code for GLOBAL LUT ID of UPDATE VSI AQ,
-do the same for RSS LUT "type", also for PF LUT in case of VF VSI.
+We wanted the devlink instance for whole device anyway - later in the
+series I will add devlink resources under it.
 
-Co-developed-by: Brett Creeley <brett.creeley@intel.com>
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Make the shared devlink a parent (wrt. nesting) of the actual PF devices.
+
+[1] commit 411ad0605875 ("Merge branch 'devlink-introduce-shared-devlink-instance-for-pfs-on-same-chip'")
+[1] https://lore.kernel.org/all/20260312100407.551173-1-jiri@resnulli.us
+
+Reviewed-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 Signed-off-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 ---
-v2: fix whitespace (Sashiko)
----
- drivers/net/ethernet/intel/ice/ice.h          |  1 +
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  1 +
- drivers/net/ethernet/intel/ice/ice_switch.h   |  2 +
- drivers/net/ethernet/intel/ice/ice_lib.c      | 28 +++++++++++--
- drivers/net/ethernet/intel/ice/ice_switch.c   | 41 +++++++++++++++++++
- 5 files changed, 69 insertions(+), 4 deletions(-)
+CC: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
+CC: Grzegorz Nitka <grzegorz.nitka@intel.com>
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 432da05c48c0..89a2bdbecf60 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -367,6 +367,7 @@ struct ice_vsi {
- 	u8 *rss_hkey_user;	/* User configured hash keys */
- 	u8 *rss_lut_user;	/* User configured lookup table entries */
- 	u8 rss_lut_type;	/* used to configure Get/Set RSS LUT AQ call */
-+	u8 global_lut_id;       /* valid when lut_type == GLOBAL_LUT */
+v2:
+ * propagate the error from devlink_shd_get() with ERR_CAST()
+ * minor kdoc updates
+ * check devl_nested_devlink_set() return value, ice_devlink_register()
+   returns int now (Sashiko)
+ * prefix the shared devlink id with "ice:", to avoid collisions with
+   ids used by other drivers (Sashiko)
+
+Sashiko suggestions I don't want to apply:
+ S: all PFs without DSN get index 0, and so share one instance
+ me: pre-existing, and DSN 0 is only on pre-production samples
+---
+ .../net/ethernet/intel/ice/devlink/devlink.h  |   2 +-
+ drivers/net/ethernet/intel/ice/ice_adapter.h  |  12 +-
+ .../net/ethernet/intel/ice/devlink/devlink.c  |  11 +-
+ drivers/net/ethernet/intel/ice/ice_adapter.c  | 106 ++++++------------
+ drivers/net/ethernet/intel/ice/ice_main.c     |  11 +-
+ 5 files changed, 57 insertions(+), 85 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/devlink/devlink.h b/drivers/net/ethernet/intel/ice/devlink/devlink.h
+index 1af3b0763fbb..62af38d11fd9 100644
+--- a/drivers/net/ethernet/intel/ice/devlink/devlink.h
++++ b/drivers/net/ethernet/intel/ice/devlink/devlink.h
+@@ -7,7 +7,7 @@
+ struct ice_pf *ice_allocate_pf(struct device *dev);
+ struct ice_sf_priv *ice_allocate_sf(struct device *dev, struct ice_pf *pf);
  
- 	/* aRFS members only allocated for the PF VSI */
- #define ICE_MAX_ARFS_LIST	1024
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 42878abac9eb..90c5587642d0 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -169,6 +169,7 @@ struct ice_aqc_set_port_params {
- #define ICE_AQC_RES_TYPE_VSI_LIST_PRUNE			0x04
- #define ICE_AQC_RES_TYPE_RECIPE				0x05
- #define ICE_AQC_RES_TYPE_SWID				0x07
-+#define ICE_AQC_RES_TYPE_GLOBAL_RSS_HASH		0x20
- #define ICE_AQC_RES_TYPE_FDIR_COUNTER_BLOCK		0x21
- #define ICE_AQC_RES_TYPE_FDIR_GUARANTEED_ENTRIES	0x22
- #define ICE_AQC_RES_TYPE_FDIR_SHARED_ENTRIES		0x23
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.h b/drivers/net/ethernet/intel/ice/ice_switch.h
-index 671d7a5f359f..99b593b68bd0 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.h
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.h
-@@ -387,6 +387,8 @@ ice_rem_adv_rule_by_id(struct ice_hw *hw,
- 		       struct ice_rule_query_data *remove_entry);
- 
- int ice_init_def_sw_recp(struct ice_hw *hw);
-+int ice_alloc_rss_global_lut(struct ice_hw *hw, u16 *global_lut_id);
-+int ice_free_rss_global_lut(struct ice_hw *hw, u16 global_lut_id);
- u16 ice_get_hw_vsi_num(struct ice_hw *hw, u16 vsi_handle);
- 
- int ice_replay_vsi_all_fltr(struct ice_hw *hw, u16 vsi_handle);
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 7cd2dd066ef5..8319956754b7 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -1247,30 +1247,46 @@ static void ice_set_fd_vsi_ctx(struct ice_vsi_ctx *ctxt, struct ice_vsi *vsi)
- 	ctxt->info.fd_report_opt = cpu_to_le16(val);
- }
- 
-+/* Translate @lut_type used in most of the places to the Admin Queue
-+ * Q_OPT value for RSS.
-+ * Used with VSI ADD and VSI UPDATE AQs (opcodes 0x0210, 0x0211).
-+ */
-+static u8 ice_lut_type_to_aq_qopt_rss_val(enum ice_lut_type lut_type)
-+{
-+	switch (lut_type) {
-+	case ICE_LUT_PF:
-+		return ICE_AQ_VSI_Q_OPT_RSS_LUT_PF;
-+	case ICE_LUT_GLOBAL:
-+		return ICE_AQ_VSI_Q_OPT_RSS_LUT_GBL;
-+	case ICE_LUT_VSI:
-+	default:
-+		return ICE_AQ_VSI_Q_OPT_RSS_LUT_VSI;
-+	}
-+}
+-void ice_devlink_register(struct ice_pf *pf);
++int ice_devlink_register(struct ice_pf *pf);
+ void ice_devlink_unregister(struct ice_pf *pf);
+ int ice_devlink_register_params(struct ice_pf *pf);
+ void ice_devlink_unregister_params(struct ice_pf *pf);
+diff --git a/drivers/net/ethernet/intel/ice/ice_adapter.h b/drivers/net/ethernet/intel/ice/ice_adapter.h
+index c61bd645e460..cdad45e8e81b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adapter.h
++++ b/drivers/net/ethernet/intel/ice/ice_adapter.h
+@@ -8,7 +8,8 @@
+ #include <linux/mutex.h>
+ #include <linux/srcu.h>
+ #include <linux/spinlock_types.h>
+-#include <linux/refcount_types.h>
 +
++#include <net/devlink.h>
+ 
+ #include "ice_type.h"
+ 
+@@ -35,31 +36,30 @@ struct ice_port_list {
+ 
  /**
-  * ice_set_rss_vsi_ctx - Set RSS VSI context before adding a VSI
-  * @ctxt: the VSI context being set
-  * @vsi: the VSI being configured
+  * struct ice_adapter - PCI adapter resources shared across PFs
+- * @refcount: Reference count. struct ice_pf objects hold the references.
++ * @devlink: ice adapter's devlink (whole dev devlink)
+  * @ptp_gltsyn_time_lock: Spinlock protecting access to the GLTSYN_TIME
+  *                        register of the PTP clock.
+  * @txq_ctx_lock: Spinlock protecting access to the GLCOMM_QTX_CNTX_CTL register
+  * @cpi_phy_lock: Per-PHY mutex serializing CPI REQ/ACK transactions.
+  *               Index 0 = PHY0, index 1 = PHY1. Used on E825C devices.
+  * @ctrl_pf: Control PF of the adapter
+  * @ports: Ports list
+- * @index: 64-bit index cached for collision detection on 32bit systems
   */
- static void ice_set_rss_vsi_ctx(struct ice_vsi_ctx *ctxt, struct ice_vsi *vsi)
+ struct ice_adapter {
+-	refcount_t refcount;
++	struct devlink *devlink;
++
+ 	/* For access to the GLTSYN_TIME register */
+ 	spinlock_t ptp_gltsyn_time_lock;
+ 	/* For access to GLCOMM_QTX_CNTX_CTL register */
+ 	spinlock_t txq_ctx_lock;
+ 	/* Serialize CPI REQ/ACK transactions per PHY (E825C only) */
+ 	struct mutex cpi_phy_lock[ICE_E825_MAX_PHYS];
+ 
+ 	struct ice_pf *ctrl_pf;
+ 	struct ice_port_list ports;
+-	u64 index;
+ };
+ 
+ struct ice_adapter *ice_adapter_get(struct pci_dev *pdev);
+-void ice_adapter_put(struct pci_dev *pdev);
++void ice_adapter_put(struct ice_adapter *adapter);
+ 
+ #endif /* _ICE_ADAPTER_H */
+diff --git a/drivers/net/ethernet/intel/ice/devlink/devlink.c b/drivers/net/ethernet/intel/ice/devlink/devlink.c
+index 8c2b63eef82b..fa64b9744779 100644
+--- a/drivers/net/ethernet/intel/ice/devlink/devlink.c
++++ b/drivers/net/ethernet/intel/ice/devlink/devlink.c
+@@ -1747,11 +1747,20 @@ struct ice_sf_priv *ice_allocate_sf(struct device *dev, struct ice_pf *pf)
+  *
+  * Return: zero on success or an error code on failure.
+  */
+-void ice_devlink_register(struct ice_pf *pf)
++int ice_devlink_register(struct ice_pf *pf)
  {
- 	u8 lut_type, hash_type;
-+	u8 global_lut_id = 0;
- 	struct device *dev;
- 	struct ice_pf *pf;
+ 	struct devlink *devlink = priv_to_devlink(pf);
++	struct ice_adapter *adapter = pf->adapter;
++	int err;
  
- 	pf = vsi->back;
- 	dev = ice_pf_to_dev(pf);
- 
- 	switch (vsi->type) {
- 	case ICE_VSI_CHNL:
--	case ICE_VSI_PF:
--		/* PF VSI will inherit RSS instance of PF */
- 		lut_type = ICE_AQ_VSI_Q_OPT_RSS_LUT_PF;
- 		break;
-+	case ICE_VSI_PF:
- 	case ICE_VSI_VF:
- 	case ICE_VSI_SF:
--		/* VF VSI will gets a small RSS table which is a VSI LUT type */
--		lut_type = ICE_AQ_VSI_Q_OPT_RSS_LUT_VSI;
-+		lut_type = ice_lut_type_to_aq_qopt_rss_val(vsi->rss_lut_type);
- 		break;
- 	default:
- 		dev_dbg(dev, "Unsupported VSI type %s\n",
-@@ -1281,8 +1297,12 @@ static void ice_set_rss_vsi_ctx(struct ice_vsi_ctx *ctxt, struct ice_vsi *vsi)
- 	hash_type = ICE_AQ_VSI_Q_OPT_RSS_HASH_TPLZ;
- 	vsi->rss_hfunc = hash_type;
- 
-+	if (vsi->rss_lut_type == ICE_LUT_GLOBAL)
-+		global_lut_id = vsi->global_lut_id;
++	if (adapter) {
++		err = devl_nested_devlink_set(adapter->devlink, devlink);
++		if (err)
++			return err;
++	}
+ 	devl_register(devlink);
 +
- 	ctxt->info.q_opt_rss =
- 		FIELD_PREP(ICE_AQ_VSI_Q_OPT_RSS_LUT_M, lut_type) |
-+		FIELD_PREP(ICE_AQ_VSI_Q_OPT_RSS_GBL_LUT_M, global_lut_id) |
- 		FIELD_PREP(ICE_AQ_VSI_Q_OPT_RSS_HASH_M, hash_type);
++	return 0;
  }
  
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 4daee252e2a6..e6f08fe9b5c2 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -1527,6 +1527,47 @@ ice_aq_get_sw_cfg(struct ice_hw *hw, struct ice_aqc_get_sw_cfg_resp_elem *buf,
- 	return status;
+ /**
+diff --git a/drivers/net/ethernet/intel/ice/ice_adapter.c b/drivers/net/ethernet/intel/ice/ice_adapter.c
+index 536923b6ae97..0cdb13e7bd89 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adapter.c
++++ b/drivers/net/ethernet/intel/ice/ice_adapter.c
+@@ -1,19 +1,14 @@
+ // SPDX-License-Identifier: GPL-2.0-only
+ // SPDX-FileCopyrightText: Copyright Red Hat
+ 
+-#include <linux/cleanup.h>
+-#include <linux/mutex.h>
+ #include <linux/pci.h>
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
+ #include <linux/srcu.h>
+-#include <linux/xarray.h>
++
+ #include "ice_adapter.h"
+ #include "ice.h"
+ 
+-static DEFINE_XARRAY(ice_adapters);
+-static DEFINE_MUTEX(ice_adapters_mutex);
+-
+ #define ICE_ADAPTER_FIXED_INDEX	BIT_ULL(63)
+ 
+ #define ICE_ADAPTER_INDEX_E825C	\
+@@ -41,56 +36,41 @@ static u64 ice_adapter_index(struct pci_dev *pdev)
+ 	}
  }
  
-+/* Allocate a new Global LUT for the caller.
-+ * LUT ID is returned via @global_lut_id.
-+ */
-+int ice_alloc_rss_global_lut(struct ice_hw *hw, u16 *global_lut_id)
-+{
-+	DEFINE_RAW_FLEX(struct ice_aqc_alloc_free_res_elem, buf, elem, 1);
-+	u16 buf_len = __struct_size(buf);
-+	int err;
+-static unsigned long ice_adapter_xa_index(struct pci_dev *pdev)
++static int ice_adapter_init(void *priv, void *init_param)
+ {
+-	u64 index = ice_adapter_index(pdev);
+-
+-#if BITS_PER_LONG == 64
+-	return index;
+-#else
+-	return (u32)index ^ (u32)(index >> 32);
+-#endif
+-}
++	struct ice_adapter *adapter = priv;
++	struct devlink *devlink;
+ 
+-static struct ice_adapter *ice_adapter_new(struct pci_dev *pdev)
+-{
+-	struct ice_adapter *adapter;
+-	int err;
++	devlink = shd_priv_to_devlink(adapter);
++	adapter->devlink = devlink;
+ 
+-	adapter = kzalloc_obj(*adapter);
+-	if (!adapter)
+-		return NULL;
+-
+-	err = init_srcu_struct(&adapter->ports.srcu);
+-	if (err) {
+-		kfree(adapter);
+-		return NULL;
+-	}
+-
+-	adapter->index = ice_adapter_index(pdev);
+ 	spin_lock_init(&adapter->ptp_gltsyn_time_lock);
+ 	spin_lock_init(&adapter->txq_ctx_lock);
+ 	for (int i = 0; i < ARRAY_SIZE(adapter->cpi_phy_lock); i++)
+ 		mutex_init(&adapter->cpi_phy_lock[i]);
+-	refcount_set(&adapter->refcount, 1);
+ 
+ 	spin_lock_init(&adapter->ports.lock);
+ 	INIT_LIST_HEAD(&adapter->ports.list);
+ 
+-	return adapter;
++	return init_srcu_struct(&adapter->ports.srcu);
+ }
+ 
+-static void ice_adapter_free(struct ice_adapter *adapter)
++static void ice_adapter_fini(void *priv)
+ {
++	struct ice_adapter *adapter = priv;
 +
-+	buf->num_elems = cpu_to_le16(1);
-+	buf->res_type = cpu_to_le16(ICE_AQC_RES_TYPE_GLOBAL_RSS_HASH);
-+
-+	err = ice_aq_alloc_free_res(hw, buf, buf_len, ice_aqc_opc_alloc_res);
-+	if (err)
-+		ice_debug(hw, ICE_DBG_RES, "Failed to allocate RSS global LUT, err %d\n",
-+			  err);
-+	else
-+		*global_lut_id = le16_to_cpu(buf->elem[0].e.sw_resp);
-+
-+	return err;
-+}
-+
-+/* Free Global LUT at @global_lut_id. */
-+int ice_free_rss_global_lut(struct ice_hw *hw, u16 global_lut_id)
-+{
-+	DEFINE_RAW_FLEX(struct ice_aqc_alloc_free_res_elem, buf, elem, 1);
-+	u16 buf_len = __struct_size(buf);
-+	int err;
-+
-+	buf->num_elems = cpu_to_le16(1);
-+	buf->res_type = cpu_to_le16(ICE_AQC_RES_TYPE_GLOBAL_RSS_HASH);
-+	buf->elem[0].e.sw_resp = cpu_to_le16(global_lut_id);
-+
-+	err = ice_aq_alloc_free_res(hw, buf, buf_len, ice_aqc_opc_free_res);
-+	if (err)
-+		ice_debug(hw, ICE_DBG_RES, "Failed to free RSS global LUT %d, err %d\n",
-+			  global_lut_id, err);
-+
-+	return err;
-+}
+ 	WARN_ON(!list_empty(&adapter->ports.list));
+ 	for (int i = 0; i < ARRAY_SIZE(adapter->cpi_phy_lock); i++)
+ 		mutex_destroy(&adapter->cpi_phy_lock[i]);
+ 
+ 	cleanup_srcu_struct(&adapter->ports.srcu);
+-
+-	kfree(adapter);
+ }
+ 
++static const struct devlink_ops ice_adapter_devlink_ops = {
++	.shd_init = ice_adapter_init,
++	.shd_fini = ice_adapter_fini,
++};
 +
  /**
-  * ice_aq_add_vsi
-  * @hw: pointer to the HW struct
+  * ice_adapter_get - Get a shared ice_adapter structure.
+  * @pdev: Pointer to the pci_dev whose driver is getting the ice_adapter.
+@@ -102,59 +82,37 @@ static void ice_adapter_free(struct ice_adapter *adapter)
+  *
+  * Context: Process, may sleep.
+  * Return:  Pointer to ice_adapter on success.
+- *          ERR_PTR() on error. -ENOMEM is the only possible error.
++ *          ERR_PTR() on error.
+  */
+ struct ice_adapter *ice_adapter_get(struct pci_dev *pdev)
+ {
+ 	struct ice_adapter *adapter;
+-	unsigned long index;
+-	int err;
+-
+-	index = ice_adapter_xa_index(pdev);
+-	scoped_guard(mutex, &ice_adapters_mutex) {
+-		adapter = xa_load(&ice_adapters, index);
+-		if (adapter) {
+-			refcount_inc(&adapter->refcount);
+-			WARN_ON_ONCE(adapter->index != ice_adapter_index(pdev));
+-			return adapter;
+-		}
+-		err = xa_reserve(&ice_adapters, index, GFP_KERNEL);
+-		if (err)
+-			return ERR_PTR(err);
+-
+-		adapter = ice_adapter_new(pdev);
+-		if (!adapter) {
+-			xa_release(&ice_adapters, index);
+-			return ERR_PTR(-ENOMEM);
+-		}
+-		xa_store(&ice_adapters, index, adapter, GFP_KERNEL);
+-	}
++	struct devlink *devlink;
++	char devlink_id[32];
++	u64 index;
++
++	index = ice_adapter_index(pdev);
++	snprintf(devlink_id, sizeof(devlink_id), "ice:%llx", index);
++	devlink = devlink_shd_get(devlink_id, &ice_adapter_devlink_ops,
++				  sizeof(*adapter), NULL, pdev->dev.driver);
++	if (IS_ERR(devlink))
++		return ERR_CAST(devlink);
++
++	adapter = devlink_shd_get_priv(devlink);
++
+ 	return adapter;
+ }
+ 
+ /**
+  * ice_adapter_put - Release a reference to the shared ice_adapter structure.
+- * @pdev: Pointer to the pci_dev whose driver is releasing the ice_adapter.
++ * @adapter: the ice_adapter to release reference to
+  *
+  * Releases the reference to ice_adapter previously obtained with
+  * ice_adapter_get.
+  *
+  * Context: Process, may sleep.
+  */
+-void ice_adapter_put(struct pci_dev *pdev)
++void ice_adapter_put(struct ice_adapter *adapter)
+ {
+-	struct ice_adapter *adapter;
+-	unsigned long index;
+-
+-	index = ice_adapter_xa_index(pdev);
+-	scoped_guard(mutex, &ice_adapters_mutex) {
+-		adapter = xa_load(&ice_adapters, index);
+-		if (WARN_ON(!adapter))
+-			return;
+-		if (!refcount_dec_and_test(&adapter->refcount))
+-			return;
+-
+-		WARN_ON(xa_erase(&ice_adapters, index) != adapter);
+-	}
+-	ice_adapter_free(adapter);
++	devlink_shd_put(adapter->devlink);
+ }
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 454fba07d4ec..6373cd5ac288 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -4946,7 +4946,12 @@ static int ice_init_devlink(struct ice_pf *pf)
+ 		return err;
+ 
+ 	ice_devlink_init_regions(pf);
+-	ice_devlink_register(pf);
++	err = ice_devlink_register(pf);
++	if (err) {
++		ice_devlink_destroy_regions(pf);
++		ice_devlink_unregister_params(pf);
++		return err;
++	}
+ 	ice_health_init(pf);
+ 
+ 	return 0;
+@@ -5291,7 +5296,7 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ unroll_dev_init:
+ 	need_dev_deinit = true;
+ unroll_adapter:
+-	ice_adapter_put(pdev);
++	ice_adapter_put(adapter);
+ unroll_hw_init:
+ 	ice_deinit_hw(hw);
+ 	if (need_dev_deinit)
+@@ -5404,7 +5409,7 @@ static void ice_remove(struct pci_dev *pdev)
+ 	ice_setup_mc_magic_wake(pf);
+ 	ice_set_wake(pf);
+ 
+-	ice_adapter_put(pdev);
++	ice_adapter_put(pf->adapter);
+ 	ice_deinit_hw(&pf->hw);
+ 
+ 	ice_deinit_dev(pf);
 -- 
 2.54.0
 
