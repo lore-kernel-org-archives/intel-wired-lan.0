@@ -1,29 +1,29 @@
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6AEBB606A32C
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD6E8606A32F
 	for <intel-wired-lan@archiver.kernel.org>; Wed,  4 Nov 2026 06:40:20 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=oqy1jRrP;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XEjRnMMW
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=6/8t84vS;
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=fHVNzF4f
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 4992D606CB;
+	by smtp4.osuosl.org (Postfix) with ESMTP id 867C7405C9;
 	Wed,  4 Nov 2026 06:40:20 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id kVJhiJ687KRi; Wed,  4 Nov 2026 06:40:19 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 813FF606C4
-Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=3; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793774419;
-	b=q2KDO05lXI7SifPsG6zz+M4SZiYOVcCcxv1Uqsh13xqVDoD016ykjEH5UgVZTMITwyiL
-	 jIy2iWuFvLCQ0vjlK4d9/cs8IylfzoiOy8LSzVtI9u6qOvqHApYPo3Ad9aPhCZ401Tqp9
-	 0Psp9UJckMMNzf4/O7/xU9vR4ypktNng1Xk0T4DLzMpCF+SO4msx4hMBn5CHhNoCCoWeZ
-	 Mw/modecIm44AT4YTNgMUFBrwLZbe7uMzIRGRUiWGmLMD6lGM4G1ThPBzlNhGkencPI9O
-	 bDVqKM4F2KC8j8WQv+WiDa2xgdoDqGuxOM2Iyb3rfoZZS5QSqE9jJMjwipS1CDLIuJg==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id pM9GynzAIRG3; Wed,  4 Nov 2026 06:40:18 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 4D0A640607
+Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=3; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793774418;
+	b=pooWlcPJxjfZUVQeXThs9kOjQWeo63tgj8tchRRvwXsBf9Mn+sieEp50WEBmlpV9Sg6g
+	 GoBsfEtOB2YM5VX8jyPAucaWfjFFgJXLf+S3O5zFwRjB+yZo4s4ujN5lnLcBufyQTXOs2
+	 FJvIe38z0Fb9T9KTZ1IjXxDN92yJTw11dju5IHzSV082tLiMCpS5Y6t0xqCvNk6TVYukG
+	 j5WuTUjICoHtZyxiOkV/dkq+OnQUF01MfYFm4qir2hNRFTdLGvcfQNarGrR4bL7RCifin
+	 efdi20rpN8vL/pP42oIP0z7QihJL1yOk6REeHjtXAfR6xrmXjfn9Ve2Q7vsO6K464ow==
 ARC-Message-Signature: i=3; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1793774419;
+	c=relaxed/relaxed; t=1793774418;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
@@ -33,50 +33,50 @@ ARC-Message-Signature: i=3; d=osuosl.org; s=arc; a=rsa-sha256;
 	 X-Original-From:Content-Transfer-Encoding:X-BeenThere:
 	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Reply-To:Errors-To;
-	bh=QM0NVH0cM+4ZpfVNA+64ursRYzC14LgzNdyXgZtFgX0=;
-	b=RidEm/gPoSJYGOzZ768oZpmyn6gsGP3DjEB2orLVxjFPrVqbOCRfsF8uCSLSp7qGvRyF
-	 wwfRrWDt1C5RBc+oWNj2G01DggR4F/WoPTQb1zRpCroHG27Hc5EMbwdk1GDVQkpIGcv/L
-	 G774MCzNcfhP2fstiHMvnAAOurfKjSTn2WPft2lXUsnpj1rxpMicchEjjL/RtSxwaw/Ai
-	 xsU0KdL93t4BE4K5ZrHX0i95mJ6b4A6EI/EMmtZCOKtRFnEMW4cRlNCNjczV/BhLVl6NC
-	 V+X+sKjcC5k1wrS+55DcA4ulxq34Ak25s97R7CCI0y2Ivbtu6WlMQgoSplq0UG5VIHw==
-ARC-Authentication-Results: i=3; smtp3.osuosl.org; 
+	bh=0M9qnpPhOhCS0OHr3LGUVqA5/n7UzIomIqhvLOkAZgI=;
+	b=Dt5qK+CjncwulnsfB4zXzM45f3AoKmlMvdeZJeD9Lixz23QeiTdY1pArgFxYWMM4SGrf
+	 8nMRMmP3k9Rnp6BHsVUFtfUqbrOoqswTprV7hz3WPzqh4KqjT4SM8cOt6Oxtp2j9es2gF
+	 ehOc4Hdcq+XaqXqQ27yF/bQgXimsS2mQq1MIE+EdBl0s+Yed65V+asYSWPyl1mKGOPM58
+	 EcuCf9qAEX9Bgm8cS8eLzPOhjsRAxmSP4jRxrWaIUU8Ez8pQg/GMrh4AnDxvTx6u6YbhY
+	 8vRWHydJ0M48jR7owaVzjVcw07urGcEhsp2upBN6u0K0Co1PqIIerUPMZr/nq5ZheTg==
+ARC-Authentication-Results: i=3; smtp4.osuosl.org; 
 	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1793774419;
-	bh=QM0NVH0cM+4ZpfVNA+64ursRYzC14LgzNdyXgZtFgX0=;
+	s=default; t=1793774418;
+	bh=0M9qnpPhOhCS0OHr3LGUVqA5/n7UzIomIqhvLOkAZgI=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Reply-To:From;
-	b=oqy1jRrPKCiJMgNcHT6ShTPqDCsL17h6T60B1c9hux5Pub/1J3Juh5XgcMhoncKBX
-	 UKOzPJB+CeLrJGIH6PEV75i4UbSIMetqBBRkEbhbDHbWPKlfhh5u0/SZVzQDF3rdVg
-	 VaWXk2STlbf6iDaiD0/QUbiQq150wWBKXV48GWqE4abilQym9nF4SoBv2Hxo1HNqsZ
-	 2WKERjKAuLvZzklwYDmocRpMPUQEcsil4umF3auRaWcu43T1mboc2p31c8hCmm1tFm
-	 61z8AhMyiIpLc2Aq2Qa1mIx+kN/bEbn0rLpVETozr1ctFuAsiLXgTEAq7Y6RzjGKoz
-	 fwPTT/omP2qDg==
+	b=6/8t84vSmIXuWhV7FcA5YiS3MXwikbjZ88bx6Anxbgg8WQ+V9rfDPn9SXId2urwLW
+	 4darRSajMnOmJjzyG7LJx4QXK4ylvfRAkL8LICq3rSvqv/D2K5EfQBxkNlHnP5mEAv
+	 iriGHHL8wozAJjCx4oocKeseJ5XvSY9+AwPzdPUh3Fntt072yaHtGeF2Sx2PdjfP73
+	 7hk4/sP5JBYwlFXIq97kvi8XgR21L7WaSzKPG5Ni15Hxlp927Opgf+Q3QfaftF7OIC
+	 p5caUacMraQDExNUGsMmM73G+asvATIxhoQb9d3BgFfKf599x8U6bTA3eCqfwEDXgL
+	 x4btmxTaVaGog==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 813FF606C4;
-	Wed,  4 Nov 2026 06:40:19 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id A10F7932
+	by smtp4.osuosl.org (Postfix) with ESMTP id 4D0A640607;
+	Wed,  4 Nov 2026 06:40:18 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 6DCBB932
  for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Nov 2026 06:40:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 8746280AE8
+ by smtp2.osuosl.org (Postfix) with ESMTP id 5FC374004D
  for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Nov 2026 06:40:11 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id onABhZuCFYyQ for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id WnNeGZWXfjwy for <intel-wired-lan@lists.osuosl.org>;
  Wed,  4 Nov 2026 06:40:10 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 79D85809BB
-Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0
- smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org 1916D401DB
+Authentication-Results: smtp2.osuosl.org; arc=pass header.oldest-pass=0
+ smtp.remote-ip=172.105.4.254
 ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793774410;
- b=AspthveybGU6t9WLoZa6MB/iJM3eV6s19stuND60CbuHdkfgZgV51WgEpTctl6GAnbo2
- aNL9+riKkd6fyJK+thWl+Pgu+HS7Y0CyMj2Hj2NijBDh5NoN/FJoh4TyENUFbflluLn3l
- Ugj1cmKIGDU2+19pydnGGT1YA3bdd1hQncP1K2GBICyTsdYdq/xocnSau2V6WLTVuOFZH
- +F5HSM7TdpiT8jQDKwz2TWsnrA+50Kq85+1aBXKm9qCrwm4eCnEbjgidAsMK+r13W7dk0
- jGCS6jj448h7KiQJ3wMDbz5QKxDvzcqRkg+HNJI0gv1i8z1DedLAIkAIsZLpFAixrlg==
+ b=WcKpieEdL2rRc39GE5yxa4MTj4sYEoXG2TeOwdUV8+wgZVFF0ZDQPfXxgaQfiwtMmIZ9
+ SgsiyPAXu2dVlHzIk5TMadfAI1HtSWo0Kq1se/+0xSaMBu2Ihth8UpmSR/HqK9hZ9vX3Y
+ CLjfvrVeuoOQbB4Hn1ELNgoeYK7QTD9VT/wVYC8/rVecqyyYFk2nuk11J3QmG5XQIvcOK
+ 6HVvHSYmNWEkksGf69W82gWPk3QXgjAAuj3b96eqxtpIveKVjCVAgcce3WDdETEcAw1IM
+ sivRgdxQhR4CloCC+naRGzPmTFAVBQRv+0KhA+Dw8KZ+jxK/ja52sVegxBjyLWPlzbQ==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
  c=relaxed/relaxed; t=1793774410;
  h=Received-SPF:Received:Received:DKIM-Signature:Received:From:Date:
@@ -84,81 +84,80 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
  To:Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:
  X-Endpoint-Received:X-Original-From:Reply-To:
  Content-Transfer-Encoding;
- bh=QM0NVH0cM+4ZpfVNA+64ursRYzC14LgzNdyXgZtFgX0=;
- b=SLznm0r+On9E+0x7XZTrdnKtg+fK5cGnkG/we8AWQUA/CTQeNc2l4hu9lKzhhDkvXxSQ
- yZB5WacOPl0VJBhmPMQr7gIHxsB/KrkMoHImzf0RcQZ9uA0Tm1vImBT4TX7Ps2T8XGrFq
- ftq/mF0cvqi06A5vvi/EjT+192rj0CJ6Hh5Todt12K9lE3CmZNv/+H9DpgqWCOSNMFYSa
- o3EViKJb+FGD9tHhhUrtoxCn2hyjEyg2verjJGPKhTV3cHwld4Po2/69ShwHkNdttd8Uk
- Z/S1EG2O2/UIvi5dSDd5QL/swRmWD1F7YqiUZ3k0f8+q76PWJaJynz5aZ41m1JY48Hw==
-ARC-Authentication-Results: i=2; smtp1.osuosl.org; 
+ bh=0M9qnpPhOhCS0OHr3LGUVqA5/n7UzIomIqhvLOkAZgI=;
+ b=iZyQiPj85+upm27CY77AHVzIOsNmW1aoEYBLxRGmzNXD5rSUsfTaLUvi6g18fiGdNl+M
+ Y94O+Eni1wG76LYmw9drOA4jNGBYYj4H0omExtLrlPMMegEJ23ccGdXem67Tj8eU/7NaD
+ /qc/QJJnSzpZlI8RPseh+bhklJ6X7bN1j5IJnvyolAy8f/orQizvpHR4xWtQpuwfrhY1y
+ ZDKEnxxGOTRQd/fh0ZSNt3tZVUgjJhs1kTrGk2PiJES+bF8URs/ScYTOrQq7MEIXe4qT3
+ qts6rRjE+u4D5e+r83SG4oLCrQejln1MxBcAhv84mdGVW2S29XN084kKnS3JqS0J7+g==
+ARC-Authentication-Results: i=2; smtp2.osuosl.org; 
  dmarc=pass header.from=kernel.org;
  dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=XEjRnMMW; 
- arc=pass header.oldest-pass=0 smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
- envelope-from=devnull+tkusters.aweta.nl@kernel.org; receiver=<UNKNOWN> 
-Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.s=k20260515 header.b=fHVNzF4f; 
+ arc=pass header.oldest-pass=0 smtp.remote-ip=172.105.4.254
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
+ helo=tor.source.kernel.org; envelope-from=devnull+tkusters.aweta.nl@kernel.org;
+ receiver=<UNKNOWN> 
+Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-Authentication-Results: smtp1.osuosl.org;
+Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20260515 header.b=XEjRnMMW
-Received: from tor.source.kernel.org (tor.source.kernel.org
- [IPv6:2600:3c04:e001:324:0:1991:8:25])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 79D85809BB
- for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Nov 2026 06:40:10 +0000 (UTC)
+ header.a=rsa-sha256 header.s=k20260515 header.b=fHVNzF4f
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 1916D401DB
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Nov 2026 06:40:09 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id 06E1060AAB;
- Wed,  4 Nov 2026 06:40:09 +0000 (UTC)
+ by tor.source.kernel.org (Postfix) with ESMTP id 97A9060D79;
+ Wed,  4 Nov 2026 06:40:08 +0000 (UTC)
 Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
 ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
  t=1793774408;
- b=r9O6Fx43/LLVgssO05rPAKbz60SE7M5MBIOrpgACq4hygau/S6ovDyY/xqmF2dLVTzHr
- OLrTcrMMWdDl30ld43cwJU58ZHn2oqQj3jOx6QOwIVbkJxlbmBIVjviJJvhaVVZJdDQsL
- b0ArSLWlF7tix2FEbC7hyl639wSAEHDIKA5DoUQ98owA0cI63Yk8HtmZQ651FtL9JzfJM
- ShCGwZ1x4E83Nf9oelebO6C2B/U0DhbjorIR9jyQrV2DogYmUGn6puhnV2CRb70NUbjPE
- mKX28Z0/Bemfte5HFhjv28wxP3/1PTiJTFTAC/Ikdt5L1FxB0+FNDav9FDUwcB8QjzA==
+ b=zB7e0hOhf692eaCmTJWRXuzQBNVw1sWfSfKfzE8WlAHAru/hLq1g9U9zFAnqJMKhLmiA
+ xCqwIlZwIxOjH1QHLB59BBkQIQGFOLonHnul4a0A0rze3qHaXm1658wl5luzpYieOv+s3
+ uh+se2Nu3YuUwThHhIyTPKTbVgyvRTwfchTyLvgTw8/3vHa/IUMoSXeA8EIoi4icZPTll
+ cNrkuga0CGCaFXJXkB4k/qr+ScfB10hDMGvniE8IjOH0SccC/DLe5BAwuVMzXED9Vq5Rx
+ jgpCkHUsdweyipDLv5Xcd/9XfSlEOsxmfLK71ci/TdyYYu1pCuKQVRUzDI30k7JGOQA==
 ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
  c=relaxed/relaxed; t=1793774408;
  h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
  Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
  X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
  X-Original-From:Reply-To:Content-Transfer-Encoding;
- bh=QM0NVH0cM+4ZpfVNA+64ursRYzC14LgzNdyXgZtFgX0=;
- b=NRZHG+H2eLDKirNnnEBnRiPESXnZmPEC3NQK81fnMgOIWbdjNAhkX7OVR+oW+pXDRAaK
- 87YwWAnPgSy1C+2XPYtd4moi3nrmTYeqm1n39f/1Furjx8i5uPzS62lRZNzzw6pfRLG2o
- btHLn3yA/RAJHhmsY92q+yzHM4lOFqlHZqu6FE5Ex9tgHPa/K1Wt9idcU5WpCcIKyns99
- hwF6RfbF2NLHA9eGlN0hhGsv8X4xwkNS6FgtLKt06LzJLbHovOZAiHqqIIgBD8dHEKMAK
- /f2gl8ZxMNm2u8UYUOR4qxp0yZfIyKh8Hsy9ajfxzUvPOZaoA+uJwJbFXYF4by0KjEg==
+ bh=0M9qnpPhOhCS0OHr3LGUVqA5/n7UzIomIqhvLOkAZgI=;
+ b=amzwbmS1PgyPl7l67yeXVvZ07q3NKU2To1dRYEvwNmH0c7cov6jOfbmd+4MKjNE9UYtE
+ cNu61xPrXA5uc0kDlXjIVdyzycHqjQV4ygcyL6HX5z5UXQf3HGmnH9aJ/ApJRo7p8nThk
+ yFRpaHwRuE7NIe779oZ5nrEhQiIX6PgTRQp2BjGinaj87W7a/QUx4rctSNgYxqHK2FQfh
+ 0/EB3uNqR/U6xfenm58AouVWqKGJsxDX0Iq7a8NkQOkWemHH8uN6c/dNTdX28JQRuMKI+
+ 618819jfoE9o7rP9FH2RhGZTrAfSvm3iNihhWPxko/vdvrqt2UN7xuCzrjGhZSfxr/A==
 ARC-Authentication-Results: i=1; smtp.kernel.org; 
  arc=none smtp.remote-ip=100.80.115.77
 Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
  (No client certificate requested)
- by smtp.kernel.org (Postfix) with ESMTPS id 72AED1F00A15;
+ by smtp.kernel.org (Postfix) with ESMTPS id 654701F00A02;
  Wed,  4 Nov 2026 06:40:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
  s=k20260515; t=1793774408;
- bh=QM0NVH0cM+4ZpfVNA+64ursRYzC14LgzNdyXgZtFgX0=;
+ bh=0M9qnpPhOhCS0OHr3LGUVqA5/n7UzIomIqhvLOkAZgI=;
  h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
- b=XEjRnMMW6Uv0bRCEO9oFy9u/vnjqj/DGLg6d/F4Wl3rhkWhrSQKmcvNmvppb+8SQ+
- kQDy38HoGhteblPbut1+U4TYg98GgtHjsPbd/DZO6dY8o/qIragCkugg7VouygYqKF
- 4coEjDb7AnPGUeGHxLPrBS0WHe1J/xQXEM862jAGiu4vN1AjafkM+4y1qv80hjJdCH
- fOdl3HqmxA3Z3GmZ4kg/BF/GQvmrOFTf0Idg7hX8dJh+EeCn9vbb/ds9tgQ7148tIp
- 5OLsWTDUVt1wEU/K0QmG8pU2Em2VkeUeIf9CQHd5qB8YMM4MKU+/qtnoarbZ08tTNW
- mYn1lTWVN/13w==
+ b=fHVNzF4fdUymVWdyRggZ9TxOFE9KFc4LOjnBMqk0d+NpPCzZ6oTVW4njmjUUsLEX6
+ WvdvAoSJ01/NAthnPNh/93O6ap4wjvMjqUnnadxIWKRyIw99cyfofjbnCJSCLMK3Xe
+ 790SfsaKiV62Y1uppKRVOcloc1G0eazV7xTSI9+9/Yy8VHwyUHlJSLkmnkwSwZkOWz
+ ggebj37NKD0gKR6W/hDOUl6JxQUrkISYdq5LZx6tiQ4bIqun8BRT+R/9TFj7HKouqe
+ lOnSzLkSm4Qv8CyGeRjopC8Ln7Tgm/PelzSsWN9MaWoWGgd4NtfZQchp085f51YZ0N
+ NBo+LBKQnxNng==
 Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
- by lkml.kernel.org (Postfix) with ESMTP id 041ED46CC7;
- Wed,  4 Nov 2026 06:40:06 +0000 (UTC)
+ by lkml.kernel.org (Postfix) with ESMTP id EA55A46CC3;
+ Wed,  4 Nov 2026 06:40:05 +0000 (UTC)
 From: Tjerk Kusters via B4 Relay <devnull+tkusters.aweta.nl@kernel.org>
-Date: Wed, 04 Nov 2026 07:40:05 +0100
-Subject: [PATCH net v5 4/4] igb: drop AF_XDP zero-copy frames that span
+Date: Wed, 04 Nov 2026 07:40:04 +0100
+Subject: [PATCH net v5 3/4] igb: do not split AF_XDP zero-copy frames over
  several Rx buffers
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261104-igb-rx-ts-fix-v5-4-bf4b4367129a@aweta.nl>
+Message-Id: <20261104-igb-rx-ts-fix-v5-3-bf4b4367129a@aweta.nl>
 References: <20261104-igb-rx-ts-fix-v5-0-bf4b4367129a@aweta.nl>
 In-Reply-To: <20261104-igb-rx-ts-fix-v5-0-bf4b4367129a@aweta.nl>
 To: Tony Nguyen <anthony.l.nguyen@intel.com>, 
@@ -179,11 +178,11 @@ Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
  Maciej Fijalkowski <maciej.fijalkowski@intel.com>, Paul Moses <p@1g4.org>, 
  stable@vger.kernel.org, Tjerk Kusters <tkusters@aweta.nl>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1793774404; l=3174;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1793774404; l=7054;
  i=tkusters@aweta.nl; s=20260619; h=from:subject:message-id;
- bh=MkRF1V1g+97bXmg40zLUInt45xqgM/uhRHUJw6aF5q4=;
- b=5tLdWEbOPlIseyGjFHZUz7pLUptV5ZFvFzMDviMEiMJn7X3oDd3o1LhwK8jL8bbyqnyzYkk/Z
- +2nppyaYkr/DjOJt/1/Vjo80CY3L4/Yrb5INyDj9uCuW0SVnCsbshDK
+ bh=9KCsF2JdSscOWYhqwzpXNPqHFCXYoHVlmj1GZ5y3NZc=;
+ b=80bromS/yvbSm8AKZHBEd4pgAkBuYNsErV25+AMEYW2CH/xvKCg9SErQk9V58j0RTQ71RboEC
+ rx/jJX7ODvwDYNllAto6/tphrxMERkjaepuuvel+RpL2sjeWVoWg01G
 X-Developer-Key: i=tkusters@aweta.nl; a=ed25519;
  pk=JYRpYQ3+LrphEabgnxcbiOUpwvNP8WDDMcLzz+cwKsk=
 X-Endpoint-Received: by B4 Relay for tkusters@aweta.nl/20260619 with
@@ -204,94 +203,173 @@ Reply-To: tkusters@aweta.nl
 X-Spam-Status: No, score=-18.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=4.0.1
+	MAILING_LIST_MULTI,SPF_HELO_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 From: Tjerk Kusters <tkusters@aweta.nl>
 
-igb_clean_rx_irq_zc() handles every descriptor as a complete frame and
-strips the inline Rx timestamp header from each of them. If a frame
-spans several descriptors, the AF_XDP socket gets its later buffers as
-separate packets without headers. If such a buffer is shorter than the
-header, the size wraps and the XDP program sees data past data_end. On
-XDP_PASS, igb_construct_skb_zc() then fails to allocate an skb, and the
-queue can stall on that descriptor.
+SRRCTL.BSIZEPKT has a granularity of 1 KiB. For AF_XDP zero-copy rings,
+igb_setup_srrctl() programs xsk_pool_get_rx_frame_size(), which is
+rounded down. With 2 KiB UMEM chunks and the default headroom this is
+1792 bytes, so the hardware buffer becomes 1 KiB and a full-size frame
+spans two Rx buffers. igb_clean_rx_irq_zc() handles every descriptor as
+a complete frame, so the AF_XDP socket gets such a frame as two
+packets, the second one without headers. With Rx timestamping enabled,
+the timestamp header is also stripped from the second buffer, and a
+short final buffer makes the size wrap.
 
-The previous patches make sure that frames fit in one buffer while XDP
-is attached. As ixgbe does, also drop any frame that still spans several
-descriptors instead of passing its buffers on: free the buffers without
-EOP, and the EOP buffer that ends such a frame. The state is kept in a
-ring flag, as a frame can be split over two NAPI polls.
+Program the same buffer size as for the other rings, 2 KiB or 3 KiB.
+This depends on "igb: do not let XDP frames span more than one Rx
+buffer": the receive length limit set there while XDP is attached keeps
+the hardware from writing more than the frame plus the timestamp header
+into the larger buffer. Without it, the hardware can write past the XSK
+frame.
 
-This depends on the previous patch. Without it, every full-size frame
-on 2 KiB chunks spans two buffers and would be dropped.
+Refuse an XSK pool whose frame size cannot hold that, and an MTU change
+that would no longer fit a bound pool, also while no XDP program is
+attached. The current MTU is checked rather than the largest XDP MTU,
+as igb allows XDP up to MTU 3030 and that would rule out 2 KiB chunks.
+A pool that still does not fit when the ring is configured, for example
+because its queue was hidden by SR-IOV during an MTU change, is not used
+in zero-copy mode, see igb_xsk_pool(); its Tx then fails with EINVAL
+until the pool is bound again.
 
-Not reproduced on hardware, as with the previous patches the I350 no
-longer splits frames in zero-copy mode.
+This is the igb counterpart of the igc XSK buffer change.
 
+Tested on an I350 with xdpsock from bpf-examples in rxdrop zero-copy
+mode on one queue, Rx timestamping on and 1514-byte frames from the
+peer. With 2 KiB chunks, the receive descriptors went from about two
+per frame to one per frame; 98-byte frames and 4 KiB chunks were one
+per frame with and without this patch. At MTU 3000, 4 KiB chunks
+receive 3014-byte frames in one buffer. A 2 KiB chunk pool at MTU 3000
+was refused by the new check on the 6.14.9 test kernel; current kernels
+already refuse it in xp_assign_dev(). There, with 2 KiB chunks and the
+default headroom, the new check refuses MTU 1751 to 1766, which the core
+accepts.
+
+Link: https://lore.kernel.org/all/20261028083344.3047350-3-p@1g4.org/
 Fixes: 2c6196013f84 ("igb: Add AF_XDP zero-copy Rx support")
 Cc: stable@vger.kernel.org
+Suggested-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 Signed-off-by: Tjerk Kusters <tkusters@aweta.nl>
 ---
- drivers/net/ethernet/intel/igb/igb.h     |  1 +
- drivers/net/ethernet/intel/igb/igb_xsk.c | 23 +++++++++++++++++++++++
- 2 files changed, 24 insertions(+)
+ drivers/net/ethernet/intel/igb/igb.h      |  9 +++++++++
+ drivers/net/ethernet/intel/igb/igb_main.c | 28 +++++++++++++++++++++++++---
+ drivers/net/ethernet/intel/igb/igb_xsk.c  | 19 ++++++++++++++++++-
+ 3 files changed, 52 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index 0495c02544d6..6613ea0eedb8 100644
+index 0fff1df81b7b..0495c02544d6 100644
 --- a/drivers/net/ethernet/intel/igb/igb.h
 +++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -393,6 +393,7 @@ enum e1000_ring_flags_t {
- 	IGB_RING_FLAG_TX_DETECT_HANG,
- 	IGB_RING_FLAG_TX_DISABLED,
- 	IGB_RING_FLAG_RX_ALLOC_FAILED,
-+	IGB_RING_FLAG_RX_XSK_DISCARD,
- };
+@@ -856,6 +856,15 @@ int igb_add_mac_steering_filter(struct igb_adapter *adapter,
+ int igb_del_mac_steering_filter(struct igb_adapter *adapter,
+ 				const u8 *addr, u8 queue, u8 flags);
  
- #define ring_uses_large_buffer(ring) \
++/* XDP does not support frames that span more than one Rx buffer, so a
++ * frame plus the inline Rx timestamp header must fit in one XSK buffer.
++ */
++static inline bool igb_xsk_frame_fits(struct xsk_buff_pool *pool,
++				      int max_frame)
++{
++	return max_frame + IGB_TS_HDR_LEN <= xsk_pool_get_rx_frame_size(pool);
++}
++
+ struct xsk_buff_pool *igb_xsk_pool(struct igb_adapter *adapter,
+ 				   struct igb_ring *ring);
+ int igb_xsk_pool_setup(struct igb_adapter *adapter,
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index cf9911137bd3..b286adedad5d 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -4833,9 +4833,13 @@ void igb_setup_srrctl(struct igb_adapter *adapter, struct igb_ring *ring)
+ 	u32 srrctl = 0;
+ 	u32 buf_size;
+ 
+-	if (ring->xsk_pool)
+-		buf_size = xsk_pool_get_rx_frame_size(ring->xsk_pool);
+-	else if (ring_uses_large_buffer(ring))
++	/* SRRCTL.BSIZEPKT has a 1 KiB granularity, so programming the XSK
++	 * frame size would round it down and split frames over several
++	 * buffers. XSK rings use the same buffer size as the other rings.
++	 * While XDP is attached, the receive length limit keeps frames
++	 * within the XSK frame, see igb_xsk_frame_fits().
++	 */
++	if (ring_uses_large_buffer(ring))
+ 		buf_size = IGB_RXBUFFER_3072;
+ 	else
+ 		buf_size = IGB_RXBUFFER_2048;
+@@ -6775,6 +6779,7 @@ static int igb_change_mtu(struct net_device *netdev, int new_mtu)
+ {
+ 	struct igb_adapter *adapter = netdev_priv(netdev);
+ 	int max_frame = new_mtu + IGB_ETH_PKT_HDR_PAD;
++	int i;
+ 
+ 	if (igb_xdp_is_enabled(adapter) &&
+ 	    !igb_xdp_frame_fits(adapter, max_frame)) {
+@@ -6788,6 +6793,23 @@ static int igb_change_mtu(struct net_device *netdev, int new_mtu)
+ 	if (max_frame < (ETH_FRAME_LEN + ETH_FCS_LEN))
+ 		max_frame = ETH_FRAME_LEN + ETH_FCS_LEN;
+ 
++	/* the frame must fit the buffers of a bound XSK pool, also while no
++	 * XDP program is attached, as attaching one does not check it again
++	 */
++	for (i = 0; i < adapter->num_rx_queues; i++) {
++		struct xsk_buff_pool *pool = xsk_get_pool_from_qid(netdev, i);
++
++		if (!pool || !pool->dev)
++			continue;
++
++		if (!igb_xsk_frame_fits(pool, max_frame)) {
++			netdev_warn(adapter->netdev,
++				    "Requested MTU size is not supported with AF_XDP. Frame size is %d\n",
++				    max_frame);
++			return -EINVAL;
++		}
++	}
++
+ 	while (test_and_set_bit(__IGB_RESETTING, &adapter->state))
+ 		usleep_range(1000, 2000);
+ 
 diff --git a/drivers/net/ethernet/intel/igb/igb_xsk.c b/drivers/net/ethernet/intel/igb/igb_xsk.c
-index fb04df82272a..7b098069fff2 100644
+index ce4a7b58cad2..fb04df82272a 100644
 --- a/drivers/net/ethernet/intel/igb/igb_xsk.c
 +++ b/drivers/net/ethernet/intel/igb/igb_xsk.c
-@@ -269,6 +269,8 @@ void igb_clean_rx_ring_zc(struct igb_ring *rx_ring)
- 	u16 ntc = rx_ring->next_to_clean;
- 	u16 ntu = rx_ring->next_to_use;
+@@ -91,7 +91,20 @@ struct xsk_buff_pool *igb_xsk_pool(struct igb_adapter *adapter,
+ 	if (!igb_xdp_is_enabled(adapter))
+ 		return NULL;
  
-+	clear_bit(IGB_RING_FLAG_RX_XSK_DISCARD, &rx_ring->flags);
+-	return (pool && pool->dev) ? pool : NULL;
++	if (!pool || !pool->dev)
++		return NULL;
 +
- 	while (ntc != ntu) {
- 		struct xdp_buff *xdp = rx_ring->rx_buffer_info_zc[ntc];
++	/* the MTU check in igb_change_mtu() does not see a pool on a queue
++	 * that was hidden at the time, for example by SR-IOV
++	 */
++	if (!igb_xsk_frame_fits(pool, adapter->max_frame_size)) {
++		netdev_warn_once(adapter->netdev,
++				 "XSK frame size is too small for the MTU, queue %d is not used in zero-copy mode\n",
++				 qid);
++		return NULL;
++	}
++
++	return pool;
+ }
  
-@@ -390,6 +392,27 @@ int igb_clean_rx_irq_zc(struct igb_q_vector *q_vector,
- 		dma_rmb();
+ static int igb_xsk_pool_enable(struct igb_adapter *adapter,
+@@ -110,6 +123,10 @@ static int igb_xsk_pool_enable(struct igb_adapter *adapter,
+ 	    qid >= netdev->real_num_tx_queues)
+ 		return -EINVAL;
  
- 		xdp = rx_ring->rx_buffer_info_zc[ntc];
++	/* igb_change_mtu() keeps this true while the pool is bound */
++	if (!igb_xsk_frame_fits(pool, adapter->max_frame_size))
++		return -EOPNOTSUPP;
 +
-+		/* A frame should never span several buffers here, see
-+		 * igb_xsk_frame_fits(). If one does, drop all its buffers.
-+		 */
-+		if (unlikely(!igb_test_staterr(rx_desc, E1000_RXD_STAT_EOP) ||
-+			     test_bit(IGB_RING_FLAG_RX_XSK_DISCARD,
-+				      &rx_ring->flags))) {
-+			if (igb_test_staterr(rx_desc, E1000_RXD_STAT_EOP))
-+				clear_bit(IGB_RING_FLAG_RX_XSK_DISCARD,
-+					  &rx_ring->flags);
-+			else
-+				set_bit(IGB_RING_FLAG_RX_XSK_DISCARD,
-+					&rx_ring->flags);
-+
-+			xsk_buff_free(xdp);
-+			ntc++;
-+			if (ntc == rx_ring->count)
-+				ntc = 0;
-+			continue;
-+		}
-+
- 		xsk_buff_set_size(xdp, size);
- 		xsk_buff_dma_sync_for_cpu(xdp);
- 
+ 	err = xsk_pool_dma_map(pool, &adapter->pdev->dev, IGB_RX_DMA_ATTR);
+ 	if (err)
+ 		return err;
 
 -- 
 2.27.0
