@@ -1,29 +1,29 @@
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A706606A32C
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  4 Nov 2026 14:40:35 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 471AF606A32F
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  4 Nov 2026 14:40:36 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=jEWWYPaG;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=faB6FTxT
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=nhqoEgTW;
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Z73iQ9/x
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 38482606DE;
-	Wed,  4 Nov 2026 14:40:35 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 271FE405E9;
+	Wed,  4 Nov 2026 14:40:36 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id k5sE4V8_glC0; Wed,  4 Nov 2026 14:40:34 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 421C6606CB
-Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793803234;
-	b=Fx8eN/m0kCmSVLsAcZRQx5XZwyx4U7iyu2YrWUIoxuPEPoUvVTlx4pbz4YkP44PZnZ65
-	 7J0dBQsExt574in3gMJJJ1K2vVjYmLcYkt0bRCcW2BhTExUYQVYgb3CSU6EDb7RQ5XhZT
-	 qkRpbB307z38loSMiJfi80pGZxwBsLxAsCakdupGbMJ7rVGKHss/SrbOYJNCXDnMlDGya
-	 7RGcD+cWlpCMVeW+qwASflVOgLgEVIdJKVnq0qkY6Tdo0W0zIBO5ZzPdshEqirehTeq0s
-	 7o+2RbrQVpnOGxlbVrJLsd+JvY6tvZzFs1yIjcb9H++PlPR60hFuA22fmi5+DqWB9Og==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id nCoEfmSSHqbE; Wed,  4 Nov 2026 14:40:35 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 16397405F4
+Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793803235;
+	b=ICrXvHST0IsxLBaHSeCVHvClHYkbPM9uI0ATEpON66IErXkCb1470rUreyYgJ1jVxAPG
+	 A2pAmCqaHh1w700oNLGwt4g3VUNhyqCws7a6MWWmIRIWIdkf8Uwg4EGuh5Gr/gMRdcp6d
+	 Y3KBwYBjrMRlHdzAj+7M1yC6BL1NPPIhdj0yv8kiXGbKZgKOQIMNNPZe6/Nwbv4o7yd+l
+	 DehDt7OrPBdSVGshVhO7nzfXd+37TbCWJEICMpdG76BiyzIHcTtMADf39uoJy4xoiRtpw
+	 QiCmF9+5e//e7KPw9OcSar3dpwV+9ApKzu57tYIAyKze1i3QrUn6z7YcLKQ4dwAEsXQ==
 ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1793803234;
+	c=relaxed/relaxed; t=1793803235;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
@@ -31,105 +31,103 @@ ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
 	 References:Content-Type:Content-Transfer-Encoding:Date:X-BeenThere:
 	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Reply-To:Errors-To;
-	bh=0uo8OZ4GCc7zOVdcS+7fHTLobKfAJ3FDI9J6Uc9TXbo=;
-	b=KGADgz9RBhnfKuJEcoZ0Cy/BvU2ImFKPhmaC3P5SCiGvkdSXNdAWuhGOf2X/LtwkzLyC
-	 oQKUj3hm5Uqsfaubu3N/BI/R/9Es/bhbIkjdtok7PmKuUeevqD+c81BOuPTD7ZiBING/s
-	 E8XOIDpBaFbZ3grbIVcYQcbqKJoDgXT1I149A4Tr6vsA14fBxkR9T6y4QPDZf9Pus4Q7V
-	 6bA48LA+UMYED6PXmNpvccNZlTqLEEwaLbR7lfGY4YQs8y4a323oYB6oe7AoglEU0eGib
-	 mzQUgUg6Ybf/wb+/zYYJ/cV5wSF9+OwTWqxzPK6q0mUld424bszNernwQN7vyBuINxA==
-ARC-Authentication-Results: i=2; smtp3.osuosl.org; 
+	bh=3QImI++ZJXqNAMd93IEa3mat3HgHd23dyYPVoEYhrbk=;
+	b=HHPKKnKN/brfOlYk8q6MJbPJqxUXHRuRy5gjZ8lDOOqtSy4oirguGq9D68kIk45lp+lD
+	 ey6jEKbzfL4VK4HUF+OUIxRrz//IJreDcFWD1Q1MUfSyFwfpn49gZxvQUOFHuHNwpJSTl
+	 Hx9IWPMo0OYKc67uWzucsH1a6wHZL1qH67Oixk68BMfRl0pfDpG5bS4w66hORmTNYjvNA
+	 YT20V84i+9HzShPhW4iqY9V7gnQRWWZbvKFqpJIW9kDTMTDWQK6TIKJVhQt5ejUHsbvpc
+	 M+tosxK6A2OYvB/MKZV3WsO5m2Njaw+huPxnGntICxZVO0uAhsx3JwDf4MrtESFelrg==
+ARC-Authentication-Results: i=2; smtp4.osuosl.org; 
 	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1793803234;
-	bh=0uo8OZ4GCc7zOVdcS+7fHTLobKfAJ3FDI9J6Uc9TXbo=;
+	s=default; t=1793803235;
+	bh=3QImI++ZJXqNAMd93IEa3mat3HgHd23dyYPVoEYhrbk=;
 	h=From:Subject:To:Cc:In-Reply-To:References:Date:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Reply-To:From;
-	b=jEWWYPaGV/125Y3XIYEnB3mW/7rFNiU3B/+d+x7lpcSnEHS17HrehOeVT6hKRFU9d
-	 V7DFKshwGaWm7jFS2JJSZ0tNIS4EAnQWXbXiJ4qp0lPe8AKdfidoVkzlGOkhhNocg+
-	 Vo81WupUraQ1FITxm3P4GkiLUhEbtOrU/ZxndQJREKpAthTKRQX2WdIE1xOj8tLYZY
-	 E3+YOr5cWdqCyKzNcDZo7AIx8qZZxZ6pl2GAXWL318ndI2oCEQJuiXg7Zu8SQZjHdJ
-	 wwJ3CJxB5bz6CnU5WvKC7z3k68nn2YTdT/aoijmfTSNSwHaJoM4QuRP8JEq4zbjSDD
-	 /bLsn3mEyLXDw==
+	b=nhqoEgTWwrDd662lv4U87uxiMpRN0+ZshtAfADQCqErM6PHXDu98togk2b3zmYEU6
+	 46oe7x5TH87n2W/HcCl8ReY5t1jb6qifJqjbw/ej/YgQVU+iWa0qGaHzHzs/EkYvla
+	 Ge7Q45u0pl1kV6jsYyuRpSKbOmsAeruoEEEUE9M+8tU1lETb0L2H0Qymul7Yo8kC09
+	 iZ0GydV6zCr13LdecwO8X7+KqEP5hvRdufVw/gi4hZju8PtzQ9dUN1AHLA9zDtve6D
+	 RRAudJs+J5bvbJTHpAoHbH0xIYEVH/5kFrf+481dGU0phLKTkWNPZbTQMK0xaxOXzO
+	 J5ebkmpuGpLng==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 421C6606CB;
-	Wed,  4 Nov 2026 14:40:34 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 92DE632A
+	by smtp4.osuosl.org (Postfix) with ESMTP id 16397405F4;
+	Wed,  4 Nov 2026 14:40:35 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id C9D6E32A
  for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Nov 2026 14:40:31 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 78B2540243
+ by smtp2.osuosl.org (Postfix) with ESMTP id B034540062
  for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Nov 2026 14:40:31 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Y8_RBoMbVvqN for <intel-wired-lan@lists.osuosl.org>;
+ id rmlHtx6opM1g for <intel-wired-lan@lists.osuosl.org>;
  Wed,  4 Nov 2026 14:40:30 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org 790D340062
-Authentication-Results: smtp2.osuosl.org; arc=none
- smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org 9188540068
+Authentication-Results: smtp2.osuosl.org; arc=none smtp.remote-ip=172.105.4.254
 ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793803230;
- b=V2gQvOgwogj8UAGq2oC+03wzdvYXuEWBl+g62ZNDX/kI3erHdYVM10ZxziozHOj8npzV
- +oxArFhuzKniecjh6IItrb/gAmTlDhSpHt6r3VDfsyGjxvnH2YgbbjEXnb+sLQwZi2NYT
- TBYpxkgwlGisWsbdnfLxBhHCjSic3ud3wlxNF1P8CvIFz1g5ivF44y99j2GgPDpqBg0bu
- LqRsPL8ACbYZMEvH3iCyXopNTm/jXkY6uiXLh8c6P3jCryulCmhnRZlW3pAWPhxhpDaAc
- K6TcRXOZUuXkE7xTU98D/25rbzFqHfD5iSScjOMkdbkgpzXMR4i7ijtgyyN8L1lftwQ==
+ b=fIK6hD8Bs18SDLirJeAMRMyRQy/u1CytF3UcAX2dCNhPmmEQmXRGocZF8YbBZV7aU73r
+ BQ3WU8brT+PW+3gJ98FVo3yhOAWDLwPS704S9GBNxI5jjFAGYJE0JwbF5+xg8aFw5edVk
+ zDEaQLHh3w8mqRlXOmX155mUjaPMxNj4gWvEKB7SZ1hhKHRIVADr0rd/lMmZpxuy9XeZB
+ HkCSTxZlLTWTjjLtUkZgbuc+qLtmMgUyu/c+zaKBHlECy9GtGX07HymKjlWDSgjO2pdGo
+ NM8hsy/DFCSozGC76OAAkFvbDz0gwHFgYSWzJ8/JZdDkz/ued5fskhCDF4oghN3P6HA==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
  c=relaxed/relaxed; t=1793803230;
  h=Received-SPF:Received:Received:DKIM-Signature:Message-ID:From:
  Subject:Reply-To:To:Cc:In-Reply-To:References:Content-Type:
  Content-Transfer-Encoding:Date;
- bh=0uo8OZ4GCc7zOVdcS+7fHTLobKfAJ3FDI9J6Uc9TXbo=;
- b=qiohQeSiVQj6BA9Bh2RfDD79QRuZIkMPOLWN/nolDkwymfUw3KHpEmlKV/7OsRvPEQvh
- HulLv49aJFsmDsFNFI8VWs9ksqzBgWBCSb8uwMB+Wu/mhULfrVgaAF2Hf59gLFLLJha++
- 8Z/YR/NA63k2QZ6efg4ZMzCL8XxvpUngl5Xn1ilOEY+bsakIXetQw7dOX6N0WSG2JVteb
- KI2JElD98PmmgQF+eoUvXqnSue9ItWh1UFdU735Pi/dKIVwaAr9Eqo2YQiPt+2D8dLP4x
- 2/d/Kx6mwJ0BgLV4joOjs5Lk6WliTxPPsawQBe3Dq7zmzwcA9hFnN13uQQSd6ZBTOFw==
+ bh=3QImI++ZJXqNAMd93IEa3mat3HgHd23dyYPVoEYhrbk=;
+ b=kLRFThGj9TWE25JwIMH69Ws350+6dcAm9/zMFlvkxV2x1//OCSXJNEJP2hDEmnkg0Fib
+ Q5ed+/adJU93urE6OYSqHvNk7WA/7wS5TDXYcIivsnTWQTkXrN6Cem3m8dJyLkHNrVYH8
+ tPgOswQc5ru+IDuYpgLbCbXsAPM36YKpPDk2SgBF8YKRQXLArsOLU6uZkepmcB9t8Okmt
+ hZoqVYx9xM43wnj+UMZ5QJq/HSH5/otl/1QcPcz8LVDWirBCCZjhdadHFp1HuP01HrARC
+ PogFl8QNaAJewWsRrBAbc8AyaBSdlL4It44d5Igs+zFAvTjo0huFGVXgL8fpNbpN3BQ==
 ARC-Authentication-Results: i=1; smtp2.osuosl.org; 
  dmarc=pass header.from=kernel.org;
  dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=faB6FTxT; 
- arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
- envelope-from=sashiko-bot@kernel.org; receiver=<UNKNOWN> 
+ header.s=k20260515 header.b="Z73iQ9/x"; 
+ arc=none smtp.remote-ip=172.105.4.254
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
+ helo=tor.source.kernel.org; envelope-from=sashiko-bot@kernel.org;
+ receiver=<UNKNOWN> 
 Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
 Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20260515 header.b=faB6FTxT
-Received: from tor.source.kernel.org (tor.source.kernel.org
- [IPv6:2600:3c04:e001:324:0:1991:8:25])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 790D340062
+ header.a=rsa-sha256 header.s=k20260515 header.b=Z73iQ9/x
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 9188540068
  for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Nov 2026 14:40:29 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id 426BB60A58;
+ by tor.source.kernel.org (Postfix) with ESMTP id D586960A9B;
  Wed,  4 Nov 2026 14:40:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D1E061F000C1;
- Wed,  4 Nov 2026 14:40:27 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 71A311F000C1;
+ Wed,  4 Nov 2026 14:40:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
  s=k20260515; t=1793803228;
- bh=0uo8OZ4GCc7zOVdcS+7fHTLobKfAJ3FDI9J6Uc9TXbo=;
+ bh=3QImI++ZJXqNAMd93IEa3mat3HgHd23dyYPVoEYhrbk=;
  h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
- b=faB6FTxTma4cuZJUuMCx62pZPZX+E0K24rqMMj6vk1ulASj5OEI99REeR7TfA7ulU
- 9IJjMWfuC2/1F4Z3Z95vAX1CxweXuuCIYrUihDNWRxa6NJzORbgIdc9Kr7Aj75wzXo
- i6t2wmvf+SzrEydKdDyfVE+tKV2DmIMwAmrjOlw6cnnyqGZjrzOaOGgWEYIcCfiVjO
- NIsHC743cwoy3+cM2CDeLyYtpPdaKlN3ucU6mTFavW5hruJDmjUQ1XMKQLFitdBEo1
- a42bN18pSOLB2Tys7jA0bVYt87oyS3v4Ex3pMCFJqqmRunaUN992V42MrrVwnbIavl
- OdPXm6JKQ+alA==
-Message-ID: <sashiko-outbox-197457@kernel.org>
+ b=Z73iQ9/xTSzbNYYx0i2SLSEZ0W60JIOp/XTS/eyh18ln7lIS0+XiW519zL0eETOtr
+ kxI7U90nc21YE1kJwMZxXmKFgpdkFvWDoiZDEEVM4IiftwGRajtZetBnQ++fCGgSEa
+ A50HzQJg8PhUHSlziLBGImQuCX5amFWpNJuxHsu0k36IVrvtzlpWLivGbZCqxBdO2b
+ U+DlGq0RB/IWrJBSUkh3hI2cnosehIkUh4yThPsTa1e5M2J6agNxiLniaJ99DuMDiJ
+ RozgfbrIpR4X5UfLjPkVhRtqTngxBjm2hdQFfl7w7qHsyVPuhFlYnJsy3gWkNlqCFy
+ ufbY3A6c21pQA==
+Message-ID: <sashiko-outbox-197459@kernel.org>
 From: sashiko-bot@kernel.org
-Subject: Re: [PATCH iwl-next v4 11/15] ice: introduce handling of virtchnl
- LARGE VF opcodes
+Subject: Re: [PATCH iwl-next v4 13/15] ice: represent RSS LUTs as devlink
+ resources
 To: "Przemek Kitszel" <przemyslaw.kitszel@intel.com>
 Cc: intel-wired-lan@lists.osuosl.org
-In-Reply-To: <20261103141646.303620-12-przemyslaw.kitszel@intel.com>
+In-Reply-To: <20261103141646.303620-14-przemyslaw.kitszel@intel.com>
 References: <20261103141646.303620-1-przemyslaw.kitszel@intel.com>
- <20261103141646.303620-12-przemyslaw.kitszel@intel.com>
+ <20261103141646.303620-14-przemyslaw.kitszel@intel.com>
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
-Date: Wed, 04 Nov 2026 14:40:27 +0000
+Date: Wed, 04 Nov 2026 14:40:28 +0000
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -144,119 +142,201 @@ Reply-To: sashiko-reviews@lists.linux.dev
 X-Spam-Status: No, score=-10.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
+	SPF_HELO_PASS autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 X-Archived-By: <archiver.kernel.org>
 
-Thank you for your contribution! Sashiko AI review found 1 potential issue(=
+Thank you for your contribution! Sashiko AI review found 2 potential issue(=
 s) to consider:
-- [Medium] ice: u8 overflow of num_ring_rx and num_ring_tx in ice_vc_map_q_=
-vector_msg()
+- [Medium] ice: incorrect vsi->rss_size in ice_vsi_cfg_def() on rebuild and=
+ ADQ
+- [Medium] ice: dual-NAC secondary PFs collide on RSS LUTs and fail probe i=
+n Safe Mode
 --
 
-commit cafaf07076ec22c624fc3bc56c70b0e708de5ea9
-Author: Brett Creeley <brett.creeley@intel.com>
+commit 299cfc2cd70e5919800a3878f9f0873adb6b516d
+Author: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 
-ice: introduce handling of virtchnl LARGE VF opcodes
+ice: represent RSS LUTs as devlink resources
 
-This commit adds virtchnl message handlers for VIRTCHNL_OP_ENABLE_QUEUES_V2,
-VIRTCHNL_OP_DISABLE_QUEUES_V2, and VIRTCHNL_OP_MAP_QUEUE_VECTOR to support =
-VFs
-with more than 16 queue pairs, and allowlists the VIRTCHNL_VF_LARGE_NUM_QPA=
-IRS
-opcodes.
+This commit exposes the PF and global RSS lookup tables of E800 devices as
+devlink resources on both the per-PF and whole-device devlink instances,
+allowing a PF to switch between its 2048-entry PF LUT and a 512-entry global
+LUT.
 
-> diff --git a/drivers/net/ethernet/intel/ice/virt/queues.c b/drivers/net/e=
-thernet/intel/ice/virt/queues.c
-> index 7f2b459dbc836..f87ccf5d370bb 100644
-> --- a/drivers/net/ethernet/intel/ice/virt/queues.c
-> +++ b/drivers/net/ethernet/intel/ice/virt/queues.c
-> @@ -1046,3 +1046,342 @@ int ice_vc_request_qs_msg(struct ice_vf *vf, u8 *=
-msg)
+> diff --git a/drivers/net/ethernet/intel/ice/devlink/resource.c b/drivers/=
+net/ethernet/intel/ice/devlink/resource.c
+> new file mode 100644
+> index 0000000000000..b0b2b1adae0c1
+> --- /dev/null
+> +++ b/drivers/net/ethernet/intel/ice/devlink/resource.c
+> @@ -0,0 +1,662 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/* Copyright (c) 2026, Intel Corporation. */
+> +
+> +#include "resource.h"
+> +#include "ice_adapter.h"
+> +#include "ice.h"
+> +#include "ice_lib.h"
+> +
+> +#define ICE_NUM_GLOBAL_LUTS	16
+> +#define ICE_ANY_SLOT		-1
+> +
+> +/* each NAC numbers its PFs from 0, secondary NAC ones go after primary =
+ones */
+> +static int ice_devl_pf_id(struct ice_pf *pf)
+> +{
+> +	struct ice_hw *hw =3D &pf->hw;
+> +
+> +	if (ice_is_primary(hw))
+> +		return hw->logical_pf_id;
+> +
+> +	return hw->logical_pf_id + ICE_PORTS_PER_QUAD;
+> +}
+
+[Severity: Medium]
+Can secondary-NAC PFs on dual-NAC E825C devices collide with primary-NAC PFs
+and fail probe when entering Safe Mode?
+
+In ice_probe(), ice_init_dev_hw() runs before ice_adapter_get() and
+ice_init(). When DDP package loading fails or leaves the PF in Safe Mode,
+ice_init_dev_hw() calls ice_set_safe_mode_caps():
+
+drivers/net/ethernet/intel/ice/ice_common.c:ice_set_safe_mode_caps() {
+	...
+	/* unset dev capabilities */
+	memset(dev_caps, 0, sizeof(*dev_caps));
+	...
+}
+
+Because dev_caps->nac_topo.mode is zeroed and not restored by
+ice_set_safe_mode_caps(), ice_is_dual(hw) returns false and
+ice_is_primary(hw) returns true even on secondary-NAC PFs.
+
+All E825C PFs share a single ice_adapter via ICE_ADAPTER_INDEX_E825C. If the
+first PF probes in Safe Mode, ice_adapter_get() -> ice_adapter_init() ->
+ice_devl_whole_dev_resources_register() sees ice_is_dual(hw) as false and
+sizes the whole-device LUT resources for a single NAC.
+
+Furthermore, during ice_init() -> ice_init_pf_sw() -> ice_pf_vsi_setup() ->
+ice_vsi_cfg_def(), ice_take_rss_lut_pf() runs even in Safe Mode. For a
+secondary-NAC PF in Safe Mode, ice_devl_pf_id() returns hw->logical_pf_id
+instead of hw->logical_pf_id + ICE_PORTS_PER_QUAD, colliding with the
+primary-NAC PF's slot in adapter->resources[ICE_RSS_LUT_PF].owner[] and
+failing with -ENOSPC.
+
+During the resulting error unwind in ice_init() -> ice_deinit_pf() ->
+ice_free_rss_lut_flr() -> ice_free_rss_lut_flr_locked(), the secondary-NAC
+PF then clears resources[ICE_RSS_LUT_PF].owner[pf_id] and any global LUTs
+matching pf_id, wiping out the primary-NAC PF's LUT resource ownership.
+
+> diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ether=
+net/intel/ice/ice_lib.c
+> index f81b310a98c3e..215244a1c043b 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_lib.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+> @@ -986,10 +988,10 @@ static void ice_rss_clean(struct ice_vsi *vsi)
+>  }
+> =20
+>  /**
+> - * ice_vsi_set_rss_params - Setup RSS capabilities per VSI type
+> + * ice_vsi_set_dflt_rss_params - Setup default RSS capabilities per VSI =
+type
+>   * @vsi: the VSI being configured
+>   */
+> -static void ice_vsi_set_rss_params(struct ice_vsi *vsi)
+> +static void ice_vsi_set_dflt_rss_params(struct ice_vsi *vsi)
+>  {
+>  	struct ice_hw_common_caps *cap;
+>  	struct ice_pf *pf =3D vsi->back;
+> @@ -1004,6 +1006,9 @@ static void ice_vsi_set_rss_params(struct ice_vsi *=
+vsi)
+>  	max_rss_size =3D BIT(cap->rss_table_entry_width);
+>  	switch (vsi->type) {
+>  	case ICE_VSI_CHNL:
+> +		if (!vsi->num_rxq)
+> +			vsi->num_rxq =3D 1;
+> +		fallthrough;
+>  	case ICE_VSI_PF:
 
 [ ... ]
 
-> +int ice_vc_map_q_vector_msg(struct ice_vf *vf, u8 *msg, u16 msglen)
-> +{
-> +	enum virtchnl_status_code v_ret =3D VIRTCHNL_STATUS_ERR_PARAM;
-> +	struct virtchnl_queue_vector_maps *qv_maps;
-> +	struct ice_vsi *vsi;
+> @@ -2427,6 +2464,18 @@ static int ice_vsi_cfg_def(struct ice_vsi *vsi)
+> =20
+>  	vsi->vsw =3D pf->first_sw;
+> =20
+> +	if (vsi->flags & ICE_VSI_FLAG_INIT) {
+> +		scoped_guard(mutex, &pf->rss_lut_lock) {
+> +			u16 lut_size =3D vsi->rss_table_size;
 > +
-> +	qv_maps =3D (struct virtchnl_queue_vector_maps *)msg;
+> +			ice_vsi_set_dflt_rss_params(vsi);
+> +			if (vsi->rss_table_size !=3D lut_size) {
+> +				devm_kfree(dev, vsi->rss_lut_user);
+> +				vsi->rss_lut_user =3D NULL;
+> +			}
+> +		}
+> +	}
 > +
-> +	if (!ice_vc_validate_qv_maps(vf, qv_maps, msglen))
-> +		goto error_param;
-> +
-> +	vsi =3D ice_get_vf_vsi(vf);
-> +	if (!vsi)
-> +		goto error_param;
-> +
-> +	for (int i =3D 0; i < qv_maps->num_qv_maps; i++) {
-> +		struct virtchnl_queue_vector *qv_map =3D &qv_maps->qv_maps[i];
-> +		struct ice_q_vector *q_vector;
-> +		u16 vector_id;
-> +		int vsi_q_id;
-> +
-> +		vsi_q_id =3D qv_map->queue_id;
-> +		vector_id =3D qv_map->vector_id;
-> +
-> +		q_vector =3D vf->vf_ops->get_q_vector(vsi, vector_id);
-> +		if (!q_vector)
-> +			goto error_param;
-> +
-> +		if (!ice_vc_isvalid_q_id(vsi, vsi_q_id))
-> +			goto error_param;
-> +
-> +		/* keep SW state in sync with HW, as ice_cfg_interrupt() does */
-> +		if (qv_map->queue_type =3D=3D VIRTCHNL_QUEUE_TYPE_RX) {
-> +			struct ice_rx_ring *ring =3D vsi->rx_rings[vsi_q_id];
-> +
-> +			if (ring->q_vector && ring->q_vector->num_ring_rx)
-> +				ring->q_vector->num_ring_rx--;
-> +			ring->q_vector =3D q_vector;
-> +			q_vector->num_ring_rx++;
-> +			q_vector->rx.itr_idx =3D qv_map->itr_idx;
-> +			ice_cfg_rxq_interrupt(vsi, vsi_q_id,
-> +					      q_vector->vf_reg_idx,
-> +					      qv_map->itr_idx);
-> +		} else if (qv_map->queue_type =3D=3D VIRTCHNL_QUEUE_TYPE_TX) {
-> +			struct ice_tx_ring *ring =3D vsi->tx_rings[vsi_q_id];
-> +
-> +			if (ring->q_vector && ring->q_vector->num_ring_tx)
-> +				ring->q_vector->num_ring_tx--;
-> +			ring->q_vector =3D q_vector;
-> +			q_vector->num_ring_tx++;
+>  	ret =3D ice_vsi_alloc_def(vsi, vsi->ch);
+>  	if (ret)
+>  		return ret;
+> @@ -2446,15 +2495,23 @@ static int ice_vsi_cfg_def(struct ice_vsi *vsi)
+>  	}
+> =20
+>  	/* set RSS capabilities */
+> -	ice_vsi_set_rss_params(vsi);
 
 [Severity: Medium]
-Can q_vector->num_ring_rx and q_vector->num_ring_tx overflow in
-ice_vc_map_q_vector_msg() in drivers/net/ethernet/intel/ice/virt/queues.c?
+Does moving ice_vsi_set_dflt_rss_params() before ice_vsi_alloc_def() and
+gating it on ICE_VSI_FLAG_INIT cause vsi->rss_size to remain clamped at a
+smaller queue count on ICE_VSI_CHNL creation and ICE_VSI_FLAG_NO_INIT
+rebuilds?
 
-In drivers/net/ethernet/intel/ice/ice.h, num_ring_rx and num_ring_tx are
-defined as u8 (max 255):
+Previously, ice_vsi_cfg_def() called ice_vsi_alloc_def(vsi, vsi->ch) first
+and then unconditionally called ice_vsi_set_rss_params(vsi) on both
+ICE_VSI_FLAG_INIT and ICE_VSI_FLAG_NO_INIT paths, resetting vsi->rss_size to
+its default ceiling before ice_vsi_cfg_rss_lut_key() clamped it via:
 
-struct ice_q_vector {
+drivers/net/ethernet/intel/ice/ice_lib.c:ice_vsi_cfg_rss_lut_key() {
 	...
-	u8 num_ring_rx;			/* total number of Rx rings in vector */
-	u8 num_ring_tx;			/* total number of Tx rings in vector */
+		vsi->rss_size =3D min_t(u16, vsi->rss_size, vsi->num_rxq);
+	...
+}
 
-With VIRTCHNL_VF_LARGE_NUM_QPAIRS enabled, a VF can be configured with up to
-ICE_MAX_QS_PER_VF (256) queue pairs. If the VF sends a
-VIRTCHNL_OP_MAP_QUEUE_VECTOR message mapping all 256 Rx or Tx queues to the
-same interrupt vector, incrementing q_vector->num_ring_rx or
-q_vector->num_ring_tx 256 times wraps the u8 counter from 255 to 0.
+With this change:
 
-If any of those queues are later remapped to another vector, the check:
+1. When a new ICE_VSI_CHNL VSI is created via ice_chnl_vsi_setup() ->
+ice_vsi_setup() -> ice_vsi_cfg_def(), ice_vsi_set_dflt_rss_params() now runs
+before ice_vsi_alloc_def() assigns vsi->num_rxq =3D ch->num_rxq. Because
+vsi->num_rxq is still 0 at that point, the new fallback sets vsi->num_rxq =
+=3D 1
+and vsi->rss_size =3D 1. After ice_vsi_alloc_def() sets the actual channel
+vsi->num_rxq, ice_vsi_cfg_rss_lut_key() computes min_t(u16, 1, vsi->num_rxq=
+),
+leaving the channel VSI's rss_size stuck at 1.
 
-	if (ring->q_vector && ring->q_vector->num_ring_rx)
-		ring->q_vector->num_ring_rx--;
+2. When ADQ is configured in ice_setup_tc_mqprio_qdisc(), main_vsi->orig_rs=
+s_size
+saves the pre-ADQ rss_size and main_vsi->rss_size is clamped to
+main_vsi->ch_rss_size. If a PF reset (ICE_RESET_PFR) occurs while ADQ is
+active, ice_prepare_for_reset() clears vsi->orig_rss_size =3D 0 (relying on=
+ the
+normal rebuild flow to recompute rss_size) while ADQ stays active and
+ice_rebuild_channels() clamps main_vsi->rss_size back to ch_rss_size. When
+the ADQ qdisc is later deleted, ice_setup_tc_mqprio_qdisc() restores
+vsi->req_rxq and calls ice_vsi_rebuild(vsi, ICE_VSI_FLAG_NO_INIT). Because
+ICE_VSI_FLAG_INIT is not set, ice_vsi_set_dflt_rss_params() is skipped,
+vsi->orig_rss_size is 0, and ice_vsi_cfg_rss_lut_key() clamps vsi->rss_size
+with min_t(u16, vsi->rss_size, vsi->num_rxq), leaving the PF VSI's rss_size
+permanently clamped to the smaller ch_rss_size.
 
-will see 0 and skip the decrement, leaving the per-vector ring accounting o=
-ut
-of sync. Should num_ring_rx and num_ring_tx in struct ice_q_vector be widen=
-ed
-to u16?
+3. Similarly, in this commit ice_sriov_set_msix_vec_count() rebuilds
+ICE_VSI_VF with ICE_VSI_FLAG_NO_INIT, leaving VF vsi->rss_size clamped if
+VF queues are lowered and then raised (though a later patch in the series,
+"ice: support up to 256 VF queues", updates ice_vsi_cfg_rss_lut_key() for
+ICE_VSI_VF).
 
 --=20
 Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261103141646.3036=
-20-1-przemyslaw.kitszel@intel.com?part=3D11
+20-1-przemyslaw.kitszel@intel.com?part=3D13
