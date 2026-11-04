@@ -2,196 +2,135 @@ Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8524C606A328
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  4 Nov 2026 06:40:17 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 05CD9606A333
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  4 Nov 2026 07:51:06 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=SbhKSI3d;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=A9DPnyaM
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=6AM+V675;
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=me4p4b5G
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 644E3405D6;
-	Wed,  4 Nov 2026 06:40:17 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id D7CE5405C6;
+	Wed,  4 Nov 2026 07:51:05 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 8iKHjk5loNLB; Wed,  4 Nov 2026 06:40:16 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 5D40B405E6
+ id SB_7f9RlebmN; Wed,  4 Nov 2026 07:51:05 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 19726405D6
 Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
-ARC-Seal: i=3; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793774416;
-	b=NPLaLt8FYNS5QyrSCNwvVpI+Vyjhq4TnXhjRKPi8C2Te9NJX9LxqsxaIuOmiBylrkS9m
-	 tA+HoE14P7vKpvY6Pl+o97cPDLiGQ36a/NBgiwjmuy2eadQIkwEWst+H7WK+kKlTM+w3X
-	 T8O9dBQHM9U1257g2VjUY/WT3UpVmgeNLg6vZFRDIAk80hP1GGjLALS1VwlTh0pkgkHG5
-	 wLxkbRIxUHXnPCKdlN9FpnqJpJvIKuNgji5nBJC4QwojFz3cmlp6iA3BHOTJs1iBR5f5U
-	 IPBeVrttjwTeZy+Dw8XEX7lMMvrX+KNBa9e2+PD60KO9oOK/WQvKUIqz87ixyuLGeHQ==
-ARC-Message-Signature: i=3; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1793774416;
+ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793778665;
+	b=NxKoEJa5RhdeNKRB2uXQQobVDP36AK0pAh80/p/Q5oApyHyffGopVu2lIV53sbmjMXHl
+	 XEeoj4mQ+NqkgHs+CaIHFBHxOHtIT6I7HcJAHVkV4Fn0HaoBNbZ4yz8RgQSfez+sdcei1
+	 2IAxSOk9GEz1BXJlw53dnUFNUZ+Vbr0WFITWrl5omYXo7S7DlbiFBg9x1IAC6g8qLfxH7
+	 XAUVRZ0ie0MCZWidxkRde6Vbo8sp3YSkS3liYpU2I5XKdPZ0mNtsKjSNiw/RYjzYRUybj
+	 R0X6QRPQlSWn+r2SuYbYOUprys/40f8mBFAfkme4j72qi12h5XZDwSCnpp8LYos52Qw==
+ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
+	c=relaxed/relaxed; t=1793778665;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
-	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Content-Transfer-Encoding:X-BeenThere:
+	 Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:References:
+	 MIME-Version:Content-Type:Content-Disposition:In-Reply-To:X-BeenThere:
 	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Reply-To:Errors-To;
-	bh=8BbsvJSapTr8hdDIwEXj9HIx0po9cSbpcewOSWjVeC4=;
-	b=pG7vBCmL0GaiS54FVlhDbXyN5PCETLTKqfs56u4ShKMv/rIdmZ1kjy9Y09LPfVAA4BYo
-	 1Lq23P0wPpinZK2xkoU9YVBfA32CbIzZ4EXHr+hK/o1V3Q9jX6YxOk1uCoVXckakqlvLG
-	 kMAjV8IRTs+YZow/Ec0F1Dn87JbEx1LMZxalGosDp/rqtjNog+Tno7ZC6S2YZmkf2S/3G
-	 hz2AP4fjS+daz+hFKg1NkRMBBj1YH6Z3vxgpAwp/LAdt/O6ExrbrxQOGnMoSSP/TqBsWy
-	 YuYLmQEbpI9TbuKytMivwcjWJVdBRPwubCu54tMEAk0b8fvL2J2St6iNappTT+pGA4g==
-ARC-Authentication-Results: i=3; smtp4.osuosl.org; 
+	 List-Post:List-Help:List-Subscribe:Errors-To;
+	bh=+x0caZ0pC+EFyWhDfl1gmIN09MGJqKHTRPG88Kl6DZ4=;
+	b=FC9yUVONZYvchOcd40qxLpQ4tYeuW5wRr3q+46A03IkmekboY5oLLI+Y+ScF61wBvAgC
+	 gkLFki0jLmMn90oYFDJ218AfCHhS6FenRLvYvfy+THHIFUuVbDlNFbnmQlajCf9EtdN7f
+	 Gx+79Kj6YKfHWTUX3ERq+G7lm4nyNJVn1Cr9GWDj4o1KkEZk0nWP6ZvR86epWLHygCx8e
+	 EIWmABsSDtr+eGQFiUc/o/fi/Ka7udWwsBADvagwO1IBk+X6X9/0aGt9gNUelo7pBdpF1
+	 aVFKZUCarFbKTv5drjEQ66bDha766ldTfPau5Fk3Jpuec8LL+qaqeUlMP1s/aGRKfIQ==
+ARC-Authentication-Results: i=2; smtp4.osuosl.org; 
 	arc=pass header.oldest-pass=0 smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1793774416;
-	bh=8BbsvJSapTr8hdDIwEXj9HIx0po9cSbpcewOSWjVeC4=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:List-Id:
+	s=default; t=1793778665;
+	bh=+x0caZ0pC+EFyWhDfl1gmIN09MGJqKHTRPG88Kl6DZ4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Reply-To:From;
-	b=SbhKSI3dLoW4gdABTM8RL/CisXM8xx3Jf4reQSvVq7R8tbEO0ga66kbA2j7wbm0nj
-	 HiTju/Vjt3vTNRU69atpwEJoQvFfAlCJ6zrQZOEjB73PxdaXsaJ4GMUtgTDKnAkLh8
-	 c49jo1gRNFq/Qsqxb7vWHABM6vq+6If9ca9K0+YBiaZVshnFef1vIBM/uDLO+A6rO+
-	 /5s8aj+ZJu3DxKbvw5cIirLt9tMzX9vtCnhjnz62USIoaLF4UN9NnmAG1ea7nc3Mmv
-	 TwcnQsuCoQqRv09LaYO6J5ghbOBcws1xBpvGul6eAsjZQzbbth6XeFW15JH/H7EHcY
-	 xJf8Gyd7gzUPg==
+	 From;
+	b=6AM+V67549LHtBWoJ6qKTOntTnWiHLksbiNXJ8Sp61K10ZmegmcDVDoGUj48foeiN
+	 GHMaBWKVNNK0rDNrIiFdK+ajPkVDyz6x3JRWYlnm3ZExTZeUcINOB/LcMN/y71lzgK
+	 /4Ko8FXqeBdAvWd/7G338nHZafalNXCKxw+KL0Kzn+pAb2Xg8R5efIgKHdNNOdP1Vw
+	 94BnNTHpLOfIp9F+hI/w9JJgdSbD/FkFtdRiiopcvjoX0c69r3OkzRlzf7g/8ZXV8a
+	 cuzQuJNAYKpn5Zvm5bYPchEuz/PYc/MFAKHz6Qj2aAbNJ0IWBgV0Ab942E/6Uuh2Pq
+	 qg/BRNjCu4/2A==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 5D40B405E6;
-	Wed,  4 Nov 2026 06:40:16 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 19726405D6;
+	Wed,  4 Nov 2026 07:51:05 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id DD3A72B6
- for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Nov 2026 06:40:10 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id CDBCB2AC
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Nov 2026 07:51:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id CF2684004D
- for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Nov 2026 06:40:10 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id C789C400CC
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Nov 2026 07:51:03 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id gLbL_bijLrC9 for <intel-wired-lan@lists.osuosl.org>;
- Wed,  4 Nov 2026 06:40:10 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org AD35240176
-Authentication-Results: smtp2.osuosl.org; arc=pass header.oldest-pass=0
- smtp.remote-ip=172.105.4.254
-ARC-Seal: i=2; d=osuosl.org; s=arc; a=rsa-sha256; cv=pass; t=1793774409;
- b=gCKij/NlOSDCCV6KSyRDn2bsg8N/Xk48xn9Lbn2YqmzVFuNOWtc1VocZTwUg4NW5n1il
- KGxXSJmQGXBuDmAhhzSgjnDFTQfswwLEf7AGp6CiruyX+E9SWOHVGVSkHmyylz2vh639g
- YG55DYEHiNLXpZosZ07uJRfQ+jYP0pTcC/jIP3F8xUgpvFpuxAuWF3RIYWvKEHxFIYETq
- HPZY764qD09PGWMEDeU3E8CkwpSXhlXhEot+VhGMy97CZd+dUjj99UDqwW4YmywEZi2SA
- +PMgOa8p3F5+gCO4Dfbcq9gFzak1n5OQSIc+T74eusUKPpVgLwsPfB3d2BC0joZI1fQ==
-ARC-Message-Signature: i=2; d=osuosl.org; s=arc; a=rsa-sha256;
- c=relaxed/relaxed; t=1793774409;
- h=Received-SPF:Received:Received:DKIM-Signature:Received:From:Date:
- Subject:MIME-Version:Content-Type:Message-Id:References:In-Reply-To:
- To:Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:
- X-Endpoint-Received:X-Original-From:Reply-To:
- Content-Transfer-Encoding;
- bh=8BbsvJSapTr8hdDIwEXj9HIx0po9cSbpcewOSWjVeC4=;
- b=sOeYrUQFLiPmSiT0mraWhXGy4+TGtwwwkK8tp3/7s+iXXyQo79blMKjwUGyQF+f1eRfF
- UMEEigp+2qhjdI/DFEJZxC8HfdWiyCD3c7skEp2UCkZbQD0irjWebutGvB2Ds6SkmAVYM
- 3H5giEuJYr7lnB/JYHH7dmNkQxT+o/uzEYt056Bj0DcDSAwsM9BrL1DjO9AIMsk44OlS+
- 9+5d8obGbBeZKpvsipURDs0ZJVlWmykIlRMdTuGYa796noFCzn9T/XTUAH6zUy6l7gsIn
- 5vmCHLtYq9jJflVdhrqJ4Pye9THMRCljf7rQ68NTAxnMIGO2ObMM78x3HqvYNhcvIkg==
-ARC-Authentication-Results: i=2; smtp2.osuosl.org; 
+ id hyLP8AC03s_9 for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  4 Nov 2026 07:51:03 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org E45444004D
+Authentication-Results: smtp2.osuosl.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793778663;
+ b=O2NDw7vni/rjnqzNL568kMMbyF/kIDCB95e5AXKffqeVAW4GU21VP34symYEvtXOBorK
+ 31L0COpIA52k4uulT4i9XLQr3DGhr81Bu/uHgKqklhS9wVQmSQCZrHHqK6OHNkBoaYCzB
+ 5T2r3t36ebI3X4eEx3TUnk9DJmTt5qm8l2cZ5PfejYdGOkOSdM3uhzFQKJwg8VDEenqjv
+ XqJ+9otQVBO6YrtdjQcIgQh8rJo6p37UpuvqboKiYBp6j5vYgPHWZruX22p6Izw/I0nbj
+ eWIV2TKUewZSK/lIV57kEJVcgow9ApwNZe4XecN6C6alyok74k1kAwzXnYIgNCbc2XQ==
+ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
+ c=relaxed/relaxed; t=1793778663;
+ h=Received-SPF:Received:Received:DKIM-Signature:Date:From:To:Cc:
+ Subject:Message-ID:References:MIME-Version:Content-Type:
+ Content-Disposition:In-Reply-To;
+ bh=+x0caZ0pC+EFyWhDfl1gmIN09MGJqKHTRPG88Kl6DZ4=;
+ b=Jqm72xI+zZMdc7qIWNLdJzA/jQlbknN3kEWBBca0xpQp8B+48l5LNNCtbV8ls74+kOPn
+ S8TdsuTeu57JABH6KoZ4BgYWD+CFaUUmFeOf8zA8DG+n4O2pVMautBLADfG9Bqnruq2ml
+ oCOeQvAasswT+9j66T4zcGfD6yoFKwQGd7mxQzQj5w46/SVIEdQRTXI9NaxqZCGRzTYRw
+ EheVzVr934ijFuFZbrszrh5Bmk7uLgdo/n4xMwv6I17SFLFzWbqF7ns0nM1DnMlN67OjG
+ WjLLZSZuAs0RQ05SnBuGkbI7b59tg+h0GfvRZCR1HHhu37k/RM7/5iLAomuK8aOdzGQ==
+ARC-Authentication-Results: i=1; smtp2.osuosl.org; 
  dmarc=pass header.from=kernel.org;
  dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=A9DPnyaM; 
- arc=pass header.oldest-pass=0 smtp.remote-ip=172.105.4.254
+ header.s=k20260515 header.b=me4p4b5G; 
+ arc=none smtp.remote-ip=172.105.4.254
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org; envelope-from=devnull+tkusters.aweta.nl@kernel.org;
- receiver=<UNKNOWN> 
+ helo=tor.source.kernel.org; envelope-from=leon@kernel.org; receiver=<UNKNOWN> 
 Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20260515 header.b=A9DPnyaM
+Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20260515 header.b=me4p4b5G
 Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp2.osuosl.org (Postfix) with ESMTPS id AD35240176
- for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Nov 2026 06:40:09 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTPS id E45444004D
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Nov 2026 07:51:01 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id 44B1160AB0;
- Wed,  4 Nov 2026 06:40:08 +0000 (UTC)
-Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
-ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
- t=1793774408;
- b=UW4BioJKYDpbooEJFsG4SS9xhjEag3IrAR1MwYv8ewienor6WU2GmZT7D2akUNbddVVB
- QY3W8MvNUtKAupHCEBl2U17MRiA4F3u2rudWngrUTIpPFo2R4GvxUXrh1ghsqsPD4doSD
- 2MkBXvmUaJpkM7gyAw+wleE7Pnfxdl5tZhO1O0MPR6EnHEbYFSChO09i4vnPW+yzSjILR
- K+Gy7itqhEsFo0VN/YLMB7ntvIc8VP20ppPe1aDoOfD33sxnY9der6c2GicL0HReBLaAD
- MwmEFztZW0cyaSVwoqLNsAG6jpAKk0GZAoEMOpG/E0Dq1ZcRkgJc1+jkmqFm8p4yR4Q==
-ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
- c=relaxed/relaxed; t=1793774408;
- h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
- Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
- X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
- X-Original-From:Reply-To:Content-Transfer-Encoding;
- bh=8BbsvJSapTr8hdDIwEXj9HIx0po9cSbpcewOSWjVeC4=;
- b=ni0h3t8XQxJ8umZ6V+W8NxHZYJYOOg4YSGdmID5xb2SoDMT1cWfgnE6NYbm9SkT65ouR
- vjl1zETQCOj4z07kpDxkknV9KPvePEOxHgA4AwFToAQl7eab45ghHOVsmUb537gc2PAIM
- 2/c5GqNZ+j+bcGveirXkPGsDPIbvsZIr+RVJm/2zR44QXazcgfu1S5TraNqTvcYHdGtag
- f9VRfzoYWhzhHLvUP0RR8cE25t3tnQVliFSv5FpskvSd58veX3pBqSHv1iPQPcMxkda+i
- y4EWN6p+BufJINJ6qg/12uvz4rkEsTZ145255c6zkGqY2HhzKG5DMUaCGUZSfMIQvXw==
-ARC-Authentication-Results: i=1; smtp.kernel.org; 
- arc=none smtp.remote-ip=100.80.115.77
-Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
- (No client certificate requested)
- by smtp.kernel.org (Postfix) with ESMTPS id 574001F0093A;
- Wed,  4 Nov 2026 06:40:06 +0000 (UTC)
+ by tor.source.kernel.org (Postfix) with ESMTP id BF29660D81;
+ Wed,  4 Nov 2026 07:50:59 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D3DBD1F00919;
+ Wed,  4 Nov 2026 07:50:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1793774407;
- bh=8BbsvJSapTr8hdDIwEXj9HIx0po9cSbpcewOSWjVeC4=;
- h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
- b=A9DPnyaMz+syfMZUWUDenCPCqjuYgIym/CcAvohJerNIU8Mvnll+8OmsguFDvthrq
- Zh9x6CCUITiWx+Lu8McRzN52x9ZJ4qvt+oPIL3EYOoip8S8Y8nPJiUyP7FZ1+87xqH
- 61gyxcmj9mURB/AxkbWYey0V5uCQ688ddjuhhfNeRxiSoGX4aGb1fvNu36x6HSTg+5
- vXDHojzTtKDnsP4Ock79d4CeLZ4X9MUd//kWG3S5QFagdUjyXD1zVFEnFtSCmd2uFp
- 6qkx5QE5vAJp99dEXQYyDtROZSC2E7uoXFj0PD6UMnLMwKVr6AAWmuV9RlwujsvnjR
- wmsfXQKaXYPpA==
-Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
- by lkml.kernel.org (Postfix) with ESMTP id DBD1F46CBF;
- Wed,  4 Nov 2026 06:40:05 +0000 (UTC)
-From: Tjerk Kusters via B4 Relay <devnull+tkusters.aweta.nl@kernel.org>
-Date: Wed, 04 Nov 2026 07:40:03 +0100
-Subject: [PATCH net v5 2/4] igb: only strip Rx timestamp header on the
- first buffer of a frame
+ s=k20260515; t=1793778659;
+ bh=+x0caZ0pC+EFyWhDfl1gmIN09MGJqKHTRPG88Kl6DZ4=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To;
+ b=me4p4b5GiB/BbaLFQXgar5GxXH6vWVN4hC6duaEOq4LD6uI5ioz0Tw31jQev5ByJK
+ cMXVyvv5tnfWAcP4bp6XIy2rg4rHW2UCGpnG8pdzsFa0B2XXz7lHAI0xdEfXk9Kzc1
+ kHzKcdOVeOvwbqr2S9wSTFITUn/8wJuu284URItSC6scrOgb2//2/Q4N9Yg+pHr2d8
+ cte33u8ZdCddF9selZfGEHrE5Cw/IKdoGe1fFA46tpOdgUi6mHQlVvWyETygWKeRyd
+ 5WcbdTs5MiGCmkoZ+UjUQMAWM2FjoWTnGh4Lo7lwsQF8ezaApzh5zYX+lGLofpy+Aw
+ gSqn/thmWw1lg==
+Date: Wed, 4 Nov 2026 09:50:55 +0200
+From: Leon Romanovsky <leon@kernel.org>
+To: David Hu <dhu@x6u.co>
+Cc: Mustafa Ismail <mustafa.ismail@intel.com>,
+ Shiraz Saleem <shiraz.saleem@intel.com>,
+ Jason Gunthorpe <jgg@ziepe.ca>, Jacob Moroni <jmoroni@google.com>,
+ intel-wired-lan@lists.osuosl.org, linux-rdma@vger.kernel.org,
+ linux-kernel@vger.kernel.org, David Hu <xuehaohu@google.com>
+Subject: Re: [PATCH rdma-next v4 0/6] RDMA/irdma: Add support for ioctl
+Message-ID: <20261104075055.GL264423@unreal>
+References: <20261030181512.2056056-1-dhu@x6u.co>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261104-igb-rx-ts-fix-v5-2-bf4b4367129a@aweta.nl>
-References: <20261104-igb-rx-ts-fix-v5-0-bf4b4367129a@aweta.nl>
-In-Reply-To: <20261104-igb-rx-ts-fix-v5-0-bf4b4367129a@aweta.nl>
-To: Tony Nguyen <anthony.l.nguyen@intel.com>, 
- Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
- Andrew Lunn <andrew+netdev@lunn.ch>, 
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
- Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
- Jesper Dangaard Brouer <hawk@kernel.org>, 
- John Fastabend <john.fastabend@gmail.com>, 
- Stanislav Fomichev <sdf@fomichev.me>, 
- Sven Auhagen <sven.auhagen@voleatech.de>, 
- Richard Cochran <richardcochran@gmail.com>, 
- Kurt Kanzenbach <kurt@linutronix.de>, 
- Sriram Yagnaraman <sriram.yagnaraman@ericsson.com>
-Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, 
- linux-kernel@vger.kernel.org, bpf@vger.kernel.org, 
- Maciej Fijalkowski <maciej.fijalkowski@intel.com>, Paul Moses <p@1g4.org>, 
- stable@vger.kernel.org, Piotr Kwapulinski <piotr.kwapulinski@intel.com>, 
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>, 
- Alexander Nowlin <alexander.nowlin@intel.com>, 
- Tjerk Kusters <tkusters@aweta.nl>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1793774404; l=4403;
- i=tkusters@aweta.nl; s=20260619; h=from:subject:message-id;
- bh=Muj1rd8V+7QFHnH0EP+D3AEv7G+gn/NLGqm5+cNtKYU=;
- b=yE0/iq55XmocD6xBOygHgMVPMCdoQ88MXbW9BPw1dwyKdvR4SUZBJhRTVJ5Ql8cpv6JCuAlnC
- IkGKtVI0blhDVUqGq2M5abPfjrHFflepTbuHjkNqE3gdn1nn4nKNCUw
-X-Developer-Key: i=tkusters@aweta.nl; a=ed25519;
- pk=JYRpYQ3+LrphEabgnxcbiOUpwvNP8WDDMcLzz+cwKsk=
-X-Endpoint-Received: by B4 Relay for tkusters@aweta.nl/20260619 with
- auth_id=831
-X-Original-From: Tjerk Kusters <tkusters@aweta.nl>
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261030181512.2056056-1-dhu@x6u.co>
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -202,102 +141,55 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Reply-To: tkusters@aweta.nl
-X-Spam-Status: No, score=-18.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-10.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_PASS autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-From: Tjerk Kusters <tkusters@aweta.nl>
+On Fri, Oct 30, 2026 at 06:15:06PM +0000, David Hu wrote:
+> From: David Hu <xuehaohu@google.com>
+> 
+> Hello,
+> 
+> This patch series introduces support for uverbs ioctl queue creation
+> (QP, CQ, and SRQ) in the irdma driver. This series makes progress towards
+> modernizing irdma. This enables 1-step queue creation from pinned UMEMs
+> and shared dma-buf heaps (system_cc_shared), providing RDMA support for
+> Confidential Computing (CoCo) guest environments where memory encryption
+> otherwise prevents standard host-VA-based queues from operating.
+> 
+> Historically, irdma relied on legacy write() commands for queue setup.
+> This series modernizes irdma's queue creation path by adopting the ioctl
+> infrastructure:
+> 
+> 1. Plumbs uverbs_attr_bundle into the irdma QP and SRQ creation routines.
+> 2. Registers irdma's UVERBS ioctl namespace definition for QP, CQ, and SRQ.
+> 3. Implements 1-step queue buffer creation for QP, CQ, and SRQ using
+>    UVERBS_ATTR_CREATE_*_BUF_UMEM attributes and ib_umem_get_attr(),
+>    configuring hardware Page Buffer Lists (PBLs) directly from pinned umems.
+> 4. Split CQ creation setup logic by umode and kmode into separate
+>    routines to be consistent with other queue creation logic.
+> 5. Adds support for driver-specific shadow area UMEM attributes during CQ
+>    creation with CQ resize capability.
+> 6. Preserves backward compatibility with legacy 2-step write() path
+>    registrations when UMEM attributes are not provided.
+> 
+> User space rdma-core PR: https://github.com/linux-rdma/rdma-core/pull/1766
+> 
+> Testing:
+> Verified with rc_pingpong, srq_pingpong, and dmabuf_pingpong over irdma
+> devices in Confidential VM environments.
+> 
+> Changes in v4:
+> - Reject dma-buf queue creation in iWARP mode and enforce page-offset
+>   alignment unconditionally in irdma_setup_q_pbl_from_umem() (Jacob)
+> - Bound attr->cqe in irdma_create_user_cq() to prevent cq_pages overflow (Sashiko)
+> - Fix to irdma_cq_free_rsrc() was sent separately (Sashiko)
+> - Link to v3: https://lore.kernel.org/all/20261016202909.1289496-1-dhu@x6u.co/
 
-When Rx hardware timestamping is enabled (e.g. ptp4l, which configures
-HWTSTAMP_FILTER_ALL), the NIC prepends a 16-byte timestamp header to the
-first Rx buffer of every received frame. igb_clean_rx_irq() strips this
-header inside its per-buffer loop:
+I applied the series, but I have a concern: the commit messages are
+not useful.
 
-	if (igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP)) {
-		ts_hdr_len = igb_ptp_rx_pktstamp(rx_ring->q_vector,
-						 pktbuf, &timestamp);
-		pkt_offset += ts_hdr_len;
-		size -= ts_hdr_len;
-	}
-
-For a frame that spans more than one Rx buffer (e.g. a jumbo frame), this
-block runs once per buffer. The timestamp header only exists at the start
-of the first buffer, but igb_ptp_rx_pktstamp() is called for every buffer.
-
-On a continuation buffer the data is packet payload, not a timestamp
-header. igb_ptp_rx_pktstamp() already has two guards against acting on a
-non-header buffer: it returns 0 if PTP is disabled, and returns 0 if the
-reserved dwords (the first 8 bytes) are non-zero. Neither is sufficient
-here: PTP is enabled, and a continuation buffer whose payload happens to
-begin with 8 zero bytes passes the reserved-dword check. In that case the
-payload is mistaken for a valid timestamp header and igb_ptp_rx_pktstamp()
-returns IGB_TS_HDR_LEN, and the caller reduces that buffer's size by 16.
-igb_add_rx_frag() adds a continuation buffer from its original offset, so
-the buffer loses its last 16 bytes and the data of the next buffer
-follows directly. A frame spanning N buffers loses 16 bytes per affected
-continuation buffer, in the middle of the payload when N > 2. If the last
-buffer of a frame holds 8 to 15 bytes, all zero, the unsigned size wraps
-and a fragment of about 4 GiB is added to the skb. The sender chooses the
-frame length and content, so this can be triggered remotely.
-
-This is easily triggered by a GigE Vision camera streaming dark frames
-(mostly 0x00 pixel data) over jumbo UDP with PTP active on the receiver:
-the all-zero frames are dropped as truncated while frames with non-zero
-content are fine. The driver reports no error; only the IP layer counts
-the frames in IpExtInTruncatedPkts.
-
-No content-based check can reliably tell a continuation buffer that begins
-with zero bytes from a real timestamp header, because both are all zero.
-Fix it structurally instead: only attempt the strip on the first buffer of
-a frame, which is the only buffer that can contain a timestamp header. In
-igb_clean_rx_irq() skb is NULL until the first buffer has been processed,
-so guarding the strip with !skb restricts it to the first buffer
-regardless of payload content.
-
-This relies on the previous patch. Without it, an XDP program that does
-not return XDP_PASS for the first buffer of a multi-buffer frame leaves
-skb NULL for the rest of that frame. With the receive length limited
-while XDP is attached, such frames no longer reach the XDP path.
-
-igc has the same bug; Paul Moses' igc series, linked below, fixes it the
-same way.
-
-Link: https://lore.kernel.org/all/20261028083344.3047350-2-p@1g4.org/
-Fixes: 5379260852b0 ("igb: Fix XDP with PTP enabled")
-Cc: stable@vger.kernel.org
-Reviewed-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Reviewed-by: Kurt Kanzenbach <kurt@linutronix.de>
-Tested-by: Alexander Nowlin <alexander.nowlin@intel.com>
-Signed-off-by: Tjerk Kusters <tkusters@aweta.nl>
----
- drivers/net/ethernet/intel/igb/igb_main.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 8abdd4e58550..cf9911137bd3 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -9122,8 +9122,11 @@ static int igb_clean_rx_irq(struct igb_q_vector *q_vector, const int budget)
- 		rx_buffer = igb_get_rx_buffer(rx_ring, size, &rx_buf_pgcnt);
- 		pktbuf = page_address(rx_buffer->page) + rx_buffer->page_offset;
- 
--		/* pull rx packet timestamp if available and valid */
--		if (igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP)) {
-+		/* pull rx packet timestamp if available and valid; it is only
-+		 * present on the first buffer of a frame
-+		 */
-+		if (!skb &&
-+		    igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP)) {
- 			int ts_hdr_len;
- 
- 			ts_hdr_len = igb_ptp_rx_pktstamp(rx_ring->q_vector,
-
--- 
-2.27.0
-
-
+Thanks
