@@ -1,235 +1,132 @@
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 983BE606A334
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  5 Nov 2026 18:46:19 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 89216606D804
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  5 Nov 2026 22:30:15 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=FM+YV8Jy;
-	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=NFFolPXP
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=soZNUvDf;
+	dkim=pass (2048-bit key, unprotected) header.d=1g4.org header.i=@1g4.org header.a=rsa-sha256 header.s=protonmail header.b=mMSmuuwV
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 7542B404C8;
-	Thu,  5 Nov 2026 18:46:19 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 6B98C811C0;
+	Thu,  5 Nov 2026 22:30:15 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id z18g1IlrIwAo; Thu,  5 Nov 2026 18:46:18 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 94FCD4057D
-Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793904378;
-	b=ZUcYkN3XoZWM1gys+TFBbMZ182jLqOFRShRgAyoOpd+epIVGEK/FrbrxWQDSz0KPwUUR
-	 6zLClhGhLhO6RaZsMLbW9yP2Qm4tTsimV4pzTq7zsub8PMLAML8uFoClC2tTGAIvgM/j4
-	 DC7bZ7phFEiBSXXTUP4zXWwPlcSLnAfnnv1EL9EPXNz98RN7aB1tz4H07OWolACTYha3Z
-	 JV01/omk19+Zy/ffZCSjde/VK1lFwrQMJj/ZTeRzVWBU3YilWtPvoRLEP69F1iUgN6HOj
-	 hRUwf7/uhW6BgOx64i8Z4GWHt8i6p49PbvrMBsATJajZl+Nr1rbD50Oq5JvEshIy9qQ==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id qYyXP86prD9e; Thu,  5 Nov 2026 22:30:14 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org DD9A5811B2
+Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793917814;
+	b=PcJ49ZxT5e91/7Jjo4ZaOqK/efhM9djknfDPJKsPCsi7PSoW+LCyblvh7qJPaKkJ/oen
+	 +6FiVppiunVeFdliHbIw5JoPbZSPstRtD7Gd4It8JQTGxxkuIVJtQtgzkiLGYnuREmMyd
+	 ERHgB691vlhpVTGRYIkXuJsVtSx7UptPDld6oK2QTz6D9P4E1fSNnOJiNh5LUspPBjI+3
+	 9J95M1fwohw/zXEQti8npVIa3TdPSm4QZhshfVSD18O060sr7J63DhB7PFrT7Cqg0XEcE
+	 ZPXAKbxdRcIfH9VXLdVuCMELRj18uwsuZAj8cok/5n5O3Tvrir9L+FasGzR9Pk23GsA==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1793904378;
+	c=relaxed/relaxed; t=1793917814;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
-	 DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-IronPort-AV:
-	 X-IronPort-AV:Received:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-ExtLoop1:
-	 X-IronPort-AV:Received:Received:Received:Received:Received:Received:
-	 Message-ID:Date:User-Agent:Subject:To:CC:References:From:
-	 Content-Language:In-Reply-To:Content-Type:Content-Transfer-Encoding:
-	 X-ClientProxiedBy:MIME-Version:X-MS-PublicTrafficType:
-	 X-MS-TrafficTypeDiagnostic:X-MS-Office365-Filtering-Correlation-Id:
-	 X-LD-Processed:X-MS-Exchange-SenderADCheck:
-	 X-MS-Exchange-AntiSpam-Relay:X-Microsoft-Antispam:
-	 X-Microsoft-Antispam-Message-Info:X-Forefront-Antispam-Report:
-	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
-	 X-MS-Exchange-AntiSpam-MessageData-0:X-Exchange-RoutingPolicyChecked:
-	 X-MS-Exchange-CrossTenant-Network-Message-Id:
-	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
-	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
-	 X-MS-Exchange-CrossTenant-FromEntityHeader:
-	 X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
-	 X-MS-Exchange-CrossTenant-UserPrincipalName:
-	 X-MS-Exchange-Transport-CrossTenantHeadersStamped:X-OriginatorOrg:
-	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
-	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=ad5YBXy4eW95TRlbvGkNl4UBpwccs3myMfEwz6m8TtY=;
-	b=qhcENXM8qP8sDHQujmDAO01mC9CBHe+mu0MO0n5MfHDrZXwonkNbgiZvMDJFjDULmXU0
-	 LZdXnc0WOseM1T3rboQhOZZUCpSxW6T+LscNpagMNItNJagN/q6Vgwd/THIvTZeUEGdiU
-	 C3NvEbaYnQ4Nvj04Tz9ty+TNjVu+BilcC1pFogk/KMbyWiZ2VPnVn9sxYbvPcZaMYYKjW
-	 fk8VdCNPa8tgqXVT2FRfA32tLrFKUD9iGXUkk/DfRb9WUmT8slpnjTNJ9RCOYK1urQtGt
-	 IqhYFspuq3MmW0Ze3ONoFYKIqBuJE6uCQ0L52+Sq9ZB3m+vF3vc4A2/edf2kWQ+tVVA==
-ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
+	 DKIM-Signature:Date:To:From:Cc:Subject:Message-ID:In-Reply-To:
+	 References:Feedback-ID:X-Pm-Message-ID:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:Precedence:
+	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 List-Subscribe:Errors-To;
+	bh=viuLjYesmtJpA1sjvM4v1Scr8RvgUg7KgCw53WlMpzY=;
+	b=Z889yU4Sk4uDPjX+cme/k115lQrU0jQzsDVPPKogDLIGyM4tm+q3WOoUBvoR7Gng3FaI
+	 AkBJCuBE6ewjhUmd0zCYildEaq/L1qldd+ZTwR60F3S4eVy4X0jVEBmL538KUb7KXac88
+	 7O734rUshNh9BXauKCymPzWFvI+Ki3kl40xtf0iUFjiWcdsBzvWDBOATPHGrij1thVxKX
+	 F5C/CK6TGn3TzpkNn1zHhYbmwXceSGn+Pen4is89ErpR+lvJxz/die78VBSa1BIOnEm1p
+	 aUkUKDy42DV1Hl84L0BEFxvNekLKJ+gmmKZPH3r5XdByrUH/wtoGwZePrHva36+YrHg==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1793904378;
-	bh=ad5YBXy4eW95TRlbvGkNl4UBpwccs3myMfEwz6m8TtY=;
-	h=Date:Subject:To:CC:References:From:In-Reply-To:List-Id:
+	s=default; t=1793917813;
+	bh=viuLjYesmtJpA1sjvM4v1Scr8RvgUg7KgCw53WlMpzY=;
+	h=Date:To:From:Cc:Subject:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=FM+YV8JyKLKHPj+5SS5b/0evgjZtUQSMKyqep5SdpzGlZKRQC5x3CUre13Z4s0Z1Y
-	 eKIhY6tPQVU1WpuQ/rLM1ldoGn8GGywENC/msP6UZarOtnB8vpBwjM9AtpsP4XV561
-	 6udrwmbA97CrjC1GNhj8YUc2WZta2s68XCYQWXbX5+FXNJfZ9NU+uCruiMBywmnrEc
-	 NWfQlIwQiNjp0xXK6Ku93/EeEeNxCKECf16pekV2qlOD9NjBwmJT9CzWfDdoxYwRPW
-	 wukTvOK8yX7Eqpt0Ca7sB56hk7c6rk+N7VurB5xccpQp0WCv56ESlF+MA6CHh7WTxy
-	 us3UPI/edD8LA==
+	b=soZNUvDfOCX76jyLW1OIupBd3erxWycNokpu9c4ioUr1dZrUxntJbyNK8+f6HKR0G
+	 t7ygm4FAgLf7haOPJZL82FfVvDnD0UZf8ibLfkG+TmTVEbHlb+nfm92TdLjGfshBVt
+	 MtS9EeS/7JJGu/1vGeiFuJa57eZPKo9hpeLMoK8PdPRIXy2sMWWBTqcJufZ+AtpOnr
+	 F6dpQl3LYwfrNFz3gJxjAjO6QmtvyItwZUym1MHKJwl5jr5jeHG3c0Td0K9nyIFCos
+	 cF85fHLe4gHWzD5RxppfLlUB0r5IXrVaIdFzTHlR7sWhozxYVu0FqpHa30Bz/DxAf0
+	 iKzIvl3jc/dUg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 94FCD4057D;
-	Thu,  5 Nov 2026 18:46:18 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id D35D7B7E
- for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Nov 2026 18:46:17 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id DD9A5811B2;
+	Thu,  5 Nov 2026 22:30:13 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 84D0C1EFC
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Nov 2026 22:30:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id D021660885
- for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Nov 2026 18:46:17 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 69BD5408D3
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Nov 2026 22:30:12 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id hIr5B8OrI_kO for <intel-wired-lan@lists.osuosl.org>;
- Thu,  5 Nov 2026 18:46:17 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org B71516085B
-Authentication-Results: smtp3.osuosl.org; arc=fail smtp.remote-ip=198.175.65.10
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.10;
- helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
- receiver=<UNKNOWN> 
-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=NFFolPXP
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
- by smtp3.osuosl.org (Postfix) with ESMTPS id B71516085B
- for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Nov 2026 18:46:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1793904377; x=1825440377;
- h=message-id:date:subject:to:cc:references:from:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=VNbuT/I9tKSKKDCrv1zY5jAXvp49R5J70Rp+7aH2g4I=;
- b=NFFolPXPYyuMogjT8/mqapwaTtCjKS0D/M2wF2RzDsW9wi1hLVxBL6hu
- +Q71TuXkvz4hfZ1hlb0wwpamGPOvs4C5JQltv0c+czu7xIaMV6ALt6Y4y
- b7blq2h7LWb0aZzgwAfb+4A0ve7Tu/KVnZBQlA+kefEBA1so4doYKl+bY
- oV7QedwnFZfP6OEH88daXWhmDUUo5qdYSfnax7RJNqgdTrdnUIp+AbPbs
- wROIcKeTLIJJg1b32kXav1llHR74PkxSCRwETeMrlNO+zYUrpx0Un6e3f
- 08FpWTwXLWpvq+zPHC55Rt3xrqlNAp3bOblDnR1dDK7c5mL2hzicX78jk g==;
-X-CSE-ConnectionGUID: INH687UDRnOss1jXRwwjkg==
-X-CSE-MsgGUID: XQWPH5jpRWSZG9KcmYXHZA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11957"; a="2609163"
-X-IronPort-AV: E=Sophos;i="6.27,197,1787036400"; 
-   d="scan'208";a="2609163"
-Received: from orviesa005.jf.intel.com ([10.64.159.145])
- by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 05 Nov 2026 10:46:16 -0800
-X-CSE-ConnectionGUID: ITZSCNawTsOdvrA9IFzqoA==
-X-CSE-MsgGUID: WOVXnu6dS9m9o6hHzuCMrQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,197,1787036400"; 
-   d="scan'208";a="6974890"
-Received: from fmsmsx903.amr.corp.intel.com ([10.18.126.92])
- by orviesa005.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 05 Nov 2026 10:46:16 -0800
-Received: from FMSMSX902.amr.corp.intel.com (10.18.126.91) by
- fmsmsx903.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.56; Thu, 5 Nov 2026 10:46:15 -0800
-Received: from fmsedg901.ED.cps.intel.com (10.1.192.143) by
- FMSMSX902.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.56 via Frontend Transport; Thu, 5 Nov 2026 10:46:15 -0800
-Received: from PH8PR06CU001.outbound.protection.outlook.com (40.107.209.45) by
- edgegateway.intel.com (192.55.55.81) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.56; Thu, 5 Nov 2026 10:46:15 -0800
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Received: from DS0PR11MB7381.namprd11.prod.outlook.com (2603:10b6:8:134::14)
- by SJ2PR11MB7619.namprd11.prod.outlook.com (2603:10b6:a03:4d1::6) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.592.10; Thu, 5 Nov
- 2026 18:46:12 +0000
-Received: from DS0PR11MB7381.namprd11.prod.outlook.com
- ([fe80::4c39:dfe6:d6dc:6f58]) by DS0PR11MB7381.namprd11.prod.outlook.com
- ([fe80::4c39:dfe6:d6dc:6f58%6]) with mapi id 15.21.0569.011; Thu, 5 Nov 2026
- 18:46:12 +0000
-Message-ID: <27edd1c3-c5ae-4d23-9b54-0589ac690dae@intel.com>
-Date: Thu, 5 Nov 2026 10:46:11 -0800
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH iwl-net 0/6] ice: fix DCB lock ordering
-To: Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- <intel-wired-lan@lists.osuosl.org>, Petr Oros <poros@redhat.com>
-CC: <netdev@vger.kernel.org>
-References: <20261102105346.30739-1-przemyslaw.kitszel@intel.com>
-From: Jacob Keller <jacob.e.keller@intel.com>
-Content-Language: en-US
-In-Reply-To: <20261102105346.30739-1-przemyslaw.kitszel@intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: MW4PR02CA0004.namprd02.prod.outlook.com
- (2603:10b6:303:16d::19) To DS0PR11MB7381.namprd11.prod.outlook.com
- (2603:10b6:8:134::14)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 60Td_zM04NWJ for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  5 Nov 2026 22:30:10 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org D82D74085B
+Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=185.70.43.97
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=185.70.43.97;
+ helo=mail-4397.protonmail.ch; envelope-from=p@1g4.org; receiver=<UNKNOWN> 
+Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=quarantine dis=none) header.from=1g4.org
+Authentication-Results: smtp4.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=1g4.org header.i=@1g4.org header.a=rsa-sha256
+ header.s=protonmail header.b=mMSmuuwV
+Received: from mail-4397.protonmail.ch (mail-4397.protonmail.ch [185.70.43.97])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id D82D74085B
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Nov 2026 22:30:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=1g4.org;
+ s=protonmail; t=1793917804; x=1794177004;
+ bh=viuLjYesmtJpA1sjvM4v1Scr8RvgUg7KgCw53WlMpzY=;
+ h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
+ Feedback-ID:From:To:Cc:Date:Subject:Reply-To:Feedback-ID:
+ Message-ID:BIMI-Selector;
+ b=mMSmuuwVIEGud4Y5aCYE/GSpTIRBaEj5qlZ61a615iQU2rVQrPljNtKoY6dsUMqFy
+ Ue8+V6w38IEwHIPojjfg6Eqfa0bL88v7g8V9mmXFsOLNDHXGg2A5sBoOBFuPLpEWDA
+ 2klPrbRG+FVVDX2pWfgbJXH5LGwYWBu0MOKobG1RjXxBEcUjLADuWs/qAYY3aIckhK
+ qrTq9dxw/AIPbB3Od1V72sUtcoUwRVyrJF8Bzh+EAdLj3CN8QfOsk3uU55LOFBPipJ
+ hm0jVmvXG5YL5WqPR8OUOy/7cmq8wq2teyhRh6JO0DKGhPTpXtTSJW2B9P175aqNoO
+ vmn3WSItZlIxA==
+Date: Thu, 05 Nov 2026 22:29:51 +0000
+To: Ding Meng <meng.ding@siemens.com>
+From: Paul Moses <p@1g4.org>
+Cc: netdev@vger.kernel.org, Willem de Bruijn <willemdebruijn.kernel@gmail.com>,
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ Jonathan Corbet <corbet@lwn.net>, Andrew Lunn <andrew+netdev@lunn.ch>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Steven Rostedt <rostedt@goodmis.org>, Masami Hiramatsu <mhiramat@kernel.org>,
+ Daniel Borkmann <daniel@iogearbox.net>, Alexei Starovoitov <ast@kernel.org>,
+ Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>,
+ Kumar Kartikeya Dwivedi <memxor@gmail.com>,
+ Richard Cochran <richardcochran@gmail.com>, florian.bezdeka@siemens.com,
+ jan.kiszka@siemens.com, wq.wang@siemens.com, gerhard@engleder-embedded.com,
+ Jason Xing <kerneljasonxing@gmail.com>, Simon Horman <horms@kernel.org>,
+ Shuah Khan <skhan@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>,
+ Mathieu Desnoyers
+ <mathieu.desnoyers@efficios.com>, Martin KaFai Lau <martin.lau@linux.dev>,
+ Song Liu <song@kernel.org>, Yonghong Song <yonghong.song@linux.dev>,
+ Jiri Olsa <jolsa@kernel.org>, Emil Tsalapatis <emil@etsalapatis.com>,
+ Ihor Solodrai <ihor.solodrai@linux.dev>,
+ John Fastabend <john.fastabend@gmail.com>,
+ Stanislav Fomichev <sdf@fomichev.me>, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
+ linux-trace-kernel@vger.kernel.org, bpf@vger.kernel.org
+Subject: Re: [PATCH] net: mark skb NAPI IDs independently of busy polling
+Message-ID: <Tif4BSB0H3l8O1bLzRnhCE9hUYhsz6G3MIhQAgYZImUx1_8YwnCyzy89IV6OSTsXdHDT6fFf7rEL1qfRFJC9OPDHRlhl3cgNJyyE_mVlHWM=@1g4.org>
+In-Reply-To: <20261105071706.7043-1-meng.ding@siemens.com>
+References: <20261105071706.7043-1-meng.ding@siemens.com>
+Feedback-ID: 8253658:user:proton
+X-Pm-Message-ID: 262a97350b81bd39ace0cec8114d774b513fee40
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS0PR11MB7381:EE_|SJ2PR11MB7619:EE_
-X-MS-Office365-Filtering-Correlation-Id: bbee094b-fea5-49c0-9f95-08df3b6d104e
-X-LD-Processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
- ARA:13230040|366016|376014|23010399003|1800799024|261026140227099003|11063799006|56012099006|261026121527099003|261022105027099003|261022075727099003|261009223027099003|261021123027099003|261021121427099003|261102123227099003|261102130727099003|261028144727099003|10067099003|22082099003|18002099003|6133799003;
-X-Microsoft-Antispam-Message-Info: BrHgpY6Yvf23ynPKIAL+ejAZDlb+cL4D2JTv+d1zTeSce8ruyX4LpFojoKkXbkygl29/1if+PNr/KoQuQSEXDiDNHfUwz7c/2gUhElPJ5imxWq2c7BgyD/FhjOJpfv2hy/c2IVRjIoPPJSDoArrIVpfVn6SKzTOWvO6hx9V+kvQqY4tAj6Qld0hiMf/07mEJo+AHVt1YF9y994oHobK6b/e/g/hmaPoJO6pC+Nr/D9S1XHu9dXDhI4Tl2rWXNNSz4vuTAGZ2SjO5/4MPXK+JP5f8XXLJBH7Ol6MhItRiBRDV0I908o3btqcX1vzlgC9f/RL6sd2D9W3oECna2i3/1rDXrcLJr/UCStTHjNHXNn5jP1bGcKINrF7b8Pc4gtDvoEqaA8IOBG3DWjQXTxks5z7onxs0CcwbX1Hhb/HEggduqIE5CBBfBMNARBQbqRRhdcKEc45SVDV1T8lMzJMRy2cW4Memdge79PfFmhC88Rxw6Nbcq5afU5FZvxlcp1MKMXypYHe1Lx2nUd0UG9G3qhArpgtODRtQq5N9LbcWQT/RlUGvlOivV7wMM+vLmmMy5Cay+Js5TqzcqMY0Ry/dLc3rwRIMMgaK+3ae7i6KTNtDyBXwrlnIvBNz8FLHFxWl
-X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:DS0PR11MB7381.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230040)(366016)(376014)(23010399003)(1800799024)(261026140227099003)(11063799006)(56012099006)(261026121527099003)(261022105027099003)(261022075727099003)(261009223027099003)(261021123027099003)(261021121427099003)(261102123227099003)(261102130727099003)(261028144727099003)(10067099003)(22082099003)(18002099003)(6133799003);
- DIR:OUT; SFP:1101; 
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?bGkzYU5JeUNyUlJXVEZRdWVxWUpxdURtTEkxb0dWZ2FaKzNFWC9Pak9RMGhz?=
- =?utf-8?B?ZFNZL3dxdFFmcFlWbmZmWnVJekJ1L3MwNXZzS3dsSjBiMWswTm9SSTcwUXov?=
- =?utf-8?B?b3A5dkhLYlZIY1NHTmZXS1llQndsMFF0NVlnWTJVcjZFSXlXRzdTU0VkT3Nv?=
- =?utf-8?B?bUhUYlU4QlA0V3gweXF5ZVF6UFZNejhVei82QkZjV05vUnY0THJURWFOR2Qv?=
- =?utf-8?B?Q09aZGJGWmFKZWcyQXRCZVFJYlpxZDQ4WUpBVWFkNEs5WHgvOWZ2YW9MOU5Y?=
- =?utf-8?B?OWkvK003NE9PWG9KMC9uTGl1TEFCL21vbzRJSSs4VFBKNW5wa1d3OWdWeGZW?=
- =?utf-8?B?eUxqa3hvZHdoRHkyMnVZTlAyaE9MaHpBakIzQ3FEVVBKMVVaaGdFdEtqQjhD?=
- =?utf-8?B?S0pHZVhRV29wanVlajhYbldYTGRFMHZRcWN6N2dIeFlFMVF6WU1xK3M2UGpx?=
- =?utf-8?B?YUpSMElmam13U2xaKzJ2WmN0ZUVvSWRvM3NseWpvNmZBMm5KbkhsNFZDcFo2?=
- =?utf-8?B?UU1qZlFaVlNYVnVEM253QzBGV2lUSFpQMkZJTVZyWGNYbWZSZ1BPSkw2WGRQ?=
- =?utf-8?B?d2VuODZWYms0eVFqTHJUZlBVTVB6bE9GeVZXVkNOYTUweHlYN2lOY0NiT0Vx?=
- =?utf-8?B?M0dGYkhtYlVZU1REU0x3TU0xaDl6UUdLTWJTZE8rZ1ZybzJzVXhBLzY5WjB5?=
- =?utf-8?B?VGFac0lzR0hFYmVnWHFuYjg2eHV3SzRzeGdjTDNMTVlnZzZDL0lWdEZXNlRq?=
- =?utf-8?B?ZHhjTkVhTW16blNid0cwblpHYy83bzVISWYyU1dtdGx5VTQ3SkxKcC91aDN0?=
- =?utf-8?B?K29NbVliMVJQVXFEcHAxVDRXakxZdkxqd2J0VGI5Nm5JQjBNRFIwRDl3RUZ1?=
- =?utf-8?B?TWlWcjA2UkFZTVJPWXh1M3NadG1TVXNOT2tlQ21YZWdFbVlHb0l2S0N2bW1D?=
- =?utf-8?B?NFh4WXMydnVidG5SWFRCNWpVN0RTTzJnT1lkbG5rdnArQzdSR1hkSzJ4U0Z1?=
- =?utf-8?B?SFFVS2gxc05FdEhUTEk3bVp1d0NDL0lSMmZ2QXFCRVJ3aFdYWURDS0NKQkN1?=
- =?utf-8?B?Q2g0azVjQ3B6b20xVkxsRUJxaDRzcm1DeEVOcFZabmVvUTU2Um1WWGhOWUk2?=
- =?utf-8?B?WVJDS2FHQVFqRm0zQ3JkZVNJNjh0cURXTHA4WVZQS2JMTDJjeTRDT2taNmxE?=
- =?utf-8?B?YStlaWFRelovaWZnSDRVNUpwaUdINVoyVmlIcjFqSWxtUFhqWE9sQ1ZrN05m?=
- =?utf-8?B?SWpUaVpzV2tqZHRLS2F3cFJreVl1bWdnRjViUUFSN1Y1cSsxVkQ0QitIb2pU?=
- =?utf-8?B?c3RuaC9qSEZLSG8vZ0hYaGw0Yk9LbE96b0VPWVZ4d2hNS0RWbVhSNjVyRW1n?=
- =?utf-8?B?Y04ydXg2bnBIbTd4cXYwZnlaRHBCWUZ0ekJjTVdvOEI2dmpVZEllWStFckMz?=
- =?utf-8?B?K0Z0aGs5S2F2MGZvQ0l3aG15SXJOZU5hTGRUa3dTZlRHVXJMRkI1Mnk3Z293?=
- =?utf-8?B?NlJpRTVsZ2hhVWdCT29KamllU01RQ3R2YzM5ajU0U0Foc3FhTmtMcnExWlAx?=
- =?utf-8?B?RitJSlRWZnZ3VnhUTDA4MllZTVl6ODlDL1MrL0NES0RNdnhnUVdmb0JBQldE?=
- =?utf-8?B?OHkvWXNUUXdTNE5zZENNalVGTmlxY3Z4MElxTVdzamVPTXp2YXBab2ZsL1pG?=
- =?utf-8?B?UTBaOGF2aVhqRjMvdWRUVTdvdGRzK3JlT3JLWURMQW9ESERZR3VYMHUwOFln?=
- =?utf-8?B?VG1JNGRkemFVdUlnSnFtV0RwRkJaTHRJdjF5TjAzQ1FXTXdra2lqMUN2dEVO?=
- =?utf-8?B?YmZWdzhTOXlKVXFEUzNsRXNBY0kyNWg2ZGZsQm1SK2VHcDlrNzRnd3BEbk9m?=
- =?utf-8?B?RzhFTnUzTmM1c2d6MldrZldpTW83MUI2RjdvUkFBYk9NVVBRaU5XekdKRXFy?=
- =?utf-8?B?c2hlbVZEM2dDazUraGVvMFZUM1hEUHZiZEFHM1Yyc3Y1UFkyVkVxSVFBN2oz?=
- =?utf-8?B?cDVvSWVDc1JSNG1DRlU2OWMzSjVVQ2J3ZGFWYjVFRWZNYXZldVZ0bGpTSFBl?=
- =?utf-8?B?WHN5UnJSUUJ4QTNsMTYrcFlXTWVmNTUyMWpXRC9GcTM1YmtsMDVQYyszQWlP?=
- =?utf-8?B?SmlXTEtJR0R0dGllWERKYWRQMXF4NElKdU1LQUtwOUdQcXhxNHBHVEJxTnh0?=
- =?utf-8?B?OUpqL2h0cWxRRWJpM1I3ZStwdU84SjdmbzF0THRnTUp4L2F6STRPbFpBNS9E?=
- =?utf-8?B?ZXBuV0FxaFNIK0lPNlVOQWVWT2dkUG9nUXVobTJYOEZ2UUxiVko5dnBnVXk5?=
- =?utf-8?B?NjNzcXBMNVAzaG5SV240YXhaYlN3RWRlNDhtUDJ0SmFoUHNYaFd5U3VBMUhU?=
- =?utf-8?Q?H2Rbsy2QLIQRZe9I=3D?=
-X-Exchange-RoutingPolicyChecked: i/ruOBfawodLUlhWMKxZDZ/T12Vi8/zvtvhFdInVTqMSOH96JttAA7gqS5agTwj32z/GFxOxZK2RoGHUJqCmXbtySGC6EwZCBAa9ohnVx6VObG/VRJM2cl8bnWYQfdXMOHf02Jgk1qD7xMtV6iTXKqwNsxHlnXyQ54e6Vb/RJ7jcS8ju7xtC1TrTtHe5xiUbOCYn7Ho6PgXc5tFT6fPEjSVG+fhBN8F5ODRRMo1qC0lvQdFmWcjTvf/ocPT2K8pDE8NXg9m0Aqxir5Nz0XZKmyYO76gBd5gKOzLsfE7nBZx7F5Lg1mKBpjxG+3DhpoU6n/2DQrLD46yeJuSnBd5JXQ==
-X-MS-Exchange-CrossTenant-Network-Message-Id: bbee094b-fea5-49c0-9f95-08df3b6d104e
-X-MS-Exchange-CrossTenant-AuthSource: DS0PR11MB7381.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 05 Nov 2026 18:46:12.2298 (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: ho8TxFY98OqA6olZztfUF0YImAemcfIaizuccbEgrfYM6gVYhJcQ3wiraHNSdOXenNJxZ+dpgvtNoZl7SOl+02PnZXhqrLcG8KC5Wvlzgnc=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ2PR11MB7619
-X-OriginatorOrg: intel.com
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -240,67 +137,233 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-12.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-15.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS
+	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On 11/2/2026 2:50 AM, Przemek Kitszel wrote:
-> Fix deadlocks and lock inversions around ice DCB configuration, between
-> RTNL, pf->tc_mutex, the PF devlink lock and pf->vfs.table_lock.
-> 
-> RTNL becomes the outer lock of all DCB configuration paths. dcbnl ops
-> and ndo_setup_tc() already run under it; patch 2 makes the LLDP MIB
-> change handler and ice_dcb_rebuild() take it too, so patch 5 can drop
-> the now redundant pf->tc_mutex. Patch 1 goes first, so that a dcbnl op
-> does not wait out a reset, whose rebuild now needs RTNL.
-> 
-> Enabling DCB in switchdev tears down the devlink-rate tree, which needs
-> the PF devlink lock and pf->vfs.table_lock, both taken before RTNL
-> elsewhere. Patch 4 only tries them, and only when a tree is exported,
-> which it tells by rate_node pointers, no longer left dangling by patch 3.
-> 
-> Patch 6 is an unrelated fix of the ice_init_lag() error path.
-> 
-> Reproducers are in the commit messages, each verified to trigger the
-> lockdep or KASAN report before its fix and not after it.
-> 
-> Petr's "ice: fix RTNL vs auxiliary device lock inversion" [0] touches
-> the same ice_setup_tc() and ice_pf_dcb_cfg() code, so one of the series
-> needs a rebase. With this one applied first, his patch 2 is not needed.
-> [0] https://lore.kernel.org/intel-wired-lan/20261023070258.730168-1-poros@redhat.com
-> 
-> 
 
-FYI, this series did not get any reports from Sashiko, and Petr's series
-did. I think that one will need to rebase on top of this for ease of
-application if thats ok? I've made some notes for Tony when he gets back
-next week on this.
 
-Thanks,
-Jake
 
-> 
-> Przemek Kitszel (6):
->   ice: don't wait out a reset in ice_dcbnl_devreset()
->   ice: take rtnl before tc_mutex in DCB MIB change and rebuild
->   ice: clear stale rate_node pointers in
->     ice_tear_down_devlink_rate_tree()
->   ice: don't block on locks in ice_tear_down_devlink_rate_tree()
->   ice: replace tc_mutex with RTNL
->   ice: register LAG event handler last in ice_init_lag()
-> 
->  .../net/ethernet/intel/ice/devlink/devlink.h  |  2 +-
->  drivers/net/ethernet/intel/ice/ice.h          |  1 -
->  drivers/net/ethernet/intel/ice/ice_dcb_lib.h  |  1 +
->  .../net/ethernet/intel/ice/devlink/devlink.c  | 52 +++++++++++++++++--
->  drivers/net/ethernet/intel/ice/ice_dcb_lib.c  | 46 ++++++++++------
->  drivers/net/ethernet/intel/ice/ice_dcb_nl.c   | 35 ++++++-------
->  drivers/net/ethernet/intel/ice/ice_lag.c      | 15 +++---
->  drivers/net/ethernet/intel/ice/ice_main.c     |  8 ++-
->  8 files changed, 108 insertions(+), 52 deletions(-)
-> 
 
+On Thursday, November 5th, 2026 at 1:19 AM, Ding Meng <meng.ding@siemens.co=
+m> wrote:
+
+> Commit 97dc7cd92ac6 ("ptp: Support late timestamp determination")
+> added support for deferring RX timestamp conversion to
+> ndo_get_tstamp(). When the timestamp is consumed, get_timestamp()
+> uses the skb's NAPI ID to find the device that owns the timestamp
+> cookie and invoke its callback.
+>=20
+> Commit e68b6e50fa35 ("udp: enable busy polling for all sockets")
+> gated NAPI ID bookkeeping with CONFIG_NET_RX_BUSY_POLL. As a result,
+> when busy polling is disabled, the skb may not carry a usable NAPI ID.
+> The device lookup then fails, so the driver callback is not invoked.
+> get_timestamp() falls back to hwtstamp, which does not contain the
+> converted timestamp, resulting in an incorrect RX hardware timestamp.
+>=20
+> Record skb NAPI IDs independently of busy-poll support to support
+> drivers that use deferred timestamp conversion and future driver
+> features that need to look up a device by its NAPI ID.
+>=20
+> Signed-off-by: Ding Meng <meng.ding@siemens.com>
+> Reviewed-by: Florian Bezdeka <florian.bezdeka@siemens.com>
+> ---
+> In the discussion of the issue reported at
+> https://lore.kernel.org/netdev/20260630112056.885071-1-meng.ding@siemens.=
+com/
+> this previous patch added an igc-specific fallback for configurations
+> with CONFIG_NET_RX_BUSY_POLL disabled. It populated skb's hwtstamp
+> field with a timestamp converted using the default hardware timer,
+> allowing get_timestamp() to return it without invoking ndo_get_tstamp().
+> But Jakub Kicinski noted that the proposed fix appeared to be a
+> driver-specific workaround for a generic problem. The engleder driver
+> would also be affected by the same issue.
+>=20
+> This patch introduces a new configuration option to enable NAPI ID
+> bookkeeping independently of busy polling. The option is enabled
+> whenever busy polling is enabled, preserving the existing behavior.
+> It is also selected by the igc and engleder drivers, ensuring that
+> skbs carry a NAPI ID even when busy polling is disabled.
+>=20
+> Another approach considered was to require drivers using deferred
+> timestamp conversion, such as igc and engleder, to enable busy polling.
+> However, this would introduce an unnecessary dependency between two
+> independent features: hardware timestamp reporting should not require
+> busy polling to be enabled.
+>=20
+> Timestamping has been tested only with igc; it has not been tested
+> with engleder.
+>=20
+>  Documentation/networking/timestamping.rst | 11 ++++++++---
+>  drivers/net/ethernet/engleder/Kconfig     |  1 +
+>  drivers/net/ethernet/intel/Kconfig        |  1 +
+>  include/linux/skbuff.h                    |  4 ++--
+>  include/net/busy_poll.h                   |  2 +-
+>  include/trace/events/net.h                |  2 +-
+>  net/Kconfig                               |  4 ++++
+>  net/core/filter.c                         |  2 +-
+>  net/core/skbuff.c                         |  2 +-
+>  9 files changed, 20 insertions(+), 9 deletions(-)
+>=20
+> diff --git a/Documentation/networking/timestamping.rst b/Documentation/ne=
+tworking/timestamping.rst
+> index 2162c4f2b28a6..dbe40a1972639 100644
+> --- a/Documentation/networking/timestamping.rst
+> +++ b/Documentation/networking/timestamping.rst
+> @@ -278,9 +278,14 @@ SOF_TIMESTAMPING_OPT_PKTINFO:
+>    packets with hardware timestamps. The message contains struct
+>    scm_ts_pktinfo, which supplies the index of the real interface which
+>    received the packet and its length at layer 2. A valid (non-zero)
+> -  interface index will be returned only if CONFIG_NET_RX_BUSY_POLL is
+> -  enabled and the driver is using NAPI. The struct contains also two
+> -  other fields, but they are reserved and undefined.
+> +  interface index will be returned only if CONFIG_SKB_MARK_NAPI_ID is
+> +  enabled and the driver is using NAPI. This hidden configuration is
+> +  selected automatically by busy-poll support and by drivers that need
+> +  skb NAPI IDs to resolve deferred hardware timestamps. Drivers that
+> +  use deferred timestamp conversion must select it so the networking
+> +  stack can find the device and call its timestamp callback even when
+> +  busy polling is disabled. The struct contains also two other fields,
+> +  but they are reserved and undefined.
+>=20
+>  SOF_TIMESTAMPING_OPT_TX_SWHW:
+>    Request both hardware and software timestamps for outgoing packets
+> diff --git a/drivers/net/ethernet/engleder/Kconfig b/drivers/net/ethernet=
+/engleder/Kconfig
+> index 3df6bf476ae7e..9700a243bea11 100644
+> --- a/drivers/net/ethernet/engleder/Kconfig
+> +++ b/drivers/net/ethernet/engleder/Kconfig
+> @@ -22,6 +22,7 @@ config TSNEP
+>  =09depends on PTP_1588_CLOCK_OPTIONAL
+>  =09select PHYLIB
+>  =09select PAGE_POOL
+> +=09select SKB_MARK_NAPI_ID
+>  =09help
+>  =09  Support for the Engleder TSN endpoint Ethernet MAC IP Core.
+>=20
+> diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/in=
+tel/Kconfig
+> index 780f113986ea8..7fb63f351fc20 100644
+> --- a/drivers/net/ethernet/intel/Kconfig
+> +++ b/drivers/net/ethernet/intel/Kconfig
+> @@ -376,6 +376,7 @@ config IGC
+>  =09depends on PCI
+>  =09depends on PTP_1588_CLOCK_OPTIONAL
+>  =09depends on ETHTOOL_NETLINK
+> +=09select SKB_MARK_NAPI_ID
+>  =09help
+>  =09  This driver supports Intel(R) Ethernet Controller I225-LM/I225-V
+>  =09  family of adapters.
+> diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
+> index 6787fcf6ac3e4..164c862f7a403 100644
+> --- a/include/linux/skbuff.h
+> +++ b/include/linux/skbuff.h
+> @@ -1059,7 +1059,7 @@ struct sk_buff {
+>  =09=09=09__u16=09vlan_tci;
+>  =09=09};
+>  =09};
+> -#if defined(CONFIG_NET_RX_BUSY_POLL) || defined(CONFIG_XPS)
+> +#if defined(CONFIG_SKB_MARK_NAPI_ID) || defined(CONFIG_XPS)
+>  =09union {
+>  =09=09unsigned int=09napi_id;
+>  =09=09unsigned int=09sender_cpu;
+> @@ -1267,7 +1267,7 @@ static inline bool skb_pkt_type_ok(u32 ptype)
+>   */
+>  static inline unsigned int skb_napi_id(const struct sk_buff *skb)
+>  {
+> -#ifdef CONFIG_NET_RX_BUSY_POLL
+> +#ifdef CONFIG_SKB_MARK_NAPI_ID
+>  =09return skb->napi_id;
+>  #else
+>  =09return 0;
+> diff --git a/include/net/busy_poll.h b/include/net/busy_poll.h
+> index 6e172d0f6ef5f..f7c0e62c6a7d7 100644
+> --- a/include/net/busy_poll.h
+> +++ b/include/net/busy_poll.h
+> @@ -130,7 +130,7 @@ static inline void sk_busy_loop(struct sock *sk, int =
+nonblock)
+>  static inline void __skb_mark_napi_id(struct sk_buff *skb,
+>  =09=09=09=09      const struct gro_node *gro)
+>  {
+> -#ifdef CONFIG_NET_RX_BUSY_POLL
+> +#ifdef CONFIG_SKB_MARK_NAPI_ID
+>  =09/* If the skb was already marked with a valid NAPI ID, avoid overwrit=
+ing
+>  =09 * it.
+>  =09 */
+> diff --git a/include/trace/events/net.h b/include/trace/events/net.h
+> index dbc2c5598e35a..99ed7645242eb 100644
+> --- a/include/trace/events/net.h
+> +++ b/include/trace/events/net.h
+> @@ -208,7 +208,7 @@ DECLARE_EVENT_CLASS(net_dev_rx_verbose_template,
+>=20
+>  =09TP_fast_assign(
+>  =09=09__assign_str(name);
+> -#ifdef CONFIG_NET_RX_BUSY_POLL
+> +#ifdef CONFIG_SKB_MARK_NAPI_ID
+>  =09=09__entry->napi_id =3D napi_id_valid(skb->napi_id) ?
+>  =09=09=09=09   skb->napi_id : 0;
+>  #else
+> diff --git a/net/Kconfig b/net/Kconfig
+> index 76ab44aa439a6..8fa7586dc08ca 100644
+> --- a/net/Kconfig
+> +++ b/net/Kconfig
+> @@ -346,9 +346,13 @@ config CGROUP_NET_CLASSID
+>  =09  Cgroup subsystem for use as general purpose socket classid marker t=
+hat is
+>  =09  being used in cls_cgroup and for netfilter matching.
+>=20
+> +config SKB_MARK_NAPI_ID
+> +=09bool
+> +
+>  config NET_RX_BUSY_POLL
+>  =09bool
+>  =09default y if !PREEMPT_RT || (PREEMPT_RT && !NETCONSOLE)
+> +=09select SKB_MARK_NAPI_ID
+>=20
+>  config BQL
+>  =09bool
+> diff --git a/net/core/filter.c b/net/core/filter.c
+> index b7ac145b68b1f..e2218c18622b8 100644
+> --- a/net/core/filter.c
+> +++ b/net/core/filter.c
+> @@ -10274,7 +10274,7 @@ static u32 bpf_convert_ctx_access(enum bpf_access=
+_type type,
+>  =09=09break;
+>=20
+>  =09case offsetof(struct __sk_buff, napi_id):
+> -#if defined(CONFIG_NET_RX_BUSY_POLL)
+> +#if defined(CONFIG_SKB_MARK_NAPI_ID)
+>  =09=09*insn++ =3D BPF_LDX_MEM(BPF_W, si->dst_reg, si->src_reg,
+>  =09=09=09=09      bpf_target_off(struct sk_buff, napi_id, 4,
+>  =09=09=09=09=09=09     target_size));
+> diff --git a/net/core/skbuff.c b/net/core/skbuff.c
+> index eb9fcc4b1fd1a..386a32cdc0cc8 100644
+> --- a/net/core/skbuff.c
+> +++ b/net/core/skbuff.c
+> @@ -1581,7 +1581,7 @@ static void __copy_skb_header(struct sk_buff *new, =
+const struct sk_buff *old)
+>  #ifdef CONFIG_NETWORK_SECMARK
+>  =09CHECK_SKB_FIELD(secmark);
+>  #endif
+> -#ifdef CONFIG_NET_RX_BUSY_POLL
+> +#ifdef CONFIG_SKB_MARK_NAPI_ID
+>  =09CHECK_SKB_FIELD(napi_id);
+>  #endif
+>  #ifdef CONFIG_XPS
+>=20
+> base-commit: d135ab453a7400a34930bdda1ef4bdc8acfac80e
+> --
+> 2.47.3
+>=20
+>=20
+
+Are you sure this does not make the preexisting timestamp lifetime
+issue more pathological? I think it needs to be fixed now as well.
+It was the last item mentioned by Sashiko in your review if I=20
+remember correctly.
+
+Paul
