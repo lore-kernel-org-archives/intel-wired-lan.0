@@ -1,138 +1,127 @@
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3CADE606A333
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  5 Nov 2026 07:19:17 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4DCCB606A329
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  5 Nov 2026 08:04:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=40qw25mT;
-	dkim=temperror header.d=siemens.com header.i=meng.ding@siemens.com header.a=rsa-sha256 header.s=fm2 header.b=MbHBkvax
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=VssbamS9;
+	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=i0s9R5+V
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 1838340400;
-	Thu,  5 Nov 2026 07:19:17 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 25D1580FA9;
+	Thu,  5 Nov 2026 08:04:13 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id GlHPRC3kYYCr; Thu,  5 Nov 2026 07:19:16 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org F07BF4077C
-Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793863156;
-	b=TX5waT6hHB/geB/hzdB6J/w1kOLXVI/lzC+o7SM+lCZP00mo3VHjr2w989jwwOWD8Qyx
-	 UTxXzS1j/1bb+4dPnc/1YOi1dnivZ1JroxUPBjoQ10BpVggxyU0hv6Aj0qFnUISVwUtTE
-	 x1JUPPXk9WUdyZO8Mrj8vI92GwtGDOiNrARoficrDhExxGsNU3ml5rqepN6sSSiuef30I
-	 qyw2SNEbGiFwFe9CSSDOZUIcRBIGqEyA81WkGa1NixGDKvsEs1YBMOTXb83+QedFWatO+
-	 16Xt54M0i1qCSqFJkGjXMhOthHg5c2e9qjXFEVtoCcqaCPGZRznBP6pzy6WpDxZDbCg==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id cIIskeHME7zr; Thu,  5 Nov 2026 08:04:12 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 41EBD81062
+Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793865852;
+	b=bA3eVflIUg6KU/ckc8V7HZl5ub+gTvO3V1vaDapjN5Cq+gcB4wqOqPhsUtQwS71piohs
+	 ajaVn+la4ticSXCFRJl1ndNLrwBSKKtrJNXQE1zmzlxVbbu4HazoskeH0oxsJdpeaQVcF
+	 vwoQ1ihLL2nySAwI8NyoqhU2wTb0GXutEGYr0TjWqpXiNot2nJhNmHZzpZ3a3oEnNmL10
+	 oBObpmCM5VFhxmtT/w8KgimO1EMFzxiFRqSWPC1HH69cVcebc48ROsj8w7qXP+YsQYk41
+	 Ck0QF3/G4p7TuDm9ZAsBCJaQlauUFq9RnsTjiGhMpe2s/HOoEl1LqIdytIP/6yCwiRg==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1793863156;
+	c=relaxed/relaxed; t=1793865852;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:MIME-Version:
-	 Content-Transfer-Encoding:X-Flowmailer-Platform:Feedback-ID:
-	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
-	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=2UeepKs1wiyGHBtfdukXuMgoSbbJsCgDnloMbndsSsg=;
-	b=X3aAVuet8WjYa2D+mmQewPVTNCHD7fAeg14NF3l7gypuXsvbGg5Mw6PT6yxa8/+jnKLd
-	 2veaSjBLtoCLqkNpIU0sOoftEEMThqXCJerA7IPdJw9vMHnuqEd8Ry1QnhttcJwXkr4dk
-	 sxVccDS9uvzPbn/5Fwsb/M20ALdh7Ouvz0LXS7WsSs+AzWs2CDgGT+ghYB7n9y4VN6BSO
-	 V40nbIxPVqi/6UPB3YnVmMYRZiqbKAxxC4OYooYhHLFDW6cme2YFK/+WVo7qF/4vfLq4L
-	 g+Q6L44FpXerynV4q8Rr2ljrnIbxLBEth1BBeU53rZ3R4Y2IOfEdSRMwD4+al1ZIEPg==
-ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
-	dmarc=pass header.from=siemens.com;
-	dkim=pass header.d=siemens.com header.i=meng.ding@siemens.com header.a=rsa-sha256 header.s=fm2 header.b=MbHBkvax;
+	 Received:DKIM-Signature:Content-Type:MIME-Version:Message-Id:
+	 In-Reply-To:References:Subject:From:To:Cc:Date:X-BeenThere:
+	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Errors-To;
+	bh=q/IVcg5Dvv6LOmALB64d6dD3OE6L0hYQ//UPgDGID20=;
+	b=Rs1Ct0nKqQcDXVSS+pplgG+3WRq9ZKaX7PCeIBvjCHRXYMs8CPsej8VVKV8H3hvsHD8d
+	 W9814rOzXHFAq4bqBRZLQcApjA2s9aW4b38bmp7dq1+O6ZXOvQDWOZYiZkwy/7s4dpt5I
+	 vOYZbEO1Fc720TzgMkoWevZC9C7LRQ0VKEexrkCp8RiI+Whj4VLYqapkoq2GUwlNePFpj
+	 BPn38mmtaHx4memNLMMSM09pWrp5AZjpRE77DebMv5EWpXwk0cc7JgdKwA6EX8q95tvA6
+	 2fIBNvtYtJaZJb+Cver6Qz+p8TaVV+kSJemLa2M8I8m28tMgsXdmXkZdPNkK4Xt9B9A==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1793863156;
-	bh=2UeepKs1wiyGHBtfdukXuMgoSbbJsCgDnloMbndsSsg=;
-	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=40qw25mTF7qXU3ndF6cqyIQYLZXLFdkLzQCl9Wp2FsWCFnJaYzAZ1lxvjPaxa7+IB
-	 23Co++Je5llBET8PNbbKhGgf9slLasEEdXmUkZAY0zCTkheaYytlax6d7LkiGr3VvV
-	 dpuEupy+L0YXnX9iTf/5674a4N0uSeYF5q9uf3UnPZyYnm/cHuus7UY51Te4cAt4cY
-	 yiMe5XK760KPh1wVxnivRFgJV7wfaSw6a1DpMdogXJMsQaHo4CROJzz7P0bbDArcaM
-	 6fkJuOuOAgsUqXVkVJoz+YcJb43SHoi2Ajd5Z8ZJJdGxMZ8iG+jXfnS2rORHRxROpe
-	 ICLJyDrdwF92A==
+	s=default; t=1793865852;
+	bh=q/IVcg5Dvv6LOmALB64d6dD3OE6L0hYQ//UPgDGID20=;
+	h=In-Reply-To:References:Subject:From:To:Cc:Date:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=VssbamS9nsqsZjmUEU4qVsOcIgHkmi+IvLa5hsEBHdbwsBCVErvG31nb2o/k0coS+
+	 9IxMG9/7Z4mLzlousMqgU6mIhkUXxfGAOsRV5kZXZk58c28J6sTcX/1anV9X6aMpEp
+	 boXwohQTnn0Fo5Dl2Ls0jkFs2zb6e+BDMh93nS0PKlMZPVbhLHvKnZs6ZUppMLInDb
+	 ml9Au5kMqlsgHkyBJfQU5ECW+R2qmiQoLSVFCs/g55gIix7+LuW2wDZ6nMKJnd9To+
+	 EN3aMh3o6lbhrHqO8vc8Eacz/uG+oa2n1UbY7IO5gQy/zRjkJ53qvXki+tN7bFDPUN
+	 1H/lYMkMaonnQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id F07BF4077C;
-	Thu,  5 Nov 2026 07:19:15 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 4688452B
- for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Nov 2026 07:19:14 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 41EBD81062;
+	Thu,  5 Nov 2026 08:04:12 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 5550F31F
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Nov 2026 08:04:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 2BAC64077C
- for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Nov 2026 07:19:14 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 3AFC0606D3
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Nov 2026 08:04:11 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 4JMm1vZDZuiM for <intel-wired-lan@lists.osuosl.org>;
- Thu,  5 Nov 2026 07:19:12 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 3C1F040400
-Authentication-Results: smtp4.osuosl.org;
- arc=none smtp.remote-ip=185.136.65.225
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=185.136.65.225;
- helo=mta-65-225.siemens.flowmailer.net;
- envelope-from=fm-1335312-20261105071905d3ab30d5c1000207a2-yh462n@rts-flowmailer.siemens.com;
- receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=reject dis=none) header.from=siemens.com
-Authentication-Results: smtp4.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=siemens.com header.i=meng.ding@siemens.com
- header.a=rsa-sha256 header.s=fm2 header.b=MbHBkvax
-Received: from mta-65-225.siemens.flowmailer.net
- (mta-65-225.siemens.flowmailer.net [185.136.65.225])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 3C1F040400
- for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Nov 2026 07:19:09 +0000 (UTC)
-Received: by mta-65-225.siemens.flowmailer.net with ESMTPSA id
- 20261105071905d3ab30d5c1000207a2
- for <intel-wired-lan@lists.osuosl.org>;
- Thu, 05 Nov 2026 08:19:06 +0100
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; s=fm2;
- d=siemens.com; i=meng.ding@siemens.com;
- h=Date:From:Subject:To:Message-ID:MIME-Version:Content-Type:Content-Transfer-Encoding:Cc;
- bh=2UeepKs1wiyGHBtfdukXuMgoSbbJsCgDnloMbndsSsg=;
- b=MbHBkvaxkeyUCwfUVzgQ1zs+Ifzqcm8ShV801eVKdDDdOajsC1zROPDsFOkPrRLIXualRq
- ljtDbGgqh9sgFeK9izYu5evE/RyVB7DkhluMQi6IchNA2WJTSPoinSUux5Kh+O5m7J23Typ6
- 6W/xUDmoZN3krR2c8DZVE//prNykK4KKliRt59nFJI4tTPArUEVhmZ6/aR6QRJnrtgqD2P6u
- fNCZtVsRth7aWbl3n1hgVvlVxKHfcKfHe2goliePomWYhxBmJ63y44Z2kx6dZBZuKElPnmKY
- 3lSy9Nl6UBDRzyRII9rw8EzNd+ksmnMP0x3M+QBl0zfTffwOUCNwBAIw==;
-From: Ding Meng <meng.ding@siemens.com>
-To: netdev@vger.kernel.org, Willem de Bruijn <willemdebruijn.kernel@gmail.com>,
- "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@kernel.org>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, Jonathan Corbet <corbet@lwn.net>,
- Andrew Lunn <andrew+netdev@lunn.ch>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Steven Rostedt <rostedt@goodmis.org>,
- Masami Hiramatsu <mhiramat@kernel.org>,
- Daniel Borkmann <daniel@iogearbox.net>,
- Alexei Starovoitov <ast@kernel.org>, Andrii Nakryiko <andrii@kernel.org>,
- Eduard Zingerman <eddyz87@gmail.com>,
- Kumar Kartikeya Dwivedi <memxor@gmail.com>,
- Richard Cochran <richardcochran@gmail.com>
-Cc: florian.bezdeka@siemens.com, jan.kiszka@siemens.com, wq.wang@siemens.com,
- p@1g4.org, gerhard@engleder-embedded.com,
- Ding Meng <meng.ding@siemens.com>, Jason Xing <kerneljasonxing@gmail.com>,
- Simon Horman <horms@kernel.org>, Shuah Khan <skhan@linuxfoundation.org>,
- Randy Dunlap <rdunlap@infradead.org>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Martin KaFai Lau <martin.lau@linux.dev>, Song Liu <song@kernel.org>,
- Yonghong Song <yonghong.song@linux.dev>, Jiri Olsa <jolsa@kernel.org>,
- Emil Tsalapatis <emil@etsalapatis.com>,
- Ihor Solodrai <ihor.solodrai@linux.dev>,
- John Fastabend <john.fastabend@gmail.com>,
- Stanislav Fomichev <sdf@fomichev.me>, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
- linux-trace-kernel@vger.kernel.org, bpf@vger.kernel.org
-Subject: [PATCH] net: mark skb NAPI IDs independently of busy polling
-Date: Thu,  5 Nov 2026 15:16:08 +0800
-Message-ID: <20261105071706.7043-1-meng.ding@siemens.com>
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id YT3hVlyfsvtp for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  5 Nov 2026 08:04:10 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 2B87E6061C
+Authentication-Results: smtp3.osuosl.org; arc=none
+ smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
+ envelope-from=bot+bpf-ci@kernel.org; receiver=<UNKNOWN> 
+Authentication-Results: smtp3.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20260515 header.b=i0s9R5+V
+Received: from tor.source.kernel.org (tor.source.kernel.org
+ [IPv6:2600:3c04:e001:324:0:1991:8:25])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 2B87E6061C
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Nov 2026 08:04:09 +0000 (UTC)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+ by tor.source.kernel.org (Postfix) with ESMTP id 2DE33601DE;
+ Thu,  5 Nov 2026 08:04:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 15C4C1F000C1;
+ Thu,  5 Nov 2026 08:04:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+ s=k20260515; t=1793865847;
+ bh=q/IVcg5Dvv6LOmALB64d6dD3OE6L0hYQ//UPgDGID20=;
+ h=In-Reply-To:References:Subject:From:To:Cc:Date;
+ b=i0s9R5+VoRkAyQcEkiiUSRvQre+yA4sOH9fDaHC0EOsXo37zcoE9Pu93SmqW5y6M9
+ 75jwKmAN9cwZB2AEDjBioMQU9MJ5tzC5d0tYeDbV565Fjhw8S3rZYG+MkzTgeorTT+
+ 4UMSo0iYWRRvbFNzsX3Vt9vWRu9PKes66PuVrqq79ybHVRb1WR8VgtrqTUM0cLNXrJ
+ MoF9QMHIooi5VprLbqzXWN7/JlqNxYcejkoO9vpHEh4nA+2OXJ0GElPA1Ko3ZzMX9m
+ JTIy/SvOw0ysGRZQyJxCgCAGeXiC1mDX545zFGFkBkHl3uzf+8CAlPBPGa/uvfengH
+ nhP60WqCq3guQ==
+Content-Type: multipart/mixed; boundary="===============1261712251123050467=="
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Flowmailer-Platform: Siemens
-Feedback-ID: 519:519-1335312:519-21489:flowmailer
+Message-Id: <4c0a0855167cac39dcf8b1c103d0f98a8898a14866daf9b97a127698bb1ea0b9@mail.kernel.org>
+In-Reply-To: <20261105071706.7043-1-meng.ding@siemens.com>
+References: <20261105071706.7043-1-meng.ding@siemens.com>
+Subject: Re: [PATCH] net: mark skb NAPI IDs independently of busy polling
+From: bot+bpf-ci@kernel.org
+To: meng.ding@siemens.com, netdev@vger.kernel.org,
+ willemdebruijn.kernel@gmail.com, davem@davemloft.net, edumazet@kernel.org,
+ kuba@kernel.org, pabeni@redhat.com, corbet@lwn.net, andrew+netdev@lunn.ch,
+ anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com, rostedt@goodmis.org,
+ mhiramat@kernel.org, daniel@iogearbox.net, ast@kernel.org, andrii@kernel.org,
+ eddyz87@gmail.com, memxor@gmail.com, richardcochran@gmail.com
+Cc: florian.bezdeka@siemens.com, jan.kiszka@siemens.com, wq.wang@siemens.com,
+ p@1g4.org, gerhard@engleder-embedded.com, meng.ding@siemens.com,
+ kerneljasonxing@gmail.com, horms@kernel.org, skhan@linuxfoundation.org,
+ rdunlap@infradead.org, mathieu.desnoyers@efficios.com, martin.lau@linux.dev,
+ song@kernel.org, yonghong.song@linux.dev, jolsa@kernel.org,
+ emil@etsalapatis.com, ihor.solodrai@linux.dev, john.fastabend@gmail.com,
+ sdf@fomichev.me, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ intel-wired-lan@lists.osuosl.org, linux-trace-kernel@vger.kernel.org,
+ bpf@vger.kernel.org, ast@kernel.org, andrii@kernel.org, daniel@iogearbox.net,
+ martin.lau@kernel.org, eddyz87@gmail.com, yonghong.song@linux.dev,
+ mason@kernel.org, ihor.solodrai@linux.dev
+Date: Thu,  5 Nov 2026 08:04:07 +0000 (UTC)
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -143,210 +132,67 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-15.9 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS autolearn=unavailable
-	autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-13.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_PASS autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Commit 97dc7cd92ac6 ("ptp: Support late timestamp determination")
-added support for deferring RX timestamp conversion to
-ndo_get_tstamp(). When the timestamp is consumed, get_timestamp()
-uses the skb's NAPI ID to find the device that owns the timestamp
-cookie and invoke its callback.
+--===============1261712251123050467==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
 
-Commit e68b6e50fa35 ("udp: enable busy polling for all sockets")
-gated NAPI ID bookkeeping with CONFIG_NET_RX_BUSY_POLL. As a result,
-when busy polling is disabled, the skb may not carry a usable NAPI ID.
-The device lookup then fails, so the driver callback is not invoked.
-get_timestamp() falls back to hwtstamp, which does not contain the
-converted timestamp, resulting in an incorrect RX hardware timestamp.
+> net: mark skb NAPI IDs independently of busy polling
 
-Record skb NAPI IDs independently of busy-poll support to support
-drivers that use deferred timestamp conversion and future driver
-features that need to look up a device by its NAPI ID.
+TL;DR: Commit message only: it blames e68b6e50fa35 for gating skb NAPI IDs on
+busy polling, but that gating predates it; 97dc7cd92ac6 introduced the
+dependency. Suggests rewording.
 
-Signed-off-by: Ding Meng <meng.ding@siemens.com>
-Reviewed-by: Florian Bezdeka <florian.bezdeka@siemens.com>
+>     net: mark skb NAPI IDs independently of busy polling
+>
+>     Commit 97dc7cd92ac6 ("ptp: Support late timestamp determination")
+>     added support for deferring RX timestamp conversion to
+>     ndo_get_tstamp(). When the timestamp is consumed, get_timestamp()
+>     uses the skb's NAPI ID to find the device that owns the timestamp
+>     cookie and invoke its callback.
+>     Commit e68b6e50fa35 ("udp: enable busy polling for all sockets")
+>     gated NAPI ID bookkeeping with CONFIG_NET_RX_BUSY_POLL. As a result,
+>     when busy polling is disabled, the skb may not carry a usable NAPI ID.
+>     The device lookup then fails, so the driver callback is not invoked.
+>     get_timestamp() falls back to hwtstamp, which does not contain the
+>     converted timestamp, resulting in an incorrect RX hardware timestamp.
+>     Record skb NAPI IDs independently of busy-poll support to support
+>     drivers that use deferred timestamp conversion and future driver
+>     features that need to look up a device by its NAPI ID.
+>     Signed-off-by: Ding Meng <meng.ding@siemens.com>
+>     Reviewed-by: Florian Bezdeka <florian.bezdeka@siemens.com>
+
+This isn't a bug, but is e68b6e50fa35 the right commit to name here?
+
+Before that commit, __skb_mark_napi_id() / skb_mark_napi_id() was already
+inside '#ifdef CONFIG_NET_RX_BUSY_POLL' with an empty stub in the #else
+branch, and struct sk_buff already had napi_id under
+'#if defined(CONFIG_NET_RX_BUSY_POLL) || defined(CONFIG_XPS)'.  That gating
+goes back to 8b80cda536ea ("net: rename ll methods to busy-poll").
+
+e68b6e50fa35 only moved the socket-side sk_mark_napi_id() out of the ifdef
+block and added sk_mark_napi_id_once().  Both act on sk->sk_napi_id, not on
+the skb.
+
+It is also about six years older than 97dc7cd92ac6, so the message reads as
+if a later change broke the deferred-timestamp lookup.  In fact
+get_timestamp() has depended on a busy-poll-only skb field (skb_napi_id()
+returns 0 when CONFIG_NET_RX_BUSY_POLL=n) since 97dc7cd92ac6 added it.
+
+Could the message say that the skb NAPI ID was always busy-poll-only and
+that 97dc7cd92ac6 started depending on it?
+
+
 ---
-In the discussion of the issue reported at
-https://lore.kernel.org/netdev/20260630112056.885071-1-meng.ding@siemens.com/
-this previous patch added an igc-specific fallback for configurations
-with CONFIG_NET_RX_BUSY_POLL disabled. It populated skb's hwtstamp
-field with a timestamp converted using the default hardware timer,
-allowing get_timestamp() to return it without invoking ndo_get_tstamp().
-But Jakub Kicinski noted that the proposed fix appeared to be a
-driver-specific workaround for a generic problem. The engleder driver
-would also be affected by the same issue.
+AI reviewed your patch. Please fix the bug or email reply why it's not a bug.
+See: https://github.com/kernel-patches/vmtest/blob/master/ci/claude/README.md
 
-This patch introduces a new configuration option to enable NAPI ID
-bookkeeping independently of busy polling. The option is enabled
-whenever busy polling is enabled, preserving the existing behavior.
-It is also selected by the igc and engleder drivers, ensuring that
-skbs carry a NAPI ID even when busy polling is disabled.
-
-Another approach considered was to require drivers using deferred
-timestamp conversion, such as igc and engleder, to enable busy polling.
-However, this would introduce an unnecessary dependency between two
-independent features: hardware timestamp reporting should not require
-busy polling to be enabled.
-
-Timestamping has been tested only with igc; it has not been tested
-with engleder.
-
- Documentation/networking/timestamping.rst | 11 ++++++++---
- drivers/net/ethernet/engleder/Kconfig     |  1 +
- drivers/net/ethernet/intel/Kconfig        |  1 +
- include/linux/skbuff.h                    |  4 ++--
- include/net/busy_poll.h                   |  2 +-
- include/trace/events/net.h                |  2 +-
- net/Kconfig                               |  4 ++++
- net/core/filter.c                         |  2 +-
- net/core/skbuff.c                         |  2 +-
- 9 files changed, 20 insertions(+), 9 deletions(-)
-
-diff --git a/Documentation/networking/timestamping.rst b/Documentation/networking/timestamping.rst
-index 2162c4f2b28a6..dbe40a1972639 100644
---- a/Documentation/networking/timestamping.rst
-+++ b/Documentation/networking/timestamping.rst
-@@ -278,9 +278,14 @@ SOF_TIMESTAMPING_OPT_PKTINFO:
-   packets with hardware timestamps. The message contains struct
-   scm_ts_pktinfo, which supplies the index of the real interface which
-   received the packet and its length at layer 2. A valid (non-zero)
--  interface index will be returned only if CONFIG_NET_RX_BUSY_POLL is
--  enabled and the driver is using NAPI. The struct contains also two
--  other fields, but they are reserved and undefined.
-+  interface index will be returned only if CONFIG_SKB_MARK_NAPI_ID is
-+  enabled and the driver is using NAPI. This hidden configuration is
-+  selected automatically by busy-poll support and by drivers that need
-+  skb NAPI IDs to resolve deferred hardware timestamps. Drivers that
-+  use deferred timestamp conversion must select it so the networking
-+  stack can find the device and call its timestamp callback even when
-+  busy polling is disabled. The struct contains also two other fields,
-+  but they are reserved and undefined.
- 
- SOF_TIMESTAMPING_OPT_TX_SWHW:
-   Request both hardware and software timestamps for outgoing packets
-diff --git a/drivers/net/ethernet/engleder/Kconfig b/drivers/net/ethernet/engleder/Kconfig
-index 3df6bf476ae7e..9700a243bea11 100644
---- a/drivers/net/ethernet/engleder/Kconfig
-+++ b/drivers/net/ethernet/engleder/Kconfig
-@@ -22,6 +22,7 @@ config TSNEP
- 	depends on PTP_1588_CLOCK_OPTIONAL
- 	select PHYLIB
- 	select PAGE_POOL
-+	select SKB_MARK_NAPI_ID
- 	help
- 	  Support for the Engleder TSN endpoint Ethernet MAC IP Core.
- 
-diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
-index 780f113986ea8..7fb63f351fc20 100644
---- a/drivers/net/ethernet/intel/Kconfig
-+++ b/drivers/net/ethernet/intel/Kconfig
-@@ -376,6 +376,7 @@ config IGC
- 	depends on PCI
- 	depends on PTP_1588_CLOCK_OPTIONAL
- 	depends on ETHTOOL_NETLINK
-+	select SKB_MARK_NAPI_ID
- 	help
- 	  This driver supports Intel(R) Ethernet Controller I225-LM/I225-V
- 	  family of adapters.
-diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
-index 6787fcf6ac3e4..164c862f7a403 100644
---- a/include/linux/skbuff.h
-+++ b/include/linux/skbuff.h
-@@ -1059,7 +1059,7 @@ struct sk_buff {
- 			__u16	vlan_tci;
- 		};
- 	};
--#if defined(CONFIG_NET_RX_BUSY_POLL) || defined(CONFIG_XPS)
-+#if defined(CONFIG_SKB_MARK_NAPI_ID) || defined(CONFIG_XPS)
- 	union {
- 		unsigned int	napi_id;
- 		unsigned int	sender_cpu;
-@@ -1267,7 +1267,7 @@ static inline bool skb_pkt_type_ok(u32 ptype)
-  */
- static inline unsigned int skb_napi_id(const struct sk_buff *skb)
- {
--#ifdef CONFIG_NET_RX_BUSY_POLL
-+#ifdef CONFIG_SKB_MARK_NAPI_ID
- 	return skb->napi_id;
- #else
- 	return 0;
-diff --git a/include/net/busy_poll.h b/include/net/busy_poll.h
-index 6e172d0f6ef5f..f7c0e62c6a7d7 100644
---- a/include/net/busy_poll.h
-+++ b/include/net/busy_poll.h
-@@ -130,7 +130,7 @@ static inline void sk_busy_loop(struct sock *sk, int nonblock)
- static inline void __skb_mark_napi_id(struct sk_buff *skb,
- 				      const struct gro_node *gro)
- {
--#ifdef CONFIG_NET_RX_BUSY_POLL
-+#ifdef CONFIG_SKB_MARK_NAPI_ID
- 	/* If the skb was already marked with a valid NAPI ID, avoid overwriting
- 	 * it.
- 	 */
-diff --git a/include/trace/events/net.h b/include/trace/events/net.h
-index dbc2c5598e35a..99ed7645242eb 100644
---- a/include/trace/events/net.h
-+++ b/include/trace/events/net.h
-@@ -208,7 +208,7 @@ DECLARE_EVENT_CLASS(net_dev_rx_verbose_template,
- 
- 	TP_fast_assign(
- 		__assign_str(name);
--#ifdef CONFIG_NET_RX_BUSY_POLL
-+#ifdef CONFIG_SKB_MARK_NAPI_ID
- 		__entry->napi_id = napi_id_valid(skb->napi_id) ?
- 				   skb->napi_id : 0;
- #else
-diff --git a/net/Kconfig b/net/Kconfig
-index 76ab44aa439a6..8fa7586dc08ca 100644
---- a/net/Kconfig
-+++ b/net/Kconfig
-@@ -346,9 +346,13 @@ config CGROUP_NET_CLASSID
- 	  Cgroup subsystem for use as general purpose socket classid marker that is
- 	  being used in cls_cgroup and for netfilter matching.
- 
-+config SKB_MARK_NAPI_ID
-+	bool
-+
- config NET_RX_BUSY_POLL
- 	bool
- 	default y if !PREEMPT_RT || (PREEMPT_RT && !NETCONSOLE)
-+	select SKB_MARK_NAPI_ID
- 
- config BQL
- 	bool
-diff --git a/net/core/filter.c b/net/core/filter.c
-index b7ac145b68b1f..e2218c18622b8 100644
---- a/net/core/filter.c
-+++ b/net/core/filter.c
-@@ -10274,7 +10274,7 @@ static u32 bpf_convert_ctx_access(enum bpf_access_type type,
- 		break;
- 
- 	case offsetof(struct __sk_buff, napi_id):
--#if defined(CONFIG_NET_RX_BUSY_POLL)
-+#if defined(CONFIG_SKB_MARK_NAPI_ID)
- 		*insn++ = BPF_LDX_MEM(BPF_W, si->dst_reg, si->src_reg,
- 				      bpf_target_off(struct sk_buff, napi_id, 4,
- 						     target_size));
-diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-index eb9fcc4b1fd1a..386a32cdc0cc8 100644
---- a/net/core/skbuff.c
-+++ b/net/core/skbuff.c
-@@ -1581,7 +1581,7 @@ static void __copy_skb_header(struct sk_buff *new, const struct sk_buff *old)
- #ifdef CONFIG_NETWORK_SECMARK
- 	CHECK_SKB_FIELD(secmark);
- #endif
--#ifdef CONFIG_NET_RX_BUSY_POLL
-+#ifdef CONFIG_SKB_MARK_NAPI_ID
- 	CHECK_SKB_FIELD(napi_id);
- #endif
- #ifdef CONFIG_XPS
-
-base-commit: d135ab453a7400a34930bdda1ef4bdc8acfac80e
--- 
-2.47.3
-
+CI run summary: https://github.com/kernel-patches/bpf/actions/runs/41989099174
+--===============1261712251123050467==--
