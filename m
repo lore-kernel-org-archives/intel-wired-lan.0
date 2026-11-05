@@ -1,132 +1,133 @@
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 89216606D804
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  5 Nov 2026 22:30:15 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 40477606A31B
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  5 Nov 2026 23:46:19 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=soZNUvDf;
-	dkim=pass (2048-bit key, unprotected) header.d=1g4.org header.i=@1g4.org header.a=rsa-sha256 header.s=protonmail header.b=mMSmuuwV
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=BPwfJQCW;
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=oGPJce4f
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 6B98C811C0;
-	Thu,  5 Nov 2026 22:30:15 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 1D03160890;
+	Thu,  5 Nov 2026 23:46:19 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id qYyXP86prD9e; Thu,  5 Nov 2026 22:30:14 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org DD9A5811B2
-Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793917814;
-	b=PcJ49ZxT5e91/7Jjo4ZaOqK/efhM9djknfDPJKsPCsi7PSoW+LCyblvh7qJPaKkJ/oen
-	 +6FiVppiunVeFdliHbIw5JoPbZSPstRtD7Gd4It8JQTGxxkuIVJtQtgzkiLGYnuREmMyd
-	 ERHgB691vlhpVTGRYIkXuJsVtSx7UptPDld6oK2QTz6D9P4E1fSNnOJiNh5LUspPBjI+3
-	 9J95M1fwohw/zXEQti8npVIa3TdPSm4QZhshfVSD18O060sr7J63DhB7PFrT7Cqg0XEcE
-	 ZPXAKbxdRcIfH9VXLdVuCMELRj18uwsuZAj8cok/5n5O3Tvrir9L+FasGzR9Pk23GsA==
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id JxN-zaKKkal4; Thu,  5 Nov 2026 23:46:17 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org A8F066085B
+Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793922377;
+	b=cBqHrCPFWo3tiKffpDdEgtpAUHQxzxqVSxEzvbgbquX42qMu3/A6JJjwgZlVB4TbbXPu
+	 mkSugSevhVRD2HUi8197iNkDX0GxLxEjEX64/nUEJule1Z5TXXmaUoR+QRL14KV1jT2L5
+	 IYtBrbSqtXUClEx1k6TOc95OuuLMHlpcFQ+aHYTFX238XjjpHlVysvdCg8KLcqKwEgtNH
+	 5CU1F4HNpHodIkhGIysu6dmjcO9dVFBS1Z7CDPV1GJ4LuUDJue5Tf4Wbwjtf9ZsPDFU4J
+	 GgpyyIuR1uPIF1j90Ill1+7by+PqtlDlQ+D0/FJCIFlhum6nT4AqRJTI7Zzph3LtIPg==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1793917814;
+	c=relaxed/relaxed; t=1793922377;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
-	 DKIM-Signature:Date:To:From:Cc:Subject:Message-ID:In-Reply-To:
-	 References:Feedback-ID:X-Pm-Message-ID:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:Precedence:
-	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-IronPort-AV:
+	 X-IronPort-AV:Received:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-ExtLoop1:
+	 X-IronPort-AV:Received:From:To:Cc:Subject:In-Reply-To:References:Date:
+	 Message-ID:MIME-Version:Content-Type:X-BeenThere:X-Mailman-Version:
+	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=viuLjYesmtJpA1sjvM4v1Scr8RvgUg7KgCw53WlMpzY=;
-	b=Z889yU4Sk4uDPjX+cme/k115lQrU0jQzsDVPPKogDLIGyM4tm+q3WOoUBvoR7Gng3FaI
-	 AkBJCuBE6ewjhUmd0zCYildEaq/L1qldd+ZTwR60F3S4eVy4X0jVEBmL538KUb7KXac88
-	 7O734rUshNh9BXauKCymPzWFvI+Ki3kl40xtf0iUFjiWcdsBzvWDBOATPHGrij1thVxKX
-	 F5C/CK6TGn3TzpkNn1zHhYbmwXceSGn+Pen4is89ErpR+lvJxz/die78VBSa1BIOnEm1p
-	 aUkUKDy42DV1Hl84L0BEFxvNekLKJ+gmmKZPH3r5XdByrUH/wtoGwZePrHva36+YrHg==
-ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
+	bh=W+uNQUyXcc+ekvFYQ9xIE0qfkbp7ilJ7NXxuLfb006w=;
+	b=cXkit/wAroHELkc8ZnU8qgtjQt/OIRb7ZzLAnbUywIc08b5KgkSmGfhmHuhK2eoyJEst
+	 /YXB0r2SX/WoYxv1RqgHEW2+oyittedP9in1ULlr+0nTPvKmB/6mUkcO/jQA7LgctQ6Fe
+	 EibBZU/PmMm3+kjUXIWocPYDA6/HDFwT6JvTBuOtVAJ/tL9F0df0HWGrcJa9a1i7Hk8YO
+	 cRXhpQdNPwbP3FYPgt9o1F3TQTOIwI0RN6mVtmhZD5Ztrb5CoedWGPapmn+CWMR6JYYvk
+	 ACEEpSUFLJiQ3qVP++dr2Zo8lFzsz8MrzbwuCCEBBglkHaGwmq/sAP7MUyq70Ob9e6Q==
+ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1793917813;
-	bh=viuLjYesmtJpA1sjvM4v1Scr8RvgUg7KgCw53WlMpzY=;
-	h=Date:To:From:Cc:Subject:In-Reply-To:References:List-Id:
+	s=default; t=1793922377;
+	bh=W+uNQUyXcc+ekvFYQ9xIE0qfkbp7ilJ7NXxuLfb006w=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=soZNUvDfOCX76jyLW1OIupBd3erxWycNokpu9c4ioUr1dZrUxntJbyNK8+f6HKR0G
-	 t7ygm4FAgLf7haOPJZL82FfVvDnD0UZf8ibLfkG+TmTVEbHlb+nfm92TdLjGfshBVt
-	 MtS9EeS/7JJGu/1vGeiFuJa57eZPKo9hpeLMoK8PdPRIXy2sMWWBTqcJufZ+AtpOnr
-	 F6dpQl3LYwfrNFz3gJxjAjO6QmtvyItwZUym1MHKJwl5jr5jeHG3c0Td0K9nyIFCos
-	 cF85fHLe4gHWzD5RxppfLlUB0r5IXrVaIdFzTHlR7sWhozxYVu0FqpHa30Bz/DxAf0
-	 iKzIvl3jc/dUg==
+	b=BPwfJQCWOmPS/JL44E7I+2jMl+cjT42Qgbt/k4aYze0DasBUvIZTM8MW7wuCcuzKA
+	 4VlcK3eMYeendl0g1eiB7iE3GAR5cHdhM42w+SUm7pIABho4MxjTNrdoPM+1L0p7In
+	 Kjd3sGMtHnDW6JpOjk1xRF9H2az4T+Z1qHief761hfvbl0ydJMpoyJsmPwqMuMteBC
+	 XtcsF16GRIwuPT67cjVe/KKv26i2D7D+uSLRTvIzsbKcAGhNGRdwSHRdGZo0XFLzIN
+	 GzDUXzPH8FvuwVPfT+w4GXwADS18w+X4iqM65moWyB6vDCHu6xU728EOfXUzlbAfF0
+	 GTX+KZuNdCrLA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id DD9A5811B2;
-	Thu,  5 Nov 2026 22:30:13 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 84D0C1EFC
- for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Nov 2026 22:30:12 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id A8F066085B;
+	Thu,  5 Nov 2026 23:46:17 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id C78C795F
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Nov 2026 23:46:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 69BD5408D3
- for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Nov 2026 22:30:12 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id AD21140815
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Nov 2026 23:46:15 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 60Td_zM04NWJ for <intel-wired-lan@lists.osuosl.org>;
- Thu,  5 Nov 2026 22:30:10 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org D82D74085B
-Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=185.70.43.97
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=185.70.43.97;
- helo=mail-4397.protonmail.ch; envelope-from=p@1g4.org; receiver=<UNKNOWN> 
+ id QOJpPqvTekVZ for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  5 Nov 2026 23:46:11 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 8A46B4050E
 Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=quarantine dis=none) header.from=1g4.org
+ arc=none smtp.remote-ip=192.198.163.15
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.15;
+ helo=mgamail.intel.com; envelope-from=vinicius.gomes@intel.com;
+ receiver=<UNKNOWN> 
+Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp4.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=1g4.org header.i=@1g4.org header.a=rsa-sha256
- header.s=protonmail header.b=mMSmuuwV
-Received: from mail-4397.protonmail.ch (mail-4397.protonmail.ch [185.70.43.97])
- by smtp4.osuosl.org (Postfix) with ESMTPS id D82D74085B
- for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Nov 2026 22:30:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=1g4.org;
- s=protonmail; t=1793917804; x=1794177004;
- bh=viuLjYesmtJpA1sjvM4v1Scr8RvgUg7KgCw53WlMpzY=;
- h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
- Feedback-ID:From:To:Cc:Date:Subject:Reply-To:Feedback-ID:
- Message-ID:BIMI-Selector;
- b=mMSmuuwVIEGud4Y5aCYE/GSpTIRBaEj5qlZ61a615iQU2rVQrPljNtKoY6dsUMqFy
- Ue8+V6w38IEwHIPojjfg6Eqfa0bL88v7g8V9mmXFsOLNDHXGg2A5sBoOBFuPLpEWDA
- 2klPrbRG+FVVDX2pWfgbJXH5LGwYWBu0MOKobG1RjXxBEcUjLADuWs/qAYY3aIckhK
- qrTq9dxw/AIPbB3Od1V72sUtcoUwRVyrJF8Bzh+EAdLj3CN8QfOsk3uU55LOFBPipJ
- hm0jVmvXG5YL5WqPR8OUOy/7cmq8wq2teyhRh6JO0DKGhPTpXtTSJW2B9P175aqNoO
- vmn3WSItZlIxA==
-Date: Thu, 05 Nov 2026 22:29:51 +0000
-To: Ding Meng <meng.ding@siemens.com>
-From: Paul Moses <p@1g4.org>
-Cc: netdev@vger.kernel.org, Willem de Bruijn <willemdebruijn.kernel@gmail.com>,
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Jonathan Corbet <corbet@lwn.net>, Andrew Lunn <andrew+netdev@lunn.ch>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Steven Rostedt <rostedt@goodmis.org>, Masami Hiramatsu <mhiramat@kernel.org>,
- Daniel Borkmann <daniel@iogearbox.net>, Alexei Starovoitov <ast@kernel.org>,
- Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>,
- Kumar Kartikeya Dwivedi <memxor@gmail.com>,
- Richard Cochran <richardcochran@gmail.com>, florian.bezdeka@siemens.com,
- jan.kiszka@siemens.com, wq.wang@siemens.com, gerhard@engleder-embedded.com,
- Jason Xing <kerneljasonxing@gmail.com>, Simon Horman <horms@kernel.org>,
- Shuah Khan <skhan@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>,
- Mathieu Desnoyers
- <mathieu.desnoyers@efficios.com>, Martin KaFai Lau <martin.lau@linux.dev>,
- Song Liu <song@kernel.org>, Yonghong Song <yonghong.song@linux.dev>,
- Jiri Olsa <jolsa@kernel.org>, Emil Tsalapatis <emil@etsalapatis.com>,
- Ihor Solodrai <ihor.solodrai@linux.dev>,
- John Fastabend <john.fastabend@gmail.com>,
- Stanislav Fomichev <sdf@fomichev.me>, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
- linux-trace-kernel@vger.kernel.org, bpf@vger.kernel.org
-Subject: Re: [PATCH] net: mark skb NAPI IDs independently of busy polling
-Message-ID: <Tif4BSB0H3l8O1bLzRnhCE9hUYhsz6G3MIhQAgYZImUx1_8YwnCyzy89IV6OSTsXdHDT6fFf7rEL1qfRFJC9OPDHRlhl3cgNJyyE_mVlHWM=@1g4.org>
-In-Reply-To: <20261105071706.7043-1-meng.ding@siemens.com>
-References: <20261105071706.7043-1-meng.ding@siemens.com>
-Feedback-ID: 8253658:user:proton
-X-Pm-Message-ID: 262a97350b81bd39ace0cec8114d774b513fee40
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=oGPJce4f
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 8A46B4050E
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Nov 2026 23:45:46 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1793922369; x=1825458369;
+ h=from:to:cc:subject:in-reply-to:references:date:
+ message-id:mime-version;
+ bh=snKNR2nl9AaDmkl2ulsSGrGAiVn+mGHWQlK5yFxTaMg=;
+ b=oGPJce4fokySe6p30VvpCyyIUZIXSVVWHyPR+QEFUbb2dgtBXAjp34bv
+ W8AugmacMv0GtMvczbxB984WjWxR7i2uUIQw8FT3BFIiVP/7XUI8HQnxQ
+ cdUgfmaWVnwE2zBp4iWa5NW2ZEf28XpnvH7kWnr71ECOtFCi5d3CT7nrA
+ 4c+y8K8tgVDQ9z1C91LeSInMF5vQbmoXcJj32frEKKmtVSxQtaLBmmBVb
+ pAkO6m/lLQuJbNVPmyjjLxLXuU/6zsXqVdHblSDuN6C3+keBdsPevboFr
+ N7oJJnG4TZyULxG1KDE8NEX6hldtJ8P8ZFL8KA/nU4GuMHTG8vo5xv90i Q==;
+X-CSE-ConnectionGUID: WQFHn6s9SbquxSa9SElvSA==
+X-CSE-MsgGUID: ER3/A5hiTOCMM8ZtQ5i/CA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11957"; a="2726083"
+X-IronPort-AV: E=Sophos;i="6.27,197,1787036400"; 
+   d="scan'208";a="2726083"
+Received: from fmviesa008.fm.intel.com ([10.60.135.148])
+ by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 05 Nov 2026 15:44:20 -0800
+X-CSE-ConnectionGUID: nV4uMikZTyWvN89HWVbJnQ==
+X-CSE-MsgGUID: hpgmX9uHSOe07DdJQLUnzA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,197,1787036400"; 
+   d="scan'208";a="7458260"
+Received: from vcostago-desk.jf.intel.com (HELO vcostago-desk) ([10.98.24.84])
+ by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 05 Nov 2026 15:44:21 -0800
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+To: Bjorn Helgaas <helgaas@kernel.org>, "Li, Yifan2" <yifan2.li@intel.com>
+Cc: "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "Nguyen, Anthony L"
+ <anthony.l.nguyen@intel.com>, "Kitszel, Przemyslaw"
+ <przemyslaw.kitszel@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, Mika
+ Westerberg <mika.westerberg@linux.intel.com>, "Ruinskiy, Dima"
+ <dima.ruinskiy@intel.com>, "Li, Lili" <lili.li@intel.com>, "Wang, Jie"
+ <jie.wang@intel.com>
+Subject: Re: [PATCH iwl-net] igc: Disable PTM after the last device reset on
+ remove
+In-Reply-To: <20261104164432.GA1216460@bhelgaas>
+References: <20261104164432.GA1216460@bhelgaas>
+Date: Thu, 05 Nov 2026 15:44:20 -0800
+Message-ID: <87ik2avo6j.fsf@intel.com>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -137,233 +138,127 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-15.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS
-	autolearn=unavailable autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_NONE autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
+Bjorn Helgaas <helgaas@kernel.org> writes:
+
+> On Wed, Nov 04, 2026 at 02:22:40PM +0000, Li, Yifan2 wrote:
+>> On Mon, Nov 02, 2026, Bjorn Helgaas wrote:
+>> > On Sat, Oct 31, 2026 at 10:19:28AM +0800, Li Yifan wrote:
+>> ...
+>
+>> > > Reset the device while the upstream port still has PTM enabled,
+>> > > so that the PTM Request gets a response. Then disable PTM and
+>> > > bus mastering. With this order, a later reset sends no PTM
+>> > > Request (tested on I226-LM). igc_ptp_stop() has already cleared
+>> > > IGC_PTP_ENABLED, so no new PTM dialog starts after this reset.
+>> > 
+>> > IGC_PTP_ENABLED is just a software flag, and it appears to be
+>> > related to PTP, not directly related to PTM, so there are some
+>> > dots missing between it and hardware PTM messages.
+>> 
+>> Sorry, I skipped steps. In igc, PTM is used only for PTP cross
+>> timestamps. The driver starts PTM dialogs only from the PTP code, by
+>> setting the TRIG bit in PTM_CTRL:
+>> - igc_ptp_reset() sets PTM_CTRL.EN and triggers the first dialog.
+>> - igc_ptp_getcrosststamp() triggers dialogs for each cross timestamp
+>>   request.
+>> 
+>> igc_ptp_stop() runs before the reset and stops both:
+>> 1. igc_ptp_suspend() -> igc_ptm_stop() clears PTM_CTRL.EN.
+>> 2. ptp_clock_unregister() removes the PHC and waits for the
+>>    getcrosststamp() calls in progress, so no more calls come.
+>> 3. It clears IGC_PTP_ENABLED. igc_reset() calls igc_ptp_reset(),
+>>    which returns early when this flag is clear, so the reset path does
+>>    not set PTM_CTRL.EN again.
+>> 
+>> So IGC_PTP_ENABLED does not control the hardware directly. It only
+>> stops the driver from setting PTM_CTRL.EN again. v2 will describe
+>> these steps.
+>
+> I don't think the PCIe spec includes any generic way to trigger PTM
+> dialogs, and in general, I think devices are permitted to initiate
+> them at any time, independent of driver or other events.  So I think
+> igc has device-specific knowledge that the NIC *only* initiates PTM
+> dialogs when a driver sets the TRIG bit.  If so, I think that's worth
+> a mention.
+>
+> I haven't worked through the steps you outlined, but maybe they
+> explain why there's no PTM Request after the later reset.
+>
+>> > > If the interface is down,
+>> > > unregister_netdev() does not reset the device, so reset it explicitly.
+>> > > PTM is still disabled before bus mastering, as the related fix above
+>> > > requires.
+>> > 
+>> > Which fix requires PTM disable before bus mastering disable?  And
+>> > why is that required?
+>> 
+>> c080fe262f9e. Its commit message says: "Avoid an i225/i226 hardware
+>> issue that PTM requests can be made even though PCI bus mastering is
+>> not enabled. These unexpected PTM requests can crash some systems."
+>> The order is a workaround for that I225/I226 hardware issue, not a
+>> PCIe spec requirement. The commit message does not say more about
+>> why the order matters, but when I checked with the hardware team, I
+>> found an internal erratum for that issue.
+>> 
+>> I found c080fe262f9e when I searched the igc history for this PTM
+>> problem. Our issue is different: after the device has done a PTM
+>> dialog, the next CTRL.RST can make it send a PTM Request, even when
+>> PTM Enable is clear.
+>
+> I think that part of the c080fe262f9e commit log is just wrong.  The
+> fact that i225/i226 can make PTM requests when bus mastering is
+> disabled is perfectly fine; it's not a hardware issue.  I *suspect*
+> that only the pci_disable_ptm() in that commit is actually required.
+>
+
+Yeah, most probably I should have written that commit message better :-)
+
+From what I remember, the issue was on the other side, even if i225/i226
+sending PTM requests when bus mastering is disabled is fine, the side
+receiving those requests weren't fine with that. And that caused some
+stuck systems. (perhaps I should have focused on this when writing the
+commit message)
+
+>> > > Skip the reset if the device cannot respond: error recovery is in
+>> > > progress or has failed (pci_channel_offline()), the device is gone
+>> > > (pci_device_is_present()), or igc_rd32() has already reported "PCIe
+>> > > link lost" (IGC_REMOVED()). Otherwise the reset accesses a device in
+>> > > error recovery, or polls all-ones register values for about two
+>> > > seconds until igc_disable_pcie_master() times out.
+>> > >
+>> > > Call pci_disable_ptm() only if PTM is enabled. pci_enable_ptm() can
+>> > > fail in probe, for example if the upstream port does not support PTM,
+>> > > and probe continues without PTM. The PCI/PTM change above also made
+>> > > pci_disable_ptm() use a reference count: it decrements
+>> > > dev->ptm_enable_cnt without a check, and then does the same for the
+>> > > upstream port. Before, it did nothing if PTM was not enabled. After a
+>> > > failed pci_enable_ptm(), the count of the device becomes negative and
+>> > > stays negative after the driver unbinds. pcie_ptm_enabled() returns
+>> > > true for a negative count, so after the next probe
+>> > > igc_is_crosststamp_supported() reports PTM support and igc_ptp_reset()
+>> > > starts PTM cycles on a device that does not have PTM enabled. Commit
+>> > > 650f197d8ea6 ("idpf: disable PTM on probe failure and on remove") adds
+>> > > the same check to idpf.
+>> > 
+>> > This sounds like a bug in the PCI core PTM support, i.e., maybe
+>> > pci_disable_ptm() should be checking for PTM being enabled?
+>> > Otherwise I'm afraid lots of drivers might trip over this.
+>> 
+>> Agree and thanks! I sent a PCI core fix:
+>> https://lore.kernel.org/r/20261104121457.2108515-1-yifan2.li@intel.com
+>
+> Thanks for that!
+>
+> Bjorn
 
 
-
-
-On Thursday, November 5th, 2026 at 1:19 AM, Ding Meng <meng.ding@siemens.co=
-m> wrote:
-
-> Commit 97dc7cd92ac6 ("ptp: Support late timestamp determination")
-> added support for deferring RX timestamp conversion to
-> ndo_get_tstamp(). When the timestamp is consumed, get_timestamp()
-> uses the skb's NAPI ID to find the device that owns the timestamp
-> cookie and invoke its callback.
->=20
-> Commit e68b6e50fa35 ("udp: enable busy polling for all sockets")
-> gated NAPI ID bookkeeping with CONFIG_NET_RX_BUSY_POLL. As a result,
-> when busy polling is disabled, the skb may not carry a usable NAPI ID.
-> The device lookup then fails, so the driver callback is not invoked.
-> get_timestamp() falls back to hwtstamp, which does not contain the
-> converted timestamp, resulting in an incorrect RX hardware timestamp.
->=20
-> Record skb NAPI IDs independently of busy-poll support to support
-> drivers that use deferred timestamp conversion and future driver
-> features that need to look up a device by its NAPI ID.
->=20
-> Signed-off-by: Ding Meng <meng.ding@siemens.com>
-> Reviewed-by: Florian Bezdeka <florian.bezdeka@siemens.com>
-> ---
-> In the discussion of the issue reported at
-> https://lore.kernel.org/netdev/20260630112056.885071-1-meng.ding@siemens.=
-com/
-> this previous patch added an igc-specific fallback for configurations
-> with CONFIG_NET_RX_BUSY_POLL disabled. It populated skb's hwtstamp
-> field with a timestamp converted using the default hardware timer,
-> allowing get_timestamp() to return it without invoking ndo_get_tstamp().
-> But Jakub Kicinski noted that the proposed fix appeared to be a
-> driver-specific workaround for a generic problem. The engleder driver
-> would also be affected by the same issue.
->=20
-> This patch introduces a new configuration option to enable NAPI ID
-> bookkeeping independently of busy polling. The option is enabled
-> whenever busy polling is enabled, preserving the existing behavior.
-> It is also selected by the igc and engleder drivers, ensuring that
-> skbs carry a NAPI ID even when busy polling is disabled.
->=20
-> Another approach considered was to require drivers using deferred
-> timestamp conversion, such as igc and engleder, to enable busy polling.
-> However, this would introduce an unnecessary dependency between two
-> independent features: hardware timestamp reporting should not require
-> busy polling to be enabled.
->=20
-> Timestamping has been tested only with igc; it has not been tested
-> with engleder.
->=20
->  Documentation/networking/timestamping.rst | 11 ++++++++---
->  drivers/net/ethernet/engleder/Kconfig     |  1 +
->  drivers/net/ethernet/intel/Kconfig        |  1 +
->  include/linux/skbuff.h                    |  4 ++--
->  include/net/busy_poll.h                   |  2 +-
->  include/trace/events/net.h                |  2 +-
->  net/Kconfig                               |  4 ++++
->  net/core/filter.c                         |  2 +-
->  net/core/skbuff.c                         |  2 +-
->  9 files changed, 20 insertions(+), 9 deletions(-)
->=20
-> diff --git a/Documentation/networking/timestamping.rst b/Documentation/ne=
-tworking/timestamping.rst
-> index 2162c4f2b28a6..dbe40a1972639 100644
-> --- a/Documentation/networking/timestamping.rst
-> +++ b/Documentation/networking/timestamping.rst
-> @@ -278,9 +278,14 @@ SOF_TIMESTAMPING_OPT_PKTINFO:
->    packets with hardware timestamps. The message contains struct
->    scm_ts_pktinfo, which supplies the index of the real interface which
->    received the packet and its length at layer 2. A valid (non-zero)
-> -  interface index will be returned only if CONFIG_NET_RX_BUSY_POLL is
-> -  enabled and the driver is using NAPI. The struct contains also two
-> -  other fields, but they are reserved and undefined.
-> +  interface index will be returned only if CONFIG_SKB_MARK_NAPI_ID is
-> +  enabled and the driver is using NAPI. This hidden configuration is
-> +  selected automatically by busy-poll support and by drivers that need
-> +  skb NAPI IDs to resolve deferred hardware timestamps. Drivers that
-> +  use deferred timestamp conversion must select it so the networking
-> +  stack can find the device and call its timestamp callback even when
-> +  busy polling is disabled. The struct contains also two other fields,
-> +  but they are reserved and undefined.
->=20
->  SOF_TIMESTAMPING_OPT_TX_SWHW:
->    Request both hardware and software timestamps for outgoing packets
-> diff --git a/drivers/net/ethernet/engleder/Kconfig b/drivers/net/ethernet=
-/engleder/Kconfig
-> index 3df6bf476ae7e..9700a243bea11 100644
-> --- a/drivers/net/ethernet/engleder/Kconfig
-> +++ b/drivers/net/ethernet/engleder/Kconfig
-> @@ -22,6 +22,7 @@ config TSNEP
->  =09depends on PTP_1588_CLOCK_OPTIONAL
->  =09select PHYLIB
->  =09select PAGE_POOL
-> +=09select SKB_MARK_NAPI_ID
->  =09help
->  =09  Support for the Engleder TSN endpoint Ethernet MAC IP Core.
->=20
-> diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/in=
-tel/Kconfig
-> index 780f113986ea8..7fb63f351fc20 100644
-> --- a/drivers/net/ethernet/intel/Kconfig
-> +++ b/drivers/net/ethernet/intel/Kconfig
-> @@ -376,6 +376,7 @@ config IGC
->  =09depends on PCI
->  =09depends on PTP_1588_CLOCK_OPTIONAL
->  =09depends on ETHTOOL_NETLINK
-> +=09select SKB_MARK_NAPI_ID
->  =09help
->  =09  This driver supports Intel(R) Ethernet Controller I225-LM/I225-V
->  =09  family of adapters.
-> diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
-> index 6787fcf6ac3e4..164c862f7a403 100644
-> --- a/include/linux/skbuff.h
-> +++ b/include/linux/skbuff.h
-> @@ -1059,7 +1059,7 @@ struct sk_buff {
->  =09=09=09__u16=09vlan_tci;
->  =09=09};
->  =09};
-> -#if defined(CONFIG_NET_RX_BUSY_POLL) || defined(CONFIG_XPS)
-> +#if defined(CONFIG_SKB_MARK_NAPI_ID) || defined(CONFIG_XPS)
->  =09union {
->  =09=09unsigned int=09napi_id;
->  =09=09unsigned int=09sender_cpu;
-> @@ -1267,7 +1267,7 @@ static inline bool skb_pkt_type_ok(u32 ptype)
->   */
->  static inline unsigned int skb_napi_id(const struct sk_buff *skb)
->  {
-> -#ifdef CONFIG_NET_RX_BUSY_POLL
-> +#ifdef CONFIG_SKB_MARK_NAPI_ID
->  =09return skb->napi_id;
->  #else
->  =09return 0;
-> diff --git a/include/net/busy_poll.h b/include/net/busy_poll.h
-> index 6e172d0f6ef5f..f7c0e62c6a7d7 100644
-> --- a/include/net/busy_poll.h
-> +++ b/include/net/busy_poll.h
-> @@ -130,7 +130,7 @@ static inline void sk_busy_loop(struct sock *sk, int =
-nonblock)
->  static inline void __skb_mark_napi_id(struct sk_buff *skb,
->  =09=09=09=09      const struct gro_node *gro)
->  {
-> -#ifdef CONFIG_NET_RX_BUSY_POLL
-> +#ifdef CONFIG_SKB_MARK_NAPI_ID
->  =09/* If the skb was already marked with a valid NAPI ID, avoid overwrit=
-ing
->  =09 * it.
->  =09 */
-> diff --git a/include/trace/events/net.h b/include/trace/events/net.h
-> index dbc2c5598e35a..99ed7645242eb 100644
-> --- a/include/trace/events/net.h
-> +++ b/include/trace/events/net.h
-> @@ -208,7 +208,7 @@ DECLARE_EVENT_CLASS(net_dev_rx_verbose_template,
->=20
->  =09TP_fast_assign(
->  =09=09__assign_str(name);
-> -#ifdef CONFIG_NET_RX_BUSY_POLL
-> +#ifdef CONFIG_SKB_MARK_NAPI_ID
->  =09=09__entry->napi_id =3D napi_id_valid(skb->napi_id) ?
->  =09=09=09=09   skb->napi_id : 0;
->  #else
-> diff --git a/net/Kconfig b/net/Kconfig
-> index 76ab44aa439a6..8fa7586dc08ca 100644
-> --- a/net/Kconfig
-> +++ b/net/Kconfig
-> @@ -346,9 +346,13 @@ config CGROUP_NET_CLASSID
->  =09  Cgroup subsystem for use as general purpose socket classid marker t=
-hat is
->  =09  being used in cls_cgroup and for netfilter matching.
->=20
-> +config SKB_MARK_NAPI_ID
-> +=09bool
-> +
->  config NET_RX_BUSY_POLL
->  =09bool
->  =09default y if !PREEMPT_RT || (PREEMPT_RT && !NETCONSOLE)
-> +=09select SKB_MARK_NAPI_ID
->=20
->  config BQL
->  =09bool
-> diff --git a/net/core/filter.c b/net/core/filter.c
-> index b7ac145b68b1f..e2218c18622b8 100644
-> --- a/net/core/filter.c
-> +++ b/net/core/filter.c
-> @@ -10274,7 +10274,7 @@ static u32 bpf_convert_ctx_access(enum bpf_access=
-_type type,
->  =09=09break;
->=20
->  =09case offsetof(struct __sk_buff, napi_id):
-> -#if defined(CONFIG_NET_RX_BUSY_POLL)
-> +#if defined(CONFIG_SKB_MARK_NAPI_ID)
->  =09=09*insn++ =3D BPF_LDX_MEM(BPF_W, si->dst_reg, si->src_reg,
->  =09=09=09=09      bpf_target_off(struct sk_buff, napi_id, 4,
->  =09=09=09=09=09=09     target_size));
-> diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-> index eb9fcc4b1fd1a..386a32cdc0cc8 100644
-> --- a/net/core/skbuff.c
-> +++ b/net/core/skbuff.c
-> @@ -1581,7 +1581,7 @@ static void __copy_skb_header(struct sk_buff *new, =
-const struct sk_buff *old)
->  #ifdef CONFIG_NETWORK_SECMARK
->  =09CHECK_SKB_FIELD(secmark);
->  #endif
-> -#ifdef CONFIG_NET_RX_BUSY_POLL
-> +#ifdef CONFIG_SKB_MARK_NAPI_ID
->  =09CHECK_SKB_FIELD(napi_id);
->  #endif
->  #ifdef CONFIG_XPS
->=20
-> base-commit: d135ab453a7400a34930bdda1ef4bdc8acfac80e
-> --
-> 2.47.3
->=20
->=20
-
-Are you sure this does not make the preexisting timestamp lifetime
-issue more pathological? I think it needs to be fixed now as well.
-It was the last item mentioned by Sashiko in your review if I=20
-remember correctly.
-
-Paul
+Cheers,
+-- 
+Vinicius
