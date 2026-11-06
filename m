@@ -1,120 +1,174 @@
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9641A606A326
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  6 Nov 2026 12:26:36 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E7501606A32C
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  6 Nov 2026 14:28:26 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=MqoJdYRb;
-	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=mBSmz5oV
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=PFYywekM;
+	dkim=pass (1024-bit key, unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=G2bDM72m;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=R7yva4Fu;
+	dkim=neutral header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=G2bDM72m
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 72D474096A;
-	Fri,  6 Nov 2026 12:26:36 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id B78F2608A9;
+	Fri,  6 Nov 2026 14:28:26 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id arLANP82ObRP; Fri,  6 Nov 2026 12:26:35 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 2FB7F4096E
-Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793967995;
-	b=Y+gcr4sSbBVJQzU3byC9Lnn4AhNfhVv/2+YLMq1mTUDSJuDlmaHdaZisuuBZptd2cbmS
-	 Jdh4monQujGPAo4ZbmD99pT+p2HkH9l+TiMTsTE4yJ/bVacbh9vH4Yl4iXzP5PKq9m41o
-	 rgBNx/NKjAeiMajEmCL5mM3Vej0bpIJETv19m7AhyzySLqR4a0xIPBbdpaHrt15AQv3cy
-	 Oi+nvm9hTmmhUtY7+TJ+YUv9QlayFRZyd320liuO2MgWyBpCkQkLB7RhIElNlF34UMFa9
-	 Dj2Zu/7sQcO1Kc+iwTrMrAuPES71YTpHkPnD0ZjDJfPeathQ7tg/n70PwReUOPmIuGg==
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id b7KvAqOYJPiT; Fri,  6 Nov 2026 14:28:24 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 10D10608A2
+Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793975304;
+	b=mp1JH6x9zneO1/NEkLQjcN7t4cYmkvEMN5ivIimoSUURWEILyMShf+YfK7Gs0L7tzwgG
+	 GI9Q7BfDpetyJJ7PgVsjg4xiO05mzii7JQcw/V6W+NiT2f1b9D4sb5rnGTfUfNWVl6Ln8
+	 p+kl3gp4q8WkawIu3k/OFgFA1aA41knCOOZBXuPNVZhb6UlWQUc422G+4whgqTc0ZljoI
+	 ayBmepJL00IOVlW0tyOsvA+vlFuK27N1BIqhwq/LaNj2ve2c9RrsRWTa0X8rrI4DCzXE9
+	 +t6D+XPjpT3OTaagxEBXkfZdBj5456iCQXbmdoiBXgGpUxvymakbkBqAbGz5NQJ9IVg==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1793967995;
+	c=relaxed/relaxed; t=1793975304;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
-	 DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-IronPort-AV:
-	 X-IronPort-AV:Received:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-ExtLoop1:
-	 X-IronPort-AV:Received:Received:Date:From:To:Subject:Message-ID:
-	 User-Agent:X-BeenThere:X-Mailman-Version:Precedence:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Errors-To;
-	bh=fpGRItHVQGPyNxC0HGjHy2FqoMkRrCLW2Me/SSVZte8=;
-	b=BhGaS1zQJviI6yRJlMmkXATpsaeRu1aSgleXTJqmML2ZmKN+0mOK2f6WWg+R67lCcq2T
-	 /IoYdUXcX2JHdeEbFec4aAy8dqU8XWnWHrT7CP8clWQ+m/TqbLJmE5QyARTEn71L6lE/U
-	 0MF1P/2UpypO/Nyofxd24oZc9CDWtBRc67mhd4VWMyVRC9eCYyYo5QEWLy1wP1xr2yMPK
-	 FMKfLAP22AExIvYP2T0yk28h0vO0miAn0TgZtVTB4AHRYy2MFIzb627kGIAHUA24YibTS
-	 1icZHR7zOUcIFFemJhBrqlIkaJr01AZuzAfwIkKHiqjHZQ1J8ryk+kvZZbrVSLw0Sng==
-ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
+	 DKIM-Signature:DKIM-Signature:DKIM-Signature:Received:X-MC-Unique:
+	 X-Mimecast-MFC-AGG-ID:Received:Received:From:To:Cc:Subject:Date:
+	 Message-ID:In-Reply-To:References:MIME-Version:X-Scanned-By:
+	 X-Mimecast-MFC-PROC-ID:X-Mimecast-Originator:
+	 Content-Transfer-Encoding:content-type:X-BeenThere:X-Mailman-Version:
+	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 List-Subscribe:Errors-To;
+	bh=+kQATwgNC1s4FQJS4ro3Fpcq0d/LcFD8Re+L/Kl0vKE=;
+	b=lfXwV2PhlFcBNO0dfRB3omYLzgRexKapjgyyq/nTyBgTXxaOtR7K4n1kSmoQxF5qg9b7
+	 H8Btxs9JUO/2RfJ7PPKo8PAzUoEv6XucPFm3Nnl7qLufZ4OVrq9t0P5LXFkR7yz11q56o
+	 0fWtZOIbpUhotnefzWDU1L6cy6KO7GE5R/CJ3k3Iso9ePsfrv358Rf97Ul0nkuSIoAo4K
+	 1JY1nSs68vQmY32ALW+ZtiRU86pnZFg70fIyZm8isfhhnFJolqR1E2lcm+gGLootsurMh
+	 SU3W6j0miOHCTMvOM2lpvDOYG9YX0SrizQAsjiMp4YkZqfbe041yXflCEjlUz3g/Sjw==
+ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1793967995;
-	bh=fpGRItHVQGPyNxC0HGjHy2FqoMkRrCLW2Me/SSVZte8=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=MqoJdYRbeRaeK9+jKdmramf3KV+hqmu1/UBSMnWws48120M0a0G+xW1G9ScpZPvZf
-	 AGkgR4NJMEZmDn3vdg9bDx18Rp7JesLEz38F4dPLjKoMFZ6PY/7Nd9MkwaQ7X/+VsG
-	 trGockPQKLmJC0SIVAGJaUVLeMIfq9vyxdTEs+OwHVnqOgyXAqU3VFVRXOLcf9P8TG
-	 Aj8NPrirWG4SMM2P7rjjLu9awZxw6yDKJ/xO/qvBFNhWPnBuCtW2ut5mXiOBYoYiyN
-	 GiO0K9iTE5DjXQYOzRYjKcdvCp0MOpQTuJ/5BVtovedrUJKX0LGXwj6weaqG/WUuH5
-	 x5v4ROaDfZZyg==
+	s=default; t=1793975304;
+	bh=+kQATwgNC1s4FQJS4ro3Fpcq0d/LcFD8Re+L/Kl0vKE=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=PFYywekMJWGbgtIsTlR6LJcU+5n7E3CoYgBmbcKuQJeMm6kP5diNE3CnMnXSs7rbK
+	 RsbH5Z/pTd/JM9A8rvQ0V1+3D13hnFZxAbqOKRywuSiRqpW6FuZT5GLG3awDu3dsqx
+	 RlKUrcQTnf/HEmi8Aak6vms+xSGTTvX6aHRC3AYAh2vbMkf8H1DIodlgzMUEM21RU+
+	 Xtjrfu1ne6OUAxJgn0IkH//XZxV5LEo4VLJDWKHfLEcOahDARxpohnfxs4a/qg6oUG
+	 4cemae3YwUXGUd/kxW0whjtcFLtDeIzSXPd+5pcwb9iR8rwm/VgJMfuoIiF1YvitPY
+	 aBSqKdRHWK6Ww==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 2FB7F4096E;
-	Fri,  6 Nov 2026 12:26:35 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 10D10608A2;
+	Fri,  6 Nov 2026 14:28:24 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 798DF362
- for <intel-wired-lan@lists.osuosl.org>; Fri,  6 Nov 2026 12:26:33 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id B45F249B
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  6 Nov 2026 14:28:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 6B072403CB
- for <intel-wired-lan@lists.osuosl.org>; Fri,  6 Nov 2026 12:26:33 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id A5D76403BE
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  6 Nov 2026 14:28:22 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id TVgoxGd7Ze5M for <intel-wired-lan@lists.osuosl.org>;
- Fri,  6 Nov 2026 12:26:32 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org 052B5403BE
+ id UWLp7Xmez_TM for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  6 Nov 2026 14:28:20 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org 8C1B0400FF
 Authentication-Results: smtp2.osuosl.org;
- arc=none smtp.remote-ip=192.198.163.10
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.10;
- helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
+ arc=none smtp.remote-ip=170.10.129.124
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=ivecera@redhat.com;
+ receiver=<UNKNOWN> 
+Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.from=redhat.com
 Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=mBSmz5oV
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 052B5403BE
- for <intel-wired-lan@lists.osuosl.org>; Fri,  6 Nov 2026 12:26:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1793967992; x=1825503992; h=date:from:to:subject:message-id;
- bh=uV57U/wPU683sRLs6uJzLa+SqI9p9aERGWmMYhCWmPE=;
- b=mBSmz5oVBDdXj6Fqe8X0SWW3FeXmSnN3K36zkhszRR4ZshjEfnffIpHT
- o6Qwy7esTjv/5HzgtYgcG/PAhKl/Y5hRgDd3AhAVXs44gXiALLFZEvbeU
- tLfJZMtGxmueiGCCFGqJGgOjUWYXVgS1mxLgvKAYIkXHvqsq8ZNdnVqFy
- zvBntUKmE07/KauiMT0I9U5UXxZKJgjRIKxAk5uAKTmpulOq1vha6L1LA
- pzDsrtDD8q+WIjTSCUtvl+aqlUC27tEckpkxjuc8Kui3HI0/bfSmOnUS7
- 00IWQNuHJI2VeU/eMsXn3e5Bzve42O99iZZ3Zo9IM7GfOftyt7ku4BN+K w==;
-X-CSE-ConnectionGUID: aJBf3F3RRzC4pEfSM9Cc0A==
-X-CSE-MsgGUID: paVIsdBjRaOSZbLeUiAfmw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11957"; a="2678138"
-X-IronPort-AV: E=Sophos;i="6.27,197,1787036400"; 
-   d="scan'208";a="2678138"
-Received: from orviesa009.jf.intel.com ([10.64.159.149])
- by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 06 Nov 2026 04:26:30 -0800
-X-CSE-ConnectionGUID: PKwiquXERtqghhe0VRfKrg==
-X-CSE-MsgGUID: Gg2ryfW8RceujhBW7LgATg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,197,1787036400"; 
-   d="scan'208";a="7380366"
-Received: from lkp-server01.sh.intel.com (HELO 0caa9d2d175c) ([10.239.97.150])
- by orviesa009.jf.intel.com with ESMTP; 06 Nov 2026 04:26:28 -0800
-Received: from kbuild by 0caa9d2d175c with local (Exim 4.98.2)
- (envelope-from <lkp@intel.com>) id 1xPJ1W-00000000pF0-25xM;
- Fri, 06 Nov 2026 12:26:26 +0000
-Date: Fri, 06 Nov 2026 20:25:30 +0800
-From: kernel test robot <lkp@intel.com>
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Subject: [tnguy-next-queue:100GbE] BUILD SUCCESS
- 0822d2fe38262e8b55c5ea55c970022bca8dd2a9
-Message-ID: <20261106202530.QX1mrA8Z-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+ dkim=pass (1024-bit key, unprotected) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=G2bDM72m; 
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=R7yva4Fu; 
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=G2bDM72m
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ by smtp2.osuosl.org (Postfix) with ESMTP id 8C1B0400FF
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  6 Nov 2026 14:28:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1793975296;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=+kQATwgNC1s4FQJS4ro3Fpcq0d/LcFD8Re+L/Kl0vKE=;
+ b=G2bDM72mWOkK/EyOYsqCy0JMWDRzP0D9PldbD85wVOIFYVU1yA6tl82SBeHr3iXOsHAyTl
+ hiDhCKkTg/31FQtCT2X08EPm5W3/N1joOto+WWiPsVqndsuBFqi/Mj2xY4zA6JWC2fKoUb
+ q1FlCRrib3aBtj5NxL4Xb2KBVMr8Lh4=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1793975297;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=+kQATwgNC1s4FQJS4ro3Fpcq0d/LcFD8Re+L/Kl0vKE=;
+ b=R7yva4FuHF7O2WCaN+E1Fo+IKjs+mc1t7vVALlNkdPtK46BcabQod0f4bYq4dyi/gLw5rG
+ A3eZkQpkF3UxyYea27u4d0cd2iUXAsuXckn27+G0WeB6cby5vCW4tI5ruU2M93ZytdXgXq
+ 2qgRa5o1XZsXzYiwYtVo2WfY5Omkmps=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1793975296;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=+kQATwgNC1s4FQJS4ro3Fpcq0d/LcFD8Re+L/Kl0vKE=;
+ b=G2bDM72mWOkK/EyOYsqCy0JMWDRzP0D9PldbD85wVOIFYVU1yA6tl82SBeHr3iXOsHAyTl
+ hiDhCKkTg/31FQtCT2X08EPm5W3/N1joOto+WWiPsVqndsuBFqi/Mj2xY4zA6JWC2fKoUb
+ q1FlCRrib3aBtj5NxL4Xb2KBVMr8Lh4=
+Received: from mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-54-Oa9wsZ1KMJCwocNAuOgpMw-1; Fri,
+ 06 Nov 2026 07:10:55 -0500
+X-MC-Unique: Oa9wsZ1KMJCwocNAuOgpMw-1
+X-Mimecast-MFC-AGG-ID: Oa9wsZ1KMJCwocNAuOgpMw_1793967053
+Received: from mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com
+ (mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.111])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
+ id C4954195607D; Fri,  6 Nov 2026 12:10:52 +0000 (UTC)
+Received: from ivecera-thinkpadp16vgen1.tpbc.csb
+ (headnet04.pony-001.prod.iad2.dc.redhat.com [10.2.32.116])
+ by mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
+ id 957B418001CA; Fri,  6 Nov 2026 12:10:46 +0000 (UTC)
+From: Ivan Vecera <ivecera@redhat.com>
+To: netdev@vger.kernel.org
+Cc: Vadim Fedorenko <vadim.fedorenko@linux.dev>,
+ Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>,
+ Jiri Pirko <jiri@resnulli.us>, Jonathan Corbet <corbet@lwn.net>,
+ Shuah Khan <skhan@linuxfoundation.org>,
+ Randy Dunlap <rdunlap@infradead.org>, Min Li <min.li@microchip.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@kernel.org>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>,
+ Richard Cochran <richardcochran@gmail.com>, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
+ Grzegorz Nitka <grzegorz.nitka@intel.com>,
+ Karol Kolacinski <karol.kolacinski@intel.com>,
+ Saeed Mahameed <saeedm@nvidia.com>, Tariq Toukan <tariqt@nvidia.com>,
+ Petr Oros <poros@redhat.com>
+Subject: [PATCH net-next 06/10] dpll: add KUnit tests for core locking
+Date: Fri,  6 Nov 2026 13:10:01 +0100
+Message-ID: <20261106121005.1327603-7-ivecera@redhat.com>
+In-Reply-To: <20261106121005.1327603-1-ivecera@redhat.com>
+References: <20261106121005.1327603-1-ivecera@redhat.com>
+X-Archived-By: <archiver.kernel.org>
+MIME-Version: 1.0
+X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.111
+X-Mimecast-MFC-PROC-ID: uMMrKJZ-CTUaa0HxiHAjUS6i_nqW5FMq3gxn391SiG8_1793967053
+X-Mimecast-Originator: redhat.com
+Content-Transfer-Encoding: 8bit
+content-type: text/plain; charset="US-ASCII"; x-default=true
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -125,364 +179,1641 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-15.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_NONE autolearn=ham autolearn_force=no version=4.0.1
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
-X-Archived-By: <archiver.kernel.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 100GbE
-branch HEAD: 0822d2fe38262e8b55c5ea55c970022bca8dd2a9  dpaa2-switch: fix port cleanup on probe errors
+Add KUnit tests using a mock driver with unrelated domains, a pin of one
+domain registered with a dpll of another and a pin of one domain under a
+MUX pin of another. They check that:
 
-elapsed time: 1329m
+- objects with the same (module, clock_id) share a refcounted domain
+- callbacks of a device run under its domain and callbacks of a pin under
+  the domain of the pin alone, whichever driver registered them
+- a callback blocked in one domain does not stop unrelated domains
+- callbacks of one domain are serialized, also across its devices
+- a stuck callback of a foreign registration stops only the domain of the
+  pin, and a stuck foreign device or domain of the pin does not stop the
+  other side
+- a pin and its parent pin of another domain do not block each other
+- registrations can connect two domains in both directions
+- a topology change waits until running requests finish
+- a request setting several attributes of a pin is atomic against other
+  requests about the pin, also when it spans two domains
+- notifications from callbacks keep their order, also when a callback
+  fails
 
-configs tested: 337
-configs skipped: 7
+Requests that can block run in kthreads, so a test can report a locking
+bug instead of blocking itself. A real deadlock cannot be undone, the
+stuck request keeps its locks, so the teardown then hangs until the run
+times out. The handlers are called directly with a hand-built message,
+so they are exported for KUnit.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Only lockdep can tell which locks a callback holds. Without it the checks
+of held locks cannot fail, so the test that checks nothing else is
+skipped. The tests of what blocks what do not depend on it.
 
-tested configs:
-alpha                              allnoconfig    gcc-16.2.0
-alpha                             allyesconfig    gcc-16.2.0
-alpha                                defconfig    gcc-16.2.0
-alpha                 randconfig-2200-20261105    gcc-9.5.0  smatch
-alpha                randconfig-r2101-20261105    gcc-8.5.0  cocci
-alpha                randconfig-r2104-20261105    gcc-8.5.0  cocci
-alpha                randconfig-r2308-20261105    gcc-10.5.0 sparse
-arc                               allmodconfig    clang-24
-arc                               allmodconfig    gcc-16.2.0
-arc                                allnoconfig    gcc-16.2.0
-arc                               allyesconfig    clang-19
-arc                               allyesconfig    clang-24
-arc                           axs103_defconfig    clang-19
-arc                                  defconfig    gcc-16.2.0
-arc                         nsim_700_defconfig    gcc-16.2.0
-arc                   randconfig-1000-20261106    gcc-8.5.0
-arc                   randconfig-1001-20261106    gcc-8.5.0
-arc                   randconfig-2000-20261105    gcc-8.5.0
-arc                   randconfig-2001-20261105    gcc-8.5.0
-arc                   randconfig-2002-20261105    gcc-8.5.0
-arc                   randconfig-2003-20261105    gcc-8.5.0
-arc                   randconfig-2004-20261105    gcc-8.5.0
-arc                   randconfig-2005-20261105    gcc-8.5.0
-arc                   randconfig-2200-20261105    gcc-8.5.0  smatch
-arc                  randconfig-r2107-20261105    gcc-11.5.0 cocci
-arc                         vdk_hs38_defconfig    clang-17
-arm                                allnoconfig    gcc-16.2.0
-arm                               allyesconfig    clang-24
-arm                         clps711x_defconfig    clang-24
-arm                                  defconfig    gcc-16.2.0
-arm                       integrator_defconfig    gcc-16.2.0
-arm                          lpc32xx_defconfig    clang-17
-arm                             mps2_defconfig    clang-24
-arm                   randconfig-1000-20261106    gcc-8.5.0
-arm                   randconfig-1001-20261106    gcc-8.5.0
-arm                   randconfig-1002-20261106    gcc-8.5.0
-arm                   randconfig-1003-20261106    gcc-8.5.0
-arm                   randconfig-2200-20261105    gcc-15.3.0 smatch
-arm                  randconfig-r2309-20261105    gcc-10.5.0 sparse
-arm                              rpc_defconfig    gcc-16.2.0
-arm                          s3c6400_defconfig    gcc-16.2.0
-arm                            sunxi_defconfig    clang-17
-arm                            sunxi_defconfig    gcc-16.2.0
-arm64                             allmodconfig    clang-24
-arm64                              allnoconfig    gcc-16.2.0
-arm64                                defconfig    gcc-16.2.0
-arm64                 randconfig-1000-20261106    clang-17
-arm64                 randconfig-1001-20261106    clang-17
-arm64                 randconfig-1002-20261106    clang-17
-arm64                 randconfig-1003-20261106    clang-17
-arm64                 randconfig-2200-20261105    clang-20   smatch
-csky                              allmodconfig    gcc-16.2.0
-csky                               allnoconfig    gcc-16.2.0
-csky                                 defconfig    gcc-16.2.0
-csky                  randconfig-1000-20261106    clang-17
-csky                  randconfig-1001-20261106    clang-17
-csky                  randconfig-2000-20261105    clang-24
-csky                  randconfig-2001-20261105    clang-24
-csky                  randconfig-2200-20261105    gcc-9.5.0  smatch
-csky                 randconfig-r2308-20261105    clang-24   sparse
-csky                 randconfig-r2311-20261105    gcc-10.5.0 sparse
-hexagon                           alldefconfig    clang-24
-hexagon                           allmodconfig    gcc-16.2.0
-hexagon                            allnoconfig    gcc-16.2.0
-hexagon                              defconfig    gcc-16.2.0
-hexagon               randconfig-1000-20261106    gcc-14.4.0
-hexagon               randconfig-1001-20261106    gcc-14.4.0
-hexagon               randconfig-2000-20261105    clang-24
-hexagon               randconfig-2001-20261105    clang-24
-hexagon               randconfig-2200-20261105    clang-17   smatch
-i386                              allmodconfig    clang-22
-i386                               allnoconfig    gcc-16.2.0
-i386                              allyesconfig    clang-22
-i386        buildonly-randconfig-1000-20261106    clang-22
-i386        buildonly-randconfig-1001-20261106    clang-22
-i386        buildonly-randconfig-1002-20261106    clang-22
-i386        buildonly-randconfig-1003-20261106    clang-22
-i386        buildonly-randconfig-1004-20261106    clang-22
-i386        buildonly-randconfig-1005-20261106    clang-22
-i386                                 defconfig    gcc-16.2.0
-i386                  randconfig-1000-20261106    gcc-14
-i386                  randconfig-1001-20261106    gcc-14
-i386                  randconfig-1002-20261106    gcc-14
-i386                  randconfig-1003-20261106    gcc-14
-i386                  randconfig-1004-20261106    gcc-14
-i386                  randconfig-1005-20261106    gcc-14
-i386                  randconfig-1006-20261106    gcc-14
-i386                  randconfig-1007-20261106    gcc-14
-i386                  randconfig-1008-20261106    gcc-14
-i386                  randconfig-1009-20261106    gcc-14
-i386                  randconfig-1010-20261106    gcc-14
-i386                  randconfig-1011-20261106    gcc-14
-i386                  randconfig-1012-20261106    gcc-14
-i386                  randconfig-1013-20261106    gcc-14
-i386                  randconfig-2100-20261105    gcc-14     cocci
-i386                  randconfig-2101-20261105    gcc-14     cocci
-i386                  randconfig-2102-20261105    gcc-14     cocci
-i386                  randconfig-2103-20261105    gcc-14     cocci
-i386                  randconfig-2104-20261105    gcc-14     cocci
-i386                  randconfig-2105-20261105    gcc-14     cocci
-i386                  randconfig-2200-20261105    clang-22   smatch
-loongarch                         allmodconfig    clang-19
-loongarch                         allmodconfig    clang-24
-loongarch                          allnoconfig    gcc-16.2.0
-loongarch                            defconfig    clang-24
-loongarch             randconfig-1000-20261106    gcc-14.4.0
-loongarch             randconfig-1001-20261106    gcc-14.4.0
-loongarch             randconfig-2000-20261105    gcc-16.2.0
-loongarch             randconfig-2001-20261105    gcc-16.2.0
-loongarch             randconfig-2200-20261105    gcc-16.2.0 smatch
-loongarch            randconfig-r2109-20261105    gcc-11.5.0 cocci
-loongarch            randconfig-r2306-20261105    clang-24   sparse
-loongarch            randconfig-r2307-20261105    gcc-10.5.0 sparse
-m68k                              allmodconfig    gcc-16.2.0
-m68k                               allnoconfig    gcc-16.2.0
-m68k                              allyesconfig    clang-24
-m68k                              allyesconfig    gcc-16.2.0
-m68k                           atari_defconfig    clang-17
-m68k                                 defconfig    clang-24
-m68k                        m5329evb_defconfig    clang-24
-m68k                       m54418evb_defconfig    clang-19
-m68k                          nettel_defconfig    gcc-16.2.0
-m68k                  randconfig-2200-20261105    gcc-8.5.0  smatch
-m68k                 randconfig-r2310-20261105    gcc-10.5.0 sparse
-m68k                 randconfig-r2311-20261105    clang-24   sparse
-microblaze                         allnoconfig    gcc-16.2.0
-microblaze                        allyesconfig    gcc-16.2.0
-microblaze                           defconfig    clang-24
-microblaze            randconfig-2200-20261105    gcc-9.5.0  smatch
-mips                              allmodconfig    gcc-16.2.0
-mips                               allnoconfig    gcc-16.2.0
-mips                              allyesconfig    gcc-16.2.0
-mips                   cavium_octeon_defconfig    gcc-16.2.0
-mips                          db1xxx_defconfig    gcc-16.2.0
-mips                           eyeq5_defconfig    clang-17
-mips                            ip28_defconfig    gcc-16.2.0
-mips                       loongson3_defconfig    gcc-16.2.0
-mips                 malta_qemu_32r6_defconfig    clang-17
-mips                     maltaup_xpa_defconfig    clang-19
-mips                  randconfig-2000-20261105    gcc-9.5.0
-mips                  randconfig-2001-20261105    gcc-9.5.0
-mips                  randconfig-2002-20261105    gcc-9.5.0
-mips                  randconfig-2200-20261105    gcc-11.5.0 smatch
-mips                 randconfig-r2111-20261105    gcc-11.5.0 cocci
-nios2                             allmodconfig    clang-20
-nios2                              allnoconfig    clang-24
-nios2                                defconfig    clang-24
-nios2                 randconfig-1000-20261106    gcc-14.4.0
-nios2                 randconfig-1001-20261106    gcc-14.4.0
-nios2                 randconfig-2000-20261105    gcc-16.2.0
-nios2                 randconfig-2001-20261105    gcc-16.2.0
-nios2                 randconfig-2200-20261105    gcc-9.5.0  smatch
-nios2                randconfig-r2102-20261105    gcc-8.5.0  cocci
-nios2                randconfig-r2108-20261105    gcc-11.5.0 cocci
-nios2                randconfig-r2110-20261105    gcc-11.5.0 cocci
-openrisc                          allmodconfig    clang-20
-openrisc                           allnoconfig    clang-24
-openrisc                    de0_nano_defconfig    clang-19
-openrisc                             defconfig    gcc-16.2.0
-openrisc                   or1klitex_defconfig    clang-24
-openrisc                   or1klitex_defconfig    gcc-16.2.0
-openrisc              randconfig-2000-20261105    gcc-9.5.0
-openrisc              randconfig-2001-20261105    gcc-9.5.0
-openrisc              randconfig-2002-20261105    gcc-9.5.0
-openrisc              randconfig-2200-20261105    gcc-16.2.0 smatch
-openrisc                  simple_smp_defconfig    gcc-16.2.0
-parisc                            allmodconfig    gcc-16.2.0
-parisc                             allnoconfig    clang-24
-parisc                            allyesconfig    clang-17
-parisc                               defconfig    gcc-16.2.0
-parisc                randconfig-1000-20261106    clang-19
-parisc                randconfig-1001-20261106    clang-19
-parisc                randconfig-2000-20261105    gcc-16.2.0
-parisc                randconfig-2001-20261105    gcc-16.2.0
-parisc                randconfig-2200-20261105    gcc-15.3.0 smatch
-parisc               randconfig-r2105-20261105    gcc-8.5.0  cocci
-parisc64                             defconfig    clang-24
-powerpc                           allmodconfig    gcc-16.2.0
-powerpc                            allnoconfig    clang-24
-powerpc                      ep8248e_defconfig    clang-17
-powerpc                      ep8248e_defconfig    clang-24
-powerpc                       ep88xc_defconfig    clang-17
-powerpc                     gamecube_defconfig    clang-19
-powerpc                      kmeter1_defconfig    gcc-16.2.0
-powerpc                       mgcoge_defconfig    clang-17
-powerpc                      mpc512x_defconfig    gcc-16.2.0
-powerpc                   mpc866_ads_defconfig    clang-17
-powerpc                   mpc885_ads_defconfig    clang-19
-powerpc                       pcm030_defconfig    gcc-16.2.0
-powerpc               randconfig-1000-20261106    clang-19
-powerpc               randconfig-1001-20261106    clang-19
-powerpc               randconfig-2000-20261105    clang-18
-powerpc               randconfig-2001-20261105    clang-18
-powerpc               randconfig-2002-20261105    clang-18
-powerpc               randconfig-2200-20261105    clang-17   smatch
-powerpc                      redwood_defconfig    gcc-16.2.0
-powerpc                     sam440ep_defconfig    gcc-16.2.0
-powerpc                      tqm8555_defconfig    clang-19
-powerpc                  xes_mpc85xx_defconfig    clang-17
-powerpc64             randconfig-1000-20261106    clang-19
-powerpc64             randconfig-1001-20261106    clang-19
-powerpc64             randconfig-2000-20261105    clang-18
-powerpc64             randconfig-2001-20261105    clang-18
-powerpc64             randconfig-2002-20261105    clang-18
-powerpc64             randconfig-2200-20261105    clang-24   smatch
-riscv                             allmodconfig    clang-24
-riscv                              allnoconfig    clang-24
-riscv                             allyesconfig    clang-24
-riscv                                defconfig    gcc-16.2.0
-riscv              nommu_k210_sdcard_defconfig    gcc-16.2.0
-riscv                 randconfig-1000-20261106    gcc-14.4.0
-riscv                 randconfig-1001-20261106    gcc-14.4.0
-riscv                 randconfig-2200-20261105    clang-24   smatch
-riscv                randconfig-r2103-20261105    gcc-8.5.0  cocci
-s390                              alldefconfig    clang-17
-s390                              allmodconfig    clang-17
-s390                               allnoconfig    clang-24
-s390                              allyesconfig    gcc-16.2.0
-s390                                 defconfig    gcc-16.2.0
-s390                  randconfig-1000-20261106    gcc-14.4.0
-s390                  randconfig-1001-20261106    gcc-14.4.0
-s390                  randconfig-2000-20261105    clang-24
-s390                  randconfig-2001-20261105    clang-24
-s390                  randconfig-2002-20261105    clang-24
-s390                  randconfig-2003-20261105    clang-24
-s390                  randconfig-2004-20261105    clang-24
-s390                  randconfig-2005-20261105    clang-24
-s390                  randconfig-2200-20261105    clang-24   smatch
-s390                 randconfig-r2306-20261105    gcc-10.5.0 sparse
-s390                 randconfig-r2307-20261105    clang-24   sparse
-s390                 randconfig-r2309-20261105    clang-24   sparse
-s390                 randconfig-r2310-20261105    clang-24   sparse
-sh                                allmodconfig    gcc-16.2.0
-sh                                 allnoconfig    clang-24
-sh                                allyesconfig    clang-17
-sh                                   defconfig    gcc-14
-sh                              espt_defconfig    gcc-16.2.0
-sh                  kfr2r09-romimage_defconfig    clang-17
-sh                             migor_defconfig    clang-24
-sh                           polaris_defconfig    gcc-16.2.0
-sh                    randconfig-1000-20261106    gcc-14.4.0
-sh                    randconfig-1001-20261106    gcc-14.4.0
-sh                    randconfig-2200-20261105    gcc-13.5.0 smatch
-sh                           rsk7201_defconfig    clang-17
-sh                         sh7757lcr_defconfig    gcc-16.2.0
-sh                              shx3_defconfig    clang-17
-sh                              shx3_defconfig    gcc-16.2.0
-sparc                              allnoconfig    clang-24
-sparc                                defconfig    gcc-16.2.0
-sparc                 randconfig-1000-20261106    gcc-15.3.0
-sparc                 randconfig-1001-20261106    gcc-15.3.0
-sparc                 randconfig-2000-20261105    clang-24
-sparc                 randconfig-2001-20261105    clang-24
-sparc                 randconfig-2200-20261105    gcc-16.2.0 smatch
-sparc                randconfig-r2106-20261105    gcc-11.5.0 cocci
-sparc64                           allmodconfig    clang-20
-sparc64                              defconfig    gcc-14
-sparc64               randconfig-1000-20261106    gcc-15.3.0
-sparc64               randconfig-1001-20261106    gcc-15.3.0
-sparc64               randconfig-2000-20261105    clang-24
-sparc64               randconfig-2001-20261105    clang-24
-sparc64               randconfig-2200-20261105    gcc-8.5.0  smatch
-sparc64              randconfig-r2100-20261105    gcc-8.5.0  cocci
-um                                alldefconfig    gcc-16.2.0
-um                                allmodconfig    clang-17
-um                                 allnoconfig    clang-24
-um                                allyesconfig    gcc-16.2.0
-um                                   defconfig    gcc-14
-um                              i386_defconfig    gcc-14
-um                    randconfig-1000-20261106    gcc-15.3.0
-um                    randconfig-1001-20261106    gcc-15.3.0
-um                    randconfig-2000-20261105    clang-24
-um                    randconfig-2001-20261105    clang-24
-um                    randconfig-2200-20261105    clang-19   smatch
-um                            x86_64_defconfig    gcc-14
-x86_64                            alldefconfig    clang-19
-x86_64                            allmodconfig    clang-22
-x86_64                             allnoconfig    clang-24
-x86_64                            allyesconfig    clang-22
-x86_64      buildonly-randconfig-1000-20261106    gcc-13
-x86_64      buildonly-randconfig-1001-20261106    gcc-13
-x86_64      buildonly-randconfig-1002-20261106    gcc-13
-x86_64      buildonly-randconfig-1003-20261106    gcc-13
-x86_64      buildonly-randconfig-1004-20261106    gcc-13
-x86_64      buildonly-randconfig-1005-20261106    gcc-13
-x86_64                               defconfig    gcc-14
-x86_64                                   kexec    clang-22
-x86_64                randconfig-1000-20261106    clang-22
-x86_64                randconfig-1001-20261106    clang-22
-x86_64                randconfig-1002-20261106    clang-22
-x86_64                randconfig-1003-20261106    clang-22
-x86_64                randconfig-1004-20261106    clang-22
-x86_64                randconfig-1005-20261106    clang-22
-x86_64                randconfig-1006-20261106    clang-22
-x86_64                randconfig-1007-20261106    clang-22
-x86_64                randconfig-1008-20261106    clang-22
-x86_64                randconfig-1009-20261106    clang-22
-x86_64                randconfig-1010-20261106    clang-22
-x86_64                randconfig-1011-20261106    clang-22
-x86_64                randconfig-1012-20261106    gcc-14
-x86_64                randconfig-1013-20261106    gcc-14
-x86_64                randconfig-1014-20261106    gcc-14
-x86_64                randconfig-1015-20261106    gcc-14
-x86_64                randconfig-1016-20261106    gcc-14
-x86_64                randconfig-1017-20261106    gcc-14
-x86_64                randconfig-2000-20261105    gcc-14
-x86_64                randconfig-2001-20261105    gcc-14
-x86_64                randconfig-2002-20261105    gcc-14
-x86_64                randconfig-2003-20261105    gcc-14
-x86_64                randconfig-2004-20261105    gcc-14
-x86_64                randconfig-2005-20261105    gcc-14
-x86_64                randconfig-2100-20261105    gcc-14     cocci
-x86_64                randconfig-2101-20261105    gcc-14     cocci
-x86_64                randconfig-2102-20261105    gcc-14     cocci
-x86_64                randconfig-2103-20261105    gcc-14     cocci
-x86_64                randconfig-2104-20261105    gcc-14     cocci
-x86_64                randconfig-2105-20261105    gcc-14     cocci
-x86_64                randconfig-2200-20261105    clang-22   smatch
-x86_64                                rhel-9.4    clang-22
-x86_64                                rhel-9.4    gcc-14
-x86_64                            rhel-9.4-bpf    gcc-14
-x86_64                           rhel-9.4-func    clang-22
-x86_64                           rhel-9.4-func    gcc-14
-x86_64                     rhel-9.4-kselftests    clang-22
-x86_64                     rhel-9.4-kselftests    gcc-14
-x86_64                          rhel-9.4-kunit    gcc-14
-x86_64                            rhel-9.4-ltp    gcc-14
-x86_64                           rhel-9.4-rust    clang-22
-xtensa                             allnoconfig    clang-24
-xtensa                            allyesconfig    clang-20
-xtensa                   nommu_kc705_defconfig    clang-24
-xtensa                randconfig-1000-20261106    gcc-15.3.0
-xtensa                randconfig-1001-20261106    gcc-15.3.0
-xtensa                randconfig-2000-20261105    clang-24
-xtensa                randconfig-2001-20261105    clang-24
-xtensa                randconfig-2200-20261105    gcc-8.5.0  smatch
-xtensa                     xip_kc705_defconfig    clang-17
+The tests do not cover what needs a netlink socket, for example the order
+of notifications against the ACK or the content of messages.
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Run them with:
+
+  tools/testing/kunit/kunit.py run --kunitconfig=drivers/dpll
+
+Signed-off-by: Ivan Vecera <ivecera@redhat.com>
+---
+ drivers/dpll/.kunitconfig      |    5 +
+ drivers/dpll/Kconfig           |   13 +
+ drivers/dpll/Makefile          |    1 +
+ drivers/dpll/dpll_core_kunit.c | 1471 ++++++++++++++++++++++++++++++++
+ drivers/dpll/dpll_netlink.c    |    7 +
+ 5 files changed, 1497 insertions(+)
+ create mode 100644 drivers/dpll/.kunitconfig
+ create mode 100644 drivers/dpll/dpll_core_kunit.c
+
+diff --git a/drivers/dpll/.kunitconfig b/drivers/dpll/.kunitconfig
+new file mode 100644
+index 00000000000000..017c9d5b593a4f
+--- /dev/null
++++ b/drivers/dpll/.kunitconfig
+@@ -0,0 +1,5 @@
++CONFIG_KUNIT=y
++CONFIG_NET=y
++CONFIG_DPLL_KUNIT_TEST=y
++CONFIG_DEBUG_KERNEL=y
++CONFIG_PROVE_LOCKING=y
+diff --git a/drivers/dpll/Kconfig b/drivers/dpll/Kconfig
+index be98969f040ab6..12bcf706a15e14 100644
+--- a/drivers/dpll/Kconfig
++++ b/drivers/dpll/Kconfig
+@@ -23,6 +23,19 @@ config DPLL_REFCNT_TRACKER
+ 
+ 	  If unsure, say N.
+ 
++config DPLL_KUNIT_TEST
++	tristate "KUnit tests for DPLL core" if !KUNIT_ALL_TESTS
++	depends on KUNIT && NET
++	select DPLL
++	default KUNIT_ALL_TESTS
++	help
++	  KUnit tests for locking in the DPLL core. They use a mock driver
++	  to check that callbacks run under the locks of their domains and
++	  that unrelated domains do not block each other. The checks of held
++	  locks need PROVE_LOCKING.
++
++	  If unsure, say N.
++
+ source "drivers/dpll/zl3073x/Kconfig"
+ 
+ endmenu
+diff --git a/drivers/dpll/Makefile b/drivers/dpll/Makefile
+index 9e7a3a3e592e81..75ee1608c76a93 100644
+--- a/drivers/dpll/Makefile
++++ b/drivers/dpll/Makefile
+@@ -8,4 +8,5 @@ dpll-y                  += dpll_core.o
+ dpll-y                  += dpll_netlink.o
+ dpll-y                  += dpll_nl.o
+ 
++obj-$(CONFIG_DPLL_KUNIT_TEST)	+= dpll_core_kunit.o
+ obj-$(CONFIG_ZL3073X)	+= zl3073x/
+diff --git a/drivers/dpll/dpll_core_kunit.c b/drivers/dpll/dpll_core_kunit.c
+new file mode 100644
+index 00000000000000..a58800eda5ff51
+--- /dev/null
++++ b/drivers/dpll/dpll_core_kunit.c
+@@ -0,0 +1,1471 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * KUnit tests for locking in the DPLL core.
++ *
++ * Each test starts with two unrelated domains:
++ *
++ * Domain A: devices A0 and A1
++ *   pin P on A0 and A1, setting its state on A0 notifies pin S
++ *   pin S on A0 and A1
++ * Domain B: device B0
++ *   pin BP on B0
++ *
++ * Tests of objects connected by a pin add these domains:
++ *
++ * Domain E: device E0, pin X on E0 (the owner), pin M (MUX) on E0
++ * Domain F: device F0, pin X from E is also registered with F0
++ * Domain G: pin C registered under pin M from E
++ *
++ * Requests that can block run in kthreads, so a test can report a locking bug
++ * instead of blocking itself. A real deadlock cannot be undone, the stuck
++ * request keeps its locks, so the teardown then hangs until the run times out.
++ */
++
++#include <kunit/test.h>
++#include <linux/completion.h>
++#include <linux/debug_locks.h>
++#include <linux/dpll.h>
++#include <linux/kthread.h>
++#include <linux/lockdep.h>
++#include <linux/notifier.h>
++#include <linux/property.h>
++#include <linux/wait.h>
++#include <net/genetlink.h>
++#include <net/netlink.h>
++
++#include "dpll_core.h"
++
++MODULE_IMPORT_NS("EXPORTED_FOR_KUNIT_TESTING");
++
++#define DT_CLOCK_ID_A		0xd0110a
++#define DT_CLOCK_ID_B		0xd0110b
++#define DT_CLOCK_ID_E		0xd0110e
++#define DT_CLOCK_ID_F		0xd0110f
++#define DT_CLOCK_ID_G		0xd01107
++
++#define DT_PIN_IDX_P		0
++#define DT_PIN_IDX_S		1
++#define DT_PIN_IDX_BP		2
++#define DT_PIN_IDX_M		3
++#define DT_PIN_IDX_X		4
++#define DT_PIN_IDX_C		5
++#define DT_PIN_IDX_Y		6
++#define DT_PIN_IDX_EXTRA	7
++
++#define DT_MAX_EVENTS		8
++#define DT_TIMEOUT		msecs_to_jiffies(5000)
++#define DT_SHORT_TIMEOUT	msecs_to_jiffies(100)
++
++struct dt_ctx;
++
++/* Counters and blocking of the callbacks of one driver instance */
++struct dt_dom {
++	struct dt_ctx *ctx;
++	struct completion entered;
++	atomic_t cur;
++	atomic_t peak;
++	bool block;
++};
++
++struct dt_dev {
++	struct dt_dom *dom;
++	struct dpll_device *dpll;
++	dpll_tracker tracker;
++	struct dt_dev *notify;
++	enum dpll_mode mode;
++	bool block;
++};
++
++struct dt_pin {
++	struct dpll_pin *pin;
++	dpll_tracker tracker;
++};
++
++struct dt_reg {
++	struct dt_dom *dom;
++	struct dt_pin *pin;
++	struct dt_dev *dev;
++	struct dt_pin *parent;
++	struct dt_pin *notify;
++	struct dpll_domain *forbid;
++	enum dpll_pin_state state;
++	enum dpll_pin_direction direction;
++	atomic_t freq_gets;
++	u32 prio;
++	bool block_prio_set;
++};
++
++struct dt_ctx {
++	struct kunit *test;
++	struct dt_dom dom_a, dom_b, dom_e, dom_f, dom_g;
++	struct dt_dev a0, a1, b0, e0, f0;
++	struct dt_pin p, s, bp, x, y, m, c, extra;
++	struct dt_reg reg_p_a0, reg_p_a1, reg_s_a0, reg_s_a1, reg_bp_b0;
++	struct dt_reg reg_x_e0, reg_x_f0, reg_y_e0, reg_y_f0, reg_m_e0, reg_c_m;
++	struct dt_reg *atomic_regs[2];
++	struct notifier_block nb;
++	wait_queue_head_t wq;
++	atomic_t cur_total;
++	atomic_t peak_total;
++	atomic_t wrong_lock;
++	atomic_t bad_ntf;
++	atomic_t torn;
++	struct task_struct *set_task;
++	void *events[DT_MAX_EVENTS];
++	int num_events;
++	bool record;
++	bool fail_after_ntf;
++	bool debug_locks_at_start;
++};
++
++struct dt_req {
++	struct dt_ctx *ctx;
++	int (*fn)(void *arg);
++	void *arg;
++	int ret;
++	struct completion done;
++	bool finished;
++};
++
++/* A nested attribute of a pin set request */
++struct dt_nest {
++	int type;
++	u32 parent_id;
++	int attr;
++	u32 val;
++};
++
++/* Allocated with kunit_kzalloc(), a failed assertion must not free them */
++struct dt_pin_set_args {
++	struct dt_ctx *ctx;
++	struct dpll_pin *pin;
++	struct dt_nest nests[2];
++	int num;
++};
++
++struct dt_mode_set_args {
++	struct dpll_device *dpll;
++	enum dpll_mode mode;
++};
++
++/*
++ * The lock may be held by another task, so mutex_is_locked() is not enough.
++ * Without lockdep no check of a held lock can fail.
++ */
++static bool dt_held(struct dpll_domain *domain)
++{
++#ifdef CONFIG_LOCKDEP
++	return lockdep_is_held(&domain->lock) != 0;
++#else
++	return true;
++#endif
++}
++
++static bool dt_surely_held(struct dpll_domain *domain)
++{
++#ifdef CONFIG_LOCKDEP
++	return lockdep_is_held(&domain->lock) > 0;
++#else
++	return false;
++#endif
++}
++
++static void dt_peak(atomic_t *peak, int val)
++{
++	int old = atomic_read(peak);
++
++	while (val > old && !atomic_try_cmpxchg(peak, &old, val))
++		;
++}
++
++static void dt_block(struct dt_dom *dom, bool *block)
++{
++	complete(&dom->entered);
++	wait_event(dom->ctx->wq, !READ_ONCE(*block));
++}
++
++static void dt_enter(struct dt_dom *dom)
++{
++	struct dt_ctx *ctx = dom->ctx;
++
++	dt_peak(&ctx->peak_total, atomic_inc_return(&ctx->cur_total));
++	dt_peak(&dom->peak, atomic_inc_return(&dom->cur));
++
++	if (READ_ONCE(dom->block))
++		dt_block(dom, &dom->block);
++}
++
++static void dt_leave(struct dt_dom *dom)
++{
++	atomic_dec(&dom->cur);
++	atomic_dec(&dom->ctx->cur_total);
++}
++
++static void dt_dev_enter(struct dt_dev *dev, const struct dpll_device *dpll)
++{
++	if (!dt_held(dpll->domain))
++		atomic_inc(&dev->dom->ctx->wrong_lock);
++	dt_enter(dev->dom);
++	if (READ_ONCE(dev->block))
++		dt_block(dev->dom, &dev->block);
++}
++
++/* A callback of a pin runs under the domain of the pin alone */
++static void dt_pin_enter(struct dt_reg *reg, const struct dpll_pin *pin)
++{
++	struct dt_ctx *ctx = reg->dom->ctx;
++
++	if (!dt_held(pin->domain) ||
++	    (reg->forbid && dt_surely_held(reg->forbid)))
++		atomic_inc(&ctx->wrong_lock);
++	dt_enter(reg->dom);
++}
++
++static int dt_mode_get(const struct dpll_device *dpll, void *priv,
++		       enum dpll_mode *mode, struct netlink_ext_ack *extack)
++{
++	struct dt_dev *dev = priv;
++
++	dt_dev_enter(dev, dpll);
++	*mode = dev->mode;
++	dt_leave(dev->dom);
++
++	return 0;
++}
++
++static int dt_mode_set(const struct dpll_device *dpll, void *priv,
++		       enum dpll_mode mode, struct netlink_ext_ack *extack)
++{
++	struct dt_dev *dev = priv;
++
++	dt_dev_enter(dev, dpll);
++	dev->mode = mode;
++	dt_leave(dev->dom);
++
++	if (dev->notify)
++		__dpll_device_change_ntf(dev->notify->dpll);
++
++	return 0;
++}
++
++static int dt_supported_modes_get(const struct dpll_device *dpll, void *priv,
++				  unsigned long *modes,
++				  struct netlink_ext_ack *extack)
++{
++	struct dt_dev *dev = priv;
++
++	dt_dev_enter(dev, dpll);
++	__set_bit(DPLL_MODE_AUTOMATIC, modes);
++	__set_bit(DPLL_MODE_MANUAL, modes);
++	dt_leave(dev->dom);
++
++	return 0;
++}
++
++static int dt_lock_status_get(const struct dpll_device *dpll, void *priv,
++			      enum dpll_lock_status *status,
++			      enum dpll_lock_status_error *status_error,
++			      struct netlink_ext_ack *extack)
++{
++	struct dt_dev *dev = priv;
++
++	dt_dev_enter(dev, dpll);
++	*status = DPLL_LOCK_STATUS_LOCKED;
++	dt_leave(dev->dom);
++
++	return 0;
++}
++
++static const struct dpll_device_ops dt_dev_ops = {
++	.mode_get = dt_mode_get,
++	.mode_set = dt_mode_set,
++	.supported_modes_get = dt_supported_modes_get,
++	.lock_status_get = dt_lock_status_get,
++};
++
++static int dt_frequency_get(const struct dpll_pin *pin, void *pin_priv,
++			    const struct dpll_device *dpll, void *dpll_priv,
++			    u64 *frequency, struct netlink_ext_ack *extack)
++{
++	struct dt_reg *reg = pin_priv;
++
++	dt_pin_enter(reg, pin);
++	atomic_inc(&reg->freq_gets);
++	*frequency = 1;
++	dt_leave(reg->dom);
++
++	return 0;
++}
++
++static int dt_state_on_dpll_get(const struct dpll_pin *pin, void *pin_priv,
++				const struct dpll_device *dpll, void *dpll_priv,
++				enum dpll_pin_state *state,
++				struct netlink_ext_ack *extack)
++{
++	struct dt_reg *reg = pin_priv;
++
++	dt_pin_enter(reg, pin);
++	*state = reg->state;
++	dt_leave(reg->dom);
++
++	return 0;
++}
++
++static int dt_state_on_dpll_set(const struct dpll_pin *pin, void *pin_priv,
++				const struct dpll_device *dpll, void *dpll_priv,
++				const enum dpll_pin_state state,
++				struct netlink_ext_ack *extack)
++{
++	struct dt_reg *reg = pin_priv;
++
++	dt_pin_enter(reg, pin);
++	reg->state = state;
++	dt_leave(reg->dom);
++
++	if (reg->notify)
++		__dpll_pin_change_ntf(reg->notify->pin);
++
++	return reg->dom->ctx->fail_after_ntf ? -EIO : 0;
++}
++
++static int dt_state_on_pin_get(const struct dpll_pin *pin, void *pin_priv,
++			       const struct dpll_pin *parent_pin,
++			       void *parent_pin_priv,
++			       enum dpll_pin_state *state,
++			       struct netlink_ext_ack *extack)
++{
++	struct dt_reg *reg = pin_priv;
++
++	dt_pin_enter(reg, pin);
++	*state = reg->state;
++	dt_leave(reg->dom);
++
++	return 0;
++}
++
++static int dt_state_on_pin_set(const struct dpll_pin *pin, void *pin_priv,
++			       const struct dpll_pin *parent_pin,
++			       void *parent_pin_priv,
++			       const enum dpll_pin_state state,
++			       struct netlink_ext_ack *extack)
++{
++	struct dt_reg *reg = pin_priv;
++
++	dt_pin_enter(reg, pin);
++	reg->state = state;
++	dt_leave(reg->dom);
++
++	return 0;
++}
++
++static int dt_prio_get(const struct dpll_pin *pin, void *pin_priv,
++		       const struct dpll_device *dpll, void *dpll_priv,
++		       u32 *prio, struct netlink_ext_ack *extack)
++{
++	struct dt_reg *reg = pin_priv;
++	struct dt_ctx *ctx = reg->dom->ctx;
++
++	dt_pin_enter(reg, pin);
++	/* Only the request doing the set may see it half done */
++	if (READ_ONCE(ctx->set_task) && current != ctx->set_task &&
++	    ctx->atomic_regs[0]->prio != ctx->atomic_regs[1]->prio)
++		atomic_inc(&ctx->torn);
++	*prio = reg->prio;
++	dt_leave(reg->dom);
++
++	return 0;
++}
++
++static int dt_prio_set(const struct dpll_pin *pin, void *pin_priv,
++		       const struct dpll_device *dpll, void *dpll_priv,
++		       const u32 prio, struct netlink_ext_ack *extack)
++{
++	struct dt_reg *reg = pin_priv;
++
++	dt_pin_enter(reg, pin);
++	if (READ_ONCE(reg->block_prio_set))
++		dt_block(reg->dom, &reg->block_prio_set);
++	reg->prio = prio;
++	dt_leave(reg->dom);
++
++	return 0;
++}
++
++static int dt_direction_get(const struct dpll_pin *pin, void *pin_priv,
++			    const struct dpll_device *dpll, void *dpll_priv,
++			    enum dpll_pin_direction *direction,
++			    struct netlink_ext_ack *extack)
++{
++	struct dt_reg *reg = pin_priv;
++
++	dt_pin_enter(reg, pin);
++	*direction = reg->direction;
++	dt_leave(reg->dom);
++
++	return 0;
++}
++
++static int dt_direction_set(const struct dpll_pin *pin, void *pin_priv,
++			    const struct dpll_device *dpll, void *dpll_priv,
++			    const enum dpll_pin_direction direction,
++			    struct netlink_ext_ack *extack)
++{
++	struct dt_reg *reg = pin_priv;
++
++	dt_pin_enter(reg, pin);
++	reg->direction = direction;
++	dt_leave(reg->dom);
++
++	return 0;
++}
++
++static int dt_ref_sync_get(const struct dpll_pin *pin, void *pin_priv,
++			   const struct dpll_pin *ref_sync_pin,
++			   void *ref_sync_pin_priv, enum dpll_pin_state *state,
++			   struct netlink_ext_ack *extack)
++{
++	struct dt_reg *reg = pin_priv;
++
++	dt_pin_enter(reg, pin);
++	*state = DPLL_PIN_STATE_DISCONNECTED;
++	dt_leave(reg->dom);
++
++	return 0;
++}
++
++static const struct dpll_pin_ops dt_pin_ops = {
++	.frequency_get = dt_frequency_get,
++	.state_on_dpll_get = dt_state_on_dpll_get,
++	.state_on_dpll_set = dt_state_on_dpll_set,
++	.state_on_pin_get = dt_state_on_pin_get,
++	.state_on_pin_set = dt_state_on_pin_set,
++	.prio_get = dt_prio_get,
++	.prio_set = dt_prio_set,
++	.direction_get = dt_direction_get,
++	.direction_set = dt_direction_set,
++	.ref_sync_get = dt_ref_sync_get,
++};
++
++static const struct dpll_pin_properties dt_prop = {
++	.type = DPLL_PIN_TYPE_EXT,
++	.capabilities = DPLL_PIN_CAPABILITIES_STATE_CAN_CHANGE |
++			DPLL_PIN_CAPABILITIES_PRIORITY_CAN_CHANGE |
++			DPLL_PIN_CAPABILITIES_DIRECTION_CAN_CHANGE,
++};
++
++static const struct dpll_pin_properties dt_prop_mux = {
++	.type = DPLL_PIN_TYPE_MUX,
++	.capabilities = DPLL_PIN_CAPABILITIES_STATE_CAN_CHANGE,
++};
++
++/* Other dpll drivers in the system can send notifications at any time */
++static bool dt_own_clock_id(u64 clock_id)
++{
++	switch (clock_id) {
++	case DT_CLOCK_ID_A:
++	case DT_CLOCK_ID_B:
++	case DT_CLOCK_ID_E:
++	case DT_CLOCK_ID_F:
++	case DT_CLOCK_ID_G:
++		return true;
++	default:
++		return false;
++	}
++}
++
++static int dt_notifier(struct notifier_block *nb, unsigned long action,
++		       void *data)
++{
++	struct dt_ctx *ctx = container_of(nb, struct dt_ctx, nb);
++	struct dpll_device_notifier_info *dev_info = data;
++	struct dpll_pin_notifier_info *pin_info = data;
++	struct dpll_domain *domain;
++	u64 clock_id;
++	void *obj;
++
++	switch (action) {
++	case DPLL_DEVICE_CHANGED:
++		clock_id = dev_info->clock_id;
++		obj = dev_info->dpll;
++		domain = dev_info->dpll->domain;
++		break;
++	case DPLL_PIN_CHANGED:
++		clock_id = pin_info->clock_id;
++		obj = pin_info->pin;
++		domain = pin_info->pin->domain;
++		break;
++	default:
++		return NOTIFY_DONE;
++	}
++
++	if (!dt_own_clock_id(clock_id) || !ctx->record)
++		return NOTIFY_DONE;
++
++	if (!dt_held(domain))
++		atomic_inc(&ctx->bad_ntf);
++	if (ctx->num_events < DT_MAX_EVENTS)
++		ctx->events[ctx->num_events] = obj;
++	ctx->num_events++;
++
++	return NOTIFY_OK;
++}
++
++static void dt_final_check(void *data)
++{
++	struct dt_ctx *ctx = data;
++
++	KUNIT_EXPECT_EQ(ctx->test, atomic_read(&ctx->wrong_lock), 0);
++	if (ctx->debug_locks_at_start)
++		KUNIT_EXPECT_TRUE(ctx->test, debug_locks);
++}
++
++static void dt_dev_release(void *data)
++{
++	struct dt_dev *dev = data;
++
++	dpll_device_unregister(dev->dpll, &dt_dev_ops, dev);
++	dpll_device_put(dev->dpll, &dev->tracker);
++}
++
++static void dt_dev_add(struct kunit *test, struct dt_dev *dev,
++		       struct dt_dom *dom, u64 clock_id, u32 idx,
++		       enum dpll_type type)
++{
++	int ret;
++
++	dev->dom = dom;
++	dev->mode = DPLL_MODE_AUTOMATIC;
++	dev->dpll = dpll_device_get(clock_id, idx, THIS_MODULE, &dev->tracker);
++	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, dev->dpll);
++
++	ret = dpll_device_register(dev->dpll, type, &dt_dev_ops, dev);
++	if (ret)
++		dpll_device_put(dev->dpll, &dev->tracker);
++	KUNIT_ASSERT_EQ(test, ret, 0);
++	KUNIT_ASSERT_EQ(test, kunit_add_action_or_reset(test, dt_dev_release,
++							dev), 0);
++}
++
++static void dt_pin_release(void *data)
++{
++	struct dt_pin *pin = data;
++
++	if (!IS_ERR_OR_NULL(pin->pin))
++		dpll_pin_put(pin->pin, &pin->tracker);
++}
++
++static void dt_pin_add(struct kunit *test, struct dt_pin *pin, u64 clock_id,
++		       u32 idx, const struct dpll_pin_properties *prop)
++{
++	pin->pin = dpll_pin_get(clock_id, idx, THIS_MODULE, prop,
++				&pin->tracker);
++	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, pin->pin);
++	KUNIT_ASSERT_EQ(test, kunit_add_action_or_reset(test, dt_pin_release,
++							pin), 0);
++}
++
++static void dt_reg_release(void *data)
++{
++	struct dt_reg *reg = data;
++
++	if (reg->parent)
++		dpll_pin_on_pin_unregister(reg->parent->pin, reg->pin->pin,
++					   &dt_pin_ops, reg);
++	else
++		dpll_pin_unregister(reg->dev->dpll, reg->pin->pin, &dt_pin_ops,
++				    reg);
++}
++
++static void dt_reg_add(struct kunit *test, struct dt_reg *reg,
++		       struct dt_dom *dom, struct dt_pin *pin,
++		       struct dt_dev *dev, struct dt_pin *parent)
++{
++	int ret;
++
++	reg->dom = dom;
++	reg->pin = pin;
++	reg->dev = dev;
++	reg->parent = parent;
++	reg->state = DPLL_PIN_STATE_SELECTABLE;
++	reg->direction = DPLL_PIN_DIRECTION_INPUT;
++
++	if (parent)
++		ret = dpll_pin_on_pin_register(parent->pin, pin->pin,
++					       &dt_pin_ops, reg);
++	else
++		ret = dpll_pin_register(dev->dpll, pin->pin, &dt_pin_ops, reg);
++	KUNIT_ASSERT_EQ(test, ret, 0);
++	KUNIT_ASSERT_EQ(test, kunit_add_action_or_reset(test, dt_reg_release,
++							reg), 0);
++}
++
++static void dt_fwnode_release(void *data)
++{
++	fwnode_remove_software_node(data);
++}
++
++/* Creates a pin with a fwnode so that it can be registered with another dpll */
++static void dt_fwnode_pin_add(struct kunit *test, struct dt_pin *pin,
++			      u64 clock_id, u32 idx)
++{
++	struct fwnode_handle *fwnode;
++
++	fwnode = fwnode_create_software_node(NULL, NULL);
++	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, fwnode);
++	KUNIT_ASSERT_EQ(test, kunit_add_action_or_reset(test, dt_fwnode_release,
++							fwnode), 0);
++	dt_pin_add(test, pin, clock_id, idx, &dt_prop);
++	dpll_pin_fwnode_set(pin->pin, fwnode);
++}
++
++/* Builds domains E and F connected by pin X */
++static void dt_foreign_pin_add(struct kunit *test)
++{
++	struct dt_ctx *ctx = test->priv;
++
++	dt_dev_add(test, &ctx->e0, &ctx->dom_e, DT_CLOCK_ID_E, 0,
++		   DPLL_TYPE_PPS);
++	dt_dev_add(test, &ctx->f0, &ctx->dom_f, DT_CLOCK_ID_F, 0,
++		   DPLL_TYPE_PPS);
++	dt_fwnode_pin_add(test, &ctx->x, DT_CLOCK_ID_E, DT_PIN_IDX_X);
++	dt_reg_add(test, &ctx->reg_x_e0, &ctx->dom_e, &ctx->x, &ctx->e0, NULL);
++	dt_reg_add(test, &ctx->reg_x_f0, &ctx->dom_f, &ctx->x, &ctx->f0, NULL);
++
++	/* No callback of the pin takes the lock of the other domain */
++	ctx->reg_x_e0.forbid = ctx->f0.dpll->domain;
++	ctx->reg_x_f0.forbid = ctx->f0.dpll->domain;
++}
++
++/*
++ * Builds domains E and G connected by pin C under pin M. The pins are added
++ * first, so that domain G is freed only after the registrations are gone.
++ */
++static void dt_on_pin_add(struct kunit *test)
++{
++	struct dt_ctx *ctx = test->priv;
++
++	dt_dev_add(test, &ctx->e0, &ctx->dom_e, DT_CLOCK_ID_E, 0,
++		   DPLL_TYPE_PPS);
++	dt_pin_add(test, &ctx->m, DT_CLOCK_ID_E, DT_PIN_IDX_M, &dt_prop_mux);
++	dt_pin_add(test, &ctx->c, DT_CLOCK_ID_G, DT_PIN_IDX_C, &dt_prop);
++	dt_reg_add(test, &ctx->reg_m_e0, &ctx->dom_e, &ctx->m, &ctx->e0, NULL);
++	dt_reg_add(test, &ctx->reg_c_m, &ctx->dom_g, &ctx->c, NULL, &ctx->m);
++
++	ctx->reg_c_m.forbid = ctx->e0.dpll->domain;
++	ctx->reg_m_e0.forbid = ctx->c.pin->domain;
++}
++
++static void dt_notifier_release(void *data)
++{
++	struct dt_ctx *ctx = data;
++
++	unregister_dpll_notifier(&ctx->nb);
++}
++
++static void dt_dom_init(struct dt_dom *dom, struct dt_ctx *ctx)
++{
++	dom->ctx = ctx;
++	init_completion(&dom->entered);
++}
++
++static int dt_init(struct kunit *test)
++{
++	struct dt_ctx *ctx;
++
++	ctx = kunit_kzalloc(test, sizeof(*ctx), GFP_KERNEL);
++	KUNIT_ASSERT_NOT_NULL(test, ctx);
++	test->priv = ctx;
++
++	ctx->test = test;
++	dt_dom_init(&ctx->dom_a, ctx);
++	dt_dom_init(&ctx->dom_b, ctx);
++	dt_dom_init(&ctx->dom_e, ctx);
++	dt_dom_init(&ctx->dom_f, ctx);
++	dt_dom_init(&ctx->dom_g, ctx);
++	init_waitqueue_head(&ctx->wq);
++	ctx->debug_locks_at_start = debug_locks;
++
++	/* Runs last, after the deletion of all objects */
++	KUNIT_ASSERT_EQ(test, kunit_add_action_or_reset(test, dt_final_check,
++							ctx), 0);
++
++	dt_dev_add(test, &ctx->a0, &ctx->dom_a, DT_CLOCK_ID_A, 0,
++		   DPLL_TYPE_PPS);
++	dt_dev_add(test, &ctx->a1, &ctx->dom_a, DT_CLOCK_ID_A, 1,
++		   DPLL_TYPE_EEC);
++	dt_dev_add(test, &ctx->b0, &ctx->dom_b, DT_CLOCK_ID_B, 0,
++		   DPLL_TYPE_PPS);
++	ctx->a0.notify = &ctx->a1;
++
++	dt_pin_add(test, &ctx->p, DT_CLOCK_ID_A, DT_PIN_IDX_P, &dt_prop);
++	dt_reg_add(test, &ctx->reg_p_a0, &ctx->dom_a, &ctx->p, &ctx->a0, NULL);
++	dt_reg_add(test, &ctx->reg_p_a1, &ctx->dom_a, &ctx->p, &ctx->a1, NULL);
++	ctx->reg_p_a0.notify = &ctx->s;
++
++	dt_pin_add(test, &ctx->s, DT_CLOCK_ID_A, DT_PIN_IDX_S, &dt_prop);
++	dt_reg_add(test, &ctx->reg_s_a0, &ctx->dom_a, &ctx->s, &ctx->a0, NULL);
++	dt_reg_add(test, &ctx->reg_s_a1, &ctx->dom_a, &ctx->s, &ctx->a1, NULL);
++
++	dt_pin_add(test, &ctx->bp, DT_CLOCK_ID_B, DT_PIN_IDX_BP, &dt_prop);
++	dt_reg_add(test, &ctx->reg_bp_b0, &ctx->dom_b, &ctx->bp, &ctx->b0,
++		   NULL);
++
++	ctx->nb.notifier_call = dt_notifier;
++	KUNIT_ASSERT_EQ(test, register_dpll_notifier(&ctx->nb), 0);
++	KUNIT_ASSERT_EQ(test, kunit_add_action_or_reset(test,
++							dt_notifier_release,
++							ctx), 0);
++
++	atomic_set(&ctx->peak_total, 0);
++	atomic_set(&ctx->dom_a.peak, 0);
++	atomic_set(&ctx->dom_b.peak, 0);
++
++	return 0;
++}
++
++static int dt_device_ntf(void *arg)
++{
++	struct dt_dev *dev = arg;
++
++	return dpll_device_change_ntf(dev->dpll);
++}
++
++static int dt_pin_ntf(void *arg)
++{
++	struct dt_pin *pin = arg;
++
++	return dpll_pin_change_ntf(pin->pin);
++}
++
++static int dt_extra_pin_get(void *arg)
++{
++	struct dt_pin *pin = arg;
++
++	pin->pin = dpll_pin_get(DT_CLOCK_ID_B, DT_PIN_IDX_EXTRA, THIS_MODULE,
++				&dt_prop, &pin->tracker);
++
++	return PTR_ERR_OR_ZERO(pin->pin);
++}
++
++static void dt_unblock(struct dt_ctx *ctx)
++{
++	WRITE_ONCE(ctx->dom_a.block, false);
++	WRITE_ONCE(ctx->dom_b.block, false);
++	WRITE_ONCE(ctx->dom_e.block, false);
++	WRITE_ONCE(ctx->dom_f.block, false);
++	WRITE_ONCE(ctx->dom_g.block, false);
++	WRITE_ONCE(ctx->f0.block, false);
++	WRITE_ONCE(ctx->reg_p_a0.block_prio_set, false);
++	WRITE_ONCE(ctx->reg_x_e0.block_prio_set, false);
++	WRITE_ONCE(ctx->reg_x_f0.block_prio_set, false);
++	wake_up_all(&ctx->wq);
++}
++
++static int dt_req_thread(void *data)
++{
++	struct dt_req *req = data;
++
++	req->ret = req->fn(req->arg);
++	kthread_complete_and_exit(&req->done, 0);
++}
++
++/* Runs before the objects used by the request are released */
++static void dt_req_release(void *data)
++{
++	struct dt_req *req = data;
++
++	dt_unblock(req->ctx);
++	if (!req->finished)
++		wait_for_completion(&req->done);
++}
++
++static struct dt_req *dt_req_start(struct kunit *test, int (*fn)(void *arg),
++				   void *arg)
++{
++	struct task_struct *task;
++	struct dt_req *req;
++
++	req = kunit_kzalloc(test, sizeof(*req), GFP_KERNEL);
++	KUNIT_ASSERT_NOT_NULL(test, req);
++
++	req->ctx = test->priv;
++	req->fn = fn;
++	req->arg = arg;
++	init_completion(&req->done);
++
++	task = kthread_run(dt_req_thread, req, "dpll-test");
++	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, task);
++	KUNIT_ASSERT_EQ(test, kunit_add_action_or_reset(test, dt_req_release,
++							req), 0);
++
++	return req;
++}
++
++/*
++ * Consumes the completion, so it must not be waited for again. Assert it before
++ * reading what the request wrote.
++ */
++static bool dt_done(struct dt_req *req, unsigned long timeout)
++{
++	if (!req->finished && wait_for_completion_timeout(&req->done, timeout))
++		req->finished = true;
++
++	return req->finished;
++}
++
++/* Blocks a request of @dom in a callback, which holds the domain lock */
++static struct dt_req *dt_block_in(struct kunit *test, struct dt_dom *dom,
++				  int (*fn)(void *arg), void *arg)
++{
++	struct dt_req *req;
++
++	WRITE_ONCE(dom->block, true);
++	req = dt_req_start(test, fn, arg);
++	KUNIT_ASSERT_TRUE(test, wait_for_completion_timeout(&dom->entered,
++							    DT_TIMEOUT));
++
++	return req;
++}
++
++/* Build a set request and pass it to the handlers genetlink would call */
++static int dt_pin_set_fn(void *arg)
++{
++	struct dt_pin_set_args *args = arg;
++	struct nlattr *attrs[DPLL_A_PIN_MAX + 1] = {};
++	struct genl_info info = {};
++	struct nlmsghdr *nlh;
++	struct sk_buff *skb;
++	struct nlattr *nest;
++	int i, ret;
++
++	if (args->ctx)
++		WRITE_ONCE(args->ctx->set_task, current);
++
++	skb = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_KERNEL);
++	if (!skb)
++		return -ENOMEM;
++	ret = -EMSGSIZE;
++	nlh = nlmsg_put(skb, 0, 0, NLMSG_MIN_TYPE, GENL_HDRLEN, 0);
++	if (!nlh || nla_put_u32(skb, DPLL_A_PIN_ID, args->pin->id))
++		goto out;
++	for (i = 0; i < args->num; i++) {
++		const struct dt_nest *n = &args->nests[i];
++
++		nest = nla_nest_start(skb, n->type);
++		if (!nest ||
++		    nla_put_u32(skb, DPLL_A_PIN_PARENT_ID, n->parent_id) ||
++		    nla_put_u32(skb, n->attr, n->val))
++			goto out;
++		nla_nest_end(skb, nest);
++	}
++	nlmsg_end(skb, nlh);
++
++	info.genlhdr = nlmsg_data(nlh);
++	info.attrs = attrs;
++	attrs[DPLL_A_PIN_ID] = nla_find(genlmsg_data(info.genlhdr),
++					genlmsg_len(info.genlhdr),
++					DPLL_A_PIN_ID);
++
++	ret = dpll_pin_pre_doit(NULL, skb, &info);
++	if (!ret) {
++		ret = dpll_nl_pin_set_doit(skb, &info);
++		dpll_pin_post_doit(NULL, skb, &info);
++	}
++out:
++	nlmsg_free(skb);
++
++	return ret;
++}
++
++static int dt_mode_set_fn(void *arg)
++{
++	struct dt_mode_set_args *args = arg;
++	struct nlattr *attrs[DPLL_A_MAX + 1] = {};
++	struct genl_info info = {};
++	struct nlmsghdr *nlh;
++	struct sk_buff *skb;
++	int ret;
++
++	skb = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_KERNEL);
++	if (!skb)
++		return -ENOMEM;
++	ret = -EMSGSIZE;
++	nlh = nlmsg_put(skb, 0, 0, NLMSG_MIN_TYPE, GENL_HDRLEN, 0);
++	if (!nlh || nla_put_u32(skb, DPLL_A_ID, args->dpll->id) ||
++	    nla_put_u32(skb, DPLL_A_MODE, args->mode))
++		goto out;
++	nlmsg_end(skb, nlh);
++
++	info.genlhdr = nlmsg_data(nlh);
++	info.attrs = attrs;
++	attrs[DPLL_A_ID] = nla_find(genlmsg_data(info.genlhdr),
++				    genlmsg_len(info.genlhdr), DPLL_A_ID);
++
++	ret = dpll_pre_doit(NULL, skb, &info);
++	if (!ret) {
++		ret = dpll_nl_device_set_doit(skb, &info);
++		dpll_post_doit(NULL, skb, &info);
++	}
++out:
++	nlmsg_free(skb);
++
++	return ret;
++}
++
++/* Runs a request that should not block in a kthread and returns its result */
++static int dt_run(struct kunit *test, int (*fn)(void *arg), void *arg)
++{
++	struct dt_req *req = dt_req_start(test, fn, arg);
++
++	KUNIT_ASSERT_TRUE(test, dt_done(req, DT_TIMEOUT));
++
++	return req->ret;
++}
++
++static struct dt_pin_set_args *dt_pin_set_args_alloc(struct kunit *test,
++						     struct dpll_pin *pin,
++						     int num)
++{
++	struct dt_pin_set_args *args;
++
++	args = kunit_kzalloc(test, sizeof(*args), GFP_KERNEL);
++	KUNIT_ASSERT_NOT_NULL(test, args);
++	args->pin = pin;
++	args->num = num;
++
++	return args;
++}
++
++static struct dt_pin_set_args *dt_pin_set_args_one(struct kunit *test,
++						   struct dpll_pin *pin,
++						   int type, u32 parent_id,
++						   int attr, u32 val)
++{
++	struct dt_pin_set_args *args = dt_pin_set_args_alloc(test, pin, 1);
++
++	args->nests[0].type = type;
++	args->nests[0].parent_id = parent_id;
++	args->nests[0].attr = attr;
++	args->nests[0].val = val;
++
++	return args;
++}
++
++static int dt_pin_set_one(struct kunit *test, struct dpll_pin *pin, int type,
++			  u32 parent_id, int attr, u32 val)
++{
++	return dt_run(test, dt_pin_set_fn,
++		      dt_pin_set_args_one(test, pin, type, parent_id, attr,
++					  val));
++}
++
++static void dt_expect_events(struct kunit *test, void * const *expected,
++			     int num)
++{
++	struct dt_ctx *ctx = test->priv;
++	int i;
++
++	KUNIT_ASSERT_EQ(test, ctx->num_events, num);
++	for (i = 0; i < num; i++)
++		KUNIT_EXPECT_PTR_EQ(test, ctx->events[i], expected[i]);
++	KUNIT_EXPECT_EQ(test, atomic_read(&ctx->bad_ntf), 0);
++}
++
++/* Objects with the same (module, clock_id) share a refcounted domain */
++static void dt_test_domain_sharing(struct kunit *test)
++{
++	struct dt_ctx *ctx = test->priv;
++	struct dpll_domain *a = ctx->a0.dpll->domain;
++	struct dpll_domain *b = ctx->b0.dpll->domain;
++
++	KUNIT_EXPECT_PTR_EQ(test, ctx->a1.dpll->domain, a);
++	KUNIT_EXPECT_PTR_EQ(test, ctx->p.pin->domain, a);
++	KUNIT_EXPECT_PTR_EQ(test, ctx->bp.pin->domain, b);
++	KUNIT_EXPECT_PTR_NE(test, a, b);
++
++	KUNIT_EXPECT_EQ(test, refcount_read(&a->refcount), 4);
++	KUNIT_EXPECT_EQ(test, refcount_read(&b->refcount), 2);
++
++	KUNIT_ASSERT_EQ(test, dt_extra_pin_get(&ctx->extra), 0);
++	KUNIT_EXPECT_PTR_EQ(test, ctx->extra.pin->domain, b);
++	KUNIT_EXPECT_EQ(test, refcount_read(&b->refcount), 3);
++	dpll_pin_put(ctx->extra.pin, &ctx->extra.tracker);
++	KUNIT_EXPECT_EQ(test, refcount_read(&b->refcount), 2);
++}
++
++/* The same clock_id used by another module means another domain */
++static void dt_test_domain_per_module(struct kunit *test)
++{
++	struct dt_ctx *ctx = test->priv;
++	static char other_module;
++	struct dpll_device *dpll;
++	dpll_tracker tracker;
++
++	/* Never registered, so the core does not dereference the module */
++	dpll = dpll_device_get(DT_CLOCK_ID_A, 0, (struct module *)&other_module,
++			       &tracker);
++	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, dpll);
++	KUNIT_EXPECT_PTR_NE(test, dpll, ctx->a0.dpll);
++	KUNIT_EXPECT_PTR_NE(test, dpll->domain, ctx->a0.dpll->domain);
++	dpll_device_put(dpll, &tracker);
++}
++
++/* A pin on a dpll of another domain stays in its domain */
++static void dt_test_foreign_registration_domain(struct kunit *test)
++{
++	struct dt_ctx *ctx = test->priv;
++	struct dpll_domain *e, *f;
++
++	dt_foreign_pin_add(test);
++	e = ctx->e0.dpll->domain;
++	f = ctx->f0.dpll->domain;
++
++	KUNIT_EXPECT_PTR_NE(test, e, f);
++	KUNIT_EXPECT_PTR_EQ(test, ctx->x.pin->domain, e);
++	KUNIT_EXPECT_EQ(test, refcount_read(&e->refcount), 2);
++	KUNIT_EXPECT_EQ(test, refcount_read(&f->refcount), 1);
++}
++
++/* A pin under a parent pin of another domain stays in its domain */
++static void dt_test_on_pin_registration_domain(struct kunit *test)
++{
++	struct dt_ctx *ctx = test->priv;
++	struct dpll_domain *e, *g;
++
++	dt_on_pin_add(test);
++	e = ctx->e0.dpll->domain;
++	g = ctx->c.pin->domain;
++
++	KUNIT_EXPECT_PTR_NE(test, e, g);
++	KUNIT_EXPECT_PTR_EQ(test, ctx->m.pin->domain, e);
++	KUNIT_EXPECT_EQ(test, refcount_read(&e->refcount), 2);
++	KUNIT_EXPECT_EQ(test, refcount_read(&g->refcount), 1);
++}
++
++/* A callback blocked in one domain does not stop other domains */
++static void dt_test_domains_run_in_parallel(struct kunit *test)
++{
++	struct dt_ctx *ctx = test->priv;
++	struct dt_req *blocked, *other;
++
++	blocked = dt_block_in(test, &ctx->dom_a, dt_device_ntf, &ctx->a0);
++
++	other = dt_req_start(test, dt_device_ntf, &ctx->b0);
++	KUNIT_EXPECT_TRUE(test, dt_done(other, DT_TIMEOUT));
++	KUNIT_EXPECT_FALSE(test, completion_done(&blocked->done));
++	KUNIT_EXPECT_EQ(test, atomic_read(&ctx->peak_total), 2);
++
++	dt_unblock(ctx);
++	KUNIT_EXPECT_TRUE(test, dt_done(blocked, DT_TIMEOUT));
++}
++
++/* Callbacks of one domain are serialized, across its devices too */
++static void dt_test_domain_is_serialized(struct kunit *test)
++{
++	struct dt_ctx *ctx = test->priv;
++	struct dt_req *first, *second;
++
++	first = dt_block_in(test, &ctx->dom_a, dt_device_ntf, &ctx->a0);
++
++	second = dt_req_start(test, dt_device_ntf, &ctx->a1);
++	KUNIT_EXPECT_FALSE(test, dt_done(second, DT_SHORT_TIMEOUT));
++
++	dt_unblock(ctx);
++	KUNIT_EXPECT_TRUE(test, dt_done(first, DT_TIMEOUT));
++	KUNIT_EXPECT_TRUE(test, dt_done(second, DT_TIMEOUT));
++	KUNIT_EXPECT_EQ(test, atomic_read(&ctx->dom_a.peak), 1);
++}
++
++/* Callbacks of all refs of a pin run under the domain of the pin alone */
++static void dt_test_foreign_get_locks(struct kunit *test)
++{
++	struct dt_ctx *ctx = test->priv;
++
++	if (!IS_ENABLED(CONFIG_LOCKDEP) || !debug_locks)
++		kunit_skip(test, "needs lockdep");
++
++	dt_foreign_pin_add(test);
++
++	KUNIT_EXPECT_EQ(test, dt_run(test, dt_pin_ntf, &ctx->x), 0);
++	KUNIT_EXPECT_EQ(test, atomic_read(&ctx->wrong_lock), 0);
++}
++
++/* Setters of a foreign ref run under the domain of the pin alone */
++static void dt_test_foreign_set_locks(struct kunit *test)
++{
++	static const struct {
++		int attr;
++		u32 val;
++	} sets[] = {
++		{ DPLL_A_PIN_STATE, DPLL_PIN_STATE_CONNECTED },
++		{ DPLL_A_PIN_PRIO, 7 },
++		{ DPLL_A_PIN_DIRECTION, DPLL_PIN_DIRECTION_OUTPUT },
++	};
++	struct dt_ctx *ctx = test->priv;
++	int i;
++
++	dt_foreign_pin_add(test);
++
++	for (i = 0; i < ARRAY_SIZE(sets); i++) {
++		int ret;
++
++		ctx->num_events = 0;
++		ctx->record = true;
++		ret = dt_pin_set_one(test, ctx->x.pin, DPLL_A_PIN_PARENT_DEVICE,
++				     ctx->f0.dpll->id, sets[i].attr,
++				     sets[i].val);
++		ctx->record = false;
++
++		KUNIT_EXPECT_EQ(test, ret, 0);
++		dt_expect_events(test, (void *[]){ ctx->x.pin }, 1);
++	}
++	KUNIT_EXPECT_EQ(test, ctx->reg_x_f0.state, DPLL_PIN_STATE_CONNECTED);
++	KUNIT_EXPECT_EQ(test, ctx->reg_x_f0.prio, 7);
++	KUNIT_EXPECT_EQ(test, ctx->reg_x_f0.direction,
++			DPLL_PIN_DIRECTION_OUTPUT);
++	KUNIT_EXPECT_EQ(test, ctx->reg_x_e0.prio, 0);
++}
++
++/* The callback of a foreign ref can notify objects of the domain of the pin */
++static void dt_test_foreign_callback_notifies_pin(struct kunit *test)
++{
++	struct dt_ctx *ctx = test->priv;
++	int ret;
++
++	dt_foreign_pin_add(test);
++	ctx->reg_x_f0.notify = &ctx->x;
++
++	ctx->record = true;
++	ret = dt_pin_set_one(test, ctx->x.pin, DPLL_A_PIN_PARENT_DEVICE,
++			     ctx->f0.dpll->id, DPLL_A_PIN_STATE,
++			     DPLL_PIN_STATE_CONNECTED);
++	ctx->record = false;
++
++	KUNIT_EXPECT_EQ(test, ret, 0);
++	dt_expect_events(test, (void *[]){ ctx->x.pin, ctx->x.pin }, 2);
++}
++
++/* Without an owner the pin-level attributes come from the foreign ref */
++static void dt_test_pin_without_owner(struct kunit *test)
++{
++	struct dt_ctx *ctx = test->priv;
++
++	dt_dev_add(test, &ctx->f0, &ctx->dom_f, DT_CLOCK_ID_F, 0,
++		   DPLL_TYPE_PPS);
++	dt_fwnode_pin_add(test, &ctx->x, DT_CLOCK_ID_E, DT_PIN_IDX_X);
++	dt_reg_add(test, &ctx->reg_x_f0, &ctx->dom_f, &ctx->x, &ctx->f0, NULL);
++	KUNIT_ASSERT_PTR_NE(test, ctx->x.pin->domain, ctx->f0.dpll->domain);
++	ctx->reg_x_f0.forbid = ctx->f0.dpll->domain;
++
++	atomic_set(&ctx->reg_x_f0.freq_gets, 0);
++	KUNIT_EXPECT_EQ(test, dt_run(test, dt_pin_ntf, &ctx->x), 0);
++	KUNIT_EXPECT_GT(test, atomic_read(&ctx->reg_x_f0.freq_gets), 0);
++	KUNIT_EXPECT_EQ(test, atomic_read(&ctx->wrong_lock), 0);
++}
++
++/* A stuck callback of a foreign ref stops only the domain of the pin */
++static void dt_test_stuck_foreign_callback(struct kunit *test)
++{
++	struct dt_req *blocked, *owner, *foreign, *other;
++	struct dt_ctx *ctx = test->priv;
++
++	dt_foreign_pin_add(test);
++
++	WRITE_ONCE(ctx->reg_x_f0.block_prio_set, true);
++	blocked = dt_req_start(test, dt_pin_set_fn,
++			       dt_pin_set_args_one(test, ctx->x.pin,
++						   DPLL_A_PIN_PARENT_DEVICE,
++						   ctx->f0.dpll->id,
++						   DPLL_A_PIN_PRIO, 7));
++	KUNIT_ASSERT_TRUE(test, wait_for_completion_timeout(&ctx->dom_f.entered,
++							    DT_TIMEOUT));
++
++	owner = dt_req_start(test, dt_device_ntf, &ctx->e0);
++	KUNIT_EXPECT_FALSE(test, dt_done(owner, DT_SHORT_TIMEOUT));
++	foreign = dt_req_start(test, dt_device_ntf, &ctx->f0);
++	KUNIT_EXPECT_TRUE(test, dt_done(foreign, DT_TIMEOUT));
++	other = dt_req_start(test, dt_device_ntf, &ctx->b0);
++	KUNIT_EXPECT_TRUE(test, dt_done(other, DT_TIMEOUT));
++
++	dt_unblock(ctx);
++	KUNIT_EXPECT_TRUE(test, dt_done(blocked, DT_TIMEOUT));
++	KUNIT_EXPECT_TRUE(test, dt_done(owner, DT_TIMEOUT));
++}
++
++/* A stuck device callback does not stop a foreign pin registered with it */
++static void dt_test_stuck_foreign_device(struct kunit *test)
++{
++	struct dt_ctx *ctx = test->priv;
++	struct dt_req *blocked, *pin;
++
++	dt_foreign_pin_add(test);
++
++	WRITE_ONCE(ctx->f0.block, true);
++	blocked = dt_req_start(test, dt_device_ntf, &ctx->f0);
++	KUNIT_ASSERT_TRUE(test, wait_for_completion_timeout(&ctx->dom_f.entered,
++							    DT_TIMEOUT));
++
++	pin = dt_req_start(test, dt_pin_ntf, &ctx->x);
++	KUNIT_EXPECT_TRUE(test, dt_done(pin, DT_TIMEOUT));
++
++	dt_unblock(ctx);
++	KUNIT_EXPECT_TRUE(test, dt_done(blocked, DT_TIMEOUT));
++}
++
++/* A stuck owner stops requests for its pins, but not the foreign device */
++static void dt_test_stuck_owner_domain(struct kunit *test)
++{
++	struct dt_ctx *ctx = test->priv;
++	struct dt_req *blocked, *foreign, *pin;
++
++	dt_foreign_pin_add(test);
++
++	blocked = dt_block_in(test, &ctx->dom_e, dt_device_ntf, &ctx->e0);
++
++	foreign = dt_req_start(test, dt_device_ntf, &ctx->f0);
++	KUNIT_EXPECT_TRUE(test, dt_done(foreign, DT_TIMEOUT));
++	pin = dt_req_start(test, dt_pin_ntf, &ctx->x);
++	KUNIT_EXPECT_FALSE(test, dt_done(pin, DT_SHORT_TIMEOUT));
++
++	dt_unblock(ctx);
++	KUNIT_EXPECT_TRUE(test, dt_done(blocked, DT_TIMEOUT));
++	KUNIT_EXPECT_TRUE(test, dt_done(pin, DT_TIMEOUT));
++}
++
++/* A pin and its parent pin of another domain do not block each other */
++static void dt_test_on_pin_domains_are_independent(struct kunit *test)
++{
++	struct dt_ctx *ctx = test->priv;
++	struct dt_req *blocked, *other;
++
++	dt_on_pin_add(test);
++
++	blocked = dt_block_in(test, &ctx->dom_e, dt_device_ntf, &ctx->e0);
++	other = dt_req_start(test, dt_pin_ntf, &ctx->c);
++	KUNIT_EXPECT_TRUE(test, dt_done(other, DT_TIMEOUT));
++	dt_unblock(ctx);
++	KUNIT_EXPECT_TRUE(test, dt_done(blocked, DT_TIMEOUT));
++
++	blocked = dt_block_in(test, &ctx->dom_g, dt_pin_ntf, &ctx->c);
++	other = dt_req_start(test, dt_pin_ntf, &ctx->m);
++	KUNIT_EXPECT_TRUE(test, dt_done(other, DT_TIMEOUT));
++	dt_unblock(ctx);
++	KUNIT_EXPECT_TRUE(test, dt_done(blocked, DT_TIMEOUT));
++}
++
++/* Registrations in both directions between two domains are fine */
++static void dt_test_registrations_both_directions(struct kunit *test)
++{
++	struct dt_ctx *ctx = test->priv;
++
++	dt_foreign_pin_add(test);
++	dt_fwnode_pin_add(test, &ctx->y, DT_CLOCK_ID_F, DT_PIN_IDX_Y);
++	dt_reg_add(test, &ctx->reg_y_f0, &ctx->dom_f, &ctx->y, &ctx->f0, NULL);
++	dt_reg_add(test, &ctx->reg_y_e0, &ctx->dom_e, &ctx->y, &ctx->e0, NULL);
++	ctx->reg_y_f0.forbid = ctx->e0.dpll->domain;
++	ctx->reg_y_e0.forbid = ctx->e0.dpll->domain;
++
++	KUNIT_EXPECT_EQ(test, dt_run(test, dt_pin_ntf, &ctx->x), 0);
++	KUNIT_EXPECT_EQ(test, dt_run(test, dt_pin_ntf, &ctx->y), 0);
++}
++
++/* A topology change waits until running requests finish */
++static void dt_test_topology_change_waits(struct kunit *test)
++{
++	struct dt_ctx *ctx = test->priv;
++	struct dt_req *blocked, *writer;
++
++	blocked = dt_block_in(test, &ctx->dom_a, dt_device_ntf, &ctx->a0);
++
++	/* Added before the request starts, so it runs after waiting for it */
++	KUNIT_ASSERT_EQ(test, kunit_add_action_or_reset(test, dt_pin_release,
++							&ctx->extra), 0);
++	writer = dt_req_start(test, dt_extra_pin_get, &ctx->extra);
++	KUNIT_EXPECT_FALSE(test, dt_done(writer, DT_SHORT_TIMEOUT));
++
++	dt_unblock(ctx);
++	KUNIT_EXPECT_TRUE(test, dt_done(blocked, DT_TIMEOUT));
++	KUNIT_ASSERT_TRUE(test, dt_done(writer, DT_TIMEOUT));
++	KUNIT_EXPECT_NOT_ERR_OR_NULL(test, ctx->extra.pin);
++}
++
++/* Other requests about a pin cannot see a set of two attributes half done */
++static void dt_check_request_atomic(struct kunit *test, struct dt_pin *pin,
++				    struct dt_dev *dev0, struct dt_reg *reg0,
++				    struct dt_dev *dev1, struct dt_reg *reg1)
++{
++	struct dt_pin_set_args *args = dt_pin_set_args_alloc(test, pin->pin, 2);
++	struct dt_ctx *ctx = test->priv;
++	struct dt_req *set, *other;
++	int i;
++
++	args->ctx = ctx;
++	for (i = 0; i < args->num; i++) {
++		args->nests[i].type = DPLL_A_PIN_PARENT_DEVICE;
++		args->nests[i].parent_id = i ? dev1->dpll->id : dev0->dpll->id;
++		args->nests[i].attr = DPLL_A_PIN_PRIO;
++		args->nests[i].val = 11;
++	}
++
++	ctx->atomic_regs[0] = reg0;
++	ctx->atomic_regs[1] = reg1;
++
++	/* The other request starts to wait before the first attribute is set */
++	WRITE_ONCE(reg0->block_prio_set, true);
++	set = dt_req_start(test, dt_pin_set_fn, args);
++	KUNIT_ASSERT_TRUE(test, wait_for_completion_timeout(&reg0->dom->entered,
++							    DT_TIMEOUT));
++	other = dt_req_start(test, dt_pin_ntf, pin);
++	KUNIT_EXPECT_FALSE(test, dt_done(other, DT_SHORT_TIMEOUT));
++
++	dt_unblock(ctx);
++	KUNIT_ASSERT_TRUE(test, dt_done(set, DT_TIMEOUT));
++	KUNIT_ASSERT_TRUE(test, dt_done(other, DT_TIMEOUT));
++	KUNIT_EXPECT_EQ(test, set->ret, 0);
++	KUNIT_EXPECT_EQ(test, reg0->prio, 11);
++	KUNIT_EXPECT_EQ(test, reg1->prio, 11);
++	KUNIT_EXPECT_EQ(test, atomic_read(&ctx->torn), 0);
++}
++
++static void dt_test_request_is_atomic(struct kunit *test)
++{
++	struct dt_ctx *ctx = test->priv;
++
++	dt_check_request_atomic(test, &ctx->p, &ctx->a0, &ctx->reg_p_a0,
++				&ctx->a1, &ctx->reg_p_a1);
++}
++
++static void dt_test_spanning_request_is_atomic(struct kunit *test)
++{
++	struct dt_ctx *ctx = test->priv;
++
++	dt_foreign_pin_add(test);
++	dt_check_request_atomic(test, &ctx->x, &ctx->e0, &ctx->reg_x_e0,
++				&ctx->f0, &ctx->reg_x_f0);
++}
++
++/* Notifications from a callback come first, under the domain lock */
++static void dt_test_ntf_order(struct kunit *test)
++{
++	struct dt_ctx *ctx = test->priv;
++	int ret;
++
++	ctx->record = true;
++	ret = dt_pin_set_one(test, ctx->p.pin, DPLL_A_PIN_PARENT_DEVICE,
++			     ctx->a0.dpll->id, DPLL_A_PIN_STATE,
++			     DPLL_PIN_STATE_CONNECTED);
++	ctx->record = false;
++
++	KUNIT_EXPECT_EQ(test, ret, 0);
++	KUNIT_EXPECT_EQ(test, ctx->reg_p_a0.state, DPLL_PIN_STATE_CONNECTED);
++	dt_expect_events(test, (void *[]){ ctx->s.pin, ctx->p.pin }, 2);
++}
++
++/* A notification from a callback that fails is still sent */
++static void dt_test_ntf_on_failure(struct kunit *test)
++{
++	struct dt_ctx *ctx = test->priv;
++	int ret;
++
++	ctx->fail_after_ntf = true;
++	ctx->record = true;
++	ret = dt_pin_set_one(test, ctx->p.pin, DPLL_A_PIN_PARENT_DEVICE,
++			     ctx->a0.dpll->id, DPLL_A_PIN_STATE,
++			     DPLL_PIN_STATE_CONNECTED);
++	ctx->record = false;
++
++	KUNIT_EXPECT_EQ(test, ret, -EIO);
++	dt_expect_events(test, (void *[]){ ctx->s.pin }, 1);
++}
++
++/* A set on a pin under a parent of another domain needs only its domain */
++static void dt_test_set_on_pin(struct kunit *test)
++{
++	struct dt_ctx *ctx = test->priv;
++	int ret;
++
++	dt_on_pin_add(test);
++
++	ctx->record = true;
++	ret = dt_pin_set_one(test, ctx->c.pin, DPLL_A_PIN_PARENT_PIN,
++			     ctx->m.pin->id, DPLL_A_PIN_STATE,
++			     DPLL_PIN_STATE_CONNECTED);
++	ctx->record = false;
++
++	KUNIT_EXPECT_EQ(test, ret, 0);
++	KUNIT_EXPECT_EQ(test, ctx->reg_c_m.state, DPLL_PIN_STATE_CONNECTED);
++	dt_expect_events(test, (void *[]){ ctx->c.pin }, 1);
++}
++
++/* A device callback notifies a sibling device of its domain */
++static void dt_test_device_set_ntf(struct kunit *test)
++{
++	struct dt_ctx *ctx = test->priv;
++	struct dt_mode_set_args *args;
++	int ret;
++
++	args = kunit_kzalloc(test, sizeof(*args), GFP_KERNEL);
++	KUNIT_ASSERT_NOT_NULL(test, args);
++	args->dpll = ctx->a0.dpll;
++	args->mode = DPLL_MODE_MANUAL;
++
++	ctx->record = true;
++	ret = dt_run(test, dt_mode_set_fn, args);
++	ctx->record = false;
++
++	KUNIT_EXPECT_EQ(test, ret, 0);
++	KUNIT_EXPECT_EQ(test, ctx->a0.mode, DPLL_MODE_MANUAL);
++	dt_expect_events(test, (void *[]){ ctx->a1.dpll }, 1);
++}
++
++/* A change of a reference sync pair notifies under the domain of the pin */
++static void dt_test_ref_sync_pair(struct kunit *test)
++{
++	struct dt_ctx *ctx = test->priv;
++	int ret;
++
++	ctx->record = true;
++	ret = dpll_pin_ref_sync_pair_add(ctx->p.pin, ctx->s.pin);
++	ctx->record = false;
++
++	KUNIT_EXPECT_EQ(test, ret, 0);
++	dt_expect_events(test, (void *[]){ ctx->p.pin }, 1);
++}
++
++static struct kunit_case dt_cases[] = {
++	KUNIT_CASE(dt_test_domain_sharing),
++	KUNIT_CASE(dt_test_domain_per_module),
++	KUNIT_CASE(dt_test_foreign_registration_domain),
++	KUNIT_CASE(dt_test_on_pin_registration_domain),
++	KUNIT_CASE(dt_test_domains_run_in_parallel),
++	KUNIT_CASE(dt_test_domain_is_serialized),
++	KUNIT_CASE(dt_test_foreign_get_locks),
++	KUNIT_CASE(dt_test_foreign_set_locks),
++	KUNIT_CASE(dt_test_foreign_callback_notifies_pin),
++	KUNIT_CASE(dt_test_pin_without_owner),
++	KUNIT_CASE(dt_test_stuck_foreign_callback),
++	KUNIT_CASE(dt_test_stuck_foreign_device),
++	KUNIT_CASE(dt_test_stuck_owner_domain),
++	KUNIT_CASE(dt_test_on_pin_domains_are_independent),
++	KUNIT_CASE(dt_test_registrations_both_directions),
++	KUNIT_CASE(dt_test_topology_change_waits),
++	KUNIT_CASE(dt_test_request_is_atomic),
++	KUNIT_CASE(dt_test_spanning_request_is_atomic),
++	KUNIT_CASE(dt_test_ntf_order),
++	KUNIT_CASE(dt_test_ntf_on_failure),
++	KUNIT_CASE(dt_test_set_on_pin),
++	KUNIT_CASE(dt_test_device_set_ntf),
++	KUNIT_CASE(dt_test_ref_sync_pair),
++	{}
++};
++
++static struct kunit_suite dt_suite = {
++	.name = "dpll_core",
++	.init = dt_init,
++	.test_cases = dt_cases,
++};
++
++kunit_test_suite(dt_suite);
++
++MODULE_DESCRIPTION("KUnit tests for locking in the DPLL core");
++MODULE_LICENSE("GPL");
+diff --git a/drivers/dpll/dpll_netlink.c b/drivers/dpll/dpll_netlink.c
+index 9d8f5d1ce97248..223cd1de905c1a 100644
+--- a/drivers/dpll/dpll_netlink.c
++++ b/drivers/dpll/dpll_netlink.c
+@@ -6,6 +6,7 @@
+  *  Copyright (c) 2023 Intel and affiliates
+  *
+  */
++#include <kunit/visibility.h>
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/netdevice.h>
+@@ -1836,6 +1837,7 @@ int dpll_nl_pin_set_doit(struct sk_buff *skb, struct genl_info *info)
+ 
+ 	return dpll_pin_set_from_nlattr(pin, info);
+ }
++EXPORT_SYMBOL_IF_KUNIT(dpll_nl_pin_set_doit);
+ 
+ static struct dpll_device *
+ dpll_device_find(u64 clock_id, struct nlattr *mod_name_attr,
+@@ -2010,6 +2012,7 @@ int dpll_nl_device_set_doit(struct sk_buff *skb, struct genl_info *info)
+ 
+ 	return dpll_set_from_nlattr(dpll, info);
+ }
++EXPORT_SYMBOL_IF_KUNIT(dpll_nl_device_set_doit);
+ 
+ int dpll_nl_device_get_dumpit(struct sk_buff *skb, struct netlink_callback *cb)
+ {
+@@ -2070,6 +2073,7 @@ int dpll_pre_doit(const struct genl_split_ops *ops, struct sk_buff *skb,
+ 	up_read(&dpll_lock);
+ 	return -ENODEV;
+ }
++EXPORT_SYMBOL_IF_KUNIT(dpll_pre_doit);
+ 
+ void dpll_post_doit(const struct genl_split_ops *ops, struct sk_buff *skb,
+ 		    struct genl_info *info)
+@@ -2079,6 +2083,7 @@ void dpll_post_doit(const struct genl_split_ops *ops, struct sk_buff *skb,
+ 	mutex_unlock(&dpll->domain->lock);
+ 	up_read(&dpll_lock);
+ }
++EXPORT_SYMBOL_IF_KUNIT(dpll_post_doit);
+ 
+ int
+ dpll_lock_doit(const struct genl_split_ops *ops, struct sk_buff *skb,
+@@ -2122,6 +2127,7 @@ int dpll_pin_pre_doit(const struct genl_split_ops *ops, struct sk_buff *skb,
+ 	up_read(&dpll_lock);
+ 	return ret;
+ }
++EXPORT_SYMBOL_IF_KUNIT(dpll_pin_pre_doit);
+ 
+ void dpll_pin_post_doit(const struct genl_split_ops *ops, struct sk_buff *skb,
+ 			struct genl_info *info)
+@@ -2131,3 +2137,4 @@ void dpll_pin_post_doit(const struct genl_split_ops *ops, struct sk_buff *skb,
+ 	mutex_unlock(&pin->domain->lock);
+ 	up_read(&dpll_lock);
+ }
++EXPORT_SYMBOL_IF_KUNIT(dpll_pin_post_doit);
+-- 
+2.56.0
+
