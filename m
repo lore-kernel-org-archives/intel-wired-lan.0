@@ -1,136 +1,246 @@
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 67DB3606A326
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  6 Nov 2026 06:36:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 76DD3606A329
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  6 Nov 2026 07:11:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=JOl8FNpL;
-	dkim=pass (2048-bit key, unprotected) header.d=1g4.org header.i=@1g4.org header.a=rsa-sha256 header.s=protonmail header.b=KtTxaRmA
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=eq28/7tP;
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=KU8uHdwX
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 3CCB860615;
-	Fri,  6 Nov 2026 06:36:27 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 494B080F86;
+	Fri,  6 Nov 2026 07:11:42 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id jE-fPWajsq6x; Fri,  6 Nov 2026 06:36:26 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 06CB86061F
-Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793946986;
-	b=SdP9q2pKEXCRHT88gWwG8V9InWJC+4Ml9beb6pfFzsMb9KIPDBBckquSJWMFRoh08Xek
-	 OdhaZYjHcHGYtXnD+n0xzBwmXQyL8T4PLLUEsG4+Fhm3xk/YZZz0YhHJdnH2M0BtgbJyI
-	 d0PCw8bymRHH8CNW98j/ffaJXHoO4arKkijZmBtT9m1wkfYtor5ux2lFc4dCPmtZOLlA3
-	 KXTZm+7Cmp9wLV8wifOjGeKcc/3Egerf132xfvC0HzChqTLHKrFhlnkgYRQxOJN0m1wyi
-	 OfSc332MQJWQet08jEuunj/7avRaNFMLbCwGZhyZCaLadMKB6JcIyw97fDVH9H5FfFQ==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Tme4BoQyQ6KK; Fri,  6 Nov 2026 07:11:41 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 5889480F8D
+Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1793949101;
+	b=GzkEbZbRNv9Soq5YM0itJtKvSQbTNBMm7UUYFunNN6gCtwPVr8XmHq7/w07vR2ITTR17
+	 NZVyfscsZFwaElbP+vy5FOn5Nk7BTTf2HhvZupmqNlizerQ8chjD0dJKSG+e+59G+npTH
+	 YM8g88yhp8HCCR4xc+XqTgMx1CD+DTTVzpCfJmNPcyxEDHN2PKgH8Gg25fkd0E+82L0fh
+	 c1GX76bLPckuGtkjRedC/9KTiFMwX4BYIwvxSpDV5rcQACkg05clxB5yDiFULuqnnoBHr
+	 HlgAsTrVdXchEHeKlFG8tag40avqPQ8J4CVFhRkILZh3Hljx7qg1Hs/mRFjnK46a8tQ==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1793946986;
+	c=relaxed/relaxed; t=1793949101;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
-	 DKIM-Signature:Date:To:From:Cc:Subject:Message-ID:In-Reply-To:
-	 References:Feedback-ID:X-Pm-Message-ID:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:Precedence:
-	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
-	 List-Subscribe:Errors-To;
-	bh=HSkq7GM/C7a8WzdehCU5wxcvtBC9C9CoJO/ODOkIDzs=;
-	b=ZjsAM5wG58pzlusQb8/VuYW3+KFK6IjNqKPl3aA1o8j/Mpch6S70Z/HeF2OOUU4OyFNK
-	 MsxgwdLlMUq0ceAeMHKQne/2GaAQuDgLcTvYfTDsgJkFv/ykyaFC+RGbK63Wm05mW/GHv
-	 FAps3X5kqsn/kgYi7Ijx39R6g4lUlUGuw7ZNXM+fDPfitIND9S6utjZn2cZvBvDJL+6fD
-	 xQ2ez3QNTJur3TuVZHNY4yFeYhgw2ZaSDGn7K6MnQyNNK1y/Zq3WPwaFjXArJIaIGXwgL
-	 SA2jWQKMXXeCttfVu84/rb6JlrwsMvW4Mj+XDVVEABvfER60BfxAzFq+KvdIzxgzR7Q==
-ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
-	dmarc=pass header.from=1g4.org;
-	dkim=pass header.d=1g4.org header.i=@1g4.org header.a=rsa-sha256 header.s=protonmail header.b=KtTxaRmA;
+	 DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-IronPort-AV:
+	 X-IronPort-AV:Received:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-ExtLoop1:
+	 X-IronPort-AV:Received:Received:Received:Received:Received:Received:
+	 From:To:CC:Subject:Thread-Topic:Thread-Index:Date:Message-ID:
+	 References:In-Reply-To:Accept-Language:Content-Language:
+	 X-MS-Has-Attach:X-MS-TNEF-Correlator:x-ms-publictraffictype:
+	 x-ms-traffictypediagnostic:x-ms-office365-filtering-correlation-id:
+	 x-ms-exchange-senderadcheck:x-ms-exchange-antispam-relay:
+	 x-microsoft-antispam:x-microsoft-antispam-message-info:
+	 x-forefront-antispam-report:
+	 x-ms-exchange-antispam-messagedata-chunkcount:
+	 x-ms-exchange-antispam-messagedata-0:Content-Type:
+	 Content-Transfer-Encoding:MIME-Version:
+	 X-Exchange-RoutingPolicyChecked:X-MS-Exchange-CrossTenant-AuthAs:
+	 X-MS-Exchange-CrossTenant-AuthSource:
+	 X-MS-Exchange-CrossTenant-Network-Message-Id:
+	 X-MS-Exchange-CrossTenant-originalarrivaltime:
+	 X-MS-Exchange-CrossTenant-fromentityheader:
+	 X-MS-Exchange-CrossTenant-id:X-MS-Exchange-CrossTenant-mailboxtype:
+	 X-MS-Exchange-CrossTenant-userprincipalname:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStamped:X-OriginatorOrg:
+	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
+	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
+	bh=9ylceJzcyMocHxs62AC8hMXM93tLhGiAuFwCnc2vxnU=;
+	b=ltY6jBaXSMAaVvDXIFAaVtrFGB/u+HYSLqAqKttr8aQWgXFqqfXRT2FHx8nJkcWCkcUN
+	 qnYiFlLlQc/s/a26V1ULt9+27G4zbFfqJuivGcPRUUbe1tbnTBWBC22fLwslIS2rPSc2K
+	 e7eO6z0IH8LPppb1TVt/QRjRww7HGL2ZdwUJq63qQBwMjntGw5zZaq0ZAKSaK9/kiGoBi
+	 Y/4oxryfdbJX50VdqnKNt+63rH0nTog3tHbEP+AybraXzbGv/9O+kxNaDOpcH+Fjx3VtH
+	 IGFnvHVFep3kffkSt4BE0c/L2E70e/nzIMgn13tybpUfaHtB+873LXw1ErAveGpTQAg==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1793946986;
-	bh=HSkq7GM/C7a8WzdehCU5wxcvtBC9C9CoJO/ODOkIDzs=;
-	h=Date:To:From:Cc:Subject:In-Reply-To:References:List-Id:
+	s=default; t=1793949101;
+	bh=9ylceJzcyMocHxs62AC8hMXM93tLhGiAuFwCnc2vxnU=;
+	h=From:To:CC:Subject:Date:References:In-Reply-To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=JOl8FNpLURpOR61VUR6gog38eEj4hbw3KKCB8BMgFpoUM4Y1pWnWN/GjpVg6GzLDL
-	 TFi+WH7ci52lWl/FgPGUVj0gpOb17fcSneO0981jZ6Gh5Z/lJdanJJbJans2nR6/Ru
-	 dNPqj/gs+Y1CfypnUTChQLlsJ5lxXcqU1Rb3Tcbo5PIe0wxz2KbaV6ieKf5JclfAHK
-	 dZARFhUINbuToN04tDLXkdJ5hU6c7iXZMSjSboJe5iSFh7QiROmWZDAYRNW/5m9YQx
-	 smEG/qjMQHwY23FRTxL5dq2zIBBc9x6YLVYxVSGNDDbl+jqfhZgqEWSctXHvAbj/ST
-	 A9Ssuq1hilWpw==
+	b=eq28/7tPmY8gncepGXxlFZtJY20u+/y0vnMX9YPjcA6esQLfKukTv24muJFd5O/rp
+	 S2EVs2jUdMWzzJw4QPkqai3z2fW09HuvJ+ATf73F9JDyKvZBzHT641lYlsLhK0spBv
+	 zTtzsXeci7BYxF6slKRcF/9krSvQQgcxglNZnamTPjWJ7WHybmoF2sUMYDzQpTBb0x
+	 pKkL9Q+sB2FwQSZaL8XDD4KAhkOw0li3WWSWKYUchDembKh97RaFhdFqoNI/hpqWKk
+	 2JCgMe4ITX4o4MHcKAlRMGQ3FfFu8A8Kc+5NZwNvb7PQEbQbCucK4Ebo0MSpKvuDub
+	 /WpD/DlG33CpA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 06CB86061F;
-	Fri,  6 Nov 2026 06:36:26 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id B339F32A
- for <intel-wired-lan@lists.osuosl.org>; Fri,  6 Nov 2026 06:36:24 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 5889480F8D;
+	Fri,  6 Nov 2026 07:11:41 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 3F97E1E3
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  6 Nov 2026 07:11:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id B09AF6061F
- for <intel-wired-lan@lists.osuosl.org>; Fri,  6 Nov 2026 06:36:24 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 254CB605B1
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  6 Nov 2026 07:11:39 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 6V1b1IGRQE22 for <intel-wired-lan@lists.osuosl.org>;
- Fri,  6 Nov 2026 06:36:22 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 7A9CB60615
-Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=185.70.43.98
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=185.70.43.98;
- helo=mail-4398.protonmail.ch; envelope-from=p@1g4.org; receiver=<UNKNOWN> 
+ id y_TOFBfCRF7R for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  6 Nov 2026 07:11:37 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 8BF22605D5
+Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0
+ smtp.remote-ip=192.198.163.10
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.10;
+ helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
+ receiver=<UNKNOWN> 
 Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=quarantine dis=none) header.from=1g4.org
+ dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=1g4.org header.i=@1g4.org header.a=rsa-sha256
- header.s=protonmail header.b=KtTxaRmA
-Received: from mail-4398.protonmail.ch (mail-4398.protonmail.ch [185.70.43.98])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 7A9CB60615
- for <intel-wired-lan@lists.osuosl.org>; Fri,  6 Nov 2026 06:36:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=1g4.org;
- s=protonmail; t=1793946975; x=1794206175;
- bh=HSkq7GM/C7a8WzdehCU5wxcvtBC9C9CoJO/ODOkIDzs=;
- h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
- Feedback-ID:From:To:Cc:Date:Subject:Reply-To:Feedback-ID:
- Message-ID:BIMI-Selector;
- b=KtTxaRmAXOyIoVXeeIsPjLsZ7swy2hG7y7mFLGdW3kC4jInBu2uCOIGKiCL2j2cLg
- WF4DuioBfuVqDw4aN6snsDEyTm1tiayWlpR3kozsr1eh+3y3PyOiSwx3XY/1AOpQs7
- NQO+RsY1frOV3eciiO/9siXk7BO3quAkrOTuo+iNCOUdCV8QN0fjfkDTcZoTjrys9Y
- gTnqH/oHMr1IahYsENwILs7hdmkLe+LJpxX2XTMiMnzWFcQ6W5UpbIKnw3o6vTKhEl
- E8+o2QgowLpMlPvRQofkryAAiVRybcZtBx1gXEmvDedoFQERxAAUZNpeRq64FdQr/0
- HqDTdU2+cqr6A==
-Date: Fri, 06 Nov 2026 06:36:05 +0000
-To: Ding Meng <meng.ding@siemens.com>
-From: Paul Moses <p@1g4.org>
-Cc: netdev@vger.kernel.org, Willem de Bruijn <willemdebruijn.kernel@gmail.com>,
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Jonathan Corbet <corbet@lwn.net>, Andrew Lunn <andrew+netdev@lunn.ch>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Steven Rostedt <rostedt@goodmis.org>, Masami Hiramatsu <mhiramat@kernel.org>,
- Daniel Borkmann <daniel@iogearbox.net>, Alexei Starovoitov <ast@kernel.org>,
- Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>,
- Kumar Kartikeya Dwivedi <memxor@gmail.com>,
- Richard Cochran <richardcochran@gmail.com>, florian.bezdeka@siemens.com,
- jan.kiszka@siemens.com, wq.wang@siemens.com, gerhard@engleder-embedded.com,
- Jason Xing <kerneljasonxing@gmail.com>, Simon Horman <horms@kernel.org>,
- Shuah Khan <skhan@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>,
- Mathieu Desnoyers
- <mathieu.desnoyers@efficios.com>, Martin KaFai Lau <martin.lau@linux.dev>,
- Song Liu <song@kernel.org>, Yonghong Song <yonghong.song@linux.dev>,
- Jiri Olsa <jolsa@kernel.org>, Emil Tsalapatis <emil@etsalapatis.com>,
- Ihor Solodrai <ihor.solodrai@linux.dev>,
- John Fastabend <john.fastabend@gmail.com>,
- Stanislav Fomichev <sdf@fomichev.me>, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
- linux-trace-kernel@vger.kernel.org, bpf@vger.kernel.org
-Subject: Re: [PATCH] net: mark skb NAPI IDs independently of busy polling
-Message-ID: <KPhGx8a4LdMBr3rj5NRNGc_DxDUpjoDXn1RDkAisaWwvTg_MoClMGQ0iCyrMM6Ev21UbYwHrlCBPZ-xJUx0NbOMhSY1o8MlozwhRUSs15SQ=@1g4.org>
-In-Reply-To: <eqrkw7wsawjtbvjkndmpik7jryb2sau6fdsu4njw6twn2lcfp3@k67o5wav5f5m>
-References: <20261105071706.7043-1-meng.ding@siemens.com>
- <Tif4BSB0H3l8O1bLzRnhCE9hUYhsz6G3MIhQAgYZImUx1_8YwnCyzy89IV6OSTsXdHDT6fFf7rEL1qfRFJC9OPDHRlhl3cgNJyyE_mVlHWM=@1g4.org>
- <eqrkw7wsawjtbvjkndmpik7jryb2sau6fdsu4njw6twn2lcfp3@k67o5wav5f5m>
-Feedback-ID: 8253658:user:proton
-X-Pm-Message-ID: 98fcd52a7ec1792cf8bb61aff9005d55238b06cf
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=KU8uHdwX
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 8BF22605D5
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  6 Nov 2026 07:11:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1793949097; x=1825485097;
+ h=from:to:cc:subject:date:message-id:references:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=9ylceJzcyMocHxs62AC8hMXM93tLhGiAuFwCnc2vxnU=;
+ b=KU8uHdwXNq5kBN3nHpMTqnvvXqREb+JA2riVhwDqjtpo/pZPLUsLl0qs
+ L35WyhY+ErU/xCMAvKrDzsZsko0zWnEmJp7akiW9bTkseyxaBTErNQ8Vg
+ lTM2y1Zf6qTHfPIOR+JFo2Bv8P03BZsE9fJN4v8C4UMt5ceSXzzC9Oz4J
+ hVzxgUy048G2WHe0qC25IaNwdE1ezvYs0vzmf35HPnLEYQT28meZiv90m
+ DHlZ5FFB5PB+pI+JkLpgigHzvXQ1m2ZF2/l2r2g5EdtQgu6YOZHms4Suc
+ 2CteBujl/VIV/fchXVvnwo6H55D+7aX7r4Iw41bT1qFw/Qp9LMrbCSZ2j A==;
+X-CSE-ConnectionGUID: f3Obu7QfQK6iMy3GkTcWKA==
+X-CSE-MsgGUID: 62coe/aWTK+/ayq0AnkE4A==
+X-IronPort-AV: E=McAfee;i="6800,10657,11957"; a="2655616"
+X-IronPort-AV: E=Sophos;i="6.27,197,1787036400"; 
+   d="scan'208";a="2655616"
+Received: from orviesa008.jf.intel.com ([10.64.159.148])
+ by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 05 Nov 2026 23:11:36 -0800
+X-CSE-ConnectionGUID: wZVGSM6oSb6Bl7TI5A82Og==
+X-CSE-MsgGUID: q+bua1jDS82QhLglOs/4ig==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,197,1787036400"; 
+   d="scan'208";a="7052138"
+Received: from orsmsx903.amr.corp.intel.com ([10.22.229.25])
+ by orviesa008.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 05 Nov 2026 23:11:36 -0800
+Received: from ORSMSX901.amr.corp.intel.com (10.22.229.23) by
+ ORSMSX903.amr.corp.intel.com (10.22.229.25) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.56; Thu, 5 Nov 2026 23:11:35 -0800
+Received: from ORSEDG903.ED.cps.intel.com (10.7.248.13) by
+ ORSMSX901.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.56 via Frontend Transport; Thu, 5 Nov 2026 23:11:35 -0800
+Received: from SA9PR02CU001.outbound.protection.outlook.com (40.93.196.36) by
+ edgegateway.intel.com (134.134.137.113) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.56; Thu, 5 Nov 2026 23:11:35 -0800
+Received: from CH3PR11MB566895.namprd11.prod.outlook.com
+ (2603:10b6:610:34d::22) by MW4PR11MB6981.namprd11.prod.outlook.com
+ (2603:10b6:303:229::20) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.592.10; Fri, 6 Nov
+ 2026 07:11:28 +0000
+Received: from CH3PR11MB566895.namprd11.prod.outlook.com
+ ([fe80::87f5:c8cf:d52:e584]) by CH3PR11MB566895.namprd11.prod.outlook.com
+ ([fe80::87f5:c8cf:d52:e584%7]) with mapi id 15.21.0592.010; Fri, 6 Nov 2026
+ 07:11:28 +0000
+From: "Loktionov, Aleksandr" <aleksandr.loktionov@intel.com>
+To: Naman Gulati <namangulati@google.com>, "intel-wired-lan@lists.osuosl.org"
+ <intel-wired-lan@lists.osuosl.org>
+CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "Nguyen, Anthony L"
+ <anthony.l.nguyen@intel.com>, "Kitszel, Przemyslaw"
+ <przemyslaw.kitszel@intel.com>, "Lobakin, Aleksander"
+ <aleksander.lobakin@intel.com>, Brian Vazquez <brianvv@google.com>, "Andrew
+ Lunn" <andrew+netdev@lunn.ch>, "David S . Miller" <davem@davemloft.net>, Eric
+ Dumazet <edumazet@kernel.org>, Jakub Kicinski <kuba@kernel.org>, "Paolo
+ Abeni" <pabeni@redhat.com>, "stable@vger.kernel.org" <stable@vger.kernel.org>
+Subject: RE: [PATCH iwl-net v2] idpf: fix Rx payload buffer leak when header
+ buffer allocation fails
+Thread-Topic: [PATCH iwl-net v2] idpf: fix Rx payload buffer leak when header
+ buffer allocation fails
+Thread-Index: AQHdbYV4cpdVdVZRlUORR+cJTi0W+LcgoO/A
+Date: Fri, 6 Nov 2026 07:11:28 +0000
+Message-ID: <CH3PR11MB5668959C93EE1742BEF40143D6E5762@CH3PR11MB566895.namprd11.prod.outlook.com>
+References: <20261106002546.2100412-1-namangulati@google.com>
+In-Reply-To: <20261106002546.2100412-1-namangulati@google.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: CH3PR11MB566895:EE_|MW4PR11MB6981:EE_
+x-ms-office365-filtering-correlation-id: bf640a2a-4a46-43de-f481-08df3bd52d3c
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+ ARA:13230040|23010399003|7416014|376014|366016|1800799024|38070700021|261021123027099003|261022105027099003|11063799006|261028144727099003|261021121427099003|261009223027099003|56012099006|261026121527099003|261022075727099003|261026140227099003|261102123227099003|10067099003|18002099003|22082099003|6133799003;
+x-microsoft-antispam-message-info: HnU1WGys6lD6FswaXtR31Wos2fyOlfS6zB8qXLxKnDJ0BHlGGEGFbV0TXsbm/GTkwp1wf6tko2FrSh7QIhTS4TJqJ0sreiNtoqWPfdK1W2ub/3pfLLFWDu5MELfFPF3Kdljqxo1TpHchvJbBNT8sj4kT8a7e9f9w6yNyzCw3aBzXjlYrvpXSVOf0Znj0dWJ/WkBN1dd2eQQgGKB29w0s/Rg86N6b4lAtuDXgAR/BzH84vdRqjZM0c5T/UHIfgicxBWWt6seoLeJu7on/TFEMCCqLuO/wuNtmynTRTwnbra/GwV/G+m6NZEuS6ai9y/OpuD8FpEtRSL2dwYbCTUb3FIHjPuPC5z2G9RRngcX+wn+KN9dK20o7w6xg+nVMOgF0t1Q4PCgYHDwIhf+oNYY9DR9qx6kp2OxAj2DRCOVicPQY6AuwlHZMVYEic513Rxmog+CprzsII/6pfxdMott0JYOjnFwjgGBjvYCfOogJK51BSrdL0WdxVHss/PKYZywzUg9ypO7XtL2fMkRcp9Ycr9hwXMgko75Mye03tMzE61J01S5TWnVnI8P4npNtgXNxCW4aObei44CAQBrY6b5rnBxBlD/vT1wa3ed6q6Lq8NSICMrxHEK6OQ4ivbdGj+W0En3jlNSlIbWGmyWkQgqfvkhTUXnrdbW9Y1jSfDvz1Y+30UMgE6+dvGckqHfNusbB
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:CH3PR11MB566895.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230040)(23010399003)(7416014)(376014)(366016)(1800799024)(38070700021)(261021123027099003)(261022105027099003)(11063799006)(261028144727099003)(261021121427099003)(261009223027099003)(56012099006)(261026121527099003)(261022075727099003)(261026140227099003)(261102123227099003)(10067099003)(18002099003)(22082099003)(6133799003);
+ DIR:OUT; SFP:1101; 
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?utf-8?B?bWdHUjhwMjFwVmxoeHREenFHM051MTVHdlV5RDB3RjRsZTdpeEFCRHhwN2pK?=
+ =?utf-8?B?OUE1MXo0c0ZDdVp0Wi83OHhZZlN4dmp2YzZvY1pRMXFMSnR0ZnFEa2U1c1VC?=
+ =?utf-8?B?ODRYbmdVcTRUbGRqL2lCdVRSTE5VUEovNjh6RkswczB2NnFhSjJBRDZOTjk2?=
+ =?utf-8?B?NGRRN25hbThjaWJtZnpCeDFpS0ZxK1orcGtUb2EzeHZ5NWZCbk5rZCswRVZv?=
+ =?utf-8?B?YkE5MUQxVHJQdkQwUjRPNDlWaUl0OW55bTdZdS9iYzcrREZaaUU5UUlnem1o?=
+ =?utf-8?B?a0FpdU4xRnlpbEFtVVBsME5TQVFsbFdaVUcvSHBFNXN6WllkVmwvVHVvUFlh?=
+ =?utf-8?B?cm8rYU81dk52N1dmeTc0NDQxR1YxMkgvZ3Z2YnhydFdYZmVJU0RpSGJIRWRs?=
+ =?utf-8?B?ZkRya25iV0tRenQ2YkZDQ00vUG9sVjBqU3JMQ1dDdkRJVGxmWTljS2dtdGRl?=
+ =?utf-8?B?VEUvdHRiTEovV2pGZjNTWjlwSlVwR200a0J2bjN6SDcxUG1QZGxSRHBqaGpU?=
+ =?utf-8?B?Zm80ZTlWdnNTWlMzRGFmZ0N2U1d5NFl3d25YQnF3a3lCek1JYkVNaGtBUXpu?=
+ =?utf-8?B?d1pjS21qNG9rZ1AvVEs1WGNULzJ2L1hyOHBMeURGSk1GNG02ZHJZbFpXZjlp?=
+ =?utf-8?B?dGR3T0srU1JrbUVmdHQxRVU1Q0ZUNUVIQUVISjdyWVgrMGhWV1FTalNDUnQ4?=
+ =?utf-8?B?ZkQvZkJmZHZVNXFqNzlyU3dXUGNoeDh6QWxzZStFYTNYdk80Qi8wancwL04w?=
+ =?utf-8?B?OU4xOEFtY1ovYjVraVM2VExySHIzOTRCMnIvUk85d3dxcGlwT3pySk1BWXRz?=
+ =?utf-8?B?ZXlnZWZxSmQybDRsaGw3ZzV3c3VBVG0wM3BySWdpUnRyL0JqYUY0cUJ1bVVV?=
+ =?utf-8?B?cGF6bjZuZ1p3VEJXQmlxb1pUU2c5Z0lZa0ZDVlZNRVdmdU43MWQ1aXhVdzhq?=
+ =?utf-8?B?NmZXQlMxRGtUbXZCOGpPK0N6ZTAwUnZJL2crTlNNTHhRTzY3SDZkNi9CQmZy?=
+ =?utf-8?B?bTRJVmx3YllySVgrV2ZXWnpyNnlvWDh6dUc3OEhLa0pXdzdHUFZ4Q3g3YXNa?=
+ =?utf-8?B?dWwrSVc1UkRESmdTZzhFTkNHeVRSTklCdU5VeE1ScmVvSStiQW9tYUZranM3?=
+ =?utf-8?B?RVR5VHc5MGVjNkJHSVdmWEdiKzk3Skp0RE4yd2haV0dQWElmSzNXdjE2MEYz?=
+ =?utf-8?B?YXF3cnRHcFoyK3pXUTMvc2thOEg5R3RJMzYwRDIrWkw1QU4rZ0poeXB2VkJs?=
+ =?utf-8?B?QnBPOFZndDV6YVFMU0ltbk5mTFpPWDY0VlBnNm1RVWJSeEcxQTZkT2k2SWJY?=
+ =?utf-8?B?ZUd4blN3R0JRNm5UZ2pJTE9QTWZ0R0U3M3hDMXNoRDZ1Q2dJNXQwdlpFSFZI?=
+ =?utf-8?B?Ymk1dkFzaHZCOE9MVUJZTEVVMUZZMS9IRU4vcC8zaElkN3gwTWorVWF4NGdH?=
+ =?utf-8?B?Q0V5UThndWx6aWlJNmlEalhXQ0Z3cWhoeHRsQWI3RUUrZVc1VzRtd0VkUUdF?=
+ =?utf-8?B?cnhoUFZhQ1JnUEFuck44NVJoZTkxY0RaZm1VU1BUZS9ZRUtEWnkzeTVZeVhV?=
+ =?utf-8?B?bUMwNEpOdll3aDRYSkNjbk45NC9KakdxMGNncmZwMEhCRkkraG4zYjJnZHNk?=
+ =?utf-8?B?UU1hcDYzM3d5ZHgzVklyT05uYXhXYnlIc1RDZlVvaDBOMDdvb1dxeDFMOW1Z?=
+ =?utf-8?B?dEVTNEFYQUlnVGtWTFpIMi8vQ1ByODA3S2JHeWl6cUd3UnVYQmZvdFBRaTgw?=
+ =?utf-8?B?ZTNOR21QZy8yTkZOUll4R3g0NEJWRDFtR2RYTENPRU9INFJMa2hzSkpJRlhY?=
+ =?utf-8?B?OTFvTzVGdkhjYkVEVVB1VXZmSjFXWlJrTThLKy95d3pMNVNlbUdWTTVTZ2tj?=
+ =?utf-8?B?WHRJVm1rUTB3eHRpd0VIU3JNWi9tU0JjUjVzRitkZmRJa3lqY3dVclFkc29S?=
+ =?utf-8?B?UEN4TVRoakIyUllaa1JkUVhxUE05OXNuM0Z5VXgvZ0FaWkY5NWU5STBBZWN6?=
+ =?utf-8?B?N0RSRzhkRUJMQXFvNWVPMitxT0xJS2VxODEvZzBkblAzZHNjVHZGK3QwdWZ2?=
+ =?utf-8?B?VEhjdVpLTVFPb0F1MktDMnY2VWtFT1I3NFN3SzE2b3c4QzBXMFFTTDUvTVRP?=
+ =?utf-8?B?MXMvK1h6emppWFZ1UWg1elhsYlhCVFExM3FYSlQxRFhUZHNUQjlQc2hYNWY2?=
+ =?utf-8?B?TDljazVEdnJRT2hIOCtHUnR2VUpES1dxNjQ0bGM1UC9INkQyem90YVd1YnFY?=
+ =?utf-8?B?SHBKbmJMMFVjQ1NzdkRkWDJyd3RVODVUVkViTkJMVU5NQXh5WkVpNWl2TnAv?=
+ =?utf-8?B?QzJNeE5McmpkN1pIbENDckRPeTdJMTI0WVc3MHpURjNJLzJpS1orVVFOeURx?=
+ =?utf-8?Q?RK0h9PANAkP91ogE=3D?=
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+X-Exchange-RoutingPolicyChecked: Uac0wDGYhefq3ckkaeV1eN8Ni+fSP4THSTxZLrTE4HIf3jhbwit8D8PuiwX9u1X94spVJ81HxGPtdUvDTPU8HpxcsVSU9Vnu6D44IpOQKmn8C44NYyBaizPt6qEE6DBQsOZIK2Sue649RH+u2u+sZ/DYEzXj/nYHnLeXpU1SbZb+pxZd82zQrP2ErK5CVcNQ33XG4dCdKODAPJqVZg26pnn9yisY8sWudYoKbx9eeEzM5AimjoR5upZtI6Vgv9W5yiHYuZZMeFThqDap5po/4xQySRcJNmwOXj3KUCZQmzca7h5sbtNSbIXN46u7AoN17VyvsrUJBJESVd2JU/7waQ==
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: CH3PR11MB566895.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: bf640a2a-4a46-43de-f481-08df3bd52d3c
+X-MS-Exchange-CrossTenant-originalarrivaltime: 06 Nov 2026 07:11:28.2738 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: YAE/m/As984zpdQHeGxFe+rkujc8xnuAkquvj78slnJccGjTx21NFeBpbCGWs6ziBlzYRUDefjbvbejyT8rURMcnOc3+DSwvy2AxCL5Af8A=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW4PR11MB6981
+X-OriginatorOrg: intel.com
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -141,321 +251,78 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-15.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS
-	autolearn=unavailable autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_NONE autolearn=unavailable
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-
-
-
-
-On Thursday, November 5th, 2026 at 11:50 PM, Ding Meng <meng.ding@siemens.c=
-om> wrote:
-
-> On Thu, Nov 05, 2026 at 10:29:51PM +0000, Paul Moses wrote:
-> >
-> >
-> >
-> >
-> > On Thursday, November 5th, 2026 at 1:19 AM, Ding Meng <meng.ding@siemen=
-s.com> wrote:
-> >
-> > > Commit 97dc7cd92ac6 ("ptp: Support late timestamp determination")
-> > > added support for deferring RX timestamp conversion to
-> > > ndo_get_tstamp(). When the timestamp is consumed, get_timestamp()
-> > > uses the skb's NAPI ID to find the device that owns the timestamp
-> > > cookie and invoke its callback.
-> > >
-> > > Commit e68b6e50fa35 ("udp: enable busy polling for all sockets")
-> > > gated NAPI ID bookkeeping with CONFIG_NET_RX_BUSY_POLL. As a result,
-> > > when busy polling is disabled, the skb may not carry a usable NAPI ID=
-.
-> > > The device lookup then fails, so the driver callback is not invoked.
-> > > get_timestamp() falls back to hwtstamp, which does not contain the
-> > > converted timestamp, resulting in an incorrect RX hardware timestamp.
-> > >
-> > > Record skb NAPI IDs independently of busy-poll support to support
-> > > drivers that use deferred timestamp conversion and future driver
-> > > features that need to look up a device by its NAPI ID.
-> > >
-> > > Signed-off-by: Ding Meng <meng.ding@siemens.com>
-> > > Reviewed-by: Florian Bezdeka <florian.bezdeka@siemens.com>
-> > > ---
-> > > In the discussion of the issue reported at
-> > > https://lore.kernel.org/netdev/20260630112056.885071-1-meng.ding@siem=
-ens.com/
-> > > this previous patch added an igc-specific fallback for configurations
-> > > with CONFIG_NET_RX_BUSY_POLL disabled. It populated skb's hwtstamp
-> > > field with a timestamp converted using the default hardware timer,
-> > > allowing get_timestamp() to return it without invoking ndo_get_tstamp=
-().
-> > > But Jakub Kicinski noted that the proposed fix appeared to be a
-> > > driver-specific workaround for a generic problem. The engleder driver
-> > > would also be affected by the same issue.
-> > >
-> > > This patch introduces a new configuration option to enable NAPI ID
-> > > bookkeeping independently of busy polling. The option is enabled
-> > > whenever busy polling is enabled, preserving the existing behavior.
-> > > It is also selected by the igc and engleder drivers, ensuring that
-> > > skbs carry a NAPI ID even when busy polling is disabled.
-> > >
-> > > Another approach considered was to require drivers using deferred
-> > > timestamp conversion, such as igc and engleder, to enable busy pollin=
-g.
-> > > However, this would introduce an unnecessary dependency between two
-> > > independent features: hardware timestamp reporting should not require
-> > > busy polling to be enabled.
-> > >
-> > > Timestamping has been tested only with igc; it has not been tested
-> > > with engleder.
-> > >
-> > >  Documentation/networking/timestamping.rst | 11 ++++++++---
-> > >  drivers/net/ethernet/engleder/Kconfig     |  1 +
-> > >  drivers/net/ethernet/intel/Kconfig        |  1 +
-> > >  include/linux/skbuff.h                    |  4 ++--
-> > >  include/net/busy_poll.h                   |  2 +-
-> > >  include/trace/events/net.h                |  2 +-
-> > >  net/Kconfig                               |  4 ++++
-> > >  net/core/filter.c                         |  2 +-
-> > >  net/core/skbuff.c                         |  2 +-
-> > >  9 files changed, 20 insertions(+), 9 deletions(-)
-> > >
-> > > diff --git a/Documentation/networking/timestamping.rst b/Documentatio=
-n/networking/timestamping.rst
-> > > index 2162c4f2b28a6..dbe40a1972639 100644
-> > > --- a/Documentation/networking/timestamping.rst
-> > > +++ b/Documentation/networking/timestamping.rst
-> > > @@ -278,9 +278,14 @@ SOF_TIMESTAMPING_OPT_PKTINFO:
-> > >    packets with hardware timestamps. The message contains struct
-> > >    scm_ts_pktinfo, which supplies the index of the real interface whi=
-ch
-> > >    received the packet and its length at layer 2. A valid (non-zero)
-> > > -  interface index will be returned only if CONFIG_NET_RX_BUSY_POLL i=
-s
-> > > -  enabled and the driver is using NAPI. The struct contains also two
-> > > -  other fields, but they are reserved and undefined.
-> > > +  interface index will be returned only if CONFIG_SKB_MARK_NAPI_ID i=
-s
-> > > +  enabled and the driver is using NAPI. This hidden configuration is
-> > > +  selected automatically by busy-poll support and by drivers that ne=
-ed
-> > > +  skb NAPI IDs to resolve deferred hardware timestamps. Drivers that
-> > > +  use deferred timestamp conversion must select it so the networking
-> > > +  stack can find the device and call its timestamp callback even whe=
-n
-> > > +  busy polling is disabled. The struct contains also two other field=
-s,
-> > > +  but they are reserved and undefined.
-> > >
-> > >  SOF_TIMESTAMPING_OPT_TX_SWHW:
-> > >    Request both hardware and software timestamps for outgoing packets
-> > > diff --git a/drivers/net/ethernet/engleder/Kconfig b/drivers/net/ethe=
-rnet/engleder/Kconfig
-> > > index 3df6bf476ae7e..9700a243bea11 100644
-> > > --- a/drivers/net/ethernet/engleder/Kconfig
-> > > +++ b/drivers/net/ethernet/engleder/Kconfig
-> > > @@ -22,6 +22,7 @@ config TSNEP
-> > >  =09depends on PTP_1588_CLOCK_OPTIONAL
-> > >  =09select PHYLIB
-> > >  =09select PAGE_POOL
-> > > +=09select SKB_MARK_NAPI_ID
-> > >  =09help
-> > >  =09  Support for the Engleder TSN endpoint Ethernet MAC IP Core.
-> > >
-> > > diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/etherne=
-t/intel/Kconfig
-> > > index 780f113986ea8..7fb63f351fc20 100644
-> > > --- a/drivers/net/ethernet/intel/Kconfig
-> > > +++ b/drivers/net/ethernet/intel/Kconfig
-> > > @@ -376,6 +376,7 @@ config IGC
-> > >  =09depends on PCI
-> > >  =09depends on PTP_1588_CLOCK_OPTIONAL
-> > >  =09depends on ETHTOOL_NETLINK
-> > > +=09select SKB_MARK_NAPI_ID
-> > >  =09help
-> > >  =09  This driver supports Intel(R) Ethernet Controller I225-LM/I225-=
-V
-> > >  =09  family of adapters.
-> > > diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
-> > > index 6787fcf6ac3e4..164c862f7a403 100644
-> > > --- a/include/linux/skbuff.h
-> > > +++ b/include/linux/skbuff.h
-> > > @@ -1059,7 +1059,7 @@ struct sk_buff {
-> > >  =09=09=09__u16=09vlan_tci;
-> > >  =09=09};
-> > >  =09};
-> > > -#if defined(CONFIG_NET_RX_BUSY_POLL) || defined(CONFIG_XPS)
-> > > +#if defined(CONFIG_SKB_MARK_NAPI_ID) || defined(CONFIG_XPS)
-> > >  =09union {
-> > >  =09=09unsigned int=09napi_id;
-> > >  =09=09unsigned int=09sender_cpu;
-> > > @@ -1267,7 +1267,7 @@ static inline bool skb_pkt_type_ok(u32 ptype)
-> > >   */
-> > >  static inline unsigned int skb_napi_id(const struct sk_buff *skb)
-> > >  {
-> > > -#ifdef CONFIG_NET_RX_BUSY_POLL
-> > > +#ifdef CONFIG_SKB_MARK_NAPI_ID
-> > >  =09return skb->napi_id;
-> > >  #else
-> > >  =09return 0;
-> > > diff --git a/include/net/busy_poll.h b/include/net/busy_poll.h
-> > > index 6e172d0f6ef5f..f7c0e62c6a7d7 100644
-> > > --- a/include/net/busy_poll.h
-> > > +++ b/include/net/busy_poll.h
-> > > @@ -130,7 +130,7 @@ static inline void sk_busy_loop(struct sock *sk, =
-int nonblock)
-> > >  static inline void __skb_mark_napi_id(struct sk_buff *skb,
-> > >  =09=09=09=09      const struct gro_node *gro)
-> > >  {
-> > > -#ifdef CONFIG_NET_RX_BUSY_POLL
-> > > +#ifdef CONFIG_SKB_MARK_NAPI_ID
-> > >  =09/* If the skb was already marked with a valid NAPI ID, avoid over=
-writing
-> > >  =09 * it.
-> > >  =09 */
-> > > diff --git a/include/trace/events/net.h b/include/trace/events/net.h
-> > > index dbc2c5598e35a..99ed7645242eb 100644
-> > > --- a/include/trace/events/net.h
-> > > +++ b/include/trace/events/net.h
-> > > @@ -208,7 +208,7 @@ DECLARE_EVENT_CLASS(net_dev_rx_verbose_template,
-> > >
-> > >  =09TP_fast_assign(
-> > >  =09=09__assign_str(name);
-> > > -#ifdef CONFIG_NET_RX_BUSY_POLL
-> > > +#ifdef CONFIG_SKB_MARK_NAPI_ID
-> > >  =09=09__entry->napi_id =3D napi_id_valid(skb->napi_id) ?
-> > >  =09=09=09=09   skb->napi_id : 0;
-> > >  #else
-> > > diff --git a/net/Kconfig b/net/Kconfig
-> > > index 76ab44aa439a6..8fa7586dc08ca 100644
-> > > --- a/net/Kconfig
-> > > +++ b/net/Kconfig
-> > > @@ -346,9 +346,13 @@ config CGROUP_NET_CLASSID
-> > >  =09  Cgroup subsystem for use as general purpose socket classid mark=
-er that is
-> > >  =09  being used in cls_cgroup and for netfilter matching.
-> > >
-> > > +config SKB_MARK_NAPI_ID
-> > > +=09bool
-> > > +
-> > >  config NET_RX_BUSY_POLL
-> > >  =09bool
-> > >  =09default y if !PREEMPT_RT || (PREEMPT_RT && !NETCONSOLE)
-> > > +=09select SKB_MARK_NAPI_ID
-> > >
-> > >  config BQL
-> > >  =09bool
-> > > diff --git a/net/core/filter.c b/net/core/filter.c
-> > > index b7ac145b68b1f..e2218c18622b8 100644
-> > > --- a/net/core/filter.c
-> > > +++ b/net/core/filter.c
-> > > @@ -10274,7 +10274,7 @@ static u32 bpf_convert_ctx_access(enum bpf_ac=
-cess_type type,
-> > >  =09=09break;
-> > >
-> > >  =09case offsetof(struct __sk_buff, napi_id):
-> > > -#if defined(CONFIG_NET_RX_BUSY_POLL)
-> > > +#if defined(CONFIG_SKB_MARK_NAPI_ID)
-> > >  =09=09*insn++ =3D BPF_LDX_MEM(BPF_W, si->dst_reg, si->src_reg,
-> > >  =09=09=09=09      bpf_target_off(struct sk_buff, napi_id, 4,
-> > >  =09=09=09=09=09=09     target_size));
-> > > diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-> > > index eb9fcc4b1fd1a..386a32cdc0cc8 100644
-> > > --- a/net/core/skbuff.c
-> > > +++ b/net/core/skbuff.c
-> > > @@ -1581,7 +1581,7 @@ static void __copy_skb_header(struct sk_buff *n=
-ew, const struct sk_buff *old)
-> > >  #ifdef CONFIG_NETWORK_SECMARK
-> > >  =09CHECK_SKB_FIELD(secmark);
-> > >  #endif
-> > > -#ifdef CONFIG_NET_RX_BUSY_POLL
-> > > +#ifdef CONFIG_SKB_MARK_NAPI_ID
-> > >  =09CHECK_SKB_FIELD(napi_id);
-> > >  #endif
-> > >  #ifdef CONFIG_XPS
-> > >
-> > > base-commit: d135ab453a7400a34930bdda1ef4bdc8acfac80e
-> > > --
-> > > 2.47.3
-> > >
-> > >
-> >
-> > Are you sure this does not make the preexisting timestamp lifetime
-> > issue more pathological? I think it needs to be fixed now as well.
-> > It was the last item mentioned by Sashiko in your review if I
-> > remember correctly.
-> >
-> > Paul
->=20
-> The hardware timestamp lifetime issue may indeed exist,
-> but it is independent of this patch. Even if that issus is fixed,
-> we still need to obtain the netdevice from the skb, so the decoupling
-> configuration introduced by this patch is still necessary.
->=20
-> Ding Meng
->=20
-
-Your patch changes non busy poll kernels from returning the raw cookie=20
-pointer to dereferencing that cookie just like busy poll already did.
-
-So I guess that's an improvement? My apathy has reached a threshold
-where that sounds good to me.
-
-The big question is why does igc alone need core modification to properly=
-=20
-store Timer 1. Seemed like an intel question so I digress.
-
-Good luck and have fun
-
-
-[    7.971832] =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-[    7.971852] BUG: KASAN: use-after-free in igc_ptp_rx_pktstamp+0x12c/0x19=
-0
-[    7.972002] Read of size 4 at addr ffff88800549c008 by task test/197
-[    7.972013]=20
-[    7.972041] CPU: 0 UID: 65534 PID: 197 Comm: test Not tainted 7.3.0-nobu=
-sy-patched-20261105+ #1 PREEMPT_RT=20
-[    7.972064] Call Trace:
-[    7.972103]  <TASK>
-[    7.972122]  dump_stack_lvl+0x43/0x60
-[    7.972215]  print_address_description+0x55/0x1d0
-[    7.972265]  ? igc_ptp_rx_pktstamp+0x12c/0x190
-[    7.972285]  print_report+0x58/0x70
-[    7.972295]  kasan_report+0x130/0x170
-[    7.972356]  ? igc_ptp_rx_pktstamp+0x12c/0x190
-[    7.972366]  igc_ptp_rx_pktstamp+0x12c/0x190
-[    7.972375]  __sock_recv_timestamp+0x72b/0xe10
-[    7.972451]  __sock_recv_cmsgs+0x168/0x3c0
-[    7.972461]  udp_recvmsg+0x4c9/0xb40
-[    7.972525]  ? __pfx_inet_recvmsg+0x10/0x10
-[    7.972546]  sock_recvmsg+0x125/0x170
-[    7.972556]  ____sys_recvmsg+0x167/0x3b0
-[    7.972567]  __sys_recvmsg+0x14c/0x1b0
-[    7.972578]  ? do_syscall_64+0x115/0x310
-[    7.972660]  do_syscall_64+0xdb/0x310
-[    7.972671]  entry_SYSCALL_64_after_hwframe+0x76/0x7e
-[    7.972697] RIP: 0033:0x20af4c
-[    7.972726] Code: be 01 00 00 00 0f 05 c3 cc cc cc cc cc cc 4d 89 cb 48 =
-89 f8 4c 8b 4c 24 08 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 d8 0f 05 <c3=
-> cc cc cc e9 db ff ff ff cc cc cc c3 cc cc cc cc cc cc cc 55 41
-[    7.972744] RSP: 002b:00007ffd6dcb7308 EFLAGS: 00000246 ORIG_RAX: 000000=
-000000002f
-[    7.972775] RAX: ffffffffffffffda RBX: 00007ffd6dcb73a0 RCX: 00000000002=
-0af4c
-[    7.972783] RDX: 0000000000000000 RSI: 00007ffd6dcb7320 RDI: 00000000000=
-00003
-[    7.972790] RBP: 0000000000000003 R08: 0000000000000000 R09: 00000000000=
-00000
-[    7.972796] R10: 0000000000000000 R11: 0000000000000246 R12: 00000000000=
-00230
-[    7.972802] R13: 00007ffd6dcb73e0 R14: 0000000000000000 R15: 00007ffd6dc=
-b75e0
-[    7.972812]  </TASK>
-
-
-
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogTmFtYW4gR3VsYXRpIDxu
+YW1hbmd1bGF0aUBnb29nbGUuY29tPg0KPiBTZW50OiBGcmlkYXksIE5vdmVtYmVyIDYsIDIwMjYg
+MToyNiBBTQ0KPiBUbzogaW50ZWwtd2lyZWQtbGFuQGxpc3RzLm9zdW9zbC5vcmcNCj4gQ2M6IG5l
+dGRldkB2Z2VyLmtlcm5lbC5vcmc7IE5ndXllbiwgQW50aG9ueSBMDQo+IDxhbnRob255Lmwubmd1
+eWVuQGludGVsLmNvbT47IEtpdHN6ZWwsIFByemVteXNsYXcNCj4gPHByemVteXNsYXcua2l0c3pl
+bEBpbnRlbC5jb20+OyBMb2Jha2luLCBBbGVrc2FuZGVyDQo+IDxhbGVrc2FuZGVyLmxvYmFraW5A
+aW50ZWwuY29tPjsgQnJpYW4gVmF6cXVleiA8YnJpYW52dkBnb29nbGUuY29tPjsNCj4gQW5kcmV3
+IEx1bm4gPGFuZHJldytuZXRkZXZAbHVubi5jaD47IERhdmlkIFMgLiBNaWxsZXINCj4gPGRhdmVt
+QGRhdmVtbG9mdC5uZXQ+OyBFcmljIER1bWF6ZXQgPGVkdW1hemV0QGtlcm5lbC5vcmc+OyBKYWt1
+Yg0KPiBLaWNpbnNraSA8a3ViYUBrZXJuZWwub3JnPjsgUGFvbG8gQWJlbmkgPHBhYmVuaUByZWRo
+YXQuY29tPjsgTmFtYW4NCj4gR3VsYXRpIDxuYW1hbmd1bGF0aUBnb29nbGUuY29tPjsgc3RhYmxl
+QHZnZXIua2VybmVsLm9yZw0KPiBTdWJqZWN0OiBbUEFUQ0ggaXdsLW5ldCB2Ml0gaWRwZjogZml4
+IFJ4IHBheWxvYWQgYnVmZmVyIGxlYWsgd2hlbiBoZWFkZXINCj4gYnVmZmVyIGFsbG9jYXRpb24g
+ZmFpbHMNCj4gDQo+IFdpdGggaGVhZGVyIHNwbGl0LCBpZHBmX3J4X3VwZGF0ZV9idWZxX2Rlc2Mo
+KSBhbGxvY2F0ZXMgdGhlIHBheWxvYWQNCj4gYnVmZmVyIGZvciBhIGJ1ZmZlciBJRCBmaXJzdCBh
+bmQgaXRzIGhlYWRlciBidWZmZXIgc2Vjb25kLiBJZiB0aGUgaGVhZGVyDQo+IGJ1ZmZlciBhbGxv
+Y2F0aW9uIGZhaWxzLCBpdCByZXR1cm5zIC1FTk9NRU0gYW5kIGxlYXZlcyB0aGUgbmV3IHBheWxv
+YWQNCj4gYnVmZmVyIGluIGJ1ZnEtPmJ1ZltidWZfaWRdLiBpZHBmX3J4X2NsZWFuX3JlZmlsbHEo
+KSB0aGVuIHN0b3BzIHdpdGhvdXQNCj4gY29uc3VtaW5nIHRoZSByZWZpbGwgcXVldWUgZW50cnks
+IGFuZCB0aGUgbmV4dCBOQVBJIHBvbGwgcmV0cmllcyB0aGUNCj4gc2FtZSBidWZmZXIgSUQsIGFn
+YWluIHN0YXJ0aW5nIHdpdGggdGhlIHBheWxvYWQgYnVmZmVyLg0KPiBsaWJldGhfcnhfYWxsb2Mo
+KSBvdmVyd3JpdGVzIGJ1ZnEtPmJ1ZltidWZfaWRdLCBhbmQgdGhlIGVhcmxpZXIgcGF5bG9hZA0K
+PiBidWZmZXIgaXMgbmV2ZXIgcmV0dXJuZWQgdG8gaXRzIHBhZ2VfcG9vbC4NCj4gDQo+IEVhY2gg
+c3VjaCBmYWlsdXJlIGxlYWtzIG9uZSBwYXlsb2FkIGJ1ZmZlci4gVGhlIHBvb2wncyBpbmZsaWdo
+dCBjb3VudA0KPiBuZXZlciBkcm9wcyB0byB6ZXJvLCBzbyB3aGVuIHRoZSBxdWV1ZXMgYXJlIHJl
+LWNyZWF0ZWQgb3IgdGhlIGRldmljZQ0KPiBnb2VzIGF3YXksIHRoZSBwb29sIG5ldmVyIGZpbmlz
+aGVzIHNodXR0aW5nIGRvd24gYW5kDQo+IHBhZ2VfcG9vbF9yZWxlYXNlX3JldHJ5KCkga2VlcHMg
+d2FybmluZyBhYm91dCBhIHN0YWxsZWQgcG9vbCBzaHV0ZG93bi4NCj4gDQo+IFRoaXMgaGFwcGVu
+cyB3aGVuIHRoZSBoZWFkZXIgYnVmZmVyIHBvb2wgcnVucyBkcnkgd2hpbGUgdGhlIHBheWxvYWQg
+cG9vbA0KPiBzdGlsbCBoYXMgcGFnZXMsIGZvciBleGFtcGxlIHVuZGVyIG1lbW9yeSBwcmVzc3Vy
+ZTogYSBoZWFkZXIgcGFnZSBob2xkcw0KPiBzZXZlcmFsIGhlYWRlciBidWZmZXJzIGFuZCBvbmx5
+IGdvZXMgYmFjayB0byBpdHMgcG9vbCBvbmNlIHRoZSBza2JzDQo+IHVzaW5nIGFsbCBvZiB0aGVt
+IGhhdmUgYmVlbiBmcmVlZC4gVGhpcyB3YXMgaGl0IHVuZGVyIGhpZ2ggZmxvdyBjb3VudA0KPiBU
+Q1Agc3RyZWFtIHRlc3RzIHdpdGggbWVtb3J5IHByZXNzdXJlIGNhdXNpbmcgUlggaGVhZGVyIGJ1
+ZmZlcg0KPiBhbGxvY2F0aW9ucyB0byBmYWlsLCBhbmQgdmFsaWRhdGVkIG9uIGlkcGYuDQo+IA0K
+PiBSZWxlYXNlIHRoZSBwYXlsb2FkIGJ1ZmZlciB3aGVuIHRoZSBoZWFkZXIgYnVmZmVyIGNhbm5v
+dCBiZSBhbGxvY2F0ZWQsDQo+IGFzIGljZV9hbGxvY19yeF9idWZzKCkgYWxyZWFkeSBkb2VzLCBz
+byB0aGF0IHRoZSByZXRyeSBzdGFydHMgZnJvbSBhbg0KPiBlbXB0eSBzbG90LiBpZHBmX3J4X3Bh
+Z2VfcmVsKCkgYWxzbyBjbGVhcnMgdGhlIHNsb3QsIHNvIHRoZSBidWZmZXIgcXVldWUNCj4gdGVh
+cmRvd24gY2Fubm90IHJlbGVhc2UgdGhlIGJ1ZmZlciBhIHNlY29uZCB0aW1lLg0KPiANCj4gRml4
+ZXM6IDkwOTEyZjlmNGYyZCAoImlkcGY6IGNvbnZlcnQgaGVhZGVyIHNwbGl0IG1vZGUgdG8gbGli
+ZXRoICsNCj4gbmFwaV9idWlsZF9za2IoKSIpDQo+IENjOiBzdGFibGVAdmdlci5rZXJuZWwub3Jn
+ICMgNi4xMSsNCj4gU2lnbmVkLW9mZi1ieTogTmFtYW4gR3VsYXRpIDxuYW1hbmd1bGF0aUBnb29n
+bGUuY29tPg0KPiBUZXN0ZWQtYnk6IEJyaWFuIFZhenF1ZXogPGJyaWFudnZAZ29vZ2xlLmNvbT4N
+Cj4gUmV2aWV3ZWQtYnk6IEFsZXhhbmRlciBMb2Jha2luIDxhbGVrc2FuZGVyLmxvYmFraW5AaW50
+ZWwuY29tPg0KPiAtLS0NCj4gdjI6DQo+ICAgLSBBZGQgQ2M6IHN0YWJsZUB2Z2VyLmtlcm5lbC5v
+cmcgIyA2LjExKyAoQWxleGFuZGVyKQ0KPiAgIC0gQWRkIFJldmlld2VkLWJ5IChBbGV4YW5kZXIp
+IGFuZCBUZXN0ZWQtYnkgKEJyaWFuKSB0YWdzDQo+ICAgLSBOb3RlIGhvdyB0aGUgaXNzdWUgd2Fz
+IHRyaWdnZXJlZCBhbmQgdmFsaWRhdGVkIG9uIGlkcGYgaW4gdGhlIGNvbW1pdA0KPiBtZXNzYWdl
+DQo+ICAgLSB2MTogaHR0cHM6Ly9sb3JlLmtlcm5lbC5vcmcvaW50ZWwtd2lyZWQtbGFuLzIwMjYx
+MTA0MDEzNjA2LjE1Mjc3NjctDQo+IDEtbmFtYW5ndWxhdGlAZ29vZ2xlLmNvbS8NCj4gIGRyaXZl
+cnMvbmV0L2V0aGVybmV0L2ludGVsL2lkcGYvaWRwZl90eHJ4LmMgfCA0ICsrKy0NCj4gIDEgZmls
+ZSBjaGFuZ2VkLCAzIGluc2VydGlvbnMoKyksIDEgZGVsZXRpb24oLSkNCj4gDQo+IGRpZmYgLS1n
+aXQgYS9kcml2ZXJzL25ldC9ldGhlcm5ldC9pbnRlbC9pZHBmL2lkcGZfdHhyeC5jDQo+IGIvZHJp
+dmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvaWRwZi9pZHBmX3R4cnguYw0KPiBpbmRleCA4ODVkZjYy
+OTRhZDk0Li43MzgzZDgyNDFlYWQ1IDEwMDY0NA0KPiAtLS0gYS9kcml2ZXJzL25ldC9ldGhlcm5l
+dC9pbnRlbC9pZHBmL2lkcGZfdHhyeC5jDQo+ICsrKyBiL2RyaXZlcnMvbmV0L2V0aGVybmV0L2lu
+dGVsL2lkcGYvaWRwZl90eHJ4LmMNCj4gQEAgLTM3NDUsOCArMzc0NSwxMCBAQCBzdGF0aWMgaW50
+IGlkcGZfcnhfdXBkYXRlX2J1ZnFfZGVzYyhzdHJ1Y3QNCj4gaWRwZl9idWZfcXVldWUgKmJ1ZnEs
+IHUzMiBidWZfaWQsDQo+ICAJZnEudHJ1ZXNpemUgPSBidWZxLT5oZHJfdHJ1ZXNpemU7DQo+IA0K
+PiAgCWFkZHIgPSBsaWJldGhfcnhfYWxsb2MoJmZxLCBidWZfaWQpOw0KPiAtCWlmIChhZGRyID09
+IERNQV9NQVBQSU5HX0VSUk9SKQ0KPiArCWlmIChhZGRyID09IERNQV9NQVBQSU5HX0VSUk9SKSB7
+DQo+ICsJCWlkcGZfcnhfcGFnZV9yZWwoJmJ1ZnEtPmJ1ZltidWZfaWRdKTsNCj4gIAkJcmV0dXJu
+IC1FTk9NRU07DQo+ICsJfQ0KPiANCj4gIAlidWZfZGVzYy0+aGRyX2FkZHIgPSBjcHVfdG9fbGU2
+NChhZGRyKTsNCj4gDQo+IC0tDQo+IDIuNTYuMC40NTUuZzZjNWE1MDNiMzgtZ29vZw0KDQpSZXZp
+ZXdlZC1ieTogQWxla3NhbmRyIExva3Rpb25vdiA8YWxla3NhbmRyLmxva3Rpb25vdkBpbnRlbC5j
+b20+DQo=
