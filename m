@@ -1,151 +1,211 @@
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B5EDB60A5BD7
-	for <intel-wired-lan@archiver.kernel.org>; Sat,  7 Nov 2026 14:35:16 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 078D8606EE82
+	for <intel-wired-lan@archiver.kernel.org>; Sat,  7 Nov 2026 15:13:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=bllSZ9VI;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HpvCxd0r
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=BaWLCnRJ;
+	dkim=pass (2048-bit key, unprotected) header.d=hydroquebec.com header.i=@hydroquebec.com header.a=rsa-sha256 header.s=selector2 header.b=BzWMl3II
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 9670C60744;
-	Sat,  7 Nov 2026 14:35:16 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id D0F4B80E95;
+	Sat,  7 Nov 2026 15:13:30 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id xsm5K2DFk-Dv; Sat,  7 Nov 2026 14:35:15 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 3C90660746
-Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794062115;
-	b=DPu+8yMjrTvtX2TfyNgdsuFP5qvT4Ze4Uqbz/4NtUw7/W96pwq33ehXf3IOG4pqboSMD
-	 hkLQXHUoXqX1ZCs0fTcPkD0r0xHRHnZqbqH+eWsfEPICgzalTjtiX/dCLFw2eIiHvM+iR
-	 jYkpxMMvJZ14JGlkLyWQIElPDH5vwp8L+wQRClK+hxBZk3ynBQzuwweLEBBRh3/fpzImz
-	 0IJBUSlYEAPv46Il5z1IjD+JHBUUYPrcXG8jhqC3uT7OliIWPNvc3u/IxTQDc5aBeRjxk
-	 pQralM9uinhiphAOGE2v0Mnf/d6SB646IIpzNo+b5I9H0p2Kd9OcKd++WudN+p52k/w==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id gz9FKdBPT16A; Sat,  7 Nov 2026 15:13:30 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 0E8D180EC7
+Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794064410;
+	b=E+BB8VNkvc6noMn973z41ET05enTZ8QPd6tgMA6BbjNc1BP7no9ScajlX28iKpaIdR/7
+	 G9R+RcZs9kyHG81ffnZELgsRWNibrpurKwdrszXpMhQJ+SfF3MgK7X1bJ4HuNQucL6vBN
+	 NsjtzSyT4cQPU2BU5UvHD9iDDYHUQmBdveUBjc96RrvuWwEwUNty/tIGsg123KyXqdidk
+	 OJdbDfkq7WCMxWeZZF4F+zFeHfNryE5KQDobIwmTQ8GAV5PSdSM9zjGQck0/w+viZWL81
+	 iMYGiPqOa1pKcS3JleUg/p+xLZgGrVV05f+BojiBpjgPxOAJsFV+maiqbMGeWN+xnrQ==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794062115;
+	c=relaxed/relaxed; t=1794064410;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
-	 Content-Type:Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Content-Transfer-Encoding:X-BeenThere:
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
+	 DKIM-Signature:Received:Received:From:To:CC:Subject:Thread-Topic:
+	 Thread-Index:Date:Message-ID:References:In-Reply-To:Accept-Language:
+	 Content-Language:X-MS-Has-Attach:X-MS-TNEF-Correlator:msip_labels:
+	 x-ms-publictraffictype:x-ms-traffictypediagnostic:
+	 x-ms-office365-filtering-correlation-id:x-ms-exchange-senderadcheck:
+	 x-ms-exchange-antispam-relay:x-microsoft-antispam:
+	 x-microsoft-antispam-message-info:x-forefront-antispam-report:
+	 x-ms-exchange-antispam-messagedata-chunkcount:
+	 x-ms-exchange-antispam-messagedata-0:Content-Type:
+	 Content-Transfer-Encoding:MIME-Version:X-OriginatorOrg:
+	 X-MS-Exchange-CrossTenant-AuthAs:X-MS-Exchange-CrossTenant-AuthSource:
+	 X-MS-Exchange-CrossTenant-Network-Message-Id:
+	 X-MS-Exchange-CrossTenant-originalarrivaltime:
+	 X-MS-Exchange-CrossTenant-fromentityheader:
+	 X-MS-Exchange-CrossTenant-id:X-MS-Exchange-CrossTenant-mailboxtype:
+	 X-MS-Exchange-CrossTenant-userprincipalname:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStamped:X-BeenThere:
 	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Reply-To:Errors-To;
-	bh=kLBnfM+2+qKD+WdkrGRF/mOf10jE8NNtb/rFUng9RoI=;
-	b=qUatXpgb843vg9RwoFeHUKBAFe72NCQ2HtSndM5a63YWcdbWF9EFJGTbzoBLsq85dmcU
-	 PA0UaMR54mZAG0RND3XIlPwJDKk9kIr+W4VFKvvvCbSADsQ0pdq850wFkQSKgJfdKrgG3
-	 VRXjdKLmjw1izvCQF30NULjpzl5sHC/r0uk4IqX9eea1nO7GcK42SM89hbvrTa3vVK/3q
-	 H8uLFxo1IpNBoMP7L9Mayydv9LIVT+JIfTm0V2OhfCmxBKq3z58A1kgMf2959/1hndiTU
-	 8xWHTrv8eYQEif5yGZi6+r8m7eMwVUoLtXuV1RUHXYcECggr+a0YBcvFmBj3eq94rkw==
-ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
-	dmarc=pass header.from=kernel.org;
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HpvCxd0r;
+	 List-Post:List-Help:List-Subscribe:Errors-To;
+	bh=cfImJqHL+dzKHx/Mltts3JcvtV8m8GeGHYFDzuh95ik=;
+	b=N13/pbl80WziLZ+YxyD+r5hYP3X39eKnIUdbIuUV/3h3W22uFmzUnb54KmY3UgiRzdk9
+	 0rAYd09pEDhpZVhWnrsvn/V4jd0Ta91Nu8pdRFSlLskg1P1HUZbQOOSEdSf0houvDjsd3
+	 OnZdfF8n4czv8MaRI2C1FvRq/q4syd7l4o+EZAgrTJI8X5at/vgdqIKiHMtqvnww2mgL5
+	 ZdvY08MtNWRxGbUlLoMZWJ0TURb0SIQGZvHLlOlk43Ga9UWeZJNNZN69xjuQBOqRotiYx
+	 X1zgOUcUYY8rwdTBRLvwMghfjUdRUBIrqNM8FdLkJt0EzaAtCL6/Cf3xt9eDg/+9PeA==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1794062115;
-	bh=kLBnfM+2+qKD+WdkrGRF/mOf10jE8NNtb/rFUng9RoI=;
-	h=From:Date:Subject:To:Cc:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Reply-To:From;
-	b=bllSZ9VInOXz/NysNsrl6rAeH1DXCcBQN0qp/c/ESdpN1+fHVRK06iC61qY+FQACP
-	 b5bz1kWz/jmvFHXfLMsNnro2cuNtGf2iQJ9W66iHKFFIH/eRgzth3LZFSfDNR9Kkl7
-	 xTLpsD5LZI+ktOUyiSmuv//dOEWY3jvOMDr9PX6UbY1n8TMl3711wDaaqrxeXxKpfx
-	 CoT50+XS17SQ8FxsqOJaDchs3oL9ilsJFa5v6bPNGQGGT8RWbFTBPoE+uPM78HBbG+
-	 k/f6FSp/dI6OK1IxoqZiDTWunSIRToQJoHtD6csC2qvF9EISU6N74oe1zBuePmv7Si
-	 T9DhuAdZFyiIw==
+	s=default; t=1794064410;
+	bh=cfImJqHL+dzKHx/Mltts3JcvtV8m8GeGHYFDzuh95ik=;
+	h=From:To:CC:Subject:Date:References:In-Reply-To:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=BaWLCnRJ5waM4I6PUyEcXLeTKvooDQdKLTYeJ8ryTkENKJX8BAcvK9vdYoWhj+tQs
+	 V/zPolltrEXlxw1t9QMTqV02rsL1pLwjqetpw8mX3Fmvu0fhlONAO+6YLVUXE5HFw8
+	 sNdbV/uyriIoTIIOVUzfgMttW2q5Da+ZPum8T9MiXeKB93PnBRJ/wXhWm/r1KoY3nf
+	 yXFSylZmOT8x0LaEai7zPLpXhijHOwWuDZYtl9+ikjuDPSP1IBw+ef21lYLMbsdKd2
+	 r4sM5HJqw/NRE6DJPLuii8+Q7MoCwH+xFvyA49tYHVJXkwAmXM6GY2imL61iF4ECkV
+	 qq2qJWk0Gpy+Q==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 3C90660746;
-	Sat,  7 Nov 2026 14:35:15 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id F381837D
- for <intel-wired-lan@lists.osuosl.org>; Sat,  7 Nov 2026 14:35:13 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 0E8D180EC7;
+	Sat,  7 Nov 2026 15:13:30 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 5DDA31E3
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  7 Nov 2026 15:13:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id E4A4960746
- for <intel-wired-lan@lists.osuosl.org>; Sat,  7 Nov 2026 14:35:13 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 3A5D560623
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  7 Nov 2026 15:13:28 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id W8RWTDJRxKuW for <intel-wired-lan@lists.osuosl.org>;
- Sat,  7 Nov 2026 14:35:12 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 538F760744
+ id 6nTzbpbnmRZd for <intel-wired-lan@lists.osuosl.org>;
+ Sat,  7 Nov 2026 15:13:27 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org CFDA2605FD
 Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0
- smtp.remote-ip=172.105.4.254
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org;
- envelope-from=devnull+choiniere.vincent.hydroquebec.com@kernel.org;
- receiver=<UNKNOWN> 
-Authentication-Results: smtp3.osuosl.org; dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
+ smtp.remote-ip=52.101.189.71
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=52.101.189.71;
+ helo=yt3pr01cu008.outbound.protection.outlook.com;
+ envelope-from=choiniere.vincent@hydroquebec.com; receiver=<UNKNOWN> 
+Authentication-Results: smtp3.osuosl.org; dmarc=pass (p=reject dis=none)
+ header.from=hydroquebec.com
 Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=HpvCxd0r
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 538F760744
- for <intel-wired-lan@lists.osuosl.org>; Sat,  7 Nov 2026 14:35:11 +0000 (UTC)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id 604D460D31;
- Sat,  7 Nov 2026 14:35:10 +0000 (UTC)
-Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
-Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
- (No client certificate requested)
- by smtp.kernel.org (Postfix) with ESMTPS id 096111F008A4;
- Sat,  7 Nov 2026 14:35:09 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1794062110;
- bh=kLBnfM+2+qKD+WdkrGRF/mOf10jE8NNtb/rFUng9RoI=;
- h=From:Date:Subject:To:Cc:Reply-To;
- b=HpvCxd0rNKTv/RK3KeNKKqYXLcUb4O5Pfk2NHVHIZrNlFySNdKZmjTY6O9wWNviuh
- zwbrEYQCNfeSFBxTYCQnclFTrx8yYvRb4PPbu4xYiGonmswKERJZwwFIoFcvmFL+LN
- m1x2tX+TpoWycSFDJlUj+luotisU10BlYLMEqnfaPS0ynPuO+ouEH5q0NkcKhfF4r+
- 4tN6QBfenDwcD7g82lpdNth9ul0YckxLea9sEVyQAthMQ8ERff4tfmQnQt02hvSjIT
- Ufz7y5Tyvh+498IhofsRq962aPr/b7aO51wLpeO29Iur5suueLu1YXr0LPqpLM6sQX
- z47U0QwS2ppqg==
-Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
- by lkml.kernel.org (Postfix) with ESMTP id 5B17A47C3A;
- Sat,  7 Nov 2026 14:35:08 +0000 (UTC)
-From: Vincent Choiniere via B4 Relay
- <devnull+choiniere.vincent.hydroquebec.com@kernel.org>
-Date: Sat, 07 Nov 2026 09:35:09 -0500
-Subject: [PATCH net v3] ice: fix Tx hang dump using stale tx_buf[0].skb
+ unprotected) header.d=hydroquebec.com header.i=@hydroquebec.com
+ header.a=rsa-sha256 header.s=selector2 header.b=BzWMl3II
+Received: from YT3PR01CU008.outbound.protection.outlook.com
+ (mail-canadacentralazon11010071.outbound.protection.outlook.com
+ [52.101.189.71])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id CFDA2605FD
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  7 Nov 2026 15:13:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=hydroquebec.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=cfImJqHL+dzKHx/Mltts3JcvtV8m8GeGHYFDzuh95ik=;
+ b=BzWMl3IIpZeJ3TLCORKfFLfp/jx8dzzxRYFLmV6Akc3ycNy0NPfg/z0Hgu6khP5fb3+uNjFoEqKDWCy7HDOPHFbVZs4KZ/Zu/RvnobwJNgWV0s5z3aVpSrXA29JIQMjv5b5mJ/ZwOA/ZM/ZE1+WeljitX6zAI6VhnuKlwXXQQDeWcMOKRjCDFDs1ASwReik6zhojp6+puzgdr3EhUgZFDuas6FcDUOFxyVSx71ZuJ4EALsFQv4KmzDLShduvtZCBU8+9nSo/7V1bUZCVFnC2nzu1RwBLVIEeMpB3lYgQ0pEmSVwcQ7tWh2wPqwwJNcGR8C8QzD+2s8vWt4dvYt2vvA==
+Received: from YT4PR01MB647290.CANPRD01.PROD.OUTLOOK.COM
+ (2603:10b6:b01:18d::8) by YT8PR01MB553497.CANPRD01.PROD.OUTLOOK.COM
+ (2603:10b6:b00:10::12) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.592.11; Sat, 7 Nov
+ 2026 15:13:20 +0000
+Received: from YT4PR01MB647290.CANPRD01.PROD.OUTLOOK.COM
+ ([fe80::aae3:5d66:3923:ae40]) by YT4PR01MB647290.CANPRD01.PROD.OUTLOOK.COM
+ ([fe80::aae3:5d66:3923:ae40%6]) with mapi id 15.21.0592.010; Sat, 7 Nov 2026
+ 15:13:19 +0000
+From: =?iso-8859-1?Q?Choini=E8re=2C_Vincent?=
+ <choiniere.vincent@hydroquebec.com>
+To: "netdev-bot+sashiko@kernel.org" <netdev-bot+sashiko@kernel.org>
+CC: "anthony.l.nguyen@intel.com" <anthony.l.nguyen@intel.com>,
+ "przemyslaw.kitszel@intel.com" <przemyslaw.kitszel@intel.com>,
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
+ "aleksandr.loktionov@intel.com" <aleksandr.loktionov@intel.com>,
+ "michal.kubiak@intel.com" <michal.kubiak@intel.com>,
+ "wojciech.drewek@intel.com" <wojciech.drewek@intel.com>,
+ "mateusz.polchlopek@intel.com" <mateusz.polchlopek@intel.com>,
+ "pmenzel@molgen.mpg.de" <pmenzel@molgen.mpg.de>, "andrew+netdev@lunn.ch"
+ <andrew+netdev@lunn.ch>, "davem@davemloft.net" <davem@davemloft.net>,
+ "edumazet@kernel.org" <edumazet@kernel.org>, "kuba@kernel.org"
+ <kuba@kernel.org>, "pabeni@redhat.com" <pabeni@redhat.com>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "stable@vger.kernel.org" <stable@vger.kernel.org>
+Subject: Re: [PATCH net v2] ice: fix Tx hang dump using stale tx_buf[0].skb
+Thread-Topic: [PATCH net v2] ice: fix Tx hang dump using stale tx_buf[0].skb
+Thread-Index: AQHdZU4ihKdjzNAMJk2Vt0Tl0Q7xS7cT0jmAgA73rbw=
+Date: Sat, 7 Nov 2026 15:13:19 +0000
+Message-ID: <YT4PR01MB64729023ADDEA05B9BDF7F064BE3752@YT4PR01MB647290.CANPRD01.PROD.OUTLOOK.COM>
+References: <20261026-ice-tx-hang-dump-v2-1-e2136ef2c5dc@hydroquebec.com>
+ <179324143967.3134.13716472134019576369@kernel.org>
+In-Reply-To: <179324143967.3134.13716472134019576369@kernel.org>
+Accept-Language: fr-CA, en-US
+Content-Language: fr-CA
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+msip_labels: MSIP_Label_5af313ef-8edb-402d-b576-47820579b2e0_Enabled=True;
+ MSIP_Label_5af313ef-8edb-402d-b576-47820579b2e0_SiteId=f40a10f0-50ee-4880-9a37-6e1dd4ac2ff3;
+ MSIP_Label_5af313ef-8edb-402d-b576-47820579b2e0_SetDate=2026-11-07T15:12:53.896Z;
+ MSIP_Label_5af313ef-8edb-402d-b576-47820579b2e0_Name=Diffusion
+ restreinte; MSIP_Label_5af313ef-8edb-402d-b576-47820579b2e0_ContentBits=1;
+ MSIP_Label_5af313ef-8edb-402d-b576-47820579b2e0_Method=Standard; 
+authentication-results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=hydroquebec.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: YT4PR01MB647290:EE_|YT8PR01MB553497:EE_
+x-ms-office365-filtering-correlation-id: a9ed6718-bd71-4db0-963c-08df3ce1a83b
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+ ARA:13230040|376014|23010399003|7416014|1800799024|366016|38070700021|261026140227099003|11063799006|4143699003|261022075727099003|261009223027099003|56012099006|261022105027099003|261021121427099003|261102123227099003|261026121527099003|261028144727099003|18002099003|22082099003|6133799003|10067099003|3023799007;
+x-microsoft-antispam-message-info: p+/iB3/5+iuaUSz4Q14Aqj3e8yPM1zadF/Y4J0/xDsDckKMKJ3yp+7g4OH6eS+5xeFGDgp8spn5/vQrcutcO7gNKLBGuR4E6f+/N9oplyIYHUlypV3H4kbGaug5wt/XmYEkowYa7itkRV0NkDBQzQSPFlHRW1oCxhQ/bQg9ZgvgAunEtf2w7nWmDZ2DxsX4AQD0Y2c2ah/I/EViy2UTuWEuIFG1gTiiaHvhycn1FJpzGb6NjpsQy2pJ7plyJfzwyIb6DwcG/9TP66NcVfzLo8xcDF5VKH8ksqyM20Bj8MGwh8M5Aqh+E3KuSBqZqXxGnQjHf26P957UVPA9bSPlFQa4congL/QMsN1vI6ct78kkmRI89l4Kl0PMeNrVbJPaArE2cdDYNGqGmlGTNaFHbz63PkPj/Tua2r+jtY+ziDAfOg820Bj/ohigv/lvRhT8NB9JqQtZ7wNMtUJHwbYoVIYuUbj6/ufmOnHgnfJQvaFRdQy6aGhA603LrXiGVUOlpUejGvRz6wpgLzw4RgciuTKZNnk15mdJTWfyGLmYC4SsDtkuTSLcBWegYPVnC8DorHWoaKZf9ZsjuxFVkcG6hVUIyxrKIbQ0i1bEfGpACv+hqV2/9OqipjCtY93RCi7NTqRqJmNghp2yaqogxIIQL8Wmf+2g/QKlRjzySSN9Gxfw=
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:YT4PR01MB647290.CANPRD01.PROD.OUTLOOK.COM; PTR:; CAT:NONE;
+ SFS:(13230040)(376014)(23010399003)(7416014)(1800799024)(366016)(38070700021)(261026140227099003)(11063799006)(4143699003)(261022075727099003)(261009223027099003)(56012099006)(261022105027099003)(261021121427099003)(261102123227099003)(261026121527099003)(261028144727099003)(18002099003)(22082099003)(6133799003)(10067099003)(3023799007);
+ DIR:OUT; SFP:1101; 
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?iso-8859-1?Q?tYy6vgNdsv1TtQS4BHnn/SVfvmHEBB4M6igir/bSsQSGmjBuMhfTg/uVjE?=
+ =?iso-8859-1?Q?aAYKcNANFIqMAB3+3PlFcXFquSLsw+6qj7u+vBJxkkeGs112cTMteNoOGQ?=
+ =?iso-8859-1?Q?caZMhd/a4k7iBSpXaLffysa8hxOExhLBmTrWIhuuje1T2EFT2hd0Q80tWi?=
+ =?iso-8859-1?Q?81VIank8WRMqExgwnzly3VveN05QI+xpwYBKHG7eT4oVBF9SXuPMTmIEX7?=
+ =?iso-8859-1?Q?9/M4OJXS9CXdVSGuRD2hRaXbIXycFM19u/HgEci5n2NtVqkZz8iI4EO+zt?=
+ =?iso-8859-1?Q?jthl1lM3ePmUnshwMJjYidbDtATAV2H40MlV4B70wmp/CiTHRLxDQENkdJ?=
+ =?iso-8859-1?Q?mreZJsgh/gIvY2XBCBMyixIb68ljNuTNv1tWI2HPMC3Y0e+y+akSrr3L8N?=
+ =?iso-8859-1?Q?aScsNMNLR0u3CEenGpDHqMxd5USiOYll0sjl9toD/NnyDvjXvPH6Q8fk/k?=
+ =?iso-8859-1?Q?stdS+IWwgffiUqsWzbJlQcNOKtH1MyX1LUvoiHBaV1eU19/Zi9RL66FLLs?=
+ =?iso-8859-1?Q?OJmQZHR8DzBlwGopytM5kKDOqnf2elmVpoQ7vH3YYjMQoF0bSGnYgaVNN0?=
+ =?iso-8859-1?Q?7QAxEDF3clyJNFUEJtejyA0c05BcTjyPPX8TVYCx5EBkkHxb68jJPecYUs?=
+ =?iso-8859-1?Q?QLBlaXLZl0S3aUZ3xDkzVNC3sB2HJmuvbhmUdj9gtUArpSLpg30XYy3qF8?=
+ =?iso-8859-1?Q?3CHJYfxhHO6dDO5s7BC4uwXt3IIwELs32w28bZnbcP9EGV+ZCw5oW2200s?=
+ =?iso-8859-1?Q?uH1I7JshBLZL96QgwgGQq3bWGLQq7PFMj0syn8MP+Z2vl0jrvpQsJKfB6m?=
+ =?iso-8859-1?Q?JmXrXiAkRSTSN1THF93tHmDNM5zgIRadDX1KW8746U2hslluy1BQaz5viH?=
+ =?iso-8859-1?Q?aIo8V/pJTpJsB2aZNhZOQw3XscfCnd4JB0WcE4qAbYe69Ppjb+8Y0OCB7x?=
+ =?iso-8859-1?Q?nQf9y4DpE1w2ZiIpj8dGwSM4dYoU38CgIi5gTQkjWprMnGfDcWZe1Fmh5k?=
+ =?iso-8859-1?Q?EnQc8XQXCQlMrdHWAz7BaZFHZxZvC0HG+74RRn38uTHx/3POY+fsTtnyZx?=
+ =?iso-8859-1?Q?JnyMnFYWK6vpqnuy+tj4v8L/rYPEEhs3L9yM3/uvP7u2ewNZMoLeMOsE3l?=
+ =?iso-8859-1?Q?L7l8vmn+rQ6EGxNdQ906KyRkbMskAye2Vp6ZIzOTfRGirgSdz+L1buhw5h?=
+ =?iso-8859-1?Q?xPO3eIMDonfVZzCghaqC9LinAmPR7Zex/N6oQkYn65w8xNzt3PuCFecySu?=
+ =?iso-8859-1?Q?wHIMP6aoNDNAfJ+Hb7GQfF4GBZoDaY/VYPI7RpkWtK/K1d2TltpDzc/gOf?=
+ =?iso-8859-1?Q?wNuHv+IwlitkdB8drVYRXSfmtSzdiPM0h8PiMeJ/uQMF72B99J86CEH8cU?=
+ =?iso-8859-1?Q?0C1gFEw3j/rtL3FUwVHoxeH22B0UFOU99S9cav05CzZtWuXt4D6kvfwRa4?=
+ =?iso-8859-1?Q?Ma74GxNUH+VwO0SuJXEJWOztbF0qDSPdiZca0tDeX73ulI4v5IUd93Gq5S?=
+ =?iso-8859-1?Q?Z56Wf+yRNZbUq36R4IXsckQlpzM1y/gKJsHRw+O5YNtD/KM6IFtIUR9a4B?=
+ =?iso-8859-1?Q?fB8Ts6EYjFAFu1RkzbssIdn7PM7T0OQYe9L6j9aLSxJkTyOBXfUTLYejz+?=
+ =?iso-8859-1?Q?O82QZ+veRvEK0UO7MCfh/8e0uyScDjpmYa0SOnlQm+oBHwnO8yK4fPQu5l?=
+ =?iso-8859-1?Q?xTQFn88V3H/8TvWaQhlEzFKxysSPq4MFiE4VgjCoFtFkKVMFa4BWA6wOOh?=
+ =?iso-8859-1?Q?vKu3a3cOquHkwA6pbh611EUR3kJyCQOLQgD4D/poi0KDlShi/tIJOt2tYq?=
+ =?iso-8859-1?Q?CqI2dqPCeDXoA1HBUOSQrxeqj+y5hQY=3D?=
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261107-ice-tx-hang-dump-v3-1-8f22109d1aad@hydroquebec.com>
-X-B4-Tracking: v=1; b=H4sIABw372oC/3WOyw6CMBBFf4XM2jG0QH2s/A/joo9BakLBFgiE8
- O8W3Jioyztz55yZIZC3FOCczOBpsME2LoZsl4CupLsTWhMz8JQLljKBVhN2I647NH3dIuVC5WT
- yY2YExLPWU2nHDXkFRx3c3sPQqwfpboWttcqGrvHTJh7YVv7vGBgyzEyZlsXpcJIFu1ST8c2zJ
- 0V6r5t6kwz8A8N/YXjEEGeZoJLrwuhvzBI5SgZC5aXT1fptLa2DZXkBXBCvCysBAAA=
-X-Change-ID: 20261016-ice-tx-hang-dump-e46b4ed483d6
-To: Tony Nguyen <anthony.l.nguyen@intel.com>, 
- Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
- intel-wired-lan@lists.osuosl.org
-Cc: Aleksandr Loktionov <aleksandr.loktionov@intel.com>, 
- Michal Kubiak <michal.kubiak@intel.com>, 
- Wojciech Drewek <wojciech.drewek@intel.com>, 
- Mateusz Polchlopek <mateusz.polchlopek@intel.com>, 
- Paul Menzel <pmenzel@molgen.mpg.de>, Andrew Lunn <andrew+netdev@lunn.ch>, 
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>, 
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
- stable@vger.kernel.org, 
- Vincent Choiniere <choiniere.vincent@hydroquebec.com>
-X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1794062108; l=13608;
- i=choiniere.vincent@hydroquebec.com; s=20261016;
- h=from:subject:message-id;
- bh=4+7rXKPibB+VQLOCoPyRkzU+NCvIKZvBae9LQCJXzfM=;
- b=Bv1X+nUeYZS0uQfBqQhRYm2i4cZzRlSe5bELKv7JT5pmYkCk4eW67EmQil1/7ZnFVeVU+SJdP
- PwnohWYl+YrD/WAFFelcNpey4JjAfabJXlm3SM4WkMdVrQvyZldfSB4
-X-Developer-Key: i=choiniere.vincent@hydroquebec.com; a=ed25519;
- pk=MctQE067DucsZOaNqb+sjY7aQ+urhztuURanagEW3+8=
-X-Endpoint-Received: by B4 Relay for
- choiniere.vincent@hydroquebec.com/20261016 with auth_id=1210
-X-Original-From: Vincent Choiniere <choiniere.vincent@hydroquebec.com>
-Content-Transfer-Encoding: 7bit
+X-OriginatorOrg: hydroquebec.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: YT4PR01MB647290.CANPRD01.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-Network-Message-Id: a9ed6718-bd71-4db0-963c-08df3ce1a83b
+X-MS-Exchange-CrossTenant-originalarrivaltime: 07 Nov 2026 15:13:19.7453 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: f40a10f0-50ee-4880-9a37-6e1dd4ac2ff3
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: czT16vcoaVE9peCabd/uma6astxbbVyPy+eOOSunTxYSJMFaN2B4+zHDveC5HF3Ycx8C3jDS6miqNoff83TMmO2zlXCBMOx5VKMpxX8Hy4GstxtX8Av1SPJG+lWXedUS
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: YT8PR01MB553497
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -156,352 +216,60 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Reply-To: choiniere.vincent@hydroquebec.com
-X-Spam-Status: No, score=-18.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-5.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
 	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-From: Vincent Choiniere <choiniere.vincent@hydroquebec.com>
-
-ice_tx_hang_reporter_dump() always reads tx_ring->tx_buf[0].skb,
-regardless of next_to_clean. The Tx cleanup path frees the skb and
-marks the buffer empty without clearing the skb pointer, so slot 0 can
-hold a stale pointer. A NULL check alone does not cover this, and
-devlink_fmsg_dump_skb() can fault on the freed skb.
-
-Using tx_buf[next_to_clean] alone does not fix the lifetime issues.
-The dump runs from the service task without synchronization with Tx
-cleanup or ring replacement:
-
-- ice_clean_tx_irq() can free the skb at next_to_clean while the
-  report is being prepared. It calls napi_consume_skb() before
-  marking the buffer empty.
-- The ring saved by ice_tx_timeout() can be replaced or freed before
-  the service task runs. ethtool -G replaces the ring contents and
-  frees tx_buf and desc, while ethtool -L can free whole rings.
-
-Record the queue index, next_to_clean and next_to_use at timeout time.
-Before reporting, take RTNL and check that the saved ring is still
-one of the PF VSI Tx rings and that the VSI is up. Copy the
-descriptors and IRQ name while the ring storage is protected against
-replacement. If the ring cannot be used or the copy cannot be made,
-report only the values recorded at timeout time.
-
-Tx cleanup can still run while the ring state is copied, so do not
-dereference the skb. Retain only its pointer value in the dump and
-remove the skb contents.
-
-Release RTNL before calling devlink_health_report(), which takes the
-devlink instance lock. Build the dump from the copied data and free
-the descriptor copy after reporting.
-
-Observed on an E810 PF passed through to a KVM guest with Ubuntu
-kernel 7.0.0-14 (PREEMPT_RT and a local scheduler patch): a delayed
-queue IRQ led to a Tx timeout and a page fault in
-devlink_fmsg_dump_skb():
-
- BUG: unable to handle page fault for address: 0000000004cd0c11
- Workqueue: ice ice_service_task [ice]
- RIP: devlink_fmsg_dump_skb+0x2d8/0x5d0
- Call Trace:
-  ice_tx_hang_reporter_dump+0x1ce/0x210 [ice]
-  devlink_health_do_dump+0xcc/0x190
-  devlink_health_report+0x1d7/0x260
-  ice_report_tx_hang+0x7d/0xa0 [ice]
-
-Fixes: 2a82874a3b7b ("ice: add Tx hang devlink health reporter")
-Link: https://lore.kernel.org/all/20260327072332.130320-1-aleksandr.loktionov@intel.com/
-Cc: stable@vger.kernel.org
-Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Signed-off-by: Vincent Choiniere <choiniere.vincent@hydroquebec.com>
----
-Changes in v3:
-- Glue the kvfree() of the descriptor copy to the preceding if as an
-  else (Przemek).
-- Reword the ice_tx_hang_snapshot() kernel-doc: it said the rings are
-  only replaced or freed under RTNL or from the service task, which does
-  not hold for driver removal and devlink reload (Sashiko). No code
-  change for this.
-- Carry Przemek's Reviewed-by; the only code change is the else above.
-- Move the AI-assistance attribution from the commit trailers to
-  the notes below.
-
-AI assistance: Claude (claude-sonnet-5-5).
-
-Changes in v2:
-- Validate the saved ring under RTNL before dereferencing it from
-  the service task, and restrict snapshots to the PF VSI while it
-  is up (Sashiko).
-- Check next_to_clean against count before indexing tx_buf, and
-  copy the descriptors and IRQ name while ring replacement is
-  excluded (Sashiko).
-- Stop dereferencing the skb and remove its contents from the dump.
-  Keep only its pointer value (Sashiko).
-- Release RTNL before reporting to preserve the devlink instance
-  lock ordering.
-- Record the queue index and ring indices at timeout time as a
-  fallback when a snapshot cannot be made.
-- Drop Paul's Reviewed-by because the patch changed substantially.
-
-v2:
-https://lore.kernel.org/netdev/20261026-ice-tx-hang-dump-v2-1-e2136ef2c5dc@hydroquebec.com/
-
-v1:
-https://lore.kernel.org/netdev/20261016-ice-tx-hang-dump-v1-1-3df0f5979a51@hydroquebec.com/
-
-Testing:
-- Built ice.ko with x86_64 defconfig, CONFIG_ICE=m, GCC 12.2 and W=1.
-  Ran sparse with C=2 (sparse git c464045). Neither reported warnings
-  in the changed files.
-- checkpatch --strict reported only an unknown Fixes commit because
-  the local tree is a shallow clone.
-- Runtime testing used an E810 PF passed through to a KVM guest with
-  Ubuntu kernel 7.0.0-38 (PREEMPT_RT), KASAN, PROVE_LOCKING and
-  DEBUG_ATOMIC_SLEEP.
-- Forced Tx timeouts by starving one queue's IRQ thread. The watchdog
-  fired after five seconds, the PF recovered, and the dump retained
-  the v1 fields except for the skb contents.
-- Used a test-only kernel patch to insert configurable delays before
-  ice_report_tx_hang() or the dump callback. Racing ethtool commands
-  were started when the instrumentation logged the delay.
-- With v1 and the same instrumentation, shrinking the ring with
-  ethtool -G tx 64 while next_to_clean was above 64 triggered a KASAN
-  slab-out-of-bounds report. This was also reproduced on a non-RT
-  kernel built from net. Racing ethtool -L combined 1 triggered a
-  use-after-free followed by a general protection fault.
-- With v2, ran 168 forced Tx timeouts, including 149 with concurrent
-  ethtool -G (tx 64, 128 or 512) or ethtool -L combined 1, before and
-  after the ring state was copied. No KASAN, lockdep or
-  sleeping-in-atomic reports were observed. When the saved ring was
-  no longer present, the dump contained only the timeout-time values.
-
-Limitations:
-- The same stress testing was not completed on a non-RT kernel,
-  where Tx timeouts could not be forced reliably.
-- Subfunction VSIs and XDP were not tested. Subfunction VSI rings
-  are excluded from the snapshot because ice_sf_dev_remove() frees
-  them without RTNL.
-- Driver removal and devlink reload still stop the service task only after
-  the devlink reporter and the VSIs are torn down, and the service task
-  runs the Tx hang report before it checks ICE_SERVICE_DIS. Before this
-  patch the same path dereferenced the saved ring with no protection at
-  all. The ordering is left to a separate fix.
-- This patch does not synchronize publication and consumption of
-  tx_hang_buf between ice_tx_timeout() and the service task. A newer
-  timeout may still be dropped or its fields mixed with an older
-  event.
-
-The original devlink_fmsg_dump_skb() crash was reproduced on Ubuntu
-kernel 7.0.0-14 with PREEMPT_RT and a local scheduler patch. The
-additional race reproductions above used test-only instrumentation.
-The affected reporter code is also present in upstream net at
-191aa4154.
----
- drivers/net/ethernet/intel/ice/devlink/health.c | 118 ++++++++++++++++++++----
- drivers/net/ethernet/intel/ice/devlink/health.h |   6 ++
- 2 files changed, 108 insertions(+), 16 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/devlink/health.c b/drivers/net/ethernet/intel/ice/devlink/health.c
-index 8e9a8a817..faad9271d 100644
---- a/drivers/net/ethernet/intel/ice/devlink/health.c
-+++ b/drivers/net/ethernet/intel/ice/devlink/health.c
-@@ -382,7 +382,13 @@ struct ice_tx_hang_event {
- 	u16 queue;
- 	u16 next_to_clean;
- 	u16 next_to_use;
--	struct ice_tx_ring *tx_ring;
-+	/* the fields below are only valid if @desc is set */
-+	char irq_name[ICE_INT_NAME_STR_LEN];
-+	void *desc_ptr;
-+	dma_addr_t dma;
-+	void *desc;
-+	u32 desc_size;
-+	void *skb_ptr;	/* pointer value only, never dereferenced */
- };
- 
- static int ice_tx_hang_reporter_dump(struct devlink_health_reporter *reporter,
-@@ -390,12 +396,10 @@ static int ice_tx_hang_reporter_dump(struct devlink_health_reporter *reporter,
- 				     struct netlink_ext_ack *extack)
- {
- 	struct ice_tx_hang_event *event = priv_ctx;
--	struct sk_buff *skb;
- 
- 	if (!event)
- 		return 0;
- 
--	skb = event->tx_ring->tx_buf->skb;
- 	devlink_fmsg_obj_nest_start(fmsg);
- 	ICE_DEVLINK_FMSG_PUT_FIELD(fmsg, event, head);
- 	ICE_DEVLINK_FMSG_PUT_FIELD(fmsg, event, intr);
-@@ -403,13 +407,14 @@ static int ice_tx_hang_reporter_dump(struct devlink_health_reporter *reporter,
- 	ICE_DEVLINK_FMSG_PUT_FIELD(fmsg, event, queue);
- 	ICE_DEVLINK_FMSG_PUT_FIELD(fmsg, event, next_to_clean);
- 	ICE_DEVLINK_FMSG_PUT_FIELD(fmsg, event, next_to_use);
--	devlink_fmsg_put(fmsg, "irq-mapping", event->tx_ring->q_vector->name);
--	ice_fmsg_put_ptr(fmsg, "desc-ptr", event->tx_ring->desc);
--	ice_fmsg_put_ptr(fmsg, "dma-ptr", (void *)(long)event->tx_ring->dma);
--	ice_fmsg_put_ptr(fmsg, "skb-ptr", skb);
--	devlink_fmsg_binary_pair_put(fmsg, "desc", event->tx_ring->desc,
--				     event->tx_ring->count * sizeof(struct ice_tx_desc));
--	devlink_fmsg_dump_skb(fmsg, skb);
-+	if (event->desc) {
-+		devlink_fmsg_put(fmsg, "irq-mapping", event->irq_name);
-+		ice_fmsg_put_ptr(fmsg, "desc-ptr", event->desc_ptr);
-+		ice_fmsg_put_ptr(fmsg, "dma-ptr", (void *)(long)event->dma);
-+		ice_fmsg_put_ptr(fmsg, "skb-ptr", event->skb_ptr);
-+		devlink_fmsg_binary_pair_put(fmsg, "desc", event->desc,
-+					     event->desc_size);
-+	}
- 	devlink_fmsg_obj_nest_end(fmsg);
- 
- 	return 0;
-@@ -424,24 +429,105 @@ void ice_prep_tx_hang_report(struct ice_pf *pf, struct ice_tx_ring *tx_ring,
- 	buf->vsi_num = vsi_num;
- 	buf->head = head;
- 	buf->intr = intr;
-+	buf->queue = tx_ring->q_index;
-+	buf->next_to_clean = tx_ring->next_to_clean;
-+	buf->next_to_use = tx_ring->next_to_use;
-+}
-+
-+/**
-+ * ice_tx_hang_snapshot - copy the hung Tx ring state for the dump
-+ * @pf: PF on which the Tx hang was detected
-+ * @tx_ring: ring saved by ice_tx_timeout(), possibly stale
-+ * @ev: event to fill in
-+ *
-+ * The saved ring may have been freed or replaced since the timeout (e.g. by
-+ * ethtool -G or -L). Use it only if it is still one of the PF VSI Tx rings
-+ * and the VSI is up. Those paths, and the reset paths, replace or free the
-+ * rings under RTNL or from the service task itself, so with RTNL held the
-+ * accesses below are to live memory for them. Driver removal and devlink
-+ * reload tear the VSIs down before the service task is stopped and are not
-+ * covered here. ice_clean_tx_irq() may still run and free the skb at
-+ * next_to_clean at any time, so only the pointer value is recorded and the
-+ * skb itself is never dereferenced.
-+ */
-+static void ice_tx_hang_snapshot(struct ice_pf *pf, struct ice_tx_ring *tx_ring,
-+				 struct ice_tx_hang_event *ev)
-+{
-+	struct ice_vsi *vsi = ice_get_main_vsi(pf);
-+	struct ice_q_vector *q_vector;
-+	struct ice_tx_buf *tx_buf;
-+	unsigned int i;
-+	u16 ntc, ntu;
-+	void *desc;
-+	u32 size;
-+
-+	ASSERT_RTNL();
-+
-+	if (!tx_ring || !vsi || !vsi->tx_rings ||
-+	    test_bit(ICE_VSI_DOWN, vsi->state))
-+		return;
-+
-+	ice_for_each_txq(vsi, i)
-+		if (vsi->tx_rings[i] == tx_ring)
-+			break;
-+	if (i == vsi->num_txq)
-+		return;
-+
-+	q_vector = tx_ring->q_vector;
-+	if (!q_vector || !tx_ring->desc || !tx_ring->tx_buf || !tx_ring->count)
-+		return;
-+
-+	size = tx_ring->count * sizeof(struct ice_tx_desc);
-+	desc = kvmalloc(size, GFP_KERNEL);
-+	if (!desc)
-+		return;
-+
-+	ntc = READ_ONCE(tx_ring->next_to_clean);
-+	ntu = READ_ONCE(tx_ring->next_to_use);
-+
-+	if (ntc < tx_ring->count) {
-+		tx_buf = &tx_ring->tx_buf[ntc];
-+		if (tx_buf->type == ICE_TX_BUF_SKB)
-+			ev->skb_ptr = READ_ONCE(tx_buf->skb);
-+
-+		memcpy(desc, tx_ring->desc, size);
-+		ev->next_to_clean = ntc;
-+		ev->next_to_use = ntu;
-+		strscpy(ev->irq_name, q_vector->name);
-+		ev->desc_ptr = tx_ring->desc;
-+		ev->dma = tx_ring->dma;
-+		ev->desc_size = size;
-+		ev->desc = desc;
-+	} else {
-+		kvfree(desc);
-+	}
- }
- 
- void ice_report_tx_hang(struct ice_pf *pf)
- {
- 	struct ice_health_tx_hang_buf *buf = &pf->health_reporters.tx_hang_buf;
--	struct ice_tx_ring *tx_ring = buf->tx_ring;
--
- 	struct ice_tx_hang_event ev = {
- 		.head = buf->head,
- 		.intr = buf->intr,
- 		.vsi_num = buf->vsi_num,
--		.queue = tx_ring->q_index,
--		.next_to_clean = tx_ring->next_to_clean,
--		.next_to_use = tx_ring->next_to_use,
--		.tx_ring = tx_ring,
-+		.queue = buf->queue,
-+		.next_to_clean = buf->next_to_clean,
-+		.next_to_use = buf->next_to_use,
- 	};
- 
-+	if (!pf->health_reporters.tx_hang)
-+		return;
-+
-+	rtnl_lock();
-+	ice_tx_hang_snapshot(pf, buf->tx_ring, &ev);
-+	rtnl_unlock();
-+
-+	/* devlink_health_report() takes the devlink instance lock, which nests
-+	 * outside RTNL, so only report once RTNL has been released.
-+	 */
- 	ice_devlink_health_report(pf->health_reporters.tx_hang, "Tx hang", &ev);
-+
-+	kvfree(ev.desc);
- }
- 
- static struct devlink_health_reporter *
-diff --git a/drivers/net/ethernet/intel/ice/devlink/health.h b/drivers/net/ethernet/intel/ice/devlink/health.h
-index 5edfc4d2a..508e4115d 100644
---- a/drivers/net/ethernet/intel/ice/devlink/health.h
-+++ b/drivers/net/ethernet/intel/ice/devlink/health.h
-@@ -37,6 +37,9 @@ enum ice_mdd_src {
-  * @head: descriptor head
-  * @intr: interrupt register value
-  * @vsi_num: VSI owning the queue that the hang occurred on
-+ * @queue: index of the queue that the hang occurred on
-+ * @next_to_clean: next_to_clean of the ring when the hang was detected
-+ * @next_to_use: next_to_use of the ring when the hang was detected
-  * @fw_status: buffer for last received FW Status event
-  * @port_status: buffer for last received Port Status event
-  */
-@@ -50,6 +53,9 @@ struct ice_health {
- 		u32 head;
- 		u32 intr;
- 		u16 vsi_num;
-+		u16 queue;
-+		u16 next_to_clean;
-+		u16 next_to_use;
- 	);
- 	struct ice_aqc_health_status_elem fw_status;
- 	struct ice_aqc_health_status_elem port_status;
-
----
-base-commit: 7076f684d5132e6a6145e1da2fa74771ecd052e5
-change-id: 20261016-ice-tx-hang-dump-e46b4ed483d6
-
-Best regards,
---  
-Vincent Choiniere <choiniere.vincent@hydroquebec.com>
-
-
+Thanks for the review. I posted v3 here:=0A=
+=0A=
+https://lore.kernel.org/netdev/20261107-ice-tx-hang-dump-v3-1-8f22109d1aad@=
+hydroquebec.com/=0A=
+=0A=
+I checked the sequences against current net.=0A=
+=0A=
+[High] VSI and ring lifetime in ice_remove():=0A=
+=0A=
+You are right that the kernel-doc claim was too strong. In ice_remove(),=0A=
+ice_unload() drops RTNL, ice_deinit() sets ICE_SERVICE_DIS and frees the=0A=
+VSIs, and the service task is only cancelled later in ice_deinit_dev().=0A=
+ice_service_task() also runs the Tx hang report before it looks at=0A=
+ICE_SERVICE_DIS, so the rings are not only replaced or freed under RTNL=0A=
+or from the service task.=0A=
+=0A=
+The underlying lifetime issue predates this patch: before it, the service=
+=0A=
+task dereferences the same saved ring with no protection at all. v3=0A=
+removes the incorrect claim about RTNL protection and documents the=0A=
+remaining limitations in the kernel-doc (ethtool -G/-L and the reset paths=
+=0A=
+are covered; driver removal and devlink reload are not).=0A=
+=0A=
+[High, pre-existing] reporter freed in ice_remove():=0A=
+=0A=
+Correct. ice_health_deinit() destroys the reporter without clearing=0A=
+pf->health_reporters.tx_hang, and the service task can still reach it.=0A=
+Same cause as above: the service task is stopped after the teardown.=0A=
+=0A=
+[High, pre-existing] DRIVER_REINIT reload vs. the service task:=0A=
+=0A=
+I read the same sequence: ice_devlink_reinit_down() reaches=0A=
+ice_deinit_dev() and cancel_work_sync() on the service task with the=0A=
+devlink instance lock held, while devlink_health_report() takes that lock=
+=0A=
+when auto_dump is set. That is a lock-ordering problem rather than a=0A=
+teardown-ordering one, so this patch does not address it. I have not=0A=
+reproduced it, and dropping RTNL before reporting does not change it.=0A=
+=0A=
+[Low] tx_hang_buf:=0A=
+=0A=
+Yes, listed under Limitations and left out of this patch.=0A=
+=0A=
+Przemek, Tony: I think these pre-existing teardown and lock-ordering=0A=
+issues would be better addressed separately from this fix. I am willing=0A=
+to investigate and test follow-up fixes (I can force Tx timeouts on an=0A=
+E810 with KASAN and lockdep), but I am not an ice expert. Please let me=0A=
+know whether you would like me to prepare a separate series, and I would=0A=
+appreciate guidance on the preferred approach.=0A=
