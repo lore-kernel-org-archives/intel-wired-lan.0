@@ -2,115 +2,150 @@ Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 47958606D804
-	for <intel-wired-lan@archiver.kernel.org>; Sat,  7 Nov 2026 12:46:21 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B5EDB60A5BD7
+	for <intel-wired-lan@archiver.kernel.org>; Sat,  7 Nov 2026 14:35:16 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=1HELVWyO;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kjLVTBZa
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=bllSZ9VI;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HpvCxd0r
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 1457C60757;
-	Sat,  7 Nov 2026 12:46:21 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 9670C60744;
+	Sat,  7 Nov 2026 14:35:16 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ZhRX97pNuKgk; Sat,  7 Nov 2026 12:46:18 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org B666360746
+ id xsm5K2DFk-Dv; Sat,  7 Nov 2026 14:35:15 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 3C90660746
 Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794055578;
-	b=P5qDN+ZRihiOoo1JnngBQUCGWDOW9AHuNXDo8oX1RThx3mIQTRvtXj5hG0HGiAxHvIzX
-	 ro1l0eZTlBhHmXKljKWvtxCfJonDFmQHbATv3rvR44617jkuVeQJ/jQ/Sqg7T2WnjH/Rg
-	 QuWKR8f2UhLL1AjWCPuwLhtfaH5dFBzQZgkc/Z/e369YGx+8bpCb1fteXhrKzRzmwai0h
-	 RyaEJTVZdXICfe5BftHCZDqPrA7yqpO+WUGJCpFIySFEqxnudA1a3uErUyzHaIcrIn37q
-	 eH9q+AGLb3Q/icQZ4nCXHPEVYRgY88/MLZGRlvtgmqA26sy7Mv++42lFobPmnskSzzw==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794062115;
+	b=DPu+8yMjrTvtX2TfyNgdsuFP5qvT4Ze4Uqbz/4NtUw7/W96pwq33ehXf3IOG4pqboSMD
+	 hkLQXHUoXqX1ZCs0fTcPkD0r0xHRHnZqbqH+eWsfEPICgzalTjtiX/dCLFw2eIiHvM+iR
+	 jYkpxMMvJZ14JGlkLyWQIElPDH5vwp8L+wQRClK+hxBZk3ynBQzuwweLEBBRh3/fpzImz
+	 0IJBUSlYEAPv46Il5z1IjD+JHBUUYPrcXG8jhqC3uT7OliIWPNvc3u/IxTQDc5aBeRjxk
+	 pQralM9uinhiphAOGE2v0Mnf/d6SB646IIpzNo+b5I9H0p2Kd9OcKd++WudN+p52k/w==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794055578;
+	c=relaxed/relaxed; t=1794062115;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 Received:DKIM-Signature:Subject:From:To:Cc:Date:Message-ID:
-	 In-Reply-To:References:X-sashiko-severity:Content-Type:
-	 Content-Transfer-Encoding:MIME-Version:X-BeenThere:X-Mailman-Version:
-	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
-	 List-Subscribe:Errors-To;
-	bh=/RiPgyoXuembimyDq6WnhbjkgPIJFpoffN9+ARbON4Q=;
-	b=j9Bnc1qWLACl5MuOr9Jx2slgDAQjDhoTGJLTyh4EVYizGunlwmcDY7nFujEO5N6xmQwl
-	 iaf34Yny61OB1IMMjzxfu5jgD1s7aTdNSzPkHXnizsiNQrJQOCEK2B9NPfxcy92JjxjKO
-	 /eyhBuLHNZDAroN1OJsJMeewTbJkcxT0xgBiaE6wuYN6RTUxjzm0SuG5FRwLZo9moYhUg
-	 Mvv/4+UH9nA9TuYym2gg5Gj/4zdWKgrHOU4CGRV3QR7xlewo57HXj+FiYtMSCN69yzybI
-	 hWB8WVKKIR2YvHX8s8sufL2Cdj7JkRwJ0WQSzVbyymslMgvOaWhOZ6hZ8GuZUV1UTCw==
+	 Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
+	 Content-Type:Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Content-Transfer-Encoding:X-BeenThere:
+	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Reply-To:Errors-To;
+	bh=kLBnfM+2+qKD+WdkrGRF/mOf10jE8NNtb/rFUng9RoI=;
+	b=qUatXpgb843vg9RwoFeHUKBAFe72NCQ2HtSndM5a63YWcdbWF9EFJGTbzoBLsq85dmcU
+	 PA0UaMR54mZAG0RND3XIlPwJDKk9kIr+W4VFKvvvCbSADsQ0pdq850wFkQSKgJfdKrgG3
+	 VRXjdKLmjw1izvCQF30NULjpzl5sHC/r0uk4IqX9eea1nO7GcK42SM89hbvrTa3vVK/3q
+	 H8uLFxo1IpNBoMP7L9Mayydv9LIVT+JIfTm0V2OhfCmxBKq3z58A1kgMf2959/1hndiTU
+	 8xWHTrv8eYQEif5yGZi6+r8m7eMwVUoLtXuV1RUHXYcECggr+a0YBcvFmBj3eq94rkw==
 ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
+	dmarc=pass header.from=kernel.org;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HpvCxd0r;
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1794055578;
-	bh=/RiPgyoXuembimyDq6WnhbjkgPIJFpoffN9+ARbON4Q=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=1HELVWyOkB2BlLL7SV9G+U5J3zZ7I6umY4NZwkIw3btCcgIcHwL84G6fPTZWl+lHF
-	 /Zrbcs1vzA3f8IZ9NQtBrulpv8anEkhV9CwJcAO1+j9rq8DCx4p3Ioe/2eViFFSTP/
-	 I4eOtD+0pEGfG0AYY2ywJOd5lHlTY+1PjiokZQpP7M5sF9wyd2jjVuDWQnhUxsaOLL
-	 KMzjr2kvucywf82Er8BStPFOuI/NMq0J2vdkW7boR198kVz8eTnGMBcRa/+0T3/NsG
-	 15e/Q/xIh07jgb21rJRKXZsMboeUZSh0j9SONzpcJx30jOUZIuO+1OPLcD/L84ALhC
-	 EnHWpa+2qCC+Q==
+	s=default; t=1794062115;
+	bh=kLBnfM+2+qKD+WdkrGRF/mOf10jE8NNtb/rFUng9RoI=;
+	h=From:Date:Subject:To:Cc:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Reply-To:From;
+	b=bllSZ9VInOXz/NysNsrl6rAeH1DXCcBQN0qp/c/ESdpN1+fHVRK06iC61qY+FQACP
+	 b5bz1kWz/jmvFHXfLMsNnro2cuNtGf2iQJ9W66iHKFFIH/eRgzth3LZFSfDNR9Kkl7
+	 xTLpsD5LZI+ktOUyiSmuv//dOEWY3jvOMDr9PX6UbY1n8TMl3711wDaaqrxeXxKpfx
+	 CoT50+XS17SQ8FxsqOJaDchs3oL9ilsJFa5v6bPNGQGGT8RWbFTBPoE+uPM78HBbG+
+	 k/f6FSp/dI6OK1IxoqZiDTWunSIRToQJoHtD6csC2qvF9EISU6N74oe1zBuePmv7Si
+	 T9DhuAdZFyiIw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B666360746;
-	Sat,  7 Nov 2026 12:46:18 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 9ABFB34D
- for <intel-wired-lan@lists.osuosl.org>; Sat,  7 Nov 2026 12:46:17 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 3C90660746;
+	Sat,  7 Nov 2026 14:35:15 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id F381837D
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  7 Nov 2026 14:35:13 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 77CBE812CF
- for <intel-wired-lan@lists.osuosl.org>; Sat,  7 Nov 2026 12:46:17 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id E4A4960746
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  7 Nov 2026 14:35:13 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id T2W-_cPruLfK for <intel-wired-lan@lists.osuosl.org>;
- Sat,  7 Nov 2026 12:46:16 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 43DC8812CB
-Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=172.105.4.254
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id W8RWTDJRxKuW for <intel-wired-lan@lists.osuosl.org>;
+ Sat,  7 Nov 2026 14:35:12 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 538F760744
+Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0
+ smtp.remote-ip=172.105.4.254
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org;
+ helo=tor.source.kernel.org;
+ envelope-from=devnull+choiniere.vincent.hydroquebec.com@kernel.org;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=quarantine dis=none)
+Authentication-Results: smtp3.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
+Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=kjLVTBZa
+ header.s=k20260515 header.b=HpvCxd0r
 Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 43DC8812CB
- for <intel-wired-lan@lists.osuosl.org>; Sat,  7 Nov 2026 12:46:15 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 538F760744
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  7 Nov 2026 14:35:11 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id 1B5F360145;
- Sat,  7 Nov 2026 12:46:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 286251F0089F;
- Sat,  7 Nov 2026 12:46:13 +0000 (UTC)
+ by tor.source.kernel.org (Postfix) with ESMTP id 604D460D31;
+ Sat,  7 Nov 2026 14:35:10 +0000 (UTC)
+Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
+Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+ (No client certificate requested)
+ by smtp.kernel.org (Postfix) with ESMTPS id 096111F008A4;
+ Sat,  7 Nov 2026 14:35:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1794055573;
- bh=/RiPgyoXuembimyDq6WnhbjkgPIJFpoffN9+ARbON4Q=;
- h=Subject:From:To:Cc:Date:In-Reply-To:References;
- b=kjLVTBZanYT45cNamz8KZqx4UF1JUJoQOjZ2AZ1BlKr3QRZMTupufknRY5QkMZ+lX
- UnTFpTddxV3lyO6+WRTw1eIiWzxH9XvUQKw5Cv1BKJRchgtVXQsraaAnYgsaifghaN
- qoJUORi35W5qKZLS21RYDRDTxtsyEHGDUo9hyLmwNRR4Ei6ofquYj2yZOcPqH+8gKr
- Afh7CPIoU3gAFJ4B56UABiiiJC+WrPYDVBUFwGtwfyeOuR8ISHuf11joJ8TgGOfaes
- XFllM0JZ9GK/Tjhg7OPS1DHdKuauN4Yi3/mSxRCU8Tfv75sLGJeAPe/GFakbG6BOv4
- joX4XEJegZ7wQ==
-Subject: Re: [PATCH] igb: disable the PCI device when resume fails
-From: netdev-bot+sashiko@kernel.org
-To: vulab@iscas.ac.cn
-Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
- andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@kernel.org,
- kuba@kernel.org, pabeni@redhat.com, intel-wired-lan@lists.osuosl.org,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Date: Sat, 07 Nov 2026 12:46:12 +0000
-Message-ID: <179405557264.994134.1212641106918033235@kernel.org>
-In-Reply-To: <20261103102849.1340413-1-vulab@iscas.ac.cn>
-References: <20261103102849.1340413-1-vulab@iscas.ac.cn>
-X-sashiko-severity: High
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+ s=k20260515; t=1794062110;
+ bh=kLBnfM+2+qKD+WdkrGRF/mOf10jE8NNtb/rFUng9RoI=;
+ h=From:Date:Subject:To:Cc:Reply-To;
+ b=HpvCxd0rNKTv/RK3KeNKKqYXLcUb4O5Pfk2NHVHIZrNlFySNdKZmjTY6O9wWNviuh
+ zwbrEYQCNfeSFBxTYCQnclFTrx8yYvRb4PPbu4xYiGonmswKERJZwwFIoFcvmFL+LN
+ m1x2tX+TpoWycSFDJlUj+luotisU10BlYLMEqnfaPS0ynPuO+ouEH5q0NkcKhfF4r+
+ 4tN6QBfenDwcD7g82lpdNth9ul0YckxLea9sEVyQAthMQ8ERff4tfmQnQt02hvSjIT
+ Ufz7y5Tyvh+498IhofsRq962aPr/b7aO51wLpeO29Iur5suueLu1YXr0LPqpLM6sQX
+ z47U0QwS2ppqg==
+Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
+ by lkml.kernel.org (Postfix) with ESMTP id 5B17A47C3A;
+ Sat,  7 Nov 2026 14:35:08 +0000 (UTC)
+From: Vincent Choiniere via B4 Relay
+ <devnull+choiniere.vincent.hydroquebec.com@kernel.org>
+Date: Sat, 07 Nov 2026 09:35:09 -0500
+Subject: [PATCH net v3] ice: fix Tx hang dump using stale tx_buf[0].skb
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <20261107-ice-tx-hang-dump-v3-1-8f22109d1aad@hydroquebec.com>
+X-B4-Tracking: v=1; b=H4sIABw372oC/3WOyw6CMBBFf4XM2jG0QH2s/A/joo9BakLBFgiE8
+ O8W3Jioyztz55yZIZC3FOCczOBpsME2LoZsl4CupLsTWhMz8JQLljKBVhN2I647NH3dIuVC5WT
+ yY2YExLPWU2nHDXkFRx3c3sPQqwfpboWttcqGrvHTJh7YVv7vGBgyzEyZlsXpcJIFu1ST8c2zJ
+ 0V6r5t6kwz8A8N/YXjEEGeZoJLrwuhvzBI5SgZC5aXT1fptLa2DZXkBXBCvCysBAAA=
+X-Change-ID: 20261016-ice-tx-hang-dump-e46b4ed483d6
+To: Tony Nguyen <anthony.l.nguyen@intel.com>, 
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
+ intel-wired-lan@lists.osuosl.org
+Cc: Aleksandr Loktionov <aleksandr.loktionov@intel.com>, 
+ Michal Kubiak <michal.kubiak@intel.com>, 
+ Wojciech Drewek <wojciech.drewek@intel.com>, 
+ Mateusz Polchlopek <mateusz.polchlopek@intel.com>, 
+ Paul Menzel <pmenzel@molgen.mpg.de>, Andrew Lunn <andrew+netdev@lunn.ch>, 
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>, 
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ stable@vger.kernel.org, 
+ Vincent Choiniere <choiniere.vincent@hydroquebec.com>
+X-Mailer: b4 0.16.0
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1794062108; l=13608;
+ i=choiniere.vincent@hydroquebec.com; s=20261016;
+ h=from:subject:message-id;
+ bh=4+7rXKPibB+VQLOCoPyRkzU+NCvIKZvBae9LQCJXzfM=;
+ b=Bv1X+nUeYZS0uQfBqQhRYm2i4cZzRlSe5bELKv7JT5pmYkCk4eW67EmQil1/7ZnFVeVU+SJdP
+ PwnohWYl+YrD/WAFFelcNpey4JjAfabJXlm3SM4WkMdVrQvyZldfSB4
+X-Developer-Key: i=choiniere.vincent@hydroquebec.com; a=ed25519;
+ pk=MctQE067DucsZOaNqb+sjY7aQ+urhztuURanagEW3+8=
+X-Endpoint-Received: by B4 Relay for
+ choiniere.vincent@hydroquebec.com/20261016 with auth_id=1210
+X-Original-From: Vincent Choiniere <choiniere.vincent@hydroquebec.com>
+Content-Transfer-Encoding: 7bit
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -121,188 +156,352 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-10.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+Reply-To: choiniere.vincent@hydroquebec.com
+X-Spam-Status: No, score=-18.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=4.0.1
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Thank you for your contribution! Sashiko AI review found 2 potential
-issue(s) to consider.
+From: Vincent Choiniere <choiniere.vincent@hydroquebec.com>
 
-Critical: 0 · High: 2 · Medium: 0 · Low: 0
+ice_tx_hang_reporter_dump() always reads tx_ring->tx_buf[0].skb,
+regardless of next_to_clean. The Tx cleanup path frees the skb and
+marks the buffer empty without clearing the skb pointer, so slot 0 can
+hold a stale pointer. A NULL check alone does not cover this, and
+devlink_fmsg_dump_skb() can fault on the freed skb.
 
-If you believe none of the issues are legitimate, please reply to each
-issue of Medium severity or higher and explain why the AI is wrong.
-If any of them are legitimate and you plan to respin, please let patchwork
-know by including "pw-bot: cr" as a separate line at the end of your reply
-(one such reply per series is enough).
+Using tx_buf[next_to_clean] alone does not fix the lifetime issues.
+The dump runs from the service task without synchronization with Tx
+cleanup or ring replacement:
 
-- [High] The patch adds pci_disable_device() calls that unbalance the PCI
-  enable count.
-- [High] igb: missing interrupt and hw control cleanup in __igb_resume()
+- ice_clean_tx_irq() can free the skb at next_to_clean while the
+  report is being prepared. It calls napi_consume_skb() before
+  marking the buffer empty.
+- The ring saved by ice_tx_timeout() can be replaced or freed before
+  the service task runs. ethtool -G replaces the ring contents and
+  frees tx_buf and desc, while ethtool -L can free whole rings.
 
---
+Record the queue index, next_to_clean and next_to_use at timeout time.
+Before reporting, take RTNL and check that the saved ring is still
+one of the PF VSI Tx rings and that the VSI is up. Copy the
+descriptors and IRQ name while the ring storage is protected against
+replacement. If the ring cannot be used or the copy cannot be made,
+report only the values recorded at timeout time.
 
-igb: disable the PCI device when resume fails
+Tx cleanup can still run while the ring state is copied, so do not
+dereference the skb. Retain only its pointer value in the dump and
+remove the skb contents.
 
-This patch adds pci_disable_device() calls to __igb_resume() for the cases
-where igb_init_interrupt_scheme() or __igb_open() fails after
-pci_enable_device_mem() has succeeded. The aim is to release the PCI
-enable reference that resume takes when the resume fails.
+Release RTNL before calling devlink_health_report(), which takes the
+devlink instance lock. Build the dump from the copied data and free
+the descriptor copy after reporting.
 
-> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-> index d4a897a8c82c6..853bc99a10113 100644
-> --- a/drivers/net/ethernet/intel/igb/igb_main.c
-> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-> @@ -9621,6 +9621,7 @@ static int __igb_resume(struct device *dev, bool rpm)
->  
->  	if (igb_init_interrupt_scheme(adapter, true)) {
->  		dev_err(&pdev->dev, "Unable to allocate memory for queues\n");
-> +		pci_disable_device(pdev);
->  		return -ENOMEM;
->  	}
->  
-> @@ -9647,6 +9648,9 @@ static int __igb_resume(struct device *dev, bool rpm)
->  	if (!rpm)
->  		rtnl_unlock();
->  
-> +	if (err)
-> +		pci_disable_device(pdev);
-> +
->  	return err;
->  }
+Observed on an E810 PF passed through to a KVM guest with Ubuntu
+kernel 7.0.0-14 (PREEMPT_RT and a local scheduler patch): a delayed
+queue IRQ led to a Tx timeout and a page fault in
+devlink_fmsg_dump_skb():
 
-[Severity: High]
-When __igb_open() fails here, the new error path disables the PCI
-device but leaves the rest of what __igb_resume() set up in place.
+ BUG: unable to handle page fault for address: 0000000004cd0c11
+ Workqueue: ice ice_service_task [ice]
+ RIP: devlink_fmsg_dump_skb+0x2d8/0x5d0
+ Call Trace:
+  ice_tx_hang_reporter_dump+0x1ce/0x210 [ice]
+  devlink_health_do_dump+0xcc/0x190
+  devlink_health_report+0x1d7/0x260
+  ice_report_tx_hang+0x7d/0xa0 [ice]
 
-Earlier in this function, igb_init_interrupt_scheme(adapter, true)
-has enabled MSI-X or MSI on pdev. It has also allocated
-adapter->q_vector[] and registered their NAPI instances on
-netdev->napi_list. igb_get_hw_control() has then set
-E1000_CTRL_EXT_DRV_LOAD.
+Fixes: 2a82874a3b7b ("ice: add Tx hang devlink health reporter")
+Link: https://lore.kernel.org/all/20260327072332.130320-1-aleksandr.loktionov@intel.com/
+Cc: stable@vger.kernel.org
+Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Signed-off-by: Vincent Choiniere <choiniere.vincent@hydroquebec.com>
+---
+Changes in v3:
+- Glue the kvfree() of the descriptor copy to the preceding if as an
+  else (Przemek).
+- Reword the ice_tx_hang_snapshot() kernel-doc: it said the rings are
+  only replaced or freed under RTNL or from the service task, which does
+  not hold for driver removal and devlink reload (Sashiko). No code
+  change for this.
+- Carry Przemek's Reviewed-by; the only code change is the else above.
+- Move the AI-assistance attribution from the commit trailers to
+  the notes below.
 
-None of the __igb_open() error paths call
-igb_clear_interrupt_scheme(). If __igb_open() fails at err_setup_tx
-or err_setup_rx, it also skips igb_release_hw_control(). That happens
-when ring allocation fails in igb_setup_all_tx_resources() or
-igb_setup_all_rx_resources().
+AI assistance: Claude (claude-sonnet-5-5).
 
-So after this hunk the device is disabled while:
+Changes in v2:
+- Validate the saved ring under RTNL before dereferencing it from
+  the service task, and restrict snapshots to the PF VSI while it
+  is up (Sashiko).
+- Check next_to_clean against count before indexing tx_buf, and
+  copy the descriptors and IRQ name while ring replacement is
+  excluded (Sashiko).
+- Stop dereferencing the skb and remove its contents from the dump.
+  Keep only its pointer value (Sashiko).
+- Release RTNL before reporting to preserve the devlink instance
+  lock ordering.
+- Record the queue index and ring indices at timeout time as a
+  fallback when a snapshot cannot be made.
+- Drop Paul's Reviewed-by because the patch changed substantially.
 
-  - MSI-X or MSI is still enabled on pdev
-  - the q_vectors and their NAPI instances are still allocated
-  - firmware still sees DRV_LOAD and believes the driver owns the
-    hardware
+v2:
+https://lore.kernel.org/netdev/20261026-ice-tx-hang-dump-v2-1-e2136ef2c5dc@hydroquebec.com/
 
-The runtime PM case is worse. When igb_runtime_resume() returns an
-error, rpm_resume() leaves the device in RPM_SUSPENDED. The next
-runtime resume then runs __igb_resume() and
-igb_init_interrupt_scheme() again on this uncleaned state:
+v1:
+https://lore.kernel.org/netdev/20261016-ice-tx-hang-dump-v1-1-3df0f5979a51@hydroquebec.com/
 
-  - If MSI-X was in use, pdev->msix_enabled is still set and
-    __pci_enable_msix_range() hits WARN_ON_ONCE(dev->msix_enabled).
-    igb then falls back to single vector MSI. That overwrites
-    adapter->num_q_vectors with 1 and leaks adapter->q_vector[1]
-    onwards.
-  - If MSI was in use, the same thing happens through
-    WARN_ON_ONCE(dev->msi_enabled) in __pci_enable_msi_range().
-  - igb_alloc_q_vector() then finds the existing q_vector[0] and
-    memsets it. It calls netif_napi_add_config() on a napi_struct
-    that is still linked on netdev->napi_list, which corrupts that
-    list.
+Testing:
+- Built ice.ko with x86_64 defconfig, CONFIG_ICE=m, GCC 12.2 and W=1.
+  Ran sparse with C=2 (sparse git c464045). Neither reported warnings
+  in the changed files.
+- checkpatch --strict reported only an unknown Fixes commit because
+  the local tree is a shallow clone.
+- Runtime testing used an E810 PF passed through to a KVM guest with
+  Ubuntu kernel 7.0.0-38 (PREEMPT_RT), KASAN, PROVE_LOCKING and
+  DEBUG_ATOMIC_SLEEP.
+- Forced Tx timeouts by starving one queue's IRQ thread. The watchdog
+  fired after five seconds, the PF recovered, and the dump retained
+  the v1 fields except for the skb contents.
+- Used a test-only kernel patch to insert configurable delays before
+  ice_report_tx_hang() or the dump callback. Racing ethtool commands
+  were started when the instrumentation logged the delay.
+- With v1 and the same instrumentation, shrinking the ring with
+  ethtool -G tx 64 while next_to_clean was above 64 triggered a KASAN
+  slab-out-of-bounds report. This was also reproduced on a non-RT
+  kernel built from net. Racing ethtool -L combined 1 triggered a
+  use-after-free followed by a general protection fault.
+- With v2, ran 168 forced Tx timeouts, including 149 with concurrent
+  ethtool -G (tx 64, 128 or 512) or ethtool -L combined 1, before and
+  after the ring state was copied. No KASAN, lockdep or
+  sleeping-in-atomic reports were observed. When the saved ring was
+  no longer present, the dump contained only the timeout-time values.
 
-If this patch is meant to unwind a failed resume, shouldn't this path
-also undo igb_init_interrupt_scheme() and igb_get_hw_control()? For
-example, igb_clear_interrupt_scheme() and igb_release_hw_control()
-could run before the device is disabled.
+Limitations:
+- The same stress testing was not completed on a non-RT kernel,
+  where Tx timeouts could not be forced reliably.
+- Subfunction VSIs and XDP were not tested. Subfunction VSI rings
+  are excluded from the snapshot because ice_sf_dev_remove() frees
+  them without RTNL.
+- Driver removal and devlink reload still stop the service task only after
+  the devlink reporter and the VSIs are torn down, and the service task
+  runs the Tx hang report before it checks ICE_SERVICE_DIS. Before this
+  patch the same path dereferenced the saved ring with no protection at
+  all. The ordering is left to a separate fix.
+- This patch does not synchronize publication and consumption of
+  tx_hang_buf between ice_tx_timeout() and the service task. A newer
+  timeout may still be dropped or its fields mixed with an older
+  event.
 
-__igb_shutdown() and igb_remove() already call both helpers, along
-with pci_disable_device(). How do you intend the resume error unwind
-to stay consistent with those teardown paths?
+The original devlink_fmsg_dump_skb() crash was reproduced on Ubuntu
+kernel 7.0.0-14 with PREEMPT_RT and a local scheduler patch. The
+additional race reproductions above used test-only instrumentation.
+The affected reporter code is also present in upstream net at
+191aa4154.
+---
+ drivers/net/ethernet/intel/ice/devlink/health.c | 118 ++++++++++++++++++++----
+ drivers/net/ethernet/intel/ice/devlink/health.h |   6 ++
+ 2 files changed, 108 insertions(+), 16 deletions(-)
 
-[Severity: High]
-Can these new calls lead to a double pci_disable_device()?
+diff --git a/drivers/net/ethernet/intel/ice/devlink/health.c b/drivers/net/ethernet/intel/ice/devlink/health.c
+index 8e9a8a817..faad9271d 100644
+--- a/drivers/net/ethernet/intel/ice/devlink/health.c
++++ b/drivers/net/ethernet/intel/ice/devlink/health.c
+@@ -382,7 +382,13 @@ struct ice_tx_hang_event {
+ 	u16 queue;
+ 	u16 next_to_clean;
+ 	u16 next_to_use;
+-	struct ice_tx_ring *tx_ring;
++	/* the fields below are only valid if @desc is set */
++	char irq_name[ICE_INT_NAME_STR_LEN];
++	void *desc_ptr;
++	dma_addr_t dma;
++	void *desc;
++	u32 desc_size;
++	void *skb_ptr;	/* pointer value only, never dereferenced */
+ };
+ 
+ static int ice_tx_hang_reporter_dump(struct devlink_health_reporter *reporter,
+@@ -390,12 +396,10 @@ static int ice_tx_hang_reporter_dump(struct devlink_health_reporter *reporter,
+ 				     struct netlink_ext_ack *extack)
+ {
+ 	struct ice_tx_hang_event *event = priv_ctx;
+-	struct sk_buff *skb;
+ 
+ 	if (!event)
+ 		return 0;
+ 
+-	skb = event->tx_ring->tx_buf->skb;
+ 	devlink_fmsg_obj_nest_start(fmsg);
+ 	ICE_DEVLINK_FMSG_PUT_FIELD(fmsg, event, head);
+ 	ICE_DEVLINK_FMSG_PUT_FIELD(fmsg, event, intr);
+@@ -403,13 +407,14 @@ static int ice_tx_hang_reporter_dump(struct devlink_health_reporter *reporter,
+ 	ICE_DEVLINK_FMSG_PUT_FIELD(fmsg, event, queue);
+ 	ICE_DEVLINK_FMSG_PUT_FIELD(fmsg, event, next_to_clean);
+ 	ICE_DEVLINK_FMSG_PUT_FIELD(fmsg, event, next_to_use);
+-	devlink_fmsg_put(fmsg, "irq-mapping", event->tx_ring->q_vector->name);
+-	ice_fmsg_put_ptr(fmsg, "desc-ptr", event->tx_ring->desc);
+-	ice_fmsg_put_ptr(fmsg, "dma-ptr", (void *)(long)event->tx_ring->dma);
+-	ice_fmsg_put_ptr(fmsg, "skb-ptr", skb);
+-	devlink_fmsg_binary_pair_put(fmsg, "desc", event->tx_ring->desc,
+-				     event->tx_ring->count * sizeof(struct ice_tx_desc));
+-	devlink_fmsg_dump_skb(fmsg, skb);
++	if (event->desc) {
++		devlink_fmsg_put(fmsg, "irq-mapping", event->irq_name);
++		ice_fmsg_put_ptr(fmsg, "desc-ptr", event->desc_ptr);
++		ice_fmsg_put_ptr(fmsg, "dma-ptr", (void *)(long)event->dma);
++		ice_fmsg_put_ptr(fmsg, "skb-ptr", event->skb_ptr);
++		devlink_fmsg_binary_pair_put(fmsg, "desc", event->desc,
++					     event->desc_size);
++	}
+ 	devlink_fmsg_obj_nest_end(fmsg);
+ 
+ 	return 0;
+@@ -424,24 +429,105 @@ void ice_prep_tx_hang_report(struct ice_pf *pf, struct ice_tx_ring *tx_ring,
+ 	buf->vsi_num = vsi_num;
+ 	buf->head = head;
+ 	buf->intr = intr;
++	buf->queue = tx_ring->q_index;
++	buf->next_to_clean = tx_ring->next_to_clean;
++	buf->next_to_use = tx_ring->next_to_use;
++}
++
++/**
++ * ice_tx_hang_snapshot - copy the hung Tx ring state for the dump
++ * @pf: PF on which the Tx hang was detected
++ * @tx_ring: ring saved by ice_tx_timeout(), possibly stale
++ * @ev: event to fill in
++ *
++ * The saved ring may have been freed or replaced since the timeout (e.g. by
++ * ethtool -G or -L). Use it only if it is still one of the PF VSI Tx rings
++ * and the VSI is up. Those paths, and the reset paths, replace or free the
++ * rings under RTNL or from the service task itself, so with RTNL held the
++ * accesses below are to live memory for them. Driver removal and devlink
++ * reload tear the VSIs down before the service task is stopped and are not
++ * covered here. ice_clean_tx_irq() may still run and free the skb at
++ * next_to_clean at any time, so only the pointer value is recorded and the
++ * skb itself is never dereferenced.
++ */
++static void ice_tx_hang_snapshot(struct ice_pf *pf, struct ice_tx_ring *tx_ring,
++				 struct ice_tx_hang_event *ev)
++{
++	struct ice_vsi *vsi = ice_get_main_vsi(pf);
++	struct ice_q_vector *q_vector;
++	struct ice_tx_buf *tx_buf;
++	unsigned int i;
++	u16 ntc, ntu;
++	void *desc;
++	u32 size;
++
++	ASSERT_RTNL();
++
++	if (!tx_ring || !vsi || !vsi->tx_rings ||
++	    test_bit(ICE_VSI_DOWN, vsi->state))
++		return;
++
++	ice_for_each_txq(vsi, i)
++		if (vsi->tx_rings[i] == tx_ring)
++			break;
++	if (i == vsi->num_txq)
++		return;
++
++	q_vector = tx_ring->q_vector;
++	if (!q_vector || !tx_ring->desc || !tx_ring->tx_buf || !tx_ring->count)
++		return;
++
++	size = tx_ring->count * sizeof(struct ice_tx_desc);
++	desc = kvmalloc(size, GFP_KERNEL);
++	if (!desc)
++		return;
++
++	ntc = READ_ONCE(tx_ring->next_to_clean);
++	ntu = READ_ONCE(tx_ring->next_to_use);
++
++	if (ntc < tx_ring->count) {
++		tx_buf = &tx_ring->tx_buf[ntc];
++		if (tx_buf->type == ICE_TX_BUF_SKB)
++			ev->skb_ptr = READ_ONCE(tx_buf->skb);
++
++		memcpy(desc, tx_ring->desc, size);
++		ev->next_to_clean = ntc;
++		ev->next_to_use = ntu;
++		strscpy(ev->irq_name, q_vector->name);
++		ev->desc_ptr = tx_ring->desc;
++		ev->dma = tx_ring->dma;
++		ev->desc_size = size;
++		ev->desc = desc;
++	} else {
++		kvfree(desc);
++	}
+ }
+ 
+ void ice_report_tx_hang(struct ice_pf *pf)
+ {
+ 	struct ice_health_tx_hang_buf *buf = &pf->health_reporters.tx_hang_buf;
+-	struct ice_tx_ring *tx_ring = buf->tx_ring;
+-
+ 	struct ice_tx_hang_event ev = {
+ 		.head = buf->head,
+ 		.intr = buf->intr,
+ 		.vsi_num = buf->vsi_num,
+-		.queue = tx_ring->q_index,
+-		.next_to_clean = tx_ring->next_to_clean,
+-		.next_to_use = tx_ring->next_to_use,
+-		.tx_ring = tx_ring,
++		.queue = buf->queue,
++		.next_to_clean = buf->next_to_clean,
++		.next_to_use = buf->next_to_use,
+ 	};
+ 
++	if (!pf->health_reporters.tx_hang)
++		return;
++
++	rtnl_lock();
++	ice_tx_hang_snapshot(pf, buf->tx_ring, &ev);
++	rtnl_unlock();
++
++	/* devlink_health_report() takes the devlink instance lock, which nests
++	 * outside RTNL, so only report once RTNL has been released.
++	 */
+ 	ice_devlink_health_report(pf->health_reporters.tx_hang, "Tx hang", &ev);
++
++	kvfree(ev.desc);
+ }
+ 
+ static struct devlink_health_reporter *
+diff --git a/drivers/net/ethernet/intel/ice/devlink/health.h b/drivers/net/ethernet/intel/ice/devlink/health.h
+index 5edfc4d2a..508e4115d 100644
+--- a/drivers/net/ethernet/intel/ice/devlink/health.h
++++ b/drivers/net/ethernet/intel/ice/devlink/health.h
+@@ -37,6 +37,9 @@ enum ice_mdd_src {
+  * @head: descriptor head
+  * @intr: interrupt register value
+  * @vsi_num: VSI owning the queue that the hang occurred on
++ * @queue: index of the queue that the hang occurred on
++ * @next_to_clean: next_to_clean of the ring when the hang was detected
++ * @next_to_use: next_to_use of the ring when the hang was detected
+  * @fw_status: buffer for last received FW Status event
+  * @port_status: buffer for last received Port Status event
+  */
+@@ -50,6 +53,9 @@ struct ice_health {
+ 		u32 head;
+ 		u32 intr;
+ 		u16 vsi_num;
++		u16 queue;
++		u16 next_to_clean;
++		u16 next_to_use;
+ 	);
+ 	struct ice_aqc_health_status_elem fw_status;
+ 	struct ice_aqc_health_status_elem port_status;
 
-The commit message says:
+---
+base-commit: 7076f684d5132e6a6145e1da2fa74771ecd052e5
+change-id: 20261016-ice-tx-hang-dump-e46b4ed483d6
 
-  The PCI enable count stays elevated and the device remains enabled
-  even though the driver failed to resume it.
+Best regards,
+--  
+Vincent Choiniere <choiniere.vincent@hydroquebec.com>
 
-A failed resume doesn't unbind the driver. igb already drops its enable
-reference unconditionally on every teardown path:
 
-drivers/net/ethernet/intel/igb/igb_main.c:igb_remove() {
-    ...
-	free_netdev(netdev);
-
-	pci_disable_device(pdev);
-}
-
-drivers/net/ethernet/intel/igb/igb_main.c:__igb_shutdown() {
-    ...
-	igb_release_hw_control(adapter);
-
-	pci_disable_device(pdev);
-    ...
-}
-
-igb_io_error_detected() also calls pci_disable_device() before it
-requests a slot reset. __igb_shutdown() is reached from igb_suspend(),
-igb_runtime_suspend() and igb_shutdown().
-
-Without this patch the count looks balanced:
-
-  probe: 1
-  suspend: 0
-  resume: 1
-  failed resume: still 1
-  remove or next suspend: 0
-
-With this patch, a failed resume drops enable_cnt to 0 while the driver
-stays bound. Any of the following then calls pci_disable_device() a
-second time:
-
-  - rmmod or unbind
-  - the next system or runtime suspend
-  - reboot or poweroff
-  - AER error_detected
-
-pci_device_remove() calls drv->remove() even when pm_runtime_get_sync()
-fails, so unbind can also hit this after a failed runtime resume.
-
-In drivers/pci/pci.c:
-
-pci_disable_device() {
-	dev_WARN_ONCE(&dev->dev, atomic_read(&dev->enable_cnt) <= 0,
-		      "disabling already-disabled device");
-
-	if (atomic_dec_return(&dev->enable_cnt) != 0)
-		return;
-    ...
-}
-
-That second call warns, which panics the host when panic_on_warn is set,
-and leaves enable_cnt at -1.
-
->From then on, the count stays wrong:
-
-  - The next pci_enable_device_mem() in __igb_resume() moves the count
-    from -1 to 0. It still enables the device, and __igb_resume() turns
-    on bus mastering, but pci_is_enabled() now reports false.
-  - Each later pci_disable_device() moves the count from 0 to -1 and
-    returns early. do_pci_disable_device() never runs, so
-    PCI_COMMAND_MASTER is no longer cleared on suspend or unbind.
-
-The existing teardown paths already release this reference. Should the
-new pci_disable_device() calls be dropped? If they stay, the other
-disable sites would need driver state to make them conditional.
-
-Because of the Cc: stable tag, this change would also be backported to
-stable trees.
-
--- 
-Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20261103102849.1340413-1-vulab%40iscas.ac.cn
