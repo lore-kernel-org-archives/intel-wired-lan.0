@@ -2,159 +2,246 @@ Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4126C606EE9F
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  9 Nov 2026 17:19:10 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EE561606A31C
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  9 Nov 2026 17:23:36 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=Tcdw4ZIr;
-	dkim=pass (2048-bit key) header.d=blockcast.net header.i=@blockcast.net header.a=rsa-sha256 header.s=google header.b=D4KK9MdG
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=lvWK90Rn;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=GC050Qot
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 227C960805;
-	Mon,  9 Nov 2026 17:19:10 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id C8CF9607F0;
+	Mon,  9 Nov 2026 17:23:36 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id qlg3GxH1l9BZ; Mon,  9 Nov 2026 17:19:03 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org C16D960762
+ id vl-2YPJazkKK; Mon,  9 Nov 2026 17:23:36 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 2659D607FC
 Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794244743;
-	b=LKn7WynqOE5At8FqM+pbf1rt/W+mzNS11TwGbZ/GRFEJ2eVLEPj5TSY5kKhny0WslVLL
-	 ztq5mVPAi4wSYHEmtWt6JhNk3piBiVDAD86NohrsA1+P1lb/byXTCSBYnA+WKQY7vhQ15
-	 Oz/2WPrnhSzl1FzlaNDlBs2/Ja1VaY+ONfOm5zvA4fgV0v3wzpnZE+aa1ooLpmJOpMRhz
-	 WfEgMT3WCDf0KyMVglN8rq+YPIX/ucLbFOhmtQ0Ov2Pol70THTF253wMxXs7EGwf9oFl2
-	 zl0/ovDeotuMzj88FX6QAj7QJimnJ4TZ3LcbR7BRIfrWKzHLWqNQ5eSwudqbiioDeVQ==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794245016;
+	b=RJJxtEofevYh8qHdoM5pwN+vjyG0Ed6OvLGlOkD7LImJCI7WMeJQHkE0taM18yZmNzD3
+	 LhokXOeAkMJyP+sK9H1bsg1mE219n4s8gXoAM5HERXM3yCchxDfxIkWz1aM4DVx3o9TJG
+	 bhxVlpqkLz1ZvCyQnlNKIy9VjXPt4KZZP/CeKv4exK8nOQu69tbG1bD/AcwNEfw4gkkvB
+	 4nXaMEKwMK5wUft5VLXGG6sV4mft2pA0jru41SW2w9ZSl1CexCFSOEKQvUUIkxZq6x7SZ
+	 5JigRlPbHgGmmQfaNFyPkrt65qrTl7mM5PNmQGw1jRR4wns6sn0vnizGYWX50bIq6dw==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794244743;
+	c=relaxed/relaxed; t=1794245016;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
-	 Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding:X-Mailman-Approved-At:X-BeenThere:
-	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=TSzJvJNUMT1IhqxFawPqLADp5ExgeasI1RJx9c8aMTc=;
-	b=IbY3EYI59VWjcJY7MZOkUBMumbLCpYKOj9XExVuxhC4QFxT8dJSVJDZMbKAO9mi4z5PX
-	 DTPe+1PymhVYVFeSSrbESngqqsa0GSsGq8sNKHSko0mlP3mAlwewD5YBJeedG/Bp+LNph
-	 JNOdGQhYODtxg45H3O5hBH1kWIMQpK0rHb2PEXO/tZzWt//T01OUEhZA1dNSU/fDjhT1E
-	 DLZYwd/GdvLKzsXh09R47GyVqjP+E3l4U++mRTg6/nlcPhnT/KtYzcSxmcm/N+STcxrOL
-	 6A7OGuEj98sJDcqXbKGBWN3kM9C/QlzDpYjAVyn4+oW//bhqmS447DGa7vkzj8pc1lg==
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
+	 DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-IronPort-AV:
+	 X-IronPort-AV:Received:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-ExtLoop1:
+	 X-IronPort-AV:Received:Received:Received:Received:Received:Received:
+	 From:To:CC:Subject:Thread-Topic:Thread-Index:Date:Message-ID:
+	 References:In-Reply-To:Accept-Language:Content-Language:
+	 X-MS-Has-Attach:X-MS-TNEF-Correlator:x-ms-publictraffictype:
+	 x-ms-traffictypediagnostic:x-ms-office365-filtering-correlation-id:
+	 x-ms-exchange-senderadcheck:x-ms-exchange-antispam-relay:
+	 x-microsoft-antispam:x-microsoft-antispam-message-info:
+	 x-forefront-antispam-report:
+	 x-ms-exchange-antispam-messagedata-chunkcount:
+	 x-ms-exchange-antispam-messagedata-0:Content-Type:
+	 Content-Transfer-Encoding:MIME-Version:
+	 X-Exchange-RoutingPolicyChecked:X-MS-Exchange-CrossTenant-AuthAs:
+	 X-MS-Exchange-CrossTenant-AuthSource:
+	 X-MS-Exchange-CrossTenant-Network-Message-Id:
+	 X-MS-Exchange-CrossTenant-originalarrivaltime:
+	 X-MS-Exchange-CrossTenant-fromentityheader:
+	 X-MS-Exchange-CrossTenant-id:X-MS-Exchange-CrossTenant-mailboxtype:
+	 X-MS-Exchange-CrossTenant-userprincipalname:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStamped:X-OriginatorOrg:
+	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
+	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
+	bh=fEB4D0biMwx5I/TAzz7/qn9aoSv8oDQxALqqk0I1AZI=;
+	b=e5Mra63p+11zRcJm0j6B5zYyuDCDzT5M/MgouoouqguVEPJNhSVDRLIcPhXGVVNzNN7l
+	 KqNbZ0aNMsmNQ3mHIUlt7QwHKqttq9cLhilV5YLrHG6mkN3IHcQ3sTIhYQR7fMtJ8YHZd
+	 DLnObDC8sXsaeFLm0ECQeTv1ithl3/gpjjhGrWxthIFwfKEUT1mZ8depo26/BFq1hjRSj
+	 s6kqFZwnhRDHVPQTCuSzhD6p4dqnkDrgQzQQITG1bZwD04GvB/pNawBFfhEvKp6Wrohxd
+	 YaT7a31JqckOLN5ksYnPfeAvxmLEu/makaMxoU3kwzLZ0t5hE7m3p9TStDK36R2lRMA==
 ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
+	dmarc=pass header.from=intel.com;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=GC050Qot;
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1794244743;
-	bh=TSzJvJNUMT1IhqxFawPqLADp5ExgeasI1RJx9c8aMTc=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
+	s=default; t=1794245016;
+	bh=fEB4D0biMwx5I/TAzz7/qn9aoSv8oDQxALqqk0I1AZI=;
+	h=From:To:CC:Subject:Date:References:In-Reply-To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=Tcdw4ZIrdIMXkGqmRpc1XNdIwV1aIbok0s9mHVXtjF7BGZtovzbwXKI4wnpVVVUcI
-	 fDZc5Pde9sev8q98Bg5EpHAv/QVWj7L7rZu9Hjk8XgrZ23daghGMmEJ7L4N8Us9yNQ
-	 +yd7OGduTr1lEsKoCNbPh8LD1mN5z9vrIvXytzNELC2ydVImYhgTIEttx/r4o1AH3h
-	 X55LI8kaIFNPprJyQ+LvaCGYH+1us/XIAs3/4ldoIaBAUiTVP/42v7v2NdVtliFuJ9
-	 WcwjPDBGvRfbh3lxq+sB5Qqmi44K8w2xfqFxh536lK5xKi0MWWFHsSW8D3tkv2jhfR
-	 /4+5XiHJlMvuA==
+	b=lvWK90Rn4MHj1UplDd0qxwO33lQLrvbBXFQUTMV6l3X/TZNV2I1L49D+TFWS6rD2H
+	 I3gzczkiYcWLAFVmIVlRvwHOPJ0KA9KLHm7sOKB/lf9nkvgKpj9XN1cJ5D8+HRNmbQ
+	 3X2P+0O1jOWpoerYzkr+2AHUV+HHEM0CqKRJmQe4porKSlkErQZ0t2ikqQ6ytl/7Qp
+	 acSSYbRfDzTHjq85fdV+P5EOsHiVk5wcfzgg/pWdKv6BaC7uJFAyTLUCmk2y3cfbRY
+	 tk9soQM57wiGN/7RN4kmU0iuRk4rVeNkdEiYhqTzjWYgFXgy1AWbT2YDsK8CQ0XZ4Z
+	 PBHzs3Z+Xx50Q==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C16D960762;
-	Mon,  9 Nov 2026 17:19:03 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id D47F3422
- for <intel-wired-lan@lists.osuosl.org>; Sat,  7 Nov 2026 18:44:59 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 2659D607FC;
+	Mon,  9 Nov 2026 17:23:36 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 3F6E828C
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Nov 2026 17:23:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id B9FB881279
- for <intel-wired-lan@lists.osuosl.org>; Sat,  7 Nov 2026 18:44:59 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 1CA6D607FC
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Nov 2026 17:23:35 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id q4FtO3nQ5qqO for <intel-wired-lan@lists.osuosl.org>;
- Sat,  7 Nov 2026 18:44:57 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 13CE381271
-Authentication-Results: smtp1.osuosl.org;
- arc=none smtp.remote-ip="2607:f8b0:4864:20::1333"
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::1333; helo=mail-dy1-x1333.google.com;
- envelope-from=omar@blockcast.net; receiver=<UNKNOWN> 
-Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=reject dis=none)
- header.from=blockcast.net
-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=blockcast.net header.i=@blockcast.net
- header.a=rsa-sha256 header.s=google header.b=D4KK9MdG
-Received: from mail-dy1-x1333.google.com (mail-dy1-x1333.google.com
- [IPv6:2607:f8b0:4864:20::1333])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 13CE381271
- for <intel-wired-lan@lists.osuosl.org>; Sat,  7 Nov 2026 18:44:56 +0000 (UTC)
-Received: by mail-dy1-x1333.google.com with SMTP id
- 5a478bee46e88-37000e7234bso3065052eec.1
- for <intel-wired-lan@lists.osuosl.org>; Sat, 07 Nov 2026 10:44:56 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=blockcast.net; s=google; t=1794077096; x=1794681896; darn=lists.osuosl.org; 
- h=content-transfer-encoding:mime-version:references:in-reply-to
- :message-id:date:subject:cc:to:from:from:to:cc:subject:date
- :message-id:reply-to:content-type;
- bh=TSzJvJNUMT1IhqxFawPqLADp5ExgeasI1RJx9c8aMTc=;
- b=D4KK9MdGJrNvrzI81yB4isaMJcTwpXf5lpziGoKiSc/KJRMQvj9qRH764zo+jmbe9/
- cXuDEi5EPE+K0la+TUNpkXCwTd1RpO7lGYHfPNihB6mc0A3UsVwSZFXVjxPRWCfFPsAc
- te+3GkBGzmTORyFh5VDROVpGYM3kGwD9sD7siPbG/8eddPhCaSj+OPc646O2kns1I9XP
- 2KNegMuM8F7yi8gZartiUhV85Gpi4+mNDNzLEZogqaeVNo1qjemdaZAi1J5K1lWA1aBB
- aSTvtz4++Ko2SbKINdbi08pxjLWMUIPxG2gzPrI6rEYNQ1JV7Ot3L77Kl1vJF2m1E0rZ
- CDvA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1794077096; x=1794681896;
- h=content-transfer-encoding:mime-version:references:in-reply-to
- :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
- :to:cc:subject:date:message-id:reply-to:content-type;
- bh=TSzJvJNUMT1IhqxFawPqLADp5ExgeasI1RJx9c8aMTc=;
- b=HEJV/HeUrE1glyuzQmgz9O+mbKHKoNITq5HmrGXCp+3OmzmGY4j9gnw9yeVbhVV+Ze
- 84O6NuoFb5+rXMzgW6lgskguw6FzA8PQPFMJw/ELSY9j2UeuywTUMtIHREuK+iJNkTJH
- wUgi3U+OMf/g9H6bNc4dPOfsQlY8t6CfaY4GaIapPizhXM/hXrN9utyNlEMWrYgBQJfA
- A3Sm4Ha6KxKZDgiuMph44I4nzjt482Lcck8oFNejabdSU9SU5GM1nX6LAFd2GWHh3CfP
- DJmFOLqAmUrdwKweyNjrGA7jVpynaEabeX54ee0/WBTnQ8QOnFXDGjZxYNx7NBqS2d/y
- kl5Q==
-X-Forwarded-Encrypted: i=1;
- AL+hErEqVad35o6krMe7aURXLKAprCL4+m7gzecLFC4UPIhvc2tVHxmt51LPTpPVMYZnYT0yV0HpVfFIU6kLwmVGDXo=@lists.osuosl.org
-X-Gm-Message-State: APuU4Z/nIapTTL/M+87ssna1m+pY7Zh3FXk1wD9VOc26bcLZ9/eszNMQ
- 3eDb0tktsDME5NEroG5WLGBZJnU/ihdSGiKLNaOTsYUGPZ38jwV7y0oH25MXXG+3er0=
-X-Gm-Gg: AYBFou11d/kT/GcaYh27CKxz696d7cr819og14ZHBlfNGbclcu0aJAhW4OA/MzRRIGc
- JOCJEZNYnsjQ8DJlrBoaD/6P6NgKdL+MgqGzKOJB17Phma7lEecpCD0uKQvbUDmTk/OIe75t+/Z
- m396husIQlfB5qwCbD9c8mqQgSaQOFfFpFXNkNPpMZ6s2U7xAZEF8pHM6sYbIkPp3/e7T8oRjQZ
- vNEprcKA+Ndt7eTugDT/rp52Y4eb4glPt2bTF7qKpbjuu2B26nE3bar1uUKGXbnvMvIlgrEHyje
- xIbAd/gXqwO8SujcAdcclSDKQo/XQnmCD1JSxrfOZ573981GBoJURwAUsldsbHQ+omY9Fr7L6r3
- 5ntC/s1upAe4hTof87PeUj8DnNBg5mRqWR5h1cKOIjKve/9qRKcUPnuTPTH/ThfU8r/00NB7pFm
- jT8wAiXY+lpHGbpXj7SGRYGx9hrf5o8mjHwB/SA3SK0PlfRwonaGo3Xf+MEtPUM+jGkawN2qrq1
- GEdb7+/5nrYv25skqLVLjquVPri2gS2dpDkORZkpODOPqj8iDKqsTG7wkGBhC+fR7GrJ674KnfG
- b7zU+2fRG07mT0MkU1QCOGjIki/r5HDzZ+kdsuQmlIpPwpk1BOs/3M7hvUF4lyBp8/uA6iA=
-X-Received: by 2002:a05:7301:9a8d:b0:369:f291:49da with SMTP id
- 5a478bee46e88-36f775f999bmr8745557eec.40.1794077094864; 
- Sat, 07 Nov 2026 10:44:54 -0800 (PST)
-Received: from devbox.ts.blockcast.net ([2602:f74d:1::32])
- by smtp.gmail.com with ESMTPSA id
- 5a478bee46e88-36fa8c4f28dsm17286897eec.9.2026.11.07.10.44.52
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sat, 07 Nov 2026 10:44:54 -0800 (PST)
-From: Omar Ramadan <omar@blockcast.net>
-To: Taehee Yoo <ap420073@gmail.com>, "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- michael.chan@broadcom.com, pavan.chebbi@broadcom.com, saeedm@nvidia.com,
- leon@kernel.org, tariqt@nvidia.com, mbloch@nvidia.com,
- brett.creeley@amd.com, sgoutham@marvell.com, anthony.l.nguyen@intel.com,
- przemyslaw.kitszel@intel.com, intel-wired-lan@lists.osuosl.org,
- Ido Schimmel <idosch@nvidia.com>, Satish Kharat <satishkh@cisco.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>, Simon Horman <horms@kernel.org>,
- Shuah Khan <shuah@kernel.org>, Kees Cook <kees@kernel.org>,
- "Gustavo A. R. Silva" <gustavoars@kernel.org>,
- linux-kselftest@vger.kernel.org, linux-hardening@vger.kernel.org
-Subject: [RFC PATCH net-next 6/9] amt: KUnit cases for the offload contract
-Date: Sat,  7 Nov 2026 18:44:34 +0000
-Message-ID: <20261107184437.2783174-7-omar@blockcast.net>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20261107184437.2783174-1-omar@blockcast.net>
-References: <20261107184437.2783174-1-omar@blockcast.net>
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id F5Ymy-TU1SLv for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  9 Nov 2026 17:23:34 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 2B585607F0
+Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0
+ smtp.remote-ip=192.198.163.19
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.19;
+ helo=mgamail.intel.com; envelope-from=samuel.salin@intel.com;
+ receiver=<UNKNOWN> 
+Authentication-Results: smtp3.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=GC050Qot
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 2B585607F0
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Nov 2026 17:23:33 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1794245015; x=1825781015;
+ h=from:to:cc:subject:date:message-id:references:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=fEB4D0biMwx5I/TAzz7/qn9aoSv8oDQxALqqk0I1AZI=;
+ b=GC050Qots5mDl3VAtxrwrsTtnJVClp4uXBO3OdiU9qaGeXo1ThN/pxIF
+ DVXSX9FaPV6/Q9QgxX3AAU4lmxvuNHSAb0beFmxtDEZGb7IHGBJPX3xXU
+ LevzfOdaoQU/YqfCE/Z4QaglwlwNTm1PTHiXG70H5WgavjDU/R2o6OPdw
+ Yol8L9SOreZQY9ovwwpECE+2rApceoo40JC6k8RPJ9G4yAqowDsG5PbTU
+ eooHSaVsHgtOpHyw1hBb61y+4+zr/SICMHqVcWCVsZNsf2wDzfmPsSzMw
+ upH+gNE09aWBq/ZWGbcLPiezJnO9Qtjkpw4EDurwYPQQo9Ud+TD3fIoPA w==;
+X-CSE-ConnectionGUID: IfDd5beORlGFGoEHjVDpgg==
+X-CSE-MsgGUID: Gm/J6VruRHiVpR52RMpl3w==
+X-IronPort-AV: E=McAfee;i="6800,10657,11961"; a="3077320"
+X-IronPort-AV: E=Sophos;i="6.27,204,1787036400"; 
+   d="scan'208";a="3077320"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+ by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 09 Nov 2026 09:23:34 -0800
+X-CSE-ConnectionGUID: cyNvO68/QVqpcCB76izacA==
+X-CSE-MsgGUID: YRJ5DaXETkG7tjhneUJjtw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,204,1787036400"; 
+   d="scan'208";a="7947892"
+Received: from orsmsx903.amr.corp.intel.com ([10.22.229.25])
+ by orviesa006.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 09 Nov 2026 09:23:33 -0800
+Received: from ORSMSX901.amr.corp.intel.com (10.22.229.23) by
+ ORSMSX903.amr.corp.intel.com (10.22.229.25) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.56; Mon, 9 Nov 2026 09:23:32 -0800
+Received: from ORSEDG902.ED.cps.intel.com (10.7.248.12) by
+ ORSMSX901.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.56 via Frontend Transport; Mon, 9 Nov 2026 09:23:32 -0800
+Received: from SJ2PR03CU001.outbound.protection.outlook.com (52.101.43.35) by
+ edgegateway.intel.com (134.134.137.112) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.56; Mon, 9 Nov 2026 09:23:32 -0800
+Received: from IA3PR11MB824491.namprd11.prod.outlook.com
+ (2603:10b6:208:626::16) by PH7PR11MB5888.namprd11.prod.outlook.com
+ (2603:10b6:510:137::11) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.592.13; Mon, 9 Nov
+ 2026 17:23:29 +0000
+Received: from IA3PR11MB824491.namprd11.prod.outlook.com
+ ([fe80::c2b7:5964:96e1:8ffd]) by IA3PR11MB824491.namprd11.prod.outlook.com
+ ([fe80::c2b7:5964:96e1:8ffd%5]) with mapi id 15.21.0592.012; Mon, 9 Nov 2026
+ 17:23:28 +0000
+From: "Salin, Samuel" <samuel.salin@intel.com>
+To: Naman Gulati <namangulati@google.com>, "Tantilov, Emil S"
+ <emil.s.tantilov@intel.com>
+CC: "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
+ "Olech, Milena" <milena.olech@intel.com>, "Ilichev, Konstantin"
+ <konstantin.ilichev@intel.com>, "Hay, Joshua A" <joshua.a.hay@intel.com>,
+ "decot@google.com" <decot@google.com>, "Chittim, Madhu"
+ <madhu.chittim@intel.com>
+Subject: RE: [PATCH iwl-net 2/2] idpf: release PTP before freeing vports on
+ the init task error path
+Thread-Topic: [PATCH iwl-net 2/2] idpf: release PTP before freeing vports on
+ the init task error path
+Thread-Index: AQHdWDdF7gpugX5w7EOF9nB8mqslGbb9w60AgChp39A=
+Date: Mon, 9 Nov 2026 17:23:28 +0000
+Message-ID: <IA3PR11MB824491526D7A44D896992628C49B732@IA3PR11MB824491.namprd11.prod.outlook.com>
+References: <20261009212537.3996-1-emil.s.tantilov@intel.com>
+ <20261009212537.3996-3-emil.s.tantilov@intel.com>
+ <CAMP57yWp8O0gXQLcXhtuLwEV5sYs3rJoGWepzO5tr103k_da8g@mail.gmail.com>
+In-Reply-To: <CAMP57yWp8O0gXQLcXhtuLwEV5sYs3rJoGWepzO5tr103k_da8g@mail.gmail.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: IA3PR11MB824491:EE_|PH7PR11MB5888:EE_
+x-ms-office365-filtering-correlation-id: 735c58d8-443c-4776-f260-08df3e862ba8
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+ ARA:13230040|366016|1800799024|376014|23010399003|38070700021|10067099003|261009223327099003|11063799006|4143699003|56012099006|261021121427099003|261021123027099003|261022105027099003|261009221227099003|261009220027099003|261009221727099003|261009223027099003|261026140227099003|261026121527099003|261102123227099003|261028144727099003|22082099003|18002099003;
+x-microsoft-antispam-message-info: d/SniUapaLMM+BNugk+yuMH07Kdy4ZHSF9uV9U7mlZrAWjozMlcRHj1SEfSy8qfPKYukZGpjAYYaLhLYV1Oq4PhsMyi4Psos2F7UHQe4v8/odAPhSuOjzzITP3DRNCMemw87/316EZ+lQ/ETNJYKK6oJQI2XyeH/hL8/8CDHAuGYH0oeYAIIY93ywH+XTjGKKpQmiJ7GotpkfQjv7ujUgY7a9FZ3wYdvZvDbrccZinG72e1xsc4hKq/voWS2ALJhQ6zWHfK0fib0br9QK1medoc4ED5/EzAapc/Dh3TPcVFMawTvnAmbD6pW4h75AtgmGwve7GVgvOg1WuOiCEfycDYlKMtcfz3Z7j5PhlTptyvuA9dakwLhqymDN6J0lOfkQAoDd3EOWPqPgvFythzmBnxrJ3v7rj3w5t0DKBkoLKEWtTa2bQZFDku9ykUG2HVL8/EN+FiQ2vpJrwA9O8+cOq9ff/Dv4XaC0B0c4QZRScfuT+ZSVqs5+7w2VhBE9dSBfjmKim8QgWKFnPvaDUPshR7FdWdDtv2PRuWeX2Cay7Mqy/Xp/wiRTnsdrJIAtAxKg88q6w2k16c98/3osAR2O8/XdkNuD/a/ykECclrEePbCm47P3n7DfLjg7yrDcV5/FFWNPgYuhWoFagOGEn0E8U53LznUqNN5b7yqWIXCSxN0z4pG+3NSdnwXQZjbjIeYBWGs6lXfGDJ/vDPUvol+23pbMZSplmnWnlUr0GrkOB0=
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:IA3PR11MB824491.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230040)(366016)(1800799024)(376014)(23010399003)(38070700021)(10067099003)(261009223327099003)(11063799006)(4143699003)(56012099006)(261021121427099003)(261021123027099003)(261022105027099003)(261009221227099003)(261009220027099003)(261009221727099003)(261009223027099003)(261026140227099003)(261026121527099003)(261102123227099003)(261028144727099003)(22082099003)(18002099003);
+ DIR:OUT; SFP:1101; 
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?utf-8?B?RGZmQnBsS2txdndZdW0xWnZWeFFOcVdwQXQ3ejRCeFpKc0IvRjN3Y1hxYzVi?=
+ =?utf-8?B?K3A3Z3R5OXFYQkRwZk1BWFdJamY0YSsydUxGV2p6Q3dWellaMmdmc3JEM1cr?=
+ =?utf-8?B?MUhKeStmZ3U1aU54VWNKeDYrOVlBS3BKYU1DNGxMOHNpaW9jeGJWb3FRcU0z?=
+ =?utf-8?B?WExxcVpuclBxaW1PZEFXMWplQlJYYzlsQVVEUDdzZnBvTk1zRFA2VEVzZ2dE?=
+ =?utf-8?B?YVBlSTlaY1lHM3I5dGN4WWFMZENKTzZReEtKaVc4K2N0OWlLbmxWNDUxbDNs?=
+ =?utf-8?B?V2JhbUJ1UzQ5NlRCRGF5clFoUXltWkZwa2haWlZmTkx4bDVUMUJXYTV3b1Rq?=
+ =?utf-8?B?R2pWKzhkS0VjMytnUk56T3NHT25JOWVUaGxkUWFmc21sTzR4SFlvZGw4M0sv?=
+ =?utf-8?B?bGtEYU5JNFg0VVFKS3RBREkvQnZCRkpMMjl4MVVMcm5udHR3NklHU1FIRU5m?=
+ =?utf-8?B?RjFSc1J6WndYdi9IbldzT296WVgzOXBmVUx2NHM1M0JmbkJ5YitMNWF1MXdy?=
+ =?utf-8?B?TGhtUDBBcUZwVWVzZGpKVGE5NkNYWXREbmVycWduMmVXZUxGVzd2WUdSNktX?=
+ =?utf-8?B?c20rWnppd0piams4bFpKS0JVcUQ4Q2ZUN3hYd01GeVZ5SERINHN4eEpnbmVz?=
+ =?utf-8?B?eUY1Wk1DZEN0UUVmSGRBS3o2Mm00OTZwanlEM0ZpZEZCUFhydGpwY3I0TXRR?=
+ =?utf-8?B?MGducGVIUHRwaXNqY0t4ZzlVT1IxTk4rcUdPQ1ZmT3RQRzF5WmNzK3g1N1Zz?=
+ =?utf-8?B?bjVGaEM2a1E4TlVETDFqMWlKQmRDRTlsT3lvWDlpQ0dOU245Mkh1Zk40ZjZ4?=
+ =?utf-8?B?bk84MUI0YjhFdS9oSEI0MDZtS3pLYlRjcDk0dFBWdVg4eVJXZmFBaXBjWlFj?=
+ =?utf-8?B?U3NGSUF4S21hbHE3SER6SzZkWkVSSUw4a0Z4Vmd2Z3UzV2o1eUJ2OXRUdEs0?=
+ =?utf-8?B?Z3VERFE5ZGZ6UjNsL0drLzVkcFg1cmo0ckNOZzBSMnpMbUk0c3liL01BTXE4?=
+ =?utf-8?B?N0FsQk9tZ2RZTFhrSDRsMnhrQVN2RDVZWUpsb0hkdXUyb3dWRTZ1RmRwSHpT?=
+ =?utf-8?B?S09Fb2NJS3RsdDdrU3YzZDRWQzRHR1Z3bzFMamJ6SXk0Q0U4Q0QzWkNNZWJX?=
+ =?utf-8?B?dVF3VUJFRHlwTmpKMWthNG1sYldndGtibHZyQkd4YUNjSm9TVWdvMHVza0xS?=
+ =?utf-8?B?MUwzczFiMnhOeEVoTGlBTUU4a21mYXFYZVJzb1FwOEdzRFpuZU5DTnF4NEVL?=
+ =?utf-8?B?bmwzV3A5dTd5TzR3RWttak5weUYxUVVSaU9kVEFKM1RrcHk1di9UakU2QzRK?=
+ =?utf-8?B?UWRhWURML21jRUV1dENIdWM5YUFmZ2dscjNNVExHVjI1TSs4UzAvQllHYkJW?=
+ =?utf-8?B?TEFpRERJWWdMU25HU3pWWGE1WlRnZHdnUXhJNDBZZDRneEpHY3dZalhWV0JB?=
+ =?utf-8?B?UlZOOUk3akVCOEIxQ3dTOHdCQnRiQnIxdkZTeHEzcmNIakRuWlhkaUMza1Zv?=
+ =?utf-8?B?SUtMYk5TVTRLbU5uQkFYV3dXY0VPQ2xXWjM0NVlkMEVPOFNhYjRacmJqV2Nl?=
+ =?utf-8?B?d1JDYVlWb2dPWGUreCs4aHBlVFFEWVgvTW9ObVJubHVoL0d2YXQ0M0w1dXhQ?=
+ =?utf-8?B?Y0JyVzF6YVJtYjBHYXRDakprWUNwSWZMbWpZS3hDTnZ2K3dBUEV2QjRtTmJk?=
+ =?utf-8?B?VXhxYStLVmxzVXdXM28zNVp3dEdpNVk5VFJhVXE3LzkySDFXVUxnVnFuaDll?=
+ =?utf-8?B?cDZWSG5mWEdrR2ZDRm9mZXAyeFNOUkRrTjhQNGhzeGFOc1M0UFRPZnUrVFFQ?=
+ =?utf-8?B?TERYUWR2Wlh0L1F5enVLNzdoTU9VVTd4dTJVakFPMHNIU1JRQUw0R2hadlFv?=
+ =?utf-8?B?Y0JHaGd3NG81ZzVNV0cvNGg5a3JRQ1VHNE9QaWlWbFlxblRFT29DUjhNdnVu?=
+ =?utf-8?B?bGtFWWFnZjBVNzJLMlg1ME9OTnRhQzN4S2RrNHRmNTluYmF2eC9XSDJVVWFP?=
+ =?utf-8?B?czFKcDI2ZEkzeWxOOGRad3VacUpLUlQ0WGxYOWFvZ2Vld2tEMHVLbHp1NnBV?=
+ =?utf-8?B?Z1kzMkU1eUVIK05YbHdrUGthVlFrZkJ1N0dQd1FjYkVIaVpNbzduR1F2dko3?=
+ =?utf-8?B?V1VZMzdrWWhuK29wS0NzZjIyckFmcXdmSjFJKzFIeis3N3FZRmpwK3ZkTjhY?=
+ =?utf-8?B?UWxnRE4vS0RrWkxkdkdZNUM0dkVOaEszcUp0THRUR29KQ2lPN3BHY0J6WVkx?=
+ =?utf-8?B?cXYyV0VhQzcwMzd1T0k0VlY1SFNLVHU1dGxLQTZLZ0x5Ylp2b0ZRMlRYelpS?=
+ =?utf-8?Q?yrBN9IOvurVNrV6VwD?=
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Mon, 09 Nov 2026 17:18:54 +0000
+X-Exchange-RoutingPolicyChecked: KeGRIxPw4i+ZuyYMKzjhYiKjQvFdcEorjj4zL/cYT3Ec2+iPem6/wXeuyM/eMwPLhkUICR425T4BiDJW0rjNGpjyKgnRqjwRw7AQWHc6q2J7I/XpfutjVq+WPlPm/SfTe1aPRx5UmbdOIdpqxz3HvIB/OdCzwNSBRC2CKm6rTeP+l8OA66vhFpoYJogHQWum7A4ZUVaShroqXdBH5Lt0twByoU0/q+qCNWTal2rzrNIUb64FSAUAiWRvwspAziuO8bye+nZq/GqPratu6LlMt4rym0w2nEwCGfD7dpzQtk6tjHKQUFdESbaklyr4157veou4+/8XMHXrYznzAn54CA==
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: IA3PR11MB824491.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 735c58d8-443c-4776-f260-08df3e862ba8
+X-MS-Exchange-CrossTenant-originalarrivaltime: 09 Nov 2026 17:23:28.8709 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: QvMMkx4i3ylbUtWuxhrdDPDpT8en3+A8U8GgE/ONRywJPnwkbgDQ7bbOSJGyofg9n0DEonQ8R5LPFDe2hmlHpw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR11MB5888
+X-OriginatorOrg: intel.com
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -165,2173 +252,72 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-18.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_NONE autolearn=ham
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-A relay fixture (amt_test_relay_alloc(), amt_test_tunnel_add()) builds a
-v4 relay without registering or opening the device, and links tunnels on
-it as amt_request_handler() admits them, listed and counted under
-amt->lock with gc_wq armed for one GMI, but without the admission
-bounds, the siphash key or the Request/Query exchange. An in-file fake
-provider logs every teardown callback in order.
-
-Registry, lifecycle and mode: register-when-bound,
-caps-family-unsupported (and bind failure), unregister-mid-fanout
-(stream_dev unregistered with groups programmed: order BGGEEU, no
-fan-out admitted at any step, binding published until unbind),
-provider-unregister ordering with required-mode carrier loss and
-rebind, IFLA_AMT_OFFLOAD_MODE validation, and required refusal counted.
-
-Reconciler and cutover, twenty cases: the fake also keeps its own
-endpoint and group tables and can refuse with -ENOSPC, fail a commit,
-overrun op_timeout_ms or answer xmit with any result. The reconciler
-work is disabled in these cases and ticks are driven by hand, so a
-static stub on amt_ofl_op_overran() reaches every timed op: the fake
-records whether each op stalled, and only such an op overruns, never one
-the scheduler happened to delay past a short op_timeout_ms.
-
-  - members follow gnodes: a second inner host only counts, the last
-    gnode removes the member, unlink removes it at once
-  - churn coalesces into one update and one commit at the last
-    generation; a tick stops starting groups once its budget is spent
-  - a refused group is served by software, not retried on its own
-    member changes, and retried past the low watermark
-  - an op overrunning op_timeout_ms flushes, bumps the epoch, ignores
-    the late result and replays; with groups still queued, the tick
-    ends at the reset
-  - a teardown whose release ops overrun op_timeout_ms makes one of
-    them, then flushes, with groups programmed or with only endpoints
-    (the group parked); every endpoint is still collected afterwards.
-    The reconciler's gone and endpoint-GC loops reset on an
-    overrunning release op
-  - under churn in one group that spends every tick's budget, the
-    endpoint that left another group is still deleted within three
-    ticks, and the churning endpoint, which the last commit names, is
-    never deleted
-  - admission lost inside an endpoint_add, a group_update or an
-    endpoint_del (a teardown racing the tick): no further provider op,
-    and the tick ends with the remaining groups queued
-  - endpoint_add is idempotent and a shared endpoint is added once
-  - a failed commit disables the group, keeps its endpoints, and a new
-    binding retries it; a leave followed by a failed recommit parks the
-    group and disables its provider object, after a grace period (a
-    static stub on the reconciler's synchronize_net() logs it)
-  - the publish gate: a leave landing inside group_commit withholds
-    that commit's publication and software serves the group, and the
-    departed member's endpoint stays programmed; a join landing there
-    does not withhold it
-  - a group emptied and rejoined within one tick: the fake refuses a
-    second live group per key, and the rejoined group still commits,
-    after a grace period for the old group's disable. If that disable
-    overruns op_timeout_ms, the provider is flushed once and the
-    rejoined group waits for the next tick
-  - CONSUMED/FALLBACK/BUSY ownership, unbound and uncommitted groups
-    stay in software, the generation rule, and a member removal
-    withdrawing the group from hardware at once
-  - the last member leaving while the reconciler allocates (static
-    stubs on its allocator and its free keep a ledger of live arrays):
-    the retry frees nothing twice
-  - both reconciler tables are indexed with the device's hash_seed and
-    sized from max_tunnels at attach
-  - ingress: a punted copy of a committed group is dropped and counted,
-    and still is after a member leaves, including one landing inside
-    the group's first commit, whose departed endpoint stays
-    programmed; only a required relay binds on ingress
-
-Assisted-by: LLM
-Signed-off-by: Omar Ramadan <omar@blockcast.net>
----
- drivers/net/amt.c | 2062 +++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 2062 insertions(+)
-
-diff --git a/drivers/net/amt.c b/drivers/net/amt.c
-index 58e9da443..bafe21302 100644
---- a/drivers/net/amt.c
-+++ b/drivers/net/amt.c
-@@ -6201,6 +6201,7 @@ static struct notifier_block amt_notifier_block __read_mostly = {
- 
- #if IS_ENABLED(CONFIG_AMT_KUNIT_TEST)
- #include <kunit/test.h>
-+#include <linux/delay.h>
- 
- /*
-  * KUnit coverage for relay-mode upstream membership tracking. The cases
-@@ -6513,10 +6514,2071 @@ static void amt_ex_transition_test(struct kunit *test)
- 	free_netdev(test_dev);
- }
- 
-+#define AMT_TEST_GW	htonl(0xc6336401)	/* 198.51.100.1, one NAT */
-+#define AMT_TEST_HOST	htonl(0x0a000002)	/* 10.0.0.2, inner host */
-+#define AMT_TEST_GROUP	htonl(0xe801013c)	/* 232.1.1.60 */
-+#define AMT_TEST_NONCE	htonl(0x5eed1234)
-+#define AMT_TEST_MAC	0xa1b2c3d4e5f6ULL
-+
-+/* A v4 relay-mode amt_dev as amt_dev_init leaves it, minus the netdev
-+ * registration. Nothing is sent: the device is never opened, and the
-+ * upstream reconciler sees upstream_active == false.
-+ */
-+static struct amt_dev *amt_test_relay_alloc(struct kunit *test,
-+					    const char *name)
-+{
-+	struct net_device *dev;
-+	struct amt_dev *amt;
-+
-+	dev = alloc_netdev(sizeof(*amt), name, NET_NAME_UNKNOWN,
-+			   amt_link_setup);
-+	KUNIT_ASSERT_NOT_NULL(test, dev);
-+	amt = netdev_priv(dev);
-+	amt->dev = dev;
-+	amt_upstream_init(amt);
-+	spin_lock_init(&amt->lock);
-+	INIT_LIST_HEAD(&amt->tunnel_list);
-+	amt->mode = AMT_MODE_RELAY;
-+	amt->hash_buckets = 8;
-+	amt->max_groups = AMT_MAX_GROUP;
-+	amt->max_tunnels = AMT_MAX_TUNNELS;
-+	amt->max_tunnels_per_source = AMT_MAX_TUNNELS_PER_SOURCE;
-+	amt->qrv = 2;
-+	amt->qi = AMT_INIT_QUERY_INTERVAL;
-+	amt->qri = 10;
-+	KUNIT_ASSERT_EQ(test, rhltable_init(&amt->groups_rhl,
-+					    &amt_gnode_params), 0);
-+	return amt;
-+}
-+
-+static void amt_test_relay_free(struct amt_dev *amt)
-+{
-+	cancel_delayed_work_sync(&amt->upstream_work);
-+	__amt_source_gc_work();
-+	rhltable_destroy(&amt->groups_rhl);
-+	free_netdev(amt->dev);
-+}
-+
-+/* A tunnel linked on @amt as amt_request_handler() admits one, holding
-+ * the nonce and MAC an Update must echo. The admission bounds, the
-+ * siphash key and the Request/Query exchange are skipped.
-+ */
-+static struct amt_tunnel_list *
-+amt_test_tunnel_add(struct kunit *test, struct amt_dev *amt, __be32 addr,
-+		    __be16 port, __be32 nonce, u64 mac)
-+{
-+	struct amt_tunnel_list *tunnel;
-+
-+	tunnel = kzalloc_obj(*tunnel, GFP_KERNEL);
-+	KUNIT_ASSERT_NOT_NULL(test, tunnel);
-+	tunnel->amt = amt;
-+	spin_lock_init(&tunnel->lock);
-+	INIT_LIST_HEAD(&tunnel->groups);
-+	tunnel->addr.ip4 = addr;
-+	tunnel->source_port = port;
-+	tunnel->nonce = nonce;
-+	tunnel->mac = mac;
-+	INIT_DELAYED_WORK(&tunnel->gc_wq, amt_tunnel_expire);
-+
-+	spin_lock_bh(&amt->lock);
-+	list_add_tail_rcu(&tunnel->list, &amt->tunnel_list);
-+	amt->nr_tunnels++;
-+	mod_delayed_work(amt_wq, &tunnel->gc_wq,
-+			 msecs_to_jiffies(amt_gmi(amt)));
-+	spin_unlock_bh(&amt->lock);
-+	return tunnel;
-+}
-+
-+/* Offload contract: an in-file fake provider. It logs every
-+ * teardown-side callback in order (B bind, G group_disable, E
-+ * endpoint_del, U unbind), so registration, binding and the documented
-+ * teardown order are asserted without a real provider, and keeps its
-+ * own endpoint and group tables so the reconciler's programming can be
-+ * checked against what the provider ended up holding.
-+ */
-+#define AMT_FAKE_LOG_MAX	32
-+#define AMT_FAKE_SLOTS		16
-+
-+struct amt_fake_obj {
-+	bool				used;
-+	struct amt_offload_endpoint_key	key;	/* endpoints */
-+	struct amt_offload_group_key	gkey;	/* groups */
-+	u64				gen;	/* groups: staged */
-+	u64				committed;
-+	u32				nr;
-+};
-+
-+static struct {
-+	char			log[AMT_FAKE_LOG_MAX];
-+	int			n;
-+	u32			families;
-+	u32			paths;
-+	u32			op_timeout_ms;
-+	int			bind_err;
-+	/* Relay whose admission state the teardown callbacks sample. */
-+	struct amt_dev		*amt;
-+	bool			admitted_in_teardown;
-+	bool			unpublished_in_teardown;
-+	struct amt_fake_obj	eps[AMT_FAKE_SLOTS];
-+	struct amt_fake_obj	grps[AMT_FAKE_SLOTS];
-+	/* endpoint_add refuses with -ENOSPC once this many are held */
-+	int			ep_cap;
-+	int			commit_err;
-+	/* run once from inside the next group_commit, then cleared */
-+	void			(*commit_hook)(void);
-+	/* the next endpoint_add overruns op_timeout_ms, then succeeds */
-+	bool			add_stall;
-+	/* every group_disable and endpoint_del overruns op_timeout_ms */
-+	bool			release_stall;
-+	/* whether the op that returned last overran, read by the overrun
-+	 * stub; every op amt times sets it on entry, or it inherits the
-+	 * previous op's verdict
-+	 */
-+	bool			stalled;
-+	/* clear b->admitting from inside the next op named here ('A'
-+	 * endpoint_add, 'U' group_update, 'E' endpoint_del), as a teardown
-+	 * racing the reconciler would; then cleared
-+	 */
-+	char			drop_admit;
-+	/* group_disable calls on a NULL handle; the contract allows none */
-+	int			null_disables;
-+	int			ep_adds;
-+	/* first uses refused: the key's earlier group was still live */
-+	int			dup_grps;
-+	int			updates;
-+	int			commits;
-+	int			flushes;
-+	enum amt_offload_result	xmit_res;
-+	int			xmits;
-+	u64			xmit_gen;
-+} amt_fake;
-+
-+static void amt_fake_reset(u32 families)
-+{
-+	memset(&amt_fake, 0, sizeof(amt_fake));
-+	amt_fake.families = families;
-+	amt_fake.paths = BIT(AMT_OFFLOAD_PATH_TX);
-+}
-+
-+static int amt_fake_live(const struct amt_fake_obj *objs)
-+{
-+	int i, n = 0;
-+
-+	for (i = 0; i < AMT_FAKE_SLOTS; i++)
-+		n += objs[i].used;
-+	return n;
-+}
-+
-+static struct amt_fake_obj *amt_fake_slot(struct amt_fake_obj *objs)
-+{
-+	int i;
-+
-+	for (i = 0; i < AMT_FAKE_SLOTS; i++) {
-+		if (!objs[i].used) {
-+			memset(&objs[i], 0, sizeof(objs[i]));
-+			objs[i].used = true;
-+			return &objs[i];
-+		}
-+	}
-+	return NULL;
-+}
-+
-+/* What a fan-out racing the teardown would see. */
-+static void amt_fake_log(char c)
-+{
-+	if (amt_fake.n < AMT_FAKE_LOG_MAX - 1)
-+		amt_fake.log[amt_fake.n++] = c;
-+	if (!amt_fake.amt || c == 'B')
-+		return;
-+	rcu_read_lock();
-+	if (amt_offload_tx_admit(amt_fake.amt))
-+		amt_fake.admitted_in_teardown = true;
-+	if (!rcu_access_pointer(amt_fake.amt->offload))
-+		amt_fake.unpublished_in_teardown = true;
-+	rcu_read_unlock();
-+}
-+
-+static void amt_fake_drop_admit(struct amt_offload_binding *b, char op)
-+{
-+	if (amt_fake.drop_admit != op)
-+		return;
-+	amt_fake.drop_admit = 0;
-+	WRITE_ONCE(container_of(b, struct amt_offload_bound, pub)->admitting,
-+		   false);
-+}
-+
-+static int amt_fake_bind(struct amt_offload_binding *b,
-+			 struct amt_offload_caps *caps)
-+{
-+	amt_fake_log('B');
-+	if (amt_fake.bind_err)
-+		return amt_fake.bind_err;
-+	caps->families = amt_fake.families;
-+	caps->paths = amt_fake.paths;
-+	caps->op_timeout_ms = amt_fake.op_timeout_ms;
-+	return 0;
-+}
-+
-+static void amt_fake_unbind(struct amt_offload_binding *b)
-+{
-+	amt_fake_log('U');
-+}
-+
-+/* Idempotent on an identical key, as the contract requires. */
-+static int amt_fake_endpoint_add(struct amt_offload_binding *b,
-+				 const struct amt_offload_endpoint_key *key,
-+				 struct amt_offload_endpoint **ep)
-+{
-+	struct amt_fake_obj *o;
-+	int i;
-+
-+	amt_fake_drop_admit(b, 'A');
-+	amt_fake.stalled = amt_fake.add_stall;
-+	amt_fake.add_stall = false;
-+	for (i = 0; i < AMT_FAKE_SLOTS; i++) {
-+		o = &amt_fake.eps[i];
-+		if (o->used && !memcmp(&o->key, key, sizeof(*key))) {
-+			*ep = (struct amt_offload_endpoint *)o;
-+			return 0;
-+		}
-+	}
-+	if (amt_fake.ep_cap && amt_fake_live(amt_fake.eps) >= amt_fake.ep_cap)
-+		return -ENOSPC;
-+	o = amt_fake_slot(amt_fake.eps);
-+	if (!o)
-+		return -ENOSPC;
-+	o->key = *key;
-+	amt_fake.ep_adds++;
-+	*ep = (struct amt_offload_endpoint *)o;
-+	return 0;
-+}
-+
-+static void amt_fake_endpoint_del(struct amt_offload_binding *b,
-+				  struct amt_offload_endpoint *ep)
-+{
-+	amt_fake.stalled = amt_fake.release_stall;
-+	amt_fake_drop_admit(b, 'E');
-+	((struct amt_fake_obj *)ep)->used = false;
-+	amt_fake_log('E');
-+}
-+
-+static int amt_fake_group_update(struct amt_offload_binding *b,
-+				 const struct amt_offload_group_key *key,
-+				 struct amt_offload_endpoint *const *members,
-+				 unsigned int nr_members, u64 gen,
-+				 struct amt_offload_group **grp)
-+{
-+	struct amt_fake_obj *o = (struct amt_fake_obj *)*grp;
-+	int i;
-+
-+	amt_fake.stalled = false;
-+	amt_fake_drop_admit(b, 'U');
-+	if (!o) {
-+		/* One group per key, as amt promises: refuse a second. */
-+		for (i = 0; i < AMT_FAKE_SLOTS; i++) {
-+			o = &amt_fake.grps[i];
-+			if (o->used && !memcmp(&o->gkey, key, sizeof(*key))) {
-+				amt_fake.dup_grps++;
-+				return -EEXIST;
-+			}
-+		}
-+		o = amt_fake_slot(amt_fake.grps);
-+		if (!o)
-+			return -ENOSPC;
-+		o->gkey = *key;
-+		*grp = (struct amt_offload_group *)o;
-+	}
-+	o->gen = gen;
-+	o->nr = nr_members;
-+	amt_fake.updates++;
-+	return 0;
-+}
-+
-+static int amt_fake_group_commit(struct amt_offload_binding *b,
-+				 struct amt_offload_group *grp, u64 gen)
-+{
-+	void (*hook)(void) = amt_fake.commit_hook;
-+
-+	amt_fake.stalled = false;
-+	if (hook) {
-+		amt_fake.commit_hook = NULL;
-+		hook();
-+	}
-+	if (amt_fake.commit_err)
-+		return amt_fake.commit_err;
-+	((struct amt_fake_obj *)grp)->committed = gen;
-+	amt_fake.commits++;
-+	return 0;
-+}
-+
-+static void amt_fake_group_disable(struct amt_offload_binding *b,
-+				   struct amt_offload_group *grp)
-+{
-+	amt_fake.stalled = grp && amt_fake.release_stall;
-+	if (!grp) {
-+		amt_fake.null_disables++;
-+		return;
-+	}
-+	((struct amt_fake_obj *)grp)->used = false;
-+	amt_fake_log('G');
-+}
-+
-+static void amt_fake_flush(struct amt_offload_binding *b)
-+{
-+	int i;
-+
-+	for (i = 0; i < AMT_FAKE_SLOTS; i++) {
-+		amt_fake.eps[i].used = false;
-+		amt_fake.grps[i].used = false;
-+	}
-+	amt_fake.flushes++;
-+}
-+
-+static enum amt_offload_result
-+amt_fake_xmit(struct amt_offload_binding *b, struct amt_offload_group *grp,
-+	      struct sk_buff *skb, u64 gen)
-+{
-+	amt_fake.xmits++;
-+	amt_fake.xmit_gen = gen;
-+	if (amt_fake.xmit_res == AMT_OFFLOAD_CONSUMED)
-+		consume_skb(skb);
-+	return amt_fake.xmit_res;
-+}
-+
-+static const struct amt_offload_ops amt_fake_ops = {
-+	.bind		= amt_fake_bind,
-+	.unbind		= amt_fake_unbind,
-+	.endpoint_add	= amt_fake_endpoint_add,
-+	.endpoint_del	= amt_fake_endpoint_del,
-+	.group_update	= amt_fake_group_update,
-+	.group_commit	= amt_fake_group_commit,
-+	.group_disable	= amt_fake_group_disable,
-+	.flush		= amt_fake_flush,
-+	.xmit		= amt_fake_xmit,
-+};
-+
-+static struct net_device *amt_test_lower_alloc(struct kunit *test)
-+{
-+	struct net_device *lower;
-+
-+	lower = alloc_netdev(0, "amtlow%d", NET_NAME_UNKNOWN, ether_setup);
-+	KUNIT_ASSERT_NOT_NULL(test, lower);
-+	return lower;
-+}
-+
-+/* A relay on @lower as amt_newlink leaves it, minus the netlink half.
-+ * Caller holds RTNL.
-+ */
-+static struct amt_dev *amt_test_offload_relay(struct kunit *test,
-+					      const char *name,
-+					      struct net_device *lower,
-+					      u32 mode)
-+{
-+	struct amt_dev *amt = amt_test_relay_alloc(test, name);
-+
-+	amt->stream_dev = lower;
-+	amt->offload_mode = mode;
-+	return amt;
-+}
-+
-+static void amt_test_offload_free(struct amt_dev *amt)
-+{
-+	rtnl_lock();
-+	amt_offload_detach(amt);
-+	rtnl_unlock();
-+	amt_ofl_state_free(amt);
-+	amt_test_relay_free(amt);
-+}
-+
-+/* A tunnel the offload hooks can name: endpoint identity only. */
-+static struct amt_tunnel_list *amt_test_ofl_tunnel(struct kunit *test,
-+						   __be32 addr, __be16 port)
-+{
-+	struct amt_tunnel_list *t = kunit_kzalloc(test, sizeof(*t),
-+						  GFP_KERNEL);
-+
-+	KUNIT_ASSERT_NOT_NULL(test, t);
-+	t->addr.ip4 = addr;
-+	t->source_port = port;
-+	return t;
-+}
-+
-+static union amt_addr amt_test_ofl_group(int i)
-+{
-+	union amt_addr g = {};
-+
-+	g.ip4 = htonl(ntohl(AMT_TEST_GROUP) + i);
-+	return g;
-+}
-+
-+/* Run reconciler ticks until it reports no work left; returns the count. */
-+static int amt_test_ofl_drain(struct amt_dev *amt)
-+{
-+	int ticks = 0;
-+
-+	while (ticks < 1000 && amt_ofl_reconcile(amt))
-+		ticks++;
-+	return ticks + 1;
-+}
-+
-+static int amt_test_offload_cnt(struct amt_dev *amt,
-+				enum amt_offload_counter cnt)
-+{
-+	return atomic_read(&amt->offload_cnt[cnt]);
-+}
-+
-+/* Two groups and two endpoints the teardown must give back, programmed
-+ * through desired state and the reconciler. RTNL held.
-+ */
-+static void amt_test_offload_seed(struct kunit *test, struct amt_dev *amt)
-+{
-+	union amt_addr grp;
-+	int i;
-+
-+	KUNIT_ASSERT_NOT_NULL(test, rtnl_dereference(amt->offload));
-+	for (i = 0; i < 2; i++) {
-+		grp = amt_test_ofl_group(i);
-+		amt_ofl_member_add(amt, amt_test_ofl_tunnel(test, AMT_TEST_GW,
-+							   htons(4000 + i)),
-+				   &grp, false);
-+	}
-+	amt_test_ofl_drain(amt);
-+	KUNIT_ASSERT_EQ(test, amt_fake_live(amt_fake.grps), 2);
-+	KUNIT_ASSERT_EQ(test, amt_fake_live(amt_fake.eps), 2);
-+}
-+
-+static bool amt_test_offload_admits(struct amt_dev *amt)
-+{
-+	bool ok;
-+
-+	rcu_read_lock();
-+	ok = !!amt_offload_tx_admit(amt);
-+	rcu_read_unlock();
-+	return ok;
-+}
-+
-+static void amt_offload_register_when_bound_test(struct kunit *test)
-+{
-+	struct net_device *lower = amt_test_lower_alloc(test);
-+	struct amt_dev *amt, *sw;
-+
-+	amt_fake_reset(AMT_OFFLOAD_FAMILY_V4 | AMT_OFFLOAD_FAMILY_V6);
-+	amt = amt_test_offload_relay(test, "amtob%d", lower,
-+				     AMT_OFFLOAD_MODE_AUTO);
-+	sw = amt_test_offload_relay(test, "amtos%d", lower,
-+				    AMT_OFFLOAD_MODE_SOFTWARE);
-+
-+	rtnl_lock();
-+	/* No provider yet: auto attaches in software. */
-+	KUNIT_EXPECT_EQ(test, amt_offload_attach(amt, NULL), 0);
-+	KUNIT_EXPECT_EQ(test, amt_offload_attach(sw, NULL), 0);
-+	KUNIT_EXPECT_NULL(test, rtnl_dereference(amt->offload));
-+
-+	/* Registering on a stream_dev in use binds the auto relay at once. */
-+	KUNIT_EXPECT_EQ(test, amt_offload_register(lower, &amt_fake_ops), 0);
-+	KUNIT_EXPECT_NOT_NULL(test, rtnl_dereference(amt->offload));
-+	KUNIT_EXPECT_NULL(test, rtnl_dereference(sw->offload));
-+	KUNIT_EXPECT_TRUE(test, amt_test_offload_admits(amt));
-+	KUNIT_EXPECT_EQ(test, amt_test_offload_cnt(amt, AMT_OFFLOAD_CNT_BIND), 1);
-+	KUNIT_EXPECT_EQ(test, amt_test_offload_cnt(amt,
-+			AMT_OFFLOAD_CNT_BIND_ON_REGISTER), 1);
-+	KUNIT_EXPECT_EQ(test, amt->offload_epoch, 1);
-+	KUNIT_EXPECT_EQ(test, amt_offload_register(lower, &amt_fake_ops),
-+			-EEXIST);
-+
-+	amt_offload_unregister(lower);
-+	KUNIT_EXPECT_NULL(test, rtnl_dereference(amt->offload));
-+	KUNIT_EXPECT_EQ(test, amt_test_offload_cnt(amt,
-+			AMT_OFFLOAD_CNT_TEARDOWN_PROVIDER), 1);
-+	KUNIT_EXPECT_EQ(test, amt->offload_epoch, 2);
-+	amt_offload_unregister(lower);	/* no provider: a no-op */
-+	rtnl_unlock();
-+
-+	KUNIT_EXPECT_STREQ(test, amt_fake.log, "BU");
-+	amt_test_offload_free(sw);
-+	amt_test_offload_free(amt);
-+	free_netdev(lower);
-+}
-+
-+static void amt_offload_family_unsupported_test(struct kunit *test)
-+{
-+	struct net_device *lower = amt_test_lower_alloc(test);
-+	struct amt_dev *amt, *amt2;
-+
-+	/* A v6-only provider and a v4 relay. */
-+	amt_fake_reset(AMT_OFFLOAD_FAMILY_V6);
-+	amt = amt_test_offload_relay(test, "amtof%d", lower,
-+				     AMT_OFFLOAD_MODE_AUTO);
-+	amt2 = amt_test_offload_relay(test, "amtoe%d", lower,
-+				      AMT_OFFLOAD_MODE_AUTO);
-+
-+	rtnl_lock();
-+	KUNIT_ASSERT_EQ(test, amt_offload_register(lower, &amt_fake_ops), 0);
-+	KUNIT_EXPECT_EQ(test, amt_offload_attach(amt, NULL), 0);
-+	KUNIT_EXPECT_NULL(test, rtnl_dereference(amt->offload));
-+	KUNIT_EXPECT_EQ(test, amt_test_offload_cnt(amt,
-+			AMT_OFFLOAD_CNT_FAMILY_UNSUPPORTED), 1);
-+	KUNIT_EXPECT_EQ(test, amt_test_offload_cnt(amt, AMT_OFFLOAD_CNT_BIND), 0);
-+
-+	/* A bind() error is a different count and never reaches unbind(). */
-+	amt_fake.bind_err = -EIO;
-+	KUNIT_EXPECT_EQ(test, amt_offload_attach(amt2, NULL), 0);
-+	KUNIT_EXPECT_NULL(test, rtnl_dereference(amt2->offload));
-+	KUNIT_EXPECT_EQ(test, amt_test_offload_cnt(amt2,
-+			AMT_OFFLOAD_CNT_BIND_FAILED), 1);
-+	amt_offload_unregister(lower);
-+	rtnl_unlock();
-+
-+	KUNIT_EXPECT_STREQ(test, amt_fake.log, "BUB");
-+	amt_test_offload_free(amt2);
-+	amt_test_offload_free(amt);
-+	free_netdev(lower);
-+}
-+
-+/* The stream_dev is unregistered with groups programmed. A fan-out
-+ * racing the teardown must not be admitted at any step, while the
-+ * binding stays published until after unbind().
-+ */
-+static void amt_offload_unregister_mid_fanout_test(struct kunit *test)
-+{
-+	struct net_device *lower = amt_test_lower_alloc(test);
-+	struct amt_dev *amt;
-+
-+	amt_fake_reset(AMT_OFFLOAD_FAMILY_V4);
-+	amt = amt_test_offload_relay(test, "amtom%d", lower,
-+				     AMT_OFFLOAD_MODE_AUTO);
-+
-+	rtnl_lock();
-+	KUNIT_ASSERT_EQ(test, amt_offload_register(lower, &amt_fake_ops), 0);
-+	KUNIT_ASSERT_EQ(test, amt_offload_attach(amt, NULL), 0);
-+	KUNIT_EXPECT_EQ(test, amt_test_offload_cnt(amt,
-+			AMT_OFFLOAD_CNT_BIND_ON_REGISTER), 0);
-+	KUNIT_EXPECT_TRUE(test, amt_test_offload_admits(amt));
-+	amt_test_offload_seed(test, amt);
-+	amt_fake.amt = amt;
-+
-+	amt_offload_lower_gone(lower);
-+	KUNIT_EXPECT_NULL(test, rtnl_dereference(amt->offload));
-+	KUNIT_EXPECT_NULL(test, amt_offload_provider_find(lower));
-+	KUNIT_EXPECT_EQ(test, amt_test_offload_cnt(amt,
-+			AMT_OFFLOAD_CNT_TEARDOWN_LOWER), 1);
-+	KUNIT_EXPECT_EQ(test, amt_test_offload_cnt(amt,
-+			AMT_OFFLOAD_CNT_TEARDOWN_PROVIDER), 0);
-+	rtnl_unlock();
-+
-+	KUNIT_EXPECT_STREQ(test, amt_fake.log, "BGGEEU");
-+	KUNIT_EXPECT_FALSE(test, amt_fake.admitted_in_teardown);
-+	KUNIT_EXPECT_FALSE(test, amt_fake.unpublished_in_teardown);
-+	KUNIT_EXPECT_FALSE(test, amt_test_offload_admits(amt));
-+	amt_test_offload_free(amt);
-+	free_netdev(lower);
-+}
-+
-+/* Same order when the provider leaves first. A required relay drops
-+ * carrier, counts it, and comes back when a provider registers again.
-+ */
-+static void amt_offload_provider_unregister_order_test(struct kunit *test)
-+{
-+	struct net_device *lower = amt_test_lower_alloc(test);
-+	struct amt_dev *amt;
-+
-+	amt_fake_reset(AMT_OFFLOAD_FAMILY_V4);
-+	amt = amt_test_offload_relay(test, "amtop%d", lower,
-+				     AMT_OFFLOAD_MODE_REQUIRED);
-+
-+	rtnl_lock();
-+	KUNIT_ASSERT_EQ(test, amt_offload_register(lower, &amt_fake_ops), 0);
-+	KUNIT_ASSERT_EQ(test, amt_offload_attach(amt, NULL), 0);
-+	amt_test_offload_seed(test, amt);
-+	amt_fake.amt = amt;
-+
-+	amt_offload_unregister(lower);
-+	KUNIT_EXPECT_NULL(test, rtnl_dereference(amt->offload));
-+	KUNIT_EXPECT_EQ(test, amt_test_offload_cnt(amt,
-+			AMT_OFFLOAD_CNT_TEARDOWN_PROVIDER), 1);
-+	KUNIT_EXPECT_EQ(test, amt_test_offload_cnt(amt,
-+			AMT_OFFLOAD_CNT_REQUIRED_UNBOUND), 1);
-+	KUNIT_EXPECT_FALSE(test, netif_carrier_ok(amt->dev));
-+	KUNIT_EXPECT_STREQ(test, amt_fake.log, "BGGEEU");
-+	KUNIT_EXPECT_FALSE(test, amt_fake.admitted_in_teardown);
-+
-+	amt_fake.amt = NULL;
-+	KUNIT_EXPECT_EQ(test, amt_offload_register(lower, &amt_fake_ops), 0);
-+	KUNIT_EXPECT_NOT_NULL(test, rtnl_dereference(amt->offload));
-+	KUNIT_EXPECT_TRUE(test, netif_carrier_ok(amt->dev));
-+	KUNIT_EXPECT_EQ(test, amt_test_offload_cnt(amt,
-+			AMT_OFFLOAD_CNT_BIND_ON_REGISTER), 1);
-+	amt_offload_unregister(lower);
-+	rtnl_unlock();
-+
-+	amt_test_offload_free(amt);
-+	free_netdev(lower);
-+}
-+
-+struct amt_test_u32_attr {
-+	struct nlattr	nla;
-+	u32		val;
-+};
-+
-+static struct nlattr *amt_test_u32(struct amt_test_u32_attr *a, int type,
-+				   u32 val)
-+{
-+	a->nla.nla_len = nla_attr_size(sizeof(u32));
-+	a->nla.nla_type = type;
-+	a->val = val;
-+	return &a->nla;
-+}
-+
-+static int amt_test_validate_offload(u32 mode, u32 offload,
-+				     struct netlink_ext_ack *extack)
-+{
-+	struct amt_test_u32_attr link, amode, local, off;
-+	struct nlattr *data[IFLA_AMT_MAX + 1] = {};
-+
-+	data[IFLA_AMT_LINK] = amt_test_u32(&link, IFLA_AMT_LINK, 1);
-+	data[IFLA_AMT_MODE] = amt_test_u32(&amode, IFLA_AMT_MODE, mode);
-+	data[IFLA_AMT_LOCAL_IP] = amt_test_u32(&local, IFLA_AMT_LOCAL_IP,
-+					       (__force u32)AMT_TEST_GW);
-+	data[IFLA_AMT_OFFLOAD_MODE] = amt_test_u32(&off, IFLA_AMT_OFFLOAD_MODE,
-+						   offload);
-+	memset(extack, 0, sizeof(*extack));
-+	return amt_validate(NULL, data, extack);
-+}
-+
-+static void amt_offload_mode_validate_test(struct kunit *test)
-+{
-+	struct netlink_ext_ack extack;
-+
-+	KUNIT_EXPECT_EQ(test, amt_test_validate_offload(AMT_MODE_RELAY,
-+			AMT_OFFLOAD_MODE_SOFTWARE, &extack), 0);
-+	KUNIT_EXPECT_EQ(test, amt_test_validate_offload(AMT_MODE_RELAY,
-+			AMT_OFFLOAD_MODE_AUTO, &extack), 0);
-+	KUNIT_EXPECT_EQ(test, amt_test_validate_offload(AMT_MODE_RELAY,
-+			AMT_OFFLOAD_MODE_REQUIRED, &extack), 0);
-+
-+	KUNIT_EXPECT_EQ(test, amt_test_validate_offload(AMT_MODE_RELAY,
-+			AMT_OFFLOAD_MODE_MAX + 1, &extack), -EINVAL);
-+	KUNIT_ASSERT_NOT_NULL(test, extack._msg);
-+	KUNIT_EXPECT_STREQ(test, extack._msg, "Offload mode is not valid");
-+
-+	KUNIT_EXPECT_EQ(test, amt_test_validate_offload(AMT_MODE_GATEWAY,
-+			AMT_OFFLOAD_MODE_AUTO, &extack), -EINVAL);
-+	KUNIT_ASSERT_NOT_NULL(test, extack._msg);
-+	KUNIT_EXPECT_STREQ(test, extack._msg,
-+			   "Offload is only valid in relay mode");
-+}
-+
-+static void amt_offload_required_refused_test(struct kunit *test)
-+{
-+	struct net_device *lower = amt_test_lower_alloc(test);
-+	struct netlink_ext_ack extack = {};
-+	struct amt_dev *amt;
-+	int before;
-+
-+	amt_fake_reset(AMT_OFFLOAD_FAMILY_V6);
-+	amt = amt_test_offload_relay(test, "amtor%d", lower,
-+				     AMT_OFFLOAD_MODE_REQUIRED);
-+	before = atomic_read(&amt_offload_required_refused);
-+
-+	rtnl_lock();
-+	/* No provider at all. */
-+	KUNIT_EXPECT_EQ(test, amt_offload_attach(amt, &extack), -ENODEV);
-+	KUNIT_EXPECT_NOT_NULL(test, extack._msg);
-+	KUNIT_EXPECT_TRUE(test, list_empty(&amt->offload_node));
-+	KUNIT_EXPECT_EQ(test, atomic_read(&amt_offload_required_refused),
-+			before + 1);
-+
-+	/* A provider that cannot carry this relay's outer family. */
-+	KUNIT_ASSERT_EQ(test, amt_offload_register(lower, &amt_fake_ops), 0);
-+	memset(&extack, 0, sizeof(extack));
-+	KUNIT_EXPECT_EQ(test, amt_offload_attach(amt, &extack), -ENODEV);
-+	KUNIT_EXPECT_NOT_NULL(test, extack._msg);
-+	KUNIT_EXPECT_EQ(test, atomic_read(&amt_offload_required_refused),
-+			before + 2);
-+	KUNIT_EXPECT_EQ(test, amt_test_offload_cnt(amt,
-+			AMT_OFFLOAD_CNT_FAMILY_UNSUPPORTED), 1);
-+
-+	/* auto with the same provider is not a refusal. */
-+	amt->offload_mode = AMT_OFFLOAD_MODE_AUTO;
-+	KUNIT_EXPECT_EQ(test, amt_offload_attach(amt, &extack), 0);
-+	KUNIT_EXPECT_EQ(test, atomic_read(&amt_offload_required_refused),
-+			before + 2);
-+	amt_offload_unregister(lower);
-+	rtnl_unlock();
-+
-+	amt_test_offload_free(amt);
-+	free_netdev(lower);
-+}
-+
-+/* Offload contract: desired state, reconciler and cutover, driven
-+ * by hand -- the reconciler work is disabled and amt_ofl_reconcile()
-+ * called directly, so every tick is the test's.
-+ */
-+static struct amt_dev *amt_test_ofl_attach(struct kunit *test,
-+					   const char *name,
-+					   struct net_device *lower, u32 mode)
-+{
-+	struct amt_dev *amt = amt_test_offload_relay(test, name, lower, mode);
-+
-+	rtnl_lock();
-+	KUNIT_EXPECT_EQ(test, amt_offload_attach(amt, NULL), 0);
-+	rtnl_unlock();
-+	KUNIT_ASSERT_NOT_NULL(test, amt->offload_st);
-+	disable_work_sync(&amt->offload_st->work);
-+	return amt;
-+}
-+
-+/* Whether a provider op overran op_timeout_ms is the fake's call, not the
-+ * clock's: on a loaded machine a 10 ms timeout against ktime_get() also
-+ * fires on ops that never stalled. The reconciler runs on the test thread
-+ * here (its work is disabled), so the stub reaches every timed op.
-+ */
-+static bool amt_test_ofl_op_overran(struct amt_offload_bound *b, ktime_t t0)
-+{
-+	return b->caps.op_timeout_ms && amt_fake.stalled;
-+}
-+
-+static void amt_test_ofl_register(struct kunit *test, struct net_device *lower)
-+{
-+	int err;
-+
-+	kunit_activate_static_stub(test, amt_ofl_op_overran,
-+				   amt_test_ofl_op_overran);
-+	rtnl_lock();
-+	err = amt_offload_register(lower, &amt_fake_ops);
-+	rtnl_unlock();
-+	KUNIT_ASSERT_EQ(test, err, 0);
-+}
-+
-+static void amt_test_ofl_done(struct amt_dev *amt, struct net_device *lower)
-+{
-+	rtnl_lock();
-+	amt_offload_unregister(lower);
-+	rtnl_unlock();
-+	amt_test_offload_free(amt);
-+	free_netdev(lower);
-+}
-+
-+static void amt_test_ofl_join(struct amt_dev *amt, struct amt_tunnel_list *t,
-+			      int i, bool join)
-+{
-+	union amt_addr g = amt_test_ofl_group(i);
-+
-+	if (join)
-+		amt_ofl_member_add(amt, t, &g, false);
-+	else
-+		amt_ofl_member_del(amt, t, &g, false);
-+}
-+
-+static struct amt_ofl_grp *amt_test_ofl_grp(struct amt_dev *amt, int i)
-+{
-+	union amt_addr a = amt_test_ofl_group(i);
-+	struct amt_offload_group_key key;
-+	struct amt_ofl_grp *g;
-+
-+	amt_ofl_grp_key(&key, &a, false);
-+	spin_lock_bh(&amt->offload_st->lock);
-+	g = amt_ofl_grp_find(amt->offload_st, &key);
-+	spin_unlock_bh(&amt->offload_st->lock);
-+	return g;
-+}
-+
-+static bool amt_test_ofl_tx(struct amt_dev *amt, struct sk_buff *skb, int i)
-+{
-+	union amt_addr g = amt_test_ofl_group(i);
-+
-+	return amt_offload_tx(amt, skb, &g, false);
-+}
-+
-+static bool amt_test_ofl_no_eps(struct amt_dev *amt)
-+{
-+	u32 i;
-+
-+	for (i = 0; i < 1U << amt->offload_st->ep_bits; i++)
-+		if (!hlist_empty(&amt->offload_st->eps[i]))
-+			return false;
-+	return true;
-+}
-+
-+/* Members follow gnodes: the first gnode of a group on a tunnel adds
-+ * the member, a second (another inner host) only counts, the last one
-+ * removes it; unlink removes it at once and the gnodes deleted after it
-+ * find nothing.
-+ */
-+static void amt_offload_member_gnode_test(struct kunit *test)
-+{
-+	struct net_device *lower = amt_test_lower_alloc(test);
-+	union amt_addr grp = amt_test_ofl_group(0), h1 = {}, h2 = {};
-+	struct amt_group_node *g1, *g2;
-+	struct amt_tunnel_list *tunnel;
-+	struct amt_ofl_grp *og;
-+	struct amt_dev *amt;
-+
-+	amt_fake_reset(AMT_OFFLOAD_FAMILY_V4);
-+	amt = amt_test_ofl_attach(test, "amton%d", lower,
-+				  AMT_OFFLOAD_MODE_AUTO);
-+	tunnel = amt_test_tunnel_add(test, amt, AMT_TEST_GW, htons(4000),
-+				     AMT_TEST_NONCE, AMT_TEST_MAC);
-+	h1.ip4 = AMT_TEST_HOST;
-+	h2.ip4 = htonl(ntohl(AMT_TEST_HOST) + 1);
-+
-+	spin_lock_bh(&tunnel->lock);
-+	g1 = amt_add_group(amt, tunnel, &grp, &h1, false);
-+	g2 = amt_add_group(amt, tunnel, &grp, &h2, false);
-+	spin_unlock_bh(&tunnel->lock);
-+	KUNIT_ASSERT_FALSE(test, IS_ERR(g1));
-+	KUNIT_ASSERT_FALSE(test, IS_ERR(g2));
-+	og = amt_test_ofl_grp(amt, 0);
-+	KUNIT_ASSERT_NOT_NULL(test, og);
-+	KUNIT_EXPECT_EQ(test, og->nr_members, 1);
-+	KUNIT_EXPECT_EQ(test, og->gen, 1);
-+	KUNIT_EXPECT_EQ(test, og->state, AMT_OFL_DIRTY);
-+
-+	spin_lock_bh(&tunnel->lock);
-+	amt_del_group(amt, g1);
-+	spin_unlock_bh(&tunnel->lock);
-+	KUNIT_EXPECT_EQ(test, og->nr_members, 1);
-+	KUNIT_EXPECT_EQ(test, og->gen, 1);
-+	spin_lock_bh(&tunnel->lock);
-+	amt_del_group(amt, g2);
-+	spin_unlock_bh(&tunnel->lock);
-+	KUNIT_EXPECT_EQ(test, og->nr_members, 0);
-+	KUNIT_EXPECT_EQ(test, og->gen, 2);
-+
-+	spin_lock_bh(&tunnel->lock);
-+	g1 = amt_add_group(amt, tunnel, &grp, &h1, false);
-+	spin_unlock_bh(&tunnel->lock);
-+	KUNIT_ASSERT_FALSE(test, IS_ERR(g1));
-+	KUNIT_EXPECT_EQ(test, og->nr_members, 1);
-+	/* Unlink alone, as amt_dev_stop() does before it cancels the
-+	 * tunnel's gc work: g1 is still in amt->groups_rhl and on
-+	 * tunnel->groups, yet the member is gone.
-+	 */
-+	spin_lock_bh(&amt->lock);
-+	amt_tunnel_unlink(amt, tunnel);
-+	spin_unlock_bh(&amt->lock);
-+	KUNIT_EXPECT_EQ(test, og->nr_members, 0);
-+	KUNIT_EXPECT_EQ(test, og->gen, 4);
-+	cancel_delayed_work_sync(&tunnel->gc_wq);
-+	amt_clear_groups(tunnel);
-+	kfree_rcu(tunnel, rcu);
-+	KUNIT_EXPECT_EQ(test, og->gen, 4);	/* g1's delete found nothing */
-+
-+	/* Unbound: the reconciler only frees the emptied records. */
-+	amt_test_ofl_drain(amt);
-+	KUNIT_EXPECT_NULL(test, amt_test_ofl_grp(amt, 0));
-+	KUNIT_EXPECT_TRUE(test, amt_test_ofl_no_eps(amt));
-+	KUNIT_EXPECT_EQ(test, amt_fake.updates, 0);
-+	amt_test_offload_free(amt);
-+	free_netdev(lower);
-+}
-+
-+/* Churn between ticks coalesces into one update and one commit at the
-+ * last generation; a tick starts no group once its budget is spent.
-+ */
-+static void amt_offload_budget_coalesce_test(struct kunit *test)
-+{
-+	struct net_device *lower = amt_test_lower_alloc(test);
-+	struct amt_tunnel_list *t[4], *u[3];
-+	struct amt_ofl_grp *og;
-+	struct amt_dev *amt;
-+	int i, round;
-+
-+	amt_fake_reset(AMT_OFFLOAD_FAMILY_V4);
-+	amt_test_ofl_register(test, lower);
-+	amt = amt_test_ofl_attach(test, "amtoc%d", lower,
-+				  AMT_OFFLOAD_MODE_AUTO);
-+	for (i = 0; i < 4; i++)
-+		t[i] = amt_test_ofl_tunnel(test, AMT_TEST_GW, htons(4000 + i));
-+	for (round = 0; round < 25; round++) {
-+		for (i = 0; i < 4; i++) {
-+			amt_test_ofl_join(amt, t[i], 0, true);
-+			if (round < 24)
-+				amt_test_ofl_join(amt, t[i], 0, false);
-+		}
-+	}
-+	og = amt_test_ofl_grp(amt, 0);
-+	KUNIT_ASSERT_NOT_NULL(test, og);
-+	KUNIT_EXPECT_EQ(test, og->nr_members, 4);
-+	amt_test_ofl_drain(amt);
-+	KUNIT_EXPECT_EQ(test, amt_fake.updates, 1);
-+	KUNIT_EXPECT_EQ(test, amt_fake.commits, 1);
-+	KUNIT_EXPECT_EQ(test, amt_fake.ep_adds, 4);
-+	KUNIT_ASSERT_TRUE(test, og->hw_active);
-+	KUNIT_EXPECT_EQ(test, og->hw_gen, og->gen);
-+	KUNIT_EXPECT_EQ(test, ((struct amt_fake_obj *)og->hw)->committed,
-+			og->gen);
-+	KUNIT_EXPECT_EQ(test, ((struct amt_fake_obj *)og->hw)->nr, 4);
-+
-+	/* Three groups at three ops each (endpoint_add, update, commit):
-+	 * a budget of 3 programs one group per tick.
-+	 */
-+	amt->offload_st->budget = 3;
-+	for (i = 0; i < 3; i++) {
-+		u[i] = amt_test_ofl_tunnel(test, AMT_TEST_GW, htons(5000 + i));
-+		amt_test_ofl_join(amt, u[i], i + 1, true);
-+	}
-+	KUNIT_EXPECT_TRUE(test, amt_ofl_reconcile(amt));
-+	KUNIT_EXPECT_EQ(test, amt_fake.updates, 2);
-+	KUNIT_EXPECT_TRUE(test, amt_ofl_reconcile(amt));
-+	KUNIT_EXPECT_EQ(test, amt_fake.updates, 3);
-+	KUNIT_EXPECT_FALSE(test, amt_ofl_reconcile(amt));
-+	KUNIT_EXPECT_EQ(test, amt_fake.updates, 4);
-+	KUNIT_EXPECT_EQ(test, amt_fake_live(amt_fake.grps), 4);
-+	amt_test_ofl_done(amt, lower);
-+}
-+
-+/* A group the provider refuses goes to software (the remainder) and is
-+ * not retried on its own member changes; it is retried once the
-+ * provider holds an eighth fewer objects than when it refused.
-+ */
-+static void amt_offload_enospc_hysteresis_test(struct kunit *test)
-+{
-+	struct net_device *lower = amt_test_lower_alloc(test);
-+	struct amt_ofl_grp *a, *b;
-+	struct amt_tunnel_list *t[3];
-+	struct amt_dev *amt;
-+	int i, updates;
-+
-+	amt_fake_reset(AMT_OFFLOAD_FAMILY_V4);
-+	amt_fake.ep_cap = 2;
-+	amt_test_ofl_register(test, lower);
-+	amt = amt_test_ofl_attach(test, "amtos%d", lower,
-+				  AMT_OFFLOAD_MODE_AUTO);
-+	for (i = 0; i < 3; i++)
-+		t[i] = amt_test_ofl_tunnel(test, AMT_TEST_GW, htons(4000 + i));
-+	amt_test_ofl_join(amt, t[0], 0, true);
-+	amt_test_ofl_join(amt, t[1], 0, true);
-+	amt_test_ofl_drain(amt);
-+	a = amt_test_ofl_grp(amt, 0);
-+	KUNIT_ASSERT_NOT_NULL(test, a);
-+	KUNIT_EXPECT_TRUE(test, a->hw_active);
-+	KUNIT_EXPECT_EQ(test, amt->offload_st->hw_objs, 3);
-+
-+	amt_test_ofl_join(amt, t[2], 1, true);
-+	amt_test_ofl_drain(amt);
-+	b = amt_test_ofl_grp(amt, 1);
-+	KUNIT_ASSERT_NOT_NULL(test, b);
-+	KUNIT_EXPECT_FALSE(test, b->hw_active);
-+	KUNIT_EXPECT_EQ(test, b->state, AMT_OFL_PARKED);
-+	KUNIT_EXPECT_EQ(test, amt_test_offload_cnt(amt,
-+			AMT_OFFLOAD_CNT_SW_REMAINDER), 1);
-+	KUNIT_EXPECT_TRUE(test, a->hw_active);
-+
-+	/* Parked: a member change does not retry it. */
-+	updates = amt_fake.updates;
-+	amt_test_ofl_join(amt, t[1], 1, true);
-+	amt_test_ofl_drain(amt);
-+	KUNIT_EXPECT_EQ(test, b->state, AMT_OFL_PARKED);
-+	KUNIT_EXPECT_EQ(test, amt_fake.updates, updates);
-+
-+	/* t[0] leaves A: A is recommitted without it and its endpoint is
-+	 * deleted, which crosses the low watermark and retries B.
-+	 */
-+	amt_test_ofl_join(amt, t[0], 0, false);
-+	amt_test_ofl_drain(amt);
-+	KUNIT_ASSERT_TRUE(test, a->hw_active);
-+	KUNIT_EXPECT_EQ(test, ((struct amt_fake_obj *)a->hw)->nr, 1);
-+	KUNIT_ASSERT_TRUE(test, b->hw_active);
-+	KUNIT_EXPECT_EQ(test, ((struct amt_fake_obj *)b->hw)->nr, 2);
-+	KUNIT_EXPECT_EQ(test, amt_fake_live(amt_fake.eps), 2);
-+	KUNIT_EXPECT_EQ(test, amt_test_offload_cnt(amt,
-+			AMT_OFFLOAD_CNT_SW_REMAINDER), 1);
-+	amt_test_ofl_done(amt, lower);
-+}
-+
-+/* An op that overruns op_timeout_ms resets the provider: flush, a new
-+ * epoch, the late result ignored, and a replay from desired state.
-+ */
-+static void amt_offload_timeout_reset_test(struct kunit *test)
-+{
-+	struct net_device *lower = amt_test_lower_alloc(test);
-+	struct amt_tunnel_list *t;
-+	struct amt_ofl_grp *og;
-+	struct amt_dev *amt;
-+	u64 epoch;
-+
-+	amt_fake_reset(AMT_OFFLOAD_FAMILY_V4);
-+	amt_fake.op_timeout_ms = 10;
-+	amt_test_ofl_register(test, lower);
-+	amt = amt_test_ofl_attach(test, "amtot%d", lower,
-+				  AMT_OFFLOAD_MODE_AUTO);
-+	epoch = amt->offload_epoch;
-+	t = amt_test_ofl_tunnel(test, AMT_TEST_GW, htons(4000));
-+	amt_test_ofl_join(amt, t, 0, true);
-+	amt_fake.add_stall = true;
-+	amt_test_ofl_drain(amt);
-+
-+	KUNIT_EXPECT_EQ(test, amt_fake.flushes, 1);
-+	KUNIT_EXPECT_EQ(test, amt_test_offload_cnt(amt, AMT_OFFLOAD_CNT_RESET),
-+			1);
-+	KUNIT_EXPECT_EQ(test, amt_test_offload_cnt(amt, AMT_OFFLOAD_CNT_STALE),
-+			1);
-+	KUNIT_EXPECT_EQ(test, amt->offload_epoch, epoch + 1);
-+	/* The late handle died with the flush; the replay added it again. */
-+	KUNIT_EXPECT_EQ(test, amt_fake.ep_adds, 2);
-+	og = amt_test_ofl_grp(amt, 0);
-+	KUNIT_ASSERT_NOT_NULL(test, og);
-+	KUNIT_EXPECT_TRUE(test, og->hw_active);
-+	KUNIT_EXPECT_EQ(test, amt_fake_live(amt_fake.eps), 1);
-+	KUNIT_EXPECT_EQ(test, amt_fake_live(amt_fake.grps), 1);
-+	amt_test_ofl_done(amt, lower);
-+}
-+
-+/* A reset late in a tick must not reach a group emptied earlier in it:
-+ * the flush already took its handle, so amt neither disables it again nor
-+ * counts it out of hw_objs a second time.
-+ */
-+static void amt_offload_reset_after_empty_test(struct kunit *test)
-+{
-+	struct net_device *lower = amt_test_lower_alloc(test);
-+	struct amt_tunnel_list *t1, *t2;
-+	struct amt_dev *amt;
-+
-+	amt_fake_reset(AMT_OFFLOAD_FAMILY_V4);
-+	amt_fake.op_timeout_ms = 10;
-+	amt_test_ofl_register(test, lower);
-+	amt = amt_test_ofl_attach(test, "amtoe%d", lower,
-+				  AMT_OFFLOAD_MODE_AUTO);
-+	t1 = amt_test_ofl_tunnel(test, AMT_TEST_GW, htons(4000));
-+	t2 = amt_test_ofl_tunnel(test, AMT_TEST_GW, htons(4001));
-+	amt_test_ofl_join(amt, t1, 0, true);
-+	amt_test_ofl_drain(amt);
-+	KUNIT_ASSERT_EQ(test, amt_fake_live(amt_fake.grps), 1);
-+
-+	/* One tick: group 0 empties, then group 1's endpoint_add overruns. */
-+	amt_test_ofl_join(amt, t1, 0, false);
-+	amt_test_ofl_join(amt, t2, 1, true);
-+	amt_fake.add_stall = true;
-+	amt_test_ofl_drain(amt);
-+
-+	KUNIT_EXPECT_EQ(test, amt_test_offload_cnt(amt, AMT_OFFLOAD_CNT_RESET),
-+			1);
-+	KUNIT_EXPECT_EQ(test, amt_fake.null_disables, 0);
-+	KUNIT_EXPECT_NULL(test, amt_test_ofl_grp(amt, 0));
-+	KUNIT_EXPECT_EQ(test, amt_fake_live(amt_fake.eps), 1);
-+	KUNIT_EXPECT_EQ(test, amt_fake_live(amt_fake.grps), 1);
-+	KUNIT_EXPECT_EQ(test, amt->offload_st->hw_objs, 2U);
-+	amt_test_ofl_done(amt, lower);
-+}
-+
-+/* Teardown's release ops are timed: a provider that stalls
-+ * in group_disable/endpoint_del costs one op under RTNL, then a flush,
-+ * not one stall per object. Untimed, the log reads "BGGEEU".
-+ */
-+static void amt_offload_teardown_release_stall_test(struct kunit *test)
-+{
-+	struct net_device *lower = amt_test_lower_alloc(test);
-+	struct amt_tunnel_list *t[2];
-+	struct amt_dev *amt;
-+	int i;
-+
-+	amt_fake_reset(AMT_OFFLOAD_FAMILY_V4);
-+	amt_fake.op_timeout_ms = 10;
-+	amt_test_ofl_register(test, lower);
-+	amt = amt_test_ofl_attach(test, "amtor%d", lower,
-+				  AMT_OFFLOAD_MODE_AUTO);
-+	for (i = 0; i < 2; i++) {
-+		t[i] = amt_test_ofl_tunnel(test, AMT_TEST_GW, htons(4000 + i));
-+		amt_test_ofl_join(amt, t[i], i, true);
-+	}
-+	amt_test_ofl_drain(amt);
-+	KUNIT_ASSERT_EQ(test, amt_fake_live(amt_fake.grps), 2);
-+	KUNIT_ASSERT_EQ(test, amt_fake_live(amt_fake.eps), 2);
-+
-+	amt_fake.release_stall = true;
-+	rtnl_lock();
-+	amt_offload_unregister(lower);
-+	rtnl_unlock();
-+	amt_fake.release_stall = false;
-+	KUNIT_EXPECT_STREQ(test, amt_fake.log, "BGU");
-+	KUNIT_EXPECT_EQ(test, amt_fake.flushes, 1);
-+	KUNIT_EXPECT_EQ(test, amt_test_offload_cnt(amt, AMT_OFFLOAD_CNT_RESET),
-+			1);
-+	KUNIT_EXPECT_EQ(test, amt->offload_st->hw_objs, 0U);
-+	/* The group the overrun never reached is unpublished too. */
-+	for (i = 0; i < 2; i++)
-+		KUNIT_EXPECT_FALSE(test,
-+				   READ_ONCE(amt_test_ofl_grp(amt, i)->hw_active));
-+	/* Both groups were uncommitted, the disabled one and the forgotten
-+	 * one, so once their members leave both endpoints are collected.
-+	 */
-+	for (i = 0; i < 2; i++)
-+		amt_test_ofl_join(amt, t[i], i, false);
-+	amt_test_ofl_drain(amt);
-+	KUNIT_EXPECT_TRUE(test, amt_test_ofl_no_eps(amt));
-+	amt_test_offload_free(amt);
-+	free_netdev(lower);
-+}
-+
-+/* Teardown with only endpoints programmed (the group parked): the first
-+ * endpoint_del to overrun ends it. Untimed, the log reads "BGEEU".
-+ */
-+static void amt_offload_teardown_ep_stall_test(struct kunit *test)
-+{
-+	struct net_device *lower = amt_test_lower_alloc(test);
-+	struct amt_dev *amt;
-+	int i;
-+
-+	amt_fake_reset(AMT_OFFLOAD_FAMILY_V4);
-+	amt_fake.op_timeout_ms = 10;
-+	amt_fake.commit_err = -EIO;
-+	amt_test_ofl_register(test, lower);
-+	amt = amt_test_ofl_attach(test, "amtot%d", lower,
-+				  AMT_OFFLOAD_MODE_AUTO);
-+	for (i = 0; i < 2; i++)
-+		amt_test_ofl_join(amt, amt_test_ofl_tunnel(test, AMT_TEST_GW,
-+							   htons(4000 + i)),
-+				  0, true);
-+	amt_test_ofl_drain(amt);
-+	KUNIT_ASSERT_EQ(test, amt_test_ofl_grp(amt, 0)->state, AMT_OFL_PARKED);
-+	KUNIT_ASSERT_EQ(test, amt_fake_live(amt_fake.grps), 0);
-+	KUNIT_ASSERT_EQ(test, amt_fake_live(amt_fake.eps), 2);
-+
-+	amt_fake.release_stall = true;
-+	rtnl_lock();
-+	amt_offload_unregister(lower);
-+	rtnl_unlock();
-+	amt_fake.release_stall = false;
-+	KUNIT_EXPECT_STREQ(test, amt_fake.log, "BGEU");
-+	KUNIT_EXPECT_EQ(test, amt_fake.flushes, 1);
-+	KUNIT_EXPECT_EQ(test, amt->offload_st->hw_objs, 0U);
-+	amt_test_offload_free(amt);
-+	free_netdev(lower);
-+}
-+
-+/* The gone and GC loops time their release ops too: one
-+ * stall, then a flush, not one per object. Each part needs its own relay,
-+ * because a gone-loop reset forgets every handle and the GC loop then has
-+ * nothing to delete.
-+ */
-+static struct amt_dev *amt_test_ofl_stall_setup(struct kunit *test,
-+						struct net_device *lower,
-+						struct amt_tunnel_list **t)
-+{
-+	struct amt_dev *amt;
-+	int i;
-+
-+	amt_fake_reset(AMT_OFFLOAD_FAMILY_V4);
-+	amt_fake.op_timeout_ms = 10;
-+	amt_test_ofl_register(test, lower);
-+	amt = amt_test_ofl_attach(test, "amtos%d", lower,
-+				  AMT_OFFLOAD_MODE_AUTO);
-+	for (i = 0; i < 2; i++) {
-+		t[i] = amt_test_ofl_tunnel(test, AMT_TEST_GW, htons(4000 + i));
-+		amt_test_ofl_join(amt, t[i], i, true);
-+	}
-+	amt_test_ofl_drain(amt);
-+	KUNIT_ASSERT_EQ(test, amt_fake_live(amt_fake.grps), 2);
-+	KUNIT_ASSERT_EQ(test, amt_fake_live(amt_fake.eps), 2);
-+	return amt;
-+}
-+
-+static void amt_offload_reconcile_release_stall_test(struct kunit *test)
-+{
-+	struct net_device *lower = amt_test_lower_alloc(test);
-+	struct amt_tunnel_list *t[3];
-+	struct amt_dev *amt;
-+	int i;
-+
-+	/* (a) Two groups empty in one tick: the first group_disable
-+	 * overruns and resets. Untimed, the GC loop resets one op later
-+	 * and the log reads "BGGE".
-+	 */
-+	amt = amt_test_ofl_stall_setup(test, lower, t);
-+	for (i = 0; i < 2; i++)
-+		amt_test_ofl_join(amt, t[i], i, false);
-+	amt_fake.release_stall = true;
-+	amt_ofl_reconcile(amt);
-+	amt_fake.release_stall = false;
-+	KUNIT_EXPECT_STREQ(test, amt_fake.log, "BG");
-+	KUNIT_EXPECT_EQ(test, amt_fake.flushes, 1);
-+	KUNIT_EXPECT_EQ(test, amt_test_offload_cnt(amt, AMT_OFFLOAD_CNT_RESET),
-+			1);
-+	KUNIT_EXPECT_EQ(test, amt_fake.null_disables, 0);
-+	/* The reset uncommitted the group it forgot: both endpoints go. */
-+	KUNIT_EXPECT_TRUE(test, amt_test_ofl_no_eps(amt));
-+	amt_test_ofl_done(amt, lower);
-+
-+	/* (b) One endpoint leaves a group, nothing empties: its
-+	 * endpoint_del overruns and resets. hw_objs is counted down before
-+	 * the op, so the reset's zeroing is final.
-+	 */
-+	lower = amt_test_lower_alloc(test);
-+	amt = amt_test_ofl_stall_setup(test, lower, t);
-+	t[2] = amt_test_ofl_tunnel(test, AMT_TEST_GW, htons(4002));
-+	amt_test_ofl_join(amt, t[2], 0, true);
-+	amt_test_ofl_drain(amt);
-+	KUNIT_ASSERT_EQ(test, amt_fake_live(amt_fake.eps), 3);
-+	amt_test_ofl_join(amt, t[2], 0, false);
-+	amt_fake.release_stall = true;
-+	amt_ofl_reconcile(amt);
-+	amt_fake.release_stall = false;
-+	KUNIT_EXPECT_STREQ(test, amt_fake.log, "BE");
-+	KUNIT_EXPECT_EQ(test, amt_fake.flushes, 1);
-+	KUNIT_EXPECT_EQ(test, amt_test_offload_cnt(amt, AMT_OFFLOAD_CNT_RESET),
-+			1);
-+	KUNIT_EXPECT_EQ(test, amt->offload_st->hw_objs, 0U);
-+	amt_test_ofl_drain(amt);
-+	KUNIT_EXPECT_EQ(test, amt->offload_st->hw_objs,
-+			(unsigned int)(amt_fake_live(amt_fake.eps) +
-+				       amt_fake_live(amt_fake.grps)));
-+	amt_test_ofl_done(amt, lower);
-+}
-+
-+/* One group re-dirtied from inside every group_commit: the churn the
-+ * hook drives spends each tick's budget on that group.
-+ */
-+static struct {
-+	struct amt_dev			*amt;
-+	struct amt_tunnel_list		*t;
-+	bool				in;
-+	bool				on;
-+} amt_test_churn;
-+
-+static void amt_test_churn_hook(void)
-+{
-+	if (!amt_test_churn.on)
-+		return;
-+	amt_test_churn.in = !amt_test_churn.in;
-+	amt_test_ofl_join(amt_test_churn.amt, amt_test_churn.t, 0,
-+			  amt_test_churn.in);
-+	amt_fake.commit_hook = amt_test_churn_hook;
-+}
-+
-+static bool amt_test_fake_ep_held(const struct amt_offload_endpoint_key *key)
-+{
-+	int i;
-+
-+	for (i = 0; i < AMT_FAKE_SLOTS; i++)
-+		if (amt_fake.eps[i].used &&
-+		    !memcmp(&amt_fake.eps[i].key, key, sizeof(*key)))
-+			return true;
-+	return false;
-+}
-+
-+/* Endpoint GC does not wait for st->dirty to empty: under
-+ * sustained churn in one group, a departed endpoint that no committed
-+ * group names is deleted within a bounded number of ticks. Gated on an
-+ * empty st->dirty it never is.
-+ */
-+static void amt_offload_gc_churn_test(struct kunit *test)
-+{
-+	struct net_device *lower = amt_test_lower_alloc(test);
-+	struct amt_tunnel_list *stay, *churn, *gone;
-+	struct amt_offload_endpoint_key key, ckey;
-+	struct amt_dev *amt;
-+	int tick;
-+
-+	amt_fake_reset(AMT_OFFLOAD_FAMILY_V4);
-+	amt_test_ofl_register(test, lower);
-+	amt = amt_test_ofl_attach(test, "amtog%d", lower,
-+				  AMT_OFFLOAD_MODE_AUTO);
-+	stay = amt_test_ofl_tunnel(test, AMT_TEST_GW, htons(4000));
-+	churn = amt_test_ofl_tunnel(test, AMT_TEST_GW, htons(4001));
-+	gone = amt_test_ofl_tunnel(test, AMT_TEST_GW, htons(4002));
-+	amt_test_ofl_join(amt, stay, 0, true);
-+	amt_test_ofl_join(amt, churn, 0, true);
-+	amt_test_ofl_join(amt, gone, 1, true);
-+	amt_test_ofl_drain(amt);
-+	KUNIT_ASSERT_EQ(test, amt_fake_live(amt_fake.eps), 3);
-+	KUNIT_ASSERT_EQ(test, amt_fake_live(amt_fake.grps), 2);
-+	amt_ofl_ep_key(&key, amt, gone);
-+	KUNIT_ASSERT_TRUE(test, amt_test_fake_ep_held(&key));
-+	amt_ofl_ep_key(&ckey, amt, churn);
-+
-+	amt->offload_st->budget = 6;
-+	memset(&amt_test_churn, 0, sizeof(amt_test_churn));
-+	amt_test_churn.amt = amt;
-+	amt_test_churn.t = churn;
-+	amt_test_churn.on = true;
-+	amt_test_ofl_join(amt, churn, 0, false);
-+	amt_test_ofl_join(amt, gone, 1, false);
-+	amt_fake.commit_hook = amt_test_churn_hook;
-+	/* GC no longer waits for st->dirty, so nothing but the commit
-+	 * accounting keeps it off an endpoint the last commit still names.
-+	 */
-+	for (tick = 0; tick < 3; tick++) {
-+		KUNIT_EXPECT_TRUE(test, amt_ofl_reconcile(amt));
-+		KUNIT_EXPECT_TRUE(test, amt_test_fake_ep_held(&ckey));
-+	}
-+	KUNIT_EXPECT_FALSE(test, amt_test_fake_ep_held(&key));
-+
-+	amt_test_churn.on = false;
-+	amt_fake.commit_hook = NULL;
-+	amt_test_ofl_drain(amt);
-+	KUNIT_EXPECT_EQ(test, amt_fake_live(amt_fake.grps), 1);
-+	amt_test_ofl_done(amt, lower);
-+}
-+
-+/* endpoint_add is idempotent on an identical key, and amt adds an
-+ * endpoint shared by several groups once.
-+ */
-+static void amt_offload_endpoint_idempotent_test(struct kunit *test)
-+{
-+	struct amt_offload_endpoint_key key = {};
-+	struct net_device *lower = amt_test_lower_alloc(test);
-+	struct amt_offload_endpoint *h1 = NULL, *h2 = NULL;
-+	struct amt_tunnel_list *t;
-+	struct amt_dev *amt;
-+
-+	amt_fake_reset(AMT_OFFLOAD_FAMILY_V4);
-+	key.family = AF_INET;
-+	key.addr.ip4 = AMT_TEST_GW;
-+	key.port = htons(4000);
-+	KUNIT_EXPECT_EQ(test, amt_fake_endpoint_add(NULL, &key, &h1), 0);
-+	KUNIT_EXPECT_EQ(test, amt_fake_endpoint_add(NULL, &key, &h2), 0);
-+	KUNIT_EXPECT_PTR_EQ(test, h1, h2);
-+	amt_fake_reset(AMT_OFFLOAD_FAMILY_V4);
-+
-+	amt_test_ofl_register(test, lower);
-+	amt = amt_test_ofl_attach(test, "amtoi%d", lower,
-+				  AMT_OFFLOAD_MODE_AUTO);
-+	t = amt_test_ofl_tunnel(test, AMT_TEST_GW, htons(4000));
-+	amt_test_ofl_join(amt, t, 0, true);
-+	amt_test_ofl_join(amt, t, 1, true);
-+	amt_test_ofl_drain(amt);
-+	KUNIT_EXPECT_EQ(test, amt_fake.ep_adds, 1);
-+	KUNIT_EXPECT_EQ(test, amt_fake.updates, 2);
-+	/* Leaving and rejoining one group keeps the endpoint programmed. */
-+	amt_test_ofl_join(amt, t, 1, false);
-+	amt_test_ofl_join(amt, t, 1, true);
-+	amt_test_ofl_drain(amt);
-+	KUNIT_EXPECT_EQ(test, amt_fake.ep_adds, 1);
-+	KUNIT_EXPECT_EQ(test, amt_fake_live(amt_fake.eps), 1);
-+	amt_test_ofl_done(amt, lower);
-+}
-+
-+/* A failed group_commit disables the group and serves it in software;
-+ * the endpoints it added stay programmed. A new binding retries it.
-+ */
-+static void amt_test_ofl_sync_net(void)
-+{
-+	amt_fake_log('S');
-+	synchronize_net();
-+}
-+
-+static void amt_offload_commit_fail_test(struct kunit *test)
-+{
-+	struct net_device *lower = amt_test_lower_alloc(test);
-+	struct amt_tunnel_list *t[2];
-+	struct amt_ofl_grp *og;
-+	struct amt_dev *amt;
-+	int i;
-+
-+	amt_fake_reset(AMT_OFFLOAD_FAMILY_V4);
-+	amt_fake.commit_err = -EIO;
-+	amt_test_ofl_register(test, lower);
-+	amt = amt_test_ofl_attach(test, "amtoe%d", lower,
-+				  AMT_OFFLOAD_MODE_AUTO);
-+	for (i = 0; i < 2; i++) {
-+		t[i] = amt_test_ofl_tunnel(test, AMT_TEST_GW, htons(4000 + i));
-+		amt_test_ofl_join(amt, t[i], 0, true);
-+	}
-+	amt_test_ofl_drain(amt);
-+	og = amt_test_ofl_grp(amt, 0);
-+	KUNIT_ASSERT_NOT_NULL(test, og);
-+	KUNIT_EXPECT_FALSE(test, og->hw_active);
-+	KUNIT_EXPECT_NULL(test, og->hw);
-+	KUNIT_EXPECT_EQ(test, og->state, AMT_OFL_PARKED);
-+	KUNIT_EXPECT_STREQ(test, amt_fake.log, "BG");
-+	KUNIT_EXPECT_EQ(test, amt_fake_live(amt_fake.eps), 2);
-+	KUNIT_EXPECT_EQ(test, amt_fake_live(amt_fake.grps), 0);
-+	KUNIT_EXPECT_EQ(test, amt_test_offload_cnt(amt,
-+			AMT_OFFLOAD_CNT_SW_REMAINDER), 1);
-+
-+	amt_fake.commit_err = 0;
-+	rtnl_lock();
-+	amt_offload_unregister(lower);
-+	KUNIT_EXPECT_EQ(test, amt_offload_register(lower, &amt_fake_ops), 0);
-+	rtnl_unlock();
-+	amt_test_ofl_drain(amt);
-+	KUNIT_ASSERT_TRUE(test, og->hw_active);
-+	KUNIT_EXPECT_EQ(test, ((struct amt_fake_obj *)og->hw)->nr, 2);
-+
-+	/* A leave withdraws the committed group, then its recommit fails:
-+	 * park still disables the provider object it holds, and waits out
-+	 * ops->xmit first although hw_active already reads false. 'S' is
-+	 * that wait: park, endpoint GC of the departed endpoint, which
-+	 * unparks, then the second failed commit parks again. Without the
-+	 * wait the log reads "GEG".
-+	 */
-+	amt_test_ofl_join(amt, t[1], 0, false);
-+	KUNIT_EXPECT_FALSE(test, og->hw_active);
-+	amt_fake.commit_err = -EIO;
-+	memset(amt_fake.log, 0, sizeof(amt_fake.log));
-+	amt_fake.n = 0;
-+	kunit_activate_static_stub(test, amt_ofl_sync_net,
-+				   amt_test_ofl_sync_net);
-+	amt_test_ofl_drain(amt);
-+	kunit_deactivate_static_stub(test, amt_ofl_sync_net);
-+	KUNIT_EXPECT_STREQ(test, amt_fake.log, "SGESG");
-+	KUNIT_EXPECT_NULL(test, og->hw);
-+	KUNIT_EXPECT_EQ(test, og->state, AMT_OFL_PARKED);
-+	KUNIT_EXPECT_EQ(test, amt_fake_live(amt_fake.grps), 0);
-+	amt_test_ofl_done(amt, lower);
-+}
-+
-+/* The publish gate: a member removed while the
-+ * reconciler programs the group is still in what it commits, so that
-+ * commit is not published and software serves the group; a member added
-+ * meanwhile does not hold the publication back. A budget of one ends the
-+ * tick right after the program the hook lands in.
-+ */
-+static struct {
-+	struct amt_dev			*amt;
-+	struct amt_tunnel_list		*tunnel;
-+	int				grp;
-+	bool				join;
-+} amt_test_ofl_hook;
-+
-+static void amt_test_ofl_commit_hook(void)
-+{
-+	amt_test_ofl_join(amt_test_ofl_hook.amt, amt_test_ofl_hook.tunnel,
-+			  amt_test_ofl_hook.grp, amt_test_ofl_hook.join);
-+}
-+
-+static void amt_offload_publish_gate_test(struct kunit *test)
-+{
-+	struct net_device *lower = amt_test_lower_alloc(test);
-+	struct amt_offload_endpoint_key key;
-+	struct amt_tunnel_list *t[3];
-+	struct amt_offload_state *st;
-+	struct amt_ofl_grp *og;
-+	struct sk_buff *skb;
-+	struct amt_dev *amt;
-+	u32 budget;
-+	int i;
-+
-+	amt_fake_reset(AMT_OFFLOAD_FAMILY_V4);
-+	amt_fake.xmit_res = AMT_OFFLOAD_FALLBACK;
-+	amt_test_ofl_register(test, lower);
-+	amt = amt_test_ofl_attach(test, "amtop%d", lower,
-+				  AMT_OFFLOAD_MODE_AUTO);
-+	st = amt->offload_st;
-+	budget = st->budget;
-+	for (i = 0; i < 3; i++)
-+		t[i] = amt_test_ofl_tunnel(test, AMT_TEST_GW, htons(4000 + i));
-+	amt_test_ofl_hook.amt = amt;
-+
-+	/* A join inside the first commit: publish the committed subset. */
-+	amt_test_ofl_join(amt, t[0], 0, true);
-+	amt_test_ofl_hook.tunnel = t[1];
-+	amt_test_ofl_hook.join = true;
-+	amt_fake.commit_hook = amt_test_ofl_commit_hook;
-+	st->budget = 1;
-+	amt_ofl_reconcile(amt);
-+	og = amt_test_ofl_grp(amt, 0);
-+	KUNIT_ASSERT_NOT_NULL(test, og);
-+	KUNIT_EXPECT_NULL(test, amt_fake.commit_hook);
-+	KUNIT_EXPECT_TRUE(test, og->hw_active);
-+	KUNIT_EXPECT_EQ(test, og->state, AMT_OFL_DIRTY);
-+	KUNIT_ASSERT_NOT_NULL(test, og->hw);
-+	KUNIT_EXPECT_EQ(test, ((struct amt_fake_obj *)og->hw)->nr, 1);
-+	st->budget = budget;
-+	amt_test_ofl_drain(amt);
-+	KUNIT_ASSERT_TRUE(test, og->hw_active);
-+	KUNIT_EXPECT_EQ(test, ((struct amt_fake_obj *)og->hw)->nr, 2);
-+
-+	/* A leave inside a recommit: withhold it, software serves G. */
-+	amt_test_ofl_join(amt, t[2], 0, true);
-+	KUNIT_EXPECT_TRUE(test, og->hw_active);	/* joins do not withdraw */
-+	amt_test_ofl_hook.tunnel = t[0];
-+	amt_test_ofl_hook.join = false;
-+	amt_fake.commit_hook = amt_test_ofl_commit_hook;
-+	st->budget = 1;
-+	amt_ofl_reconcile(amt);
-+	KUNIT_EXPECT_NULL(test, amt_fake.commit_hook);
-+	KUNIT_EXPECT_FALSE(test, og->hw_active);
-+	/* The provider still replicates to t[0]: its endpoint stays. */
-+	amt_ofl_ep_key(&key, amt, t[0]);
-+	KUNIT_EXPECT_TRUE(test, amt_test_fake_ep_held(&key));
-+	KUNIT_EXPECT_EQ(test, og->state, AMT_OFL_DIRTY);
-+	skb = alloc_skb(64, GFP_KERNEL);
-+	KUNIT_ASSERT_NOT_NULL(test, skb);
-+	i = amt_fake.xmits;
-+	KUNIT_EXPECT_FALSE(test, amt_test_ofl_tx(amt, skb, 0));
-+	KUNIT_EXPECT_EQ(test, amt_fake.xmits, i);
-+	st->budget = budget;
-+	amt_test_ofl_drain(amt);
-+	KUNIT_EXPECT_TRUE(test, og->hw_active);
-+	KUNIT_EXPECT_EQ(test, ((struct amt_fake_obj *)og->hw)->nr, 2);
-+	kfree_skb(skb);
-+	amt_test_ofl_done(amt, lower);
-+}
-+
-+/* Same-key rejoin: K empties and goes on the tick's gone list with its
-+ * provider group still live; a join inside the next group's commit hashes
-+ * a new K, which the same tick programs. That first use must wait for the
-+ * old group's disable: the fake refuses a second live group per key, and
-+ * without the flush the new K parks in software.
-+ */
-+static void amt_offload_rejoin_gone_test(struct kunit *test)
-+{
-+	struct net_device *lower = amt_test_lower_alloc(test);
-+	struct amt_tunnel_list *t[2];
-+	struct amt_ofl_grp *og;
-+	struct amt_dev *amt;
-+	int i;
-+
-+	amt_fake_reset(AMT_OFFLOAD_FAMILY_V4);
-+	amt_test_ofl_register(test, lower);
-+	amt = amt_test_ofl_attach(test, "amtor%d", lower,
-+				  AMT_OFFLOAD_MODE_AUTO);
-+	for (i = 0; i < 2; i++)
-+		t[i] = amt_test_ofl_tunnel(test, AMT_TEST_GW, htons(4000 + i));
-+	amt_test_ofl_join(amt, t[0], 0, true);
-+	amt_test_ofl_drain(amt);
-+	og = amt_test_ofl_grp(amt, 0);
-+	KUNIT_ASSERT_NOT_NULL(test, og);
-+	KUNIT_ASSERT_TRUE(test, og->hw_active);
-+
-+	/* K empties first, then G dirties; G's commit rejoins K. */
-+	amt_test_ofl_join(amt, t[0], 0, false);
-+	amt_test_ofl_join(amt, t[1], 1, true);
-+	amt_test_ofl_hook.amt = amt;
-+	amt_test_ofl_hook.tunnel = t[0];
-+	amt_test_ofl_hook.grp = 0;
-+	amt_test_ofl_hook.join = true;
-+	amt_fake.commit_hook = amt_test_ofl_commit_hook;
-+	/* 'S' is the mid-pass flush's wait for ops->xmit on the old K before
-+	 * its disable; without it the log reads "G".
-+	 */
-+	memset(amt_fake.log, 0, sizeof(amt_fake.log));
-+	amt_fake.n = 0;
-+	kunit_activate_static_stub(test, amt_ofl_sync_net,
-+				   amt_test_ofl_sync_net);
-+	amt_ofl_reconcile(amt);
-+	kunit_deactivate_static_stub(test, amt_ofl_sync_net);
-+	KUNIT_EXPECT_STREQ(test, amt_fake.log, "SG");
-+	KUNIT_EXPECT_NULL(test, amt_fake.commit_hook);
-+	KUNIT_EXPECT_EQ(test, amt_fake.dup_grps, 0);
-+	og = amt_test_ofl_grp(amt, 0);
-+	KUNIT_ASSERT_NOT_NULL(test, og);
-+	KUNIT_EXPECT_TRUE(test, og->hw_active);
-+	KUNIT_EXPECT_EQ(test, og->state, AMT_OFL_IDLE);
-+	KUNIT_EXPECT_EQ(test, amt_fake_live(amt_fake.grps), 2);
-+	KUNIT_EXPECT_EQ(test, amt_test_offload_cnt(amt,
-+			AMT_OFFLOAD_CNT_SW_REMAINDER), 0);
-+	amt_test_ofl_done(amt, lower);
-+}
-+
-+/* The mid-pass flush above is timed like any release op: a stalled
-+ * group_disable of the old K resets the provider once, and the pass ends
-+ * there rather than program the new K against a provider it just
-+ * flushed. The next ticks replay it.
-+ */
-+static void amt_offload_rejoin_gone_stall_test(struct kunit *test)
-+{
-+	struct net_device *lower = amt_test_lower_alloc(test);
-+	struct amt_tunnel_list *t[2];
-+	struct amt_ofl_grp *og;
-+	struct amt_dev *amt;
-+	int i, updates;
-+
-+	amt_fake_reset(AMT_OFFLOAD_FAMILY_V4);
-+	amt_fake.op_timeout_ms = 10;
-+	amt_test_ofl_register(test, lower);
-+	amt = amt_test_ofl_attach(test, "amtos%d", lower,
-+				  AMT_OFFLOAD_MODE_AUTO);
-+	for (i = 0; i < 2; i++)
-+		t[i] = amt_test_ofl_tunnel(test, AMT_TEST_GW, htons(4000 + i));
-+	amt_test_ofl_join(amt, t[0], 0, true);
-+	amt_test_ofl_drain(amt);
-+
-+	amt_test_ofl_join(amt, t[0], 0, false);
-+	amt_test_ofl_join(amt, t[1], 1, true);
-+	amt_test_ofl_hook.amt = amt;
-+	amt_test_ofl_hook.tunnel = t[0];
-+	amt_test_ofl_hook.grp = 0;
-+	amt_test_ofl_hook.join = true;
-+	amt_fake.commit_hook = amt_test_ofl_commit_hook;
-+	amt_fake.release_stall = true;
-+	updates = amt_fake.updates;
-+	amt_ofl_reconcile(amt);
-+	amt_fake.release_stall = false;
-+	KUNIT_EXPECT_NULL(test, amt_fake.commit_hook);
-+	KUNIT_EXPECT_EQ(test, amt_fake.flushes, 1);
-+	KUNIT_EXPECT_EQ(test, amt_test_offload_cnt(amt, AMT_OFFLOAD_CNT_RESET),
-+			1);
-+	/* G's update only: the new K was not programmed. */
-+	KUNIT_EXPECT_EQ(test, amt_fake.updates, updates + 1);
-+	og = amt_test_ofl_grp(amt, 0);
-+	KUNIT_ASSERT_NOT_NULL(test, og);
-+	KUNIT_EXPECT_NULL(test, og->hw);
-+	KUNIT_EXPECT_FALSE(test, og->hw_active);
-+
-+	amt_test_ofl_drain(amt);
-+	KUNIT_EXPECT_TRUE(test, og->hw_active);
-+	KUNIT_EXPECT_EQ(test, amt_fake.dup_grps, 0);
-+	amt_test_ofl_done(amt, lower);
-+}
-+
-+/* Exactly one actor per packet: CONSUMED gives the skb away, FALLBACK
-+ * and BUSY return it untouched (BUSY counted); an uncommitted group and
-+ * an unbound relay never reach the provider. A packet submitted after a
-+ * commit carries the new generation.
-+ */
-+static void amt_offload_tx_ownership_test(struct kunit *test)
-+{
-+	struct net_device *lower = amt_test_lower_alloc(test);
-+	struct amt_tunnel_list *t[2];
-+	struct amt_ofl_grp *og;
-+	struct sk_buff *skb;
-+	struct amt_dev *amt;
-+	u64 gen;
-+
-+	amt_fake_reset(AMT_OFFLOAD_FAMILY_V4);
-+	amt = amt_test_ofl_attach(test, "amtox%d", lower,
-+				  AMT_OFFLOAD_MODE_AUTO);
-+	t[0] = amt_test_ofl_tunnel(test, AMT_TEST_GW, htons(4000));
-+	t[1] = amt_test_ofl_tunnel(test, AMT_TEST_GW, htons(4001));
-+	amt_test_ofl_join(amt, t[0], 0, true);
-+	amt_test_ofl_drain(amt);
-+	skb = alloc_skb(64, GFP_KERNEL);
-+	KUNIT_ASSERT_NOT_NULL(test, skb);
-+
-+	/* No provider: software, as with offload=software. */
-+	KUNIT_EXPECT_FALSE(test, amt_test_ofl_tx(amt, skb, 0));
-+
-+	rtnl_lock();
-+	KUNIT_EXPECT_EQ(test, amt_offload_register(lower, &amt_fake_ops), 0);
-+	rtnl_unlock();
-+	KUNIT_EXPECT_FALSE(test, amt_test_ofl_tx(amt, skb, 0));
-+	KUNIT_EXPECT_EQ(test, amt_fake.xmits, 0);	/* not committed yet */
-+	amt_test_ofl_drain(amt);
-+	og = amt_test_ofl_grp(amt, 0);
-+	KUNIT_ASSERT_NOT_NULL(test, og);
-+	KUNIT_ASSERT_TRUE(test, og->hw_active);
-+
-+	amt_fake.xmit_res = AMT_OFFLOAD_FALLBACK;
-+	KUNIT_EXPECT_FALSE(test, amt_test_ofl_tx(amt, skb, 0));
-+	amt_fake.xmit_res = AMT_OFFLOAD_BUSY;
-+	KUNIT_EXPECT_FALSE(test, amt_test_ofl_tx(amt, skb, 0));
-+	KUNIT_EXPECT_EQ(test, amt_test_offload_cnt(amt,
-+			AMT_OFFLOAD_CNT_BUSY_FALLBACK), 1);
-+	KUNIT_EXPECT_EQ(test, refcount_read(&skb->users), 1);
-+	KUNIT_EXPECT_FALSE(test, amt_test_ofl_tx(amt, skb, 1));	/* no group */
-+	KUNIT_EXPECT_EQ(test, amt_fake.xmits, 2);
-+	KUNIT_EXPECT_EQ(test, amt_fake.xmit_gen, og->hw_gen);
-+
-+	/* Generation rule. */
-+	gen = og->hw_gen;
-+	amt_test_ofl_join(amt, t[1], 0, true);
-+	amt_fake.xmit_res = AMT_OFFLOAD_FALLBACK;
-+	KUNIT_EXPECT_FALSE(test, amt_test_ofl_tx(amt, skb, 0));
-+	KUNIT_EXPECT_EQ(test, amt_fake.xmit_gen, gen);
-+	amt_test_ofl_drain(amt);
-+	KUNIT_EXPECT_GT(test, og->hw_gen, gen);
-+	amt_fake.xmit_res = AMT_OFFLOAD_CONSUMED;
-+	KUNIT_EXPECT_TRUE(test, amt_test_ofl_tx(amt, skb, 0));	/* freed */
-+	KUNIT_EXPECT_EQ(test, amt_fake.xmit_gen, og->hw_gen);
-+	KUNIT_EXPECT_EQ(test, amt_fake.xmits, 4);
-+
-+	/* Removing a member withdraws the group from hardware at once, not
-+	 * at the next commit: the committed set still names the departed
-+	 * endpoint.
-+	 */
-+	amt_test_ofl_join(amt, t[1], 0, false);
-+	KUNIT_EXPECT_FALSE(test, og->hw_active);
-+	skb = alloc_skb(64, GFP_KERNEL);
-+	KUNIT_ASSERT_NOT_NULL(test, skb);
-+	KUNIT_EXPECT_FALSE(test, amt_test_ofl_tx(amt, skb, 0));
-+	KUNIT_EXPECT_EQ(test, amt_fake.xmits, 4);
-+	amt_test_ofl_drain(amt);
-+	KUNIT_EXPECT_TRUE(test, og->hw_active);
-+	KUNIT_EXPECT_EQ(test, ((struct amt_fake_obj *)og->hw)->nr, 1);
-+	kfree_skb(skb);
-+	amt_test_ofl_done(amt, lower);
-+}
-+
-+/* Admission: a teardown waiting on st->mutex holds RTNL, so once admission
-+ * stops a programming pass makes no further endpoint_add, group_update,
-+ * group_commit or endpoint_del, and ends the tick. A pass releasing
-+ * everything after desync does not check admission and finishes that
-+ * release. The fake clears b->admitting from inside one op. The four
-+ * blocks below fail with any one of these five admission checks reverted
-+ * (before endpoint_add, group_update and group_commit, at the top of the
-+ * pass loop, in the endpoint GC); the pass loop's epoch check is
-+ * amt_offload_reset_ends_pass_test's.
-+ */
-+static void amt_offload_admit_guard_test(struct kunit *test)
-+{
-+	struct amt_tunnel_list *t[3];
-+	struct net_device *lower;
-+	struct amt_dev *amt;
-+	int i;
-+
-+	/* A two-endpoint group, admission lost in the first endpoint_add:
-+	 * no second endpoint_add.
-+	 */
-+	lower = amt_test_lower_alloc(test);
-+	amt_fake_reset(AMT_OFFLOAD_FAMILY_V4);
-+	amt_test_ofl_register(test, lower);
-+	amt = amt_test_ofl_attach(test, "amtga%d", lower,
-+				  AMT_OFFLOAD_MODE_AUTO);
-+	for (i = 0; i < 2; i++)
-+		amt_test_ofl_join(amt, amt_test_ofl_tunnel(test, AMT_TEST_GW,
-+							   htons(4000 + i)),
-+				  0, true);
-+	amt_fake.drop_admit = 'A';
-+	amt_ofl_reconcile(amt);
-+	KUNIT_EXPECT_EQ(test, amt_fake.ep_adds, 1);
-+	KUNIT_EXPECT_EQ(test, amt_fake.updates, 0);
-+	amt_test_ofl_done(amt, lower);
-+
-+	/* Three one-endpoint groups, lost in the first endpoint_add: no
-+	 * group_update, and the pass ends with the other two still queued.
-+	 */
-+	lower = amt_test_lower_alloc(test);
-+	amt_fake_reset(AMT_OFFLOAD_FAMILY_V4);
-+	amt_test_ofl_register(test, lower);
-+	amt = amt_test_ofl_attach(test, "amtgb%d", lower,
-+				  AMT_OFFLOAD_MODE_AUTO);
-+	for (i = 0; i < 3; i++)
-+		amt_test_ofl_join(amt, amt_test_ofl_tunnel(test, AMT_TEST_GW,
-+							   htons(4000 + i)),
-+				  i, true);
-+	amt_fake.drop_admit = 'A';
-+	KUNIT_EXPECT_TRUE(test, amt_ofl_reconcile(amt));
-+	KUNIT_EXPECT_EQ(test, amt_fake.ep_adds, 1);
-+	KUNIT_EXPECT_EQ(test, amt_fake.updates, 0);
-+	KUNIT_EXPECT_EQ(test, amt_fake.commits, 0);
-+	for (i = 1; i < 3; i++) {
-+		struct amt_ofl_grp *g = amt_test_ofl_grp(amt, i);
-+
-+		KUNIT_ASSERT_NOT_NULL(test, g);
-+		KUNIT_EXPECT_EQ(test, g->state, AMT_OFL_DIRTY);
-+	}
-+	amt_test_ofl_done(amt, lower);
-+
-+	/* Lost in group_update: no group_commit. */
-+	lower = amt_test_lower_alloc(test);
-+	amt_fake_reset(AMT_OFFLOAD_FAMILY_V4);
-+	amt_test_ofl_register(test, lower);
-+	amt = amt_test_ofl_attach(test, "amtgc%d", lower,
-+				  AMT_OFFLOAD_MODE_AUTO);
-+	amt_test_ofl_join(amt, amt_test_ofl_tunnel(test, AMT_TEST_GW,
-+						   htons(4000)), 0, true);
-+	amt_fake.drop_admit = 'U';
-+	amt_ofl_reconcile(amt);
-+	KUNIT_EXPECT_EQ(test, amt_fake.updates, 1);
-+	KUNIT_EXPECT_EQ(test, amt_fake.commits, 0);
-+	amt_test_ofl_done(amt, lower);
-+
-+	/* Two unused endpoints, lost in the first endpoint_del: the
-+	 * endpoint GC deletes no second one.
-+	 */
-+	lower = amt_test_lower_alloc(test);
-+	amt_fake_reset(AMT_OFFLOAD_FAMILY_V4);
-+	amt_test_ofl_register(test, lower);
-+	amt = amt_test_ofl_attach(test, "amtgd%d", lower,
-+				  AMT_OFFLOAD_MODE_AUTO);
-+	for (i = 0; i < 2; i++) {
-+		t[i] = amt_test_ofl_tunnel(test, AMT_TEST_GW, htons(4000 + i));
-+		amt_test_ofl_join(amt, t[i], i, true);
-+	}
-+	amt_test_ofl_drain(amt);
-+	KUNIT_ASSERT_EQ(test, amt_fake_live(amt_fake.eps), 2);
-+	for (i = 0; i < 2; i++)
-+		amt_test_ofl_join(amt, t[i], i, false);
-+	amt_fake.drop_admit = 'E';
-+	amt_ofl_reconcile(amt);
-+	KUNIT_EXPECT_EQ(test, amt_fake_live(amt_fake.eps), 1);
-+	amt_test_ofl_done(amt, lower);
-+}
-+
-+/* A reset (an op overran op_timeout_ms) replays every group, so
-+ * the pass ends at it instead of spending the rest of the budget against
-+ * a provider that may be wedged.
-+ */
-+static void amt_offload_reset_ends_pass_test(struct kunit *test)
-+{
-+	struct net_device *lower = amt_test_lower_alloc(test);
-+	struct amt_dev *amt;
-+	int i;
-+
-+	amt_fake_reset(AMT_OFFLOAD_FAMILY_V4);
-+	amt_fake.op_timeout_ms = 10;
-+	amt_test_ofl_register(test, lower);
-+	amt = amt_test_ofl_attach(test, "amtor%d", lower,
-+				  AMT_OFFLOAD_MODE_AUTO);
-+	for (i = 0; i < 3; i++)
-+		amt_test_ofl_join(amt, amt_test_ofl_tunnel(test, AMT_TEST_GW,
-+							   htons(4000 + i)),
-+				  i, true);
-+	amt_fake.add_stall = true;
-+	KUNIT_EXPECT_TRUE(test, amt_ofl_reconcile(amt));
-+	KUNIT_EXPECT_EQ(test, amt_fake.flushes, 1);
-+	KUNIT_EXPECT_EQ(test, amt_fake.ep_adds, 1);
-+	KUNIT_EXPECT_EQ(test, amt_fake.updates, 0);
-+
-+	/* The next tick replays all three. */
-+	amt_test_ofl_drain(amt);
-+	KUNIT_EXPECT_EQ(test, amt_fake_live(amt_fake.grps), 3);
-+	KUNIT_EXPECT_EQ(test, amt_fake_live(amt_fake.eps), 3);
-+	amt_test_ofl_done(amt, lower);
-+}
-+
-+/* Hash seed: the offload tables are indexed with the device's hash_seed and
-+ * sized from max_tunnels (x max_groups) at attach, so a gateway can
-+ * neither precompute one chain nor fill a fixed-size table.
-+ */
-+static void amt_offload_hash_seed_test(struct kunit *test)
-+{
-+	struct amt_offload_endpoint_key ek;
-+	struct amt_offload_group_key gk;
-+	bool gmoved = false, emoved = false;
-+	struct amt_offload_state *st;
-+	struct hlist_head *g0, *e0;
-+	struct net_device *lower;
-+	struct amt_dev *amt;
-+	u32 seed;
-+
-+	memset(&ek, 0, sizeof(ek));
-+	ek.family = AF_INET;
-+	ek.addr.ip4 = AMT_TEST_GW;
-+	ek.port = htons(4000);
-+	memset(&gk, 0, sizeof(gk));
-+	gk.family = AF_INET;
-+	gk.group.ip4 = AMT_TEST_GROUP;
-+
-+	/* Default caps: 128 tunnels x 32 groups. */
-+	lower = amt_test_lower_alloc(test);
-+	amt_fake_reset(AMT_OFFLOAD_FAMILY_V4);
-+	amt_test_ofl_register(test, lower);
-+	amt = amt_test_ofl_attach(test, "amtoh%d", lower,
-+				  AMT_OFFLOAD_MODE_AUTO);
-+	st = amt->offload_st;
-+	KUNIT_EXPECT_EQ(test, st->ep_bits, 7);
-+	KUNIT_EXPECT_EQ(test, st->grp_bits, 12);
-+	amt->hash_seed = 0;
-+	g0 = amt_ofl_grp_bucket(st, &gk);
-+	e0 = amt_ofl_ep_bucket(st, &ek);
-+	for (seed = 1; seed < 64 && !(gmoved && emoved); seed++) {
-+		amt->hash_seed = seed;
-+		gmoved |= amt_ofl_grp_bucket(st, &gk) != g0;
-+		emoved |= amt_ofl_ep_bucket(st, &ek) != e0;
-+	}
-+	KUNIT_EXPECT_TRUE_MSG(test, gmoved, "group bucket ignores hash_seed");
-+	KUNIT_EXPECT_TRUE_MSG(test, emoved, "endpoint bucket ignores hash_seed");
-+	amt_test_ofl_done(amt, lower);
-+
-+	/* max_tunnels set before attach sizes both tables. */
-+	lower = amt_test_lower_alloc(test);
-+	amt_fake_reset(AMT_OFFLOAD_FAMILY_V4);
-+	amt_test_ofl_register(test, lower);
-+	amt = amt_test_offload_relay(test, "amtoi%d", lower,
-+				     AMT_OFFLOAD_MODE_AUTO);
-+	amt->max_tunnels = 10000;
-+	rtnl_lock();
-+	KUNIT_EXPECT_EQ(test, amt_offload_attach(amt, NULL), 0);
-+	rtnl_unlock();
-+	KUNIT_ASSERT_NOT_NULL(test, amt->offload_st);
-+	disable_work_sync(&amt->offload_st->work);
-+	KUNIT_EXPECT_EQ(test, amt->offload_st->ep_bits, 14);
-+	KUNIT_EXPECT_EQ(test, amt->offload_st->grp_bits, 16);
-+	amt_test_ofl_done(amt, lower);
-+}
-+
-+/* The last member leaves while the reconciler allocates its arrays: the
-+ * retry finds no member and must not free the arrays a second time. The
-+ * allocation and free stubs keep a ledger of live arrays, so a repeated
-+ * free fails the case in every configuration, not only under KASAN.
-+ */
-+static struct {
-+	struct kunit			*test;
-+	struct amt_dev			*amt;
-+	struct amt_tunnel_list		*tunnel;
-+	int				calls;
-+	void				*live[4];
-+	int				nr_live;
-+} amt_test_ofl_race;
-+
-+static void *amt_test_ofl_alloc_leave(u32 n, size_t size)
-+{
-+	void *p;
-+
-+	if (!amt_test_ofl_race.calls++)
-+		amt_test_ofl_join(amt_test_ofl_race.amt,
-+				  amt_test_ofl_race.tunnel, 0, false);
-+	p = kvmalloc_array(n, size, GFP_KERNEL);
-+	if (!p)
-+		return NULL;
-+	if (amt_test_ofl_race.nr_live == ARRAY_SIZE(amt_test_ofl_race.live)) {
-+		/* A later free of p would read as a double free. */
-+		KUNIT_FAIL(amt_test_ofl_race.test, "live-array ledger full");
-+		return p;
-+	}
-+	amt_test_ofl_race.live[amt_test_ofl_race.nr_live++] = p;
-+	return p;
-+}
-+
-+static void amt_test_ofl_free_once(void *p)
-+{
-+	int i;
-+
-+	if (!p)
-+		return;
-+	for (i = 0; i < amt_test_ofl_race.nr_live; i++) {
-+		if (amt_test_ofl_race.live[i] == p) {
-+			amt_test_ofl_race.live[i] =
-+				amt_test_ofl_race.live[--amt_test_ofl_race.nr_live];
-+			kvfree(p);
-+			return;
-+		}
-+	}
-+	/* Not live: a second free. Leak it rather than corrupt the heap. */
-+	KUNIT_FAIL(amt_test_ofl_race.test, "array %p freed twice", p);
-+}
-+
-+static void amt_offload_alloc_race_test(struct kunit *test)
-+{
-+	struct net_device *lower = amt_test_lower_alloc(test);
-+	struct amt_dev *amt;
-+
-+	amt_fake_reset(AMT_OFFLOAD_FAMILY_V4);
-+	amt_test_ofl_register(test, lower);
-+	amt = amt_test_ofl_attach(test, "amtoa%d", lower,
-+				  AMT_OFFLOAD_MODE_AUTO);
-+	memset(&amt_test_ofl_race, 0, sizeof(amt_test_ofl_race));
-+	amt_test_ofl_race.test = test;
-+	amt_test_ofl_race.amt = amt;
-+	amt_test_ofl_race.tunnel = amt_test_ofl_tunnel(test, AMT_TEST_GW,
-+						       htons(4000));
-+	amt_test_ofl_join(amt, amt_test_ofl_race.tunnel, 0, true);
-+
-+	kunit_activate_static_stub(test, amt_ofl_alloc_array,
-+				   amt_test_ofl_alloc_leave);
-+	kunit_activate_static_stub(test, amt_ofl_free_array,
-+				   amt_test_ofl_free_once);
-+	amt_test_ofl_drain(amt);
-+	kunit_deactivate_static_stub(test, amt_ofl_free_array);
-+	kunit_deactivate_static_stub(test, amt_ofl_alloc_array);
-+
-+	/* One allocation round, then the retry read no member. */
-+	KUNIT_EXPECT_EQ(test, amt_test_ofl_race.calls, 2);
-+	KUNIT_EXPECT_EQ(test, amt_test_ofl_race.nr_live, 0);
-+	KUNIT_EXPECT_NULL(test, amt_test_ofl_grp(amt, 0));
-+	KUNIT_EXPECT_TRUE(test, amt_test_ofl_no_eps(amt));
-+	KUNIT_EXPECT_EQ(test, amt_fake.updates, 0);
-+	amt_test_ofl_done(amt, lower);
-+}
-+
-+/* Ingress: the host drops a punted copy of a committed group and sends
-+ * everything else to software. Only a required relay binds on ingress.
-+ * A leave does not lift the drop: hardware keeps replicating to the
-+ * committed set until the recommit, so software would send the remaining
-+ * members every packet a second time.
-+ */
-+static void amt_offload_ingress_punt_test(struct kunit *test)
-+{
-+	struct net_device *lower = amt_test_lower_alloc(test);
-+	struct amt_offload_endpoint_key key;
-+	struct amt_tunnel_list *t, *t2;
-+	struct amt_dev *amt, *aut;
-+	struct sk_buff *skb;
-+	u32 budget;
-+
-+	amt_fake_reset(AMT_OFFLOAD_FAMILY_V4);
-+	amt_fake.paths = BIT(AMT_OFFLOAD_PATH_INGRESS);
-+	amt_test_ofl_register(test, lower);
-+	aut = amt_test_ofl_attach(test, "amtoa%d", lower,
-+				  AMT_OFFLOAD_MODE_AUTO);
-+	KUNIT_EXPECT_NULL(test, rcu_access_pointer(aut->offload));
-+	KUNIT_EXPECT_EQ(test, amt_test_offload_cnt(aut,
-+			AMT_OFFLOAD_CNT_PATH_UNSUPPORTED), 1);
-+
-+	amt = amt_test_ofl_attach(test, "amtog%d", lower,
-+				  AMT_OFFLOAD_MODE_REQUIRED);
-+	KUNIT_ASSERT_NOT_NULL(test, rcu_access_pointer(amt->offload));
-+	t = amt_test_ofl_tunnel(test, AMT_TEST_GW, htons(4000));
-+	t2 = amt_test_ofl_tunnel(test, AMT_TEST_GW, htons(4001));
-+	amt_test_ofl_join(amt, t, 0, true);
-+	amt_test_ofl_join(amt, t2, 0, true);
-+	amt_test_ofl_join(amt, t, 2, true);
-+	amt_test_ofl_drain(amt);
-+	amt_test_ofl_join(amt, t, 3, true);	/* not committed */
-+
-+	skb = alloc_skb(64, GFP_KERNEL);
-+	KUNIT_ASSERT_NOT_NULL(test, skb);
-+	KUNIT_EXPECT_FALSE(test, amt_test_ofl_tx(amt, skb, 1));
-+	KUNIT_EXPECT_FALSE(test, amt_test_ofl_tx(amt, skb, 3));
-+	KUNIT_EXPECT_EQ(test, amt_test_offload_cnt(amt,
-+			AMT_OFFLOAD_CNT_PUNT_DROPPED), 0);
-+	KUNIT_EXPECT_TRUE(test, amt_test_ofl_tx(amt, skb, 0));	/* dropped */
-+	KUNIT_EXPECT_EQ(test, amt_test_offload_cnt(amt,
-+			AMT_OFFLOAD_CNT_PUNT_DROPPED), 1);
-+
-+	amt_test_ofl_join(amt, t2, 0, false);
-+	skb = alloc_skb(64, GFP_KERNEL);
-+	KUNIT_ASSERT_NOT_NULL(test, skb);
-+	KUNIT_EXPECT_TRUE(test, amt_test_ofl_tx(amt, skb, 0));	/* dropped */
-+	KUNIT_EXPECT_EQ(test, amt_test_offload_cnt(amt,
-+			AMT_OFFLOAD_CNT_PUNT_DROPPED), 2);
-+
-+	/* A leave inside a group's first commit: hardware replicates to the
-+	 * committed set anyway, so the pass still publishes it and the
-+	 * punted copy is dropped. Withholding it would send the remaining
-+	 * member every packet twice until the next pass.
-+	 */
-+	amt_test_ofl_drain(amt);
-+	amt_test_ofl_join(amt, t, 4, true);
-+	amt_test_ofl_join(amt, t2, 4, true);
-+	amt_test_ofl_hook.amt = amt;
-+	amt_test_ofl_hook.tunnel = t2;
-+	amt_test_ofl_hook.grp = 4;
-+	amt_test_ofl_hook.join = false;
-+	amt_fake.commit_hook = amt_test_ofl_commit_hook;
-+	budget = amt->offload_st->budget;
-+	amt->offload_st->budget = 1;
-+	amt_ofl_reconcile(amt);
-+	amt->offload_st->budget = budget;
-+	amt_test_ofl_hook.grp = 0;
-+	KUNIT_EXPECT_NULL(test, amt_fake.commit_hook);
-+	amt_ofl_ep_key(&key, amt, t2);
-+	KUNIT_EXPECT_TRUE(test, amt_test_fake_ep_held(&key));
-+	skb = alloc_skb(64, GFP_KERNEL);
-+	KUNIT_ASSERT_NOT_NULL(test, skb);
-+	KUNIT_EXPECT_TRUE(test, amt_test_ofl_tx(amt, skb, 4));	/* dropped */
-+	KUNIT_EXPECT_EQ(test, amt_test_offload_cnt(amt,
-+			AMT_OFFLOAD_CNT_PUNT_DROPPED), 3);
-+	amt_test_ofl_drain(amt);
-+	KUNIT_EXPECT_EQ(test, amt_fake.xmits, 0);
-+	amt_test_offload_free(aut);
-+	amt_test_ofl_done(amt, lower);
-+}
-+
- static struct kunit_case amt_test_cases[] = {
- 	KUNIT_CASE(amt_lifecycle_test),
- 	KUNIT_CASE(amt_upstream_refresh_idempotent_test),
- 	KUNIT_CASE(amt_ex_transition_test),
-+	KUNIT_CASE(amt_offload_register_when_bound_test),
-+	KUNIT_CASE(amt_offload_family_unsupported_test),
-+	KUNIT_CASE(amt_offload_unregister_mid_fanout_test),
-+	KUNIT_CASE(amt_offload_provider_unregister_order_test),
-+	KUNIT_CASE(amt_offload_mode_validate_test),
-+	KUNIT_CASE(amt_offload_required_refused_test),
-+	KUNIT_CASE(amt_offload_member_gnode_test),
-+	KUNIT_CASE(amt_offload_budget_coalesce_test),
-+	KUNIT_CASE(amt_offload_enospc_hysteresis_test),
-+	KUNIT_CASE(amt_offload_timeout_reset_test),
-+	KUNIT_CASE(amt_offload_reset_after_empty_test),
-+	KUNIT_CASE(amt_offload_teardown_release_stall_test),
-+	KUNIT_CASE(amt_offload_teardown_ep_stall_test),
-+	KUNIT_CASE(amt_offload_reconcile_release_stall_test),
-+	KUNIT_CASE(amt_offload_gc_churn_test),
-+	KUNIT_CASE(amt_offload_endpoint_idempotent_test),
-+	KUNIT_CASE(amt_offload_commit_fail_test),
-+	KUNIT_CASE(amt_offload_publish_gate_test),
-+	KUNIT_CASE(amt_offload_rejoin_gone_test),
-+	KUNIT_CASE(amt_offload_rejoin_gone_stall_test),
-+	KUNIT_CASE(amt_offload_tx_ownership_test),
-+	KUNIT_CASE(amt_offload_alloc_race_test),
-+	KUNIT_CASE(amt_offload_admit_guard_test),
-+	KUNIT_CASE(amt_offload_reset_ends_pass_test),
-+	KUNIT_CASE(amt_offload_hash_seed_test),
-+	KUNIT_CASE(amt_offload_ingress_punt_test),
- 	{}
- };
- 
--- 
-2.43.0
-
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBOYW1hbiBHdWxhdGkgPG5hbWFu
+Z3VsYXRpQGdvb2dsZS5jb20+DQo+IFNlbnQ6IFdlZG5lc2RheSwgT2N0b2JlciAxNCwgMjAyNiA1
+OjE0IFBNDQo+IFRvOiBUYW50aWxvdiwgRW1pbCBTIDxlbWlsLnMudGFudGlsb3ZAaW50ZWwuY29t
+Pg0KPiBDYzogaW50ZWwtd2lyZWQtbGFuQGxpc3RzLm9zdW9zbC5vcmc7IE9sZWNoLCBNaWxlbmEg
+PG1pbGVuYS5vbGVjaEBpbnRlbC5jb20+Ow0KPiBJbGljaGV2LCBLb25zdGFudGluIDxrb25zdGFu
+dGluLmlsaWNoZXZAaW50ZWwuY29tPjsgSGF5LCBKb3NodWEgQQ0KPiA8am9zaHVhLmEuaGF5QGlu
+dGVsLmNvbT47IGRlY290QGdvb2dsZS5jb207IENoaXR0aW0sIE1hZGh1DQo+IDxtYWRodS5jaGl0
+dGltQGludGVsLmNvbT4NCj4gU3ViamVjdDogUmU6IFtQQVRDSCBpd2wtbmV0IDIvMl0gaWRwZjog
+cmVsZWFzZSBQVFAgYmVmb3JlIGZyZWVpbmcgdnBvcnRzIG9uIHRoZQ0KPiBpbml0IHRhc2sgZXJy
+b3IgcGF0aA0KPiANCj4gUmV2aWV3ZWQtYnk6IE5hbWFuIEd1bGF0aSA8bmFtYW5ndWxhdGlAZ29v
+Z2xlLmNvbT4NCj4gDQo+IE9uIEZyaSwgT2N0IDksIDIwMjYgYXQgMjo0M+KAr1BNIEVtaWwgVGFu
+dGlsb3YgPGVtaWwucy50YW50aWxvdkBpbnRlbC5jb20+DQo+IHdyb3RlOg0KPiA+DQo+ID4gUmVs
+ZWFzZSBQVFAsIHdoaWNoIGNhbmNlbHMgdGhlIGF1eCB3b3JrZXIsIGJlZm9yZSB0aGUgdW53aW5k
+IGZyZWVzIHRoZQ0KPiA+IHZwb3J0cywgbWF0Y2hpbmcgdGhlIGlkcGZfdmNfY29yZV9kZWluaXQo
+KSBvcmRlci4gUHJldmlvdXNseSBpdCB3YXMNCj4gPiBwb3NzaWJsZSBmb3IgaWRwZl9wdHBfdXBk
+YXRlX2NhY2hlZF9waGN0aW1lKCkgd2hpY2ggcnVucyB2aWEgdGhlIFBUUA0KPiA+IGF1eGlsaWFy
+eSB3b3JrZXIgdG8gcmVhZCBhIG5vbi1OVUxMIGJ1dCBhbHJlYWR5IGZyZWVkIHNsb3QsIHBhc3Mg
+aXRzDQo+ID4gTlVMTCBjaGVjaywgYW5kIGRlcmVmZXJlbmNlIHRoZSBmcmVlZCB2cG9ydC4gVGhp
+cyBjYW4gaGFwcGVuIG9uIGRyaXZlcg0KPiA+IGxvYWQsIHdoZXJlIGFueSB2cG9ydCBwYXN0IHRo
+ZSBmaXJzdCBmYWlscyB0byBpbml0aWFsaXplOg0KPiA+DQo+ID4gICBCVUc6IEtBU0FOOiBzbGFi
+LXVzZS1hZnRlci1mcmVlIGluDQo+IGlkcGZfcHRwX3VwZGF0ZV9jYWNoZWRfcGhjdGltZSsweDRh
+ZC8weDRkMCBbaWRwZl0NCj4gPiAgIFJlYWQgb2Ygc2l6ZSA4IGF0IGFkZHIgZmYxMTAwMjEyOTIx
+NTA1MCBieSB0YXNrIHB0cDMvMTAxMjANCj4gPiAgIC4uLg0KPiA+ICAgaWRwZl9wdHBfdXBkYXRl
+X2NhY2hlZF9waGN0aW1lKzB4NGFkLzB4NGQwIFtpZHBmXQ0KPiA+ICAgaWRwZl9wdHBfZG9fYXV4
+X3dvcmsrMHgzNy8weDUwIFtpZHBmXQ0KPiA+ICAgcHRwX2F1eF9rd29ya2VyKzB4NjQvMHhkMA0K
+PiA+ICAga3RocmVhZF93b3JrZXJfZm4rMHgyODkvMHhhMjANCj4gPiAgIC4uLg0KPiA+ICAgQWxs
+b2NhdGVkIGJ5IHRhc2sgODgyMCBvbiBjcHUgMzIgYXQgMjExMy43NjEzNzVzOg0KPiA+ICAgaWRw
+Zl9pbml0X3Rhc2srMHgzMjEvMHgyMWMwIFtpZHBmXWENCj4gPiAgIHByb2Nlc3Nfb25lX3dvcmsr
+MHg5MTcvMHgxOTQwDQo+ID4gICB3b3JrZXJfdGhyZWFkKzB4NWE1LzB4ZmUwDQo+ID4gICAuLi4N
+Cj4gPiAgIEZyZWVkIGJ5IHRhc2sgODgyMCBvbiBjcHUgMzIgYXQgMjExMy44MDkwMTRzOg0KPiA+
+ICAgaWRwZl92cG9ydF9kZWFsbG9jKzB4OGNmLzB4MTZiMCBbaWRwZl0NCj4gPiAgIGlkcGZfaW5p
+dF90YXNrKzB4MjQ1LzB4MjFjMCBbaWRwZl0NCj4gPiAgIHByb2Nlc3Nfb25lX3dvcmsrMHg5MTcv
+MHgxOTQwDQo+ID4gICB3b3JrZXJfdGhyZWFkKzB4NWE1LzB4ZmUwDQo+ID4NCj4gPiBUaGUgYXV4
+IHdvcmtlciBpcyBhcm1lZCBpbiBpZHBmX3ZjX2NvcmVfaW5pdCgpIGJlZm9yZSBpZHBmX2luaXRf
+dGFzaygpDQo+ID4gaXMgcXVldWVkLCBzbyBpdCBpcyBsaXZlIHRocm91Z2hvdXQgYSBmYWlsaW5n
+IGluaXQsIGxlYWRpbmcgdG8gdGhlDQo+ID4gc2NlbmFyaW8gYWJvdmUuDQo+ID4NCj4gPiBGaXhl
+czogMWE0OWNmODE0ZmUxICgiaWRwZjogYWRkIFR4IHRpbWVzdGFtcCBmbG93cyIpDQo+ID4gUmV2
+aWV3ZWQtYnk6IE1hZGh1IENoaXR0aW0gPG1hZGh1LmNoaXR0aW1AaW50ZWwuY29tPg0KPiA+IFNp
+Z25lZC1vZmYtYnk6IEVtaWwgVGFudGlsb3YgPGVtaWwucy50YW50aWxvdkBpbnRlbC5jb20+DQo+
+ID4gUmVwb3J0ZWQtYnk6IEtvbnN0YW50aW4gSWxpY2hldiA8a29uc3RhbnRpbi5pbGljaGV2QGlu
+dGVsLmNvbT4NCj4gPiAtLS0NCj4gPiAgZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvaWRwZi9p
+ZHBmX2xpYi5jIHwgMyArKy0NCj4gPiAgMSBmaWxlIGNoYW5nZWQsIDIgaW5zZXJ0aW9ucygrKSwg
+MSBkZWxldGlvbigtKQ0KPiA+DQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvbmV0L2V0aGVybmV0
+L2ludGVsL2lkcGYvaWRwZl9saWIuYw0KPiA+IGIvZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50ZWwv
+aWRwZi9pZHBmX2xpYi5jDQo+ID4gaW5kZXggYTFjNzM5Y2RkNTQwLi45YzU0MWRkNmVkNGQgMTAw
+NjQ0DQo+ID4gLS0tIGEvZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvaWRwZi9pZHBmX2xpYi5j
+DQo+ID4gKysrIGIvZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvaWRwZi9pZHBmX2xpYi5jDQo+
+ID4gQEAgLTE3NDcsNiArMTc0Nyw4IEBAIHZvaWQgaWRwZl9pbml0X3Rhc2soc3RydWN0IHdvcmtf
+c3RydWN0ICp3b3JrKQ0KPiA+ICAgICAgICAgcmV0dXJuOw0KPiA+DQo+ID4gIHVud2luZF92cG9y
+dHM6DQo+ID4gKyAgICAgICBpZHBmX3B0cF9yZWxlYXNlKGFkYXB0ZXIpOw0KPiA+ICsNCj4gPiAg
+ICAgICAgIGlmIChkZWZhdWx0X3Zwb3J0KSB7DQo+ID4gICAgICAgICAgICAgICAgIGZvciAoaW5k
+ZXggPSAwOyBpbmRleCA8IGFkYXB0ZXItPm1heF92cG9ydHM7IGluZGV4KyspIHsNCj4gPiAgICAg
+ICAgICAgICAgICAgICAgICAgICBpZiAoYWRhcHRlci0+dnBvcnRzW2luZGV4XSkgQEAgLTE3NjAs
+NyArMTc2Miw2DQo+ID4gQEAgdm9pZCBpZHBmX2luaXRfdGFzayhzdHJ1Y3Qgd29ya19zdHJ1Y3Qg
+KndvcmspDQo+ID4gICAgICAgICAgICAgICAgIGNhbmNlbF9kZWxheWVkX3dvcmtfc3luYygmYWRh
+cHRlci0+c2Vydl90YXNrKTsNCj4gPiAgICAgICAgICAgICAgICAgY2FuY2VsX2RlbGF5ZWRfd29y
+a19zeW5jKCZhZGFwdGVyLT5tYnhfdGFzayk7DQo+ID4gICAgICAgICB9DQo+ID4gLSAgICAgICBp
+ZHBmX3B0cF9yZWxlYXNlKGFkYXB0ZXIpOw0KPiA+DQo+ID4gICAgICAgICBjbGVhcl9iaXQoSURQ
+Rl9IUl9SRVNFVF9JTl9QUk9HLCBhZGFwdGVyLT5mbGFncyk7ICB9DQo+ID4gLS0NCj4gPiAyLjM3
+LjMNCj4gPg0KDQpUZXN0ZWQtYnk6IFNhbXVlbCBTYWxpbiA8U2FtdWVsLnNhbGluQGludGVsLmNv
+bT4NCg==
