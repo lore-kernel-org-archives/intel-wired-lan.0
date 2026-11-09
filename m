@@ -1,159 +1,144 @@
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 10D86606EE87
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  9 Nov 2026 17:19:08 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0449E606EE9E
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  9 Nov 2026 17:19:10 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=3P2HUpt+;
-	dkim=pass (2048-bit key) header.d=blockcast.net header.i=@blockcast.net header.a=rsa-sha256 header.s=google header.b=eppwMojT
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=fTcNTecL;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RTdczEx2
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id CD9AA8101B;
-	Mon,  9 Nov 2026 17:19:07 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id D80946082E;
+	Mon,  9 Nov 2026 17:19:09 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 1RJz_woegoH4; Mon,  9 Nov 2026 17:19:05 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 6FC8B80FA0
-Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794244745;
-	b=fSyOueQTASwoAah2Kvu8vv8242M6er6MLDcECn3oUoz7HEkN90AXPhMp3J2jSMSMVD9z
-	 ag0/yQ4v9QPd76CbdOh2KIOeW7CgvkjCzz5nJhQqR/Xp7Qk4veRycOgRaKr1tJ1vtK4Hr
-	 GZFx5u4qlPKo1u/v8KWoqm/E1tdLId9iZBr20ylme5fa0soOfrBXwdnGrf0jssfuB442R
-	 93uJLLf2u+mkEEybkTJLp8rbpf9S5anMt2BQkR3IWIJH3r2EbVLNPUybNL45Nu18/FFIy
-	 TLiYdsi5bhtf1K17EOAJ5FIEBdHu5riTNvOfcR7BTpWw+m83xgj8gABDiCl2qAu8RoQ==
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id ZbUD3KTIDHxz; Mon,  9 Nov 2026 17:19:07 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 01FA86082B
+Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794244747;
+	b=kinMZUGzUXTRzNT4DhmsaPYRpkvPuqwaW3sOC2u3nwJpyY1HNSLVNENEdkBIIZWIKjn+
+	 5mZHcm4rHKFdNf9YXaFsbjs0eWW6K3Duj9EXUrKlfGrUP0rqmtCwS/RSZ2hc4AhaV4OjC
+	 iBG0snwB0bYqpdL25N7z+P+eBiRQt3KK6NpVPT1FTmQOijbe+EgrKO2hTNicZfGPFxgL5
+	 yRLzisvVQFbeIDuvFRny55wtSSWfYSl1iyNIAI3qKdMavHUBKjoaFrU0ESGmi0pRUpTyg
+	 dQfWX30V9Cf1waIetgsTGv3zdrKg3tKz1e5mUo7P9e3O6adJ/fRebCHME5HDMsUQYEQ==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794244745;
+	c=relaxed/relaxed; t=1794244747;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
-	 Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding:X-Mailman-Approved-At:X-BeenThere:
-	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=u3pF9cSG2s2OvUiOff2e3lsOipUwDDFyl2aM5L15+sk=;
-	b=GRSEws2wM+ySNvtSZLaH0Fnv62nnI620hFITTrm4SSGXxDOWrhRorkuR4Y7y10yYOddp
-	 xZI2rDVWpr5txfGTkuoSzRq3LgH3mQ1ClIXwl6O2EuRTo4zvj7ilDqbljtB89MHfPK94l
-	 Mu6l3sNu6eFMMNF/QYXpAjpLBDrLq0Vq2wFMyVmNcKKeXgcNwEGEr80PJe2LSBIfNolXP
-	 k+UqLjNowpEGO6wBtjHR7/EwlaoNfYc2bHKWW23dmrIWT3cPEa5ZoTBDDaAh6qlbDezPe
-	 XkbbF374V7Ojtb+nY4neWOysAISQPoGn4d1YgoHt9twgia5Kh45o6rHF+erCjPLRrGg==
-ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
+	 Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
+	 Content-Type:Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Content-Transfer-Encoding:X-Mailman-Approved-At:
+	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
+	 List-Archive:List-Post:List-Help:List-Subscribe:Reply-To:Errors-To;
+	bh=ZKeqBS047+Pa27H8S0Szofh5TDu9ixoEKn6/UhBf5Lo=;
+	b=PY6q8Ke57ClXmN7r+LhB3PWYwIkpXAYcICddk5BEu4D0pXfjS5RleCHgmJQGPhY8xmjm
+	 Uu7SLHVKLBH0n5kOxpr7J9NUEhtCW7zEaz5woDHl/Omr5evaM9vRF8N/IyLQFAZk2JT9C
+	 RZPT136ohBSaXGqomGk7f9YvsQlcoD8YWoQZft+TE73bQ8mlmuOcNUnq170+L37zie4oz
+	 jWh3OjrBfVR/J1ZgPNXdSK0az4TWTHyy4wPdkLBGtSzSX3Bujvb4Jqq1flYYM9tTHKmme
+	 Wo5q2MY8IAda25KuVh5lkjJBUwAO9N+lgh9ayXtaXwrGCWSvEaSPBgV2FCi/20gFgwg==
+ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1794244745;
-	bh=u3pF9cSG2s2OvUiOff2e3lsOipUwDDFyl2aM5L15+sk=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=3P2HUpt+ZQSGgyD3tP8Q55VuepTF9sJcCOeXJnZKF1mmMe5SfgWBfjgscov9TYK1f
-	 bXa9FR7bJdbkPLWscy5dQpO5/M/oE0LHltGWJOj7BvrtRd6LU/KEK/I9R6l76evoRh
-	 DZdYOy8GuyGSoxF9Lc/YRX3AoPcl0PIZs10sHP9znKrJhPfBRIHjjqvXO0YHkp3jj5
-	 Z/ubQHbFSArAeMtzh+KZLljDkrwEWDfCkr54G0wYdR9+jwZgGkHVRBuBy8Mz4A11Fy
-	 VBTBCJ3R4XvjJewNrm33GR8QNYuYs7i7aNaLNrUuCq4eOnE8lGgIAzx7tbuT6MfgNI
-	 9xIDlWuzvoh5w==
+	s=default; t=1794244747;
+	bh=ZKeqBS047+Pa27H8S0Szofh5TDu9ixoEKn6/UhBf5Lo=;
+	h=From:Date:Subject:To:Cc:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Reply-To:From;
+	b=fTcNTecLj15xPrrkr5EdA5HZb/PESxkKO12+qUFZaR88ziuQNMx2LZ1kFpMmlpRxa
+	 y8Jd6p0/enCMRUJXbAAJr/GOejPS9sxWxoG2TAFGw/yrtRGW3LxUcna4pAu+or7SuV
+	 Qa77C1eLFW5v5rbr7Nh3EoWRea1lTpU79NcK99q8E0mf2fUxWXK1m8VCqW4ffM4Ak3
+	 4W8ENyXRrkGcmAWC2tbghWqkxyQ5M/6i/UHtDrOnqRh5+3A+8aKEOVjnxlbtg2fzqT
+	 BM8Dz8VPmbP6/Fi8d6OeqGrx1k7olHFiMMQBas9OnV/k7aM3vjtnJP2fOnlcjKRtyy
+	 K2mZn9CX9+/Vw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 6FC8B80FA0;
-	Mon,  9 Nov 2026 17:19:05 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 01FA86082B;
+	Mon,  9 Nov 2026 17:19:07 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 5562A422
- for <intel-wired-lan@lists.osuosl.org>; Sat,  7 Nov 2026 18:45:03 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id D7EB2362
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Nov 2026 08:24:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 46F6B4009B
- for <intel-wired-lan@lists.osuosl.org>; Sat,  7 Nov 2026 18:45:03 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id BD98940251
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Nov 2026 08:24:22 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id G0kigMtTN9yG for <intel-wired-lan@lists.osuosl.org>;
- Sat,  7 Nov 2026 18:45:01 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org 8AA5D4005F
-Authentication-Results: smtp2.osuosl.org;
- arc=none smtp.remote-ip="2607:f8b0:4864:20::1331"
+ id dRkMUSR9f1_U for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  9 Nov 2026 08:24:22 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org 9CFBE4022F
+Authentication-Results: smtp2.osuosl.org; arc=pass header.oldest-pass=0
+ smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::1331; helo=mail-dy1-x1331.google.com;
- envelope-from=omar@blockcast.net; receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=reject dis=none)
- header.from=blockcast.net
-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=blockcast.net header.i=@blockcast.net
- header.a=rsa-sha256 header.s=google header.b=eppwMojT
-Received: from mail-dy1-x1331.google.com (mail-dy1-x1331.google.com
- [IPv6:2607:f8b0:4864:20::1331])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 8AA5D4005F
- for <intel-wired-lan@lists.osuosl.org>; Sat,  7 Nov 2026 18:45:01 +0000 (UTC)
-Received: by mail-dy1-x1331.google.com with SMTP id
- 5a478bee46e88-36fc0a3fe93so2805132eec.0
- for <intel-wired-lan@lists.osuosl.org>; Sat, 07 Nov 2026 10:45:01 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=blockcast.net; s=google; t=1794077100; x=1794681900; darn=lists.osuosl.org; 
- h=content-transfer-encoding:mime-version:references:in-reply-to
- :message-id:date:subject:cc:to:from:from:to:cc:subject:date
- :message-id:reply-to:content-type;
- bh=u3pF9cSG2s2OvUiOff2e3lsOipUwDDFyl2aM5L15+sk=;
- b=eppwMojT0o1p/IjmTKNbnMW4zPpo57tGW7RV797zLAYkpIaJRCRAGlML3TvAA4qZeX
- GWnZf9Jc/LhNw0H9rxFlbj6gglYVkHgZCOlTZ5YwPCKJeyzsXX+Z/aAZz3Kg7SBjW7ie
- 5liaybGJ6hugws0KzbLeE90KYb3irdrDZEfN1YVOoq9bO1PNfBJJYFPwaxSev8T+AV+C
- 8JrpLSA8wBkC/yPihVquowUFVgO2DnQV1Vt2Cld9TLPVfJwF6op1nrXLMfzKljcEt0D/
- 0tdZfrv6iQN8B08Rf2KteRLT53++Ow/O5EYRd7AeT+OSPObiBC25NSJHXzZQX/Z9JPwJ
- ITMw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1794077100; x=1794681900;
- h=content-transfer-encoding:mime-version:references:in-reply-to
- :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
- :to:cc:subject:date:message-id:reply-to:content-type;
- bh=u3pF9cSG2s2OvUiOff2e3lsOipUwDDFyl2aM5L15+sk=;
- b=VS78v7e6fsLex3lAnnjhHqhXiPSSC0TusagXOGrr1o8Xfnse4a+WhxFt72SyAviBlp
- j1jvU6FsT200SPK1Q6o/7r5/VwHn+5JmALB0aUbt+8YVucBCMWgjlfr4k7ghoqkZ5kKY
- OlNoVa5d40GtYRATD7bibw8QOjutxEc9OfK1BlJmTWIMlVaBqssVyjy0kkEkmuvMjdg/
- FqWh1x79HMqlNb7BVG6Yo3VHnbHub6fdJAjwgae+V3hu4R6gOBqsdz5pnsnOZRMlMxMv
- 7sjM717HHLnsS80unBlWMJ2r68etStqEw0JRdF5hYlVBk/ggmkoi4YajiP6y54XbdVD4
- j87w==
-X-Forwarded-Encrypted: i=1;
- AL+hErEzIee1LCVTWcxx8e5nbcjtXNDHGpo/X/cnsk4WpXya8G/j4PzgzzPheSwg6FbloVdYVLPwo3gCloo8u1KQ4cM=@lists.osuosl.org
-X-Gm-Message-State: APuU4Z8dbNHgY9BTW5d3DXYFkXe/i5uTZEFkJWackJHSmIAhzpRSuT4G
- PpTFWBAVh1xYgrpzKZDN9mFNpPBkJxB0BwsRULe/F/H/wanElJCi9het3EQbyXMPEsI=
-X-Gm-Gg: AYBFou2eJ7eMoVGXtI1HQ9+JQkn6BIXGXi28J6TFBomkcuBW8raY3vH3YLEiKe125vm
- LXki6sV18Dj7HJvi7bslA8ES/QAgkssoTc90nMpEXJL5nZSbCGZPDGeyk18sLlnXYv/h2RARuB+
- DUSXP8wLB7Q1RHMF145r05fffJA2E+lCDvNzSxS6zR7yMfRkxp29Bdp2bpVB+n1GzI5WwSqZXAo
- Emfb9UCn2ECjm1AnuehZBxCYUr9e0jyQst9IkHyT0HAKXLbI19WDhHkRjCncRX60/0RpWv8mD1/
- ovY782zn7VdneZ8xtmoHHhgpc1xBVEzxsKUV6euMU/PsJDv3kZQx8YjKqo8IVIC29rnwhFZp1N2
- rujMCr07yIU5YQSdmfTmDZmBwo9hWaHVvKdOy5jB+McB2zQ/Sk40eNF0+8W/WmLDkcQOVHLg6OA
- NxQA0M430OYPstLaWxNharpj/3J7G1REat2JDNHCkO+i+xH/SSFmluZ97Iuyf8ni/NGaTvYnI47
- 5kuajRSzlh8u9sAtqp9gihwCNNy1tqSzUdEQkOTlpD8Or7r2Vk3ImH+QaXJtelduIu1BWYH5HTD
- 1hIY0Mcat2HIhmmA1JyGMQS2fKkWiiZDcQKiYM36J3y8ekUTo4QgeoLO7opeajNt9UARCms=
-X-Received: by 2002:a05:7300:b0aa:b0:36f:4d62:2884 with SMTP id
- 5a478bee46e88-36f7691a412mr8340188eec.30.1794077099785; 
- Sat, 07 Nov 2026 10:44:59 -0800 (PST)
-Received: from devbox.ts.blockcast.net ([2602:f74d:1::32])
- by smtp.gmail.com with ESMTPSA id
- 5a478bee46e88-36fa8c4f28dsm17286897eec.9.2026.11.07.10.44.57
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sat, 07 Nov 2026 10:44:58 -0800 (PST)
-From: Omar Ramadan <omar@blockcast.net>
-To: Taehee Yoo <ap420073@gmail.com>, "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- michael.chan@broadcom.com, pavan.chebbi@broadcom.com, saeedm@nvidia.com,
- leon@kernel.org, tariqt@nvidia.com, mbloch@nvidia.com,
- brett.creeley@amd.com, sgoutham@marvell.com, anthony.l.nguyen@intel.com,
- przemyslaw.kitszel@intel.com, intel-wired-lan@lists.osuosl.org,
- Ido Schimmel <idosch@nvidia.com>, Satish Kharat <satishkh@cisco.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>, Simon Horman <horms@kernel.org>,
- Shuah Khan <shuah@kernel.org>, Kees Cook <kees@kernel.org>,
- "Gustavo A. R. Silva" <gustavoars@kernel.org>,
- linux-kselftest@vger.kernel.org, linux-hardening@vger.kernel.org
-Subject: [RFC PATCH net-next 8/9] selftests: net: add amt_offload.sh for AMT
- relay offload
-Date: Sat,  7 Nov 2026 18:44:36 +0000
-Message-ID: <20261107184437.2783174-9-omar@blockcast.net>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20261107184437.2783174-1-omar@blockcast.net>
-References: <20261107184437.2783174-1-omar@blockcast.net>
+ client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
+ envelope-from=devnull+dominik.dvorak.econ.muni.cz@kernel.org;
+ receiver=<UNKNOWN> 
+Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20260515 header.b=RTdczEx2
+Received: from sea.source.kernel.org (sea.source.kernel.org
+ [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 9CFBE4022F
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Nov 2026 08:24:20 +0000 (UTC)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+ by sea.source.kernel.org (Postfix) with ESMTP id 048AA435F9;
+ Mon,  9 Nov 2026 08:24:20 +0000 (UTC)
+Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
+Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+ (No client certificate requested)
+ by smtp.kernel.org (Postfix) with ESMTPS id 4E4811F0089F;
+ Mon,  9 Nov 2026 08:24:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+ s=k20260515; t=1794212659;
+ bh=ZKeqBS047+Pa27H8S0Szofh5TDu9ixoEKn6/UhBf5Lo=;
+ h=From:Date:Subject:To:Cc:Reply-To;
+ b=RTdczEx28kGsWBqBjtijV/wx7tw+zw20WgWk0KI+fh0v3lxkBhSNo9QgEZmHcjdX5
+ LeCchxBSDDPOv5Uy2L8+MC93HyNrIIxkemhQoIOtZqzqGOIdzu35Af4evEBRFnk0C0
+ +RnFZYLh38wqjsMh7oa9zfZSpnqxjXSE5v86xSDYJxD4J3c+OxQIFSGvJB1Z64GNaN
+ gueJQLix5B7w4drau+0HjX/dNIxtFJjFYmLWvzD2VgUkU5SeJbmYKIcxhKxI7QdxEE
+ NPQGZGBAGDc982pNH+SaX3YC9tYtuRCsEav6NuV4b8Wh6HtQqUJ/q6R5Zd4SAXC+iR
+ kEtMDB2wzoQxg==
+Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
+ by lkml.kernel.org (Postfix) with ESMTP id A0F9F48353;
+ Mon,  9 Nov 2026 08:24:18 +0000 (UTC)
+From: =?utf-8?q?Dominik_Dvo=C5=99=C3=A1k_via_B4_Relay?=
+ <devnull+Dominik.Dvorak.econ.muni.cz@kernel.org>
+Date: Mon, 09 Nov 2026 09:24:10 +0100
+Subject: [PATCH iwl-net v2] ice: fix Rx byte accounting for dropped XDP frames
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <20261109-ice-xdp-rx-bytes-v2-1-7d6035e687e2@econ.muni.cz>
+X-B4-Tracking: v=1; b=H4sIACmD8WoC/3WNwQ6CMBBEf4Xs2SW0CCSe/A/DobSrbKItaWstE
+ v7dhruHObxM5s0GgTxTgEu1gafEgZ0tIE8V6FnZByGbwiAb2QvRdMiaMJsFfcZpjRTwrLQqaUh
+ qCWW2eLpzPpQ34M8TLUUYSzFziM6vx1USR/3fmgQK7Fujhqmj1gz9lbSz9ettudZfGPd9/wH60
+ G/KvAAAAA==
+X-Change-ID: 20261105-ice-xdp-rx-bytes-4aca4ac0e2c2
+To: intel-wired-lan@lists.osuosl.org
+Cc: netdev@vger.kernel.org, 
+ Maciej Fijalkowski <maciej.fijalkowski@intel.com>, 
+ Tony Nguyen <anthony.l.nguyen@intel.com>, 
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
+ Alexander Lobakin <aleksander.lobakin@intel.com>, 
+ Michal Kubiak <michal.kubiak@intel.com>, stable@vger.kernel.org, 
+ =?utf-8?q?Dominik_Dvo=C5=99=C3=A1k?= <Dominik.Dvorak@econ.muni.cz>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1794212658; l=4363;
+ i=Dominik.Dvorak@econ.muni.cz; s=20261105; h=from:subject:message-id;
+ bh=vmGpEja47/xI/Jmt7BtvYvGqCuVgtx1xmRCp+kyKWls=;
+ b=IUXEjKuIWDxIAsEwrR8yZRdNiFvc5O1T2EZAU4prXwahNs++vMgJN659Lbp2URQ/UOT7PTy0n
+ i9YXxyyo62UD2CK2c3U+UETs7d+DAs3B4L55DyES1l3lQ857mr7Gljt
+X-Developer-Key: i=Dominik.Dvorak@econ.muni.cz; a=ed25519;
+ pk=RTZ8nGbFvBgcLsYzcjFd1S3jciozWEBDwMVtwC7jkGI=
+X-Endpoint-Received: by B4 Relay for Dominik.Dvorak@econ.muni.cz/20261105
+ with auth_id=1418
+X-Original-From: =?utf-8?q?Dominik_Dvo=C5=99=C3=A1k?=
+ <Dominik.Dvorak@econ.muni.cz>
 Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Mon, 09 Nov 2026 17:18:54 +0000
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -166,710 +151,117 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-18.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=4.0.1
+Reply-To: Dominik.Dvorak@econ.muni.cz
+X-Spam-Status: No, score=-18.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Exercise the AMT relay replication offload contract against netdevsim's
-TX reference provider. A relay in offload auto mode transmits on one
-netdevsim port; four in-tree AMT gateways, each in its own netns (an amt
-device binds relay_port on INADDR_ANY, so two gateways cannot share
-one), reach its peer through a bridge. Copies are counted per gateway on
-the decapsulating amtg device, and hardware copies on the provider's own
-counter, so the eleven assertions are about what actually reached each
-gateway:
+From: Dominik Dvořák <Dominik.Dvorak@econ.muni.cz>
 
- 1. no membership: no copy anywhere
- 2. one copy per committed endpoint per packet, all from the provider,
-    and the provider's devlink resources agree
- 3. members joining under traffic (generation replace): stable members
-    get exactly one copy of every packet, and every copy comes from the
-    provider
- 4. xmit BUSY: exactly one software copy set, counted
- 5. forwarding is per group: an INCLUDE(S1) member still receives S2
- 6. a programming op overruns op_timeout_ms: amt resets the provider,
-    ignores the stale result, replays, and copies stay at one; the
-    provider's health reporter records it
- 7. partial commit (group_update succeeds, group_commit fails): no
-    hardware copy, the group is served in software
- 8. every member leaves: once the relay times their sources out, the
-    group is disabled, no copy anywhere
- 9. offload required with no provider: refused with an extack, counted
-10. the peer unlinked under traffic, relinked, then the relay's netdevsim
-    deleted under traffic: ordered teardown, no splat
-11. a lower carrying two amt devices deleted: both go with it, no splat
-    (runs first, in its own netns, independent of the offload setup;
-    one dmesg snapshot after its netns teardown ends its splat scan
-    and starts case 10's)
+Since the Rx path was converted to page pool and libeth, ice_run_xdp()
+returns the buffer itself via libeth_xdp_return_buff() on XDP_DROP,
+XDP_ABORTED and on a failed XDP_TX or XDP_REDIRECT. That helper also
+sets xdp->data to NULL. ice_clean_rx_irq() then calls xdp_get_buff_len()
+on the same buffer to update the Rx byte counter, which evaluates
+xdp->data_end - NULL and adds the low 32 bits of a kernel address to
+the ring's byte counter for every such frame. For multi-buffer frames
+it would also read skb_shared_info from a page that has already been
+returned to the page pool.
 
-No IGMPv3 leave takes effect at once on this base: a BLOCK or TO_IN
-leaves the timer of each source it drops alone, so the relay keeps the
-source until that timer expires, at least a GMI (260 s by default)
-after the last report that refreshed it. So case 3 drives its
-generation replaces with joins alone, and case 8 waits out the GMI.
+On an E810 with an XDP blocklist attached to an 802.3ad bond, this shows
+up as jumps of up to 4 GiB in the per-queue and netdev rx_bytes counters,
+one per dropped packet, while the packet counters and the hardware byte
+counter (rx_bytes.nic) stay correct. The bogus values are also exposed
+to unprivileged users through the netdev statistics.
 
-The test SKIPs, loudly, when ip cannot set the offload mode or the
-netdevsim has no provider, rather than silently testing software only.
+Count the frame length once, before running the XDP program, and use it
+for the byte counter on every path; this also drops the duplicate
+skb->len accounting that the XDP_PASS path did afterwards. The frame
+length as received is counted, rather than the length after a possible
+bpf_xdp_adjust_head()/bpf_xdp_adjust_tail().
 
-Assisted-by: LLM
-Signed-off-by: Omar Ramadan <omar@blockcast.net>
+The problem was tracked down and this fix written with the help of
+Claude Opus 5.5 (Anthropic), working from netdev and ethtool counters
+collected on the affected system and from the driver source.
+
+Tested on an E810-XXV (7.0.14 kernel, same code as current master) with
+an XDP blocklist attached to an 802.3ad bond: without the fix, each
+dropped packet added about 2.5 GB to rx_queue_N_bytes; with the fix, 40
+dropped packets produced no such jumps.
+
+Fixes: 93f53db9f9dc ("ice: switch to Page Pool")
+Cc: stable@vger.kernel.org # 6.18.x
+Link: https://lore.kernel.org/netdev/DB7PR03MB460158B90A64D025962670E0D5772@DB7PR03MB4601.eurprd03.prod.outlook.com/
+Signed-off-by: Dominik Dvořák <Dominik.Dvorak@econ.muni.cz>
 ---
- tools/testing/selftests/net/Makefile       |   1 +
- tools/testing/selftests/net/amt_offload.sh | 608 +++++++++++++++++++++
- tools/testing/selftests/net/config         |   2 +
- 3 files changed, 611 insertions(+)
- create mode 100755 tools/testing/selftests/net/amt_offload.sh
+Based on the stable v7.0.14 tree, which is what the affected box runs;
+the changed code is identical in current master. Tested on that box
+with the fixed module built against the 7.0.14-26-pve headers.
+---
+Changes in v2:
+- Account for Rx bytes and packets once, before ice_run_xdp(), and drop
+  the separate skb->len accounting on the XDP_PASS path (Olek).
+- Add Cc: stable with the minimum affected version (Olek).
+---
+ drivers/net/ethernet/intel/ice/ice_txrx.c | 15 +++++++--------
+ 1 file changed, 7 insertions(+), 8 deletions(-)
 
-diff --git a/tools/testing/selftests/net/Makefile b/tools/testing/selftests/net/Makefile
-index 5db68de0b..2d6c6de0d 100644
---- a/tools/testing/selftests/net/Makefile
-+++ b/tools/testing/selftests/net/Makefile
-@@ -11,6 +11,7 @@ TEST_PROGS := \
- 	amt.sh \
- 	amt_v6.sh \
- 	amt_gw_v6.sh \
-+	amt_offload.sh \
- 	amt_scale.sh \
- 	arp_ndisc_evict_nocarrier.sh \
- 	arp_ndisc_untracked_subnets.sh \
-diff --git a/tools/testing/selftests/net/amt_offload.sh b/tools/testing/selftests/net/amt_offload.sh
-new file mode 100755
-index 000000000..4e00fba0b
---- /dev/null
-+++ b/tools/testing/selftests/net/amt_offload.sh
-@@ -0,0 +1,608 @@
-+#!/bin/bash
-+# SPDX-License-Identifier: GPL-2.0
-+#
-+# AMT relay replication offload, against netdevsim's TX reference provider.
-+#
-+# netdevsim keeps its own endpoint and group tables and emits each copy
-+# through amt_offload_encap_xmit() out of the relay's stream device to its
-+# peer, so a divergence between what amt wants and what the provider
-+# committed shows up as a wrong copy count at the gateways. Copies are
-+# counted per gateway on the decapsulating amtg device (AF_PACKET), and
-+# hardware copies on the provider's own counter in debugfs.
-+#
-+#   RELAY netns                                GATEWAY netns
-+#   src0 (S1 172.17.0.2, S2 172.17.0.3)
-+#     | sender, IP_MULTICAST_IF amtr
-+#   amtr (relay, offload auto)
-+#     | stream_dev
-+#   nsim_r 10.0.0.2/24  <== netdevsim peer link ==>  nsim_g -- br0
-+#                                                              |
-+#                                     veth to GATEWAY netns i = 1..4:
-+#                                     gw<i> 10.0.0.1<i>/24, amtg<i>
-+#
-+# One gateway per netns: an amt device binds its UDP socket to relay_port
-+# on INADDR_ANY in its netns, gateways included, so a second gateway in
-+# the same netns fails to come up with EADDRINUSE.
-+#
-+# The source sits in the relay netns and transmits on amtr directly: how
-+# multicast reaches amtr (mroute) is not under test, amt_dev_xmit is.
-+#
-+# Eleven assertions, each printing one "TEST: ... [ OK ]" line; the run
-+# passes only if all eleven printed OK.
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index 4ca1a0602307d076153f77671e8c9a6ff4f8dd28..8e4cda9a34b673a6c5a75e5aa7492c18bb0f3f19 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -1028,14 +1028,19 @@ static int ice_clean_rx_irq(struct ice_rx_ring *rx_ring, int budget)
+ 		if (ice_is_non_eop(rx_ring, rx_desc) || unlikely(!xdp->data))
+ 			continue;
+ 
++		/* Account for Rx bytes here, before ice_run_xdp() may free the
++		 * buffer and clear xdp->data; the XDP and skb paths share the
++		 * same length.
++		 */
++		total_rx_bytes += xdp_get_buff_len(&xdp->base);
++		total_rx_pkts++;
 +
-+source "$(dirname "$0")"/lib.sh
-+
-+readonly RELAY=$(mktemp -u amtofl-r-XXXXXXXX)
-+readonly GW=$(mktemp -u amtofl-g-XXXXXXXX)
-+readonly TMP=$(mktemp -d)
-+readonly G1=239.1.1.1 G2=239.1.1.2 G3=239.1.1.3 G4=232.1.1.4 G5=239.1.1.5
-+readonly S1=172.17.0.2 S2=172.17.0.3
-+readonly K=50
-+NSIM_R_ID=$((256 + RANDOM % 256))
-+NSIM_G_ID=$((NSIM_R_ID + 256))
-+readonly NSIM_SYS=/sys/bus/netdevsim
-+readonly DFS=/sys/kernel/debug/netdevsim/netdevsim$NSIM_R_ID/ports/0/amt
-+readonly DL=netdevsim/netdevsim$NSIM_R_ID
-+ERR=$ksft_skip
-+OKS=0
-+PIDS=()
-+gwns() { echo "$GW-$1"; }
-+declare -A JOIN
-+
-+cleanup()
-+{
-+	for p in "${PIDS[@]}" "${JOIN[@]}"; do
-+		kill "$p" 2>/dev/null
-+	done
-+	wait 2>/dev/null
-+	ip netns del "$RELAY" 2>/dev/null
-+	ip netns del "$GW" 2>/dev/null
-+	for i in 1 2 3 4 mu; do
-+		ip netns del "$(gwns $i)" 2>/dev/null
-+	done
-+	echo "$NSIM_R_ID" > $NSIM_SYS/del_device 2>/dev/null
-+	echo "$NSIM_G_ID" > $NSIM_SYS/del_device 2>/dev/null
-+	rm -rf "$TMP"
-+	exit $ERR
-+}
-+
-+skip()
-+{
-+	echo "SKIP: $*"
-+	# A failure already printed (assertion 11 runs before the provider
-+	# checks) must not be reported as a skip.
-+	[ "$ERR" = 1 ] || ERR=$ksft_skip
-+	exit $ERR
-+}
-+
-+ok()
-+{
-+	printf "TEST: %-62s  [ OK ]\n" "$1"
-+	OKS=$((OKS + 1))
-+}
-+
-+fail()
-+{
-+	printf "TEST: %-62s  [FAIL]\n" "$1"
-+	shift
-+	[ $# -gt 0 ] && echo "      $*"
-+	ERR=1
-+	return 0
-+}
-+
-+# --- helpers --------------------------------------------------------------
-+
-+cat > "$TMP/join.py" <<'EOF'
-+# join.py IFNAME GROUP [SOURCE]: hold an ASM or SSM membership on IFNAME
-+# until killed; leaving is closing the socket.
-+import signal, socket, struct, sys, time
-+ifn, grp = sys.argv[1], sys.argv[2]
-+src = sys.argv[3] if len(sys.argv) > 3 else None
-+def sin(a):
-+    return struct.pack('=HH4s120x', socket.AF_INET, 0, socket.inet_aton(a))
-+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-+req = struct.pack('=I4x', socket.if_nametoindex(ifn)) + sin(grp)
-+if src:
-+    s.setsockopt(socket.IPPROTO_IP, 46, req + sin(src)) # MCAST_JOIN_SOURCE_GROUP
-+else:
-+    s.setsockopt(socket.IPPROTO_IP, 42, req)            # MCAST_JOIN_GROUP
-+signal.signal(signal.SIGTERM, lambda *a: sys.exit(0))
-+while True:
-+    time.sleep(3600)
-+EOF
-+
-+cat > "$TMP/send.py" <<'EOF'
-+# send.py IFNAME SRC GROUP COUNT INTERVAL: COUNT UDP datagrams to GROUP:5000
-+# from SRC out of IFNAME. Send errors (the device going away) are ignored.
-+import socket, struct, sys, time
-+ifn, src, grp, n, ivl = sys.argv[1:6]
-+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-+s.bind((src, 0))
-+s.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_IF,
-+             struct.pack('=4s4si', bytes(4), bytes(4),
-+                         socket.if_nametoindex(ifn)))
-+s.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 8)
-+s.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_LOOP, 0)
-+for i in range(int(n)):
-+    try:
-+        s.sendto(b'%08d' % i + bytes(56), (grp, 5000))
-+    except OSError:
-+        pass
-+    time.sleep(float(ivl))
-+EOF
-+
-+cat > "$TMP/count.py" <<'EOF'
-+# count.py IFNAME...: count received UDP datagrams to port 5000 per
-+# (interface, source, group) until SIGTERM, then read what is already
-+# queued and print one line per key.
-+import collections, select, signal, socket, sys
-+socks = {}
-+for ifn in sys.argv[1:]:
-+    s = socket.socket(socket.AF_PACKET, socket.SOCK_DGRAM, socket.htons(0x0800))
-+    s.bind((ifn, 0x0800))
-+    socks[s] = ifn
-+cnt = collections.Counter()
-+done = False
-+def stop(*a):
-+    global done
-+    done = True
-+signal.signal(signal.SIGTERM, stop)
-+sys.stdout.write('READY\n'); sys.stdout.flush()
-+while True:
-+    r = select.select(list(socks), [], [], 0 if done else 0.1)[0]
-+    if not r and done:
-+        break
-+    for s in r:
-+        d, a = s.recvfrom(4096)
-+        if a[2] == socket.PACKET_OUTGOING or len(d) < 28 or d[9] != 17:
-+            continue
-+        hl = (d[0] & 15) * 4
-+        if int.from_bytes(d[hl + 2:hl + 4], 'big') != 5000:
-+            continue
-+        cnt[(socks[s], socket.inet_ntoa(d[12:16]),
-+             socket.inet_ntoa(d[16:20]))] += 1
-+for (ifn, src, grp), n in sorted(cnt.items()):
-+    print(ifn, src, grp, n)
-+EOF
-+
-+dfs() { cat "$DFS/$1"; }
-+dfs_set() { echo "$2" > "$DFS/$1"; }
-+rsys() { ip netns exec "$RELAY" cat "/sys/class/net/amtr/offload/$1"; }
-+
-+# Committed member count of group $1 in the provider's own table, or 0.
-+hw_members()
-+{
-+	awk -v g="group $1" '
-+		$0 == g { in_g = 1; next }
-+		/^group / || /^endpoint / || /^binding / { in_g = 0 }
-+		in_g && $1 == "committed" { n = $5; sub(":", "", n); print n; f = 1; exit }
-+		END { if (!f) print 0 }' "$DFS/tables"
-+}
-+
-+hw_group_present()
-+{
-+	grep -qx "group $1" "$DFS/tables"
-+}
-+
-+# wait_for SECONDS CMD...: poll CMD every 0.2s.
-+wait_for()
-+{
-+	local t=$(( $1 * 5 ))
-+
-+	shift
-+	while [ $t -gt 0 ]; do
-+		"$@" && return 0
-+		sleep 0.2
-+		t=$((t - 1))
-+	done
-+	return 1
-+}
-+
-+members_eq() { [ "$(hw_members "$1")" = "$2" ]; }
-+group_gone() { ! hw_group_present "$1"; }
-+sysfs_ge() { [ "$(rsys "$1")" -ge "$2" ]; }
-+
-+# Members that later leave join source-specific, so a relay that applies
-+# INCLUDE leaves at once drops the group at once. This base does not: a
-+# BLOCK or TO_IN leaves the timer of each source it drops alone, so the
-+# relay keeps the source until that timer expires, at least a GMI after
-+# the last report that refreshed it, and deletes the group with its last
-+# source (an ASM leave waits out the group timer the same way). So case 8
-+# waits out the GMI, and case 3 drives its generation replaces with joins
-+# alone.
-+join()	# join KEY IFNAME GROUP [SOURCE]
-+{
-+	local key=$1
-+
-+	shift
-+	ip netns exec "$(gwns "${1#amtg}")" python3 "$TMP/join.py" "$@" &
-+	JOIN[$key]=$!
-+}
-+
-+leave()
-+{
-+	kill "${JOIN[$1]}" 2>/dev/null
-+	wait "${JOIN[$1]}" 2>/dev/null
-+	unset "JOIN[$1]"
-+}
-+
-+# measure SRC GROUP COUNT INTERVAL [HOOK]: send, count per gateway, and
-+# the provider's hardware copies. Fills CNT[amtgN] (copies from SRC to
-+# GROUP) and HW (tx_copies delta). The counters run until a second after
-+# the last packet is sent, however long sending takes. HOOK, a function
-+# that must not block, runs once every counter is ready, just before the
-+# first packet.
-+declare -A CNT
-+HW=0
-+measure()
-+{
-+	local src=$1 grp=$2 n=$3 ivl=$4 hw0 line i cpids=()
-+
-+	hw0=$(dfs tx_copies)
-+	for i in 1 2 3 4; do
-+		ip netns exec "$(gwns $i)" python3 "$TMP/count.py" amtg$i \
-+			> "$TMP/count$i.out" &
-+		cpids+=($!)
-+	done
-+	for i in 1 2 3 4; do
-+		wait_for 5 grep -q READY "$TMP/count$i.out"
-+	done
-+	[ -z "${5:-}" ] || "$5"
-+	ip netns exec "$RELAY" python3 "$TMP/send.py" amtr "$src" "$grp" "$n" \
-+		"$ivl"
-+	sleep 1
-+	kill -TERM "${cpids[@]}" 2>/dev/null
-+	wait "${cpids[@]}"
-+	HW=$(( $(dfs tx_copies) - hw0 ))
-+	CNT=([amtg1]=0 [amtg2]=0 [amtg3]=0 [amtg4]=0)
-+	while read -r ifn s g c; do
-+		[ "$s" = "$src" ] && [ "$g" = "$grp" ] && CNT[$ifn]=$c
-+	done < <(cat "$TMP"/count[1-4].out | grep -v READY)
-+}
-+
-+counts() { echo "amtg1..4=${CNT[amtg1]},${CNT[amtg2]},${CNT[amtg3]},${CNT[amtg4]} hw=$HW"; }
-+
-+dl_occ()
-+{
-+	devlink -j resource show "$DL" | jq -r --arg r "$1" \
-+		'.resources[][] | select(.name == "amt") | .resources[] |
-+		 select(.name == $r) | .occ'
-+}
-+
-+# --- preflight ------------------------------------------------------------
-+
-+[ "$(id -u)" -eq 0 ] || skip "needs root"
-+for c in python3 jq devlink; do
-+	command -v $c > /dev/null || skip "$c not found"
-+done
-+# A guest whose ip cannot set the mode would silently test software only.
-+ip link help amt 2>&1 | grep -q 'offload OFFLOAD' ||
-+	skip "ip lacks IFLA_AMT_OFFLOAD_MODE (iproute2 amt offload patch)"
-+modprobe amt 2>/dev/null
-+modprobe netdevsim 2>/dev/null
-+[ -w $NSIM_SYS/new_device ] || skip "netdevsim not available"
-+
-+trap cleanup EXIT
-+DMESG0=$(dmesg | wc -l)
-+
-+# --- 11. a lower carrying two amt devices is deleted ------------------------
-+# Not offload, so it runs first, in its own netns, and is not lost when
-+# the offload setup below fails: the amt notifier must take down every
-+# amt device on an unregistering lower, not just the first.
-+# One left linked trips the upper-dev WARN in
-+# unregister_netdevice_many_notify() and a kernfs upper_* splat. The
-+# devices stay down: two gateways cannot both bind relay_port in one
-+# netns, and linking is all this needs.
-+MU=$(gwns mu)
-+ip netns add "$MU"
-+ip -n "$MU" link add mu0 type dummy
-+ip -n "$MU" addr add 10.9.0.1/24 dev mu0
-+for d in mu_a mu_b; do
-+	ip -n "$MU" link add $d type amt mode gateway local 10.9.0.1 \
-+		discovery 10.9.0.2 dev mu0
-+done
-+made=$(ip -n "$MU" -o link show type amt | wc -l)
-+ip -n "$MU" link del mu0
-+left=$(ip -n "$MU" -o link show type amt | wc -l)
-+ip netns del "$MU"
-+# The netns teardown is asynchronous: give it a second. Then one dmesg
-+# snapshot ends this case's scan and starts case 10's, so the two scans
-+# tile and a splat this case provokes fails this case only.
-+sleep 1
-+dm=$(dmesg)
-+DMESG1=$(printf '%s\n' "$dm" | wc -l)
-+splat=$(printf '%s\n' "$dm" | tail -n +$((DMESG0 + 1)) |
-+	grep -E 'WARNING:|BUG:|Oops|kernfs: can not remove|refcount_t|use-after-free')
-+if [ "$made" -eq 2 ] && [ "$left" -eq 0 ] && [ -z "$splat" ]; then
-+	ok "lower carrying two amt devices deleted: both gone"
-+else
-+	fail "lower carrying two amt devices deleted" \
-+		"made=$made left=$left splat: $splat"
-+fi
-+
-+echo "$NSIM_R_ID" > $NSIM_SYS/new_device
-+echo "$NSIM_G_ID" > $NSIM_SYS/new_device
-+udevadm settle 2>/dev/null
-+[ -d "$DFS" ] || skip "netdevsim has no AMT offload provider ($DFS)"
-+NR=$(ls $NSIM_SYS/devices/netdevsim$NSIM_R_ID/net)
-+NG=$(ls $NSIM_SYS/devices/netdevsim$NSIM_G_ID/net)
-+
-+set -e
-+ip netns add "$RELAY"
-+ip netns add "$GW"
-+ip link set "$NR" netns "$RELAY"
-+ip link set "$NG" netns "$GW"
-+ip -n "$RELAY" link set "$NR" name nsim_r
-+ip -n "$GW" link set "$NG" name nsim_g
-+for ns in "$RELAY" "$GW"; do
-+	ip -n "$ns" link set lo up
-+done
-+ip -n "$RELAY" addr add 10.0.0.2/24 dev nsim_r
-+ip -n "$RELAY" link set nsim_r up
-+ip -n "$GW" link set nsim_g up
-+
-+exec {FD_R}<"/var/run/netns/$RELAY"
-+exec {FD_G}<"/var/run/netns/$GW"
-+IFX_R=$(ip netns exec "$RELAY" cat /sys/class/net/nsim_r/ifindex)
-+IFX_G=$(ip netns exec "$GW" cat /sys/class/net/nsim_g/ifindex)
-+echo "$FD_R:$IFX_R $FD_G:$IFX_G" > $NSIM_SYS/link_device
-+
-+ip -n "$RELAY" link add src0 type dummy
-+ip -n "$RELAY" addr add $S1/24 dev src0
-+ip -n "$RELAY" addr add $S2/24 dev src0
-+ip -n "$RELAY" link set src0 up
-+ip -n "$RELAY" link add amtr type amt mode relay local 10.0.0.2 dev nsim_r \
-+	relay_port 2268 offload auto
-+ip -n "$RELAY" link set amtr up
-+ip -n "$GW" link add br0 type bridge
-+ip -n "$GW" link set nsim_g master br0
-+ip -n "$GW" link set br0 up
-+for i in 1 2 3 4; do
-+	ns=$(gwns $i)
-+	ip netns add "$ns"
-+	# No IPv6 on the gateways: amtg would join solicited-node groups over
-+	# the tunnel and the relay would offload them alongside G1..G4.
-+	ip netns exec "$ns" sysctl -qw net.ipv6.conf.default.disable_ipv6=1 \
-+		2>/dev/null || true
-+	ip -n "$ns" link set lo up
-+	ip -n "$GW" link add br_g$i type veth peer name gw$i netns "$ns"
-+	ip -n "$GW" link set br_g$i master br0 up
-+	ip -n "$ns" addr add 10.0.0.1$i/24 dev gw$i
-+	ip -n "$ns" link set gw$i up
-+	ip -n "$ns" link add amtg$i type amt mode gateway local 10.0.0.1$i \
-+		discovery 10.0.0.2 dev gw$i gateway_port 2268 relay_port 2268
-+	ip -n "$ns" addr add 192.168.$i.1/32 dev amtg$i
-+	ip -n "$ns" link set amtg$i up
-+done
-+set +e
-+
-+discovered()
-+{
-+	local i
-+
-+	for i in 1 2 3 4; do
-+		[ "$(ip -n "$(gwns $i)" -d -j link show amtg$i |
-+		     jq -r '.[0].linkinfo.info_data.remote')" = 10.0.0.2 ] ||
-+			return 1
-+	done
-+}
-+wait_for 30 discovered || { fail "setup" "gateways never discovered the relay"; exit; }
-+
-+mode=$(ip -n "$RELAY" -d -j link show amtr | jq -r '.[0].linkinfo.info_data.offload')
-+[ "$mode" = auto ] && [ "$(rsys bound)" = 1 ] ||
-+	{ fail "setup" "relay offload mode '$mode', bound $(rsys bound)"; exit; }
-+ERR=0
-+
-+# --- 1. no membership, nothing committed: no copies anywhere ----------------
-+measure $S1 $G1 $K 0.01
-+if [ "$HW" -eq 0 ] && [ $((CNT[amtg1] + CNT[amtg2] + CNT[amtg3] + CNT[amtg4])) -eq 0 ]; then
-+	ok "0 copies before any group is committed"
-+else
-+	fail "0 copies before any group is committed" "$(counts)"
-+fi
-+
-+# --- 2. one hardware copy per committed endpoint per packet -----------------
-+for i in 1 2 3; do
-+	join a$i amtg$i $G1 $S1
-+done
-+if ! wait_for 40 members_eq $G1 3; then
-+	fail "1 copy per endpoint per packet" \
-+		"G1 never committed with 3 members: $(cat "$DFS/tables")"
-+else
-+	measure $S1 $G1 $K 0.01
-+	if [ "${CNT[amtg1]}" -eq $K ] && [ "${CNT[amtg2]}" -eq $K ] &&
-+	   [ "${CNT[amtg3]}" -eq $K ] && [ "${CNT[amtg4]}" -eq 0 ] &&
-+	   [ "$HW" -eq $((3 * K)) ] && [ "$(dl_occ endpoints)" = 3 ] &&
-+	   [ "$(dl_occ groups)" = 1 ] && [ "$(dl_occ members)" = 3 ]; then
-+		ok "1 copy per endpoint per packet, all from the provider"
-+	else
-+		fail "1 copy per endpoint per packet" "$(counts)" \
-+			"devlink endpoints/groups/members:" \
-+			"$(dl_occ endpoints)/$(dl_occ groups)/$(dl_occ members)"
-+	fi
-+fi
-+
-+# --- 3. generation replace under traffic: no duplicate, no loss --------------
-+# G5 has two stable members; two more join while it is sent, 3 s and 6 s
-+# into a 12 s stream, so each join is a generation replace under traffic.
-+late_joins()
-+{
-+	ip netns exec "$(gwns 3)" bash -c \
-+		"sleep 3; exec python3 $TMP/join.py amtg3 $G5 $S1" &
-+	JOIN[l3]=$!
-+	ip netns exec "$(gwns 4)" bash -c \
-+		"sleep 6; exec python3 $TMP/join.py amtg4 $G5 $S1" &
-+	JOIN[l4]=$!
-+}
-+join l1 amtg1 $G5 $S1
-+join l2 amtg2 $G5 $S1
-+if ! wait_for 40 members_eq $G5 2; then
-+	fail "generation replace under traffic" \
-+		"G5 never committed with 2 members: $(cat "$DFS/tables")"
-+else
-+	c0=$(dfs commits)
-+	st0=$(dfs tx_stale_gen)
-+	measure $S1 $G5 600 0.02 late_joins
-+	gens=$(( $(dfs commits) - c0 ))
-+	stale=$(( $(dfs tx_stale_gen) - st0 ))
-+	# The stable members got every packet once, the late members some
-+	# but not all of them, and every copy came from the provider (HW is
-+	# their sum), none from a software fallback on a stale generation.
-+	if [ "${CNT[amtg1]}" -eq 600 ] && [ "${CNT[amtg2]}" -eq 600 ] &&
-+	   [ "${CNT[amtg3]}" -gt 0 ] && [ "${CNT[amtg3]}" -lt 600 ] &&
-+	   [ "${CNT[amtg4]}" -gt 0 ] && [ "${CNT[amtg4]}" -lt 600 ] &&
-+	   [ "$HW" -eq $((CNT[amtg1] + CNT[amtg2] + CNT[amtg3] + CNT[amtg4])) ] &&
-+	   [ $gens -ge 2 ] && [ $stale -eq 0 ]; then
-+		ok "generation replace: stable members get exactly 1 copy"
-+	else
-+		fail "generation replace under traffic" \
-+			"$(counts) generations=$gens stale_gen=+$stale"
-+	fi
-+fi
-+
-+# --- 4. BUSY: exactly one software copy set -----------------------------------
-+b0=$(rsys busy_fallback)
-+t0=$(dfs tx_busy)
-+dfs_set busy 1
-+measure $S1 $G1 $K 0.01
-+dfs_set busy 0
-+if [ "${CNT[amtg1]}" -eq $K ] && [ "${CNT[amtg2]}" -eq $K ] &&
-+   [ "${CNT[amtg3]}" -eq $K ] && [ "$HW" -eq 0 ] &&
-+   [ $(( $(rsys busy_fallback) - b0 )) -eq $K ] && [ $(( $(dfs tx_busy) - t0 )) -eq $K ]; then
-+	ok "BUSY: exactly one software copy set per packet"
-+else
-+	fail "BUSY: exactly one software copy set" "$(counts)" \
-+		"busy_fallback +$(( $(rsys busy_fallback) - b0 ))"
-+fi
-+
-+# --- 5. forwarding is per group: INCLUDE(S1) still receives S2 ----------------
-+join s1 amtg1 $G4 $S1
-+if ! wait_for 40 members_eq $G4 1; then
-+	fail "INCLUDE(S1) member receives S2" "G4 never committed: $(cat "$DFS/tables")"
-+else
-+	measure $S2 $G4 $K 0.01
-+	if [ "${CNT[amtg1]}" -eq $K ] && [ "$HW" -eq $K ]; then
-+		ok "INCLUDE(S1) member still receives S2, in hardware"
-+	else
-+		fail "INCLUDE(S1) member receives S2" "$(counts)"
-+	fi
-+fi
-+
-+# --- 6. op overruns op_timeout_ms: reset, stale results ignored, no dup -------
-+r0=$(rsys resets)
-+s0=$(rsys stale_completions)
-+f0=$(dfs flushes)
-+h0=$(devlink -j health show "$DL" reporter amt | jq '.health[][0].error')
-+dfs_set stall_ms 1500
-+join r2 amtg2 $G3
-+wait_for 30 sysfs_ge resets $((r0 + 1))
-+dfs_set stall_ms 0
-+if ! wait_for 40 members_eq $G3 1; then
-+	fail "reset: stale completion ignored" \
-+		"G3 never committed after reset: $(cat "$DFS/tables")"
-+else
-+	measure $S1 $G3 $K 0.01
-+	h1=$(devlink -j health show "$DL" reporter amt | jq '.health[][0].error')
-+	if [ "${CNT[amtg2]}" -eq $K ] && [ "$HW" -eq $K ] &&
-+	   [ "$(rsys resets)" -gt "$r0" ] && [ "$(rsys stale_completions)" -gt "$s0" ] &&
-+	   [ "$(dfs flushes)" -gt "$f0" ] && [ "$h1" -gt "$h0" ]; then
-+		ok "reset: stale completion ignored, replay gives 1 copy"
-+	else
-+		fail "reset: stale completion ignored" "$(counts)" \
-+			"resets $r0->$(rsys resets)" \
-+			"stale $s0->$(rsys stale_completions) health $h0->$h1"
-+	fi
-+fi
-+
-+# --- 7. partial commit: group staged, commit refused -> software -------------
-+w0=$(rsys sw_remainder)
-+dfs_set fail_commit 1
-+for i in 1 2 3; do
-+	join p$i amtg$i $G2 $S1
-+done
-+wait_for 40 sysfs_ge sw_remainder $((w0 + 1))
-+sleep 2
-+measure $S1 $G2 $K 0.01
-+dfs_set fail_commit 0
-+if [ "${CNT[amtg1]}" -eq $K ] && [ "${CNT[amtg2]}" -eq $K ] &&
-+   [ "${CNT[amtg3]}" -eq $K ] && [ "$HW" -eq 0 ] && [ "$(hw_members $G2)" = 0 ]; then
-+	ok "partial commit: 0 hardware copies, software remainder"
-+else
-+	fail "partial commit: software remainder" "$(counts) sw_remainder $w0->$(rsys sw_remainder)"
-+fi
-+for i in 1 2 3; do
-+	leave p$i
-+done
-+
-+# --- 8. every member leaves: group disabled, no copies ------------------------
-+# The relay drops S1, and G1 with it, at least a GMI after the last
-+# report that refreshed it: qrv * 125 s query interval + 10 s response
-+# interval. The timer wheel can fire it up to 8/63 of its delay late
-+# (32.8 s of a 260 s GMI at HZ=1000), so wait a seventh more, and 10 s.
-+gmi=$(( $(ip netns exec "$RELAY" sysctl -n net.ipv4.igmp_qrv) * 125 + 10 ))
-+for i in 1 2 3; do
-+	leave a$i
-+done
-+if wait_for $((gmi + gmi / 7 + 10)) group_gone $G1; then
-+	measure $S1 $G1 $K 0.01
-+	if [ "$HW" -eq 0 ] && [ $((CNT[amtg1] + CNT[amtg2] + CNT[amtg3] + CNT[amtg4])) -eq 0 ]; then
-+		ok "0 copies after the group is disabled"
-+	else
-+		fail "0 copies after the group is disabled" "$(counts)"
-+	fi
-+else
-+	fail "0 copies after the group is disabled" "G1 still in the provider: $(cat "$DFS/tables")"
-+fi
-+
-+# --- 9. required mode with no provider: refused with extack -----------------
-+ip -n "$RELAY" link add dum0 type dummy
-+ip -n "$RELAY" addr add 10.0.1.2/24 dev dum0
-+q0=$(cat /sys/module/amt/parameters/offload_required_refused)
-+msg=$(ip -n "$RELAY" link add amtx type amt mode relay local 10.0.1.2 \
-+	dev dum0 offload required 2>&1)
-+rc=$?
-+q1=$(cat /sys/module/amt/parameters/offload_required_refused)
-+if [ $rc -ne 0 ] && echo "$msg" | grep -q '^Error: ' && [ $((q1 - q0)) -eq 1 ] &&
-+   ! ip -n "$RELAY" link show amtx > /dev/null 2>&1; then
-+	ok "required with no provider: refused with extack, counted"
-+else
-+	fail "required refuses with extack" "rc=$rc refused $q0->$q1 msg: $msg"
-+fi
-+
-+# --- 10. lower device torn away under traffic: ordered teardown ---------------
-+# Unlink the peer mid-stream (copies stop, the binding survives), relink
-+# (copies resume at 1 per packet), then delete the relay's netdevsim under
-+# traffic: amt tears the binding down before the relay goes, with no splat.
-+# The unlink-phase stream is from S1, so copies queued while unlinked and
-+# released on relink are not counted as the relinked (S2, G4) copies.
-+ip netns exec "$RELAY" python3 "$TMP/send.py" amtr $S1 $G4 100 0.02 &
-+PIDS+=($!)
-+sleep 0.5
-+echo "$FD_R:$IFX_R" > $NSIM_SYS/unlink_device
-+wait "${PIDS[-1]}"
-+bound_after_unlink=$(rsys bound)
-+echo "$FD_R:$IFX_R $FD_G:$IFX_G" > $NSIM_SYS/link_device
-+wait_for 20 members_eq $G4 1
-+measure $S2 $G4 $K 0.01
-+relinked=${CNT[amtg1]}
-+relinked_hw=$HW
-+ip netns exec "$RELAY" python3 "$TMP/send.py" amtr $S2 $G4 200 0.01 &
-+PIDS+=($!)
-+sleep 0.5
-+echo "$NSIM_R_ID" > $NSIM_SYS/del_device
-+wait "${PIDS[-1]}"
-+splat=$(dmesg | tail -n +$((DMESG1 + 1)) |
-+	grep -E 'WARNING:|BUG:|Oops|refcount_t|use-after-free|list_(add|del) corruption')
-+if [ "$bound_after_unlink" = 1 ] && [ "$relinked" -eq $K ] && [ "$relinked_hw" -eq $K ] &&
-+   ! ip -n "$RELAY" link show amtr > /dev/null 2>&1 && [ ! -d "$DFS" ] &&
-+   [ -z "$splat" ]; then
-+	ok "lower device unlinked and deleted under traffic: ordered teardown"
-+else
-+	fail "ordered teardown under traffic" \
-+		"bound=$bound_after_unlink relinked=$relinked hw=$relinked_hw splat: $splat"
-+fi
-+
-+if [ $OKS -ne 11 ]; then
-+	echo "only $OKS of 11 assertions passed"
-+	ERR=1
-+fi
-diff --git a/tools/testing/selftests/net/config b/tools/testing/selftests/net/config
-index 94d722770..88eb75060 100644
---- a/tools/testing/selftests/net/config
-+++ b/tools/testing/selftests/net/config
-@@ -11,6 +11,7 @@ CONFIG_CRYPTO_ARIA=y
- CONFIG_CRYPTO_CHACHA20POLY1305=m
- CONFIG_CRYPTO_SHA1=y
- CONFIG_CRYPTO_SM4_GENERIC=y
-+CONFIG_DEBUG_FS=y
- CONFIG_DEBUG_INFO_BTF=y
- CONFIG_DEBUG_INFO_BTF_MODULES=n
- CONFIG_DUMMY=y
-@@ -117,6 +118,7 @@ CONFIG_OPENVSWITCH=m
- CONFIG_OPENVSWITCH_GENEVE=m
- CONFIG_OPENVSWITCH_GRE=m
- CONFIG_OPENVSWITCH_VXLAN=m
-+CONFIG_PACKET=y
- CONFIG_PROC_SYSCTL=y
- CONFIG_PSAMPLE=m
- CONFIG_RPS=y
+ 		xdp_verdict = ice_run_xdp(rx_ring, xdp, xdp_prog, xdp_ring, rx_desc);
+ 		if (xdp_verdict == ICE_XDP_PASS)
+ 			goto construct_skb;
+ 
+ 		if (xdp_verdict & (ICE_XDP_TX | ICE_XDP_REDIR))
+ 			xdp_xmit |= xdp_verdict;
+-		total_rx_bytes += xdp_get_buff_len(&xdp->base);
+-		total_rx_pkts++;
+ 
+ 		xdp->data = NULL;
+ 		continue;
+@@ -1053,18 +1058,12 @@ static int ice_clean_rx_irq(struct ice_rx_ring *rx_ring, int budget)
+ 
+ 		vlan_tci = ice_get_vlan_tci(rx_desc);
+ 
+-		/* probably a little skewed due to removing CRC */
+-		total_rx_bytes += skb->len;
+-
+ 		/* populate checksum, VLAN, and protocol */
+ 		ice_process_skb_fields(rx_ring, rx_desc, skb);
+ 
+ 		ice_trace(clean_rx_irq_indicate, rx_ring, rx_desc, skb);
+ 		/* send completed skb up the stack */
+ 		ice_receive_skb(rx_ring, skb, vlan_tci);
+-
+-		/* update budget accounting */
+-		total_rx_pkts++;
+ 	}
+ 
+ 	rx_ring->next_to_clean = ntc;
+
+---
+base-commit: 458c6079fc1d41d564c37679c8ace02cd83ee817
+change-id: 20261105-ice-xdp-rx-bytes-4aca4ac0e2c2
+
+Best regards,
 -- 
-2.43.0
+Dominik Dvořák <Dominik.Dvorak@econ.muni.cz>
+
 
