@@ -1,29 +1,29 @@
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3368B606A31C
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Nov 2026 16:51:22 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 29548606A31C
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Nov 2026 16:51:23 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=Zt049GWK;
-	dkim=pass (2048-bit key) header.d=cloudflare.com header.i=@cloudflare.com header.a=rsa-sha256 header.s=google09082023 header.b=bxg9hI/5
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=odSq2X6K;
+	dkim=pass (2048-bit key) header.d=cloudflare.com header.i=@cloudflare.com header.a=rsa-sha256 header.s=google09082023 header.b=VK8nZo/1
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 1631D40572;
-	Tue, 10 Nov 2026 16:51:22 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 0C447812CA;
+	Tue, 10 Nov 2026 16:51:23 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id iUjnkSrncDW8; Tue, 10 Nov 2026 16:51:21 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 39E8540820
-Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794329481;
-	b=mhChtEUUyRGiO6MSAhcoqSVx7cx3Q8LbLRvo1O0no6K4hjH9sODRv0haxkHnfnT0zGy6
-	 MFtFZDJNVYC8vKCu9A0lrHTw7OBwmuIo6w+2ewFIf1I/HEl9SBNw68m5il18oLTkhpoWU
-	 cCbfGZ+pOgCD23mjye/e2rm11yEUR+NSSQL3PhiMsqu42++ZpJ2ouskuL394CXSkgFWKU
-	 Z9Pt+BJLYbDxCKEcIWpmzZpeNJxbi/Nedbde7VuQPNb6zd49H6GrR5S8798b1HBUJ42Og
-	 APgQBR0i+EI9duq9IYabq2klrpPJyhq0D9vLkR+JECmWSfB+7WcTNzskFo/Sy1ZNaRQ==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id gOeklPcmw4Mr; Tue, 10 Nov 2026 16:51:22 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 1A891811C8
+Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794329482;
+	b=K8uV4Tb3io2N3y2MzLCLAHrm/rwFZY97Wv6FfJdY9h9wZCFevDVdPtZ28cNmdtu20N9B
+	 rlLJOVQqVW8bxagUCRWlKfwSxH5x2r7RDaVQNw8vCsdVW5DmxLlU9xy0cyB3wSS6+Etzw
+	 oeXQ2dthPQTKo1y7W3PyxV4A6rDP7hMWrP4P+GFWxqaN5hbwvoFCKvNWu3yYdEPS6fxPJ
+	 BmBorHJm+qPT8GSFDDL0bHcDYCpnxVMs5hACoyWhgX/IDac6T1AXa7BNUYXmCgkX4l6Qb
+	 hElnBNThNSeEB4iCp3UZFdLJYRUuhv4cz1BhFcP3j2CAxJK0fpHSwJUqpJSnRHUFKwg==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794329481;
+	c=relaxed/relaxed; t=1794329482;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
@@ -33,105 +33,106 @@ ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
 	 Content-Transfer-Encoding:X-Mailman-Approved-At:X-BeenThere:
 	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=MSk1Tsr4MwxHYw7iRh7y9cNVx4+IdLtKhJgZHhSE8Jo=;
-	b=UzWKBIK1r5O6pbBo3YJnrdwWVm6wVchoIhhlnYTEFtJ6U3Lk2a3nadHjh+8SEfRI+xsB
-	 CU4t9qEVMN0O2foGwM2UDy5qkpTD9bSiM9nis6N7w2t+P6OwWmPouUV9L+APH04QZQvHM
-	 WaXz7BH3114Gynyi/tbDKMG/3cZZGyL+sP5ZZ7ZYk75viVYnt44GOSZMmvKNoamYWeSgy
-	 nbifiyrQAUebgkfvWw1BreGAz6hFYv0LPMUA4rKB9/DNxM6GcAYoNFCFad20IGXMvMMMU
-	 6jc3z+M/M8DP8mSpe+CBT4FAiYXRX9dLb/SEKUy6kfkWAxOnMErX84ai1RN5uDwjQ7Q==
-ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
+	bh=PPCb0t5/Stvq5DGUybTkkPxJ34Zyvu9vKlrhKMaUpac=;
+	b=AA6pGebP0761sfhrDsFVRw+4R0HYhy/+6poLh5mCJju+KYnNe7XsS3rpmIQ44JsttGZc
+	 QrycR6idnFPXCPlYo+zOu8JDTIiiXsQ8h+UxCjXZFEtCQDW7sd+Mt2B0EN/ocbP5JyoCs
+	 my9C0i0H0lmDicf/yqEZjnWCjoyowgKWTLlp3hdIwSlW4HMqR1z6hFZs9TFk2WieXUsKk
+	 l0FHsxmEiEWKmAw3jp8zMYAC065Eyu6dC9PplneE0ldTXnNqOnQlzLUiy8/NccrFrERi5
+	 9Z3UtHLKcBFdsoYt65/V7Tq825mtZaxDkHCZKrd9heYFJen/rKtVv3ymW6NVoE/Njzw==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1794329481;
-	bh=MSk1Tsr4MwxHYw7iRh7y9cNVx4+IdLtKhJgZHhSE8Jo=;
+	s=default; t=1794329482;
+	bh=PPCb0t5/Stvq5DGUybTkkPxJ34Zyvu9vKlrhKMaUpac=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=Zt049GWK+RAjghHLwtgGLWEC1ch0p9ZBKto7chM6Z63vYEpvWxHxz0uQPuHL8zMvl
-	 UuVevPbna1pKRjgZT3xgYcTYKpRotW3pG5U5EdCURA448DRCpZ0/rOlicuhw2OfDAD
-	 DkqQCj6z6FaVI+pWJk2hypTWPdOi6ulNxhsUGkUulLD2mJ+IuWqSozizIWlQoU1cv6
-	 5xbqf9LC3HB61oQahd/6ZFgx2Lxk712VQRPyQOivRV0ErHHwBlrKJvefqCV3mXbKTZ
-	 EpaAgqZWeLXTlEb3Z9cfYHaR05CihvUisDpsCutOVP5TqDODRsPGvjeUFOVimGtx/e
-	 vG2pwZhs/bMhQ==
+	b=odSq2X6KvD/VJP/6bPId8ubk9aoh7pBFz9LSGKxAHn03uGDvlp18O+wB5pclsZPNt
+	 /Yqwiiq3+FrzsYCf17m53Z63s6tHRcvxUGvcgBrMwo+K0iAzq9Tpd74Cmg3FxRj3SR
+	 IdJ/opgsY65CHoL0AHx0I2B+OxSKgm56CHv49Mju2+JkzwN5Bzpj+OlUesqI6R8Hh9
+	 3/GBIYgwNtVA9n/YiasP0u081pHrtMDXM6e82NwAfAv2mSWYfWd7UFJfoBZLE6ZRsY
+	 W+mjdAJDxT6tvW06LegvCE9AjnsZe7yPUmGrWXdWjjIue3cIiZ32HBtze5E8TXAM2U
+	 A1N2BTyJGhdtQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 39E8540820;
-	Tue, 10 Nov 2026 16:51:21 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 5A2EF335
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 03:58:14 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 1A891811C8;
+	Tue, 10 Nov 2026 16:51:22 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id F26E3AF2
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 03:58:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 4BD4C8100A
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 03:58:14 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id E0487407DA
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 03:58:16 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id CTtRlpwbhwVV for <intel-wired-lan@lists.osuosl.org>;
- Tue, 10 Nov 2026 03:58:13 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 1B323809EE
-Authentication-Results: smtp1.osuosl.org;
- arc=none smtp.remote-ip="2a00:1450:4864:20::52e"
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 7w18Inlm9o-K for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 10 Nov 2026 03:58:16 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org ABE3240762
+Authentication-Results: smtp4.osuosl.org;
+ arc=none smtp.remote-ip="2a00:1450:4864:20::52f"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a00:1450:4864:20::52e; helo=mail-ed1-x52e.google.com;
+ client-ip=2a00:1450:4864:20::52f; helo=mail-ed1-x52f.google.com;
  envelope-from=tianyi@cloudflare.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=reject dis=none)
+Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=reject dis=none)
  header.from=cloudflare.com
-Authentication-Results: smtp1.osuosl.org;
+Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=cloudflare.com header.i=@cloudflare.com
- header.a=rsa-sha256 header.s=google09082023 header.b=bxg9hI/5
-Received: from mail-ed1-x52e.google.com (mail-ed1-x52e.google.com
- [IPv6:2a00:1450:4864:20::52e])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 1B323809EE
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 03:58:11 +0000 (UTC)
-Received: by mail-ed1-x52e.google.com with SMTP id
- 4fb4d7f45d1cf-6b587591414so1742948a12.0
- for <intel-wired-lan@lists.osuosl.org>; Mon, 09 Nov 2026 19:58:11 -0800 (PST)
+ header.a=rsa-sha256 header.s=google09082023 header.b=VK8nZo/1
+Received: from mail-ed1-x52f.google.com (mail-ed1-x52f.google.com
+ [IPv6:2a00:1450:4864:20::52f])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id ABE3240762
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 03:58:15 +0000 (UTC)
+Received: by mail-ed1-x52f.google.com with SMTP id
+ 4fb4d7f45d1cf-6b704171bc9so1707343a12.0
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 09 Nov 2026 19:58:15 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=cloudflare.com; s=google09082023; t=1794283090; x=1794887890;
+ d=cloudflare.com; s=google09082023; t=1794283093; x=1794887893;
  darn=lists.osuosl.org; 
  h=content-transfer-encoding:mime-version:references:in-reply-to
  :message-id:date:subject:cc:to:from:from:to:cc:subject:date
  :message-id:reply-to:content-type;
- bh=MSk1Tsr4MwxHYw7iRh7y9cNVx4+IdLtKhJgZHhSE8Jo=;
- b=bxg9hI/5/zsOSqF5+X6uTucMZRCfaWNKtYZRKZNerVhRHMrPvobTzWXXOEG+wsvuwl
- MWz11og3NmebuDFyR4iRRJeM9VrLRmk410n7t9Ev9uCEL/N8elpXsJtIgr/Ghepx0ZcC
- GF05tzTlogkD94SQLOndGAsb/nmcygZHSLK9bMv19g23dJCaiOSxHaLgxVKXTOngVbAB
- Rk0Pz5IkTWMssVhDUmEHGqMJW1+v4JWo7ebT2xuL2Lf9Rf06tDfR4IgovHR6MWya4l4t
- RCphhTJ/2IwH5U5maO50J6NyREzffh3jhHXjrNSb6306utu7bbyryGw/gkLQpfMG0q54
- vSng==
+ bh=PPCb0t5/Stvq5DGUybTkkPxJ34Zyvu9vKlrhKMaUpac=;
+ b=VK8nZo/14jkrRXiGBumwpvQlH9zouYDi6Z3KP7Vj0pDfMyB9FgpULGFBcsZ55SJgpC
+ 1qA0pA4QIYeVOYGsDG10U0vvgs6+xhn0+5ku9X20vVvR9vZze//0lB6JQ5ujYfYRLfgZ
+ Jy20BNXFjt+5TVj6BvQR13tbBR32ka8kH1e82miVFU5naur9lEvcpi//C/iEzDRFLMHz
+ Zgw4/8xqXDXrja4NqAI5u6/9fctibDs6I4x/IKJmbBiN0wac0aZjT6eAxu4n+vKJZ5dz
+ zgeAWYWfGIKxPb/Kx14uv5/FXT9syRU6/AmP9Qrmfd7Rqzt5Tmu2T67VfygL0n4Ge96w
+ IEBw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1794283090; x=1794887890;
+ d=1e100.net; s=20260707; t=1794283093; x=1794887893;
  h=content-transfer-encoding:mime-version:references:in-reply-to
  :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
  :to:cc:subject:date:message-id:reply-to:content-type;
- bh=MSk1Tsr4MwxHYw7iRh7y9cNVx4+IdLtKhJgZHhSE8Jo=;
- b=FzTONQvHVoH7o39WSlWt3ABaVSz0LQzfSJiAkP5IXrN1CnagcdLqQ9p4gnjZFg0sfJ
- UQRqE1Zo2QRrha4VPF9f/ZZvnVN8APHN7R1qSM0a3JAu858zdv6BoO09W4cINUZ0rCRW
- VrptRX4TMeSZyQG+TYc5c9OIhQxouiLHSfUG34fq5/5hjmRg6nRIs0b7AHSSeh+KwpAm
- b5jCXJQX/Qh0rosnf6h1hsjh39BReML8u8l3M3rBbBXmFKk+TW9wtvgh48GkPSEtzy39
- 402BUh++ydiTftVC04exFRGDL1FpwAtXWl3KVjTlN5TNYe2CSdkLdvLekP0kjx3XcfZM
- 0jjA==
+ bh=PPCb0t5/Stvq5DGUybTkkPxJ34Zyvu9vKlrhKMaUpac=;
+ b=ik31NK57ab9cnG8SAfsyMNcYS1didSi+1nqMjmBvHKy0Q1drNZlfTk2BPeiXfUxaIq
+ tr9JNO5e9RwAguLrrinm8XPgbpdXXuGCzz33IhMRBw+3VHMpdjI8lL7rMhf6UFTRdz5N
+ uGAhLR8Qk2ENyE6AATMP+u+B/x2NUI04P/+eiGdXtqHAXaRYRTW43lL4UzoeSL35rYij
+ nFezCa9uJCIuPSyALfsLpD0aEfK23ym845GW5UJryyRInYcu7TCT2go96VNFoPVU2FxE
+ vUgUWIGozdTQTcJOxeWF6lCxsvPMAmNa/rjHOkTnP7OU+kQmBZf757QzMo62jgGp5T/3
+ yDeg==
 X-Forwarded-Encrypted: i=1;
- AL+hErHsMNTzOMx7CIpp//4R+vgcekX/WfqRnt5UxBk0A0LwZI5EB8FDj0X4JRNafLxuS+9r0d4CFttM3bnEAxo67Zo=@lists.osuosl.org
-X-Gm-Message-State: APuU4Z9POVBmUb0lGEUUK5D1hPEW4PvV+IkEPxFX0kUjwwQ8tfFVhDDd
- 6JBt1wz9+KK5v8WMpVZCITQnmzZeX7muuoCno8+DVX8rFhRHcZwLHrxa7ws04wqiEEY=
-X-Gm-Gg: AYBFou3xFfs720+4v+7IS1P0uGWUKxkUJqpFpRG/+TxFVeZxn997sDdGqGP6Us5dP1B
- HG4Y+ObacqqR9DPduxrFfUQLhCOBOjPa+LqnWizZFXBcLKghhplj3WIeufUe3Xzpp0/UjDx6UFl
- 4wcP3LZvVybsZ6EqUCQatcfnr6W+GX0jg+ZsTXXIpaPcK+wf/ibaII4JwboX00A5cTNwTjlyqVx
- R6Ws91oUErXVjn6d0g3gHMkwwoXY0GR+FPVn6sR4LZVwBlE8zEuEockbqPnCd+SsRHK+SGzOROR
- 8twZNrjXiUJdLtFaH427Ouc7SH4C+FpEQO7REZGELe8LGrEI+XdAG8nBY9I7tmq3Fa4qAk6FQ31
- wkT4C9+hs73PvXQmzZYiWdqK3mpi5NwM8NGphO8btqexw9qoRcE4mA9efiu/AuDNRSDmYTjrLGZ
- 3P1mRbNnCmHbTmO0tpM+DPjr2ok+RemgQDsT84kPhT/yNrPCcea+diMEP6RIQnLsmTw7rLVTz3I
- 81692TT8LgPGlAlgNfPBNL/qHyHeKx6Jhey9sCmdYFde6CHv9havnqux3cGHzOYRmuKK0IYaNSH
- /3XpbFZuggsuhCrrStuWFnDoUl6sYDOHRpAqSWV+D+QYhcVCZ4YDgIUidhgXfZdF
-X-Received: by 2002:a05:6402:5626:b0:6b6:efc4:9eb2 with SMTP id
- 4fb4d7f45d1cf-6b7556282afmr914079a12.0.1794283089889; 
- Mon, 09 Nov 2026 19:58:09 -0800 (PST)
+ AL+hErHeMPN1LSJRVt8dYK6XiUK1HDZG/mR0RNpeI2KM7B5VgQIf/Mt/WmYuGLHYEpaWwAzs23G+TAWhW5kTCZvHok4=@lists.osuosl.org
+X-Gm-Message-State: APuU4Z8YeuPmhe1+mb8NhfaQ5yWEEwTWwYwj2f7dvG6riX/bxOZNzE0Q
+ Kf4ozhYmfuf4hXNEwmiJAjNQuGLC+HNddQhH6kbkKAyeyLC1HYxyCMelYhlePUlE4nc=
+X-Gm-Gg: AYBFou2+rBJPljtaiNAY5S6a3MXU+rJUpseAr9XOiw8a0X+qtzunmXbVQ6oHRdzn9HB
+ ka6+JXKdAtcxJRAYy0q+cxCbcsardlwks/hNabu5leCkbkzeb3PAlShcbLU6q39AHRoQ8jCnpwp
+ sjDF0iZgKF4i7uYRnPr9bhsyICYiBeTaHj3ZZ+i4UKPD/ThMjPbI76XXgUFDGUpOcl01UGDGJFl
+ 0mMTo3+ac3mo3LD39CX4aFUlYQVJcduQlGj4zGSSVp+ro2zj8jYp4m3e+RjM5RqmMilu2R/72Mz
+ uQJbHEQxMpnpJidspvUbxu6SXRfN+fCT9NGPKWyfqjOiW7+D1zZ9mFxm+byDw0pinUxPHoMpRjq
+ oxO8UepvoejDPSD8ryBVKNm4ctqjWFc9VmCWaCc+JoWdmEy164iHIly/Ftw8a+lI+QfrhsyfEln
+ MSG+7m5nf5sSf4A8X+7/cU0eeUQTAe9ynNxGZLXRpHlw6NMtGVRWSNBo71/vzvJ+FkmLcd8lhU/
+ 9mjZ9suYsp4idhCCvKJGzdQELHNUE5PYQJfNy4BcH5C1OB8Qi8iYL4gHKUg7xzqQgb9oU3LznZx
+ Qz1govFD4BP1eBgcLsBmp+kBUnkTk+650grrj5zjc/50JVfWDNxGwhO2nWavL0AXbk0ZznztYMo
+ OKKqA2id+
+X-Received: by 2002:a05:6402:3603:b0:6b6:ee00:aed9 with SMTP id
+ 4fb4d7f45d1cf-6b756adfec4mr1037528a12.44.1794283093331; 
+ Mon, 09 Nov 2026 19:58:13 -0800 (PST)
 Received: from L9JK9NPFH9.lan ([104.28.20.56])
  by smtp.gmail.com with ESMTPSA id
- 4fb4d7f45d1cf-6b7579047c9sm548801a12.33.2026.11.09.19.58.06
+ 4fb4d7f45d1cf-6b7579047c9sm548801a12.33.2026.11.09.19.58.10
  (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
- Mon, 09 Nov 2026 19:58:08 -0800 (PST)
+ Mon, 09 Nov 2026 19:58:12 -0800 (PST)
 From: Tianyi Gao <tianyi@cloudflare.com>
 To: bpf@vger.kernel.org, netdev@vger.kernel.org,
  Alexei Starovoitov <ast@kernel.org>,
@@ -172,10 +173,9 @@ Cc: John Fastabend <john.fastabend@gmail.com>,
  linux-kselftest@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
  llvm@lists.linux.dev, kernel-team@cloudflare.com,
  Tianyi Gao <tianyi@cloudflare.com>
-Subject: [PATCH bpf-next 14/15] selftests/bpf: Test the load kfuncs on cpumap
- and veth
-Date: Tue, 10 Nov 2026 03:57:12 +0000
-Message-ID: <87e20fe4ae289764205f33920e90f3283a478e8a.1794281983.git.tianyi@cloudflare.com>
+Subject: [PATCH bpf-next 15/15] docs: net: document the skb core extension area
+Date: Tue, 10 Nov 2026 03:57:13 +0000
+Message-ID: <a37a908598e396446c1a389e3a58a1fe44a514ac.1794281983.git.tianyi@cloudflare.com>
 X-Mailer: git-send-email 2.56.0
 In-Reply-To: <cover.1794281983.git.tianyi@cloudflare.com>
 References: <cover.1794281983.git.tianyi@cloudflare.com>
@@ -196,255 +196,203 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 X-Spam-Status: No, score=-18.9 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=4.0.1
+	MAILING_LIST_MULTI,SPF_HELO_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Add a test for the load kfuncs on each path of the xdp_skb_ext_to_skb
-test. On XDP_PASS, the program that stores the values reads them back.
-On cpumap and veth, the program after the redirect reads them. Each
-test case compares them with the stored values. A load that finds no
-entry, also after bpf_xdp_skb_ext_del(), must return -ENODATA.
+Add a section on the skb core extension area to xdp-rx-metadata.rst.
+It shows where the area is in the headroom and lists the store, delete
+and load kfuncs. It also says when the kernel sets the stored values on
+the skb. The Supported Devices section names the skb-ext-pass XDP
+feature.
 
-With BPF_F_TEST_XDP_LIVE_FRAMES, a recycled page still holds the entries
-of the previous packet. The live_frames test checks that a load returns
--ENODATA there.
+Update the XDP_PASS, bpf_redirect_map and bpf_tail_call sections,
+which did not cover the area. Document xdp_skb_ext_to_skb(), the
+skb-ext-pass XDP feature and xdp_build_skb_from_frame() in the driver
+section, and point to the selftests in the example section.
 
 Signed-off-by: Tianyi Gao <tianyi@cloudflare.com>
 ---
- .../selftests/bpf/prog_tests/xdp_skb_ext.c    | 47 +++++++++++------
- .../selftests/bpf/progs/test_xdp_skb_ext.c    | 50 ++++++++++++++++++-
- tools/testing/selftests/bpf/xdp_skb_ext.h     |  2 +-
- 3 files changed, 81 insertions(+), 18 deletions(-)
+ Documentation/networking/xdp-rx-metadata.rst | 127 +++++++++++++++++--
+ 1 file changed, 116 insertions(+), 11 deletions(-)
 
-diff --git a/tools/testing/selftests/bpf/prog_tests/xdp_skb_ext.c b/tools/testing/selftests/bpf/prog_tests/xdp_skb_ext.c
-index 64c6f0268d60..0811c09b7747 100644
---- a/tools/testing/selftests/bpf/prog_tests/xdp_skb_ext.c
-+++ b/tools/testing/selftests/bpf/prog_tests/xdp_skb_ext.c
-@@ -7,7 +7,6 @@
- #include "test_xdp_skb_ext.skel.h"
- #include "xdp_skb_ext_success.skel.h"
- #include "xdp_skb_ext_failure.skel.h"
--#include "xdp_dummy.skel.h"
+diff --git a/Documentation/networking/xdp-rx-metadata.rst b/Documentation/networking/xdp-rx-metadata.rst
+index efdf5eeb49e7..61dcc24d7342 100644
+--- a/Documentation/networking/xdp-rx-metadata.rst
++++ b/Documentation/networking/xdp-rx-metadata.rst
+@@ -54,6 +54,83 @@ area in whichever format it chooses. Later consumers of the metadata
+ will have to agree on the format by some out of band contract (like for
+ the AF_XDP use case, see below).
  
- #define XDP_RSS_TYPE_L3_IPV4 BIT(0)
- #define XDP_RSS_TYPE_L4 BIT(3)
-@@ -167,7 +166,9 @@ static void set_case(struct test_xdp_skb_ext *skel,
- 	skel->bss->want = c->want;
- 	skel->bss->del_hash = c->del_hash;
- 	memset(&skel->bss->have, 0, sizeof(skel->bss->have));
-+	memset(&skel->bss->loaded, 0, sizeof(skel->bss->loaded));
- 	skel->bss->store_err = 0;
-+	skel->bss->load_err = 0;
- 	skel->bss->pkts_seen_tc = 0;
- }
- 
-@@ -191,8 +192,6 @@ static void check_have(struct test_xdp_skb_ext *skel)
- 	bool unnecessary = (want->fields & SKB_EXT_FIELD_CSUM) &&
- 			   want->ip_summed == XDP_CHECKSUM_UNNECESSARY;
- 
--	if (!wait_pkt(skel))
--		return;
- 	ASSERT_EQ(skel->bss->store_err, 0, "store_err");
- 	ASSERT_EQ(have->hash, want->rx_hash, "hash");
- 	ASSERT_EQ(have->l4_hash, !!(want->rx_hash_type & XDP_RSS_TYPE_L4),
-@@ -208,6 +207,24 @@ static void check_have(struct test_xdp_skb_ext *skel)
- 		  "csum_level");
- }
- 
-+static void check_loaded(struct test_xdp_skb_ext *skel)
-+{
-+	const struct xdp_skb_ext_vals *want = &skel->bss->want;
-+	const struct xdp_skb_ext_vals *loaded = &skel->bss->loaded;
++SKB Core Extension Area
++=======================
 +
-+	ASSERT_EQ(skel->bss->load_err, 0, "load_err");
-+	ASSERT_EQ(loaded->fields, want->fields, "loaded_fields");
-+	ASSERT_EQ(loaded->rx_hash, want->rx_hash, "loaded_rx_hash");
-+	ASSERT_EQ(loaded->rx_hash_type, want->rx_hash_type,
-+		  "loaded_rx_hash_type");
-+	ASSERT_EQ(loaded->rx_vlan_proto, want->rx_vlan_proto,
-+		  "loaded_rx_vlan_proto");
-+	ASSERT_EQ(loaded->rx_vlan_tci, want->rx_vlan_tci,
-+		  "loaded_rx_vlan_tci");
-+	ASSERT_EQ(loaded->ip_summed, want->ip_summed, "loaded_ip_summed");
-+	ASSERT_EQ(loaded->csum_level, want->csum_level, "loaded_csum_level");
-+}
++An XDP program can also store RX metadata that the kernel sets on the
++``skb`` built from the packet. It stores and deletes the values with
++these kfuncs:
 +
- static void test_frames(struct test_xdp_skb_ext *skel, const char *path,
- 			enum xdp_skb_ext_deliver deliver, int ifindex)
- {
-@@ -232,9 +249,12 @@ static void test_frames(struct test_xdp_skb_ext *skel, const char *path,
- 		if (!test__start_subtest(name))
- 			continue;
- 		set_case(skel, &skb_ext_cases[i]);
--		if (ASSERT_OK(bpf_prog_test_run_opts(prog_fd, &opts),
--			      "test_run"))
--			check_have(skel);
-+		if (!ASSERT_OK(bpf_prog_test_run_opts(prog_fd, &opts),
-+			       "test_run") ||
-+		    !wait_pkt(skel))
-+			continue;
-+		check_have(skel);
-+		check_loaded(skel);
- 	}
- }
- 
-@@ -266,6 +286,7 @@ static void test_veth_skb(struct test_xdp_skb_ext *skel, struct bpf_link *link,
- 		goto out;
- 	if (deliver == DELIVER_CPUMAP) {
- 		check_have(skel);
-+		check_loaded(skel);
- 		goto out;
- 	}
- 	ASSERT_EQ(skel->bss->store_err, 0, "store_err");
-@@ -275,6 +296,7 @@ static void test_veth_skb(struct test_xdp_skb_ext *skel, struct bpf_link *link,
- 	ASSERT_EQ(have->vlan_tci, 0, "vlan_tci");
- 	ASSERT_EQ(have->ip_summed, CHECKSUM_NONE, "ip_summed");
- 	ASSERT_EQ(have->csum_level, 0, "csum_level");
-+	check_loaded(skel);
- out:
- 	close(sock);
- }
-@@ -292,7 +314,6 @@ void test_xdp_skb_ext_to_skb(void)
- {
- 	struct bpf_cpumap_val val = { .qsize = 192 };
- 	int ifindex_src, ifindex_dst, tc_prog_fd;
--	struct xdp_dummy *skel_dummy = NULL;
- 	struct test_xdp_skb_ext *skel = NULL;
- 	struct bpf_link *link = NULL;
- 	struct netns_obj *ns = NULL;
-@@ -330,18 +351,13 @@ void test_xdp_skb_ext_to_skb(void)
- 	    tc_prog_attach("veth_dst", tc_prog_fd, -1))
- 		goto out;
- 
-+	val.bpf_prog.fd = bpf_program__fd(skel->progs.cpumap_load);
- 	if (!ASSERT_OK(bpf_map_update_elem(bpf_map__fd(skel->maps.cpu_map),
- 					   &key, &val, 0), "add cpumap entry"))
- 		goto out;
- 
--	skel_dummy = xdp_dummy__open_and_load();
--	if (!ASSERT_OK_PTR(skel_dummy, "xdp_dummy__open_and_load"))
--		goto out;
--
--	/* veth_dst takes xdp_frames only with an XDP program */
--	link = bpf_program__attach_xdp(skel_dummy->progs.xdp_dummy_prog,
--				       ifindex_dst);
--	if (!ASSERT_OK_PTR(link, "attach xdp_dummy"))
-+	link = bpf_program__attach_xdp(skel->progs.veth_load, ifindex_dst);
-+	if (!ASSERT_OK_PTR(link, "attach veth_load"))
- 		goto out;
- 
- 	test_frames(skel, "pass", DELIVER_PASS, ifindex_src);
-@@ -354,7 +370,6 @@ void test_xdp_skb_ext_to_skb(void)
- 
- out:
- 	bpf_link__destroy(link);
--	xdp_dummy__destroy(skel_dummy);
- 	test_xdp_skb_ext__destroy(skel);
- 	netns_free(ns);
- }
-diff --git a/tools/testing/selftests/bpf/progs/test_xdp_skb_ext.c b/tools/testing/selftests/bpf/progs/test_xdp_skb_ext.c
-index a63206ff993d..34db1a986f3b 100644
---- a/tools/testing/selftests/bpf/progs/test_xdp_skb_ext.c
-+++ b/tools/testing/selftests/bpf/progs/test_xdp_skb_ext.c
-@@ -1,5 +1,6 @@
- // SPDX-License-Identifier: GPL-2.0
- #include <vmlinux.h>
-+#include <errno.h>
- #include "xdp_skb_ext.h"
- #include <bpf/bpf_endian.h>
- #include <bpf/bpf_helpers.h>
-@@ -14,6 +15,8 @@ SEC("xdp")
- int live_frames(struct xdp_md *ctx)
- {
- 	__u8 *mark = (void *)(long)ctx->data;
-+	enum xdp_rss_hash_type rss_type;
-+	__u32 hash;
- 
- 	if (mark + 1 > (__u8 *)(long)ctx->data_end)
- 		return XDP_DROP;
-@@ -25,6 +28,9 @@ int live_frames(struct xdp_md *ctx)
- 			reused_ok++;
- 			bpf_xdp_adjust_meta(ctx, MAX_META_LEN);
- 		}
-+		if (bpf_xdp_skb_ext_load_rx_hash(ctx, &hash, &rss_type) !=
-+		    -ENODATA)
-+			reused_bad++;
- 	}
- 	if (bpf_xdp_skb_ext_store_rx_hash(ctx, 1, XDP_RSS_TYPE_L4_IPV4_TCP) ||
- 	    bpf_xdp_skb_ext_store_rx_vlan(ctx, bpf_htons(ETH_P_8021Q), 1) ||
-@@ -51,7 +57,34 @@ enum xdp_skb_ext_deliver deliver;
- struct xdp_skb_ext_vals want;
- bool del_hash;
- struct xdp_skb_ext_have have;
--int pkts_seen_tc;
-+struct xdp_skb_ext_vals loaded;
-+int pkts_seen_tc, load_err;
++.. kernel-doc:: net/core/xdp.c
++   :identifiers: bpf_xdp_skb_ext_store_rx_hash
 +
-+static void load_all(struct xdp_md *ctx)
-+{
-+	int err;
++.. kernel-doc:: net/core/xdp.c
++   :identifiers: bpf_xdp_skb_ext_store_rx_vlan
 +
-+	err = bpf_xdp_skb_ext_load_rx_hash(ctx, &loaded.rx_hash,
-+					   &loaded.rx_hash_type);
-+	if (!err)
-+		loaded.fields |= SKB_EXT_FIELD_HASH;
-+	else if (err != -ENODATA)
-+		load_err++;
++.. kernel-doc:: net/core/xdp.c
++   :identifiers: bpf_xdp_skb_ext_store_rx_csum
 +
-+	err = bpf_xdp_skb_ext_load_rx_vlan(ctx, &loaded.rx_vlan_proto,
-+					   &loaded.rx_vlan_tci);
-+	if (!err)
-+		loaded.fields |= SKB_EXT_FIELD_VLAN;
-+	else if (err != -ENODATA)
-+		load_err++;
++.. kernel-doc:: net/core/xdp.c
++   :identifiers: bpf_xdp_skb_ext_del
 +
-+	err = bpf_xdp_skb_ext_load_rx_csum(ctx, &loaded.ip_summed,
-+					   &loaded.csum_level);
-+	if (!err)
-+		loaded.fields |= SKB_EXT_FIELD_CSUM;
-+	else if (err != -ENODATA)
-+		load_err++;
-+}
++The values are kept in the skb core extension area. The area starts at
++``data_hard_start + sizeof(struct xdp_frame)``, right after the room for
++the ``xdp_frame``::
++
++  +-----------+-----------+----------------+---------------------+------+
++  | xdp_frame |  skb core |    headroom    |   custom metadata   | data |
++  |           | extension |                |                     |      |
++  +-----------+-----------+----------------+---------------------+------+
++  ^                                        ^                     ^
++  |                                        |                     |
++  xdp_buff->data_hard_start       xdp_buff->data_meta     xdp_buff->data
++
++The area is not an skb extension (``struct skb_ext``) and needs no
++extra allocation. It takes no space until the first store. It holds a
++4-byte header and the stored entries. The header and all three entries
++take 20 bytes. ``bpf_xdp_adjust_head``, ``bpf_xdp_adjust_meta`` and
++``bpf_xdp_pull_data`` do not move the packet or the metadata into the
++area.
++
++The kernel sets the stored values on the ``skb`` in these cases:
++
++- When cpumap or veth builds the ``skb`` from an ``xdp_frame`` after
++  ``XDP_REDIRECT``.
++- When ``BPF_PROG_RUN`` with ``BPF_F_TEST_XDP_LIVE_FRAMES`` builds the
++  ``skb`` after ``XDP_PASS``.
++- On ``XDP_PASS``, in a driver with the ``skb-ext-pass`` XDP feature,
++  see `Supported Devices`_.
++
++On ``XDP_PASS``, the stored values replace the values that the driver
++sets from the RX descriptor. On a native XDP driver without the feature,
++the kernel warns once when the program returns ``XDP_PASS`` with stored
++values. When XDP runs on an ``skb``, in generic XDP or when veth receives
++an ``skb`` from its peer, the kernel does not set the stored values on
++``XDP_PASS`` and also warns once.
++
++The program that stores the values can read them back. So can the
++programs that run on the ``xdp_frame`` after ``XDP_REDIRECT``, on cpumap,
++devmap and veth:
++
++.. kernel-doc:: net/core/xdp.c
++   :identifiers: bpf_xdp_skb_ext_load_rx_hash
++
++.. kernel-doc:: net/core/xdp.c
++   :identifiers: bpf_xdp_skb_ext_load_rx_vlan
++
++.. kernel-doc:: net/core/xdp.c
++   :identifiers: bpf_xdp_skb_ext_load_rx_csum
++
++They return only the stored values. The RX metadata kfuncs above still
++read the values from the RX descriptor. Unlike those, the kfuncs in this
++section do not need a program that is bound to a device.
++
++On ``AF_XDP`` zero-copy, the store kfuncs return ``-EOPNOTSUPP``, because
++user space can write the headroom. The area would not reach the skb
++anyway. On ``XDP_REDIRECT``, ``xdp_convert_zc_to_xdp_frame`` copies only
++the custom metadata and the packet. On ``XDP_PASS``, drivers do not apply
++the area.
++
+ AF_XDP
+ ======
  
- SEC("xdp")
- int xdp_store(struct xdp_md *ctx)
-@@ -99,6 +132,21 @@ int xdp_store(struct xdp_md *ctx)
- 		return bpf_redirect_map(&cpu_map, 0, 0);
- 	if (deliver == DELIVER_VETH)
- 		return bpf_redirect(ifindex_out, 0);
-+	load_all(ctx);
-+	return XDP_PASS;
-+}
-+
-+SEC("xdp/cpumap")
-+int cpumap_load(struct xdp_md *ctx)
-+{
-+	load_all(ctx);
-+	return XDP_PASS;
-+}
-+
-+SEC("xdp")
-+int veth_load(struct xdp_md *ctx)
-+{
-+	load_all(ctx);
- 	return XDP_PASS;
- }
+@@ -83,12 +160,13 @@ This is the path where the packets processed by the XDP program are passed
+ into the kernel. The kernel creates the ``skb`` out of the ``xdp_buff``
+ contents. Currently, every driver has custom kernel code to parse
+ the descriptors and populate ``skb`` metadata when doing this ``xdp_buff->skb``
+-conversion, and the XDP metadata is not used by the kernel when building
++conversion, and the custom metadata is not used by the kernel when building
+ ``skbs``. However, TC-BPF programs can access the XDP metadata area using
+ the ``data_meta`` pointer.
  
-diff --git a/tools/testing/selftests/bpf/xdp_skb_ext.h b/tools/testing/selftests/bpf/xdp_skb_ext.h
-index 11feee2fa31c..64d4a0511d0a 100644
---- a/tools/testing/selftests/bpf/xdp_skb_ext.h
-+++ b/tools/testing/selftests/bpf/xdp_skb_ext.h
-@@ -30,7 +30,7 @@ enum xdp_skb_ext_deliver {
- 	DELIVER_VETH,
- };
+-In the future, we'd like to support a case where an XDP program
+-can override some of the metadata used for building ``skbs``.
++On drivers with the ``skb-ext-pass`` XDP feature, an XDP program can use
++the `SKB Core Extension Area`_ to override the hash, VLAN tag and checksum
++status of the ``skb``.
  
--/* The entries that the XDP program stores */
-+/* The entries that the XDP programs store or load */
- struct xdp_skb_ext_vals {
- 	__u32 rx_hash;
- 	__u32 rx_hash_type;
+ bpf_redirect_map
+ ================
+@@ -100,18 +178,19 @@ access to the original hardware descriptor and can't access any of
+ the original metadata. The same applies to XDP programs installed
+ into devmaps and cpumaps.
+ 
+-This means that for redirected packets only custom metadata is
+-currently supported, which has to be prepared by the initial XDP program
+-before redirect. If the frame is eventually passed to the kernel, the
+-``skb`` created from such a frame won't have any hardware metadata populated
+-in its ``skb``. If such a packet is later redirected into an ``XSK``,
+-that will also only have access to the custom metadata.
++This means that the initial XDP program has to prepare the metadata
++before the redirect, as custom metadata or in the `SKB Core Extension
++Area`_. If the frame is eventually passed to the kernel, the ``skb``
++created from such a frame gets its hash, VLAN tag and checksum status
++only from the area. If such a packet is later redirected into an
++``XSK``, that will only have access to the custom metadata.
+ 
+ bpf_tail_call
+ =============
+ 
+ Adding programs that access metadata kfuncs to the ``BPF_MAP_TYPE_PROG_ARRAY``
+-is currently not supported.
++is currently not supported. The kfuncs of the `SKB Core Extension Area`_
++do not have this limit.
+ 
+ Supported Devices
+ =================
+@@ -120,6 +199,12 @@ It is possible to query which kfunc the particular netdev implements via
+ netlink. See ``xdp-rx-metadata-features`` attribute set in
+ ``Documentation/netlink/specs/netdev.yaml``.
+ 
++A netdev that sets the values from the `SKB Core Extension Area`_ on
++``XDP_PASS`` in native XDP has the ``skb-ext-pass`` flag in its
++``xdp-features`` attribute. The flag does not cover generic XDP or the
++veth ``skb`` path. An XDP program can also read ``xdp_features`` of the
++receiving netdev after ``bpf_cast_to_kern_ctx``.
++
+ Driver Implementation
+ =====================
+ 
+@@ -153,9 +238,29 @@ xdp_frame. If these conditions are not met, it returns a negative error. In this
+ case, the BPF program should not proceed to populate data into the ``data_meta``
+ area.
+ 
++A driver that builds the ``skb`` on ``XDP_PASS`` applies the
++`SKB Core Extension Area`_ and sets ``NETDEV_XDP_ACT_SKB_EXT_PASS``. The
++driver sets the ``skb`` fields from the RX descriptor and then calls this
++function. The driver takes the area pointer with ``xdp_buff_skb_ext``
++before it reuses the ``xdp_buff``:
++
++.. kernel-doc:: net/core/xdp.c
++   :identifiers: xdp_skb_ext_to_skb
++
++``xdp_build_skb_from_frame`` does not apply the area. Its callers set the
++RX fields themselves or transmit the ``skb``.
++
++A driver that moves ``data_hard_start`` after the XDP program ran calls
++``xdp_buff_clear_skb_ext_flag``, because the area is no longer at the
++expected place. The stored values are then lost.
++
+ Example
+ =======
+ 
+ See ``tools/testing/selftests/bpf/progs/xdp_metadata.c`` and
+ ``tools/testing/selftests/bpf/prog_tests/xdp_metadata.c`` for an example of
+-BPF program that handles XDP metadata.
++BPF program that handles XDP metadata. See
++``tools/testing/selftests/bpf/progs/test_xdp_skb_ext.c`` and
++``tools/testing/selftests/bpf/prog_tests/xdp_skb_ext.c`` for the skb core
++extension area, and ``tools/testing/selftests/drivers/net/hw/xdp_metadata.py``
++for a driver on ``XDP_PASS``.
 -- 
 2.56.0
 
