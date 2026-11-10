@@ -1,27 +1,27 @@
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ECB04606A31C
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Nov 2026 16:51:18 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A2AF9606A31C
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Nov 2026 16:51:19 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=PvkVjdSU;
-	dkim=pass (2048-bit key) header.d=cloudflare.com header.i=@cloudflare.com header.a=rsa-sha256 header.s=google09082023 header.b=XpOew5f3
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=gCOBLL9y;
+	dkim=pass (2048-bit key) header.d=cloudflare.com header.i=@cloudflare.com header.a=rsa-sha256 header.s=google09082023 header.b=V5U7tDfm
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id CF4D881298;
-	Tue, 10 Nov 2026 16:51:18 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 80FDF4074C;
+	Tue, 10 Nov 2026 16:51:19 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id SqcYBIbDaQgE; Tue, 10 Nov 2026 16:51:18 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org E849581265
-Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id uiGj_2XxHpct; Tue, 10 Nov 2026 16:51:18 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org B5E624081E
+Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
 ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794329478;
-	b=iFlsk77W3eolelVSJtYzHWAV/9nhktHq0vWr631B6o7QUhJBeUSFXsyMrpyi5+YXY7Jx
-	 91LJZCkD+PYBAKVemV2JXuzX1Vpbk6JB/A2y9dHONksybdwO3IYJhe/JfIEnCHXTo8ykH
-	 M/XDwhOrTx9zmV6IuFlPQ5m16OL3qR9zSI7VmESU20rzZyijbEpuL5XJVHLBVNA2lJ3HH
-	 w4Fp3EZb3aJcEZcQ2I4TeNARsWkJ+qvd1I3mpAnaLVaG+Lk8v3TQRHN9QAuOohIXc3gSB
-	 0dlKdQoQCWbjnRha/uraWQwkjarn0LxFl/SJMjQJJsEQc6PsHmCu7GnCRYMs3SVKoBA==
+	b=IHEnwxcjydmVQiwj5Dk+bhUJlNJLSIVQEV1J1/pewGoTKApsL++pXLFbVWnFBQE307C9
+	 mdirMG56ecHHhmaG3y3vDodYeLOhmtlPeCQA0nQ0Iud6MO3a4byInedmg602tKDpVKpu2
+	 s0D+QaXg5itrBFFmvmT77Rgb4zOz+iJml/ahNYiJ2zweK5ZH9MLogv7bo77dMvlD1Sthd
+	 qjRwhEUOm6cDdhSGI5ukUvtgFTZj4T5lnUG3NiokDt1RozlRfIo1cbfWYD6XuMQQFrDwG
+	 G0A7q0A0H6NiexuWlwB+3ZZ3FD4/W1iq6Gz4bPm6T8jwgSd2BTCjCaiJzr6fzw1BnJA==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
 	c=relaxed/relaxed; t=1794329478;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
@@ -33,105 +33,105 @@ ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
 	 Content-Transfer-Encoding:X-Mailman-Approved-At:X-BeenThere:
 	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=6mXUjSsb+h9m7vI0sEcfo3uXfUjeQTfFxyZorh+4fbw=;
-	b=GrP2NCaJvV2usrfxmdVhL74q6xV56WHP510fFvslmm9fYewlWmxSxgDlKN3dHJZthcRn
-	 Pri9y9p/36D28Q9Rt9Vh0ClJ4+23JE7U47SLPd9fOwnhAZVZ3HtfeR9RQcJ8ESLkvZMKd
-	 Lmkz7MnJeuDaiC2jhsOyjul6y+rHEsOtthIq4w3eVmLhhtdAdusabqOa10FMB28QdUzen
-	 9EHkbhe2Qtawevc+CTgIYO3wEiPZ94IfOt6vGIQTRh/Rz/LsKKKb3T0fSPTmNa8pby+pu
-	 8yixk3WO9enD7LOK3m7/bh8gIzZAWrdjHhkmdkmpP6UQbKBjLtWXfYu+cPzDjJQ/Fww==
-ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
+	bh=Y1n75dlSKXk28YfIHQIdOaiTcHKQaKmSFDKJym+w+lI=;
+	b=st/apfRq373Clf4NXUvL+CkmJUUBT8X/ZOLw+wxCOmyLcjqzYr44Fc/UuvFQg8PtAlhC
+	 fJxqkVkljL97R8ULzLXQIYIK5pntJ1ehnj7C90IKXDXZHIy0MYv543lyYoOy+7wDi5MMy
+	 MU7jtOPezzHSBUVddnP/Jzy1BvKvkBs0keVtFMQazosOlyXiiZfXE+LjBjabEvAj2/IMj
+	 2sfIEFkRLkEWxud8JsZyy0uBRjVIrQ2hAaEqnok8pUGF8hf4JwWp9M7yVdkmQUcK1tyUc
+	 a/M35h0w5xxcEoDTvWY3h+AhHd5y+qHmjo9g0uDdEQGOJDf/w8HYuUQh2c627JWN9VQ==
+ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
 	s=default; t=1794329478;
-	bh=6mXUjSsb+h9m7vI0sEcfo3uXfUjeQTfFxyZorh+4fbw=;
+	bh=Y1n75dlSKXk28YfIHQIdOaiTcHKQaKmSFDKJym+w+lI=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=PvkVjdSU+LMbZEvdN0fqk2JjIMWZSh7LJZwzL7FCRUJWeYlumN+dHLjKadkwiNIcX
-	 audatiT/AsBL/tUIjicOhSFucU2SMwtG7Rmv+eOZwak51u5RtK20hjq50tU2C0ZOJM
-	 OIXUAtPW+hvidy2QeZhvEW2hR5y6J5FY1GXjZktHeb90pUjQESxv91m60AaF4CG+Qv
-	 7PfKDLuzUkumZp7OdiFQW9s6/x8H1uKLhsFBQ7cHBvT1cqwfEhidzWcCf+KwfKCCDm
-	 qA6PRUyAPCXiiD7OzWiLW19xT3Nnr9tzNAAUHbavTQwCcAkBiZbVWDd+2TrBec6cFv
-	 bwhODLWWb/sxw==
+	b=gCOBLL9yZk1tudVqrb2zLB9jmDlqCV0bjPeXhQ1Vw08eJu+pFzr4F3/mZqBX903LJ
+	 39LJQ312Iyqdu8kRsLRXuHQncNIxMPnOVhY8Q5LXT5WvRN8a7RBki0nBPcEf5i2tml
+	 nqti7jVJ9jWwBa95ZlRxj4WcOhngORaHb3oiBIo50x1ovzTI6wWxO0JfNPu+QiRS9V
+	 7wbaMixUkalXybfblaRK+l9kkDbgKPpKKVvEIWjexk2tjZXfdR8X8OL1dEdg7q1RNk
+	 Y5YXpvDsE1I+zjNxvmSkE29+ra4AsB2X/qL0Y7Li/UrOplRrMT4clx0Yx3+m61CBax
+	 uOM83X9jjbMew==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id E849581265;
-	Tue, 10 Nov 2026 16:51:17 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id C60BB335
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 03:58:00 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id B5E624081E;
+	Tue, 10 Nov 2026 16:51:18 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id ACAAF335
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 03:58:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id B3B924059A
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 03:58:00 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 9E5DF60803
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 03:58:03 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id rEUxhOWVg7ci for <intel-wired-lan@lists.osuosl.org>;
- Tue, 10 Nov 2026 03:58:00 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org A9A6D4070E
-Authentication-Results: smtp4.osuosl.org;
- arc=none smtp.remote-ip="2a00:1450:4864:20::52d"
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id HkeXDpaPeHlt for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 10 Nov 2026 03:58:03 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 86A13605CF
+Authentication-Results: smtp3.osuosl.org;
+ arc=none smtp.remote-ip="2a00:1450:4864:20::533"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a00:1450:4864:20::52d; helo=mail-ed1-x52d.google.com;
+ client-ip=2a00:1450:4864:20::533; helo=mail-ed1-x533.google.com;
  envelope-from=tianyi@cloudflare.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=reject dis=none)
+Authentication-Results: smtp3.osuosl.org; dmarc=pass (p=reject dis=none)
  header.from=cloudflare.com
-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=cloudflare.com header.i=@cloudflare.com
- header.a=rsa-sha256 header.s=google09082023 header.b=XpOew5f3
-Received: from mail-ed1-x52d.google.com (mail-ed1-x52d.google.com
- [IPv6:2a00:1450:4864:20::52d])
- by smtp4.osuosl.org (Postfix) with ESMTPS id A9A6D4070E
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 03:57:58 +0000 (UTC)
-Received: by mail-ed1-x52d.google.com with SMTP id
- 4fb4d7f45d1cf-6b7221c0f2cso447095a12.3
- for <intel-wired-lan@lists.osuosl.org>; Mon, 09 Nov 2026 19:57:58 -0800 (PST)
+Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=cloudflare.com header.i=@cloudflare.com
+ header.a=rsa-sha256 header.s=google09082023 header.b=V5U7tDfm
+Received: from mail-ed1-x533.google.com (mail-ed1-x533.google.com
+ [IPv6:2a00:1450:4864:20::533])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 86A13605CF
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 03:58:02 +0000 (UTC)
+Received: by mail-ed1-x533.google.com with SMTP id
+ 4fb4d7f45d1cf-6b75712fb57so693496a12.2
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 09 Nov 2026 19:58:01 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=cloudflare.com; s=google09082023; t=1794283076; x=1794887876;
+ d=cloudflare.com; s=google09082023; t=1794283080; x=1794887880;
  darn=lists.osuosl.org; 
  h=content-transfer-encoding:mime-version:references:in-reply-to
  :message-id:date:subject:cc:to:from:from:to:cc:subject:date
  :message-id:reply-to:content-type;
- bh=6mXUjSsb+h9m7vI0sEcfo3uXfUjeQTfFxyZorh+4fbw=;
- b=XpOew5f38dqc7ef+qLGM9MwBvkqwSZN8swXjDsipxsS8vIwbAXpav+p8Buuv+RIm2B
- Nbhqfg9qiIevD2upI/MQnZcQN8q4kzZ4CWxglpfHTFeg34ysl1R5ZUiDR5AkA9JlXPv5
- DB6XS1dPih4Hll/8u3s6wy64XFo1vFEgK2+ae2ZZRSXTw3z4tC7NssJOaE/VVnNKcyRj
- d/5/7UISiciFjRNyGJL5bG8RT0KOGGeCHBzCqKM1KkeBnHUg2NjZq4eNR9/pK+cmKKIo
- h2SaMn1FDcdBQGpakZ9irXkx3dYyC5rvfv7ZR4R2azWYnzlxfyexszHqp7R7zK2Hc8Vq
- 43ow==
+ bh=Y1n75dlSKXk28YfIHQIdOaiTcHKQaKmSFDKJym+w+lI=;
+ b=V5U7tDfmWwBK1jaPygBJxThocNOtTGc5H9rsB5qwfScYKy/xBc1Z+7CPDHgHcNZlmD
+ CoRnCISQz6FQkAoAZ0W9PfdTYUGE+z0UGdc1eH7a7kv0XsXrqQsV6vh9rZUuLfgohGvD
+ OWlbapqKDruB2xG5aM0u4IoLhAPtLsI4TCtEJPoI5FqgbtvZGynGA6dm+u4vHVE1B3u/
+ sBKJ2FfYSDK+cRAm54+leRgi3Zn72gv1HOJxTCSP2dLYEy1bBy8xFp9c5duKRBfMK2Da
+ 5EaMoy2F4dQFFSJQHhdcyXgJOuwFKvUpnjtUGsRu4ACFbKeJn3gun0eEDeu0P+fy+vq1
+ qGuw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1794283076; x=1794887876;
+ d=1e100.net; s=20260707; t=1794283080; x=1794887880;
  h=content-transfer-encoding:mime-version:references:in-reply-to
  :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
  :to:cc:subject:date:message-id:reply-to:content-type;
- bh=6mXUjSsb+h9m7vI0sEcfo3uXfUjeQTfFxyZorh+4fbw=;
- b=Rg96d5YmMidWcJzIK2wbiCF6e1DHrYGDfFAiXi8THXmxCtOqOV/6U+JTrXj4NJ80Q7
- NiuuEoJNrLB8CqfMlhLiLVOrQmA615fdz1KRkdVYmpKIniuEXQrgIieeKcq96CWNZgui
- Gsq0vMN63TF/6c/xH0+q5fIIQsxwJq2+AQUgLiwtT0XqbiN6OUzCvh2fgIK23S5UkllT
- zqDAuWdZKyzSHrsprNvqvtm35syhdY4AiHDz3LZyVn0mHRlElgeffFRfgtfTcBK0E0xI
- QECP6bfNnneBz/EiJ/RDUdjpr2IKpruWgYDFQYrmMjn7ypTVbFLPmE4w9G2jJu2xU/gE
- yedw==
+ bh=Y1n75dlSKXk28YfIHQIdOaiTcHKQaKmSFDKJym+w+lI=;
+ b=SNmnP2V5urmQyYBDadeKQB/YlyjvDdEImWSD9UFkRBRHaKB/jObgS+S3FmSkDgw+CM
+ UJpOO0p4vHVXHSj6qvbLYuBMLp03r2Aus3Fx4QOj6fEFrDBt1quV8CLwqrLsfqClxCYc
+ Wy6Jzxc17rc4WnS42trtyzjzaTEgTy0PiBbiMvpHD3y3VqDwi18LdsaRXve16o2XbJvH
+ Q5AHHL1zn+ahRHOJIMu9NASoQn9Tr1taO15oxqOIenkxYZH74EtyMe1fa0TUp0UMzfNt
+ XhM4yisMGMxKNCYkc0RMdgPUnoz3D0cI/KJZdkohUumPKUZWWl1+IRRCHx8U8H6TRZZW
+ TZ+w==
 X-Forwarded-Encrypted: i=1;
- AL+hErGpfqr47UD9qpA4DvzJWTEEQsrC0udPd7XI7eo5k85Htn1/EDrj/SBOA5SKTLCCOcAnC5BFblClbzUnYdBtuZU=@lists.osuosl.org
-X-Gm-Message-State: APuU4Z8QJ9g7wEuognQ3T+qUBbcK6LiNxOEc4p1ppLfkY8WgslHQrh83
- 0+eEzRZMO3JFIBlgRI6SSA8F3h3MbcCmmMneSa8SArpebRWD/CHGadS1x/NS1/INvwA=
-X-Gm-Gg: AYBFou0yRaSedODWQVrgZDL0d/c9pQfRIFiHMfI6sNErVjXRDbrfjS9/LYuKbY6YYvu
- 3f5JbZ8Q8qcsBlPy8STmSpFUoGd3W0jo4uHPjzJtELc76c3NSx97pClD/wOT+1/k46fQlUHp6JQ
- LA0UkU2tIQ7dJzXPMrsXu7bcU99d9PjGiCyllQnlMCitnBJY3l/AhCe3+n2CvSJqYtQLNqDxwac
- BVS0pNVDovITenrWZByoJJt47D9J97Xn/b0oPcdC+iNkdE2/9i58yWO0kKpxmzYuEwh7aqo9CLy
- phjJVfs1EdvJzZkPzoWfguZ7+pD0XFsQ4xTPr2Z6huiQvw5xUvwVYp9S1uOLBrw9ONn4mHBAH+3
- 5d5BL9EJYBHw+qH/i1Q7WHHGLFKcSMIt4kSHjbCez4lWx+Esn4VshZLItQm9vU6KaMdO3lCQkaf
- wWYJFQ2SRpluXVZYVARNPWldoCF3fGPF3P6bQZ0Wny8u5osnbSS2PbaiVR40nfD3he59CT5xdvE
- Fc535B0zisVG7jilmJFQeB0Z1/G0cp+Qk8MiRUXUZNmK9JGixr/ABr2WnMLOINcKuimzda3wb7q
- 5qJphPZk751wCXibBLF7hhjKKxti/5ShNYFL7keKETh8T+ONukOMr+RF6DTtqpk=
-X-Received: by 2002:a05:6402:214b:b0:6b3:c320:8858 with SMTP id
- 4fb4d7f45d1cf-6b756ae734emr681477a12.24.1794283076584; 
- Mon, 09 Nov 2026 19:57:56 -0800 (PST)
+ AL+hErFMgs9JfIIVJsaWnAbr4WxHUQ9PEOAhWLBtC9GkMEnY2pzXY60CJ0r6BklMLPREoARiceqgJQF0VfJbBsXlFB4=@lists.osuosl.org
+X-Gm-Message-State: APuU4Z95IVk3tRAtTkSC1qyv8805OCaEUbPQVwZRhP3jnQ3/LbD3Z2br
+ f7SoTT38m7bBe+QAlDfbLiuborSsy/fxRW64aerrRMhH24BJ/QH7wcJ2YDDXG+Sjo30=
+X-Gm-Gg: AYBFou3FEYxPTEYg3NZ3jyCpDda1ltl1gBOF+dTAHVPJFYZkKdAxV/2kfWw0eouojdT
+ 49ZiQ+cfvV+CE3NvJddPIT47OnCX4bmjypWOsMB3ol8paURwuAhR5kecoBDq9hnmh1VWQpwZUHq
+ Ps+Y+HBTaM8hT4u5B+iFpsAEulMd1nbE7EnqbSvvSL2kPT1AQb79qkLz3yixqTzae44gI48zsfJ
+ 98EEcGs4BtPyb4za17/Hg1bRlivhgQ0YJUZ7oNfI2193RI1iUlOFysVeohLMjy6RPyWdytrci09
+ Ze/5ilx2UBKTmJ2DV4OUWCeNN5j02+hlLNNmlYzV1MAX9vT3j4FeJcHLFCU5Th6pssbPQBcJlIa
+ 8gVTHLYKfY2WPM5FM35qmT0Jn1BZuEIlI8AygwfS8sKvpD1/C9jjaI/Inh3QHrd9ZFKnl0DLKB7
+ RqL4xRUnvUQWG0DadyKjTEjxXLpM9rb/gBn/3NvkEI1+lXUvovu28uLOSgAUUHiCWBwX+VA/Lq4
+ IKe4RMXC69oTIJZqsIUBnysQnKHGLoU2Ld+rG/1zSp1smNveqmszmEfA2IOFEWUeNfoi1EGNlJ6
+ td5JwgsZ4S/prBLT1NhLKN4NQ9lER1ZP7ylR73GsG0q18IUPXMKENPqLFE6F9QU=
+X-Received: by 2002:aa7:cd92:0:b0:6af:a64f:bd44 with SMTP id
+ 4fb4d7f45d1cf-6b756b0d218mr745095a12.45.1794283080043; 
+ Mon, 09 Nov 2026 19:58:00 -0800 (PST)
 Received: from L9JK9NPFH9.lan ([104.28.20.56])
  by smtp.gmail.com with ESMTPSA id
- 4fb4d7f45d1cf-6b7579047c9sm548801a12.33.2026.11.09.19.57.52
+ 4fb4d7f45d1cf-6b7579047c9sm548801a12.33.2026.11.09.19.57.56
  (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
- Mon, 09 Nov 2026 19:57:54 -0800 (PST)
+ Mon, 09 Nov 2026 19:57:58 -0800 (PST)
 From: Tianyi Gao <tianyi@cloudflare.com>
 To: bpf@vger.kernel.org, netdev@vger.kernel.org,
  Alexei Starovoitov <ast@kernel.org>,
@@ -172,10 +172,10 @@ Cc: John Fastabend <john.fastabend@gmail.com>,
  linux-kselftest@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
  llvm@lists.linux.dev, kernel-team@cloudflare.com,
  Tianyi Gao <tianyi@cloudflare.com>
-Subject: [PATCH bpf-next 10/15] xdp: warn on XDP_PASS with stored values when
- XDP runs on an skb
-Date: Tue, 10 Nov 2026 03:57:08 +0000
-Message-ID: <15f830924c4d06d3d8c7e41fb8a9f8c29b63d9a7.1794281983.git.tianyi@cloudflare.com>
+Subject: [PATCH bpf-next 11/15] ice: set skb RX metadata from the skb core
+ extension area of xdp_buff
+Date: Tue, 10 Nov 2026 03:57:09 +0000
+Message-ID: <ae488c057454cd57fb01ac01aefc3e97d6271ada.1794281983.git.tianyi@cloudflare.com>
 X-Mailer: git-send-email 2.56.0
 In-Reply-To: <cover.1794281983.git.tianyi@cloudflare.com>
 References: <cover.1794281983.git.tianyi@cloudflare.com>
@@ -201,122 +201,168 @@ X-Spam-Status: No, score=-18.9 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On XDP_PASS, when XDP runs on an skb, the stored values are lost, because
-the skb already exists. This happens in bpf_prog_run_generic_xdp() for
-generic XDP and for cpumap and devmap programs on an skb. It also
-happens in veth_xdp_rcv_skb() when veth receives an skb from its peer.
-veth has the skb-ext-pass feature, so bpf_prog_run_xdp() does not warn
-for it.
+On XDP_PASS, ice builds the skb with xdp_build_skb_from_buff(). Then
+ice_process_skb_fields() sets the hash and ip_summed from the RX
+descriptor, and ice_receive_skb() adds the VLAN tag. The values that the
+XDP program stored in the skb core extension area are not used.
 
-Add xdp_skb_ext_warn_skb(). bpf_prog_run_generic_xdp() and
-veth_xdp_rcv_skb() call it on XDP_PASS with stored values, whatever the
-device features.
+ice_clean_rx_irq() takes the skb core extension pointer from the
+xdp_buff before it builds the skb, and passes it to ice_receive_skb().
+ice_receive_skb() calls xdp_skb_ext_to_skb() right before GRO. The
+stored values then replace the values from the descriptor before the skb
+leaves the driver. ice now sets the skb-ext-pass XDP feature.
 
-Generic XDP also runs bpf_prog_run_xdp(). On a native XDP device without
-the feature, it would warn twice. So xdp_skb_ext_warn_pass() skips
-generic XDP.
+Zero-copy is not supported in this patch. ice_clean_rx_irq_zc() passes
+NULL for the skb core extension pointer to ice_receive_skb(). Hence the
+skb-ext-pass feature does not cover AF_XDP zero-copy queues.
+
+Export xdp_skb_ext_to_skb(), because ice can be a module.
 
 Signed-off-by: Tianyi Gao <tianyi@cloudflare.com>
 ---
-Tested on virtio_net and veth: generic XDP prints only the new warning,
-and BPF_PROG_RUN without live frames prints none.
----
- drivers/net/veth.c |  2 ++
- include/net/xdp.h  |  2 ++
- net/core/dev.c     |  2 ++
- net/core/xdp.c     | 21 ++++++++++++++++++++-
- 4 files changed, 26 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_main.c     | 3 ++-
+ drivers/net/ethernet/intel/ice/ice_sf_eth.c   | 3 ++-
+ drivers/net/ethernet/intel/ice/ice_txrx.c     | 4 +++-
+ drivers/net/ethernet/intel/ice/ice_txrx_lib.c | 7 ++++++-
+ drivers/net/ethernet/intel/ice/ice_txrx_lib.h | 3 ++-
+ drivers/net/ethernet/intel/ice/ice_xsk.c      | 2 +-
+ net/core/xdp.c                                | 5 ++++-
+ 7 files changed, 20 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/veth.c b/drivers/net/veth.c
-index b402f8ed5096..f0d279e2da6a 100644
---- a/drivers/net/veth.c
-+++ b/drivers/net/veth.c
-@@ -826,6 +826,8 @@ static struct sk_buff *veth_xdp_rcv_skb(struct veth_rq *rq,
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 454fba07d4ec..cb619689d11a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3461,7 +3461,8 @@ static void ice_set_ops(struct ice_vsi *vsi)
  
- 	switch (act) {
- 	case XDP_PASS:
-+		if (unlikely(xdp_buff_has_skb_ext(xdp)))
-+			xdp_skb_ext_warn_skb(xdp_prog, xdp);
- 		break;
- 	case XDP_TX:
- 		veth_xdp_get(xdp);
-diff --git a/include/net/xdp.h b/include/net/xdp.h
-index 7148e8ef00e1..596261ed9cca 100644
---- a/include/net/xdp.h
-+++ b/include/net/xdp.h
-@@ -511,6 +511,8 @@ static __always_inline void *xdp_skb_ext_end(const struct xdp_buff *xdp)
- void xdp_skb_ext_to_skb(struct sk_buff *skb, const struct xdp_skb_ext *ext);
- void xdp_skb_ext_warn_pass(const struct bpf_prog *prog,
- 			   const struct xdp_buff *xdp);
-+void xdp_skb_ext_warn_skb(const struct bpf_prog *prog,
-+			  const struct xdp_buff *xdp);
+ 	netdev->xdp_features = NETDEV_XDP_ACT_BASIC | NETDEV_XDP_ACT_REDIRECT |
+ 			       NETDEV_XDP_ACT_XSK_ZEROCOPY |
+-			       NETDEV_XDP_ACT_RX_SG;
++			       NETDEV_XDP_ACT_RX_SG |
++			       NETDEV_XDP_ACT_SKB_EXT_PASS;
+ 	netdev->xdp_zc_max_segs = ICE_MAX_BUF_TXD;
+ }
  
- void __xdp_return(netmem_ref netmem, enum xdp_mem_type mem_type,
- 		  bool napi_direct, struct xdp_buff *xdp);
-diff --git a/net/core/dev.c b/net/core/dev.c
-index 3bf00e7e1a85..e37c881d968b 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -5705,6 +5705,8 @@ u32 bpf_prog_run_generic_xdp(struct sk_buff *skb, struct xdp_buff *xdp,
- 	orig_eth_type = eth->h_proto;
+diff --git a/drivers/net/ethernet/intel/ice/ice_sf_eth.c b/drivers/net/ethernet/intel/ice/ice_sf_eth.c
+index a730aa368c92..90f2ce5da022 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sf_eth.c
++++ b/drivers/net/ethernet/intel/ice/ice_sf_eth.c
+@@ -52,7 +52,8 @@ static int ice_sf_cfg_netdev(struct ice_dynamic_port *dyn_port,
  
- 	act = bpf_prog_run_xdp(xdp_prog, xdp);
-+	if (unlikely(xdp_buff_has_skb_ext(xdp)) && act == XDP_PASS)
-+		xdp_skb_ext_warn_skb(xdp_prog, xdp);
+ 	netdev->xdp_features = NETDEV_XDP_ACT_BASIC | NETDEV_XDP_ACT_REDIRECT |
+ 			       NETDEV_XDP_ACT_XSK_ZEROCOPY |
+-			       NETDEV_XDP_ACT_RX_SG;
++			       NETDEV_XDP_ACT_RX_SG |
++			       NETDEV_XDP_ACT_SKB_EXT_PASS;
+ 	netdev->xdp_zc_max_segs = ICE_MAX_BUF_TXD;
  
- 	/* check if bpf_xdp_adjust_head was used */
- 	off = xdp->data - orig_data;
+ 	eth_hw_addr_set(netdev, dyn_port->hw_addr);
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index a2c7c4962882..06a1a5fdc43b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -966,6 +966,7 @@ static int ice_clean_rx_irq(struct ice_rx_ring *rx_ring, int budget)
+ 	/* start the loop to process Rx packets bounded by 'budget' */
+ 	while (likely(total_rx_pkts < (unsigned int)budget)) {
+ 		union ice_32b_rx_flex_desc *rx_desc;
++		const struct xdp_skb_ext *ext;
+ 		struct libeth_fqe *rx_buf;
+ 		struct sk_buff *skb;
+ 		unsigned int size;
+@@ -1041,6 +1042,7 @@ static int ice_clean_rx_irq(struct ice_rx_ring *rx_ring, int budget)
+ 		continue;
+ 
+ construct_skb:
++		ext = xdp_buff_skb_ext(&xdp->base);
+ 		skb = xdp_build_skb_from_buff(&xdp->base);
+ 		xdp->data = NULL;
+ 
+@@ -1061,7 +1063,7 @@ static int ice_clean_rx_irq(struct ice_rx_ring *rx_ring, int budget)
+ 
+ 		ice_trace(clean_rx_irq_indicate, rx_ring, rx_desc, skb);
+ 		/* send completed skb up the stack */
+-		ice_receive_skb(rx_ring, skb, vlan_tci);
++		ice_receive_skb(rx_ring, skb, vlan_tci, ext);
+ 
+ 		/* update budget accounting */
+ 		total_rx_pkts++;
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
+index e695a664e53d..85439853596f 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
+@@ -247,17 +247,22 @@ ice_process_skb_fields(struct ice_rx_ring *rx_ring,
+  * @rx_ring: Rx ring in play
+  * @skb: packet to send up
+  * @vlan_tci: VLAN TCI for packet
++ * @ext: skb core extension area of the packet, or NULL
+  *
+  * This function sends the completed packet (via. skb) up the stack using
+  * gro receive functions (with/without VLAN tag)
+  */
+ void
+-ice_receive_skb(struct ice_rx_ring *rx_ring, struct sk_buff *skb, u16 vlan_tci)
++ice_receive_skb(struct ice_rx_ring *rx_ring, struct sk_buff *skb, u16 vlan_tci,
++		const struct xdp_skb_ext *ext)
+ {
+ 	if ((vlan_tci & VLAN_VID_MASK) && rx_ring->vlan_proto)
+ 		__vlan_hwaccel_put_tag(skb, rx_ring->vlan_proto,
+ 				       vlan_tci);
+ 
++	if (ext)
++		xdp_skb_ext_to_skb(skb, ext);
++
+ 	napi_gro_receive(&rx_ring->q_vector->napi, skb);
+ }
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx_lib.h b/drivers/net/ethernet/intel/ice/ice_txrx_lib.h
+index f17990b68b62..cfc77847696e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_txrx_lib.h
+@@ -133,6 +133,7 @@ ice_process_skb_fields(struct ice_rx_ring *rx_ring,
+ 		       union ice_32b_rx_flex_desc *rx_desc,
+ 		       struct sk_buff *skb);
+ void
+-ice_receive_skb(struct ice_rx_ring *rx_ring, struct sk_buff *skb, u16 vlan_tci);
++ice_receive_skb(struct ice_rx_ring *rx_ring, struct sk_buff *skb, u16 vlan_tci,
++		const struct xdp_skb_ext *ext);
+ 
+ #endif /* !_ICE_TXRX_LIB_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
+index 0643017541c3..f64659dc8313 100644
+--- a/drivers/net/ethernet/intel/ice/ice_xsk.c
++++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
+@@ -670,7 +670,7 @@ int ice_clean_rx_irq_zc(struct ice_rx_ring *rx_ring,
+ 		vlan_tci = ice_get_vlan_tci(rx_desc);
+ 
+ 		ice_process_skb_fields(rx_ring, rx_desc, skb);
+-		ice_receive_skb(rx_ring, skb, vlan_tci);
++		ice_receive_skb(rx_ring, skb, vlan_tci, NULL);
+ 	}
+ 
+ 	rx_ring->next_to_clean = ntc;
 diff --git a/net/core/xdp.c b/net/core/xdp.c
-index 36d6bb38b719..984299199906 100644
+index 984299199906..fdda072a5858 100644
 --- a/net/core/xdp.c
 +++ b/net/core/xdp.c
-@@ -18,6 +18,7 @@
- 
- #include <net/hotdata.h>
- #include <net/netdev_lock.h>
-+#include <net/netdev_rx_queue.h>
- #include <net/xdp.h>
- #include <net/xdp_priv.h> /* struct xdp_mem_allocator */
- #include <trace/events/xdp.h>
-@@ -1124,12 +1125,17 @@ void xdp_skb_ext_to_skb(struct sk_buff *skb, const struct xdp_skb_ext *ext)
- void xdp_skb_ext_warn_pass(const struct bpf_prog *prog,
- 			   const struct xdp_buff *xdp)
+@@ -1086,7 +1086,9 @@ static const void *xdp_skb_ext_get(const struct xdp_skb_ext *ext,
+  * @skb: The skb that is built from the packet.
+  * @ext: The skb core extension area of the packet.
+  *
+- * Call it only when the packet has the XDP_FLAGS_HAS_SKB_EXT flag.
++ * Call it only when the packet has the XDP_FLAGS_HAS_SKB_EXT flag. A driver
++ * calls it after it sets the skb fields from the RX descriptor, and sets
++ * NETDEV_XDP_ACT_SKB_EXT_PASS.
+  */
+ void xdp_skb_ext_to_skb(struct sk_buff *skb, const struct xdp_skb_ext *ext)
  {
--	const struct net_device *dev = xdp->rxq->dev;
-+	const struct xdp_rxq_info *rxq = xdp->rxq;
-+	const struct net_device *dev = rxq->dev;
- 
- 	/* The skb is built later from the xdp_frame */
- 	if (prog->expected_attach_type == BPF_XDP_CPUMAP ||
- 	    prog->expected_attach_type == BPF_XDP_DEVMAP)
- 		return;
-+	/* Generic XDP and BPF_PROG_RUN use the netdev_rx_queue xdp_rxq */
-+	if (rxq->queue_index < dev->num_rx_queues &&
-+	    rxq == &dev->_rx[rxq->queue_index].xdp_rxq)
-+		return;
- 	/* No native XDP, so only generic XDP or BPF_PROG_RUN runs on dev */
- 	if (!(dev->xdp_features & NETDEV_XDP_ACT_BASIC))
- 		return;
-@@ -1139,6 +1145,19 @@ void xdp_skb_ext_warn_pass(const struct bpf_prog *prog,
+@@ -1115,6 +1117,7 @@ void xdp_skb_ext_to_skb(struct sk_buff *skb, const struct xdp_skb_ext *ext)
+ 		skb->csum_level = csum->level;
+ 	}
  }
- EXPORT_SYMBOL_GPL(xdp_skb_ext_warn_pass);
- 
-+/**
-+ * xdp_skb_ext_warn_skb - Warn that XDP_PASS on an skb loses the stored values.
-+ * @prog: The XDP program that returned XDP_PASS.
-+ * @xdp: The packet, with the XDP_FLAGS_HAS_SKB_EXT flag, built on an skb.
-+ */
-+void xdp_skb_ext_warn_skb(const struct bpf_prog *prog,
-+			  const struct xdp_buff *xdp)
-+{
-+	pr_warn_once("XDP_PASS on prog %s (id %u): dev %s runs XDP on an skb, the stored RX metadata is lost\n",
-+		     prog->aux->name, prog->aux->id, xdp->rxq->dev->name);
-+}
-+EXPORT_SYMBOL_GPL(xdp_skb_ext_warn_skb);
-+
- __bpf_kfunc_start_defs();
++EXPORT_SYMBOL_GPL(xdp_skb_ext_to_skb);
  
  /**
+  * xdp_skb_ext_warn_pass - Warn if XDP_PASS does not use the stored values.
 -- 
 2.56.0
 
