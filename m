@@ -2,200 +2,145 @@ Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 79906606A33F
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Nov 2026 12:25:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2653B606BFC5
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Nov 2026 13:02:19 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=E+Joj16A;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=MzqLOvb8;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=MzqLOvb8;
-	dkim=neutral header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=MzqLOvb8
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=jbfuKPoh;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eAo3gcZm
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 5BF43811F6;
-	Tue, 10 Nov 2026 12:25:54 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 003DE80DAF;
+	Tue, 10 Nov 2026 13:02:19 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 8YW-DzbuPrOw; Tue, 10 Nov 2026 12:25:53 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 8D5E48121E
+ id c04e4Viwrvt2; Tue, 10 Nov 2026 13:02:18 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 0896780D91
 Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794313553;
-	b=p8yY+M2aMaGIppJQufpbbhDybEHfOvJ/rtsdN8KXu17T/vr2dS6gbqV8Q3TqWJuEnBb6
-	 C/zNXD5rL8ziFRpd23/kcSg53dPp3AgSiRmWceN05w1o9OHfW8tlSoLuss4MGKtOGAnId
-	 cLbrucrVRBFdq13aZj+0wxan7m2aVgwK7R2y4YtfmmQCdKTTXxsX+GlzwX9ltle8E8LVy
-	 8riVH+/SlJeotbWCtl3tD+nFHl2HZIKw62R7bX6Dvitf++V5HM2SryCg4l47ydIxk2cIj
-	 JOpYKwD4pGyy5hT0eGWMBs34/CO39v8XsheG6xqPNRZCwAO1CG/I6NXylsXgf+eLMwA==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794315738;
+	b=Cg2xJAboj8dzz7j/IVb1DRVhRRxuYgNVrFvh9PKyxCT0DvU4FKzR6KPGRV3rNgBMlElv
+	 WizHsOIHkd/p4IG8xUb2c3Yn/7U9EED5e72zsEGCXBaqC/ctUTI47XmNjIb+TCfDv6oJz
+	 4hyI7ekbjFsLCKOd/vQwqjZxt1hsX96/y+G0zrZcm6lJ2Tpn1kr+nv78gt3SRvBSvxxwx
+	 v02dDRw7guW+NEyDeKBCz5LQxyKkZGQPms3JUcCz43VhCZG6qulJII3t65giBlxNKnz5T
+	 T9gyPYx2iYmcXU3nrPJEdkSmFKjVVIKL8FCqDP2yQSqoSdxt3m0wKEAOyp3yHDi0ujg==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794313553;
+	c=relaxed/relaxed; t=1794315738;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
-	 DKIM-Signature:DKIM-Signature:DKIM-Signature:Received:X-MC-Unique:
-	 X-Mimecast-MFC-AGG-ID:Received:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
-	 X-Received:Received:Message-ID:Date:MIME-Version:User-Agent:Subject:
-	 To:Cc:References:From:In-Reply-To:X-Mimecast-Spam-Score:
-	 X-Mimecast-MFC-PROC-ID:X-Mimecast-Originator:Content-Language:
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
+	 Received:DKIM-Signature:Message-ID:Date:MIME-Version:User-Agent:
+	 Subject:To:Cc:References:Content-Language:From:In-Reply-To:
 	 Content-Type:Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:
 	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=2z9Dq46PGzc1DYcTmA3bznslu78oudIXu01vR14qyUQ=;
-	b=GgcGdEkZhZGqXkjdpaWx7GWSCTjVO/DWFerL4h+CHno4SpgVMY+a9ANjB3hzSwx6D9J+
-	 yqQuDUQ4m6UKDRapfw2Y08gqElvr3fRdsCpkYcvfmK8VLWJjF0XNtCQz8z5IqmEFh4SeA
-	 YOg85kcfcu5jboiJO0VniQaterhS7mgaeE7c9xn9mFe4sCxq2L2CF0rZJVoaUsVZcADbb
-	 Uac9Plg3c5nuOddYdNPmXDULtBZKHruvdURPRtqRRVRB8oZ+9wtLaL17h0O0jTlo42sNK
-	 URyTMQUxv0NGrt+paV9ZykmeU8PvycQsH4EwdGCpVdxRaEWvTjLt/r6DU91lP/nimsA==
+	bh=jmytX1alxm46Z7KikqFXBcorSxxsi2qlPM9aYuMFJLo=;
+	b=Ya135Z88CEMnTRSr9fmgirkQ4NIXvbUq7iuErpFgJvgIJLvVhtFHvmlFklZyoiWMnPar
+	 co8XjG605bEdC1qlZYIuFJR5D680wQskTDwCWHJetU7NFdBmn2TPR8KSLN0RGM8a1pfoe
+	 bai4cyYuc1YlWLkXu4dnZQAuZvhu/Iv8G7cZFOeXu7UEgnsjeDB9bB/10S44X5hWw3XJ3
+	 gEuvsFlvmEHfSdzomSJCdyMtneGqCv7nIc0aSgT6cneGVJ/B8IGIddzoAwU8O+nN2PuML
+	 G0Wdemteo655pgtKQsRNObsH7WAeVB1dReCQW/XJCTUDihwCcR1tfGb///mUlVCn74A==
 ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1794313553;
-	bh=2z9Dq46PGzc1DYcTmA3bznslu78oudIXu01vR14qyUQ=;
+	s=default; t=1794315738;
+	bh=jmytX1alxm46Z7KikqFXBcorSxxsi2qlPM9aYuMFJLo=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=E+Joj16AD4dOZDOfHLS4avx1BgGmzTsc1DzZzqQfyRB9YpRe/1NU3LJX6Um6UI/CE
-	 gLGmEqZTe5wa6ei7sQyGvlZxmdqPyLTNaqCWjpvOamqIJYqTplcySK0IPpeFFEZn4c
-	 Sd26YUuFuXxtZ/6thHa+ouO0f5yEKGpBNZo4coRmrZEs41Q3x2hZ/UEIJWcHCD5eGA
-	 te+sAWWbYb/p6kojAZRpjLLRct7KudammXaGraBcfuwdlTNDjwKbi8S9Fh/TcwCS+u
-	 V+SXWjbjIQKVnyn/C1NUl0cwNhOCeUMWGQDdU+Hq3iGiudOKOuB7MtguSJCd9VLXcm
-	 0zp3f/osnnz7Q==
+	b=jbfuKPohm/hj42+/ZME87uHORR4KZiVc6UjlJeXF71MPsMfiYJAhITIw8CI4kVeyZ
+	 6J4UvKk3KjjdolJggnU9lMb+Ztr66xAfBK6uIHXTU8+rs5tyckDbTK9Yo4faXTF1jA
+	 wiDEO3YAAcImuDrQ9U1j94fpPEfb6uRFDJNA6LubxlvitNVTh6GkWzP9yUSxIGsJP2
+	 aVDMfa+YDWj4iJK2CDUhuvSG4N6mjA7yvph73xQP4kDUbQ32SJxL1uDuM979TkZURE
+	 TSEsZIoaSfjaqcCPcfORPSbjaKbhL8Ew8c0rI+Rnb52b8DblwfZ/FuX+TY3jSEf6uZ
+	 9YAcV3zKWbhDA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 8D5E48121E;
-	Tue, 10 Nov 2026 12:25:53 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id D98D71A6
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 12:25:52 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 0896780D91;
+	Tue, 10 Nov 2026 13:02:18 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 6BB599D1
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 13:02:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id CB1D1408E9
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 12:25:52 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 5D0234034A
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 13:02:16 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id eDbbEdhrRHaT for <intel-wired-lan@lists.osuosl.org>;
- Tue, 10 Nov 2026 12:25:52 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 00D86408E1
-Authentication-Results: smtp4.osuosl.org;
- arc=none smtp.remote-ip=170.10.133.124
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.133.124;
- helo=us-smtp-delivery-124.mimecast.com; envelope-from=poros@redhat.com;
- receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=quarantine dis=none)
- header.from=redhat.com
-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=MzqLOvb8; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=MzqLOvb8; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=MzqLOvb8
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.133.124])
- by smtp4.osuosl.org (Postfix) with ESMTP id 00D86408E1
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 12:25:51 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1794313550;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=2z9Dq46PGzc1DYcTmA3bznslu78oudIXu01vR14qyUQ=;
- b=MzqLOvb8lzMKMW1vshqfCQkByLNtXRCJKaEia8Q2crJQW2Knbqtj9+1/E9pe2Mz+znk4zC
- 32j41XjhFzt/Lyv2NgD5ClyPjjVbw+dLc9AePPcVKKa2KtatBlONOfyRQ4hbPad1oxum71
- qCKg48sCWXsaeDgEycE4xKpIH7xSzrw=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1794313550;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=2z9Dq46PGzc1DYcTmA3bznslu78oudIXu01vR14qyUQ=;
- b=MzqLOvb8lzMKMW1vshqfCQkByLNtXRCJKaEia8Q2crJQW2Knbqtj9+1/E9pe2Mz+znk4zC
- 32j41XjhFzt/Lyv2NgD5ClyPjjVbw+dLc9AePPcVKKa2KtatBlONOfyRQ4hbPad1oxum71
- qCKg48sCWXsaeDgEycE4xKpIH7xSzrw=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1794313550;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=2z9Dq46PGzc1DYcTmA3bznslu78oudIXu01vR14qyUQ=;
- b=MzqLOvb8lzMKMW1vshqfCQkByLNtXRCJKaEia8Q2crJQW2Knbqtj9+1/E9pe2Mz+znk4zC
- 32j41XjhFzt/Lyv2NgD5ClyPjjVbw+dLc9AePPcVKKa2KtatBlONOfyRQ4hbPad1oxum71
- qCKg48sCWXsaeDgEycE4xKpIH7xSzrw=
-Received: from mail-wr1-f71.google.com (mail-wr1-f71.google.com
- [209.85.221.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-20-cHkqg-HPNrS4OOU73cz8_A-1; Tue, 10 Nov 2026 07:25:46 -0500
-X-MC-Unique: cHkqg-HPNrS4OOU73cz8_A-1
-X-Mimecast-MFC-AGG-ID: cHkqg-HPNrS4OOU73cz8_A_1794313546
-Received: by mail-wr1-f71.google.com with SMTP id
- ffacd0b85a97d-490a0e72578so1273506f8f.0
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 04:25:46 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1794313545; x=1794918345;
- h=content-transfer-encoding:content-type:in-reply-to:from:references
- :cc:to:content-language:subject:user-agent:mime-version:date
- :message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
- :message-id:reply-to:content-type;
- bh=2z9Dq46PGzc1DYcTmA3bznslu78oudIXu01vR14qyUQ=;
- b=wg43Wdl3xSd4o0Pl1d4z0R7C+dqdfLTc+Xz/4ctjF3ba/vVTNz1TryYv/IIRLaK+R5
- Z/gYjJJvmm2kEwUwDuxTMDSG+JVtreZ1rh1iS4Uk+dQ515MSIP6JewS+sbnkizW8GGwk
- +1X7xoRDpUnPMcDJd8tLqgIh4266wvI7sAcPBv4L9Juy8PBrsUXTTQ1CjhGCtNKYB5D2
- JjqmQcx4AqBZI2LhpUzO3DbDtUG/+RvbmDLTYyUed91pUfhNclerGawPJSRwmFvpBGiM
- 6oV9uKxHuA+HsFfNHTomoLlxGlZpF3xWUdyic58eTalwvGkZdOLOpxGQIPu8wB5wFqwb
- kMBQ==
-X-Forwarded-Encrypted: i=1;
- AL+hErFuPLbRvlMIFxo/wws2+ueOEICxx7NCRdLA+wr2QEORoIONa8IDOzqlUXoRgLcjGDmbEXcUEBR36BYf0Myl31k=@lists.osuosl.org
-X-Gm-Message-State: APuU4Z/JeBQ/NbX1uauTs1UILoD0t3P6EHi8b16gh9f0nYl8SsooHGJo
- 8tXgumXOVjorOA3VPgKbSjxLA+ePF/B3odVXNN55ccZCq11g5LsaQCMwdjSk64a+m8C8484B07f
- LZ/7tgqGEvZMMufm1jcdqbicTQDD6Pvs1rj84qR174+nSHtlQSwB2Zccpe2ueeskGGaqKbFk=
-X-Gm-Gg: AYBFou1n0YtpIcE+JCR12lgZs4Lv379SagAfd2e2wn0QbcmwNeXUA3ePg2Uzp61G/aT
- qrAqbRfAFM/SugtXbdUKN5rrQ3u/PRhpEoLv+9Ge89Kiy2hAW/nym/nxtDNnpAr7ToPY+/taxut
- a+p/qxHnTS52O0Ss8/FkmT/RipcLOxzbLCvxHQjOwHYMySanvsR00z7886dMyqkeSq4vJJzL8RG
- rVG8PkeE2JRJOOSXoLjRK1VX1jQqSC1MvoS5PT2btxWTVPXe5ouLtX8JeGdhGQ+z/tWGZ0+AieT
- Jc+Wi9eJ0wPsfks+4BZswQ3dtvT3k2RlejpuHUyWAt52fxJ/0oU4XPpN3Tpt88qlGMXKOSWUKro
- FWgFSDNYn5/plHwgBtS5EOFFotVQT5r06Uts=
-X-Received: by 2002:a05:6000:29d2:b0:498:88f:14c8 with SMTP id
- ffacd0b85a97d-4982fb52546mr2653563f8f.9.1794313545505; 
- Tue, 10 Nov 2026 04:25:45 -0800 (PST)
-X-Received: by 2002:a05:6000:29d2:b0:498:88f:14c8 with SMTP id
- ffacd0b85a97d-4982fb52546mr2653511f8f.9.1794313545005; 
- Tue, 10 Nov 2026 04:25:45 -0800 (PST)
-Received: from [10.43.3.161] ([213.175.37.14])
- by smtp.gmail.com with ESMTPSA id
- ffacd0b85a97d-4989a2a505asm3264342f8f.13.2026.11.10.04.25.42
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Tue, 10 Nov 2026 04:25:43 -0800 (PST)
-Message-ID: <f73146cb-fcbb-4263-90d9-b5378faf30f7@redhat.com>
-Date: Tue, 10 Nov 2026 13:25:41 +0100
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id jPYTjfw1P7CR for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 10 Nov 2026 13:02:15 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org 0055640176
+Authentication-Results: smtp2.osuosl.org; arc=none
+ smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
+ envelope-from=hawk@kernel.org; receiver=<UNKNOWN> 
+Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20260515 header.b=eAo3gcZm
+Received: from tor.source.kernel.org (tor.source.kernel.org
+ [IPv6:2600:3c04:e001:324:0:1991:8:25])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 0055640176
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 13:02:14 +0000 (UTC)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+ by tor.source.kernel.org (Postfix) with ESMTP id E07B56390E;
+ Tue, 10 Nov 2026 13:02:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 94E9B1F008A1;
+ Tue, 10 Nov 2026 13:02:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+ s=k20260515; t=1794315732;
+ bh=jmytX1alxm46Z7KikqFXBcorSxxsi2qlPM9aYuMFJLo=;
+ h=Date:Subject:To:Cc:References:From:In-Reply-To;
+ b=eAo3gcZmqWtOPx75UD0JZIp0/rUOLSR0khkKOdV3zDQpnO/7F2bZHqCcpNMU1s4Uw
+ hWoWOZt/+jQTl7OgWOqvnge9FG9Fl/PAdnGKw7zFrGaUHZI/XslnIp+3eHejYM5OPC
+ RD8x1cruazrVkl32sSZURBRLH/JOoe7yL8qFJr+fh3AWCGpNoq6qyH5yUujdFxbUHU
+ 6Rno1WwU7leYRROXtOmhgileWTmV45YB4mm5bWRb3TU/2g/mCEKhONzuGe2fF2Njrb
+ etwhPt6N036CMwbplvwU+KhtCGY8K6gt508qM69S4B1uyQNA8toNyyXwnGBAuFo2te
+ Z90IQAjrffWjw==
+Message-ID: <287c1cb5-7523-4f73-a16b-b066fd9d56a7@kernel.org>
+Date: Tue, 10 Nov 2026 14:01:59 +0100
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH net-next 10/10] dpll: document locking rules
-To: Ivan Vecera <ivecera@redhat.com>, netdev@vger.kernel.org
-Cc: Vadim Fedorenko <vadim.fedorenko@linux.dev>,
- Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>,
- Jiri Pirko <jiri@resnulli.us>, Jonathan Corbet <corbet@lwn.net>,
- Shuah Khan <skhan@linuxfoundation.org>, Randy Dunlap
- <rdunlap@infradead.org>, Min Li <min.li@microchip.com>,
+Subject: Re: [PATCH bpf-next 00/15] xdp: add SKB core extensions to keep RX
+ metadata until skb creation
+To: Tianyi Gao <tianyi@cloudflare.com>, bpf@vger.kernel.org,
+ netdev@vger.kernel.org, Alexei Starovoitov <ast@kernel.org>,
+ Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>,
+ Martin KaFai Lau <martin.lau@linux.dev>, Jakub Kicinski <kuba@kernel.org>
+Cc: John Fastabend <john.fastabend@gmail.com>,
+ Stanislav Fomichev <sdf@fomichev.me>, Lorenzo Bianconi <lorenzo@kernel.org>,
+ Vladimir Vdovin <deliran@verdict.gg>, "David S. Miller"
+ <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>,
+ Andrew Lunn <andrew+netdev@lunn.ch>, Donald Hunter
+ <donald.hunter@gmail.com>, Eduard Zingerman <eddyz87@gmail.com>,
+ Kumar Kartikeya Dwivedi <memxor@gmail.com>, Song Liu <song@kernel.org>,
+ Yonghong Song <yonghong.song@linux.dev>, Jiri Olsa <jolsa@kernel.org>,
+ Emil Tsalapatis <emil@etsalapatis.com>,
+ Ihor Solodrai <ihor.solodrai@linux.dev>,
  Tony Nguyen <anthony.l.nguyen@intel.com>,
  Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller"
- <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Richard Cochran <richardcochran@gmail.com>, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
- Grzegorz Nitka <grzegorz.nitka@intel.com>,
- Karol Kolacinski <karol.kolacinski@intel.com>,
- Saeed Mahameed <saeedm@nvidia.com>, Tariq Toukan <tariqt@nvidia.com>
-References: <20261106121005.1327603-1-ivecera@redhat.com>
- <20261106121005.1327603-11-ivecera@redhat.com>
-From: Petr Oros <poros@redhat.com>
-In-Reply-To: <20261106121005.1327603-11-ivecera@redhat.com>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: XDO6ZYtklkZnsQ6NkIOFLIyc12rUKxfNjVUw8lYqxZU_1794313546
-X-Mimecast-Originator: redhat.com
+ Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
+ Alexander Lobakin <aleksander.lobakin@intel.com>,
+ Magnus Karlsson <magnus.karlsson@intel.com>,
+ Tushar Vyavahare <tushar.vyavahare@intel.com>,
+ Jason Xing <kerneljasonxing@gmail.com>,
+ Nikolay Aleksandrov <razor@blackwall.org>,
+ Madalin Bucur <madalin.bucur@nxp.com>, Ioana Ciornei
+ <ioana.ciornei@nxp.com>, Jonathan Corbet <corbet@lwn.net>,
+ Shuah Khan <skhan@linuxfoundation.org>, Shuah Khan <shuah@kernel.org>,
+ Randy Dunlap <rdunlap@infradead.org>, Nathan Chancellor <nathan@kernel.org>,
+ Nick Desaulniers <ndesaulniers@google.com>, Bill Wendling
+ <morbo@google.com>, Justin Stitt <justinstitt@google.com>,
+ Chris J Arges <carges@cloudflare.com>, Jakub Sitnicki
+ <jakub@cloudflare.com>, linux-doc@vger.kernel.org,
+ linux-kselftest@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
+ llvm@lists.linux.dev, kernel-team@cloudflare.com
+References: <cover.1794281983.git.tianyi@cloudflare.com>
 Content-Language: en-US
+From: Jesper Dangaard Brouer <hawk@kernel.org>
+In-Reply-To: <cover.1794281983.git.tianyi@cloudflare.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -208,107 +153,149 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-17.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-12.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=4.0.1
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 
 
-On 11/6/26 1:10 PM, Ivan Vecera wrote:
-> Describe the lock levels of the subsystem, which domain a callback runs
-> under and the rules device drivers have to follow.
+On 11/10/26 04:56, Tianyi Gao wrote:
+> An skb gets its RX hash, VLAN tag and checksum status from the RX
+> descriptor, which describes the packet before the XDP program ran.
 > 
-> Signed-off-by: Ivan Vecera <ivecera@redhat.com>
-> ---
->   Documentation/driver-api/dpll.rst | 44 +++++++++++++++++++++++++++++++
->   drivers/dpll/dpll_core.c          |  9 +++++++
->   2 files changed, 53 insertions(+)
+> Without this series:
 > 
-> diff --git a/Documentation/driver-api/dpll.rst b/Documentation/driver-api/dpll.rst
-> index 7c117ae37cc1bc..40d5037ff3bb0f 100644
-> --- a/Documentation/driver-api/dpll.rst
-> +++ b/Documentation/driver-api/dpll.rst
-> @@ -675,6 +675,50 @@ In the error path we have to rewind every allocation in the reverse order:
->   
->   More complex example can be found in Intel's ICE driver or nVidia's mlx5 driver.
->   
-> +Locking
-> +=======
-> +
-> +The subsystem uses two levels of locks, always taken in this order:
-> +
-> +- ``dpll_lock`` protects the topology of dpll devices and pins and their
-> +  lifetime. Functions changing the topology, for example dpll_pin_register(),
-> +  take it for write and send the create and delete notifications under it.
-> +  Netlink requests, each part of a dump and change notifications take it for
-> +  read for their whole duration.
-> +- A domain lock serializes driver callbacks. All dpll devices and pins created
-> +  with the same module and ``clock_id`` belong to one domain, in practice to
-> +  one chip or card.
-> +
-> +A netlink request addressing a device or a pin by its ID holds the domain lock
-> +of that object from start to end. A notification holds it while its message is
-> +built and sent, so messages of one object are sent in the order they were
-> +built. Only one domain lock is held at a time, so domains have no lock order,
-> +and callbacks of different domains can run concurrently.
-> +
-> +Callbacks of a dpll device run under the domain of the device. Callbacks of a
-> +pin run under the domain of the pin, whichever driver registered them:
-> +
-> +- A driver registering a pin of another driver with its dpll device has these
-> +  callbacks serialized with the driver that created the pin, not with the other
-> +  callbacks of its device, so it has to protect the state they share by itself.
-> +  A callback stuck in such a registration stops the domain of the pin.
-> +- The parent pin of a pin registered with dpll_pin_on_pin_register() and its
-> +  dpll devices can belong to another driver, so the callback must not
-> +  dereference their private data.
-> +- The frequency monitor belongs to the dpll device, so only callbacks of a pin
-> +  of the same domain registered with dpll_pin_register() can include
-> +  ``.measured_freq_get``.
-> +
-> +Device drivers have to follow these rules:
-> +
-> +- A callback must not call dpll_device_change_ntf(), dpll_pin_change_ntf() or
-> +  any function changing the topology.
-> +- A callback notifies about objects of the domain it runs under with
-> +  __dpll_device_change_ntf() or __dpll_pin_change_ntf(). Other objects have to
-> +  be notified from a context that holds no domain lock, for example a work item.
-> +- A driver must not call dpll_device_change_ntf(), dpll_pin_change_ntf() or any
-> +  function changing the topology while holding a lock that its callbacks take.
-> +
->   SyncE enablement
->   ================
->   For SyncE enablement it is required to allow control over dpll device
-> diff --git a/drivers/dpll/dpll_core.c b/drivers/dpll/dpll_core.c
-> index 84377f8ba16036..6ad40fb9eee855 100644
-> --- a/drivers/dpll/dpll_core.c
-> +++ b/drivers/dpll/dpll_core.c
-> @@ -932,6 +932,10 @@ __dpll_pin_register(struct dpll_device *dpll, struct dpll_pin *pin,
->    * @ops: ops for a dpll pin ops
->    * @priv: pointer to private information of owner
->    *
-> + * The callbacks run under the domain of @pin. If @pin belongs to another domain
-> + * than @dpll, they are not serialized with the callbacks of @dpll and @ops must
-> + * not include .measured_freq_get.
-> + *
->    * Context: Acquires dpll_lock and domain locks
->    * Return:
->    * * 0 on success
-> @@ -1049,6 +1053,11 @@ EXPORT_SYMBOL_GPL(dpll_pin_unregister);
->    * Register a pin with a parent pin, create references between them and
->    * between newly registered pin and dplls connected with a parent pin.
->    *
-> + * The callbacks run under the domain of @pin. The parent pin and its dplls can
-> + * belong to another driver, so @ops must not dereference their private data.
-> + * The frequency monitor belongs to a dpll, so @ops must not include
-> + * .measured_freq_get.
-> + *
->    * Context: Acquires dpll_lock and domain locks
->    * Return:
->    * * 0 on success
-Reviewed-by: Petr Oros <poros@redhat.com>
+> - On XDP_PASS, the values are stale. After the program strips a UDP
+>    tunnel header, the stack applies the outer CHECKSUM_UNNECESSARY to the
+>    inner packet [1]. If the outer UDP checksum is 0, a packet with a bad
+>    inner checksum reaches the socket.
+
+Our XDP Unimog load-balancer uses GUE like packet encapsulation, so it
+hits above case all the time. If packet is end-host, it modify packet by
+popping header and returns XDP_PASS for local netstack delivery.
+
+> - On XDP_REDIRECT, the values are lost. The skb that cpumap or veth
+>    builds from the xdp_frame has no RX hash and no VLAN tag, and its
+>    checksum status is CHECKSUM_NONE.
+> 
+> In one use case, an XDP program redirects packets into a veth device.
+> The checksum status is lost, so GRO verifies every checksum in software.
+> With one TCP flow, this costs 34% of the receiving CPU.
+> 
+> Another use case [2] is load balancing IPsec tunnel traffic with cpumap.
+> Without the RX hash, GRO on cpumap puts all flows into the same bucket.
+> In a cpumap test with 16 TCP flows and no IPsec, the throughput is
+> 17.6 Gbit/s instead of 23.4.
+> 
+
+Yes, GRO missing RX-hash for bucket split is real. Above IPsec XDP load-
+balacing have been running in production for a year by now.
+Our more general RX-pipeline CPUMAP redirect is currently being tested
+in production.  This means all of our traffic will soon be hitting this
+GRO limitation.
+
+> This series introduces SKB core extensions for XDP. It reserves an skb
+> core extension area in the headroom, right after the space for struct
+> xdp_frame. An XDP program stores RX metadata in the area with kfuncs,
+> and the kernel sets the skb fields from it. This design was initially
+> proposed in [3].
+> 
+
+Yes, I agree. We don't want to add static members to xdp_frame, as it
+will always reserve the space.  Instead this only takes up the space
+when needed.  The most obvious case is the VLAN.
+
+
+> The layout of the area follows skb extensions (struct skb_ext). A small
+> header gives the offset of each entry. An entry takes headroom only when
+> the program stores it, so the area does not grow with each new type of
+> RX metadata, unlike [4]. Unlike skb_ext, the area needs no allocation.
+> 
+
+Hopefully other maintainers like this encoding format better than our
+previous attempt.  As this is already used by existing skb extensions.
+This is not expose as UAPI and BPF access this via helpers.
+
+
+> This series supports three types of RX metadata. Each type has a store
+> kfunc, and bpf_xdp_skb_ext_del() deletes an entry:
+> 
+> - The RX hash and its type: bpf_xdp_skb_ext_store_rx_hash().
+> - The VLAN tag and its protocol: bpf_xdp_skb_ext_store_rx_vlan().
+> - The checksum status: bpf_xdp_skb_ext_store_rx_csum(). Only
+>    XDP_CHECKSUM_NONE, or XDP_CHECKSUM_UNNECESSARY with a csum_level up to
+>    SKB_MAX_CSUM_LEVEL, are allowed [5][6].
+> 
+> The kernel sets the skb fields from the area:
+> 
+> - After XDP_REDIRECT, in __xdp_build_skb_from_frame().
+> - On XDP_PASS, in the NIC driver. A driver that does this sets the new
+>    XDP feature skb-ext-pass. On other native XDP drivers, the kernel
+>    warns once when the program returns XDP_PASS with stored values, and
+>    ignores the area. This series adds the support to ice.
+> 
+> The existing XDP RX metadata kfuncs are bpf_xdp_metadata_rx_*(). Only
+> a device-bound program can call them. Programs on cpumap and devmap are
+> not device-bound, so they cannot call them. Relaxing this check would
+> change their semantics. So this series adds three load kfuncs,
+> bpf_xdp_skb_ext_load_rx_*(). They read the stored values.
+> 
+> bpf_xdp_adjust_head(), bpf_xdp_adjust_meta() and bpf_xdp_pull_data() do
+> not move the packet or the metadata into the area. In this series, the
+> area takes at most 20 bytes of headroom. With the hardware RX timestamp,
+> the RX queue index and CHECKSUM_COMPLETE, it would take up to 40 bytes.
+> 
+
+I like how the size usage is limited in this patchset. As I understood, 
+this was previously a concern from Jakub/kuba in my previous patchset.
+In my previous patchset we allowed more flexibility and others to use 
+this area. This has been dropped. Notice how this patchset focus only on 
+the fields needed for the SKB.  This is basically working towards that
+xdp_frame becomes the "mini-SKB" concept.
+
+
+> Lorenzo's RX checksum kfunc series v5 [7] also defines enum
+> xdp_checksum. The series that is merged second drops its copy.
+> 
+> Performance:
+> 
+> We measured on ice (E810, 25 Gbit/s) with bpf-next 0fb18ce8a2e9, patches
+> 1-3 of [7] and this series. In the RX metadata column, the XDP program
+> reads a value with bpf_xdp_metadata_rx_*() and stores it. The veth test
+> stores the checksum status, and the cpumap test stores the RX hash. The
+> kernel then sets the value on the skb. Baseline does not store it. Each
+> value is the median of 5 rounds:
+> 
+> test                  metric          baseline     RX metadata
+> veth, 1 TCP flow      RX CPU busy     100%         66% (-34%)
+> veth, 1 TCP flow      RX cycles/pkt   2027         1343 (-34%)
+> cpumap, 16 TCP flows  throughput      17.6 Gbit/s  23.4 (+33%)
+> cpumap, 16 TCP flows  pkts/GRO skb    3.4          7.5 (+122%)
+> 
+> Both veth columns reach line rate, so the gain is in CPU time. A store
+> kfunc takes 2.9 to 4.9 ns. Details are in [8].
+> 
+
+Nice performance gains :-)
+
+--Jesper
+
+[... cut ...]
+ > [1]https://lore.kernel.org/all/20260227153231.78d16b69@kernel.org/
+ > 
+[2]https://lore.kernel.org/all/ca38f2ed-999f-4ce1-8035-8ee9247f27f2@kernel.org/
+ > 
+[3]https://lore.kernel.org/all/1d5521eb-84fc-4417-a3f5-6366694d160a@kernel.org/
+ > [4]https://lore.kernel.org/
+ > all/175146824674.1421237.18351246421763677468.stgit@firesoul/
+ > [5]https://lore.kernel.org/all/20260722113525.34092660@kernel.org/
+ > [6]https://lore.kernel.org/all/20260721183256.6f49d6e1@kernel.org/
+ > [7]https://lore.kernel.org/all/20260715-bpf-xdp-meta-rxcksum-
+ > v5-0-623d5c0d0ab7@kernel.org/
+ > [8]https://github.com/tgao-cf/skb-core-extensions-bench
+
 
