@@ -1,29 +1,29 @@
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AAA72606C66D
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Nov 2026 09:45:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3BC60606C67D
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Nov 2026 09:45:36 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=mubS6owM;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Gc/VV8LB
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=O4ckvti8;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=PDj788tq
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 803D1810DC;
-	Tue, 10 Nov 2026 09:45:33 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id DF5BB606E1;
+	Tue, 10 Nov 2026 09:45:35 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id nnkIDdNRP7e3; Tue, 10 Nov 2026 09:45:33 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org E5F5280DD7
-Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794303933;
-	b=lAV6G2BLK4YnxtdkWWdmruk08edpAqqrp7GoTcZmT6Aj6R83GKqvesAJVbEYwLE331Yg
-	 D/iX90cdGygPzcr+ecybRvNttq7YgLNLQELUdZ4VWcSff4uLq0ZMWZPeRpoC0blb0P0mq
-	 5kVeYl5ykzong3kCm+AEmetHM/iYFP6UzcXtsWdsbY8Bf2YIVEj2+fRDnY6yPq80/+L/5
-	 JDDVVRwoncM94FSyZiexgKu8rXeH7pFEt1k5uib3Wkv05ARl27EnllaEOirkddX+sLtIr
-	 JeuPq1rOV2IweNZVkX60NI+4PXnp63eMjF5VjuZEHcprp4uvfwLriNAb76BRs776OuQ==
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id AzFBftdt9jNe; Tue, 10 Nov 2026 09:45:35 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 24669607AC
+Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794303935;
+	b=G4sMEQbOUIPdvqvsYIqz8IF5RzNRn+7huv2ubEF4lpBkkh75fM0DNzFNkY+gA892o0fF
+	 ZlI3zvDuqa9Yy48yNg36+A+G9rzaj2cQPFZ2ZsXuEF0doyRP/lJXDHOFetzZhTFfDM6DQ
+	 edQ+tHgnups+dibYxckg1Y6MYObMM2hkSN6Lvji4nka+OK8TAva1u5LD9k/mRXudjYqjd
+	 YkCGoJP4JmChap/ynVkQ5jW+0ymuZa1QUrmHXITFExoBQHszzcr1+qzp7inAXtUOtHGnB
+	 xM4qehfOm5EgylrmYhv2L4iDsE2O3HEta+ur7v2TwSlt+ky5mXmHlOOibTaZaZpTAlQ==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794303933;
+	c=relaxed/relaxed; t=1794303935;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
@@ -34,102 +34,101 @@ ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
 	 Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:Precedence:
 	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=Yt1RUkpWxEjGNFb0fWteE6fFY2lB9nSa+4LX3gy4fTM=;
-	b=rIRlWWpBTPMXVCra8eP4b9IMTQmIRD/hozDktVxTfeLabrEt0MSI0hZBm8wO4X+gWY/z
-	 YxqGnUbO44S322znzfFvAQe/tQstOQ3c2DWPwGFRthJUWyiiw7NN29LMimadMleQBgTp8
-	 GIRduzVWSOfG/ufnOlOODj5NGv/pk+gke2c45Bh9bwlh/nf8Jkmcuui3qq15Ig2ONMepY
-	 xeRV6KwwHMcRuVrj/+M3GmUQbD9AUjPXA5C97RAep0VlWNdCKvDYvVY5Bbu4XpbGRRjPk
-	 qvgWMenL6fDiTVB4/eAmChxhiY7OOGYyI/2veLDvPeqRIXSJjYuRnrkfAjPo/9TQLtQ==
-ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
-	dmarc=pass header.from=redhat.com;
-	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b="Gc/VV8LB";
+	bh=I0aHNpYYYJjXnks0yXtv3vruSoxZWqR1NIB39pb6v0Q=;
+	b=Da3fBx6oNUoo1pP4Sa2owTH9KDB6qUq+6ogQeFSjkc3YMyXnnnEkFX9oZZ7bkGzdf8g3
+	 DAc8sEcCtzreXmPAFS0Yl6wVCzN4xSmYDC1jxa1ELlSNKUSH3N5s8vOfS3D8rMyvLNGHV
+	 4Q0wdmJGBOiZrBAYPG/NDz2BuauCUZMSUgwlhtUGORPrF6v8qj9bAcnrdzpPxo9rBK3Ov
+	 hM+NNanCxKVrBlZDOPrrZHvRCKHzLNYwZQKqVHB4Wg/0XPi4sQ5f6L8sXjVWWjZzo27Kd
+	 4VX8NYZpnVwxTWqz8+xDbVmdWNhYiYCuaqsk99dxnLZhFab0K1BYYW5VCnWkW19rpIQ==
+ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1794303932;
-	bh=Yt1RUkpWxEjGNFb0fWteE6fFY2lB9nSa+4LX3gy4fTM=;
+	s=default; t=1794303935;
+	bh=I0aHNpYYYJjXnks0yXtv3vruSoxZWqR1NIB39pb6v0Q=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=mubS6owMeqXKnJ/4JOLiCEo0sIcMMVuWO7aBQe9dIV5G3awgmIKTlqlr9m3Ad+DMG
-	 tJCS+V/70LwwS8uUPe8g++/RRHhsJnYbzGyfqkm4yEG/S5uVYLvFx3UXb8CD7GlX1D
-	 RuHAeiZuyHyTJgco9CEJs5POxmSng1M4nVqJeEtqvcq6aF+dN74Yr5brYUhkjd7M3y
-	 tgUDJRsO7KSMjWhy04zHqQZXUbEmaKADLWhIrMzB4mdX+fiGswQAkOaqMiL1phJAsW
-	 H9BOKsCHtXhF7quxD4yyL+9++zcEFja6c3tB4shy+NW/mPIOjhQVAofQ1TIa5dPQEU
-	 gzsFXv//dh5Gg==
+	b=O4ckvti8WHi/6llBhZsSeIpxsI4aKywzA2rL9lZY+wXC3iPNHbHdBllYWVwiw9VJh
+	 mQ3ovlR1Vhxdnhga5Hvml9Hge7i9tYV7qpE/11b0A9qm9q56wR4JXxW0oQFyAXZnMY
+	 uAz6XsTjhCgCrRj3PooYWVEWYR8vxHbEwtOkhhF95WPqyENqcYRz26qd8zcdgeVEQu
+	 lUTt9j7XF6kX083NCHNZ+/+n97PUHwcazobZv/zVohziiGndkA+SIrcdr1R26awYs+
+	 4LloXbu6lvvrV+IolXivlbuLHu0MHDCBtg0+3gLy4efykNDF5UijIl7Cp6mKnZZmfs
+	 PFcWR41xb40GQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id E5F5280DD7;
-	Tue, 10 Nov 2026 09:45:32 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id B20304B8
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 09:45:31 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 24669607AC;
+	Tue, 10 Nov 2026 09:45:35 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 1CF2F1FC
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 09:45:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id A343480DD7
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 09:45:31 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 1A5B8405AD
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 09:45:34 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id rvETsiEDsrf0 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 10 Nov 2026 09:45:31 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org E790E80DCE
-Authentication-Results: smtp1.osuosl.org;
- arc=none smtp.remote-ip=170.10.129.124
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id pBhlQTxvQsYD for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 10 Nov 2026 09:45:33 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 9FA36405A9
+Authentication-Results: smtp4.osuosl.org;
+ arc=none smtp.remote-ip=170.10.133.124
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.133.124;
  helo=us-smtp-delivery-124.mimecast.com; envelope-from=ivecera@redhat.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=quarantine dis=none)
+Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=redhat.com
-Authentication-Results: smtp1.osuosl.org;
+Authentication-Results: smtp4.osuosl.org;
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=Gc/VV8LB
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=PDj788tq
 Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp1.osuosl.org (Postfix) with ESMTP id E790E80DCE
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 09:45:30 +0000 (UTC)
+ (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+ by smtp4.osuosl.org (Postfix) with ESMTP id 9FA36405A9
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 09:45:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1794303929;
+ s=mimecast20190719; t=1794303931;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=Yt1RUkpWxEjGNFb0fWteE6fFY2lB9nSa+4LX3gy4fTM=;
- b=Gc/VV8LBozz9BwOghKMXXm4MrIvtutqSXQdP9KT9uAg4tkFBDgXgs+HCvsz5u1/+SsSdxS
- M0QdVAr4GvGgUytdTPrVpO7MVTF3yoSTczvgRDfiGl0dpQ2TIIsCDzdN3FvMvISC3rlws8
- //sP2VEzrZlH9tpx0/rDYFb3VkNMFwc=
-Received: from mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
+ bh=I0aHNpYYYJjXnks0yXtv3vruSoxZWqR1NIB39pb6v0Q=;
+ b=PDj788tq2Ybt7hmH+lpvdKGfFnurGot/cpRXvsJImimVa4W2uJLrnXU2yiviwz/LAkmVo9
+ M/4bcKX6NsfEwamZYWfeeUp7QbDs+6hxLkYtS+A7BBC6AebTx2iEp5vfskLkOg1Z9XPNav
+ yl754wD3IB7Cqm4SfyDiy1Wxtz/wsVk=
+Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
  relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-31-8ytUxQaUOf-lyaIqo9r1PQ-1; Tue,
- 10 Nov 2026 04:45:27 -0500
-X-MC-Unique: 8ytUxQaUOf-lyaIqo9r1PQ-1
-X-Mimecast-MFC-AGG-ID: 8ytUxQaUOf-lyaIqo9r1PQ_1794303926
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-160-M3SqPeGFPAiHztvTxAVf4g-1; Tue,
+ 10 Nov 2026 04:45:23 -0500
+X-MC-Unique: M3SqPeGFPAiHztvTxAVf4g-1
+X-Mimecast-MFC-AGG-ID: M3SqPeGFPAiHztvTxAVf4g_1794303922
 Received: from mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com
  (mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.17])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
- id 73CFA1800347; Tue, 10 Nov 2026 09:45:26 +0000 (UTC)
+ by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
+ id 9A52619560B7; Tue, 10 Nov 2026 09:45:22 +0000 (UTC)
 Received: from [100.91.101.41] (headnet04.pony-001.prod.iad2.dc.redhat.com
  [10.2.32.116])
  by mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
- id 7189E1956086; Tue, 10 Nov 2026 09:45:25 +0000 (UTC)
-Message-ID: <da73c81a-7fd9-47c5-bd09-3652c83d44cf@redhat.com>
-Date: Tue, 10 Nov 2026 10:45:25 +0100
+ id B840A1956086; Tue, 10 Nov 2026 09:45:21 +0000 (UTC)
+Message-ID: <d5acc725-dd95-4e96-89ca-364db2444b61@redhat.com>
+Date: Tue, 10 Nov 2026 10:45:20 +0100
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH net-next 06/10] dpll: add KUnit tests for core locking
+Subject: Re: [PATCH net-next 02/10] ice: dpll: serialize changes of the SyncE
+ CGU registers
 To: sashiko-reviews@lists.linux.dev
 Cc: intel-wired-lan@lists.osuosl.org,
  "netdev@vger.kernel.org" <netdev@vger.kernel.org>
 References: <20261106121005.1327603-1-ivecera@redhat.com>
- <20261106121005.1327603-7-ivecera@redhat.com>
- <sashiko-outbox-202878@kernel.org>
+ <20261106121005.1327603-3-ivecera@redhat.com>
+ <sashiko-outbox-202874@kernel.org>
 From: Ivan Vecera <ivecera@redhat.com>
-In-Reply-To: <sashiko-outbox-202878@kernel.org>
+In-Reply-To: <sashiko-outbox-202874@kernel.org>
 X-Scanned-By: MIMEDefang 3.0 on 10.30.177.17
-X-Mimecast-MFC-PROC-ID: fcedEvc0P-e3Pev84iKNtw2TOk9_twpZoBebAfQQDTU_1794303926
+X-Mimecast-MFC-PROC-ID: 7T9kqR8cmIacgmGcp6XoKg6h1-fWpTCytmhV8vvWXQw_1794303922
 X-Mimecast-Originator: redhat.com
 Content-Language: en-US
 Content-Type: text/plain; charset=UTF-8; format=flowed
@@ -144,62 +143,82 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-12.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-17.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=4.0.1
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 On 11/7/26 13:11, sashiko-bot@kernel.org wrote:
-> Thank you for your contribution! Sashiko AI review found 1 potential
-> issue to consider:
-> - [Low] dpll: dt_fwnode_pin_add() duplicates
->    kunit_fwnode_create_software_node()
+> Thank you for your contribution! Sashiko AI review found 2 potential
+> issues to consider:
+> - [Medium] ice: ptp: unconditional R10 write and lock scope in
+>    ice_ptp_link_change()
+> - [Low] ice: dpll: missing Fixes trailer for commit ad1df4f2d591
 > --
 > 
-> commit cb6cfd6901bcce17d3e841bfa531bd7cce8efeac
+> commit 6fdc60cccd47bebe7d61ff60807ee77303bf58bd
 > Author: Ivan Vecera <ivecera@redhat.com>
 > 
-> dpll: add KUnit tests for core locking
-> 
-> This commit adds KUnit tests using a mock driver to verify domain locking,
-> callback serialization, cross-domain pin registrations, and notification
-> ordering in the DPLL core.
-> 
->> diff --git a/drivers/dpll/dpll_core_kunit.c b/drivers/dpll/dpll_core_kunit.c
->> new file mode 100644
->> index 0000000000000..a58800eda5ff5
->> --- /dev/null
->> +++ b/drivers/dpll/dpll_core_kunit.c
-> [ ... ]
->> +static void dt_fwnode_release(void *data)
->> +{
->> +	fwnode_remove_software_node(data);
->> +}
->> +
->> +/* Creates a pin with a fwnode so that it can be registered with another dpll */
->> +static void dt_fwnode_pin_add(struct kunit *test, struct dt_pin *pin,
->> +			      u64 clock_id, u32 idx)
->> +{
->> +	struct fwnode_handle *fwnode;
->> +
->> +	fwnode = fwnode_create_software_node(NULL, NULL);
->> +	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, fwnode);
->> +	KUNIT_ASSERT_EQ(test, kunit_add_action_or_reset(test, dt_fwnode_release,
->> +							fwnode), 0);
->> +	dt_pin_add(test, pin, clock_id, idx, &dt_prop);
->> +	dpll_pin_fwnode_set(pin->pin, fwnode);
->> +}
+>> ice: dpll: serialize changes of the SyncE CGU registers
+>>
+>> On dual complex E825 only complex 0 has a functional CGU and the second
+>> complex reaches it through cgu_peer, so PFs of both complexes share the
+>> CGU registers R10 and R11. They read, modify and write them when the
+>> state of an RCLK pin changes, and ice_ptp_link_change() rewrites R10 when
+>> a link changes, under the pf->dplls.lock of their own PF only.
+>>
+>> ice_ptp_link_change() does not hold dpll_lock, so it can already overwrite
+>> an update of another PF. RCLK callbacks are serialized by dpll_lock, but
+>> the DPLL core is going to serialize callbacks per (module, clock_id), and
+>> each complex has its own DSN and so its own clock_id. With that change, a
+>> test toggling RCLK pins of both complexes lost an update.
+>>
+>> Add a mutex to struct ice_adapter, which all E825C PFs share, and hold it
+>> around these sequences.
+>>
+>> Signed-off-by: Ivan Vecera <ivecera@redhat.com>
 > 
 > [Severity: Low]
-> This isn't a bug, but could dt_fwnode_pin_add() use
-> kunit_fwnode_create_software_node(test, NULL, NULL) from
-> include/kunit/fwnode.h instead of open-coding fwnode_create_software_node()
-> and the dt_fwnode_release() cleanup action?
+> Since this fixes concurrent CGU register updates in E825-C SyncE support,
+> should it include:
+> 
+>    Fixes: ad1df4f2d591 ("ice: dpll: Support E825-C SyncE and dynamic pin discovery")
+> 
 
-Will use it in v2.
+Yes, the race with ice_ptp_link_change() is there since that commit. The
+patch now goes to net with this tag:
+
+https://lore.kernel.org/netdev/20261110094350.184185-1-ivecera@redhat.com/
+
+v2 of this series will drop it.
+
+> [ ... ]
+> 
+>> diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
+>> index 3df08714510da..4d4b6aaaf30c2 100644
+>> --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
+>> +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+>> @@ -1395,7 +1395,9 @@ void ice_ptp_link_change(struct ice_pf *pf, bool linkup)
+>>   				break;
+>>   			}
+>>   
+>> +			mutex_lock(&pf->adapter->cgu_synce_lock);
+>>   			err = ice_tspll_cfg_synce_ethdiv_e825c(hw, clk_pin);
+>> +			mutex_unlock(&pf->adapter->cgu_synce_lock);
+>>   			if (active && err) {
+>>   				dev_err_once(ice_pf_to_dev(pf),
+>>   					     "Failed to configure SyncE ETH divider for pin %d, err %d\n",
+> 
+> [Severity: Medium]
+> Should cgu_synce_lock also cover ice_tspll_bypass_mux_active_e825c(), and
+> should ice_tspll_cfg_synce_ethdiv_e825c() be skipped when active is false?
+
+Yes to both, also there since ad1df4f2d591. Patch 2 of the net posting
+skips the outputs the port does not drive and checks the mux under
+cgu_synce_lock.
 
 Thanks,
 Ivan
