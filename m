@@ -2,28 +2,28 @@ Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3DE64606A321
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Nov 2026 14:13:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 34F6560A5BCA
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Nov 2026 14:20:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=DqJrwgPA;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=f8Mt1/7r
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=8OVgpJVw;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Tzc9Zs/y
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2045A60690;
-	Tue, 10 Nov 2026 14:13:59 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 0B9FB608D4;
+	Tue, 10 Nov 2026 14:20:42 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id g9OZiftOzM2U; Tue, 10 Nov 2026 14:13:58 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 0B6C3608DB
+ id rVmCTEu6loI2; Tue, 10 Nov 2026 14:20:41 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 7689B608DB
 Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794320038;
-	b=la68cU/KjwVF0PKn2FaQ+NsoHsBAGJUXxZcQRoaGXcmX/pXzG13HQLfeveFVeUk4muG2
-	 3WXwGNtRYSi2+J0CaNGw/gyCIGwPqREbp7UyEw8EKHVlGAt8ufQtpQiHbpW6oNViaUl5p
-	 9abfWtXzvSSB0MLat/tfECbQCVo4ZZfLWYDPLDVsikCn6MxVXkqHXkIwqMez1uYUbruH2
-	 NF+XWceSxPv+JXOsklDwIMuuRJV49iAsD274poZ0N1EycZ63ltRyXGXxmk9G4N7G+XKn+
-	 ovdDaLbDI97Pbwqna2MCnppJPZJuo5a3Cz+4GDjwyiCtF42R5YhIgG1KvV8NPkxOaUA==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794320441;
+	b=CCx3bqb8jok2SmQYBSI2IqYQ7MYzDWcqeIBRsRbLz+1Dk3iYZi3rNB+/HgDwtpeMhFHs
+	 R1S5xuZbd45rOe09cCHtewGhJVwFUELxY2gTge3qiWwBJ0ko+KM8aOILS9KsvIMpwmuHt
+	 l3OQbPMRSQGBnx0/rHejgpH2bmJX5eOeA1J3khUeu1AA+chSZ6/5D5pBZT08DWnCUxTUQ
+	 q87l8u1Dc5LVr2lA0jr7UtFW4ojttJXSMGTGAa4OUDcJWyZt1SDn3nWEv2c09b1XsHfpB
+	 /NhRLdkn0uaFwFidiPQMLcHpnwpq0V9hr9AsfcP3A8OjYDgx00lKXa6BrcyNKTUBBVQ==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794320038;
+	c=relaxed/relaxed; t=1794320441;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
@@ -32,75 +32,78 @@ ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
 	 Content-Type:Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:
 	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=Xd4nTp86cW9MidEl4iHRTLTDM3LxuvmF0DAhfS6CjOQ=;
-	b=n11Srq6FoMNUNMvsDyChEaqYBytsrOYFbNJcdSOGfFKdOyqFrHQzxdehU3HPgQREUm/x
-	 O5n+VIDR4frZFjp81m3x5e9Ksb2yh3ErJQFBRH4EMAEkKEHQ9ZUxXY1XdXGjLSvVaerHZ
-	 pHZw93pehdH7TYCDwwAciKScyYAbDbRJWgyErl7VqsgLXsVKBzb2Kz0SM3cHMbaLrhBH+
-	 VoowFn9xpReKKZNKjFB7XMJewju0C/UfJoQ/VefysNg7Ot05H/0cWBD4g+CHGWbOH2+3l
-	 EiX/abbrYTfE9P9LQpDgGgtWg4tICl9UP0Ne2o463kLnhr0fCa3wEwLXDxMEgB1SBJw==
+	bh=yxghYJJACMUSH3L8Z8k3tre7BBZpihYhe07SHtfZRzU=;
+	b=R2G8oqWLiFDvJO4h9HbHRa5GJNhyfgJEFQOVzeEviwV8bX35IcH5wOXBs81WeJFW0777
+	 b5wHwAatx3NZYXLJmlX6axP+ZK/kxb1r8wk7ziqQacVqcAS26ama0QtzX+vKTYnt8Tg2Q
+	 cykchYefO3D+b/fS0q3W3986dO7b/xzFfuL4lv0rnPXj7wnpfSjzrvcMlDBrUOBbq5t5j
+	 0gKH8oIOR16NPKxKJaos31Mj2Tat/4yhsYPXCky5HOyJodsoSaEeuQ3EiGbZOXvm4xWbv
+	 5KCy6uqtcnnF2HfXVPPreC4y4ik46UeAheQ8Ij54nMzecp4LGeai4Tf9FYZPNHVPgyQ==
 ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1794320038;
-	bh=Xd4nTp86cW9MidEl4iHRTLTDM3LxuvmF0DAhfS6CjOQ=;
+	s=default; t=1794320441;
+	bh=yxghYJJACMUSH3L8Z8k3tre7BBZpihYhe07SHtfZRzU=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=DqJrwgPA9AyzKbKVytCxCmLnlfTY74HNDn+DVtorxieI01r1yzRhOGQ/fVvae1RGS
-	 KZEsJODCi4gWFnbCzwQiDrU41Yg9OxzhAS3WwCpcwde44WwtitUYgJd+5a/B31EHS+
-	 ivXy5eErg04caJLqwaGgZcf9c1BdENV9uNQIoVp1crxXvbRuVoDaR9VZDKsDnrqv00
-	 JdvGO/5xwUtYQVW0HhNmg9kyICDw3i0glRnqXr4q+lTPtaz0Wo6e3XotZZBTW4lctj
-	 gaHwuZ+IMkZtxxP9lzy8qR44Scn7QRSaaHOLYTJwYhSqcng6+vzVSeziertC/p0j6q
-	 Z8eVk76GCUFkQ==
+	b=8OVgpJVwCs/feGbjYcw1aPHQenQsi7WSGRUi0ev3vBKb/6VJvUiee3CJS8/if4vPd
+	 cmPl8vFLJXdjX8jmsxQER1w/aphiiMLERRkz9ujOum8xh3up5fvvYqJotvnbgm8AeN
+	 fga5JbnmYXBwtjd3E6hSbfX3ByQNFpSwzXChXnie1O1RnG7YiPA1uYQK5qBZINJ5gi
+	 EtrlkXK/CuCFqCiWXRCnYxsz0MX2sNU6Nadm3DD16BAAv17Gl9HzrVp5fTMew281Xp
+	 HHnr0MvUjGuZ106krVkBzYmD0jZAQH2N038KS8DE6cT9Uoc7LtO7BaxL6uN7SJwQ4m
+	 AN0YmtlXcDseg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 0B6C3608DB;
-	Tue, 10 Nov 2026 14:13:58 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 7689B608DB;
+	Tue, 10 Nov 2026 14:20:41 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 9BAED1A6
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 14:13:56 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id C8641388
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 14:20:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 8CE934034A
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 14:13:56 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id AE9AB4034A
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 14:20:39 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 8IXVWgxcPs8m for <intel-wired-lan@lists.osuosl.org>;
- Tue, 10 Nov 2026 14:13:55 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org 4F9464008E
-Authentication-Results: smtp2.osuosl.org; arc=none smtp.remote-ip=172.105.4.254
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org; envelope-from=hawk@kernel.org; receiver=<UNKNOWN> 
+ id b1hEYWNqyOyU for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 10 Nov 2026 14:20:39 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org C88F54008E
+Authentication-Results: smtp2.osuosl.org; arc=none
+ smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
+ envelope-from=hawk@kernel.org; receiver=<UNKNOWN> 
 Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=f8Mt1/7r
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 4F9464008E
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 14:13:54 +0000 (UTC)
+Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20260515 header.b=Tzc9Zs/y
+Received: from tor.source.kernel.org (tor.source.kernel.org
+ [IPv6:2600:3c04:e001:324:0:1991:8:25])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id C88F54008E
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 14:20:38 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id 9F167639A1;
- Tue, 10 Nov 2026 14:13:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 850981F0089F;
- Tue, 10 Nov 2026 14:13:43 +0000 (UTC)
+ by tor.source.kernel.org (Postfix) with ESMTP id 6DC0F639BB;
+ Tue, 10 Nov 2026 14:20:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 657561F008A2;
+ Tue, 10 Nov 2026 14:20:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1794320033;
- bh=Xd4nTp86cW9MidEl4iHRTLTDM3LxuvmF0DAhfS6CjOQ=;
+ s=k20260515; t=1794320437;
+ bh=yxghYJJACMUSH3L8Z8k3tre7BBZpihYhe07SHtfZRzU=;
  h=Date:Subject:To:Cc:References:From:In-Reply-To;
- b=f8Mt1/7rCa1pZCIKwEJ+QowRw7WQd2Mil3HemNjtaswi4u+d03aYrTi40TLXxnCKw
- pauvn8khQlPZ8R0mn/xay1EkuRTlVn70VcrXZAEZWngUsD6lexjShgO4SZjUnAw+Y7
- IkXLs633FXY+yrUe4/bR9QruYsg3I9GAvk92vUcOMAd/goWCPfS5TkZXmAZlDQU2Xl
- CDTMbuumkOVilTAQVmB07pRXPfjrja83JxOczK9RnNr+hOr3Y+05WFCevz3qvEFves
- +l5bSjPbG1HZLdG4bfwyu9UpYy3uV/pWeW9XheFevIn2LpwSkiOXknAXotskv9WmEt
- hGecO3L5DbctA==
-Message-ID: <2f0e411d-d29a-487a-b7d3-2cd7dd92e456@kernel.org>
-Date: Tue, 10 Nov 2026 15:13:41 +0100
+ b=Tzc9Zs/ycPeXxJ8aNptWRv5lXPygStV7Lf+YUKUAuneDLgJyMyaAf+p0f7TpXUTOM
+ WsEH1DhI/2Ts1lJdYM9/+VhYtt2IatVPaJZc0W6ph2hxS4vqjd6dVRdWho4YcGNpVx
+ Hv0Z9WLWCfc5ozGerNpjq0O/HYYCk5BHBJvv1eQanba4kd3aYFLPjoELh2Qv5lMmlB
+ 1hIXqcR/hJlH5YIT+YK893I/s8nTPsglgehw4Q9MQkJgPaG/n1SQ3WuQXVj+Ttqyaz
+ pJ5qwLkDiWJGQ4yFAALapy77jvIDGMyiEsY2GX3clx+yVz4PFTBft10FfYxT4vAwvV
+ Z6oqX/5AyJ1SA==
+Message-ID: <197d5a54-26e1-4985-8001-5819fc702fd4@kernel.org>
+Date: Tue, 10 Nov 2026 15:20:25 +0100
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH bpf-next 03/15] xdp: add kfuncs to store RX hash and VLAN
- tag
+Subject: Re: [PATCH bpf-next 04/15] xdp: add a kfunc to delete skb core
+ extension entries
 To: Tianyi Gao <tianyi@cloudflare.com>, bpf@vger.kernel.org,
  netdev@vger.kernel.org, Alexei Starovoitov <ast@kernel.org>,
  Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>,
@@ -135,10 +138,10 @@ Cc: John Fastabend <john.fastabend@gmail.com>,
  linux-kselftest@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
  llvm@lists.linux.dev, kernel-team@cloudflare.com
 References: <cover.1794281983.git.tianyi@cloudflare.com>
- <f865ab08e7e0343bcd6eb380f7003ddd32d177e2.1794281983.git.tianyi@cloudflare.com>
+ <2892d19e606e3809c268de0610a4ccc8bf68625a.1794281983.git.tianyi@cloudflare.com>
 Content-Language: en-US
 From: Jesper Dangaard Brouer <hawk@kernel.org>
-In-Reply-To: <f865ab08e7e0343bcd6eb380f7003ddd32d177e2.1794281983.git.tianyi@cloudflare.com>
+In-Reply-To: <2892d19e606e3809c268de0610a4ccc8bf68625a.1794281983.git.tianyi@cloudflare.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -162,227 +165,33 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 
 On 11/10/26 04:57, Tianyi Gao wrote:
-> Add bpf_xdp_skb_ext_store_rx_hash() and bpf_xdp_skb_ext_store_rx_vlan().
-> They store the RX hash and the VLAN tag in the skb core extension area.
-> A later patch sets the stored values on the skb built from the
-> xdp_frame.
+> bpf_xdp_skb_ext_del() deletes the stored entry for an id. A program on
+> cpumap or veth can use it to drop RX metadata that an earlier program
+> stored.
 > 
-> Both kfuncs call xdp_skb_ext_add(), which reserves the entry for an id.
-> On the first store for a packet, it clears the header and sets
-> XDP_FLAGS_HAS_SKB_EXT, so stale headroom is never read as a header. A
-> second store of the same id, also after a delete, reuses its offset.
+> Without the XDP_FLAGS_HAS_SKB_EXT flag, the kfunc does nothing, because
+> the header bytes may then belong to the packet.
 > 
-> xdp_skb_ext_add() returns -EOPNOTSUPP for AF_XDP zero-copy buffers. User
-> space can write their headroom while the program runs, and could change
-> the header between two stores.
+> The kfunc only clears XDP_SKB_EXT_ENTRY_ACTIVE, so a later store of the
+> same id reuses its offset. The flag and the size of the area stay the
+> same, also after the last delete. To give the bytes back, the kfunc
+> would have to move the entries after the deleted one. The cost is
+> headroom that bpf_xdp_adjust_head() and bpf_xdp_adjust_meta() cannot
+> use.
 > 
-> The store kfuncs are in their own kfunc set. They do not need a
-> device-bound program, so programs on cpumap and veth can call them.
-> 
-> bpf_xdp_skb_ext_store_rx_vlan() accepts only ETH_P_8021Q and
-> ETH_P_8021AD, because vlan_proto_idx() warns on any other TPID.
-> 
-> A BUILD_BUG_ON() in xdp_skb_ext_struct_check() limits the area to 64
-> bytes. As in skb_extensions_init(), the function is noinline
-> __no_profile so that it builds with CONFIG_GCOV_PROFILE_ALL.
-> 
-> The two kfuncs are based on bpf_xdp_store_rx_hash() and
-> bpf_xdp_store_rx_vlan() by Lorenzo Bianconi in Jesper's XDP_REDIRECT RX
-> hints series V2 [1].
-> 
-> Link: https://lore.kernel.org/all/175146831297.1421237.17665319427079757435.stgit@firesoul/ [1]
 > Signed-off-by: Tianyi Gao <tianyi@cloudflare.com>
 > ---
->   net/core/xdp.c | 154 ++++++++++++++++++++++++++++++++++++++++++++++++-
->   1 file changed, 151 insertions(+), 3 deletions(-)
-> 
-> diff --git a/net/core/xdp.c b/net/core/xdp.c
-> index 1d679e8fd649..97dc0e403a78 100644
-> --- a/net/core/xdp.c
-> +++ b/net/core/xdp.c
-> @@ -990,11 +990,159 @@ bool bpf_dev_bound_kfunc_id(u32 btf_id)
->   	return btf_id_set8_contains(&xdp_metadata_kfunc_ids, btf_id);
->   }
->   
-> -static int __init xdp_metadata_init(void)
-> +#define XDP_SKB_EXT_CHUNKSIZEOF(x) DIV_ROUND_UP(sizeof(x), XDP_SKB_EXT_ALIGN)
-> +#define XDP_SKB_EXT_ENTRY_ACTIVE BIT(7)
-> +
-> +struct xdp_skb_ext_hash {
-> +	u32 val;
-> +	u32 type; /* enum xdp_rss_hash_type */
-> +};
-> +
-> +struct xdp_skb_ext_vlan {
-> +	__be16 proto;
-> +	u16 tci;
-> +};
-> +
-> +static const u8 xdp_skb_ext_type_len[] = {
-> +	[XDP_SKB_EXT_HASH] = XDP_SKB_EXT_CHUNKSIZEOF(struct xdp_skb_ext_hash),
-> +	[XDP_SKB_EXT_VLAN] = XDP_SKB_EXT_CHUNKSIZEOF(struct xdp_skb_ext_vlan),
-> +};
-> +
-> +/* Limit the header and all entries to 64 bytes, so that a new entry
-> + * cannot grow the area without notice.
-> + */
-> +static noinline void __init __no_profile xdp_skb_ext_struct_check(void)
-> +{
-> +	unsigned int chunks = XDP_SKB_EXT_CHUNKSIZEOF(struct xdp_skb_ext);
-> +	int i;
-> +
-> +	for (i = 0; i < ARRAY_SIZE(xdp_skb_ext_type_len); i++)
-> +		chunks += xdp_skb_ext_type_len[i];
-> +
-> +	BUILD_BUG_ON(chunks * XDP_SKB_EXT_ALIGN > 64);
-> +}
-> +
-> +static void *xdp_skb_ext_add(struct xdp_buff *xdp, enum xdp_skb_ext_id id)
-> +{
-> +	struct xdp_skb_ext *ext = xdp_skb_ext(xdp->data_hard_start);
-> +	bool valid = xdp_buff_has_skb_ext(xdp);
-> +	unsigned int newlen, newoff;
-> +	void *start;
-> +
-> +	/* User space can write the headroom of AF_XDP zero-copy buffers */
-> +	if (xdp->rxq->mem.type == MEM_TYPE_XSK_BUFF_POOL)
-> +		return ERR_PTR(-EOPNOTSUPP);
-> +
-> +	if (!valid) {
-> +		newoff = XDP_SKB_EXT_CHUNKSIZEOF(*ext);
-> +		newlen = newoff + xdp_skb_ext_type_len[id];
-> +	} else if (ext->offset[id]) {
-> +		newoff = ext->offset[id] & ~XDP_SKB_EXT_ENTRY_ACTIVE;
+> __skb_ext_del() frees struct skb_ext after the last delete, because it
+> comes from a slab cache. The skb core extension area uses existing
+> headroom, so it is not freed.
+> ---
+>   include/net/xdp.h |  8 ++++++++
+>   net/core/xdp.c    | 26 ++++++++++++++++++++++++++
+>   2 files changed, 34 insertions(+)
 
+I think this approach of simply disabling the entry is okay.
+This is trading off performance vs small area memory usage.
 
-Given the recent run of security bugs caused by manipulated offsets, I
-would like to limit how far a bad offset can reach here. The offset is
-read back from the packet headroom and is trusted only because
-XDP_FLAGS_HAS_SKB_EXT is set; nothing checks it against ext->chunks or
-the buffer. With the 7-bit mask it can point up to 508 bytes past the
-ext header, beyond the default headroom and into packet data, and in
-this branch the caller then writes the entry (up to 8 bytes) there. I
-have not found a way to get a bad header with this series, but the
-invariant depends on every driver leaving this area alone while the
-flag is set.
-
-The BUILD_BUG_ON() in xdp_skb_ext_struct_check() limits the header plus
-all entries to 64 bytes, which is 16 chunks, so a 4-bit mask covers
-every valid offset. A bad offset then starts at most 60 bytes after the
-ext header. It is the same AND with another constant, so it costs
-nothing in the fast path. The same mask should be used in
-xdp_skb_ext_get() in patch 7.
+Acked-by: Jesper Dangaard Brouer <hawk@kernel.org>
 
 --Jesper
-
-> +		newlen = ext->chunks;
-> +	} else {
-> +		newoff = ext->chunks;
-> +		newlen = newoff + xdp_skb_ext_type_len[id];
-> +	}
-> +
-> +	start = xdp_data_meta_unsupported(xdp) ? xdp->data : xdp->data_meta;
-> +	if ((void *)ext + newlen * XDP_SKB_EXT_ALIGN > start)
-> +		return ERR_PTR(-ENOSPC);
-> +
-> +	if (!valid) {
-> +		memset(ext->offset, 0, sizeof(ext->offset));
-> +		xdp->flags |= XDP_FLAGS_HAS_SKB_EXT;
-> +	}
-> +	ext->offset[id] = newoff | XDP_SKB_EXT_ENTRY_ACTIVE;
-> +	ext->chunks = newlen;
-> +
-> +	return (void *)ext + newoff * XDP_SKB_EXT_ALIGN;
-> +}
-> +
-> +__bpf_kfunc_start_defs();
-> +
-> +/**
-> + * bpf_xdp_skb_ext_store_rx_hash - Store the RX hash of this packet.
-> + * @ctx: XDP context pointer.
-> + * @hash: RX hash value.
-> + * @rss_type: RSS hash type, see &enum xdp_rss_hash_type.
-> + *
-> + * Return:
-> + * * Returns 0 on success or ``-errno`` on error.
-> + * * ``-ENOSPC`` : not enough headroom for the entry
-> + * * ``-EOPNOTSUPP`` : AF_XDP zero-copy buffer
-> + */
-> +__bpf_kfunc int bpf_xdp_skb_ext_store_rx_hash(struct xdp_md *ctx, u32 hash,
-> +					      enum xdp_rss_hash_type rss_type)
->   {
-> -	return register_btf_kfunc_id_set(BPF_PROG_TYPE_XDP, &xdp_metadata_kfunc_set);
-> +	struct xdp_buff *xdp = (struct xdp_buff *)ctx;
-> +	struct xdp_skb_ext_hash *entry;
-> +
-> +	entry = xdp_skb_ext_add(xdp, XDP_SKB_EXT_HASH);
-> +	if (IS_ERR(entry))
-> +		return PTR_ERR(entry);
-> +
-> +	entry->val = hash;
-> +	entry->type = rss_type;
-> +
-> +	return 0;
-> +}
-> +
-> +/**
-> + * bpf_xdp_skb_ext_store_rx_vlan - Store the VLAN tag of this packet.
-> + * @ctx: XDP context pointer.
-> + * @vlan_proto: VLAN tag protocol identifier (TPID), in network byte order.
-> + * @vlan_tci: VLAN TCI, in host byte order.
-> + *
-> + * Return:
-> + * * Returns 0 on success or ``-errno`` on error.
-> + * * ``-EINVAL`` : @vlan_proto is not 802.1Q or 802.1AD
-> + * * ``-ENOSPC`` : not enough headroom for the entry
-> + * * ``-EOPNOTSUPP`` : AF_XDP zero-copy buffer
-> + */
-> +__bpf_kfunc int bpf_xdp_skb_ext_store_rx_vlan(struct xdp_md *ctx,
-> +					      __be16 vlan_proto, u16 vlan_tci)
-> +{
-> +	struct xdp_buff *xdp = (struct xdp_buff *)ctx;
-> +	struct xdp_skb_ext_vlan *entry;
-> +
-> +	if (vlan_proto != htons(ETH_P_8021Q) &&
-> +	    vlan_proto != htons(ETH_P_8021AD))
-> +		return -EINVAL;
-> +
-> +	entry = xdp_skb_ext_add(xdp, XDP_SKB_EXT_VLAN);
-> +	if (IS_ERR(entry))
-> +		return PTR_ERR(entry);
-> +
-> +	entry->proto = vlan_proto;
-> +	entry->tci = vlan_tci;
-> +
-> +	return 0;
-> +}
-> +
-> +__bpf_kfunc_end_defs();
-> +
-> +BTF_KFUNCS_START(xdp_skb_ext_kfunc_ids)
-> +BTF_ID_FLAGS(func, bpf_xdp_skb_ext_store_rx_hash)
-> +BTF_ID_FLAGS(func, bpf_xdp_skb_ext_store_rx_vlan)
-> +BTF_KFUNCS_END(xdp_skb_ext_kfunc_ids)
-> +
-> +static const struct btf_kfunc_id_set xdp_skb_ext_kfunc_set = {
-> +	.owner = THIS_MODULE,
-> +	.set   = &xdp_skb_ext_kfunc_ids,
-> +};
-> +
-> +static int __init xdp_kfunc_init(void)
-> +{
-> +	int ret;
-> +
-> +	xdp_skb_ext_struct_check();
-> +
-> +	ret = register_btf_kfunc_id_set(BPF_PROG_TYPE_XDP,
-> +					&xdp_skb_ext_kfunc_set);
-> +	return ret ?: register_btf_kfunc_id_set(BPF_PROG_TYPE_XDP,
-> +						&xdp_metadata_kfunc_set);
->   }
-> -late_initcall(xdp_metadata_init);
-> +late_initcall(xdp_kfunc_init);
->   
->   void xdp_set_features_flag_locked(struct net_device *dev, xdp_features_t val)
->   {
-
