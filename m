@@ -1,150 +1,177 @@
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 79B6C606A325
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Nov 2026 12:25:08 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 79906606A33F
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Nov 2026 12:25:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=TBtKUZCj;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=gaZ+IBrY
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=E+Joj16A;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=MzqLOvb8;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=MzqLOvb8;
+	dkim=neutral header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=MzqLOvb8
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 5D24B40859;
-	Tue, 10 Nov 2026 12:25:08 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 5EOrkZ55rwEm; Tue, 10 Nov 2026 12:25:07 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org B89294088B
-Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794313507;
-	b=Y+hrrScy9n+u0sPT1TAjiemkcCepiUzw+cHTVRpox65oS1Atk3dSvXq/MtNmSnz+NIHZ
-	 O/9W9pnX//h8Nfyvqjqk8ovL+zsbCU42xVOgtTs7mjEnK2bh8jeP/sO9buxOW/rOSuRFe
-	 H5wdeqyLQnthjJRefnU3PsAc/Js4/ajyXqMddMbtSNGY1RXSiJN3FaCOIjRGWZCRnmdX3
-	 bS04XscJ218qQ3uZLg47iZtU5U4TovgFOCNFgtkBJEH2d59CK1ieAEH5bWZULHpZTigpS
-	 pglLWy0TB9AVfYDwoCFTnaE3zuouCS/gxqpTFDiu8QhlWSQ5J9Vx+CYHO0F3EvrmH5g==
-ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794313507;
-	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
-	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
-	 DKIM-Signature:Received:X-MC-Unique:X-Mimecast-MFC-AGG-ID:Received:
-	 X-Google-DKIM-Signature:X-Forwarded-Encrypted:X-Gm-Message-State:
-	 X-Gm-Gg:X-Received:X-Received:Received:Message-ID:Date:MIME-Version:
-	 User-Agent:Subject:To:Cc:References:From:In-Reply-To:
-	 X-Mimecast-Spam-Score:X-Mimecast-MFC-PROC-ID:X-Mimecast-Originator:
-	 Content-Language:Content-Type:Content-Transfer-Encoding:X-BeenThere:
-	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=VQa/zF/czqRgBTE3EecGrylKNQt9LYXwl13l8Xprd24=;
-	b=eXPoWZtSslqnEvi1pfssJcUWXDSLehQuKnKKJTfvZO6EGTSIecQ2r+o0oBDOr140Kb0X
-	 ZvuMO3vNKLvDhW5ucGSNxxQVTnNPsD/Q5okJfqwYd1nF7p2m7nIhGtdtpt/bCozPsEi4B
-	 V8mLDLhMXfGoNJv3e4No5UnFP88dqO0ARxzubY6asVX4sWBTbOIpJKxR188PMQ6AiWiMv
-	 v9BN/7K62UHtzvXUZ5OYWeolD9jPn8MKuyXF29kkyaRoOJedjsuNC3C1bXYe+nXrAfWVw
-	 /gx7839lNa5y3w2QIH9GFG5X2TPemgRqMrCsV3PZ+X24+XRoChRpiRp83d3D7ykQ5wA==
-ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
-	arc=none smtp.remote-ip=140.211.166.142
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1794313507;
-	bh=VQa/zF/czqRgBTE3EecGrylKNQt9LYXwl13l8Xprd24=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=TBtKUZCj26XaczH18QdLHKodfCmZLvqQsb2fPX0h/PL0mFsXBv6s3oLuIkihyKYZl
-	 +wFbFxsMjU0cR8t+kXF724JIddWhzSq0P059MScZ3uXiiRdcsNb9RIz5aFcryu8ezx
-	 prKq1cQt3wbR55Y/tXlRUM1PV+hVbHMSYiMAj5LEY4jrCoQf+Q1WnOQpI2uD2sUBNN
-	 gLt2pqFVzBXtLFTyoOjqZrke5bHPvCm/HXhunsuXUN7vGrJ3MCzPfdT3EMgkIaEVXH
-	 8DLa5G75AisiqVaYrnW7nETsmZ9rCyucOe6XQKiyX7znbo/JGfY2kmtgS6XS84GNH9
-	 dINxL/inbRtoQ==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B89294088B;
-	Tue, 10 Nov 2026 12:25:07 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 568499D1
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 12:25:06 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 51160811FC
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 12:25:06 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 5BF43811F6;
+	Tue, 10 Nov 2026 12:25:54 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id atDXhmCss6Kf for <intel-wired-lan@lists.osuosl.org>;
- Tue, 10 Nov 2026 12:25:05 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 92C6A811C8
-Authentication-Results: smtp1.osuosl.org;
+ id 8YW-DzbuPrOw; Tue, 10 Nov 2026 12:25:53 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 8D5E48121E
+Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794313553;
+	b=p8yY+M2aMaGIppJQufpbbhDybEHfOvJ/rtsdN8KXu17T/vr2dS6gbqV8Q3TqWJuEnBb6
+	 C/zNXD5rL8ziFRpd23/kcSg53dPp3AgSiRmWceN05w1o9OHfW8tlSoLuss4MGKtOGAnId
+	 cLbrucrVRBFdq13aZj+0wxan7m2aVgwK7R2y4YtfmmQCdKTTXxsX+GlzwX9ltle8E8LVy
+	 8riVH+/SlJeotbWCtl3tD+nFHl2HZIKw62R7bX6Dvitf++V5HM2SryCg4l47ydIxk2cIj
+	 JOpYKwD4pGyy5hT0eGWMBs34/CO39v8XsheG6xqPNRZCwAO1CG/I6NXylsXgf+eLMwA==
+ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
+	c=relaxed/relaxed; t=1794313553;
+	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
+	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
+	 DKIM-Signature:DKIM-Signature:DKIM-Signature:Received:X-MC-Unique:
+	 X-Mimecast-MFC-AGG-ID:Received:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
+	 X-Received:Received:Message-ID:Date:MIME-Version:User-Agent:Subject:
+	 To:Cc:References:From:In-Reply-To:X-Mimecast-Spam-Score:
+	 X-Mimecast-MFC-PROC-ID:X-Mimecast-Originator:Content-Language:
+	 Content-Type:Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:
+	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 List-Subscribe:Errors-To;
+	bh=2z9Dq46PGzc1DYcTmA3bznslu78oudIXu01vR14qyUQ=;
+	b=GgcGdEkZhZGqXkjdpaWx7GWSCTjVO/DWFerL4h+CHno4SpgVMY+a9ANjB3hzSwx6D9J+
+	 yqQuDUQ4m6UKDRapfw2Y08gqElvr3fRdsCpkYcvfmK8VLWJjF0XNtCQz8z5IqmEFh4SeA
+	 YOg85kcfcu5jboiJO0VniQaterhS7mgaeE7c9xn9mFe4sCxq2L2CF0rZJVoaUsVZcADbb
+	 Uac9Plg3c5nuOddYdNPmXDULtBZKHruvdURPRtqRRVRB8oZ+9wtLaL17h0O0jTlo42sNK
+	 URyTMQUxv0NGrt+paV9ZykmeU8PvycQsH4EwdGCpVdxRaEWvTjLt/r6DU91lP/nimsA==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
+	arc=none smtp.remote-ip=140.211.166.142
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1794313553;
+	bh=2z9Dq46PGzc1DYcTmA3bznslu78oudIXu01vR14qyUQ=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=E+Joj16AD4dOZDOfHLS4avx1BgGmzTsc1DzZzqQfyRB9YpRe/1NU3LJX6Um6UI/CE
+	 gLGmEqZTe5wa6ei7sQyGvlZxmdqPyLTNaqCWjpvOamqIJYqTplcySK0IPpeFFEZn4c
+	 Sd26YUuFuXxtZ/6thHa+ouO0f5yEKGpBNZo4coRmrZEs41Q3x2hZ/UEIJWcHCD5eGA
+	 te+sAWWbYb/p6kojAZRpjLLRct7KudammXaGraBcfuwdlTNDjwKbi8S9Fh/TcwCS+u
+	 V+SXWjbjIQKVnyn/C1NUl0cwNhOCeUMWGQDdU+Hq3iGiudOKOuB7MtguSJCd9VLXcm
+	 0zp3f/osnnz7Q==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp1.osuosl.org (Postfix) with ESMTP id 8D5E48121E;
+	Tue, 10 Nov 2026 12:25:53 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id D98D71A6
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 12:25:52 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id CB1D1408E9
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 12:25:52 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id eDbbEdhrRHaT for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 10 Nov 2026 12:25:52 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 00D86408E1
+Authentication-Results: smtp4.osuosl.org;
  arc=none smtp.remote-ip=170.10.133.124
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.133.124;
  helo=us-smtp-delivery-124.mimecast.com; envelope-from=poros@redhat.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=quarantine dis=none)
+Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=redhat.com
-Authentication-Results: smtp1.osuosl.org;
+Authentication-Results: smtp4.osuosl.org;
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=gaZ+IBrY
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=MzqLOvb8; 
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=MzqLOvb8; 
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=MzqLOvb8
 Received: from us-smtp-delivery-124.mimecast.com
  (us-smtp-delivery-124.mimecast.com [170.10.133.124])
- by smtp1.osuosl.org (Postfix) with ESMTP id 92C6A811C8
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 12:25:05 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 00D86408E1
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 12:25:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1794313504;
+ s=mimecast20190719; t=1794313550;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=VQa/zF/czqRgBTE3EecGrylKNQt9LYXwl13l8Xprd24=;
- b=gaZ+IBrYaGjCsDwNYEB6oSb7EW9VO14HBJyLO59SM4yoyWfheDygnM5cEuoCQInMwVxdkS
- PUMGXLOQ50srcwtPyAJ5MYfAvsN8jVgz/uo8mfFoiLj1uHey8Peb/xNmqYFuWYOJqq1bDA
- p6n3r7IliiJaF5WrWdwgDliDSCiUcGo=
-Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
- [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ bh=2z9Dq46PGzc1DYcTmA3bznslu78oudIXu01vR14qyUQ=;
+ b=MzqLOvb8lzMKMW1vshqfCQkByLNtXRCJKaEia8Q2crJQW2Knbqtj9+1/E9pe2Mz+znk4zC
+ 32j41XjhFzt/Lyv2NgD5ClyPjjVbw+dLc9AePPcVKKa2KtatBlONOfyRQ4hbPad1oxum71
+ qCKg48sCWXsaeDgEycE4xKpIH7xSzrw=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1794313550;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=2z9Dq46PGzc1DYcTmA3bznslu78oudIXu01vR14qyUQ=;
+ b=MzqLOvb8lzMKMW1vshqfCQkByLNtXRCJKaEia8Q2crJQW2Knbqtj9+1/E9pe2Mz+znk4zC
+ 32j41XjhFzt/Lyv2NgD5ClyPjjVbw+dLc9AePPcVKKa2KtatBlONOfyRQ4hbPad1oxum71
+ qCKg48sCWXsaeDgEycE4xKpIH7xSzrw=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1794313550;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=2z9Dq46PGzc1DYcTmA3bznslu78oudIXu01vR14qyUQ=;
+ b=MzqLOvb8lzMKMW1vshqfCQkByLNtXRCJKaEia8Q2crJQW2Knbqtj9+1/E9pe2Mz+znk4zC
+ 32j41XjhFzt/Lyv2NgD5ClyPjjVbw+dLc9AePPcVKKa2KtatBlONOfyRQ4hbPad1oxum71
+ qCKg48sCWXsaeDgEycE4xKpIH7xSzrw=
+Received: from mail-wr1-f71.google.com (mail-wr1-f71.google.com
+ [209.85.221.71]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-230-I8SMJnAYP32oyobfZJx-1A-1; Tue, 10 Nov 2026 07:25:03 -0500
-X-MC-Unique: I8SMJnAYP32oyobfZJx-1A-1
-X-Mimecast-MFC-AGG-ID: I8SMJnAYP32oyobfZJx-1A_1794313502
-Received: by mail-wm1-f69.google.com with SMTP id
- 5b1f17b1804b1-4ba078abd78so1169565e9.1
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 04:25:03 -0800 (PST)
+ us-mta-20-cHkqg-HPNrS4OOU73cz8_A-1; Tue, 10 Nov 2026 07:25:46 -0500
+X-MC-Unique: cHkqg-HPNrS4OOU73cz8_A-1
+X-Mimecast-MFC-AGG-ID: cHkqg-HPNrS4OOU73cz8_A_1794313546
+Received: by mail-wr1-f71.google.com with SMTP id
+ ffacd0b85a97d-490a0e72578so1273506f8f.0
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 04:25:46 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1794313502; x=1794918302;
+ d=1e100.net; s=20260707; t=1794313545; x=1794918345;
  h=content-transfer-encoding:content-type:in-reply-to:from:references
  :cc:to:content-language:subject:user-agent:mime-version:date
  :message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
  :message-id:reply-to:content-type;
- bh=VQa/zF/czqRgBTE3EecGrylKNQt9LYXwl13l8Xprd24=;
- b=OtXY+YrzbO8eu32fSSSJt/4hcBVWRZICUfcgoo1VLy5d4NeqlTtPty1hfuFK/15mbY
- lkcGqPEZf8FCyGXPrAS3wfOCgJiU7p3Mn4PFfKwQX5N669KkPQs6UlIT6/bfo7huyyPg
- QAPswwmmXGhbu9bcXNItUpHCpyujtSEgk/b1OlKC1+6x/8pjm/eG5bephQuHW/CvaYnk
- hD/JHZucm95p5NlOY683uqlknnkkCtJy1rURHNqG8em5qPaThkXLRRDzv2017BTZPHE+
- Zwpu7ZonRTngTlEQjVZ+Cf36kyVR0lb6po/SecjntZ8XiApUepFTOEnQlFmT0bSvLPer
- QOIA==
+ bh=2z9Dq46PGzc1DYcTmA3bznslu78oudIXu01vR14qyUQ=;
+ b=wg43Wdl3xSd4o0Pl1d4z0R7C+dqdfLTc+Xz/4ctjF3ba/vVTNz1TryYv/IIRLaK+R5
+ Z/gYjJJvmm2kEwUwDuxTMDSG+JVtreZ1rh1iS4Uk+dQ515MSIP6JewS+sbnkizW8GGwk
+ +1X7xoRDpUnPMcDJd8tLqgIh4266wvI7sAcPBv4L9Juy8PBrsUXTTQ1CjhGCtNKYB5D2
+ JjqmQcx4AqBZI2LhpUzO3DbDtUG/+RvbmDLTYyUed91pUfhNclerGawPJSRwmFvpBGiM
+ 6oV9uKxHuA+HsFfNHTomoLlxGlZpF3xWUdyic58eTalwvGkZdOLOpxGQIPu8wB5wFqwb
+ kMBQ==
 X-Forwarded-Encrypted: i=1;
- AL+hErGwyOiL87c+GCJL81M3Dw/s4djAjxpz94FXI55uI+YcoKfcUlPPQXMt/NszFoJsW4aePCZOdM3qEgMyHc1N3HQ=@lists.osuosl.org
-X-Gm-Message-State: APuU4Z+ll8vmhOcqQCrzEqRUzxgrVSQRAQQVocp9Z92NZcETDKYHdubP
- ZW2XK0GWA3r1NhGArx3bH/MpJ4asAI62VDkHLoXA7Z+DtH3vt1KJE/vW4dM/d3/P05Xno3/xWeo
- VJnnfq1sWhnZud6GKmLKKB8EDhQbO9BMm0kQh/nOOV4xt0Rcc6lGnuUqcSyoBufda9ZkTE14=
-X-Gm-Gg: AYBFou1pRQkVi7ZL479ACjSSSBToNqF4Es3tX1snrP7rMmwNkZxrVqgOHDATyMJmxHC
- 9LO5i5MTUrJo6ODqg2/RUkieSw8ushaUMh8pvVsbsTS6U/hzH7MG2DCRRecWviNEEuWHiwpbFa1
- vb/BjiRXlihg9a4Ed2mKgqQVySDeksfm+NGuMc0V3G98tvD6wkLxpUtXwN6oeyhRl8EG3UiaRxZ
- 86qUTzLysXxEXEoqbPFrBjizPj3f/jS0MmFRjkHJSt1cbwHiPWzeXUNnPnIB87NaYssASORchyh
- ekj2tQi0UtUf9pjJtyKDQno9ETtYPlM48+mXVkxtfkbsGi/K8FXbLMzGWCEXXl6D5p5vZ0NVZTG
- 8bx72N8H1NN/Ij8a4oBkbMh+dk/TQjHbYqqo=
-X-Received: by 2002:a05:600d:82d3:b0:49d:1fa8:b266 with SMTP id
- 5b1f17b1804b1-4ba0234ff73mr46627495e9.26.1794313501871; 
- Tue, 10 Nov 2026 04:25:01 -0800 (PST)
-X-Received: by 2002:a05:600d:82d3:b0:49d:1fa8:b266 with SMTP id
- 5b1f17b1804b1-4ba0234ff73mr46626915e9.26.1794313501466; 
- Tue, 10 Nov 2026 04:25:01 -0800 (PST)
-Received: from [10.43.3.161] ([213.175.46.86])
+ AL+hErFuPLbRvlMIFxo/wws2+ueOEICxx7NCRdLA+wr2QEORoIONa8IDOzqlUXoRgLcjGDmbEXcUEBR36BYf0Myl31k=@lists.osuosl.org
+X-Gm-Message-State: APuU4Z/JeBQ/NbX1uauTs1UILoD0t3P6EHi8b16gh9f0nYl8SsooHGJo
+ 8tXgumXOVjorOA3VPgKbSjxLA+ePF/B3odVXNN55ccZCq11g5LsaQCMwdjSk64a+m8C8484B07f
+ LZ/7tgqGEvZMMufm1jcdqbicTQDD6Pvs1rj84qR174+nSHtlQSwB2Zccpe2ueeskGGaqKbFk=
+X-Gm-Gg: AYBFou1n0YtpIcE+JCR12lgZs4Lv379SagAfd2e2wn0QbcmwNeXUA3ePg2Uzp61G/aT
+ qrAqbRfAFM/SugtXbdUKN5rrQ3u/PRhpEoLv+9Ge89Kiy2hAW/nym/nxtDNnpAr7ToPY+/taxut
+ a+p/qxHnTS52O0Ss8/FkmT/RipcLOxzbLCvxHQjOwHYMySanvsR00z7886dMyqkeSq4vJJzL8RG
+ rVG8PkeE2JRJOOSXoLjRK1VX1jQqSC1MvoS5PT2btxWTVPXe5ouLtX8JeGdhGQ+z/tWGZ0+AieT
+ Jc+Wi9eJ0wPsfks+4BZswQ3dtvT3k2RlejpuHUyWAt52fxJ/0oU4XPpN3Tpt88qlGMXKOSWUKro
+ FWgFSDNYn5/plHwgBtS5EOFFotVQT5r06Uts=
+X-Received: by 2002:a05:6000:29d2:b0:498:88f:14c8 with SMTP id
+ ffacd0b85a97d-4982fb52546mr2653563f8f.9.1794313545505; 
+ Tue, 10 Nov 2026 04:25:45 -0800 (PST)
+X-Received: by 2002:a05:6000:29d2:b0:498:88f:14c8 with SMTP id
+ ffacd0b85a97d-4982fb52546mr2653511f8f.9.1794313545005; 
+ Tue, 10 Nov 2026 04:25:45 -0800 (PST)
+Received: from [10.43.3.161] ([213.175.37.14])
  by smtp.gmail.com with ESMTPSA id
- ffacd0b85a97d-4983585c5b9sm4681271f8f.9.2026.11.10.04.24.58
+ ffacd0b85a97d-4989a2a505asm3264342f8f.13.2026.11.10.04.25.42
  (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Tue, 10 Nov 2026 04:24:59 -0800 (PST)
-Message-ID: <42c9a0b6-0828-42b6-ba9e-cd49fb9ef4bd@redhat.com>
-Date: Tue, 10 Nov 2026 13:24:58 +0100
+ Tue, 10 Nov 2026 04:25:43 -0800 (PST)
+Message-ID: <f73146cb-fcbb-4263-90d9-b5378faf30f7@redhat.com>
+Date: Tue, 10 Nov 2026 13:25:41 +0100
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH net-next 08/10] dpll: zl3073x: update locking comments
+Subject: Re: [PATCH net-next 10/10] dpll: document locking rules
 To: Ivan Vecera <ivecera@redhat.com>, netdev@vger.kernel.org
 Cc: Vadim Fedorenko <vadim.fedorenko@linux.dev>,
  Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>,
@@ -162,11 +189,11 @@ Cc: Vadim Fedorenko <vadim.fedorenko@linux.dev>,
  Karol Kolacinski <karol.kolacinski@intel.com>,
  Saeed Mahameed <saeedm@nvidia.com>, Tariq Toukan <tariqt@nvidia.com>
 References: <20261106121005.1327603-1-ivecera@redhat.com>
- <20261106121005.1327603-9-ivecera@redhat.com>
+ <20261106121005.1327603-11-ivecera@redhat.com>
 From: Petr Oros <poros@redhat.com>
-In-Reply-To: <20261106121005.1327603-9-ivecera@redhat.com>
+In-Reply-To: <20261106121005.1327603-11-ivecera@redhat.com>
 X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: SThx6TjzjvYf2uXKa7xBL_ijarRNewALyNojqKaOKYk_1794313502
+X-Mimecast-MFC-PROC-ID: XDO6ZYtklkZnsQ6NkIOFLIyc12rUKxfNjVUw8lYqxZU_1794313546
 X-Mimecast-Originator: redhat.com
 Content-Language: en-US
 Content-Type: text/plain; charset=UTF-8; format=flowed
@@ -184,7 +211,7 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 X-Spam-Status: No, score=-17.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1
+	MAILING_LIST_MULTI,SPF_HELO_PASS,USER_AGENT_SANE_1
 	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
@@ -192,41 +219,96 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 
 On 11/6/26 1:10 PM, Ivan Vecera wrote:
-> Callbacks are serialized by the DPLL core domain lock instead of dpll_lock.
-> All channels of a chip belong to one domain, so what the comments rely on
-> still holds.
+> Describe the lock levels of the subsystem, which domain a callback runs
+> under and the rules device drivers have to follow.
 > 
 > Signed-off-by: Ivan Vecera <ivecera@redhat.com>
 > ---
->   drivers/dpll/zl3073x/dpll.c | 9 +++++----
->   1 file changed, 5 insertions(+), 4 deletions(-)
+>   Documentation/driver-api/dpll.rst | 44 +++++++++++++++++++++++++++++++
+>   drivers/dpll/dpll_core.c          |  9 +++++++
+>   2 files changed, 53 insertions(+)
 > 
-> diff --git a/drivers/dpll/zl3073x/dpll.c b/drivers/dpll/zl3073x/dpll.c
-> index 1cdadb8e46fb2d..6e5e2bb41f55d6 100644
-> --- a/drivers/dpll/zl3073x/dpll.c
-> +++ b/drivers/dpll/zl3073x/dpll.c
-> @@ -349,9 +349,10 @@ zl3073x_dpll_input_pin_ref_sync_set(const struct dpll_pin *dpll_pin,
->   	if (rc)
->   		goto unlock;
+> diff --git a/Documentation/driver-api/dpll.rst b/Documentation/driver-api/dpll.rst
+> index 7c117ae37cc1bc..40d5037ff3bb0f 100644
+> --- a/Documentation/driver-api/dpll.rst
+> +++ b/Documentation/driver-api/dpll.rst
+> @@ -675,6 +675,50 @@ In the error path we have to rewind every allocation in the reverse order:
 >   
-> -	/* All code paths accessing per-channel reference priorities are
-> -	 * serialized by the subsystem dpll_lock, so it is safe to release
-> -	 * our lock here before iterating over the other channels.
-> +	/* All callbacks accessing per-channel reference priorities are
-> +	 * serialized by the DPLL core domain lock shared by all channels of
-> +	 * the chip, so it is safe to release our lock here before iterating
-> +	 * over the other channels.
->   	 */
->   	mutex_unlock(&zldpll->lock);
+>   More complex example can be found in Intel's ICE driver or nVidia's mlx5 driver.
 >   
-> @@ -2401,7 +2402,7 @@ zl3073x_dpll_changes_check(struct zl3073x_dpll *zldpll)
->   	mutex_unlock(&zldpll->lock);
->   
->   	/* Send notifications outside the lock to avoid ABBA deadlock
-> -	 * with dpll_lock taken by notification functions.
-> +	 * with the DPLL core domain lock taken by notification functions.
->   	 */
->   	if (dev_changed)
->   		dpll_device_change_ntf(zldpll->dpll_dev);
+> +Locking
+> +=======
+> +
+> +The subsystem uses two levels of locks, always taken in this order:
+> +
+> +- ``dpll_lock`` protects the topology of dpll devices and pins and their
+> +  lifetime. Functions changing the topology, for example dpll_pin_register(),
+> +  take it for write and send the create and delete notifications under it.
+> +  Netlink requests, each part of a dump and change notifications take it for
+> +  read for their whole duration.
+> +- A domain lock serializes driver callbacks. All dpll devices and pins created
+> +  with the same module and ``clock_id`` belong to one domain, in practice to
+> +  one chip or card.
+> +
+> +A netlink request addressing a device or a pin by its ID holds the domain lock
+> +of that object from start to end. A notification holds it while its message is
+> +built and sent, so messages of one object are sent in the order they were
+> +built. Only one domain lock is held at a time, so domains have no lock order,
+> +and callbacks of different domains can run concurrently.
+> +
+> +Callbacks of a dpll device run under the domain of the device. Callbacks of a
+> +pin run under the domain of the pin, whichever driver registered them:
+> +
+> +- A driver registering a pin of another driver with its dpll device has these
+> +  callbacks serialized with the driver that created the pin, not with the other
+> +  callbacks of its device, so it has to protect the state they share by itself.
+> +  A callback stuck in such a registration stops the domain of the pin.
+> +- The parent pin of a pin registered with dpll_pin_on_pin_register() and its
+> +  dpll devices can belong to another driver, so the callback must not
+> +  dereference their private data.
+> +- The frequency monitor belongs to the dpll device, so only callbacks of a pin
+> +  of the same domain registered with dpll_pin_register() can include
+> +  ``.measured_freq_get``.
+> +
+> +Device drivers have to follow these rules:
+> +
+> +- A callback must not call dpll_device_change_ntf(), dpll_pin_change_ntf() or
+> +  any function changing the topology.
+> +- A callback notifies about objects of the domain it runs under with
+> +  __dpll_device_change_ntf() or __dpll_pin_change_ntf(). Other objects have to
+> +  be notified from a context that holds no domain lock, for example a work item.
+> +- A driver must not call dpll_device_change_ntf(), dpll_pin_change_ntf() or any
+> +  function changing the topology while holding a lock that its callbacks take.
+> +
+>   SyncE enablement
+>   ================
+>   For SyncE enablement it is required to allow control over dpll device
+> diff --git a/drivers/dpll/dpll_core.c b/drivers/dpll/dpll_core.c
+> index 84377f8ba16036..6ad40fb9eee855 100644
+> --- a/drivers/dpll/dpll_core.c
+> +++ b/drivers/dpll/dpll_core.c
+> @@ -932,6 +932,10 @@ __dpll_pin_register(struct dpll_device *dpll, struct dpll_pin *pin,
+>    * @ops: ops for a dpll pin ops
+>    * @priv: pointer to private information of owner
+>    *
+> + * The callbacks run under the domain of @pin. If @pin belongs to another domain
+> + * than @dpll, they are not serialized with the callbacks of @dpll and @ops must
+> + * not include .measured_freq_get.
+> + *
+>    * Context: Acquires dpll_lock and domain locks
+>    * Return:
+>    * * 0 on success
+> @@ -1049,6 +1053,11 @@ EXPORT_SYMBOL_GPL(dpll_pin_unregister);
+>    * Register a pin with a parent pin, create references between them and
+>    * between newly registered pin and dplls connected with a parent pin.
+>    *
+> + * The callbacks run under the domain of @pin. The parent pin and its dplls can
+> + * belong to another driver, so @ops must not dereference their private data.
+> + * The frequency monitor belongs to a dpll, so @ops must not include
+> + * .measured_freq_get.
+> + *
+>    * Context: Acquires dpll_lock and domain locks
+>    * Return:
+>    * * 0 on success
 Reviewed-by: Petr Oros <poros@redhat.com>
 
