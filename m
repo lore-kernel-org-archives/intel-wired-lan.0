@@ -2,134 +2,136 @@ Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B80E8606A321
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Nov 2026 16:51:10 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C609B606A31C
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Nov 2026 16:51:11 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=WPuoWIQI;
-	dkim=pass (2048-bit key, unprotected) header.d=cloudflare.com header.i=@cloudflare.com header.a=rsa-sha256 header.s=google09082023 header.b=W4Ecy/As
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=OHOIaMBz;
+	dkim=pass (2048-bit key) header.d=cloudflare.com header.i=@cloudflare.com header.a=rsa-sha256 header.s=google09082023 header.b=CliO2VxJ
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 8926E811C8;
-	Tue, 10 Nov 2026 16:51:10 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 91C61811E1;
+	Tue, 10 Nov 2026 16:51:11 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 2kEIeNJY2u_r; Tue, 10 Nov 2026 16:51:09 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 7643581192
+ id bTLgTZx4ukNH; Tue, 10 Nov 2026 16:51:10 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 4AB3C811ED
 Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794329469;
-	b=ZtOArC+zN/85aamI+wLUbc3Dy22itGv9d6OpvZQMnquA0BFgsEdOuaKjExm4HRwbeK8P
-	 VRBfmH4nuWeWiOxxkeY8O5u4E0F3ZK6fJ9dOXGj/s4Ow9pfQU17ma4xE5A2fXov8e9xba
-	 yTlDG+eGA/AxqtLKPpq8EogCIQCrfnzPwC2DIB6mJIcBtXrvVAtQy2jelTlfhQwGIPjp4
-	 oDEEeOLNhBlFODbItt++gCmDNueB+bT43H6nIxByGb/BHEHUowbVTwmL1OTFRw41JsqjO
-	 eOiScAgExdatbMLYES/qwKh85CqOzaDb9Rmf2rv8M70xaUIABiiUkY2il4aU4E7BQAg==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794329470;
+	b=ZsLQFA3td/9LoRxEv6WOteKVRfLsdknjNPfyw0mFW8/i72kh31Ur5A/rP/kI7PpbIVIX
+	 CsAD6Gxx+iic1uUDCkFLerzifib+3hiVnHJcJ6z+uxQqI77kBp2W3uNESwrljT3KqQDm1
+	 Y/Y9C/ed8JlrbmID1mCmRFa6PHqJ5MRWZ4qoiJZhJPj7lkJuxLPLN7DzTzvTRZr7QKp/S
+	 M0eGKKjA/vN/EhiU+0rAJw6GtKq+RHj3oUXV0j4v0uWFiRxHPoMfP6jjcLrlN3GIbMJDV
+	 bmWyJMWnWvT/RpVqZh3ZCDzZshMTt1KHp5f3+7nIfP9mgJAWEcq403nxrHBOviGfgIw==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794329469;
+	c=relaxed/relaxed; t=1794329470;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
 	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
 	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
-	 Date:Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding:
-	 X-Mailman-Approved-At:X-BeenThere:X-Mailman-Version:Precedence:
-	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
-	 List-Subscribe:Errors-To;
-	bh=eceI8dL07kv9yfwsc+DTSqIVxIuF3lFqQT3hh7B4xzA=;
-	b=AnpUUzdnInszSy4eSb4xSsfVsRV1ZcpNQir90r9R/MGJYXvMANNCKAGXrIa1w5kakEPE
-	 MqzedvUVNMq9xVnWL8/OqnDai35no3khbero3ygXAKcHZsZVM7A7oaCCwePBRcjo+doTL
-	 LyYbO0UxjHHmwMnC5WmUocp906MTY/rdxlNxLP80X2riowjJ6lUlqi7XD/YRRill+WGCQ
-	 M8CfvEe4Mx7aZYZSecFOQb3U6TavM/szl/yuygV95Nak103qYf7Xc4Utrr3YsPcNe0CRZ
-	 9Hdetr4jJ0jIPecchX/04D7rv4dy/Kk1Y5ByE56kLDZH4REAZl/8Ofl1NqCQP3qrXTg==
+	 Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
+	 Content-Transfer-Encoding:X-Mailman-Approved-At:X-BeenThere:
+	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Errors-To;
+	bh=oKixK7Jwu6TCrx7SV2g9n1KdVg0f5barw8E7pwYTzBI=;
+	b=RHvCn1H/kYsy+i1nrVcNzQ8GEZmil41aofVMqVdOKY3v7vP6x+OYFfkt2aS1/ROl+vnW
+	 1JOnFwaUKIbRoks4pQmMt9X3xLoWrj0IXb7PG4c4hh4Z2FqXOnJl6SmUqZ8WHUOtrdmQv
+	 ed4oO4WQGDnjlQ9GnSdvU7Do5GENtVMfqeSua48G5XU85epw/gYyzuk3D9JQ108Os1BvU
+	 QwGpJEuWksHW/F9NOiHCnuxvmuw/9A3X19jqg8opcIGM/njIJXSTSc3QMv/UHgsFMDLwj
+	 DGDx2qQIVnUMkHJT/+cZOFd6y9KekdJSpTad8tDlBT2o47+CylP8IdkImQ3t+jOoh/Q==
 ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1794329469;
-	bh=eceI8dL07kv9yfwsc+DTSqIVxIuF3lFqQT3hh7B4xzA=;
-	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=WPuoWIQIQQRdY7O8sxahqJFl4fVwgK3fjS7UY8ih9aw+Z+p8NMuud95Np26SyxXor
-	 zsUu91mJ9bihoRiQwf++UkcofQONIn7odND9e4/yUvSHwwqw1ZqLxVkSxHSSNEncqo
-	 6fGCEswyQaMehz3KIhphsAP97BonNAwk3F9wa6bGQjDmX1x+//vVzh8SueZ1EpabEq
-	 2I6M7UxtmwYs61yo0wIWkOp8P7eP63W4Sf0ja9UpCi0W0LlvXTbnz+CEtJPsf+xbMk
-	 Xf+CcqGZljOAnvGRuGWIZ6QiAh/fsES54Xnb+jAEJAbmQfwbp7s7Zl0hbh5s8i3SQX
-	 nTUEzfmstCcZA==
+	s=default; t=1794329470;
+	bh=oKixK7Jwu6TCrx7SV2g9n1KdVg0f5barw8E7pwYTzBI=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=OHOIaMBzpTvk3Ojfv3ToHFUVRgFYefmxodY4ZR2N+0FYE684sAZIN0nqcy7CT/lgd
+	 w4+I1+XIQrJ4I2fbOrKbGjW9HSYNaIQw6tllOm28YRtU2RQwKo02QPDzIJjfUA3Fkt
+	 VDxOXVAFEI2Li3Bm2OWlZrn0NtD7cl7QxnC9VThVPqMFOO82+RHMJMOPZA1703JqCe
+	 01Rwfjr4a0atMBdpFcadNM8FfINdbiWytSLRlARKwr/m0VqCytMskbatZ2YPJaiz/j
+	 Q5Umn/3vsm19RS5WAWEu7dSgeJJHmZrIATmxa+VABdPM3jqmzTzvrM2xhKEQMzbrs1
+	 Lhl00gkDwKyqw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 7643581192;
-	Tue, 10 Nov 2026 16:51:09 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 4AB3C811ED;
+	Tue, 10 Nov 2026 16:51:10 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id D7971335
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 03:57:23 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id B4860AF2
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 03:57:26 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id BD19E4031B
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 03:57:23 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id AE8D240312
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 03:57:26 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id vZsWh2BSn_-l for <intel-wired-lan@lists.osuosl.org>;
- Tue, 10 Nov 2026 03:57:22 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org 20B1940061
+ id 21zTVcumVfyN for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 10 Nov 2026 03:57:25 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org 76ECB4008C
 Authentication-Results: smtp2.osuosl.org;
- arc=none smtp.remote-ip="2a00:1450:4864:20::52f"
+ arc=none smtp.remote-ip="2a00:1450:4864:20::534"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a00:1450:4864:20::52f; helo=mail-ed1-x52f.google.com;
+ client-ip=2a00:1450:4864:20::534; helo=mail-ed1-x534.google.com;
  envelope-from=tianyi@cloudflare.com; receiver=<UNKNOWN> 
 Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=reject dis=none)
  header.from=cloudflare.com
-Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=cloudflare.com header.i=@cloudflare.com
- header.a=rsa-sha256 header.s=google09082023 header.b=W4Ecy/As
-Received: from mail-ed1-x52f.google.com (mail-ed1-x52f.google.com
- [IPv6:2a00:1450:4864:20::52f])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 20B1940061
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 03:57:21 +0000 (UTC)
-Received: by mail-ed1-x52f.google.com with SMTP id
- 4fb4d7f45d1cf-6b5669a5100so2126880a12.1
- for <intel-wired-lan@lists.osuosl.org>; Mon, 09 Nov 2026 19:57:21 -0800 (PST)
+Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=cloudflare.com header.i=@cloudflare.com
+ header.a=rsa-sha256 header.s=google09082023 header.b=CliO2VxJ
+Received: from mail-ed1-x534.google.com (mail-ed1-x534.google.com
+ [IPv6:2a00:1450:4864:20::534])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 76ECB4008C
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 03:57:25 +0000 (UTC)
+Received: by mail-ed1-x534.google.com with SMTP id
+ 4fb4d7f45d1cf-6b5669a5100so2126911a12.1
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 09 Nov 2026 19:57:25 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=cloudflare.com; s=google09082023; t=1794283040; x=1794887840;
+ d=cloudflare.com; s=google09082023; t=1794283043; x=1794887843;
  darn=lists.osuosl.org; 
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
- bh=eceI8dL07kv9yfwsc+DTSqIVxIuF3lFqQT3hh7B4xzA=;
- b=W4Ecy/AsHOGkFrte8QoS5ELqBlTVjjN9QbXNvg/k6wfYKei3MA+iqhT6E2s5ZEFrND
- 0vL5ZzfeMVmlXPySssreAbLVd1r7PbpWyWAZq1eHYLqKg2JogMszaUTs/G/+ggZ6s9Y5
- AY8MoVZcZoxqcsKldYzZaZPOgn6YKH/ioP5FqtGnNV8bqbVJvQv//9Lsl5Y/HK5SqAJP
- HousI1/RabYS0RsBbHFGMGc4cewYBcQO8fN0uLgqraLHi46k3d3BOGt8d6msucDnse0y
- BKjqSNPxfPJ/pWTpCst9fthqvMwGlF/Irv/xAFh+/mIa7nxvm40QFhQBkOvEZjUIw4X3
- b7Xw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1794283040; x=1794887840;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:from:to:cc:subject:date
  :message-id:reply-to:content-type;
- bh=eceI8dL07kv9yfwsc+DTSqIVxIuF3lFqQT3hh7B4xzA=;
- b=LZ6rOal0LcwRzskujRUwVG4RFi8re6fOkTjsNWhR9tu3ecCleuDOSk2g/hSPUH8Rvc
- RIGNC0zMkMxXjqE865SlrdU/qgvwvZlMvhMbSBJFSzcENLdBNn8TPVozE/u47G4q03ok
- SKrXlxztVpRM+C6wJlxA3QF4XIq4L229NsLNIfnnjz/0IwpacbGPndj7Er3ToaWpAS2H
- OBvT2AkSm1CasX1cUIOpoSJLjWlvwAMgyx2ZoEtAmSHCDaWfYxhyLfwjkqhCVZYcs1a+
- lrg4mp4R9PiRR2Qshmx/1DsfwBGhwjW4n8vQM9chX/rz1/t9WyZ1hDj1a0DZnIo+i4uq
- b53w==
+ bh=oKixK7Jwu6TCrx7SV2g9n1KdVg0f5barw8E7pwYTzBI=;
+ b=CliO2VxJiCxom33zrD+TK8kAUVtOO7pOmWtDArDnfmnD7DncN4qloqJm/K7BqpeBk3
+ ZQJxugrjcTHITqiLi3HiDR+KnShE4+1PiByK4yJbbjdUUaw9qP6hvUfjjyebl8d1sI5/
+ jzW9zEZeqUqyTC+TXxC3PBJLgrqNTQ9tqFk2SyUOE69x/Za9P3amGIASIo2gLamJntFl
+ c+nD+AnDTIpQc8KIRKIf2uCx578xug9KuRL76nPuzmnhvI1CPVtb9ARLU5HY8JmxH19j
+ 1SBNfJ7KM51/jglQ8izRfOjE5mkXmOOJmp2ySUPXFx/izBkE1Lwrrp0o6mk+FeEnLWaE
+ 6acA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20260707; t=1794283043; x=1794887843;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+ :to:cc:subject:date:message-id:reply-to:content-type;
+ bh=oKixK7Jwu6TCrx7SV2g9n1KdVg0f5barw8E7pwYTzBI=;
+ b=MD2RsmtW/lZwebNVF7X1pCL3NnSbXmVZGoxDxGXpVf5CHeRvL+SsTPpUK7GmuNzFlq
+ 9WNPSGELjDtsnSkxNBkUQDZrBG1idzhhvXjmREHpxg/nY1FdYPM9sUBZZqmUQmva6FNX
+ 0xRSBLY/ePlwk9KEbtlmSrwHUcZ9/6CFEXojuBtiOLqJ18Od3EXA/IT8kGOJlohzXhao
+ 3qs1/hDvbYUXbU+ftRdXvfd0LnePjNaXnKowcff1UD7XzME6lxcTotbwPVrTy0+4E3c1
+ cDYbQyNgZjonj9O1DH5W7B0KFU45bFuC0wpUJewAg69pJ07suO+Pqn7A9AOZLTQPVEMB
+ 6VDw==
 X-Forwarded-Encrypted: i=1;
- AL+hErFto7dzeKlwrr5Q8UuMGX6MnPwF3ib35vOwgn4Ymu8jwMnEeM9UgBZlGzDo91cni3t30Mz+LCwur1/DOq9E0Jk=@lists.osuosl.org
-X-Gm-Message-State: APuU4Z+qMQlz1X0kkopqPo8euGrF7L3/OIMC/tAdRmh/T5z7rMeqS59Z
- L4ImKOPkeys2yfz7l+WYoiJATgU2d0Ghr/Gp3IjhPU7v1u9d60H1Nsa4KI3jw3iFajs=
-X-Gm-Gg: AYBFou0Cgc8gFO+bQ12Y6kH3uA546Q/MQLV3JAfH0Ex3Q32dswU7fNZQV5G2PBRBxg+
- 67LFoWgXGLEq94ysXBpZqegK8a2crb/szv2lw8DGTW3vtK56d4nf8CfmkJxZevdOx/+JURWsHJH
- FDacA4Qm6AQGqN8x/kn3T8jYIrGGhEiQ8+Kup+NjGcFkoPA20E2E0Fwbd9s0bMDMJc7I3s/pBPN
- tKxypOFtnLZaMV1iO5qCP96Z9zfqj8T5BuVQVbHlCQsyjFSc1DZcQNlqNACnyNepKYArKxC499S
- u20ZSjZSV56XFuHKkp+5JL1qOJxOu0bufcy4dkHv7n11kCaUVF5Zmj3OrxjDT6LbJkljf8lTbIl
- cV/VKczHxsnO/b4BGEUa+4SFn6HJSc7t8c2xjhdvPpKx09of9Le8os3T8hUBnjHzLve4CM/ShKL
- lCVfvXMr6bdBMhKuze8bt3oe0yw5l5WV2XwIRYP8fTkm+nrvPB8tMJpQlxJ509+v9zXr3hzuLFZ
- cL+wVbW9wSsXa1RDThSq8a7x09bZQ2u2zcyJTvwt8faIbkHWmjJdWbHdy3DZr8W9ds9oSbxbwBh
- UlMGSGkB6Pb4P1Nhl/q+HSBkcYkfkaJAC6XUxEAlBZMqeRhf2ibm87pFWRZzw+RF
-X-Received: by 2002:a05:6402:205b:b0:6b7:1d62:3916 with SMTP id
- 4fb4d7f45d1cf-6b755626b9dmr778195a12.0.1794283039727; 
- Mon, 09 Nov 2026 19:57:19 -0800 (PST)
+ AL+hErGb5GRLYTiqqQtTsx8rsezqbYc8RhxvWRH2J+BoEt8hUzQ6PuBaSxhj1rfzSPRwoM+2d+potx712lgr9g6KcUg=@lists.osuosl.org
+X-Gm-Message-State: APuU4Z84HdoTpR1gDwfucdvkHhKqd+MiAmnu5em5C2N71zU4U6UcduTQ
+ PNlWKQolDHPf8YyOwwVMfo7Ivvvn1Z9Tbeuw9KWbBkknQorXoL9A54pMxxS3mGRQc/g=
+X-Gm-Gg: AYBFou2vTfhJcCPe02ouUZ6M+QofgL7Bi//OLWPGOdeNvFHSB1VLgnp+pCSN9IdNcn/
+ R55zJYd+xTx/H9f6exowBCp7Qp3skFjH5C/xxlbcqArfViuA8FsksMolTmuj0B+8FEgXGqJb/N8
+ pkNdEeWxPzLi6+vqy1Wkhf6P4erNHduVnkUduxVPdlrvqPskcccwcclsCAvXIdzhrO9JzkCrAuL
+ Ltd163r9811QMSMrvkN95UKuLuR4WpyV0d0llQTb2p4MEATbaGVWbUTNplkF3H4q2N9YsfF4zOD
+ sClGmZKbnVNoqNnoYo7QS9Z/OV46zZ7+Q5jdmaQgP6qtR9RTfGmXFmJeSH0pRigoDinjEJWzZuX
+ Vzqwv2Y3orDHpU+Q1zQSJopESj367hZYRGNiXqOeRVi9KLopBYdFmZnQkEWUQdAzXuYxu56d27H
+ fsVN4Af5RssZWybgEv6W7FkG8bjGRx9keSuy5wSTqabndQF932Oql6KXlG+Whe7xsjvvObOt9Ra
+ zGNFQQsSc2oGwnf9C5/s/bbxCzulqDZ3vZ5eRqlNRmILQAzwl3Q8h8Fp+2PioI+8Nsd1V1A7Z+W
+ K/6YrhdEGB/WSOpbLADCnw8KhEPDedR4LdVaju1S2KM8pl029/BXfFK7AnzBbpI=
+X-Received: by 2002:a05:6402:a6c7:10b0:6ac:73f8:2e4f with SMTP id
+ 4fb4d7f45d1cf-6b756aeaf80mr752992a12.29.1794283043237; 
+ Mon, 09 Nov 2026 19:57:23 -0800 (PST)
 Received: from L9JK9NPFH9.lan ([104.28.20.56])
  by smtp.gmail.com with ESMTPSA id
- 4fb4d7f45d1cf-6b7579047c9sm548801a12.33.2026.11.09.19.57.16
+ 4fb4d7f45d1cf-6b7579047c9sm548801a12.33.2026.11.09.19.57.19
  (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
- Mon, 09 Nov 2026 19:57:18 -0800 (PST)
+ Mon, 09 Nov 2026 19:57:21 -0800 (PST)
 From: Tianyi Gao <tianyi@cloudflare.com>
 To: bpf@vger.kernel.org, netdev@vger.kernel.org,
  Alexei Starovoitov <ast@kernel.org>,
@@ -170,11 +172,13 @@ Cc: John Fastabend <john.fastabend@gmail.com>,
  linux-kselftest@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
  llvm@lists.linux.dev, kernel-team@cloudflare.com,
  Tianyi Gao <tianyi@cloudflare.com>
-Subject: [PATCH bpf-next 00/15] xdp: add SKB core extensions to keep RX
- metadata until skb creation
-Date: Tue, 10 Nov 2026 03:56:58 +0000
-Message-ID: <cover.1794281983.git.tianyi@cloudflare.com>
+Subject: [PATCH bpf-next 01/15] xdp: reserve an skb core extension area after
+ the xdp_frame
+Date: Tue, 10 Nov 2026 03:56:59 +0000
+Message-ID: <115997f55d63b507ce54fbe9e22900b59016f3c3.1794281983.git.tianyi@cloudflare.com>
 X-Mailer: git-send-email 2.56.0
+In-Reply-To: <cover.1794281983.git.tianyi@cloudflare.com>
+References: <cover.1794281983.git.tianyi@cloudflare.com>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -191,178 +195,174 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 X-Spam-Status: No, score=-18.9 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=4.0.1
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-An skb gets its RX hash, VLAN tag and checksum status from the RX
-descriptor, which describes the packet before the XDP program ran.
+Reserve the skb core extension area in the headroom, right after the
+xdp_frame. An XDP program stores RX metadata there for the skb that is
+built later.
 
-Without this series:
+The area begins with a header, struct xdp_skb_ext. It records the offset
+of each entry and the end of the last entry, in 4-byte units.
+bpf_xdp_adjust_head(), bpf_xdp_adjust_meta() and bpf_xdp_pull_data() use
+xdp_skb_ext_end() as their lower bound, so packet data and metadata
+cannot overwrite the entries.
 
-- On XDP_PASS, the values are stale. After the program strips a UDP
-  tunnel header, the stack applies the outer CHECKSUM_UNNECESSARY to the
-  inner packet [1]. If the outer UDP checksum is 0, a packet with a bad
-  inner checksum reaches the socket.
-- On XDP_REDIRECT, the values are lost. The skb that cpumap or veth
-  builds from the xdp_frame has no RX hash and no VLAN tag, and its
-  checksum status is CHECKSUM_NONE.
+The XDP_FLAGS_HAS_SKB_EXT flag indicates that the header is valid. Most
+drivers reuse the xdp_buff between packets, so xdp_prepare_buff() clears
+it. With BPF_F_TEST_XDP_LIVE_FRAMES, reset_ctx() restores the flags
+before each run, and ctx_was_changed() compares them.
 
-In one use case, an XDP program redirects packets into a veth device.
-The checksum status is lost, so GRO verifies every checksum in software.
-With one TCP flow, this costs 34% of the receiving CPU.
+Suggested-by: Jesper Dangaard Brouer <hawk@kernel.org>
+Link: https://lore.kernel.org/all/1d5521eb-84fc-4417-a3f5-6366694d160a@kernel.org/
+Signed-off-by: Tianyi Gao <tianyi@cloudflare.com>
+---
+ include/net/xdp.h  | 45 +++++++++++++++++++++++++++++++++++++++++++++
+ net/bpf/test_run.c |  4 +++-
+ net/core/filter.c  |  8 +++-----
+ 3 files changed, 51 insertions(+), 6 deletions(-)
 
-Another use case [2] is load balancing IPsec tunnel traffic with cpumap.
-Without the RX hash, GRO on cpumap puts all flows into the same bucket.
-In a cpumap test with 16 TCP flows and no IPsec, the throughput is
-17.6 Gbit/s instead of 23.4.
-
-This series introduces SKB core extensions for XDP. It reserves an skb
-core extension area in the headroom, right after the space for struct
-xdp_frame. An XDP program stores RX metadata in the area with kfuncs,
-and the kernel sets the skb fields from it. This design was initially
-proposed in [3].
-
-The layout of the area follows skb extensions (struct skb_ext). A small
-header gives the offset of each entry. An entry takes headroom only when
-the program stores it, so the area does not grow with each new type of
-RX metadata, unlike [4]. Unlike skb_ext, the area needs no allocation.
-
-This series supports three types of RX metadata. Each type has a store
-kfunc, and bpf_xdp_skb_ext_del() deletes an entry:
-
-- The RX hash and its type: bpf_xdp_skb_ext_store_rx_hash().
-- The VLAN tag and its protocol: bpf_xdp_skb_ext_store_rx_vlan().
-- The checksum status: bpf_xdp_skb_ext_store_rx_csum(). Only
-  XDP_CHECKSUM_NONE, or XDP_CHECKSUM_UNNECESSARY with a csum_level up to
-  SKB_MAX_CSUM_LEVEL, are allowed [5][6].
-
-The kernel sets the skb fields from the area:
-
-- After XDP_REDIRECT, in __xdp_build_skb_from_frame().
-- On XDP_PASS, in the NIC driver. A driver that does this sets the new
-  XDP feature skb-ext-pass. On other native XDP drivers, the kernel
-  warns once when the program returns XDP_PASS with stored values, and
-  ignores the area. This series adds the support to ice.
-
-The existing XDP RX metadata kfuncs are bpf_xdp_metadata_rx_*(). Only
-a device-bound program can call them. Programs on cpumap and devmap are
-not device-bound, so they cannot call them. Relaxing this check would
-change their semantics. So this series adds three load kfuncs,
-bpf_xdp_skb_ext_load_rx_*(). They read the stored values.
-
-bpf_xdp_adjust_head(), bpf_xdp_adjust_meta() and bpf_xdp_pull_data() do
-not move the packet or the metadata into the area. In this series, the
-area takes at most 20 bytes of headroom. With the hardware RX timestamp,
-the RX queue index and CHECKSUM_COMPLETE, it would take up to 40 bytes.
-
-Lorenzo's RX checksum kfunc series v5 [7] also defines enum
-xdp_checksum. The series that is merged second drops its copy.
-
-Performance:
-
-We measured on ice (E810, 25 Gbit/s) with bpf-next 0fb18ce8a2e9, patches
-1-3 of [7] and this series. In the RX metadata column, the XDP program
-reads a value with bpf_xdp_metadata_rx_*() and stores it. The veth test
-stores the checksum status, and the cpumap test stores the RX hash. The
-kernel then sets the value on the skb. Baseline does not store it. Each
-value is the median of 5 rounds:
-
-test                  metric          baseline     RX metadata
-veth, 1 TCP flow      RX CPU busy     100%         66% (-34%)
-veth, 1 TCP flow      RX cycles/pkt   2027         1343 (-34%)
-cpumap, 16 TCP flows  throughput      17.6 Gbit/s  23.4 (+33%)
-cpumap, 16 TCP flows  pkts/GRO skb    3.4          7.5 (+122%)
-
-Both veth columns reach line rate, so the gain is in CPU time. A store
-kfunc takes 2.9 to 4.9 ns. Details are in [8].
-
-Not in this series:
-
-- XDP_PASS support in mlx5 and bnxt. To align with Lorenzo's series [7],
-  we plan to add xmo_rx_checksum and XDP_PASS support to them together,
-  one driver at a time.
-- AF_XDP zero-copy. User space can write the headroom of zero-copy
-  buffers, so the store kfuncs return -EOPNOTSUPP there.
-- Packets that enter XDP as an skb and leave it as an skb. This happens
-  in generic XDP, and on XDP_PASS in veth when its peer sends it an skb.
-  The series only sets the stored values on an skb that the kernel
-  builds from an xdp_buff or an xdp_frame.
-- Stored entries on frames that dpaa and dpaa2 redirect. These drivers
-  move data_hard_start before XDP_REDIRECT, so patch 2 clears the flag
-  of the area.
-
-[1] https://lore.kernel.org/all/20260227153231.78d16b69@kernel.org/
-[2] https://lore.kernel.org/all/ca38f2ed-999f-4ce1-8035-8ee9247f27f2@kernel.org/
-[3] https://lore.kernel.org/all/1d5521eb-84fc-4417-a3f5-6366694d160a@kernel.org/
-[4] https://lore.kernel.org/all/175146824674.1421237.18351246421763677468.stgit@firesoul/
-[5] https://lore.kernel.org/all/20260722113525.34092660@kernel.org/
-[6] https://lore.kernel.org/all/20260721183256.6f49d6e1@kernel.org/
-[7] https://lore.kernel.org/all/20260715-bpf-xdp-meta-rxcksum-v5-0-623d5c0d0ab7@kernel.org/
-[8] https://github.com/tgao-cf/skb-core-extensions-bench
-
-Tianyi Gao (15):
-  xdp: reserve an skb core extension area after the xdp_frame
-  net: dpaa, dpaa2: clear the skb core extension flag
-  xdp: add kfuncs to store RX hash and VLAN tag
-  xdp: add a kfunc to delete skb core extension entries
-  xdp: add a kfunc to store the RX checksum status
-  selftests/bpf: Test the skb core extension kfuncs
-  xdp: set skb RX metadata from the skb core extension area of xdp_frame
-  selftests/bpf: Test RX metadata on skbs built from xdp_frames
-  xdp: add the skb-ext-pass XDP feature and warn without it
-  xdp: warn on XDP_PASS with stored values when XDP runs on an skb
-  ice: set skb RX metadata from the skb core extension area of xdp_buff
-  selftests: drv-net: xdp: test the stored RX metadata on XDP_PASS
-  xdp: add kfuncs to load the stored RX metadata
-  selftests/bpf: Test the load kfuncs on cpumap and veth
-  docs: net: document the skb core extension area
-
- Documentation/netlink/specs/netdev.yaml       |   5 +
- Documentation/networking/xdp-rx-metadata.rst  | 127 +++++-
- .../net/ethernet/freescale/dpaa/dpaa_eth.c    |   2 +
- .../net/ethernet/freescale/dpaa2/dpaa2-eth.c  |   2 +
- drivers/net/ethernet/intel/ice/ice_main.c     |   3 +-
- drivers/net/ethernet/intel/ice/ice_sf_eth.c   |   3 +-
- drivers/net/ethernet/intel/ice/ice_txrx.c     |   4 +-
- drivers/net/ethernet/intel/ice/ice_txrx_lib.c |   7 +-
- drivers/net/ethernet/intel/ice/ice_txrx_lib.h |   3 +-
- drivers/net/ethernet/intel/ice/ice_xsk.c      |   2 +-
- drivers/net/veth.c                            |   5 +-
- include/net/xdp.h                             |  74 +++
- include/uapi/linux/netdev.h                   |   6 +-
- net/bpf/test_run.c                            |   4 +-
- net/core/dev.c                                |   2 +
- net/core/filter.c                             |   8 +-
- net/core/xdp.c                                | 428 +++++++++++++++++-
- tools/include/uapi/linux/netdev.h             |   6 +-
- .../selftests/bpf/prog_tests/test_xsk.c       |  25 +
- .../selftests/bpf/prog_tests/test_xsk.h       |   2 +
- .../selftests/bpf/prog_tests/xdp_bonding.c    |   8 +-
- .../bpf/prog_tests/xdp_do_redirect.c          |   8 +-
- .../selftests/bpf/prog_tests/xdp_pull_data.c  |  12 +-
- .../selftests/bpf/prog_tests/xdp_skb_ext.c    | 375 +++++++++++++++
- .../selftests/bpf/progs/test_xdp_pull_data.c  |   7 +
- .../selftests/bpf/progs/test_xdp_skb_ext.c    | 173 +++++++
- .../selftests/bpf/progs/xdp_skb_ext_failure.c |  16 +
- .../selftests/bpf/progs/xdp_skb_ext_success.c | 245 ++++++++++
- .../selftests/bpf/progs/xsk_xdp_progs.c       |  13 +
- tools/testing/selftests/bpf/xdp_skb_ext.h     |  53 +++
- .../drivers/net/hw/lib/py/__init__.py         |   3 +-
- .../selftests/drivers/net/hw/xdp_metadata.py  | 118 ++++-
- .../drivers/net/hw/xdp_skb_ext.bpf.c          | 166 +++++++
- 33 files changed, 1873 insertions(+), 42 deletions(-)
- create mode 100644 tools/testing/selftests/bpf/prog_tests/xdp_skb_ext.c
- create mode 100644 tools/testing/selftests/bpf/progs/test_xdp_skb_ext.c
- create mode 100644 tools/testing/selftests/bpf/progs/xdp_skb_ext_failure.c
- create mode 100644 tools/testing/selftests/bpf/progs/xdp_skb_ext_success.c
- create mode 100644 tools/testing/selftests/bpf/xdp_skb_ext.h
- create mode 100644 tools/testing/selftests/drivers/net/hw/xdp_skb_ext.bpf.c
-
-
-base-commit: 0fb18ce8a2e9de830433923cf65838933d615359
+diff --git a/include/net/xdp.h b/include/net/xdp.h
+index 07231adfb5f8..c888353425d4 100644
+--- a/include/net/xdp.h
++++ b/include/net/xdp.h
+@@ -81,6 +81,9 @@ enum xdp_buff_flags {
+ 	 * XDP program is not attached.
+ 	 */
+ 	XDP_FLAGS_FRAGS_UNREADABLE	= BIT(2),
++	XDP_FLAGS_HAS_SKB_EXT		= BIT(3), /* skb core extension header
++						   * is valid
++						   */
+ };
+ 
+ struct xdp_buff {
+@@ -146,6 +149,16 @@ static __always_inline void xdp_buff_clear_frag_pfmemalloc(struct xdp_buff *xdp)
+ 	xdp->flags &= ~XDP_FLAGS_FRAGS_PF_MEMALLOC;
+ }
+ 
++static __always_inline bool xdp_buff_has_skb_ext(const struct xdp_buff *xdp)
++{
++	return !!(xdp->flags & XDP_FLAGS_HAS_SKB_EXT);
++}
++
++static __always_inline void xdp_buff_clear_skb_ext_flag(struct xdp_buff *xdp)
++{
++	xdp->flags &= ~XDP_FLAGS_HAS_SKB_EXT;
++}
++
+ static __always_inline void
+ xdp_init_buff(struct xdp_buff *xdp, u32 frame_sz, struct xdp_rxq_info *rxq)
+ {
+@@ -174,6 +187,7 @@ xdp_prepare_buff(struct xdp_buff *xdp, unsigned char *hard_start,
+ 	xdp->data = data;
+ 	xdp->data_end = data + data_len;
+ 	xdp->data_meta = meta_valid ? data : data + 1;
++	xdp_buff_clear_skb_ext_flag(xdp);
+ }
+ 
+ /* Reserve memory area at end-of data area.
+@@ -450,6 +464,37 @@ struct xdp_frame *xdp_convert_buff_to_frame(struct xdp_buff *xdp)
+ 	return xdp_frame;
+ }
+ 
++/* skb core extensions: RX metadata that an XDP program stores in the
++ * headroom right after the xdp_frame, for the skb that is built later.
++ */
++enum xdp_skb_ext_id {
++	XDP_SKB_EXT_HASH,
++	XDP_SKB_EXT_VLAN,
++	XDP_SKB_EXT_CSUM,
++	XDP_SKB_EXT_NUM,
++};
++
++#define XDP_SKB_EXT_ALIGN	4
++
++struct xdp_skb_ext {
++	u8 offset[XDP_SKB_EXT_NUM];	/* in chunks of 4 bytes */
++	u8 chunks;			/* same */
++};
++
++static __always_inline struct xdp_skb_ext *xdp_skb_ext(struct xdp_frame *frame)
++{
++	return (void *)(frame + 1);
++}
++
++static __always_inline void *xdp_skb_ext_end(const struct xdp_buff *xdp)
++{
++	struct xdp_skb_ext *ext = xdp_skb_ext(xdp->data_hard_start);
++
++	if (!xdp_buff_has_skb_ext(xdp))
++		return ext;
++	return (void *)ext + ext->chunks * XDP_SKB_EXT_ALIGN;
++}
++
+ void __xdp_return(netmem_ref netmem, enum xdp_mem_type mem_type,
+ 		  bool napi_direct, struct xdp_buff *xdp);
+ void xdp_return_frame(struct xdp_frame *xdpf);
+diff --git a/net/bpf/test_run.c b/net/bpf/test_run.c
+index d6c9dc62182e..f25581851339 100644
+--- a/net/bpf/test_run.c
++++ b/net/bpf/test_run.c
+@@ -223,7 +223,8 @@ static bool ctx_was_changed(struct xdp_page_head *head)
+ {
+ 	return head->orig_ctx.data != head->ctx.data ||
+ 		head->orig_ctx.data_meta != head->ctx.data_meta ||
+-		head->orig_ctx.data_end != head->ctx.data_end;
++		head->orig_ctx.data_end != head->ctx.data_end ||
++		head->orig_ctx.flags != head->ctx.flags;
+ }
+ 
+ static void reset_ctx(struct xdp_page_head *head)
+@@ -234,6 +235,7 @@ static void reset_ctx(struct xdp_page_head *head)
+ 	head->ctx.data = head->orig_ctx.data;
+ 	head->ctx.data_meta = head->orig_ctx.data_meta;
+ 	head->ctx.data_end = head->orig_ctx.data_end;
++	head->ctx.flags = head->orig_ctx.flags;
+ 	xdp_update_frame_from_buff(&head->ctx, head->frame);
+ 	head->frame->mem_type = head->orig_ctx.rxq->mem.type;
+ }
+diff --git a/net/core/filter.c b/net/core/filter.c
+index 9245009d9f1e..4f6698f75d90 100644
+--- a/net/core/filter.c
++++ b/net/core/filter.c
+@@ -4243,9 +4243,8 @@ static unsigned long xdp_get_metalen(const struct xdp_buff *xdp)
+ 
+ BPF_CALL_2(bpf_xdp_adjust_head, struct xdp_buff *, xdp, int, offset)
+ {
+-	void *xdp_frame_end = xdp->data_hard_start + sizeof(struct xdp_frame);
+ 	unsigned long metalen = xdp_get_metalen(xdp);
+-	void *data_start = xdp_frame_end + metalen;
++	void *data_start = xdp_skb_ext_end(xdp) + metalen;
+ 	void *data = xdp->data + offset;
+ 
+ 	if (unlikely(data < data_start ||
+@@ -4547,13 +4546,12 @@ static const struct bpf_func_proto bpf_xdp_adjust_tail_proto = {
+ 
+ BPF_CALL_2(bpf_xdp_adjust_meta, struct xdp_buff *, xdp, int, offset)
+ {
+-	void *xdp_frame_end = xdp->data_hard_start + sizeof(struct xdp_frame);
+ 	void *meta = xdp->data_meta + offset;
+ 	unsigned long metalen = xdp->data - meta;
+ 
+ 	if (xdp_data_meta_unsupported(xdp))
+ 		return -ENOTSUPP;
+-	if (unlikely(meta < xdp_frame_end ||
++	if (unlikely(meta < xdp_skb_ext_end(xdp) ||
+ 		     meta > xdp->data))
+ 		return -EINVAL;
+ 	if (unlikely(xdp_metalen_invalid(metalen)))
+@@ -12794,7 +12792,7 @@ __bpf_kfunc int bpf_xdp_pull_data(struct xdp_md *x, u32 len)
+ 
+ 	start = xdp_data_meta_unsupported(xdp) ? xdp->data : xdp->data_meta;
+ 
+-	headroom = start - xdp->data_hard_start - sizeof(struct xdp_frame);
++	headroom = start - xdp_skb_ext_end(xdp);
+ 	tailroom = data_hard_end - xdp->data_end;
+ 
+ 	delta = len - data_len;
 -- 
 2.56.0
 
