@@ -1,149 +1,208 @@
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 77E61606A31C
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Nov 2026 10:04:51 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6858D60A2608
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Nov 2026 12:23:20 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=AgcTRPgW;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=JwO9YrLQ
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=ab8qiiiX;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=OrU5yJJt;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=OrU5yJJt;
+	dkim=neutral header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=OrU5yJJt
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 55122606E1;
-	Tue, 10 Nov 2026 10:04:51 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 4259B810E6;
+	Tue, 10 Nov 2026 12:23:20 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id NNw_5jcZ6lgC; Tue, 10 Nov 2026 10:04:50 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org AA3FF60760
-Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794305090;
-	b=KRWu/MDjnG2j/Pgl83CDTGk/fU+urpx85DzASlH6649PPt4/WJKxsucMaxQ/rtRkrF5J
-	 /udinfCxL6DicOUWVCj+85UAZM3dJieoMRBCF2kLdGNW1lD5uBM0/3tsG6n0awyBQUbEy
-	 vc0l7Br94mUQ+RORh/P59wIdqptCSdsjR7XwAmSjbSuLJaPFpUNXa6KF7LqufCXvQ4qEN
-	 D8UguEv68VaHEGD2WC2XhIKkT8D+MwXvXSLY/3TwCDcR2CV7VBE0Xr9jr2PfZPgeA/1VL
-	 7XTkyF1IEHREsHkPTyD32aboJNKx7MEVMh8BEB7WmAgF96ckAIbjFjMtXYUkNDuXe+w==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id XoifpIpjdnDx; Tue, 10 Nov 2026 12:23:19 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 60D508112A
+Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794313399;
+	b=ApNo2dcHmFl9Rt3WDVisvj0aXSirqm2c+psjdhaC4ZchqysFyVBs9s/0qZgyKmY41ilX
+	 psXyb+W5YQ1in8O0Qz2L335kCRkUPtkdztrs8oLEyt0voobrcLS6o/c4iYh23/VTy/Ind
+	 CXQuwl0wUeFUmIfUbzP6NOtMv0MV2roygQcnbEDtv7GDpSycHs/rlbzT72j7v0mn2uvEy
+	 8FOJht3khfj2j+HBU03YOCPIKKazsiwWETDi//BZ5Bfy6pTUGjkx208HYLHOQQi1Aj+u8
+	 AJ39OMURAwuabZHeA3VGv/KJkKKYAPBj3Tq6gxFOLPRTPJTURTlxUG8146UT3ogxvqg==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794305090;
+	c=relaxed/relaxed; t=1794313399;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:MIME-Version:References:
-	 In-Reply-To:From:Date:X-Gm-Features:Message-ID:Subject:To:Cc:
-	 Content-Type:X-BeenThere:X-Mailman-Version:Precedence:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Errors-To;
-	bh=c8SH9EDnCkmjUHGPR0P2Z3gz/VtKXf2f2iywxNQfoIM=;
-	b=B3jcB36m5Lb7N6SxbS5518fnBulYNZb4t+I3Y23B/pzkmb3pNG6rwFmdALEmOcna/EnT
-	 qZ6Cft3sFlhn9XTsHrEKThKBnQs79fIq8xBP0FsOTb07ZjYOnnm0Ycqp0PIO/px8eH8yI
-	 O3trAZ7ef/qj4YiYnaTdgzpXrScuVic02paDtdOJqImX6siTmWXPSSgKy+2jN7vDZUPCf
-	 hdjvYihoZwVmEFJ2DrNU7TaNgR48MkNKWIMdGu1/H0+vUCDVtaGoTaRCwwgSuZKw4JIiE
-	 TwrLDfx90vdPeOJYGU0325ZDv9FhfXQOkp8JM5Op45MtihwGuIlhrrV8P7CMK5svexg==
-ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
-	dmarc=pass header.from=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=JwO9YrLQ;
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
+	 DKIM-Signature:DKIM-Signature:DKIM-Signature:Received:X-MC-Unique:
+	 X-Mimecast-MFC-AGG-ID:Received:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
+	 X-Received:Received:Message-ID:Date:MIME-Version:User-Agent:Subject:
+	 To:Cc:References:From:In-Reply-To:X-Mimecast-Spam-Score:
+	 X-Mimecast-MFC-PROC-ID:X-Mimecast-Originator:Content-Language:
+	 Content-Type:Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:
+	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 List-Subscribe:Errors-To;
+	bh=LiIl7kgsfTWpSgySm1Nh3N0Z7OZvnmYj+mfXUmSTco8=;
+	b=PCYho/rvVmD1zXYuaVyZ+OYUvRT46qeIPx20wP2QvI4+0siUySWo2FnpZ8N3RwnFFGqd
+	 JZtfzz9ss3lleB0eJ5eZG98u1Hh1LZhrejjF610499aXrKhKFK6pEyPjyit5faSC+hJHK
+	 gAZDTCLGWDENlokafu4vAE/y7TP4udt8SBY+nAhPqC8Zet8jANvpkn6bwyydUScWnL6Ik
+	 xRbDsyxqwoGryj1HEOzvraOFs1A2myRx2f7VaXARbWB3Jk9xsb3Fr5WxQFsaW3Bjhxg79
+	 aOEx1bOaqu8T1MeJL7m5I3HPULsj5heBq35/PrgDn9ByZ+8Ka7UwWJFITMKrLpFX8iA==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
+	dmarc=pass header.from=redhat.com;
+	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=OrU5yJJt;
+	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=OrU5yJJt;
+	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=OrU5yJJt;
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1794305090;
-	bh=c8SH9EDnCkmjUHGPR0P2Z3gz/VtKXf2f2iywxNQfoIM=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-Id:
+	s=default; t=1794313399;
+	bh=LiIl7kgsfTWpSgySm1Nh3N0Z7OZvnmYj+mfXUmSTco8=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=AgcTRPgWajVxBOBK7CKPtylt2M46ICHsz+xtBm+UeD8tIJ8HzuSwXqYl1v31QJz7Y
-	 nAHhUZkOgGzvO0/Td/9oUQ/VcwcWEfMQ0rNHx9X3jeIOzgr7TFwlCtbVFg4NIasqlY
-	 eVc7hub1MhMP+WizS8XLhQv29J/cMLqv1UGbABq3zM6wrDlT7v0NHYo8ln/sxkkS4W
-	 3sLL/HOGgNB/UuVRV3Fqm9YTHRIFqjx9ByjDDGWT1Tvpvjgymi95nxKCCcPCP0I0lM
-	 8SABpzMVT9QmFzsZ7qBMqDbeRM6AEmbHtbFPp37+XSJEDHrlQsUZ7yF/6c2EorLiUl
-	 ZhHzxVyOLHefw==
+	b=ab8qiiiXSK09tGWqVw4cThFEofu8ul6J3Dv2ufL28hLumDaK3fgadT25leCxOhGfg
+	 TChu8vctX+TgoMdbQigguQ50EhPTRhA/KKtQTuNZWPF97+c+np+2rrfGSA7BxvP6P9
+	 6jq9glCPHUtTft602EOq1J4J8gp4wD1vFd6RP/74ZSHhfdYPSaH8cBRzrwNVtuvlYz
+	 7USc02cJMzLbwYr2/ddbJXdLe/RHWeHLUlUn7H/o1uW/BmalhXr23wuSyFaCPx+9vz
+	 wQb8/qWLhUqmoLGCayE1x1OWrCGRSZiGEt2a+HNxBAEeM5CYEdycciEygJWcE8n11G
+	 oYq6RPY3E672w==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id AA3FF60760;
-	Tue, 10 Nov 2026 10:04:50 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 6CA0FD7
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 10:04:49 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 60D508112A;
+	Tue, 10 Nov 2026 12:23:19 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id B0621731
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 12:23:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 5E1F060760
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 10:04:49 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id A0DA4810E6
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 12:23:18 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id wq0hxZ54OLiA for <intel-wired-lan@lists.osuosl.org>;
- Tue, 10 Nov 2026 10:04:48 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 54157606E1
-Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0
- smtp.remote-ip="2607:f8b0:4864:20::c30"
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::c30; helo=mail-oo1-xc30.google.com;
- envelope-from=danividanivi@gmail.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20260707 header.b=JwO9YrLQ
-Received: from mail-oo1-xc30.google.com (mail-oo1-xc30.google.com
- [IPv6:2607:f8b0:4864:20::c30])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 54157606E1
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 10:04:47 +0000 (UTC)
-Received: by mail-oo1-xc30.google.com with SMTP id
- 006d021491bc7-716c0217635so1555050eaf.0
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 02:04:47 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20260707; t=1794305087; x=1794909887; darn=lists.osuosl.org;
- h=content-type:cc:to:subject:message-id:date:from:in-reply-to
- :references:mime-version:from:to:cc:subject:date:message-id:reply-to
- :content-type; bh=c8SH9EDnCkmjUHGPR0P2Z3gz/VtKXf2f2iywxNQfoIM=;
- b=JwO9YrLQsqGHxlHvIYlU+O8QJQ/CDPDh80wP2QtWjF7V4KFfP/1Oi7NR2vUXG+V2Pj
- dDRECQyO3+CaS4VYbNz2LwtZGNQD3pGASKc1Dp4p25hPydandGGrP7Iq7o4vCuHnSnq1
- t6rLGzGdjqVjigWGQ4a+yrpYnJu3n236is+3JFlItHeypHqyekvX8mIhwQHbpM5/kngJ
- hIhfOuh2o1FSOLbTqYOhUS/YAUwHCMWg7fT9gcvqGeqThvX3Tsa78GruBUgTFb7fUH2z
- 328Ko5KXkWZ6lFUKLt1/LLpRY7mL42C//KIGNAYDS8s4+kEYLIzDvlkt47GW5uNmTb50
- nE/w==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id hgOkphr4YMfN for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 10 Nov 2026 12:23:18 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 36EC68100F
+Authentication-Results: smtp1.osuosl.org;
+ arc=none smtp.remote-ip=170.10.133.124
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.133.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=poros@redhat.com;
+ receiver=<UNKNOWN> 
+Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.from=redhat.com
+Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (1024-bit key, unprotected) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=OrU5yJJt; 
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=OrU5yJJt; 
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=OrU5yJJt
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+ by smtp1.osuosl.org (Postfix) with ESMTP id 36EC68100F
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 12:23:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1794313395;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=LiIl7kgsfTWpSgySm1Nh3N0Z7OZvnmYj+mfXUmSTco8=;
+ b=OrU5yJJtu/Btuj7cDFGGqY3Vu/AfMExTwnxYseVkCNqpQZ1bab+TtK8UWuIgQpkQJ0nbyL
+ lE7qZXDX+a/xk9BidG2ALHMzInSXQxN4Nnz4mmsaEL5sMrezOcysQUI+kQBUjxnN+6yibm
+ YGTDvmTXb2CIK9hNRdJuj5WVwYXOahE=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1794313395;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=LiIl7kgsfTWpSgySm1Nh3N0Z7OZvnmYj+mfXUmSTco8=;
+ b=OrU5yJJtu/Btuj7cDFGGqY3Vu/AfMExTwnxYseVkCNqpQZ1bab+TtK8UWuIgQpkQJ0nbyL
+ lE7qZXDX+a/xk9BidG2ALHMzInSXQxN4Nnz4mmsaEL5sMrezOcysQUI+kQBUjxnN+6yibm
+ YGTDvmTXb2CIK9hNRdJuj5WVwYXOahE=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1794313395;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=LiIl7kgsfTWpSgySm1Nh3N0Z7OZvnmYj+mfXUmSTco8=;
+ b=OrU5yJJtu/Btuj7cDFGGqY3Vu/AfMExTwnxYseVkCNqpQZ1bab+TtK8UWuIgQpkQJ0nbyL
+ lE7qZXDX+a/xk9BidG2ALHMzInSXQxN4Nnz4mmsaEL5sMrezOcysQUI+kQBUjxnN+6yibm
+ YGTDvmTXb2CIK9hNRdJuj5WVwYXOahE=
+Received: from mail-wr1-f71.google.com (mail-wr1-f71.google.com
+ [209.85.221.71]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-396-mL0xfzkLMUCsCgirW4mMpQ-1; Tue, 10 Nov 2026 07:23:14 -0500
+X-MC-Unique: mL0xfzkLMUCsCgirW4mMpQ-1
+X-Mimecast-MFC-AGG-ID: mL0xfzkLMUCsCgirW4mMpQ_1794313393
+Received: by mail-wr1-f71.google.com with SMTP id
+ ffacd0b85a97d-48e0461e040so1568943f8f.0
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 04:23:14 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1794305087; x=1794909887;
- h=content-type:cc:to:subject:message-id:date:from:in-reply-to
- :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
- :subject:date:message-id:reply-to:content-type;
- bh=c8SH9EDnCkmjUHGPR0P2Z3gz/VtKXf2f2iywxNQfoIM=;
- b=YEsmZv6h5nqWq79r6G66fi75FnoAZqgyx5jDw9+ExS1oTVFMx9+ZfIjxnPtofv05Ue
- zsVghva4u733c4RyFEpycJX0nppUpfjyb3ApLlh8vqW6FNEfkn6/u7UjChU3dh951hwE
- /brKbjcIUeavfKX6jQY52xCC1rR9kF8dFZ1HfEzlEKrSxfS8zhyz0DLBzRMZFgxfv1oc
- jwGwtM/fklfavbIHpC2R09YLoVaRvl84sIBvw2Qpw73nWpeE4C/XGHOUzVSSXFt7aVHi
- SD8evctTJNdBGiIbnSDGXOeTjIafSK3h3+HqvfgBXWl/c/vizUU8MgoIlTq9Tk16CK6X
- Z/Uw==
+ d=1e100.net; s=20260707; t=1794313393; x=1794918193;
+ h=content-transfer-encoding:content-type:in-reply-to:from:references
+ :cc:to:content-language:subject:user-agent:mime-version:date
+ :message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to:content-type;
+ bh=LiIl7kgsfTWpSgySm1Nh3N0Z7OZvnmYj+mfXUmSTco8=;
+ b=WbXnpx5FB7+/yTbfAkYyXQnaVM8eNzEtL6enxTAhGpdxQeR5o3S7z7tRRd2OVKT1Rf
+ C216bBZVBdZEYE7SQRiiy8UeQS4iiapk12z8UVlRoK+OTZbauj1U1OiBKReeYJcLMexm
+ mKVj5fjfWL0qjJ7KZWWBBBv03/Q7kDFMzStMB4qdNrueQQAmnG9BhCk81sRgjvOjN1An
+ LoUaNVkiOAz3GpGr0oM18BWJ0y5dq6N326SwRWfiosZpezKwaW2OWAGOADA1wbFrPS3w
+ iNp9gng879b0pHkq1trE3I2A55SeOwR9k1qrCS07Rr8lm59E1pTpCK0PDUd2C3NdzC++
+ hliQ==
 X-Forwarded-Encrypted: i=1;
- AL+hErGzTSeQ95HFsA7g0r6IJZ7njgzD1m703tNWAX8zxKI2tCJ+v2DRDDDGt+PwVBjH4NeQmTeEVkl6/3XKbPh1r6Y=@lists.osuosl.org
-X-Gm-Message-State: APuU4Z90IOYr9hR33UXil3C5L9evNhh13K/1x7XEizPEEpr9BJ/6EGbX
- YNQl/CFIKdqF+2ATJW2udmiHXw8juscVv9Bh4EUjdtEx11oIbOp90VfAhqyh1ctuyn5vckYCosG
- 1QooE97pn/zWYSOCq6qD8yYcHPjNx6p0=
-X-Gm-Gg: AYBFou3GeqQgbI3oS7qdENwJw1WXzpSD5EIyYI08PVdls/T6AKRSh8oxZ6bTdy/47Uv
- eXN4mr7NJs6sQtsIsS4Kdk0XngHGHXEMXExetBcBq6zqK4RDY519EaP04V3vHWi75VJB4JiggD+
- fx/WoC1ezj7i++lSK16MItaUqkoVTpZMi3AJFK82DoPCpCl0egRppFznrNis8KnjosC0oEA1MUE
- UqQYlts6cR0P2pxJuH5i3eW3E5iiC/dfhiOb9hgIvsam5lk6XNDj8mEW8Z8ifQ91YUhxWdGRiRr
- 8C3+rymDHyQ3kQEEaNjcOhjMInhSbHHxzSK02yVoBeM0NqSrx5ufZUB0YGfFKPL0lS25yn4M4DM
- JyulunTk8oBu0QzYV+HB4kNJ+wN/svfYbWDdYo3gQEpWV5p3KIeH1rXyWtKY2evW8Eq7SjN4UGy
- ABsT/RJ3EgLdfad4DVE4Drn8ffHfMj7eIqJJWm+AMHfZ3tQyKp1B+CWaLid7eqdAzdSFY37b8b
-X-Received: by 2002:a05:6820:c0d4:20b0:6f7:e193:8326 with SMTP id
- 006d021491bc7-718a70211bcmr533260eaf.32.1794305086687; Tue, 10 Nov 2026
- 02:04:46 -0800 (PST)
+ AL+hErF3GNqTx3LjIQ4aZHukpLb1NVtx9+5J72OmiwJeSKHJq8XKylDtE54BdD/YjeT6J+fYUO0NCr3zprmaAvh9kt0=@lists.osuosl.org
+X-Gm-Message-State: APuU4Z9oxdRY4sIjOJ3ysF736erYIdUcfxQTT1MhFFib/3FsRBIuqFrJ
+ xbHKxCpCj0gm52Qy7bOVyjCi8xU8dz1hHbxdLNYXvGb4NAszlFvEGF3u/WXgwHC8ncKRvDdl8yr
+ dRSpvCnXaFctrwq6UwNAmvRL8YKkm7SVbUZXmC2/S8F1PdQrdSa/MWtBITA0ZY3wqHene6UHw8/
+ Z+YDMR2g==
+X-Gm-Gg: AYBFou34SQyiZJSOrHnaBC8CMkvaLumZ4hHWmFcDgX6B/GRj4Zfg9xvNrm2gu/bLW9R
+ WJZm9IZU3ToUy5GDaP5HDNydnMkq3uo1igLRFBpF7Z25RBsCHIMMX4mVPK+JIOzWDTWyH/qKYxH
+ SJiKvTUqpvdzPV6oGIoVhkJnW6B5I2qjOi9t5WfOkZU/0T+bQgp6nqGX9DZzqFwuLrBC/qdUCMZ
+ lIAuh3fG5Rf65NKH2esJ1+ZCaY7XJFmhQDayJ1i/P+TXO5guppYPEpk6pMbYyded/4Y76a4eRFn
+ nRvDWAqP3v+OTZeOgKAeNvQA/Id9QML2N91kWMmeovl94WGg1sYfY0rLcocs/CRsus1ahaLQtGi
+ DoCYOHbk8ZVMN1M/Kv2GW7j47haDXUOyBlz8=
+X-Received: by 2002:a05:6000:310d:b0:491:45bc:d69a with SMTP id
+ ffacd0b85a97d-49830b9797bmr5613038f8f.44.1794313392915; 
+ Tue, 10 Nov 2026 04:23:12 -0800 (PST)
+X-Received: by 2002:a05:6000:310d:b0:491:45bc:d69a with SMTP id
+ ffacd0b85a97d-49830b9797bmr5612980f8f.44.1794313392451; 
+ Tue, 10 Nov 2026 04:23:12 -0800 (PST)
+Received: from [10.43.3.161] ([213.175.46.86])
+ by smtp.gmail.com with ESMTPSA id
+ ffacd0b85a97d-4983600bc9asm4459078f8f.29.2026.11.10.04.23.11
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Tue, 10 Nov 2026 04:23:11 -0800 (PST)
+Message-ID: <ef9829b0-845b-41bd-bf58-dd8c28baaab3@redhat.com>
+Date: Tue, 10 Nov 2026 13:23:10 +0100
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-References: <20260925112850.189302-1-danividanivi@gmail.com>
- <179068206160.434549.1717741783856466607@kernel.org>
- <02c36d47-ad50-4f2c-88cc-6c91f62bba00@intel.com>
-In-Reply-To: <02c36d47-ad50-4f2c-88cc-6c91f62bba00@intel.com>
-From: =?UTF-8?Q?Daniel_Via=C3=B1o?= <danividanivi@gmail.com>
-Date: Tue, 10 Nov 2026 11:04:35 +0100
-X-Gm-Features: AclHuK8llmPJAPoIuNJK-9z_1ADOqNSF_GH_KJ9E3vYufuFCOTh_YkEnA-aSzHQ
-Message-ID: <CAD6rab8LEfZcQgcZLmeiDzd-PUi56h=9aBEsuOS2qnoyZEsdxA@mail.gmail.com>
-Subject: Re: [PATCH net] igc: Disable PCIe L1.2 substate on I225-LMvP and
- I226-LMvP devices
-To: "Ruinskiy, Dima" <dima.ruinskiy@intel.com>
-Cc: netdev-bot+sashiko@kernel.org, anthony.l.nguyen@intel.com, 
- przemyslaw.kitszel@intel.com, intel-wired-lan@lists.osuosl.org, 
- netdev@vger.kernel.org, bhelgaas@google.com, linux-pci@vger.kernel.org, 
- linux-kernel@vger.kernel.org, kuba@kernel.org
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH net-next 03/10] dpll: add domain object
+To: Ivan Vecera <ivecera@redhat.com>, netdev@vger.kernel.org
+Cc: Vadim Fedorenko <vadim.fedorenko@linux.dev>,
+ Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>,
+ Jiri Pirko <jiri@resnulli.us>, Jonathan Corbet <corbet@lwn.net>,
+ Shuah Khan <skhan@linuxfoundation.org>, Randy Dunlap
+ <rdunlap@infradead.org>, Min Li <min.li@microchip.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller"
+ <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ Richard Cochran <richardcochran@gmail.com>, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
+ Grzegorz Nitka <grzegorz.nitka@intel.com>,
+ Karol Kolacinski <karol.kolacinski@intel.com>,
+ Saeed Mahameed <saeedm@nvidia.com>, Tariq Toukan <tariqt@nvidia.com>
+References: <20261106121005.1327603-1-ivecera@redhat.com>
+ <20261106121005.1327603-4-ivecera@redhat.com>
+From: Petr Oros <poros@redhat.com>
+In-Reply-To: <20261106121005.1327603-4-ivecera@redhat.com>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: 8zuqEAQ34PWqfd52RVKW-XP-yruT3VQoSHaYOHkU0Xg_1794313393
+X-Mimecast-Originator: redhat.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -154,65 +213,229 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-2.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-17.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On 09/11/2026 12:45, Ruinskiy, Dima wrote:
-> I think this patch might better be split into several patches.
->
-> 1. Adding the missing IGC_DEV_ID_I226_LMVP to igc_is_device_id_i226().
-> This was probably an accidental omission.
 
-Agreed, I'll send this as a separate patch. Note that it also changes
-the TSN code paths in igc_tsn.c for I226-LMvP (they will now get the
-i226 behaviour), so it would be good if you could confirm that this
-is correct for 0x5503.
 
-> 2. Addressing the locked vs. non-locked call to pci_disable_link_state
-> (the possible deadlock noted by Sashiko) - this should be looked into a
-> bit more, I don't know off the top of my head what race is / isn't
-> possible.
+On 11/6/26 1:09 PM, Ivan Vecera wrote:
+> All dpll device and pin callbacks are serialized by the global dpll_lock,
+> so a slow device stalls all others, whichever driver they belong to.
+> 
+> Add struct dpll_domain as a preparation for serializing callbacks per
+> driver instance. A domain groups all devices and pins created with the
+> same (module, clock_id) pair, which is in practice one chip or card. The
+> same pair already identifies the owner of a pin in
+> dpll_pin_own_dpll_ref_first().
+> 
+> Domains are kept in an xarray, like devices and pins, and they live only as
+> long as their objects.
+> 
+> No functional change.
+> 
+> Signed-off-by: Ivan Vecera <ivecera@redhat.com>
+> ---
+>   drivers/dpll/dpll_core.c | 61 ++++++++++++++++++++++++++++++++++++++++
+>   drivers/dpll/dpll_core.h | 27 ++++++++++++++++++
+>   2 files changed, 88 insertions(+)
+> 
+> diff --git a/drivers/dpll/dpll_core.c b/drivers/dpll/dpll_core.c
+> index 8389983f425695..d39c4905172f2d 100644
+> --- a/drivers/dpll/dpll_core.c
+> +++ b/drivers/dpll/dpll_core.c
+> @@ -24,6 +24,7 @@ DEFINE_MUTEX(dpll_lock);
+>   
+>   DEFINE_XARRAY_FLAGS(dpll_device_xa, XA_FLAGS_ALLOC);
+>   DEFINE_XARRAY_FLAGS(dpll_pin_xa, XA_FLAGS_ALLOC);
+> +static DEFINE_XARRAY_FLAGS(dpll_domain_xa, XA_FLAGS_ALLOC);
+>   
+>   static RAW_NOTIFIER_HEAD(dpll_notifier_chain);
+>   static DEFINE_IDA(dpll_pin_idx_ida);
+> @@ -88,6 +89,50 @@ void dpll_pin_notify(struct dpll_pin *pin, u64 src_clock_id,
+>   	call_dpll_notifiers(action, &info);
+>   }
+>   
+> +static struct dpll_domain *dpll_domain_get(u64 clock_id, struct module *module)
+> +{
+> +	struct dpll_domain *domain;
+> +	unsigned long i;
+> +	int ret;
+> +
+> +	lockdep_assert_held(&dpll_lock);
+> +
+> +	xa_for_each(&dpll_domain_xa, i, domain) {
+> +		if (domain->clock_id == clock_id && domain->module == module) {
+> +			refcount_inc(&domain->refcount);
+> +			return domain;
+> +		}
+> +	}
+> +
+> +	domain = kzalloc_obj(*domain);
+> +	if (!domain)
+> +		return ERR_PTR(-ENOMEM);
+> +	domain->clock_id = clock_id;
+> +	domain->module = module;
+> +	refcount_set(&domain->refcount, 1);
+> +	mutex_init(&domain->lock);
+> +	ret = xa_alloc(&dpll_domain_xa, &domain->id, domain, xa_limit_32b,
+> +		       GFP_KERNEL);
+> +	if (ret) {
+> +		mutex_destroy(&domain->lock);
+> +		kfree(domain);
+> +		return ERR_PTR(ret);
+> +	}
+> +
+> +	return domain;
+> +}
+> +
+> +static void dpll_domain_put(struct dpll_domain *domain)
+> +{
+> +	lockdep_assert_held(&dpll_lock);
+> +
+> +	if (refcount_dec_and_test(&domain->refcount)) {
+> +		xa_erase(&dpll_domain_xa, domain->id);
+> +		mutex_destroy(&domain->lock);
+> +		kfree(domain);
+> +	}
+> +}
+> +
+>   static void dpll_device_tracker_alloc(struct dpll_device *dpll,
+>   				      dpll_tracker *tracker)
+>   {
+> @@ -120,6 +165,7 @@ static void __dpll_device_put(struct dpll_device *dpll, dpll_tracker *tracker)
+>   		xa_erase(&dpll_device_xa, dpll->id);
+>   		WARN_ON(!list_empty(&dpll->registration_list));
+>   		ref_tracker_dir_exit(&dpll->refcnt_tracker);
+> +		dpll_domain_put(dpll->domain);
+>   		kfree(dpll);
+>   	}
+>   }
+> @@ -159,6 +205,7 @@ static void __dpll_pin_put(struct dpll_pin *pin, dpll_tracker *tracker)
+>   		fwnode_handle_put(pin->fwnode);
+>   		dpll_pin_idx_free(pin->pin_idx);
+>   		ref_tracker_dir_exit(&pin->refcnt_tracker);
+> +		dpll_domain_put(pin->domain);
+>   		kfree_rcu(pin, rcu);
+>   	}
+>   }
+> @@ -366,6 +413,12 @@ dpll_device_alloc(const u64 clock_id, u32 device_idx, struct module *module)
+>   	dpll = kzalloc_obj(*dpll);
+>   	if (!dpll)
+>   		return ERR_PTR(-ENOMEM);
+> +	dpll->domain = dpll_domain_get(clock_id, module);
+> +	if (IS_ERR(dpll->domain)) {
+> +		ret = PTR_ERR(dpll->domain);
+> +		kfree(dpll);
+> +		return ERR_PTR(ret);
+> +	}
+>   	refcount_set(&dpll->refcount, 1);
+>   	INIT_LIST_HEAD(&dpll->registration_list);
+>   	dpll->device_idx = device_idx;
+> @@ -374,6 +427,7 @@ dpll_device_alloc(const u64 clock_id, u32 device_idx, struct module *module)
+>   	ret = xa_alloc_cyclic(&dpll_device_xa, &dpll->id, dpll, xa_limit_32b,
+>   			      &dpll_device_xa_id, GFP_KERNEL);
+>   	if (ret < 0) {
+> +		dpll_domain_put(dpll->domain);
+>   		kfree(dpll);
+>   		return ERR_PTR(ret);
+>   	}
+> @@ -664,6 +718,11 @@ dpll_pin_alloc(u64 clock_id, u32 pin_idx, struct module *module,
+>   	ret = dpll_pin_prop_dup(prop, &pin->prop);
+>   	if (ret)
+>   		goto err_pin_prop;
+> +	pin->domain = dpll_domain_get(clock_id, module);
+> +	if (IS_ERR(pin->domain)) {
+> +		ret = PTR_ERR(pin->domain);
+> +		goto err_domain;
+> +	}
+>   	refcount_set(&pin->refcount, 1);
+>   	xa_init_flags(&pin->dpll_refs, XA_FLAGS_ALLOC);
+>   	xa_init_flags(&pin->parent_refs, XA_FLAGS_ALLOC);
+> @@ -678,6 +737,8 @@ dpll_pin_alloc(u64 clock_id, u32 pin_idx, struct module *module,
+>   	xa_destroy(&pin->dpll_refs);
+>   	xa_destroy(&pin->parent_refs);
+>   	xa_destroy(&pin->ref_sync_pins);
+> +	dpll_domain_put(pin->domain);
+> +err_domain:
+>   	dpll_pin_prop_free(&pin->prop);
+>   err_pin_prop:
+>   	kfree(pin);
+> diff --git a/drivers/dpll/dpll_core.h b/drivers/dpll/dpll_core.h
+> index da8a369556ed11..6705e81bc11de9 100644
+> --- a/drivers/dpll/dpll_core.h
+> +++ b/drivers/dpll/dpll_core.h
+> @@ -9,18 +9,42 @@
+>   
+>   #include <linux/dpll.h>
+>   #include <linux/list.h>
+> +#include <linux/mutex.h>
+>   #include <linux/refcount.h>
+>   #include <linux/ref_tracker.h>
+>   #include "dpll_nl.h"
+>   
+>   #define DPLL_REGISTERED		XA_MARK_1
+>   
+> +/**
+> + * struct dpll_domain - group of dpll objects sharing a lock
+> + * @id:			index of the domain in dpll_domain_xa
+> + * @clock_id:		clock_id of the objects in the domain
+> + * @module:		module of the objects in the domain
+> + * @refcount:		number of dpll devices and pins in the domain
+> + * @lock:		lock of the domain
+> + *
+> + * All dpll devices and pins created with the same (module, clock_id) pair
+> + * belong to one domain, in practice to one chip or card.
+> + **/
+> +struct dpll_domain {
+> +	u32 id;
+> +	u64 clock_id;
+> +	struct module *module;
+> +	refcount_t refcount;
+> +	/* Serializes the driver callbacks of all DPLL devices and pins
+> +	 * that share one (module, clock_id) pair.
+> +	 */
+> +	struct mutex lock;
+> +};
+> +
+>   /**
+>    * struct dpll_device - stores DPLL device internal data
+>    * @id:			unique id number for device given by dpll subsystem
+>    * @device_idx:		id given by dev driver
+>    * @clock_id:		unique identifier (clock_id) of a dpll
+>    * @module:		module of creator
+> + * @domain:		domain the device belongs to
+>    * @type:		type of a dpll
+>    * @pin_refs:		stores pins registered within a dpll
+>    * @refcount:		refcount
+> @@ -32,6 +56,7 @@ struct dpll_device {
+>   	u32 device_idx;
+>   	u64 clock_id;
+>   	struct module *module;
+> +	struct dpll_domain *domain;
+>   	enum dpll_type type;
+>   	struct xarray pin_refs;
+>   	refcount_t refcount;
+> @@ -46,6 +71,7 @@ struct dpll_device {
+>    * @clock_id:		clock_id of creator
+>    * @module:		module of creator
+>    * @module_name:	module name of creator
+> + * @domain:		domain the pin belongs to
+>    * @fwnode:		optional reference to firmware node
+>    * @dpll_refs:		hold referencees to dplls pin was registered with
+>    * @parent_refs:	hold references to parent pins pin was registered with
+> @@ -61,6 +87,7 @@ struct dpll_pin {
+>   	u64 clock_id;
+>   	struct module *module;
+>   	char module_name[MODULE_NAME_LEN];
+> +	struct dpll_domain *domain;
+>   	struct fwnode_handle *fwnode;
+>   	struct xarray dpll_refs;
+>   	struct xarray parent_refs;
 
-I believe the deadlock is real and already present for I226.
-pcie_do_recovery() runtime-resumes the affected devices through
-pci_walk_bridge(bridge, pci_pm_runtime_get_sync, NULL), i.e. with
-pci_bus_sem held for read. If igc is runtime-suspended at that point,
-igc_runtime_resume() -> __igc_resume() -> pci_disable_link_state()
-takes pci_bus_sem for read a second time, which can deadlock if a
-writer queues in between.
+Reviewed-by: Petr Oros <poros@redhat.com>
 
-The L1.2 disable done in probe is sticky (link->aspm_disable) and the
-PCI core honours it when restoring state on resume, so I plan to drop
-the call from __igc_resume().
-
-> 3. The actual problem with L1.2 substate this patch aims to solve. I
-> checked with the HW team and there are two conclusions - (a) it is
-> strange that L1.2 is enabled somehow for I225_LMVP - this is not
-> expected.
-
-You are right, and I was wrong about the mechanism. On my setup (HP
-Thunderbolt Dock G4, I225-LMvP rev 03 behind a Goshen Ridge
-downstream port) the NIC only advertises L1.1:
-
-  L1SubCap: PCI-PM_L1.2- PCI-PM_L1.1+
-            ASPM_L1.2- ASPM_L1.1+ L1_PM_Substates+
-
-and the upstream port has no L1 PM Substates capability at all, so
-L1.2 can never be enabled on this link. I will drop the I225-LMvP
-part and investigate the dock errors separately with AER enabled.
-
-> (b) generally it is probably best and simplest to remove any
-> device ID checks and simply disable L1.2 across the board in this
-> driver.
-
-I can add a third patch doing that if you prefer. Otherwise I'd leave
-it to you, since I have no I226 hardware to test it on.
-
-Thanks,
-Daniel
-
-pw-bot: cr
