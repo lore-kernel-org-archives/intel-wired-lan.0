@@ -2,148 +2,136 @@ Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 34F6560A5BCA
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Nov 2026 14:20:42 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1830F60A261A
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Nov 2026 14:31:52 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=8OVgpJVw;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Tzc9Zs/y
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=F9HC5VDD;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=EeIvCcTn
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 0B9FB608D4;
-	Tue, 10 Nov 2026 14:20:42 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id E882B60690;
+	Tue, 10 Nov 2026 14:31:51 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id rVmCTEu6loI2; Tue, 10 Nov 2026 14:20:41 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 7689B608DB
+ id D4fp14d8RKip; Tue, 10 Nov 2026 14:31:51 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 2601D6083E
 Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794320441;
-	b=CCx3bqb8jok2SmQYBSI2IqYQ7MYzDWcqeIBRsRbLz+1Dk3iYZi3rNB+/HgDwtpeMhFHs
-	 R1S5xuZbd45rOe09cCHtewGhJVwFUELxY2gTge3qiWwBJ0ko+KM8aOILS9KsvIMpwmuHt
-	 l3OQbPMRSQGBnx0/rHejgpH2bmJX5eOeA1J3khUeu1AA+chSZ6/5D5pBZT08DWnCUxTUQ
-	 q87l8u1Dc5LVr2lA0jr7UtFW4ojttJXSMGTGAa4OUDcJWyZt1SDn3nWEv2c09b1XsHfpB
-	 /NhRLdkn0uaFwFidiPQMLcHpnwpq0V9hr9AsfcP3A8OjYDgx00lKXa6BrcyNKTUBBVQ==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794321111;
+	b=mS/4fumzXaEuVgI6IqsAmX+2XHXqePdw//jzPccg75aKOZ2qa1Ya9Fu1HrHsSmibVJqt
+	 T3ZDRw/uedJOKnkahyFbbLNedmEXrheTj1PcJE2GKcQ6lqVEu8g8T5EYcvXzhhGV2MKly
+	 7bV55rY711wuF1oFKbsAAsF0WS9POBZ92wbuOCFdrNuMSwaq7Z/xlSkp2darbYBDTJ3Nd
+	 jcvrFGGwBKZVO98qF4AUkKxBb7XEvBSgpVq4m0lDY1M0sVYKyu/1P2w629F81lwAEOiAM
+	 5uFI1F6WhvI1qtumigoKM3zef2vrPLr5mb2LTkhx8yO3+mD5r028GVRB88P/8xuoVlg==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794320441;
+	c=relaxed/relaxed; t=1794321111;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 Received:DKIM-Signature:Message-ID:Date:MIME-Version:User-Agent:
-	 Subject:To:Cc:References:Content-Language:From:In-Reply-To:
-	 Content-Type:Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
+	 DKIM-Signature:Received:X-MC-Unique:X-Mimecast-MFC-AGG-ID:Received:
+	 Received:From:To:Cc:Subject:Date:Message-ID:MIME-Version:X-Scanned-By:
+	 X-Mimecast-MFC-PROC-ID:X-Mimecast-Originator:
+	 Content-Transfer-Encoding:content-type:X-BeenThere:X-Mailman-Version:
 	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=yxghYJJACMUSH3L8Z8k3tre7BBZpihYhe07SHtfZRzU=;
-	b=R2G8oqWLiFDvJO4h9HbHRa5GJNhyfgJEFQOVzeEviwV8bX35IcH5wOXBs81WeJFW0777
-	 b5wHwAatx3NZYXLJmlX6axP+ZK/kxb1r8wk7ziqQacVqcAS26ama0QtzX+vKTYnt8Tg2Q
-	 cykchYefO3D+b/fS0q3W3986dO7b/xzFfuL4lv0rnPXj7wnpfSjzrvcMlDBrUOBbq5t5j
-	 0gKH8oIOR16NPKxKJaos31Mj2Tat/4yhsYPXCky5HOyJodsoSaEeuQ3EiGbZOXvm4xWbv
-	 5KCy6uqtcnnF2HfXVPPreC4y4ik46UeAheQ8Ij54nMzecp4LGeai4Tf9FYZPNHVPgyQ==
+	bh=OlTyX/eRdkd2ub5ISBF1y4LBYRbIgdGhTfqDORaDu3k=;
+	b=L67jjwpKwZAxne1g7sVCA0l9F563adF4wZV9+1gbAm6ZKgnnrElvWIPFkoHhe0EGMwEl
+	 lLd28O4hLvmIXR+N5A8/jNhX/HM6u6dLkn1jp+0X3+2GZzOwLHkDmpBoAsN4g8aglF0nr
+	 AB2cGqJt1GbDAajQi8Zaw3oYwAIcQt9c9vzSsLiRIQSY6NiYBE7Sj6zrZOtbVwlXZ7D1I
+	 kbRjckPw53dsE/C558Zv2+Wccs1yTorS+s+Z8sf4K8aGS4CzFICvvL/9CGhB29Xeg8SgN
+	 VoemKb1miIFbGA7i22O+ynT0ybC4QNH/pV5tXbGWCnxnXcSmicgVP9wDI0Bke0eNN8w==
 ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1794320441;
-	bh=yxghYJJACMUSH3L8Z8k3tre7BBZpihYhe07SHtfZRzU=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=8OVgpJVwCs/feGbjYcw1aPHQenQsi7WSGRUi0ev3vBKb/6VJvUiee3CJS8/if4vPd
-	 cmPl8vFLJXdjX8jmsxQER1w/aphiiMLERRkz9ujOum8xh3up5fvvYqJotvnbgm8AeN
-	 fga5JbnmYXBwtjd3E6hSbfX3ByQNFpSwzXChXnie1O1RnG7YiPA1uYQK5qBZINJ5gi
-	 EtrlkXK/CuCFqCiWXRCnYxsz0MX2sNU6Nadm3DD16BAAv17Gl9HzrVp5fTMew281Xp
-	 HHnr0MvUjGuZ106krVkBzYmD0jZAQH2N038KS8DE6cT9Uoc7LtO7BaxL6uN7SJwQ4m
-	 AN0YmtlXcDseg==
+	s=default; t=1794321111;
+	bh=OlTyX/eRdkd2ub5ISBF1y4LBYRbIgdGhTfqDORaDu3k=;
+	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=F9HC5VDDOrk+hzb+id+D1rEXWvrKrJMGsj4oRolgdSI6LSMR29Z5Gm5j0w+N2H259
+	 4hYnYCt+q/iWwZFIRRH98XZCgR9zgBsqNf0BqbF6TAcEa5l4Zu0rZkEhU6Gxs899w6
+	 JKS59SiOmV7KohizuOWhZC1DBD1uCT9GJ4NdaxtM80JwwuXEdbO/wbJyx3qmoF4B8i
+	 aOPI/tcnOuazww2STCYx+flFzoRHbYW+B7Q6R7fXRB5KhfvsEXexthVgckxnZNCji0
+	 20oyX7WaeMShPOTXDFp918+eusQmIji+sR8eGH5FpWR24YvfWZTrK/1ZGn+qdGRL+v
+	 4XXCGlSChnmHA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 7689B608DB;
-	Tue, 10 Nov 2026 14:20:41 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id C8641388
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 14:20:39 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 2601D6083E;
+	Tue, 10 Nov 2026 14:31:51 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 5D9D11A6
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 14:31:49 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id AE9AB4034A
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 14:20:39 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 43C2F40822
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 14:31:49 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id b1hEYWNqyOyU for <intel-wired-lan@lists.osuosl.org>;
- Tue, 10 Nov 2026 14:20:39 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org C88F54008E
-Authentication-Results: smtp2.osuosl.org; arc=none
- smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
- envelope-from=hawk@kernel.org; receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20260515 header.b=Tzc9Zs/y
-Received: from tor.source.kernel.org (tor.source.kernel.org
- [IPv6:2600:3c04:e001:324:0:1991:8:25])
- by smtp2.osuosl.org (Postfix) with ESMTPS id C88F54008E
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 14:20:38 +0000 (UTC)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id 6DC0F639BB;
- Tue, 10 Nov 2026 14:20:37 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 657561F008A2;
- Tue, 10 Nov 2026 14:20:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1794320437;
- bh=yxghYJJACMUSH3L8Z8k3tre7BBZpihYhe07SHtfZRzU=;
- h=Date:Subject:To:Cc:References:From:In-Reply-To;
- b=Tzc9Zs/ycPeXxJ8aNptWRv5lXPygStV7Lf+YUKUAuneDLgJyMyaAf+p0f7TpXUTOM
- WsEH1DhI/2Ts1lJdYM9/+VhYtt2IatVPaJZc0W6ph2hxS4vqjd6dVRdWho4YcGNpVx
- Hv0Z9WLWCfc5ozGerNpjq0O/HYYCk5BHBJvv1eQanba4kd3aYFLPjoELh2Qv5lMmlB
- 1hIXqcR/hJlH5YIT+YK893I/s8nTPsglgehw4Q9MQkJgPaG/n1SQ3WuQXVj+Ttqyaz
- pJ5qwLkDiWJGQ4yFAALapy77jvIDGMyiEsY2GX3clx+yVz4PFTBft10FfYxT4vAwvV
- Z6oqX/5AyJ1SA==
-Message-ID: <197d5a54-26e1-4985-8001-5819fc702fd4@kernel.org>
-Date: Tue, 10 Nov 2026 15:20:25 +0100
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id aH3ps_5EgqzW for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 10 Nov 2026 14:31:48 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org B17CD40812
+Authentication-Results: smtp4.osuosl.org;
+ arc=none smtp.remote-ip=170.10.129.124
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=poros@redhat.com;
+ receiver=<UNKNOWN> 
+Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.from=redhat.com
+Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=EeIvCcTn
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ by smtp4.osuosl.org (Postfix) with ESMTP id B17CD40812
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Nov 2026 14:31:46 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1794321105;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding;
+ bh=OlTyX/eRdkd2ub5ISBF1y4LBYRbIgdGhTfqDORaDu3k=;
+ b=EeIvCcTnmKo8M8me0+CIroPUXBuGusxgGNVPM64wHesOMHbxuooGQasSoaqVtovRkh6R6t
+ tRWb3yJM5o/ZRFnUBD9HJ7x28R96005X7DKieXZlT1LAU+BZG8t5c63vi10XEuJLa3D4Zm
+ ovLtSOE9uBznl3oXSm98yj1EIkBIrkA=
+Received: from mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-617-a_fOVax3NlS4GWkOWJXNng-1; Tue,
+ 10 Nov 2026 09:31:42 -0500
+X-MC-Unique: a_fOVax3NlS4GWkOWJXNng-1
+X-Mimecast-MFC-AGG-ID: a_fOVax3NlS4GWkOWJXNng_1794321100
+Received: from mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com
+ (mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.111])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
+ id 7CC261956049; Tue, 10 Nov 2026 14:31:39 +0000 (UTC)
+Received: from poros-thinkpadp16vgen1.tpbc.com (unknown [10.44.48.49])
+ by mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
+ id 719A4180034C; Tue, 10 Nov 2026 14:31:32 +0000 (UTC)
+From: Petr Oros <poros@redhat.com>
+To: netdev@vger.kernel.org
+Cc: Petr Oros <poros@redhat.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@kernel.org>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>,
+ Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>,
+ Michal Michalik <michal.michalik@intel.com>,
+ Vadim Fedorenko <vadim.fedorenko@linux.dev>,
+ Milena Olech <milena.olech@intel.com>, intel-wired-lan@lists.osuosl.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH iwl-net] ice: dpll: refuse pin states that are not valid for
+ the pin
+Date: Tue, 10 Nov 2026 15:31:19 +0100
+Message-ID: <20261110143119.2313907-1-poros@redhat.com>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH bpf-next 04/15] xdp: add a kfunc to delete skb core
- extension entries
-To: Tianyi Gao <tianyi@cloudflare.com>, bpf@vger.kernel.org,
- netdev@vger.kernel.org, Alexei Starovoitov <ast@kernel.org>,
- Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>,
- Martin KaFai Lau <martin.lau@linux.dev>, Jakub Kicinski <kuba@kernel.org>
-Cc: John Fastabend <john.fastabend@gmail.com>,
- Stanislav Fomichev <sdf@fomichev.me>, Lorenzo Bianconi <lorenzo@kernel.org>,
- Vladimir Vdovin <deliran@verdict.gg>, "David S. Miller"
- <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>,
- Andrew Lunn <andrew+netdev@lunn.ch>, Donald Hunter
- <donald.hunter@gmail.com>, Eduard Zingerman <eddyz87@gmail.com>,
- Kumar Kartikeya Dwivedi <memxor@gmail.com>, Song Liu <song@kernel.org>,
- Yonghong Song <yonghong.song@linux.dev>, Jiri Olsa <jolsa@kernel.org>,
- Emil Tsalapatis <emil@etsalapatis.com>,
- Ihor Solodrai <ihor.solodrai@linux.dev>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
- Alexander Lobakin <aleksander.lobakin@intel.com>,
- Magnus Karlsson <magnus.karlsson@intel.com>,
- Tushar Vyavahare <tushar.vyavahare@intel.com>,
- Jason Xing <kerneljasonxing@gmail.com>,
- Nikolay Aleksandrov <razor@blackwall.org>,
- Madalin Bucur <madalin.bucur@nxp.com>, Ioana Ciornei
- <ioana.ciornei@nxp.com>, Jonathan Corbet <corbet@lwn.net>,
- Shuah Khan <skhan@linuxfoundation.org>, Shuah Khan <shuah@kernel.org>,
- Randy Dunlap <rdunlap@infradead.org>, Nathan Chancellor <nathan@kernel.org>,
- Nick Desaulniers <ndesaulniers@google.com>, Bill Wendling
- <morbo@google.com>, Justin Stitt <justinstitt@google.com>,
- Chris J Arges <carges@cloudflare.com>, Jakub Sitnicki
- <jakub@cloudflare.com>, linux-doc@vger.kernel.org,
- linux-kselftest@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
- llvm@lists.linux.dev, kernel-team@cloudflare.com
-References: <cover.1794281983.git.tianyi@cloudflare.com>
- <2892d19e606e3809c268de0610a4ccc8bf68625a.1794281983.git.tianyi@cloudflare.com>
-Content-Language: en-US
-From: Jesper Dangaard Brouer <hawk@kernel.org>
-In-Reply-To: <2892d19e606e3809c268de0610a4ccc8bf68625a.1794281983.git.tianyi@cloudflare.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.111
+X-Mimecast-MFC-PROC-ID: 3d4xxy55Ja26iTY47ZOzYMfchiireOHMxcWF4cM-Q9c_1794321100
+X-Mimecast-Originator: redhat.com
+Content-Transfer-Encoding: 8bit
+content-type: text/plain; charset="US-ASCII"; x-default=true
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -154,44 +142,162 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-17.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-15.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=4.0.1
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
+The DPLL core checks only that a pin may change its state, which states
+a pin accepts is left to the driver. The ice callbacks turn the
+requested state into an enable flag by comparing it with the one state
+that enables the pin, so every other state disables it, including the
+one that has no meaning for the pin.
 
+The inputs of the EEC and PPS DPLLs are enabled by selectable, as these
+DPLLs select their reference automatically. A request for connected,
+which Documentation/driver-api/dpll.rst reserves for manual mode and
+for pins with the state-connected-override capability, disables the
+input. On an E810:
 
-On 11/10/26 04:57, Tianyi Gao wrote:
-> bpf_xdp_skb_ext_del() deletes the stored entry for an id. A program on
-> cpumap or veth can use it to drop RX metadata that an earlier program
-> stored.
-> 
-> Without the XDP_FLAGS_HAS_SKB_EXT flag, the kfunc does nothing, because
-> the header bytes may then belong to the packet.
-> 
-> The kfunc only clears XDP_SKB_EXT_ENTRY_ACTIVE, so a later store of the
-> same id reuses its offset. The flag and the size of the area stay the
-> same, also after the last delete. To give the bytes back, the kfunc
-> would have to move the entries after the deleted one. The cost is
-> headroom that bpf_xdp_adjust_head() and bpf_xdp_adjust_meta() cannot
-> use.
-> 
-> Signed-off-by: Tianyi Gao <tianyi@cloudflare.com>
-> ---
-> __skb_ext_del() frees struct skb_ext after the last delete, because it
-> comes from a slab cache. The skb core extension area uses existing
-> headroom, so it is not freed.
-> ---
->   include/net/xdp.h |  8 ++++++++
->   net/core/xdp.c    | 26 ++++++++++++++++++++++++++
->   2 files changed, 34 insertions(+)
+  # dpll pin set id 1 parent-device 0 state connected
+  # dpll pin show id 1
+  ... state disconnected on both DPLLs
 
-I think this approach of simply disabling the entry is okay.
-This is trading off performance vs small area memory usage.
+A recovered clock pin is connected to or disconnected from its parent
+pin, and a request for selectable disconnects it:
 
-Acked-by: Jesper Dangaard Brouer <hawk@kernel.org>
+  # dpll pin set id 2109 parent-pin 2094 state selectable
+  # dpll pin show id 2109
+  ... state disconnected on parent 2094
 
---Jesper
+Add a helper that translates the state for a pin given the state that
+enables it. Disconnected disables the pin and anything else is refused
+with -EINVAL and an extack message. Use it for the input and recovered
+clock pins, and for the output pins, which already refused selectable
+and now tell the user why.
+
+The SMA pins have the same problem. It is left out here, as the rework
+of the SMA and U.FL pin control that is queued for net-next refuses the
+states these pins cannot serve.
+
+Found with the pin state selftest of the dpllsim series running against
+an ice E810.
+
+Fixes: d7999f5ea64bb1 ("ice: implement dpll interface to control cgu")
+Signed-off-by: Petr Oros <poros@redhat.com>
+---
+ drivers/net/ethernet/intel/ice/ice_dpll.c | 61 ++++++++++++++++++++---
+ 1 file changed, 55 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_dpll.c b/drivers/net/ethernet/intel/ice/ice_dpll.c
+index ade1fb3dd06743..b2b515420bc8cd 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dpll.c
++++ b/drivers/net/ethernet/intel/ice/ice_dpll.c
+@@ -961,6 +961,40 @@ static int ice_dpll_phase_offset_monitor_get(const struct dpll_device *dpll,
+ 	return 0;
+ }
+ 
++/**
++ * ice_dpll_pin_state_to_enable - translate a requested pin state
++ * @state: pin state requested by the user
++ * @on_state: the state that enables the pin
++ * @enable: on success true to enable the pin, false to disable it
++ * @extack: error reporting
++ *
++ * A pin is enabled by exactly one state: selectable for an input of the
++ * EEC and PPS DPLLs, which select their reference automatically, and
++ * connected for an output and for a recovered clock on its parent pin.
++ * Disconnected disables the pin. No other state has a meaning for the
++ * pin, so it is refused rather than taken for one of the two.
++ *
++ * Return:
++ * * 0 - success, @enable is set
++ * * -EINVAL - @state is not valid for the pin
++ */
++static int
++ice_dpll_pin_state_to_enable(enum dpll_pin_state state,
++			     enum dpll_pin_state on_state, bool *enable,
++			     struct netlink_ext_ack *extack)
++{
++	if (state != on_state && state != DPLL_PIN_STATE_DISCONNECTED) {
++		NL_SET_ERR_MSG_FMT(extack,
++				   "pin state must be %s or disconnected",
++				   on_state == DPLL_PIN_STATE_SELECTABLE ?
++				   "selectable" : "connected");
++		return -EINVAL;
++	}
++	*enable = state == on_state;
++
++	return 0;
++}
++
+ /**
+  * ice_dpll_pin_state_set - set pin's state on dpll
+  * @pin: pointer to a pin
+@@ -1027,12 +1061,15 @@ ice_dpll_output_state_set(const struct dpll_pin *pin, void *pin_priv,
+ 			  enum dpll_pin_state state,
+ 			  struct netlink_ext_ack *extack)
+ {
+-	bool enable = state == DPLL_PIN_STATE_CONNECTED;
+ 	struct ice_dpll_pin *p = pin_priv;
+ 	struct ice_dpll *d = dpll_priv;
++	bool enable;
++	int ret;
+ 
+-	if (state == DPLL_PIN_STATE_SELECTABLE)
+-		return -EINVAL;
++	ret = ice_dpll_pin_state_to_enable(state, DPLL_PIN_STATE_CONNECTED,
++					   &enable, extack);
++	if (ret)
++		return ret;
+ 	if (!enable && p->state[d->dpll_idx] == DPLL_PIN_STATE_DISCONNECTED)
+ 		return 0;
+ 
+@@ -1062,7 +1099,13 @@ ice_dpll_input_state_set(const struct dpll_pin *pin, void *pin_priv,
+ 			 enum dpll_pin_state state,
+ 			 struct netlink_ext_ack *extack)
+ {
+-	bool enable = state == DPLL_PIN_STATE_SELECTABLE;
++	bool enable;
++	int ret;
++
++	ret = ice_dpll_pin_state_to_enable(state, DPLL_PIN_STATE_SELECTABLE,
++					   &enable, extack);
++	if (ret)
++		return ret;
+ 
+ 	return ice_dpll_pin_state_set(pin, pin_priv, dpll, dpll_priv, enable,
+ 				      extack, ICE_DPLL_PIN_TYPE_INPUT);
+@@ -2518,18 +2561,24 @@ ice_dpll_rclk_state_on_pin_set(const struct dpll_pin *pin, void *pin_priv,
+ 			       enum dpll_pin_state state,
+ 			       struct netlink_ext_ack *extack)
+ {
+-	bool enable = state == DPLL_PIN_STATE_CONNECTED;
+ 	struct ice_dpll_pin *p = pin_priv;
+ 	struct ice_pf *pf = p->pf;
+ 	struct ice_hw *hw;
+-	int ret = -EINVAL;
++	bool enable;
+ 	int hw_idx;
++	int ret;
+ 
+ 	hw = &pf->hw;
+ 
+ 	if (ice_dpll_is_reset(pf, extack))
+ 		return -EBUSY;
+ 
++	ret = ice_dpll_pin_state_to_enable(state, DPLL_PIN_STATE_CONNECTED,
++					   &enable, extack);
++	if (ret)
++		return ret;
++
++	ret = -EINVAL;
+ 	mutex_lock(&pf->dplls.lock);
+ 	hw_idx = ice_dpll_pin_get_parent_idx(p, parent_pin);
+ 	if (hw_idx < 0)
+-- 
+2.56.0
+
