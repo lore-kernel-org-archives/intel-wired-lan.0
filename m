@@ -2,28 +2,28 @@ Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C6BA3606A33E
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 11 Nov 2026 10:53:34 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0FE98606A321
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 11 Nov 2026 10:55:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=tE9sno61;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=WFHF5jNd
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=vYJ0kWLu;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=e7c28ZRA
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 9D70F40A9F;
-	Wed, 11 Nov 2026 10:53:34 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id E0AB440598;
+	Wed, 11 Nov 2026 10:55:30 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id jPLu089j1V2g; Wed, 11 Nov 2026 10:53:34 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org F071B40A7F
+ id RRXQ_6Jh8EiH; Wed, 11 Nov 2026 10:55:30 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 4A3ED40624
 Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794394414;
-	b=XYjN6wwko/YySBWtaptgPLJSzSsbdkecJL+efat5uH/I6/cNy/fD4mJgjoavIv4t3SyT
-	 b1YL1q6Kk3IdH9ToDba08za+e+vSYGP6Ps61kvNXMtnlHtpG+EvTy9eJZdItyOA5wVfkH
-	 q9mgJMv5jWR5iKUj3k5zJd+f5A3IAdR51WbYN8q0ogUNnKPN9Wbe5/Q3S9iB3Nc/ZicgA
-	 PKRu6xrVLlWvkQeTjxHCAuLbO6sceevVl5SC0Xs5lGBAs9CLvDYY4/mnyfc7yfmomR0U3
-	 TKcbPzfHMS6cR18i7aEmmx6+tDXlFZ4ybT+joOmmjXwYwvFDUYYmWidZwnfxh1+80zQ==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794394530;
+	b=cK55mo229bDDiXq8bKcNYI73JmZK7ocZVgv8xMEz8rYO6nkIjpo0s8L9FyWSZyIuVfd2
+	 vwwY9td+6ZfcSBiCk+tA1fupoA1WMFOhxV1qb2XjdaMYYbVKHdXW3E8YCDfEN1oT+EhOE
+	 2rYJP0GE0Wn6PBUDBd8N+LhrfFffnObZ+JkDMnBp7kH/MEI/jap/hp+gaZYka7tj5jTSz
+	 Qtq6ulGrSj8OXySx0EjkjCu8dmRvWyLDkB32UP6sjkqwC3WuYVfeCHrw6seWEJgQy5HfX
+	 RPGdz4KzH86+zQzKgEjN3404BWCfdlOLOBGg0kjxrR27+kO2gHs63q59Niu0Rz1vsog==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794394414;
+	c=relaxed/relaxed; t=1794394530;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
@@ -34,92 +34,91 @@ ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
 	 Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:Precedence:
 	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=8N7fypCJ/hoT+y3Nl5Cy8LcZBYe/io6SKN/QBhzDpOM=;
-	b=LpruKDnnKHfhidKPd6inEYMQP1ZJZdty7s/Js3IrdZpL7SRrgHaHzVpmGFhozEmGg27a
-	 okI0ObM/jnneLBVXDYC28n/9cAXztiSkaHWVvlTLKVYU3Xyunv6WX05Wr5LuqF3SJI7Hw
-	 Hk1ogCtQJdFaXuq1w2LoptODkrNohtFusfSVo8mJkzXxkdfsn0Vf+Ell+afe0tlW9atro
-	 6bDmxRuXBsqrE6EgF0OUxn9FkVNh4AGkvIi4u251YU49pVIahx1FRIu9p5BKS47yoczXn
-	 ogkr3+laJjIZabuOVBj96RYo/6LQgpq/xqOEOe+zSCZYyg1RS5z7KeDnfXgelPWUdyg==
+	bh=SF2NQhuQxu5m0bI5v5rpx1rhcNXkOJ4L4wUCi27ileQ=;
+	b=MxPKYS7hHS2bhgPxB+mQOwEaOdeBlGck7aNoo7IHZtnM7X6daGjg5eLOu/h5xjE2/W7h
+	 O/of31C76ZQcxfJf//CDYfjRWVvHBXrfn4NVsz3NqpDHh9umfQjiDKM6KYwMfotCTAqf3
+	 3BqkfyQWsyoKrgBhAJfaCegusudTWo/fHUY6940AUUsoU6ncsOqNyEPUUTU9j+Wr5NKE9
+	 vEGlBRWdEnNptTb2tJo5mUr5IndcpxqGbY6PklFqAf2BSOOvPibX4VvL+nCEnwzwe+hQ9
+	 DJ7dztLciZTXY8ZFh56ZTirVjAibqHU64Wyaw6hajLpH+twcEM5dmt0oavzqAyUGC7A==
 ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
-	dmarc=pass header.from=redhat.com;
-	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=WFHF5jNd;
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1794394414;
-	bh=8N7fypCJ/hoT+y3Nl5Cy8LcZBYe/io6SKN/QBhzDpOM=;
+	s=default; t=1794394530;
+	bh=SF2NQhuQxu5m0bI5v5rpx1rhcNXkOJ4L4wUCi27ileQ=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=tE9sno61wQwDpZXKXxosnvnrO9nJSIBm+svKB9PVHMQoLmH3AUMXPdoqwsB6tCSgk
-	 wmjIJBqDEPzcYnqysLqRnIpsJ4YuN6OXK3kEPT98fy1FMWQJmuofO+2kBbVZtqwqrh
-	 Re+MyqTZsxaMb9oRmepFwhn21HpldfrZ5rmJjiopjrIidt1qKik9AHCQAd64auMFYm
-	 w1rXYn5KjcV0odbNxW2KkDAyTlZGXN6pPNm6pXK2BfBhe1W+KYs5hyYtDjZm5clqbt
-	 EWGl8jr5s3mVTdcFHOKDSlc/VUbX1rfyDk0WpLYGMpDgCcm0U4abk1h4D/ygrPuI9h
-	 5vsYcxKKtZWiQ==
+	b=vYJ0kWLunJ+kx24k/anlX1dn9BZk1zilgDLYEcw7anAX2rZt/JRORaZ351WDKFSiO
+	 FZ10BRj1dmL4lSmsZs5LJNmsWpbIRGXByc0JakCbip3k8y1BRlqYX+u6B5UXAR3Tsq
+	 yvw3na3VSHRgJs8qtvNRYTupYwaONDyvVUr6qC0nPwzOHKJzQAosEIXHdQvl5Fradw
+	 uh1bGMegl51501jLZutrxhlA6wUg5GjrnkhgzbDCPw3D6AwvoEIU3U2yNip8uUmYDc
+	 oBmC44duWBGUGvVipUypfJYNtz4iXkkXjEaQOmztaXZBnVCKczDKd/OcZ6uOVv2r1g
+	 /oBBLe66gBVRA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id F071B40A7F;
-	Wed, 11 Nov 2026 10:53:33 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 1F201731
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Nov 2026 10:53:32 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 4A3ED40624;
+	Wed, 11 Nov 2026 10:55:30 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 34B09731
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Nov 2026 10:55:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id F0A0C40A7F
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Nov 2026 10:53:31 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 1478D40217
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Nov 2026 10:55:28 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ObSQYk2zvgnF for <intel-wired-lan@lists.osuosl.org>;
- Wed, 11 Nov 2026 10:53:31 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 9E73240A6A
-Authentication-Results: smtp4.osuosl.org;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id IGU8dd-JNHR5 for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 11 Nov 2026 10:55:27 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org AC206400D5
+Authentication-Results: smtp2.osuosl.org;
  arc=none smtp.remote-ip=170.10.129.124
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
  helo=us-smtp-delivery-124.mimecast.com; envelope-from=ivecera@redhat.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=quarantine dis=none)
+Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=redhat.com
-Authentication-Results: smtp4.osuosl.org;
+Authentication-Results: smtp2.osuosl.org;
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=WFHF5jNd
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=e7c28ZRA
 Received: from us-smtp-delivery-124.mimecast.com
  (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp4.osuosl.org (Postfix) with ESMTP id 9E73240A6A
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Nov 2026 10:53:29 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id AC206400D5
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Nov 2026 10:55:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1794394408;
+ s=mimecast20190719; t=1794394525;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=8N7fypCJ/hoT+y3Nl5Cy8LcZBYe/io6SKN/QBhzDpOM=;
- b=WFHF5jNd+2uzvLYtty812YMxMbGT6AeRw+fg+EqZ+XzZbOq+BFbq5qRUIab5mVlRRCkJyA
- gRB9FCiaBA5jHZOfcAyOtF8Q/uxUv3kWuRpsGFI7SfSxOIIuz/YXwAtqY26gJWMuN2y7b7
- o8y41ZxS7R3t8m7LFy7nqjui3OfOT3k=
-Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
+ bh=SF2NQhuQxu5m0bI5v5rpx1rhcNXkOJ4L4wUCi27ileQ=;
+ b=e7c28ZRAT8ymtGjwBPQPIQt0wJ9p57/GNR7jsfIGv+g7BNDBhXrN7juVuvt3uxGVR378O/
+ Erb7FwKw+x7cYjIyWAPuODTXH32YHy/ovX4vyfvqptwzjk33zDRkZdXnJNY7A6wfJibrth
+ rIc0AUP50DW5kUVqM2NcuxtQEtq57eQ=
+Received: from mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com
  (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
  relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-711-DxKuXwMGPSCoAX2zKEuwcg-1; Wed,
- 11 Nov 2026 05:53:25 -0500
-X-MC-Unique: DxKuXwMGPSCoAX2zKEuwcg-1
-X-Mimecast-MFC-AGG-ID: DxKuXwMGPSCoAX2zKEuwcg_1794394402
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-453-Oqo0X7NTPyKcaINytLDz9g-1; Wed,
+ 11 Nov 2026 05:55:20 -0500
+X-MC-Unique: Oqo0X7NTPyKcaINytLDz9g-1
+X-Mimecast-MFC-AGG-ID: Oqo0X7NTPyKcaINytLDz9g_1794394517
 Received: from mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com
  (mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.93])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
- id 9591F1955F61; Wed, 11 Nov 2026 10:53:21 +0000 (UTC)
+ by mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
+ id 0EAC619775DB; Wed, 11 Nov 2026 10:55:17 +0000 (UTC)
 Received: from [100.91.101.41] (headnet04.pony-001.prod.iad2.dc.redhat.com
  [10.2.32.116])
  by mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
- id 45ED518004FC; Wed, 11 Nov 2026 10:53:14 +0000 (UTC)
-Message-ID: <38365dce-f6a6-4fdb-8f76-8b697f64aeb3@redhat.com>
-Date: Wed, 11 Nov 2026 11:53:12 +0100
+ id 523A518004FF; Wed, 11 Nov 2026 10:55:10 +0000 (UTC)
+Message-ID: <fe93c3de-e478-4bdf-877a-d3c5d345dd04@redhat.com>
+Date: Wed, 11 Nov 2026 11:55:09 +0100
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH net-next 06/10] dpll: add KUnit tests for core locking
+Subject: Re: [PATCH net-next 01/10] ice: dpll: notify TSPLL lock status from
+ the periodic work only
 To: netdev-bot+sashiko@kernel.org
 Cc: netdev@vger.kernel.org, vadim.fedorenko@linux.dev,
  arkadiusz.kubalewski@intel.com, jiri@resnulli.us, corbet@lwn.net,
@@ -131,12 +130,12 @@ Cc: netdev@vger.kernel.org, vadim.fedorenko@linux.dev,
  intel-wired-lan@lists.osuosl.org, grzegorz.nitka@intel.com,
  karol.kolacinski@intel.com, saeedm@nvidia.com, tariqt@nvidia.com,
  poros@redhat.com
-References: <20261106121005.1327603-7-ivecera@redhat.com>
- <179433320676.994134.7049432410059447687@kernel.org>
+References: <20261106121005.1327603-2-ivecera@redhat.com>
+ <179433319925.994134.5092477928749468374@kernel.org>
 From: Ivan Vecera <ivecera@redhat.com>
-In-Reply-To: <179433320676.994134.7049432410059447687@kernel.org>
+In-Reply-To: <179433319925.994134.5092477928749468374@kernel.org>
 X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.93
-X-Mimecast-MFC-PROC-ID: ychpuwB_aKFclVPP1Tr_q5t2l_LsfUGS_wbZY_ohKmE_1794394402
+X-Mimecast-MFC-PROC-ID: ZXDGyKAFnuNxkWsDKAhJTKtjSRzmiIfZSg9Si9i65MU_1794394517
 X-Mimecast-Originator: redhat.com
 Content-Language: en-US
 Content-Type: text/plain; charset=UTF-8; format=flowed
@@ -160,99 +159,60 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 On 11/10/26 18:53, netdev-bot+sashiko@kernel.org wrote:
-> Thank you for your contribution! Sashiko AI review found 1 potential
-> issue(s) to consider.
+> Thank you for your contribution! Sashiko AI review found more severe
+> issue(s) in other patches of this series. This mail is only an FYI, in case
+> you want to address the nit picks below when you respin.
 > 
-> Critical: 0 · High: 0 · Medium: 1 · Low: 0
+> Low priority / nit picks for your consideration:
 > 
-> If you believe none of the issues are legitimate, please reply to each
-> issue of Medium severity or higher and explain why the AI is wrong.
-> If any of them are legitimate and you plan to respin, please let patchwork
-> know by including "pw-bot: cr" as a separate line at the end of your reply
-> (one such reply per series is enough).
-> 
-> - [Medium] In drivers/dpll/dpll_core_kunit.c, some tests set a blocking
->    flag before dt_req_start() has registered dt_req_release().
+> - [Low] This patch leaves the comments in
+>    ice_dpll_tspll_state_on_dpll_set()…
 > 
 > --
 > 
-> dpll: add KUnit tests for core locking
+> ice: dpll: notify TSPLL lock status from the periodic work only
 > 
-> This adds KUnit tests for DPLL core locking. They use a mock driver with
-> several domains to check domain sharing, which locks callbacks hold,
-> independence and serialization of domains, atomicity of multi-attribute
-> pin sets, and notification ordering. The netlink pre/post doit and set
-> handlers are exported for KUnit so the tests can call them directly.
+> This patch stops ice_dpll_tspll_state_on_dpll_set() from sending a TSPLL
+> device change notification from the TIME_REF pin callback. The callback
+> now only updates dpll_state. ice_dpll_periodic_work_e825() refreshes
+> dpll_state on every run and sends the notification when the state differs
+> from prev_dpll_state.
 > 
->> diff --git a/drivers/dpll/dpll_core_kunit.c b/drivers/dpll/dpll_core_kunit.c
->> new file mode 100644
->> index 0000000000000..a58800eda5ff5
->> --- /dev/null
->> +++ b/drivers/dpll/dpll_core_kunit.c
->> @@ -0,0 +1,1471 @@
+>> diff --git a/drivers/net/ethernet/intel/ice/ice_dpll.c b/drivers/net/ethernet/intel/ice/ice_dpll.c
+>> index ade1fb3dd0674..bdbcf7af296eb 100644
+>> --- a/drivers/net/ethernet/intel/ice/ice_dpll.c
+>> +++ b/drivers/net/ethernet/intel/ice/ice_dpll.c
 > 
 > [ ... ]
 > 
->> +static void dt_block(struct dt_dom *dom, bool *block)
->> +{
->> +	complete(&dom->entered);
->> +	wait_event(dom->ctx->wq, !READ_ONCE(*block));
->> +}
+>> @@ -2947,15 +2946,12 @@ ice_dpll_tspll_state_on_dpll_set(const struct dpll_pin *pin, void *pin_priv,
+>>   		WRITE_ONCE(pf->ptp.tspll_locked,
+>>   			   new_state == DPLL_LOCK_STATUS_LOCKED);
+>>   
+>> -		if (tp->prev_dpll_state != new_state) {
+>> -			tp->dpll_state = new_state;
+>> -			tp->prev_dpll_state = new_state;
+>> -			changed = true;
+>> -		}
+>> +		/* ice_dpll_periodic_work_e825() compares the state with
+>> +		 * prev_dpll_state and sends the notification.
+>> +		 */
+>> +		tp->dpll_state = new_state;
 > 
-> [ ... ]
-> 
->> +static struct dt_req *dt_req_start(struct kunit *test, int (*fn)(void *arg),
->> +				   void *arg)
->> +{
->> +	struct task_struct *task;
->> +	struct dt_req *req;
->> +
->> +	req = kunit_kzalloc(test, sizeof(*req), GFP_KERNEL);
->> +	KUNIT_ASSERT_NOT_NULL(test, req);
->> +
->> +	req->ctx = test->priv;
->> +	req->fn = fn;
->> +	req->arg = arg;
->> +	init_completion(&req->done);
->> +
->> +	task = kthread_run(dt_req_thread, req, "dpll-test");
->> +	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, task);
->> +	KUNIT_ASSERT_EQ(test, kunit_add_action_or_reset(test, dt_req_release,
->> +							req), 0);
->> +
->> +	return req;
->> +}
-> 
-> [ ... ]
-> 
->> +/* Blocks a request of @dom in a callback, which holds the domain lock */
->> +static struct dt_req *dt_block_in(struct kunit *test, struct dt_dom *dom,
->> +				  int (*fn)(void *arg), void *arg)
->> +{
->> +	struct dt_req *req;
->> +
->> +	WRITE_ONCE(dom->block, true);
->> +	req = dt_req_start(test, fn, arg);
-> 
-> [Severity: Medium]
-> Can the teardown hang here if dt_req_start() fails one of its assertions?
-
-Yes. It takes an allocation or kthread_run() failure in the test, but
-then the cleanup blocks under dpll_lock for good.
+> [Severity: Low]
+> This isn't a bug, but do the comments in ice_dpll_tspll_state_on_dpll_set()
+> still match how the notification path works after this change?
 
 [...]
-> One option is to register a cleanup action that calls dt_unblock() from
-> dt_init(), before any flag can be set. Another is to set the flags only
-> after dt_req_release() has been registered. Would either of these work?
 
-The objects of the foreign and on-pin tests are added by the tests after
-dt_init(), and KUnit runs the actions in reverse order, so an action
-registered in dt_init() would run after their release. v2 clears the
-flags in an exit callback of the suite instead. KUnit runs it before any
-cleanup action, so it also covers dt_test_stuck_foreign_device().
+> Could both comments say that the periodic work picks up the new state
+> through pf->ptp.tspll_locked? Then a later change is less likely to drop
+> the WRITE_ONCE() as just a way to avoid spurious notifications.
+Right, the first comment still gives the reason from before this patch.
+Now the write of pf->ptp.tspll_locked is what brings the new state to
+ice_dpll_periodic_work_e825(). v2 will merge both comments into one that
+says so.
 
 Thanks,
 Ivan
----
-pw-bot: cr
 
