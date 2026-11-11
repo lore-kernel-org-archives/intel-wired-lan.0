@@ -1,152 +1,119 @@
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 75D36606A330
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 11 Nov 2026 06:51:18 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2864060A2603
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 11 Nov 2026 08:59:51 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=01W6snnT;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Gbx5mrI/
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=2/iJzwYX;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=cedgbX7i
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 53A94408AD;
-	Wed, 11 Nov 2026 06:51:18 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 030B360657;
+	Wed, 11 Nov 2026 08:59:51 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id qepE_89aJ0lW; Wed, 11 Nov 2026 06:51:17 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org EAE87408E4
-Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794379877;
-	b=cIwbKJW9r7xy88pGbwgQf/xzBig0wD+K5iL11D3Dx7oFqrRUZ//0U8IEVSaOs32JooBt
-	 AJTBR1/52J75ZOAoztGwdjdcaxqZJpWfwuky/wRzTfXBHiLjVeF/9/EJ3klswUIvAxWlq
-	 jm8g5wGpCUwjppPh3I3p9rE+WoE7YJyjThhl1xZ1q4VDFHCAaL/Ba+rDjK1B5WiJg4KwK
-	 6QBWOA0Z1qWvSdJ4kAWJl+ku/XCYtzwcJDj2fUGGEpAV18t9XGfLlywOEeTZAZUhtz/0s
-	 fu/QPMUyCIdIjxB8z9fmqQ1tbayCUo2y/uvaKM4CkvsdkGbn4XVb9qv5a9dht1IMvcQ==
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id xAEwzGOGjW5u; Wed, 11 Nov 2026 08:59:49 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org BD6BD6067D
+Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794387589;
+	b=hM4/laabhcLWdDqxGwO8EkUJvz1ZKU/LQTGzm6fzDi+wV5L91alzXgtIvfCkIOKXVByM
+	 yBNktvYLFrn4v0W9S/H15ZfSy5giRS9uLq6sDd6WABZIthzT8vCJgxRFYp8jm7qH3KDK7
+	 +A+LzMw7cODqLbpMVGPYD81RqTAa9/Ft07pR2VaQ8k/vb7yiddQx289gvXNdtjUi5/Btt
+	 no771QSeWw/SHCxJsbxbevu8IxyU0qOqvuzS+cz8cn2NY3WXlySHvPFruDl6StDMDuprJ
+	 w1gw5OTc2Bw9wEEU2giT3H7ssy93H8AD02uz9GyExQ4hISY1byXPgAZSdTTQAXjJHtQ==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794379877;
+	c=relaxed/relaxed; t=1794387589;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
-	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Content-Transfer-Encoding:X-BeenThere:
-	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Reply-To:Errors-To;
-	bh=p5LolXQCvMOw3ShzhNdRxGXaj8+DPDD6xwmarA3Bn9E=;
-	b=d8HH0+p9AUWlLBy7yWtuvSg0DBZW91D7NsNlBEkf+WR+iXsj28tzp8wDp1NIBMLm9flf
-	 uSGHL1Kgrvh09wnW+qR9mXxmIvHjtU0TANFB6YtQEKk2+YeTGHurt/fMBWt+BwPyYJtez
-	 HIVV4GY52zT2Sp328/n4iSPj5HrCScudUK3sSMZWbMQTWREuPLyBXwUjd5vxtgtKzmZUr
-	 shTiEWHdOtcIBOk6O2BOuulT43MgxAlO6Q58X+OBqGlpGjF/3LLVYAzpjUns1wLCeuAKB
-	 nWDmg7wYDzK2zC3VgsJX6IWVyMQczHq3nDugwvRlcn6Gxg1SW0m+do4ISG1jHEq414A==
-ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
-	dmarc=pass header.from=kernel.org;
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="Gbx5mrI/";
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
+	 DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-IronPort-AV:
+	 X-IronPort-AV:Received:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-ExtLoop1:
+	 X-IronPort-AV:Received:Received:Date:From:To:Subject:Message-ID:
+	 User-Agent:X-BeenThere:X-Mailman-Version:Precedence:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Errors-To;
+	bh=ssOWQ2grqPmr3BRISE4V4NAIXzNMIIlqBJZXpUPGoaI=;
+	b=lIzJqdFEMApOVxfiKxIDosJBpY0huHaFVY1FpQwZb/STyGKRfb13s8q1j+Kcszn3x5qS
+	 NcQx+Dv6n7zmwJen0bvx9WqvKUcZwqUVXUeGYNOjmSC1vLGkzZr1LHqxBjl8Pg2sl3th7
+	 uNIXu6D/k0jrQjgk1rZBYmDnJNvIH5ZpExC6M8W7H2IrKc9xY/tZDpP2LJNaO9Bs8/gNK
+	 +/wou6evaoot4ar3xkSpw7DOH9E6aCnT0kssl9olqdbreqR+YjEm30PLCWB84MKwHpxpk
+	 rC2pBvQZ7gi/za6iRyPxg0Bgy/0PFzfHZHeCOd1GlhRHxd2Gy8JjcWDpBjfEVVyUD8A==
+ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1794379877;
-	bh=p5LolXQCvMOw3ShzhNdRxGXaj8+DPDD6xwmarA3Bn9E=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Reply-To:From;
-	b=01W6snnTVMqbXJo6Bdplwx9J0q2RFrqGchZg6g4LokzE0EIPqzrialZChfjPqxDIt
-	 ON2r4Kxv+OuDPk807+PEmb/Z++Lxh0gKbtJexldh0Jf9mIeu0Qy56Qn9JD7NolBaxx
-	 h4ekmM5QqllcKdNRHgM7bFA4rDgP4JH1QLiTMyQYoTpbYoWcnQh3qhw9MSZpL4ydRx
-	 3d86UySXPjbFewTMTm2JM2whqNsuYXQiIu7bLH70RrgyVvcQDhatkgHF5yx6/z9fdd
-	 CqOsv2um7qxzCrhGVSuSj3JJ88d4dZNeeO+MBsiW3pnIovYKJCwGdDOPdrvNRaB23H
-	 2PTqcZhO/N/sA==
+	s=default; t=1794387589;
+	bh=ssOWQ2grqPmr3BRISE4V4NAIXzNMIIlqBJZXpUPGoaI=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=2/iJzwYXAHmvr7g1QqQKn74EjpszqxReV8e7py+dmqb67/CFm0qmy2VpPGacokEBy
+	 x+pLgvNq8gbD4GDDvHm+qdMrxmdBltt2XkL/vSrVL0Jhwb9aPo0VQz2GtuIOxVNbBM
+	 dwlbmTAt2/0LIX67qgTlqgMYf+JO1/JunE5MVXHEp/oEibnwIFxEeRvuFNmyg44Iq+
+	 Z/IIQFilSAS/08OXUQgvFIhzT/Zwe3UOA9etLaIvgLJW8zWwhxXUuSWnqteCxkso/i
+	 25PLxnzD5W/rqb9p7q2jKecixvR1R/L8Oj6tbEa5aV7QC152h82dL+ZF+D4QL7Kk9v
+	 u8P1rZcHEi4YA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id EAE87408E4;
-	Wed, 11 Nov 2026 06:51:16 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id AC15B17CC
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Nov 2026 06:51:15 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id BD6BD6067D;
+	Wed, 11 Nov 2026 08:59:49 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 439BA28C
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Nov 2026 08:59:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 92E40408BC
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Nov 2026 06:51:15 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 294B640318
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Nov 2026 08:59:48 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id cpvntpGJK1DF for <intel-wired-lan@lists.osuosl.org>;
- Wed, 11 Nov 2026 06:51:14 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 0E80040797
-Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0
- smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
- envelope-from=devnull+tkusters.aweta.nl@kernel.org; receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20260515 header.b=Gbx5mrI/
-Received: from tor.source.kernel.org (tor.source.kernel.org
- [IPv6:2600:3c04:e001:324:0:1991:8:25])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 0E80040797
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Nov 2026 06:51:11 +0000 (UTC)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id D43DA6120A;
- Wed, 11 Nov 2026 06:51:09 +0000 (UTC)
-Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
-Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
- (No client certificate requested)
- by smtp.kernel.org (Postfix) with ESMTPS id 3E8D61F00A06;
- Wed, 11 Nov 2026 06:51:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1794379869;
- bh=p5LolXQCvMOw3ShzhNdRxGXaj8+DPDD6xwmarA3Bn9E=;
- h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
- b=Gbx5mrI/JtySC5FR1+pVZ+CLhZCib2S5VqtORVSHYxMkEiy+V08YicukwSWuIRc2n
- MsPkDD0wLi3W2xoiv6y3lHORtlH9CQqSsK+PdoM88b4Y0AMn7EyZA/Vi2yZ+Rzv0YS
- UhISWY6loJtS1ZibRmJYshzHVhrTj3X6f0QeHXepKcwOvOWniN3K9zs2QMRl21yaNj
- 5Ln4qQAsJRi/GZ7C5+J0XQ0B420RFrOHm41owPlWpfFilsYzTgb6t+1oKB2/crItSe
- WEj7AT+4+K5lF+SThxkvATVt+FaOUJZjj1sIn4wdSkZgIdkjcxSN6Tv5JM6xswpVlN
- U0YZj+znHh2aw==
-Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
- by lkml.kernel.org (Postfix) with ESMTP id B85DB48E25;
- Wed, 11 Nov 2026 06:51:07 +0000 (UTC)
-From: Tjerk Kusters via B4 Relay <devnull+tkusters.aweta.nl@kernel.org>
-Date: Wed, 11 Nov 2026 07:51:04 +0100
-Subject: [PATCH net v6 1/3] igb: do not let XDP frames span more than one
- Rx buffer
-X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261111-igb-rx-ts-fix-v6-1-ba5b9903859c@aweta.nl>
-References: <20261111-igb-rx-ts-fix-v6-0-ba5b9903859c@aweta.nl>
-In-Reply-To: <20261111-igb-rx-ts-fix-v6-0-ba5b9903859c@aweta.nl>
-To: Tony Nguyen <anthony.l.nguyen@intel.com>, 
- Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
- Andrew Lunn <andrew+netdev@lunn.ch>, 
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
- Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
- Jesper Dangaard Brouer <hawk@kernel.org>, 
- John Fastabend <john.fastabend@gmail.com>, 
- Stanislav Fomichev <sdf@fomichev.me>, 
- Sven Auhagen <sven.auhagen@voleatech.de>, 
- Richard Cochran <richardcochran@gmail.com>, 
- Kurt Kanzenbach <kurt@linutronix.de>, 
- Sriram Yagnaraman <sriram.yagnaraman@ericsson.com>
-Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, 
- linux-kernel@vger.kernel.org, bpf@vger.kernel.org, 
- Maciej Fijalkowski <maciej.fijalkowski@intel.com>, Paul Moses <p@1g4.org>, 
- stable@vger.kernel.org, Tjerk Kusters <tkusters@aweta.nl>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1794379866; l=14921;
- i=tkusters@aweta.nl; s=20260619; h=from:subject:message-id;
- bh=/1X3W0XTIg0dSxPNaaBrsYUdi1tbbhB17j02lXwsPfc=;
- b=/Df1AYYv7SNqfbJ7TE8YA6yr87OtcStFOR4IiBhpyIQZw3eATP5yWPsXhdQNMRv7Vih+/nbpo
- HzphgrNlQqOBgjXJBAJD44Y1gwOV/sUEl93snFlXcQnrsyeRjqLkB6/
-X-Developer-Key: i=tkusters@aweta.nl; a=ed25519;
- pk=JYRpYQ3+LrphEabgnxcbiOUpwvNP8WDDMcLzz+cwKsk=
-X-Endpoint-Received: by B4 Relay for tkusters@aweta.nl/20260619 with
- auth_id=831
-X-Original-From: Tjerk Kusters <tkusters@aweta.nl>
-Content-Transfer-Encoding: 7bit
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 3XZKA4lcNpfT for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 11 Nov 2026 08:59:47 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org D137B40070
+Authentication-Results: smtp2.osuosl.org; arc=none smtp.remote-ip=198.175.65.15
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.15;
+ helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
+Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=cedgbX7i
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id D137B40070
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Nov 2026 08:59:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1794387587; x=1825923587; h=date:from:to:subject:message-id;
+ bh=4yoYgVdfJP1uC3/VvZS//e2Zz4cTUrl4qNJVZxFgK2w=;
+ b=cedgbX7isZOAFJlyTyks27ClSE59ACGfJNVEVkM5FjK+gY5uIBZCB/3a
+ Pbgwc6zVkjT9+Qbu9sKImOfzgmTRZxbFGjPqbQ4+qfMNLvN40sWi4BFDL
+ PbfnnBW8FbRo8d7vbhqn8FOR5nZ3RDyK/i2gWXfRm5R5RjNIGhOryVqyZ
+ r7c/+d7K9DQjrG4BiUJa3d/GVU2FeonvGq7o5KaLUGV4SVJO4YWbC4E8v
+ Rhk1bbY/N/SQELu8VJf7wfCb9zJeWex2lMzUQQ4qiODTCNxOVUfm2j4om
+ jGmQjIeLZFqscOME0cmRYXDlZFp5uE+D7BQwn+wF24lPjNa+Ydc61f88O Q==;
+X-CSE-ConnectionGUID: NbVuZaFdTOq9oyL1A2xI5Q==
+X-CSE-MsgGUID: MIXFudMPRien5SUgc35vMg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11962"; a="3160365"
+X-IronPort-AV: E=Sophos;i="6.27,207,1787036400"; 
+   d="scan'208";a="3160365"
+Received: from orviesa002.jf.intel.com ([10.64.159.142])
+ by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 11 Nov 2026 00:59:45 -0800
+X-CSE-ConnectionGUID: DdV/jEy8QFOhAoQvzro3+Q==
+X-CSE-MsgGUID: pyPxa21OSce/xHYT7BOv4w==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,207,1787036400"; 
+   d="scan'208";a="8372034"
+Received: from lkp-server01.sh.intel.com (HELO 0caa9d2d175c) ([10.239.97.150])
+ by orviesa002.jf.intel.com with ESMTP; 11 Nov 2026 00:59:44 -0800
+Received: from kbuild by 0caa9d2d175c with local (Exim 4.98.2)
+ (envelope-from <lkp@intel.com>) id 1xR4BB-00000000yUr-29AU;
+ Wed, 11 Nov 2026 08:59:41 +0000
+Date: Wed, 11 Nov 2026 16:59:18 +0800
+From: kernel test robot <lkp@intel.com>
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Subject: [tnguy-net-queue:main] BUILD SUCCESS
+ 8373c4e8863ac5f5120d200527aca9880330f343
+Message-ID: <20261111165918.aDQOPSU2-lkp@intel.com>
+User-Agent: s-nail v14.9.25
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -157,367 +124,320 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Reply-To: tkusters@aweta.nl
-X-Spam-Status: No, score=-18.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-10.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=4.0.1
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_PASS autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
+X-Archived-By: <archiver.kernel.org>
 
-From: Tjerk Kusters <tkusters@aweta.nl>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git main
+branch HEAD: 8373c4e8863ac5f5120d200527aca9880330f343  MAINTAINERS: Add Hidayath as net/iucv maintainer
 
-igb does not support XDP multi-buffer: igb_xdp_setup() only accepts an
-MTU whose frame fits in one Rx buffer, and the XDP program only sees
-the first buffer of a frame. The maximum receive length is not limited
-accordingly, though. RLPML is only lowered when the frame fits a
-build_skb buffer on systems with PAGE_SIZE < 8192 and no VFs. Otherwise
-the MAC still accepts frames of up to MAX_JUMBO_FRAME_SIZE while XDP is
-attached, for example at MTU 3000 on 3 KiB buffers, and at any MTU when
-PAGE_SIZE >= 8192. With VFs allocated, RLPML always stays at
-MAX_JUMBO_FRAME_SIZE and the PF pool limit in VMOLR is only lowered for
-frames that fit a build_skb buffer, so the same happens at MTU 3000.
+elapsed time: 1006m
 
-Such frames span several descriptors. When the program does not return
-XDP_PASS for the first buffer, no skb is built, and igb_clean_rx_irq()
-handles the next buffer of the same frame as the start of a new frame:
-it runs the program on it and may pass it to the stack as a bogus frame
-made from the middle of the original payload.
+configs tested: 293
+configs skipped: 2
 
-Limit the receive length to the configured maximum frame size while XDP
-is attached: in RLPML when no VFs are allocated, and in the PF pool's
-VMOLR otherwise, as RLPML then has to stay large for the VFs. Larger
-frames are dropped by the MAC.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Also make sure that the limit holds:
-
-- Leave room for the inline Rx timestamp header when checking that the
-  frame fits in one Rx buffer, on XDP setup and on MTU change, where the
-  limit is the hardware buffer size. This lowers the largest MTU
-  accepted with XDP by 16 bytes: from 3046 to 3030 on 3 KiB buffers,
-  and from 2022 to 2006 with legacy-rx or PAGE_SIZE >= 8192. Setups that
-  use XDP at those MTUs will have to lower the MTU. The build_skb frame
-  limit used with 2 KiB buffers is kept, so XDP still attaches up to MTU
-  1510 on x86. The header is only prepended by 82580 and later MACs; the
-  room is reserved on all MACs for simplicity.
-- Base that check on the buffer size that igb_set_rx_buffer_len() will
-  select, not on the ring flags, which are only updated when the rings
-  are configured and can be stale on an interface that is down. As a
-  result, an MTU change with XDP attached can now also move from 2 KiB
-  to 3 KiB buffers. The check is skipped when XDP is removed.
-- Refuse XDP while rx-all is enabled, and keep rx-all off while XDP is
-  attached, as the MAC then also stores frames longer than RLPML. If
-  rx-all was requested meanwhile, it is turned on when XDP is removed.
-- Refuse to change the legacy-rx private flag while XDP is attached, as
-  that changes the Rx buffer size without checking it against the MTU.
-- Program both limits from igb_configure(), which runs when the
-  interface is (re)configured, before Rx is enabled, and no longer from
-  igb_set_rx_mode(), which can also run without RTNL, for example on an
-  IPv6 multicast join or a VF mailbox request. Otherwise such a call
-  during an XDP removal or an MTU change could apply the new limit while
-  the rings still use the old buffers.
-  Attaching or removing an XDP program on a running interface goes
-  through igb_close() and igb_open(), and an MTU change through
-  igb_down() and igb_up(), so igb_configure() runs in both cases.
-  igb_set_rx_mode() still updates other bits of the PF pool's VMOLR. The
-  core calls it under the address lock, so the limit is changed under
-  that lock. The VF mailbox path calls it from the interrupt handler
-  without the lock, but interrupts are masked while igb_configure()
-  runs.
-
-This follows the same approach as the igc fix that limits RLPML while
-XDP is attached. igb_set_rx_mode() does not touch VMOLR on i354, but
-i354 can have VFs, and then the PF pool limit is the only one. So it is
-also written on i354 when VFs are allocated, with or without XDP.
-
-Tested on an I350 at MTU 3000 with Rx timestamping on and xdp-filter
-dropping all IPv4 from the peer: 8242-byte frames are now dropped by the
-MAC (rx_long_length_errors), instead of their last two buffers being
-delivered as a separate frame. XDP attach at MTU 1500 and 3030 still
-works, at MTU 3046 it is refused, as is an MTU change from 3030 to 3046
-with XDP attached; an MTU change from 1500 to 3000 with XDP attached
-now works. With XDP attached, rx-all stays off and the legacy-rx flag
-cannot be changed. XDP attach is refused with rx-all on, and at MTU
-3000 with legacy-rx on, also when the flag was set while the interface
-was down. MTU changes between 1500 and 3000 with XDP attached, while
-the peer sent 3000-byte zero-payload frames, let no frame through as a
-separate frame.
-
-With two VFs allocated, the same frames are counted by the MAC but
-dropped by the PF pool limit in VMOLR before they reach the Rx queue;
-without this patch their last two buffers are again delivered as a
-separate frame. Read back from the registers, RLPML then stays at 9728
-and the PF pool limit is 3026 at MTU 3000 and 1526 at MTU 1500 with XDP
-attached. In repeated runs of about 200 MTU changes each, the limit was
-right after every change, except for one read in one run, where the
-value was not logged; eight reruns showed no mismatch.
-
-The i354 path was checked with the driver built so that the I350 takes
-the i354 branches for VMOLR. With two VFs and XDP attached, the PF pool
-limit kept its old value of 9728 when the VMOLR write was skipped on
-i354, and read back as 3026 at MTU 3000 and 1526 at MTU 1500 with this
-patch. Only the registers were checked; I have no i354 to test on.
-
-Link: https://lore.kernel.org/all/20261028083344.3047350-3-p@1g4.org/
-Fixes: 9cbc948b5a20 ("igb: add XDP support")
-Cc: stable@vger.kernel.org
-Suggested-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Signed-off-by: Tjerk Kusters <tkusters@aweta.nl>
----
- drivers/net/ethernet/intel/igb/igb_ethtool.c |   9 ++
- drivers/net/ethernet/intel/igb/igb_main.c    | 149 +++++++++++++++++++--------
- 2 files changed, 116 insertions(+), 42 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-index f7938c1da835..4f2891fca282 100644
---- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-@@ -3438,6 +3438,15 @@ static int igb_set_priv_flags(struct net_device *netdev, u32 priv_flags)
- 		flags |= IGB_FLAG_RX_LEGACY;
- 
- 	if (flags != adapter->flags) {
-+		/* the Rx buffer size depends on this flag, see
-+		 * igb_xdp_setup()
-+		 */
-+		if (igb_xdp_is_enabled(adapter)) {
-+			netdev_warn(netdev,
-+				    "Cannot change legacy-rx while XDP is attached\n");
-+			return -EOPNOTSUPP;
-+		}
-+
- 		adapter->flags = flags;
- 
- 		/* reset interface to repopulate queues */
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index ce91dda00ec0..711a67f0bd80 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -1964,6 +1964,57 @@ static void igb_setup_tx_mode(struct igb_adapter *adapter)
- 		   "enabled" : "disabled");
- }
- 
-+/**
-+ *  igb_set_rlpml - set the receive length limits
-+ *  @adapter: private board structure
-+ *
-+ *  Called from igb_configure(), before Rx is enabled. igb_set_rx_mode() can
-+ *  also run without RTNL, so it does not change these limits.
-+ **/
-+static void igb_set_rlpml(struct igb_adapter *adapter)
-+{
-+	u32 rlpml = MAX_JUMBO_FRAME_SIZE, pool_rlpml = MAX_JUMBO_FRAME_SIZE;
-+	unsigned int vfn = adapter->vfs_allocated_count;
-+	struct e1000_hw *hw = &adapter->hw;
-+	u32 vmolr;
-+
-+#if (PAGE_SIZE < 8192)
-+	/* restrict as needed to support build_skb */
-+	if (adapter->max_frame_size <= IGB_MAX_FRAME_BUILD_SKB) {
-+		pool_rlpml = IGB_MAX_FRAME_BUILD_SKB;
-+		if (!vfn)
-+			rlpml = IGB_MAX_FRAME_BUILD_SKB;
-+	}
-+#endif
-+	/* XDP does not support frames that span more than one Rx buffer.
-+	 * With VFs the global limit stays large and the PF pool is limited
-+	 * through VMOLR.
-+	 */
-+	if (igb_xdp_is_enabled(adapter)) {
-+		pool_rlpml = min(pool_rlpml, adapter->max_frame_size);
-+		if (!vfn)
-+			rlpml = min(rlpml, adapter->max_frame_size);
-+	}
-+	wr32(E1000_RLPML, rlpml);
-+
-+	/* the PF pool's VMOLR is used on these MACs, see igb_set_rx_mode(),
-+	 * and with VFs it carries the only limit for the PF, also on i354
-+	 */
-+	if (hw->mac.type < e1000_82576 ||
-+	    (hw->mac.type > e1000_i350 && !vfn))
-+		return;
-+
-+	/* igb_set_rx_mode() also updates this register, and the core calls
-+	 * it under the address lock
-+	 */
-+	netif_addr_lock_bh(adapter->netdev);
-+	vmolr = rd32(E1000_VMOLR(vfn));
-+	vmolr &= ~E1000_VMOLR_RLPML_MASK;
-+	vmolr |= pool_rlpml | E1000_VMOLR_LPE;
-+	wr32(E1000_VMOLR(vfn), vmolr);
-+	netif_addr_unlock_bh(adapter->netdev);
-+}
-+
- /**
-  *  igb_configure - configure the hardware for RX and TX
-  *  @adapter: private board structure
-@@ -1981,6 +2032,7 @@ static void igb_configure(struct igb_adapter *adapter)
- 
- 	igb_setup_tctl(adapter);
- 	igb_setup_mrqc(adapter);
-+	igb_set_rlpml(adapter);
- 	igb_setup_rctl(adapter);
- 
- 	igb_nfc_filter_restore(adapter);
-@@ -2468,6 +2520,14 @@ void igb_reset(struct igb_adapter *adapter)
- static netdev_features_t igb_fix_features(struct net_device *netdev,
- 	netdev_features_t features)
- {
-+	struct igb_adapter *adapter = netdev_priv(netdev);
-+
-+	/* with rx-all the MAC also stores frames longer than RLPML, which
-+	 * XDP cannot handle
-+	 */
-+	if (igb_xdp_is_enabled(adapter))
-+		features &= ~NETIF_F_RXALL;
-+
- 	/* Since there is no support for separate Rx/Tx vlan accel
- 	 * enable/disable make sure Tx flag is always in same state as Rx.
- 	 */
-@@ -2886,6 +2946,27 @@ static int igb_setup_tc(struct net_device *dev, enum tc_setup_type type,
- 	}
- }
- 
-+/* Check that a frame fits in one Rx buffer together with the inline Rx
-+ * timestamp header, for the buffer size igb_set_rx_buffer_len() selects.
-+ * The ring flags are only updated when the rings are configured, so they
-+ * are not used here. For build_skb rings the frame is limited to
-+ * IGB_MAX_FRAME_BUILD_SKB, which is below the 2 KiB hardware buffer size
-+ * even with the header.
-+ */
-+static bool igb_xdp_frame_fits(struct igb_adapter *adapter, int max_frame)
-+{
-+#if (PAGE_SIZE < 8192)
-+	if (!(adapter->flags & IGB_FLAG_RX_LEGACY)) {
-+		if (max_frame <= IGB_MAX_FRAME_BUILD_SKB &&
-+		    !IGB_2K_TOO_SMALL_WITH_PADDING)
-+			return true;
-+
-+		return max_frame + IGB_TS_HDR_LEN <= IGB_RXBUFFER_3072;
-+	}
-+#endif
-+	return max_frame + IGB_TS_HDR_LEN <= IGB_RXBUFFER_2048;
-+}
-+
- static int igb_xdp_setup(struct net_device *dev, struct netdev_bpf *bpf)
- {
- 	int i, frame_size = dev->mtu + IGB_ETH_PKT_HDR_PAD;
-@@ -2894,17 +2975,21 @@ static int igb_xdp_setup(struct net_device *dev, struct netdev_bpf *bpf)
- 	bool running = netif_running(dev);
- 	bool need_reset;
- 
--	/* verify igb ring attributes are sufficient for XDP */
--	for (i = 0; i < adapter->num_rx_queues; i++) {
--		struct igb_ring *ring = adapter->rx_ring[i];
-+	/* with rx-all the MAC also stores frames longer than RLPML */
-+	if (prog && (dev->features & NETIF_F_RXALL)) {
-+		NL_SET_ERR_MSG_MOD(bpf->extack, "XDP is not supported with rx-all");
-+		return -EOPNOTSUPP;
-+	}
- 
--		if (frame_size > igb_rx_bufsz(ring)) {
--			NL_SET_ERR_MSG_MOD(bpf->extack,
--					   "The RX buffer size is too small for the frame size");
--			netdev_warn(dev, "XDP RX buffer size %d is too small for the frame size %d\n",
--				    igb_rx_bufsz(ring), frame_size);
--			return -EINVAL;
--		}
-+	/* verify igb ring attributes are sufficient for XDP, leaving room
-+	 * for the inline Rx timestamp header
-+	 */
-+	if (prog && !igb_xdp_frame_fits(adapter, frame_size)) {
-+		NL_SET_ERR_MSG_MOD(bpf->extack,
-+				   "The RX buffer size is too small for the frame size");
-+		netdev_warn(dev, "XDP RX buffer size is too small for the frame size %d\n",
-+			    frame_size);
-+		return -EINVAL;
- 	}
- 
- 	old_prog = xchg(&adapter->xdp_prog, prog);
-@@ -2935,6 +3020,10 @@ static int igb_xdp_setup(struct net_device *dev, struct netdev_bpf *bpf)
- 	if (running)
- 		igb_open(dev);
- 
-+	/* rx-all may have been requested while XDP was attached */
-+	if (!prog && (dev->wanted_features & NETIF_F_RXALL))
-+		netdev_update_features(dev);
-+
- 	return 0;
- }
- 
-@@ -5323,7 +5412,7 @@ static void igb_set_rx_mode(struct net_device *netdev)
- 	struct igb_adapter *adapter = netdev_priv(netdev);
- 	struct e1000_hw *hw = &adapter->hw;
- 	unsigned int vfn = adapter->vfs_allocated_count;
--	u32 rctl = 0, vmolr = 0, rlpml = MAX_JUMBO_FRAME_SIZE;
-+	u32 rctl = 0, vmolr = 0;
- 	int count;
- 
- 	/* Check for Promiscuous and All Multicast modes */
-@@ -5380,14 +5469,6 @@ static void igb_set_rx_mode(struct net_device *netdev)
- 				     E1000_RCTL_VFE);
- 	wr32(E1000_RCTL, rctl);
- 
--#if (PAGE_SIZE < 8192)
--	if (!adapter->vfs_allocated_count) {
--		if (adapter->max_frame_size <= IGB_MAX_FRAME_BUILD_SKB)
--			rlpml = IGB_MAX_FRAME_BUILD_SKB;
--	}
--#endif
--	wr32(E1000_RLPML, rlpml);
--
- 	/* In order to support SR-IOV and eventually VMDq it is necessary to set
- 	 * the VMOLR to enable the appropriate modes.  Without this workaround
- 	 * we will have issues with VLAN tag stripping not being done for frames
-@@ -5399,19 +5480,10 @@ static void igb_set_rx_mode(struct net_device *netdev)
- 	/* set UTA to appropriate mode */
- 	igb_set_uta(adapter, !!(vmolr & E1000_VMOLR_ROPE));
- 
-+	/* keep the receive length limit set by igb_set_rlpml() */
- 	vmolr |= rd32(E1000_VMOLR(vfn)) &
- 		 ~(E1000_VMOLR_ROPE | E1000_VMOLR_MPME | E1000_VMOLR_ROMPE);
- 
--	/* enable Rx jumbo frames, restrict as needed to support build_skb */
--	vmolr &= ~E1000_VMOLR_RLPML_MASK;
--#if (PAGE_SIZE < 8192)
--	if (adapter->max_frame_size <= IGB_MAX_FRAME_BUILD_SKB)
--		vmolr |= IGB_MAX_FRAME_BUILD_SKB;
--	else
--#endif
--		vmolr |= MAX_JUMBO_FRAME_SIZE;
--	vmolr |= E1000_VMOLR_LPE;
--
- 	wr32(E1000_VMOLR(vfn), vmolr);
- 
- 	igb_restore_vf_multicasts(adapter);
-@@ -6707,19 +6779,12 @@ static int igb_change_mtu(struct net_device *netdev, int new_mtu)
- 	struct igb_adapter *adapter = netdev_priv(netdev);
- 	int max_frame = new_mtu + IGB_ETH_PKT_HDR_PAD;
- 
--	if (igb_xdp_is_enabled(adapter)) {
--		int i;
--
--		for (i = 0; i < adapter->num_rx_queues; i++) {
--			struct igb_ring *ring = adapter->rx_ring[i];
--
--			if (max_frame > igb_rx_bufsz(ring)) {
--				netdev_warn(adapter->netdev,
--					    "Requested MTU size is not supported with XDP. Max frame size is %d\n",
--					    max_frame);
--				return -EINVAL;
--			}
--		}
-+	if (igb_xdp_is_enabled(adapter) &&
-+	    !igb_xdp_frame_fits(adapter, max_frame)) {
-+		netdev_warn(adapter->netdev,
-+			    "Requested MTU size is not supported with XDP. Frame size is %d\n",
-+			    max_frame);
-+		return -EINVAL;
- 	}
- 
- 	/* adjust max frame to be at least the size of a standard frame */
+tested configs:
+alpha                              allnoconfig    gcc-16.2.0
+alpha                             allyesconfig    gcc-16.2.0
+alpha                                defconfig    gcc-16.2.0
+alpha                 randconfig-2200-20261110    gcc-9.5.0  smatch
+alpha                randconfig-r2109-20261110    clang-24   cocci
+arc                               allmodconfig    clang-24
+arc                                allnoconfig    gcc-16.2.0
+arc                               allyesconfig    clang-24
+arc                                  defconfig    gcc-16.2.0
+arc                         nsimosci_defconfig    gcc-16.2.0
+arc                   randconfig-1000-20261111    gcc-15.3.0
+arc                   randconfig-1001-20261111    gcc-15.3.0
+arc                   randconfig-2000-20261110    gcc-8.5.0
+arc                   randconfig-2001-20261110    gcc-8.5.0
+arc                   randconfig-2002-20261110    gcc-8.5.0
+arc                   randconfig-2003-20261110    gcc-8.5.0
+arc                   randconfig-2004-20261110    gcc-8.5.0
+arc                   randconfig-2005-20261110    gcc-8.5.0
+arc                   randconfig-2200-20261110    gcc-8.5.0  smatch
+arm                                allnoconfig    gcc-16.2.0
+arm                               allyesconfig    clang-24
+arm                          bcm2835_defconfig    gcc-16.2.0
+arm                      davinci_all_defconfig    clang-24
+arm                                  defconfig    gcc-16.2.0
+arm                       footbridge_defconfig    gcc-16.2.0
+arm                         mvebu_v7_defconfig    clang-24
+arm                         mvebu_v7_defconfig    gcc-16.2.0
+arm                   randconfig-1000-20261111    gcc-15.3.0
+arm                   randconfig-1001-20261111    gcc-15.3.0
+arm                   randconfig-1002-20261111    gcc-15.3.0
+arm                   randconfig-1003-20261111    gcc-15.3.0
+arm                   randconfig-2200-20261110    gcc-11.5.0 smatch
+arm64                             allmodconfig    clang-24
+arm64                              allnoconfig    gcc-16.2.0
+arm64                                defconfig    gcc-16.2.0
+arm64                 randconfig-1000-20261111    gcc-13.5.0
+arm64                 randconfig-1001-20261111    gcc-13.5.0
+arm64                 randconfig-1002-20261111    gcc-13.5.0
+arm64                 randconfig-1003-20261111    gcc-13.5.0
+arm64                 randconfig-2200-20261110    clang-24   smatch
+arm64                randconfig-r2106-20261110    clang-24   cocci
+arm64                randconfig-r2108-20261110    clang-24   cocci
+csky                              allmodconfig    gcc-16.2.0
+csky                               allnoconfig    gcc-16.2.0
+csky                                 defconfig    gcc-16.2.0
+csky                  randconfig-1000-20261111    gcc-13.5.0
+csky                  randconfig-1001-20261111    gcc-13.5.0
+csky                  randconfig-2000-20261110    gcc-11.5.0
+csky                  randconfig-2001-20261110    gcc-11.5.0
+csky                  randconfig-2200-20261110    gcc-16.2.0 smatch
+csky                 randconfig-r2110-20261110    clang-24   cocci
+hexagon                           allmodconfig    gcc-16.2.0
+hexagon                            allnoconfig    gcc-16.2.0
+hexagon                              defconfig    gcc-16.2.0
+hexagon               randconfig-1000-20261111    clang-17
+hexagon               randconfig-1001-20261111    clang-17
+hexagon               randconfig-2000-20261110    gcc-11.5.0
+hexagon               randconfig-2001-20261110    gcc-11.5.0
+hexagon               randconfig-2200-20261110    clang-24   smatch
+hexagon              randconfig-r2111-20261110    clang-24   cocci
+i386                              allmodconfig    clang-22
+i386                               allnoconfig    gcc-16.2.0
+i386                              allyesconfig    clang-22
+i386        buildonly-randconfig-1000-20261111    clang-22
+i386        buildonly-randconfig-1001-20261111    clang-22
+i386        buildonly-randconfig-1002-20261111    clang-22
+i386        buildonly-randconfig-1003-20261111    clang-22
+i386        buildonly-randconfig-1004-20261111    clang-22
+i386        buildonly-randconfig-1005-20261111    clang-22
+i386                                 defconfig    gcc-16.2.0
+i386                  randconfig-1000-20261111    gcc-13
+i386                  randconfig-1001-20261111    gcc-13
+i386                  randconfig-1002-20261111    gcc-13
+i386                  randconfig-1003-20261111    gcc-13
+i386                  randconfig-1004-20261111    gcc-13
+i386                  randconfig-1005-20261111    gcc-13
+i386                  randconfig-1006-20261111    gcc-13
+i386                  randconfig-1007-20261111    clang-22
+i386                  randconfig-1008-20261111    clang-22
+i386                  randconfig-1009-20261111    clang-22
+i386                  randconfig-1010-20261111    clang-22
+i386                  randconfig-1011-20261111    clang-22
+i386                  randconfig-1012-20261111    clang-22
+i386                  randconfig-1013-20261111    clang-22
+i386                  randconfig-2200-20261110    gcc-13     smatch
+loongarch                         allmodconfig    clang-24
+loongarch                          allnoconfig    gcc-16.2.0
+loongarch                            defconfig    clang-24
+loongarch             randconfig-1000-20261111    clang-17
+loongarch             randconfig-1001-20261111    clang-17
+loongarch             randconfig-2000-20261110    gcc-11.5.0
+loongarch             randconfig-2001-20261110    gcc-11.5.0
+m68k                              allmodconfig    gcc-16.2.0
+m68k                               allnoconfig    gcc-16.2.0
+m68k                              allyesconfig    clang-24
+m68k                          amcore_defconfig    gcc-16.2.0
+m68k                           atari_defconfig    gcc-16.2.0
+m68k                                 defconfig    clang-24
+m68k                  randconfig-2200-20261110    gcc-16.2.0 smatch
+microblaze                         allnoconfig    gcc-16.2.0
+microblaze                        allyesconfig    gcc-16.2.0
+microblaze                           defconfig    clang-24
+microblaze            randconfig-2200-20261110    gcc-8.5.0  smatch
+mips                              allmodconfig    gcc-16.2.0
+mips                               allnoconfig    gcc-16.2.0
+mips                              allyesconfig    gcc-16.2.0
+mips                      decstation_defconfig    gcc-16.2.0
+mips                           eyeq6_defconfig    clang-24
+mips                             gpr_defconfig    clang-24
+mips                        lemote2f_defconfig    clang-24
+mips                            mtx1_defconfig    clang-24
+mips                  randconfig-2000-20261110    gcc-16.2.0
+mips                  randconfig-2001-20261110    gcc-16.2.0
+mips                  randconfig-2002-20261110    gcc-16.2.0
+mips                  randconfig-2200-20261110    clang-17   smatch
+mips                 randconfig-r2309-20261110    clang-24   sparse
+nios2                             allmodconfig    clang-20
+nios2                              allnoconfig    clang-24
+nios2                                defconfig    clang-24
+nios2                 randconfig-1000-20261111    clang-17
+nios2                 randconfig-1001-20261111    clang-17
+nios2                 randconfig-2000-20261110    gcc-11.5.0
+nios2                 randconfig-2001-20261110    gcc-11.5.0
+nios2                 randconfig-2200-20261110    gcc-11.5.0 smatch
+openrisc                          alldefconfig    gcc-16.2.0
+openrisc                          allmodconfig    clang-20
+openrisc                           allnoconfig    clang-24
+openrisc                             defconfig    gcc-16.2.0
+openrisc              randconfig-2000-20261110    gcc-16.2.0
+openrisc              randconfig-2001-20261110    gcc-16.2.0
+openrisc              randconfig-2002-20261110    gcc-16.2.0
+openrisc              randconfig-2200-20261110    gcc-9.5.0  smatch
+openrisc             randconfig-r2109-20261110    clang-24   cocci
+parisc                            alldefconfig    gcc-16.2.0
+parisc                            allmodconfig    gcc-16.2.0
+parisc                             allnoconfig    clang-24
+parisc                            allyesconfig    clang-17
+parisc                               defconfig    gcc-16.2.0
+parisc                randconfig-1000-20261111    gcc-15.3.0
+parisc                randconfig-1001-20261111    gcc-15.3.0
+parisc                randconfig-2000-20261110    gcc-11.5.0
+parisc                randconfig-2001-20261110    gcc-11.5.0
+parisc                randconfig-2200-20261110    gcc-15.3.0 smatch
+parisc64                          alldefconfig    clang-24
+parisc64                             defconfig    clang-24
+powerpc                           allmodconfig    gcc-16.2.0
+powerpc                            allnoconfig    clang-24
+powerpc                        eiger_defconfig    gcc-16.2.0
+powerpc                    microwatt_defconfig    gcc-16.2.0
+powerpc               randconfig-1000-20261111    gcc-15.3.0
+powerpc               randconfig-1001-20261111    gcc-15.3.0
+powerpc               randconfig-2000-20261110    gcc-10.5.0
+powerpc               randconfig-2001-20261110    gcc-10.5.0
+powerpc               randconfig-2002-20261110    gcc-10.5.0
+powerpc               randconfig-2200-20261110    clang-24   smatch
+powerpc              randconfig-r2108-20261110    clang-24   cocci
+powerpc              randconfig-r2111-20261110    clang-24   cocci
+powerpc                      tqm8555_defconfig    gcc-16.2.0
+powerpc64             randconfig-1000-20261111    gcc-15.3.0
+powerpc64             randconfig-1001-20261111    gcc-15.3.0
+powerpc64             randconfig-2000-20261110    gcc-10.5.0
+powerpc64             randconfig-2001-20261110    gcc-10.5.0
+powerpc64             randconfig-2002-20261110    gcc-10.5.0
+powerpc64             randconfig-2200-20261110    clang-24   smatch
+riscv                             allmodconfig    clang-24
+riscv                              allnoconfig    clang-24
+riscv                             allyesconfig    clang-24
+riscv                                defconfig    gcc-16.2.0
+riscv                 randconfig-1000-20261111    clang-17
+riscv                 randconfig-1001-20261111    clang-17
+riscv                 randconfig-2000-20261110    gcc-12.5.0
+riscv                 randconfig-2001-20261110    gcc-12.5.0
+riscv                 randconfig-2002-20261110    gcc-12.5.0
+riscv                 randconfig-2003-20261110    gcc-12.5.0
+riscv                 randconfig-2004-20261110    gcc-12.5.0
+riscv                 randconfig-2005-20261110    gcc-12.5.0
+riscv                 randconfig-2200-20261110    gcc-8.5.0  smatch
+s390                              allmodconfig    clang-17
+s390                               allnoconfig    clang-24
+s390                              allyesconfig    gcc-16.2.0
+s390                                 defconfig    gcc-16.2.0
+s390                  randconfig-1000-20261111    clang-17
+s390                  randconfig-1001-20261111    clang-17
+s390                  randconfig-2000-20261110    clang-20
+s390                  randconfig-2001-20261110    clang-20
+s390                  randconfig-2002-20261110    clang-20
+s390                  randconfig-2003-20261110    clang-20
+s390                  randconfig-2004-20261110    clang-20
+s390                  randconfig-2005-20261110    clang-20
+s390                  randconfig-2200-20261110    clang-18   smatch
+s390                 randconfig-r2107-20261110    clang-24   cocci
+s390                 randconfig-r2308-20261110    clang-24   sparse
+s390                 randconfig-r2311-20261110    clang-24   sparse
+sh                                allmodconfig    gcc-16.2.0
+sh                                 allnoconfig    clang-24
+sh                                allyesconfig    clang-17
+sh                                   defconfig    gcc-14
+sh                 ecovec24-romimage_defconfig    gcc-16.2.0
+sh                  kfr2r09-romimage_defconfig    gcc-16.2.0
+sh                    randconfig-1000-20261111    clang-17
+sh                    randconfig-1001-20261111    clang-17
+sh                    randconfig-2000-20261110    gcc-9.5.0
+sh                    randconfig-2001-20261110    gcc-9.5.0
+sh                    randconfig-2002-20261110    gcc-9.5.0
+sh                    randconfig-2003-20261110    gcc-9.5.0
+sh                    randconfig-2004-20261110    gcc-9.5.0
+sh                    randconfig-2005-20261110    gcc-9.5.0
+sh                    randconfig-2200-20261110    gcc-16.2.0 smatch
+sh                    secureedge5410_defconfig    gcc-16.2.0
+sh                               ul2_defconfig    clang-24
+sparc                              allnoconfig    clang-24
+sparc                                defconfig    gcc-16.2.0
+sparc                 randconfig-1000-20261111    gcc-16.2.0
+sparc                 randconfig-1001-20261111    gcc-16.2.0
+sparc                 randconfig-2000-20261110    gcc-14
+sparc                 randconfig-2001-20261110    gcc-14
+sparc                 randconfig-2200-20261110    gcc-13.5.0 smatch
+sparc                randconfig-r2107-20261110    clang-24   cocci
+sparc                randconfig-r2307-20261110    clang-24   sparse
+sparc64                           allmodconfig    clang-20
+sparc64                              defconfig    gcc-14
+sparc64               randconfig-1000-20261111    gcc-16.2.0
+sparc64               randconfig-1001-20261111    gcc-16.2.0
+sparc64               randconfig-2000-20261110    gcc-14
+sparc64               randconfig-2001-20261110    gcc-14
+sparc64               randconfig-2200-20261110    clang-24   smatch
+um                                allmodconfig    clang-17
+um                                 allnoconfig    clang-24
+um                                allyesconfig    gcc-16.2.0
+um                                   defconfig    gcc-14
+um                              i386_defconfig    gcc-14
+um                    randconfig-1000-20261111    gcc-16.2.0
+um                    randconfig-1001-20261111    gcc-16.2.0
+um                    randconfig-2000-20261110    gcc-14
+um                    randconfig-2001-20261110    gcc-14
+um                    randconfig-2200-20261110    gcc-14     smatch
+um                   randconfig-r2306-20261110    clang-24   sparse
+um                   randconfig-r2310-20261110    clang-24   sparse
+um                            x86_64_defconfig    gcc-14
+x86_64                            allmodconfig    clang-22
+x86_64                             allnoconfig    clang-24
+x86_64                            allyesconfig    clang-22
+x86_64      buildonly-randconfig-1000-20261111    gcc-14
+x86_64      buildonly-randconfig-1001-20261111    gcc-14
+x86_64      buildonly-randconfig-1002-20261111    gcc-14
+x86_64      buildonly-randconfig-1003-20261111    gcc-14
+x86_64      buildonly-randconfig-1004-20261111    gcc-14
+x86_64      buildonly-randconfig-1005-20261111    gcc-14
+x86_64                               defconfig    gcc-14
+x86_64                                   kexec    clang-22
+x86_64                randconfig-1000-20261111    clang-22
+x86_64                randconfig-1001-20261111    clang-22
+x86_64                randconfig-1002-20261111    clang-22
+x86_64                randconfig-1003-20261111    clang-22
+x86_64                randconfig-1004-20261111    clang-22
+x86_64                randconfig-1005-20261111    clang-22
+x86_64                randconfig-1006-20261111    clang-22
+x86_64                randconfig-1007-20261111    clang-22
+x86_64                randconfig-1008-20261111    clang-22
+x86_64                randconfig-1009-20261111    clang-22
+x86_64                randconfig-1010-20261111    clang-22
+x86_64                randconfig-1011-20261111    clang-22
+x86_64                randconfig-1012-20261111    gcc-14
+x86_64                randconfig-1013-20261111    gcc-14
+x86_64                randconfig-1014-20261111    gcc-14
+x86_64                randconfig-1015-20261111    gcc-14
+x86_64                randconfig-1016-20261111    gcc-14
+x86_64                randconfig-1017-20261111    gcc-14
+x86_64                randconfig-2000-20261110    clang-22
+x86_64                randconfig-2001-20261110    clang-22
+x86_64                randconfig-2002-20261110    clang-22
+x86_64                randconfig-2003-20261110    clang-22
+x86_64                randconfig-2004-20261110    clang-22
+x86_64                randconfig-2005-20261110    clang-22
+x86_64                randconfig-2200-20261110    gcc-14     smatch
+x86_64                                rhel-9.4    clang-22
+x86_64                            rhel-9.4-bpf    clang-22
+x86_64                            rhel-9.4-bpf    gcc-14
+x86_64                           rhel-9.4-func    clang-22
+x86_64                     rhel-9.4-kselftests    clang-22
+x86_64                          rhel-9.4-kunit    clang-22
+x86_64                          rhel-9.4-kunit    gcc-14
+x86_64                            rhel-9.4-ltp    clang-22
+x86_64                            rhel-9.4-ltp    gcc-14
+x86_64                           rhel-9.4-rust    clang-22
+x86_64                           rhel-9.4-rust    clang-22
+xtensa                             allnoconfig    clang-24
+xtensa                            allyesconfig    clang-20
+xtensa                randconfig-1000-20261111    gcc-16.2.0
+xtensa                randconfig-1001-20261111    gcc-16.2.0
+xtensa                randconfig-2000-20261110    gcc-11.5.0
+xtensa                randconfig-2001-20261110    gcc-11.5.0
+xtensa               randconfig-r2110-20261110    clang-24   cocci
 
 -- 
-2.27.0
-
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
