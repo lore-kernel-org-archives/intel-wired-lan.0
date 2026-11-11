@@ -2,33 +2,33 @@ Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5C1DD606A31C
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 11 Nov 2026 11:03:42 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EF0B2606A884
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 11 Nov 2026 11:06:34 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=TET56i7h;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=bX6mOSMM;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=bX6mOSMM;
-	dkim=neutral header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=bX6mOSMM;
-	dkim=neutral header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=bX6mOSMM;
-	dkim=neutral header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=bX6mOSMM;
-	dkim=neutral header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=bX6mOSMM
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=HCMOs4ok;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=VA+VJlY/;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=OqoOBJF4;
+	dkim=neutral header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=OqoOBJF4;
+	dkim=neutral header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=VA+VJlY/;
+	dkim=neutral header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=OqoOBJF4;
+	dkim=neutral header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=VA+VJlY/
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 3F8F140B0B;
-	Wed, 11 Nov 2026 11:03:42 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id CABEF40827;
+	Wed, 11 Nov 2026 11:06:34 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id DnaKpQAq5RqC; Wed, 11 Nov 2026 11:03:40 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org B841340AF6
+ id 3vogitO3WsMM; Wed, 11 Nov 2026 11:06:34 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 1E3FA40829
 Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794395020;
-	b=H3ipTg0jhLLo1/nUfsm8Z55orV1nCSnjOtXVa6k8IcqnHWBctN/6K9eiI6EmcjWXeJW0
-	 mQaLhZtgzJQNg5Bs0fMKJHfb06S9ZhyizCq5Pk0Z/+UJtlCURUa/LfkEvW+FJj/qd+7No
-	 sdb6jIP6xZ/b29OIJNi0I17kVLzYJdpZ84b9+K93rcvTm5y5TlOY6szcmKELK0LfC/g9l
-	 HdfS9jF/V4M/S6mWJkcaZuUIv8PKEtLtpfZs9dCXbrSYaQIo+DS0RSuKp3hoRtabjC4L6
-	 j8FtYvh8ScIDeseunobB3K8pqcSuN2JKFNejrwV9U2qRAOBmOb6Qg7UQgWLhywinTLg==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794395194;
+	b=aSWtOWWqcEoqXC2y4iKfX+MuWvveehHsHyJWOh3GFgLd6wHlSfaZLGCco0EA74ZgiL0Y
+	 33Ks1CgR11GPVF7F4TOqNOVgU4iR0f6GFt/but7O2xs2S15zD69zi8zdwmYFRDvBxT4C2
+	 /+Wl44HcpIksqU/aiRAfdFop9C61L3twFZn83o+KMC6eGTulREDFpVg8Kgn7c6J+CjNty
+	 5EF036rHT8To94l/XXNmknai3xE3rJ74KMcNBNA8dxQxIv9S5PgMxj1kuo0HLFlQwm8zS
+	 ipwFnJo74DNBzKEyfo/MjdSPlw4MrT5iMUGmdvnyycPq1M/24fwRGyFV3FU/jb5hdeA==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794395020;
+	c=relaxed/relaxed; t=1794395194;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
@@ -40,150 +40,157 @@ ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
 	 Content-Type:Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:
 	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=9xCaKikxY5SCwLczpS9oMIGpBnm49BMiWeY8N1jcjvk=;
-	b=prTvN4olevhuNs3TlUK2/wvJsFTYy15tPE4w4xNLs7vlalo1J0DWoYeBjhWYzKfXVqQh
-	 pPuxcwLjMsCxczXMJzkw6MJIK81AgoJEl3Id9IUCv8RbR8nw4X0WGbfcrmZoSV/FlaKMk
-	 zJ6dQ1TOSkpHCS26AWK1XtFXfUtgkGtNwpiuVPihXsa8TNA+7R2hcrgnlITxnqoEdIHjZ
-	 caoZ/cXxBKjRq+vm3Sctk95Y9x3cJoIXXFgxHoQYYzqdIZuxxc3Sxylqmuyl4gSDxqc0P
-	 qqbH9Y/T5K3q9ldqbFVBZgVwcxokaEERm5Mgvqazc2Y4P9bFFfI8BW5Uzcl+UkHuM2Q==
+	bh=j68fncYFG3wRKRfnvYuffOG/HpagUvbeYFES/ium9zw=;
+	b=UYNOClOsVN9+jqP2h0QT3Y4pGob9uS9+bRdrit08FGwg9dEzz/B8f+bvS8i8zjxko7EJ
+	 QJUGtTsMru3C1WleWFQmx8xAEm5tw0dbufn84Rkd0GaHUnQaVgZ8dbRFXSrohKXIPPbWY
+	 GbuGkKCtJjrAds9JLDtfwoorGhtv6u0pmLRwWkg2Znc+Pi7+YBcIFyg0UhCExrV9/KN/d
+	 rgC2BrlheCCAO8LlaqmcarUPbj39BR6Nuh9Nhd5vKhoJ2XI7ONUTSme9rdIHWljFNSwtx
+	 csGTjPRCAxDjCz2nFNdkYpeSYEp1lLwxidMFMeGX6Qziv3q/n/c5cE3sflXNd1OiRFw==
 ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
+	dmarc=pass header.from=redhat.com;
+	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b="VA+VJlY/";
+	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=OqoOBJF4;
+	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=OqoOBJF4;
+	dkim=neutral header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b="VA+VJlY/";
+	dkim=neutral header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=OqoOBJF4;
+	dkim=neutral header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b="VA+VJlY/";
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1794395020;
-	bh=9xCaKikxY5SCwLczpS9oMIGpBnm49BMiWeY8N1jcjvk=;
+	s=default; t=1794395194;
+	bh=j68fncYFG3wRKRfnvYuffOG/HpagUvbeYFES/ium9zw=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=TET56i7hPTKWCaNz5M96GgB1X4C34/clbJqhzjyqdKYp5tk68r2Ek1cyrhpMHTgsC
-	 fbfQq+YL7AphUjNh2TUOtPpvI9m0UuY1CnyjLUL9RyQIt2gnO93TNZX7kYY6RTd6zJ
-	 TGPqmuo2X/mTG7wuUNLD937ec5gexTv6vMIzrno915oIS09/kY4poYYbB+C0v56eS2
-	 yIZAmvRuOCviLLWPexmV81KZv3+YRoIjQdTGUJruD7yuWsAVV3Xd+JJbLI3nsUi6sg
-	 HG64tqNRnSLbwfakJkcgeqHZAYiTZHf+brOOAUlr9xo0c0S80F7QFaqjmLkJQ1rWh4
-	 bPi2oNPX3ovwg==
+	b=HCMOs4okWeYpP03dZBBS4Vrr6oKhBNQ3CyEnUuSMRkjcmlt/sQn4w/4jzo6mTghff
+	 7JKM85R7EIxyvNu+QR5kz4mVlwXz3o8gFNnjYjecP+dhnBWWLbhQdxzLT+d4f/9mqQ
+	 E3xmdnL6ROjK+xVn16Q2tWo2hbxTrzjg+OQSi+ndhX7w7GEZOLHjOJUk5jk3DMnbZ3
+	 xuecZpJVsH9MjQhz0x92Uhh5tajTBIpQJbDCCjZVXSOdb9xN4YGnGxq3oRTIIFbFg+
+	 oxWwO1dTFlN98MhneO8IlG1CW6k0ylENwmIRP5w8McnqueejNOApMUPbNtgIzIQYnc
+	 fxVAhYxV/QOqw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B841340AF6;
-	Wed, 11 Nov 2026 11:03:40 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 569D4F22
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Nov 2026 11:03:39 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1E3FA40829;
+	Wed, 11 Nov 2026 11:06:34 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id E901B731
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Nov 2026 11:06:32 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 3C9CE60796
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Nov 2026 11:03:39 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id D453840829
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Nov 2026 11:06:32 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id U57_9SE2AUyf for <intel-wired-lan@lists.osuosl.org>;
- Wed, 11 Nov 2026 11:03:38 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 8E31860793
-Authentication-Results: smtp3.osuosl.org;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id CObJ91ag1Xa7 for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 11 Nov 2026 11:06:32 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org AFC2540827
+Authentication-Results: smtp4.osuosl.org;
  arc=none smtp.remote-ip=170.10.129.124
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
  helo=us-smtp-delivery-124.mimecast.com; envelope-from=ivecera@redhat.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp3.osuosl.org; dmarc=pass (p=quarantine dis=none)
+Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=redhat.com
-Authentication-Results: smtp3.osuosl.org;
+Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (1024-bit key, unprotected) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=VA+VJlY/; 
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=bX6mOSMM; 
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=OqoOBJF4; 
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=bX6mOSMM; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=bX6mOSMM; 
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=OqoOBJF4; 
  dkim=neutral header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=bX6mOSMM; 
+ header.s=mimecast20190719 header.b=VA+VJlY/; 
  dkim=neutral header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=bX6mOSMM; 
+ header.s=mimecast20190719 header.b=OqoOBJF4; 
  dkim=neutral header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=bX6mOSMM
+ header.s=mimecast20190719 header.b=VA+VJlY/
 Received: from us-smtp-delivery-124.mimecast.com
  (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp3.osuosl.org (Postfix) with ESMTP id 8E31860793
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Nov 2026 11:03:36 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id AFC2540827
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Nov 2026 11:06:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1794395015;
+ s=mimecast20190719; t=1794394889;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=9xCaKikxY5SCwLczpS9oMIGpBnm49BMiWeY8N1jcjvk=;
- b=bX6mOSMMBJ+JRmOa4IXEeeS20w1j/cBjSVShHAu4yNLvq0vvJ4feLj7enxjZ80C1BLgXvw
- pNwvp9FLW9gV/Wc701br1Fhh5f9LDPgWwZY1phnBd1BqOhzx4GmiSga/wYj5XRcwQbq510
- xHHk+YA3/wjBXGdtuV9xLmNX6ukURkA=
+ bh=j68fncYFG3wRKRfnvYuffOG/HpagUvbeYFES/ium9zw=;
+ b=VA+VJlY/IkV5d4ghcelGR4YwrVeBXM7SoJyE9auTejl+hn+f+sUC2Ngt88a6ZiQ22Lb79I
+ I/MPx1nDZoFBkTxTHz2gEdHeeRONEsFf17AYJfFsMp21OHnb9h3Eu10p0ybAe8frMKv8ib
+ vjEYMm5POxw2If7F/MVRIemGqkYy++4=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1794395015;
+ s=mimecast20190719; t=1794395190;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=9xCaKikxY5SCwLczpS9oMIGpBnm49BMiWeY8N1jcjvk=;
- b=bX6mOSMMBJ+JRmOa4IXEeeS20w1j/cBjSVShHAu4yNLvq0vvJ4feLj7enxjZ80C1BLgXvw
- pNwvp9FLW9gV/Wc701br1Fhh5f9LDPgWwZY1phnBd1BqOhzx4GmiSga/wYj5XRcwQbq510
- xHHk+YA3/wjBXGdtuV9xLmNX6ukURkA=
+ bh=j68fncYFG3wRKRfnvYuffOG/HpagUvbeYFES/ium9zw=;
+ b=OqoOBJF4m2v5gUmkaG5IvUImW6eqisbHe0JsZbOIkHxPceiHs06ic5lI8GojOX9iHNjdiZ
+ dGsTbB8WNTexdFE2NjRMsw05btR/81d0OX7Tb4cKI/eZr9T1rPzSVdmpuNzEg1pT/sdx95
+ h8FgEoN2QgmabtwKbTvHFP3HkGl1dro=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1794395015;
+ s=mimecast20190719; t=1794395190;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=9xCaKikxY5SCwLczpS9oMIGpBnm49BMiWeY8N1jcjvk=;
- b=bX6mOSMMBJ+JRmOa4IXEeeS20w1j/cBjSVShHAu4yNLvq0vvJ4feLj7enxjZ80C1BLgXvw
- pNwvp9FLW9gV/Wc701br1Fhh5f9LDPgWwZY1phnBd1BqOhzx4GmiSga/wYj5XRcwQbq510
- xHHk+YA3/wjBXGdtuV9xLmNX6ukURkA=
+ bh=j68fncYFG3wRKRfnvYuffOG/HpagUvbeYFES/ium9zw=;
+ b=OqoOBJF4m2v5gUmkaG5IvUImW6eqisbHe0JsZbOIkHxPceiHs06ic5lI8GojOX9iHNjdiZ
+ dGsTbB8WNTexdFE2NjRMsw05btR/81d0OX7Tb4cKI/eZr9T1rPzSVdmpuNzEg1pT/sdx95
+ h8FgEoN2QgmabtwKbTvHFP3HkGl1dro=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1794395015;
+ s=mimecast20190719; t=1794394889;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=9xCaKikxY5SCwLczpS9oMIGpBnm49BMiWeY8N1jcjvk=;
- b=bX6mOSMMBJ+JRmOa4IXEeeS20w1j/cBjSVShHAu4yNLvq0vvJ4feLj7enxjZ80C1BLgXvw
- pNwvp9FLW9gV/Wc701br1Fhh5f9LDPgWwZY1phnBd1BqOhzx4GmiSga/wYj5XRcwQbq510
- xHHk+YA3/wjBXGdtuV9xLmNX6ukURkA=
+ bh=j68fncYFG3wRKRfnvYuffOG/HpagUvbeYFES/ium9zw=;
+ b=VA+VJlY/IkV5d4ghcelGR4YwrVeBXM7SoJyE9auTejl+hn+f+sUC2Ngt88a6ZiQ22Lb79I
+ I/MPx1nDZoFBkTxTHz2gEdHeeRONEsFf17AYJfFsMp21OHnb9h3Eu10p0ybAe8frMKv8ib
+ vjEYMm5POxw2If7F/MVRIemGqkYy++4=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1794395015;
+ s=mimecast20190719; t=1794395190;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=9xCaKikxY5SCwLczpS9oMIGpBnm49BMiWeY8N1jcjvk=;
- b=bX6mOSMMBJ+JRmOa4IXEeeS20w1j/cBjSVShHAu4yNLvq0vvJ4feLj7enxjZ80C1BLgXvw
- pNwvp9FLW9gV/Wc701br1Fhh5f9LDPgWwZY1phnBd1BqOhzx4GmiSga/wYj5XRcwQbq510
- xHHk+YA3/wjBXGdtuV9xLmNX6ukURkA=
+ bh=j68fncYFG3wRKRfnvYuffOG/HpagUvbeYFES/ium9zw=;
+ b=OqoOBJF4m2v5gUmkaG5IvUImW6eqisbHe0JsZbOIkHxPceiHs06ic5lI8GojOX9iHNjdiZ
+ dGsTbB8WNTexdFE2NjRMsw05btR/81d0OX7Tb4cKI/eZr9T1rPzSVdmpuNzEg1pT/sdx95
+ h8FgEoN2QgmabtwKbTvHFP3HkGl1dro=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1794395015;
+ s=mimecast20190719; t=1794394889;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=9xCaKikxY5SCwLczpS9oMIGpBnm49BMiWeY8N1jcjvk=;
- b=bX6mOSMMBJ+JRmOa4IXEeeS20w1j/cBjSVShHAu4yNLvq0vvJ4feLj7enxjZ80C1BLgXvw
- pNwvp9FLW9gV/Wc701br1Fhh5f9LDPgWwZY1phnBd1BqOhzx4GmiSga/wYj5XRcwQbq510
- xHHk+YA3/wjBXGdtuV9xLmNX6ukURkA=
-Received: from mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
+ bh=j68fncYFG3wRKRfnvYuffOG/HpagUvbeYFES/ium9zw=;
+ b=VA+VJlY/IkV5d4ghcelGR4YwrVeBXM7SoJyE9auTejl+hn+f+sUC2Ngt88a6ZiQ22Lb79I
+ I/MPx1nDZoFBkTxTHz2gEdHeeRONEsFf17AYJfFsMp21OHnb9h3Eu10p0ybAe8frMKv8ib
+ vjEYMm5POxw2If7F/MVRIemGqkYy++4=
+Received: from mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
  relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-607-N6vwd9lROFKYldtDPkqikQ-1; Wed,
- 11 Nov 2026 06:03:27 -0500
-X-MC-Unique: N6vwd9lROFKYldtDPkqikQ-1
-X-Mimecast-MFC-AGG-ID: N6vwd9lROFKYldtDPkqikQ_1794395004
-Received: from mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com
- (mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.12])
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-223-rbdtinCuP1GMtHMkRB0Fgg-1; Wed,
+ 11 Nov 2026 06:01:27 -0500
+X-MC-Unique: rbdtinCuP1GMtHMkRB0Fgg-1
+X-Mimecast-MFC-AGG-ID: rbdtinCuP1GMtHMkRB0Fgg_1794394884
+Received: from mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com
+ (mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.111])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
- id A14B818002C8; Wed, 11 Nov 2026 11:03:24 +0000 (UTC)
+ by mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
+ id DCE261955F0E; Wed, 11 Nov 2026 11:01:23 +0000 (UTC)
 Received: from [100.91.101.41] (headnet04.pony-001.prod.iad2.dc.redhat.com
  [10.2.32.116])
- by mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
- id 621521956087; Wed, 11 Nov 2026 11:03:18 +0000 (UTC)
-Message-ID: <230b9191-ed71-47b2-8e64-456b6c60b480@redhat.com>
-Date: Wed, 11 Nov 2026 12:03:17 +0100
+ by mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
+ id B82171800495; Wed, 11 Nov 2026 11:01:17 +0000 (UTC)
+Message-ID: <373e80ec-de22-4486-afdf-1a88f6207b9f@redhat.com>
+Date: Wed, 11 Nov 2026 12:01:16 +0100
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH net-next 09/10] ice: dpll: update locking comments
+Subject: Re: [PATCH net-next 05/10] dpll: convert dpll_lock to rwsem
 To: netdev-bot+sashiko@kernel.org
 Cc: netdev@vger.kernel.org, vadim.fedorenko@linux.dev,
  arkadiusz.kubalewski@intel.com, jiri@resnulli.us, corbet@lwn.net,
@@ -195,16 +202,16 @@ Cc: netdev@vger.kernel.org, vadim.fedorenko@linux.dev,
  intel-wired-lan@lists.osuosl.org, grzegorz.nitka@intel.com,
  karol.kolacinski@intel.com, saeedm@nvidia.com, tariqt@nvidia.com,
  poros@redhat.com
-References: <20261106121005.1327603-10-ivecera@redhat.com>
- <179433320858.994134.3648996641880038315@kernel.org>
+References: <20261106121005.1327603-6-ivecera@redhat.com>
+ <179433320479.994134.13826920591104367019@kernel.org>
 From: Ivan Vecera <ivecera@redhat.com>
-In-Reply-To: <179433320858.994134.3648996641880038315@kernel.org>
-X-Scanned-By: MIMEDefang 3.0 on 10.30.177.12
-X-Mimecast-MFC-PROC-ID: 91Q3UyrVM-oUP0GjVfQ6kBDHf2KloG4-c40m9H23M0Y_1794395004
+In-Reply-To: <179433320479.994134.13826920591104367019@kernel.org>
+X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.111
+X-Mimecast-MFC-PROC-ID: GepT0_gPkrMhFrBuqVtkgeI8gI-JMNv3k2D9vuZRng0_1794394884
 X-Mimecast-Originator: redhat.com
 Content-Language: en-US
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -218,7 +225,7 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 X-Spam-Status: No, score=-12.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
 	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
@@ -230,44 +237,43 @@ On 11/10/26 18:53, netdev-bot+sashiko@kernel.org wrote:
 > 
 > Low priority / nit picks for your consideration:
 > 
-> - [Low] The locking note this patch adds to the struct ice_dplls kernel-
->    doc (drivers/net/ethernet/intel/ice/ice_dpll.h, lines 168-170) is…
+> - [Low] This patch turns dpll_lock from a mutex into an rwsem.
 > 
 > --
 > 
-> ice: dpll: update locking comments
+> dpll: convert dpll_lock to rwsem
 > 
-> This commit updates the ice DPLL locking comments now that callbacks run
-> under the DPLL core domain locks instead of dpll_lock. It also adds a note
-> saying that callbacks of the external DPLL's pins run under that DPLL's
-> domain, so only pf->dplls.lock serializes them with the rest of the
-> driver.
+> This commit converts dpll_lock from a mutex to an rwsem. Core functions
+> that change the topology take it for write. Netlink requests, dump parts
+> and change notifications take it for read, so callbacks of different
+> domains can run concurrently.
 > 
->> diff --git a/drivers/net/ethernet/intel/ice/ice_dpll.h b/drivers/net/ethernet/intel/ice/ice_dpll.h
->> index 4ba76e2e2e0b0..39e041a30090d 100644
->> --- a/drivers/net/ethernet/intel/ice/ice_dpll.h
->> +++ b/drivers/net/ethernet/intel/ice/ice_dpll.h
->> @@ -165,6 +165,9 @@ struct ice_dpll {
->>    *     tx_refclks usage map), acquire pf->dplls.lock first, then
->>    *     ctrl_pf->dplls.lock. Skip the second acquire when pf == ctrl_pf
->>    *     to avoid recursive locking.
->> + *   - Callbacks of the SYNCE and TIME_REF pins of an external DPLL run under
->> + *     the DPLL core domain lock of that DPLL, not of the TXC and TSPLL DPLLs,
->> + *     so only @lock serializes them with the callbacks of these DPLLs.
+>> diff --git a/drivers/dpll/dpll_core.c b/drivers/dpll/dpll_core.c
+>> index dd09f52817099..8eb7468234315 100644
+>> --- a/drivers/dpll/dpll_core.c
+>> +++ b/drivers/dpll/dpll_core.c
+>> @@ -19,8 +19,12 @@
+>>   #include "dpll_core.h"
+>>   #include "dpll_netlink.h"
+>>   
+>> -/* Mutex lock to protect DPLL subsystem devices and pins */
+>> -DEFINE_MUTEX(dpll_lock);
+>> +/* Protects the topology and lifetime of DPLL devices and pins. Taken for write
+>> + * to change them and for read for the whole netlink request, part of a dump or
+>> + * change notification that uses them. Driver callbacks are serialized by domain
+>> + * locks, which are only taken under this lock.
+>> + */
+>> +DECLARE_RWSEM(dpll_lock);
 > 
 > [Severity: Low]
-> Could this note be clearer that TXC and TSPLL are not in the same core
-> domain either?
+> Should the assertions in dpll_domain_get() and dpll_domain_put() be changed
+> to lockdep_assert_held_write() along with this conversion?
 
 [...]
-> The new sentence is accurate per DPLL, and the first bullet still says
-> @lock serializes all DPLL state mutations. Since this patch exists to
-> document the domain-lock rules, though, would it make sense to say that
-> TXC, TSPLL and the DSN-domain objects are each in their own domain?
-Yes. v2 will say that the core serializes callbacks per (module, clock_id),
-that the TXC DPLL, the TSPLL DPLL and the other objects of a PF have a
-clock_id each, and that the SYNCE and TIME_REF pins of an external DPLL
-are one more such case. @lock serializes all of them.
+> call_dpll_notifiers() can keep the plain lockdep_assert_held(), because it
+> legitimately runs under the read lock.
+Yes, v2 uses lockdep_assert_held_write() in both and keeps
+lockdep_assert_held() in call_dpll_notifiers().
 
 Thanks,
 Ivan
