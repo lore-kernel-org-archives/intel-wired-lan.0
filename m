@@ -2,28 +2,28 @@ Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0FE98606A321
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 11 Nov 2026 10:55:31 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 731E6606A32D
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 11 Nov 2026 10:57:16 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=vYJ0kWLu;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=e7c28ZRA
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=E16wTv6I;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dogS02vY
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id E0AB440598;
-	Wed, 11 Nov 2026 10:55:30 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 50F4E40572;
+	Wed, 11 Nov 2026 10:57:16 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id RRXQ_6Jh8EiH; Wed, 11 Nov 2026 10:55:30 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 4A3ED40624
+ id AaaotbfiqGhR; Wed, 11 Nov 2026 10:57:15 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 91A5A40598
 Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794394530;
-	b=cK55mo229bDDiXq8bKcNYI73JmZK7ocZVgv8xMEz8rYO6nkIjpo0s8L9FyWSZyIuVfd2
-	 vwwY9td+6ZfcSBiCk+tA1fupoA1WMFOhxV1qb2XjdaMYYbVKHdXW3E8YCDfEN1oT+EhOE
-	 2rYJP0GE0Wn6PBUDBd8N+LhrfFffnObZ+JkDMnBp7kH/MEI/jap/hp+gaZYka7tj5jTSz
-	 Qtq6ulGrSj8OXySx0EjkjCu8dmRvWyLDkB32UP6sjkqwC3WuYVfeCHrw6seWEJgQy5HfX
-	 RPGdz4KzH86+zQzKgEjN3404BWCfdlOLOBGg0kjxrR27+kO2gHs63q59Niu0Rz1vsog==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794394635;
+	b=l0wcJ7OYca3Bq1TbRFilCOacS17HbdR0oOmmAad1YYliVWmb5FZuMlqwZxIedyUjw/OF
+	 q4hAnkCqac2ihMLMODDlITOqNfOuNu5ZyUVOEhLJWMbp6EmEomaZdjpJEHWUN7KTqz2TD
+	 xdKKLFfQUHxi8xYgGWsS3eYDTJC9o9hmNlT25V6XJzM8/G3jLKYZ1M0HQswzxQwgkLO1z
+	 PyZ0G1rpQx7O3i0DhTRZpLtwRbaSJ8FPvrOVgK2ZajEujUWKyWjpmqtY9/bQoVwb36jjm
+	 xJtKNmvVYPf35njalkueLmPeX1zqcrSIG2i3tOCmDqI8S5A7tVOOaCMuNt98VO/u9+A==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794394530;
+	c=relaxed/relaxed; t=1794394635;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
@@ -34,91 +34,93 @@ ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
 	 Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:Precedence:
 	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=SF2NQhuQxu5m0bI5v5rpx1rhcNXkOJ4L4wUCi27ileQ=;
-	b=MxPKYS7hHS2bhgPxB+mQOwEaOdeBlGck7aNoo7IHZtnM7X6daGjg5eLOu/h5xjE2/W7h
-	 O/of31C76ZQcxfJf//CDYfjRWVvHBXrfn4NVsz3NqpDHh9umfQjiDKM6KYwMfotCTAqf3
-	 3BqkfyQWsyoKrgBhAJfaCegusudTWo/fHUY6940AUUsoU6ncsOqNyEPUUTU9j+Wr5NKE9
-	 vEGlBRWdEnNptTb2tJo5mUr5IndcpxqGbY6PklFqAf2BSOOvPibX4VvL+nCEnwzwe+hQ9
-	 DJ7dztLciZTXY8ZFh56ZTirVjAibqHU64Wyaw6hajLpH+twcEM5dmt0oavzqAyUGC7A==
+	bh=y71I2g5CiY6ZLFtOOjFefsyXa2Y2V1HXYev8hBP6Jd4=;
+	b=gy4PotgSdMS1Q5FF9kWMZGtQ5EtDvdkhrMpKdiK0aK71ktt+jSdZiJpzUZQXdxJt7oKa
+	 v7LAqtbCRIOLD5BmxrhadSCWq+SstLNDwnYpDozeXC9S64n51BZecsNdkyuDQp165GmL5
+	 U9uoplOBHe/Z9vkrBmRMzVy7GZzsSfzlA8stUX8RPYHrJACp+i/DRdLTXYxb3A5Xa0U0g
+	 S2/R6qjoZpqsBM9848WcrbnZlAHrDi6FLUTWzrzsRc+Z0OWVK6IMX7dLpfdm2zA2L81ay
+	 4JQ/hHvvrglmwWF5kZmIdr4HtjUhBiyaX8rQBZeA4o8uMGPPk3+lTz5ThlS+F6FsbTg==
 ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
+	dmarc=pass header.from=redhat.com;
+	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dogS02vY;
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1794394530;
-	bh=SF2NQhuQxu5m0bI5v5rpx1rhcNXkOJ4L4wUCi27ileQ=;
+	s=default; t=1794394635;
+	bh=y71I2g5CiY6ZLFtOOjFefsyXa2Y2V1HXYev8hBP6Jd4=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=vYJ0kWLunJ+kx24k/anlX1dn9BZk1zilgDLYEcw7anAX2rZt/JRORaZ351WDKFSiO
-	 FZ10BRj1dmL4lSmsZs5LJNmsWpbIRGXByc0JakCbip3k8y1BRlqYX+u6B5UXAR3Tsq
-	 yvw3na3VSHRgJs8qtvNRYTupYwaONDyvVUr6qC0nPwzOHKJzQAosEIXHdQvl5Fradw
-	 uh1bGMegl51501jLZutrxhlA6wUg5GjrnkhgzbDCPw3D6AwvoEIU3U2yNip8uUmYDc
-	 oBmC44duWBGUGvVipUypfJYNtz4iXkkXjEaQOmztaXZBnVCKczDKd/OcZ6uOVv2r1g
-	 /oBBLe66gBVRA==
+	b=E16wTv6I1bpdLkczt1yLfA/Ver8HUNbSW1REl7AYTnTWVNoaX/CdglJN5JZUxC3eZ
+	 1sJ6sRmwJYk7asodNxnslaUf8cSQgh8t5E1Kb7124RIA0v7o7JKxC1XQ6VTwI8kok2
+	 eF3GeOFasg63r5JqxxwykLIxoZjNAoBKC3Sum9kn9Ht/mFBu8yfxyl1CVGpU/kZGmd
+	 YlF+utT0FW86qSXuRGT7MOzYS27kvOYPJvReJv2vb7dJjEwnDWgsxxW7s42MluVGDb
+	 4olCHwmHJpXpdBrUvBGsoWPCx9Qn+u9ojryMAoioHo3kzRZT6BBY9kf+vyN300J2Wq
+	 z9LHbsoGVGWAA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 4A3ED40624;
-	Wed, 11 Nov 2026 10:55:30 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 34B09731
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Nov 2026 10:55:28 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 91A5A40598;
+	Wed, 11 Nov 2026 10:57:15 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 9793617CC
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Nov 2026 10:57:13 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 1478D40217
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Nov 2026 10:55:28 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 940DE40598
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Nov 2026 10:57:13 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id IGU8dd-JNHR5 for <intel-wired-lan@lists.osuosl.org>;
- Wed, 11 Nov 2026 10:55:27 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org AC206400D5
-Authentication-Results: smtp2.osuosl.org;
- arc=none smtp.remote-ip=170.10.129.124
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id FaPvoZ2EOx0S for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 11 Nov 2026 10:57:12 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 88D8940572
+Authentication-Results: smtp4.osuosl.org;
+ arc=none smtp.remote-ip=170.10.133.124
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.133.124;
  helo=us-smtp-delivery-124.mimecast.com; envelope-from=ivecera@redhat.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=quarantine dis=none)
+Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=redhat.com
-Authentication-Results: smtp2.osuosl.org;
+Authentication-Results: smtp4.osuosl.org;
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=e7c28ZRA
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=dogS02vY
 Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp2.osuosl.org (Postfix) with ESMTP id AC206400D5
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Nov 2026 10:55:26 +0000 (UTC)
+ (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+ by smtp4.osuosl.org (Postfix) with ESMTP id 88D8940572
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Nov 2026 10:57:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1794394525;
+ s=mimecast20190719; t=1794394630;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=SF2NQhuQxu5m0bI5v5rpx1rhcNXkOJ4L4wUCi27ileQ=;
- b=e7c28ZRAT8ymtGjwBPQPIQt0wJ9p57/GNR7jsfIGv+g7BNDBhXrN7juVuvt3uxGVR378O/
- Erb7FwKw+x7cYjIyWAPuODTXH32YHy/ovX4vyfvqptwzjk33zDRkZdXnJNY7A6wfJibrth
- rIc0AUP50DW5kUVqM2NcuxtQEtq57eQ=
-Received: from mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com
+ bh=y71I2g5CiY6ZLFtOOjFefsyXa2Y2V1HXYev8hBP6Jd4=;
+ b=dogS02vYUiLBKw4Dz3ut9QQ07lAdYTVeVZk+91xwuNC/hmj6r4hKL+8gLD5TgWaAaQM4MJ
+ tG1Hfs5c5psnpeu2vSYc0sikO6AKziWlSGauBngaKpOabDms9BL5+rq3SRszfQI7kQyvJR
+ m1q94qewMbI5Y2Td1taIL3bUE3QIy+w=
+Received: from mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com
  (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
  relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-453-Oqo0X7NTPyKcaINytLDz9g-1; Wed,
- 11 Nov 2026 05:55:20 -0500
-X-MC-Unique: Oqo0X7NTPyKcaINytLDz9g-1
-X-Mimecast-MFC-AGG-ID: Oqo0X7NTPyKcaINytLDz9g_1794394517
-Received: from mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com
- (mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.93])
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-2-VSeC4wBmMpOyp6eJ7S0wcA-1; Wed,
+ 11 Nov 2026 05:57:09 -0500
+X-MC-Unique: VSeC4wBmMpOyp6eJ7S0wcA-1
+X-Mimecast-MFC-AGG-ID: VSeC4wBmMpOyp6eJ7S0wcA_1794394625
+Received: from mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com
+ (mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.12])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
- id 0EAC619775DB; Wed, 11 Nov 2026 10:55:17 +0000 (UTC)
+ by mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
+ id 8C3941955F18; Wed, 11 Nov 2026 10:57:05 +0000 (UTC)
 Received: from [100.91.101.41] (headnet04.pony-001.prod.iad2.dc.redhat.com
  [10.2.32.116])
- by mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
- id 523A518004FF; Wed, 11 Nov 2026 10:55:10 +0000 (UTC)
-Message-ID: <fe93c3de-e478-4bdf-877a-d3c5d345dd04@redhat.com>
-Date: Wed, 11 Nov 2026 11:55:09 +0100
+ by mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
+ id 2DD8C19634EF; Wed, 11 Nov 2026 10:56:58 +0000 (UTC)
+Message-ID: <47221876-07a8-46c1-86f7-552402a8d5a9@redhat.com>
+Date: Wed, 11 Nov 2026 11:56:56 +0100
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH net-next 01/10] ice: dpll: notify TSPLL lock status from
- the periodic work only
+Subject: Re: [PATCH net-next 02/10] ice: dpll: serialize changes of the SyncE
+ CGU registers
 To: netdev-bot+sashiko@kernel.org
 Cc: netdev@vger.kernel.org, vadim.fedorenko@linux.dev,
  arkadiusz.kubalewski@intel.com, jiri@resnulli.us, corbet@lwn.net,
@@ -130,16 +132,16 @@ Cc: netdev@vger.kernel.org, vadim.fedorenko@linux.dev,
  intel-wired-lan@lists.osuosl.org, grzegorz.nitka@intel.com,
  karol.kolacinski@intel.com, saeedm@nvidia.com, tariqt@nvidia.com,
  poros@redhat.com
-References: <20261106121005.1327603-2-ivecera@redhat.com>
- <179433319925.994134.5092477928749468374@kernel.org>
+References: <20261106121005.1327603-3-ivecera@redhat.com>
+ <179433320107.994134.16333323653199953270@kernel.org>
 From: Ivan Vecera <ivecera@redhat.com>
-In-Reply-To: <179433319925.994134.5092477928749468374@kernel.org>
-X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.93
-X-Mimecast-MFC-PROC-ID: ZXDGyKAFnuNxkWsDKAhJTKtjSRzmiIfZSg9Si9i65MU_1794394517
+In-Reply-To: <179433320107.994134.16333323653199953270@kernel.org>
+X-Scanned-By: MIMEDefang 3.0 on 10.30.177.12
+X-Mimecast-MFC-PROC-ID: StzoN7Wk0ghzHxhnAsvZv943kXUBHzVhV2kExFTnhqU_1794394625
 X-Mimecast-Originator: redhat.com
 Content-Language: en-US
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -152,7 +154,7 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 X-Spam-Status: No, score=-12.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
 	SPF_HELO_PASS,USER_AGENT_SANE_1 autolearn=unavailable
 	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
@@ -165,53 +167,40 @@ On 11/10/26 18:53, netdev-bot+sashiko@kernel.org wrote:
 > 
 > Low priority / nit picks for your consideration:
 > 
-> - [Low] This patch leaves the comments in
->    ice_dpll_tspll_state_on_dpll_set()…
+> - [Low] The commit fixes a race that already exists in the tree, but it
+>    has no Fixes: tag and no stable Cc.
 > 
 > --
 > 
-> ice: dpll: notify TSPLL lock status from the periodic work only
+> ice: dpll: serialize changes of the SyncE CGU registers
 > 
-> This patch stops ice_dpll_tspll_state_on_dpll_set() from sending a TSPLL
-> device change notification from the TIME_REF pin callback. The callback
-> now only updates dpll_state. ice_dpll_periodic_work_e825() refreshes
-> dpll_state on every run and sends the notification when the state differs
-> from prev_dpll_state.
+> This patch adds a cgu_synce_lock mutex to struct ice_adapter, which all
+> E825C PFs share. It holds that lock around the CGU R10/R11
+> read-modify-write sequences in ice_dpll_synce_update_e825c(), and around
+> the ice_tspll_cfg_synce_ethdiv_e825c() call in ice_ptp_link_change().
 > 
->> diff --git a/drivers/net/ethernet/intel/ice/ice_dpll.c b/drivers/net/ethernet/intel/ice/ice_dpll.c
->> index ade1fb3dd0674..bdbcf7af296eb 100644
->> --- a/drivers/net/ethernet/intel/ice/ice_dpll.c
->> +++ b/drivers/net/ethernet/intel/ice/ice_dpll.c
+>> ice_ptp_link_change() does not hold dpll_lock, so it can already overwrite
+>> an update of another PF. RCLK callbacks are serialized by dpll_lock, but
+>> the DPLL core is going to serialize callbacks per (module, clock_id), and
+>> each complex has its own DSN and so its own clock_id. With that change, a
+>> test toggling RCLK pins of both complexes lost an update.
 > 
 > [ ... ]
 > 
->> @@ -2947,15 +2946,12 @@ ice_dpll_tspll_state_on_dpll_set(const struct dpll_pin *pin, void *pin_priv,
->>   		WRITE_ONCE(pf->ptp.tspll_locked,
->>   			   new_state == DPLL_LOCK_STATUS_LOCKED);
->>   
->> -		if (tp->prev_dpll_state != new_state) {
->> -			tp->dpll_state = new_state;
->> -			tp->prev_dpll_state = new_state;
->> -			changed = true;
->> -		}
->> +		/* ice_dpll_periodic_work_e825() compares the state with
->> +		 * prev_dpll_state and sends the notification.
->> +		 */
->> +		tp->dpll_state = new_state;
+>> Signed-off-by: Ivan Vecera <ivecera@redhat.com>
 > 
 > [Severity: Low]
-> This isn't a bug, but do the comments in ice_dpll_tspll_state_on_dpll_set()
-> still match how the notification path works after this change?
+> Should this patch have a Fixes: tag?
 
 [...]
 
-> Could both comments say that the periodic work picks up the new state
-> through pf->ptp.tspll_locked? Then a later change is less likely to drop
-> the WRITE_ONCE() as just a way to avoid spurious notifications.
-Right, the first comment still gives the reason from before this patch.
-Now the write of pf->ptp.tspll_locked is what brings the new state to
-ice_dpll_periodic_work_e825(). v2 will merge both comments into one that
-says so.
+> Another option is to split this patch out of the series and send it to
+> net.
+Done, the patch went to net with this tag:
+
+https://lore.kernel.org/netdev/20261110094350.184185-1-ivecera@redhat.com/
+
+v2 of this series drops it.
 
 Thanks,
 Ivan
