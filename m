@@ -1,182 +1,146 @@
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3E415606A88D
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 11 Nov 2026 10:48:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C6BA3606A33E
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 11 Nov 2026 10:53:34 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=mi2UXzSc;
-	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=B21EnIbU
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=tE9sno61;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=WFHF5jNd
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 0AB458111F;
-	Wed, 11 Nov 2026 10:48:54 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 9D70F40A9F;
+	Wed, 11 Nov 2026 10:53:34 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id bGFJpJTcgG_J; Wed, 11 Nov 2026 10:48:53 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 2E48181123
-Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794394133;
-	b=ni0x/w+Nj0N5fhA7psClslzO/2cZCHw8IOXohcjzmwzCdNpd26xShzHwprqqfmZa4l2W
-	 B3SaCZiGekY4yvjaczO7ICY4jqZ0xqrY/msp04kZ6WOtOqy9n59hSX76Ia8bidRvLDySY
-	 6QpwFXsW5+S81WTvUcT3v1NShejuGfbY8NH77JhL7GhBBQEF4+SIWjFmsxAN+ZkEOhHMn
-	 FTHbs6g2tXYzbUIhN6TAFseDWUN17ZReOHr29LQ1HOcO/4T0I5TBZe9TdaQTnxnh71f1O
-	 4NinwTyYVmGRXsLmdDEKr1zF/zHZRDHmZokkKYXMXkRJeGGzv+uVvYe3FI2VuP3QZYQ==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id jPLu089j1V2g; Wed, 11 Nov 2026 10:53:34 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org F071B40A7F
+Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794394414;
+	b=XYjN6wwko/YySBWtaptgPLJSzSsbdkecJL+efat5uH/I6/cNy/fD4mJgjoavIv4t3SyT
+	 b1YL1q6Kk3IdH9ToDba08za+e+vSYGP6Ps61kvNXMtnlHtpG+EvTy9eJZdItyOA5wVfkH
+	 q9mgJMv5jWR5iKUj3k5zJd+f5A3IAdR51WbYN8q0ogUNnKPN9Wbe5/Q3S9iB3Nc/ZicgA
+	 PKRu6xrVLlWvkQeTjxHCAuLbO6sceevVl5SC0Xs5lGBAs9CLvDYY4/mnyfc7yfmomR0U3
+	 TKcbPzfHMS6cR18i7aEmmx6+tDXlFZ4ybT+joOmmjXwYwvFDUYYmWidZwnfxh1+80zQ==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794394133;
+	c=relaxed/relaxed; t=1794394414;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Message-ID:Date:
-	 MIME-Version:User-Agent:Subject:To:Cc:References:Content-Language:
-	 From:In-Reply-To:Content-Type:Content-Transfer-Encoding:X-BeenThere:
-	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=SJE8c/dZm+CWhQbZBqBGTdaX2jwL8ZWmvduRU6X8Ew0=;
-	b=CmiC8SVWp7bQMgDeImhHfJfvviOJc30Jj1JCfw8g3kUgg7+b4vakQVmV0aerg1NJ0H6u
-	 P4KYPlXSKa2sjyF0Y38id9rH0pgVuvBnsHruRjzptJQZas7z9Etxqy0YFSwxuOneHpoBO
-	 NgKoi1yhdJao/BcVXpWRUI66oskXcUWus0FmnKnmz9MSAD9QJrxuNQaZQkQFTwBXx6pXv
-	 gV40QNCVVkrDBamtdz1/zTiNGX4onih8y+0YMIbAzf/5XQqsSVATf5tm7Pj3TqYeOB7ip
-	 H29+D26VEosXYLGb/U35KJzEHV56UqjTLZ+IGi2IPqstqQ4y9brWX4NGFcx9EVNyKIg==
-ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
+	 DKIM-Signature:Received:X-MC-Unique:X-Mimecast-MFC-AGG-ID:Received:
+	 Received:Message-ID:Date:MIME-Version:User-Agent:Subject:To:Cc:
+	 References:From:In-Reply-To:X-Scanned-By:X-Mimecast-MFC-PROC-ID:
+	 X-Mimecast-Originator:Content-Language:Content-Type:
+	 Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:Precedence:
+	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 List-Subscribe:Errors-To;
+	bh=8N7fypCJ/hoT+y3Nl5Cy8LcZBYe/io6SKN/QBhzDpOM=;
+	b=LpruKDnnKHfhidKPd6inEYMQP1ZJZdty7s/Js3IrdZpL7SRrgHaHzVpmGFhozEmGg27a
+	 okI0ObM/jnneLBVXDYC28n/9cAXztiSkaHWVvlTLKVYU3Xyunv6WX05Wr5LuqF3SJI7Hw
+	 Hk1ogCtQJdFaXuq1w2LoptODkrNohtFusfSVo8mJkzXxkdfsn0Vf+Ell+afe0tlW9atro
+	 6bDmxRuXBsqrE6EgF0OUxn9FkVNh4AGkvIi4u251YU49pVIahx1FRIu9p5BKS47yoczXn
+	 ogkr3+laJjIZabuOVBj96RYo/6LQgpq/xqOEOe+zSCZYyg1RS5z7KeDnfXgelPWUdyg==
+ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
+	dmarc=pass header.from=redhat.com;
+	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=WFHF5jNd;
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1794394133;
-	bh=SJE8c/dZm+CWhQbZBqBGTdaX2jwL8ZWmvduRU6X8Ew0=;
+	s=default; t=1794394414;
+	bh=8N7fypCJ/hoT+y3Nl5Cy8LcZBYe/io6SKN/QBhzDpOM=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=mi2UXzScG9ee4tA0wEYCm9HB/NIsYJAZKR2EPfF7REpdWRr5E6nIEqP/YaYLJkaKF
-	 Q0CnNXhykA/XugMVzrSDEIpFlYsIjmPhnssJ62F7KVVMz2WlCU3dYiowBfbKvLGLvg
-	 IdmGLYVQSpwRq3OENI1MwnOGJK2+qNc6N3v9Yd6jedbomfOLPuBMNZtcNVrmy4dVDS
-	 iu18dkEncR6Kq3W2ytSBz1XtQkrSLXj7thAsWLx7OIxlwwbcb9dyZflgui+QMuilyE
-	 nm4bWXYBd7+ykVEWpJmeEe5ihy1Sz3y5aLzamnCA/PafzYikcJw1zMBhzlvXGaofCr
-	 E0gvPrx5431qQ==
+	b=tE9sno61wQwDpZXKXxosnvnrO9nJSIBm+svKB9PVHMQoLmH3AUMXPdoqwsB6tCSgk
+	 wmjIJBqDEPzcYnqysLqRnIpsJ4YuN6OXK3kEPT98fy1FMWQJmuofO+2kBbVZtqwqrh
+	 Re+MyqTZsxaMb9oRmepFwhn21HpldfrZ5rmJjiopjrIidt1qKik9AHCQAd64auMFYm
+	 w1rXYn5KjcV0odbNxW2KkDAyTlZGXN6pPNm6pXK2BfBhe1W+KYs5hyYtDjZm5clqbt
+	 EWGl8jr5s3mVTdcFHOKDSlc/VUbX1rfyDk0WpLYGMpDgCcm0U4abk1h4D/ygrPuI9h
+	 5vsYcxKKtZWiQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 2E48181123;
-	Wed, 11 Nov 2026 10:48:53 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id E29E317CC
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Nov 2026 10:48:51 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id F071B40A7F;
+	Wed, 11 Nov 2026 10:53:33 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 1F201731
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Nov 2026 10:53:32 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id BF077606E0
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Nov 2026 10:48:51 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id F0A0C40A7F
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Nov 2026 10:53:31 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id rP7sXfQoVWkS for <intel-wired-lan@lists.osuosl.org>;
- Wed, 11 Nov 2026 10:48:51 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 850F860604
-Authentication-Results: smtp3.osuosl.org;
- arc=none smtp.remote-ip="2a00:1450:4864:20::335"
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a00:1450:4864:20::335; helo=mail-wm1-x335.google.com;
- envelope-from=petr.pavlu@suse.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp3.osuosl.org; dmarc=pass (p=quarantine dis=none)
- header.from=suse.com
-Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256
- header.s=google header.b=B21EnIbU
-Received: from mail-wm1-x335.google.com (mail-wm1-x335.google.com
- [IPv6:2a00:1450:4864:20::335])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 850F860604
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Nov 2026 10:48:50 +0000 (UTC)
-Received: by mail-wm1-x335.google.com with SMTP id
- 5b1f17b1804b1-4a2072b9832so17556465e9.1
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Nov 2026 02:48:49 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=suse.com; s=google; t=1794394128; x=1794998928; darn=lists.osuosl.org;
- h=content-transfer-encoding:content-type:in-reply-to:from
- :content-language:references:cc:to:subject:user-agent:mime-version
- :date:message-id:from:to:cc:subject:date:message-id:reply-to
- :content-type; bh=SJE8c/dZm+CWhQbZBqBGTdaX2jwL8ZWmvduRU6X8Ew0=;
- b=B21EnIbUm4xQ4HN1JyrTQTqzXnl7hYQxL7+wEqa2/bwhBDpa3M/NKWKIdKvohgIsCT
- 8OyeJXNG5GAUtpgt0wlNMKPJ2u1SFtRTI3mwDrgAH7FSCesG7T7Ero6yVDL3WJ3FPKyj
- 4Pa4w2HaPZ84lQLectcGQcvriGJsUf2TO161xM3pNom0Rh/fIC57xO2NEk8BhHH6u05P
- cQz9MhyM3L6mTWPX8MkEALRWmvKuhDpUJaIk1IPqkVXVetIDnAmrC6Ab/u0mFI8Wxd61
- sENps/vvmmd6jJ6jvE2pTS+ImBAbeoYXArRXpwOej5IS3Qq9GIt6LP3/bj73c43bzk3X
- mpAQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1794394128; x=1794998928;
- h=content-transfer-encoding:content-type:in-reply-to:from
- :content-language:references:cc:to:subject:user-agent:mime-version
- :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
- :message-id:reply-to:content-type;
- bh=SJE8c/dZm+CWhQbZBqBGTdaX2jwL8ZWmvduRU6X8Ew0=;
- b=xG3wtxonB2cA4ONuet60iHA+GT0sE6/Dmd0T7DjhiBXCzgwnUxHJwFz4UcnbODBJTo
- 10e4SdXgitgeaRKAGAuc73n7jrZZD4cUn1Kg0RAOdTDO9vXUjZqhZxr81rH7cVfYQNW0
- 3Gi1iZcqOFiqfyw1qFBnamV7EdBgA+S7Es7lTeedlTwDj3I8Ugj70lVjUportH66C54p
- TJ4zvGt/JnyYqbojEXG9Z7p/U6KSlPcKo5+7EXX6s/4lHQ1g2ArP3n9wFVXIGZ5iZAHQ
- hv+x0MKL4L82H3CGwZlh5y5WzR4lTgihMgZCMYJirX4Unf56Ec986JaaItTku6fh/8LF
- 1RQg==
-X-Forwarded-Encrypted: i=1;
- AL+hErH9wmMotx/LdiRgQ+kbkTuyVXkP0CCVfTR7gYq20nB4DXewE7Me8M/9N9YrDMfi8A00k2rFsiBD19rJ7WfEDnw=@lists.osuosl.org
-X-Gm-Message-State: APuU4Z+E2HS5/eM4yvuPaGfCAhICifx+pqlPiWF90+oZaxT6AlSCd40P
- VlIt4OkI+3+jlrEdKmFYACKvv95VpHt/xero6c+T9iEvciIJk/OvAE6Lj8ZfPokHMUI=
-X-Gm-Gg: AYBFou0yrU/s9szE5TYwCJiKnvU4fezBoZAQ4m5Hk5fiKug6H4olKf0mipdXqWnHmwO
- gPdStUZGaeg0VC/O8NL1iFaqFYNX3qDlVrbwHZBsTebRPY9rzJF4pC47Qi7bXHPigSNu8IVQAlK
- mj9yXco1ivRTXQpyCL7HrNKGmWGOikAzPMxCJpYATREB8L0UFboAhbqoU1xgU857tq9j8/vjmbB
- Z0cMI60hXVlDn3foY7rfDrgB24RkT0OLlBY1L+4hL9DhxEdq8nEuKmqCItthza8hSk8C25z4hr8
- oPOEd/BFEmtcfY46XI/SeNh+oR++FyxkYMa9wc/l0uZk1BvZwU9OMmHD1s8ZWVVADetMgn/jFe+
- 6+hBpGh4HgyX3I9FeAe0Qne7vRogYxOPIoIsjL4aQq8n2r+HzFxO6URHNil3DUfrAcuRAZ3Hrls
- w6YRBz8O5WF8mFvhNdZmUPRys6yj5W0R5ILsT9JxCOLfDushfY/BUGgak3hZnlupAxCwvKIkAQM
- 7xENMLaoJifbonFWsO8SiEWJtx18MehouY89ztgJqECOKU1AMcqhzFewDYAl4guJnGyiIf/vPl0
- sTG+RUpSyQr8Ztw7qSUkwPpxEe8F0Fy789dGu8OJEiWkhHWpm5HlS0IWPXo8UNGzoQ==
-X-Received: by 2002:a05:600c:1f93:b0:4a0:20b4:ba93 with SMTP id
- 5b1f17b1804b1-4ba0938124fmr41926975e9.16.1794394127955; 
- Wed, 11 Nov 2026 02:48:47 -0800 (PST)
-Received: from ?IPV6:2a07:de40:8100:0:89a9:fd0e:583d:4a53?
- ([2001:af0:8000:1409:193:86:92:181])
- by smtp.gmail.com with ESMTPSA id
- 5b1f17b1804b1-4ba0951fe22sm54693255e9.3.2026.11.11.02.48.46
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Wed, 11 Nov 2026 02:48:47 -0800 (PST)
-Message-ID: <2e392c2b-3fde-42fd-82e0-8130d2de48d2@suse.com>
-Date: Wed, 11 Nov 2026 11:48:45 +0100
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id ObSQYk2zvgnF for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 11 Nov 2026 10:53:31 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 9E73240A6A
+Authentication-Results: smtp4.osuosl.org;
+ arc=none smtp.remote-ip=170.10.129.124
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=ivecera@redhat.com;
+ receiver=<UNKNOWN> 
+Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.from=redhat.com
+Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=WFHF5jNd
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ by smtp4.osuosl.org (Postfix) with ESMTP id 9E73240A6A
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Nov 2026 10:53:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1794394408;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=8N7fypCJ/hoT+y3Nl5Cy8LcZBYe/io6SKN/QBhzDpOM=;
+ b=WFHF5jNd+2uzvLYtty812YMxMbGT6AeRw+fg+EqZ+XzZbOq+BFbq5qRUIab5mVlRRCkJyA
+ gRB9FCiaBA5jHZOfcAyOtF8Q/uxUv3kWuRpsGFI7SfSxOIIuz/YXwAtqY26gJWMuN2y7b7
+ o8y41ZxS7R3t8m7LFy7nqjui3OfOT3k=
+Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-711-DxKuXwMGPSCoAX2zKEuwcg-1; Wed,
+ 11 Nov 2026 05:53:25 -0500
+X-MC-Unique: DxKuXwMGPSCoAX2zKEuwcg-1
+X-Mimecast-MFC-AGG-ID: DxKuXwMGPSCoAX2zKEuwcg_1794394402
+Received: from mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com
+ (mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.93])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
+ id 9591F1955F61; Wed, 11 Nov 2026 10:53:21 +0000 (UTC)
+Received: from [100.91.101.41] (headnet04.pony-001.prod.iad2.dc.redhat.com
+ [10.2.32.116])
+ by mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
+ id 45ED518004FC; Wed, 11 Nov 2026 10:53:14 +0000 (UTC)
+Message-ID: <38365dce-f6a6-4fdb-8f76-8b697f64aeb3@redhat.com>
+Date: Wed, 11 Nov 2026 11:53:12 +0100
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 0/3] Remove obsolete __MODULE_STRING()
-To: Jani Nikula <jani.nikula@linux.intel.com>
-Cc: Wim Van Sebroeck <wim@linux-watchdog.org>,
- Guenter Roeck <linux@roeck-us.net>, Ian Abbott <abbotti@mev.co.uk>,
- H Hartley Sweeten <hsweeten@visionengravers.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
- Rudolf Marek <r.marek@assembler.cz>, Andi Shyti <andi.shyti@kernel.org>,
- Chris Snook <chris.snook@gmail.com>, Andrew Lunn <andrew+netdev@lunn.ch>,
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- =?UTF-8?Q?Marek_Beh=C3=BAn?= <kabel@kernel.org>,
- Alexandre Belloni <alexandre.belloni@bootlin.com>,
- Andreas Noever <andreas.noever@gmail.com>,
- Mika Westerberg <westeri@kernel.org>, Yehezkel Bernat
- <YehezkelShB@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Jiri Slaby <jirislaby@kernel.org>, Duncan Sands <duncan.sands@free.fr>,
- Chas Williams <3chas3@gmail.com>, Luis Chamberlain <mcgrof@kernel.org>,
- Daniel Gomez <da.gomez@kernel.org>, Sami Tolvanen <samitolvanen@google.com>,
- Aaron Tomlin <atomlin@atomlin.com>,
- Wolfram Sang <wsa+renesas@sang-engineering.com>,
- linux-watchdog@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-hwmon@vger.kernel.org, linux-i2c@vger.kernel.org,
- netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
- linux-rtc@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-serial@vger.kernel.org, linux-atm-general@lists.sourceforge.net,
- linux-modules@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20261002-module-string-v2-0-fc7438acaf4d@suse.com>
- <2e88806e-57dd-47e0-a9ef-a8507d22aa3e@suse.com>
- <a190f981-d668-4208-8148-f4e50adb31a6@suse.com>
- <6c00fc009f4e61e87895eb2dd3d77c5dfb28183d@intel.com>
+Subject: Re: [PATCH net-next 06/10] dpll: add KUnit tests for core locking
+To: netdev-bot+sashiko@kernel.org
+Cc: netdev@vger.kernel.org, vadim.fedorenko@linux.dev,
+ arkadiusz.kubalewski@intel.com, jiri@resnulli.us, corbet@lwn.net,
+ skhan@linuxfoundation.org, rdunlap@infradead.org, min.li@microchip.com,
+ anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@kernel.org,
+ kuba@kernel.org, pabeni@redhat.com, richardcochran@gmail.com,
+ linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ intel-wired-lan@lists.osuosl.org, grzegorz.nitka@intel.com,
+ karol.kolacinski@intel.com, saeedm@nvidia.com, tariqt@nvidia.com,
+ poros@redhat.com
+References: <20261106121005.1327603-7-ivecera@redhat.com>
+ <179433320676.994134.7049432410059447687@kernel.org>
+From: Ivan Vecera <ivecera@redhat.com>
+In-Reply-To: <179433320676.994134.7049432410059447687@kernel.org>
+X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.93
+X-Mimecast-MFC-PROC-ID: ychpuwB_aKFclVPP1Tr_q5t2l_LsfUGS_wbZY_ohKmE_1794394402
+X-Mimecast-Originator: redhat.com
 Content-Language: en-US
-From: Petr Pavlu <petr.pavlu@suse.com>
-In-Reply-To: <6c00fc009f4e61e87895eb2dd3d77c5dfb28183d@intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -187,44 +151,108 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-12.4 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=4.0.1
+X-Spam-Status: No, score=-12.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On 11/9/26 7:07 PM, Jani Nikula wrote:
-> On Mon, 09 Nov 2026, Petr Pavlu <petr.pavlu@suse.com> wrote:
->> On 10/14/26 11:36 AM, Petr Pavlu wrote:
->>> On 10/2/26 10:31 AM, Petr Pavlu wrote:
->>>> __MODULE_STRING() has been an alias for __stringify() since "[PATCH]
->>>> MODULE_PARM support for older modules" [1] in 2002-12. That change also
->>>> moved it to the graveyard section at the end of linux/module.h
->>>>
->>>> Replace the remaining uses of __MODULE_STRING() with __stringify() and
->>>> remove the macro.
->>>>
->>>> Apologies for the wide distribution. Acked-bys are appreciated.
->>>>
->>>> [1] https://git.kernel.org/tglx/history/c/136839a1b4
->>>
->>> I've queued the second patch ("drivers: Replace __MODULE_STRING() with
->>> __stringify()") on modules-next for v7.4-rc1. Thanks for the Acked-byes
->>> and reviews.
->>>
->>> The first patch ("hwmon: Replace __MODULE_STRING() with __stringify()")
->>> should go through the hwmon tree. Once these changes are in mainline,
->>> I plan to pick up the final patch ("module: Remove obsolete
->>> __MODULE_STRING()").
->>
->> v7.4-rc1 no longer contains any __MODULE_STRING() calls, so I've queued
->> the final removal in patch 3 on modules-next for 7.5-rc1.
+On 11/10/26 18:53, netdev-bot+sashiko@kernel.org wrote:
+> Thank you for your contribution! Sashiko AI review found 1 potential
+> issue(s) to consider.
 > 
-> Perhaps send it for v7.4-rc3 to prevent *new* __MODULE_STRING() users
-> from cropping up between now and v7.5-rc1?
-If I need to send an earlier pull request for the module loader, I'll
-include this patch as well.
+> Critical: 0 · High: 0 · Medium: 1 · Low: 0
+> 
+> If you believe none of the issues are legitimate, please reply to each
+> issue of Medium severity or higher and explain why the AI is wrong.
+> If any of them are legitimate and you plan to respin, please let patchwork
+> know by including "pw-bot: cr" as a separate line at the end of your reply
+> (one such reply per series is enough).
+> 
+> - [Medium] In drivers/dpll/dpll_core_kunit.c, some tests set a blocking
+>    flag before dt_req_start() has registered dt_req_release().
+> 
+> --
+> 
+> dpll: add KUnit tests for core locking
+> 
+> This adds KUnit tests for DPLL core locking. They use a mock driver with
+> several domains to check domain sharing, which locks callbacks hold,
+> independence and serialization of domains, atomicity of multi-attribute
+> pin sets, and notification ordering. The netlink pre/post doit and set
+> handlers are exported for KUnit so the tests can call them directly.
+> 
+>> diff --git a/drivers/dpll/dpll_core_kunit.c b/drivers/dpll/dpll_core_kunit.c
+>> new file mode 100644
+>> index 0000000000000..a58800eda5ff5
+>> --- /dev/null
+>> +++ b/drivers/dpll/dpll_core_kunit.c
+>> @@ -0,0 +1,1471 @@
+> 
+> [ ... ]
+> 
+>> +static void dt_block(struct dt_dom *dom, bool *block)
+>> +{
+>> +	complete(&dom->entered);
+>> +	wait_event(dom->ctx->wq, !READ_ONCE(*block));
+>> +}
+> 
+> [ ... ]
+> 
+>> +static struct dt_req *dt_req_start(struct kunit *test, int (*fn)(void *arg),
+>> +				   void *arg)
+>> +{
+>> +	struct task_struct *task;
+>> +	struct dt_req *req;
+>> +
+>> +	req = kunit_kzalloc(test, sizeof(*req), GFP_KERNEL);
+>> +	KUNIT_ASSERT_NOT_NULL(test, req);
+>> +
+>> +	req->ctx = test->priv;
+>> +	req->fn = fn;
+>> +	req->arg = arg;
+>> +	init_completion(&req->done);
+>> +
+>> +	task = kthread_run(dt_req_thread, req, "dpll-test");
+>> +	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, task);
+>> +	KUNIT_ASSERT_EQ(test, kunit_add_action_or_reset(test, dt_req_release,
+>> +							req), 0);
+>> +
+>> +	return req;
+>> +}
+> 
+> [ ... ]
+> 
+>> +/* Blocks a request of @dom in a callback, which holds the domain lock */
+>> +static struct dt_req *dt_block_in(struct kunit *test, struct dt_dom *dom,
+>> +				  int (*fn)(void *arg), void *arg)
+>> +{
+>> +	struct dt_req *req;
+>> +
+>> +	WRITE_ONCE(dom->block, true);
+>> +	req = dt_req_start(test, fn, arg);
+> 
+> [Severity: Medium]
+> Can the teardown hang here if dt_req_start() fails one of its assertions?
 
--- Petr
+Yes. It takes an allocation or kthread_run() failure in the test, but
+then the cleanup blocks under dpll_lock for good.
+
+[...]
+> One option is to register a cleanup action that calls dt_unblock() from
+> dt_init(), before any flag can be set. Another is to set the flags only
+> after dt_req_release() has been registered. Would either of these work?
+
+The objects of the foreign and on-pin tests are added by the tests after
+dt_init(), and KUnit runs the actions in reverse order, so an action
+registered in dt_init() would run after their release. v2 clears the
+flags in an exit callback of the suite instead. KUnit runs it before any
+cleanup action, so it also covers dt_test_stuck_foreign_device().
+
+Thanks,
+Ivan
+---
+pw-bot: cr
+
