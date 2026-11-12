@@ -2,180 +2,119 @@ Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4BF18606A321
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 12 Nov 2026 00:35:01 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0722A606A337
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 12 Nov 2026 01:03:17 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=uV1S2vS1;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=RWkXIDg9
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=0QsJDAYx;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=iaAGtehy
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 213AA40840;
-	Thu, 12 Nov 2026 00:35:01 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id D076040A79;
+	Thu, 12 Nov 2026 01:03:16 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Yk1Q6VFZpZ39; Thu, 12 Nov 2026 00:35:00 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 303AF40842
+ id DYihun5lgXXj; Thu, 12 Nov 2026 01:03:16 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org D6E1F40A83
 Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794443700;
-	b=PO+D0H0pnOZ98x6ZgTFWvVf6jkfioKaQSyRRElRG+4dLYwPh3vufSGRWO6BJ350yEy3A
-	 gkFPRlvd9w4+KeN4eLAKZqK3zSHil8M2eijA5PcjfNcK57HGWPLtVnnOU1SqhwYYwXu7P
-	 FtVNhlCuAKnqgLiHwexEWokwXltGnMltHG1vaHkqs6wSSRHavzAPljQpLSTrQ/YKZWbl+
-	 f80WlRhr847Gdrt7wTcniBE9mdtAs41I5SRJCzMoSSiSsGIzXZncTaakQ/2xGW+yZG5rn
-	 SdL7D28hzvpBg9SP21HxuqGyBfFrsftljeQB5fXapCeG1K5TXv5Hd+EcGRu62iMv3yQ==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794445395;
+	b=J0h99D8ZpfUm+X8KkNrfR//td2AU+A43x8ymWx1xCbyn3BuTc3DQnhA7COlSH7dIFGuV
+	 npYdZCTuwIMvfzFyg1gAOGh4ktlZ0KyGiNJJHWwelkSJ7uLUI3/zsEUEbRR4t3ilCjqcP
+	 cYDIXgQHWdfFmyZw6yicPsV71KzegUpucBfo5wk8BLZArds48evvRL6FlXMWVkHQ1hAWd
+	 Q2v+hkealOl7i/NM9P7bZEvSGUhMKmpDmOAiiBi2h+iWnM76UD9lApeCT7IiyorHgNI3m
+	 cVMsfykyqKPoGYnKqR/ZDHXTKpQEcP+UCZBUfmvFeYnkIjm7FsPE7Z0dqSISvrphkgw==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794443700;
+	c=relaxed/relaxed; t=1794445395;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Content-Type:Date:
-	 Message-Id:Cc:Subject:From:To:In-Reply-To:References:
-	 Content-Transfer-Encoding:MIME-Version:X-BeenThere:X-Mailman-Version:
-	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
-	 List-Subscribe:Errors-To;
-	bh=0TpPReWodjm7eLrKXuRP3FItXhIb0Yxnna4BA9L21XQ=;
-	b=jJ58g0rLOLf4annCuuoR38dANiR/fLbNd1lho74FQTxv0EnRdaEAWvmZHqWhg/r+2xSh
-	 nIaLLmxnqaxKxJAwOSiAWXQ5E2KQb+rhh/yaS+p7CJaLBIA2LpmZKoR7fq/be1SeHneer
-	 rOGHXHEOFfWVBTEdrfhdxtE+8qoyq0XN5imBGEC101Xi6wKsrtJctglqpOsEMJgWgjuzB
-	 BBBqfDhexlM8sNALyhgGb78X3+Y/L5aS5QgnIkle12JCwNCdKQZd1iGu4p/cLN4cihz4Z
-	 RXHxT3J2wvvbjswYDL8Wxnp6/It6OfApSyh+dAy7IeA2pr35TtQEYdQkVVQdBxXBbLw==
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
+	 DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-IronPort-AV:
+	 X-IronPort-AV:Received:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-ExtLoop1:
+	 X-IronPort-AV:Received:Received:Date:From:To:Subject:Message-ID:
+	 User-Agent:X-BeenThere:X-Mailman-Version:Precedence:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Errors-To;
+	bh=RQzjhtGqnJZwwjQViD8hQr/4HoAaPczCDeJZgm6UIqc=;
+	b=GVf4AtaM/UZIZkcEbYl3PObzDmeJh34gJ53++qy6BAPGgg42CUjry8+A7i0O/W/9yaG4
+	 KvYezETpCopA+fo5ZxFCthMyKkAEg7aQyQ8l1ta5VRI7zSo5M8S365QpXD/nL+5kYMSFq
+	 MqIgW1/n7EhMS5mrovmmOosKHjFcZW31YpKhb9lb45Oc+rt3AJ6OomibOwbISGKdU3gK3
+	 3Nsq75edQTPEMtNpKJUqTM0prpzRKZoGQFYJh8FwUrGVWji/uUgt3CCsuq3wc8+AIrNLz
+	 61sY3qGeEMLBpF2YsjyoOrl6ZxlqbzaVsTe8do/nwbklWDnKsGitZnb85T2pvxGGW4w==
 ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
-	dmarc=pass header.from=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=RWkXIDg9;
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1794443700;
-	bh=0TpPReWodjm7eLrKXuRP3FItXhIb0Yxnna4BA9L21XQ=;
-	h=Date:Cc:Subject:From:To:In-Reply-To:References:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=uV1S2vS1APSHflyOBDh/TXez1GCt6xnSoryolFWEboeV/1kIN6uHjfoQcSclGdZkh
-	 FrZnubmBUxkbGn22XSgKy+OxcgOWOPrPxkaJr5we0bNnHOyJHnIRulR7Rj1r+ebl4i
-	 hLgl7+2OSyYWBs9tM8U37tw+QpGURuIYDgjad+myqiJjY1Eo28jVLYCtO4TWqscctF
-	 1CE4Uy2gFx96ck7He5Nt81PmLuFR92oq36xxpETGTNpPcPpP3zvmNDKcEBpyDsTb9s
-	 nhAg/I7+e4acysYgvPwnBeVbJQIDh7DIErIW+OLXB2v07n79n4l7ttYz4ImwAzRfnN
-	 huoWtNQn45jxg==
+	s=default; t=1794445395;
+	bh=RQzjhtGqnJZwwjQViD8hQr/4HoAaPczCDeJZgm6UIqc=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=0QsJDAYxERa0ohMUQvcgwwDzXwc65Fmvuhdko369fWP07pbuGRIKjiAS3kOolsj5p
+	 bmeIP8sriRyquizsjDE4tJ5RrL0PcgiV3IXFLIlc+CCCp5+mNoVEANyn+m3+uCNAt0
+	 s59esP5F134BDH7wAloqhX6OgIfb+m6xRQ6z1Ekirp6h1KzUgJpIM2PgoRg47ky/e2
+	 Zl7GLw9QQ7szGx1ME8N3zw7ZADfXMFlaTD2LgT616xnjIRKSR1MmyQ5OFeCGO6hV1/
+	 hra6jqFWdDDd7sNodedZlewv8xgTaNj/dneg2D+Y/0mTqelHuioB6Ty6tlj1KgSF6d
+	 eoEHwmotc0lLQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 303AF40842;
-	Thu, 12 Nov 2026 00:35:00 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id F1A552E5
- for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Nov 2026 00:34:58 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id D6E1F40A83;
+	Thu, 12 Nov 2026 01:03:15 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 2D10C2FE
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Nov 2026 01:03:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id D7D5340842
- for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Nov 2026 00:34:58 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 1EE8040217
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Nov 2026 01:03:15 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id tpAfiK8StexC for <intel-wired-lan@lists.osuosl.org>;
- Thu, 12 Nov 2026 00:34:57 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 9C1E640840
-Authentication-Results: smtp4.osuosl.org;
- arc=none smtp.remote-ip="2607:f8b0:4864:20::432"
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::432; helo=mail-pf1-x432.google.com;
- envelope-from=alexei.starovoitov@gmail.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp4.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20260707 header.b=RWkXIDg9
-Received: from mail-pf1-x432.google.com (mail-pf1-x432.google.com
- [IPv6:2607:f8b0:4864:20::432])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 9C1E640840
- for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Nov 2026 00:34:57 +0000 (UTC)
-Received: by mail-pf1-x432.google.com with SMTP id
- d2e1a72fcca58-8b5e5e64494so2014557b3a.1
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Nov 2026 16:34:57 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20260707; t=1794443697; x=1795048497; darn=lists.osuosl.org;
- h=mime-version:content-transfer-encoding:references:in-reply-to:to
- :from:subject:cc:message-id:date:content-type:from:to:cc:subject
- :date:message-id:reply-to:content-type;
- bh=0TpPReWodjm7eLrKXuRP3FItXhIb0Yxnna4BA9L21XQ=;
- b=RWkXIDg9pt4UKYssZF/FrumImQADPbM1AJSZWtwqPneFqzUeYNCZPLToAnOcKLpmEe
- sJFdSsJqjcGFPMGwdcOhLEjVeJbSBfupzdFShX9s2w2meviG/NLwcnHov4PYV9Z8dFTa
- cqcewSwZnMMI6iXPkWn8xihRtx80afbJRV+NNXGqQMBxcXY/QmNdfZBpHq5jG7S2S5Nk
- CXLWnP5B9N5HH+E5nmiqkGZamjyW2FgXNMPkCB9VH+jjMvX9KBvZzZxnERhAomgdWAMX
- oyIUW7VhybJsiBVOYOLuJFaModLtMzcJYGU0BLKtvvFKrp6NBbMc3x7KgS/X5WU7ctJI
- 6DOA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1794443697; x=1795048497;
- h=mime-version:content-transfer-encoding:references:in-reply-to:to
- :from:subject:cc:message-id:date:content-type:x-gm-gg
- :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
- :content-type;
- bh=0TpPReWodjm7eLrKXuRP3FItXhIb0Yxnna4BA9L21XQ=;
- b=X7htmoAe1mA/L/fnxYrYw4DrKtLmpD0O6oqdfJdLp1czwyvVtBEMwsaZC/D2dqigrl
- 9fC9fhY5UHrHZgdjoM/NQtaVTMPt+jcVI4Q11CYl75dFlOVxXNRDeNSdEYiisVWi22Qd
- AgLubSXTkIUKioNKE7QCK5cFKZn2GHNaPbvMF+B/4NlddKPCs5WKvEtGoaYmk8MJ8g3L
- mu+QZreCxI4q9Eo6cZbUQPylkb7ovm3FkcaksYLkYWPJ+LfmArJgkur8yVkWOio8Fkxj
- 7b3KcNz4EuYo9Ahb5dxskO3TgfAQ2iNH4cG7CwIsoDAcYyy69hwrjUc/iRmeXGlHhgK3
- ZJRA==
-X-Forwarded-Encrypted: i=1;
- AL+hErEDUYU/8jJGplZxJQRV7XGEurwDtYhJXAKOxUVIm7nZpucfHKtDKzCQIL1R5IEkSdOp6u2RxhBCdPzZP0Nuz7Y=@lists.osuosl.org
-X-Gm-Message-State: APuU4Z8Obq5WKH8cce291GRcia6IYnSz5ryeNYV1052EAaEtvT5LKIgf
- qTbA+9+g5v63XdfpbC2dbYAH2g2iTx1+Sqh6TCf6TX7Zky4rXP7W6EJc
-X-Gm-Gg: AYBFou0pYtI1OYkBVOYwmsigADP1gyD+T/WCMY25m/jPZalukz6Z3GauCpgmFK/oRqA
- B9QV/8updj8HWDzMsTtzaQ+WOxwYwDBHBGuVngWxuwpLLGW+SLEV9vb6f5rdEAd06Cr2QWaIha5
- zd0xnH7ojEQ+zubLmVs4sBgGibstaDBFLlOUzIQnnYw9HAMPwuw0mLVwr5jpdM019QsuTFGVEun
- 0ZCNQWFYeTzk/KjFbWs5BjeVfmbyFQ7jDFhqDkPBhuKEXhCvu0eu29DGrLAve16I6TCO5g0yZYL
- BK6xr0XIgE/8q4U6nF7Au+/ZGb4XPMGJpC+Ypl/scc+PtY0w/fBRwdIANfznH1VCMHpbFKA+bh9
- UQAsjNgt5Mf+73xALKRvxSHB78UYDAcRM09RDHcYej/ajsfq+s4uufGAUmal3VpaHrQUfgUp+LG
- BPo9Q4FeDloIMxVUeaHxx5MEdCD4jv1q9JCigSt8D0QloSriADkIKqXqd/z0iPWhI+M818M1VfG
- /7AWZQJYoD1APPwsGOms2f6X410JAvH1/NQSeDE3F/SZbXvJ3DtQIhuryJUQuHriwhPZF/0uNvo
- YrHnrxXuGUPhhkDbT+7ag8BwAw0eAMNJTFiWP1Zk5+06ZnOImnC1UwIbMdEzTAH1myyEt1uygy3
- vipceitHQ1af2TtPVruBnmmCEfjXNyaUjSw==
-X-Received: by 2002:a05:6a20:2451:b0:3e2:1a24:fb7e with SMTP id
- adf61e73a8af0-3f2fda8c6b2mr4281249637.40.1794443696335; 
- Wed, 11 Nov 2026 16:34:56 -0800 (PST)
-Received: from localhost ([153.61.198.241]) by smtp.gmail.com with ESMTPSA id
- 41be03b00d2f7-cdd8d67e52esm2026298a12.10.2026.11.11.16.34.54
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Wed, 11 Nov 2026 16:34:55 -0800 (PST)
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 12 Nov 2026 00:34:54 +0000
-Message-Id: <DMST78XBB2RK.2BKP3O07GEWZQ@gmail.com>
-Cc: "John Fastabend" <john.fastabend@gmail.com>, "Stanislav Fomichev"
- <sdf@fomichev.me>, "Lorenzo Bianconi" <lorenzo@kernel.org>, "Vladimir
- Vdovin" <deliran@verdict.gg>, "David S. Miller" <davem@davemloft.net>,
- "Eric Dumazet" <edumazet@kernel.org>, "Paolo Abeni" <pabeni@redhat.com>,
- "Simon Horman" <horms@kernel.org>, "Andrew Lunn" <andrew+netdev@lunn.ch>,
- "Donald Hunter" <donald.hunter@gmail.com>, "Eduard Zingerman"
- <eddyz87@gmail.com>, "Kumar Kartikeya Dwivedi" <memxor@gmail.com>, "Song
- Liu" <song@kernel.org>, "Yonghong Song" <yonghong.song@linux.dev>, "Jiri
- Olsa" <jolsa@kernel.org>, "Emil Tsalapatis" <emil@etsalapatis.com>, "Ihor
- Solodrai" <ihor.solodrai@linux.dev>, "Tony Nguyen"
- <anthony.l.nguyen@intel.com>, "Przemek Kitszel"
- <przemyslaw.kitszel@intel.com>, "Maciej Fijalkowski"
- <maciej.fijalkowski@intel.com>, "Alexander Lobakin"
- <aleksander.lobakin@intel.com>, "Magnus Karlsson"
- <magnus.karlsson@intel.com>, "Tushar Vyavahare"
- <tushar.vyavahare@intel.com>, "Jason Xing" <kerneljasonxing@gmail.com>,
- "Nikolay Aleksandrov" <razor@blackwall.org>, "Madalin Bucur"
- <madalin.bucur@nxp.com>, "Ioana Ciornei" <ioana.ciornei@nxp.com>, "Jonathan
- Corbet" <corbet@lwn.net>, "Shuah Khan" <skhan@linuxfoundation.org>, "Shuah
- Khan" <shuah@kernel.org>, "Randy Dunlap" <rdunlap@infradead.org>, "Nathan
- Chancellor" <nathan@kernel.org>, "Nick Desaulniers"
- <ndesaulniers@google.com>, "Bill Wendling" <morbo@google.com>, "Justin
- Stitt" <justinstitt@google.com>, "Chris J Arges" <carges@cloudflare.com>,
- "Jakub Sitnicki" <jakub@cloudflare.com>, <linux-doc@vger.kernel.org>,
- <linux-kselftest@vger.kernel.org>, <intel-wired-lan@lists.osuosl.org>,
- <llvm@lists.linux.dev>, <kernel-team@cloudflare.com>
-Subject: Re: [PATCH bpf-next 00/15] xdp: add SKB core extensions to keep RX
- metadata until skb creation
-From: "Alexei Starovoitov" <alexei.starovoitov@gmail.com>
-To: "Tianyi Gao" <tianyi@cloudflare.com>, <bpf@vger.kernel.org>,
- <netdev@vger.kernel.org>, "Daniel Borkmann" <daniel@iogearbox.net>, "Andrii
- Nakryiko" <andrii@kernel.org>, "Martin KaFai Lau" <martin.lau@linux.dev>,
- "Jakub Kicinski" <kuba@kernel.org>, "Jesper Dangaard Brouer"
- <hawk@kernel.org>
-In-Reply-To: <cover.1794281983.git.tianyi@cloudflare.com>
-References: <cover.1794281983.git.tianyi@cloudflare.com>
-Content-Transfer-Encoding: 8bit
-X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id EdcR4S54-wGo for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 12 Nov 2026 01:03:14 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org 0011F400A2
+Authentication-Results: smtp2.osuosl.org;
+ arc=none smtp.remote-ip=192.198.163.17
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.17;
+ helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
+Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=iaAGtehy
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 0011F400A2
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Nov 2026 01:03:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1794445395; x=1825981395; h=date:from:to:subject:message-id;
+ bh=t4eweZVMjYQhg6R1pCb1UrrsCJyrrwmOSgNnQpbfHMo=;
+ b=iaAGtehynE1as+85DJvJrEppkgvcoFPtpL2eWFK09OhuQMCC3mcBCTqo
+ 6ia7tgLwOUPy0URmm1+u7ho0vFXXbPiArjqVQvZBGCTQ2gc9ievWFgid4
+ KlJBiseoZEazEyGoxrF0v/LOW+zD0WLnPQwMWWK+HIfcX/NmeWhf/6Bk8
+ m53brQnOHq1SAXsI/o0qWdCk/r8cM3TX8mWxlC2Z0n0xdOAsEMYXqcLFS
+ 5bo2mYSVxdcqSjTKgEYR0bZoAerg8lC8iOqimcR3zk2w3cc08M1UTmJ85
+ pXXsPoENZ25a9IfBNNUFBGc1LCFmVxqo81grSXQ/5Zv89r9O6PGtlHfY3 g==;
+X-CSE-ConnectionGUID: CTiqrKD9QKORZCLDUraQGg==
+X-CSE-MsgGUID: pPBgy9xPS2m/JdpRNFAT0g==
+X-IronPort-AV: E=McAfee;i="6800,10657,11963"; a="3223848"
+X-IronPort-AV: E=Sophos;i="6.27,208,1787036400"; 
+   d="scan'208";a="3223848"
+Received: from orviesa005.jf.intel.com ([10.64.159.145])
+ by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 11 Nov 2026 17:03:13 -0800
+X-CSE-ConnectionGUID: JkvJQxhYSXSe95+ZNoxBYQ==
+X-CSE-MsgGUID: EfjQfj2uTcqXtqVOYOTSkg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,208,1787036400"; 
+   d="scan'208";a="8390540"
+Received: from lkp-server01.sh.intel.com (HELO 0caa9d2d175c) ([10.239.97.150])
+ by orviesa005.jf.intel.com with ESMTP; 11 Nov 2026 17:03:11 -0800
+Received: from kbuild by 0caa9d2d175c with local (Exim 4.98.2)
+ (envelope-from <lkp@intel.com>) id 1xRJDZ-0000000109L-00YZ;
+ Thu, 12 Nov 2026 01:03:09 +0000
+Date: Thu, 12 Nov 2026 09:03:02 +0800
+From: kernel test robot <lkp@intel.com>
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Subject: [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 34a70a40c954fb8044ecd124840a2c38cd3aa4cc
+Message-ID: <20261112090302.1s8eiKog-lkp@intel.com>
+User-Agent: s-nail v14.9.25
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -186,355 +125,168 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-7.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_NONE autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
+X-Archived-By: <archiver.kernel.org>
 
-On Mon, Nov 09, 2026 at 07:56 PM Tianyi Gao <tianyi@cloudflare.com> wrote:
-> The layout of the area follows skb extensions (struct skb_ext). A small
-> header gives the offset of each entry. An entry takes headroom only when
-> the program stores it, so the area does not grow with each new type of
-> RX metadata, unlike [4]. Unlike skb_ext, the area needs no allocation.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: 34a70a40c954fb8044ecd124840a2c38cd3aa4cc  ice: use struct timecounter for E825 and E830
 
-I'm with Stan on this. It looks heavy.
+elapsed time: 1525m
 
-How about the following idea:
+configs tested: 141
+configs skipped: 2
 
-diff --git a/include/net/xdp.h b/include/net/xdp.h
-index 07231ad..7f30d24 100644
---- a/include/net/xdp.h
-+++ b/include/net/xdp.h
-@@ -81,8 +81,15 @@ enum xdp_buff_flags {
- 	 * XDP program is not attached.
- 	 */
- 	XDP_FLAGS_FRAGS_UNREADABLE	= BIT(2),
-+	/* The prog stored these members of struct xdp_rx_meta */
-+	XDP_FLAGS_RX_HASH		= BIT(3),
-+	XDP_FLAGS_RX_VLAN		= BIT(4),
-+	XDP_FLAGS_RX_CSUM		= BIT(5),
- };
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-+#define XDP_FLAGS_RX_META \
-+	(XDP_FLAGS_RX_HASH | XDP_FLAGS_RX_VLAN | XDP_FLAGS_RX_CSUM)
-+
- struct xdp_buff {
- 	void *data;
- 	void *data_end;
-@@ -174,6 +181,7 @@ xdp_prepare_buff(struct xdp_buff *xdp, unsigned char *hard_start,
- 	xdp->data = data;
- 	xdp->data_end = data + data_len;
- 	xdp->data_meta = meta_valid ? data : data + 1;
-+	xdp->flags &= ~XDP_FLAGS_RX_META;
- }
+tested configs:
+alpha                              allnoconfig    gcc-16.2.0
+alpha                             allyesconfig    gcc-16.2.0
+alpha                                defconfig    gcc-16.2.0
+arc                               allmodconfig    clang-24
+arc                                allnoconfig    gcc-16.2.0
+arc                                  defconfig    gcc-16.2.0
+arc                   randconfig-1000-20261111    gcc-15.3.0
+arc                   randconfig-1000-20261112    clang-24
+arc                   randconfig-1001-20261111    gcc-15.3.0
+arc                   randconfig-1001-20261112    clang-24
+arm                                allnoconfig    gcc-16.2.0
+arm                               allyesconfig    clang-24
+arm                      am200epdkit_defconfig    gcc-16.2.0
+arm                                  defconfig    gcc-16.2.0
+arm                             hisi_defconfig    gcc-16.2.0
+arm                           pxa910_defconfig    gcc-16.2.0
+arm                   randconfig-1000-20261111    gcc-15.3.0
+arm                   randconfig-1000-20261112    clang-24
+arm                   randconfig-1001-20261111    gcc-15.3.0
+arm                   randconfig-1001-20261112    clang-24
+arm                   randconfig-1002-20261111    gcc-15.3.0
+arm                   randconfig-1002-20261112    clang-24
+arm                   randconfig-1003-20261111    gcc-15.3.0
+arm                   randconfig-1003-20261112    clang-24
+arm64                              allnoconfig    gcc-16.2.0
+arm64                                defconfig    gcc-16.2.0
+arm64                 randconfig-1000-20261112    gcc-14.4.0
+arm64                 randconfig-1001-20261112    gcc-14.4.0
+arm64                 randconfig-1002-20261112    gcc-14.4.0
+arm64                 randconfig-1003-20261112    gcc-14.4.0
+csky                              allmodconfig    gcc-16.2.0
+csky                               allnoconfig    gcc-16.2.0
+csky                                 defconfig    gcc-16.2.0
+csky                  randconfig-1000-20261112    gcc-14.4.0
+csky                  randconfig-1001-20261112    gcc-14.4.0
+hexagon                           allmodconfig    gcc-16.2.0
+hexagon                            allnoconfig    gcc-16.2.0
+hexagon                              defconfig    gcc-16.2.0
+i386                              allmodconfig    clang-22
+i386                               allnoconfig    gcc-16.2.0
+i386                              allyesconfig    clang-22
+i386        buildonly-randconfig-1000-20261112    clang-22
+i386        buildonly-randconfig-1001-20261112    clang-22
+i386        buildonly-randconfig-1002-20261112    clang-22
+i386        buildonly-randconfig-1003-20261112    clang-22
+i386        buildonly-randconfig-1004-20261112    clang-22
+i386        buildonly-randconfig-1005-20261112    clang-22
+i386                                 defconfig    gcc-16.2.0
+loongarch                          allnoconfig    gcc-16.2.0
+loongarch                            defconfig    clang-24
+m68k                              allmodconfig    gcc-16.2.0
+m68k                               allnoconfig    gcc-16.2.0
+m68k                              allyesconfig    clang-24
+m68k                                 defconfig    clang-24
+microblaze                         allnoconfig    gcc-16.2.0
+microblaze                        allyesconfig    gcc-16.2.0
+microblaze                           defconfig    clang-24
+mips                               allnoconfig    gcc-16.2.0
+mips                              allyesconfig    gcc-16.2.0
+mips                         qi_lb60_defconfig    gcc-16.2.0
+nios2                             allmodconfig    clang-20
+nios2                              allnoconfig    clang-24
+nios2                                defconfig    clang-24
+openrisc                          allmodconfig    clang-20
+openrisc                           allnoconfig    clang-24
+openrisc                             defconfig    gcc-16.2.0
+parisc                             allnoconfig    clang-24
+parisc                            allyesconfig    clang-17
+parisc                               defconfig    gcc-16.2.0
+parisc                randconfig-1000-20261112    gcc-12.5.0
+parisc                randconfig-1001-20261112    gcc-12.5.0
+parisc64                             defconfig    clang-24
+powerpc                            allnoconfig    clang-24
+powerpc               randconfig-1000-20261112    gcc-12.5.0
+powerpc               randconfig-1001-20261112    gcc-12.5.0
+powerpc                       tqm8xx_defconfig    gcc-16.2.0
+powerpc64             randconfig-1000-20261112    gcc-12.5.0
+powerpc64             randconfig-1001-20261112    gcc-12.5.0
+riscv                              allnoconfig    clang-24
+riscv                             allyesconfig    clang-24
+riscv                                defconfig    gcc-16.2.0
+riscv                 randconfig-1000-20261112    gcc-9.5.0
+riscv                 randconfig-1001-20261112    gcc-9.5.0
+s390                              allmodconfig    clang-17
+s390                               allnoconfig    clang-24
+s390                                 defconfig    gcc-16.2.0
+s390                  randconfig-1000-20261112    gcc-9.5.0
+s390                  randconfig-1001-20261112    gcc-9.5.0
+s390                        zfcpdump_defconfig    gcc-16.2.0
+sh                                allmodconfig    gcc-16.2.0
+sh                                 allnoconfig    clang-24
+sh                                allyesconfig    clang-17
+sh                                   defconfig    gcc-14
+sh                    randconfig-1000-20261112    gcc-9.5.0
+sh                    randconfig-1001-20261112    gcc-9.5.0
+sh                            se7780_defconfig    gcc-16.2.0
+sh                         sh7763rdp_defconfig    gcc-16.2.0
+sparc                              allnoconfig    clang-24
+sparc                                defconfig    gcc-16.2.0
+sparc                 randconfig-1000-20261111    gcc-16.2.0
+sparc                 randconfig-1001-20261111    gcc-16.2.0
+sparc64                           allmodconfig    clang-20
+sparc64                              defconfig    gcc-14
+sparc64               randconfig-1000-20261111    gcc-16.2.0
+sparc64               randconfig-1001-20261111    gcc-16.2.0
+um                                allmodconfig    clang-17
+um                                 allnoconfig    clang-24
+um                                allyesconfig    gcc-16.2.0
+um                                   defconfig    gcc-14
+um                              i386_defconfig    gcc-14
+um                    randconfig-1000-20261111    gcc-16.2.0
+um                    randconfig-1001-20261111    gcc-16.2.0
+um                            x86_64_defconfig    gcc-14
+x86_64                            allmodconfig    clang-22
+x86_64                             allnoconfig    clang-24
+x86_64                            allyesconfig    clang-22
+x86_64      buildonly-randconfig-1000-20261112    gcc-14
+x86_64      buildonly-randconfig-1001-20261112    gcc-14
+x86_64      buildonly-randconfig-1002-20261112    gcc-14
+x86_64      buildonly-randconfig-1003-20261112    gcc-14
+x86_64      buildonly-randconfig-1004-20261112    gcc-14
+x86_64      buildonly-randconfig-1005-20261112    gcc-14
+x86_64                               defconfig    gcc-14
+x86_64                                   kexec    clang-22
+x86_64                randconfig-1006-20261111    clang-22
+x86_64                randconfig-1007-20261111    clang-22
+x86_64                randconfig-1008-20261111    clang-22
+x86_64                randconfig-1009-20261111    clang-22
+x86_64                randconfig-1010-20261111    clang-22
+x86_64                randconfig-1011-20261111    clang-22
+x86_64                                rhel-9.4    clang-22
+x86_64                            rhel-9.4-bpf    gcc-14
+x86_64                           rhel-9.4-func    clang-22
+x86_64                     rhel-9.4-kselftests    clang-22
+x86_64                          rhel-9.4-kunit    gcc-14
+x86_64                            rhel-9.4-ltp    gcc-14
+x86_64                           rhel-9.4-rust    clang-22
+xtensa                             allnoconfig    clang-24
+xtensa                            allyesconfig    clang-20
+xtensa                randconfig-1000-20261111    gcc-16.2.0
+xtensa                randconfig-1001-20261111    gcc-16.2.0
 
- /* Reserve memory area at end-of data area.
-@@ -310,6 +318,48 @@ struct xdp_frame {
- 	u32 flags; /* supported values defined in xdp_buff_flags */
- };
-
-+/*
-+ * RX metadata that an XDP prog stores for the skb that is built later.
-+ * It follows the xdp_frame in the headroom. The headroom is taken only
-+ * when one of XDP_FLAGS_RX_META is set.
-+ */
-+struct xdp_rx_meta {
-+	u32 hash;
-+	__be16 vlan_proto;
-+	u16 vlan_tci;
-+	u8 hash_type;	/* enum pkt_hash_types */
-+	u8 ip_summed;
-+	u8 csum_level;
-+};
-+
-+static __always_inline struct xdp_rx_meta *xdp_rx_meta(void *data_hard_start)
-+{
-+	return data_hard_start + sizeof(struct xdp_frame);
-+}
-+
-+/* The lowest address that the packet and data_meta can use */
-+static __always_inline void *xdp_buff_headroom_start(const struct xdp_buff *xdp)
-+{
-+	struct xdp_rx_meta *meta = xdp_rx_meta(xdp->data_hard_start);
-+
-+	return xdp->flags & XDP_FLAGS_RX_META ? meta + 1 : meta;
-+}
-+
-+void __xdp_rx_meta_to_skb(struct sk_buff *skb, const struct xdp_rx_meta *meta,
-+			  u32 flags);
-+
-+/*
-+ * A driver calls it on XDP_PASS after it sets the skb fields from
-+ * the RX descriptor.
-+ */
-+static inline void xdp_buff_rx_meta_to_skb(const struct xdp_buff *xdp,
-+					   struct sk_buff *skb)
-+{
-+	if (unlikely(xdp->flags & XDP_FLAGS_RX_META))
-+		__xdp_rx_meta_to_skb(skb, xdp_rx_meta(xdp->data_hard_start),
-+				     xdp->flags);
-+}
-+
- static __always_inline bool xdp_frame_has_frags(const struct xdp_frame *frame)
- {
- 	return !!(frame->flags & XDP_FLAGS_HAS_FRAGS);
-@@ -648,6 +698,12 @@ enum xdp_rss_hash_type {
- 	XDP_RSS_TYPE_L4_IPV6_SCTP_EX = XDP_RSS_TYPE_L4_IPV6_SCTP | XDP_RSS_L3_DYNHDR,
- };
-
-+enum xdp_checksum {
-+	XDP_CHECKSUM_NONE		= BIT(CHECKSUM_NONE),
-+	XDP_CHECKSUM_UNNECESSARY	= BIT(CHECKSUM_UNNECESSARY),
-+	XDP_CHECKSUM_COMPLETE		= BIT(CHECKSUM_COMPLETE),
-+};
-+
- struct xdp_metadata_ops {
- 	int	(*xmo_rx_timestamp)(const struct xdp_md *ctx, u64 *timestamp);
- 	int	(*xmo_rx_hash)(const struct xdp_md *ctx, u32 *hash,
-diff --git a/net/bpf/test_run.c b/net/bpf/test_run.c
-index d6c9dc6..f255818 100644
---- a/net/bpf/test_run.c
-+++ b/net/bpf/test_run.c
-@@ -223,7 +223,8 @@ static bool ctx_was_changed(struct xdp_page_head *head)
- {
- 	return head->orig_ctx.data != head->ctx.data ||
- 		head->orig_ctx.data_meta != head->ctx.data_meta ||
--		head->orig_ctx.data_end != head->ctx.data_end;
-+		head->orig_ctx.data_end != head->ctx.data_end ||
-+		head->orig_ctx.flags != head->ctx.flags;
- }
-
- static void reset_ctx(struct xdp_page_head *head)
-@@ -234,6 +235,7 @@ static void reset_ctx(struct xdp_page_head *head)
- 	head->ctx.data = head->orig_ctx.data;
- 	head->ctx.data_meta = head->orig_ctx.data_meta;
- 	head->ctx.data_end = head->orig_ctx.data_end;
-+	head->ctx.flags = head->orig_ctx.flags;
- 	xdp_update_frame_from_buff(&head->ctx, head->frame);
- 	head->frame->mem_type = head->orig_ctx.rxq->mem.type;
- }
-diff --git a/net/core/filter.c b/net/core/filter.c
-index 9245009..efbe293 100644
---- a/net/core/filter.c
-+++ b/net/core/filter.c
-@@ -4243,9 +4243,8 @@ static unsigned long xdp_get_metalen(const struct xdp_buff *xdp)
-
- BPF_CALL_2(bpf_xdp_adjust_head, struct xdp_buff *, xdp, int, offset)
- {
--	void *xdp_frame_end = xdp->data_hard_start + sizeof(struct xdp_frame);
- 	unsigned long metalen = xdp_get_metalen(xdp);
--	void *data_start = xdp_frame_end + metalen;
-+	void *data_start = xdp_buff_headroom_start(xdp) + metalen;
- 	void *data = xdp->data + offset;
-
- 	if (unlikely(data < data_start ||
-@@ -4547,13 +4546,12 @@ static const struct bpf_func_proto bpf_xdp_adjust_tail_proto = {
-
- BPF_CALL_2(bpf_xdp_adjust_meta, struct xdp_buff *, xdp, int, offset)
- {
--	void *xdp_frame_end = xdp->data_hard_start + sizeof(struct xdp_frame);
- 	void *meta = xdp->data_meta + offset;
- 	unsigned long metalen = xdp->data - meta;
-
- 	if (xdp_data_meta_unsupported(xdp))
- 		return -ENOTSUPP;
--	if (unlikely(meta < xdp_frame_end ||
-+	if (unlikely(meta < xdp_buff_headroom_start(xdp) ||
- 		     meta > xdp->data))
- 		return -EINVAL;
- 	if (unlikely(xdp_metalen_invalid(metalen)))
-@@ -12794,7 +12792,7 @@ __bpf_kfunc int bpf_xdp_pull_data(struct xdp_md *x, u32 len)
-
- 	start = xdp_data_meta_unsupported(xdp) ? xdp->data : xdp->data_meta;
-
--	headroom = start - xdp->data_hard_start - sizeof(struct xdp_frame);
-+	headroom = start - xdp_buff_headroom_start(xdp);
- 	tailroom = data_hard_end - xdp->data_end;
-
- 	delta = len - data_len;
-diff --git a/net/core/xdp.c b/net/core/xdp.c
-index 1d679e8..ca17609 100644
---- a/net/core/xdp.c
-+++ b/net/core/xdp.c
-@@ -829,10 +829,10 @@ struct sk_buff *__xdp_build_skb_from_frame(struct xdp_frame *xdpf,
-
- 	/* Essential SKB info: protocol and skb->dev */
- 	skb->protocol = eth_type_trans(skb, dev);
-+	if (xdpf->flags & XDP_FLAGS_RX_META)
-+		__xdp_rx_meta_to_skb(skb, xdp_rx_meta(xdpf), xdpf->flags);
-
- 	/* Optional SKB info, currently missing:
--	 * - HW checksum info		(skb->ip_summed)
--	 * - HW RX hash			(skb_set_hash)
- 	 * - RX ring dev queue index	(skb_record_rx_queue)
- 	 */
-
-@@ -857,6 +857,9 @@ struct sk_buff *xdp_build_skb_from_frame(struct xdp_frame *xdpf,
-
- 	memset(skb, 0, offsetof(struct sk_buff, tail));
-
-+	/* The callers set the RX fields themselves or transmit the skb */
-+	xdpf->flags &= ~XDP_FLAGS_RX_META;
-+
- 	return __xdp_build_skb_from_frame(xdpf, skb, dev);
- }
- EXPORT_SYMBOL_GPL(xdp_build_skb_from_frame);
-@@ -990,9 +993,154 @@ bool bpf_dev_bound_kfunc_id(u32 btf_id)
- 	return btf_id_set8_contains(&xdp_metadata_kfunc_ids, btf_id);
- }
-
-+void __xdp_rx_meta_to_skb(struct sk_buff *skb, const struct xdp_rx_meta *meta,
-+			  u32 flags)
-+{
-+	if (flags & XDP_FLAGS_RX_HASH)
-+		skb_set_hash(skb, meta->hash, meta->hash_type);
-+	if (flags & XDP_FLAGS_RX_VLAN)
-+		__vlan_hwaccel_put_tag(skb, meta->vlan_proto, meta->vlan_tci);
-+	if (flags & XDP_FLAGS_RX_CSUM) {
-+		skb->ip_summed = meta->ip_summed;
-+		skb->csum_level = meta->csum_level;
-+	}
-+}
-+EXPORT_SYMBOL_GPL(__xdp_rx_meta_to_skb);
-+
-+static struct xdp_rx_meta *xdp_rx_meta_reserve(const struct xdp_buff *xdp)
-+{
-+	struct xdp_rx_meta *meta = xdp_rx_meta(xdp->data_hard_start);
-+	void *start = xdp_data_meta_unsupported(xdp) ? xdp->data : xdp->data_meta;
-+
-+	/* User space can write the headroom of AF_XDP zero-copy buffers */
-+	if (xdp->rxq->mem.type == MEM_TYPE_XSK_BUFF_POOL)
-+		return ERR_PTR(-EOPNOTSUPP);
-+	if ((void *)(meta + 1) > start)
-+		return ERR_PTR(-ENOSPC);
-+	return meta;
-+}
-+
-+__bpf_kfunc_start_defs();
-+
-+/**
-+ * bpf_xdp_store_rx_hash - Store the RX hash for the skb of this packet.
-+ * @ctx: XDP context pointer.
-+ * @hash: RX hash value.
-+ * @rss_type: RSS hash type, see &enum xdp_rss_hash_type.
-+ *
-+ * Return:
-+ * * Returns 0 on success or ``-errno`` on error.
-+ * * ``-ENOSPC`` : not enough headroom
-+ * * ``-EOPNOTSUPP`` : AF_XDP zero-copy buffer
-+ */
-+__bpf_kfunc int bpf_xdp_store_rx_hash(struct xdp_md *ctx, u32 hash,
-+				      enum xdp_rss_hash_type rss_type)
-+{
-+	struct xdp_buff *xdp = (struct xdp_buff *)ctx;
-+	struct xdp_rx_meta *meta = xdp_rx_meta_reserve(xdp);
-+
-+	if (IS_ERR(meta))
-+		return PTR_ERR(meta);
-+
-+	meta->hash = hash;
-+	if (rss_type & XDP_RSS_L4)
-+		meta->hash_type = PKT_HASH_TYPE_L4;
-+	else if (rss_type & (XDP_RSS_L3_IPV4 | XDP_RSS_L3_IPV6))
-+		meta->hash_type = PKT_HASH_TYPE_L3;
-+	else
-+		meta->hash_type = PKT_HASH_TYPE_NONE;
-+	xdp->flags |= XDP_FLAGS_RX_HASH;
-+
-+	return 0;
-+}
-+
-+/**
-+ * bpf_xdp_store_rx_vlan_tag - Store the VLAN tag for the skb of this packet.
-+ * @ctx: XDP context pointer.
-+ * @vlan_proto: VLAN tag protocol identifier (TPID), in network byte order.
-+ * @vlan_tci: VLAN TCI, in host byte order.
-+ *
-+ * Return:
-+ * * Returns 0 on success or ``-errno`` on error.
-+ * * ``-EINVAL`` : @vlan_proto is not 802.1Q or 802.1AD
-+ * * ``-ENOSPC`` : not enough headroom
-+ * * ``-EOPNOTSUPP`` : AF_XDP zero-copy buffer
-+ */
-+__bpf_kfunc int bpf_xdp_store_rx_vlan_tag(struct xdp_md *ctx, __be16 vlan_proto,
-+					  u16 vlan_tci)
-+{
-+	struct xdp_buff *xdp = (struct xdp_buff *)ctx;
-+	struct xdp_rx_meta *meta = xdp_rx_meta_reserve(xdp);
-+
-+	if (IS_ERR(meta))
-+		return PTR_ERR(meta);
-+	if (vlan_proto != htons(ETH_P_8021Q) &&
-+	    vlan_proto != htons(ETH_P_8021AD))
-+		return -EINVAL;
-+
-+	meta->vlan_proto = vlan_proto;
-+	meta->vlan_tci = vlan_tci;
-+	xdp->flags |= XDP_FLAGS_RX_VLAN;
-+
-+	return 0;
-+}
-+
-+/**
-+ * bpf_xdp_store_rx_csum - Store the checksum status for the skb of this packet.
-+ * @ctx: XDP context pointer.
-+ * @ip_summed: ``XDP_CHECKSUM_NONE`` or ``XDP_CHECKSUM_UNNECESSARY``.
-+ * @csum_level: Number of consecutive verified checksums minus one, up to
-+ *              ``SKB_MAX_CSUM_LEVEL``. Must be 0 with ``XDP_CHECKSUM_NONE``.
-+ *
-+ * Return:
-+ * * Returns 0 on success or ``-errno`` on error.
-+ * * ``-EINVAL`` : @ip_summed is not supported, or @csum_level is not valid
-+ *   for it
-+ * * ``-ENOSPC`` : not enough headroom
-+ * * ``-EOPNOTSUPP`` : AF_XDP zero-copy buffer
-+ */
-+__bpf_kfunc int bpf_xdp_store_rx_csum(struct xdp_md *ctx,
-+				      enum xdp_checksum ip_summed,
-+				      u8 csum_level)
-+{
-+	struct xdp_buff *xdp = (struct xdp_buff *)ctx;
-+	struct xdp_rx_meta *meta = xdp_rx_meta_reserve(xdp);
-+
-+	if (IS_ERR(meta))
-+		return PTR_ERR(meta);
-+	if (ip_summed == XDP_CHECKSUM_NONE && !csum_level)
-+		meta->ip_summed = CHECKSUM_NONE;
-+	else if (ip_summed == XDP_CHECKSUM_UNNECESSARY &&
-+		 csum_level <= SKB_MAX_CSUM_LEVEL)
-+		meta->ip_summed = CHECKSUM_UNNECESSARY;
-+	else
-+		return -EINVAL;
-+
-+	meta->csum_level = csum_level;
-+	xdp->flags |= XDP_FLAGS_RX_CSUM;
-+
-+	return 0;
-+}
-+
-+__bpf_kfunc_end_defs();
-+
-+BTF_KFUNCS_START(xdp_rx_meta_kfunc_ids)
-+BTF_ID_FLAGS(func, bpf_xdp_store_rx_hash)
-+BTF_ID_FLAGS(func, bpf_xdp_store_rx_vlan_tag)
-+BTF_ID_FLAGS(func, bpf_xdp_store_rx_csum)
-+BTF_KFUNCS_END(xdp_rx_meta_kfunc_ids)
-+
-+static const struct btf_kfunc_id_set xdp_rx_meta_kfunc_set = {
-+	.owner = THIS_MODULE,
-+	.set   = &xdp_rx_meta_kfunc_ids,
-+};
-+
- static int __init xdp_metadata_init(void)
- {
--	return register_btf_kfunc_id_set(BPF_PROG_TYPE_XDP, &xdp_metadata_kfunc_set);
-+	int ret;
-+
-+	ret = register_btf_kfunc_id_set(BPF_PROG_TYPE_XDP, &xdp_rx_meta_kfunc_set);
-+	return ret ?: register_btf_kfunc_id_set(BPF_PROG_TYPE_XDP, &xdp_metadata_kfunc_set);
- }
- late_initcall(xdp_metadata_init);
-
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
