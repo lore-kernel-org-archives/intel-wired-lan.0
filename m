@@ -2,129 +2,123 @@ Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 40384606A884
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 12 Nov 2026 01:37:21 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 79E8C606A31C
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 12 Nov 2026 01:41:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=iYC2bfV1;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aWGOzBnY
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=dct8boNB;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SidTa3oo
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 1414A812B3;
-	Thu, 12 Nov 2026 01:37:21 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 49D7C81426;
+	Thu, 12 Nov 2026 01:41:44 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Z93tSkl2tRni; Thu, 12 Nov 2026 01:37:20 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 7E6E48124B
+ id 1-3gL4It9TNS; Thu, 12 Nov 2026 01:41:43 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org C2C1A81603
 Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794447440;
-	b=RXfM9xuKd5oh4G2C2QXnXR6XFJn66LBsGGlpO8PQYSpatQElYsBsYlsabXEk7HG8lCX+
-	 i49Jtf69DVb6XPPqpKXSpduZX8Gxj/vdTsAaEq7z/2M5JTrB+Z6xlEj8ibc9rw2PGyZex
-	 mQeKwMgD7JFYYRASrs/RkLg1ZqMoDpQiD5lxi3w92aaRrCUhqbASLxkltpk7GNb/Alo0K
-	 EHW4UZijirjRbLzZjVj3FOP9I5lMNsJAQ+COk4z9lqS1sCzTQvNOHdsXYDaIGWNaWFPaH
-	 8pZTSAOgo5EEsxOcbJmylrGA5j93iceTXeoPyXkwKObQP5xKspEWdCP9qCvwChBZmmQ==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794447703;
+	b=td855htVGRbiJGM4P/1eJc6C7KVIWpHk2/o374p0SgyBCBsP+UiQKf3v4LOQs8ctvSIx
+	 mNwZB2Z6n+Yr6ODCgwsy0UMSjSNngu2Yxnyu+HXtGpHoajjQXDfG5DaqY+vWw0D1NDkzP
+	 hLhAMmWuASgmZ6AYKjOZnbXH3cGq5oZChZkQpZnL3OaXBkwQjIYlO9LLv2jZGKmvpq2Km
+	 uHPmR6NdEQNrdCdgUuxAkW5LXTrMpALm2snmrfmTsoZtqJxRHTNXtC5LNM+ZI0ByZNB+J
+	 szHBGKheBc2mw2TGL+prF5BXlVFp1HPExnbVk4XjWMJ9FBwk11zhKUndH5MNPJw9aAA==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794447440;
+	c=relaxed/relaxed; t=1794447703;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
-	 In-Reply-To:References:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:Precedence:
-	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:
+	 In-Reply-To:References:Auto-Submitted:Content-Type:
+	 Content-Transfer-Encoding:MIME-Version:X-BeenThere:X-Mailman-Version:
+	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=btUPWx1UcmpMZ1wNFLhAkAK57tox2FcAT8+j9g6x7RM=;
-	b=omLkKXxiMlX20iw/rkg0/K0ucW67CCj6OG9IrDR7E/OTcopF7ljWQK7gV9d31P98XiVm
-	 Isa5aJ6yCULvA2cPtDp0j2Wac1CR0+OdtiwZY2WYXI6SVnfjLN027SRRanIJLD+REG+iy
-	 p8658giEzlAQruo8l0SNCeA7sedrKQQdTATvuCSkuCpzvGCKRjCmkdo3krm6zMOB3pBCc
-	 471/Wz5NdBzk1L43IBG0xyoNaJRrtWaTBTIUdnjWb/h+PQ7qhP4V8HFm6OeuT6VvVcmKc
-	 q2aSGK4sobmRr6iLnjmM44Ls1TT5pKSYEv857fWROHONxuKXIJNZi3q9LkM4A99DSYg==
+	bh=PJRu7W6/Or1we5Gv3BgoLEtby0D0Y0UGgfjBHfRc5+k=;
+	b=M6mis5Crtg2nfuQYMPJqEji2MMxutnnmazBqS/anePlSXcEK+fZ58IyWDVt5JU+jYnXQ
+	 wZQTiIoqPHYbYV4uqTWRZRN6Npku4QE8Ou+nwmSi0GwviSn4Yzi5/QHd4Wz8mF6+7KN8A
+	 od6ERrCI0ArA0xBdCkDnQlZEHwVzT8ONvii0RgKIoTMZ+4sgzCkcbHuCdsa7pjjpynint
+	 fXn5xY0DUkKa8XfzXrog1WzCbbxXL+5m+3+/Bbuvlmryc48N9zPp82TxoimLlf1k43zXQ
+	 Ddt4FlGp7XdngkAHmGFmTywMfxqMZIONhMOwlBSxYGFqwOMgMcG34HXxIqI4wqwVGgA==
 ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1794447440;
-	bh=btUPWx1UcmpMZ1wNFLhAkAK57tox2FcAT8+j9g6x7RM=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:List-Id:
+	s=default; t=1794447703;
+	bh=PJRu7W6/Or1we5Gv3BgoLEtby0D0Y0UGgfjBHfRc5+k=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=iYC2bfV1MO/DcoR/mRghTx8YB67JBquRlRtjbgpuq9YTRuxzLf8DEzXEi0EWaysvQ
-	 KcOzksl2fgsVS8OT38qVYkoL4jEXG6p56oFu7/8U5BxPSsiNyHk8qtz/6AaLD0B4wG
-	 ifIFUWyXZS9cnyRC2ppGWoDWYHjvwlwqDTDrxT5anlY2GrSWf6mNLO4oPIhKSgMu+r
-	 27HL47ESF5qPIM0704DqhuholzOJKGBE5HEJazEZw3x2xcN4zJ0nsz/7V7liaj4Zoi
-	 nh1iJZcJeUlav78WzkizZRTRZS92CR4GfThoeqz4EeFDzO71UIhuNAQKlDIbCKz1Jc
-	 BnNCKf92U09CA==
+	b=dct8boNBgTeqdPv2/cACQTKOinAAkSff3RCKrHlBVC/iV94jFFrm3/rwUlVTOt4mZ
+	 YXyiCWyUfLpMUQJOGU4F4OwWkv1mpiMDSHcd7nMcjlAM9aJDIGR+JMOreU8gBuD7TJ
+	 Xb7CejD5TkuKigJbNujmBf2kh5Teq3XrttYzYTQhQurFb73h9Mcoa1dDFq29/+OwKA
+	 TWqWReNXHstg1rl9RvF3lff+RBOCIjUd8aop8m0p+o0ZmPkzj0oUXalIx5lUfNGIls
+	 xNnm9u/bmDkwRSLjSnYnveJqMzkrHEx7EVzH97xyn2mm24m7H6lt5/YlDgPkop65Zm
+	 Yo8yt+5WiB2dw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 7E6E48124B;
-	Thu, 12 Nov 2026 01:37:20 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 2162CD7
- for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Nov 2026 01:37:19 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id C2C1A81603;
+	Thu, 12 Nov 2026 01:41:43 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 96DEF2E5
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Nov 2026 01:41:42 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 1ECF34060F
- for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Nov 2026 01:37:19 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 88880403A6
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Nov 2026 01:41:42 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 7QTt7iQHaLYd for <intel-wired-lan@lists.osuosl.org>;
- Thu, 12 Nov 2026 01:37:18 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 69318405C9
-Authentication-Results: smtp4.osuosl.org;
- arc=none smtp.remote-ip=172.234.252.31
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
- helo=sea.source.kernel.org; envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=quarantine dis=none)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Y2dRUQqgkkSo for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 12 Nov 2026 01:41:42 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org CCD5840217
+Authentication-Results: smtp2.osuosl.org; arc=none
+ smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
+ envelope-from=netdev-bot+sinfo@kernel.org; receiver=<UNKNOWN> 
+Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-Authentication-Results: smtp4.osuosl.org; dkim=pass (2048-bit key,
+Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=aWGOzBnY
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 69318405C9
- for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Nov 2026 01:37:17 +0000 (UTC)
+ header.s=k20260515 header.b=SidTa3oo
+Received: from tor.source.kernel.org (tor.source.kernel.org
+ [IPv6:2600:3c04:e001:324:0:1991:8:25])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id CCD5840217
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Nov 2026 01:41:41 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by sea.source.kernel.org (Postfix) with ESMTP id 389E443472;
- Thu, 12 Nov 2026 01:37:17 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3507E1F00A05;
- Thu, 12 Nov 2026 01:37:16 +0000 (UTC)
+ by tor.source.kernel.org (Postfix) with ESMTP id D526B61242;
+ Thu, 12 Nov 2026 01:41:39 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DE58E1F00A05;
+ Thu, 12 Nov 2026 01:41:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1794447437;
- bh=btUPWx1UcmpMZ1wNFLhAkAK57tox2FcAT8+j9g6x7RM=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References;
- b=aWGOzBnYNa0wVY3pMutI6+4BN31XNpQd4GlZTzAz07lsL0KwUtBb0lgZ6nVvKze6F
- M9w2uEqj+wtz6a6Ww83J/b9Tol/gqGQcPRgGd8Hqn85BgIyleFGK7zi+JCGmEyvR5E
- M3dOXdjmq6lvympxiICUmANRGPspFpZq0jRylkE97o5VxM6HAGPj3aDMl3HTcUvek8
- ZS/G34DyqhyDR1stf3cbqOtS1e0nxdC28q5zxbow87lTc4D9q3KGteJlGd5vvQaVOk
- XaYDgIf4oVx0BrPT2CV6vUDc0AKIo87i719Bc18b2GUBHeJw+gRyhYGs48kNFm0/+0
- qaWLKBH4AQJDA==
-Date: Wed, 11 Nov 2026 17:37:15 -0800
-From: Jakub Kicinski <kuba@kernel.org>
-To: Marcin Knap via B4 Relay <devnull+marcin.knap.vecima.com@kernel.org>
-Cc: marcin.knap@vecima.com, Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>, Andrew Lunn
- <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>, Eric
- Dumazet <edumazet@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Magnus
- Karlsson <magnus.karlsson@intel.com>, Maciej Fijalkowski
- <maciej.fijalkowski@intel.com>, Stanislav Fomichev <sdf@fomichev.me>, Simon
- Horman <horms@kernel.org>, Alexei Starovoitov <ast@kernel.org>, Daniel
- Borkmann <daniel@iogearbox.net>, Jesper Dangaard Brouer <hawk@kernel.org>,
- John Fastabend <john.fastabend@gmail.com>, jtollet@cisco.com,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, bpf@vger.kernel.org, =?UTF-8?B?QmrDtnJuIFQ=?=
- =?UTF-8?B?w7ZwZWw=?= <bjorn@kernel.org>, Jason Xing
- <kerneljasonxing@gmail.com>, Nitin Shetty J <nshettyj@marvell.com>, Joshua
- Washington <joshwash@google.com>, Harshitha Ramamurthy
- <hramamurthy@google.com>, Sunil Goutham <sgoutham@marvell.com>, Geetha
- sowjanya <gakula@marvell.com>, Ratheesh Kannoth <rkannoth@marvell.com>,
- Subbaraya Sundeep <sbhatta@marvell.com>, Bharat Bhushan
- <bbhushan2@marvell.com>
-Subject: Re: [PATCH net v4] xsk: Do not free ZC Rx buffer when the Rx ring
- is full
-Message-ID: <20261111173715.75bccc04@kernel.org>
-In-Reply-To: <20261109-xsk-zc-rx-double-free-v4-1-24e00ac221a0@vecima.com>
-References: <20261109-xsk-zc-rx-double-free-v4-1-24e00ac221a0@vecima.com>
+ s=k20260515; t=1794447699;
+ bh=PJRu7W6/Or1we5Gv3BgoLEtby0D0Y0UGgfjBHfRc5+k=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References;
+ b=SidTa3ooh+dDUnsw65X63uLxzNg/ez+yu4ozqE3le3/IDWgcdcqL0/n2ratb+n8nP
+ vo+vko1f74c+izxVAtj0XWZTMqu2fxi3eKDLfmIlKX0No3e/tXWTGSqma4B5F2kUG+
+ kdGAUgQIk221C1D072hw5Y/2LzUbXFU+lJm/m1b+RZhUOYHlQBIz/GS82ZLN6NZUUT
+ HLj4983t7tgbwAQiej98FzUjBuGlCbUGl6DDkHdujavx2FCS8JSPJVM93FAyHe49H5
+ 3kvB80B4hWWpzPIKg2E/k3utsQEK7IHkcgRpsoBj0YniVxUR0XbEDeXhixR7bk/Xjl
+ FrHWDfNh+lsmw==
+From: netdev-bot+sinfo@kernel.org
+To: Jiaming Fan <fan.jiaming@hotmail.com>
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>, 
+ Eric Dumazet <edumazet@kernel.org>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>,
+ =?utf-8?q?Micha=C5=82_Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Subject: Re: [PATCH iwl-net] e1000: report RX checksum offload as on when it
+ is enabled
+Date: Thu, 12 Nov 2026 01:41:38 +0000
+Message-ID: <179444769837.2168702.18320155804189818970@kernel.org>
+In-Reply-To: =?utf-8?q?=3COS3PR01MB10251F4C0DDF4A1AA90095494E7702=40OS3PR01M?=
+ =?utf-8?q?B10251=2Ejpnprd01=2Eprod=2Eoutlook=2Ecom=3E?=
+References: =?utf-8?q?=3COS3PR01MB10251F4C0DDF4A1AA90095494E7702=40OS3PR01MB?=
+ =?utf-8?q?10251=2Ejpnprd01=2Eprod=2Eoutlook=2Ecom=3E?=
+Auto-Submitted: auto-generated
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -142,17 +136,20 @@ X-Spam-Status: No, score=-5.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Mon, 09 Nov 2026 12:01:14 +0100 Marcin Knap via B4 Relay wrote:
-> This covers redirects to an XSKMAP. A zero-copy buffer redirected to
-> a devmap or cpumap is copied by xdp_convert_zc_to_xdp_frame(), which
-> frees it before the enqueue can still fail. That path is not changed
-> here.
+Hi!
 
-But what's the plan for fixing those redirect targets?
-I think it'd be much better if we had one series which
-addresses all the cases, which AI can review...
-If there's consensus that xdp_convert_zc_to_xdp_frame() 
-can be trivially handled later let's document that (and 
-how) in the commit message?
--- 
-pw-bot: cr
+This is an automated message. This series looks like a fix, but its
+commit messages seem to be missing some information:
+
+ - How the issue was discovered, e.g. hit in production, hit during
+   development, syzbot report, manual code inspection, LLM or static
+   analysis tool scan.
+
+Please do not repost the series just to address the above. Instead,
+reply to this email with the missing information, so that reviewers
+can take it into account. If the series needs another revision for
+other reasons, please include the information in the commit messages
+then.
+
+The evaluation is done by an LLM so it may be wrong, if you think
+that is the case please reply and explain.
