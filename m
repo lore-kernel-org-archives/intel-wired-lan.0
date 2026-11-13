@@ -2,28 +2,28 @@ Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4A8AB606A335
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 13 Nov 2026 23:46:17 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 679FC606A881
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 13 Nov 2026 23:52:50 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=1XPY29Zu;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=B4mbdfi4
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=1+oT5mHV;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Bn7y3kyR
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2465660665;
-	Fri, 13 Nov 2026 23:46:17 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 3E9B2606EA;
+	Fri, 13 Nov 2026 23:52:50 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id yJ5VvR9u9goa; Fri, 13 Nov 2026 23:46:16 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 1B01C60679
+ id Slq9GYL7U7zU; Fri, 13 Nov 2026 23:52:49 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org CEC7C6063E
 Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794613576;
-	b=L449IGTQAaki4mAEnkNUJfR96I9VxZ19IrJjddn+AippCGMZRv+41noUmADwZKlxIKqJ
-	 Mg/U8SLMdP6X73c0GhGYJLw7gwn0g05NGTnAXeJOJRAWQXsGljd3/7Hfs5ZvSTddqjHDy
-	 ArW0LWtQBlDNZNA/nng36DWnc5Mvf5BQ0FmMlY8pNat1457g7njUhbNT5AuWCX0bzCddR
-	 SRtJxByWNlfQvNM9/flRAKuxTtuPR7fA9ga2UeugYasyWj2XTtMz8MK/MFxDoxMavK9sJ
-	 LhQOSImzYkZKzHGLAAHq8sp6wjzXWgCOw7CrDyguLXA4weggmsTAnTxwmUMziDePqeQ==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794613968;
+	b=eEYTkp55N5f2uGUtQsagVFiSQ1gTJucHLt0REC/q9MuaFfFKhaBAtjlSLR1Exro40l8Z
+	 /PbSCCRjNuWPAG8S7WfKrKUhex0/SoQ1iiFvoTL1tiSRoJwO7+KCKYmvSvGtjez6qx7My
+	 VROmFZuSeZDXK2xLtFnd3+0l3SOoKF0a+xF2Q106y3cIm8BkA0wQY6tRgSFNMtUhwfpm+
+	 0ua1EoxTNLx2iPZEZGtJz0/xmR2Xrkbit2783ttFAsaiokbYsPn+Rpl2+9MzFY69Xr6ai
+	 TGd9YhGbgJN6gvTSKv3V9RRwEK/2ee2CyRfjTSSL70L40TAA/a2Z3ug/h2MuzZodsMQ==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794613576;
+	c=relaxed/relaxed; t=1794613968;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
@@ -31,83 +31,80 @@ ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
 	 References:Content-Type:Content-Transfer-Encoding:Date:X-BeenThere:
 	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Reply-To:Errors-To;
-	bh=AeHILAyVcKpr9GNF5d4ydzcQq6JUIxrj7kPI6Vs66hQ=;
-	b=Yp+eK7te8QlCr0YT3to290nFl1BWuuR2nph4pXDzAoDUnKXnfkTXI66+vAP4NKOBfM83
-	 7nOG3czcLIjH01stpmF0vJTRU0dJ2+Pzx2sm66H8lYurJfJZlHRT16JoxrbXnOsRtXr1i
-	 KZ0NNGoMNAA6TOE50JOCM+nfqbLqzdTag5EbDyaBmBMMasUomuBdSLuFzjo4P9hVP0kY0
-	 E5GJYDCjejmP7jpHHQOxzYABticF+Re7II1xzIYzXra9CSD3rNXW4/7IauiCqiUjhB/yP
-	 PO6NkU+J3xQE6/Zl94Rr2M+FyWW7tuKjygqhwaM9mEbyLlVyOEBfSgdvHC08AA/TMWQ==
+	bh=Ff/BmaL7scNp3we2xZphkAit9jmnRbr78KsxLzfOp8A=;
+	b=P94DEfBhnKFX6aJB/sDrFPKBzMz+TC+0QkYGnVBtLjcKSJBdfzpGQw9+BKDUquRdeaEw
+	 LRyD6omz047n451nz3RvI2kf7KylhBvM/khllg5WFJ4s0KnHjYPhbTPPiBZ/yyU/ddDzq
+	 R5Xg4SXi2Uz56oiXLXbJWKXWa0RQjH3bv7dB0Pz5QRtZ+zpyM245QLxT2bn+cXMkvFspP
+	 QsV+o4f32svwKeghY41hO1C4+g/MzjpRA1XslwMf3/gbO9pvvzAP437Ej2ayPNMiZnIb5
+	 iN9i/BiUGTigkVm7iNVRN7gwWdCoPwiFViVQ4wo0TeUl4t4CPaM0OuL8AciWP+tBqJw==
 ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1794613576;
-	bh=AeHILAyVcKpr9GNF5d4ydzcQq6JUIxrj7kPI6Vs66hQ=;
+	s=default; t=1794613968;
+	bh=Ff/BmaL7scNp3we2xZphkAit9jmnRbr78KsxLzfOp8A=;
 	h=From:Subject:To:In-Reply-To:References:Date:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Reply-To:From;
-	b=1XPY29ZuIAQ7q6Ct9BEwpviIci3iPHnGPBPFavX9uQT/oAOqBbYuRoO4w9CblEHRP
-	 gj46l4mxeMVzlEe0oFK9qUDf55yn/3uhALYJ6Kb4HubcFBMC1lhhcaoyz93Iw8p2FK
-	 MP5cCogBW9+uDtyIUnA32OE2Iie5wan1u2gMVMM64TktuSAar8vU27BMw6pVK43tck
-	 sPm4WU7m2WgCxfj5LAKjWbDt85O6Ay+qShzk8Rh2DNGqvLEnjUnwlcSqFziVi+W4NN
-	 1Ym114/IfbA0Cg7AtQh5GxW2r9I4/z1T5wQuJsaEsXXUsFNujUt6ke4tz9M6zwuRxs
-	 rircGGJK2R9xA==
+	b=1+oT5mHVLTJon3ZTA6U3oi8eD4nP81Tn+tMxVfK1KbVIvjPr8gu/V9pt3R8E+uuqM
+	 /8m+63BGChCegCMvTAvbPDB/aQ1/IH8hmYjFxBdLWtmnbvixAEYx3TcoJdTIB1NioM
+	 BXmKLjCt8seIQciDERkVk5dqdYIDhzQ5McGSsLfU3qmgNAGPmoHAYf7u/xTIuvK3lh
+	 1tE+orTK+2E8dUFot/WGqKinnLWP+BR82OL/n9UNEdoLOiywg1XjuQvNx8cQck0ZaE
+	 m0hwK5d4Zr1DbYuS+5iR7H3az5rQJDH6YMRSuDHv+LKAUBJx7FG5heoKBOKeDW9oht
+	 cLSvAKxE9U4aQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 1B01C60679;
-	Fri, 13 Nov 2026 23:46:16 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 64CD92FB
- for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Nov 2026 23:46:15 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id CEC7C6063E;
+	Fri, 13 Nov 2026 23:52:48 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 9637A28C
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Nov 2026 23:52:47 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 5934781463
- for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Nov 2026 23:46:15 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 87A4740921
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Nov 2026 23:52:47 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id hroXlBhCDvnm for <intel-wired-lan@lists.osuosl.org>;
- Fri, 13 Nov 2026 23:46:14 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 2121B811E4
-Authentication-Results: smtp1.osuosl.org; arc=none
- smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
- envelope-from=sashiko-bot@kernel.org; receiver=<UNKNOWN> 
-Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=quarantine dis=none)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Na1kYAGucKef for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 13 Nov 2026 23:52:46 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 68F684091F
+Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=172.105.4.254
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
+ helo=tor.source.kernel.org; envelope-from=sashiko-bot@kernel.org;
+ receiver=<UNKNOWN> 
+Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
+Authentication-Results: smtp4.osuosl.org; dkim=pass (2048-bit key,
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=B4mbdfi4
-Received: from tor.source.kernel.org (tor.source.kernel.org
- [IPv6:2600:3c04:e001:324:0:1991:8:25])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 2121B811E4
- for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Nov 2026 23:46:13 +0000 (UTC)
+ header.s=k20260515 header.b=Bn7y3kyR
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 68F684091F
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Nov 2026 23:52:46 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id AC9B561274;
- Fri, 13 Nov 2026 23:46:11 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 465F81F000C4;
- Fri, 13 Nov 2026 23:46:11 +0000 (UTC)
+ by tor.source.kernel.org (Postfix) with ESMTP id 744A462664;
+ Fri, 13 Nov 2026 23:52:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0FE081F000C4;
+ Fri, 13 Nov 2026 23:52:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1794613571;
- bh=AeHILAyVcKpr9GNF5d4ydzcQq6JUIxrj7kPI6Vs66hQ=;
+ s=k20260515; t=1794613965;
+ bh=Ff/BmaL7scNp3we2xZphkAit9jmnRbr78KsxLzfOp8A=;
  h=From:Subject:Reply-To:To:In-Reply-To:References:Date;
- b=B4mbdfi4FeGRBlxun1IE7ovpgsv1HERzIYofcaPs8lCDBqu+nNA6Siq1USpSl03qc
- NkZUf85F0di38F5spvSpTSN12Qk+tf2WnYGimE3m3MGoo2M8afdmZxRr+kdf8lFDNw
- gtm5Ff6cPnP9wov97LX5RedXQOfTZEcJ+8A84D1J8X33Rap1hM0S4d0/2GyQWeaJiQ
- AgNNDeZvMrhrmPT4uD2MWQ6uSWHqdCmIfnatBAUcFf+E17mBsbsPtVkFa2JnFwTgnX
- VFKcb+ug64BjclTVuBrGOdZ8WH0qBp9NP8K+7oKun1tYzIzILq9WnpDJt/pcb1Dp2b
- 3cB3JcfZI1mwg==
-Message-ID: <sashiko-outbox-213873@kernel.org>
+ b=Bn7y3kyRnWi4EyG6HQYEZbjlrl54VSjp0ojA+i9l1Ie2SpNwOPd/iSoqjsspDkl6g
+ TqiZHZTS4aGm00EOXoJA7NC3j1MqSBTUgfoKaxIdDAeQJ3WbJCGXpVhLBEbDemUg/k
+ tcgXdD8GIa9TrguJzP814Qo3oeF+J8GfZLfW7DhSEPLTOqjz40hyIE+34XS7pBJ7pO
+ JQYmbziFeULA5xnmXphaBxwZ/qCx4lkIwxg4BUqws5dNRdDxVSSVeeoILVniE6bqoc
+ sDM1/jrCd1efqbARJwZ1DkBz4rA5PUqmpCW6bxuDJHsWf20CRhGTPgTkdmWBTX6TRG
+ pD5JRFyXM/Lcw==
+Message-ID: <sashiko-outbox-213880@kernel.org>
 From: sashiko-bot@kernel.org
-Subject: Re: [PATCH iwl-next v2 4/4] ice: use struct timecounter for E825
- and E830
+Subject: Re: [PATCH iwl-next v2 3/4] ice: store cached PHC time in ice_adapter
 To: "Jacob Keller" <jacob.e.keller@intel.com>,
  "Intel Wired LAN" <intel-wired-lan@lists.osuosl.org>
-In-Reply-To: <20261113-jk-e825-e830-timecounter-v2-4-9c357a7ed349@intel.com>
+In-Reply-To: <20261113-jk-e825-e830-timecounter-v2-3-9c357a7ed349@intel.com>
 References: <20261113-jk-e825-e830-timecounter-v2-0-9c357a7ed349@intel.com>
- <20261113-jk-e825-e830-timecounter-v2-4-9c357a7ed349@intel.com>
+ <20261113-jk-e825-e830-timecounter-v2-3-9c357a7ed349@intel.com>
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
-Date: Fri, 13 Nov 2026 23:46:10 +0000
+Date: Fri, 13 Nov 2026 23:52:44 +0000
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -127,235 +124,107 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 X-Archived-By: <archiver.kernel.org>
 
-Thank you for your contribution! Sashiko AI review found 2 potential
-issues to consider:
-- [Medium] ice: perout_rqs updated outside phc.lock in
-  ice_ptp_gpio_enable()
-- [Medium] ice: premature update_jiffies store in ice_ptp_read_cycles()
+Thank you for your contribution! Sashiko AI review found 1 potential
+issue to consider:
+- [Medium] ice: stale adapter->phc cache across reset in
+  ice_ptp_rebuild_owner()
 --
 
-commit 2dbce654e6813d30b319e71f8e68ca2b82a4b244
+commit 3e2553cade32eeca4938b383704866bc53bd38ea
 Author: Jacob Keller <jacob.e.keller@intel.com>
 
-ice: use struct timecounter for E825 and E830
+ice: store cached PHC time in ice_adapter
 
-This commit switches E825 and E830 devices from direct hardware PHC time
-adjustments and legacy 32-bit timestamp extension to a latched
-timecounter/cyclecounter stored in struct ice_phc.
+This commit moves the cached PHC time and its update timestamp from the
+per-PF ice_ptp and Rx ring structures into a shared struct ice_phc embedded
+in ice_adapter, updated only by the clock owner PF.
 
 > diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ether=
 net/intel/ice/ice_ptp.c
-> index a0451c1083a41..b48d1bf3bbf59 100644
+> index bf37c2a7ff863..a0451c1083a41 100644
 > --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
 > +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-> @@ -272,6 +272,202 @@ int ice_ptp_read_src_clk_reg(struct ice_pf *pf,
->  	return 0;
+[ ... ]
+> @@ -3099,24 +3056,20 @@ static void ice_ptp_periodic_work(struct kthread_=
+work *work)
+>  {
+>  	struct ice_ptp *ptp =3D container_of(work, struct ice_ptp, work.work);
+>  	struct ice_pf *pf =3D container_of(ptp, struct ice_pf, ptp);
+> -	int err;
+> =20
+>  	if (pf->ptp.state !=3D ICE_PTP_READY)
+>  		return;
+> =20
+>  	ice_ptp_tspll_monitor(pf);
+> =20
+> -	err =3D ice_ptp_update_cached_phctime(pf);
+> +	if (ice_pf_src_tmr_owned(pf))
+> +		ice_ptp_update_cached_phctime(pf);
+> =20
+>  	ice_ptp_maybe_trigger_tx_interrupt(pf);
+> =20
+> -	/* Run twice a second, or retry soon if another thread was busy
+> -	 * updating the Rx rings. Other errors, such as a missing control PF,
+> -	 * do not clear up on their own and must not turn the periodic worker
+> -	 * into a busy loop.
+> -	 */
+> +	/* Run twice a second */
+>  	kthread_queue_delayed_work(ptp->kworker, &ptp->work,
+> -				   msecs_to_jiffies(err =3D=3D -EAGAIN ? 10 : 500));
+> +				   msecs_to_jiffies(500));
 >  }
 > =20
-> +/**
-> + * ice_ptp_read_cycles - cyclecounter read() callback function
-> + * @cc: the hardware cycle counter structure
-> + *
-> + * Read the PHC time via ice_ptp_read_src_clk_reg() and report it for use
-> + * within timecounter_read() and timecounter_init().
-> + *
-> + * Although the cycle counter is masked to 32-bits for timestamp extensi=
-on,
-> + * this still reports the full 64-bit time to enable determining the pha=
-se
-> + * difference between the PHC hardware value and the timecounter properl=
-y.
-> + *
-> + * Return: The current PHC timer value from the hardware on success.
-> + *         Since failure cannot be meaningfully reported, return the pre=
-vious
-> + *         cycle_last value when unable to access the device.
-> + */
-> +u64 ice_ptp_read_cycles(struct cyclecounter *cc)
-> +{
-> +	struct ice_adapter *adapter;
-> +	struct ice_phc *phc;
-> +	struct ice_pf *pf;
-> +	u64 time;
-> +	int err;
-> +
-> +	phc =3D container_of(cc, struct ice_phc, cc);
-> +	adapter =3D container_of(phc, struct ice_adapter, phc);
-> +
-> +	scoped_guard(rcu) {
-> +		pf =3D rcu_dereference(adapter->ctrl_pf);
-> +		if (!pf)
-> +			return phc->tc[0].cycle_last;
-> +
-> +		err =3D ice_ptp_read_src_clk_reg(pf, NULL, &time);
-> +		if (err)
-> +			return phc->tc[0].cycle_last;
-> +
-> +		/* Paired with smp_load_acquire in ice_ptp_extend_32b_ts */
-> +		smp_store_release(&phc->update_jiffies, jiffies | 1);
-> +		return time;
-> +	}
-> +}
-
-[ ... ]
-
-> +static void ice_phc_refresh(struct ice_phc *phc)
-> +{
-> +	lockdep_assert_held(&phc->lock);
-> +
-> +	write_seqcount_latch_begin(&phc->seq);
-> +	(void)timecounter_read(&phc->tc[0]);
-> +	write_seqcount_latch(&phc->seq);
-> +	/* Update the secondary copy */
-> +	phc->tc[1].cycle_last =3D phc->tc[0].cycle_last;
-> +	phc->tc[1].nsec =3D phc->tc[0].nsec;
-> +	write_seqcount_latch_end(&phc->seq);
-> +}
-> +
-> +/**
-> + * ice_phc_init - Initialize PHC timecounter to new start value
-> + * @phc: pointer to the PHC structure
-> + * @init_tstamp: New initial value for the timecounter
-> + *
-> + * Initialize the PHC timecounter to a new offset. The latched sequence
-> + * counter is used to ensure readers get a consistent view of the timeco=
-unter
-> + * phase. We always pass the same cyclecounter structure, so the mask, f=
-rac,
-> + * and cc fields always remain the same, and only the cycle_last and nsec
-> + * fields must be propagated to the secondary structure.
-> + */
-> +static void ice_phc_init(struct ice_phc *phc, u64 init_tstamp)
-> +{
-> +	lockdep_assert_held(&phc->lock);
-> +
-> +	write_seqcount_latch_begin(&phc->seq);
-> +	timecounter_init(&phc->tc[0], &phc->cc, init_tstamp);
-> +	write_seqcount_latch(&phc->seq);
-> +	/* Update the secondary copy */
-> +	phc->tc[1].cycle_last =3D phc->tc[0].cycle_last;
-> +	phc->tc[1].nsec =3D phc->tc[0].nsec;
-> +	write_seqcount_latch_end(&phc->seq);
-> +}
-
-[Severity: Medium]
-Does storing phc->update_jiffies inside ice_ptp_read_cycles() publish
-the timestamp before either phc->tc[] copy is updated?
-
-timecounter_init() and timecounter_read() invoke cc->read() before
-writing tc[0].cycle_last and tc[0].nsec, while phc->seq is odd and
-directing readers to phc->tc[1]:
-
-CPU0                                  CPU1
-ice_phc_init()
-  write_seqcount_latch_begin(&phc->seq)
-  timecounter_init(&phc->tc[0], ...)
-    ice_ptp_read_cycles()
-      smp_store_release(&phc->update_jiffies, ...)
-                                      ice_ptp_extend_32b_ts()
-                                        smp_load_acquire(&phc->update_jiffi=
-es)
-                                        ice_phc_cyc2time_with_trace()
-                                          seq =3D read_seqcount_latch(&phc-=
->seq)
-                                          /* idx =3D=3D 1 */
-                                          timecounter_cyc2time(&phc->tc[1],=
- ...)
-                                            <-- uses uninitialized or stale=
- tc[1]
-    tc[0].cycle_last =3D ...
-    tc[0].nsec =3D ...
-  write_seqcount_latch(&phc->seq)
-  phc->tc[1] =3D phc->tc[0]
-  write_seqcount_latch_end(&phc->seq)
-
-During initial bringup or after a reset or delayed refresh (>2s), CPU1
-sees a fresh update_jiffies and extends a packet's 32-bit hardware
-timestamp against an uninitialized (zero) or stale phc->tc[1] snapshot
-instead of discarding it or using the updated timecounter.  Recording the
-new jiffies value and calling smp_store_release(&phc->update_jiffies, ...)
-after write_seqcount_latch(&phc->seq) (or write_seqcount_latch_end()) when
-cc->read() succeeded would ensure readers only see the fresh timestamp
-once an updated timecounter copy is active.
-
-[ ... ]
-
-> @@ -1974,7 +2202,10 @@ static int ice_ptp_gpio_enable(struct ptp_clock_in=
-fo *info,
->  		if (on && pf->ptp.state !=3D ICE_PTP_READY)
->  			return -EIO;
+>  /**
+> @@ -3211,6 +3164,8 @@ void ice_ptp_prepare_for_reset(struct ice_pf *pf, e=
+num ice_reset_req reset_type)
 > =20
-> +		/* Serialize against concurrent timecounter updates */
-> +		mutex_lock(&pf->adapter->phc.lock);
->  		err =3D ice_ptp_cfg_perout(pf, &rq->perout, on);
-> +		mutex_unlock(&pf->adapter->phc.lock);
->  		if (!err) {
->  			*cached =3D rq->perout;
->  		} else {
-
-[ ... ]
-
-> @@ -2086,6 +2319,43 @@ ice_ptp_settime64(struct ptp_clock_info *info, con=
-st struct timespec64 *ts)
-> +static int ice_ptp_settime64_tc(struct ptp_clock_info *info,
-> +				const struct timespec64 *ts)
-> +{
-> +	struct ice_pf *pf =3D ptp_info_to_pf(info);
-> +	struct ice_phc *phc =3D &pf->adapter->phc;
-> +	u64 ns;
-> +
-> +	if (pf->ptp.state !=3D ICE_PTP_READY)
-> +		return -EIO;
-> +
-> +	ns =3D timespec64_to_ns(ts);
-> +
-> +	mutex_lock(&phc->lock);
-> +
-> +	ice_ptp_disable_all_perout(pf);
-> +
-> +	ice_phc_init(phc, ns);
-> +
-> +	ice_ptp_mark_all_tx_tracker_stale(pf);\n+
-> +	/* Reenable periodic outputs */
-> +	ice_ptp_enable_all_perout(pf);
-> +
-> +	mutex_unlock(&phc->lock);
-> +
-> +	return 0;
-> +}
+>  	/* Acquire PHC and system timer to restore after reset */
+>  	ptp->reset_time =3D ktime_get_real_ns();
+> +	if (ice_ptp_read_src_clk_reg(pf, NULL, &ptp->phc_reset_time))
+> +		ptp->phc_reset_time =3D 0;
+>  }
+> =20
+>  /**
+> @@ -3250,13 +3205,13 @@ static int ice_ptp_rebuild_owner(struct ice_pf *p=
+f)
+>  	if (err)
+>  		goto err_unlock;
+> =20
+> -	/* Write the initial Time value to PHY and LAN using the cached PHC
+> -	 * time before the reset and time difference between stopping and
+> -	 * starting the clock.
+> +	/* Write the initial Time value to PHY and LAN using the PHC time
+> +	 * before the reset and time difference between stopping and starting
+> +	 * the clock.
+>  	 */
+> -	if (ptp->cached_phc_time) {
+> +	if (ptp->phc_reset_time) {
+>  		time_diff =3D ktime_get_real_ns() - ptp->reset_time;
+> -		ts =3D ns_to_timespec64(ptp->cached_phc_time + time_diff);
+> +		ts =3D ns_to_timespec64(ptp->phc_reset_time + time_diff);
+>  	} else {
+>  		ts =3D ktime_to_timespec64(ktime_get_real());
+>  	}
 
 [Severity: Medium]
-Can releasing pf->adapter->phc.lock before updating *cached
-(pf->ptp.perout_rqs[rq->perout.index]) in ice_ptp_gpio_enable() race with
-ice_ptp_settime64_tc() or ice_ptp_adjtime_tc()?
+Does ice_ptp_rebuild_owner() leave a stale cached_time in pf->adapter->phc
+across a non-PFR reset?
 
-The POSIX clock layer only holds down_read(&clk->rwsem) across ioctl,
-clock_settime, and clock_adjtime calls, so ice_ptp_gpio_enable() and
-ice_ptp_settime64_tc() can run concurrently:
+When a reset such as EMPR zeroes GLTSYN_TIME before
+ice_ptp_prepare_for_reset() reads it, ptp->phc_reset_time is 0 and
+ice_ptp_rebuild_owner() reinitializes the hardware clock to
+ktime_get_real() (UTC) via ice_ptp_write_init(), which can differ from a
+pre-reset TAI PHC by 37 seconds.  Neither ice_ptp_prepare_for_reset() nor
+ice_ptp_rebuild_owner() invalidates or refreshes pf->adapter->phc after
+writing the new time, and non-owner PFs no longer update the cache in
+ice_ptp_periodic_work().
 
-CPU0                                  CPU1
-ice_ptp_gpio_enable()
-  mutex_lock(&pf->adapter->phc.lock)
-  ice_ptp_cfg_perout(pf, &rq->perout, 1)
-  mutex_unlock(&pf->adapter->phc.lock)
-                                      ice_ptp_settime64_tc()
-                                        mutex_lock(&phc->lock)
-                                        ice_ptp_disable_all_perout(pf)
-                                        ice_phc_init(phc, ns)
-                                        ice_ptp_enable_all_perout(pf)
-                                          /* cached->period is still 0 */
-                                        mutex_unlock(&phc->lock)
-  *cached =3D rq->perout;                 <-- HW keeps pre-settime phase
-
-When enabling an output, ice_ptp_enable_all_perout() sees a zero period in
-perout_rqs[] and skips reprogramming GLTSYN_TGT for the new timecounter
-phase; when disabling an output, it sees the old non-zero period and
-re-enables the output in hardware right before *cached is cleared.
-Writing *cached without holding phc.lock also races with
-ice_ptp_disable_all_perout() and ice_ptp_enable_all_perout() reading the
-struct under phc.lock.  Holding pf->adapter->phc.lock across the *cached
-update in ice_ptp_gpio_enable() avoids the race.
+If the reset and rebuild finish within 2000 ms of the last pre-reset
+update, ice_ptp_extend_32b_ts() still sees a fresh phc->update_jiffies and
+extends post-reset Rx and Tx hardware timestamps against the pre-reset
+phc->cached_time until the owner PF's kworker runs
+ice_ptp_periodic_work().
 
 --=20
 Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261113-jk-e825-e8=
-30-timecounter-v2-0-9c357a7ed349@intel.com?part=3D4
+30-timecounter-v2-0-9c357a7ed349@intel.com?part=3D3
