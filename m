@@ -1,29 +1,29 @@
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 75B44606A32E
-	for <intel-wired-lan@archiver.kernel.org>; Sat, 14 Nov 2026 02:59:00 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7CE3B606A329
+	for <intel-wired-lan@archiver.kernel.org>; Sat, 14 Nov 2026 02:59:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=eO7mcuEg;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=STcSVUBi
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=fJ4WuRZQ;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=lI3XUHzD
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 586FC40EBA;
-	Sat, 14 Nov 2026 02:59:00 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 5C2A4606D0;
+	Sat, 14 Nov 2026 02:59:01 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id cNp2IoJsxwPK; Sat, 14 Nov 2026 02:58:59 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 3170B40ECA
-Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794625139;
-	b=rSt/cURGGgRre3sP0afy20zsZlE/+uEPO78QSNbW2P3XrA+PyV6wJ3ZYO7EZmtSK6u9X
-	 4/qbbDyl4/yR4iY/b5o0DOggY5DA5aDNFmujzv8CU76pVYNWX3EghYNT6J4SOjGRAvez4
-	 Z9zjQtx+m8iJQoTqy2YU2/Ko+cJmjxNisoPe/rbtMdWQmtVkyJUn3SmW/FlW5tCteqEG/
-	 wrVzBVUiiy7dDs0AywQNOYfZ04lbIFJEH55B/qIYbUtaXPg41v9Ui7U3HkyjP4Y5TubcN
-	 Zt5Pc1qYoCNo97G0EUyXYtOV8tYkEwgvzmuiKI+hjkdH+WgK7MGSOSXJclhakojbCAA==
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 1oWnWVW_Rmdk; Sat, 14 Nov 2026 02:59:00 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org F0F90606EA
+Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794625140;
+	b=W3zcg4ztbN0debrI9iB54xbmPtVFmDx/niJWhD41Uhi1U5PIHMpl6VmYgN/Zu7G8puIv
+	 eq3TNI9d5odEB9Q8ZeoUXqnd3JDAkYbiDQZ5eIxCkzgD2IXYmOy90heIhUn2noiIY1QYu
+	 dE1GjzFuV/2nw74YNdAYRc63R1HYUWi1JYVqvDHkubJ+3OzxTRzxsg4MSbB+gfA61ZLf+
+	 fWqoH4NvdLEG9OeHkHLqcPU+jgSRpWt+v7YbJvtMHLekn5ecpijU7SdwCbEHG3S3jOW+j
+	 PfShEecRUEZfnSyMmEZkHvN5z1Th6STJNxb8SvNjqfvFcK57b/tGy7Elz22WvJLK6yw==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794625139;
+	c=relaxed/relaxed; t=1794625140;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
@@ -33,43 +33,41 @@ ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
 	 User-Agent:X-BeenThere:X-Mailman-Version:Precedence:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Errors-To;
-	bh=1HQJhSitZJIif001w0k9MCex3DmjKQIhUaMEjOIIMPE=;
-	b=lvcXZnfOzXsRaMtl+Xf69rU9X5wO5WrdBKpfINlDjQpSgLQcMFbCgdukOTRfn660Ec8/
-	 Nd959Kty8oSrkRPc8sEfShx6ztUfsszs5WWU77rIfetZksCuNN/muwthLpLuhSSZHVwSq
-	 s3TqEkS/K/NqtpGXgUJRh+wL61FeuBttS8MH+cI5kcAa32xfJRUbJBdmErNgRuvJ4ntQT
-	 xCog240kekkrxA8+GJlr6BcRyUwUImTuLwQhaHg2LhhFctwRyB5IAY0+FS+Uy453M9Ece
-	 5DUlmOSyLz7KfyWsL81BO8QZKwR4aX2V+DRCXghFunLArCGOOgQ3/6SDJPi4BWo1EIg==
-ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
-	dmarc=pass header.from=intel.com;
-	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=STcSVUBi;
+	bh=T/wDWd0FikjbMsJXKHrhc2xwlbSQOCiKdXw+Vnuytcg=;
+	b=dD7Vj6zbAjjTzCk3zCOd9IU1TIqqnIpE8jUumVN25A7tE8SJJWZ+e4yHbJn9X+DprdrX
+	 VAHwpeB9NuDlF8T6+07lX4ijXCvnjCnquN1Bsz27jVaaR7TdMZhAU+U+Q0s4cLk07hdCH
+	 I73KXYeXnVhEaoVkkbe2V+30lbTqH7y56TAW5mQ650IXIp9x2ffwrJUwE32OCbQdf54Fc
+	 XqCZMV3LglrdLO0xI786LhFT5xCR4WLZ8y9Vls2/s7B9w/P4u13Lf3WFvgTOJweZwnHKj
+	 vsoDlqcNYRu6+n3UCPPtuvmnkkaOLxQfDvgyv2HtYJoM3ToyBioMenRXLtw9XRUIfPg==
+ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1794625139;
-	bh=1HQJhSitZJIif001w0k9MCex3DmjKQIhUaMEjOIIMPE=;
+	s=default; t=1794625140;
+	bh=T/wDWd0FikjbMsJXKHrhc2xwlbSQOCiKdXw+Vnuytcg=;
 	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=eO7mcuEgNTHFnQtKB/onfRR5jeyEX1pF4XiPqKwhrl1cgZqX8g4a4a26PbVtW6/zQ
-	 JTCljs/sAb93aW/BQEgJhzr/KwqkXsLaI+FdqAphDCBknQ4ORPydt/gYwVnqKgbWYg
-	 i6VKsRb11HKfT7AYoxvSaOBZpUAWwsnI0CsU+DEmNsLrjskli1zhZbU2BW2udbu0K7
-	 vep/xS2rD8HK3PPOtrQYvfc9gAVdikoWlOaruGnTwcC+38xCS5a9MQOc8wB0gS+EHu
-	 qvJvD0XkVE3LlTArqr3GLg4O8TXadksyXS9oZ3s2C8CF5NQyTamAhUbAIR5IOgVpP5
-	 tyYN8zynecq8A==
+	b=fJ4WuRZQMdzM/qSSoxYNxdCvJW+0CPsD38Jz1CfkxGUVF9XOhtScYyPKYcmYZ+K5a
+	 ZqbXdwA1bRLSzD9dzFjMXqLtlX6kaYaSrgDYmxSN8RM6eUEiTSdy5raUvF5zjMF49k
+	 Y8WNeanA1v1+xjjH0XsEQixfQkEqydL60LnN7vSPMSiGS57G0AUouE3mjYzAEvyNKP
+	 32tGRpr4jWs4qdwLX7L5Y+uUw9oxJeNeRiREFXgjwSrQaqzkqoVqY70xi07ofbLZct
+	 Qp7fgAVHuc5YZ+IiV0qACQXxOJmTGeRAtoUQNA1WdJRCDOq/PlhITf09U3w8kzCF0t
+	 plVF+S5wcbAiQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 3170B40ECA;
+	by smtp3.osuosl.org (Postfix) with ESMTP id F0F90606EA;
 	Sat, 14 Nov 2026 02:58:59 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 93B9D1E7
- for <intel-wired-lan@lists.osuosl.org>; Sat, 14 Nov 2026 02:58:56 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id ABF08150
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 14 Nov 2026 02:58:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 8541540E9C
- for <intel-wired-lan@lists.osuosl.org>; Sat, 14 Nov 2026 02:58:56 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 920F740EC2
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 14 Nov 2026 02:58:57 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id afcBYv1FEMwO for <intel-wired-lan@lists.osuosl.org>;
- Sat, 14 Nov 2026 02:58:55 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 14B9C40EA0
+ id l_JMZoUikefi for <intel-wired-lan@lists.osuosl.org>;
+ Sat, 14 Nov 2026 02:58:56 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 11A2D40EBA
 Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=198.175.65.21
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.21;
  helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
@@ -77,44 +75,44 @@ Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=STcSVUBi
+ header.a=rsa-sha256 header.s=Intel header.b=lI3XUHzD
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 14B9C40EA0
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 11A2D40EBA
  for <intel-wired-lan@lists.osuosl.org>; Sat, 14 Nov 2026 02:58:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1794625135; x=1826161135; h=date:from:to:subject:message-id;
- bh=WIyJcBaM0nI+DqzOC86laJ6n21K69XlXjcU+7uQqtfY=;
- b=STcSVUBigHz2NRDWx03bL8GKhfltQrMilqZpZuiOvwa7cUwqepwMD1Rv
- OwKSZZykbq1va0KzHOeWB6+zhiVJxTzao+cfiLKN/tIZMMTLsnvlPQIMU
- ObO4N9xAejGfpNud6u7YyV7fVm10p3NUggfXkXJ55wFmc3pbz7OLBNc+2
- 35e+e/OCOw03lL9lcNxlNZkpQm8qWycF+F5LKB68oXfJ/0+TEhxnhjBXo
- R7X01aDSfi94lDh555FIs1ZLouK+iU89ya7p038JFpD0oS7D5MRoGotid
- euJiW72yPZNv6mYkLREkTbRLDKQpNUc80TFo99zcZLBg9izgIMO+BLACR Q==;
-X-CSE-ConnectionGUID: JkBzpuN3QNG5i865Y6vKWg==
-X-CSE-MsgGUID: EW2PpQf3SDWSzzZefktPrQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11965"; a="3517796"
+ t=1794625136; x=1826161136; h=date:from:to:subject:message-id;
+ bh=zGo/sDpW9R5/KagRBk2ktdsShJ4OOQCt8klRf/ZoXkw=;
+ b=lI3XUHzD2/P+AX9AoRUxIIvLffQkFR1X5UgKaxHj9641erUYE5rp+fc0
+ oQtpKxSHppGfAcjSK0wP9tbtyzLDNSQ5zttYwLKNkvvrWVP0Uj3wb3mW2
+ ZEPOoWflQy+3d2lAqtuzUkxo5YRHuB4MdmumBdSbPk5+qNOhs8k4d+WmH
+ Ka/DtzKWexbUkWfpAGSXfFvI08uNBTkY7PczvkAK6c7X6sZBwbbOxcmpN
+ QVSc/S0Pl9LoXAB3AMHUtD+4onIk4f7Aq6jvDT1itbZdkhyYFbnBc/Vbj
+ 1QKZ1nqvdU0S9moZMa6lcxtCbC5WzuCyd6z15QY2sJzT5QlgqQ0UAfBBp w==;
+X-CSE-ConnectionGUID: qKHuuq/jQFqwbMzDPVr42w==
+X-CSE-MsgGUID: 3C86yVOHRN2OPMp/9tUWcg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11965"; a="3517797"
 X-IronPort-AV: E=Sophos;i="6.27,212,1787036400"; 
-   d="scan'208";a="3517796"
+   d="scan'208";a="3517797"
 Received: from orviesa006.jf.intel.com ([10.64.159.146])
  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  13 Nov 2026 18:58:53 -0800
-X-CSE-ConnectionGUID: om0iyQq8Rx+lITXjQSrqTg==
-X-CSE-MsgGUID: 4mPIgWrLQSKLTxEG3U9TtQ==
+X-CSE-ConnectionGUID: F3DdovG/TROVjM9wK7c5+w==
+X-CSE-MsgGUID: L8izcbDfSoGqr5A67vq68A==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.27,212,1787036400"; 
-   d="scan'208";a="9079775"
+   d="scan'208";a="9079777"
 Received: from lkp-server01.sh.intel.com (HELO 0caa9d2d175c) ([10.239.97.150])
  by orviesa006.jf.intel.com with ESMTP; 13 Nov 2026 18:58:52 -0800
 Received: from kbuild by 0caa9d2d175c with local (Exim 4.98.2)
- (envelope-from <lkp@intel.com>) id 1xS3yb-000000014n5-3QYY;
+ (envelope-from <lkp@intel.com>) id 1xS3yb-000000014n7-3kuM;
  Sat, 14 Nov 2026 02:58:49 +0000
-Date: Sat, 14 Nov 2026 10:58:13 +0800
+Date: Sat, 14 Nov 2026 10:58:25 +0800
 From: kernel test robot <lkp@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Subject: [tnguy-net-queue:1GbE] BUILD SUCCESS
- f08567db418fc23ef661cccd649072b0c1784369
-Message-ID: <20261114105813.7mBye9jC-lkp@intel.com>
+Subject: [tnguy-net-queue:40GbE] BUILD SUCCESS
+ e54d3ad91558e0f929531cf20e32551ef695a93b
+Message-ID: <20261114105825.zdcXQOKk-lkp@intel.com>
 User-Agent: s-nail v14.9.25
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
@@ -126,16 +124,16 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-10.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_NONE autolearn=ham autolearn_force=no version=4.0.1
+	SPF_HELO_PASS autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 X-Archived-By: <archiver.kernel.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 1GbE
-branch HEAD: f08567db418fc23ef661cccd649072b0c1784369  net: e1000: fix warning in iounmap on probe failure
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 40GbE
+branch HEAD: e54d3ad91558e0f929531cf20e32551ef695a93b  iavf: add missing PTP adjustment callbacks
 
 elapsed time: 1203m
 
