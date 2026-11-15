@@ -2,243 +2,122 @@ Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6E9FA606A329
-	for <intel-wired-lan@archiver.kernel.org>; Sun, 15 Nov 2026 09:00:10 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2E4EE606A32F
+	for <intel-wired-lan@archiver.kernel.org>; Sun, 15 Nov 2026 09:39:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=Q5pNyo2c;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=GNkqAiUP;
-	dkim=pass (1024-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=selector1 header.b=WSdZsLBT
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=Qvpqdpim;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dUtdOS9q
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 44BBE8108D;
-	Sun, 15 Nov 2026 09:00:10 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 05AFE8107C;
+	Sun, 15 Nov 2026 09:39:42 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id HG4KGkUA2zF9; Sun, 15 Nov 2026 09:00:09 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 19E05810AC
+ id tZDC9cal1VXe; Sun, 15 Nov 2026 09:39:41 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org EAF5781092
 Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794733209;
-	b=aOBPDmx6QepCUti5hKC6zfloMIBWXHfvaU6RJsC32NJn5w3BppigKzjdrHS5Ekf9WLOc
-	 8QyQRQAcbXnnmCwfWwi/iiGNkLvk4Hn6VCRV0g9z/ECmkWlUKDgipvFxHTSYK/D5EjJRA
-	 VvfVs08yTTl/EnFSKNuAnionBNbGRryDgZZl6V0OHup2qbcedQT0SuQKts8+XVstMRoc0
-	 M++q/u9ClGDDkCtE2QmFwLl/gkT/4sqbAS5bXhHDrjOWVCAvWJekuMOGwEg5BNdxuYAc6
-	 u0fkZrRV9yPq/J3TUd1NnqcwTzFzanzhkDhrm9ZLQv4+h9ZcvM/bi9nUOJFVbfOByDw==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794735581;
+	b=VAZclLzOPvTEl03BfAS8s/ZkOZKgAt9nQgEfNirIs7D4eO9PXhi70jpYf1D2Fjy9G1CK
+	 nuYPk+aCIoPIRam7M+/jQXEjlrOQO1P1hA46E/bquMnWlraJfS+2RR4QhdtTrNC72HbrW
+	 RWsXnaIndMgtJsjPq2dEIWeIgWUAC+34UD+zSbDoVDmn2z1Dk4s/U8o+5UHcMzpJGf5cU
+	 ZBxuEnyb3kekJ+SELBp4HMRB9/q6Y3RLXGjEaxKbA4gzd+Pt1uy3Rh9FoQozTUv0xWvOo
+	 3LcTkOMnTQIAYtbAyCV+YhGI4rfBvHWHSeaDJCxwU24uyhU1qvhc4vmYdoWtxsGvgDg==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794733209;
+	c=relaxed/relaxed; t=1794735581;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
-	 DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-IronPort-AV:
-	 X-IronPort-AV:Received:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-ExtLoop1:
-	 X-IronPort-AV:Received:Received:Received:Received:DKIM-Signature:
-	 Received:Received:Message-ID:Date:User-Agent:Subject:To:CC:References:
-	 Content-Language:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:X-ClientProxiedBy:MIME-Version:
-	 X-MS-PublicTrafficType:X-MS-TrafficTypeDiagnostic:
-	 X-MS-Office365-Filtering-Correlation-Id:X-MS-Exchange-SenderADCheck:
-	 X-MS-Exchange-AntiSpam-Relay:X-Microsoft-Antispam:
-	 X-Microsoft-Antispam-Message-Info:X-Forefront-Antispam-Report:
-	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
-	 X-MS-Exchange-AntiSpam-MessageData-0:X-Exchange-RoutingPolicyChecked:
-	 X-MS-Exchange-CrossTenant-Network-Message-Id:
-	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
-	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
-	 X-MS-Exchange-CrossTenant-FromEntityHeader:
-	 X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
-	 X-MS-Exchange-CrossTenant-UserPrincipalName:
-	 X-MS-Exchange-Transport-CrossTenantHeadersStamped:X-OriginatorOrg:
-	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
-	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=+m7KSKNzpNN+VdGfwxaP6XTnoOD1HmuS7Vl45Wxs3Mk=;
-	b=D8OSz7x6yMvXU71gHdJPoIIrquI5RdZL5JaNFaGFAvi8yMXd1bVfKxjaGhoQ9vk1YJTc
-	 ROcqvCYJOQ5cF9HMJKMFQuXf90mVoUrVXk5+AnJmHGXJZe785AzQKQVR23NC3HWtkxslR
-	 UuEi8LWYTHk/13BKc5aZ0V3l1U4z/9J7WPXIiCYuX/IzKJwY860cToBtzeO5JxJhHVbl+
-	 9zrxr6quHDafD1lu+JVTouewWoeH46Q5DLJMFCnmpMyxFQMT8uUdUGAJ1Dtgv2YQJAgbs
-	 rWFpOqslmfR7MFROUBY8rIQceaE5ajh7B++chXtsXxMd4We894fQH3TGR7KAGuaah4g==
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
+	 Received:DKIM-Signature:Subject:From:To:Cc:Date:Message-ID:
+	 In-Reply-To:References:X-sashiko-severity:Content-Type:
+	 Content-Transfer-Encoding:MIME-Version:X-BeenThere:X-Mailman-Version:
+	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 List-Subscribe:Errors-To;
+	bh=JM6k01Ttm0jeBYqGpKvHxBo6u55v8KB/HBMFkcLSpXo=;
+	b=nb8sOoVK2gELbJb5lQs90cRAN8aMpJTag7kUmrfMuyXnAXi9EhhA3TO6/uzcxS66mr3M
+	 ZoTxa6gauBSB5+NvqdF+s93tMHOM5ZJY1r3E/oHUU8gGrAkU5AtbmAjS4VjapxM5JbkL2
+	 oBpC6Ln8AfOSgvLYlDoYPF5zJbPF9BID4Jwl+u9H+Hpp2fNRSc/Kv077ULshsc0EAyw6T
+	 6JqWSXQICtCSvjDsD6/IxF/f7AeLzAhpLCAD3eMu6jI84dgwOMI0gC7T3SFBRYaPMMwtI
+	 bdLlS8DvuBLa4WH153p2PvCr7tSXk+PnPgqdIHRJSMeBwvVetHPrGNsPspwYfPKl1Vw==
 ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
+	dmarc=pass header.from=kernel.org;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dUtdOS9q;
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1794733209;
-	bh=+m7KSKNzpNN+VdGfwxaP6XTnoOD1HmuS7Vl45Wxs3Mk=;
-	h=Date:Subject:To:CC:References:From:In-Reply-To:List-Id:
+	s=default; t=1794735581;
+	bh=JM6k01Ttm0jeBYqGpKvHxBo6u55v8KB/HBMFkcLSpXo=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=Q5pNyo2cfe+lpN3Mma1/U48XGxEuHt8/EehYqiIljD2/mc5C1m2ZNZzf0CPB0NqS+
-	 NGmR25zk+jX7A+y29chU2s1cpt49UYYfuihM6um9BEOWnokDmtTuTNrxwQCEvi3xSn
-	 vGhi5kEZWIK5UXAiJhDh6ODp6H+r+M6OzR1b/v+DGwY/bfyKK+bxwAPp7PeIsOMeVC
-	 zqU/1QA3TKfchrDiNhGC+2t2TdH2Yv2kxLMI9pdgf9BlwD4qGzsTfn/LqZ1KfJDlhn
-	 wXp3zuwpMDeH3LiZSQPJ6A+kmAR8ac4UkiNuL8rxo2AXJvciPZH6M875CNdZ6MUYWh
-	 a+fp7V6nWLZPw==
+	b=QvpqdpimLb2MlLXeBgX+hdeSca9GjT0AwgSdZeqNmFUwjdH1v0PyHJ8OHOTGnMycV
+	 qt+O/+JzLDoDbPtpWh+Uzob474Y5OCuOA79boxHhwIeMgbEpC9wNvM8DLuRkJvtTBf
+	 Ixg8sO/vLKWuRphX6jXk6/UAOoDYaz9da8ZZ5paaX0XrB3BeiZncMX818v+JeLf4xU
+	 gmVzW/7ZyaitFHfRivU9bkBpINqaHcqqq/cBLEPw6gtV5jjFS1+UuPglfKJEb3gTMw
+	 ZE889v1ZaAZyGF6jXjBD+gsAnWWkd3qXRGErsJfqiAEx6BETqDYZtgvIQLG+Hrr81E
+	 DYRlfFZ7g8J9Q==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 19E05810AC;
-	Sun, 15 Nov 2026 09:00:09 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 6278972D
- for <intel-wired-lan@lists.osuosl.org>; Sun, 15 Nov 2026 09:00:05 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id EAF5781092;
+	Sun, 15 Nov 2026 09:39:40 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 2422E1A6
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 15 Nov 2026 09:39:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 48D336063E
- for <intel-wired-lan@lists.osuosl.org>; Sun, 15 Nov 2026 09:00:05 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 0A53D81092
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 15 Nov 2026 09:39:40 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 9qyQd4pT0UBM for <intel-wired-lan@lists.osuosl.org>;
- Sun, 15 Nov 2026 09:00:04 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 8D91C6071D
-Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0
- smtp.remote-ip=192.198.163.15
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.15;
- helo=mgamail.intel.com; envelope-from=dima.ruinskiy@intel.com;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id NYElIth6adMe for <intel-wired-lan@lists.osuosl.org>;
+ Sun, 15 Nov 2026 09:39:38 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 92C788107C
+Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=172.105.4.254
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
+ helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=GNkqAiUP; 
- dkim=pass (1024-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=selector1 header.b=WSdZsLBT
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 8D91C6071D
- for <intel-wired-lan@lists.osuosl.org>; Sun, 15 Nov 2026 09:00:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1794733204; x=1826269204;
- h=message-id:date:subject:to:cc:references:from:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=Bp5wp4X96BA7la5yYGUZxlJ2EnO4btgXwtjmnFEIlbA=;
- b=GNkqAiUPNOLLh27nN3MXIhfjc3Qe56iPVDx98ez7j48vnG5rNRrSjk3b
- EO1Zo5Gqmc1QromdyRtTzRVj57IbWA8r1xbWV3wXsJRLnuoPIOrlHOBY5
- mmE+LnhXZv445CPlxv8mQ2NKgXhjbSjkEEklXVX96Sqqrd+Yf1vzRxcAd
- 8utT1hzxRAzBNcmUvilpBNpMu5Dv3T6QMpFvAwFwGUZhDOjz+8uQ4yyG4
- seG0eAMYHht/TZIv3xEwV+14IsoS3ntnJI+y7gYyWWNTPT9coD3XGJhxe
- SsGtN1Gxdnsm76yZrQ2rJY3q2pBulKBQD8kfQgESHmuJGz99ZgELjORAV A==;
-X-CSE-ConnectionGUID: 7FqP/4J9TnSY3pu/xvCaCA==
-X-CSE-MsgGUID: KZc5OtD3SvGLUDhfM5hBfQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11966"; a="3496624"
-X-IronPort-AV: E=Sophos;i="6.27,214,1787036400"; 
-   d="scan'208";a="3496624"
-Received: from orviesa004.jf.intel.com ([10.64.159.144])
- by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 15 Nov 2026 01:00:02 -0800
-X-CSE-ConnectionGUID: IUfXnebtRjSTBYfIMNVN/A==
-X-CSE-MsgGUID: jKIIxCNwS6GmNi+HJZx+5w==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,214,1787036400"; 
-   d="scan'208";a="9170260"
-Received: from orsmsx902.amr.corp.intel.com ([10.22.229.24])
- by orviesa004.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 15 Nov 2026 01:00:01 -0800
-Received: from ORSMSX902.amr.corp.intel.com (10.22.229.24) by
- ORSMSX902.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.56; Sun, 15 Nov 2026 01:00:01 -0800
-Received: from ORSEDG902.ED.cps.intel.com (10.7.248.12) by
- ORSMSX902.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.56 via Frontend Transport; Sun, 15 Nov 2026 01:00:01 -0800
-Received: from PH0PR06CU001.outbound.protection.outlook.com (40.107.208.41) by
- edgegateway.intel.com (134.134.137.112) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.56; Sun, 15 Nov 2026 01:00:01 -0800
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=intel.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=+m7KSKNzpNN+VdGfwxaP6XTnoOD1HmuS7Vl45Wxs3Mk=;
- b=WSdZsLBT6EXipYt+GN+Rc3965Idg5w6+eBNpz1SRSX+vxF/IQZIVArDIvtVF+k3GgK3IfC8vJTqsm3vDuK2kdcbYghZi6CQlh5FzqIEtiLtVEUOdSY5zk4DXZPUh6tSnllZ9vqxHHud16Pyj3onycu4tOXyu4fxyto4/uTmTD4k=
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Received: from SJ0PR11MB5630.namprd11.prod.outlook.com (2603:10b6:a03:3bb::6)
- by SJ0PR11MB5040.namprd11.prod.outlook.com (2603:10b6:a03:2d6::21)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.615.13; Sun, 15 Nov
- 2026 08:59:59 +0000
-Received: from SJ0PR11MB5630.namprd11.prod.outlook.com
- ([fe80::79de:af84:3b43:84e3]) by SJ0PR11MB5630.namprd11.prod.outlook.com
- ([fe80::79de:af84:3b43:84e3%4]) with mapi id 15.21.0615.012; Sun, 15 Nov 2026
- 08:59:59 +0000
-Message-ID: <e4b3ca77-4e70-4405-94a2-2cb4cb9889b4@intel.com>
-Date: Sun, 15 Nov 2026 10:59:53 +0200
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH iwl-net] e1000e: Add additional systems to disable K1 list
-To: Mark Pearson <mpearson@squebb.ca>, Paul Menzel <pmenzel@molgen.mpg.de>
-CC: <anthony.l.nguyen@intel.com>, Christoph Groth <christoph@grothesque.org>, 
- <ghrafn@proton.me>, <intel-wired-lan@lists.osuosl.org>
-References: <20261012214113.69770-1-dima.ruinskiy@intel.com>
- <eea9e99d-ef6f-4bd6-abb2-54fb9c53a7de@molgen.mpg.de>
- <5fbfadf9-fb27-429d-82d5-ac8dc87e9886@app.fastmail.com>
-Content-Language: en-US
-From: "Ruinskiy, Dima" <dima.ruinskiy@intel.com>
-In-Reply-To: <5fbfadf9-fb27-429d-82d5-ac8dc87e9886@app.fastmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20260515 header.b=dUtdOS9q
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 92C788107C
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 15 Nov 2026 09:39:38 +0000 (UTC)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+ by tor.source.kernel.org (Postfix) with ESMTP id 43DAD61CD2;
+ Sun, 15 Nov 2026 09:39:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C62091F000C4;
+ Sun, 15 Nov 2026 09:39:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+ s=k20260515; t=1794735576;
+ bh=JM6k01Ttm0jeBYqGpKvHxBo6u55v8KB/HBMFkcLSpXo=;
+ h=Subject:From:To:Cc:Date:In-Reply-To:References;
+ b=dUtdOS9qP3pJnvEH+AuAVWXe9+b4lkGivaNuSkrl90HG38yKW7pjWZHlXuZa/AMd1
+ UBN0jGDaqwvILNx2iE11KwQvW+CQgJSTfHgvLPlBYT2LZwo4lr+X6AowBRKraK8ulm
+ 9uEPceTw0Jm8EYIkwdxFTEAhvy6i8SKC01MXVB+d1cMBWtcDZN0DgDNAA1QAUdt8g4
+ a4FyoFkEI+bKE/ubIsBwZlV1wL/qENSEQWvOyatg8WKMa2EqaE91yLEQ+jA2JWPPkr
+ xBq7cFiPUmRlJC08NvlzwDcjBAlsxxjCvyj+9n21pVTxK2LJISSGp1f5enUnYtp93b
+ /2VX26IAliwsA==
+Subject: Re: [PATCH net v6 1/3] igb: do not let XDP frames span more than one
+ Rx buffer
+From: netdev-bot+sashiko@kernel.org
+To: tkusters@aweta.nl
+Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com, ast@kernel.org, daniel@iogearbox.net,
+ hawk@kernel.org, john.fastabend@gmail.com, sdf@fomichev.me,
+ sven.auhagen@voleatech.de, richardcochran@gmail.com, kurt@linutronix.de,
+ sriram.yagnaraman@ericsson.com, intel-wired-lan@lists.osuosl.org,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org, bpf@vger.kernel.org,
+ maciej.fijalkowski@intel.com, p@1g4.org, stable@vger.kernel.org
+Date: Sun, 15 Nov 2026 09:39:34 +0000
+Message-ID: <179473557433.2199510.15562599161772023793@kernel.org>
+In-Reply-To: <20261111-igb-rx-ts-fix-v6-1-ba5b9903859c@aweta.nl>
+References: <20261111-igb-rx-ts-fix-v6-1-ba5b9903859c@aweta.nl>
+X-sashiko-severity: Medium
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: TL2P290CA0025.ISRP290.PROD.OUTLOOK.COM
- (2603:1096:950:3::20) To SJ0PR11MB5630.namprd11.prod.outlook.com
- (2603:10b6:a03:3bb::6)
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SJ0PR11MB5630:EE_|SJ0PR11MB5040:EE_
-X-MS-Office365-Filtering-Correlation-Id: c71ffa5e-e96d-45f8-4db9-08df42f6d377
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
- ARA:13230040|23010399003|376014|366016|1800799024|10067099003|56012099006|11063799006|4143699003|261026121527099003|261026140227099003|261028144727099003|261022105027099003|261022075727099003|261021121427099003|261102123227099003|261009223027099003|18002099003|22082099003|4133799003;
-X-Microsoft-Antispam-Message-Info: R8OjBkZ1aAd5NssdE+D2uvG5bgm19L5jPlvoOev3G8/r7aCkUpPb4WI50ht3pR1geJnVeZ5rmjzGHJRGiQoXhW8r3uwitRFeCZ8MK/4zD7qdRLdt8WfFSY8ZXMUnqhl+DUWd9TVBogIJ76uzQfbKlUduCeHg16oBe3yRgZ718WD7Tj4pdANX7yALz5m9Wf3Zj2mL1pOSijbUMkPLglAGFi5secfZA0H2Sl99Au4nIN9tmU3hi29G0nimXRh4XQVtuwjHqnJVCShptoV9RP/yq0GE/b+yLxs4XFL/js0oq5JcTcPtvJocpOZaYdygxFPaTxirzXagW+YPjOUjR710yHiStZqEieYC+ZNBhjyf3DxPezpMOn+HsJh0DVyDlufHe3Xx0tYXHguX8NsO01xtHLFezJKyIR+EQKP3x0iBncuStiXWpTnKVJLJz4nSxATaVnpaiT4WEYkqF9ANF9sJPLJCEj6KvWlfjc/2LeJfHhxxF7rYiovI5G6Cc76P+kpjDnkrd4WwqQjBPDPfaUT9qfZrgRPOsPaC67MN4w76OzNAH0ngXGoqZtmb+WxrBV669K8hTIEOungCVFWgkUg57MNitcTWoIb43KKCafw0WxWUJFidq02dNP4DKfIonpzo
-X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:SJ0PR11MB5630.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230040)(23010399003)(376014)(366016)(1800799024)(10067099003)(56012099006)(11063799006)(4143699003)(261026121527099003)(261026140227099003)(261028144727099003)(261022105027099003)(261022075727099003)(261021121427099003)(261102123227099003)(261009223027099003)(18002099003)(22082099003)(4133799003);
- DIR:OUT; SFP:1101; 
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?bmxHbHhoS2VQR25YZU1TalhseU1jSDhGK3ZEMEVlOUxodi9xTHVsUm9vQ2Fr?=
- =?utf-8?B?TDRYUkdLTC81T3BJdVgrSVp4M01sN281MVJpRHhVWEczallMVC9qY05tTzli?=
- =?utf-8?B?REJZS2tDditsZE45akxlaDF0VnM0ZUNpU1JVcDJ6Wmd4V3l0NUptMnBrKzZz?=
- =?utf-8?B?QXN5c2c1SFFFSnAvelNNRTUyb203MlJhZ1VZRnkyNDllVHV6K0RvSllMV2JY?=
- =?utf-8?B?aCs5c1FMSXBENFNxZnppMHBoVTUrU1JLVlF1Mmd5aU5vN0JCSGhCdGNML2ZH?=
- =?utf-8?B?OTdoOGpteWVSd2lhYTFMWGhEQWVaWVlmcUlwU3h3UllZWjJsU203V3Q4blRY?=
- =?utf-8?B?MzBLYnZlN1J6MWNFbHk0SHJYWG5lQjBjM2w4YnJ3RnkyRGtoenJVeHQ3YStB?=
- =?utf-8?B?d29uamRCbnFNZVAwMVV1NW1BK1ZhUmcvYm1KOU94UU5zVFZrL2VIZlEybVlv?=
- =?utf-8?B?RE9PT2d4eEhwOStPVEk5SVErLzE4dkQwb1kxZFlhM0lJMG9XczF6RXphUEh5?=
- =?utf-8?B?REdtSW5rS09iRmo1SFZVaDF6dTdaWTBWQkFwT1Uxb0ZtRk5pNldCSXVTSCtx?=
- =?utf-8?B?djVUYVEvOFkwdUZyUURYdm9WaWVPKzR6TERwNFlDb21rWGtrZ3ZUWERGQVNK?=
- =?utf-8?B?MDFEakRFem40ZzgrcXE3OTZZT2oydDh2ekdKYTQrbk9oaWc2NndsL0VXZkh1?=
- =?utf-8?B?ZHBTRFhoQURMWEliSlNaVXdSTW43UUtUNU1saXB1c1A1V3VaZ2grTnpaYTZw?=
- =?utf-8?B?TUVvUFBxOGNJSlRmOTI2OFhFem9RZm9MbjQzTmpVWWtBMXdpTVpSdG53eFkr?=
- =?utf-8?B?Q2k2NmJjUldhcktDZFRFdzdldTdTbEFEdkhxbk5pY2hCaU9aMkRyWnhOc3pG?=
- =?utf-8?B?R3pFK2EyVzFYKzc3YVBJdi81eXkvd1ZHZkNmanpQL29NZHZvK2U4eFlmNTRk?=
- =?utf-8?B?VlQ0K01RemZ6VGVETkhVT2N1WGJieUNSZzdBdlNLZEI3aTI3VmQ4akJSdGs0?=
- =?utf-8?B?ekRwRm8zUjJTVkpmdEFxTmFQUjYrYSt3NFdvMHdYZHV6TE9lanBxQm1pdHFa?=
- =?utf-8?B?RzNxbWhKZk1CSnc5eXdtYVBWZWt4N2VLVkwyb2piUGZ1eGx2ZUY0VUs5S3N6?=
- =?utf-8?B?UjQ1Zk90WmRMMmpEbkJoNWprM2ZmenBwOURLVXhrV1FBUWl1OXpFVUFmL2c4?=
- =?utf-8?B?ZHc4VnBnbnNtWU5nSnNhWEVlVkltNGFMckk1YSs1OVVBNnUxUEVOWDlFbkxs?=
- =?utf-8?B?NnVTQmVoK0pEZDJyVmRxL0FicG1ZMm5kTFFPWWFPZ0J5VUlNbW5jZ0x0QXZi?=
- =?utf-8?B?RFZBMWhkNWc5bWlZSU1FNkxON3YvQXV5TlY3VUhUZ3MyVTBRMUVUQ0Fqek9C?=
- =?utf-8?B?bnkvdnZybXZKTjZlY2s0RkdRQ1Z1K0JLSGtJckFEWVRQeVQwV2VoU0c3dHRU?=
- =?utf-8?B?Z0lZL3ZJMlg2S0YwT1FmTTcxc25XYTF5K2JuT2ZwVVU0aUxLM1BOWDVZS3Vr?=
- =?utf-8?B?RWxqNDdJVGZtNnp1NkhqcUlRdHArSUxpcVNzdWlvVlN6QTI3YTQvbW5KaElV?=
- =?utf-8?B?cnNTRWxZNnpiTUU1RmdyZkl4MXBPa056UUdrbWIxSUVDY3ZFQ1BzQWs4Wi82?=
- =?utf-8?B?VUR5MnRIMGQrNHZ6Q295Q1RJQkphYmdxTlhCdHQxOXF0aDBhZVFtenFrTnhh?=
- =?utf-8?B?NzVBc3FNbW1GVzYvMDJRWkRCQmZkYkRkcDRXSXgrSmk1L1dpV2lwNW5adlRp?=
- =?utf-8?B?YzFGME5ObFRVSnNoZ1FMK0g0eGxSWk1TckxMeG13YjQybUp2bzJocVVKa1RS?=
- =?utf-8?B?TzBrN2ZlZXNONmZIZTd0TVpHTHNHd2c0TUFYazl5aG94VFVZY2pvMmlUYWF6?=
- =?utf-8?B?MUdEbE1talU0NWdPVkVtODFJVWR0Q2NYUmV2azNjRS9UT3VWY3JCNGVFVCtU?=
- =?utf-8?B?cE5uS09aZ0xCQnVSaUl1N2k2bldtRmlKQlJlMExybVJMMmJxaHEwdVF5VmpD?=
- =?utf-8?B?T3dZeU9WU09zQTduZ3RReHEvVzduVXhkNGRFUVZmOHZCVGNLOExRUUxpdnF1?=
- =?utf-8?B?WUxuVWIyNzFvdEYzZ05BYVFVZTVaRHRUdU1mczBLSTk2NTlEZFRqWW5XS3Z3?=
- =?utf-8?B?WFVOREQwekdsbldETVpDYU9DcDdrTlVYOUcxaEp1VDEzazdHbFdHOFl3ODhZ?=
- =?utf-8?B?dm82L0JxR1FnTWpTRW02WDN6RDJxb01wQlNMSTBmcFExR3M4QXd2Z1UvODVL?=
- =?utf-8?B?WVJqUTdISGx2eEIrdXhaM3NPRHFrTTdwU3MzN0NyZzJ3eVNkVVUyQmw5NGU4?=
- =?utf-8?B?VXVFQ1lvNENjL0IwZVVCRi9tQTN1RnloNFV5NmJGRDFvWjMvSzJPQT09?=
-X-Exchange-RoutingPolicyChecked: EEIhiLotaExBjhhfA00zo6BKE0V3QH51ZkC/U2QSCsV5Pww3yqRMs70zeverIjS0LEtS4e1FhJ2ZNrROTQ6IlTKlqr24v9t9chY+KAnd1i/7GPQ47GI+aeuqZ5Vs+0WIq5j8+07s1E5VTBM4pyk5DmyiHnc5JMPfXx/OO6i9d9Q+ZlX6tdAyo0W2kdufLwchUCm478udSeDFbCUlhad+u96xQ+VTHZ2oq7Jp0uknINqiQ8GLPSCpCdgi+e035ixRxuir/A5nclTNxV4fb8JARLHSU+JDyu6qbAamEWDEOEo6OYsUgKuG2hnw9mqdBz9AGI9+9ncslvnopPY2JeD8Wg==
-X-MS-Exchange-CrossTenant-Network-Message-Id: c71ffa5e-e96d-45f8-4db9-08df42f6d377
-X-MS-Exchange-CrossTenant-AuthSource: SJ0PR11MB5630.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Nov 2026 08:59:59.0251 (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: CUgo+pG3voHtNi37vyZ++3xPWo5hK+3DNmu7y4pQYmLNJ0eI4QyHsr7c7Hei6HmohF256dmAnF6UpRQkoTFCiQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR11MB5040
-X-OriginatorOrg: intel.com
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -249,111 +128,294 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-22.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-10.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=4.0.1
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On 13/10/2026 20:33, Mark Pearson wrote:
-> 
-> 
-> On Tue, Oct 13, 2026, at 1:16 AM, Paul Menzel wrote:
->> [Cc: +Mark Pearson for Lenovo to maybe fix firmware to support K1]
->>
->> Dear Dima,
->>
->>
->> Thank you for your patch.
->>
->> Am 12.10.26 um 23:41 schrieb Dima Ruinskiy:
->>> On some Lenovo laptops performance issues were reported with K1 enabled.
->>
->> I’d make one commit per device, so the device can be mentioned in the
->> summary/title, and it can be reverted more easily. It also helps
->> reverting commits in case of problems for just one device. Should you
->> stay with one commit, please at least mention the devices in the commit
->> message.
->>
->> Commit messages should also be self-contained, so describing the
->> performance issue would be great. Having the firmware versions directly
->> in the commit message would also help me.
->>
->>> Add them to the list of systems where K1 is disabled by default.
->>>
->>> Cc: stable@vger.kernel.org
->>> Fixes: 578294b8b60d ("e1000e: Reconfigure PLL clock gate timeout and re-enable K1 on Meteor Lake")
->>> Reported-by: Christoph Groth <christoph@grothesque.org>
->>> Link: https://lore.kernel.org/intel-wired-lan/87v77ial45.fsf@grothesque.org/
->>> Reported-by: ghrafn <ghrafn@proton.me>
->>> Link: https://lore.kernel.org/intel-wired-lan/_kB6DUeC6oOmJnK0FobVVJHADewewO3wzeFw_GrempgMu6s5CUwHpkT16Bwn8tXRq0k_CN4b2NY6API37M6mVciEpH6DKbTqK7f13KMpmgI=@proton.me/
->>> Signed-off-by: Dima Ruinskiy <dima.ruinskiy@intel.com>
->>> ---
->>>    drivers/net/ethernet/intel/e1000e/netdev.c | 14 ++++++++++++++
->>>    1 file changed, 14 insertions(+)
->>>
->>> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
->>> index 834a5b8883df..35c729368684 100644
->>> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
->>> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
->>> @@ -74,6 +74,20 @@ static const struct dmi_system_id disable_k1_list[] = {
->>>    			DMI_MATCH(DMI_PRODUCT_VERSION, "ThinkPad P14s Gen 5"),
->>>    		},
->>>    	},
->>> +	{
->>> +		.ident = "Lenovo ThinkPad P14s Gen 6",
->>> +		.matches = {
->>> +			DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
->>> +			DMI_MATCH(DMI_PRODUCT_VERSION, "ThinkPad P14s Gen 6"),
->>> +		},
->>> +	},
->>> +	{
->>> +		.ident = "Lenovo ThinkPad T14 Gen 6",
->>> +		.matches = {
->>> +			DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
->>> +			DMI_MATCH(DMI_PRODUCT_VERSION, "ThinkPad T14 Gen 6"),
->>> +		},
->>> +	},
->>>    	{}
->>>    };
->>
->> The diff looks good. With my comments addressed, please feel free to add:
->>
->> Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
->>
->>
->> Kind regards,
->>
->> Paul
->>
->>
->> PS: As far as I can see, it’s not logged, when K1 is disabled by the
->> quirk list.
-> 
-> Using the Product version is probably not a good idea as you'll be picking up both ARL and LNL versions of the T14 G6. Do you know if the LNL's are impacted? I'll see if I can reproduce on my system here.
-> 
-> I would recommend using the BOARD_NAME codes, as is done in thinkpad_acpi: https://github.com/torvalds/linux/blob/24a19b953e2a3d0ea5a8c4951a0ab8f32720c907/drivers/platform/x86/lenovo/thinkpad_acpi.c#L4244-L4245
-> It's a bit more annoying as there are two codes per platform - but it's safer in scope (these codes are fixed and won't change):
-> T14 G6 ARL: 21QC and 21QH
-> P14s G6 ARL: 21QT and 21QU
-> T14 G6 LNL: 21QD and 21QG
-> 
-> I've created internal ticket LO-4707 to get input from the FW team on if we can do a FW fix for this. I'm not sure how this passed our certification and QA with this issue. If you don't mind holding off a week or two while we investigate the patch might not be needed.
-> 
-> Mark
+Thank you for your contribution! Sashiko AI review found 2 potential
+issue(s) to consider.
 
-Hi Mark,
-Have you had any feedback from the Lenovo FW team? Basically the two 
-questions are - has it been seen on LNL systems, and can it be fixed in FW?
+Critical: 0 · High: 0 (3) · Medium: 2 · Low: 0
 
-My gut feeling is to make the disable quirk broad rather than narrow. 
-Hardware-wise - the issue may definitely impact LNL systems, and since 
-previous generations have been affected as well (e.g., P14s Gen 5), it 
-feels "safer". The power increase from K1 disabling in nominal operation 
-would be less dramatic than users experiencing significant packet loss.
+If you believe none of the issues are legitimate, please reply to each
+issue of Medium severity or higher and explain why the AI is wrong.
+If any of them are legitimate and you plan to respin, please let patchwork
+know by including "pw-bot: cr" as a separate line at the end of your reply
+(one such reply per series is enough).
 
-Thoughts?
---Dima
+- [Medium] igb_xdp_setup() now calls netdev_update_features(dev) without
+  first checking that the device is running or awake.
+- [Medium] igb_xdp_setup() ignores the return value of igb_open() and
+  then calls the new netdev_update_features(dev) unconditionally.
 
+Pre-existing issues:
+- [High] This problem wasn't introduced by this patch, but
+  igb_set_rx_mode() runs without netif_addr_lock_bh() from several paths…
+- [High] This problem wasn't introduced by this patch, but
+  igb_set_vf_rlpml() takes the VF-supplied msgbuf[1] (u32) into 'int…
+- [High] This problem wasn't introduced by this patch, but on 2 KiB
+  build_skb Rx rings (PAGE_SIZE < 8192, legacy-rx off,…
+
+--
+
+igb: do not let XDP frames span more than one Rx buffer
+
+This commit limits the receive length to the configured maximum frame
+size while XDP is attached, so XDP frames cannot span more than one Rx
+buffer. The limit goes in RLPML, or in the PF pool's VMOLR when VFs are
+allocated. The length programming moves from igb_set_rx_mode() into a
+new igb_set_rlpml() called from igb_configure(), the XDP fit check now
+reserves room for the Rx timestamp header, and rx-all and legacy-rx are
+kept from changing while XDP is attached.
+
+Link: https://lore.kernel.org/all/20261028083344.3047350-3-p@1g4.org/
+
+> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+> index ce91dda00ec0e..711a67f0bd801 100644
+> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+> @@ -1964,6 +1964,57 @@ static void igb_setup_tx_mode(struct igb_adapter *adapter)
+
+[ ... ]
+
+> +static void igb_set_rlpml(struct igb_adapter *adapter)
+> +{
+
+[ ... ]
+
+> +	/* the PF pool's VMOLR is used on these MACs, see igb_set_rx_mode(),
+> +	 * and with VFs it carries the only limit for the PF, also on i354
+> +	 */
+> +	if (hw->mac.type < e1000_82576 ||
+> +	    (hw->mac.type > e1000_i350 && !vfn))
+> +		return;
+> +
+> +	/* igb_set_rx_mode() also updates this register, and the core calls
+> +	 * it under the address lock
+> +	 */
+> +	netif_addr_lock_bh(adapter->netdev);
+
+[Severity: High]
+This isn't a bug introduced by this patch, but the core is not the only
+caller of igb_set_rx_mode(). Several others run it without
+netif_addr_lock_bh(): igb_configure() just before this call,
+igb_set_vf_multicasts() and igb_vf_reset() from the VF mailbox interrupt
+path (holding only vfs_lock), and __igb_shutdown().
+
+igb_set_rx_mode() walks dev->mc without the lock:
+
+igb_write_mc_addr_list() {
+    ...
+	mta_list = kcalloc(netdev_mc_count(netdev), 6, GFP_ATOMIC);
+	if (!mta_list)
+		return -ENOMEM;
+
+	/* The shared function expects a packed array of only addresses. */
+	i = 0;
+	netdev_for_each_mc_addr(ha, netdev)
+		memcpy(mta_list + (i++ * ETH_ALEN), ha->addr, ETH_ALEN);
+    ...
+}
+
+Suppose dev_mc_add() adds an entry between netdev_mc_count() and the
+walk, for example on an IPv6 multicast join that holds only
+addr_list_lock. Can this then write past the end of mta_list?
+
+A VF can reach the unlocked path whenever it wants by sending
+E1000_VF_SET_MULTICAST:
+
+igb_msg_task()->igb_rcv_msg_from_vf()->igb_set_vf_multicasts()
+  ->igb_set_rx_mode()->igb_write_mc_addr_list()
+
+The unlocked __dev_uc_sync()->__hw_addr_sync_dev() can also race with a
+locked __dev_uc_sync() on another CPU. Both update sync_cnt and refcount
+and can delete entries on dev->uc. An entry freed with
+list_del_rcu()/kfree_rcu() during the unlocked walk could also be used
+after it is freed.
+
+> +	vmolr = rd32(E1000_VMOLR(vfn));
+> +	vmolr &= ~E1000_VMOLR_RLPML_MASK;
+> +	vmolr |= pool_rlpml | E1000_VMOLR_LPE;
+> +	wr32(E1000_VMOLR(vfn), vmolr);
+> +	netif_addr_unlock_bh(adapter->netdev);
+> +}
+
+[Severity: High]
+This is a pre-existing issue, but it sits next to the VMOLR length logic
+reworked here. igb_set_vf_rlpml() writes the VF's own VMOLR from a
+mailbox word that the VF controls:
+
+igb_set_vf_rlpml(struct igb_adapter *adapter, int size, int vfn) {
+    ...
+	if (size > MAX_JUMBO_FRAME_SIZE)
+		size = MAX_JUMBO_FRAME_SIZE;
+
+	vmolr = rd32(E1000_VMOLR(vfn));
+	vmolr &= ~E1000_VMOLR_RLPML_MASK;
+	vmolr |= size | E1000_VMOLR_LPE;
+	wr32(E1000_VMOLR(vfn), vmolr);
+    ...
+}
+
+For E1000_VF_SET_LPE, igb_rcv_msg_from_vf() passes msgbuf[1] straight
+through. A value of 0x80000000 or more becomes a negative int, skips the
+clamp, and is ORed into VMOLR without being masked to
+E1000_VMOLR_RLPML_MASK.
+
+Can a malicious VF use this to set ROPE, AUPE, MPME, ROMPE, BAM, STRVLAN
+and other pool bits that the PF otherwise controls? igb_set_vf_promisc()
+explicitly clears ROPE, and igb_set_vmolr() clears AUPE when a port VLAN
+is assigned.
+
+With AUPE set on a port-VLAN VF, the pool would accept untagged frames.
+With ROPE set and UTA all-ones (82576 with the PF in promiscuous mode,
+or RAR overflow), the VF would receive unicast traffic for other MACs.
+
+Would treating size as unsigned and masking it with
+E1000_VMOLR_RLPML_MASK be enough here?
+
+[ ... ]
+
+> @@ -2886,6 +2946,27 @@ static int igb_setup_tc(struct net_device *dev, enum tc_setup_type type,
+>  	}
+>  }
+>  
+> +/* Check that a frame fits in one Rx buffer together with the inline Rx
+> + * timestamp header, for the buffer size igb_set_rx_buffer_len() selects.
+> + * The ring flags are only updated when the rings are configured, so they
+> + * are not used here. For build_skb rings the frame is limited to
+> + * IGB_MAX_FRAME_BUILD_SKB, which is below the 2 KiB hardware buffer size
+> + * even with the header.
+> + */
+> +static bool igb_xdp_frame_fits(struct igb_adapter *adapter, int max_frame)
+> +{
+> +#if (PAGE_SIZE < 8192)
+> +	if (!(adapter->flags & IGB_FLAG_RX_LEGACY)) {
+> +		if (max_frame <= IGB_MAX_FRAME_BUILD_SKB &&
+> +		    !IGB_2K_TOO_SMALL_WITH_PADDING)
+> +			return true;
+
+[Severity: High]
+This is a pre-existing issue, but the comment's "even with the header"
+compares against the 2 KiB SRRCTL buffer size. Does it also hold for
+the build_skb data area?
+
+igb_skb_pad() leaves exactly IGB_MAX_FRAME_BUILD_SKB bytes between the
+DMA start (page_offset = IGB_SKB_PAD) and the skb_shared_info that
+igb_build_skb() places at SKB_WITH_OVERHEAD(2048):
+
+igb_skb_pad() {
+    ...
+		rx_buf_len = IGB_RXBUFFER_1536;
+
+	/* if needed make room for NET_IP_ALIGN */
+	rx_buf_len -= NET_IP_ALIGN;
+
+	return igb_compute_pad(rx_buf_len);
+}
+
+On 82580 and later MACs, Rx hardware timestamping makes the MAC prepend
+the 16-byte timestamp header. RLPML (or the PF pool limit) is
+IGB_MAX_FRAME_BUILD_SKB here. A 1525 to 1536 byte frame from the wire
+can then put up to 16 + (1536 - 4) = 1548 bytes after the DMA start on
+x86_64.
+
+Could this write up to 12 bytes into the shinfo area? Then
+napi_build_skb(xdp->data_hard_start, truesize) zeroes shinfo over the
+end of the payload, and __skb_put() in igb_build_skb() leaves tail past
+end.
+
+With XDP attached and the new RLPML of max_frame_size, data_end would
+also land past data_hard_end at MTU 1510, or with QinQ frames at MTU
+1500.
+
+Since igb_xdp_frame_fits() now accepts this layout explicitly, should
+the build_skb path also leave room for IGB_TS_HDR_LEN?
+
+[ ... ]
+
+> @@ -2935,6 +3020,10 @@ static int igb_xdp_setup(struct net_device *dev, struct netdev_bpf *bpf)
+>  	if (running)
+>  		igb_open(dev);
+>  
+> +	/* rx-all may have been requested while XDP was attached */
+> +	if (!prog && (dev->wanted_features & NETIF_F_RXALL))
+> +		netdev_update_features(dev);
+
+[Severity: Medium]
+Can this new call touch a device that is runtime-suspended?
+
+Take an interface that is down, where rx-all was requested while XDP was
+attached. When XDP is removed, igb_fix_features() stops masking
+NETIF_F_RXALL. igb_set_features() then sees it in changed and takes the
+!netif_running() branch:
+
+igb_set_features() {
+    ...
+	if (netif_running(netdev))
+		igb_reinit_locked(adapter);
+	else
+		igb_reset(adapter);
+    ...
+}
+
+igb_reset() accesses MMIO registers right away. The ndo_bpf path
+(dev_xdp_install()->bpf_op()) does not take a runtime-PM reference. The
+ethtool paths that reach igb_set_features() do take one.
+
+With power/control=auto, a sequence like this seems to reach it:
+
+  ethtool -K <if> rx-all on   (XDP attached, only wanted_features changes)
+  ip link set <if> down       (igb_runtime_idle() schedules suspend
+                               after 5s without link, device in D3hot)
+  ip link set <if> xdp off
+    igb_xdp_setup()
+      netdev_update_features()
+        igb_set_features()
+          igb_reset()
+
+igb_rd32() would then read all-F, set hw->hw_addr = NULL and warn about
+the lost PCIe link. __igb_resume() does not restore hw_addr. Does the
+NIC then stay unusable until the driver is rebound?
+
+Before this patch, igb_xdp_setup() did not touch the hardware on a down
+interface.
+
+[Severity: Medium]
+What happens here if igb_open() fails? Its return value is ignored, and
+the new netdev_update_features() call runs anyway.
+
+When XDP is removed from a running interface, igb_close()->igb_down()
+disables NAPI on every q_vector and the rings are freed. __igb_open()
+can then fail in Tx/Rx resource allocation, igb_request_irq() or
+netif_set_real_num_*_queues(). Its error labels free the resources and
+return without napi_enable(), but netif_running() is still true.
+
+If rx-all was requested while XDP was attached, igb_set_features() then
+calls igb_reinit_locked()->igb_down()->napi_disable() on NAPI instances
+that are already disabled. napi_disable_locked() waits for:
+
+	while (val & (NAPIF_STATE_SCHED | NAPIF_STATE_NPSVC)) {
+		usleep_range(20, 200);
+		val = READ_ONCE(n->state);
+	}
+
+Would this spin forever with RTNL held? Even past that point,
+igb_up()->igb_configure()->igb_alloc_rx_buffers() would use rings whose
+descriptors and rx_buffer_info were freed.
+
+Ignoring the igb_open() error is older than this patch, and the broken
+state would also hang on a later link down. This call, though, turns a
+single failed XDP removal straight into the hang. Should igb_xdp_setup()
+return the igb_open() error and skip netdev_update_features() when it
+fails?
+
+> +
+>  	return 0;
+>  }
+
+-- 
+Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20261111-igb-rx-ts-fix-v6-0-ba5b9903859c%40aweta.nl
