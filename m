@@ -1,158 +1,147 @@
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E8284606A330
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 16 Nov 2026 16:40:38 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C653F606A890
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 16 Nov 2026 22:27:16 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=6zWbzSUg;
-	dkim=pass (2048-bit key) header.d=cloudflare.com header.i=@cloudflare.com header.a=rsa-sha256 header.s=google09082023 header.b=TVYQ4HeI
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=R7o0AdRq;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=md2D4WPO
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id C157C80ECC;
-	Mon, 16 Nov 2026 16:40:38 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 9D205405CB;
+	Mon, 16 Nov 2026 22:27:16 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 0lo_xiofXx_x; Mon, 16 Nov 2026 16:40:38 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 0695880ED9
-Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794847238;
-	b=ikwuR6/MDCIl6/uGQGW3IWUwlpBxXrcG9gV2pDSbinm/glYCU4Rg+VbZbAPvEB5CvePg
-	 gzZevyLJrfi/OvC5JuvUerAqr/W8kXhsh2QKT2v5zk4fAKMoE7xfnX+b2lV4QYs/hx/2+
-	 jffn6+gEdCPapudMOOEXQFmQnKb/0x7+msPcdnr/Ko++N3fGNpEYNe3OmNR0kOU4xGWnW
-	 Of8/dBDD45BdJm2cGv19AE2HtDTOlkh3HO5G4HAKNKZRCiMKGo5I9TJttvrcjGCofQUii
-	 cbt+Lu70McFt2KmJtqsXZ8TwgVr9bdixnV1/+IzhE/+SLzjgsjUMZlv8JylDEg6W0Mw==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id HRaigTxOD0Lv; Mon, 16 Nov 2026 22:27:16 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org CFFA040705
+Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794868035;
+	b=jgvXjJ5PteMnNrMPXx5eOgWv+/AD6VLzB4jfu9CPLYsBdldgGnjBwBMOk9tGSvQ0L30S
+	 yQhd2P88e5o9kytzsBmKwA+I5U/ChVqA9NmUV6lE4TEbAXRY6VGdfcVoJf+WvTZPewCCY
+	 Jp7H+7LNeevMygnAxXpkH/wMN2lCXh9sOxbsSFJcUA6AN691WygYz/ElUoObSdLjVW/35
+	 +wbpWgQdHEyvd1n4tUugK3+RH4CtDRB5B2lmxFjoLsVsUXtLp2g4hy0Y0GmsjmRso5saP
+	 c5tBH3M/HuZ3ZTeBrA/sypi85Zz3ncq9J5bXDw088alkmPH3Sfdp00glSuSTOFpkI4g==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794847238;
+	c=relaxed/relaxed; t=1794868035;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
-	 Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Type:Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:
-	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 In-Reply-To:References:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:Precedence:
+	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=uT9dGfnNHZVYLS4OP43xiMgwtbDlKvr9wQr6PZJ9F1Q=;
-	b=GTPXZVd1J7jb4/8CPap/qWs7yI8th8lWvv6IvNpXdy9mGPAbYF4BzUSk5qF64WErImtC
-	 rjZqjzrsSDccjsAT6E/6iiCbIf6X8JgQHe/fIt0oqBlNKW/4/+usRBRBbDcq67BJMvnXO
-	 U3nvxNmnD52o2jtMrQmQTS6crkCbT6se5sqtBGE3WU38OLlunNF4hvvYJWjFEJAAQcQBS
-	 zIUU+Z803lzo8QfpN5i6qs4HZflaMbGoYsshzpM6DGqgEEfqlhp/QQqCobLJIqqRzqDEo
-	 mK/xG8nVAsTDDRXpjgfbi9Bg9q69HQg1SukbVVrbWz7DB7+Bl9sQhmkJ2X8Vds1nupQ==
-ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
+	bh=yTKvK6Q2yCQePo9OFHjf3+LCM7gt5vNfOS7VI6PK0to=;
+	b=ItRHDTmWXHpiBsjYFApIfbuiSbQe56acVKO0X0S1vjU0ayZ1eXKUrvJP6qnyniRlQ030
+	 r3TlYunaflOamORCD/eW7upvB27dUKZM5EbYVvHvywLVxs9oVqLb0d22p43Cw1UCYfafj
+	 eAiGBWq0zfmxh69GSANEPS3NjJhqMFrr2yN/dgHAAZYEvouwE/LHvOohAH7gBVTAnyxgk
+	 DjpFF5XfAUsCtld4WtT3H/7jb9A0Fq1KfltW8Bbql8jbjtNvi0wCbNHWVMLEh4I45FB+G
+	 29GoJm1D6k2afuxY2bv5WdDfeBTwTNRh/AODjy7xHW7E7+DIbUoTzmYL5IeYFmh3XPg==
+ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1794847238;
-	bh=uT9dGfnNHZVYLS4OP43xiMgwtbDlKvr9wQr6PZJ9F1Q=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
+	s=default; t=1794868035;
+	bh=yTKvK6Q2yCQePo9OFHjf3+LCM7gt5vNfOS7VI6PK0to=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=6zWbzSUgM2wl7cn5WTg+88upQJd+NXsBrJNCc8FkQvwoHfT7IKfKifVyquHIjcBnr
-	 +yH4zV7orJwc/Bw/nmIx7PYXbIHyPghaByeAQDMwk8krVmTSNz6T8kD/dHA5u3H2Or
-	 hIKl4Fd0P1XbGVVLzjbWvs9h4lnfszDKmE9+g5L5TtBy5Jxlm7ChOx1YxM9G5wUQhs
-	 fEkEYXdCUOtHl32R9SYRRPlWq3icbNty4aK+ELrmKbGAshX+3dB1as/9BE3a8mzBGI
-	 pywmRazz0W1hMMnt1//fVcr1syCjFDARpzjRCHPCQZlPOqZTx1EVGB/ckmCDs6iPtG
-	 EBRB0XHkG4mmQ==
+	b=R7o0AdRqP3POobQ1rKrtacqd722d2dnjDTt4Pzv3cYoRXxb3FxhtsAPTliqvDoXPf
+	 KeSqo4VX9FEiiKsCa05l0XIHipVs6ZWEOAUqbAMF6vl0Eo5KLss1AwP0dK2rfC88c8
+	 dM3wuwyQgC0nG4uUKnFIUVFTGIO8VBIB5NilnZfjqHs1JOLYnOIQzRVLfxEunx894c
+	 8X/y0N9OxmQCgiiORp2xdnByBaJlB6pWVmpE41DWXHASXfD5FAN+/rLhTjIPkAg+OL
+	 boA2Fmh+UYsMbxz5Vb03bajxSyCS3Ak7oStixi18KiOHpqdkNkIWVMCXkGFvpC8Qg5
+	 /qwUrX8WksjCg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 0695880ED9;
-	Mon, 16 Nov 2026 16:40:38 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 276C21E7
- for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Nov 2026 16:40:37 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id CFFA040705;
+	Mon, 16 Nov 2026 22:27:15 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id A2B9B49B
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Nov 2026 22:27:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 18C1C607CE
- for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Nov 2026 16:40:37 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 9429A606A2
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Nov 2026 22:27:14 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id f3XmlvNwYE-D for <intel-wired-lan@lists.osuosl.org>;
- Mon, 16 Nov 2026 16:40:36 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org C7E5060721
-Authentication-Results: smtp3.osuosl.org;
- arc=none smtp.remote-ip="2a00:1450:4864:20::62d"
+ id Jwoll4Kjilaz for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 16 Nov 2026 22:27:13 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org A699060602
+Authentication-Results: smtp3.osuosl.org; arc=none
+ smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a00:1450:4864:20::62d; helo=mail-ej1-x62d.google.com;
- envelope-from=tianyi@cloudflare.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp3.osuosl.org; dmarc=pass (p=reject dis=none)
- header.from=cloudflare.com
+ client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
+ envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
+Authentication-Results: smtp3.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
 Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=cloudflare.com header.i=@cloudflare.com
- header.a=rsa-sha256 header.s=google09082023 header.b=TVYQ4HeI
-Received: from mail-ej1-x62d.google.com (mail-ej1-x62d.google.com
- [IPv6:2a00:1450:4864:20::62d])
- by smtp3.osuosl.org (Postfix) with ESMTPS id C7E5060721
- for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Nov 2026 16:40:33 +0000 (UTC)
-Received: by mail-ej1-x62d.google.com with SMTP id
- a640c23a62f3a-c50715c2757so467726966b.3
- for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Nov 2026 08:40:33 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=cloudflare.com; s=google09082023; t=1794847231; x=1795452031;
- darn=lists.osuosl.org; 
- h=content-transfer-encoding:content-type:mime-version:references
- :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
- :date:message-id:reply-to:content-type;
- bh=uT9dGfnNHZVYLS4OP43xiMgwtbDlKvr9wQr6PZJ9F1Q=;
- b=TVYQ4HeIiSFMwgB0ywq7XjSa92zfz8CzbSskWGGhjj9w8lPeU+Zn5bZSKtAEfM96Zy
- 2xxVdGq+ijOh+6xraAvJUegU1P3Z/FGybyXV9v+cqEjgdkoNanrDs2BtJ6yNKLF+gasg
- oJqdmt95TswtXwcLpStFBU+bqbRv+1Vp1/xDUhIBrbbcDgdj9DNVVSqy3KSzPeB+galK
- SX78XjVWFGH3bY99hTIO92AgsjEThBz1qqOxPxC9c4INRR89WXUd10knK9iW+K2didll
- F64SoDqKIeA29K7yHR7gHlExgJz1N2V6tEuutps4n70/Zo02aHV3QrYmett4ZOnCj11z
- N4ZA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1794847231; x=1795452031;
- h=content-transfer-encoding:content-type:mime-version:references
- :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
- :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
- :content-type;
- bh=uT9dGfnNHZVYLS4OP43xiMgwtbDlKvr9wQr6PZJ9F1Q=;
- b=qpv+SO2bTZNlIgllUMFglLKiXKZP6iV/VWPwFM1fdIGJQYc1wwrkw49HFxat8D6Emu
- 8n+Sircb8VUJ5KUlmAC622sZ0wAIau9cd+W5u4b7C3svcmxk4mAouwguFGJA7zi7UUPv
- 84PozHpKh4MVQiyyZN7YqFcEf9UuvVlxRbIfsjQ0cNc6i14ALjIbAzjMNgbejwqscvUa
- Rh2Rj2On5B0yjHCU3bNckmv9FPwTFxEqVx40OGQ+atBVZu6JXeJAPe3tvVwETPnBKiSy
- dwLQ8yE9dkZ4zJv2r+QNFuIY0DE3M3wFW9EY0gEU7C8NuYmq5Gmmt+X8pGVjEX5sMWV5
- VwMw==
-X-Forwarded-Encrypted: i=1;
- AL+hErFiZVPzr/N1bpRrvwTBhh3qf3R0qcpJXPn5S/+ZekOHwXS2SPdZtcYd4spDTvxKBtwh1IM9FUowRbgPLACMjsk=@lists.osuosl.org
-X-Gm-Message-State: APuU4Z9ML03cxJ1FYfExCDAj5H88mRn3Px1597jQsvQqVU4ux/przb0W
- rfrB67Vm1OWDWLcyME6PcDg8avmCvEtpoamZaT2DqYmzn6H2UTf/smjzqlBkq36Plmk=
-X-Gm-Gg: AYBFou0PTKQ/KyU0X0//ZZM3n0W8EjIcgDqdYci4xqL8DAm6Jm7W+4CTCrWUR98W+xF
- fPshOs2ww3imvodCmWDT1vPnZ4dLLs86Gnw6fv36RZ/cxT9wQ+PFFMRv4KtNdHNDgAJS992Psrt
- mCEvkW3IH5Hrcp34SjlPHSbpugJV4XMCXDLkHn1x/Ja81eiyRQfh9oCMZ05bQ9hqI3eKus7hooc
- 8PA4TS3r/qqB0yrnns0xIL3F++2PRv9dpChqeR8g1RDyIisNe3nDBFg18biQaVlyu7yPEGADDP5
- OmA5NnU1bRfT8KYtk8dyvIT2grbM9oKX9b54NpcX6kytBY5DUhWuPGbki9b4VNw548dsWbAXR7R
- FZhU3nJv9Y4DlOImqXnUgH76052IUSNqu/0Roj7/991wJeF1frBhoEozqh7m9Z+i1uhyfMwcQzY
- x0ZMTRANyVtMqofMz5DNAU+/9ovG1Ix7W651OkiQBqhvARmllWIqTwADT7gR7LX58aAJu+ZcZq2
- srvkuAy4CiY9O/O462qNIUX1Xo04Wh3BtOwmXhO7oC3roHdjQ3sef2mwAOlNP7+fI4Pbj3MS0yu
- tfNRsvs/zKp4ZywF0vct2e1QXK3TdcR5
-X-Received: by 2002:a17:907:d10:b0:c4c:ddd1:cffa with SMTP id
- a640c23a62f3a-c5096398ae2mr930659766b.29.1794847231194; 
- Mon, 16 Nov 2026 08:40:31 -0800 (PST)
-Received: from L9JK9NPFH9 ([2a09:bac6:37ad:1e5a::306:a])
- by smtp.gmail.com with ESMTPSA id
- a640c23a62f3a-c5095b7b2c9sm444919166b.73.2026.11.16.08.40.30
- (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
- Mon, 16 Nov 2026 08:40:30 -0800 (PST)
-From: Tianyi Gao <tianyi@cloudflare.com>
-To: sashiko-bot@kernel.org
-Cc: bpf@vger.kernel.org, netdev@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org, Michal Kubiak <michal.kubiak@intel.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>, kernel-team@cloudflare.com,
- tianyi.gao@linux.dev
-Subject: Re: [PATCH bpf-next 11/15] ice: set skb RX metadata from the skb core
- extension area of xdp_buff
-Date: Mon, 16 Nov 2026 16:40:28 +0000
-Message-ID: <20261116164028.37110-1-tianyi@cloudflare.com>
-X-Mailer: git-send-email 2.56.0
-In-Reply-To: <sashiko-outbox-206188@kernel.org>
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20260515 header.b=md2D4WPO
+Received: from sea.source.kernel.org (sea.source.kernel.org
+ [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id A699060602
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Nov 2026 22:27:13 +0000 (UTC)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+ by sea.source.kernel.org (Postfix) with ESMTP id C66934139E;
+ Mon, 16 Nov 2026 22:27:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 283BA1F000C4;
+ Mon, 16 Nov 2026 22:27:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+ s=k20260515; t=1794868032;
+ bh=yTKvK6Q2yCQePo9OFHjf3+LCM7gt5vNfOS7VI6PK0to=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References;
+ b=md2D4WPOInNakDSqWfE1IPbeod9zOxz2pjEYXRvX5XiOz3ugZVGikYj7oFVPNv5TA
+ anRLz9W1IPaeffFSXdQM5eIkNzSl7SSBVcl2XNx1GIfniOATopc5iOYnfIW2tcJICz
+ aVn8KUWMqGcxXYidnfS7JXA/XupIgyyf55FAXfxOjNnYtNjcQUssyVADQa/bzbhV3W
+ UicZSxsZqypH7o7MtWctPXY/bJPQqUdH6+NnMUSsGHKKnFY1lnd0GDxpKiTXt7vuKS
+ VxK1w0CvT9hWXVQ6g73MyFiBbMOQ63w53AYN7IuB3i9vZCAPLRr0V5/4yR2A03YPn6
+ UCdDxRThMLAvA==
+Date: Mon, 16 Nov 2026 14:27:10 -0800
+From: Jakub Kicinski <kuba@kernel.org>
+To: Tianyi Gao <tianyi@cloudflare.com>
+Cc: Stanislav Fomichev <sdf.kernel@gmail.com>, bpf@vger.kernel.org,
+ netdev@vger.kernel.org, Alexei Starovoitov <ast@kernel.org>, Daniel
+ Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>,
+ Martin KaFai Lau <martin.lau@linux.dev>, Jesper Dangaard Brouer
+ <hawk@kernel.org>, John Fastabend <john.fastabend@gmail.com>, Stanislav
+ Fomichev <sdf@fomichev.me>, Lorenzo Bianconi <lorenzo@kernel.org>, Vladimir
+ Vdovin <deliran@verdict.gg>, "David S. Miller" <davem@davemloft.net>, Eric
+ Dumazet <edumazet@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Simon
+ Horman <horms@kernel.org>, Andrew Lunn <andrew+netdev@lunn.ch>, Donald
+ Hunter <donald.hunter@gmail.com>, Eduard Zingerman <eddyz87@gmail.com>,
+ Kumar Kartikeya Dwivedi <memxor@gmail.com>, Song Liu <song@kernel.org>,
+ Yonghong Song <yonghong.song@linux.dev>, Jiri Olsa <jolsa@kernel.org>, Emil
+ Tsalapatis <emil@etsalapatis.com>, Ihor Solodrai <ihor.solodrai@linux.dev>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>, Przemek Kitszel
+ <przemyslaw.kitszel@intel.com>, Maciej Fijalkowski
+ <maciej.fijalkowski@intel.com>, Alexander Lobakin
+ <aleksander.lobakin@intel.com>, Magnus Karlsson
+ <magnus.karlsson@intel.com>, Tushar Vyavahare <tushar.vyavahare@intel.com>,
+ Jason Xing <kerneljasonxing@gmail.com>, Nikolay Aleksandrov
+ <razor@blackwall.org>, Madalin Bucur <madalin.bucur@nxp.com>, Ioana Ciornei
+ <ioana.ciornei@nxp.com>, Jonathan Corbet <corbet@lwn.net>, Shuah Khan
+ <skhan@linuxfoundation.org>, Shuah Khan <shuah@kernel.org>, Randy Dunlap
+ <rdunlap@infradead.org>, Nathan Chancellor <nathan@kernel.org>, Nick
+ Desaulniers <ndesaulniers@google.com>, Bill Wendling <morbo@google.com>,
+ Justin Stitt <justinstitt@google.com>, Chris J Arges
+ <carges@cloudflare.com>, Jakub Sitnicki <jakub@cloudflare.com>,
+ linux-doc@vger.kernel.org, linux-kselftest@vger.kernel.org,
+ intel-wired-lan@lists.osuosl.org, llvm@lists.linux.dev,
+ kernel-team@cloudflare.com, Tianyi Gao <tianyi.gao@linux.dev>
+Subject: Re: [PATCH bpf-next 00/15] xdp: add SKB core extensions to keep RX
+ metadata until skb creation
+Message-ID: <20261116142710.347e8571@kernel.org>
+In-Reply-To: <CAG4wq-dhd5a5zxQcSShaKifYd2z+pMpHaCYtZJRX1QCxEH4dfg@mail.gmail.com>
 References: <cover.1794281983.git.tianyi@cloudflare.com>
- <ae488c057454cd57fb01ac01aefc3e97d6271ada.1794281983.git.tianyi@cloudflare.com>
- <sashiko-outbox-206188@kernel.org>
+ <avOvI8xrHI0dwyHj@devvm16445.scu0.facebook.com>
+ <CAG4wq-egD55NZDw+OKVKTKN2tQJ9oKEC504wFv=xoMXyJ-0z4g@mail.gmail.com>
+ <20261115113902.4834dda6@kernel.org>
+ <CAG4wq-dhd5a5zxQcSShaKifYd2z+pMpHaCYtZJRX1QCxEH4dfg@mail.gmail.com>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -163,34 +152,48 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-8.9 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+X-Spam-Status: No, score=-5.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi,
+On Sun, 15 Nov 2026 23:36:34 +0000 Tianyi Gao wrote:
+> On Sun, 15 Nov 2026 11:39:02 -0800 Jakub Kicinski wrote:
+> > On Wed, 11 Nov 2026 01:07:46 +0000 Tianyi Gao wrote:  
+> > > - On veth, an XDP program removes software GSO from the peer, limits
+> > >   its MTU, and can copy skbs from the peer.  
+> >
+> > Could you remind us why you XDP_REDIRECT xdp_frames to the veth
+> > if you end up allocating the skb on the veth, anyway?
+> >
+> > I thought that was to let veth run its own prog before skb is allocated
+> > but you're saying that you want to avoid veth having a prog, so clearly
+> > it's not that.  
+> 
+> Thank you for your comment!
+> 
+> XDP_REDIRECT into a veth without a program on it has been supported
+> since commit 0e672f306a28 ("veth: check for NAPI instead of xdp_prog
+> before xmit of XDP frame"). There is demand for it [1].
+> 
+> With or without a program on the veth, and on cpumap, this series
+> keeps the RX metadata from the NIC until the skb is built.
+> 
+> [1] https://lore.kernel.org/all/20210416175929.35c3c389@carbon/
 
-On Tue, Nov 10, 2026 at 04:23:22AM +0000, sashiko-bot@kernel.org wrote:
+Perhaps I'm slow but I don't see how this answers my question.
+I read your reply as "the config is supported and my team uses it".
 
-[ ... ]
+The question is _why_ you use it. Let's leave the cpumap case aside,
+you provided no legitimate reason why having an XDP prog in that case
+is a problem. With veth - you are right that attaching XDP causes
+problems for pure skb traffic. For veth cases, however, there's no
+strong reason to delay the skb allocation. Hence my question.
+Why not let the driver allocate the skb if we know that the
+redirect target will need to allocate one, anyway.
 
-> [Severity: Critical]
-> This problem wasn't introduced by this patch, but clearing xdp->data before
-> checking whether xdp_build_skb_from_buff() succeeded causes an invalid page
-> dereference and leaks the head buffer [1] when skb allocation fails:
-
-[ ... ]
-
-> Should xdp->data = NULL be moved after the !skb check (since
-> __libeth_xdp_return_buff() already clears xdp->data on the failure path)?
->
-> [1] https://sashiko.dev/#/bug/linux-d6eb94b5-df62-4b78-9f73-358fdd002a0c
-
-This is a pre-existing issue in ice from commit 93f53db9f9dc ("ice:
-switch to Page Pool"), not related to this series. Cc Michal, the
-author of that commit.
-
-Cheers,
-Tianyi
+Since your patches are not a natural / clean extension of the existing
+infrastructure - we should step back and make sure the use case is
+practically justified.
