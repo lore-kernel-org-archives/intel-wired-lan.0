@@ -1,178 +1,141 @@
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 12E17606A32F
-	for <intel-wired-lan@archiver.kernel.org>; Sun, 15 Nov 2026 23:36:51 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C0BC5606A31C
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 16 Nov 2026 03:23:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=0Fz7Mti/;
-	dkim=pass (2048-bit key) header.d=cloudflare.com header.i=@cloudflare.com header.a=rsa-sha256 header.s=google09082023 header.b=CeH/9GGQ
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=MYIAFE0D;
+	dkim=pass (2048-bit key, unprotected) header.d=siemens.com header.i=meng.ding@siemens.com header.a=rsa-sha256 header.s=fm1 header.b=HQQZot2Z
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id B6B4F80C47;
-	Sun, 15 Nov 2026 23:36:50 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 884274060F;
+	Mon, 16 Nov 2026 03:23:13 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id xk8dkmBHAuQW; Sun, 15 Nov 2026 23:36:50 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org EC88280DC5
-Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794785810;
-	b=QmIlLGsdg5KEix+moKp5fWl2nCoyylmC7jp9r+bvwNtEDYzXK2RDAnBVgDKjahL67hFZ
-	 o0wCGujWzsLWyVnwlaSPJheepUSjnvCu0jg4kSH0j/WtsUXER1s2X3jueaJWqkSuzfgQu
-	 pTBwF2pDbqIBAuvP4TZgeDHfz+QIGzoEq+gSd/l+39dCIvi4INWBEJqKe8cGtKB2AQDrR
-	 rSus6DAlV0/L0WJCxNdBFbWcer4aYnfJuIkQcIhcN4N0tLtHRqCJ6HzSsw4oAX6H0qfT0
-	 yMlvXwp/ua6jM3BA+aFAtZ5VzMSNYvZHK2+Z1fzFmmiQBJ5HrpdEZ1B++y/LmH8bP7w==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 8yfSBQw4OKSg; Mon, 16 Nov 2026 03:23:12 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 2F60840602
+Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794799392;
+	b=iC4JMZgx2490xpDpenurt+bLzbOBmEycxxRsT3aOZAf5LwKsVNOorFNn6vrL52JGZ1h5
+	 +GNc9CXyncZg3XDqCehgrrFTBHFGaFnjfw9XTcXoTRnj0ACktP5a7MIFla098YUoa6Zdk
+	 TSjPbjh/bw4e2e/U9P8KiJUfQdPw4eaMdjZJe/o1mekSYEo4VUvx5TnvAliVfTIV1eH0I
+	 5Kx19ZEuDoyntC+YNBwkfTkgysydAUB07V0lGlJw8yoO+Im1Zxm8cPtfw9iLkdaQG0NL5
+	 c+F01/wYa0yMgELjDePw9O1ogNYeAgc6R+/VGJ5DFn1evWFIz87FkS4s8sak9WMJB8A==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794785810;
+	c=relaxed/relaxed; t=1794799392;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:MIME-Version:References:
-	 In-Reply-To:From:Date:X-Gm-Features:Message-ID:Subject:To:Cc:
-	 Content-Type:X-BeenThere:X-Mailman-Version:Precedence:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Errors-To;
-	bh=eiEJgJLTePDasa4fCxlIDYNvy/YXg5RoYnLKMhW0V1k=;
-	b=CD/0H06NiZpU6EaxnNMtL8NVf0jiEqjeGjFhR068Jp7pyLCcx/KlnaoAaAl+NkTksdcV
-	 9CsZhme0QRl3y9+p7u4iURY7db0f7J2n6WY5WgRGKTe1dDkRuAGkloytszG8l52wht0kc
-	 xn7F+xQIRccy4ypS3TanGdiCODUNqQbpJTBvFHC2pDSpTgT+5dtHIjecBcvkNzEEKd54P
-	 RX/H1VUf4Mn64kqAKYYrJO1PW7DKn5S8ePFXTM6oPZEuKTLVyZjC+wO13gIeuKIwB6/6D
-	 llDsvpKrafXbSK61tBZFCKLakfTVhgUIC/MOTAArxgPEKvokDcUSZASdPhKd/+gV1Iw==
-ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
+	 DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:References:
+	 MIME-Version:Content-Type:Content-Disposition:In-Reply-To:
+	 X-Flowmailer-Platform:Feedback-ID:X-BeenThere:X-Mailman-Version:
+	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 List-Subscribe:Errors-To;
+	bh=vuaY7FImZE75sRdiBasv0Tsa2qzXujkTJsfP+X+hpsE=;
+	b=UUoixrFq82/UsYqMHSoPrb+oAt5batQ7DQDeKCaiCZZIH40nC4oQYwBLCdUEs94hitT+
+	 IgI2DrQR5qp/xxclJ9EgbJkANJS0M2EiZ8MfI3uV0P0oPiKFfJudUB6bP0WEm0JQ9pyno
+	 jEKNGme5qeFFz7Uik+mv+CMVo4IyYtd+TdtH7hF9WXU1v1O7EHuKbz/hA1XbkEfNKVZN3
+	 JOsVbLGbJ1VVEwJq8xf9yMbJ/iAHyzC7wDhfFN0eB8xR7sP8bQRSLF9XnoXXM37xAacNk
+	 +rCQb4uI11Jka7D8JSVRj0a0e9t/XyXnOaNT80fE+Se7Leoi6CY1NscnbBFdM+0LgTQ==
+ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1794785810;
-	bh=eiEJgJLTePDasa4fCxlIDYNvy/YXg5RoYnLKMhW0V1k=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-Id:
+	s=default; t=1794799392;
+	bh=vuaY7FImZE75sRdiBasv0Tsa2qzXujkTJsfP+X+hpsE=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=0Fz7Mti/mIIgTlwV68VK0LBCEo+SPJTai5BZqXYQahi/dZAGMHhNdUt/KE5ve+1r0
-	 A0O3jyJCVe2C0tyer2bmHarn8CUWiAahGJG7W9Ls6/oImgYsTM5CuFDgWJBiQe3er0
-	 fzFCQiBflbCtgC7VXYInVc6KgYntiS+AngALF3kEcpYOnAJkgefBKx6rSjkhMSx8T9
-	 XoxIn8kup3WdAFL1hSUfhgbovJAX4nJV/yve8FoYseUU0ENVA5AVP4zJxVyUcRbUij
-	 Kg89o+Gh7gNKsOucKezUnvL5lryzrkoW9lFuCc9zF9XULwuVi56vXRo2O1Mfmm+r5e
-	 vLU3/HFEGJDIQ==
+	b=MYIAFE0D0lf/EuzbDgX7i5KqkrhHkKLO+Z1F2/OKf756Cct/xgJRsoYY0q76Tx6XB
+	 xwyzYLfAE40aZsWP8ZphXwbyYIEn+LF/Xp36RIWbEiPRYmDotIITIugqehCrvvGRmc
+	 lH+6CCGL4RwIauu3RVtH95mdKZQ6kQQANOGFlZSxVqsK+NYKnzP/+o3zKLnzFPnNAg
+	 g0lMRNiMRe78cfpJDRLWZDz49rQTT+rmVMtCiv0ot+ylb4mr7JtAam+7I3jNtGVaRm
+	 pbQAd5LBB1CV4+m8GkezKtaNK1fZ1Fb9Glcj6qMQ3uHqAhDysYsmDYI4Ab0JRGfgiv
+	 4HHicNL3JGHKg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id EC88280DC5;
-	Sun, 15 Nov 2026 23:36:49 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 3E7E72E5
- for <intel-wired-lan@lists.osuosl.org>; Sun, 15 Nov 2026 23:36:48 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 2F60840602;
+	Mon, 16 Nov 2026 03:23:12 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id BE1364A0
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Nov 2026 03:23:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 1BCBE40072
- for <intel-wired-lan@lists.osuosl.org>; Sun, 15 Nov 2026 23:36:48 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id A71EB6060E
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Nov 2026 03:23:10 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id qxGoTzGBj4sM for <intel-wired-lan@lists.osuosl.org>;
- Sun, 15 Nov 2026 23:36:47 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org C7F9940012
-Authentication-Results: smtp2.osuosl.org; arc=pass header.oldest-pass=0
- smtp.remote-ip="2607:f8b0:4864:20::c2d"
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::c2d; helo=mail-oo1-xc2d.google.com;
- envelope-from=tianyi@cloudflare.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=reject dis=none)
- header.from=cloudflare.com
-Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=cloudflare.com header.i=@cloudflare.com
- header.a=rsa-sha256 header.s=google09082023 header.b=CeH/9GGQ
-Received: from mail-oo1-xc2d.google.com (mail-oo1-xc2d.google.com
- [IPv6:2607:f8b0:4864:20::c2d])
- by smtp2.osuosl.org (Postfix) with ESMTPS id C7F9940012
- for <intel-wired-lan@lists.osuosl.org>; Sun, 15 Nov 2026 23:36:46 +0000 (UTC)
-Received: by mail-oo1-xc2d.google.com with SMTP id
- 006d021491bc7-6b8e2d8df4fso2558300eaf.1
- for <intel-wired-lan@lists.osuosl.org>; Sun, 15 Nov 2026 15:36:46 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=cloudflare.com; s=google09082023; t=1794785805; x=1795390605;
- darn=lists.osuosl.org; 
- h=content-type:cc:to:subject:message-id:date:from:in-reply-to
- :references:mime-version:from:to:cc:subject:date:message-id:reply-to
- :content-type; bh=eiEJgJLTePDasa4fCxlIDYNvy/YXg5RoYnLKMhW0V1k=;
- b=CeH/9GGQqDHXXvMXgLYd9ijOJ7Lo71xdjEyeup0Pg1z8qkQe9P+jldoE0ZhuN1XAId
- dnr6qyS21aQQ3fQ8UmAF0+xzPzeN8HvubIe0v4fPihoZ0FjHqFkRZRaYoAyqoGT0AX+c
- xuCgIsvYDkQ7wz7Zp9vHd2tPJFFe4fSLenbU4hX5rwJcWjwKqwKu4r8qKOqxAQED9q+E
- HrY+n3ow13Xo1c6R96kcKjK2rJCajHVsslaluVpYP8Z0SuAgfHqE1r/Rlxs8z7ThrerU
- Ct6wiM9FB1Mku+/iNuXqWKMxdAVBU/g3RPCGOqKiH/n2M97GwdUxCTdLjssQ41mDaMUX
- KSqQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1794785805; x=1795390605;
- h=content-type:cc:to:subject:message-id:date:from:in-reply-to
- :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
- :subject:date:message-id:reply-to:content-type;
- bh=eiEJgJLTePDasa4fCxlIDYNvy/YXg5RoYnLKMhW0V1k=;
- b=LbGO8VJW7LEHnFqneBzYYn4IS6Nxm+2dFYSod4j8HwcKEBfoez0J0m8kqXDlTkhGdo
- HQOcYXUxAT9XdEGH0JAQw8iC4eaagqwfrhKEJiYFMJz7Nm5o6XZKZ9yueRKtV4PGmQKn
- GZwYTrJHC5xEJlVgK/QY/cHC2wtKB6gizKH56sO7cBkixKXRuVjTnVijKYidMCaWVQzm
- v8mAaPz4e/aOzpaqmcRiVpBMBv4Ss7AezrODmhgSfuITabELmqSCBJGayu4s4o+gelE8
- NWDE8Lu5HmS/Pa1f7dNU1CD1v6/UmmpixsXSbAwIK55omi3K1IbvU5ONqdOCefpiVFEF
- Ta/A==
-X-Forwarded-Encrypted: i=1;
- AL+hErHcNwGhXlu+4oZCXQZI+j3iaecAuohSWj5DgAnkebBBIXEK61fHmoRFYIn69JC2PkQPEGoL27kGF7kFsDtNVas=@lists.osuosl.org
-X-Gm-Message-State: APuU4Z/XuJMwcqinbhjie7PPGbBgc1j59E5bGeqvjjHAYk2Tq7LxubMd
- vQSsQ+ogUKLoCZvBlKiwSPDFy2oiYkzoJ1kbIGGhbGV6lTZjYvcXmHfdUJfr5THufX/uDHCTalW
- XeOHN2E5xbS03ebEXkDhpWoFiXBbqGGEkbhim74wxHA==
-X-Gm-Gg: AYBFou25fFxbDshmwTRH/a3tmQz0l5tLGHP8g7CUGDBTbupi7K0FOVZ8NBVTrKE/s80
- gZBO1co6xs3YKEK+V22l9JLJBh//UJQReeUQiKgGYl+g+ct0p5Hc3xslWh3RDlhvBZPXg0NoXCr
- KjafksIscHR4zm5VxZAQwCULQfDCNv1j8VDFT9lSLnfISJmUdy746oNC6+EpInk9Tf0+uAoS6YZ
- 3Yf3Z1qxAXgMGvNKAZUNq7dkV3LFJKdOBr0hNOhiG09/FtYj8G8cLwm5LwW7SJun7WUqPmsCtiA
- nVgWBsOJ3mwlev+bkTa1R83KC5PpKckN/pRq/FTU9A3KkFsEeJXKgp4O7WDxklJ8UD8fg7Jx22D
- /qTimIcIMQrr5IGZdd6Hyy1ClqI5S2Y6jAhJniENb20Qxtc2kcy2tKKBIRL1Y9/H/Rm4zHvjTld
- JFFQn55Juc3cnvKJgFH/errH5UPWqe7y4=
-X-Received: by 2002:a05:6820:3411:20b0:71a:f794:49af with SMTP id
- 006d021491bc7-71af7944afamr223598eaf.56.1794785805311; Sun, 15 Nov 2026
- 15:36:45 -0800 (PST)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id lEkLdBfYsZZg for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 16 Nov 2026 03:23:09 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org A41DE6060D
+Authentication-Results: smtp3.osuosl.org;
+ arc=none smtp.remote-ip=185.136.64.228
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=185.136.64.228;
+ helo=mta-64-228.siemens.flowmailer.net;
+ envelope-from=fm-1335312-202611160323025d4b5ad0e600020733-6q3uzm@rts-flowmailer.siemens.com;
+ receiver=<UNKNOWN> 
+Authentication-Results: smtp3.osuosl.org;
+ dmarc=pass (p=reject dis=none) header.from=siemens.com
+Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=siemens.com header.i=meng.ding@siemens.com
+ header.a=rsa-sha256 header.s=fm1 header.b=HQQZot2Z
+Received: from mta-64-228.siemens.flowmailer.net
+ (mta-64-228.siemens.flowmailer.net [185.136.64.228])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id A41DE6060D
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Nov 2026 03:23:05 +0000 (UTC)
+Received: by mta-64-228.siemens.flowmailer.net with ESMTPSA id
+ 202611160323025d4b5ad0e600020733
+ for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 16 Nov 2026 04:23:03 +0100
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; s=fm1;
+ d=siemens.com; i=meng.ding@siemens.com;
+ h=Date:From:Subject:To:Message-ID:MIME-Version:Content-Type:Cc:References:In-Reply-To;
+ bh=vuaY7FImZE75sRdiBasv0Tsa2qzXujkTJsfP+X+hpsE=;
+ b=HQQZot2Z8h36ijQln+msDhv9gcSYj5SfMiT/N6XRhq1xugtUNdMn/fUxA9qBarw0//j8Na
+ Qp5FuiVGhxMPO9cC993IMWDRG3jL5qroVt1jz0dpBcib5J1XqAsug55FaOn/UyJlwDW3+4/Z
+ SnqUPMfUPAFyJz26D8x3C+E+NxXIWN8DlZk93cowvaGSNioXssPo/2gJc+UIv9QXzmXIx35U
+ NMhKnIdWTs+/JSI01xzO9af0qK0O6sX7kqp73KReA2Smg8mZnL2c/2jAK8tKE3YieXUoBvbc
+ ix9Kc3VFdeZvjHKk09TilgE806fp1YWk96vwKdP6iRMZZyoFc6l9hW+w==;
+Date: Mon, 16 Nov 2026 11:22:46 +0800
+From: Ding Meng <meng.ding@siemens.com>
+To: Gerhard Engleder <gerhard@engleder-embedded.com>
+Cc: Paul Moses <p@1g4.org>, Jakub Kicinski <kuba@kernel.org>,
+ netdev@vger.kernel.org, Willem de Bruijn <willemdebruijn.kernel@gmail.com>,
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet
+ <edumazet@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Jonathan Corbet
+ <corbet@lwn.net>, Andrew Lunn <andrew+netdev@lunn.ch>, Tony Nguyen
+ <anthony.l.nguyen@intel.com>, Przemek Kitszel
+ <przemyslaw.kitszel@intel.com>, Steven Rostedt <rostedt@goodmis.org>,
+ Masami Hiramatsu <mhiramat@kernel.org>, Daniel Borkmann
+ <daniel@iogearbox.net>, Alexei Starovoitov <ast@kernel.org>, Andrii
+ Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, Kumar
+ Kartikeya Dwivedi <memxor@gmail.com>, Richard Cochran
+ <richardcochran@gmail.com>, florian.bezdeka@siemens.com,
+ jan.kiszka@siemens.com, wq.wang@siemens.com, Jason Xing
+ <kerneljasonxing@gmail.com>, Simon Horman <horms@kernel.org>, Shuah Khan
+ <skhan@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>, Mathieu
+ Desnoyers <mathieu.desnoyers@efficios.com>, Martin KaFai Lau
+ <martin.lau@linux.dev>, Song Liu <song@kernel.org>, Yonghong Song
+ <yonghong.song@linux.dev>, Jiri Olsa <jolsa@kernel.org>, Emil Tsalapatis
+ <emil@etsalapatis.com>, Ihor Solodrai <ihor.solodrai@linux.dev>, John
+ Fastabend <john.fastabend@gmail.com>, Stanislav Fomichev <sdf@fomichev.me>,
+ linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ intel-wired-lan@lists.osuosl.org, linux-trace-kernel@vger.kernel.org,
+ bpf@vger.kernel.org
+Subject: Re: [PATCH] net: mark skb NAPI IDs independently of busy polling
+Message-ID: <tuwyyxeexvnd4ckncfhdg3grlh2xd6d2rym7vhx2uzdspjopmk@quzaz3gdurlz>
+References: <20261105071706.7043-1-meng.ding@siemens.com>
+ <20261110134539.12d860ef@kernel.org>
+ <4pqljild2fp6eotiicvwbwu2wfw66fzd4qamwt6utirdjxlaok@iiu2f3k7azrp>
+ <Fhn2gT70aJ-2_eak73NBZYuXuKtVb64PoD8VQ9jwm-S-K0RhZilAg9iwSBJ0RlaiSrRvM1vPw1aHvGPjcktu9GmdBuvFk9244-q2IVOrFu0=@1g4.org>
+ <1ab53072-b9ee-464b-b5b3-cbb578059b49@engleder-embedded.com>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-References: <cover.1794281983.git.tianyi@cloudflare.com>
- <avOvI8xrHI0dwyHj@devvm16445.scu0.facebook.com>
- <CAG4wq-egD55NZDw+OKVKTKN2tQJ9oKEC504wFv=xoMXyJ-0z4g@mail.gmail.com>
- <20261115113902.4834dda6@kernel.org>
-In-Reply-To: <20261115113902.4834dda6@kernel.org>
-From: Tianyi Gao <tianyi@cloudflare.com>
-Date: Sun, 15 Nov 2026 23:36:34 +0000
-X-Gm-Features: AclHuK-Ta2Fkr4hOVhZX_y8Xr7mXxa9_sbD5R_U1pL1RP64y3ME0zGRwgXOH1aQ
-Message-ID: <CAG4wq-dhd5a5zxQcSShaKifYd2z+pMpHaCYtZJRX1QCxEH4dfg@mail.gmail.com>
-Subject: Re: [PATCH bpf-next 00/15] xdp: add SKB core extensions to keep RX
- metadata until skb creation
-To: Jakub Kicinski <kuba@kernel.org>
-Cc: Stanislav Fomichev <sdf.kernel@gmail.com>, bpf@vger.kernel.org,
- netdev@vger.kernel.org, 
- Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
- Andrii Nakryiko <andrii@kernel.org>, Martin KaFai Lau <martin.lau@linux.dev>, 
- Jesper Dangaard Brouer <hawk@kernel.org>,
- John Fastabend <john.fastabend@gmail.com>, 
- Stanislav Fomichev <sdf@fomichev.me>, Lorenzo Bianconi <lorenzo@kernel.org>, 
- Vladimir Vdovin <deliran@verdict.gg>, "David S. Miller" <davem@davemloft.net>, 
- Eric Dumazet <edumazet@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Simon Horman <horms@kernel.org>, 
- Andrew Lunn <andrew+netdev@lunn.ch>, Donald Hunter <donald.hunter@gmail.com>, 
- Eduard Zingerman <eddyz87@gmail.com>,
- Kumar Kartikeya Dwivedi <memxor@gmail.com>, Song Liu <song@kernel.org>, 
- Yonghong Song <yonghong.song@linux.dev>, Jiri Olsa <jolsa@kernel.org>, 
- Emil Tsalapatis <emil@etsalapatis.com>, Ihor Solodrai <ihor.solodrai@linux.dev>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
- Maciej Fijalkowski <maciej.fijalkowski@intel.com>, 
- Alexander Lobakin <aleksander.lobakin@intel.com>,
- Magnus Karlsson <magnus.karlsson@intel.com>, 
- Tushar Vyavahare <tushar.vyavahare@intel.com>,
- Jason Xing <kerneljasonxing@gmail.com>, 
- Nikolay Aleksandrov <razor@blackwall.org>,
- Madalin Bucur <madalin.bucur@nxp.com>, 
- Ioana Ciornei <ioana.ciornei@nxp.com>, Jonathan Corbet <corbet@lwn.net>, 
- Shuah Khan <skhan@linuxfoundation.org>, Shuah Khan <shuah@kernel.org>, 
- Randy Dunlap <rdunlap@infradead.org>, Nathan Chancellor <nathan@kernel.org>, 
- Nick Desaulniers <ndesaulniers@google.com>, Bill Wendling <morbo@google.com>, 
- Justin Stitt <justinstitt@google.com>, Chris J Arges <carges@cloudflare.com>, 
- Jakub Sitnicki <jakub@cloudflare.com>, linux-doc@vger.kernel.org, 
- linux-kselftest@vger.kernel.org, intel-wired-lan@lists.osuosl.org, 
- llvm@lists.linux.dev, kernel-team@cloudflare.com, 
- Tianyi Gao <tianyi.gao@linux.dev>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1ab53072-b9ee-464b-b5b3-cbb578059b49@engleder-embedded.com>
+X-Flowmailer-Platform: Siemens
+Feedback-ID: 519:519-1335312:519-21489:flowmailer
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -185,33 +148,44 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 X-Spam-Status: No, score=-5.9 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
 	SPF_PASS autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Sun, 15 Nov 2026 11:39:02 -0800 Jakub Kicinski wrote:
-> On Wed, 11 Nov 2026 01:07:46 +0000 Tianyi Gao wrote:
-> > - On veth, an XDP program removes software GSO from the peer, limits
-> >   its MTU, and can copy skbs from the peer.
->
-> Could you remind us why you XDP_REDIRECT xdp_frames to the veth
-> if you end up allocating the skb on the veth, anyway?
->
-> I thought that was to let veth run its own prog before skb is allocated
-> but you're saying that you want to avoid veth having a prog, so clearly
-> it's not that.
+On Fri, Nov 13, 2026 at 09:59:17PM +0100, Gerhard Engleder wrote:
+> On 13.11.26 09:29, Paul Moses wrote:
+> > 
+> > > 
+> > > Then, drivers that use deferred timestamp conversion (e.g. igc, engleder) must
+> > > specify a busy poll dependency if they want to obtain the original net
+> > > device upon consuming the skb. However, this dependency is far from
+> > > obvious, and annotating it for future features of this kind will be very
+> > > hard to discover.
+> > 
+> > The "deferred timestamp conversion" was incomplete is what I'm saying.
+> > 
+> > This started with 97dc7cd92ac6, 0abb62b68252 and 069b142f5819 were built upon
+> > it, so maybe Gerhard should decide the path forward?
+> 
+> The deferred timestamp conversion is a niche feature for TSN to solve
+> the working clock / global time problem in TSN networks. IMO there is
+> no need to make it working as soon as igc or tsnep drivers are enabled.
+> It would be ok to fall back to normal vclock behavior like all other
+> drivers if CONFIG_NET_RX_BUSY_POLL=n. For me it is ok that NETCONSOLE
+> is not possible for PREEMPT_RT in combination with this feature.
+> 
+> There are already so many things to consider to get TSN working. To
+> not enable NETCONSOLE on PREEMPT_RT for deferred timestamp conversion
+> would be just one of many.
+> 
+> @Ding Meng: Do you actually need the NETCONSOLE in this combination?
+> On productive systems likely not these days due to CRA.
+> 
+> Gerhard
+OK, understand. Thanks for your comments, Gerhard. Actuallly, we solved
+this issue by disabling netconsole and enabling busy poll. This is
+indeed a quite rare scenario, but when it happens, it is a bit difficult
+to figure out that this was the root cause.
 
-Thank you for your comment!
-
-XDP_REDIRECT into a veth without a program on it has been supported
-since commit 0e672f306a28 ("veth: check for NAPI instead of xdp_prog
-before xmit of XDP frame"). There is demand for it [1].
-
-With or without a program on the veth, and on cpumap, this series
-keeps the RX metadata from the NIC until the skb is built.
-
-[1] https://lore.kernel.org/all/20210416175929.35c3c389@carbon/
-
-Thanks,
-Tianyi
+Ding Meng
