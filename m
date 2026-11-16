@@ -1,141 +1,152 @@
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C0BC5606A31C
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 16 Nov 2026 03:23:13 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 09E74606A31C
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 16 Nov 2026 08:22:20 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=MYIAFE0D;
-	dkim=pass (2048-bit key, unprotected) header.d=siemens.com header.i=meng.ding@siemens.com header.a=rsa-sha256 header.s=fm1 header.b=HQQZot2Z
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=Ujr6PgIq;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=fQZ84ft1
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 884274060F;
-	Mon, 16 Nov 2026 03:23:13 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id DA46180E4B;
+	Mon, 16 Nov 2026 08:22:19 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 8yfSBQw4OKSg; Mon, 16 Nov 2026 03:23:12 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 2F60840602
-Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794799392;
-	b=iC4JMZgx2490xpDpenurt+bLzbOBmEycxxRsT3aOZAf5LwKsVNOorFNn6vrL52JGZ1h5
-	 +GNc9CXyncZg3XDqCehgrrFTBHFGaFnjfw9XTcXoTRnj0ACktP5a7MIFla098YUoa6Zdk
-	 TSjPbjh/bw4e2e/U9P8KiJUfQdPw4eaMdjZJe/o1mekSYEo4VUvx5TnvAliVfTIV1eH0I
-	 5Kx19ZEuDoyntC+YNBwkfTkgysydAUB07V0lGlJw8yoO+Im1Zxm8cPtfw9iLkdaQG0NL5
-	 c+F01/wYa0yMgELjDePw9O1ogNYeAgc6R+/VGJ5DFn1evWFIz87FkS4s8sak9WMJB8A==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id XWYBUDjZHu9S; Mon, 16 Nov 2026 08:22:19 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 149E680E51
+Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794817339;
+	b=enALIJ/V/p5wRgLlbAVu2WGzB+oUTx8Px/hJgwh55K2hDsWs8EvfHDhnzSWNQhUlLd8O
+	 Qy+kGEBEuNp5jFq47Ns5Kjkbx2ipuC6A9WLl2K8AcBm2N/XburT+PG26nY5r34n7ek7Ai
+	 FViAGCte3vjHIVeyAEc0EuQwHvQDuJIOmF9kaKOyovuMChUFcGGAVM99wweKANiad3v0j
+	 jJydh+JcRVJW0phiK3GxL0VQzvwRD5N6rni5inTWwV1swwMjY9l8rp17IjIS1eARhWZPs
+	 yDR6YYMInv/FDgqGk178jdDhGuFkLxLSUIR1RgFkyH0NWVoY6M7gk6NQ3mI7Es3aLMw==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794799392;
+	c=relaxed/relaxed; t=1794817339;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:References:
-	 MIME-Version:Content-Type:Content-Disposition:In-Reply-To:
-	 X-Flowmailer-Platform:Feedback-ID:X-BeenThere:X-Mailman-Version:
-	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
+	 DKIM-Signature:Received:X-MC-Unique:X-Mimecast-MFC-AGG-ID:Received:
+	 Received:Message-ID:Date:MIME-Version:User-Agent:Subject:From:To:Cc:
+	 References:In-Reply-To:X-Scanned-By:X-Mimecast-MFC-PROC-ID:
+	 X-Mimecast-Originator:Content-Language:Content-Type:
+	 Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:Precedence:
+	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=vuaY7FImZE75sRdiBasv0Tsa2qzXujkTJsfP+X+hpsE=;
-	b=UUoixrFq82/UsYqMHSoPrb+oAt5batQ7DQDeKCaiCZZIH40nC4oQYwBLCdUEs94hitT+
-	 IgI2DrQR5qp/xxclJ9EgbJkANJS0M2EiZ8MfI3uV0P0oPiKFfJudUB6bP0WEm0JQ9pyno
-	 jEKNGme5qeFFz7Uik+mv+CMVo4IyYtd+TdtH7hF9WXU1v1O7EHuKbz/hA1XbkEfNKVZN3
-	 JOsVbLGbJ1VVEwJq8xf9yMbJ/iAHyzC7wDhfFN0eB8xR7sP8bQRSLF9XnoXXM37xAacNk
-	 +rCQb4uI11Jka7D8JSVRj0a0e9t/XyXnOaNT80fE+Se7Leoi6CY1NscnbBFdM+0LgTQ==
-ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
+	bh=gfIacyhfnvssNjldJA8LhzYaZPtCvyfmo//br/NPqo0=;
+	b=b70TYtu2IdPg1dZDfTd6B5IXVRFbmh/HMp0YxlyjPCvWVosvsY8jiva6af2yXYfzAMb6
+	 tXMPKhFxLKywnmsbWebY7l1xjPcKQVELGbyalsNicyuOHfoycX8uaEKoO68kngXGHdpd2
+	 2qPFn0g7VOFWVHF+DotssTcdi3qENC4AHIvvD/Nta8xvk3m42TJf/u1f8gnzYsSh9W0fz
+	 2L3/bM8V71+j5mOTGnAKlJTIrL0DZ2gDvN8k2HlsfSwnc9D7dvnrI4oBcm2YMuSRtWMVT
+	 Xl3N2lZpUdrCZqGW2i2arOjcKg9aSANDlBXgRulKqpcCRlRx3eH13/lmFEKY2BdMasw==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
+	dmarc=pass header.from=redhat.com;
+	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=fQZ84ft1;
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1794799392;
-	bh=vuaY7FImZE75sRdiBasv0Tsa2qzXujkTJsfP+X+hpsE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-Id:
+	s=default; t=1794817339;
+	bh=gfIacyhfnvssNjldJA8LhzYaZPtCvyfmo//br/NPqo0=;
+	h=Date:Subject:From:To:Cc:References:In-Reply-To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=MYIAFE0D0lf/EuzbDgX7i5KqkrhHkKLO+Z1F2/OKf756Cct/xgJRsoYY0q76Tx6XB
-	 xwyzYLfAE40aZsWP8ZphXwbyYIEn+LF/Xp36RIWbEiPRYmDotIITIugqehCrvvGRmc
-	 lH+6CCGL4RwIauu3RVtH95mdKZQ6kQQANOGFlZSxVqsK+NYKnzP/+o3zKLnzFPnNAg
-	 g0lMRNiMRe78cfpJDRLWZDz49rQTT+rmVMtCiv0ot+ylb4mr7JtAam+7I3jNtGVaRm
-	 pbQAd5LBB1CV4+m8GkezKtaNK1fZ1Fb9Glcj6qMQ3uHqAhDysYsmDYI4Ab0JRGfgiv
-	 4HHicNL3JGHKg==
+	b=Ujr6PgIq3Guodm/nYlZ+c93++2uq3AN9zwXSuANNaN9RgpbAgEgtVeBRjbbSsvwp/
+	 t3KOlNtl84zaVWGz4mHB9id7pbSWP9AZ95Zs/APdiIPloGZBnqnrjQqcEsr+50BDZl
+	 I4xOSNOfmr/A9Ml8YrnJqLojC23jfznBUiB9iCbe0uDn+zG4jl2MiXxS0ZwNY82Btb
+	 SzpWPYk7tZeoUUN1FALoSytet5OES6vuwwgNQ3y3+xHmfOQyQ2bP7QD9iFE+xcKpKW
+	 8mAY8V8li1pEAGzkbgK5z4Sv8Z8ChB06/yXtd6Ws4erU+OKG5z7TlUONEhXJa94EqM
+	 JYkj1roYSLmQA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 2F60840602;
-	Mon, 16 Nov 2026 03:23:12 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id BE1364A0
- for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Nov 2026 03:23:10 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 149E680E51;
+	Mon, 16 Nov 2026 08:22:19 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 9194D1A6
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Nov 2026 08:22:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id A71EB6060E
- for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Nov 2026 03:23:10 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 6F1E280E55
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Nov 2026 08:22:17 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id lEkLdBfYsZZg for <intel-wired-lan@lists.osuosl.org>;
- Mon, 16 Nov 2026 03:23:09 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org A41DE6060D
-Authentication-Results: smtp3.osuosl.org;
- arc=none smtp.remote-ip=185.136.64.228
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=185.136.64.228;
- helo=mta-64-228.siemens.flowmailer.net;
- envelope-from=fm-1335312-202611160323025d4b5ad0e600020733-6q3uzm@rts-flowmailer.siemens.com;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id cb3CqqvW1LxA for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 16 Nov 2026 08:22:16 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 416EC80E4B
+Authentication-Results: smtp1.osuosl.org;
+ arc=none smtp.remote-ip=170.10.133.124
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.133.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=ivecera@redhat.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=reject dis=none) header.from=siemens.com
-Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=siemens.com header.i=meng.ding@siemens.com
- header.a=rsa-sha256 header.s=fm1 header.b=HQQZot2Z
-Received: from mta-64-228.siemens.flowmailer.net
- (mta-64-228.siemens.flowmailer.net [185.136.64.228])
- by smtp3.osuosl.org (Postfix) with ESMTPS id A41DE6060D
- for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Nov 2026 03:23:05 +0000 (UTC)
-Received: by mta-64-228.siemens.flowmailer.net with ESMTPSA id
- 202611160323025d4b5ad0e600020733
- for <intel-wired-lan@lists.osuosl.org>;
- Mon, 16 Nov 2026 04:23:03 +0100
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; s=fm1;
- d=siemens.com; i=meng.ding@siemens.com;
- h=Date:From:Subject:To:Message-ID:MIME-Version:Content-Type:Cc:References:In-Reply-To;
- bh=vuaY7FImZE75sRdiBasv0Tsa2qzXujkTJsfP+X+hpsE=;
- b=HQQZot2Z8h36ijQln+msDhv9gcSYj5SfMiT/N6XRhq1xugtUNdMn/fUxA9qBarw0//j8Na
- Qp5FuiVGhxMPO9cC993IMWDRG3jL5qroVt1jz0dpBcib5J1XqAsug55FaOn/UyJlwDW3+4/Z
- SnqUPMfUPAFyJz26D8x3C+E+NxXIWN8DlZk93cowvaGSNioXssPo/2gJc+UIv9QXzmXIx35U
- NMhKnIdWTs+/JSI01xzO9af0qK0O6sX7kqp73KReA2Smg8mZnL2c/2jAK8tKE3YieXUoBvbc
- ix9Kc3VFdeZvjHKk09TilgE806fp1YWk96vwKdP6iRMZZyoFc6l9hW+w==;
-Date: Mon, 16 Nov 2026 11:22:46 +0800
-From: Ding Meng <meng.ding@siemens.com>
-To: Gerhard Engleder <gerhard@engleder-embedded.com>
-Cc: Paul Moses <p@1g4.org>, Jakub Kicinski <kuba@kernel.org>,
- netdev@vger.kernel.org, Willem de Bruijn <willemdebruijn.kernel@gmail.com>,
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet
- <edumazet@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Jonathan Corbet
- <corbet@lwn.net>, Andrew Lunn <andrew+netdev@lunn.ch>, Tony Nguyen
- <anthony.l.nguyen@intel.com>, Przemek Kitszel
- <przemyslaw.kitszel@intel.com>, Steven Rostedt <rostedt@goodmis.org>,
- Masami Hiramatsu <mhiramat@kernel.org>, Daniel Borkmann
- <daniel@iogearbox.net>, Alexei Starovoitov <ast@kernel.org>, Andrii
- Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, Kumar
- Kartikeya Dwivedi <memxor@gmail.com>, Richard Cochran
- <richardcochran@gmail.com>, florian.bezdeka@siemens.com,
- jan.kiszka@siemens.com, wq.wang@siemens.com, Jason Xing
- <kerneljasonxing@gmail.com>, Simon Horman <horms@kernel.org>, Shuah Khan
- <skhan@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>, Mathieu
- Desnoyers <mathieu.desnoyers@efficios.com>, Martin KaFai Lau
- <martin.lau@linux.dev>, Song Liu <song@kernel.org>, Yonghong Song
- <yonghong.song@linux.dev>, Jiri Olsa <jolsa@kernel.org>, Emil Tsalapatis
- <emil@etsalapatis.com>, Ihor Solodrai <ihor.solodrai@linux.dev>, John
- Fastabend <john.fastabend@gmail.com>, Stanislav Fomichev <sdf@fomichev.me>,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org, linux-trace-kernel@vger.kernel.org,
- bpf@vger.kernel.org
-Subject: Re: [PATCH] net: mark skb NAPI IDs independently of busy polling
-Message-ID: <tuwyyxeexvnd4ckncfhdg3grlh2xd6d2rym7vhx2uzdspjopmk@quzaz3gdurlz>
-References: <20261105071706.7043-1-meng.ding@siemens.com>
- <20261110134539.12d860ef@kernel.org>
- <4pqljild2fp6eotiicvwbwu2wfw66fzd4qamwt6utirdjxlaok@iiu2f3k7azrp>
- <Fhn2gT70aJ-2_eak73NBZYuXuKtVb64PoD8VQ9jwm-S-K0RhZilAg9iwSBJ0RlaiSrRvM1vPw1aHvGPjcktu9GmdBuvFk9244-q2IVOrFu0=@1g4.org>
- <1ab53072-b9ee-464b-b5b3-cbb578059b49@engleder-embedded.com>
+Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.from=redhat.com
+Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=fQZ84ft1
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 416EC80E4B
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Nov 2026 08:22:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1794817332;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=gfIacyhfnvssNjldJA8LhzYaZPtCvyfmo//br/NPqo0=;
+ b=fQZ84ft1LYqoWqfxV+VJnUzlMoH/x2ceAHB77s6q1s/wgcbFLm/SFxaJrpZaGhSwRpGTcl
+ 7WxQprHNN7F9S9tyB7gd6O2qvhyusnjGJsAjtcsjSH7eP/tWFb+1X/VcwBjS8H71YS8YQI
+ +kF8MbgI9v9FolVEnehadCFlOMNzp9o=
+Received: from mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-644-YeG4u82aP8Of6FAvye7dWw-1; Mon,
+ 16 Nov 2026 03:22:09 -0500
+X-MC-Unique: YeG4u82aP8Of6FAvye7dWw-1
+X-Mimecast-MFC-AGG-ID: YeG4u82aP8Of6FAvye7dWw_1794817326
+Received: from mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com
+ (mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.12])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
+ id B8B61180036E; Mon, 16 Nov 2026 08:22:05 +0000 (UTC)
+Received: from [100.91.101.41] (headnet04.pony-001.prod.iad2.dc.redhat.com
+ [10.2.32.116])
+ by mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
+ id 9625C1956088; Mon, 16 Nov 2026 08:21:58 +0000 (UTC)
+Message-ID: <2770a801-e889-4181-84ef-d1846d6c9e15@redhat.com>
+Date: Mon, 16 Nov 2026 09:21:57 +0100
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1ab53072-b9ee-464b-b5b3-cbb578059b49@engleder-embedded.com>
-X-Flowmailer-Platform: Siemens
-Feedback-ID: 519:519-1335312:519-21489:flowmailer
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH net-next v2 4/9] dpll: convert dpll_lock to rwsem
+From: Ivan Vecera <ivecera@redhat.com>
+To: netdev@vger.kernel.org
+Cc: Vadim Fedorenko <vadim.fedorenko@linux.dev>,
+ Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>,
+ Jiri Pirko <jiri@resnulli.us>, Jonathan Corbet <corbet@lwn.net>,
+ Shuah Khan <skhan@linuxfoundation.org>, Randy Dunlap
+ <rdunlap@infradead.org>, Min Li <min.li@microchip.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller"
+ <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ Richard Cochran <richardcochran@gmail.com>, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
+ Grzegorz Nitka <grzegorz.nitka@intel.com>,
+ Karol Kolacinski <karol.kolacinski@intel.com>,
+ Saeed Mahameed <saeedm@nvidia.com>, Tariq Toukan <tariqt@nvidia.com>,
+ Petr Oros <poros@redhat.com>
+References: <20261111164021.273409-1-ivecera@redhat.com>
+ <20261111164021.273409-5-ivecera@redhat.com>
+In-Reply-To: <20261111164021.273409-5-ivecera@redhat.com>
+X-Scanned-By: MIMEDefang 3.0 on 10.30.177.12
+X-Mimecast-MFC-PROC-ID: J_rfYqV_5vLbTXf2Q5Kj_Se6PQYWGykxGjbUf6Kob8s_1794817326
+X-Mimecast-Originator: redhat.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -146,46 +157,46 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-5.9 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+X-Spam-Status: No, score=-7.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=no autolearn_force=no version=4.0.1
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Fri, Nov 13, 2026 at 09:59:17PM +0100, Gerhard Engleder wrote:
-> On 13.11.26 09:29, Paul Moses wrote:
-> > 
-> > > 
-> > > Then, drivers that use deferred timestamp conversion (e.g. igc, engleder) must
-> > > specify a busy poll dependency if they want to obtain the original net
-> > > device upon consuming the skb. However, this dependency is far from
-> > > obvious, and annotating it for future features of this kind will be very
-> > > hard to discover.
-> > 
-> > The "deferred timestamp conversion" was incomplete is what I'm saying.
-> > 
-> > This started with 97dc7cd92ac6, 0abb62b68252 and 069b142f5819 were built upon
-> > it, so maybe Gerhard should decide the path forward?
-> 
-> The deferred timestamp conversion is a niche feature for TSN to solve
-> the working clock / global time problem in TSN networks. IMO there is
-> no need to make it working as soon as igc or tsnep drivers are enabled.
-> It would be ok to fall back to normal vclock behavior like all other
-> drivers if CONFIG_NET_RX_BUSY_POLL=n. For me it is ok that NETCONSOLE
-> is not possible for PREEMPT_RT in combination with this feature.
-> 
-> There are already so many things to consider to get TSN working. To
-> not enable NETCONSOLE on PREEMPT_RT for deferred timestamp conversion
-> would be just one of many.
-> 
-> @Ding Meng: Do you actually need the NETCONSOLE in this combination?
-> On productive systems likely not these days due to CRA.
-> 
-> Gerhard
-OK, understand. Thanks for your comments, Gerhard. Actuallly, we solved
-this issue by disabling netconsole and enabling busy poll. This is
-indeed a quite rare scenario, but when it happens, it is a bit difficult
-to figure out that this was the root cause.
+Sashiko reviewed v2 only on its dashboard [1], with low severity
+findings, so I am answering them here.
 
-Ding Meng
+[1] 
+https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20261111164021.273409-1-ivecera%40redhat.com
+
+ > This isn't a bug, but zl3073x_dpll_input_pin_ref_sync_set() in
+ > drivers/dpll/zl3073x/dpll.c still uses the old global serialization to
+ > justify dropping zldpll->lock:
+[...]
+ > Could this comment be updated in this patch, along with the dpll_lock
+ > reference in zl3073x_dpll_changes_check()? The later patch "dpll:
+ > zl3073x: update locking comments" rewrites both. The stale comment only
+ > exists between this patch and that one.
+
+Right, both comments are stale between this patch and patch 7, which
+rewrites them. The code is correct at every commit, because all channels
+of a chip share one domain. The new comments hold from patch 3 on, so if
+a respin is needed, I will move patch 7 before this one.
+
+ > Pin requests now run with dpll_lock held for read and pin->domain->lock.
+ > Take a fwnode pin registered on a DPLL from a different domain. Can that
+ > DPLL's device callbacks now run without its own domain lock?
+[...]
+ > Would it be better to put that check in before this conversion, or in
+ > the same patch, so this gap never exists?
+
+Right, between this patch and patch 6 nothing rejects such a
+registration. As you note, no in-tree driver registers a pin of another
+domain with .measured_freq_get, so no commit of the series can hit it
+with in-tree drivers. If a respin is needed, I will move the check of
+patch 6 before this patch and keep its tests in the KUnit patch.
+
+Thanks,
+Ivan
+
