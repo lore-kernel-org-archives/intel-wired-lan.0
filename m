@@ -2,29 +2,29 @@ Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 55908606A31C
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 17 Nov 2026 00:35:13 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 011BC606A31C
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 17 Nov 2026 00:40:06 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=Jcd75qOL;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=mF7z3127;
-	dkim=pass (1024-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=selector1 header.b=C2un4g7U
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=OrdnFhaD;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=eTwHjcA3;
+	dkim=pass (1024-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=selector1 header.b=ORmQo42d
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2C1B860825;
-	Tue, 17 Nov 2026 00:35:13 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id CC2D860831;
+	Tue, 17 Nov 2026 00:40:05 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id n3ocVpiC9HLc; Tue, 17 Nov 2026 00:35:11 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 397A760635
+ id 07axq3Ke0ExV; Tue, 17 Nov 2026 00:40:05 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org DF88C6081F
 Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794875711;
-	b=aDmC32aLmNo6PliS8lCRsEmhdbpjtFau4sKBEp6n+tGWY/5+fr0rqSoARi0iu+b2TD/0
-	 qvFMo6SYUHtGw7VhHy0YamPHZ5XNXDfMF1aXh+woAF+lyISgXeqabE+evW50QQGhYAqlC
-	 3TdN7DWgsZJoac05+RCD4Rtg3NrWxJt1zPeH6l46k1H7+kSes+RHvelJxGROEFNmQL5PC
-	 1wKxvXZxgf9OKvqZBompTcHfDy7z1ZTxtApdZql8idKjqemI/trsTEje0rBgjA4/IxfNK
-	 I3LquDZAwqjafZUO6AEsXGxxQm62uKZk6JQMccQgL7bFBxPcWDyc0t37uJf6OWtIWUw==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794876005;
+	b=Zt3FRfl4tfmWyff8uojchmT6VF6WdoGYuqNYI2BzY6/RWenTD5j9Yapiq3zrq82OsuQG
+	 DEesqsdR7/dyal5XIu67mU80JXZxbHhiOmGt6gYWYilNx7uHD439Wqvb5KFTCynyZnX4q
+	 g/Vg6NGyf6Ovlxr36oRHUoL01gET9ny26q5kNgNpTskuXoan9pBYHCypK8vEwrhfCB3G3
+	 6SZKEYKN1C8thae8BUpfvUuiPLmpQ/AWZ541aZeDq9eAn57usgJr4OGWjq2Tt++WGmWfF
+	 UQKHpxFYan/WRDqyFxiO82Cie8VlFFZBV50EpIzuHubqWkGUToUDN2VnEHPspOtH5yg==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794875711;
+	c=relaxed/relaxed; t=1794876005;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
@@ -49,193 +49,193 @@ ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
 	 X-MS-Exchange-Transport-CrossTenantHeadersStamped:X-OriginatorOrg:
 	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
 	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=QsfIX2B9HqqKy+oioSf2arR9bgOfC6jXkkODK4gAox8=;
-	b=NTlyCurvJJ3R8EnrVzfgdg8krjQJ+deB+qZ8Q/ZE4S8hLHwIqQqKd85WKdyLTRAu567V
-	 0+OW0XEfKWjkOyYiafRpmqPyvF5+fvmGiq+5mra7HQQskzQub1Nnf3TT0cmdO+Aw4aDN3
-	 GXYlBGeCI8E7WXMrYF9nDQi/jxWrfG+OYCv+IQAWxf78LOfkwIyge0uJUKLqjrN7q+txK
-	 Epjut0Kv/a2ihImzipHdBnlnTblQkQ/Y9gyKW3jVZ6t2GMgI+at/ImWJ4JnSbtdx4Z/hb
-	 JxwEmCZjux9do1QhJybjQTGeViJS7B2kjYTrzwBvJLJzLdhZ+bAHH/StJpXyspkbTMw==
+	bh=i7juHAK3cvEQod054ao1+2nUnocxn/TIB4wX+zW0ENo=;
+	b=q25q2F1LqbjfPYzZbF/MhIjS4Do05ZYVKiNVcNVB5MAUKdn76Zblbp7p1MK6ayn4X/q1
+	 nXDV0qqetzRzDNyI/ZXCJQIR5qiYZcLXw/PjsrGRJS/OlzMUgpOyRDNdxR9dt6awU8xMA
+	 lRvbnntBezbeKILCaaDWMicu9KuQ97U9v6bLRB7LOgC5TeBLXPkXsHNjG0+FtlkVghBx2
+	 3IV6R50/6l9nigT1uArgtwWXOP7v1czlILoC6lrBpdIzUQmeZv+17CJswFjE640ax3koq
+	 YaAZTVQ+bXClEnAWXZNjU+0/IMVaXW40mlB2Hj3D4NNtoIX8+4cGebbriFlsSitbL+A==
 ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1794875711;
-	bh=QsfIX2B9HqqKy+oioSf2arR9bgOfC6jXkkODK4gAox8=;
+	s=default; t=1794876004;
+	bh=i7juHAK3cvEQod054ao1+2nUnocxn/TIB4wX+zW0ENo=;
 	h=Date:Subject:To:References:From:In-Reply-To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=Jcd75qOLzceOWPYoYvYvV9xcENZs6e1X/JcgFTnf0+XuN13MeG1WtB6ZaVmxGyoXt
-	 HQInnkpW3SXQ8K5ZylcGYe1BOnIyTtoaKaDluXQUazsOqZZ8uZbiqgkIqHJL+0hilG
-	 73h3+UIpyw6yW1qECv9s+Cbd27+bTtg3G4QPzlBsKSpVc702Ee3fsbwmWj1/7Ft2XO
-	 FGbhkb9LGshD8wbpT4aLlueNTvx/Z5eW+uvh5565WW0GbDi84jZb4dcvLhRkGIVWF3
-	 NPfsFIscImYVL+KQJRayU4bCWH5Cig/oal8Vw785iHOyPZh8y+W+G/8Sus0+PDpNOl
-	 9VixjzDtgkUiA==
+	b=OrdnFhaDguLmKoHVK2KTASGvszrCdy+DKm7hj4XIvvulfw/bWgstDdVUymKxfYsnG
+	 vG0aq/JUnl1isvxP9fpejzkP640EH+FQBVNkKDsfHFvJqJ0J5wB5vwXRhCvF2qJS7T
+	 kd4bpOSVmr10LDnbehMBl/rU9+d1PkDoHniCvhwTwzXpksPw+UH77TDdvEDISO6XBV
+	 mvVTgvQLv5rCmS4vtBNXcDZO6sdzISBNTgSuo+PA2yq5l0PHEKzp312BRGb0f8jGib
+	 JiyxIIVm1Hvc5Urwi/2g5z+112EB7CKmMNslgqVm4yzkKxMIVdrQl1bOI+V6umE/jL
+	 cUMkLxM/xHO6w==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 397A760635;
-	Tue, 17 Nov 2026 00:35:11 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id E00DA1E7
- for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 00:35:09 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id DF88C6081F;
+	Tue, 17 Nov 2026 00:40:04 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id E47A149B
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 00:40:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id BCF1F80AC4
- for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 00:35:09 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id CFF6540737
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 00:40:03 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ADCou4tZsy2u for <intel-wired-lan@lists.osuosl.org>;
- Tue, 17 Nov 2026 00:35:08 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 21C0580A83
-Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0
- smtp.remote-ip=198.175.65.20
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.20;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Ev7L2K0VKLp7 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 17 Nov 2026 00:40:02 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 6E0C540723
+Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0
+ smtp.remote-ip=192.198.163.12
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.12;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp1.osuosl.org;
+Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=mF7z3127; 
+Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=eTwHjcA3; 
  dkim=pass (1024-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=selector1 header.b=C2un4g7U
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 21C0580A83
- for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 00:35:07 +0000 (UTC)
+ header.s=selector1 header.b=ORmQo42d
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 6E0C540723
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 00:40:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1794875708; x=1826411708;
+ t=1794876003; x=1826412003;
  h=message-id:date:subject:to:references:from:in-reply-to:
  content-transfer-encoding:mime-version;
- bh=zjtnefiNRJulUEhGerH5rH4SyOP5I9UBrSco98b/KmA=;
- b=mF7z3127w1Y8k76UxMJ48vGt3dKr0LuFqA1NDn7veBybXP+LcQk3NM/c
- HPr1da2BTxrO9SAQ2ZLNn7dcD5ia3wTsbUakIA2sWjEOqeofowNmqZ6P0
- 9b8I0uBh73YyVyfxQ011rPH3Qd0LLj1dz8xReVjnRdacNUzbvI6mGt3d4
- vNrEVORiRvNQCtRWOD8+zZgjaXJLCZIvGKCcitXSknpYug+qUHwMNEBhy
- jXWL0JqNTCWBIxqmCT1XojQIBmE33124Ub8ZvKTyDSjtcvdDHZiau0Nmq
- g4YZEfN2MLoG3dPP7BDy3cBFoIT04lnbey/TEmJCIqrULCcy7YCOw3VF4 A==;
-X-CSE-ConnectionGUID: b9dYaeQWSLa+WCEYZRElBQ==
-X-CSE-MsgGUID: inaPFrhIRC6Xa4nrFzsx0g==
-X-IronPort-AV: E=McAfee;i="6800,10657,11968"; a="3666976"
+ bh=qNC4mO22QBA4grWeBTt7qLfzuEvdaTi/Jo0nF6H/gF4=;
+ b=eTwHjcA3Fl7QJpQK5llRPg0ZoRbqBvvt0RULOGbc311j3D8Th6zX/wo0
+ TQwx6fm7vBf4vdKQQuyvCxHjCw7jWbptVKxjz9QxL+OGFX1kJFSBLoPcw
+ bZHUWnC+wSBbgeTu3+naHkzvPLK5Ul7fchdtiNpCsDMN+00HIvkEce+oV
+ 0+Rf/Wo1IxH30xESyNQkm6h7mrOk6sSswTd2UOHOn9S0KlVO/Kcmj2GlX
+ YVGu7vWdAcYQvfiXdURdrpnwuP5XPsXI3YLqQs4/WxZwJ8AtPLtQ4Y1oN
+ g5EPDjHVQecBtR2bSIWkIJWi6EcCCCrJK2yj2FFs+k9TKy97pFP8sGnko Q==;
+X-CSE-ConnectionGUID: t4KEavk9R064a6c+D/gRzA==
+X-CSE-MsgGUID: H9025o3ZTJiJ2evA4xJmcw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11968"; a="3533108"
 X-IronPort-AV: E=Sophos;i="6.27,217,1787036400"; 
-   d="scan'208";a="3666976"
-Received: from orviesa004.jf.intel.com ([10.64.159.144])
- by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 16 Nov 2026 16:35:07 -0800
-X-CSE-ConnectionGUID: dyXVO4SPTy6wmpVFuGTjjQ==
-X-CSE-MsgGUID: ckwoyx6GSyS3z/LOJoOp9Q==
+   d="scan'208";a="3533108"
+Received: from fmviesa009.fm.intel.com ([10.60.135.149])
+ by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 16 Nov 2026 16:40:01 -0800
+X-CSE-ConnectionGUID: hdl5dybeRkCw+/oO+B1NMw==
+X-CSE-MsgGUID: SRu96St8SUm+kr4+2YFutw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,217,1787036400"; 
-   d="scan'208";a="9582577"
+X-IronPort-AV: E=Sophos;i="6.27,217,1787036400"; d="scan'208";a="10016210"
 Received: from orsmsx903.amr.corp.intel.com ([10.22.229.25])
- by orviesa004.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 16 Nov 2026 16:35:08 -0800
-Received: from ORSMSX901.amr.corp.intel.com (10.22.229.23) by
+ by fmviesa009.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 16 Nov 2026 16:40:01 -0800
+Received: from ORSMSX903.amr.corp.intel.com (10.22.229.25) by
  ORSMSX903.amr.corp.intel.com (10.22.229.25) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.56; Mon, 16 Nov 2026 16:35:06 -0800
-Received: from ORSEDG902.ED.cps.intel.com (10.7.248.12) by
- ORSMSX901.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
+ 15.2.2562.56; Mon, 16 Nov 2026 16:40:00 -0800
+Received: from ORSEDG903.ED.cps.intel.com (10.7.248.13) by
+ ORSMSX903.amr.corp.intel.com (10.22.229.25) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.56 via Frontend Transport; Mon, 16 Nov 2026 16:35:06 -0800
-Received: from MW6PR02CU001.outbound.protection.outlook.com (52.101.48.35) by
- edgegateway.intel.com (134.134.137.112) with Microsoft SMTP Server
+ 15.2.2562.56 via Frontend Transport; Mon, 16 Nov 2026 16:40:00 -0800
+Received: from CO1PR03CU002.outbound.protection.outlook.com (52.101.46.67) by
+ edgegateway.intel.com (134.134.137.113) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.56; Mon, 16 Nov 2026 16:35:06 -0800
+ 15.2.2562.56; Mon, 16 Nov 2026 16:40:00 -0800
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=intel.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=QsfIX2B9HqqKy+oioSf2arR9bgOfC6jXkkODK4gAox8=;
- b=C2un4g7U/eLWoOmN8V52I2QGVXHTsRJc1Ea2ao4TAjd03fvkkx/tu3gQTpSlkXnbTLXn6/xdgteqNMeA1xYaYJ7SVNYo0OrfRjJXWudeAV0+vtvgs59Mzu1JCYmyJYgnYXsqumVPNdZyFPvVdfSGrSptuASgigLCIc0rif/ShqA=
+ bh=i7juHAK3cvEQod054ao1+2nUnocxn/TIB4wX+zW0ENo=;
+ b=ORmQo42daYsoVvBU2/SktYkQQSHhQE6fxLEROzBDUj+PczT9ks8sU4DiNQujePW6OTj0Q2fYOOUCh+vDIX2XYyWnXyKygbhQszxYMxOdcYrFrNjhqbZ8WW15Ms+xxbQ6rELQOd8y0RSzgsk3XZShEiFsyQ9uWPWSfs6Pk4KCDJs=
 Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=intel.com;
 Received: from SJ2PR11MB8451.namprd11.prod.outlook.com (2603:10b6:a03:56e::20)
  by DM3PPF99D0888FA.namprd11.prod.outlook.com (2603:10b6:f:fc00::f3d)
  with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.615.14; Tue, 17 Nov
- 2026 00:35:02 +0000
+ 2026 00:39:58 +0000
 Received: from SJ2PR11MB8451.namprd11.prod.outlook.com
  ([fe80::7d5f:b2ba:92d4:5f3c]) by SJ2PR11MB8451.namprd11.prod.outlook.com
  ([fe80::7d5f:b2ba:92d4:5f3c%4]) with mapi id 15.21.0615.013; Tue, 17 Nov 2026
- 00:35:02 +0000
-Message-ID: <531d951d-b412-401e-b016-a2c3efb172a1@intel.com>
-Date: Mon, 16 Nov 2026 16:35:00 -0800
+ 00:39:58 +0000
+Message-ID: <d7ca984f-e9ac-4299-88d9-5c9c48de1db6@intel.com>
+Date: Mon, 16 Nov 2026 16:39:57 -0800
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH iwl-next v2 3/4] ice: store cached PHC time in ice_adapter
+Subject: Re: [PATCH iwl-next v2 4/4] ice: use struct timecounter for E825 and
+ E830
 To: <sashiko-reviews@lists.linux.dev>, Intel Wired LAN
  <intel-wired-lan@lists.osuosl.org>
 References: <20261113-jk-e825-e830-timecounter-v2-0-9c357a7ed349@intel.com>
- <20261113-jk-e825-e830-timecounter-v2-3-9c357a7ed349@intel.com>
- <sashiko-outbox-213880@kernel.org>
+ <20261113-jk-e825-e830-timecounter-v2-4-9c357a7ed349@intel.com>
+ <sashiko-outbox-213873@kernel.org>
 From: Jacob Keller <jacob.e.keller@intel.com>
 Content-Language: en-US
-In-Reply-To: <sashiko-outbox-213880@kernel.org>
+In-Reply-To: <sashiko-outbox-213873@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: MW4P220CA0023.NAMP220.PROD.OUTLOOK.COM
- (2603:10b6:303:115::28) To SJ2PR11MB8451.namprd11.prod.outlook.com
+X-ClientProxiedBy: MW4P220CA0002.NAMP220.PROD.OUTLOOK.COM
+ (2603:10b6:303:115::7) To SJ2PR11MB8451.namprd11.prod.outlook.com
  (2603:10b6:a03:56e::20)
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
 X-MS-TrafficTypeDiagnostic: SJ2PR11MB8451:EE_|DM3PPF99D0888FA:EE_
-X-MS-Office365-Filtering-Correlation-Id: 95a995d1-5133-4f73-312f-08df44429e08
+X-MS-Office365-Filtering-Correlation-Id: b78892d8-628c-4f1b-64df-08df44434ec4
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
- ARA:13230040|23010399003|366016|376014|1800799024|18002099003|22082099003|6133799003|11063799006|4143699003|56012099006|10067099003|261026121527099003|261028144727099003|261021123027099003|261021121427099003|261026140227099003|261009223027099003|261102123227099003|261022105027099003;
-X-Microsoft-Antispam-Message-Info: VN8Sbb+A4+lUES+Z+dVVhaUDkrGZOeI13RuPFD6YONlUOB3o2pZvX73Xa1hy4LnQ1Pssppxe2r63JNIjBJMmweERLioNfelodnePZASXKtqW/AnUhTXDTQ8KYpKa/IxEdHG6QX39GTV2lMHM1FTYztech8fNI+4Id+0AxnA1lhj5ymhmy2soKleolPXgsr5fpxwqEnlWvm0Q9igxJPXM7LiF06yJPpwuqQvmCE+l974waCAJHXszgY4hwsE/w3cYBFuf9GIuhyNmV2pRZrngUm7BGWkTjDJcrgI4xqFhasPPkp1OUBuD3V3BfUw/9gZLEUva5hnsMHquv84w7otKyw3Ws/qFpXJdeXhHuCGpAdO6I/flPUuBvceb944g2YoZ3OfAPiNAgeJWYQqRoK+FOUCuMMvHDv3bwqI9bw0ecMC1fRZNQuKxDZmgyYaYhu44m8J9LspM/0WYQMDQdJ5U+xh2MgKOD7fJUsNLU7p3sR1mpxJjZ2cP494+Ar+qKQzaHKx0Qac6bbW40F3tUBUxSetHa1OUnJHVwQw1jAuLtMvgyZXKPM2TrkhDYqtUVK4lMGt6kdUYTwunxMim6TOL4loNnJ9x1BuOBJ4x0oiBPylPAgHYzUIjS7MtsRCEU8CcLsY+dz3dTR2c1Dkw5jiy83BGSaa5ob7DupCm6GA7jJA=
+ ARA:13230040|23010399003|366016|376014|1800799024|18002099003|22082099003|6133799003|3023799007|5023799004|11063799006|4143699003|56012099006|10067099003|261022075727099003|261026121527099003|261028144727099003|261021123027099003|261009221227099003|261021121427099003|261009223327099003|261009221727099003|261026140227099003|261009223027099003|261102123227099003|261009220027099003|261022105027099003;
+X-Microsoft-Antispam-Message-Info: s2SN5zgVwDTzo44Qy/oOaFUviO1ASxjPP0cbbjassfS++V8ttJrTyqrHnu737pXcKfbQlCLmoyvkZKf7Wgxi+58Wk42CW1JCDQ+qgRwVqfrlr0YpqsbC34BZAQ8L53OgYhsVuDqLZdnXoatoS5Kmt3mQm4s+ffPpoopUIHz9kxnxi8UMZtTfAd/oiTX7NbpJSKdmxIZcmCY1lcWC8MFXf7IM6rdAcPQFquX6rG89Aoa+wmCXe2uDlXa38WIaIEk2t4s62eOs88KaOjBIr4f4D6f6AeOmhhzrCZaurnU54B3HMD0SbomedoaBSb7bKVLOvFl5Lk+85mJPZO4MhIw6uT+sOtL7J97a4Vk47SZ8czyxfUp3GWd/x+a2sGI69RST6+bO9SjV1zipGwRv1LNupC8FD3XfP412AeueCNmVc9N+YpBnVvmrDSqLor3mEuGai1QKQmwadnLs0xONuG4MULhiMUxeysuRG7iB9xLoV59Jd2ECPzJdYBEkAn4M+IVyyfdcUxr932fAh4R51qu0W7GZeD4O6/3/Fo2sTIiuKUN1sAXyKzrac9HTpGNrHVqfaypbJc9MoTCNQMRmGVzj7kPukFvfPOBM6+O7Hg+Fq/lGPiJPI0Lo3xNOMvCnG2FnwezO11AXDaLjo1ciuMJyO67sKed2pNBTYDqIML27hVk=
 X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
  IPV:NLI; SFV:NSPM; H:SJ2PR11MB8451.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230040)(23010399003)(366016)(376014)(1800799024)(18002099003)(22082099003)(6133799003)(11063799006)(4143699003)(56012099006)(10067099003)(261026121527099003)(261028144727099003)(261021123027099003)(261021121427099003)(261026140227099003)(261009223027099003)(261102123227099003)(261022105027099003);
+ SFS:(13230040)(23010399003)(366016)(376014)(1800799024)(18002099003)(22082099003)(6133799003)(3023799007)(5023799004)(11063799006)(4143699003)(56012099006)(10067099003)(261022075727099003)(261026121527099003)(261028144727099003)(261021123027099003)(261009221227099003)(261021121427099003)(261009223327099003)(261009221727099003)(261026140227099003)(261009223027099003)(261102123227099003)(261009220027099003)(261022105027099003);
  DIR:OUT; SFP:1101; 
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?am9HdXJEbWtXbDkvTm1EUFdoZm1MMEtwdFpKN3h4Q3lmOWNrenZlaVdBQ0h4?=
- =?utf-8?B?L2ZFVHNtTTFxbnMrTDZBb1NaaUdaSENnY3FBS29VcG9tOWRtb0lOSmFTZEI1?=
- =?utf-8?B?ekovNUorL1ZvOS94UE01Y3hGKzhnVmlndzFHVkZ6WmVqalhoY2hBcTFuSWJX?=
- =?utf-8?B?MEwzUFZqNUt1TEhEbTI5Z1RVejZmTVpFdThjZGUrQkFROUJrSHpQZXNKVUo4?=
- =?utf-8?B?WXRRSFpGWXlTYzFPZ0xndzV3YXNBeWp2UmZxb0kzSlY5Z0krakkyWkFLNlgw?=
- =?utf-8?B?L2tGdDh0MDFKYVN0OGc0TE9YY0RPcTBhYVZnMmgzK1JDU0YweFltYzhONEhK?=
- =?utf-8?B?aDVoYjNkQ0RGZkI1bWNacElibVFSTVBVakY3cm5SaGRYNlJiRXNLNGYzQ2pw?=
- =?utf-8?B?ZjY5b1ZhbEhKb1R2TjJVbEdDd3V5cW1rM1ZyVlJmTFJzTmNSQUtQWE5XTFhW?=
- =?utf-8?B?WXdXQ0t2cndZZStYMUd2dldDS29OaHhLT1I2WjIvaFZkNnBOdnNQY0MxVmMr?=
- =?utf-8?B?VTBqMTlHbXVEY29yOEJlMnlwUVhock93SmJxdUl5UFpIOEMycERhRnhBWWVF?=
- =?utf-8?B?SDExb1BoYllaM1dIVjFpTmwvbnowNUR1SVd4QUVLeFpydDdZWlhlQnFCc2sz?=
- =?utf-8?B?ZXZoUVdhRXZLTTBZNjFqTHp0TEF5SmYrM0I2eUYvaCsrcFI4aTlDZnd6b3dr?=
- =?utf-8?B?UlIrRjh0SzJkTU5McUhsVEtGK25ZdTA4NEUzL2NHS0d1MnJGbis0c2c0cDdR?=
- =?utf-8?B?Q2o5eFEwYVRsVXpYWWhScWt3a0FLMTJmYjJ0THdCMk4wcVo2YzB0VE1SWUs0?=
- =?utf-8?B?MktrbnJmZkhJZGxxOUxiVkU2eG9kWEpVb2ROUm80bE92a01JdnVENlJlTDZv?=
- =?utf-8?B?QXRuRDcxdlpPSGhuVzFRNFVWVFJYYzhTMktWeGliQ0ptdjhYd0poMWVzWUZj?=
- =?utf-8?B?TXAzWVdFOHRKNkIzUWR6MHJtSlRXMGpyaW80ZDQzcEJlQUNHR0xoNFhVczFq?=
- =?utf-8?B?Tnp5dnF0RThNZVpTb2xFWUUyTUNYTUcxbC9nY3FzSGRUWDlXNjcrc3dHWGZo?=
- =?utf-8?B?OUlMUzZ3aGh2eEZOYllPUDNoZHZIWDZvT0xoOGdjRjRCb3ZEMEJzT0hGSDJO?=
- =?utf-8?B?d2hzRyt2VjRneXZIU05CK0N4WGNmeGYzcTRiVzR6VXVXODdYZERaTDZWL1I2?=
- =?utf-8?B?eXMvQm5yVGNHNTMyMysyaEh6KzFKaFBOdVIxTmUweHJRT1ZoZTl4UGdIS090?=
- =?utf-8?B?R09OUkNyclRaazl1VzYwNUoybCtMcXQyRlVwVmxyWi9GeHR6K1NsTWd4VGhU?=
- =?utf-8?B?anBZWGpKWWMvSDBheUZLUS9sWkdidXBNQVhjVXAwaU1ldzBWZTB2UzVXWU5h?=
- =?utf-8?B?b2ZGN204SVJHSGp5UzkwNVJFeVJVOGkySWVlcy9vRG5mWXpxWHowTWl2Qnoz?=
- =?utf-8?B?dXFhdjgzOFEwNjNHRmdQcnF4d0NhVW9SMWw1ZmdpeFpuUDc3TVhhN2dpNDVW?=
- =?utf-8?B?QnE5MSs0eTNxVVE3d0krc2VYYjRtVU96dTBMNGI2RnRMOFlPeUVqTW0rQjAr?=
- =?utf-8?B?WFd6eDhGcThuNGtpcEh0OGd2R0NPYkd5UngxV0EwMXV4STl2NkdIRXc3VFFk?=
- =?utf-8?B?ZStXN2hOWEgrTnZjd1B0ZWhXYkdjUWE2WTFrbTVVa0JBQlVMZ0x6VG42RlUz?=
- =?utf-8?B?MDdkL2dPb0NCVEdhTmxyS0Vjbmc2dGhEOEtkTVQ0L2hrSHF0UzVqVEZsSFBa?=
- =?utf-8?B?WWlvZzVNWW9GYzlXTVVlQWx2WncxaWRhekczRFFpb3RwT3JLM01sTFlNcTd3?=
- =?utf-8?B?aUZGbTVwUmhnUk9LUVE2WEJ5UWRPTUJkYnlBZzdpQ0p6U25jUkVsS3NBQmYx?=
- =?utf-8?B?ZGdSd1Y4T05kQW1GTWVMTWFpczV1ZVBscDJWcUszbTQybHhVVWdtcHUwQklD?=
- =?utf-8?B?RXRvNy90dFpZNWlsbi9IdTVhcjEyVmR5bDNRSkEwTkR0WHd3bWsyaG02dWY2?=
- =?utf-8?B?VUUrU3A3dnFoaUEvYjE4eHNqTVZ0WXpzVStYbm9pUjVNMFVkK2xIaXBGNjlq?=
- =?utf-8?B?UGNpSnFUWGtQNTl4N2ttaFp6SlllR2FzbUdEenJLbHdSL2p4ZzQzZVJDU3JN?=
- =?utf-8?B?bnlMVFRuRWJxK20xbHZWNEZLdE9uRUR1aGZhbVRsRW5FV2ZqanBDVnhUVWZH?=
- =?utf-8?B?OFhsU2xLVFlxS0w0YWtsWEVsQkVLbmtDMjNVYUROZHI4ZlpJYVB5QmpWQ2lp?=
- =?utf-8?B?NWluM3J6RGRlajdVNFpkc3NzbGFNQ1B1dzdER1NITGpDL2NyblI4OWpQeVZa?=
- =?utf-8?B?S3J6dHFmY3dDZU4zekd1MS93VEYzMVdnSTY3bmV5WC9yckpwNm5jdz09?=
-X-Exchange-RoutingPolicyChecked: dGcbEzkQNlqlCMqlgNMUfByOSMBlK+nJzenhDBBhWFN4/nt7Y3Ki1ohxv40q48Uuj8Ea+aCY5ixMjILCroyeJw5mS2eRVyO93I5PHYCGQ3i+/+CxHETEf63sFa/ISWVpSyoczNY7d4Kt9dJt2P2V9r0u+zqgREW+Jg/4fNEvkyHpPa9C587Tumf6SczO58vfAzkDNEaK7dPvu3LAabd7LPVra1L3YMM71LiTMILsByQpQrwrSTGSP2eTVfhYiMfPYEdEbZ8KGiJSxS4acGecvnUAU+NMvd3i5UgpgJhzrZx22WWbfk2zdp/pcPonleV8SZMEEyNil/Dx0w7jUZ1GSg==
-X-MS-Exchange-CrossTenant-Network-Message-Id: 95a995d1-5133-4f73-312f-08df44429e08
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?MUF1emhhbGdNOHltTm1XL0lpaDBGeEpMQStRd3ZwMGJKNmdiMjJRWVpkMmI2?=
+ =?utf-8?B?b2RJWFNaRDB1ekM1ZHl2YzdXbi9aZGtHeFBydXpPbnltS2VRaGZpRDZFejln?=
+ =?utf-8?B?cDRNMzE1Zk5LQ1ZkN2k4R2ZNN20zcjBRWUo5eExta1FWUXp4eHNhbmNPZEFo?=
+ =?utf-8?B?RXhSZDdrQ0JPdkVKK0ttdVQwcWp2QzdjZW5wQ2JzM2YyZXNUTXlUMDRxNGF0?=
+ =?utf-8?B?L0pGZzNrV09YZkdnT01hVWFWdEx5TXpxVTBBQmRReEE2dEpCbCtyaUdZRVBS?=
+ =?utf-8?B?WlRHTTFEUkFFQzB4WXlmRythUi9IbC9YUThzYkFFWHNTV0crd3h0aUFQKzRr?=
+ =?utf-8?B?blRlZFNQczBhN1hnSDJnM0xkeCtTM0JKSktzUHJiVVVKS2NIRWlTVVdVckRZ?=
+ =?utf-8?B?blNvT05jb1JlcnZvSWRPdGZWNDdvTkZxdERCMm4xdUIvZFd6YmR1SEcwazY3?=
+ =?utf-8?B?WEtDUE9mMDQ3VWFIWjhzMkZnNXNwbUdaZTgyVmVEMWlxOVlwVmFMZnZydFls?=
+ =?utf-8?B?aW1VYlM3V0RPUnUyenZBK2VBZkFVU1BoUDE4dEQvcVUvYkFGNFNtWkZOL0JE?=
+ =?utf-8?B?ZitLUGM3U0JwOFdSRnlEUnk4WGVMRlZUQ0V0cWJWQThNY2JrKzd5eGQvd1hE?=
+ =?utf-8?B?SDVjZEdpZ0xrVEJ4R3pqQW5TNG9nV1hJd0U0OFM4L2JvVXJ3Ylo5WUllRUc2?=
+ =?utf-8?B?Tngyb0Z3MmF2RG1RMnFXUmFiNEFReHA5ODEwaFp5Nnk3SnVsdzRZcC94OElL?=
+ =?utf-8?B?d1NKL3BXYXp1bDJEZFJ2OVpUczZMR0tzbEQ3Nlo2UUc1TmFPaWlIUnpKYkty?=
+ =?utf-8?B?dHBMNzlITFhtcm5RTGtaWVE4YnVBWDNRTFFSd2hQSGFWRGloRTVxbGtNeVc0?=
+ =?utf-8?B?RmFqQUFUNXozNnk4VDFKQkM1cC8zOER2OWpRUTNnemZCeHVSRFg1MnplMzRu?=
+ =?utf-8?B?TWZoQjg0dW1BbGdOVFFJNEpqdTI3bFNzTkk5UWo2OWljM1k4ckEvWGl2MzdQ?=
+ =?utf-8?B?clF1eXM0RWJuOEFXU0E2RE5XS2lOWjZnakdYVjNZYUV3U3J5Um1XUXAzTGI1?=
+ =?utf-8?B?ampnUDNtUFJWTzkvTW92dlJJeURXYUZwQlRXRXBGS2pCTXhiTm4rNjIya2ZI?=
+ =?utf-8?B?cjRha3VoNEN5N3FWcGxpdStmb1lZQ0hzRlhmTVVnUWJyMmg0WFhyaFFLc0hK?=
+ =?utf-8?B?bUlFdlcxQnlWNis3a0ZvREsxZk8wbXRSeDk2aXZGS25OVGR2RUE5UG5Ib3g5?=
+ =?utf-8?B?dVZUUlBiYUNGaW11WW1pU1M2aXdiYnZ0N2dMdGdJcGNqaHMrWWl6SWZjbDJa?=
+ =?utf-8?B?UHFnMFlPRlpXaGgya21QR3Rka3c3UlQ0TWNRQ3dIU0gvdUJXeWdMTjBRK2sx?=
+ =?utf-8?B?TStIRW5EWU5yYzdUY20yVURaeE00YUpsV0cxeGtmVkhiaEZNTEQyUzZjcjhw?=
+ =?utf-8?B?eStZTmRpbWp5NG9EZEFaSkpCbVA4QnVydW5WdktUbjE3Q0l0YUpnUnZxR0hP?=
+ =?utf-8?B?a0Z0eU5oMnBxWEhiRGpjSjg5cDJtYTJzQ2hORndma3lWVDlYcTdDV25GN2tG?=
+ =?utf-8?B?cXBtdXArRmUvSFZLU0NCWEROUThFWjRSUGZuWEdOSnlkYWZBVU52emFhVnNq?=
+ =?utf-8?B?UUZqbmlqV0ZMZDRkODRSYWRETDQ1aWxwcEJxcTU1Rmo3aCtwNk1uTjg1YkpL?=
+ =?utf-8?B?Sk5PMDBKampDZGZXZC9rYUNaNnlTMmU0ekZuYnBINU5XZ09Wc0VUZlRkVFRN?=
+ =?utf-8?B?eXpnNHR0TlMrNjBHR0xCM3B5T0lCNjUrZFU2ZzkrWEYwdlp5UXduclp3c2x2?=
+ =?utf-8?B?dXg4Q1h2NTZxelMwc0kybEswMnYwSFhwcUpnY3pVaXRiWk5CUXAxamlzRkpJ?=
+ =?utf-8?B?c21XZENYdk9oMzRiKzRDZStmS1g0WlB4WWppd1kyVDBYK0xUYks5SEVZU29l?=
+ =?utf-8?B?Z3kxeHkvRDFJTERhNEYyNndhT0p3NGZUWndHRHhrbSszaExFK0hnVWZ4TjRO?=
+ =?utf-8?B?VitpSmJsQ2FvQlBPMndyL0FpQXhnUHV0eFRBQjFzNUZvTHRMTXpmcklTamw5?=
+ =?utf-8?B?UHVFOUVYaG5oZzFTNFQzbjZaMVh0VG9JNDN2UENCMUxoNjF5NUd4amxUd2Vj?=
+ =?utf-8?B?MW5qaGtkSmNmYk8vRU5NZlFpNXQ0ZGpkVTlnNnp1MCtWTjhGZzNGV1MzRGh2?=
+ =?utf-8?B?MHdjcnNTSnQxU29tYmhMVStsSnkrK1c3bkhrSUpzNEphTVByZ2JRam8vNE5D?=
+ =?utf-8?B?V05IVmtBYXJMWTBzSUZnR1hJeFRjNmtmTzZTZGxGN0kzMkl1dGw5L0piMmVW?=
+ =?utf-8?B?eHdhMWFQczd1MVVyb0hsTGZOTmJlNHpQMnVPU1BsVlAzdDE4RU44QT09?=
+X-Exchange-RoutingPolicyChecked: p4tEspHTBIe3csfCmaxtEUCMfwpELNqo5SoEKN3kJ0ClBHkV+0zAJOp2L9QY0rXRppUPsM3kUzOfmqRgeW/FSssNc0neuz/sUyFonjA1mA18BKstc+Sm0De35Z+nCpFY+5BaY0MuIWGRGZ9vWpPSyl7uYN8K/qFa9Nia9JqK0CHj5aW8/znGIPCoRlZqcgPvhyNOC4u815cbxLktfRj/XTlQcg1n1BIK/g1Klhy029i1yu5PUAHIFtr8N1rUapf5l8g01zG32fMoEPf24b4k2b0dvL0Y+6dE+VgKpMxhJ8HlUP+P6ghKiUn1ChqK0Zjq1EKFgvLV7oR56iTr4yo7nA==
+X-MS-Exchange-CrossTenant-Network-Message-Id: b78892d8-628c-4f1b-64df-08df44434ec4
 X-MS-Exchange-CrossTenant-AuthSource: SJ2PR11MB8451.namprd11.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Nov 2026 00:35:02.3789 (UTC)
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Nov 2026 00:39:58.6472 (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 6m3sJ5LbOb/PqfUiwU7/JGedpUEpyDyux9rbIEIp8Jy0iYyAeDKriV/FrOSljXPsBg15B8iXLlnoe6wkN7yxcIPlpWfaVIX2yxNA+AURH80=
+X-MS-Exchange-CrossTenant-UserPrincipalName: +6x/dvkH4u/HqI8kzoLDvDG5NB+5AY5GlejhddQgAf8jZxDCwfikxWBxf9DjWu4jy3bZXmutIHwD+9FjYdfNT/8BSfdfmKc+7c4YVQQbOpU=
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM3PPF99D0888FA
 X-OriginatorOrg: intel.com
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -256,116 +256,236 @@ X-Spam-Status: No, score=-12.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On 11/13/2026 3:52 PM, sashiko-bot@kernel.org wrote:
-> Thank you for your contribution! Sashiko AI review found 1 potential
-> issue to consider:
-> - [Medium] ice: stale adapter->phc cache across reset in
->   ice_ptp_rebuild_owner()
+On 11/13/2026 3:46 PM, sashiko-bot@kernel.org wrote:
+> Thank you for your contribution! Sashiko AI review found 2 potential
+> issues to consider:
+> - [Medium] ice: perout_rqs updated outside phc.lock in
+>   ice_ptp_gpio_enable()
+> - [Medium] ice: premature update_jiffies store in ice_ptp_read_cycles()
 > --
 > 
-> commit 3e2553cade32eeca4938b383704866bc53bd38ea
+> commit 2dbce654e6813d30b319e71f8e68ca2b82a4b244
 > Author: Jacob Keller <jacob.e.keller@intel.com>
 > 
-> ice: store cached PHC time in ice_adapter
+> ice: use struct timecounter for E825 and E830
 > 
-> This commit moves the cached PHC time and its update timestamp from the
-> per-PF ice_ptp and Rx ring structures into a shared struct ice_phc embedded
-> in ice_adapter, updated only by the clock owner PF.
+> This commit switches E825 and E830 devices from direct hardware PHC time
+> adjustments and legacy 32-bit timestamp extension to a latched
+> timecounter/cyclecounter stored in struct ice_phc.
 > 
 >> diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
->> index bf37c2a7ff863..a0451c1083a41 100644
+>> index a0451c1083a41..b48d1bf3bbf59 100644
 >> --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
 >> +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+>> @@ -272,6 +272,202 @@ int ice_ptp_read_src_clk_reg(struct ice_pf *pf,
+>>  	return 0;
+>>  }
+>>  
+>> +/**
+>> + * ice_ptp_read_cycles - cyclecounter read() callback function
+>> + * @cc: the hardware cycle counter structure
+>> + *
+>> + * Read the PHC time via ice_ptp_read_src_clk_reg() and report it for use
+>> + * within timecounter_read() and timecounter_init().
+>> + *
+>> + * Although the cycle counter is masked to 32-bits for timestamp extension,
+>> + * this still reports the full 64-bit time to enable determining the phase
+>> + * difference between the PHC hardware value and the timecounter properly.
+>> + *
+>> + * Return: The current PHC timer value from the hardware on success.
+>> + *         Since failure cannot be meaningfully reported, return the previous
+>> + *         cycle_last value when unable to access the device.
+>> + */
+>> +u64 ice_ptp_read_cycles(struct cyclecounter *cc)
+>> +{
+>> +	struct ice_adapter *adapter;
+>> +	struct ice_phc *phc;
+>> +	struct ice_pf *pf;
+>> +	u64 time;
+>> +	int err;
+>> +
+>> +	phc = container_of(cc, struct ice_phc, cc);
+>> +	adapter = container_of(phc, struct ice_adapter, phc);
+>> +
+>> +	scoped_guard(rcu) {
+>> +		pf = rcu_dereference(adapter->ctrl_pf);
+>> +		if (!pf)
+>> +			return phc->tc[0].cycle_last;
+>> +
+>> +		err = ice_ptp_read_src_clk_reg(pf, NULL, &time);
+>> +		if (err)
+>> +			return phc->tc[0].cycle_last;
+>> +
+>> +		/* Paired with smp_load_acquire in ice_ptp_extend_32b_ts */
+>> +		smp_store_release(&phc->update_jiffies, jiffies | 1);
+>> +		return time;
+>> +	}
+>> +}
+> 
 > [ ... ]
->> @@ -3099,24 +3056,20 @@ static void ice_ptp_periodic_work(struct kthread_work *work)
->>  {
->>  	struct ice_ptp *ptp = container_of(work, struct ice_ptp, work.work);
->>  	struct ice_pf *pf = container_of(ptp, struct ice_pf, ptp);
->> -	int err;
->>  
->>  	if (pf->ptp.state != ICE_PTP_READY)
->>  		return;
->>  
->>  	ice_ptp_tspll_monitor(pf);
->>  
->> -	err = ice_ptp_update_cached_phctime(pf);
->> +	if (ice_pf_src_tmr_owned(pf))
->> +		ice_ptp_update_cached_phctime(pf);
->>  
->>  	ice_ptp_maybe_trigger_tx_interrupt(pf);
->>  
->> -	/* Run twice a second, or retry soon if another thread was busy
->> -	 * updating the Rx rings. Other errors, such as a missing control PF,
->> -	 * do not clear up on their own and must not turn the periodic worker
->> -	 * into a busy loop.
->> -	 */
->> +	/* Run twice a second */
->>  	kthread_queue_delayed_work(ptp->kworker, &ptp->work,
->> -				   msecs_to_jiffies(err == -EAGAIN ? 10 : 500));
->> +				   msecs_to_jiffies(500));
->>  }
->>  
->>  /**
->> @@ -3211,6 +3164,8 @@ void ice_ptp_prepare_for_reset(struct ice_pf *pf, enum ice_reset_req reset_type)
->>  
->>  	/* Acquire PHC and system timer to restore after reset */
->>  	ptp->reset_time = ktime_get_real_ns();
->> +	if (ice_ptp_read_src_clk_reg(pf, NULL, &ptp->phc_reset_time))
->> +		ptp->phc_reset_time = 0;
->>  }
->>  
->>  /**
->> @@ -3250,13 +3205,13 @@ static int ice_ptp_rebuild_owner(struct ice_pf *pf)
->>  	if (err)
->>  		goto err_unlock;
->>  
->> -	/* Write the initial Time value to PHY and LAN using the cached PHC
->> -	 * time before the reset and time difference between stopping and
->> -	 * starting the clock.
->> +	/* Write the initial Time value to PHY and LAN using the PHC time
->> +	 * before the reset and time difference between stopping and starting
->> +	 * the clock.
->>  	 */
->> -	if (ptp->cached_phc_time) {
->> +	if (ptp->phc_reset_time) {
->>  		time_diff = ktime_get_real_ns() - ptp->reset_time;
->> -		ts = ns_to_timespec64(ptp->cached_phc_time + time_diff);
->> +		ts = ns_to_timespec64(ptp->phc_reset_time + time_diff);
->>  	} else {
->>  		ts = ktime_to_timespec64(ktime_get_real());
->>  	}
+> 
+>> +static void ice_phc_refresh(struct ice_phc *phc)
+>> +{
+>> +	lockdep_assert_held(&phc->lock);
+>> +
+>> +	write_seqcount_latch_begin(&phc->seq);
+>> +	(void)timecounter_read(&phc->tc[0]);
+>> +	write_seqcount_latch(&phc->seq);
+>> +	/* Update the secondary copy */
+>> +	phc->tc[1].cycle_last = phc->tc[0].cycle_last;
+>> +	phc->tc[1].nsec = phc->tc[0].nsec;
+>> +	write_seqcount_latch_end(&phc->seq);
+>> +}
+>> +
+>> +/**
+>> + * ice_phc_init - Initialize PHC timecounter to new start value
+>> + * @phc: pointer to the PHC structure
+>> + * @init_tstamp: New initial value for the timecounter
+>> + *
+>> + * Initialize the PHC timecounter to a new offset. The latched sequence
+>> + * counter is used to ensure readers get a consistent view of the timecounter
+>> + * phase. We always pass the same cyclecounter structure, so the mask, frac,
+>> + * and cc fields always remain the same, and only the cycle_last and nsec
+>> + * fields must be propagated to the secondary structure.
+>> + */
+>> +static void ice_phc_init(struct ice_phc *phc, u64 init_tstamp)
+>> +{
+>> +	lockdep_assert_held(&phc->lock);
+>> +
+>> +	write_seqcount_latch_begin(&phc->seq);
+>> +	timecounter_init(&phc->tc[0], &phc->cc, init_tstamp);
+>> +	write_seqcount_latch(&phc->seq);
+>> +	/* Update the secondary copy */
+>> +	phc->tc[1].cycle_last = phc->tc[0].cycle_last;
+>> +	phc->tc[1].nsec = phc->tc[0].nsec;
+>> +	write_seqcount_latch_end(&phc->seq);
+>> +}
 > 
 > [Severity: Medium]
-> Does ice_ptp_rebuild_owner() leave a stale cached_time in pf->adapter->phc
-> across a non-PFR reset?
+> Does storing phc->update_jiffies inside ice_ptp_read_cycles() publish
+> the timestamp before either phc->tc[] copy is updated?
 > 
-> When a reset such as EMPR zeroes GLTSYN_TIME before
-> ice_ptp_prepare_for_reset() reads it, ptp->phc_reset_time is 0 and
-> ice_ptp_rebuild_owner() reinitializes the hardware clock to
-> ktime_get_real() (UTC) via ice_ptp_write_init(), which can differ from a
-> pre-reset TAI PHC by 37 seconds.  Neither ice_ptp_prepare_for_reset() nor
-> ice_ptp_rebuild_owner() invalidates or refreshes pf->adapter->phc after
-> writing the new time, and non-owner PFs no longer update the cache in
-> ice_ptp_periodic_work().
+> timecounter_init() and timecounter_read() invoke cc->read() before
+> writing tc[0].cycle_last and tc[0].nsec, while phc->seq is odd and
+> directing readers to phc->tc[1]:
+> 
+> CPU0                                  CPU1
+> ice_phc_init()
+>   write_seqcount_latch_begin(&phc->seq)
+>   timecounter_init(&phc->tc[0], ...)
+>     ice_ptp_read_cycles()
+>       smp_store_release(&phc->update_jiffies, ...)
+>                                       ice_ptp_extend_32b_ts()
+>                                         smp_load_acquire(&phc->update_jiffies)
+>                                         ice_phc_cyc2time_with_trace()
+>                                           seq = read_seqcount_latch(&phc->seq)
+>                                           /* idx == 1 */
+>                                           timecounter_cyc2time(&phc->tc[1], ...)
+>                                             <-- uses uninitialized or stale tc[1]
+>     tc[0].cycle_last = ...
+>     tc[0].nsec = ...
+>   write_seqcount_latch(&phc->seq)
+>   phc->tc[1] = phc->tc[0]
+>   write_seqcount_latch_end(&phc->seq)
+> 
+> During initial bringup or after a reset or delayed refresh (>2s), CPU1
+> sees a fresh update_jiffies and extends a packet's 32-bit hardware
+> timestamp against an uninitialized (zero) or stale phc->tc[1] snapshot
+> instead of discarding it or using the updated timecounter.  Recording the
+> new jiffies value and calling smp_store_release(&phc->update_jiffies, ...)
+> after write_seqcount_latch(&phc->seq) (or write_seqcount_latch_end()) when
+> cc->read() succeeded would ensure readers only see the fresh timestamp
+> once an updated timecounter copy is active.
+>
+
+The problem here is that I do not have a way to check if read fails. I
+suppose we could modify the timecounter API to support reporting a
+failure from read? In practice this read should basically never fail
+except in cases near a teardown that drops the ctrl_pf from the
+adapter... I don't really want to try and add yet another variable to
+the structure but that would be an alternative fix here...
+
+
+
+> [ ... ]
+> 
+>> @@ -1974,7 +2202,10 @@ static int ice_ptp_gpio_enable(struct ptp_clock_info *info,
+>>  		if (on && pf->ptp.state != ICE_PTP_READY)
+>>  			return -EIO;
+>>  
+>> +		/* Serialize against concurrent timecounter updates */
+>> +		mutex_lock(&pf->adapter->phc.lock);
+>>  		err = ice_ptp_cfg_perout(pf, &rq->perout, on);
+>> +		mutex_unlock(&pf->adapter->phc.lock);
+>>  		if (!err) {
+>>  			*cached = rq->perout;
+>>  		} else {
+> 
+> [ ... ]
+> 
+>> @@ -2086,6 +2319,43 @@ ice_ptp_settime64(struct ptp_clock_info *info, const struct timespec64 *ts)
+>> +static int ice_ptp_settime64_tc(struct ptp_clock_info *info,
+>> +				const struct timespec64 *ts)
+>> +{
+>> +	struct ice_pf *pf = ptp_info_to_pf(info);
+>> +	struct ice_phc *phc = &pf->adapter->phc;
+>> +	u64 ns;
+>> +
+>> +	if (pf->ptp.state != ICE_PTP_READY)
+>> +		return -EIO;
+>> +
+>> +	ns = timespec64_to_ns(ts);
+>> +
+>> +	mutex_lock(&phc->lock);
+>> +
+>> +	ice_ptp_disable_all_perout(pf);
+>> +
+>> +	ice_phc_init(phc, ns);
+>> +
+>> +	ice_ptp_mark_all_tx_tracker_stale(pf);\n+
+>> +	/* Reenable periodic outputs */
+>> +	ice_ptp_enable_all_perout(pf);
+>> +
+>> +	mutex_unlock(&phc->lock);
+>> +
+>> +	return 0;
+>> +}
+> 
+> [Severity: Medium]
+> Can releasing pf->adapter->phc.lock before updating *cached
+> (pf->ptp.perout_rqs[rq->perout.index]) in ice_ptp_gpio_enable() race with
+> ice_ptp_settime64_tc() or ice_ptp_adjtime_tc()?
+> 
+> The POSIX clock layer only holds down_read(&clk->rwsem) across ioctl,
+> clock_settime, and clock_adjtime calls, so ice_ptp_gpio_enable() and
+> ice_ptp_settime64_tc() can run concurrently:
 > 
 
-Couple of notes: We have patches to convert the driver to use
-ktime_get_tai() which we should probably include in the series.
 
-Additionally, I'm not entirely sure how to resolve this since I don't
-think checking against the cached_time is good (it could easily be up to
-0.5 seconds out of date making our reset provide a bad time. I'm not
-sure which is actually worse?
+Its weird this was placed here, but ya, I think we do need to hold the
+lock until after the report back from gpio_enable.
 
-> If the reset and rebuild finish within 2000 ms of the last pre-reset
-> update, ice_ptp_extend_32b_ts() still sees a fresh phc->update_jiffies and
-> extends post-reset Rx and Tx hardware timestamps against the pre-reset
-> phc->cached_time until the owner PF's kworker runs
-> ice_ptp_periodic_work().
+> CPU0                                  CPU1
+> ice_ptp_gpio_enable()
+>   mutex_lock(&pf->adapter->phc.lock)
+>   ice_ptp_cfg_perout(pf, &rq->perout, 1)
+>   mutex_unlock(&pf->adapter->phc.lock)
+>                                       ice_ptp_settime64_tc()
+>                                         mutex_lock(&phc->lock)
+>                                         ice_ptp_disable_all_perout(pf)
+>                                         ice_phc_init(phc, ns)
+>                                         ice_ptp_enable_all_perout(pf)
+>                                           /* cached->period is still 0 */
+>                                         mutex_unlock(&phc->lock)
+>   *cached = rq->perout;                 <-- HW keeps pre-settime phase
+> 
+> When enabling an output, ice_ptp_enable_all_perout() sees a zero period in
+> perout_rqs[] and skips reprogramming GLTSYN_TGT for the new timecounter
+> phase; when disabling an output, it sees the old non-zero period and
+> re-enables the output in hardware right before *cached is cleared.
+> Writing *cached without holding phc.lock also races with
+> ice_ptp_disable_all_perout() and ice_ptp_enable_all_perout() reading the
+> struct under phc.lock.  Holding pf->adapter->phc.lock across the *cached
+> update in ice_ptp_gpio_enable() avoids the race.
 > 
 
-I suppose we could try to disable timestamps explicitly when we reset at
-the cost of timestamps potentially going missing? I guess resetting
-stops queues anyways...
-
-I am not sure how big a deal this is in practice.
