@@ -2,28 +2,28 @@ Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D8BDF606A31C
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 17 Nov 2026 16:29:12 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B6835606A32A
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 17 Nov 2026 16:29:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=bYZU9ylq;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=QxKIUdvB
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=xXxbViqg;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=EvE76S02
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B7C344094C;
-	Tue, 17 Nov 2026 16:29:12 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 97C67408FB;
+	Tue, 17 Nov 2026 16:29:13 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id W5FKI5fIYqKI; Tue, 17 Nov 2026 16:29:11 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org DB9B54093B
+ id lP22Em-y08Z8; Tue, 17 Nov 2026 16:29:12 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 74AFC4094B
 Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794932950;
-	b=aV+E41ZakYB/rnqQNN+GE6eXkTpPQf9PgprIgGX6EA2DEcmLQM81mtYAClmn52JSUX9N
-	 LH7+gSS1ZXGuAsflMrYy3VJff6tPSGCuxXCGYIn5OBq5OXTqAtBrxCfN/a1oSnW3laAXr
-	 oY4V+8qzR7WhsavFQMBasQOzat9K4w3bkcXuW7wwJmrxnP5GxmChCWrwupL7ZEt9Mkwq0
-	 /KmBN1n1nZTpjDOTekiXXKHhOIL9ngn9Kriur0w3tNj1BwSs1WccQ2c6EW3LSADpgP5+L
-	 NO7ZRdC9YWihtX3vIxflRFmWhwdfZo227LMiS2Y24UiQJu52hNhEXG9fzy12pV3wOAw==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794932952;
+	b=SCkC6BqVErVYbnVe4VXJ/+YHBXtx8z5eEcYeK7M3sKTmKZUCF0YVtSDhWRNjWlbS3b8A
+	 +23hYHnxNIhv3FmJw7sfRKjt0QJaaPi4ll+Hk+NaDTfjWgOGIdXts9Wfkk0F7QvU6ux44
+	 +ffYQgSyuMyb/qZq4Wa4N6pOEyhn7P3fZ04C4QeBMlakG5mxXYoy5Y4UB2dX7M8Y42kNq
+	 1Nb6PzvXeD9TyG70imogF6C8QhDQzMw+/88T9kpA+cSefOTJR4oNlCHxK3DwIT9rL6ffj
+	 BqplJ5xV2TDFYt3u0CP0o0fIR8VvPnSt1Vy9maVAGMtaqIzouztKtUSj4hik766KsBw==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794932950;
+	c=relaxed/relaxed; t=1794932952;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
@@ -33,105 +33,103 @@ ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
 	 X-Mailman-Approved-At:X-BeenThere:X-Mailman-Version:Precedence:
 	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=HotKHfm/wwBRMcvK7oxXp3xcdvVbDhxmIMVIjCZywAA=;
-	b=FUwSxNM/UA4LOKkJhP6yVK2r3vi2Bju+ivrpCVu6KfBeOwHn4hogjR1FcsbnZVHqScEU
-	 ZJuIf9FeYU2i7VOfAHLKcGj6nlVyyIf7jRDM4CuyuDxr38snLF6jjnBKKw6vYhysscv1d
-	 tQc/BK7Cw9gxzZSogtNwb48aznHgfIcxfYcl+UJiUpwDSjw2KovOJcHAzidB0recpMu4a
-	 FUjPCX4s4tTNNVV/wsEeNoif+t6az/CFlP422YMJ095t89RxHx43N1C9fkhdvXebMbvkp
-	 Y6bJk0yM4sKpqWwvqFtZ6cn7C58ex8VzcGUVVgOV5TQxvxralIvhFhCETifBFWMJImA==
+	bh=j/02eyou4M60KpUrF8lLMNeinWTXVYjClptMJA9JWgg=;
+	b=B3tmkrV2ao8qG0Z0mB3Oz4/oMKP2RVDIltCaomx5TyzUddQDBWWtLASDcCNgo76Pzkh7
+	 kfFsKFt48CEAVn2oyKxpBMsf6KACR4DwlnXGC4btwh1jyGQ0jmqNIsqbWnpUtRBtqHtED
+	 vgF9JCK2y3oc/fADCPJoRJnUwXPVzn+PN2hevTffOCBEnZz47brZh7KXBR15QMFzP3Rru
+	 DSlqG+0+L0JfEEh9GnzdfUJShfFzLrFQY/UF1wZMlTi42pBvPbzS9ZYbVPKagjgXt4Fq5
+	 i+MZx2fK3Phj1R4xGdiEv1nBd4LYJT1HOjAOWn2DxYYaD/+zrfm/WeGhfvz+6ZB/TcQ==
 ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
 	dmarc=pass header.from=google.com;
-	dkim=pass header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=QxKIUdvB;
+	dkim=pass header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=EvE76S02;
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1794932950;
-	bh=HotKHfm/wwBRMcvK7oxXp3xcdvVbDhxmIMVIjCZywAA=;
+	s=default; t=1794932952;
+	bh=j/02eyou4M60KpUrF8lLMNeinWTXVYjClptMJA9JWgg=;
 	h=Date:In-Reply-To:References:Subject:From:To:Cc:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=bYZU9ylqH3J9XWCNI/uthC7Xx0ocWuENEtXs67RD9yb2I4PBPS9dHP510M03ZfNNg
-	 CGR1PJCmw3zVxgRwrLqcJncObZv9xc3dtvlPCfBdsG1sjrRoVLxP+bWnmJphYpNHOi
-	 rY3iqhJ3uloMZ3BPfaSR8/W5nsExJThnIZvnSYOV3zz8We4lvBh0e3pTOGDaot8yu1
-	 R3970uCeLmSTw4HqKRa+aK3GcX6zRMzXohExe4QwyKSog4D7eaDmbck7nw6hn0Xhlt
-	 oOxCgOpSMRyqQTajhYtJkBCbpIHoNEwhX+QKiZ2nQvvY4mcJXHnFTRBUaJWueywe1K
-	 9tRm7ZR0Z7kyQ==
+	b=xXxbViqg+tPMMJvTwxvXLmUgz5SCwR38pXbsLCKoxZW8hbdtLX1LE0jkDKSewgcj5
+	 DPcok85S9gVPZQQDWL05rhIoQTGPD1A/nX3C4HOuz0cVh2iopmDDoyvY73iNC1+4UL
+	 +yKAiGugYO92PNzv41rGG0ifDUCcKRT5rio5hQCN4Zd6Bjo4bP7AU7in3VRlTKvBUO
+	 KvOFhSumHyknyV8mFc6B7Dt9K445ylZzUCji0UhxL2x1xg7+yptgYbrdnuk8A8MFZJ
+	 /CDI5EYv3xK+XzF37ctmqsuk/yHS3Qoh1iz3vHw+Pt/GgNXHee0bCOpAVrGko/G+6k
+	 x3qUjh94FZWHQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id DB9B54093B;
-	Tue, 17 Nov 2026 16:29:10 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 74AFC4094B;
+	Tue, 17 Nov 2026 16:29:12 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 64F5849B
- for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 14:55:54 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 7079370B
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 14:55:55 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 566B240897
- for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 14:55:54 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 56560408B5
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 14:55:55 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id AexzNu5f9oPd for <intel-wired-lan@lists.osuosl.org>;
- Tue, 17 Nov 2026 14:55:53 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org BD016408BE
+ id fS0sIWX7RRVG for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 17 Nov 2026 14:55:54 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 68D6D40897
 Authentication-Results: smtp4.osuosl.org;
- arc=none smtp.remote-ip="2607:f8b0:4864:20::846"
+ arc=none smtp.remote-ip="2607:f8b0:4864:20::1145"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::846; helo=mail-qt1-x846.google.com;
- envelope-from=39mr8agukdx0lm3gb9hh9e7.5hfbgm7e-pbk76-e3geblml.hlnhle.hk9@flex--stani.bounces.google.com;
+ client-ip=2607:f8b0:4864:20::1145; helo=mail-yw1-x1145.google.com;
+ envelope-from=3-gr8agukdx8no5idbjjbg9.7jhdio9g-rdm98-g5igdnon.jnpjng.jmb@flex--stani.bounces.google.com;
  receiver=<UNKNOWN> 
 Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
- header.a=rsa-sha256 header.s=20260707 header.b=QxKIUdvB
-Received: from mail-qt1-x846.google.com (mail-qt1-x846.google.com
- [IPv6:2607:f8b0:4864:20::846])
- by smtp4.osuosl.org (Postfix) with ESMTPS id BD016408BE
- for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 14:55:52 +0000 (UTC)
-Received: by mail-qt1-x846.google.com with SMTP id
- d75a77b69052e-5363fa3d3e4so91025281cf.0
- for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 06:55:51 -0800 (PST)
+ header.a=rsa-sha256 header.s=20260707 header.b=EvE76S02
+Received: from mail-yw1-x1145.google.com (mail-yw1-x1145.google.com
+ [IPv6:2607:f8b0:4864:20::1145])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 68D6D40897
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 14:55:53 +0000 (UTC)
+Received: by mail-yw1-x1145.google.com with SMTP id
+ 00721157ae682-8b4e8af48c8so21009047b3.1
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 06:55:53 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=google.com; s=20260707; t=1794927351; x=1795532151; darn=lists.osuosl.org;
+ d=google.com; s=20260707; t=1794927352; x=1795532152; darn=lists.osuosl.org;
  h=content-type:cc:to:from:subject:message-id:references:mime-version
  :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
- :content-type; bh=HotKHfm/wwBRMcvK7oxXp3xcdvVbDhxmIMVIjCZywAA=;
- b=QxKIUdvBSkQUgk+uj7j3pdMRBEct+gCIZUAKPAqHgtJ6tvS/NSde8GgoEaLSeGt8v+
- 7UHdPg1jTmTuWuGn7DADXb0n4fbjLl7VHaFLd0FY3lae2ctDorrbhKEOykK+0je825Ty
- sN80+mW9J3RS8oD072Xe/KYyUDxsptZHLlMak+wxQH9ojueEBSbqOXSw9wmYR+TCGkMV
- P81jqMAb69scWLBZLAyX0FgmnE7uqjs9x+yP1vlbiFD05JSJX/VS4C0OTu9ozBYJVt2c
- Y6LYxorneVzT2a528eNUlV8/t+D+PbPEdWrNmoKvylVr5SLFb6ffM+P4yoZLR/JqNrMH
- 72XA==
+ :content-type; bh=j/02eyou4M60KpUrF8lLMNeinWTXVYjClptMJA9JWgg=;
+ b=EvE76S02lzLoeQQ8Px1uIKiweE+G90yv/pX/AaPrfwbrk3XJfsu1Bbq+nKAMLF2yD6
+ RmryvQ2z6g5p0LsFs5aVQ0wUrZ09NtzsBBfSu4frr03lwxIe/hTIMrlTid3gZBTSD+Yc
+ RzqTaspbyp+PBmG0v4rWanXs8/O07YGYafIa0YoUWhTjUYL0hQXtexSfth2CHcpgdvEm
+ /SQf7QCiEiCPqNj+lRQ4yVwX8+icmE26ryYMPsED8hgZMCKupA/V7JSVUz2AWaPoLkku
+ tq/2Z/y3sA1hMjaY9tD2BoESV9G8Njmky3f1QQDNeFKmynePbHKebLZA2xFDgqFSoy8r
+ ZWDw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1794927351; x=1795532151;
+ d=1e100.net; s=20260707; t=1794927352; x=1795532152;
  h=content-type:cc:to:from:subject:message-id:references:mime-version
  :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
  :message-id:reply-to:content-type;
- bh=HotKHfm/wwBRMcvK7oxXp3xcdvVbDhxmIMVIjCZywAA=;
- b=NwsCSGhGne/XKV8bZIEd/QQsQFW/kLTm5kEagrDcq6bfpgjzqPtVzWY4k/EdnTZHZn
- xYTriZJAnE2mMHbFGxB5oP3LDem4Q8zsZtkWibZVF0AQLihXHF/vsHBOxIZLuriu3ubI
- MLEVK5cQRVN65hME/fWZTMzuVtkvbyaRjZWyw2lKgjh2R5qhe91X5l32hUfPaKY0UkjP
- MGG3kMa1xKGO6vtmpYkG6OGnqWYU3bzzdZ0CkHh4fUmH/GRiJgp2HorwKvDPRrSdVzlN
- hYlydnOxq+LulHsEpVVWUE9i41Yuz/Bo6ZNPfYE5d23UZi+JtRxG3hee/tmloD1h+uUR
- QDtA==
+ bh=j/02eyou4M60KpUrF8lLMNeinWTXVYjClptMJA9JWgg=;
+ b=o+ljvivqHDubJS831e+pYJLK3tXjLNJUrfXtw6eZslXCwsAx2wIWYUPDSB6PfyJB+p
+ QTkjR6KcigfxIsPe9JNLzbGE/ujSkIwuInttzcl2TkBCsFja3bGScZyGF2dBZbqMiSgY
+ OJa9DSCqrobJnq4HGaBXQjWlWPqO5hBQxXeXsp+Pl+MtX24734zZF5K8YoVnsAFWYuiT
+ m3+hFuO1c9P/8Id143B9bFWGwAcH6VVsFrM/bHyGjPeQRfdZbg68c6ysI3fAebZ29kGJ
+ JZNF62B6HepKFsYJRKH3EGZTmWtHMA0CQP/JG8djacoV17K8cVhUkDJMWcpk/oRNy74H
+ NYeA==
 X-Forwarded-Encrypted: i=1;
- AL+hErHrBJgDrAg6dEYWtwWIkeqYrwj1ATSVE/VEBNcOdzE85Ojim9jYsaONpulHA9yGC63nDu+TopVLkql7jg4BP6Y=@lists.osuosl.org
-X-Gm-Message-State: APuU4Z955TucUIfso0g6U0V9Dvosq9qa5RGfGCHNhwsT3JZh+SNVde8I
- c9EosLP+z5RF8IZRHNpv+U+9RKSuAJz9AaUat+AQViGXzDNl3mquSJenWCqNYEEY2ggIQXtW3KW
- MmQ==
-X-Received: from qtrr4-n1.prod.google.com
- ([2002:a05:622a:a984:10b0:55d:38be:35af])
+ AL+hErEL1mUW6dNbvQdyhWE3INJT3iUM/SUlLrwydcO+Prd5mbzTbVv0CgzdNVWj8C8+658lu9qox44txrJR0c2oerk=@lists.osuosl.org
+X-Gm-Message-State: APuU4Z935j4sJz27WhHAiCBWJnC5nEKLBhChiFC0nuBlT8JsNqMf43Tl
+ mrNlzOIv7f8hzCAjA+jHYfOlFT44wOT88F70WtTIcja+pxpdbF2T4NimTu8aqza3gfdiQr+aRpx
+ AFg==
+X-Received: from ywzz28.prod.google.com ([2002:a05:690c:a71c:b0:8ab:3345:c617])
  (user=stani job=prod-delivery.src-stubby-dispatcher) by
- 2002:a05:622a:5b93:b0:536:8f5a:628
- with SMTP id d75a77b69052e-55ac908688bmr214064961cf.52.1794927350524; Tue, 17
- Nov 2026 06:55:50 -0800 (PST)
-Date: Tue, 17 Nov 2026 14:55:19 +0000
+ 2002:a05:690c:e64b:b0:8b0:d9ff:4f74
+ with SMTP id 00721157ae682-8b4aa32e148mr55968407b3.42.1794927352263; Tue, 17
+ Nov 2026 06:55:52 -0800 (PST)
+Date: Tue, 17 Nov 2026 14:55:21 +0000
 In-Reply-To: <20261117145522.1910636-1-stani@google.com>
 X-Archived-By: <archiver.kernel.org>
 Mime-Version: 1.0
 References: <20261117145522.1910636-1-stani@google.com>
 X-Mailer: git-send-email 2.56.0.679.gc527c65306-goog
-Message-ID: <20261117145522.1910636-14-stani@google.com>
-Subject: [PATCH iwl-next 13/15] idpf: psp: add psp work and tx key insertion
- completion
+Message-ID: <20261117145522.1910636-16-stani@google.com>
+Subject: [PATCH iwl-next 15/15] idpf: psp: add psp tx key registration
 From: Stan Iliev <stani@google.com>
 To: Tony Nguyen <anthony.l.nguyen@intel.com>, 
  Przemek Kitszel <przemyslaw.kitszel@intel.com>,
@@ -168,596 +166,203 @@ X-Spam-Status: No, score=-26.4 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Add the PSP work and the completion of the asynchronous TX key
-insertion requests:
-- Add the PSP work on the PSP workqueue, allocated the first time PSP
-  is negotiated, which sends the queued deletion requests. A request
-  that couldn't be sent, e.g. because no mailbox transaction was free,
-  is sent again after IDPF_PSP_RETRY_MSEC: the PSP work is a delayed
-  work. It is cancelled during a reset and while a soft reset
-  reallocates the queues, and queued again afterwards.
-- Introduce VIRTCHNL2_OP_PSP_INSERT_KEYS (561) and
-  struct virtchnl2_psp_insert_keys_response.
-- Add struct idpf_psp_insert_req, the context of an insertion request,
-  which holds a reference on its keys: it binds the response callback
-  to the keys the request was sent for. At most one request is in
-  flight.
-- Implement idpf_psp_tx_key_inserted(), which publishes the SA index
-  of an inserted key, and idpf_psp_tx_key_failed(). A key deleted
-  while its insertion was pending gets its SA index deleted.
-- libie calls the response callback of a request once, after the
-  reply or the timeout, except on shutdown: idpf_psp_quiesce(), called
-  after libie_ctlq_xn_shutdown() in idpf_vc_core_deinit(), fails the
-  request in flight and drops the delete queue. libie only checks the
-  timeouts in the mailbox task: a timer runs it once the request timed
-  out, so that a lost reply in mailbox interrupt mode doesn't block the
-  insertions.
-- The SA indexes of late replies, passed by libie to
-  idpf_recv_event_msg(), are queued for deletion.
+Add idpf_psp_queue_insert(), which queues a TX key for insertion:
+- The key reserves a SADB entry, released if the insertion fails, or
+  once its SA index was deleted. An SA index that couldn't be deleted
+  keeps its SADB entry, as does the SA index of a late insertion reply
+  until it is deleted.
+- New keys are refused with -ENOSPC once the SADB or the insert queue
+  (IDPF_PSP_INS_QUEUE_MAX keys) is full.
+- The RX SPI allocation refuses the RX keys of new connections then,
+  instead of failing their TX keys later.
 
 Signed-off-by: Stan Iliev <stani@google.com>
 ---
- drivers/net/ethernet/intel/idpf/idpf_lib.c    |  12 +
- drivers/net/ethernet/intel/idpf/idpf_psp.c    | 213 ++++++++++++++++++
- drivers/net/ethernet/intel/idpf/idpf_psp.h    |  14 ++
- .../net/ethernet/intel/idpf/idpf_psp_def.h    |  34 +++
- .../ethernet/intel/idpf/idpf_psp_virtchnl.c   |  50 +++-
- .../intel/idpf/idpf_psp_virtchnl_def.h        |   3 +
- .../net/ethernet/intel/idpf/idpf_virtchnl.c   |   3 +
- include/linux/net/intel/virtchnl2.h           |  16 ++
- 8 files changed, 344 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/idpf/idpf_psp.c    | 62 +++++++++++++++++++
+ drivers/net/ethernet/intel/idpf/idpf_psp.h    |  2 +
+ .../net/ethernet/intel/idpf/idpf_psp_def.h    |  4 ++
+ .../ethernet/intel/idpf/idpf_psp_virtchnl.c   |  4 ++
+ 4 files changed, 72 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_lib.c b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-index 062753a62f59..18d484c1a2ca 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_lib.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-@@ -1458,6 +1458,9 @@ static int idpf_vport_open(struct idpf_vport *vport, bool rtnl)
- 
- 	idpf_up_complete(vport);
- 
-+	/* Send the PSP requests queued while the vport was down */
-+	idpf_queue_psp_work(adapter);
-+
- 	if (rtnl)
- 		rtnl_unlock();
- 
-@@ -1755,6 +1758,9 @@ static void idpf_init_hard_reset(struct idpf_adapter *adapter)
- 
- 	dev_info(dev, "Device HW Reset initiated\n");
- 
-+	/* Stop sending PSP requests */
-+	idpf_cancel_psp_work(adapter);
-+
- 	/* Prepare for reset */
- 	if (test_bit(IDPF_HR_DRV_LOAD, adapter->flags)) {
- 		reg_ops->trigger_reset(adapter, IDPF_HR_DRV_LOAD);
-@@ -1882,6 +1888,11 @@ int idpf_initiate_soft_reset(struct idpf_vport *vport,
- 	if (!new_vport)
- 		return -ENOMEM;
- 
-+	/* No PSP packet is sent while the queues are reallocated, the PSP
-+	 * work is queued again below
-+	 */
-+	idpf_cancel_psp_work(adapter);
-+
- 	/* This purposely avoids copying the end of the struct because it
- 	 * contains wait_queues and mutexes and other stuff we don't want to
- 	 * mess with. Nothing below should use those variables from new_vport
-@@ -1970,6 +1981,7 @@ int idpf_initiate_soft_reset(struct idpf_vport *vport,
- 
- free_vport:
- 	kfree(new_vport);
-+	idpf_queue_psp_work(adapter);
- 
- 	if (reset_cause == IDPF_SR_MTU_CHANGE)
- 		idpf_idc_vdev_mtu_event(vport->vdev_info,
 diff --git a/drivers/net/ethernet/intel/idpf/idpf_psp.c b/drivers/net/ethernet/intel/idpf/idpf_psp.c
-index d2a0ba79c7ab..373edbef9a7e 100644
+index 95926ac99777..1dfec4177c43 100644
 --- a/drivers/net/ethernet/intel/idpf/idpf_psp.c
 +++ b/drivers/net/ethernet/intel/idpf/idpf_psp.c
-@@ -5,6 +5,101 @@
- #include "idpf_psp.h"
- #include "idpf_psp_virtchnl.h"
+@@ -11,6 +11,9 @@
+ /* Delay before the PSP work sends again a request that couldn't be sent */
+ #define IDPF_PSP_RETRY_MSEC		100
  
-+/* Delay of the insert request timer after the request timeout */
-+#define IDPF_PSP_INSERT_TIMER_SLACK_MSEC	1000
-+
-+/* Delay before the PSP work sends again a request that couldn't be sent */
-+#define IDPF_PSP_RETRY_MSEC		100
-+
-+/**
-+ * idpf_queue_psp_work - Queue the PSP work
-+ * @adapter: private data struct
-+ */
-+void idpf_queue_psp_work(struct idpf_adapter *adapter)
-+{
-+	if (adapter->psp.wq)
-+		mod_delayed_work(adapter->psp.wq, &adapter->psp.work, 0);
-+}
-+
-+/**
-+ * idpf_retry_psp_work - Queue the PSP work after a request couldn't be sent
-+ * @adapter: private data struct
-+ *
-+ * The request is sent again after IDPF_PSP_RETRY_MSEC, unless the PSP work is
-+ * queued earlier.
-+ */
-+void idpf_retry_psp_work(struct idpf_adapter *adapter)
-+{
-+	if (adapter->psp.wq)
-+		queue_delayed_work(adapter->psp.wq, &adapter->psp.work,
-+				   msecs_to_jiffies(IDPF_PSP_RETRY_MSEC));
-+}
-+
-+/**
-+ * idpf_cancel_psp_work - Cancel the PSP work and wait for it to finish
-+ * @adapter: private data struct
-+ */
-+void idpf_cancel_psp_work(struct idpf_adapter *adapter)
-+{
-+	if (adapter->psp.wq)
-+		cancel_delayed_work_sync(&adapter->psp.work);
-+}
-+
-+/**
-+ * idpf_psp_work - Send the PSP key insertion and deletion requests
-+ * @work: work of struct idpf_adapter_psp
-+ *
-+ * Send
-+ * at most one request of each kind. The work is queued again when there is
-+ * more to do, or after a delay when a request couldn't be sent.
-+ */
-+static void idpf_psp_work(struct work_struct *work)
-+{
-+	struct idpf_adapter *adapter = container_of(to_delayed_work(work),
-+						    struct idpf_adapter,
-+						    psp.work);
-+
-+	/* The mailbox is initialized again on reset, and released on remove
-+	 * and shutdown, see idpf_psp_quiesce()
-+	 */
-+	if (idpf_is_reset_in_prog(adapter) ||
-+	    test_bit(IDPF_REMOVE_IN_PROG, adapter->flags))
-+		return;
-+
-+	if (idpf_send_delete_psp_keys(adapter))
-+		idpf_queue_psp_work(adapter);
-+}
-+
-+/**
-+ * idpf_psp_insert_timeout - Insert request timer
-+ * @t: insert_timer of struct idpf_adapter_psp
-+ *
-+ * libie times out asynchronous requests in the mailbox task, which only runs
-+ * when the CP sends a message in mailbox interrupt mode. Run it once the insert
-+ * request in flight timed out, so that a lost reply doesn't block the key
-+ * insertions.
-+ */
-+static void idpf_psp_insert_timeout(struct timer_list *t)
-+{
-+	struct idpf_adapter_psp *psp = timer_container_of(psp, t, insert_timer);
-+	struct idpf_adapter *adapter = container_of(psp, struct idpf_adapter,
-+						    psp);
-+
-+	queue_delayed_work(adapter->mbx_wq, &adapter->mbx_task, 0);
-+}
-+
-+/**
-+ * idpf_psp_insert_timer_arm - Start the insert request timer
-+ * @adapter: private data struct
-+ * @timeout_ms: timeout of the insert request
-+ */
-+void idpf_psp_insert_timer_arm(struct idpf_adapter *adapter, u32 timeout_ms)
-+{
-+	mod_timer(&adapter->psp.insert_timer,
-+		  jiffies + msecs_to_jiffies(timeout_ms +
-+					     IDPF_PSP_INSERT_TIMER_SLACK_MSEC));
-+}
++/* Maximum number of TX keys queued for insertion */
++#define IDPF_PSP_INS_QUEUE_MAX		1024
 +
  /**
-  * idpf_psp_negotiate_caps - Negotiate the crypto and PSP capabilities
+  * idpf_queue_psp_work - Queue the PSP work
   * @adapter: private data struct
-@@ -110,9 +205,23 @@ void idpf_psp_init(struct idpf_adapter *adapter)
- 	if (!psp->initialized) {
- 		spin_lock_init(&psp->del_lock);
- 		INIT_LIST_HEAD(&psp->del_list);
-+		INIT_DELAYED_WORK(&psp->work, idpf_psp_work);
-+		spin_lock_init(&psp->insert_lock);
-+		timer_setup(&psp->insert_timer, idpf_psp_insert_timeout, 0);
- 		psp->initialized = true;
- 	}
- 
-+	if (!psp->wq) {
-+		psp->wq = alloc_workqueue("%s-%s-psp",
-+					  WQ_UNBOUND | WQ_MEM_RECLAIM | WQ_SYSFS,
-+					  0, dev_driver_string(dev),
-+					  dev_name(dev));
-+		if (!psp->wq) {
-+			dev_warn(dev, "PSP disabled, failed to allocate the workqueue\n");
-+			return;
-+		}
-+	}
-+
- 	/* The master keys are tracked again for the new PSP device */
- 	psp->generation = 0;
- 	psp->rx_gen[0].gen = IDPF_PSP_GEN_UNKNOWN;
-@@ -123,10 +232,60 @@ void idpf_psp_init(struct idpf_adapter *adapter)
- 	atomic_set(&psp->keys_removed, 0);
- 	atomic_set(&psp->keys_lost, 0);
- 	atomic_set(&psp->del_retries, 0);
-+	atomic_set(&psp->keys_inserted, 0);
-+	atomic_set(&psp->insert_errors, 0);
-+	atomic_set(&psp->insert_late, 0);
+@@ -237,6 +240,8 @@ void idpf_psp_init(struct idpf_adapter *adapter)
+ 	atomic_set(&psp->keys_inserted, 0);
+ 	atomic_set(&psp->insert_errors, 0);
+ 	atomic_set(&psp->insert_late, 0);
++	atomic_set(&psp->sadb_used, 0);
++	atomic_set(&psp->keys_refused, 0);
  
  	WRITE_ONCE(psp->enabled, true);
  }
+@@ -436,6 +441,8 @@ void idpf_psp_tx_key_failed(struct idpf_adapter *adapter,
+ 			    struct idpf_psp_tx_key *key)
+ {
+ 	atomic_inc(&adapter->psp.insert_errors);
++	/* The SADB entry reserved for the key wasn't used */
++	atomic_dec(&adapter->psp.sadb_used);
+ 
+ 	spin_lock_bh(&key->lock);
+ 	if (key->idx == IDPF_PSP_IDX_IN_PROG)
+@@ -443,6 +450,54 @@ void idpf_psp_tx_key_failed(struct idpf_adapter *adapter,
+ 	spin_unlock_bh(&key->lock);
+ }
  
 +/**
-+ * idpf_psp_quiesce - Stop the PSP work and drop the pending requests
++ * idpf_psp_sadb_full - Check if new PSP keys must be refused
 + * @adapter: private data struct
 + *
-+ * Called after libie_ctlq_xn_shutdown(), which discards the asynchronous
-+ * transactions without calling their response callback: the keys of the
-+ * insert request in flight are failed here. The SA indexes queued for deletion
-+ * are dropped, as the SADB is flushed by the reset or remove that follows, see
-+ * idpf_psp_queue_delete().
++ * Return: true if the SADB or the insertion queue is full, false otherwise.
 + */
-+void idpf_psp_quiesce(struct idpf_adapter *adapter)
++static bool idpf_psp_sadb_full(struct idpf_adapter *adapter)
++{
++	/* sadb_entries fits in 26 bits, see idpf_psp_negotiate_caps() */
++	return atomic_read(&adapter->psp.sadb_used) >=
++	       (int)adapter->psp.sadb_entries ||
++	       READ_ONCE(adapter->psp.ins_queued) >= IDPF_PSP_INS_QUEUE_MAX;
++}
++
++/**
++ * idpf_psp_queue_insert - Queue a TX key for insertion into the SADB
++ * @adapter: private data struct
++ * @key: the TX key, with its SPI and key set
++ *
++ * Reserve a SADB entry for the key and queue it for insertion. The PSP work
++ * inserts the queued keys, see idpf_send_insert_psp_keys(), and releases the
++ * reference taken on @key once the insertion completed.
++ *
++ * Return: 0 on success, -ENOSPC if the SADB or the insertion queue is full.
++ */
++int idpf_psp_queue_insert(struct idpf_adapter *adapter,
++			  struct idpf_psp_tx_key *key)
 +{
 +	struct idpf_adapter_psp *psp = &adapter->psp;
-+	struct idpf_psp_insert_req *req;
-+	struct idpf_psp_tx_key *key, *tmp;
-+	LIST_HEAD(keys);
-+	u32 i;
-+
-+	if (!psp->wq)
-+		return;
-+
-+	cancel_delayed_work_sync(&psp->work);
-+	timer_delete_sync(&psp->insert_timer);
 +
 +	spin_lock_bh(&psp->insert_lock);
-+	req = psp->insert_req;
-+	psp->insert_req = NULL;
++	if (idpf_psp_sadb_full(adapter)) {
++		spin_unlock_bh(&psp->insert_lock);
++		atomic_inc(&psp->keys_refused);
++		return -ENOSPC;
++	}
++
++	atomic_inc(&psp->sadb_used);
++	idpf_psp_tx_key_get(key);
++	list_add_tail(&key->ins_node, &psp->ins_list);
++	WRITE_ONCE(psp->ins_queued, psp->ins_queued + 1);
 +	spin_unlock_bh(&psp->insert_lock);
 +
-+	if (req) {
-+		for (i = 0; i < req->num_keys; i++) {
-+			idpf_psp_tx_key_failed(adapter, req->keys[i]);
-+			idpf_psp_tx_key_put(req->keys[i]);
-+		}
-+		kfree(req);
-+	}
-+
-+	spin_lock_bh(&psp->del_lock);
-+	list_splice_init(&psp->del_list, &keys);
-+	spin_unlock_bh(&psp->del_lock);
-+
-+	list_for_each_entry_safe(key, tmp, &keys, del_node) {
-+		list_del_init(&key->del_node);
-+		idpf_psp_tx_key_put(key);
-+	}
-+}
-+
- /**
-  * idpf_psp_free - Release the PSP offload resources
-  * @adapter: private data struct
-@@ -136,6 +295,13 @@ void idpf_psp_init(struct idpf_adapter *adapter)
- void idpf_psp_free(struct idpf_adapter *adapter)
- {
- 	idpf_psp_unregister(adapter);
-+
-+	if (!adapter->psp.wq)
-+		return;
-+
-+	idpf_psp_quiesce(adapter);
-+	destroy_workqueue(adapter->psp.wq);
-+	adapter->psp.wq = NULL;
- }
- 
- /**
-@@ -215,6 +381,53 @@ void idpf_psp_queue_delete(struct idpf_adapter *adapter,
- 	spin_lock_bh(&psp->del_lock);
- 	list_add_tail(&key->del_node, &psp->del_list);
- 	spin_unlock_bh(&psp->del_lock);
-+
 +	idpf_queue_psp_work(adapter);
++
++	return 0;
 +}
 +
-+/**
-+ * idpf_psp_tx_key_inserted - Complete the insertion of a TX key
-+ * @adapter: private data struct
-+ * @key: TX key of an insert request
-+ * @saidx: SA index the key was inserted at, see idpf_psp_saidx_ok()
-+ *
-+ * Called from the insert response callback, must not sleep.
-+ */
-+void idpf_psp_tx_key_inserted(struct idpf_adapter *adapter,
-+			      struct idpf_psp_tx_key *key, u32 saidx)
-+{
-+	bool deleted;
-+
-+	atomic_inc(&adapter->psp.keys_inserted);
-+
-+	spin_lock_bh(&key->lock);
-+	key->hw_idx = saidx;
-+	deleted = key->idx == IDPF_PSP_IDX_DELETED;
-+	if (!deleted)
-+		WRITE_ONCE(key->idx, saidx);
-+	spin_unlock_bh(&key->lock);
-+
-+	/* The key was deleted while its insertion was pending */
-+	if (deleted)
-+		idpf_psp_queue_delete(adapter, key);
-+}
-+
-+/**
-+ * idpf_psp_tx_key_failed - Fail the insertion of a TX key
-+ * @adapter: private data struct
-+ * @key: TX key of an insert request
-+ *
-+ * Called from the insert response callback, must not sleep.
-+ */
-+void idpf_psp_tx_key_failed(struct idpf_adapter *adapter,
-+			    struct idpf_psp_tx_key *key)
-+{
-+	atomic_inc(&adapter->psp.insert_errors);
-+
-+	spin_lock_bh(&key->lock);
-+	if (key->idx == IDPF_PSP_IDX_IN_PROG)
-+		WRITE_ONCE(key->idx, IDPF_PSP_IDX_ERROR);
-+	spin_unlock_bh(&key->lock);
- }
- 
  /**
+  * idpf_psp_set_config - Set the PSP device configuration
+  * @psd: PSP device
+@@ -515,6 +570,13 @@ static int idpf_psp_rx_spi_alloc(struct psp_dev *psd, u32 version,
+ 		return -EOPNOTSUPP;
+ 	}
+ 
++	/* Refuse new connections whose TX key couldn't be inserted */
++	if (idpf_psp_sadb_full(adapter)) {
++		atomic_inc(&adapter->psp.keys_refused);
++		NL_SET_ERR_MSG_MOD(extack, "PSP SADB full");
++		return -ENOSPC;
++	}
++
+ 	err = idpf_send_allocate_psp_key(adapter, &rx_key);
+ 	if (err) {
+ 		NL_SET_ERR_MSG_MOD(extack, "Failed to allocate RX SPI and key");
 diff --git a/drivers/net/ethernet/intel/idpf/idpf_psp.h b/drivers/net/ethernet/intel/idpf/idpf_psp.h
-index b4f46e43cd83..0b2ae019b4a0 100644
+index 0b2ae019b4a0..377cd4889f51 100644
 --- a/drivers/net/ethernet/intel/idpf/idpf_psp.h
 +++ b/drivers/net/ethernet/intel/idpf/idpf_psp.h
-@@ -50,6 +50,16 @@ static inline bool idpf_psp_idx_valid(u32 idx)
- void idpf_psp_queue_delete(struct idpf_adapter *adapter,
- 			   struct idpf_psp_tx_key *key);
+@@ -59,6 +59,8 @@ void idpf_psp_tx_key_inserted(struct idpf_adapter *adapter,
+ 			      struct idpf_psp_tx_key *key, u32 saidx);
+ void idpf_psp_tx_key_failed(struct idpf_adapter *adapter,
+ 			    struct idpf_psp_tx_key *key);
++int idpf_psp_queue_insert(struct idpf_adapter *adapter,
++			  struct idpf_psp_tx_key *key);
  
-+void idpf_queue_psp_work(struct idpf_adapter *adapter);
-+void idpf_retry_psp_work(struct idpf_adapter *adapter);
-+void idpf_cancel_psp_work(struct idpf_adapter *adapter);
-+void idpf_psp_quiesce(struct idpf_adapter *adapter);
-+void idpf_psp_insert_timer_arm(struct idpf_adapter *adapter, u32 timeout_ms);
-+void idpf_psp_tx_key_inserted(struct idpf_adapter *adapter,
-+			      struct idpf_psp_tx_key *key, u32 saidx);
-+void idpf_psp_tx_key_failed(struct idpf_adapter *adapter,
-+			    struct idpf_psp_tx_key *key);
-+
  #else /* !CONFIG_INET_PSP */
  
- static inline void idpf_psp_init(struct idpf_adapter *adapter) { }
-@@ -65,6 +75,10 @@ static inline void
- idpf_psp_rotation_event(struct idpf_adapter *adapter,
- 			const struct libie_ctlq_msg *ctlq_msg) { }
- 
-+static inline void idpf_queue_psp_work(struct idpf_adapter *adapter) { }
-+static inline void idpf_cancel_psp_work(struct idpf_adapter *adapter) { }
-+static inline void idpf_psp_quiesce(struct idpf_adapter *adapter) { }
-+
- #endif /* CONFIG_INET_PSP */
- 
- #endif /* !_IDPF_PSP_H_ */
 diff --git a/drivers/net/ethernet/intel/idpf/idpf_psp_def.h b/drivers/net/ethernet/intel/idpf/idpf_psp_def.h
-index 3157b40006c1..4c42755615cb 100644
+index 5af3347d9596..449bcb3c9ee2 100644
 --- a/drivers/net/ethernet/intel/idpf/idpf_psp_def.h
 +++ b/drivers/net/ethernet/intel/idpf/idpf_psp_def.h
-@@ -6,6 +6,8 @@
- #include <linux/kref.h>
- #include <linux/list.h>
- #include <linux/spinlock.h>
-+#include <linux/timer.h>
-+#include <linux/workqueue.h>
- #include <linux/net/intel/virtchnl2.h>
- #include <net/psp.h>
- 
-@@ -52,6 +54,21 @@ struct idpf_psp_tx_key {
- 	struct rcu_head rcu;
- };
- 
-+/**
-+ * struct idpf_psp_insert_req - VIRTCHNL2_OP_PSP_INSERT_KEYS request
-+ * @adapter: adapter the request was sent for
-+ * @num_keys: number of keys in the request
-+ * @keys: keys of the request in request order, with a reference each
-+ *
-+ * The request is the context of the response callback: it binds the response
-+ * to the keys it was sent for, see idpf_psp_insert_keys_cb().
-+ */
-+struct idpf_psp_insert_req {
-+	struct idpf_adapter *adapter;
-+	u32 num_keys;
-+	struct idpf_psp_tx_key *keys[] __counted_by(num_keys);
-+};
-+
- /**
-  * struct idpf_psp_rx_key - PSP RX key allocated by the CP
-  * @spi: SPI of the key
-@@ -103,7 +120,16 @@ struct idpf_psp_rx_gen {
-  *		 PSP was negotiated
-  * @del_lock: protects @del_list
-  * @del_list: TX keys whose SA index is queued for deletion
-+ * @wq: workqueue of @work
-+ * @work: sends the insertion and deletion requests
-+ * @insert_lock: protects @insert_req
-+ * @insert_req: the VIRTCHNL2_OP_PSP_INSERT_KEYS request in flight, if any
-+ * @insert_timer: makes the mailbox task time out a lost insert request,
-+ *		  see idpf_psp_insert_timeout()
+@@ -134,6 +134,7 @@ struct idpf_psp_rx_gen {
+  *		  see idpf_psp_insert_timeout()
+  * @ins_list: TX keys queued for insertion
+  * @ins_queued: number of keys in @ins_list
++ * @sadb_used: SADB entries used, or reserved by keys queued for insertion
   * @keys_allocated: RX keys allocated
-+ * @keys_inserted: TX keys inserted into the SADB
-+ * @insert_errors: TX keys whose insertion failed
-+ * @insert_late: SA indexes of late insertion replies, queued for deletion
+  * @keys_inserted: TX keys inserted into the SADB
+  * @insert_errors: TX keys whose insertion failed
+@@ -141,6 +142,7 @@ struct idpf_psp_rx_gen {
   * @keys_removed: SA indexes deleted
   * @keys_lost: SA indexes that couldn't be deleted
   * @del_retries: SA indexes retried after a failed deletion request
-@@ -131,7 +157,15 @@ struct idpf_adapter_psp {
- 	bool initialized;
- 	spinlock_t del_lock;		/* protects del_list */
- 	struct list_head del_list;
-+	struct workqueue_struct *wq;
-+	struct delayed_work work;
-+	spinlock_t insert_lock;		/* protects the insertions */
-+	struct idpf_psp_insert_req *insert_req;
-+	struct timer_list insert_timer;
++ * @keys_refused: RX and TX keys refused, SADB or insertion queue full
+  * @psp_dev: the PSP device, see idpf_psp_register()
+  * @caps: capabilities of @psp_dev
+  */
+@@ -172,6 +174,7 @@ struct idpf_adapter_psp {
+ 	struct timer_list insert_timer;
+ 	struct list_head ins_list;
+ 	u32 ins_queued;
++	atomic_t sadb_used;
  	atomic_t keys_allocated;
-+	atomic_t keys_inserted;
-+	atomic_t insert_errors;
-+	atomic_t insert_late;
+ 	atomic_t keys_inserted;
+ 	atomic_t insert_errors;
+@@ -179,6 +182,7 @@ struct idpf_adapter_psp {
  	atomic_t keys_removed;
  	atomic_t keys_lost;
  	atomic_t del_retries;
++	atomic_t keys_refused;
+ 	struct psp_dev *psp_dev;
+ 	struct psp_dev_caps caps;
+ };
 diff --git a/drivers/net/ethernet/intel/idpf/idpf_psp_virtchnl.c b/drivers/net/ethernet/intel/idpf/idpf_psp_virtchnl.c
-index 42a7d74db232..e813dca8961d 100644
+index 480b56ce8164..0843f8e0ffea 100644
 --- a/drivers/net/ethernet/intel/idpf/idpf_psp_virtchnl.c
 +++ b/drivers/net/ethernet/intel/idpf/idpf_psp_virtchnl.c
-@@ -442,7 +442,8 @@ static void idpf_psp_delete_done(struct idpf_adapter *adapter,
-  *   it and its SA indexes may be in use by new keys: they are counted as lost,
-  *   a late reply moves the deleted ones to removed, see
-  *   idpf_psp_recv_late_reply();
-- * - a request that couldn't be sent is retried the next time the PSP work runs.
-+ * - a request that couldn't be sent is sent again after a delay, see
-+ *   idpf_retry_psp_work().
-  *
-  * Return: true if SA indexes are still queued for deletion, false otherwise.
-  */
-@@ -553,10 +554,52 @@ bool idpf_send_delete_psp_keys(struct idpf_adapter *adapter)
- 	list_splice(&batch, &psp->del_list);
- 	spin_unlock_bh(&psp->del_lock);
- 	net_warn_ratelimited("%s: request not sent: %d\n", __func__, err);
-+	idpf_retry_psp_work(adapter);
+@@ -416,6 +416,7 @@ static void idpf_psp_delete_done(struct idpf_adapter *adapter,
+ 	struct idpf_psp_tx_key *key, *tmp;
  
- 	return false;
- }
+ 	atomic_add(removed, &adapter->psp.keys_removed);
++	atomic_sub(removed, &adapter->psp.sadb_used);
+ 	if (lost) {
+ 		atomic_add(lost, &adapter->psp.keys_lost);
+ 		net_warn_ratelimited("%s: %u SA indexes couldn't be deleted\n",
+@@ -661,6 +662,8 @@ static void idpf_psp_insert_late(struct idpf_adapter *adapter,
+ 			continue;
  
-+/**
-+ * idpf_psp_insert_late - Delete the SA indexes of a late insertion reply
-+ * @adapter: Driver specific private structure
-+ * @buff: VIRTCHNL2_OP_PSP_INSERT_KEYS reply
-+ *
-+ * The keys of the request were failed when it timed out: delete the SA indexes
-+ * they were inserted at.
-+ */
-+static void idpf_psp_insert_late(struct idpf_adapter *adapter,
-+				 const struct kvec *buff)
-+{
-+	const struct virtchnl2_psp_insert_keys_response *resp = buff->iov_base;
-+	struct idpf_psp_tx_key *key;
-+	u32 i, num_sa_indexes;
-+
-+	if (!resp || buff->iov_len < sizeof(*resp))
-+		return;
-+
-+	num_sa_indexes = min_t(size_t, le32_to_cpu(resp->num_sa_indexes),
-+			       (buff->iov_len - sizeof(*resp)) /
-+			       sizeof(resp->sa_indexes[0]));
-+
-+	for (i = 0; i < num_sa_indexes; i++) {
-+		u32 saidx = le32_to_cpu(resp->sa_indexes[i]);
-+
-+		if (!idpf_psp_saidx_ok(adapter, saidx))
-+			continue;
-+
-+		atomic_inc(&adapter->psp.insert_late);
-+		key = idpf_psp_tx_key_alloc();
-+		if (!key) {
-+			atomic_inc(&adapter->psp.keys_lost);
-+			continue;
-+		}
-+
-+		key->hw_idx = saidx;
-+		idpf_psp_queue_delete(adapter, key);
-+		idpf_psp_tx_key_put(key);
-+	}
-+}
-+
- /**
-  * idpf_psp_recv_late_reply - Handle a late reply to a PSP request
-  * @adapter: Driver specific private structure
-@@ -566,6 +609,7 @@ bool idpf_send_delete_psp_keys(struct idpf_adapter *adapter)
-  * The RX key of an allocation reply is wiped. The SA indexes deleted by a
-  * deletion reply were counted as lost, see idpf_send_delete_psp_keys(): they
-  * are counted as removed.
-+ * The SA indexes of an insertion reply are deleted, see idpf_psp_insert_late().
-  */
- void idpf_psp_recv_late_reply(struct idpf_adapter *adapter,
- 			      const struct libie_ctlq_msg *ctlq_msg)
-@@ -593,6 +637,10 @@ void idpf_psp_recv_late_reply(struct idpf_adapter *adapter,
+ 		atomic_inc(&adapter->psp.insert_late);
++		/* The SA index is used until it is deleted */
++		atomic_inc(&adapter->psp.sadb_used);
+ 		key = idpf_psp_tx_key_alloc();
+ 		if (!key) {
+ 			atomic_inc(&adapter->psp.keys_lost);
+@@ -826,6 +829,7 @@ void idpf_psp_recv_late_reply(struct idpf_adapter *adapter,
+ 				max(atomic_read(&adapter->psp.keys_lost), 0));
  		atomic_sub(deleted, &adapter->psp.keys_lost);
  		atomic_add(deleted, &adapter->psp.keys_removed);
++		atomic_sub(deleted, &adapter->psp.sadb_used);
  		break;
-+	case VIRTCHNL2_OP_PSP_INSERT_KEYS:
-+		if (idpf_is_psp_ena(adapter) && !ctlq_msg->chnl_retval)
-+			idpf_psp_insert_late(adapter, buff);
-+		break;
- 	default:
- 		break;
- 	}
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_psp_virtchnl_def.h b/drivers/net/ethernet/intel/idpf/idpf_psp_virtchnl_def.h
-index c2be65e541be..69a61fa421e0 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_psp_virtchnl_def.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf_psp_virtchnl_def.h
-@@ -6,6 +6,9 @@
- #include <linux/net/intel/libie/controlq.h>
- #include <linux/net/intel/virtchnl2.h>
- 
-+/* Timeout of the asynchronous VIRTCHNL2_OP_PSP_INSERT_KEYS requests */
-+#define IDPF_VC_XN_PSP_RESPONSE_TIMEOUT_MSEC	(60 * 1000)
-+
- /* PSP key insertion and deletion requests must fit in one mailbox buffer,
-  * which limits the number of TX keys and SA indexes per request.
-  */
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-index 90fe5212095d..bff3b0f46113 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-@@ -3281,6 +3281,9 @@ void idpf_vc_core_deinit(struct idpf_adapter *adapter)
- 	if (remove_in_prog)
- 		libie_ctlq_xn_shutdown(adapter->xnm);
- 
-+	/* The mailbox transactions were shut down in both cases */
-+	idpf_psp_quiesce(adapter);
-+
- 	cancel_delayed_work_sync(&adapter->serv_task);
- 	cancel_delayed_work_sync(&adapter->mbx_task);
- 
-diff --git a/include/linux/net/intel/virtchnl2.h b/include/linux/net/intel/virtchnl2.h
-index 903159235832..b8940e33fd04 100644
---- a/include/linux/net/intel/virtchnl2.h
-+++ b/include/linux/net/intel/virtchnl2.h
-@@ -86,6 +86,7 @@ enum virtchnl2_op {
- 	VIRTCHNL2_OP_DEL_FLOW_RULE			= 553,
- 	/* Crypto/PSP opcodes */
- 	VIRTCHNL2_OP_PSP_ALLOCATE_KEYS			= 560,
-+	VIRTCHNL2_OP_PSP_INSERT_KEYS			= 561,
- 	VIRTCHNL2_OP_PSP_DELETE_KEYS			= 562,
- 	VIRTCHNL2_OP_PSP_ROTATE_KEYGEN_REQUEST		= 563,
- 	VIRTCHNL2_OP_CRYPTO_GET_CAPS			= 564,
-@@ -1991,6 +1992,21 @@ struct virtchnl2_psp_allocate_keys_response {
- };
- VIRTCHNL2_CHECK_STRUCT_LEN(16, virtchnl2_psp_allocate_keys_response);
- 
-+/**
-+ * struct virtchnl2_psp_insert_keys_response - Insert PSP TX keys response
-+ * @vport_id: Virtual port ID
-+ * @num_sa_indexes: Number of allocated SA indexes, at most the number of keys
-+ *		    requested. On partial success the insertion stops at the
-+ *		    first failure.
-+ * @sa_indexes: Flexible array of allocated SA indexes
-+ */
-+struct virtchnl2_psp_insert_keys_response {
-+	__le32 vport_id;
-+	__le32 num_sa_indexes;
-+	__le32 sa_indexes[] __counted_by_le(num_sa_indexes);
-+};
-+VIRTCHNL2_CHECK_STRUCT_LEN(8, virtchnl2_psp_insert_keys_response);
-+
- /**
-  * struct virtchnl2_psp_delete_keys_request - Delete PSP TX keys request
-  * @vport_id: Virtual port ID
+ 	case VIRTCHNL2_OP_PSP_INSERT_KEYS:
+ 		if (idpf_is_psp_ena(adapter) && !ctlq_msg->chnl_retval)
 -- 
 2.56.0.679.gc527c65306-goog
 
