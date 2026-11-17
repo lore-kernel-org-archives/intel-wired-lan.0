@@ -1,112 +1,152 @@
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C1086606A32C
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 17 Nov 2026 15:31:17 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B6C54606A331
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 17 Nov 2026 16:29:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=v/oMzHd8;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Tc5nyYQU
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=yNkLykJi;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=C+8zgTGW
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 94B8F811D8;
-	Tue, 17 Nov 2026 15:31:17 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 902C44055C;
+	Tue, 17 Nov 2026 16:29:02 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id PnyWtFWkSFkt; Tue, 17 Nov 2026 15:31:15 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org EF30F811D4
-Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794929475;
-	b=JDUih9XzSBtV0VY9OA4nFdBTQTrzV5Y3hXHw9CAG+MEt95LwtabtqSWzxQKQyHhODvjK
-	 R0nWn1Z23CaZ/vDi6R+/vABGCM3mcaRmsBAypXqCMPvFaNglk1K21DtcvLfIHYGCpDpSU
-	 3O15lqZLcjYsT8Mp9bWrwKJQOBH3KQa0iNt8Dpz2qceHvR134LuRCARCkjf6r64rUl0ZE
-	 Z39HgFG/7oPrVC2WVf8lqzonuVcWT8PnIMpkj2/0f98d+l0pE6zSegV6PG+A6uOkTJpXn
-	 OX7Sl2sHDD5QnFilh6WW2/qLfEtT21qF24P2KLNiBGWiTdv4fyukVzz0fhXcBjCqjbQ==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id jcnE_k1p6q69; Tue, 17 Nov 2026 16:29:02 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 06035408D1
+Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794932942;
+	b=ReHC5zmttlSVBJ+e7QaCmNiqPlHZvgwuKNhmiR4pBOXSczckZAlLvOIY46xSDBiO6/RH
+	 1yZp1bEn3P3nzts04NHHOUJz5V96kWBd5PNYUxKPnigLoK4Q/28UiY4IgE/sjn4H/b6dU
+	 RBgy1u7M4x8T0E7SSYdDlpoBw8tDoAFMHiLbpHYInbC27i7oiWkCc8GpJtubghe/tODOt
+	 YnFe7jogoAqZQ88ruSIHw8fo9LBA1mYWAkgBS7yF9FrM1VcZUJWD+mIAFrmgWs7sbgokx
+	 CjktKkXpclZ0I67Ya5veLzYgpJd3pN7wA/Ttmg90zKd4Zakk4ajpFLh6SNYyLRefgOQ==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794929475;
+	c=relaxed/relaxed; t=1794932942;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 Received:DKIM-Signature:Message-ID:From:Subject:To:In-Reply-To:
-	 References:Content-Type:Content-Transfer-Encoding:Date:X-BeenThere:
-	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Reply-To:Errors-To;
-	bh=s1P7GOLUv8iOSbFu5NeqLEkrh4wnhDJ65KwuPQLRocE=;
-	b=ElajefE6+X0foMzmHEWFBU2Tj8GYL7jU+O2evzaD33ka/Vd2goEPVzJm8ItMcVgdIU2s
-	 pSKaf4LWfxkl6hSnjJ2Z7IOVTdDm+BR3bEOzN9TsmGtzgykrhXxeswTCHPnvC/UZcCJdX
-	 AO/GoBvJ+SsCuqdchzNEeQAxRpyu8aCzr7GemRTmSNbiZRveibOrAp7vt7ssyyCO5hnmB
-	 qXSFvE1u1g4W/9eu9L/q/b5VDEbB2PCPDO0tT3uKcD3JItSEd0ykL+YnvCsDovuLJ/3+C
-	 OV/b1YifqqqmU35wZ/JF9mFv96fDyyCzCj3QR66QAEDHZgCKJ5gAmnqFMQKQJsRhwNQ==
-ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
+	 Date:Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding:
+	 X-Mailman-Approved-At:X-BeenThere:X-Mailman-Version:Precedence:
+	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 List-Subscribe:Errors-To;
+	bh=hLTAdn75m/X1XOgHCTgJs4b9yJPhm3jmCX7SAzPgrq4=;
+	b=n+90JR0+1zySkvjvu27x+Od3ygz0ZTpFFPjwlA6T1yzx+qN1UzInwTlNVXsCHGhqDSP6
+	 seq7I+iB68oXqAL+ljzafnRC2ntFkEopn3qiQD9mJJgbTFxJaE2IyuE49eJJAPbzuyjGy
+	 ljnGdj06stSNTF3GW+z/rGZUkIl1syhs7ABmUtWqy2j6ENR30cpLtjnaInJ3oGym3NY9q
+	 rKPH87fyd/DEylMeGY5HFTE3sNcThLUlbjnyVkT5/B/k+X/5aHU56fSKWNjomOWh8GZvz
+	 A693VGDtmZ04PcbWIhao/wfYznApOP0QI3G3xwItWHsqwtWaJaBPplKbaLI6OcUE6kA==
+ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1794929475;
-	bh=s1P7GOLUv8iOSbFu5NeqLEkrh4wnhDJ65KwuPQLRocE=;
-	h=From:Subject:To:In-Reply-To:References:Date:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Reply-To:From;
-	b=v/oMzHd8z3eGfQJV3/+GVtYhyx6TwbwK0kQDaYnwsyuDc9cMrfyLh1ApTiZwDHddv
-	 nylgilBtUj5FVd27nD8K4sAfkAM65yzEuP+Kidb8p78cv1wEraEZ1kUjTSOuikMxMY
-	 ceiqYKATynxqA/dYU2gi0UJL6PR2okXgaMqd/++40Ax8OhZpapcUM8OxALhdLSbJ2D
-	 ghSgkLXO8Kp60GYuzVF5SLSeWp/FCOC3mzw/WtEeEW5rer6iYoW9mI56MKYGKdSUq9
-	 vpyOD7DOjvnJBXLHFoBhW5Rh03xRJ0AXnt+FZc0OtHtaJfEubbXHAFTpqcCbIS15RG
-	 Sv+pvzQxEecEg==
+	s=default; t=1794932942;
+	bh=hLTAdn75m/X1XOgHCTgJs4b9yJPhm3jmCX7SAzPgrq4=;
+	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=yNkLykJiESEyKW4OI4FkN/988VbqroGjwcZo/lOIz+ZZ6Qzn6G5jYVU3KSHWdDQUm
+	 VWStu9w/gHmiQVqH/eSLvtNj/jWCmN7xSpxJS7j+VbdCVgtIBuZ5L+Vi5dms8WEWUe
+	 LNnMFX3fz8V6foo7XOF7gvVQpKFBvNUeTMb3c6qXmUXy7QdRNtqq5A5S9gN+skkLls
+	 NS7uGNj2fVKjFURlgCpf9b2OIce0Qydb9tHMGT4emy9iGkX9+4hVvK3bgqOg2FsoG8
+	 hTz8P1ttQxsNxf7dEsh7jcI2lyGnWOy639AxKSPgEFVf/yNHFDNopw9UcH5RtI3uJF
+	 VqOtpBSEWLxUw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id EF30F811D4;
-	Tue, 17 Nov 2026 15:31:14 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 06035408D1;
+	Tue, 17 Nov 2026 16:29:02 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 291DB70B
- for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 15:31:13 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 6414D13C
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 03:15:59 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 0EEF640342
- for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 15:31:13 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 5615C400A2
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 03:15:59 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Zqope7Ml2oTS for <intel-wired-lan@lists.osuosl.org>;
- Tue, 17 Nov 2026 15:31:08 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org C72A840185
+ id RfimXuKT-YDt for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 17 Nov 2026 03:15:58 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org 85F0940048
 Authentication-Results: smtp2.osuosl.org;
- arc=none smtp.remote-ip=172.234.252.31
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
- helo=sea.source.kernel.org; envelope-from=sashiko-bot@kernel.org;
- receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=Tc5nyYQU
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
- by smtp2.osuosl.org (Postfix) with ESMTPS id C72A840185
- for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 15:31:07 +0000 (UTC)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by sea.source.kernel.org (Postfix) with ESMTP id 5E0F540944;
- Tue, 17 Nov 2026 15:31:07 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 22FF71F000C5;
- Tue, 17 Nov 2026 15:31:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1794929467;
- bh=s1P7GOLUv8iOSbFu5NeqLEkrh4wnhDJ65KwuPQLRocE=;
- h=From:Subject:Reply-To:To:In-Reply-To:References:Date;
- b=Tc5nyYQUCtJComBTHDOWSEXQENDrX7mAKfmQ5JF6FilP99d2B38wXpCrO1XfTxY7q
- tq/eUsJROZXu6TRsEvPhFjp+nHf8dFqhf9eQpgjqekyC9W7ZP5D+edEqRINwNR3nLG
- jgvfwTGpWJFgOAHXR0BQhxP1qUmYxx2cIOaOT3HCpfmff36PgU38jZyD9wtaHuoaPu
- S85cr83ZsILOs936MXyDFl7fGa3Ayhnz6OX5MDFD151pSmEMNdLFgVj4ZmQ1b4JHc9
- 5H56y7EPsLfSxQ7liEqYuenYt7xsfOKqPkeyXOp7SJkM16ZPMf+21nZ5seGADbc7hQ
- NS+19eiucme/g==
-Message-ID: <sashiko-outbox-219079@kernel.org>
-From: sashiko-bot@kernel.org
-Subject: Re: [PATCH net v2 1/3] igb: fix RTNL assertion when resuming from
- runtime suspend
-To: "Antonio Quartulli" <antonio@mandelbit.com>,
- intel-wired-lan@lists.osuosl.org
-In-Reply-To: <20261116153041.3002666-2-antonio@mandelbit.com>
-References: <20261116153041.3002666-1-antonio@mandelbit.com>
- <20261116153041.3002666-2-antonio@mandelbit.com>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-Date: Tue, 17 Nov 2026 15:31:06 +0000
+ arc=none smtp.remote-ip="2607:f8b0:4864:20::829"
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2607:f8b0:4864:20::829; helo=mail-qt1-x829.google.com;
+ envelope-from=lcy8047@gmail.com; receiver=<UNKNOWN> 
+Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20260707 header.b=C+8zgTGW
+Received: from mail-qt1-x829.google.com (mail-qt1-x829.google.com
+ [IPv6:2607:f8b0:4864:20::829])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 85F0940048
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 03:15:58 +0000 (UTC)
+Received: by mail-qt1-x829.google.com with SMTP id
+ d75a77b69052e-5366ae57896so49030111cf.3
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Nov 2026 19:15:57 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20260707; t=1794885357; x=1795490157; darn=lists.osuosl.org;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+ bh=hLTAdn75m/X1XOgHCTgJs4b9yJPhm3jmCX7SAzPgrq4=;
+ b=C+8zgTGWmAYgnZoKg3WTLd0FFAIdHG2ruy6JrTjiMrKSztxhFWYB5Dod+yO53Bl8Ri
+ ZweDY0MO3YFMuR2PYWhxjV7yRsVy3RUt7iaERhJGbcsac/KIix6/howK872lCWeqeLPD
+ t7mWXeS5yS63kvBGhpKtXJkW1nB0WIC4w+0RbC96fWZhcQlul7SWPJb568wnty1qZ3+D
+ RFom0qa/wmCutujyOPt39wMJuLvqK4ZqaMGWBeBIX5CZOmFQQpXkRbsryhVrHJKDlXZD
+ s6k5Z8JNIO2LAvFnSHrf+I97eUDC8B1YZ0WCX2qAeSTT3Q+KaXWD9jGGAo2DurG++jmm
+ rsIw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20260707; t=1794885357; x=1795490157;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to:content-type;
+ bh=hLTAdn75m/X1XOgHCTgJs4b9yJPhm3jmCX7SAzPgrq4=;
+ b=eZz1teN/LAyD8+mnF4aMSokP7AGRligoCdIq5M3hlrF89zBmMWBhFbDzXWdMhEwnT5
+ SdL1WL0i5AVdjkpdRB8N+yWS5LiQqEgkYTeKhtPmdzNIxI5iot6CUtCpNtcCjK2OsxsG
+ B+SWgft0GsnfWDVTEAkYJSs7vmxVK6puoDhA3v5xe3hYL4nD4v8dvNT4SXV46u9WYMIv
+ p6qnjKd4/lt8rc7Gd1sR6g0TH3aMNSIAgl7RS1d+kap8ggDSuPNvUVmCv/dpnOvbRZgT
+ i3KXmTo6r1SvEYvnyIINE20HNATIMtBz+CtK73p0eW2Btm1QjPKOQRVos2TaLiG47WjE
+ SE+w==
+X-Forwarded-Encrypted: i=1;
+ AL+hErGHRqnFgR7rOI6HIUriQHXnIdB4qj5wOKlQ/JxaktDOdDMXf1US/asetQXWzlZmFDTzoAPDwTdXCirRQNax4Os=@lists.osuosl.org
+X-Gm-Message-State: APuU4Z+007ov1UfcNXEwEbUYWcquqSYQ4ROz5JRZOjYMDACMqLRrR7E/
+ PLhx7lW9jzMgEpqdZlWhKoDrCG84yF0XumEUsLgI+ZeDyZRsfaTLJyDt
+X-Gm-Gg: AYBFou0rjzkc2586KM5tLNikBuCvBnRuaIPlhtl7zpWerTuSkmlH1XcmSVEDU2aT1LS
+ 0pigVohT7yyMeHRnJ1e81XSF9bg6cGCeRAZGMVdKrJ1unnAn6eO3uXG/3dY/0YV/cEdb5qFcvAV
+ X7RdG01AOtPQHGpV+4QIcSP4V5ot0dqc3ynqS3h/9TlbsvlWAWN3x+t4TDoPt1unsXWsVePjYED
+ NUYPO4wt4TK3OrInfixr4XL9+RPotKaRGEwwgAIElGFHeVt1pS9f2GKQU3VyoI3Jp+7ByCiJ65z
+ 1UlAWAlLtuy903ZnzP73Uo4aRZSV6NXTYNOwl/jUbHuFu0J1FTZ0eBduI0L3CFNZGh/nAA+NZrD
+ XPGMUpeFV96tVvCQrdIFsR5yD8kxS2eE6hxGxE/sCJLnHrTw7HEw45VB9nmfAHteP3ZlqdC9eyM
+ 62HJ2odcshk8CAKpbCvuYSWfGF9IwvaRFVKpCwJUG4+qXJ9aQp43KPWHDLAM2L40O1OW6wuuCxl
+ rbE8GHW1TSp2eSKkXHRfv2rnI+/0UXbbKYsTwfjhgse0zY0+k1T/YSgkSsSpaG/GlL9dAESBHpv
+ 7X0728kxl7uuDJOksb+fcGpFJ8lWCl+Ort3Aq3QiY6eY7DJsWAMRwE3Uw1D9YgtMHLe/qIlrBI5
+ FQ0L6qXE19JGjorCiDC2O
+X-Received: by 2002:a05:622a:14c6:b0:55c:fa5a:b232 with SMTP id
+ d75a77b69052e-55cfa5ab3b2mr121881541cf.4.1794885356928; 
+ Mon, 16 Nov 2026 19:15:56 -0800 (PST)
+Received: from linux.. ([8.34.174.240]) by smtp.gmail.com with ESMTPSA id
+ 6a1803df08f44-91f23da64c1sm99291826d6.37.2026.11.16.19.15.56
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 16 Nov 2026 19:15:56 -0800 (PST)
+From: Changyul Lee <lcy8047@gmail.com>
+To: Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Cc: Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@kernel.org>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, intel-wired-lan@lists.osuosl.org,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Changyul Lee <lcy8047@gmail.com>
+Subject: [PATCH iwl-net] i40e: hold mac_filter_hash_lock while validating VF
+ cloud filters
+Date: Mon, 16 Nov 2026 22:15:53 -0500
+Message-ID: <20261117031553.1728084-1-lcy8047@gmail.com>
+X-Mailer: git-send-email 2.43.0
+X-Archived-By: <archiver.kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Tue, 17 Nov 2026 16:29:00 +0000
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -117,117 +157,66 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Reply-To: sashiko-reviews@lists.linux.dev
-X-Spam-Status: No, score=-10.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_PASS autolearn=ham autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-15.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
-X-Archived-By: <archiver.kernel.org>
 
-Thank you for your contribution! Sashiko AI review found 1 potential
-issue to consider:
-- [Medium] igb: stale real queue counts after resume MSI fallback in
-  __igb_open()
---
+i40e_validate_cloud_filter() runs in the VF message path, which holds
+neither RTNL nor vsi->mac_filter_hash_lock. It looks up the destination
+MAC with i40e_find_mac() and walks vsi->mac_filter_hash for the VLAN
+without the lock. Meanwhile the host can change the VF MAC or port VLAN
+with i40e_ndo_set_vf_mac() or i40e_ndo_set_vf_port_vlan(), which delete
+filters under the lock and free them in __i40e_del_filter() or
+i40e_sync_vsi_filters(). The lookup and the walk can then read a freed
+struct i40e_mac_filter.
 
-commit 6c8e67bb8e01233489112f0bf629f1764d87d2c6
-Author: Antonio Quartulli <antonio@mandelbit.com>
+Do the lookup and the walk under mac_filter_hash_lock, as
+i40e_vc_add_mac_addr_msg() does, and do not use the filter after
+dropping the lock.
 
-igb: fix RTNL assertion when resuming from runtime suspend
+Fixes: e284fc280473 ("i40e: Add and delete cloud filter")
+Signed-off-by: Changyul Lee <lcy8047@gmail.com>
+---
+Found with a static analysis tool we are developing.
 
-This commit skips calling netif_set_real_num_tx_queues() and
-netif_set_real_num_rx_queues() in __igb_open() when resuming is true to
-avoid triggering an RTNL assertion during runtime resume.
+Compile-tested only, with x86_64_defconfig plus PCI_IOV, I40E and W=1.
 
-> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethe=
-rnet/intel/igb/igb_main.c
-> index 131df3e09ba14..bf8acac72b324 100644
-> --- a/drivers/net/ethernet/intel/igb/igb_main.c
-> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-> @@ -4178,16 +4178,20 @@ static int __igb_open(struct net_device *netdev, =
-bool resuming)
->  	if (err)
->  		goto err_req_irq;
-> =20
-> -	/* Notify the stack of the actual queue counts. */
-> -	err =3D netif_set_real_num_tx_queues(adapter->netdev,
-> -					   adapter->num_tx_queues);
-> -	if (err)
-> -		goto err_set_queues;
-> +	/* Notify the stack of the actual queue counts. This needs RTNL,
-> +	 * which isn't held when resuming from runtime suspend.
-> +	 */
-> +	if (!resuming) {
-> +		err =3D netif_set_real_num_tx_queues(adapter->netdev,
-> +						   adapter->num_tx_queues);
-> +		if (err)
-> +			goto err_set_queues;
-> =20
-> -	err =3D netif_set_real_num_rx_queues(adapter->netdev,
-> -					   adapter->num_rx_queues);
-> -	if (err)
-> -		goto err_set_queues;
-> +		err =3D netif_set_real_num_rx_queues(adapter->netdev,
-> +						   adapter->num_rx_queues);
-> +		if (err)
-> +			goto err_set_queues;
-> +	}
-> =20
->  	/* From here on the code is the same as igb_up() */
->  	clear_bit(__IGB_DOWN, &adapter->state);
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-[Severity: Medium]
-Can leaving netdev->real_num_tx_queues and netdev->real_num_rx_queues stale
-when MSI-X falls back to MSI during resume cause concurrent unlocked TX on
-adapter->tx_ring[0] and a NULL pointer dereference in igb_xsk_pool_disable(=
-)?
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 74b6c0ed8480..da1f1a9c4124 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -3624,9 +3624,11 @@ static int i40e_validate_cloud_filter(struct i40e_vf *vf,
+ 	 */
+ 	if (mask.dst_mac[0] && !mask.dst_ip[0]) {
+ 		vsi = pf->vsi[vf->lan_vsi_idx];
++		spin_lock_bh(&vsi->mac_filter_hash_lock);
+ 		f = i40e_find_mac(vsi, data.dst_mac);
+ 
+ 		if (!f) {
++			spin_unlock_bh(&vsi->mac_filter_hash_lock);
+ 			dev_info(&pf->pdev->dev,
+ 				 "Destination MAC %pM doesn't belong to VF %d\n",
+ 				 data.dst_mac, vf->vf_id);
+@@ -3641,6 +3643,10 @@ static int i40e_validate_cloud_filter(struct i40e_vf *vf,
+ 					break;
+ 				}
+ 			}
++		}
++		spin_unlock_bh(&vsi->mac_filter_hash_lock);
++
++		if (mask.vlan_id) {
+ 			if (!found) {
+ 				dev_info(&pf->pdev->dev,
+ 					 "VF %d doesn't have any VLAN id %u\n",
 
-During suspend, __igb_shutdown() -> igb_clear_interrupt_scheme() frees all
-q_vectors and clears adapter->tx_ring[] and adapter->rx_ring[].  If MSI-X
-allocation fails on resume (including system resume via igb_resume() ->
-__igb_resume(dev, false), which already holds rtnl_lock() but still passes
-resuming =3D true), the driver falls back to MSI with adapter->num_tx_queues
-and adapter->num_rx_queues set to 1, allocating only index 0 while
-netdev->real_num_tx_queues and netdev->real_num_rx_queues remain at N > 1.
+base-commit: 7475ea8b58616b33c04afb976cf0fbaad9dd63fb
+-- 
+2.43.0
 
-In the TX path, the stack selects subqueues across 0 .. real_num_tx_queues =
-- 1,
-each serialized only by its own netdev->_tx[q]._xmit_lock, but
-igb_tx_queue_mapping() folds all of them onto adapter->tx_ring[0]:
-
-drivers/net/ethernet/intel/igb/igb_main.c:igb_tx_queue_mapping() {
-	unsigned int r_idx =3D skb->queue_mapping;
-
-	if (r_idx >=3D adapter->num_tx_queues)
-		r_idx =3D r_idx % adapter->num_tx_queues;
-
-	return adapter->tx_ring[r_idx];
-}
-
-CPU0 (subqueue 0)                 CPU1 (subqueue 1)
-netdev_start_xmit()               netdev_start_xmit()
-  HARD_TX_LOCK(dev, txq0)           HARD_TX_LOCK(dev, txq1)
-  igb_xmit_frame()                  igb_xmit_frame()
-    igb_tx_queue_mapping()            igb_tx_queue_mapping()
-      -> adapter->tx_ring[0]            -> adapter->tx_ring[0]
-    igb_xmit_frame_ring(tx_ring[0])   igb_xmit_frame_ring(tx_ring[0])
-      first =3D &tx_ring->                first =3D &tx_ring->
-        tx_buffer_info[next_to_use]       tx_buffer_info[next_to_use]
-                                          <-- concurrent ring corruption
-
-Multiple CPUs transmitting on different subqueues concurrently run
-igb_xmit_frame_ring() and igb_tx_map() on adapter->tx_ring[0], corrupting
-tx_ring->next_to_use, tx_buffer_info, hardware descriptors, and BQL state.
-
-In addition, igb_xsk_pool_disable() checks xsk_get_pool_from_qid(), which
-validates qid against real_num_rx_queues and real_num_tx_queues; disabling =
-an
-AF_XDP pool bound to qid >=3D 1 after a resume fallback passes qid to
-igb_txrx_ring_disable(), dereferencing NULL adapter->tx_ring[qid] and
-adapter->rx_ring[qid].
-
---=20
-Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261116153041.3002=
-666-1-antonio@mandelbit.com?part=3D1
