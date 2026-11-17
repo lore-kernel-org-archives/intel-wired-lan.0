@@ -2,28 +2,28 @@ Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E97A5606A31C
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 17 Nov 2026 16:29:15 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 15AD3606A31C
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 17 Nov 2026 16:29:18 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=mX86fXjU;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=op1rLTqn
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=YWFLHb62;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=fu3EVd0+
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C862C4091C;
-	Tue, 17 Nov 2026 16:29:15 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id E8F7A40908;
+	Tue, 17 Nov 2026 16:29:17 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id R4-mEdoKPlQM; Tue, 17 Nov 2026 16:29:15 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 0221040945
+ id qYlLNMtlSzM4; Tue, 17 Nov 2026 16:29:16 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org E68D840945
 Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794932955;
-	b=DHYZjXqXVwOpwPzqtz1w86YwF6rwre96en5nLb8WovwPm3XFgqjuz1UrEYNsF1RIYTBg
-	 R++3lVPmG6EjK5uAL/NTGAy1SGjetsC5XIr8Uj0M82fakjle25YiEj3xWIgkCn0uDt90r
-	 0z2omcryhyiIlhfuk5TOnoGOpQSoluKJC3VEF+u+ExakyrpvDMGJFbnGJftQoDBV/pKST
-	 Vct1M2hQj5xWKLNr9b1t5EsS2mHVIIUzGuf5oeOuv5Ig5sxC3OCTufINL5Bu4rugipNyn
-	 /6I01SKqNvc/mDPOys1uhR5S3oF/fxncxldUWwt1at9Sn6C0cOXtjmqK7elRklib5cA==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794932956;
+	b=C8TskbNrt2pUPhz4di4lzJxBsWBrkpvZLjpPAOAPdVgtDmiapZAvXIjQ5fBWs1fN7RsV
+	 6hZg1HGK3PRHbuunzt9p72nNCH07JODw06vvleNYkjLRh6HTOgLyYIrPC9spB67+tEDR4
+	 vha/HlLxdNW77T4jiDfaylSuWJ0tWkGXzjqENV1jnm1fbSviB37cP4Vvt/dRyiazLwD8J
+	 FvUX9VI+33/SLKKHIl6TPo2+fDdoLER4ft/FKhRaEKDOnyocNRcGygIJNHlPPxNdC0vXc
+	 wkCE7EI43ibhN/aVC/WVA3R6Qhk6rU8B9sfBDK8y1/Bpv3gqYSBRveLAs3oVAGMnedQ==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794932955;
+	c=relaxed/relaxed; t=1794932956;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
@@ -33,101 +33,103 @@ ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
 	 X-Mailman-Approved-At:X-BeenThere:X-Mailman-Version:Precedence:
 	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=N2W1vGbTN1fxXgYMzqAEGGqqwODSJcSkIJEHTLlETcw=;
-	b=ISvX6sEulMwHDTGw3H/SKQrjJoTDra6r4FFbAFwOkeOnkF/z4/tRLDAe4iOyPUSlevWF
-	 ZAb3z1aCU+WmD1gkt20lBIYR12kmAyOZoU45hJFR9oz0Vy3qguWwJjJ4V9t7eYUKKMX1/
-	 dv7ASdwxselOKYjnvdGsaZewvzcFT1wr5g0I6+C9FRfQn0TjKtzvKlSpwCJy2G2m3mq/P
-	 su6QFzJzn0I37BNc03GGvYvL78QZ5Tsb24z2ayrsb+7Ed+Duv3g0UrpUAS9fPsHSi0BpU
-	 q7hZK1BHlYARf1Gd6pPpLtzO78wj48ZuG0PVhVru5EUqqHcf7R8WuI4E+BSUvGgci6A==
+	bh=WHBOqD2eXB9OnYWRQPiBoFc35ni///xtz0x2mmN/PH0=;
+	b=JTGgqcuPeoStG9E6Z2rPEfutkeA8RnDhfr+kgW2dufx68iEnOqPhKmU8yU5WKtRoXZ8G
+	 +40lCz6Wv/WsTK89/FglRm1oUSginpbGJo7y4Yd82doo+nqGPb/av4/MeRpbwGHpS4rOi
+	 F8aXVWq9RlVP5nc9le7k+FnihNLHZCcqWTWInyHa41U4g+TcLRttjNn2TD/hVj5mMqmeU
+	 7mGlK+g9z3UP302t7SG1aEr1T50UDCggXfxfn8BQxn5PD5RhqKy/dGVJ/0IkoBW6v5hp5
+	 9NhDp5QlnpWQM9P09fHtYX0+n9fhPi8RQsb9QbiKmVCwmoNZBtXALbC6AfApTMlMQbg==
 ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
 	s=default; t=1794932955;
-	bh=N2W1vGbTN1fxXgYMzqAEGGqqwODSJcSkIJEHTLlETcw=;
+	bh=WHBOqD2eXB9OnYWRQPiBoFc35ni///xtz0x2mmN/PH0=;
 	h=Date:In-Reply-To:References:Subject:From:To:Cc:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=mX86fXjUENSoDi2dTsIdUo26dPrRFht3wl6Jjezy2lfzPCfBYX/eIHFxObwcqtyqM
-	 XPn/L3q9KVNVY5xu8J9bXe4JYLfLegpRm3j7JH31EFiCnZgVsmfDOyiuhHOQ/mDQK2
-	 h1M9IBn5AHOl12dM5oF7dU+/QRxkVHDU24lNUW0pBJ/dXof1eK6NYfk7oBvXF6lTjw
-	 eoZ2yBoltf8Cc1r6uduM/HKBC1+TxVKXbX59dBk+9JuyDU2to7YF2mwriOnGsZkK6+
-	 a7D/d8l05LtENw60V5EgxONBkV6QSt8ysS//z0UXgP6enqRvNKxQTfy+6mvFRlBfLo
-	 BUa4uk+FquYhA==
+	b=YWFLHb62aPFWbe+VIwSz1XRLnLe5YA9MF3vfn8c5jInkm4/Linrvs2pAOqZIM+8Qv
+	 ztHNfDj0PFsEJr6FrYG6pch81zPLxAz66xCsNYgo0a+ROu4rPD6nTJJQPzdpH2VPuD
+	 ZUkspbA2EmE0wPcjJotAEr2y6zRYfov9tCqMjb1BqNC0aD1GUQVLWH7IONo8nYuk4x
+	 kwiomlq0hWgm103WPZkPw3zaJWy3VpMMhJXYt2w7qgOzh7Kmt7SpG6Rq5y55vea8WY
+	 LpOZ7wTNuKzkJ1BGoF2L+YQva7dGNGsZIA97yXAwyrQaTgRMYH9IDdty/u+W2QdOd+
+	 QlSU8KF/a7kiA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 0221040945;
+	by smtp4.osuosl.org (Postfix) with ESMTP id E68D840945;
 	Tue, 17 Nov 2026 16:29:15 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 3B69BDD6
+ by lists1.osuosl.org (Postfix) with ESMTP id 3C0C7E04
  for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 14:55:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id A9FAB608EF
- for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 14:55:51 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id A0C96608FA
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 14:55:47 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 66snVK_f4Uef for <intel-wired-lan@lists.osuosl.org>;
- Tue, 17 Nov 2026 14:55:51 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org C07A0608EA
+ id VKRre8hsP2jP for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 17 Nov 2026 14:55:47 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org C3129608EF
 Authentication-Results: smtp3.osuosl.org;
- arc=none smtp.remote-ip="2607:f8b0:4864:20::b145"
+ arc=none smtp.remote-ip="2607:f8b0:4864:20::f45"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::b145; helo=mail-yx1-xb145.google.com;
- envelope-from=39gr8agukdxsjk1e97ff7c5.3fd9ek5c-n9i54-c1ec9jkj.fjlfjc.fi7@flex--stani.bounces.google.com;
+ client-ip=2607:f8b0:4864:20::f45; helo=mail-qv1-xf45.google.com;
+ envelope-from=38gr8agukdxcfgxa53bb381.zb95ag18-j5e10-8xa85fgf.bfhbf8.be3@flex--stani.bounces.google.com;
  receiver=<UNKNOWN> 
 Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
- header.a=rsa-sha256 header.s=20260707 header.b=op1rLTqn
-Received: from mail-yx1-xb145.google.com (mail-yx1-xb145.google.com
- [IPv6:2607:f8b0:4864:20::b145])
- by smtp3.osuosl.org (Postfix) with ESMTPS id C07A0608EA
- for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 14:55:50 +0000 (UTC)
-Received: by mail-yx1-xb145.google.com with SMTP id
- 956f58d0204a3-67dabc6d5dfso4626943d50.2
- for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 06:55:50 -0800 (PST)
+ header.a=rsa-sha256 header.s=20260707 header.b=fu3EVd0+
+Received: from mail-qv1-xf45.google.com (mail-qv1-xf45.google.com
+ [IPv6:2607:f8b0:4864:20::f45])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id C3129608EF
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 14:55:46 +0000 (UTC)
+Received: by mail-qv1-xf45.google.com with SMTP id
+ 6a1803df08f44-920f9885cb1so19748226d6.1
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 06:55:46 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=google.com; s=20260707; t=1794927349; x=1795532149; darn=lists.osuosl.org;
+ d=google.com; s=20260707; t=1794927345; x=1795532145; darn=lists.osuosl.org;
  h=content-type:cc:to:from:subject:message-id:references:mime-version
  :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
- :content-type; bh=N2W1vGbTN1fxXgYMzqAEGGqqwODSJcSkIJEHTLlETcw=;
- b=op1rLTqncqqRuPeNHry0kK8qDZ3dk9Qb2U+p8IwJqbRV+ncvk08Btkkq+naiAiib+7
- hxH+IprPnJVt7lBgQZHsQqxnpZT08KmHWH+OVBKsMtkz0juKoAWrAqcW9YagfG4nXDaj
- bsyaZIRL3QAwFSbj37XUKoK7yZWBYt5CBT+hrlbkr/aNGcJMevqs3mE+CGsh0cOd/yAd
- GwH2J8mOXXvw3YYEF4SMEdIEqxR9wvuQJeqTPDBzyp/mjS8aRfgcLuBMmS4u5e3yuaaU
- SQy/rbuGxA1eiosmHcJb8UnoL4gamEknBbBOacSSYXlG4kAPVuYQ6BklvsZqGLF9Et9R
- gAPA==
+ :content-type; bh=WHBOqD2eXB9OnYWRQPiBoFc35ni///xtz0x2mmN/PH0=;
+ b=fu3EVd0+zsvjScLtStR3/dGPkdrd1QKpbCP6XFvThDGj+PyD9M1VR9Rdlrai+48aw7
+ XL2xc+6ZXUZHoYAjKVxpbbwmfNEkzT6iETT5GHwI7WxxbRTOlQYxHmFqyJJ+9YtgYTBb
+ ZjQ/apnoZ50ZKWMvCLwwMDeMF44sp0C1UF9/6HG20lll3fRd5XEFZbhRKKdnNHbq1NAE
+ v8JN3SeeiiDjPvYphClH97PoEFUULJROkV5KeuGQeXQjlKFjeul3JPX/SjrJRIiFG2YE
+ TVXZ7XJgjE4dyyFWCTGfnN65UF0nl0P0UlTDPSzG0eXajc2i2OIsgBhicVaj4B03QMeE
+ eJHA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1794927349; x=1795532149;
+ d=1e100.net; s=20260707; t=1794927345; x=1795532145;
  h=content-type:cc:to:from:subject:message-id:references:mime-version
  :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
  :message-id:reply-to:content-type;
- bh=N2W1vGbTN1fxXgYMzqAEGGqqwODSJcSkIJEHTLlETcw=;
- b=FJ7+prZ6t6M+hXRCS/GV8OOTYl3o6TN62UIji/cxltlExud5umVSDl85duUyPZpOu+
- I+qcxsIZANtZzN2dqlNxTLA2IEVW/0SbPBhbpuXjdkojuvJ7Ikby8jT/MKwJIQOcXisX
- h/yviLDLwelSuRlwYDyuLS2+SiaoXfYPXTthIrvLscIJnDrtBOemtcEJCMhdUcQ9K9ON
- shCfDhGhgdvTGs/6zSLmrIqXIU0mtxQp4ZCuTXgFfLByDyce3tDJHqkqUlj4k49umS/K
- sRd254mC1YwxHmczS0njxdbYKhjf1nUnV7wPw93eNb7PsPnLy+opw6rmKrCZsTVTzvfx
- +QqA==
+ bh=WHBOqD2eXB9OnYWRQPiBoFc35ni///xtz0x2mmN/PH0=;
+ b=TYfVU0N4hLDoxfMAEI0dOBiozepR96TfH0iqHfl29G+Y5Crwe2ihCfPlFBVH+ndP1T
+ ARyzwSrfEljbcaa4s6zMK/13QPJUKSzoYeA+Lz7BoKnZNlPLy83gWVnoryKeLJknYjfz
+ aifLVIp1GzCuf0Wfzr8yuVc9HCAWGeZcABHOB0qjttTOet1vKmQYQcbuQoAZJzzHzOpU
+ f5SKKfVUmaXU1yDWl6BpfqoO5XWGWVfTcITUgt54yQEdB2nZ/H8niJr+5DZDGPrQ9TmJ
+ FejRRd3W8iBQYH4cDa63Q7yCUB/1SH2CFBQ49nCmUzIIB+s7CZu5f7zlpZyz4CmHkuVk
+ UPpA==
 X-Forwarded-Encrypted: i=1;
- AL+hErFcvk0VpFe32jCtjgg5gtRfUo9Ikpn2vDxtXcKgtsjcQs0nZntdyA7j9GvSwPUGx0/AwiO8eySIV/X1QbgA74s=@lists.osuosl.org
-X-Gm-Message-State: APuU4Z/oh3bebhwBIEte4YxCjEMMDHBG+WKB2F5Vmr2BqwrQIglX8Xw6
- 4p1ktklIaw3d6ICfDh8uVIieG9aywZhwoL6jrPIWwUsHXJrPs1zYiBB6pPh7aKsSoBwHQG+QreX
- RYA==
-X-Received: from yxbv18.prod.google.com ([2002:a05:690e:7d2:b0:675:604a:47fe])
+ AL+hErHKF3DWS8pjSnBZn4zoylDfm84RNwBmXzn8ElFzgYlBg63Q6Qd13LYRT88ZZ/ps/bOl+o+wLqLxn7p4w1EuOls=@lists.osuosl.org
+X-Gm-Message-State: APuU4Z8zG//j7Inwa3buxpe4nN+rhfZoEh2J/I0289rOLjxhRD0PQNqi
+ qTpF5Q03cu/sMbLzEaDzM5hVz3j6ouUV2ZF5c9evxd/UxN4wrnMA4AJpaAYGrQB6VqIuvVTLTy8
+ VDg==
+X-Received: from qkntn22.prod.google.com
+ ([2002:a05:620a:3c16:b0:945:ebee:5f07])
  (user=stani job=prod-delivery.src-stubby-dispatcher) by
- 2002:a05:690e:d8f:b0:67c:8ea:be13
- with SMTP id 956f58d0204a3-67d896a0ae3mr6694528d50.52.1794927348674; Tue, 17
- Nov 2026 06:55:48 -0800 (PST)
-Date: Tue, 17 Nov 2026 14:55:17 +0000
+ 2002:a05:620a:440d:b0:93f:5f83:2ca7
+ with SMTP id af79cd13be357-9494bc3da2amr2443427785a.52.1794927344689; Tue, 17
+ Nov 2026 06:55:44 -0800 (PST)
+Date: Tue, 17 Nov 2026 14:55:13 +0000
 In-Reply-To: <20261117145522.1910636-1-stani@google.com>
 X-Archived-By: <archiver.kernel.org>
 Mime-Version: 1.0
 References: <20261117145522.1910636-1-stani@google.com>
 X-Mailer: git-send-email 2.56.0.679.gc527c65306-goog
-Message-ID: <20261117145522.1910636-12-stani@google.com>
-Subject: [PATCH iwl-next 11/15] idpf: psp: add psp tx key state
+Message-ID: <20261117145522.1910636-8-stani@google.com>
+Subject: [PATCH iwl-next 07/15] idpf: psp: add support for fips compliance
+ status
 From: Stan Iliev <stani@google.com>
 To: Tony Nguyen <anthony.l.nguyen@intel.com>, 
  Przemek Kitszel <przemyslaw.kitszel@intel.com>,
@@ -165,178 +167,148 @@ X-Spam-Status: No, score=-26.4 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-TX keys are inserted into the SADB asynchronously: the SA index of a
-key is only known when the CP replies. Add struct idpf_psp_tx_key, the
-reference counted state of a TX key, stored in the driver data of its
-PSP association in a later patch:
-- idpf_psp_tx_key_alloc(), idpf_psp_tx_key_get() and
-  idpf_psp_tx_key_put(). The TX path reads the SA index of the key
-  under RCU: the key is freed after an RCU grace period.
-- The SA index is IDPF_PSP_IDX_IN_PROG while the insertion is pending,
-  IDPF_PSP_IDX_ERROR if it failed and IDPF_PSP_IDX_DELETED once the key
-  was deleted, see idpf_psp_idx_valid().
-- idpf_psp_saidx_ok() checks the SA indexes returned by the CP against
-  the SA index width negotiated for the adapter.
+Add support for querying the FIPS compliance status of the crypto
+offload:
+- Introduce VIRTCHNL2_OP_GET_FIPS_COMPLIANCE_STATUS (567) and
+  struct virtchnl2_get_fips_compliance_status_resp.
+- Implement idpf_send_get_fips_compliance_status(), called from
+  idpf_psp_init(), which logs the status as
+  "compliant@cmvp_cert_<a>_and_<b>" or "noncompliant". The status is
+  informational only: failing to read it doesn't disable PSP.
 
 Signed-off-by: Stan Iliev <stani@google.com>
 ---
- drivers/net/ethernet/intel/idpf/idpf_psp.c    | 51 +++++++++++++++++++
- drivers/net/ethernet/intel/idpf/idpf_psp.h    | 31 +++++++++++
- .../net/ethernet/intel/idpf/idpf_psp_def.h    | 30 +++++++++++
- 3 files changed, 112 insertions(+)
+ drivers/net/ethernet/intel/idpf/idpf_psp.c    |  6 ++
+ .../ethernet/intel/idpf/idpf_psp_virtchnl.c   | 59 +++++++++++++++++++
+ .../ethernet/intel/idpf/idpf_psp_virtchnl.h   |  1 +
+ include/linux/net/intel/virtchnl2.h           | 14 +++++
+ 4 files changed, 80 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/idpf/idpf_psp.c b/drivers/net/ethernet/intel/idpf/idpf_psp.c
-index 844463754632..ef23b1699b09 100644
+index 252ddb773cf5..67f1f1d7508c 100644
 --- a/drivers/net/ethernet/intel/idpf/idpf_psp.c
 +++ b/drivers/net/ethernet/intel/idpf/idpf_psp.c
-@@ -128,6 +128,57 @@ void idpf_psp_free(struct idpf_adapter *adapter)
- 	idpf_psp_unregister(adapter);
+@@ -100,6 +100,12 @@ void idpf_psp_init(struct idpf_adapter *adapter)
+ 		return;
+ 	}
+ 
++	/* The FIPS compliance status is informational only */
++	err = idpf_send_get_fips_compliance_status(adapter);
++	if (err)
++		dev_warn(dev, "Failed to get PSP FIPS compliance status: %d\n",
++			 err);
++
+ 	WRITE_ONCE(psp->enabled, true);
  }
  
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_psp_virtchnl.c b/drivers/net/ethernet/intel/idpf/idpf_psp_virtchnl.c
+index ba114324d818..0502ce0b7abe 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_psp_virtchnl.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_psp_virtchnl.c
+@@ -135,3 +135,62 @@ int idpf_send_get_psp_caps(struct idpf_adapter *adapter,
+ 	libie_ctlq_release_rx_buf(&xn_params.recv_mem);
+ 	return err;
+ }
++
 +/**
-+ * idpf_psp_tx_key_alloc - Allocate the state of a PSP TX key
++ * idpf_send_get_fips_compliance_status - Get the FIPS compliance status
++ * @adapter: Driver specific private structure
 + *
-+ * Return: the TX key with a reference, NULL if it couldn't be allocated.
++ * Query the FIPS compliance status of the crypto offload with
++ * VIRTCHNL2_OP_GET_FIPS_COMPLIANCE_STATUS and log it in the legacy
++ * "compliant@cmvp_cert_<a>_and_<b>" form, or as "noncompliant".
++ *
++ * Return: 0 on success, negative on failure.
 + */
-+struct idpf_psp_tx_key *idpf_psp_tx_key_alloc(void)
++int idpf_send_get_fips_compliance_status(struct idpf_adapter *adapter)
 +{
-+	struct idpf_psp_tx_key *key;
++	struct libie_ctlq_xn_send_params xn_params = {
++		.chnl_opcode	= VIRTCHNL2_OP_GET_FIPS_COMPLIANCE_STATUS,
++		.timeout_ms	= IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
++	};
++	const struct virtchnl2_get_fips_compliance_status_resp *resp;
++	struct device *dev = &adapter->pdev->dev;
++	char status[128];
++	size_t reply_sz;
++	u32 num_certs;
++	int len, err;
++	/* The request has no payload, but libie can't send empty messages */
++	u8 dummy = 0;
++	u32 i;
 +
-+	key = kzalloc_obj(*key);
-+	if (!key)
-+		return NULL;
++	err = idpf_send_mb_msg(adapter, &xn_params, &dummy, sizeof(dummy));
++	if (err)
++		return err;
 +
-+	kref_init(&key->ref);
-+	spin_lock_init(&key->lock);
-+	key->idx = IDPF_PSP_IDX_IN_PROG;
++	reply_sz = xn_params.recv_mem.iov_len;
++	resp = xn_params.recv_mem.iov_base;
++	if (reply_sz < sizeof(*resp)) {
++		err = -EIO;
++		goto release_rx;
++	}
 +
-+	return key;
++	num_certs = le32_to_cpu(resp->num_certs);
++	if (struct_size(resp, certs, num_certs) > reply_sz) {
++		err = -EIO;
++		goto release_rx;
++	}
++
++	if (!num_certs) {
++		dev_info(dev, "PSP FIPS compliance: noncompliant\n");
++		goto release_rx;
++	}
++
++	len = scnprintf(status, sizeof(status), "compliant@cmvp_cert_");
++	for (i = 0; i < num_certs; i++)
++		len += scnprintf(status + len, sizeof(status) - len, "%s%u",
++				 i ? "_and_" : "", le32_to_cpu(resp->certs[i]));
++	dev_info(dev, "PSP FIPS compliance: %s\n", status);
++
++release_rx:
++	libie_ctlq_release_rx_buf(&xn_params.recv_mem);
++	return err;
 +}
-+
-+/**
-+ * idpf_psp_tx_key_free - Free the state of a PSP TX key
-+ * @ref: reference count of the TX key
-+ */
-+static void idpf_psp_tx_key_free(struct kref *ref)
-+{
-+	struct idpf_psp_tx_key *key = container_of(ref, struct idpf_psp_tx_key,
-+						   ref);
-+
-+	/* The TX path may still read the SA index of the key */
-+	kfree_rcu(key, rcu);
-+}
-+
-+/**
-+ * idpf_psp_tx_key_get - Get a reference on a PSP TX key
-+ * @key: the TX key
-+ */
-+void idpf_psp_tx_key_get(struct idpf_psp_tx_key *key)
-+{
-+	kref_get(&key->ref);
-+}
-+
-+/**
-+ * idpf_psp_tx_key_put - Release a reference on a PSP TX key
-+ * @key: the TX key
-+ */
-+void idpf_psp_tx_key_put(struct idpf_psp_tx_key *key)
-+{
-+	kref_put(&key->ref, idpf_psp_tx_key_free);
-+}
-+
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_psp_virtchnl.h b/drivers/net/ethernet/intel/idpf/idpf_psp_virtchnl.h
+index b1c64575b417..2ade2df2e34e 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_psp_virtchnl.h
++++ b/drivers/net/ethernet/intel/idpf/idpf_psp_virtchnl.h
+@@ -11,5 +11,6 @@ int idpf_send_get_crypto_caps(struct idpf_adapter *adapter,
+ 			      struct virtchnl2_crypto_get_caps *caps);
+ int idpf_send_get_psp_caps(struct idpf_adapter *adapter,
+ 			   struct virtchnl2_psp_get_caps *caps);
++int idpf_send_get_fips_compliance_status(struct idpf_adapter *adapter);
+ 
+ #endif /* !_IDPF_PSP_VIRTCHNL_H_ */
+diff --git a/include/linux/net/intel/virtchnl2.h b/include/linux/net/intel/virtchnl2.h
+index 45cdfc0651e3..c3a0e7b1b8e2 100644
+--- a/include/linux/net/intel/virtchnl2.h
++++ b/include/linux/net/intel/virtchnl2.h
+@@ -87,6 +87,7 @@ enum virtchnl2_op {
+ 	/* Crypto/PSP opcodes */
+ 	VIRTCHNL2_OP_CRYPTO_GET_CAPS			= 564,
+ 	VIRTCHNL2_OP_PSP_GET_CAPS			= 565,
++	VIRTCHNL2_OP_GET_FIPS_COMPLIANCE_STATUS		= 567,
+ };
+ 
  /**
-  * idpf_psp_set_config - Set the PSP device configuration
-  * @psd: PSP device
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_psp.h b/drivers/net/ethernet/intel/idpf/idpf_psp.h
-index 34534076da47..44ac750e2c3b 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_psp.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf_psp.h
-@@ -16,6 +16,37 @@ void idpf_psp_recv_late_reply(struct idpf_adapter *adapter,
- void idpf_psp_rotation_event(struct idpf_adapter *adapter,
- 			     const struct libie_ctlq_msg *ctlq_msg);
+@@ -1908,4 +1909,17 @@ struct virtchnl2_psp_key_domain {
+ };
+ VIRTCHNL2_CHECK_STRUCT_LEN(16, virtchnl2_psp_key_domain);
  
-+struct idpf_psp_tx_key *idpf_psp_tx_key_alloc(void);
-+void idpf_psp_tx_key_get(struct idpf_psp_tx_key *key);
-+void idpf_psp_tx_key_put(struct idpf_psp_tx_key *key);
-+
 +/**
-+ * idpf_psp_saidx_ok - Check an SA index returned by the CP
-+ * @adapter: private data struct
-+ * @saidx: the SA index
-+ *
-+ * Return: true if @saidx fits in the SA index width negotiated for the
-+ * adapter, false otherwise.
++ * struct virtchnl2_get_fips_compliance_status_resp - FIPS compliance response
++ * @num_certs: Number of certificates, 0 if not FIPS compliant
++ * @pad: Reserved/padding
++ * @certs: Flexible array of certificate IDs
 + */
-+static inline bool idpf_psp_saidx_ok(const struct idpf_adapter *adapter,
-+				     u32 saidx)
-+{
-+	return saidx < BIT(adapter->psp.saidx_width);
-+}
-+
-+/**
-+ * idpf_psp_idx_valid - Check if the SA index of a TX key is usable
-+ * @idx: SA index or state of a TX key, see struct idpf_psp_tx_key
-+ *
-+ * Only SA indexes checked with idpf_psp_saidx_ok() are stored in a TX key.
-+ *
-+ * Return: true if @idx is an SA index, false if it is a state.
-+ */
-+static inline bool idpf_psp_idx_valid(u32 idx)
-+{
-+	return idx <= IDPF_PSP_IDX_MAX;
-+}
-+
- #else /* !CONFIG_INET_PSP */
- 
- static inline void idpf_psp_init(struct idpf_adapter *adapter) { }
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_psp_def.h b/drivers/net/ethernet/intel/idpf/idpf_psp_def.h
-index fdd65bc5321a..9ba99e08853a 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_psp_def.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf_psp_def.h
-@@ -3,6 +3,8 @@
- #ifndef _IDPF_PSP_DEF_H_
- #define _IDPF_PSP_DEF_H_
- 
-+#include <linux/kref.h>
-+#include <linux/spinlock.h>
- #include <linux/net/intel/virtchnl2.h>
- #include <net/psp.h>
- 
-@@ -12,6 +14,34 @@
- #define IDPF_PSP_SAIDX_WIDTH_21		21
- #define IDPF_PSP_SAIDX_WIDTH_26		26
- 
-+/* Largest SA index the driver supports. The SA indexes the CP returns are
-+ * checked against the width negotiated for the adapter before they are used,
-+ * see idpf_psp_saidx_ok().
-+ */
-+#define IDPF_PSP_IDX_MAX		(BIT(IDPF_PSP_SAIDX_WIDTH_26) - 1)
-+/* States of a TX key without a usable SA index, see struct idpf_psp_tx_key */
-+#define IDPF_PSP_IDX_NONE		(U32_MAX - 3)	/* no SA index */
-+#define IDPF_PSP_IDX_IN_PROG		(U32_MAX - 2)	/* insertion pending */
-+#define IDPF_PSP_IDX_ERROR		(U32_MAX - 1)	/* insertion failed */
-+#define IDPF_PSP_IDX_DELETED		U32_MAX		/* key deleted */
-+
-+/**
-+ * struct idpf_psp_tx_key - State of a PSP TX key
-+ * @ref: reference count, held by the PSP association, see
-+ *	 idpf_psp_tx_key_add(), and by the lists and the insert request the
-+ *	 key is on
-+ * @lock: protects @idx and @hw_idx updates, and @tx_queue
-+ * @idx: SA index the TX path uses, or IDPF_PSP_IDX_IN_PROG,
-+ *	 IDPF_PSP_IDX_ERROR or IDPF_PSP_IDX_DELETED. Read without @lock.
-+ * @rcu: for freeing the key after the RCU readers of the TX path
-+ */
-+struct idpf_psp_tx_key {
-+	struct kref ref;
-+	spinlock_t lock;		/* protects the SA indexes and tx_queue */
-+	u32 idx;
-+	struct rcu_head rcu;
++struct virtchnl2_get_fips_compliance_status_resp {
++	__le32 num_certs;
++	u8 pad[4];
++	__le32 certs[] __counted_by_le(num_certs);
 +};
++VIRTCHNL2_CHECK_STRUCT_LEN(8, virtchnl2_get_fips_compliance_status_resp);
 +
- /**
-  * struct idpf_psp_rx_key - PSP RX key allocated by the CP
-  * @spi: SPI of the key
+ #endif /* _VIRTCHNL_2_H_ */
 -- 
 2.56.0.679.gc527c65306-goog
 
