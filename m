@@ -2,28 +2,28 @@ Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 09C56606A31C
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 17 Nov 2026 17:34:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 89420606A331
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 17 Nov 2026 20:40:12 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=KxCxpFtQ;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=qw1BFsUA
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=z5BOrRRg;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=nqQTH6bh
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id CDCE8810DF;
-	Tue, 17 Nov 2026 17:34:29 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 470DC811EA;
+	Tue, 17 Nov 2026 20:40:12 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id bJ73y1bZzlln; Tue, 17 Nov 2026 17:34:29 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 3FC2B810F4
+ id rLnvwkfEhM6Q; Tue, 17 Nov 2026 20:40:11 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org A7353811D8
 Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794936869;
-	b=BVNi0QF+NR+h+WhvYPfzBiroP8s/LerKLhM1V6niDDih099UUQvHwdzhhkUZr9a8hL9c
-	 WmRdD/CnoJhrA851J3v0bLnDYTXSMGK9Rusfdze1D2mMfERHYJST8UklgrbfyGCybD6Iv
-	 KgWk2mMwaO4ivzdTOonnoniB43uYe7nvcf01ffvOjNxfV95TyvWskWUangjUOyaOiFKIU
-	 h02HAEi6/uSEfkiG11/RDPgVAl3YFs0W1sCbN0aOICLFloPJfgWIkQk1VXknwnbiFVF8U
-	 w2WQEcfpTAQuGRw41itIB/BKLdrknGpNNsDtwsjTHSiLPEUqx6Vt2SKa3iE6ac/FJuA==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1794948011;
+	b=k7T9DJTmJ77d9qxMXI3XKJ0qQSzxwe3tMEAFo+WmiHu6FG8fZMJklrEek3/xx/G2XUpn
+	 Bei3c0vgcBS4YVDYAXfmlyEhkk/taEmkmZ7LyzEULA9ZHazijPRdRPPXQhv997UFbxUZq
+	 oBfUmYVld11M3HSJfDSoTfx7KlcU0cxokJXwxqkMxjQUYXYc1+7UxXMQQyVHXqrpfnayA
+	 fReEEMQY5h9/DN6RV5B5j6T7lzow9g1GtrXfUn6YIOYUzNjFG1gZMqM/xupJTEBpDBk8b
+	 6CyWQA3shGU1S72JqlYAF8Jgy3qIxSWckL8qHqOtX5nGZ4DebPDyWXpG5hMfT+SfILw==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794936869;
+	c=relaxed/relaxed; t=1794948011;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
@@ -33,111 +33,111 @@ ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
 	 Subject:X-Mailer:References:In-Reply-To:X-BeenThere:X-Mailman-Version:
 	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=pVxrfzsOkS8R/UI8C/+4VKwcJVz62eWVYB27WSqCUBg=;
-	b=OhpxKeCMz6puwPC5qmXEMxWPwk6c+76qo82wyqGTlEq4ufdeIK2RuZuuWDXKCSPm3rm6
-	 OEwhBVXalPcI/PaLolcGSkB5WBhAba88I1a5QwbAOxb5WVe0n4/vqDJtbhN9/2rvvST7V
-	 C3Tg5kKPUDn9ymchP+UmmQL8C+bLp626t4CdxM/DJU/AqCf+5d72zMBfXo2vL35k9xWao
-	 K9RHhNq7E59Bok0MPCH0R3Tln7zDdbbe/ZPBqa0OpLhmAVFwf+rTSe1++9Ytr5UF+9Wh6
-	 XmCa4547TxZkItk27mCPUUMajnWLSS0nZ/Bo0b3LcYDhQuUrhfKB9CXtnIIrzwr4Ftg==
+	bh=+zkjXBeMkEDc7QufXqaSGB6NEDq0WBn2vnhWa4XM0nU=;
+	b=sCjAyaqtVZPqP768yo63ZkSI5qDZZJ1FuMIgOuDt6MsT4RPa+H256pUPZUj6orGZBmbg
+	 lRh3aKbjDiPb8JIqKXvStVxA6/1W+YPeouyOr7HbbJuAEF5n7BZIt0NYVrq8uCD+Mof2O
+	 v0vcaqVAoTComB2utuARPAGr/mXzhNf3TvPUym1IeaXx6mGQKJTdbsuVKpdYHCB+SZBzv
+	 SykbA0vrkCDhs67koJiNz7BSNuBmIqktFYpUcrtdE5vHra9pkH7Vifg+nLYW1u2Rs83W8
+	 H4SwmBRHAvgOoW7w7m7KqUqlHyF9ERUl1A0vzimo5gIfqXcciMzP8HHJz4CebZhVhAQ==
 ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1794936869;
-	bh=pVxrfzsOkS8R/UI8C/+4VKwcJVz62eWVYB27WSqCUBg=;
+	s=default; t=1794948011;
+	bh=+zkjXBeMkEDc7QufXqaSGB6NEDq0WBn2vnhWa4XM0nU=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=KxCxpFtQMUrqRxNqbp7euM+55ROcB1EysHwBgwEsd1v+Sq+ujpqJlszUDy0bYcRDW
-	 bM5/73f5ycKXb+CRobXRHKqhw05reRer7MmGHHh/K1vwWjLhzcen+7fzNJ8mqQExi+
-	 wZwOzJMcdH014wAhNDM3vcl69ZEukaAlL6cRLhRkQs5NmC/s2yUcn3n8gtU/g3dTLU
-	 eEyEPpXJxpOzAKDZ7NJu7ROc1eoGeKy3SHW4oSIrZnHhiHmuB0vNdA+ZmGNi5lQmZh
-	 g/5tYsMyFCNkSQAG1Y/wrSYZZlVVb3E4tqD0+cl0JbxK0t935jjl9JFoCOKHeAUS8e
-	 llS3C1SlzFk0A==
+	b=z5BOrRRg/pRGaEmbxCcLsenFC/wAJFpE6l0k5DCLaxq98ssCUy1tAqzfvGCB0TnWj
+	 fepxPzPP2n19MU1XCWWDkFpYkm0Jz6lZQLvJ2NYe4zjFdbPBQRCOgV4u1EuFRd4ovl
+	 b1knUxfSdIKf/FiXojxFkG+GW1c2kuhgF2xQ/KaW7d/ac7QM+brG/PqzrEm7D3nT2x
+	 BsFSNt2olDMrHuvPM7SQAHf56HHMPQvpqqz/CZrDVCm7aGTratG1h/E9enDSYxAZMP
+	 KeN5GzbUgRG84Y9thCIlGC8MG5nHNPfWsZI0Fn9I8X2an1iYjGyFrkBmgbSXIkfi/G
+	 b6b1GyPOv5Yzg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 3FC2B810F4;
-	Tue, 17 Nov 2026 17:34:29 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 59415105
- for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 17:34:27 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id A7353811D8;
+	Tue, 17 Nov 2026 20:40:11 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 0F127A0E
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 20:40:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 498EB6077B
- for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 17:34:27 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id E9073409B9
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 20:40:09 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id pxeobXePX_Ud for <intel-wired-lan@lists.osuosl.org>;
- Tue, 17 Nov 2026 17:34:26 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 87ADB605F4
-Authentication-Results: smtp3.osuosl.org;
- arc=none smtp.remote-ip="2607:f8b0:4864:20::732"
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Lm2yiphAsLRf for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 17 Nov 2026 20:40:09 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 1624D40913
+Authentication-Results: smtp4.osuosl.org;
+ arc=none smtp.remote-ip="2607:f8b0:4864:20::f2b"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::732; helo=mail-qk1-x732.google.com;
+ client-ip=2607:f8b0:4864:20::f2b; helo=mail-qv1-xf2b.google.com;
  envelope-from=daniel.zahka@gmail.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp3.osuosl.org;
+Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp3.osuosl.org;
+Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20260707 header.b=qw1BFsUA
-Received: from mail-qk1-x732.google.com (mail-qk1-x732.google.com
- [IPv6:2607:f8b0:4864:20::732])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 87ADB605F4
- for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 17:34:26 +0000 (UTC)
-Received: by mail-qk1-x732.google.com with SMTP id
- af79cd13be357-93f3c616c84so8639385a.1
- for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 09:34:26 -0800 (PST)
+ header.a=rsa-sha256 header.s=20260707 header.b=nqQTH6bh
+Received: from mail-qv1-xf2b.google.com (mail-qv1-xf2b.google.com
+ [IPv6:2607:f8b0:4864:20::f2b])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 1624D40913
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 20:40:08 +0000 (UTC)
+Received: by mail-qv1-xf2b.google.com with SMTP id
+ 6a1803df08f44-92106d5371dso1474646d6.1
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Nov 2026 12:40:08 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20260707; t=1794936865; x=1795541665; darn=lists.osuosl.org;
+ d=gmail.com; s=20260707; t=1794948007; x=1795552807; darn=lists.osuosl.org;
  h=in-reply-to:references:subject:cc:to:from:message-id:date
  :content-type:content-transfer-encoding:mime-version:from:to:cc
  :subject:date:message-id:reply-to:content-type;
- bh=pVxrfzsOkS8R/UI8C/+4VKwcJVz62eWVYB27WSqCUBg=;
- b=qw1BFsUAxWFEZ0648TsbMY8sJi8sk/OvnpYARqezSGFCgX8gysdmsUm76RChHeHUwd
- ct7rxdn5nYrNJeOgdSS5BBy1ItRXExq254fy7RXehFEeCW5yvsVS8oAwTP5fJHsr9/SR
- xc9OIgk7lLjw6RVC/YQtizcopDn/NBJqgmmohXKHN9cVA83cIDzY4nWesuT8KSeY44E+
- /mI0yDF5rlMXNluiLaclzF000wzP0vY5ZQbDLgeyjpMu9k9aIdsOR9KLyAjRRfMQkFUz
- vKU93nVZCWFXZRznfIzyqBH46WA6sXb3p8fX1a68vwvjW98ofaWS+bPAPybCio02O093
- 71Fg==
+ bh=+zkjXBeMkEDc7QufXqaSGB6NEDq0WBn2vnhWa4XM0nU=;
+ b=nqQTH6bhtyyt6skMXHlg554REXkaLzcCGJ514VM0HmDXA1CIQy762M7hoMxZuL9vG2
+ JR78WB7dLJZEXOFMJ3cv0Q3lwq6SO0vVQIdgmJ+OZxMZg3ji6QUiQE3N13Sw8gleBYnP
+ 2oAIrAe2JDOdgRXrC7blVgzXVfzONgsgkLr5DMiTDqJvykvq0H7RtYEYnubtPn1iQINd
+ vO7lbtlXi6OC8tXmcC9Hpr8R5JBEfP4s/4aK7EolDkbqwFQQM3F8M1Axdi39y6Reo7hV
+ PDwykN8mdfcZD5AQqurc6e9NhOCmaNPQXRF1+cW7PI97Ey6uRGa7BFcxCBVR76Gu9iiC
+ vSbw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1794936865; x=1795541665;
+ d=1e100.net; s=20260707; t=1794948007; x=1795552807;
  h=in-reply-to:references:subject:cc:to:from:message-id:date
  :content-type:content-transfer-encoding:mime-version:x-gm-gg
  :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
  :content-type;
- bh=pVxrfzsOkS8R/UI8C/+4VKwcJVz62eWVYB27WSqCUBg=;
- b=c+cI6K+OG8YaKyLzqh8WXkwWmep3jTmkN6aVakLqEj5XGhGbsuEBDUxO8XMun95DjV
- rgvUEPPP1JzmPeYUi8MR0rL2qL5GLoefCxOr3jCKQwO9jdcML8REnVk3r9CgyGW6pmMd
- eQSDnxIfEuWJE67Qr76802Vzs2fE6di4jqx8s7Ru3Sl7D5rWdGa/DBpkX0ZeanFKqopa
- CaQamU5z7CWJEeW5D5MwaWeX4rN7blFrJX7xFv2DL+FMW8S8Hp98cAq8NE7lwb1yjTb7
- AtYBcC/5g3QH1Gr/JqvlI0iwbwPkBWMX5F1gtFAFOZVdS5Uw9haivDrswQwUJXpltyLc
- CT8Q==
+ bh=+zkjXBeMkEDc7QufXqaSGB6NEDq0WBn2vnhWa4XM0nU=;
+ b=o8GAV0B5mDfFwW0r25NYn1lu2IDJc6w7+begt6rxND/lyxMQ4pO3oj6+ecJ55htbdG
+ 7T3BHrZaUztoIlAag/qMVYCAFhLGbu4TU+dzsn4H52YU+twxe3znIPk/OHzsj8BNw8s8
+ 7bXLUzbEwZy+wrcfvu4GjvDI7YRxcAuhH+0B/KxzgxJ7/wA4fWacegem3RqBm3DrhZr0
+ cjCCLtEYgm5mE4H6vNyAI1g9g2J+De6P4ihCw883d6JBjotmo85pwPMKYyLlbZxULPSq
+ IOj9jBHMIqi+KJOeLtFN6VTXT73xHpGzzli2+VXPu5Z41hAFGhtfy6wGjMwKCUguDO6J
+ xW4g==
 X-Forwarded-Encrypted: i=1;
- AL+hErF5uFmxpkbLNjDd7KoUy+/AibGW68zCAB+Oywp8FiD37tqaIk+/y47Yh3brp3j7WnUh2HAdTNMo8RcF1Yn0bgs=@lists.osuosl.org
-X-Gm-Message-State: APuU4Z8PCNF1/3L6Td81/9vRwIKRH9lobLftPt7LWbWbyv/oVLd+F9eX
- 9t4IpMHGmzF319aYNhZ/9APvH0qlzEtnznPmC7EsLwLyFJBjZCauMjRO
-X-Gm-Gg: AYBFou0gzNwNS3jrzpn8NDJy511CJaqPoY8uECKIi7Xz3usL1pyRGiDV0X2UA3aKxGB
- tww3oDctRXhYqn6mtoM+VEPc2BIywcEG5XV/5jbRD0+xWX+Cm41yO07bicNY8I0/VI/NiOND7dJ
- gP+PCYZx6du0Q87K7FzzFXgcIAG/NY3VAwswVlFDZUDqVKgQ0+qfTQHOFEnoiXr6RBQI45dBphZ
- jggRLlJxYfTzmenTLKfp5BoQDGXjYL4uIYHkTe03fRKQU/d3sCrPaeCkQseOKGISna1AN+sMh76
- pg5B6xYThb7a7sMYW+2DzccU8N0t+nBC5vEwJOGwumCiyJNla4aQeIvLXTsxWbtPU0lxF0H/0ac
- t0SvZSKHePVEbvGBbTZJMMfXBNpLGj3rkhAOp859zt1SVFJ1owhVkAXTbZqUSAfJ375rYi0y04s
- dNedUKs8pMqj9OTbQLtX+li/J/yN2SkBnRgzAwKwtjK7PiEqdIHrKaqjHMlu6e8/XmSuqXT7f/A
- dRKj3aEZ1ZMT0EQe55Wd9FqZ3SWxxuCAXYYOmyf9XKRy8b+aDvc7IrAfzY1bno5OSKZamIrQgYF
- 9aDhXht3a2pVAcoy+A==
-X-Received: by 2002:a05:620a:1714:b0:949:73f3:83c with SMTP id
- af79cd13be357-94999572b95mr73032085a.21.1794936864878; 
- Tue, 17 Nov 2026 09:34:24 -0800 (PST)
-Received: from localhost ([2620:10d:c091:500::7:5db8])
+ AL+hErHyRACjzu2WrOc5YKw81fHZQL+iWfWMOAKVFk+fcSfVDeEm4AZT5eoLTR8WHB2AHOSwoXIkYLsL9xNYWv6WONU=@lists.osuosl.org
+X-Gm-Message-State: APuU4Z+SXOnuAB44ABVmx6hTZ5CLZQyl2rmdhuxOxgtIhZSoe9mEeGYE
+ tWxuMTzYHqJMNjbQn6641AuokKl3dAZ0XBsig5hscbX0DUty7Dv1tcNh
+X-Gm-Gg: AZFdTZdCSyMjcJKwat3t++2xRB9qIA4fa+b6yUfvVqOVoYGfSFOXvlT3WZbXLbX3XjT
+ AbAbAtz4weEdm280pzFSHBouQX0xbIgH1svzUuFpahpOULiGwDLZUFh0GpZgspF4Enyq+DUFAH2
+ pV4tp3w8+05Atn6VAZSxy656q9NEoa1I9UmU8wfAdXG8MW6xbyBJGIGCF6ly2oevbQ4h41VU4mr
+ VP9i7RPkLBKl1fX5lW3NTwJh/0+mPZoeIfYz89YYY4+13cMELHDmie4D2nZ9NVlC7f6lu1NWMo/
+ Zq6mCx+FAVAiWKGk6ykWT0tuPghc0SmssbMWispMrMn3lXGuDW1zS0QCU8FiOvoPjKhETpclzsO
+ PDoWv7XGo+bODGJJUsgP5IchF3JBed90F8GZ8n0aVOjCGWRdGOe6ZnlcRz+vktOW4/RMJBBrDEw
+ S6fP+NITRoUHgV8nvgSnAd4gkqzPQ47UBzWweg+jWcnH8wLrUjLLStPhjgjdpY9CTaDi5CullJG
+ p6KqX9tF2crZklHBn12264e3s7ayoJy4oGd9rYmm07VVJ01/78u9cPd4lo5VuijY+JYy1gLw5KW
+ 6bgYvLkBaA4B+GuGmhoI37zf7RzpbtUGqw==
+X-Received: by 2002:a05:6214:449e:b0:917:8c2d:4283 with SMTP id
+ 6a1803df08f44-920fd36e10bmr57938796d6.22.1794948007115; 
+ Tue, 17 Nov 2026 12:40:07 -0800 (PST)
+Received: from localhost ([2600:4040:9399:4000:e553:72e5:7d37:c7ef])
  by smtp.gmail.com with ESMTPSA id
- af79cd13be357-9494c831b7dsm1139318185a.20.2026.11.17.09.34.23
+ 6a1803df08f44-92114db5db5sm2876646d6.43.2026.11.17.12.40.05
  (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Tue, 17 Nov 2026 09:34:24 -0800 (PST)
+ Tue, 17 Nov 2026 12:40:06 -0800 (PST)
 X-Archived-By: <archiver.kernel.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset=UTF-8
-Date: Tue, 17 Nov 2026 12:34:23 -0500
-Message-Id: <DMXO0JIUCNYA.1940X1XHRX6SF@gmail.com>
+Date: Tue, 17 Nov 2026 15:40:02 -0500
+Message-Id: <DMXRYOOJPIXS.1DIGZP64RMRLW@gmail.com>
 From: "Daniel Zahka" <daniel.zahka@gmail.com>
 To: "Stan Iliev" <stani@google.com>, "Tony Nguyen"
  <anthony.l.nguyen@intel.com>, "Przemek Kitszel"
@@ -154,11 +154,12 @@ Cc: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>, "David
  "Willem de Bruijn" <willemdebruijn.kernel@gmail.com>, "Kees Cook"
  <kees@kernel.org>, "Gustavo A. R. Silva" <gustavoars@kernel.org>,
  <linux-hardening@vger.kernel.org>
-Subject: Re: [PATCH iwl-next 04/15] idpf: psp: add psp offload initialization
+Subject: Re: [PATCH iwl-next 07/15] idpf: psp: add support for fips
+ compliance status
 X-Mailer: aerc 0.21.0-threadmapfix
 References: <20261117145522.1910636-1-stani@google.com>
- <20261117145522.1910636-5-stani@google.com>
-In-Reply-To: <20261117145522.1910636-5-stani@google.com>
+ <20261117145522.1910636-8-stani@google.com>
+In-Reply-To: <20261117145522.1910636-8-stani@google.com>
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -178,42 +179,85 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 On Tue Nov 17, 2026 at 9:55 AM EST, Stan Iliev wrote:
-> Add the PSP offload initialization:
-> - Introduce VIRTCHNL2_CAP_CRYPTO (bit 26 of the other capabilities)
->   and request it in VIRTCHNL2_OP_GET_CAPS if CONFIG_INET_PSP is
->   enabled.
-> - Add struct idpf_adapter_psp to struct idpf_adapter.
-> - Implement idpf_psp_init(), called from idpf_vc_core_init() on each
->   core init, including after a hard reset, and idpf_psp_free(), called
->   from idpf_remove(). PSP is enabled if VIRTCHNL2_CAP_CRYPTO was
->   granted, see idpf_is_psp_ena(). A failure disables PSP instead of
->   failing the core init.
-> - Add the PSP device ops with idpf_psp_set_config(), and
->   idpf_psp_register()/idpf_psp_unregister(). The PSP device is
->   registered in a later patch, once all mandatory PSP device ops and the
->   datapath are implemented.
-> - Build idpf_psp.c only with CONFIG_INET_PSP, with static inline stubs
->   in idpf_psp.h otherwise.
+> Add support for querying the FIPS compliance status of the crypto
+> offload:
+> - Introduce VIRTCHNL2_OP_GET_FIPS_COMPLIANCE_STATUS (567) and
+>   struct virtchnl2_get_fips_compliance_status_resp.
+> - Implement idpf_send_get_fips_compliance_status(), called from
+>   idpf_psp_init(), which logs the status as
+>   "compliant@cmvp_cert_<a>_and_<b>" or "noncompliant". The status is
+>   informational only: failing to read it doesn't disable PSP.
 >
 > Signed-off-by: Stan Iliev <stani@google.com>
 > ---
+
+[...]
+
 > +
 > +/**
-> + * idpf_psp_set_config - Set the PSP device configuration
-> + * @psd: PSP device
-> + * @conf: new configuration
-> + * @extack: netlink extended ack for error reporting
+> + * idpf_send_get_fips_compliance_status - Get the FIPS compliance status
+> + * @adapter: Driver specific private structure
 > + *
-> + * The configuration is applied by the PSP core.
+> + * Query the FIPS compliance status of the crypto offload with
+> + * VIRTCHNL2_OP_GET_FIPS_COMPLIANCE_STATUS and log it in the legacy
+> + * "compliant@cmvp_cert_<a>_and_<b>" form, or as "noncompliant".
 > + *
-> + * Return: 0.
+> + * Return: 0 on success, negative on failure.
 > + */
-> +static int idpf_psp_set_config(struct psp_dev *psd, struct psp_dev_confi=
-g *conf,
-> +			       struct netlink_ext_ack *extack)
+> +int idpf_send_get_fips_compliance_status(struct idpf_adapter *adapter)
 > +{
-> +	return 0;
+> +	struct libie_ctlq_xn_send_params xn_params =3D {
+> +		.chnl_opcode	=3D VIRTCHNL2_OP_GET_FIPS_COMPLIANCE_STATUS,
+> +		.timeout_ms	=3D IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
+> +	};
+> +	const struct virtchnl2_get_fips_compliance_status_resp *resp;
+> +	struct device *dev =3D &adapter->pdev->dev;
+> +	char status[128];
+> +	size_t reply_sz;
+> +	u32 num_certs;
+> +	int len, err;
+> +	/* The request has no payload, but libie can't send empty messages */
+> +	u8 dummy =3D 0;
+> +	u32 i;
+> +
+> +	err =3D idpf_send_mb_msg(adapter, &xn_params, &dummy, sizeof(dummy));
+> +	if (err)
+> +		return err;
+> +
+> +	reply_sz =3D xn_params.recv_mem.iov_len;
+> +	resp =3D xn_params.recv_mem.iov_base;
+> +	if (reply_sz < sizeof(*resp)) {
+> +		err =3D -EIO;
+> +		goto release_rx;
+> +	}
+> +
+> +	num_certs =3D le32_to_cpu(resp->num_certs);
+> +	if (struct_size(resp, certs, num_certs) > reply_sz) {
+> +		err =3D -EIO;
+> +		goto release_rx;
+> +	}
+> +
+> +	if (!num_certs) {
+> +		dev_info(dev, "PSP FIPS compliance: noncompliant\n");
+> +		goto release_rx;
+> +	}
+> +
+> +	len =3D scnprintf(status, sizeof(status), "compliant@cmvp_cert_");
+> +	for (i =3D 0; i < num_certs; i++)
+> +		len +=3D scnprintf(status + len, sizeof(status) - len, "%s%u",
+> +				 i ? "_and_" : "", le32_to_cpu(resp->certs[i]));
+> +	dev_info(dev, "PSP FIPS compliance: %s\n", status);
+> +
 
-this is supposed to enable/disable PSP Rx on the device. It should
-probably either do something or have a TODO or comment explaining that
-the HW doesn't support disabling parsing packets as PSP.
+You should think about exposing this with a netlink uapi instead of
+making userspace parse it from dmesg. Maybe PSP dev-get.
+
+I would also suggest moving this to a series after the PSP
+implementation. It doesn't make sense to have the PSP driver API
+implemented over the span of two separate series when stuff like this is
+in between.
+
+> +release_rx:
+> +	libie_ctlq_release_rx_buf(&xn_params.recv_mem);
+> +	return err;
+> +}
