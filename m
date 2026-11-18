@@ -1,30 +1,30 @@
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D662E60A260F
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Nov 2026 14:18:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2ABBA60A2603
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Nov 2026 14:27:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=r1CKuX+w;
-	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=d38Tf7BW;
-	dkim=pass (1024-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=selector1 header.b=RBI5cV9c
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=Qa1JW6mH;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=WEBrkKPL;
+	dkim=pass (1024-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=selector1 header.b=L2rdzyGA
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id AE86760A7F;
-	Wed, 18 Nov 2026 14:18:33 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 021BA8121A;
+	Wed, 18 Nov 2026 14:27:21 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id frWAScGgbLgu; Wed, 18 Nov 2026 14:18:31 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org B1B9860A7C
-Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795011511;
-	b=BWBtpPCckpdoiDtUAtmeSOjSax2N64z6Zo/s/WacDH5gHghy4lOuqVgIJiWKyxCLkMOn
-	 5WaMIqKyXjaPlQbFFFHRCoY1rffxHGA07XSR9UsvtIi6KJavElqhSie7thiyU2rMZ8sUt
-	 NxiidRhHWN0GN6URo7QpzlMCI4H2oE2K5u74r+CSAEfOnbQaKAa74RuySAQqUjT5Yxxbt
-	 vBudWKptj5mTNsEZx6jkZSLnhZPRfR8zwWBZkfh7lZFIYwPukNaofhnxeCNpqW0PacCQq
-	 e6AsIWTz6kbiGTMjbnIUKtn5aOZvJCmf0GQlTHfTYhUawmMBa4Q+eUwc9SX6qBccxqw==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id vvLTTiXhsHPo; Wed, 18 Nov 2026 14:27:20 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 28D5381225
+Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795012040;
+	b=ppqFqRGy+yCEdbSg1p81IQU9ECkuXW3jDGi+DzDDQR9ZFXMvxdEpCk4g99pw9nACnRJD
+	 VDeSeiNYqZlvNtm29z5NPudfTbQo9BAu8R0jydp0LUm9EznsVVp12t2GFD48EpHJyPzdu
+	 oFi8JrjIoeSWBQkpNHhbR+lV9OFOeEVrPpLHbofAM8pYBxTZIjMQcUAZvJNNc2qMuaeRO
+	 bQ88DMsxSKV5KhCaoi87jb+EW8CIXgH4MQ84Uh0PmNamEnRx9EI5IdwF37brGte9kcCwW
+	 CZVfXa0EJRoxCm9kWfGaYL6t2w/wpfr7jtxQTPDPic7nNFQ39S2rhDrLXF3fgCky4PA==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795011511;
+	c=relaxed/relaxed; t=1795012040;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
@@ -48,181 +48,182 @@ ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
 	 X-MS-Exchange-Transport-CrossTenantHeadersStamped:X-OriginatorOrg:
 	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
 	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=e9z/u45NuEg4HXYDtzDUp5YdYFqpo4/+sRlujleJzGE=;
-	b=awiIERjImiMd3AQmwb6VIy1L4qd8V6jrcNV0LbGaf5lswr5FrqfgLlsWnL5+NxMsy+J7
-	 pMQfS6JZekDGjHqYF8Af3XIGsdwdfVVCg1f2lYJDoYNOaiYieNFlHY0XXrx2RIdchO+l0
-	 M4ZakUSO3rR2uq/YR+PSYnrLIEZYS72IFpnNL/Z6X9UdlBE3e1cRooh4zYF218mqUkLAx
-	 6yEK7WZKYmyw61l6QebUV0W/EvoW8/Ucf9tG/tq7Q0r6Xsa1GTJT4tH6d2Whex7lGOB0N
-	 6sx9EVQ750YkP+d9tHUi0ugvHAiTalzXbri1ccXK3d55zI1Zjb6oPw0oCfK53RmjUMQ==
-ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
+	bh=vEbhJfZkTtaPsgQxZTNygKGDVLdH6lTT/fSGmFBELCM=;
+	b=KSXZURwV5cNQaWWydUZtT+JhEdqjG6D/tDSVVxpIUMNTRyj//9LCyX6P/S50/kIk7L/3
+	 KHSxQOLvxdOSYCSsGaLRxQL/XeTW67t+MDzJdbIZ3bHtE24WPwWUcxYgLshQmnbfyEPIx
+	 g4jdtuzQOk0n78OjrPR/OzU/1oBXqpKl4yu33J3NOMdJLXzj3WSqQ29AihBRBrPRtQB4/
+	 5XFy2rSYViwE9HB9xKJD79hhCKQJIFlXKTGtNjEx74E5Hvf+JawsBZRPhh6P2MHBUAoOQ
+	 lMV6dvOWo8BLGu37EKfDiKaym2ivSJf34F+kk6L+bgSBU03DFPFCY6DDIqInKdQHvuQ==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1795011511;
-	bh=e9z/u45NuEg4HXYDtzDUp5YdYFqpo4/+sRlujleJzGE=;
+	s=default; t=1795012040;
+	bh=vEbhJfZkTtaPsgQxZTNygKGDVLdH6lTT/fSGmFBELCM=;
 	h=Date:From:To:CC:Subject:References:In-Reply-To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=r1CKuX+wL93tTxuAH52agKIrlPvUPerAugvNRCqppnqLw36xIHyoCUKJJfdN9lT84
-	 KkftJBD7OrqGgUQjzIScEIIcSqi+/XxYNJrC9QcRrp9XCi4o4bRqjCutqyXDuOCLWZ
-	 k48rZ4b/aBdNx00Pw0jXxzmz4LYXtBCc4pWsHg3oYkt7N4YMOeHemv1z3L8jhM+EWQ
-	 MoeToxGKcmw8XiIH7EIltokgZI9+PsXX3hHYRmhFWUTgc8PyCVj2bO0uengnHFYKy+
-	 FISpmwdEM7Xy5bny0yCMOQe4RJI+CEejJ+0nh16g1laVukLT1EVa4WvlxZ80LGtz42
-	 7tSjAePEjkaxw==
+	b=Qa1JW6mH45lSQxRMlynPkuQxxG3Lb49MuQQm/bAqNh/CPUxziM8txgbCLg9mviQvM
+	 x0t4h6mi041b8nZH/3o8m0Pmst4txyFdfcvhCCPTTCWkQeSTiQXbhkmC/SCMHFamgj
+	 VH0F0RPZoV0BIzJs9efY2MNdqpXk5tUJT6Mgy5Sf32zKVl7Dkp1EcyR+vNK+HwAW58
+	 gLdoa7Eq69A3B3dQKrmmlRJdMLPrWymTOAXcBtt5xGhc2va+mKEnpfPqiAD0hl9LPE
+	 EyzvXAw9fKJJQB1sywbRBmmLQHsTzuwf80ycRnlnPv9TAVKaDp+AppHEWfMvopJH+x
+	 mB+Uim8vX6YpA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B1B9860A7C;
-	Wed, 18 Nov 2026 14:18:31 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id BF6039F8
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Nov 2026 14:18:30 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 28D5381225;
+	Wed, 18 Nov 2026 14:27:20 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 6341D70B
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Nov 2026 14:27:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id A5111409D7
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Nov 2026 14:18:30 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 49C0540A06
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Nov 2026 14:27:17 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id nu-sXccgrrlE for <intel-wired-lan@lists.osuosl.org>;
- Wed, 18 Nov 2026 14:18:30 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org B599C409CE
+ id PDxGBbhbNuQx for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 18 Nov 2026 14:27:16 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org D4EC1409D2
 Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0
- smtp.remote-ip=192.198.163.8
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.8;
+ smtp.remote-ip=192.198.163.7
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.7;
  helo=mgamail.intel.com; envelope-from=maciej.fijalkowski@intel.com;
  receiver=<UNKNOWN> 
 Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=d38Tf7BW; 
+ header.a=rsa-sha256 header.s=Intel header.b=WEBrkKPL; 
  dkim=pass (1024-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=selector1 header.b=RBI5cV9c
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
- by smtp4.osuosl.org (Postfix) with ESMTPS id B599C409CE
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Nov 2026 14:18:28 +0000 (UTC)
+ header.s=selector1 header.b=L2rdzyGA
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id D4EC1409D2
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Nov 2026 14:27:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1795011510; x=1826547510;
+ t=1795012036; x=1826548036;
  h=date:from:to:cc:subject:message-id:references:
  in-reply-to:mime-version;
- bh=1bkwxp8hpOk0zRz+BF6wGVkq9ZUAwDTAtLsFOPGkA7o=;
- b=d38Tf7BWDqzxfddmmpg8aE8meLqDkzGint7JM7nQ1PGnDhs14EEgWcAc
- fZpE06sVgHZo8mJFcwBrjLb9rqhCz7vItb8x/05aIEGusH4ueHT6Hth0R
- xM1vqLzVabwhy99oXYPwO4djlixFIzS2nzOnMXtzMaPt2/kqMNDig5LZe
- FdTPJBKJRCXM0DrCujeq6V20KbYMHtv6ieh+MUAPXEKNgIQ/9YhbFYP8L
- px7AiXZ1nOjiTC4zpllIfli4CR1s69MxeUx8gUpZT6bOhAJgvIH7IU9Lj
- mqQpOIGU6ocDg6HpWBcq2LTMpNK5TWEXwcMRUAIr4I3w9fCC+aNJkr74b Q==;
-X-CSE-ConnectionGUID: sd2AmqndSvOEHPnk92HMzw==
-X-CSE-MsgGUID: nJwgj9ihR7WXLu/VefX3rw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11969"; a="3714212"
+ bh=QPut77wSD8RQBCrb9zNz3a8wB6i8wRK7pyeHuElZ9hQ=;
+ b=WEBrkKPLQUYQ0aUOemP2F+SO+metU51C6pzmKmn7a8xS+Z61RRK5vT5i
+ I+LSisLoYTXK0fja4BlmA1O1C+XO8/rOqrj/8Y0GGNxrW4TQdQPT3gyvX
+ 2j1ZyU6l3nwbkqC46uVOU1ZAp/Cb3YeFkOGAtFAgEdddF2OdkIu5d2rqb
+ AvwWUfmz1H5sWzm29x/dsyasjGkCgW/LX/MNc0WaBWlB3cPj2VhBiYOfs
+ WSymIdz+Wt8Pkxy5/D0Hh9CMuegrQrj6Mhq3Qwb3sV/BOJuMCuFRE3A2a
+ TQfyyGNqa57XGg2SSHwcAuBU8bkq8rxiDKC1QQzJftznNFUtsIxPt4RFk w==;
+X-CSE-ConnectionGUID: +F9PlmYRQKub9akutapwHw==
+X-CSE-MsgGUID: ZynEtr01SGGPT0ouBanxCA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11970"; a="3682595"
 X-IronPort-AV: E=Sophos;i="6.27,219,1787036400"; 
-   d="scan'208";a="3714212"
-Received: from fmviesa004.fm.intel.com ([10.60.135.144])
- by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 18 Nov 2026 06:18:28 -0800
-X-CSE-ConnectionGUID: q4DGTe8gQMaOroLOfBNG4Q==
-X-CSE-MsgGUID: YsjnIMI1SGKXCkz3qGyTdA==
+   d="scan'208";a="3682595"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+ by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 18 Nov 2026 06:27:12 -0800
+X-CSE-ConnectionGUID: 92i958B1SyShWLJXocqghQ==
+X-CSE-MsgGUID: htqMjrgSQ++EDB8Wl4r6Fg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,219,1787036400"; d="scan'208";a="10146496"
-Received: from orsmsx903.amr.corp.intel.com ([10.22.229.25])
- by fmviesa004.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 18 Nov 2026 06:18:28 -0800
-Received: from ORSMSX903.amr.corp.intel.com (10.22.229.25) by
- ORSMSX903.amr.corp.intel.com (10.22.229.25) with Microsoft SMTP Server
+X-IronPort-AV: E=Sophos;i="6.27,219,1787036400"; d="scan'208";a="10242924"
+Received: from orsmsx902.amr.corp.intel.com ([10.22.229.24])
+ by fmviesa005.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 18 Nov 2026 06:27:12 -0800
+Received: from ORSMSX901.amr.corp.intel.com (10.22.229.23) by
+ ORSMSX902.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.56; Wed, 18 Nov 2026 06:18:27 -0800
+ 15.2.2562.56; Wed, 18 Nov 2026 06:27:10 -0800
 Received: from ORSEDG901.ED.cps.intel.com (10.7.248.11) by
- ORSMSX903.amr.corp.intel.com (10.22.229.25) with Microsoft SMTP Server
+ ORSMSX901.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.56 via Frontend Transport; Wed, 18 Nov 2026 06:18:27 -0800
-Received: from BL2PR02CU003.outbound.protection.outlook.com (52.101.52.13) by
+ 15.2.2562.56 via Frontend Transport; Wed, 18 Nov 2026 06:27:10 -0800
+Received: from DM1PR04CU001.outbound.protection.outlook.com (52.101.61.40) by
  edgegateway.intel.com (134.134.137.111) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.56; Wed, 18 Nov 2026 06:18:27 -0800
+ 15.2.2562.56; Wed, 18 Nov 2026 06:27:10 -0800
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=intel.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=e9z/u45NuEg4HXYDtzDUp5YdYFqpo4/+sRlujleJzGE=;
- b=RBI5cV9cVH+rpwDdiWz5512yziMJBJLy0fo+D5kW+s4BUs/IJMBByRA3x49QiREbDJCAbr9fXFFkO8ojlcveqgoq6zEF0+e88vnSQ8YD8OQDdYAklM+4QA/0t4N2OKXFDFGB13DcFP9wQDeFtO/xXXsPKgIg0QGpc7jBir4xOLY=
+ bh=vEbhJfZkTtaPsgQxZTNygKGDVLdH6lTT/fSGmFBELCM=;
+ b=L2rdzyGANZ5ULR94vNfXXA/5LuxTm8j55XOhwcTilb6Anp1o/5btq5eysnv3pvrFv+te+8U3Ru8OJwVuklaNOcuavY4BGSSHLVQspoQU5QS88KcPq1ivzxxJkqYL7nRTGpRsWyWw2/69KZYIt+ZAHvjABeILSCm+F/QPbhINWfs=
 Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=intel.com;
 Received: from LV2PR11MB868673.namprd11.prod.outlook.com
- (2603:10b6:408:422::13) by SJ2PR11MB8471.namprd11.prod.outlook.com
- (2603:10b6:a03:578::5) with Microsoft SMTP Server (version=TLS1_2,
+ (2603:10b6:408:422::13) by LV2PR11MB9597.namprd11.prod.outlook.com
+ (2603:10b6:408:379::10) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.615.14; Wed, 18 Nov
- 2026 14:18:25 +0000
+ 2026 14:27:02 +0000
 Received: from LV2PR11MB868673.namprd11.prod.outlook.com
  ([fe80::5bfd:6afe:a9db:b7de]) by LV2PR11MB868673.namprd11.prod.outlook.com
  ([fe80::5bfd:6afe:a9db:b7de%4]) with mapi id 15.21.0615.013; Wed, 18 Nov 2026
- 14:18:25 +0000
-Date: Wed, 18 Nov 2026 15:18:15 +0100
+ 14:27:02 +0000
+Date: Wed, 18 Nov 2026 15:26:57 +0100
 From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 To: Magnus Karlsson <magnus.karlsson@intel.com>
 CC: <magnus.karlsson@gmail.com>, <intel-wired-lan@lists.osuosl.org>,
  <anthony.l.nguyen@intel.com>, <przemyslaw.kitszel@intel.com>
-Subject: Re: [PATCH iwl-net] ice: reset xdp_tx_active when cleaning a Tx ring
-Message-ID: <av2zp3AEAB08afQa@boxer>
-References: <20261118135920.1063665-1-magnus.karlsson@intel.com>
+Subject: Re: [PATCH iwl-net] ice: use the queue pair's XDP ring in
+ ice_qp_{dis,ena}()
+Message-ID: <av21sWxL2vEiJspz@boxer>
+References: <20261118135952.1063685-1-magnus.karlsson@intel.com>
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20261118135920.1063665-1-magnus.karlsson@intel.com>
-X-ClientProxiedBy: DU2PR04CA0167.eurprd04.prod.outlook.com
- (2603:10a6:10:2b0::22) To LV2PR11MB868673.namprd11.prod.outlook.com
+In-Reply-To: <20261118135952.1063685-1-magnus.karlsson@intel.com>
+X-ClientProxiedBy: DUZPR01CA0149.eurprd01.prod.exchangelabs.com
+ (2603:10a6:10:4bd::25) To LV2PR11MB868673.namprd11.prod.outlook.com
  (2603:10b6:408:422::13)
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: LV2PR11MB868673:EE_|SJ2PR11MB8471:EE_
-X-MS-Office365-Filtering-Correlation-Id: b96c1f5c-626c-4107-36e5-08df457ecee9
+X-MS-TrafficTypeDiagnostic: LV2PR11MB868673:EE_|LV2PR11MB9597:EE_
+X-MS-Office365-Filtering-Correlation-Id: 0402d941-fcdf-4b18-c78e-08df45800310
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
- ARA:13230040|23010399003|1800799024|376014|366016|22082099003|18002099003|261009223027099003|261102123227099003|11063799006|56012099006|261021121427099003|261022115727099003|10067099003;
-X-Microsoft-Antispam-Message-Info: yFmSLXgDytSaKDQIzJHkEmmZBZgF1x4wr4/7aMrVABiT+wQ2YdzEraXJIiJQLFxyJCO3gLH36CYy5p52QOcKxrlNI6qio8IHiEwvrwbzo02c3swS4kSk+aTJgYAA3Ho0Tu6bexhPlmflEPbLC3CH2P2F7+ANty/EPAvC61vPyGB71GKGSJffxN+L+EMpTAG1r4LEwKxZx1sMKZYtEEIuulqTAyD+Tq06Ko7GRJdhlAjI0MOz8I0DJrD+JBDTQOLajGmwMcyvVa+rCo7xpJQQxMSfbSJ2xC9lITGAGZRuT9FMY1U0jrmctjLLK6lQMkTs//nECHUtxUxfpfEVAp1J7DAeL8vLKITskPWxGpwdd7tJQAOnfyDEpgiKxeF/38vCVuAJEeYU3SX8BwzLBAui3/AS+p4HY5sBbdrH5Ksd/0hUrBo9pmczBy/pqCd7uz3QmNZEbf3icW5mz8jdIBGRZXZ+4yj9hz7pRoyyVa/BUBi3j9+jptW5duXsMjqxhFFzr7/Rp/5QDrTso6uN3w8DH1jbOi9gOmRO02IoFunCZs1TAr0WwUWVk3HmWBUoox5+IeM3meMSCL9Uns3bBmB2osEy3hmwCaO9imjy80A6PSBI32e4OdnbOEEbfnOZX8eMIerHJJyBRSf3bSfF5Ao6WCNpmsujtljjeLsjmPngAio=
+ ARA:13230040|23010399003|1800799024|366016|376014|261102123227099003|261026140227099003|261026121527099003|261028144727099003|261021123027099003|261021121427099003|261022115727099003|261022105027099003|56012099006|11063799006|10067099003|22082099003|18002099003|261009223027099003;
+X-Microsoft-Antispam-Message-Info: t8BQX3pmN7pDqVBYbyvniFZ2GS07FC9n5sJdfUOGLEOUQ4k4chqREjtbqD7M30c59T0jzHdZNOWG9aBRtlbelqnRLdVx83wSACGX9M5bJ+JjU2JPAqzpH2NLpp+dzp5ORgSMfRdkQ7vn8A59jT7RB0yiJ8cziQ/gCNM/fjR6x/T/njjw3CfAKUCIAGpdhnEjsmhqUtaIx+kaNC/5mTkv3W4v26lswxk4WB2VJlOy3FrnZdFG0vw9jJhbgnBqnSgYRK96buQ2wdKTGhPcGtNVF3SSlC+6QvaMHb+nP7l25/xOtbuAuJsekM1lzoE8z6SZcG1PyZFNl4KVkkwRvFaH6mrG6+0xBPYHey8KvD5VrfuWFePKvc6x1rq5CvB6Hw8EurAj/uT/DVhwg5aWtSXFHpJHg6kalg/V43TOTyQxk4wcB45tVNB4YD8LxUmKsz/liXU6LRSl9PO+yWnlscqFxYtQSoC+iTzT2A7eFCy6Y1zYfOvRTc4L6v6MsIsF6aABGQbf6nzIjyNuVPxsE04ElLCzhkdt4UsCu6o3LfL0cCXhH9s8XDxrSowHwbTQJEDvpmoEth4REH31oT2/MinwJOwCxUKOjbwT0ZyKtvQOyk54fGpSv3zf9S6q2XdGy8Eh8U5ukDKT2aHxdi9sg/SuKKyYA6e5cHDxe636GQ8jKHU=
 X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
  IPV:NLI; SFV:NSPM; H:LV2PR11MB868673.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230040)(23010399003)(1800799024)(376014)(366016)(22082099003)(18002099003)(261009223027099003)(261102123227099003)(11063799006)(56012099006)(261021121427099003)(261022115727099003)(10067099003);
+ SFS:(13230040)(23010399003)(1800799024)(366016)(376014)(261102123227099003)(261026140227099003)(261026121527099003)(261028144727099003)(261021123027099003)(261021121427099003)(261022115727099003)(261022105027099003)(56012099006)(11063799006)(10067099003)(22082099003)(18002099003)(261009223027099003);
  DIR:OUT; SFP:1101; 
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?vfMsBLxznaEcTm7uwiEJhGBzehOAwnN4QZXEA+U74ia+x1YQE3odEXk3IOpQ?=
- =?us-ascii?Q?BO8Y8Fg8vDhDmeKmgv7SDZlronr7eySUPv3qWWIETHezOLLu57Zjs4zTWMH9?=
- =?us-ascii?Q?IiEy0FI24kjIbgTK+NkLQ7H4wSU+B206huOUeHDfYlZG7ggVbWT9q2SX7Tco?=
- =?us-ascii?Q?53nbJ1Cjn373cERX12Bs4HofoaWoMg3k7oMMQWZvqCZGmoREzxmboTn7yggc?=
- =?us-ascii?Q?xZTR5wILvRqdk0gj7rgOUcq+1UTBKpsA3HsqIbfoPRI9lpkzaR3tK6mb7sFk?=
- =?us-ascii?Q?pHdXMtTGTVIyBLCYT5C8VY3Hs9mIXbz0oPZc9EKFy91kkVi7Q+Nmn8agn4v8?=
- =?us-ascii?Q?yDGZ/fOYYbct5iLJM9zEiefyIF7VS/yO7eqzLXeD0KKejWi39DA0T85I6POD?=
- =?us-ascii?Q?ZHWYIbhW7zzIwwaEP/HFd+8OE6ciVnWotG1EXb4iNawyF7hicqsE4v/wnKJj?=
- =?us-ascii?Q?Newi2Hd4oFZrKikMEvvBElMeHeZTzcPIZ5zj3jzh37l+dw7gruosn6uk4QzF?=
- =?us-ascii?Q?mYXbiLYAfnYpNHaPD0RQE8wphiHTPTktiuh/KIGliexc5zgewT6tX4cu++51?=
- =?us-ascii?Q?g2tbxttCmaxVyQ+D1qAl2cAj7db/uEMnFNKPQNDFSqN28NE4xAtumNk+maCE?=
- =?us-ascii?Q?bAWmA3FPlekN4GtJ1B7pBM5v6XbumRUYhut0R+POSsEYNgiyyZWgIBVUQvx+?=
- =?us-ascii?Q?sxDfep6IL9nIMUGMndtw79W/TUN1lCyB3YWND8XxGnm4S3YVDfXtHURWRXwk?=
- =?us-ascii?Q?kZrSnquXm9T0mxsI8C81Ui86JpKrn8JZL0BGm0SGEBJymGm4iacKhJub21a4?=
- =?us-ascii?Q?6RScr/mLd+3i6Fv0vCc2Kx8k+Myl1tg26BWqbd75i8E52Xq06OJRhCyZTMBR?=
- =?us-ascii?Q?sMbaeID8ZBVNkv0+fOpx20ow5pyRufCDK5B30y41waZiedMnIMFmpVS1x0Jm?=
- =?us-ascii?Q?wINeFTGioEA/LUS9LLfy79IxtV/+p5VtF/i9jQdLyUEeFkzzSmH0xEACMxEa?=
- =?us-ascii?Q?3Xmw6swNOPjNPILsf3lveWhwGzSDv9biVz+AdvCUJTwq+jrWlRk3pmLjXied?=
- =?us-ascii?Q?Mq7jcdphbqSKJZT3Yw2FNWh52yEboakMjIcQTzciccz6bsT/D9EhYf6220L1?=
- =?us-ascii?Q?L4T/ZdkCUar8GLH/e24myD5x6fZT3PL74FMLLEflaibh9l5hegZxc3Osksho?=
- =?us-ascii?Q?peETP1SIK6cPkybq+AkZdBGlUpaWJLe9cLds7+z0eV5b7qaKIG1GJJZL8NJI?=
- =?us-ascii?Q?ph1sf5YRKp6MZ6waEuB/hqij9oiFTONTZIP1/DW29j8G81npm7wqzI1lbWHN?=
- =?us-ascii?Q?s+c9Ga6i6/xLO2nSfy3fZKrHKRqSJhQxUd836UW8Q6XGn5jmU8nYmEY34/hs?=
- =?us-ascii?Q?QRxfb0+NB5RSbYBmof1Id+vVOBljW2w0jIZEvJ4NgtNKRCAQyWBCIZGfCjzN?=
- =?us-ascii?Q?LfJhfMG6WrgL3FERLmFXEw2IzSYWInCye6N+HaAcZPsewMmFqF5xU4S8AsBA?=
- =?us-ascii?Q?aNUcWuCIp1vap64sXGeuthXDoWEbrLP2qJytnVBH/gTq3O6CZlbhl2Egbe0i?=
- =?us-ascii?Q?EinZuhndQ2PA+O7W+74WTX3DivxpwiK5vVEc85oKB+bdHppQhorEmTXWwwbM?=
- =?us-ascii?Q?s/QotPXxMjTiib7/JwYJDozElHL2Y5jWA9WjY86Y0MnFbgH7w4/6AjFWGVUf?=
- =?us-ascii?Q?w2kr6yHXSP5Xqmtv5VDBOvr+6BI0QVerhmNtNOwO4VQrHpYgMXEkLlpo64Uk?=
- =?us-ascii?Q?avPKGiiV3NnBdSKyNi1AcIE+WArZYnc=3D?=
-X-Exchange-RoutingPolicyChecked: UEWXZjxZnMSJSFtEb/Nx7BwntdZ0j3az7HkLGqndpKJJ6z5b6zmPXrfWQcKTN60mB7Yh7Q0k8rD7HdG7hHMRd/GVZa7PG9w9sJgtXC5EQz8v06uZfUKT/cDr7wh/b+NWzYeIsT3tIJqepJMubC1InctnmU5RArTuykB+xdOLSiW0s4IlCc0K82bz3Bjy65G+53d/JPI95NmZoUdXxQjOmEOxlOFMZuZj5oJJgRWUFUKnIrCnBx2XeZbh7M5Q2Yy+uU8TRyNz0UXbJrxOaoR/hmolz38FPTcIx20SKkddLnesEnYkhA1m4JNz4WdwpyxtlI9iA+mvj3qg2JJjHxwvEQ==
-X-MS-Exchange-CrossTenant-Network-Message-Id: b96c1f5c-626c-4107-36e5-08df457ecee9
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?fozEMrw9pqe1cAdZHnmtCSafgfP6AQ+XTdpBpv9dtLvq5lydyWo+JlD5S0GG?=
+ =?us-ascii?Q?Y+LeFNFLvpYNLIglhXRNPxGdpz4iCyxl3WV1cZA2Y9qhH/oSLzF4U2cFlkxY?=
+ =?us-ascii?Q?3s0ui2SMKcIm40FJ7BNe6tS/zbK2heHsEv0oAwdUw2HQwP9bJwtqOtAr8WBM?=
+ =?us-ascii?Q?2xO1zyaEFGgeknbP3WtCHVjaVr6mZSGH+qeBkr+TuO74Z7XAPl7SwL4t0Nzi?=
+ =?us-ascii?Q?tYHIYjQYkufcO7vNEP0dC20Vxxrhn55oBnCsHYjDVk3wx2cmkKTRrHdOcPEs?=
+ =?us-ascii?Q?mvg+6dLG/8Pi24kPTq6OFKmeFl48c/0tZirv0FOrdMwbYPZlzlr6iUdw7QJI?=
+ =?us-ascii?Q?TiNDZp3XF5zd3/C81R8rfA4HbMRllm19aOo9yIi68SZj+DKoZz4KlKtUPX36?=
+ =?us-ascii?Q?dV1GMQFAiySwFw+93MPmmzB7P1059YQCAcYHW1fzrQQ60gddihQEmd9sWKQX?=
+ =?us-ascii?Q?2f4z1cVcLI4bun6S6vz168u75VVK71UnzW2oyNNVaOJWvz9+V/yuLIDIGUcy?=
+ =?us-ascii?Q?hUU+kuxJTPo9OtzkzeUkxHyAyw4WXJxDL4M0rJTcMokCqh5DMt9cvtFTVG2u?=
+ =?us-ascii?Q?aP0gIbgbwtu6f7K+4aAV6UuqjDZWVY2SDzVMr66Gvl++Pp+DExCzRD1yiwkD?=
+ =?us-ascii?Q?pzt7o3lm7vtZIXiQl9SY5LxXVgyYjxPhQmz4QQP7dPRcq9ktmsV9SwNhAiy2?=
+ =?us-ascii?Q?mjPfy3/f99CXJ9oZg6/oCv2AkRB2R/4ov1lqoU5zQTPkDHp1+66FG1vSjWy7?=
+ =?us-ascii?Q?J/8Sqs4WHVj9P0wvIsmIFaQD32naTf42TVhwuNr6BmccCZUoYl4G1Kiu9nw+?=
+ =?us-ascii?Q?fUBYONtizdVriMOTSoIgB2u5l1giQvuBqhhalHxTEpjoZd+ykJwgg16N2GMP?=
+ =?us-ascii?Q?75qbvmbtBdnMYwpLeeapqbS+HLKw4x7NzWPjYu6bepFuoHsjvO7ZkLHzzlQ5?=
+ =?us-ascii?Q?cTcyDzHfvuDX9CEPCxnMu0tqbcAyMbKRfc0y5Z9qPjiqsxKnqNjtyUI7nFue?=
+ =?us-ascii?Q?2cqRLPYohSa39AwvS2KHYmw0hUZkfTXQYSp0lsn+vTm+PoGnv2h7ju1o0r3N?=
+ =?us-ascii?Q?669rU1NfMMalQHMDQDoSeo/479YDqcOEBxxlU5/KWqPPsyXrPHbtty+1pvUY?=
+ =?us-ascii?Q?brWUeFB523rdIA/5hbjPn7MNVzYvpaKVFxFmKooBfPpbwRxz38w/PfacarzX?=
+ =?us-ascii?Q?Gk7b1OzxGzIY3lezhbni5MV0cCDTpcrMaGBdaLp/zJgNuMCE+e52Guz7k9DQ?=
+ =?us-ascii?Q?EkE7EF4mzRkSzpDC7kiuyhLjdZrmi0bfNQca1xabe10kOUqV4m/aMrKDaSZa?=
+ =?us-ascii?Q?M4EbdjUgiYyu/0pqPYyZpqNthfkX0/hSe2HY6aL2syiG6F5cILNUk1dguTPQ?=
+ =?us-ascii?Q?sfSOu4GZIZUARm+67eqPcJbCpgUvQOQq3DJdGzG3P9tHnmKOO81CHffL8PRP?=
+ =?us-ascii?Q?hIkh1k01HSJZW1cb7SPvAlx1wgXJ2csYwR/VZW12I4PDdUfBvBPLsqzLcslT?=
+ =?us-ascii?Q?MjJ+vxmLRHLUOhk/Czy2ldyflS4KsSEQAUoFw7e7aUqb2p3MNBO6XzXRB0dg?=
+ =?us-ascii?Q?Sd+FQ5UMOYaGBU8u7kutMVCOXRAHe1nTHmyQF7cJe1eea1WgzGWun6+eWeNA?=
+ =?us-ascii?Q?jcBy1sEtX8DG2+R3rXiqE7NFdhqQdLoJ+LGKeKQ3lJCcC7DR2WqJ0QzoOTRi?=
+ =?us-ascii?Q?jmPZeqoDcWcH4Ofr0fPClUO2chdLgJYUWTmzCtZHu7HbZc8cQAEypEfZiv3W?=
+ =?us-ascii?Q?ArqUC7wdekDke8tCl4zB+iQymRKplfg=3D?=
+X-Exchange-RoutingPolicyChecked: s0+L8egh1tUo+gfAYqLF1e2gaqe1aAJP8UsCFhC8Hd3SSdF6LiH7zy+jUj4+aE60q967eWwQRZIEmum1R//43niVxhJesC6e0AVbTLZEBPh1JJhlhBuTKYj/ipkm3+m87dY2kh7c7gupHQFSAcat7zlYC9ceCra1HbHW8BtZGE1WnwmUm7C7TS2K6Mq2RNLfq8pmQ4IH/IB/9no4dDjfpfmnozxwZk7MrA7EUvcD6tG/rxg0MJyxJZpzliKQ2i2/uH7zQ8MD+40UT/q3BE8zAFR8e8K8ue4tIaYi5X77nERCpEUZHwPOFLq1zKIjcQQN60UbcMXoPYpkzV3Cag4aXg==
+X-MS-Exchange-CrossTenant-Network-Message-Id: 0402d941-fcdf-4b18-c78e-08df45800310
 X-MS-Exchange-CrossTenant-AuthSource: LV2PR11MB868673.namprd11.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Nov 2026 14:18:25.0200 (UTC)
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Nov 2026 14:27:02.1081 (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: ZgBoN8E3ikteQxWC3ISJaUe6iT54m6I0MvN9e9UfxUHb3a8Rst9MxzlUr51VsPruk4bbtGzRUre30EQ5CzpMNQ/wY20tkIk4CRtfQZdnVqs=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ2PR11MB8471
+X-MS-Exchange-CrossTenant-UserPrincipalName: aX/RK0HkNfb3XGAFIlfcZ3HJWVhUm+RIq3JyTI51IdeYNU1qOMh7m5vRAXQZwl4P/EXlvcWafJX5lzmQWr60+A8uOaLEKFxbSFmT4R6x29k=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV2PR11MB9597
 X-OriginatorOrg: intel.com
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
@@ -234,58 +235,155 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-15.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_NONE autolearn=ham
-	autolearn_force=no version=4.0.1
+	MAILING_LIST_MULTI,SPF_HELO_PASS autolearn=ham autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Wed, Nov 18, 2026 at 02:59:20PM +0100, Magnus Karlsson wrote:
-> xdp_tx_active counts the XDP_TX buffers on an XDP ring, so that
-> ice_clean_xdp_irq_zc() can complete AF_XDP zero-copy frames in bulk when
-> there are none. It is incremented for every XDP_TX frame and decremented
-> when such a frame completes. ice_clean_tx_ring() frees the frames that
-> are still on the ring, both through ice_xsk_clean_xdp_ring() and through
-> ice_unmap_and_free_tx_buf(), but leaves the counter as it was.
+On Wed, Nov 18, 2026 at 02:59:52PM +0100, Magnus Karlsson wrote:
+> Since commit 9ead7e74bfd6 ("ice: xsk: use Rx ring's XDP ring when picking
+> NAPI context"), an Rx ring uses the XDP ring that is first on its queue
+> vector's Tx ring list, both for XDP_TX and for AF_XDP zero-copy Tx. With
+> fewer queue vectors than CPUs, a vector carries several XDP rings, so Rx
+> ring N then does not use XDP ring N. ice_qp_dis(), ice_qp_ena() and the
+> ring cleaning and stats reset they call still operate on
+> vsi->xdp_rings[q_idx].
 > 
-> After a ring is cleaned with XDP_TX frames in flight, for example when
-> an AF_XDP socket is bound or unbound, xdp_tx_active therefore stays
-> non-zero for the lifetime of the ring. ice_clean_xdp_irq_zc() then
-> always takes the per-descriptor slow path.
+> As a result, a zero-copy pool is attached to and detached from an XDP ring
+> that is never stopped, cleaned or reconfigured. At the same time, another
+> XDP ring is stopped and cleaned, possibly while it is in use from another
+> queue vector whose NAPI context keeps running.
 > 
-> The ring is empty after ice_clean_tx_ring(), so reset the counter
-> there, together with next_to_use and next_to_clean.
-
-Has that ever happen on your side?
-
-Maybe to be sure we are not leaking buffers we should teach
-ice_xsk_clean_xdp_ring() to decrement xdp_tx_active for ICE_TX_BUF_XSK_TX
-and on ice_clean_tx_ring() warn if xdp_tx_active is still non-zero?
-
-Feels a bit rigoristic, but I think I stumbled upon some off-by-one bugs
-where we rely on ntc != ntu loop. non-xsk clean goes 0..count.
-
+> With 4 channels on a machine with 8 CPUs, for example, queue vector 0
+> carries XDP rings 0 and 1, and Rx ring 0 uses XDP ring 1. Disabling queue
+> pair 1 then disables the NAPI context of vector 1, but stops and cleans
+> XDP ring 1, which vector 0 is still using.
 > 
-> Fixes: 59e92bfe4df7 ("ice: xsk: Borrow xdp_tx_active logic from i40e")
+> Use rx_rings[q_idx]->xdp_ring, the ring that ice_tx_xsk_pool() assigns
+> the pool to, in all of these places. ice_vsi_cfg_single_txq() checks
+> its index against the number of LAN Tx queues, which an XDP ring index
+> can exceed, so configure that ring with ice_vsi_cfg_txq() directly.
+> 
+> Fixes: 9ead7e74bfd6 ("ice: xsk: use Rx ring's XDP ring when picking NAPI context")
 > Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
+
+Yikes! Good catch!
+
+Acked-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+
 > ---
->  drivers/net/ethernet/intel/ice/ice_txrx.c | 1 +
->  1 file changed, 1 insertion(+)
+>  drivers/net/ethernet/intel/ice/ice_base.c | 42 +++++++++++++++++------
+>  1 file changed, 31 insertions(+), 11 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-> index 35a480a1e172..f26646825a1e 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-> @@ -228,6 +228,7 @@ void ice_clean_tx_ring(struct ice_tx_ring *tx_ring)
+> diff --git a/drivers/net/ethernet/intel/ice/ice_base.c b/drivers/net/ethernet/intel/ice/ice_base.c
+> index 1667f686ff75..aa0ad313a97c 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_base.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_base.c
+> @@ -1386,6 +1386,22 @@ ice_fill_txq_meta(const struct ice_vsi *vsi, struct ice_tx_ring *ring,
+>  	}
+>  }
 >  
->  	tx_ring->next_to_use = 0;
->  	tx_ring->next_to_clean = 0;
-> +	tx_ring->xdp_tx_active = 0;
+> +/**
+> + * ice_qp_xdp_ring - Get the XDP ring used by a queue pair
+> + * @vsi: VSI that contains rings of interest
+> + * @q_idx: ring index in array
+> + *
+> + * A queue vector can carry more than one XDP ring, and Rx ring @q_idx then
+> + * does not use XDP ring @q_idx. Return the XDP ring that XDP_TX and AF_XDP
+> + * zero-copy use for this queue pair, as picked by ice_map_xdp_rings().
+> + *
+> + * Return: the XDP ring, or NULL if XDP rings are not configured.
+> + */
+> +static struct ice_tx_ring *ice_qp_xdp_ring(struct ice_vsi *vsi, u16 q_idx)
+> +{
+> +	return vsi->xdp_rings ? vsi->rx_rings[q_idx]->xdp_ring : NULL;
+> +}
+> +
+>  /**
+>   * ice_qp_reset_stats - Resets all stats for rings of given index
+>   * @vsi: VSI that contains rings of interest
+> @@ -1393,6 +1409,7 @@ ice_fill_txq_meta(const struct ice_vsi *vsi, struct ice_tx_ring *ring,
+>   */
+>  static void ice_qp_reset_stats(struct ice_vsi *vsi, u16 q_idx)
+>  {
+> +	struct ice_tx_ring *xdp_ring = ice_qp_xdp_ring(vsi, q_idx);
+>  	struct ice_vsi_stats *vsi_stat;
+>  	struct ice_pf *pf;
 >  
->  	if (!tx_ring->netdev)
->  		return;
+> @@ -1408,9 +1425,9 @@ static void ice_qp_reset_stats(struct ice_vsi *vsi, u16 q_idx)
+>  	       sizeof(vsi_stat->rx_ring_stats[q_idx]->stats));
+>  	memset(&vsi_stat->tx_ring_stats[q_idx]->stats, 0,
+>  	       sizeof(vsi_stat->tx_ring_stats[q_idx]->stats));
+> -	if (vsi->xdp_rings)
+> -		memset(&vsi->xdp_rings[q_idx]->ring_stats->stats, 0,
+> -		       sizeof(vsi->xdp_rings[q_idx]->ring_stats->stats));
+> +	if (xdp_ring)
+> +		memset(&xdp_ring->ring_stats->stats, 0,
+> +		       sizeof(xdp_ring->ring_stats->stats));
+>  }
+>  
+>  /**
+> @@ -1420,9 +1437,11 @@ static void ice_qp_reset_stats(struct ice_vsi *vsi, u16 q_idx)
+>   */
+>  static void ice_qp_clean_rings(struct ice_vsi *vsi, u16 q_idx)
+>  {
+> +	struct ice_tx_ring *xdp_ring = ice_qp_xdp_ring(vsi, q_idx);
+> +
+>  	ice_clean_tx_ring(vsi->tx_rings[q_idx]);
+> -	if (vsi->xdp_rings)
+> -		ice_clean_tx_ring(vsi->xdp_rings[q_idx]);
+> +	if (xdp_ring)
+> +		ice_clean_tx_ring(xdp_ring);
+>  	ice_clean_rx_ring(vsi->rx_rings[q_idx]);
+>  }
+>  
+> @@ -1435,9 +1454,9 @@ static void ice_qp_clean_rings(struct ice_vsi *vsi, u16 q_idx)
+>   */
+>  int ice_qp_dis(struct ice_vsi *vsi, u16 q_idx)
+>  {
+> +	struct ice_tx_ring *tx_ring, *xdp_ring;
+>  	struct ice_txq_meta txq_meta = { };
+>  	struct ice_q_vector *q_vector;
+> -	struct ice_tx_ring *tx_ring;
+>  	struct ice_rx_ring *rx_ring;
+>  	int fail = 0;
+>  	int err;
+> @@ -1447,6 +1466,7 @@ int ice_qp_dis(struct ice_vsi *vsi, u16 q_idx)
+>  
+>  	tx_ring = vsi->tx_rings[q_idx];
+>  	rx_ring = vsi->rx_rings[q_idx];
+> +	xdp_ring = ice_qp_xdp_ring(vsi, q_idx);
+>  	q_vector = rx_ring->q_vector;
+>  
+>  	synchronize_net();
+> @@ -1460,9 +1480,7 @@ int ice_qp_dis(struct ice_vsi *vsi, u16 q_idx)
+>  	err = ice_vsi_stop_tx_ring(vsi, ICE_NO_RESET, 0, tx_ring, &txq_meta);
+>  	if (!fail)
+>  		fail = err;
+> -	if (vsi->xdp_rings) {
+> -		struct ice_tx_ring *xdp_ring = vsi->xdp_rings[q_idx];
+> -
+> +	if (xdp_ring) {
+>  		memset(&txq_meta, 0, sizeof(txq_meta));
+>  		ice_fill_txq_meta(vsi, xdp_ring, &txq_meta);
+>  		err = ice_vsi_stop_tx_ring(vsi, ICE_NO_RESET, 0, xdp_ring,
+> @@ -1497,9 +1515,11 @@ int ice_qp_ena(struct ice_vsi *vsi, u16 q_idx)
+>  		fail = err;
+>  
+>  	if (ice_is_xdp_ena_vsi(vsi)) {
+> -		struct ice_tx_ring *xdp_ring = vsi->xdp_rings[q_idx];
+> +		DEFINE_RAW_FLEX(struct ice_aqc_add_tx_qgrp, qg_buf, txqs, 1);
+> +		struct ice_tx_ring *xdp_ring = ice_qp_xdp_ring(vsi, q_idx);
+>  
+> -		err = ice_vsi_cfg_single_txq(vsi, vsi->xdp_rings, q_idx);
+> +		qg_buf->num_txqs = 1;
+> +		err = ice_vsi_cfg_txq(vsi, xdp_ring, qg_buf);
+>  		if (!fail)
+>  			fail = err;
+>  		ice_set_ring_xdp(xdp_ring);
 > -- 
 > 2.38.1
 > 
