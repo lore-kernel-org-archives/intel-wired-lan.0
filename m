@@ -1,145 +1,114 @@
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C2317606A320
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Nov 2026 14:32:56 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B5F4C606A339
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Nov 2026 14:35:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=xgMZ0AQh;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=ZPl8COpf
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=2WXHs/Dk;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Zg3v0b7W
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 9CDE5810A4;
-	Wed, 18 Nov 2026 14:32:56 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 959F340A28;
+	Wed, 18 Nov 2026 14:35:28 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id OdAf4VdQlx5z; Wed, 18 Nov 2026 14:32:56 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 106F681247
-Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795012376;
-	b=Q8chJ+CL3CgtJErxi/wRdL4P/0Ir0n/1mFWXtxT4tLg0nmeijvrgUckpzCUe/Lda4+WX
-	 RGd8X7z4ZGm+YYq8wHJFSz4NDWjfVQcddj01yLrGamuK8L2BAJvEsokFXztaeFlSFzJwa
-	 Rd7e/79oocJhwIF8mcwwGpz6am+gXCr7tPMRkspaEjpS/IOeZT68Fsg6yEAzWgeDac/1H
-	 RHLDGGL3P7ZutguzBzyBPabH2JwBNG9i9AysR4N+drgkNvErxSj/QkdElVCb4AQ4oEDGz
-	 L///qCZCH9oMN6V74f9hmEZMvodTGJOusRIdklD9epBjXFwR/R6h3y1oJAcF7zMUQSQ==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id xzXjl2jX9tH5; Wed, 18 Nov 2026 14:35:27 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 94DCD40A33
+Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795012526;
+	b=PgXCcpK0iOcFGcx/LLSGj1MQOp75EV8wQMJhrQdi1OJopFJnSpglDJL9DX928xxzHep9
+	 57hutwVie5JuvDDUuv72yADX0awF5HHJPbnGWjWCU/qRlOniVbEh4dSehxmGKk/+WuY8x
+	 jBxtYLeH1rG4Wtj7IkhbnJOCoc9rv6W742Q3qBp4vpwGzwD1tjqSEMeiEuEjXytglEFp9
+	 36IWVol33wawhmboCP5/PGXWpBZhPVveO+SJEasCdzvhEmTHl0KtnoPqJ7uIH4ljoL53B
+	 B6KXHvTES+34YXl3oPi5xHmKJF6JPUBbwQoWarDJbz9OdTJ/5P/YNniGvf9Mre7tASw==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795012376;
+	c=relaxed/relaxed; t=1795012526;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:MIME-Version:References:
-	 In-Reply-To:From:Date:X-Gm-Features:Message-ID:Subject:To:Cc:
-	 Content-Type:X-BeenThere:X-Mailman-Version:Precedence:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Errors-To;
-	bh=1qMDZq34OBzonT4rJzzUXxJIMu+zEtHTKKfbGDY12zc=;
-	b=qzJcpHLfYocOZWo8HIgXPmL/39PJhoxzoAWIqTI2d6ksIkHw+2WRoPndBXQMbeP511ih
-	 WeL4lvcW+Q2QGxnybkeEWz779AweC3iGzzzwx/6ZqHSULzXks5nsh0R2UwG04jAYdP7cV
-	 g1tNs19SA7whvERvl7WcXY3rS0HnipJESBybY82D01rs8Ag0SbyE7xpcODjT/IaCr/5nG
-	 bZIxqp81olmrMnXCSjq0nVi9c9zzn9oRNsdXQoXKnGYFbkvVPe2/GDjbPkBi4KlyG81zV
-	 orvBxzGAcTVdvlkesmy8SkpsHIqN6+IVklNqF2g5zPl3QU3qhTJrSp0dChV9RJdTPZQ==
-ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
-	dmarc=pass header.from=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=ZPl8COpf;
+	 Received:DKIM-Signature:Message-ID:From:Subject:To:In-Reply-To:
+	 References:Content-Type:Content-Transfer-Encoding:Date:X-BeenThere:
+	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Reply-To:Errors-To;
+	bh=I14X62NAtlu/hRxG86G+Hf/PgAdLJItadNL5fCZVifM=;
+	b=Z2YzZbYxgsN+IV96CxbvkCk0rXOn5DegqWaG/ey6EWy4g5I5w8pLqEVMFCfc/M1gIFx4
+	 Ekrv/8juYcxEqbxHPxCr7Nzzb3zuaUxfVJkCeV6Bkaq7Dn2iPCm4smMNvlJ4JoBtmmf3l
+	 7thzGCW7+DAcQFZ7EPaaIAbJBTGgmHUICgXmU7POV8ScgvmiH1ahiXKdoPY/46+V4T08U
+	 Fod3rbsNXC759imuRKxRE53ceA79YjyvkW5RyikrhLRjv/WQcGyDJ9WHq3dllmDW2CEs/
+	 0C2kIo/TL1pN8/hjWo7AeXazOSUt3mGMFZc3/P2oHecjZaOfeXgZ8fmwmCyT8BLNpBw==
+ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
+	dmarc=pass header.from=kernel.org;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Zg3v0b7W;
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1795012376;
-	bh=1qMDZq34OBzonT4rJzzUXxJIMu+zEtHTKKfbGDY12zc=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-Id:
+	s=default; t=1795012526;
+	bh=I14X62NAtlu/hRxG86G+Hf/PgAdLJItadNL5fCZVifM=;
+	h=From:Subject:To:In-Reply-To:References:Date:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=xgMZ0AQhfKQW+slagXIARXkZ48q1AZZnrZBxagsH/iwrbjeDgiYsHObOIoB4QFyFA
-	 Al1CnuX0WaD/gulbkaqzTW0inLVzzHheyWqNBE0+rRM+ZawFfBWdgUny2e/ZBNu1W0
-	 JTXm/6iVmGTSNeZehYPZLJ7B2o0dSUpcjohctMVCyxkPXbsOl4mrNjWTznYvwybC2w
-	 XHO5qQg0zyPRq5/t064WwsTl6xaUJTyXTEK/se0pmbfLDzG17i0SRf88gdXqparE3Q
-	 B6DpNPFsX0wpqYF5r7mPA67aOWRfkxAqopI3QWK1j9GPpl8nFbfW0UkoJPxNb82yu2
-	 bfVQ6t9JbGhyw==
+	 Reply-To:From;
+	b=2WXHs/DkMC9MznEcma0poEKgGK6QD0XVncD/naQHGZth0kfWBx18IS5+BAawVrECN
+	 19a5Nq0gz2npkPICKviXdV+In/oMSRmH8DqYMddm2FBZr846SUVedrTeO8KqAtn/2w
+	 Kk13vMCZGWfRva2+UHON1GdBXt71Est8VGn/5dPuiHON6lCBgktn9f56uJ2deylJj1
+	 S4u7CLOa4vUUJGRJal9LeVGwwwAJCvIFKtj8d3+fOcMXJogCrub4DmuwMsxvYQL05M
+	 HyrgtvzdaLSJdLJBntyvCgpaRJOL7/cjcpjLm1lFR4iHF6lUVe6pTxjj5BhfYOJKJq
+	 jCo3yQuEq9Mgg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 106F681247;
-	Wed, 18 Nov 2026 14:32:56 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id DFE0C49B
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Nov 2026 14:32:54 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 94DCD40A33;
+	Wed, 18 Nov 2026 14:35:26 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 11CA89F8
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Nov 2026 14:35:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id C5BC681247
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Nov 2026 14:32:54 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 0413D40A1E
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Nov 2026 14:35:25 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id LcbQpOqsBWZM for <intel-wired-lan@lists.osuosl.org>;
- Wed, 18 Nov 2026 14:32:53 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org B689D810A4
-Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0
- smtp.remote-ip="2607:f8b0:4864:20::42a"
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id TMi9u-kV7OfQ for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 18 Nov 2026 14:35:24 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org D53CC40A17
+Authentication-Results: smtp4.osuosl.org; arc=none
+ smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::42a; helo=mail-pf1-x42a.google.com;
- envelope-from=magnus.karlsson@gmail.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20260707 header.b=ZPl8COpf
-Received: from mail-pf1-x42a.google.com (mail-pf1-x42a.google.com
- [IPv6:2607:f8b0:4864:20::42a])
- by smtp1.osuosl.org (Postfix) with ESMTPS id B689D810A4
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Nov 2026 14:32:53 +0000 (UTC)
-Received: by mail-pf1-x42a.google.com with SMTP id
- d2e1a72fcca58-8b2382bf051so707617b3a.3
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Nov 2026 06:32:53 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20260707; t=1795012372; x=1795617172; darn=lists.osuosl.org;
- h=content-type:cc:to:subject:message-id:date:from:in-reply-to
- :references:mime-version:from:to:cc:subject:date:message-id:reply-to
- :content-type; bh=1qMDZq34OBzonT4rJzzUXxJIMu+zEtHTKKfbGDY12zc=;
- b=ZPl8COpfOLQgvtBqovA0hOj3lD3yx0Qvb1ffBSHQJrLcRWjY+DylwpQymywIJeRP0l
- lVE0F0D4d1gEXGTu2gaf1kCvGIYxBhmKSzRQdXhXstq8JF6DqXCVgE+VCOvbqSw2Z/X6
- 1VO085XWBrPo6WGsQxzSAjYNecI6QMNPw8ui4s6tzVyLHT/ITsbv99bQMkLQJjy+btMY
- 2iGp3VpxqRla3knm6zQZ6DV71/50gF/NTwGSZgY/1iyLeimmu8YPjIFikv9Rzpv2LAWC
- qr90cvJpCPIQAgZB7GTVuxiqWs/LojTcz8Udmz96hIiS5vCXWdfLbP9BeYeX3NSBq3E8
- 9iHQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1795012372; x=1795617172;
- h=content-type:cc:to:subject:message-id:date:from:in-reply-to
- :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
- :subject:date:message-id:reply-to:content-type;
- bh=1qMDZq34OBzonT4rJzzUXxJIMu+zEtHTKKfbGDY12zc=;
- b=q4Ejy9ch5TJVcaXu0ET/y+oW0W324W5Jz5PdWs0e/qkFwZ17ZqXQpzsmyQe/lU7M8Z
- j4bm9o+pF034t58xrTNTHghAUGw2fIPVEnROgzUhepibfnL59cJ7j+ztGjwghYGzx4jK
- weGzuCxIwnZOHbVnvdw/4VnwdWYVgsRFcxgYwyAH1nKBnwHk5kPLXaqGke488IooIGYy
- jYs3GIcTHJBS1Hn48jHaF02yrwB1Zrp+jPFC97Kq583V1KtdFbEJxs51XQrpG0j6T9So
- q7Czri8c1DVzu7SFHT5XIpoSpz7CRfZFGDuSV4J19rPXd2aawFrHs5SWZjWwDhWHE4qD
- CU+g==
-X-Forwarded-Encrypted: i=1;
- AL+hErGUUURCZQhMTKV92ChAhwUdiOLPGTUAW2i92orJzi2fZTztfAKF7njLiboEzBpT2FgWzk5qfiMSgpGJE7TZhxA=@lists.osuosl.org
-X-Gm-Message-State: APuU4Z+5pihunRD+EUZ36KsltTB0LQWj3iz8+x9vlgl1ITsqnuI6vnF1
- 9i+3orGQa3O8o1KC4D1nLt/IkyhxyFI8T3731uwIaCC7HE5S93EOGUqlP8CSPdasAms25799Wip
- AEvFG0UmiGwY9nNfXxifYBZe7i4gbM4g=
-X-Gm-Gg: AYBFou3a6lDrpLkmUUxYP5W35ar+F13scr/ehH6ume3WggPuzss5czUx7j2G4/r23Ew
- V28bY6W+Ek2smEu7NPYCTws2UUPWu9wcPwO5oBXKzYDqIxDRKMDqxb4dirit/lT4Rj23qe+PbDn
- 8f276Iix5dUITZ7krDZ6i+XqDtmMv7SZwKjqsefb6+zv+S2zJFZGGikWPKqPBYqFnp+FNc80zHs
- nK1HKECjRodpwqa0/EJ9Dt2080NLagn8yOkNZVHN+lXJ7f6gBDfVL1NGZNKucukFZIzGsYbBLJa
- p2FhGDJOg2j2sXIDorQcUpeZbMUqLs1g1Wp94aZFBBIqc04Y1+0yr4coMeJUhYw5biHlNrnhOG2
- E6lOLYdaWcmutl5qAKPChm8C5ZswJwwFNmMPzVr4=
-X-Received: by 2002:a05:6a20:5483:b0:3dd:a006:ed90 with SMTP id
- adf61e73a8af0-3fe89c1711dmr2945264637.38.1795012372364; Wed, 18 Nov 2026
- 06:32:52 -0800 (PST)
-X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
-References: <20261118135920.1063665-1-magnus.karlsson@intel.com>
- <av2zp3AEAB08afQa@boxer>
-In-Reply-To: <av2zp3AEAB08afQa@boxer>
-From: Magnus Karlsson <magnus.karlsson@gmail.com>
-Date: Wed, 18 Nov 2026 15:32:40 +0100
-X-Gm-Features: AclHuK83Zhoh0Un-O_cRJvBPrfMisFYI3l_ZXfwUVVUkBX2p1rY_2JB6gEzRg1I
-Message-ID: <CAJ8uoz0Cr5ZFA9GTybTgw7TB_0+hO3yegayBg0r9n4L8cnTtkw@mail.gmail.com>
-Subject: Re: [PATCH iwl-net] ice: reset xdp_tx_active when cleaning a Tx ring
-To: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Cc: Magnus Karlsson <magnus.karlsson@intel.com>,
- intel-wired-lan@lists.osuosl.org, 
- anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com
-Content-Type: text/plain; charset="UTF-8"
+ client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
+ envelope-from=sashiko-bot@kernel.org; receiver=<UNKNOWN> 
+Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+Authentication-Results: smtp4.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20260515 header.b=Zg3v0b7W
+Received: from tor.source.kernel.org (tor.source.kernel.org
+ [IPv6:2600:3c04:e001:324:0:1991:8:25])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id D53CC40A17
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Nov 2026 14:35:23 +0000 (UTC)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+ by tor.source.kernel.org (Postfix) with ESMTP id 920136225D;
+ Wed, 18 Nov 2026 14:35:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2D26D1F000C4;
+ Wed, 18 Nov 2026 14:35:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+ s=k20260515; t=1795012521;
+ bh=I14X62NAtlu/hRxG86G+Hf/PgAdLJItadNL5fCZVifM=;
+ h=From:Subject:Reply-To:To:In-Reply-To:References:Date;
+ b=Zg3v0b7WgI0fZDVtty3+e6FtDFo34U6xjdNcVHWDekFDehNAbSvFBgCMqXpAQtdp4
+ PvnDBTlICdjwaUewxfmet/lKEkJScsBp8FJ6XQeKzD7mQGnnEB1Ojx6LgCEGBEiJpP
+ DpS5qgChq4fySs6hJAQ9WnzDvA1Vufq0XdU/xjmA/FJ46fhf204dQoIz8MWItfPgLp
+ iS1x/Qud6v+KZE8ZN18ZghrEqbOfe29HRUqmXEeuc7Pvu7WJR9MdGH17g9LHssgCA6
+ +Vf+4gi+DMcXW5h1C8ur6JASYLoThaVE+/lQ2x59G0XIqvvWAzp1Llx0IzWqb5EYQ8
+ ODKeEXPWJi5sA==
+Message-ID: <sashiko-outbox-221222@kernel.org>
+From: sashiko-bot@kernel.org
+Subject: Re: [PATCH iwl-net] ice: use the queue pair's XDP ring in
+ ice_qp_{dis, ena}()
+To: "Magnus Karlsson" <magnus.karlsson@intel.com>,
+ intel-wired-lan@lists.osuosl.org
+In-Reply-To: <20261118135952.1063685-1-magnus.karlsson@intel.com>
+References: <20261118135952.1063685-1-magnus.karlsson@intel.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Date: Wed, 18 Nov 2026 14:35:20 +0000
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -150,65 +119,110 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham
-	autolearn_force=no version=4.0.1
+Reply-To: sashiko-reviews@lists.linux.dev
+X-Spam-Status: No, score=-10.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_PASS autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
+X-Archived-By: <archiver.kernel.org>
 
-On Wed, 18 Nov 2026 at 15:18, Maciej Fijalkowski
-<maciej.fijalkowski@intel.com> wrote:
->
-> On Wed, Nov 18, 2026 at 02:59:20PM +0100, Magnus Karlsson wrote:
-> > xdp_tx_active counts the XDP_TX buffers on an XDP ring, so that
-> > ice_clean_xdp_irq_zc() can complete AF_XDP zero-copy frames in bulk when
-> > there are none. It is incremented for every XDP_TX frame and decremented
-> > when such a frame completes. ice_clean_tx_ring() frees the frames that
-> > are still on the ring, both through ice_xsk_clean_xdp_ring() and through
-> > ice_unmap_and_free_tx_buf(), but leaves the counter as it was.
-> >
-> > After a ring is cleaned with XDP_TX frames in flight, for example when
-> > an AF_XDP socket is bound or unbound, xdp_tx_active therefore stays
-> > non-zero for the lifetime of the ring. ice_clean_xdp_irq_zc() then
-> > always takes the per-descriptor slow path.
-> >
-> > The ring is empty after ice_clean_tx_ring(), so reset the counter
-> > there, together with next_to_use and next_to_clean.
->
-> Has that ever happen on your side?
+Thank you for your contribution! Sashiko AI review found 1 potential
+issue to consider:
+- [High] ice: XDP ring QINT_TQCTL interrupt mismatch in ice_qp_dis() and
+  ice_qp_ena()
+It also noticed 1 related pre-existing issue this patch does not
+introduce:
+- [Critical] ice: incorrect XDP queue indexing in
+  ice_cfg_txq_interrupt() [1]
+--
 
-Nope, but I never use XDP_TX to be honest.
+commit 16196a7c47f74a832fc91f862f75e019be2f6418
+Author: Magnus Karlsson <magnus.karlsson@intel.com>
 
-> Maybe to be sure we are not leaking buffers we should teach
-> ice_xsk_clean_xdp_ring() to decrement xdp_tx_active for ICE_TX_BUF_XSK_TX
-> and on ice_clean_tx_ring() warn if xdp_tx_active is still non-zero?
+ice: use the queue pair's XDP ring in ice_qp_{dis, ena}()
 
-Sure, but does that belong in this patch?
+This commit updates ice_qp_dis(), ice_qp_ena(), ice_qp_clean_rings(), and
+ice_qp_reset_stats() to operate on vsi->rx_rings[q_idx]->xdp_ring instead
+of vsi->xdp_rings[q_idx].
 
-> Feels a bit rigoristic, but I think I stumbled upon some off-by-one bugs
-> where we rely on ntc != ntu loop. non-xsk clean goes 0..count.
->
-> >
-> > Fixes: 59e92bfe4df7 ("ice: xsk: Borrow xdp_tx_active logic from i40e")
-> > Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
-> > ---
-> >  drivers/net/ethernet/intel/ice/ice_txrx.c | 1 +
-> >  1 file changed, 1 insertion(+)
-> >
-> > diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-> > index 35a480a1e172..f26646825a1e 100644
-> > --- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-> > +++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-> > @@ -228,6 +228,7 @@ void ice_clean_tx_ring(struct ice_tx_ring *tx_ring)
-> >
-> >       tx_ring->next_to_use = 0;
-> >       tx_ring->next_to_clean = 0;
-> > +     tx_ring->xdp_tx_active = 0;
-> >
-> >       if (!tx_ring->netdev)
-> >               return;
-> > --
-> > 2.38.1
-> >
+> diff --git a/drivers/net/ethernet/intel/ice/ice_base.c b/drivers/net/ethe=
+rnet/intel/ice/ice_base.c
+> index 1667f686ff751..aa0ad313a97cd 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_base.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_base.c
+[ ... ]
+> @@ -1460,9 +1480,7 @@ int ice_qp_dis(struct ice_vsi *vsi, u16 q_idx)
+>  	err =3D ice_vsi_stop_tx_ring(vsi, ICE_NO_RESET, 0, tx_ring, &txq_meta);
+>  	if (!fail)
+>  		fail =3D err;
+> -	if (vsi->xdp_rings) {
+> -		struct ice_tx_ring *xdp_ring =3D vsi->xdp_rings[q_idx];
+> -
+> +	if (xdp_ring) {
+>  		memset(&txq_meta, 0, sizeof(txq_meta));
+>  		ice_fill_txq_meta(vsi, xdp_ring, &txq_meta);
+>  		err =3D ice_vsi_stop_tx_ring(vsi, ICE_NO_RESET, 0, xdp_ring,
+> @@ -1497,9 +1515,11 @@ int ice_qp_ena(struct ice_vsi *vsi, u16 q_idx)
+>  		fail =3D err;
+> =20
+>  	if (ice_is_xdp_ena_vsi(vsi)) {
+> -		struct ice_tx_ring *xdp_ring =3D vsi->xdp_rings[q_idx];
+> +		DEFINE_RAW_FLEX(struct ice_aqc_add_tx_qgrp, qg_buf, txqs, 1);
+> +		struct ice_tx_ring *xdp_ring =3D ice_qp_xdp_ring(vsi, q_idx);
+> =20
+> -		err =3D ice_vsi_cfg_single_txq(vsi, vsi->xdp_rings, q_idx);
+> +		qg_buf->num_txqs =3D 1;
+> +		err =3D ice_vsi_cfg_txq(vsi, xdp_ring, qg_buf);
+>  		if (!fail)
+>  			fail =3D err;
+>  		ice_set_ring_xdp(xdp_ring);
+
+[Severity: High]
+Does ice_qp_ena() leave QINT_TQCTL_CAUSE_ENA_M cleared on xdp_ring after
+ice_qp_dis() stops it?
+
+In ice_qp_dis(), ice_vsi_stop_tx_ring() clears QINT_TQCTL_CAUSE_ENA_M in
+QINT_TQCTL(xdp_ring->reg_idx).  When ice_qp_ena() re-enables the queue
+pair, it configures MSI-X via ice_qvec_cfg_msix() ->
+ice_cfg_txq_interrupt(), which still writes to a different queue index:
+
+drivers/net/ethernet/intel/ice/ice_base.c:ice_cfg_txq_interrupt() {
+    ...
+	wr32(hw, QINT_TQCTL(vsi->txq_map[txq]), val);
+	if (ice_is_xdp_ena_vsi(vsi)) {
+		u32 xdp_txq =3D txq + vsi->num_xdp_txq;
+
+		wr32(hw, QINT_TQCTL(vsi->txq_map[xdp_txq]),
+		     val);
+	}
+    ...
+}
+
+When there are fewer queue vectors than CPUs, vsi->txq_map[q_idx +
+vsi->num_xdp_txq] is not xdp_ring->reg_idx.  As a result, xdp_ring's Tx
+interrupt remains disabled (breaking AF_XDP zero-copy Tx completions), and
+another ring's QINT_TQCTL is overwritten with this queue vector's MSI-X
+index.
+
+[Severity: Critical]
+This problem wasn't introduced by this patch, but ice_cfg_txq_interrupt()
+and ice_vsi_release_msix() also compute the XDP queue offset in
+vsi->txq_map as txq + vsi->num_xdp_txq [1], whereas
+ice_prepare_xdp_rings() places XDP rings in vsi->txq_map starting at
+vsi->alloc_txq.
+
+When the allocated LAN Tx queue count differs from vsi->num_xdp_txq (for
+example, after changing the channel count with ethtool), indexing
+vsi->txq_map[txq + vsi->num_xdp_txq] can access past the end of
+vsi->txq_map or corrupt QINT_TQCTL for the wrong hardware queues.  In
+addition, ice_vsi_release_msix() only iterates up to q_vector->num_ring_tx,
+which leaves the remaining XDP rings' QINT_TQCTL interrupt mappings active
+when there are fewer LAN Tx queues than XDP queues.
+
+[1] https://sashiko.dev/#/bug/linux-0b308224-7107-4d23-9bbc-9ae5c80b362b
+
+--=20
+Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261118135952.1063=
+685-1-magnus.karlsson@intel.com?part=3D1
