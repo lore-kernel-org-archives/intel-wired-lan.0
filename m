@@ -1,129 +1,157 @@
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7C1E6606A337
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE1DC60A2608
 	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Nov 2026 16:23:10 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=u3Iv4XH6;
-	dkim=pass (2048-bit key) header.d=ideco.ru header.i=@ideco.ru header.a=rsa-sha256 header.s=ics header.b=mODEyCM+
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=wbFXcjQ6;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=L/Grl6NZ
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 41D2860A67;
+	by smtp4.osuosl.org (Postfix) with ESMTP id C0B8D4099E;
 	Wed, 18 Nov 2026 16:23:10 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 9nMw6StDOvfc; Wed, 18 Nov 2026 16:23:09 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 3E3AE60A8C
-Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795018989;
-	b=eKGDv5r8/G8YMWxbrFxUbsKrBPMHuRfh/ge1ZykiqTDHHbtoOrIArflVbr4M94Jf5R+x
-	 2VCMPcVpDawr4X3B9l97vBPUC8U9OU/tBbLlpvR3QAGPvKoHG0Ar+Al7pUFsb/vBU3yMF
-	 6TLv06Yva1y13hQSlRVbuM9j72znyMDscJno6qot7a6sM0KnUNe2u3nMsj0fZIGxccsza
-	 gjKwgYUcZCcVs/BVuPobtoJWeq2EuTTgVl1zeqdmJyT9H3B6CpWUYNeGRwf9gqeUEepSk
-	 WCFSFaL8zXmO8o062Y3IT5YEIDL0kN+ds+0RoOC/MZbNJoNrqV4/20uKXMkXMrPvQUQ==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id omWsSBNdZ5Dl; Wed, 18 Nov 2026 16:23:10 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 1D7AF40807
+Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795018990;
+	b=Fh8k3OPEo+AzPMUsnC0jwOXmvJ0Um4uttu7u2t09SiE65qKKsUdDUsutjmoFqN46vGlR
+	 QtWO9MGJKZBX/l1siuQkeP5sk2zaeRuHaZbZw/jtAVjx7G8dbEZ6pWln5e5Ml99/4zo+j
+	 4Ll7AtAgVbNjCCQaCDuZCeEtoDKiKD1fV7cYCJFoaxcJBC6oJPeR0grxuyqf5z3yFpP3p
+	 H52fGjKI4/QXX3LJksRCKq3On06OW7R0KWM4aVFD9246DAVbjTRnnDdwF6iEdZrwOQKEe
+	 dOENaGrStH34tTaQ+pcieoJcMVWRlzJcpIqIt/dwfYpaKrtj+k8rk4xTHQazP+tZUBg==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795018989;
+	c=relaxed/relaxed; t=1795018990;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 Received:DKIM-Filter:DKIM-Signature:Message-ID:Date:MIME-Version:
-	 User-Agent:Subject:To:Cc:References:Content-Language:From:In-Reply-To:
-	 Content-Type:Content-Transfer-Encoding:X-Mailman-Approved-At:
-	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
-	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=H65MlX7VDMs/QZf1f9eG5SUm6SNdstMBTp7c2Y28djo=;
-	b=qZPc87I18AB+CpSgVMFPF3L2wb83j+wkt/BGrbMQPe5cbQ984BdSN1T29whZI4WSZr2w
-	 UjnX2GVZmYnZ4YCt4+ONqAZZUMcwHKt7/uzcrTB+CxRLuq7LY+z3Ry43YqgvgZ/PkFbaf
-	 51zA0dikVyQYGAUTLNQ/+umA1+40aTCJc9pRXQ3k3KjBZwOTV9ZSU+i9IOQtUbn8okU9o
-	 zxabOutOMSKWKzPIeptxIHgVOPJ9aAMYzuc8NfYn0CLkLgW8inAcYyW85v5UN4WG9y1N4
-	 mCpxEsRTnTUgK5Mr0d61+iiVxAOKaCTTLp5X/Lwin93BHrLE5nHHt/ekV4/CAvV/Q1A==
-ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Gm-Message-State:X-Gm-Gg:
+	 X-Received:Received:Date:From:To:Cc:Subject:Message-ID:References:
+	 MIME-Version:Content-Type:Content-Disposition:In-Reply-To:
+	 X-Mailman-Approved-At:X-BeenThere:X-Mailman-Version:Precedence:
+	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 List-Subscribe:Errors-To;
+	bh=p7Dcs8rqFWgV7vy5jckJd9/OMxXaRSwC9PD3XcVQ8ik=;
+	b=C2t5X928+mEHjDLGBw+hpHg1oAkjRo7PEbDeKX5Ys8jkJGkFCtWCRwpVc6D3ABbBYgGI
+	 wpl/qMVZ4vboGTVZ/Rnt5taDCsfV+QJ/ZAOQD8HK6uTkrnqAlGEmEzc9WDHqalp6Sf/f6
+	 nQr5v7aNhKN0He3WArWwSjo+QZPoTBVos4uPmTW0t+V2Cgq6DLEt7BSKXab7afdnQv2mD
+	 gQ8mzvgo+NUwkpcbqI7dV1tIslYRdRvn8k7GZiCfCHkDM0oP4S1Z+IeoX2dvTfcKjpdi/
+	 Ni63pSwCk0611nJVVUqttvNVKBewJ9GlfdA6dOaaoVc8tGHFgcWlas3jUXri0Y8tyjg==
+ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1795018989;
-	bh=H65MlX7VDMs/QZf1f9eG5SUm6SNdstMBTp7c2Y28djo=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:List-Id:
+	s=default; t=1795018990;
+	bh=p7Dcs8rqFWgV7vy5jckJd9/OMxXaRSwC9PD3XcVQ8ik=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=u3Iv4XH6ZjozsvcUPX7t/7F7KL8zZ3jGax2rQBOIyYUdqyfBY4FBQ8ExF1beq8Zn5
-	 CW0e+wFxTOZW7WIw9TfdoeKBoMZ0EOnNIpX6/yHFVVIoTx2GXfXvj75a3AvXZQstNt
-	 9uxJjKWsFDgdkem7WWs4evQan6bZeMjEHAsAPrFtGqnMUGH+toJHhPbjBa1MKQJG36
-	 i4emhkOIHd4dDxLBdtiaeFdM4ntR/6z11hYv1KpxCxwVHXexJ/yuhl0Rx3IQxFWzt5
-	 S1mpfrdYLeoB3o/5WyyIqMb1/jxD7jeDsWaQmXGY9XtlFCflPCzGlAtmbL3j9I9Voa
-	 eMK51VePYdHHg==
+	b=wbFXcjQ6QfH+CYrBGkQ9tiXoTnRBKsSaeyGi4UpsNt3zhTWuD/TZh7LukJ+dP2v2v
+	 LMdmndNrZkpxLsOZMND+MTuBHmtixVg9fu1d9lLcbkelIwWzVw/9Bk54IysDj4h2ma
+	 DtQEqcCbYUdCIE4V7psHV9TdQipYj5swz2QxObdQHL5pLIpv+2kB5VEzvKz+/NVwDv
+	 WBl9L1wWf5U8jpDbPyJ7T0Y3oE6U0MuLLDtzl5JNclW3WdbW7XWl79//vadFbJgFqc
+	 Br5jpk2s+1b6ruwd+5XlDOIEgyzwL5960bxniXrDicB5XuKdGSs0Js2abhbkBFHlqj
+	 4qlmaA9Vhb+Tw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 3E3AE60A8C;
-	Wed, 18 Nov 2026 16:23:09 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 316391E7
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Nov 2026 08:00:47 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1D7AF40807;
+	Wed, 18 Nov 2026 16:23:10 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 52C1BA0E
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Nov 2026 13:21:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 17ADF401E2
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Nov 2026 08:00:47 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 38BFC811D7
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Nov 2026 13:21:56 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id jNnC3RC9mRTO for <intel-wired-lan@lists.osuosl.org>;
- Wed, 18 Nov 2026 08:00:45 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org 77311400A7
-Authentication-Results: smtp2.osuosl.org; arc=none smtp.remote-ip=51.250.56.165
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=51.250.56.165;
- helo=smtp.ideco.ru; envelope-from=a.kazinsky@ideco.ru; receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=quarantine dis=none)
- header.from=ideco.ru
-Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=ideco.ru header.i=@ideco.ru header.a=rsa-sha256
- header.s=ics header.b=mODEyCM+
-Received: from smtp.ideco.ru (smtp.ideco.ru [51.250.56.165])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 77311400A7
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Nov 2026 08:00:43 +0000 (UTC)
-Received: from [169.254.254.254] (localhost [127.0.0.1])
- by smtp.ideco.ru (Postfix) with ESMTP id 0B8B026BC1;
- Wed, 18 Nov 2026 13:00:41 +0500 (+05)
-Received: from [192.168.1.75] (5cfcd9fa.dynamic.mv.ru [92.252.217.250])
- (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
- key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by smtp.ideco.ru (Postfix) with ESMTPSA id ED0E426BC0;
- Wed, 18 Nov 2026 13:00:38 +0500 (+05)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp.ideco.ru ED0E426BC0
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ideco.ru; s=ics;
- t=1794988840; bh=H65MlX7VDMs/QZf1f9eG5SUm6SNdstMBTp7c2Y28djo=;
- h=Date:Subject:To:Cc:References:From:In-Reply-To;
- b=mODEyCM+RnWfkQD3D0L7RPiVM9y17X1jl+AEmaew/5qkbmQPln7heB3W1I9zluFOn
- OuQqrZ4nNyJ8dLBHHkOQTqZMy4jfQ8HNLgQv7CMCbS7pz3mYcKh7Uhp9f/YJEZ4KBp
- djCk2Dkt5MsDG7xsVGV/ni8IG8DLTItnx/yHy4wq3ES7VP+Fro9H3Irfx7hKPnQBS+
- XRZom0Ap2YHRkbdYwIdYROJ5HbBCneb2WWhyJFvGhc9zhzc50QQFmqYMw3u9mgsUiV
- Rq1pA8q9jJDoAxs3QfPxkBMNbbgkqLvDlfOTd1H+kJoK2w6Ic0MEoJLqxY8UKDVz2I
- vdP/70pwXmsPQ==
-Message-ID: <a77f7b69-89a3-4fe4-8ac7-4f5ac86ba2d4@ideco.ru>
-Date: Wed, 18 Nov 2026 12:00:38 +0400
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id r7x0jG7kd23a for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 18 Nov 2026 13:21:55 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 4F759811BC
+Authentication-Results: smtp1.osuosl.org;
+ arc=none smtp.remote-ip="2a00:1450:4864:20::332"
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2a00:1450:4864:20::332; helo=mail-wm1-x332.google.com;
+ envelope-from=janislacis06@gmail.com; receiver=<UNKNOWN> 
+Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20260707 header.b=L/Grl6NZ
+Received: from mail-wm1-x332.google.com (mail-wm1-x332.google.com
+ [IPv6:2a00:1450:4864:20::332])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 4F759811BC
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Nov 2026 13:21:54 +0000 (UTC)
+Received: by mail-wm1-x332.google.com with SMTP id
+ 5b1f17b1804b1-4bb64ef5a00so6898885e9.3
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Nov 2026 05:21:54 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20260707; t=1795008113; x=1795612913; darn=lists.osuosl.org;
+ h=in-reply-to:content-disposition:content-type:mime-version
+ :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+ :date:message-id:reply-to:content-type;
+ bh=p7Dcs8rqFWgV7vy5jckJd9/OMxXaRSwC9PD3XcVQ8ik=;
+ b=L/Grl6NZp/6uRSzyQRqPbZSb4YI+iLrgM2NzwBsL56t/3u6APAKBLdX+I9dHcdhcHh
+ ROY79NbmFcTmihce2Uq1ebhou08pQWmsBzRB0XiiteqFsdntyfSuvR+2DzRndaN6JmsU
+ BR/PfWuSayeMQN3jbcV98ihXDBLGvdpcU25SdaYuwAuozutGLceSgjkZ+lZV2kkQVpnw
+ wTeojvtU3EGJeHBTlNl0bpU90Rx+rW545H6FBj00nITmjCjaoH0uB6TfF9avWqx71BNJ
+ +8Mpw5/LV8Jkp/8qF1ZrYfxOqVr1K/YuUGUU5TENVwANxuQsyIxoCMBdV6cdgYJEXnhP
+ dDIA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20260707; t=1795008113; x=1795612913;
+ h=in-reply-to:content-disposition:content-type:mime-version
+ :references:message-id:subject:cc:to:from:date:x-gm-gg
+ :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+ :content-type;
+ bh=p7Dcs8rqFWgV7vy5jckJd9/OMxXaRSwC9PD3XcVQ8ik=;
+ b=qKE5j6aBJzCv1ygl9KOepjr8MX2I/J/EwwYx7xf/lrcvQD4SKlH4/NVoW/zRpjnsLR
+ xUMAtF+fKWnTM12RZiT43Yulm8RyZnIIcb3QAQ3v/ToPERGYURv5bZdIERhyP5S9TB39
+ AN79E8pUnQUtG2hX7zKe2C8/sf6Ypz6O5JCR8WspUyF0Sp1mGEdU91TIgMiIHXNtLbTm
+ RM6b4oWR74zsKnj2XlvLF5OPvA7y1l9T8ZiAWbl0/gQo2BOJcZkZwxAhARIK9KGDcadi
+ 2SjAoO+rOCsxMbswOgcz4CczQkzRuHcDXXWEWY25yfhJQpo3z/n05XTPAnKOfCneDWYi
+ cFxw==
+X-Gm-Message-State: APuU4Z9P/fXfC5jtJ7MzJd4UVQ4h8yffzfEId/z1XorR97hnq8wWv9mK
+ tDKAEacM1HpHby71euHDH5Gu3qcSAm6YZJ1pguNB0a1aSD4sKUtNtlJ7
+X-Gm-Gg: AYBFou3iqooIMi+98HJxeTi0Edo2uVuog6TQoCRPYcm+df4ErKTN9d1cFIF+mxGKaBZ
+ /CC7+DBW4jmmuJTwlJ6HPOKxenM1Su+8bu2Dz/pS4jfAqyNI+7Cq9PbzdFW9uA4QPpRhqMFTNYW
+ Da0ErlZsqrHY8Dl70li7zEm6fb7pFKr98LOlqhpRIKaaHpN27gGt76+zbUT4omcW71keaSaih+w
+ yzpH19mqfcIvHUCGG9hwLKtYB3VueWqoct12A+S9QVpqCScimC0oxjfWosbEBjIezKpy45Izu4e
+ J8RSZdvaa+LLFiAlQypboENY5k7vJOXJuYN7GaAx8UtQ54bH6YWPXQeidp1xV+drUq8zYrHZINX
+ 3amB1okje2Sn2RaxZYmX8RbxlFfsJ3DZBfxFvHnYNreDv3fPDpd4taaWu6pzuuh24rt1toFJSEg
+ TgiSLaX0EAiCBgyKlmgdNTISD3rFS4mJVoU7FvaBekUiSsZVdK5iaqgUp/3qj+iWxy3RA/BxHHQ
+ OXnhefhxS2k+JLlY6qP+SqsjJN6SN0Rn8uU3xpNLP/XrzW6v4LAmFh+zO8hpOMJJLLKKFYPnt1q
+ /D/ovjhA0KIg4B+2jUWgTPl6C+PqhaEBP97yAMfwJNdFowxec93V4fB2XPRkhmy3GFY7LzqkUiK
+ WoWUjvp1W5cy+DNTjH0cOsE6s9FnK0wungtA=
+X-Received: by 2002:a05:600c:4f4e:b0:4bb:7033:c92f with SMTP id
+ 5b1f17b1804b1-4bb7da0f671mr58393325e9.11.1795008112703; 
+ Wed, 18 Nov 2026 05:21:52 -0800 (PST)
+Received: from pc.tail250202.ts.net ([87.110.86.243])
+ by smtp.gmail.com with ESMTPSA id
+ ffacd0b85a97d-4a65541f3b3sm4899303f8f.23.2026.11.18.05.21.50
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 18 Nov 2026 05:21:52 -0800 (PST)
+Date: Wed, 18 Nov 2026 15:21:49 +0200
+From: Janis Edvarts Lacis <janislacis06@gmail.com>
+To: Antonio Quartulli <antonio@mandelbit.com>
+Cc: intel-wired-lan@lists.osuosl.org, 
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
+ Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>, 
+ Eric Dumazet <edumazet@kernel.org>, Jakub Kicinski <kuba@kernel.org>, 
+ Paolo Abeni <pabeni@redhat.com>, Heiner Kallweit <hkallweit1@gmail.com>,
+ netdev@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Subject: Re: [PATCH net v2 1/3] igb: fix RTNL assertion when resuming from
+ runtime suspend
+Message-ID: <rab7ustlezklu43vnjkby5mqh33bgqoztlz6bv5wxkjqfvbtfd@imjngi6j72nz>
+References: <20261116153041.3002666-1-antonio@mandelbit.com>
+ <20261116153041.3002666-2-antonio@mandelbit.com>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH net] ice: Avoid tracing bridge ports after initialization
- failure
-To: netdev-bot+sinfo@kernel.org
-Cc: Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>, "David S . Miller"
- <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Pawel Chmielewski <pawel.chmielewski@intel.com>,
- Wojciech Drewek <wojciech.drewek@intel.com>,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, lvc-project@linuxtesting.org,
- stable@vger.kernel.org
-References: <20261118074324.1583964-1-a.kazinsky@ideco.ru>
- <179498811103.3291.4517029211414094145@kernel.org>
-Content-Language: en-US
-From: =?UTF-8?B?0JDQu9C10LrRgdC10Lkg0JrQsNC30LjQvdGB0LrQuNC5?=
- <a.kazinsky@ideco.ru>
-In-Reply-To: <179498811103.3291.4517029211414094145@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Disposition: inline
+In-Reply-To: <20261116153041.3002666-2-antonio@mandelbit.com>
 X-Mailman-Approved-At: Wed, 18 Nov 2026 16:23:08 +0000
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
@@ -135,31 +163,32 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-7.4 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-2.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_PASS autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-18.11.2026 11:48, netdev-bot+sinfo@kernel.org wrote:
-> Hi!
-> 
-> This is an automated message. This series looks like a fix, but its
-> commit messages seem to be missing some information:
-> 
->   - What hardware the change was tested on. For driver fixes please
->     mention the device (and if relevant firmware version) used for
->     testing, or say that the change was not tested on real hardware.
-> 
-> Please do not repost the series just to address the above. Instead,
-> reply to this email with the missing information, so that reviewers
-> can take it into account.
-> 
-> *IMPORTANT*: If you do repost (for other reasons) - please include
-> the relevant info in the cover letter or commit messages.
+On 16 Nov 16:30, Antonio Quartulli wrote:
+>Since commit ac8c58f5b535 ("igb: fix deadlock caused by taking RTNL in
+>RPM resume path") __igb_resume() doesn't take RTNL for runtime resume,
+>but __igb_open() still calls netif_set_real_num_{tx,rx}_queues(), which
+>require it. An asynchronous runtime resume (e.g. after the link comes
+>back) then triggers "RTNL: assertion failed".
+>
+>Skip them when resuming. The counts are set again on every regular open,
+>which happens under RTNL; the only case left out is a fallback from
+>MSI-X to MSI during a resume, which leaves the stack with more queues
+>than the device uses until the next open.
 
-Hi!
-This change was not tested on real hardware.
+RTNL is not held only on runtime resume, it is held on a normal resume.
+__igb_open() skips netif_set_real_num_{tx,rx}_queues() for both resume
+types. Maybe it makes sense to skip them only on runtime resume when the
+RTNL is not held?
 
+May I ask why is it okay to leave out the fallback case, can't it lead
+to trouble if the counts are not updated but a fallback happens?
 
+Best regards,
+Janis
