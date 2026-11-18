@@ -1,114 +1,135 @@
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B5F4C606A339
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Nov 2026 14:35:28 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B577B60A2602
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Nov 2026 14:52:40 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=2WXHs/Dk;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Zg3v0b7W
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=dHck848c;
+	dkim=pass (2048-bit key, unprotected) header.d=mandelbit.com header.i=@mandelbit.com header.a=rsa-sha256 header.s=MBO0001 header.b=EmsZyBQW
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 959F340A28;
-	Wed, 18 Nov 2026 14:35:28 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 821D88126B;
+	Wed, 18 Nov 2026 14:52:40 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id xzXjl2jX9tH5; Wed, 18 Nov 2026 14:35:27 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 94DCD40A33
-Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795012526;
-	b=PgXCcpK0iOcFGcx/LLSGj1MQOp75EV8wQMJhrQdi1OJopFJnSpglDJL9DX928xxzHep9
-	 57hutwVie5JuvDDUuv72yADX0awF5HHJPbnGWjWCU/qRlOniVbEh4dSehxmGKk/+WuY8x
-	 jBxtYLeH1rG4Wtj7IkhbnJOCoc9rv6W742Q3qBp4vpwGzwD1tjqSEMeiEuEjXytglEFp9
-	 36IWVol33wawhmboCP5/PGXWpBZhPVveO+SJEasCdzvhEmTHl0KtnoPqJ7uIH4ljoL53B
-	 B6KXHvTES+34YXl3oPi5xHmKJF6JPUBbwQoWarDJbz9OdTJ/5P/YNniGvf9Mre7tASw==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id So34ePF5OcPf; Wed, 18 Nov 2026 14:52:39 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 85B528125A
+Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795013559;
+	b=Wc4wMoJokagyYB8HaYh7R2XNjNoQo+SWaOoCHobiTGiPDLXCTPpEIMo0ImR6lU2ofXea
+	 GhW6aBEdlOBpWxBN6UZblDE8qMaUBBPA8Jz0txKM7WB5eUT4J5hcvo9LNNSGp/RCMCYug
+	 r1BVh82nQpmtNB7zzG6A4JdRmcNvThWt/5dFzEWTKtEbM5HsVosdr/KEye4RatHMvmn+7
+	 9vMBEXIM5wcuWownKeoHYUwjLfiCARWudneXrHGcMB/GzkFyWeFnLkB3feua0pDk8aX7F
+	 or/3KMNKO5Ad2bSPPsEf4Kbq17eKsSjfXvzNiYK4HQfl2Fj6xKdQIshbhAVr7S/z2Ow==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795012526;
+	c=relaxed/relaxed; t=1795013559;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 Received:DKIM-Signature:Message-ID:From:Subject:To:In-Reply-To:
-	 References:Content-Type:Content-Transfer-Encoding:Date:X-BeenThere:
+	 DKIM-Signature:Message-ID:Date:MIME-Version:User-Agent:Subject:To:Cc:
+	 References:Content-Language:From:Organization:In-Reply-To:
+	 Content-Type:Content-Transfer-Encoding:X-Rspamd-Queue-Id:X-BeenThere:
 	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Reply-To:Errors-To;
-	bh=I14X62NAtlu/hRxG86G+Hf/PgAdLJItadNL5fCZVifM=;
-	b=Z2YzZbYxgsN+IV96CxbvkCk0rXOn5DegqWaG/ey6EWy4g5I5w8pLqEVMFCfc/M1gIFx4
-	 Ekrv/8juYcxEqbxHPxCr7Nzzb3zuaUxfVJkCeV6Bkaq7Dn2iPCm4smMNvlJ4JoBtmmf3l
-	 7thzGCW7+DAcQFZ7EPaaIAbJBTGgmHUICgXmU7POV8ScgvmiH1ahiXKdoPY/46+V4T08U
-	 Fod3rbsNXC759imuRKxRE53ceA79YjyvkW5RyikrhLRjv/WQcGyDJ9WHq3dllmDW2CEs/
-	 0C2kIo/TL1pN8/hjWo7AeXazOSUt3mGMFZc3/P2oHecjZaOfeXgZ8fmwmCyT8BLNpBw==
-ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
-	dmarc=pass header.from=kernel.org;
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Zg3v0b7W;
+	 List-Post:List-Help:List-Subscribe:Errors-To;
+	bh=pnA9abm8tKCVM9tIK3l/Su5BC83HTMGiHZbk93iWfqI=;
+	b=RR5ByNLZbu2pMRIPAQxdd80UaTDNMnbdA6+ZCcF/DHLnQNU+bMu7tLTtKUa4gzp2n193
+	 JB3XJFbKp7+N/ohELqm2vtw+POxshwmInVqCLf7n2CCYDxmW02mjM9x22hSmLhs5tUJZP
+	 Xvx7YwX4sggMpLGw2KfpwjRByMEvWqQjEr+dA0XIVUaXxVPZ/mIldb/SXap1NSusWb0w4
+	 SE80NaxUoWq6BCvi3iVbs9rlmcDuQ2LfRqtwrrFM3rCRRIuxjPPJ8SVH4/Fhpq/70Fg+e
+	 IGeqe//eUdWF3HdYG5s2Ve2lpYg1TOj7EB5b83LCeDbiagbItpO8aeiMuK3FAIaWbuw==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1795012526;
-	bh=I14X62NAtlu/hRxG86G+Hf/PgAdLJItadNL5fCZVifM=;
-	h=From:Subject:To:In-Reply-To:References:Date:List-Id:
+	s=default; t=1795013559;
+	bh=pnA9abm8tKCVM9tIK3l/Su5BC83HTMGiHZbk93iWfqI=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Reply-To:From;
-	b=2WXHs/DkMC9MznEcma0poEKgGK6QD0XVncD/naQHGZth0kfWBx18IS5+BAawVrECN
-	 19a5Nq0gz2npkPICKviXdV+In/oMSRmH8DqYMddm2FBZr846SUVedrTeO8KqAtn/2w
-	 Kk13vMCZGWfRva2+UHON1GdBXt71Est8VGn/5dPuiHON6lCBgktn9f56uJ2deylJj1
-	 S4u7CLOa4vUUJGRJal9LeVGwwwAJCvIFKtj8d3+fOcMXJogCrub4DmuwMsxvYQL05M
-	 HyrgtvzdaLSJdLJBntyvCgpaRJOL7/cjcpjLm1lFR4iHF6lUVe6pTxjj5BhfYOJKJq
-	 jCo3yQuEq9Mgg==
+	 From;
+	b=dHck848c8orzuPsUYPDGTRjfxIZcYSGv1f/7wK/pdK64hKnf13swP+Dp/UaUySOql
+	 kbwJKm7KrOmXcaORqMRDscTu5HnGEMc8th7hR99v1F2i//bVyZm1fVuVvCobmQZrBP
+	 9v42EmEuHLWDDbzloArlytdPR6hSt3mNb8r0+tXnWMBf1TfgAGyTgu4tPcP1DLPS/L
+	 uJZo3vSQvhcQniWP29sCgli1lAVm1Kl2gJwVuA2f86NQg7oxCLsg3ur20YY1xGC6mP
+	 FSzH+QJnjMPG/z0o0BHMgzMbQJ5lmu+XeBu5quv5W9Leonx3nzEnHNlXU6A9zFF2gA
+	 0o4GCuVGnDzpQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 94DCD40A33;
-	Wed, 18 Nov 2026 14:35:26 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 85B528125A;
+	Wed, 18 Nov 2026 14:52:39 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 11CA89F8
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Nov 2026 14:35:25 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id A601B9F8
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Nov 2026 14:52:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 0413D40A1E
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Nov 2026 14:35:25 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 97BF540A0D
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Nov 2026 14:52:38 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id TMi9u-kV7OfQ for <intel-wired-lan@lists.osuosl.org>;
- Wed, 18 Nov 2026 14:35:24 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org D53CC40A17
-Authentication-Results: smtp4.osuosl.org; arc=none
- smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ id DxzjU_INhQgm for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 18 Nov 2026 14:52:37 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 6CBB440A0E
+Authentication-Results: smtp4.osuosl.org;
+ arc=none smtp.remote-ip="2001:67c:2050:102:465::112"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
- envelope-from=sashiko-bot@kernel.org; receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
+ client-ip=2001:67c:2050:102:465::112; helo=mout-b-112.mailbox.org;
+ envelope-from=antonio@mandelbit.com; receiver=<UNKNOWN> 
+Authentication-Results: smtp4.osuosl.org;
+ dmarc=none (p=none dis=none) header.from=mandelbit.com
 Authentication-Results: smtp4.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=Zg3v0b7W
-Received: from tor.source.kernel.org (tor.source.kernel.org
- [IPv6:2600:3c04:e001:324:0:1991:8:25])
- by smtp4.osuosl.org (Postfix) with ESMTPS id D53CC40A17
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Nov 2026 14:35:23 +0000 (UTC)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id 920136225D;
- Wed, 18 Nov 2026 14:35:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2D26D1F000C4;
- Wed, 18 Nov 2026 14:35:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1795012521;
- bh=I14X62NAtlu/hRxG86G+Hf/PgAdLJItadNL5fCZVifM=;
- h=From:Subject:Reply-To:To:In-Reply-To:References:Date;
- b=Zg3v0b7WgI0fZDVtty3+e6FtDFo34U6xjdNcVHWDekFDehNAbSvFBgCMqXpAQtdp4
- PvnDBTlICdjwaUewxfmet/lKEkJScsBp8FJ6XQeKzD7mQGnnEB1Ojx6LgCEGBEiJpP
- DpS5qgChq4fySs6hJAQ9WnzDvA1Vufq0XdU/xjmA/FJ46fhf204dQoIz8MWItfPgLp
- iS1x/Qud6v+KZE8ZN18ZghrEqbOfe29HRUqmXEeuc7Pvu7WJR9MdGH17g9LHssgCA6
- +Vf+4gi+DMcXW5h1C8ur6JASYLoThaVE+/lQ2x59G0XIqvvWAzp1Llx0IzWqb5EYQ8
- ODKeEXPWJi5sA==
-Message-ID: <sashiko-outbox-221222@kernel.org>
-From: sashiko-bot@kernel.org
-Subject: Re: [PATCH iwl-net] ice: use the queue pair's XDP ring in
- ice_qp_{dis, ena}()
-To: "Magnus Karlsson" <magnus.karlsson@intel.com>,
- intel-wired-lan@lists.osuosl.org
-In-Reply-To: <20261118135952.1063685-1-magnus.karlsson@intel.com>
-References: <20261118135952.1063685-1-magnus.karlsson@intel.com>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-Date: Wed, 18 Nov 2026 14:35:20 +0000
+ unprotected) header.d=mandelbit.com header.i=@mandelbit.com
+ header.a=rsa-sha256 header.s=MBO0001 header.b=EmsZyBQW
+Received: from mout-b-112.mailbox.org (mout-b-112.mailbox.org
+ [IPv6:2001:67c:2050:102:465::112])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 6CBB440A0E
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Nov 2026 14:52:35 +0000 (UTC)
+Received: from smtp102.mailbox.org (smtp102.mailbox.org
+ [IPv6:2001:67c:2050:b231:465::102])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519MLKEM768 server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mout-b-112.mailbox.org (Postfix) with ESMTPS id 4jV4MM4M4hz5wkr;
+ Wed, 18 Nov 2026 15:52:31 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mandelbit.com;
+ s=MBO0001; t=1795013551;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=pnA9abm8tKCVM9tIK3l/Su5BC83HTMGiHZbk93iWfqI=;
+ b=EmsZyBQWl3mIWf54qckm4AL2FWnWPQltJ16v4suq+m6zKB5dVSyasZC9x4pZnAgWiua/n/
+ qSHiG+NYJsV/y35oPsTl5upz2YjsZPhO377xLqE9m1cO5GgYVEdYOZ7ANXinkgemGyW9Wq
+ ZLGB6TZYzCqTP9OeSvFB35JHqy+/SJF2gkztz+2t20L1WfHHItZZ0TRRl3l/hzpzxE5AxC
+ SOfLwz0PK8yHXKqXGn+vjooG57KIJGMloU95Oi5zCisHK6NKNl5+Eulk9U8qtzhg9VwC+9
+ FFLJdMPaWsAxqs5lQGYP6OrXkoCQI3w3oGotOaYAcd5f3K6e4GljlrMT3n40RA==
+Authentication-Results: outgoing_mbo_mout; dkim=none;
+ spf=pass (outgoing_mbo_mout: domain of antonio@mandelbit.com designates
+ 2001:67c:2050:b231:465::102 as permitted sender)
+ smtp.mailfrom=antonio@mandelbit.com
+Message-ID: <3f6b535c-fce1-41d7-90a4-b15cfa20db52@mandelbit.com>
+Date: Wed, 18 Nov 2026 15:52:28 +0100
+X-Archived-By: <archiver.kernel.org>
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH net v2 1/3] igb: fix RTNL assertion when resuming from
+ runtime suspend
+To: Janis Edvarts Lacis <janislacis06@gmail.com>
+Cc: intel-wired-lan@lists.osuosl.org, Tony Nguyen
+ <anthony.l.nguyen@intel.com>, Przemek Kitszel
+ <przemyslaw.kitszel@intel.com>, Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ Heiner Kallweit <hkallweit1@gmail.com>, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org
+References: <20261116153041.3002666-1-antonio@mandelbit.com>
+ <20261116153041.3002666-2-antonio@mandelbit.com>
+ <rab7ustlezklu43vnjkby5mqh33bgqoztlz6bv5wxkjqfvbtfd@imjngi6j72nz>
+Content-Language: en-US
+From: Antonio Quartulli <antonio@mandelbit.com>
+Organization: Mandelbit SRL
+In-Reply-To: <rab7ustlezklu43vnjkby5mqh33bgqoztlz6bv5wxkjqfvbtfd@imjngi6j72nz>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Rspamd-Queue-Id: 4jV4MM4M4hz5wkr
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -119,110 +140,66 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Reply-To: sashiko-reviews@lists.linux.dev
-X-Spam-Status: No, score=-10.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_PASS autolearn=ham autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-7.4 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
-X-Archived-By: <archiver.kernel.org>
 
-Thank you for your contribution! Sashiko AI review found 1 potential
-issue to consider:
-- [High] ice: XDP ring QINT_TQCTL interrupt mismatch in ice_qp_dis() and
-  ice_qp_ena()
-It also noticed 1 related pre-existing issue this patch does not
-introduce:
-- [Critical] ice: incorrect XDP queue indexing in
-  ice_cfg_txq_interrupt() [1]
---
+Hi Janis, thanks for the review!
 
-commit 16196a7c47f74a832fc91f862f75e019be2f6418
-Author: Magnus Karlsson <magnus.karlsson@intel.com>
+On 18/11/2026 14:21, Janis Edvarts Lacis wrote:
+> On 16 Nov 16:30, Antonio Quartulli wrote:
+>> Since commit ac8c58f5b535 ("igb: fix deadlock caused by taking RTNL in
+>> RPM resume path") __igb_resume() doesn't take RTNL for runtime resume,
+>> but __igb_open() still calls netif_set_real_num_{tx,rx}_queues(), which
+>> require it. An asynchronous runtime resume (e.g. after the link comes
+>> back) then triggers "RTNL: assertion failed".
+>>
+>> Skip them when resuming. The counts are set again on every regular open,
+>> which happens under RTNL; the only case left out is a fallback from
+>> MSI-X to MSI during a resume, which leaves the stack with more queues
+>> than the device uses until the next open.
+> 
+> RTNL is not held only on runtime resume, it is held on a normal resume.
+> __igb_open() skips netif_set_real_num_{tx,rx}_queues() for both resume
+> types. Maybe it makes sense to skip them only on runtime resume when the
+> RTNL is not held?
 
-ice: use the queue pair's XDP ring in ice_qp_{dis, ena}()
+You're right.
+RTNL is held on normal (system sleep) resume, so the counts can and 
+should be set there.
 
-This commit updates ice_qp_dis(), ice_qp_ena(), ice_qp_clean_rings(), and
-ice_qp_reset_stats() to operate on vsi->rx_rings[q_idx]->xdp_ring instead
-of vsi->xdp_rings[q_idx].
+> 
+> May I ask why is it okay to leave out the fallback case, can't it lead
+> to trouble if the counts are not updated but a fallback happens?
 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_base.c b/drivers/net/ethe=
-rnet/intel/ice/ice_base.c
-> index 1667f686ff751..aa0ad313a97cd 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_base.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_base.c
-[ ... ]
-> @@ -1460,9 +1480,7 @@ int ice_qp_dis(struct ice_vsi *vsi, u16 q_idx)
->  	err =3D ice_vsi_stop_tx_ring(vsi, ICE_NO_RESET, 0, tx_ring, &txq_meta);
->  	if (!fail)
->  		fail =3D err;
-> -	if (vsi->xdp_rings) {
-> -		struct ice_tx_ring *xdp_ring =3D vsi->xdp_rings[q_idx];
-> -
-> +	if (xdp_ring) {
->  		memset(&txq_meta, 0, sizeof(txq_meta));
->  		ice_fill_txq_meta(vsi, xdp_ring, &txq_meta);
->  		err =3D ice_vsi_stop_tx_ring(vsi, ICE_NO_RESET, 0, xdp_ring,
-> @@ -1497,9 +1515,11 @@ int ice_qp_ena(struct ice_vsi *vsi, u16 q_idx)
->  		fail =3D err;
-> =20
->  	if (ice_is_xdp_ena_vsi(vsi)) {
-> -		struct ice_tx_ring *xdp_ring =3D vsi->xdp_rings[q_idx];
-> +		DEFINE_RAW_FLEX(struct ice_aqc_add_tx_qgrp, qg_buf, txqs, 1);
-> +		struct ice_tx_ring *xdp_ring =3D ice_qp_xdp_ring(vsi, q_idx);
-> =20
-> -		err =3D ice_vsi_cfg_single_txq(vsi, vsi->xdp_rings, q_idx);
-> +		qg_buf->num_txqs =3D 1;
-> +		err =3D ice_vsi_cfg_txq(vsi, xdp_ring, qg_buf);
->  		if (!fail)
->  			fail =3D err;
->  		ice_set_ring_xdp(xdp_ring);
+Ouch..you're right again.
+The fallback case can't be left out: with fewer rings than the stack's 
+real queue count, igb_tx_queue_mapping() maps several TX queues onto 
+tx_ring[0], each under its own xmit lock, and igb_xsk_pool_disable() can 
+index a ring that doesn't exist (Sashiko reported the same on this 
+version....).
 
-[Severity: High]
-Does ice_qp_ena() leave QINT_TQCTL_CAUSE_ENA_M cleared on xdp_ring after
-ice_qp_dis() stops it?
+To summarize: in v3 I'll set the counts directly on normal resume and on 
+runtime resume from a work item that takes RTNL (as patch 2 already does 
+for the NAPI links).
+Until the work item has run, igb_xmit_frame() will drop packets for 
+queues the device doesn't have instead of mapping them onto tx_ring[0] 
+(the stack drops them anyway when the count is lowered), and the XSK 
+disable path will skip rings that don't exist.
 
-In ice_qp_dis(), ice_vsi_stop_tx_ring() clears QINT_TQCTL_CAUSE_ENA_M in
-QINT_TQCTL(xdp_ring->reg_idx).  When ice_qp_ena() re-enables the queue
-pair, it configures MSI-X via ice_qvec_cfg_msix() ->
-ice_cfg_txq_interrupt(), which still writes to a different queue index:
+Best,
 
-drivers/net/ethernet/intel/ice/ice_base.c:ice_cfg_txq_interrupt() {
-    ...
-	wr32(hw, QINT_TQCTL(vsi->txq_map[txq]), val);
-	if (ice_is_xdp_ena_vsi(vsi)) {
-		u32 xdp_txq =3D txq + vsi->num_xdp_txq;
+> 
+> Best regards,
+> Janis
 
-		wr32(hw, QINT_TQCTL(vsi->txq_map[xdp_txq]),
-		     val);
-	}
-    ...
-}
+-- 
+Antonio Quartulli
 
-When there are fewer queue vectors than CPUs, vsi->txq_map[q_idx +
-vsi->num_xdp_txq] is not xdp_ring->reg_idx.  As a result, xdp_ring's Tx
-interrupt remains disabled (breaking AF_XDP zero-copy Tx completions), and
-another ring's QINT_TQCTL is overwritten with this queue vector's MSI-X
-index.
+CEO and Co-Founder
+Mandelbit Srl
+https://www.mandelbit.com
 
-[Severity: Critical]
-This problem wasn't introduced by this patch, but ice_cfg_txq_interrupt()
-and ice_vsi_release_msix() also compute the XDP queue offset in
-vsi->txq_map as txq + vsi->num_xdp_txq [1], whereas
-ice_prepare_xdp_rings() places XDP rings in vsi->txq_map starting at
-vsi->alloc_txq.
-
-When the allocated LAN Tx queue count differs from vsi->num_xdp_txq (for
-example, after changing the channel count with ethtool), indexing
-vsi->txq_map[txq + vsi->num_xdp_txq] can access past the end of
-vsi->txq_map or corrupt QINT_TQCTL for the wrong hardware queues.  In
-addition, ice_vsi_release_msix() only iterates up to q_vector->num_ring_tx,
-which leaves the remaining XDP rings' QINT_TQCTL interrupt mappings active
-when there are fewer LAN Tx queues than XDP queues.
-
-[1] https://sashiko.dev/#/bug/linux-0b308224-7107-4d23-9bbc-9ae5c80b362b
-
---=20
-Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261118135952.1063=
-685-1-magnus.karlsson@intel.com?part=3D1
