@@ -1,29 +1,29 @@
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3AA26606A337
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 19 Nov 2026 16:54:17 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2D2C7606A32F
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 19 Nov 2026 16:54:23 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=TP99Imr0;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=AO94A2v5
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=bjkJhy1y;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=RWnenj52
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 1E7EC60749;
-	Thu, 19 Nov 2026 16:54:17 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 128054062A;
+	Thu, 19 Nov 2026 16:54:21 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id UOpJ_1iEkeRO; Thu, 19 Nov 2026 16:54:15 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 2512E6069F
-Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795107255;
-	b=iCAOrz6Y7jyfrakgIlR1WQCalD5evxzlwiVL9rmMNYvMNuZxfQ774W9BdpiQBrWJwkH/
-	 cIFSL6SoIuNt3ngGjHQnVvDgxXYIWC5yI42vfwTu4CxGYq3oCpA+8xeRvHzXkz6/t3mSO
-	 qRyZSCqxkQr4wwUMea2TsCN8a5rftV19tcarVQpizsia996b+6n8cnoRInAQHi/WJ/MPW
-	 dTH/n+C4mxSXeaFO1mqGPqShwrxS8XBaBdxk5sGoTPOgVJU9RiNKfvVMjsyi/PHvp3Ar2
-	 HGrz3BKXKNRnrg6+yPWYcF9uCdJdhBS8Ge8397kQLxeLoxM1R6JVPTftdHub4rXyGxQ==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 2gAduzarY_Ti; Thu, 19 Nov 2026 16:54:19 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org E22E040B39
+Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795107259;
+	b=d1OCN0bA0wi0ojYty7692nFstrpJvNv82wqp/i1Cs+YIs3e6psqGktYZppnN7lf8K+8n
+	 lU3DWhPm85/I7GHy5RSchfVKRlZN7qatizEfsczqThvMczkE3r8hpbKDL317pGdz0p/Mu
+	 4x22MixBjDFWb9Iep1c3U/XeEML0RbkYRtm+0HWMzzPsbW2XjykMIi3mSgAHU1RqB72DH
+	 2SQn8+yREv7/W1TV0RToUEpM6kfOEphZFyfnMpJQzckOFvSRd+g9U/ZmMQhGANsVZXXP3
+	 fO9zw+t0Ox+oJ/QvEF9cIGXH2dS3YhlgjwHjWvATxRxNuSmmTr9jiQM58RbM4LFPhpg==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795107255;
+	c=relaxed/relaxed; t=1795107259;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
@@ -33,42 +33,42 @@ ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
 	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding:
 	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
 	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=3a/4iVoMyX+imSqLnnb1dUVm1CzUkONqRQpiuKSwmiI=;
-	b=POZ6Fw0LGrV/F6X2Xexcpi6tXHqisEUgcBSQx77JxVlAzAp/QpasyjDBiskWGbI0ew+L
-	 ZA31UIJ8NGCGWh+xCN9ysWYkcepRQ+RrTGk49SOuLbdFfFpJ1v7k2qowBX6oTveHhYj03
-	 iwt+hapUlzwceptRfr7q6xm7PWb/DwWKah///9hWGw97EZHxqYoCUoWNNEaBT0PTXsZex
-	 dwJgDGCa/FfMnKZfRnzGLjq3qAtc0hK1HX7w5tm5INn+PLh0KEbnbJ6AodYW6YtONKlL5
-	 OUABWMwtDyCSPSzSTjX0zNdd6w5VDkqhCbiShf4HESEt2UirSaND/mD86mvgAwAk97w==
-ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
+	bh=I6ueF8ltV78eKvEUnHHfXi42A6xUIUTqkyV9CNwByEE=;
+	b=gK1wjNNqZH6IU7c3EQnqR53Ucd+Eqnd5dsjMLpzH+wL0BjoeXZXZhKR6f/433Z5lVXFt
+	 ir3Zq/H5gmVIfs+ljMmkc+d9IAmx1xQgk04Ocw7ERcXNFYLbTmyrpFbTd7jcrpflRoN0x
+	 uGqmE42FTnqmgnVOBCDuCxKQEyJvBEoyAss9njlSxc6mHQ2nc7GfJmAOoIfui9ziTo6Fv
+	 FZQdgxdgKxKqDVyEYzhNzGrPpRxOtIEFDhk7udVQBYuK1xdbTgcBwtfKl7IWUgK5y6w4j
+	 45aoofTjK2tsEZklhdqeNNBR0l5oF0tbduQQK6kg9yT8tKkaNGxVRF3qpNUiUt+It9A==
+ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1795107255;
-	bh=3a/4iVoMyX+imSqLnnb1dUVm1CzUkONqRQpiuKSwmiI=;
+	s=default; t=1795107258;
+	bh=I6ueF8ltV78eKvEUnHHfXi42A6xUIUTqkyV9CNwByEE=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=TP99Imr0IXTCurkdgfYCwsNo6JY5HQJiMSiBP2JGYFVaDi5j8XXwu20fnbmP/Homk
-	 UtDuhU3YaKaMnxTXdlcp505kLxLUSas1nUawtQUi5DrK4zjy2l47U7jItE/LGkx5Qt
-	 aqRJdMWJfcTyMAl8lCeA5Bi499udka3+fTGfqEMpx5EjlXzcoObzVrOH8RMUgjhzlG
-	 0Jzvm8Z4Au2k0kIV0HO24NWRbluasC6u7GHK39w31C3fYgmdhDjx+pEJv195V/velh
-	 YqN3/RQ0hu9Tty0U+YbBV62sqLGeHnQPrEzX+Fh8r/Vbg5w2SFWu6lvIReCnPFQKsq
-	 KoYuN7hQoU+sA==
+	b=bjkJhy1y+yH+H/b7lspNKCvpAw9LMkCjRaxP0+kT+37MNiMQ8P16Ech/AUPg04DHQ
+	 ZGF08br1OjedwJH74qBj4a3yjP0GPmeNqNpAsD3rXxfb1BT+rZ7u3UYfuvncDJ4FWw
+	 OZ35XE+nvXPt6IH19YG5esBj3ZPqGvo0ZnGZ0pm9YFbWrUg55wA5iZmWPgj6zI+ucB
+	 Ub9g7fLpzfNxYEI4Ja6LWvwnw4+8ERmFW0liEajWUklToH8m/uUSlPpxTWp6LdkEqe
+	 0fuGshrde5lR/fMPxJO6pFukwjsDYlw4zzdjDDP/Hpzybe+0tMW/7fIJdSj8yK5tQA
+	 5XvoiC4AoGXuw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2512E6069F;
-	Thu, 19 Nov 2026 16:54:15 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id E22E040B39;
+	Thu, 19 Nov 2026 16:54:18 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 9B9951C9
- for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Nov 2026 16:54:13 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id EEE739F8
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Nov 2026 16:54:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 8D3CD8110A
- for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Nov 2026 16:54:13 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id E049281106
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Nov 2026 16:54:17 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Pl5FcKOuV6rp for <intel-wired-lan@lists.osuosl.org>;
- Thu, 19 Nov 2026 16:54:12 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org D510281106
+ id rzuTzHhJrOLr for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 19 Nov 2026 16:54:16 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org D58688136F
 Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=198.175.65.21
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.21;
  helo=mgamail.intel.com; envelope-from=magnus.karlsson@intel.com;
@@ -77,36 +77,36 @@ Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=AO94A2v5
+ header.a=rsa-sha256 header.s=Intel header.b=RWnenj52
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
- by smtp1.osuosl.org (Postfix) with ESMTPS id D510281106
- for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Nov 2026 16:54:11 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTPS id D58688136F
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Nov 2026 16:54:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1795107252; x=1826643252;
+ t=1795107256; x=1826643256;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=vlCzwpAk1/VQVK7t4fVrf+Kzxiafq/9oYdpcA29fgNc=;
- b=AO94A2v5Ysp5kw8foDgwp5ZSNWlyyjezdh7WHfYWvL6bY9cJ/gyXDBeD
- go0nU/BySHXQHa8C1qstQ1U7igQ40CD3vEiqPiaHLQoE3UQqlBvRaNQQB
- E2pzu5kn0c2MIjiBaGXY8E2d3A0i0nuhe0khbgEcHNtiuc/VxqdAOkUYb
- UIGiiFyLhcjARji6T63t6GYmI4X34Gs+Yuf20bkjjqfj5OfLsIrnqcnn4
- wLZtIHie9aaEtsGYAmCaLfv5v7U6yXTmgOFYANsnBRtQEWoHKrVcOgnTF
- vWu9R8oBkEs9IWEL4eY6rXrO44yN4YCxgZktmB1RSe3Z7kcdWTzEJisDu w==;
-X-CSE-ConnectionGUID: P4M4BlYdSNeFbClq2+snxQ==
-X-CSE-MsgGUID: OGpLWv/4SD+eAahMf3hIKQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11971"; a="4045462"
+ bh=k+Ubnv5W8bAdkgha88wOu/A9VFJ8e5eqDpYAEgsMq6o=;
+ b=RWnenj52pJUnpopitGm6X4yuLGgevYzqw8r+eHQo9rYC4hEBI7+wztPB
+ c078NE1YjLuoieE48DIqXjUxhm7bJxwSCLgQGafMc2mam6d9jHNiqp5Zj
+ SHgWbMMr2BTWv3jjytcBd1/T/Z/wasRoBn+GXGG/Zyxn9c4fNN3+gmQLW
+ nDlPcdcjjbsApTsrUa3+/ItOquHIAJHLmfkm7BS6Fw3lEvtW1cY2e24ZJ
+ 3yn2rT1TQJdwbCkYTkjZx76I/A/9Ge+4Oc8E7kGP1Fy4IWkAQg59RW+6z
+ nNenCj7SEVKT10z7BXZtPe1whiuPcAJLTm2bzjmcagDQl5A3X7zsTwsIC w==;
+X-CSE-ConnectionGUID: QYLK7u4DSQm6km7IXLoiVw==
+X-CSE-MsgGUID: NGumjLn2RfqN7z38rNSwTQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11971"; a="4045476"
 X-IronPort-AV: E=Sophos;i="6.27,221,1787036400"; 
-   d="scan'208";a="4045462"
+   d="scan'208";a="4045476"
 Received: from orviesa009.jf.intel.com ([10.64.159.149])
  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 19 Nov 2026 08:54:12 -0800
-X-CSE-ConnectionGUID: sEbvZt8SSQSX2pph6jfSkQ==
-X-CSE-MsgGUID: BtS3mduhSyCsNUfD7WYU2Q==
+ 19 Nov 2026 08:54:16 -0800
+X-CSE-ConnectionGUID: RZ5+qPi3QXuIKsOec9MFcQ==
+X-CSE-MsgGUID: f/gaLoIaQ6em9roKCwh3yA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,221,1787036400"; d="scan'208";a="10774992"
+X-IronPort-AV: E=Sophos;i="6.27,221,1787036400"; d="scan'208";a="10775004"
 Received: from boxer.igk.intel.com ([10.102.20.173])
- by orviesa009.jf.intel.com with ESMTP; 19 Nov 2026 08:54:08 -0800
+ by orviesa009.jf.intel.com with ESMTP; 19 Nov 2026 08:54:12 -0800
 From: Magnus Karlsson <magnus.karlsson@intel.com>
 To: netdev@vger.kernel.org, magnus.karlsson@intel.com,
  magnus.karlsson@gmail.com, maciej.fijalkowski@intel.com, sdf@fomichev.me,
@@ -115,10 +115,9 @@ To: netdev@vger.kernel.org, magnus.karlsson@intel.com,
  kerneljasonxing@gmail.com
 Cc: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
  przemyslaw.kitszel@intel.com, jacob.e.keller@intel.com
-Subject: [PATCH net-next 4/5] xsk: add KUnit tests for AF_XDP USO header
- helpers
-Date: Thu, 19 Nov 2026 17:53:39 +0100
-Message-Id: <20261119165340.1071525-5-magnus.karlsson@intel.com>
+Subject: [PATCH net-next 5/5] selftests: net: add AF_XDP USO test
+Date: Thu, 19 Nov 2026 17:53:40 +0100
+Message-Id: <20261119165340.1071525-6-magnus.karlsson@intel.com>
 X-Mailer: git-send-email 2.38.1
 In-Reply-To: <20261119165340.1071525-1-magnus.karlsson@intel.com>
 References: <20261119165340.1071525-1-magnus.karlsson@intel.com>
@@ -143,710 +142,1036 @@ X-Spam-Status: No, score=-18.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Add KUnit tests for the helpers that AF_XDP uses to validate and prepare
-USO requests, as these run on headers supplied by user space and are
-shared by the copy and zero-copy paths:
+Add xsk_uso, a functional test for AF_XDP UDP segmentation offload in
+copy and zero-copy mode. It sends USO requests from an AF_XDP socket
+and checks the datagrams received on a packet socket: the number of
+datagrams, the IP and UDP lengths, the checksums and the payload, for
+IPv4 and IPv6, and single and multi-buffer requests. It also checks
+that invalid requests are dropped and counted in tx_invalid_descs.
 
-- xsk_tx_uso_validate(): IPv4 and IPv6, link-layer headers of different
-  lengths, IPv4 options, malformed IP and UDP headers, an IPv6
-  destination options header, a non-UDP IPv6 next header, a UDP header
-  that does not directly follow the IPv6 header, bad offsets and
-  lengths, the MTU and the segment count limit.
-  The link layer is not parsed, so the IP header is found at
-  network_offset whatever the EtherType says.
-- xsk_tx_uso_parse(): the header and metadata are snapshotted, so later
-  changes to the UMEM do not reach the copy; invalid metadata, offsets
-  and descriptor layouts are rejected; flag combinations that USO does
-  not support are rejected; segmentation needs NETIF_F_GSO_UDP_L4 while
-  a single datagram does not; requests without USO are left alone.
-- xsk_tx_uso_prepare_headers(): the checksum seeds are compared with
-  pseudo-header checksums computed independently with
-  csum_tcpudp_magic() and csum_ipv6_magic(), and a single datagram
-  keeps its headers.
-- xsk_buff_valid_tx_metadata() and xsk_tx_uso_flags_valid() for USO.
+The test needs root and physical NICs with an MTU of at least 1448,
+either two connected ports (-i TX_IFACE -r RX_IFACE) or one in NIC
+loopback (-l -i IFACE). Virtual devices such as veth pass the packet on
+without segmenting it. Zero copy (-z) also needs a native XDP program on
+the interface. Standalone checksum offload cases run only with -C, as
+they test the existing checksum offload rather than USO. As it needs
+real hardware, it is built but not run by default, like xdp_hw_metadata.
+It uses the AF_XDP library in net/lib/xsk.
 
-The tests are in net/xdp/tests/xsk_tx_uso_kunit.c, following the KUnit
-naming convention. Run with:
-
-  ./tools/testing/kunit/kunit.py run --kunitconfig=net/xdp
+Missing prerequisites are reported as skips. In zero-copy mode, the
+device must report xsk-zerocopy and tx-uso-zc, and checksum-only cases
+need tx-checksum. In both modes, cases that produce more than one
+datagram need tx-udp-segmentation, including the invalid ones, which
+would otherwise be dropped for lack of the offload whatever their
+headers. Cases that need more descriptors than xdp-zc-max-segs are
+skipped, and so are binds that the device refuses with EOPNOTSUPP.
+Receive-side UDP GRO (rx-udp-gro-forwarding, rx-gro-list) must be off,
+as it would merge the segments again before the packet socket sees them.
+USO with launch time must succeed in copy mode and be dropped in
+zero-copy mode.
 
 Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
 ---
- net/xdp/.kunitconfig             |   6 +
- net/xdp/Kconfig                  |  12 +
- net/xdp/Makefile                 |   1 +
- net/xdp/tests/xsk_tx_uso_kunit.c | 620 +++++++++++++++++++++++++++++++
- 4 files changed, 639 insertions(+)
- create mode 100644 net/xdp/.kunitconfig
- create mode 100644 net/xdp/tests/xsk_tx_uso_kunit.c
+ tools/testing/selftests/net/.gitignore |   1 +
+ tools/testing/selftests/net/Makefile   |  10 +-
+ tools/testing/selftests/net/xsk_uso.c  | 954 +++++++++++++++++++++++++
+ 3 files changed, 964 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/net/xsk_uso.c
 
-diff --git a/net/xdp/.kunitconfig b/net/xdp/.kunitconfig
-new file mode 100644
-index 000000000000..d88b8e3643f1
---- /dev/null
-+++ b/net/xdp/.kunitconfig
-@@ -0,0 +1,6 @@
-+CONFIG_KUNIT=y
-+CONFIG_NET=y
-+CONFIG_BPF=y
-+CONFIG_BPF_SYSCALL=y
-+CONFIG_XDP_SOCKETS=y
-+CONFIG_XDP_SOCKETS_USO_KUNIT_TEST=y
-diff --git a/net/xdp/Kconfig b/net/xdp/Kconfig
-index 71af2febe72a..f230b9049ef0 100644
---- a/net/xdp/Kconfig
-+++ b/net/xdp/Kconfig
-@@ -14,3 +14,15 @@ config XDP_SOCKETS_DIAG
- 	help
- 	  Support for PF_XDP sockets monitoring interface used by the ss tool.
- 	  If unsure, say Y.
+diff --git a/tools/testing/selftests/net/.gitignore b/tools/testing/selftests/net/.gitignore
+index 83d68e2dd4ac..e40a97618cdc 100644
+--- a/tools/testing/selftests/net/.gitignore
++++ b/tools/testing/selftests/net/.gitignore
+@@ -64,3 +64,4 @@ udpgso_bench_rx
+ udpgso_bench_tx
+ xdp_hw_metadata
+ xdp_hw_metadata.skel.h
++xsk_uso
+diff --git a/tools/testing/selftests/net/Makefile b/tools/testing/selftests/net/Makefile
+index c80dabbcc907..afe839db2a45 100644
+--- a/tools/testing/selftests/net/Makefile
++++ b/tools/testing/selftests/net/Makefile
+@@ -219,7 +219,8 @@ TEST_FILES := \
+ # end of TEST_FILES
+ 
+ # YNL files, must be before "include ..lib.mk"
+-YNL_GEN_FILES := busy_poller
++# xsk_uso needs root and a NIC with loopback or a connected peer; see the source.
++YNL_GEN_FILES := busy_poller xsk_uso
+ YNL_GEN_PROGS := \
+ 	netlink-dumps \
+ 	tun \
+@@ -273,3 +274,10 @@ $(OUTPUT)/xdp_hw_metadata: xdp_hw_metadata.c xdp_metadata.h lib/xsk/xsk.c \
+ 	$(Q)$(CC) -I$(top_srcdir)/tools/include $(CFLAGS) -I$(OUTPUT) \
+ 		-I$(SCRATCH_DIR)/include \
+ 		$(filter %.c,$^) $(BPFOBJ) $(LDLIBS) -lelf -lz -o $@
 +
-+config XDP_SOCKETS_USO_KUNIT_TEST
-+	tristate "AF_XDP USO header validation tests" if !KUNIT_ALL_TESTS
-+	depends on XDP_SOCKETS && KUNIT
-+	default KUNIT_ALL_TESTS
-+	help
-+	  KUnit tests for the helpers that validate and prepare AF_XDP UDP
-+	  segmentation offload (USO) requests in copy and zero-copy mode:
-+	  header validation, metadata snapshots, segment limits and the
-+	  preparation of headers and checksum seeds for segmentation.
-+
-+	  If unsure, say N.
-diff --git a/net/xdp/Makefile b/net/xdp/Makefile
-index b6109e0e5547..aef2e70f7a6f 100644
---- a/net/xdp/Makefile
-+++ b/net/xdp/Makefile
-@@ -3,3 +3,4 @@ obj-$(CONFIG_XDP_SOCKETS) += xsk.o xdp_umem.o xsk_queue.o xskmap.o
- obj-$(CONFIG_XDP_SOCKETS) += xsk_buff_pool.o
- obj-$(CONFIG_XDP_SOCKETS) += xsk_tx_uso.o
- obj-$(CONFIG_XDP_SOCKETS_DIAG) += xsk_diag.o
-+obj-$(CONFIG_XDP_SOCKETS_USO_KUNIT_TEST) += tests/xsk_tx_uso_kunit.o
-diff --git a/net/xdp/tests/xsk_tx_uso_kunit.c b/net/xdp/tests/xsk_tx_uso_kunit.c
++$(OUTPUT)/xsk_uso: xsk_uso.c lib/xsk/xsk.c lib/xsk/xsk.h $(BPFOBJ) \
++		   $(OUTPUT)/libynl.a
++	$(call msg,CC,,$@)
++	$(Q)$(CC) -I$(top_srcdir)/tools/include $(CFLAGS) \
++		-I$(SCRATCH_DIR)/include \
++		$(filter %.c,$^) $(BPFOBJ) $(OUTPUT)/libynl.a $(LDLIBS) -lelf -lz -o $@
+diff --git a/tools/testing/selftests/net/xsk_uso.c b/tools/testing/selftests/net/xsk_uso.c
 new file mode 100644
-index 000000000000..53d763aa53dc
+index 000000000000..2e3228e2b2f8
 --- /dev/null
-+++ b/net/xdp/tests/xsk_tx_uso_kunit.c
-@@ -0,0 +1,620 @@
++++ b/tools/testing/selftests/net/xsk_uso.c
+@@ -0,0 +1,954 @@
 +// SPDX-License-Identifier: GPL-2.0
-+#include <kunit/test.h>
-+#include <linux/if_vlan.h>
-+#include <net/ip.h>
-+#include <net/ip6_checksum.h>
-+#include <net/udp.h>
-+#include <net/xdp_sock_drv.h>
-+#include <net/xsk_tx_uso.h>
 +
-+#define USO_META_LEN	sizeof(struct xsk_tx_metadata)
-+
-+static const __be32 uso_saddr = cpu_to_be32(0xc0a80001);
-+static const __be32 uso_daddr = cpu_to_be32(0xc0a80002);
-+
-+/* Build an Ethernet frame with @l2_len bytes of link layer, one IP header and
-+ * a UDP header carrying @payload bytes, and describe it in @uso.
++/* AF_XDP UDP segmentation offload (USO) test.
++ *
++ * Sends USO requests from an AF_XDP socket in copy or zero-copy mode and
++ * checks the datagrams received on a packet socket: their number, IP and
++ * UDP lengths, checksums and payload, for IPv4 and IPv6, and single and
++ * multi-buffer requests. Invalid requests must be dropped and counted in
++ * tx_invalid_descs.
++ *
++ * Needs root and physical NICs with an MTU of at least 1448, either two
++ * connected ports (-i TX_IFACE -r RX_IFACE) or one in NIC loopback
++ * (-l -i IFACE). Virtual devices such as veth pass the packet on without
++ * segmenting it, so they are skipped. An MTU too large for eight 4K buffers
++ * is also a skip. Zero-copy mode (-z) also needs a native XDP program on the
++ * interface and a driver reporting tx-uso-zc. Requests that produce more than one datagram
++ * need tx-udp-segmentation. Standalone checksum offload cases run only with
++ * -C, and in zero-copy mode only on drivers reporting tx-checksum. Missing
++ * prerequisites are reported as skips.
 + */
-+static void uso_packet(void *header, struct xsk_tx_uso_info *uso,
-+		       bool ipv6, u32 l2_len, u32 payload)
-+{
-+	u32 iplen = ipv6 ? sizeof(struct ipv6hdr) : sizeof(struct iphdr);
-+	struct xsk_tx_metadata *meta = &uso->metadata;
-+	struct ethhdr *eth = header;
-+	struct udphdr *uh;
 +
-+	memset(header, 0, XSK_TX_USO_MAX_HEADER);
-+	memset(uso, 0, sizeof(*uso));
-+	meta->request.network_offset = l2_len;
-+	meta->request.csum_start = l2_len + iplen;
-+	meta->request.csum_offset = offsetof(struct udphdr, check);
-+	meta->request.gso_size = 1400;
-+	uso->header_len = meta->request.csum_start + sizeof(*uh);
-+	uso->len = uso->header_len + payload;
-+	eth->h_proto = htons(ipv6 ? ETH_P_IPV6 : ETH_P_IP);
-+	if (ipv6) {
-+		struct ipv6hdr *ip6h = header + l2_len;
++#define _GNU_SOURCE
++#include <arpa/inet.h>
++#include <errno.h>
++#include <linux/ethtool.h>
++#include <linux/if_ether.h>
++#include <linux/if_link.h>
++#include <linux/if_packet.h>
++#include <linux/if_xdp.h>
++#include <linux/ipv6.h>
++#include <linux/netdev.h>
++#include <linux/sockios.h>
++#include <linux/udp.h>
++#include <net/if.h>
++#include <netinet/ip.h>
++#include <poll.h>
++#include <stdbool.h>
++#include <assert.h>
++#include <stddef.h>
++#include <stdint.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/ioctl.h>
++#include <sys/mman.h>
++#include <sys/socket.h>
++#include <time.h>
++#include <unistd.h>
++#include <ynl.h>
 +
-+		ip6h->version = 6;
-+		ip6h->nexthdr = IPPROTO_UDP;
-+		ip6h->payload_len = htons(sizeof(*uh) + payload);
-+		ip6h->saddr.s6_addr32[0] = uso_saddr;
-+		ip6h->daddr.s6_addr32[0] = uso_daddr;
-+	} else {
-+		struct iphdr *iph = header + l2_len;
++#include "kselftest.h"
++#include "lib/xsk/xsk.h"
++#include "netdev-user.h"
 +
-+		iph->version = 4;
-+		iph->ihl = 5;
-+		iph->protocol = IPPROTO_UDP;
-+		iph->tot_len = htons(iplen + sizeof(*uh) + payload);
-+		iph->saddr = uso_saddr;
-+		iph->daddr = uso_daddr;
-+	}
-+	uh = header + meta->request.csum_start;
-+	uh->len = htons(sizeof(*uh) + payload);
-+}
-+
-+/* The header copy, at the alignment that drivers give it. Kept off the stack,
-+ * as KASAN builds pad every on-stack buffer.
++#define RING_SIZE 1024
++#define NUM_FRAMES 1024
++#define FRAME_SIZE 4096
++#define META_LEN sizeof(struct xsk_tx_metadata)
++/* Each segment then fills an IPv4 or IPv6 packet of at most 1448 bytes, the
++ * smallest MTU that the test accepts.
 + */
-+static void *uso_header(struct kunit *test)
-+{
-+	u8 *storage = kunit_kzalloc(test, NET_IP_ALIGN + XSK_TX_USO_MAX_HEADER,
-+				    GFP_KERNEL);
++#define GSO_SIZE 1400
++#define MIN_MTU (sizeof(struct ipv6hdr) + sizeof(struct udphdr) + GSO_SIZE)
++/* Most buffers a test packet uses. In zero-copy mode, cases that need more
++ * descriptors than the driver's xdp-zc-max-segs are skipped.
++ */
++#define MAX_BUFFERS 8
++#define TEST_PORT 49732
++#define TIMEOUT_MS 2000
 +
-+	KUNIT_ASSERT_NOT_NULL(test, storage);
-+	return storage + NET_IP_ALIGN;
-+}
++static_assert(sizeof(struct xsk_tx_metadata) == 24, "metadata size");
++static_assert(offsetof(struct xsk_tx_metadata, request.gso_size) == 12,
++	      "segment size offset");
++static_assert(offsetof(struct xsk_tx_metadata, request.network_offset) == 14,
++	      "network header offset");
++static_assert(offsetof(struct xsk_tx_metadata, request.launch_time) == 16,
++	      "launch time offset");
++static_assert(offsetof(struct xsk_tx_metadata, completion.tx_timestamp) == 8,
++	      "timestamp offset");
 +
-+/* Partial pseudo-header checksum over a UDP length, as an application seeds it. */
-+static __sum16 uso_pseudo_csum(void *header, const struct xsk_tx_uso_info *uso,
-+			       bool ipv6, u32 udp_len)
-+{
-+	void *ip = header + uso->metadata.request.network_offset;
-+
-+	if (ipv6) {
-+		struct ipv6hdr *ip6h = ip;
-+
-+		return ~csum_ipv6_magic(&ip6h->saddr, &ip6h->daddr, udp_len,
-+					IPPROTO_UDP, 0);
-+	}
-+	return ~csum_tcpudp_magic(((struct iphdr *)ip)->saddr,
-+				  ((struct iphdr *)ip)->daddr, udp_len,
-+				  IPPROTO_UDP, 0);
-+}
-+
-+static void uso_valid(struct kunit *test)
-+{
-+	static const u32 l2_lens[] = { ETH_HLEN, ETH_HLEN + VLAN_HLEN,
-+				       ETH_HLEN + 8 };
-+	void *header = uso_header(test);
-+	struct xsk_tx_uso_info uso;
-+	int ipv6, i;
-+
-+	for (ipv6 = 0; ipv6 < 2; ipv6++)
-+		for (i = 0; i < ARRAY_SIZE(l2_lens); i++) {
-+			uso_packet(header, &uso, ipv6, l2_lens[i], 4000);
-+			KUNIT_ASSERT_EQ_MSG(test,
-+					    xsk_tx_uso_validate(header, &uso, 1500),
-+					    0, "ipv6 %d l2 %u", ipv6, l2_lens[i]);
-+			KUNIT_EXPECT_EQ(test, uso.gso_segs, 3);
-+			KUNIT_EXPECT_EQ(test, ntohs(uso.protocol),
-+					ipv6 ? ETH_P_IPV6 : ETH_P_IP);
-+			KUNIT_EXPECT_EQ(test, uso.l4_protocol, IPPROTO_UDP);
-+			uso_packet(header, &uso, ipv6, l2_lens[i], 0);
-+			KUNIT_ASSERT_EQ(test, xsk_tx_uso_validate(header, &uso, 1500),
-+					0);
-+			KUNIT_EXPECT_EQ(test, uso.gso_segs, 1);
-+		}
-+}
-+
-+enum uso_invalid_kind {
-+	USO_INVALID_IPV6_VERSION,
-+	USO_INVALID_IHL,
-+	USO_INVALID_TOT_LEN,
-+	USO_INVALID_FRAGMENT,
-+	USO_INVALID_PROTOCOL,
-+	USO_INVALID_UDP_LEN,
-+	USO_INVALID_NETWORK_OFFSET,
-+	USO_INVALID_NO_IP_HEADER,
-+	USO_INVALID_LEN,
-+	/* IPv6 cases from here on. */
-+	USO_INVALID_IPV6_NEXTHDR,
-+	USO_INVALID_IPV6_EXT_HEADER,
-+	USO_INVALID_IPV6_UDP_OFFSET,
++enum bad_request {
++	VALID, ZERO_SIZE, FRAGS_SIZE, NO_CHECKSUM, BAD_CSUM_OFFSET,
++	BAD_NETWORK_OFFSET, BAD_UDP_LENGTH, FRAGMENT, BAD_PROTOCOL,
++	EXT_HEADER, LARGE_SEGMENT, SHORT_HEADER, TIMESTAMP, LAUNCH_TIME,
++	SW_CHECKSUM, UNKNOWN_FLAG, BAD_IP_LENGTH, BAD_IP_VERSION, BAD_IHL,
++	BAD_TRANSPORT_OFFSET, TOO_MANY_SEGMENTS,
 +};
 +
-+struct uso_invalid_case {
++static const struct test_case {
 +	const char *name;
-+	enum uso_invalid_kind kind;
++	bool ipv6;
++	unsigned int payload;
++	unsigned int first_len;
++	enum bad_request bad;
++	bool checksum_only;
++} cases[] = {
++	{ "IPv4 USO", false, 4000, 0, VALID, false },
++	{ "IPv6 USO", true, 4000, 0, VALID, false },
++	{ "IPv4 multi-buffer USO", false, 6000, 2048, VALID, false },
++	{ "IPv6 multi-buffer USO", true, 6000, 2048, VALID, false },
++	{ "single output datagram", false, GSO_SIZE, 0, VALID, false },
++	{ "empty IPv4 datagram", false, 0, 0, VALID, false },
++	{ "empty IPv6 datagram", true, 0, 0, VALID, false },
++	{ "checksum-only compatibility", false, 1000, 0, VALID, true },
++	{ "IPv6 checksum-only", true, 1000, 0, VALID, true },
++	{ "IPv4 multi-buffer checksum-only", false, 1400, 512, VALID, true },
++	{ "IPv6 multi-buffer checksum-only", true, 1400, 512, VALID, true },
++	{ "empty IPv4 checksum-only", false, 0, 0, VALID, true },
++	{ "empty IPv6 checksum-only", true, 0, 0, VALID, true },
++	{ "zero segment size", false, 4000, 0, ZERO_SIZE, false },
++	{ "GSO_BY_FRAGS segment size", false, 4000, 0, FRAGS_SIZE, false },
++	{ "missing checksum flag", false, 6000, 2048, NO_CHECKSUM, false },
++	{ "invalid checksum offset", false, 4000, 0, BAD_CSUM_OFFSET, false },
++	{ "invalid IP offset", false, 4000, 0, BAD_NETWORK_OFFSET, false },
++	{ "invalid UDP length", false, 6000, 2048, BAD_UDP_LENGTH, false },
++	{ "fragmented IPv4", false, 4000, 0, FRAGMENT, false },
++	{ "non-UDP protocol", false, 4000, 0, BAD_PROTOCOL, false },
++	{ "IPv6 extension header", true, 4000, 0, EXT_HEADER, false },
++	{ "segment exceeds MTU", false, 0, 0, LARGE_SEGMENT, false },
++	{ "headers split across buffers", true, 4000, 0, SHORT_HEADER, false },
++	{ "USO with timestamp", false, 4000, 0, TIMESTAMP, false },
++	{ "USO with launch time", false, 4000, 0, LAUNCH_TIME, false },
++	{ "IPv6 USO with launch time", true, 4000, 0, LAUNCH_TIME, false },
++	{ "multi-buffer USO with launch time", false, 6000, 2048, LAUNCH_TIME, false },
++	{ "USO with software checksum", false, 4000, 0, SW_CHECKSUM, false },
++	{ "unknown metadata flag", false, 4000, 0, UNKNOWN_FLAG, false },
++	{ "invalid IPv4 total length", false, 4000, 0, BAD_IP_LENGTH, false },
++	{ "invalid IPv6 payload length", true, 4000, 0, BAD_IP_LENGTH, false },
++	{ "invalid IPv4 version", false, 4000, 0, BAD_IP_VERSION, false },
++	{ "invalid IPv6 version", true, 4000, 0, BAD_IP_VERSION, false },
++	{ "invalid IPv4 header length", false, 4000, 0, BAD_IHL, false },
++	{ "UDP offset mismatch", false, 4000, 0, BAD_TRANSPORT_OFFSET, false },
++	{ "too many segments", false, 4000, 0, TOO_MANY_SEGMENTS, false },
 +};
 +
-+static const struct uso_invalid_case uso_invalid_cases[] = {
-+	{ "ipv4_header_with_ipv6_version", USO_INVALID_IPV6_VERSION },
-+	{ "short_ihl", USO_INVALID_IHL },
-+	{ "short_tot_len", USO_INVALID_TOT_LEN },
-+	{ "fragment", USO_INVALID_FRAGMENT },
-+	{ "not_udp", USO_INVALID_PROTOCOL },
-+	{ "short_udp_len", USO_INVALID_UDP_LEN },
-+	{ "short_network_offset", USO_INVALID_NETWORK_OFFSET },
-+	{ "no_ip_header", USO_INVALID_NO_IP_HEADER },
-+	{ "len_below_header", USO_INVALID_LEN },
-+	{ "ipv6_non_udp_nexthdr", USO_INVALID_IPV6_NEXTHDR },
-+	{ "ipv6_extension_header", USO_INVALID_IPV6_EXT_HEADER },
-+	{ "ipv6_udp_offset_past_header", USO_INVALID_IPV6_UDP_OFFSET },
++struct xsk {
++	int fd;
++	void *umem;
++	struct xsk_umem *umem_handle;
++	struct xsk_socket *socket;
++	struct xsk_ring_prod fill;
++	struct xsk_ring_prod tx;
++	struct xsk_ring_cons cq;
 +};
 +
-+KUNIT_ARRAY_PARAM_DESC(uso_invalid, uso_invalid_cases, name);
++static unsigned char tx_mac[ETH_ALEN], rx_mac[ETH_ALEN];
++static unsigned char tx_packet[MAX_BUFFERS * FRAME_SIZE];
++static unsigned int mtu;
++static bool zero_copy;
++static bool checksum_tests;
 +
-+static void uso_invalid(struct kunit *test)
++static uint64_t now_ms(void)
 +{
-+	const struct uso_invalid_case *param = test->param_value;
-+	bool ipv6 = param->kind >= USO_INVALID_IPV6_NEXTHDR;
-+	void *header = uso_header(test);
-+	struct xsk_tx_uso_info uso;
-+	struct iphdr *iph;
-+	struct udphdr *uh;
++	struct timespec ts;
 +
-+	uso_packet(header, &uso, ipv6, ETH_HLEN, 4000);
-+	iph = header + uso.metadata.request.network_offset;
-+	uh = header + uso.metadata.request.csum_start;
-+	switch (param->kind) {
-+	case USO_INVALID_IPV6_VERSION:
-+		/* An IPv6 version needs a 40-byte network header. */
-+		iph->version = 6;
-+		break;
-+	case USO_INVALID_IHL:
-+		iph->ihl = 4;
-+		break;
-+	case USO_INVALID_TOT_LEN:
-+		iph->tot_len = htons(40);
-+		break;
-+	case USO_INVALID_FRAGMENT:
-+		iph->frag_off = htons(IP_MF);
-+		break;
-+	case USO_INVALID_PROTOCOL:
-+		iph->protocol = IPPROTO_TCP;
-+		break;
-+	case USO_INVALID_UDP_LEN:
-+		uh->len = htons(8);
-+		break;
-+	case USO_INVALID_NETWORK_OFFSET:
-+		uso.metadata.request.network_offset = ETH_HLEN - 1;
-+		break;
-+	case USO_INVALID_NO_IP_HEADER:
-+		uso.metadata.request.network_offset =
-+			uso.metadata.request.csum_start;
-+		break;
-+	case USO_INVALID_LEN:
-+		uso.len = uso.header_len - 1;
-+		break;
-+	case USO_INVALID_IPV6_NEXTHDR:
-+		((struct ipv6hdr *)iph)->nexthdr = IPPROTO_DSTOPTS;
-+		break;
-+	case USO_INVALID_IPV6_EXT_HEADER: {
-+		/* An otherwise valid 8-byte destination options header between
-+		 * the IPv6 and UDP headers, with csum_start past it.
-+		 */
-+		struct ipv6hdr *ip6h = (struct ipv6hdr *)iph;
-+		u8 *opts = (u8 *)uh;
++	if (clock_gettime(CLOCK_MONOTONIC, &ts))
++		ksft_exit_fail_msg("clock_gettime: %s\n", strerror(errno));
++	return ts.tv_sec * 1000ULL + ts.tv_nsec / 1000000;
++}
 +
-+		memmove(opts + 8, uh, sizeof(*uh));
-+		memset(opts, 0, 8);
-+		opts[0] = IPPROTO_UDP;		/* next header */
-+		opts[2] = IPV6_TLV_PADN;	/* pad the remaining 6 bytes */
-+		opts[3] = 4;
-+		ip6h->nexthdr = IPPROTO_DSTOPTS;
-+		be16_add_cpu(&ip6h->payload_len, 8);
-+		uso.metadata.request.csum_start += 8;
-+		uso.header_len += 8;
-+		uso.len += 8;
-+		break;
++static uint32_t sum_bytes(const void *data, unsigned int len)
++{
++	const unsigned char *p = data;
++	uint32_t sum = 0;
++
++	while (len > 1) {
++		sum += p[0] * 256 + p[1];
++		p += 2;
++		len -= 2;
 +	}
-+	case USO_INVALID_IPV6_UDP_OFFSET:
-+		/* The same layout, but with nexthdr naming UDP, so that only
-+		 * the IPv6 header length check can reject it.
-+		 */
-+		memmove((u8 *)uh + 8, uh, sizeof(*uh));
-+		memset(uh, 0, 8);
-+		be16_add_cpu(&((struct ipv6hdr *)iph)->payload_len, 8);
-+		uso.metadata.request.csum_start += 8;
-+		uso.header_len += 8;
-+		uso.len += 8;
-+		break;
++	if (len)
++		sum += p[0] * 256;
++	return sum;
++}
++
++static uint16_t fold(uint32_t sum)
++{
++	while (sum >> 16)
++		sum = (sum & 0xffff) + (sum >> 16);
++	return sum;
++}
++
++static uint32_t pseudo_sum(const void *ip, bool ipv6, unsigned int udp_len)
++{
++	const struct iphdr *h = ip;
++
++	if (ipv6) {
++		const struct ipv6hdr *h6 = ip;
++
++		return sum_bytes(&h6->saddr, 32) + IPPROTO_UDP + udp_len;
 +	}
-+	KUNIT_EXPECT_EQ(test, xsk_tx_uso_validate(header, &uso, 1500), -EINVAL);
++	return sum_bytes(&h->saddr, 8) + IPPROTO_UDP + udp_len;
 +}
 +
-+static void uso_limits(struct kunit *test)
++static void get_mac(const char *name, unsigned char *mac)
 +{
-+	void *header = uso_header(test);
-+	struct xsk_tx_uso_info uso;
++	struct ifreq ifr = {};
++	int fd = socket(AF_INET, SOCK_DGRAM, 0);
 +
-+	uso_packet(header, &uso, false, ETH_HLEN, 8192);
-+	uso.metadata.request.gso_size = 64;
-+	KUNIT_EXPECT_EQ(test, xsk_tx_uso_validate(header, &uso, 1500), 0);
-+	KUNIT_EXPECT_EQ(test, uso.gso_segs, UDP_MAX_SEGMENTS);
-+	uso_packet(header, &uso, false, ETH_HLEN, 8193);
-+	uso.metadata.request.gso_size = 64;
-+	KUNIT_EXPECT_EQ(test, xsk_tx_uso_validate(header, &uso, 1500), -EINVAL);
-+	uso_packet(header, &uso, false, ETH_HLEN, 4000);
-+	uso.metadata.request.gso_size = 1472;
-+	KUNIT_EXPECT_EQ(test, xsk_tx_uso_validate(header, &uso, 1500), 0);
-+	uso.metadata.request.gso_size++;
-+	KUNIT_EXPECT_EQ(test, xsk_tx_uso_validate(header, &uso, 1500), -EINVAL);
-+	/* A single datagram must fit the MTU as well. */
-+	uso_packet(header, &uso, false, ETH_HLEN, 1473);
-+	uso.metadata.request.gso_size = 4000;
-+	KUNIT_EXPECT_EQ(test, xsk_tx_uso_validate(header, &uso, 1500), -EINVAL);
++	if (fd < 0)
++		ksft_exit_fail_msg("socket: %s\n", strerror(errno));
++	snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", name);
++	if (ioctl(fd, SIOCGIFHWADDR, &ifr))
++		ksft_exit_fail_msg("MAC address for %s: %s\n", name, strerror(errno));
++	memcpy(mac, ifr.ifr_hwaddr.sa_data, ETH_ALEN);
++	close(fd);
 +}
 +
-+static void uso_header_layout(struct kunit *test)
++static unsigned int get_mtu(const char *name)
 +{
-+	void *header = uso_header(test);
-+	struct xsk_tx_uso_info uso;
-+	struct udphdr *uh;
-+	struct iphdr *iph;
++	struct ifreq ifr = {};
++	int fd = socket(AF_INET, SOCK_DGRAM, 0);
 +
-+	/* IPv4 options are accepted when csum_start points past them. */
-+	uso_packet(header, &uso, false, ETH_HLEN, 4000);
-+	iph = header + uso.metadata.request.network_offset;
-+	memmove(header + uso.metadata.request.csum_start + 4,
-+		header + uso.metadata.request.csum_start, sizeof(*uh));
-+	memset(header + uso.metadata.request.csum_start, 0, 4);
-+	iph->ihl++;
-+	iph->tot_len = htons(ntohs(iph->tot_len) + 4);
-+	uso.metadata.request.csum_start += 4;
-+	uso.header_len += 4;
-+	uso.len += 4;
-+	KUNIT_EXPECT_EQ(test, xsk_tx_uso_validate(header, &uso, 1500), 0);
-+
-+	/* The link layer is not parsed: the IP header is found at
-+	 * network_offset whatever the EtherType says. Copy mode checks the
-+	 * EtherType separately.
-+	 */
-+	uso_packet(header, &uso, false, ETH_HLEN + VLAN_HLEN, 4000);
-+	((struct ethhdr *)header)->h_proto = htons(ETH_P_ARP);
-+	KUNIT_EXPECT_EQ(test, xsk_tx_uso_validate(header, &uso, 1500), 0);
-+	KUNIT_EXPECT_EQ(test, ntohs(uso.protocol), ETH_P_IP);
-+
-+	/* The IP version selects the protocol. */
-+	uso_packet(header, &uso, false, ETH_HLEN, 4000);
-+	((struct iphdr *)(header + ETH_HLEN))->version = 5;
-+	KUNIT_EXPECT_EQ(test, xsk_tx_uso_validate(header, &uso, 1500),
-+			-EPROTONOSUPPORT);
++	snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", name);
++	if (fd < 0 || ioctl(fd, SIOCGIFMTU, &ifr))
++		ksft_exit_fail_msg("MTU of %s: %s\n", name, strerror(errno));
++	close(fd);
++	return ifr.ifr_mtu;
 +}
 +
-+static void uso_prepare_headers(struct kunit *test)
++/* Virtual devices have no backing device, and pass GSO packets on whole. */
++static bool is_physical(const char *name)
 +{
-+	void *header = uso_header(test);
-+	struct xsk_tx_uso_info uso;
-+	int ipv6;
++	char path[64];
 +
-+	for (ipv6 = 0; ipv6 < 2; ipv6++) {
-+		void *ip = header + ETH_HLEN;
-+		struct udphdr *uh;
-+		u32 udp_len;
++	snprintf(path, sizeof(path), "/sys/class/net/%s/device", name);
++	return !access(path, F_OK);
++}
 +
-+		uso_packet(header, &uso, ipv6, ETH_HLEN, 4000);
-+		/* Start from a valid IPv4 checksum, so that clearing it shows. */
-+		if (!ipv6) {
-+			struct iphdr *iph = ip;
++static int ethtool_ioctl(const char *name, void *cmd)
++{
++	struct ifreq ifr = { .ifr_data = cmd };
++	int fd = socket(AF_INET, SOCK_DGRAM, 0), err;
 +
-+			iph->check = ip_fast_csum(iph, iph->ihl);
-+			KUNIT_ASSERT_NE(test, (__force u16)iph->check, 0);
++	if (fd < 0)
++		return -1;
++	snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", name);
++	err = ioctl(fd, SIOCETHTOOL, &ifr);
++	close(fd);
++	return err;
++}
++
++/* Returns whether the netdev feature called @feature is active on @name. */
++static bool feature_active(const char *name, const char *feature)
++{
++	struct ethtool_gfeatures *features = NULL;
++	struct ethtool_gstrings *strings = NULL;
++	struct ethtool_sset_info *sset;
++	unsigned int count, blocks, i;
++	bool active = false;
++
++	sset = calloc(1, sizeof(*sset) + sizeof(sset->data[0]));
++	if (!sset)
++		ksft_exit_fail_msg("calloc: %s\n", strerror(errno));
++	sset->cmd = ETHTOOL_GSSET_INFO;
++	sset->sset_mask = 1ULL << ETH_SS_FEATURES;
++	if (ethtool_ioctl(name, sset))
++		ksft_exit_fail_msg("ETHTOOL_GSSET_INFO: %s\n", strerror(errno));
++	if (!sset->sset_mask)
++		ksft_exit_fail_msg("%s reports no feature strings\n", name);
++	count = sset->data[0];
++	blocks = (count + 31) / 32;
++	strings = calloc(1, sizeof(*strings) + count * ETH_GSTRING_LEN);
++	features = calloc(1, sizeof(*features) +
++			  blocks * sizeof(features->features[0]));
++	if (!strings || !features)
++		ksft_exit_fail_msg("calloc: %s\n", strerror(errno));
++	strings->cmd = ETHTOOL_GSTRINGS;
++	strings->string_set = ETH_SS_FEATURES;
++	strings->len = count;
++	features->cmd = ETHTOOL_GFEATURES;
++	features->size = blocks;
++	if (ethtool_ioctl(name, strings) || ethtool_ioctl(name, features))
++		ksft_exit_fail_msg("ethtool features: %s\n", strerror(errno));
++	for (i = 0; i < count; i++)
++		if (!strncmp((char *)strings->data + i * ETH_GSTRING_LEN, feature,
++			     ETH_GSTRING_LEN)) {
++			active = features->features[i / 32].active & (1U << (i % 32));
++			break;
 +		}
-+		KUNIT_ASSERT_EQ(test, xsk_tx_uso_validate(header, &uso, 1500), 0);
-+		uh = header + uso.metadata.request.csum_start;
-+		udp_len = uso.len - uso.metadata.request.csum_start;
-+		uh->check = uso_pseudo_csum(header, &uso, ipv6, udp_len);
-+
-+		/* The seed must cover the pseudo header without the length. */
-+		xsk_tx_uso_prepare_headers(&uso, header);
-+		KUNIT_EXPECT_EQ_MSG(test, (__force u16)uh->check,
-+				    (__force u16)uso_pseudo_csum(header, &uso, ipv6, 0),
-+				    "ipv6 %d", ipv6);
-+		if (ipv6) {
-+			KUNIT_EXPECT_EQ(test,
-+					ntohs(((struct ipv6hdr *)ip)->payload_len), 0);
-+		} else {
-+			KUNIT_EXPECT_EQ(test, ntohs(((struct iphdr *)ip)->tot_len), 0);
-+			KUNIT_EXPECT_EQ(test,
-+					(__force u16)((struct iphdr *)ip)->check, 0);
-+		}
-+	}
++	free(features);
++	free(strings);
++	free(sset);
++	return active;
 +}
 +
-+/* A single datagram uses ordinary checksum offload, so its headers stay. */
-+static void uso_prepare_single(struct kunit *test)
++static void get_xdp_features(unsigned int ifindex, uint64_t *xdp, uint64_t *xsk,
++			     unsigned int *zc_max_segs)
 +{
-+	u8 *orig = kunit_kzalloc(test, XSK_TX_USO_MAX_HEADER, GFP_KERNEL);
-+	void *header = uso_header(test);
-+	struct xsk_tx_uso_info uso;
-+	struct udphdr *uh;
++	struct netdev_dev_get_req *req;
++	struct netdev_dev_get_rsp *rsp;
++	struct ynl_error yerr;
++	struct ynl_sock *ys;
 +
-+	KUNIT_ASSERT_NOT_NULL(test, orig);
-+	uso_packet(header, &uso, false, ETH_HLEN, 1000);
-+	KUNIT_ASSERT_EQ(test, xsk_tx_uso_validate(header, &uso, 1500), 0);
-+	KUNIT_ASSERT_EQ(test, uso.gso_segs, 1);
-+	uh = header + uso.metadata.request.csum_start;
-+	uh->check = uso_pseudo_csum(header, &uso, false, ntohs(uh->len));
-+	memcpy(orig, header, uso.header_len);
-+	xsk_tx_uso_prepare_headers(&uso, header);
-+	KUNIT_EXPECT_MEMEQ(test, header, orig, uso.header_len);
++	ys = ynl_sock_create(&ynl_netdev_family, &yerr);
++	if (!ys)
++		ksft_exit_fail_msg("YNL: %s\n", yerr.msg);
++	req = netdev_dev_get_req_alloc();
++	if (!req)
++		ksft_exit_fail_msg("netdev_dev_get_req_alloc failed\n");
++	netdev_dev_get_req_set_ifindex(req, ifindex);
++	rsp = netdev_dev_get(ys, req);
++	netdev_dev_get_req_free(req);
++	if (!rsp)
++		ksft_exit_fail_msg("netdev dev-get: %s\n", ys->err.msg);
++	*xdp = rsp->_present.xdp_features ? rsp->xdp_features : 0;
++	*xsk = rsp->_present.xsk_features ? rsp->xsk_features : 0;
++	*zc_max_segs = rsp->_present.xdp_zc_max_segs ? rsp->xdp_zc_max_segs : 1;
++	netdev_dev_get_rsp_free(rsp);
++	ynl_sock_destroy(ys);
 +}
 +
-+static void uso_metadata_flags(struct kunit *test)
++/* Returns 0, or a negative error if the device refuses the bind. */
++static int open_xsk(struct xsk *xsk, unsigned int ifindex, bool sw_csum)
 +{
-+	struct xsk_tx_metadata meta = {
-+		.flags = XDP_TXMD_FLAGS_USO | XDP_TXMD_FLAGS_CHECKSUM,
++	struct xsk_socket_config config = {
++		.tx_size = RING_SIZE,
++		.bind_flags = (zero_copy ? XDP_ZEROCOPY : XDP_COPY) | XDP_USE_SG,
 +	};
-+	struct xsk_buff_pool *pool;
-+	u64 flags;
-+
-+	pool = kunit_kzalloc(test, sizeof(*pool), GFP_KERNEL);
-+	KUNIT_ASSERT_NOT_NULL(test, pool);
-+	pool->tx_metadata_len = USO_META_LEN;
-+	pool->tx_uso_supported = true;
-+
-+	KUNIT_ASSERT_TRUE(test, xsk_buff_valid_tx_metadata(pool, &meta, &flags));
-+	KUNIT_EXPECT_TRUE(test, xsk_tx_uso_flags_valid(flags));
-+
-+	/* USO needs checksum offload and cannot report a Tx timestamp. */
-+	meta.flags = XDP_TXMD_FLAGS_USO;
-+	KUNIT_ASSERT_TRUE(test, xsk_buff_valid_tx_metadata(pool, &meta, &flags));
-+	KUNIT_EXPECT_FALSE(test, xsk_tx_uso_flags_valid(flags));
-+	meta.flags = XDP_TXMD_FLAGS_USO | XDP_TXMD_FLAGS_CHECKSUM |
-+		     XDP_TXMD_FLAGS_TIMESTAMP;
-+	KUNIT_ASSERT_TRUE(test, xsk_buff_valid_tx_metadata(pool, &meta, &flags));
-+	KUNIT_EXPECT_FALSE(test, xsk_tx_uso_flags_valid(flags));
-+
-+	/* Launch time is allowed here; zero-copy rejects it when parsing. */
-+	meta.flags = XDP_TXMD_FLAGS_USO | XDP_TXMD_FLAGS_CHECKSUM |
-+		     XDP_TXMD_FLAGS_LAUNCH_TIME;
-+	KUNIT_ASSERT_TRUE(test, xsk_buff_valid_tx_metadata(pool, &meta, &flags));
-+	KUNIT_EXPECT_TRUE(test, xsk_tx_uso_flags_valid(flags));
-+
-+	/* USO requests are refused on pools that cannot carry them. */
-+	meta.flags = XDP_TXMD_FLAGS_USO | XDP_TXMD_FLAGS_CHECKSUM;
-+	pool->tx_uso_supported = false;
-+	KUNIT_EXPECT_FALSE(test, xsk_buff_valid_tx_metadata(pool, &meta, &flags));
-+	pool->tx_uso_supported = true;
-+	pool->tx_metadata_len =
-+		offsetofend(struct xsk_tx_metadata, request.network_offset) - 1;
-+	KUNIT_EXPECT_FALSE(test, xsk_buff_valid_tx_metadata(pool, &meta, &flags));
-+	pool->tx_metadata_len = USO_META_LEN;
-+	meta.flags |= BIT_ULL(63);
-+	KUNIT_EXPECT_FALSE(test, xsk_buff_valid_tx_metadata(pool, &meta, &flags));
-+}
-+
-+struct uso_parse_ctx {
-+	struct xsk_buff_pool *pool;
-+	struct xdp_desc descs[2];
-+	u32 nr;
-+	struct xsk_tx_metadata meta;
-+	struct xsk_tx_uso_info orig;
-+	void *orig_header;
-+	void *umem_header;
-+};
-+
-+/* Place a packet with @payload bytes in a UMEM, split over two descriptors
-+ * when it does not fit in the first 2048 bytes.
-+ */
-+static void uso_parse_init(struct kunit *test, struct uso_parse_ctx *ctx,
-+			   u32 payload)
-+{
-+	struct xsk_buff_pool *pool;
-+
-+	memset(ctx, 0, sizeof(*ctx));
-+	pool = kunit_kzalloc(test, sizeof(*pool), GFP_KERNEL);
-+	KUNIT_ASSERT_NOT_NULL(test, pool);
-+	pool->netdev = kunit_kzalloc(test, sizeof(*pool->netdev), GFP_KERNEL);
-+	KUNIT_ASSERT_NOT_NULL(test, pool->netdev);
-+	pool->netdev->mtu = 1500;
-+	pool->netdev->features = NETIF_F_GSO_UDP_L4;
-+	pool->tx_metadata_len = USO_META_LEN;
-+	pool->tx_uso_supported = true;
-+	pool->addrs = kunit_kzalloc(test, 8192, GFP_KERNEL);
-+	KUNIT_ASSERT_NOT_NULL(test, pool->addrs);
-+	ctx->pool = pool;
-+	ctx->orig_header = uso_header(test);
-+
-+	uso_packet(ctx->orig_header, &ctx->orig, false, ETH_HLEN, payload);
-+	ctx->nr = ctx->orig.len > 2048 ? 2 : 1;
-+	ctx->descs[0] = (struct xdp_desc) {
-+		.addr = 128, .len = min(ctx->orig.len, 2048U),
-+		.options = XDP_TX_METADATA | (ctx->nr > 1 ? XDP_PKT_CONTD : 0),
++	struct xsk_umem_config umem_config = {
++		.fill_size = RING_SIZE,
++		.comp_size = RING_SIZE,
++		.frame_size = FRAME_SIZE,
++		.flags = XDP_UMEM_TX_METADATA_LEN,
++		.tx_metadata_len = META_LEN,
 +	};
-+	ctx->descs[1] = (struct xdp_desc) {
-+		.addr = 4096, .len = ctx->orig.len - ctx->descs[0].len,
-+	};
-+	ctx->meta = ctx->orig.metadata;
-+	ctx->meta.flags = XDP_TXMD_FLAGS_USO | XDP_TXMD_FLAGS_CHECKSUM;
-+	ctx->umem_header = pool->addrs + ctx->descs[0].addr;
-+	memcpy(ctx->umem_header, ctx->orig_header, ctx->orig.header_len);
-+}
-+
-+static struct uso_parse_ctx *uso_parse_ctx(struct kunit *test)
-+{
-+	struct uso_parse_ctx *ctx = kunit_kzalloc(test, sizeof(*ctx), GFP_KERNEL);
-+
-+	KUNIT_ASSERT_NOT_NULL(test, ctx);
-+	return ctx;
-+}
-+
-+static int uso_parse(struct uso_parse_ctx *ctx, struct xsk_tx_uso_info *info,
-+		     void *header)
-+{
-+	memcpy(ctx->umem_header - USO_META_LEN, &ctx->meta, USO_META_LEN);
-+	return xsk_tx_uso_parse(ctx->pool, ctx->descs, ctx->nr, info, header);
-+}
-+
-+static void uso_snapshot(struct kunit *test)
-+{
-+	struct uso_parse_ctx *ctx = uso_parse_ctx(test);
-+	void *header = uso_header(test);
-+	struct xsk_tx_uso_info info;
-+	struct udphdr *uh;
-+
-+	uso_parse_init(test, ctx, 4000);
-+	KUNIT_ASSERT_EQ(test, uso_parse(ctx, &info, header), 1);
-+	KUNIT_EXPECT_EQ(test, info.len, ctx->orig.len);
-+	KUNIT_EXPECT_EQ(test, info.header_len, ctx->orig.header_len);
-+	KUNIT_EXPECT_EQ(test, info.gso_segs, 3);
-+
-+	/* Changes to the UMEM after parsing do not reach the copy. */
-+	memset(ctx->umem_header - USO_META_LEN, 0xff,
-+	       USO_META_LEN + ctx->orig.header_len);
-+	KUNIT_EXPECT_MEMEQ(test, header, ctx->orig_header, ctx->orig.header_len);
-+	KUNIT_EXPECT_EQ(test, info.metadata.request.gso_size, 1400);
-+
-+	/* Preparing the copy leaves the UMEM alone. */
-+	xsk_tx_uso_prepare_headers(&info, header);
-+	uh = header + info.metadata.request.csum_start;
-+	KUNIT_EXPECT_EQ(test, ntohs(((struct iphdr *)(header + ETH_HLEN))->tot_len),
-+			0);
-+	KUNIT_EXPECT_EQ(test, ntohs(uh->len), 4008);
-+	KUNIT_EXPECT_EQ(test, *(u8 *)ctx->umem_header, 0xff);
-+}
-+
-+enum uso_parse_kind {
-+	USO_PARSE_NO_GSO_SIZE,
-+	USO_PARSE_GSO_BY_FRAGS,
-+	USO_PARSE_NO_NETWORK_OFFSET,
-+	USO_PARSE_CSUM_START,
-+	USO_PARSE_CSUM_OFFSET,
-+	USO_PARSE_SPLIT_HEADER,
-+	USO_PARSE_EARLY_EOP,
-+	USO_PARSE_NO_CSUM,
-+	USO_PARSE_TIMESTAMP,
-+	USO_PARSE_LAUNCH_TIME,
-+	USO_PARSE_BAD_HEADER,
-+};
-+
-+struct uso_parse_case {
-+	const char *name;
-+	enum uso_parse_kind kind;
++	uint64_t deadline;
 +	int err;
-+};
 +
-+static const struct uso_parse_case uso_parse_cases[] = {
-+	{ "no_gso_size", USO_PARSE_NO_GSO_SIZE, -EINVAL },
-+	{ "gso_by_frags", USO_PARSE_GSO_BY_FRAGS, -EINVAL },
-+	{ "no_network_offset", USO_PARSE_NO_NETWORK_OFFSET, -EINVAL },
-+	{ "csum_start_past_max_header", USO_PARSE_CSUM_START, -EINVAL },
-+	{ "bad_csum_offset", USO_PARSE_CSUM_OFFSET, -EINVAL },
-+	{ "header_split_over_buffers", USO_PARSE_SPLIT_HEADER, -EINVAL },
-+	{ "early_end_of_packet", USO_PARSE_EARLY_EOP, -EINVAL },
-+	{ "no_checksum_flag", USO_PARSE_NO_CSUM, -EOPNOTSUPP },
-+	{ "timestamp_flag", USO_PARSE_TIMESTAMP, -EOPNOTSUPP },
-+	{ "launch_time_flag", USO_PARSE_LAUNCH_TIME, -EOPNOTSUPP },
-+	{ "invalid_header", USO_PARSE_BAD_HEADER, -EINVAL },
-+};
++	memset(xsk, 0, sizeof(*xsk));
++	xsk->umem = mmap(NULL, NUM_FRAMES * FRAME_SIZE, PROT_READ | PROT_WRITE,
++			 MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
++	if (xsk->umem == MAP_FAILED)
++		ksft_exit_fail_msg("mmap UMEM: %s\n", strerror(errno));
++	if (sw_csum)
++		umem_config.flags |= XDP_UMEM_TX_SW_CSUM;
++	err = xsk_umem__create(&xsk->umem_handle, xsk->umem, NUM_FRAMES * FRAME_SIZE,
++			       &xsk->fill, &xsk->cq, &umem_config);
++	if (err)
++		ksft_exit_fail_msg("UMEM creation: %s\n", strerror(-err));
++	/* A previous socket on the queue may still be going away. */
++	deadline = now_ms() + TIMEOUT_MS;
++	while ((err = xsk_socket__create(&xsk->socket, ifindex, 0,
++					 xsk->umem_handle, NULL, &xsk->tx,
++					 &config))) {
++		if (err != -EBUSY || now_ms() >= deadline) {
++			xsk_umem__delete(xsk->umem_handle);
++			munmap(xsk->umem, NUM_FRAMES * FRAME_SIZE);
++			return err;
++		}
++		usleep(10000);
++	}
++	xsk->fd = xsk_socket__fd(xsk->socket);
++	return 0;
++}
 +
-+KUNIT_ARRAY_PARAM_DESC(uso_parse_invalid, uso_parse_cases, name);
-+
-+static void uso_parse_invalid(struct kunit *test)
++static void close_xsk(struct xsk *xsk)
 +{
-+	const struct uso_parse_case *param = test->param_value;
-+	struct uso_parse_ctx *ctx = uso_parse_ctx(test);
-+	void *header = uso_header(test);
-+	struct xsk_tx_uso_info info;
++	int err;
 +
-+	uso_parse_init(test, ctx, 4000);
-+	switch (param->kind) {
-+	case USO_PARSE_NO_GSO_SIZE:
-+		ctx->meta.request.gso_size = 0;
++	xsk_socket__delete(xsk->socket);
++	err = xsk_umem__delete(xsk->umem_handle);
++	if (err)
++		ksft_exit_fail_msg("UMEM deletion: %s\n", strerror(-err));
++	munmap(xsk->umem, NUM_FRAMES * FRAME_SIZE);
++}
++
++/* An IPv4 segment size one byte larger than the MTU allows. */
++static unsigned int large_gso_size(void)
++{
++	return mtu - sizeof(struct iphdr) - sizeof(struct udphdr) + 1;
++}
++
++static unsigned int case_payload(const struct test_case *t)
++{
++	/* Two segments, each too large for the MTU. */
++	return t->bad == LARGE_SEGMENT ? 2 * large_gso_size() : t->payload;
++}
++
++static unsigned int
++make_packet(unsigned char *packet, const struct test_case *t, unsigned int id,
++	    struct xsk_tx_metadata *meta)
++{
++	struct ethhdr *eth = (void *)packet;
++	unsigned int ip_len = t->ipv6 ? sizeof(struct ipv6hdr) : sizeof(struct iphdr);
++	unsigned int start = sizeof(*eth) + ip_len;
++	unsigned int udp_len = sizeof(struct udphdr) + case_payload(t);
++	struct udphdr *uh = (void *)(packet + start);
++	void *ip = packet + sizeof(*eth);
++	unsigned int i;
++
++	memset(packet, 0, start + udp_len);
++	memcpy(eth->h_source, tx_mac, ETH_ALEN);
++	memcpy(eth->h_dest, rx_mac, ETH_ALEN);
++	eth->h_proto = htons(t->ipv6 ? ETH_P_IPV6 : ETH_P_IP);
++	if (t->ipv6) {
++		struct ipv6hdr *h = ip;
++
++		h->version = 6;
++		h->nexthdr = IPPROTO_UDP;
++		h->hop_limit = 64;
++		h->payload_len = htons(udp_len);
++		inet_pton(AF_INET6, "2001:db8::1", &h->saddr);
++		inet_pton(AF_INET6, "2001:db8::2", &h->daddr);
++	} else {
++		struct iphdr *h = ip;
++
++		h->version = 4;
++		h->ihl = 5;
++		h->ttl = 64;
++		h->protocol = IPPROTO_UDP;
++		h->tot_len = htons(ip_len + udp_len);
++		h->frag_off = htons(IP_DF);
++		inet_pton(AF_INET, "198.18.0.1", &h->saddr);
++		inet_pton(AF_INET, "198.18.0.2", &h->daddr);
++		h->check = htons((uint16_t)~fold(sum_bytes(h, ip_len)));
++	}
++	uh->source = htons(TEST_PORT);
++	uh->dest = htons(TEST_PORT);
++	uh->len = htons(udp_len);
++	uh->check = htons(fold(pseudo_sum(ip, t->ipv6, udp_len)));
++	for (i = 0; i < udp_len - sizeof(*uh); i++)
++		packet[start + sizeof(*uh) + i] = (i + id * 13) % 251;
++
++	memset(meta, 0, sizeof(*meta));
++	meta->flags = XDP_TXMD_FLAGS_USO | XDP_TXMD_FLAGS_CHECKSUM;
++	meta->request.csum_start = start;
++	meta->request.csum_offset = offsetof(struct udphdr, check);
++	meta->request.gso_size = GSO_SIZE;
++	meta->request.network_offset = sizeof(*eth);
++	if (t->checksum_only)
++		meta->flags &= ~XDP_TXMD_FLAGS_USO;
++	switch (t->bad) {
++	case ZERO_SIZE:
++		meta->request.gso_size = 0;
 +		break;
-+	case USO_PARSE_GSO_BY_FRAGS:
-+		ctx->meta.request.gso_size = GSO_BY_FRAGS;
++	case FRAGS_SIZE:
++		meta->request.gso_size = UINT16_MAX;
 +		break;
-+	case USO_PARSE_NO_NETWORK_OFFSET:
-+		ctx->meta.request.network_offset = 0;
++	case NO_CHECKSUM:
++		meta->flags &= ~XDP_TXMD_FLAGS_CHECKSUM;
 +		break;
-+	case USO_PARSE_CSUM_START:
-+		ctx->meta.request.csum_start = XSK_TX_USO_MAX_HEADER;
++	case BAD_CSUM_OFFSET:
++		meta->request.csum_offset = 0;
 +		break;
-+	case USO_PARSE_CSUM_OFFSET:
-+		ctx->meta.request.csum_offset = 0;
++	case BAD_NETWORK_OFFSET:
++		meta->request.network_offset++;
 +		break;
-+	case USO_PARSE_SPLIT_HEADER:
-+		/* All headers through UDP must be in the first buffer. */
-+		ctx->descs[0].len = ctx->orig.header_len - 1;
-+		ctx->descs[1].len = ctx->orig.len - ctx->descs[0].len;
++	case BAD_UDP_LENGTH:
++		uh->len = htons(udp_len - 1);
 +		break;
-+	case USO_PARSE_EARLY_EOP:
-+		/* Only the last descriptor may end the packet. */
-+		ctx->descs[0].options &= ~XDP_PKT_CONTD;
++	case FRAGMENT:
++		((struct iphdr *)ip)->frag_off = htons(IP_MF);
 +		break;
-+	case USO_PARSE_NO_CSUM:
-+		ctx->meta.flags = XDP_TXMD_FLAGS_USO;
++	case BAD_PROTOCOL:
++		((struct iphdr *)ip)->protocol = IPPROTO_TCP;
 +		break;
-+	case USO_PARSE_TIMESTAMP:
-+		ctx->meta.flags |= XDP_TXMD_FLAGS_TIMESTAMP;
++	case EXT_HEADER:
++		((struct ipv6hdr *)ip)->nexthdr = IPPROTO_DSTOPTS;
 +		break;
-+	case USO_PARSE_LAUNCH_TIME:
-+		ctx->meta.flags |= XDP_TXMD_FLAGS_LAUNCH_TIME;
++	case LARGE_SEGMENT:
++		meta->request.gso_size = large_gso_size();
 +		break;
-+	case USO_PARSE_BAD_HEADER:
-+		((struct iphdr *)(ctx->umem_header + ETH_HLEN))->protocol =
-+			IPPROTO_TCP;
++	case TIMESTAMP:
++		meta->flags |= XDP_TXMD_FLAGS_TIMESTAMP;
++		break;
++	case LAUNCH_TIME:
++		meta->flags |= XDP_TXMD_FLAGS_LAUNCH_TIME;
++		break;
++	case UNKNOWN_FLAG:
++		meta->flags |= 1ULL << 63;
++		break;
++	case BAD_IP_LENGTH:
++		if (t->ipv6)
++			((struct ipv6hdr *)ip)->payload_len = htons(udp_len - 1);
++		else
++			((struct iphdr *)ip)->tot_len = htons(ip_len + udp_len - 1);
++		break;
++	case BAD_IP_VERSION:
++		if (t->ipv6)
++			((struct ipv6hdr *)ip)->version = 4;
++		else
++			((struct iphdr *)ip)->version = 6;
++		break;
++	case BAD_IHL:
++		((struct iphdr *)ip)->ihl = 4;
++		break;
++	case BAD_TRANSPORT_OFFSET:
++		meta->request.csum_start += 4;
++		break;
++	case TOO_MANY_SEGMENTS:
++		meta->request.gso_size = 1;
++		break;
++	default:
 +		break;
 +	}
-+	KUNIT_EXPECT_EQ(test, uso_parse(ctx, &info, header), param->err);
++	return start + udp_len;
 +}
 +
-+static void uso_parse_feature(struct kunit *test)
++/* EAGAIN means no Tx progress until completions free resources, so return
++ * to the caller to reap them instead of sleeping.
++ */
++static bool kick_tx(struct xsk *xsk)
 +{
-+	struct uso_parse_ctx *ctx = uso_parse_ctx(test);
-+	void *header = uso_header(test);
-+	struct xsk_tx_uso_info info;
-+
-+	/* Segmentation follows NETIF_F_GSO_UDP_L4. */
-+	uso_parse_init(test, ctx, 4000);
-+	ctx->pool->netdev->features = 0;
-+	KUNIT_EXPECT_EQ(test, uso_parse(ctx, &info, header), -EOPNOTSUPP);
-+
-+	/* A single datagram does not need it. */
-+	uso_parse_init(test, ctx, 1000);
-+	ctx->pool->netdev->features = 0;
-+	KUNIT_EXPECT_EQ(test, uso_parse(ctx, &info, header), 1);
-+	KUNIT_EXPECT_EQ(test, info.gso_segs, 1);
++	if (sendto(xsk->fd, NULL, 0, MSG_DONTWAIT, NULL, 0) < 0 && errno != EAGAIN) {
++		ksft_print_msg("sendto: %s\n", strerror(errno));
++		return false;
++	}
++	return true;
 +}
 +
-+static void uso_parse_no_uso(struct kunit *test)
++/* Length of descriptor @n of a packet with @left bytes still to place. */
++static unsigned int desc_len(const struct test_case *t,
++			     const struct xsk_tx_metadata *meta, unsigned int n,
++			     unsigned int left)
 +{
-+	struct uso_parse_ctx *ctx = uso_parse_ctx(test);
-+	void *header = uso_header(test);
-+	struct xsk_tx_uso_info info;
++	unsigned int amount = left;
 +
-+	uso_parse_init(test, ctx, 4000);
-+	ctx->meta.flags = XDP_TXMD_FLAGS_CHECKSUM;
-+	KUNIT_EXPECT_EQ(test, uso_parse(ctx, &info, header), 0);
-+	ctx->meta.flags = XDP_TXMD_FLAGS_USO | XDP_TXMD_FLAGS_CHECKSUM;
-+	ctx->descs[0].options &= ~XDP_TX_METADATA;
-+	KUNIT_EXPECT_EQ(test, uso_parse(ctx, &info, header), 0);
++	if (amount > FRAME_SIZE - META_LEN)
++		amount = FRAME_SIZE - META_LEN;
++	if (!n && t->first_len && amount > t->first_len)
++		amount = t->first_len;
++	if (!n && t->bad == SHORT_HEADER)
++		amount = meta->request.csum_start + sizeof(struct udphdr) - 1;
++	return amount;
 +}
 +
-+static struct kunit_case xsk_tx_uso_cases[] = {
-+	KUNIT_CASE(uso_valid),
-+	KUNIT_CASE_PARAM(uso_invalid, uso_invalid_gen_params),
-+	KUNIT_CASE(uso_limits),
-+	KUNIT_CASE(uso_header_layout),
-+	KUNIT_CASE(uso_prepare_headers),
-+	KUNIT_CASE(uso_prepare_single),
-+	KUNIT_CASE(uso_metadata_flags),
-+	KUNIT_CASE(uso_snapshot),
-+	KUNIT_CASE_PARAM(uso_parse_invalid, uso_parse_invalid_gen_params),
-+	KUNIT_CASE(uso_parse_feature),
-+	KUNIT_CASE(uso_parse_no_uso),
-+	{}
-+};
++static unsigned int count_descs(const struct test_case *t,
++				const struct xsk_tx_metadata *meta,
++				unsigned int len)
++{
++	unsigned int n = 0, copied = 0;
 +
-+static struct kunit_suite xsk_tx_uso_suite = {
-+	.name = "xsk_tx_uso",
-+	.test_cases = xsk_tx_uso_cases,
-+};
++	while (copied < len)
++		copied += desc_len(t, meta, n++, len - copied);
++	return n;
++}
 +
-+kunit_test_suite(xsk_tx_uso_suite);
-+MODULE_DESCRIPTION("KUnit tests for AF_XDP USO header helpers");
-+MODULE_LICENSE("GPL");
++/* Submits the packet and waits for its completions. Sets @nr_descs to the
++ * number of descriptors used.
++ */
++static bool transmit(struct xsk *xsk, unsigned char *packet, unsigned int len,
++		     const struct test_case *t, struct xsk_tx_metadata *meta,
++		     unsigned int *nr_descs)
++{
++	uint32_t index;
++	uint64_t deadline = now_ms() + TIMEOUT_MS;
++	uint64_t addrs[RING_SIZE];
++	unsigned int copied = 0, n = 0, completed = 0;
++	bool seen[RING_SIZE] = {};
++
++	while (copied < len) {
++		struct xdp_desc *desc;
++		unsigned int amount = desc_len(t, meta, n, len - copied);
++		uint64_t addr = n * FRAME_SIZE + META_LEN;
++
++		memcpy(xsk->umem + addr, packet + copied, amount);
++		if (!n)
++			memcpy(xsk->umem + addr - META_LEN, meta, META_LEN);
++		if (xsk_ring_prod__reserve(&xsk->tx, 1, &index) != 1) {
++			ksft_print_msg("functional Tx ring reservation failed\n");
++			return false;
++		}
++		desc = xsk_ring_prod__tx_desc(&xsk->tx, index);
++		*desc = (struct xdp_desc) {
++			.addr = addr,
++			.len = amount,
++			.options = (!n && meta->flags ? XDP_TX_METADATA : 0) |
++				   (copied + amount < len ? XDP_PKT_CONTD : 0),
++		};
++		addrs[n++] = addr;
++		copied += amount;
++	}
++	xsk_ring_prod__submit(&xsk->tx, n);
++	*nr_descs = n;
++	while (completed < n) {
++		unsigned int count, i;
++
++		if (!kick_tx(xsk))
++			return false;
++		count = xsk_ring_cons__peek(&xsk->cq, RING_SIZE, &index);
++		for (i = 0; i < count; i++) {
++			uint64_t addr = *xsk_ring_cons__comp_addr(&xsk->cq, index + i);
++			unsigned int j;
++
++			for (j = 0; j < n; j++)
++				if (addr == addrs[j])
++					break;
++			if (j == n || seen[j]) {
++				ksft_print_msg("functional Tx: invalid or duplicate completion\n");
++				return false;
++			}
++			seen[j] = true;
++		}
++		xsk_ring_cons__release(&xsk->cq, count);
++		completed += count;
++		if (completed < n && now_ms() > deadline) {
++			ksft_print_msg("completion timeout\n");
++			return false;
++		}
++	}
++	return true;
++}
++
++/* USO with launch time is copy mode only. */
++static bool valid_request(const struct test_case *t)
++{
++	return t->bad == VALID || (t->bad == LAUNCH_TIME && !zero_copy);
++}
++
++/* Requests that produce more than one datagram, valid or not. Without
++ * tx-udp-segmentation, invalid ones would be dropped for lack of the
++ * offload even if a header check were missing.
++ */
++static bool needs_segmentation(const struct test_case *t)
++{
++	return !t->checksum_only && case_payload(t) > GSO_SIZE;
++}
++
++/* Drop frames that a failed or late case left behind. */
++static void drain_packets(int fd)
++{
++	unsigned char packet[64];
++
++	while (recv(fd, packet, sizeof(packet), MSG_DONTWAIT | MSG_TRUNC) >= 0)
++		;
++}
++
++static bool receive_packets(int fd, const struct test_case *t, unsigned int id)
++{
++	unsigned int count = 0, received = 0;
++	unsigned int expected = valid_request(t) ? t->payload : 0;
++	unsigned int expected_count = 0;
++	uint64_t deadline;
++	unsigned char packet[8192];
++
++	if (valid_request(t)) {
++		expected_count = (expected + GSO_SIZE - 1) / GSO_SIZE;
++		if (t->checksum_only || !expected)
++			expected_count = 1;
++	}
++	deadline = now_ms() + (expected_count ? TIMEOUT_MS : 200);
++	while (now_ms() < deadline) {
++		unsigned int ip_len = t->ipv6 ? sizeof(struct ipv6hdr) : sizeof(struct iphdr);
++		unsigned int start = sizeof(struct ethhdr) + ip_len;
++		struct pollfd pfd = { .fd = fd, .events = POLLIN };
++		struct ethhdr *eth = (void *)packet;
++		struct udphdr *uh = (void *)(packet + start);
++		unsigned int payload, frame_len, max_frame_len, i;
++		ssize_t len;
++
++		if (poll(&pfd, 1, 20) < 0) {
++			ksft_print_msg("receive: poll: %s\n", strerror(errno));
++			return false;
++		}
++		len = recv(fd, packet, sizeof(packet), MSG_DONTWAIT);
++		if (len < 0) {
++			if (errno == EAGAIN)
++				continue;
++			ksft_print_msg("receive: recv: %s\n", strerror(errno));
++			return false;
++		}
++		if ((size_t)len < start + sizeof(*uh) ||
++		    memcmp(eth->h_source, tx_mac, ETH_ALEN) ||
++		    memcmp(eth->h_dest, rx_mac, ETH_ALEN) ||
++		    eth->h_proto != htons(t->ipv6 ? ETH_P_IPV6 : ETH_P_IP) ||
++		    uh->source != htons(TEST_PORT) || uh->dest != htons(TEST_PORT))
++			continue;
++		if (count >= expected_count) {
++			ksft_print_msg("receive: unexpected datagram, %u expected\n",
++				       expected_count);
++			return false;
++		}
++		payload = expected - received;
++		if (!t->checksum_only && payload > GSO_SIZE)
++			payload = GSO_SIZE;
++		frame_len = start + sizeof(*uh) + payload;
++		max_frame_len = frame_len < ETH_ZLEN ? ETH_ZLEN : frame_len;
++		if (ntohs(uh->len) != sizeof(*uh) + payload) {
++			ksft_print_msg("receive: datagram %u: UDP length %u, expected %zu\n",
++				       count, ntohs(uh->len), sizeof(*uh) + payload);
++			return false;
++		}
++		if ((size_t)len < frame_len || (size_t)len > max_frame_len) {
++			ksft_print_msg("receive: datagram %u: frame length %zd, expected %u\n",
++				       count, len, frame_len);
++			return false;
++		}
++		if (!uh->check ||
++		    fold(sum_bytes(uh, sizeof(*uh) + payload) +
++			 pseudo_sum(packet + sizeof(*eth), t->ipv6,
++				    sizeof(*uh) + payload)) != 0xffff) {
++			ksft_print_msg("receive: datagram %u: bad UDP checksum 0x%04x\n",
++				       count, ntohs(uh->check));
++			return false;
++		}
++		if (t->ipv6) {
++			struct ipv6hdr *h = (void *)(packet + sizeof(*eth));
++
++			if (ntohs(h->payload_len) != sizeof(*uh) + payload) {
++				ksft_print_msg("receive: datagram %u: IPv6 len %u, expected %zu\n",
++					       count, ntohs(h->payload_len),
++					       sizeof(*uh) + payload);
++				return false;
++			}
++		} else {
++			struct iphdr *h = (void *)(packet + sizeof(*eth));
++
++			if (ntohs(h->tot_len) != ip_len + sizeof(*uh) + payload) {
++				ksft_print_msg("receive: datagram %u: IPv4 len %u, expected %zu\n",
++					       count, ntohs(h->tot_len),
++					       ip_len + sizeof(*uh) + payload);
++				return false;
++			}
++			if (fold(sum_bytes(h, ip_len)) != 0xffff) {
++				ksft_print_msg("receive: datagram %u: bad IPv4 header checksum\n",
++					       count);
++				return false;
++			}
++		}
++		for (i = 0; i < payload; i++)
++			if (packet[start + sizeof(*uh) + i] !=
++			    (received + i + id * 13) % 251) {
++				ksft_print_msg("receive: datagram %u: bad payload byte %u\n",
++					       count, i);
++				return false;
++			}
++		received += payload;
++		count++;
++		if (count == expected_count)
++			deadline = now_ms() + 100;
++	}
++	if (received != expected || count != expected_count) {
++		ksft_print_msg("receive: %u/%u packets, %u/%u payload bytes\n",
++			       count, expected_count, received, expected);
++		return false;
++	}
++	return true;
++}
++
++/* Opens the default socket for case @i onwards. If that fails, the remaining
++ * cases cannot run.
++ */
++static void restore_xsk(struct xsk *xsk, unsigned int ifindex, unsigned int i)
++{
++	int err = open_xsk(xsk, ifindex, false);
++
++	if (!err)
++		return;
++	for (; i < ARRAY_SIZE(cases); i++)
++		ksft_test_result_error("%s: socket creation: %s\n", cases[i].name,
++				       strerror(-err));
++	ksft_finished();
++}
++
++static void reopen_xsk(struct xsk *xsk, unsigned int ifindex, unsigned int i)
++{
++	close_xsk(xsk);
++	restore_xsk(xsk, ifindex, i);
++}
++
++int main(int argc, char **argv)
++{
++	const char *tx_name = NULL, *rx_name = NULL;
++	struct sockaddr_ll addr = { .sll_family = AF_PACKET, .sll_protocol = htons(ETH_P_ALL) };
++	uint64_t xdp_features = 0, xsk_features = 0;
++	bool loopback = false, udp_segmentation;
++	struct xsk_tx_metadata meta;
++	unsigned int ifindex, i;
++	unsigned int zc_max_segs = 0;
++	bool sw_csum = false;
++	int err;
++	struct xsk xsk;
++	int fd, opt;
++
++	while ((opt = getopt(argc, argv, "i:r:zlC")) != -1) {
++		if (opt == 'i')
++			tx_name = optarg;
++		else if (opt == 'r')
++			rx_name = optarg;
++		else if (opt == 'z')
++			zero_copy = true;
++		else if (opt == 'l')
++			loopback = true;
++		else if (opt == 'C')
++			checksum_tests = true;
++		else
++			ksft_exit_fail_msg("Usage: %s [-z] [-l] [-C] -i TX_IFACE [-r RX_IFACE]\n",
++					   argv[0]);
++	}
++	if (loopback) {
++		if (rx_name && (!tx_name || strcmp(tx_name, rx_name)))
++			ksft_exit_fail_msg("Loopback needs one interface for Tx and Rx\n");
++		rx_name = tx_name;
++	}
++	ksft_print_header();
++	if (!tx_name || !rx_name || geteuid())
++		ksft_exit_skip("needs root and -i TX_IFACE -r RX_IFACE, or -l -i IFACE\n");
++	ifindex = if_nametoindex(tx_name);
++	addr.sll_ifindex = if_nametoindex(rx_name);
++	if (!addr.sll_ifindex || !ifindex ||
++	    (!loopback && !strcmp(tx_name, rx_name)))
++		ksft_exit_fail_msg("Use two connected interfaces, or -l\n");
++	get_mac(tx_name, tx_mac);
++	get_mac(rx_name, rx_mac);
++	if (loopback) {
++		/* Avoid sending the port's own source MAC back into its Rx filter. */
++		tx_mac[0] = (tx_mac[0] | 2) & ~1;
++		tx_mac[ETH_ALEN - 1] ^= 0x80;
++		memset(rx_mac, 0xff, ETH_ALEN);
++	}
++	if (!is_physical(tx_name) || !is_physical(rx_name))
++		ksft_exit_skip("%s and %s must be physical NICs that segment on the wire\n",
++			       tx_name, rx_name);
++	mtu = get_mtu(tx_name);
++	if (mtu < MIN_MTU || get_mtu(rx_name) < MIN_MTU)
++		ksft_exit_skip("%s and %s need an MTU of at least %zu\n",
++			       tx_name, rx_name, MIN_MTU);
++	/* The oversized-segment case must fit the buffers of a packet. */
++	if (sizeof(struct ethhdr) + sizeof(struct iphdr) +
++	    sizeof(struct udphdr) + 2 * large_gso_size() >
++	    MAX_BUFFERS * (FRAME_SIZE - META_LEN))
++		ksft_exit_skip("%s has MTU %u, too large for the test buffers\n",
++			       tx_name, mtu);
++	if (zero_copy) {
++		get_xdp_features(ifindex, &xdp_features, &xsk_features,
++				 &zc_max_segs);
++		if (!(xdp_features & NETDEV_XDP_ACT_XSK_ZEROCOPY))
++			ksft_exit_skip("%s does not support AF_XDP zero-copy\n", tx_name);
++		if (!(xsk_features & NETDEV_XSK_FLAGS_TX_USO_ZC))
++			ksft_exit_skip("%s does not report tx-uso-zc\n", tx_name);
++		if (!xsk_is_in_mode(ifindex, XDP_FLAGS_DRV_MODE))
++			ksft_exit_skip("%s has no native XDP program attached\n", tx_name);
++		if (zc_max_segs < 2)
++			ksft_exit_skip("%s does not support multi-buffer zero-copy\n",
++				       tx_name);
++	}
++	/* The packet socket sees received packets after GRO, which could merge
++	 * the segments back together.
++	 */
++	if (feature_active(rx_name, "rx-udp-gro-forwarding") ||
++	    feature_active(rx_name, "rx-gro-list"))
++		ksft_exit_skip("turn off rx-udp-gro-forwarding and rx-gro-list on %s\n",
++			       rx_name);
++	udp_segmentation = feature_active(tx_name, "tx-udp-segmentation");
++	fd = socket(AF_PACKET, SOCK_RAW | SOCK_NONBLOCK, htons(ETH_P_ALL));
++	if (fd < 0)
++		ksft_exit_fail_msg("packet socket: %s\n", strerror(errno));
++	{
++		int ignore_outgoing = 1;
++
++		if (setsockopt(fd, SOL_PACKET, PACKET_IGNORE_OUTGOING,
++			       &ignore_outgoing, sizeof(ignore_outgoing)) ||
++		    bind(fd, (void *)&addr, sizeof(addr)))
++			ksft_exit_fail_msg("packet socket setup: %s\n", strerror(errno));
++	}
++	err = open_xsk(&xsk, ifindex, false);
++	if (err == -EOPNOTSUPP)
++		ksft_exit_skip("%s does not support this AF_XDP bind\n", tx_name);
++	if (err)
++		ksft_exit_fail_msg("socket creation: %s\n", strerror(-err));
++	ksft_set_plan(ARRAY_SIZE(cases));
++	for (i = 0; i < ARRAY_SIZE(cases); i++) {
++		const struct test_case *t = &cases[i];
++		struct xdp_statistics before, after;
++		socklen_t size = sizeof(before);
++		unsigned int len, descs, expected_invalid = 0;
++		bool ok, want_sw_csum;
++
++		if (!checksum_tests && t->checksum_only) {
++			ksft_test_result_skip("%s: checksum offload cases need -C\n",
++					      t->name);
++			continue;
++		}
++		if (zero_copy && t->checksum_only &&
++		    !(xsk_features & NETDEV_XSK_FLAGS_TX_CHECKSUM)) {
++			ksft_test_result_skip("%s: %s does not report tx-checksum\n",
++					      t->name, tx_name);
++			continue;
++		}
++		if (zero_copy && t->bad == SW_CHECKSUM) {
++			ksft_test_result_skip("%s: software checksum is copy mode only\n",
++					      t->name);
++			continue;
++		}
++		if (needs_segmentation(t) && !udp_segmentation) {
++			ksft_test_result_skip("%s: tx-udp-segmentation is off on %s\n",
++					      t->name, tx_name);
++			continue;
++		}
++		len = make_packet(tx_packet, t, i, &meta);
++		if (zero_copy && count_descs(t, &meta, len) > zc_max_segs) {
++			ksft_test_result_skip("%s: needs more than %u descriptors\n",
++					      t->name, zc_max_segs);
++			continue;
++		}
++		want_sw_csum = t->bad == SW_CHECKSUM;
++		if (sw_csum && !want_sw_csum) {
++			sw_csum = false;
++			reopen_xsk(&xsk, ifindex, i);
++		} else if (want_sw_csum && !sw_csum) {
++			close_xsk(&xsk);
++			err = open_xsk(&xsk, ifindex, true);
++			if (err) {
++				/* open_xsk() released the socket on failure. */
++				if (err == -EOPNOTSUPP)
++					ksft_test_result_skip("%s: %s refuses %s\n", t->name,
++							      tx_name, "XDP_UMEM_TX_SW_CSUM");
++				else
++					ksft_test_result_error("%s: socket creation: %s\n",
++							       t->name, strerror(-err));
++				restore_xsk(&xsk, ifindex, i + 1);
++				continue;
++			}
++			sw_csum = true;
++		}
++		drain_packets(fd);
++		if (getsockopt(xsk.fd, SOL_XDP, XDP_STATISTICS, &before, &size)) {
++			ksft_test_result_error("%s: XDP_STATISTICS: %s\n", t->name,
++					       strerror(errno));
++			continue;
++		}
++		if (!transmit(&xsk, tx_packet, len, t, &meta, &descs)) {
++			ksft_test_result_fail("%s: submission or completion failed\n",
++					      t->name);
++			/* Start the next case from a clean socket. */
++			sw_csum = false;
++			reopen_xsk(&xsk, ifindex, i + 1);
++			continue;
++		}
++		ok = receive_packets(fd, t, i);
++		if (!valid_request(t))
++			expected_invalid = descs;
++		size = sizeof(after);
++		if (getsockopt(xsk.fd, SOL_XDP, XDP_STATISTICS, &after, &size)) {
++			ksft_test_result_error("%s: XDP_STATISTICS: %s\n", t->name,
++					       strerror(errno));
++			continue;
++		}
++		if (after.tx_invalid_descs - before.tx_invalid_descs != expected_invalid) {
++			ksft_print_msg("tx_invalid_descs grew by %llu, expected %u\n",
++				       after.tx_invalid_descs - before.tx_invalid_descs,
++				       expected_invalid);
++			ok = false;
++		}
++		if (!ok && zero_copy && valid_request(t))
++			ksft_print_msg("%s\n%s\n",
++				       "Drivers may ignore USO in some configurations,",
++				       "see Documentation/networking/xsk-tx-metadata.rst");
++		ksft_test_result(ok, "%s\n", t->name);
++	}
++	close_xsk(&xsk);
++	close(fd);
++	ksft_finished();
++}
 -- 
 2.38.1
 
