@@ -1,29 +1,29 @@
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 110C7606A320
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 19 Nov 2026 15:24:48 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9505D606A320
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 19 Nov 2026 15:24:49 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=aFzRlnoW;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=PlMc0O0C
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=Xa7kOkra;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=LLWxPYTc
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id E522280C95;
-	Thu, 19 Nov 2026 15:24:47 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 739844068F;
+	Thu, 19 Nov 2026 15:24:49 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ItDL1IVAJEEU; Thu, 19 Nov 2026 15:24:47 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 4FC7081371
-Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795101887;
-	b=M6FHwRJenGxSmOH+awZtULqfX/dXB6NUHWH0XkljOdQpD/y/ageUYewP9SiNGyaSze/B
-	 gp8CgkBfMpVXgp5hh+CpGbR7Ztpd50ab2QIW20xseo4Scm1vYP6a4vo79g4oXNIhf1ACF
-	 3xWdsRZt3MtcdcqC043QsOXQcXQcfzsWFntaxUsqsOmsHa/OGhQtr/kMhLgOznTOUMBRQ
-	 FXIPXKvIRkQaGws5BuP1ynUPRuMb4OnRgPV0afwZnS2VOqP8n/OYidLJoUWER1a/HQFqi
-	 kkux2jdpioLJ1HWq8kTtXLnokMglaMdHXfbfp7gc8s0pa5I6WZUb66/8BCrVwrzuvBQ==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id HQ9OTAw8wESy; Thu, 19 Nov 2026 15:24:48 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 1C8E1405CB
+Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795101888;
+	b=kmQfPY/3lBbmXsiohky9nZlUmUk7qInCaUM6vHHK7LXu4cbXeyC+OL13Xj6C2BNRAHqs
+	 1uHRWvgfmLL9OyJJHPzBTLJPJ7LaxEJLzCGKQXPlNc02p6J3gU9A+JPCcLQPLsbP3eXFT
+	 SohnXTzwUn2+LpSMEskl1XEiNW6u7Gh1KlaME9TBKCik9Qxwyhog7fQ6FoPqIXiRMjeGA
+	 X/D149CQMiiKptS4+ltsF+4Gc7yLobJ1+xLnL5KCXP4Nzwt0lq1OozczS3wgBwk3XNcBp
+	 noSyiRFgdNkPIXb7lOn5BgipKVb5ulDiJkULpAMgaMm7VClR10eAkbCqd6kBdad/tOA==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795101887;
+	c=relaxed/relaxed; t=1795101888;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
@@ -33,42 +33,42 @@ ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
 	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding:
 	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
 	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=xeAAHFS/ck3qQUCyoFr7ZlyP/1XztGil2SbSddsE5LI=;
-	b=T8nxsMPVGYA5R0wh3FxVW+1GmxfY52OwHdVWyB/ImWW7TYZe4/wa+69EE8NDkIadvsLN
-	 znCzs912Xr+IbOqe30Ki/csunRoOEUv1EJoGfDXIDN900MQo/9SFEiOQVG5wgPiBlqq12
-	 jLAfvtKNTk8z1Y2B1m0TvpZOxF5GJb/0sGH3bHVMehNTU4V0UhTwlvym7hnkQDhCmiSZ9
-	 6Vc+OT/GAls2tPyPKAXgc0tbbR2HE4xLHu6GS2je7MSMZJDD6oxvvHfAZWiipNJPDEohM
-	 K2J7qtJ+/ec00AK3bUlXySaeGnGAyF8Gt5KaLjTvT+EHIjeicoOOZFrnhROPFTZrm0g==
-ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
+	bh=tUbbPrpYOv58uVNR+mXEF7wc5VFgpq+1lHd3ZcFtAGU=;
+	b=V7LJreQrTwdoiCjb/4tQqdXSgZBNuEsjJjQ6pvTQlqibi0hXZXj4UfZuIA4oEx63YBXb
+	 zCpjTJUScPBy8fmyJlOwKHa8zcvvTSsgjGJb9cwNw6Xx6/Bg+wH5TPDt65Zln2TZhYDz5
+	 yrcLrBgCscjlskAFqkApQoA/M3uo51YkH+Mn+0rqZ1pdthhb3toMi7gGqa5UFFxuS1qCe
+	 ZckykMv/i9QtOqLc2LiLZYl5q6xFKptSu5v6VnXG29KA+zbKHf6K/SlGliuZaqNAEzMcK
+	 peMmHKJPQ7SAW9DAbnUYxyIPrxDoJjNCTz/ZDcc37XpumnKigEGCfk7yBbFLVDvxtaQ==
+ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1795101887;
-	bh=xeAAHFS/ck3qQUCyoFr7ZlyP/1XztGil2SbSddsE5LI=;
+	s=default; t=1795101888;
+	bh=tUbbPrpYOv58uVNR+mXEF7wc5VFgpq+1lHd3ZcFtAGU=;
 	h=From:To:Subject:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=aFzRlnoWwnPXmFJMZY7A49hXBlji399dlYLPOitQdMX0yfTLZcVxYsTiXDDsKKEuO
-	 kyW4qzV+TAC3lX/65L6JcxcDrkK3g1Vs5n0E7cd9Ed3M+QwuJITAd6MwAz+yC+zd1a
-	 +brLbz9VD7qqZVl41LcNiRrCx4JqDm+2mukxNKNbJn1qBewuyiXwHKujt8VisAOEcY
-	 XPkgDGNZN6vuqRFyCW5QswbFZTgtdHdWkEI/YraCm+3yU0id9FOCgMXV8bc1vtrXUy
-	 uCQos9v1wLCR9WXqgL/4fITj7QmPPGhbtyV0g0viYA0QoU4xkbGI+KPhxZjH30UGif
-	 QmbY1/cAST9TA==
+	b=Xa7kOkraXqxzOGJAqqk0ADZPwcatB6ACne1wPF8ZoxcpdxvRZxV8yvcgLNbHoZQOC
+	 OmMK8vv1u5C+Cb5d8GIaSH/jxXYZtpuQyJ+M/z8AfOUQJz2gAytiI/DpcrIYqj2SYm
+	 PkKjo/NLrS61w02Rri1rF0lmk9ER8RfS6Eoj9Yk+hBkjrKzN9OWwb80byC9sG7Ow04
+	 LFX6Ce/0yApc7tby+Gyg8x/cFf8/WXfed45XCgHjtqWgvBBUpoKnoklf9SKz6IL1PD
+	 u6J6IyYlRhLCAdK4ZCNBi0PW/Zht90XwTUSLQL2jMsFw4Q/oE1MBAD7DQGDAu+C1lb
+	 YlmJOJGqzXe4A==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 4FC7081371;
-	Thu, 19 Nov 2026 15:24:47 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 725202FB
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1C8E1405CB;
+	Thu, 19 Nov 2026 15:24:48 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id D9B421E7
  for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Nov 2026 15:24:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 63F3B60896
+ by smtp3.osuosl.org (Postfix) with ESMTP id C038360658
  for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Nov 2026 15:24:44 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id BZN3Leu7MJMD for <intel-wired-lan@lists.osuosl.org>;
- Thu, 19 Nov 2026 15:24:43 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org BAA0260658
+ id h_15ebyPPJ7t for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 19 Nov 2026 15:24:44 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 22E4660686
 Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=198.175.65.11
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.11;
  helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
@@ -77,42 +77,42 @@ Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=PlMc0O0C
+ header.a=rsa-sha256 header.s=Intel header.b=LLWxPYTc
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
- by smtp3.osuosl.org (Postfix) with ESMTPS id BAA0260658
- for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Nov 2026 15:24:43 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 22E4660686
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Nov 2026 15:24:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
  t=1795101884; x=1826637884;
  h=from:to:subject:date:message-id:in-reply-to:references:
  mime-version:content-transfer-encoding;
- bh=kKJ5bd0jnByYNwWtTOiUgAQDxTXDC2VazM3DdgBSHhE=;
- b=PlMc0O0CTJbpCGEz/dU+RxUTh/3bAaZDgJ/MkL/Fwfitn/n8Y8PGpqvs
- NNL/ZpjlAyuXwO/cWYV2f9P6qOZ44V9glZib1RnNRsiUeJPQXePEsCgZH
- DN5013fvPi8PSZ+CPmBmLzAqxCVaNiM844U1r3FBKblvD83ifS7mmbiR1
- zew0tAGA5AglIxdSZr2sSu6dKfukiuHa0beUWccuPajIQFJ0iyN5jZumx
- Snymlr3P9ixSm5oFQ8gsDBnxRgkMhTb/mhAGrg/XWjc6KAHG98ylAWBBR
- zpSp0rvsP5lU8gT78UDqH01HWFmqRzBlULg/1XIeK9G4iJdlds0P1s+bq Q==;
-X-CSE-ConnectionGUID: 6+sASaqYQHaWun19rtd6jA==
-X-CSE-MsgGUID: dmQ0t+FpRwaVim3CGTS4pQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11971"; a="3848772"
+ bh=o4tlLESgbnrnEccgclOrTMImAFfXT02f/IkdT0lS0oM=;
+ b=LLWxPYTcrxytyj8/EIp7pCoVYI6m6Jwd9vvYRQmYNX839qTmwH+2mG/n
+ blAJj/W9Dka59BkFaBfK1bOK/w+CY8lmPL4TKXkxBrxarc3Ocnx3q01BX
+ bxuefr4JXBPiGN2KYCkTgmR2WXgJNawb0Sw78utBx+pHaC4ko2Sh5D7rv
+ BH+u766ZHXbjjFpOhse0BVROGD/V/Ui+rh1XrfUl4xFNpRXZVirAleXSF
+ QDryTTpKX0tdLlnRTwAzZM7qh8dPULnW9HORzRcgCTjl1P8Ql0LftLcbJ
+ FfRq+IGtcDJ585dlBhDYeD2V5r/jeAEkALe65U6VWjfX+abR+w3toDjbK Q==;
+X-CSE-ConnectionGUID: h52vUoN3Tzi+jud/WS3TDg==
+X-CSE-MsgGUID: 1i1BgnHOR9m0cyTypHVyxQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11971"; a="3848775"
 X-IronPort-AV: E=Sophos;i="6.27,221,1787036400"; 
-   d="scan'208";a="3848772"
+   d="scan'208";a="3848775"
 Received: from orviesa003.jf.intel.com ([10.64.159.143])
  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 19 Nov 2026 07:24:43 -0800
-X-CSE-ConnectionGUID: IG7WQaalRPq3jaB2rnCWvA==
-X-CSE-MsgGUID: 7arAOemRRWuqdfMq5/TfIA==
+ 19 Nov 2026 07:24:44 -0800
+X-CSE-ConnectionGUID: G0GtUPepTCWx3ZaIdhoN7Q==
+X-CSE-MsgGUID: gg38j33MS9+thkSwypQbYg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,221,1787036400"; d="scan'208";a="10358788"
+X-IronPort-AV: E=Sophos;i="6.27,221,1787036400"; d="scan'208";a="10358792"
 Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by orviesa003.jf.intel.com with ESMTP; 19 Nov 2026 07:24:42 -0800
+ by orviesa003.jf.intel.com with ESMTP; 19 Nov 2026 07:24:43 -0800
 From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 To: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
  aleksandr.loktionov@intel.com
-Subject: [PATCH iwl-net v3 2/4] ice: validate VF FDIR queue action
-Date: Thu, 19 Nov 2026 16:24:36 +0100
-Message-ID: <20261119152438.3577165-3-aleksandr.loktionov@intel.com>
+Subject: [PATCH iwl-net v3 3/4] ice: validate VF FDIR queue region action
+Date: Thu, 19 Nov 2026 16:24:37 +0100
+Message-ID: <20261119152438.3577165-4-aleksandr.loktionov@intel.com>
 X-Mailer: git-send-email 2.56.0
 In-Reply-To: <20261119152438.3577165-1-aleksandr.loktionov@intel.com>
 References: <20261013144435.1406126-1-aleksandr.loktionov@intel.com>
@@ -134,68 +134,58 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 X-Spam-Status: No, score=-18.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,USER_AGENT_GIT autolearn=ham
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_NONE,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-ice_vc_fdir_parse_action() copies the VF supplied queue index straight
-into the flow director programming descriptor (QINDEX), which the
-hardware interprets relative to the VF's VSI, so a VF can steer
-matched packets to queues beyond its own range, i.e. queues belonging
-to another VF or to the PF.
+The VIRTCHNL_ACTION_Q_REGION filter covers 2^region queues starting at
+the index the VF supplies.  The index and the region go into the
+programming descriptor (TO_Q), which the hardware interprets relative
+to the VF's VSI, so a region extending past the VSI's Rx queues lets
+the VF steer matched packets to queues belonging to another VF or to
+the PF.
 
-For VIRTCHNL_ACTION_QUEUE reject an index that is not below the VSI's
-Rx queue count; the rejected action fails the whole add request.
+Reject a region that does not fit the 3-bit TO_Q field (it would be
+silently truncated) and require the whole range to fit within the
+VSI's Rx queues.  No alignment of the index is required for this to
+hold: however the hardware combines the index with the hash bits, no
+queue it selects from the region is at or above index + 2^region.
+The rejected action fails the whole add request.
 
 v2 -> v3:
  - split out from the single queue and queue-region validation
    commit of the v2 posting, one commit per Fixes tag
  - rewrap the dev_dbg() call to fit within 80 columns
 
-Fixes: 0ce332fd62f6 ("ice: Add FDIR pattern action parser for VF")
+Fixes: 346bf2504397 ("ice: Add new actions support for VF FDIR")
 Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 ---
- drivers/net/ethernet/intel/ice/virt/fdir.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ drivers/net/ethernet/intel/ice/virt/fdir.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/ice/virt/fdir.c b/drivers/net/ethernet/intel/ice/virt/fdir.c
-index b6e3097..f3af7de 100644
+index f3af7de..244da64 100644
 --- a/drivers/net/ethernet/intel/ice/virt/fdir.c
 +++ b/drivers/net/ethernet/intel/ice/virt/fdir.c
-@@ -1151,6 +1151,7 @@ ice_vc_fdir_parse_action(struct ice_vf *vf, struct virtchnl_fdir_add *fltr,
- 	struct virtchnl_filter_action_set *as = &fltr->rule_cfg.action_set;
- 	struct ice_ntuple_fltr *input = &conf->input;
- 	struct device *dev = ice_pf_to_dev(vf->pf);
-+	struct ice_vsi *vsi;
- 	u32 dest_num = 0;
- 	u32 mark_num = 0;
- 	int i;
-@@ -1161,6 +1162,10 @@ ice_vc_fdir_parse_action(struct ice_vf *vf, struct virtchnl_fdir_add *fltr,
- 		return -EINVAL;
- 	}
- 
-+	vsi = ice_get_vf_vsi(vf);
-+	if (!vsi)
-+		return -EINVAL;
-+
- 	for (i = 0; i < as->count; i++) {
- 		struct virtchnl_filter_action *action = &as->actions[i];
- 
-@@ -1175,6 +1180,13 @@ ice_vc_fdir_parse_action(struct ice_vf *vf, struct virtchnl_fdir_add *fltr,
+@@ -1192,6 +1192,17 @@ ice_vc_fdir_parse_action(struct ice_vf *vf, struct virtchnl_fdir_add *fltr,
  			break;
- 		case VIRTCHNL_ACTION_QUEUE:
+ 		case VIRTCHNL_ACTION_Q_REGION:
  			dest_num++;
-+			if (action->act_conf.queue.index >= vsi->num_rxq) {
++			if (action->act_conf.queue.region >
++			    FIELD_MAX(ICE_FXD_FLTR_QW0_TO_Q_M) ||
++			    action->act_conf.queue.index +
++			    BIT(action->act_conf.queue.region) > vsi->num_rxq) {
 +				dev_dbg(dev,
-+					"Invalid queue index %u for VF %d\n",
++					"Invalid queue region %u/%u for VF %d\n",
 +					action->act_conf.queue.index,
++					action->act_conf.queue.region,
 +					vf->vf_id);
 +				return -EINVAL;
 +			}
- 			input->dest_ctl = ICE_FLTR_PRGM_DESC_DEST_DIRECT_PKT_QINDEX;
+ 			input->dest_ctl = ICE_FLTR_PRGM_DESC_DEST_DIRECT_PKT_QGROUP;
  			input->q_index = action->act_conf.queue.index;
- 			break;
+ 			input->q_region = action->act_conf.queue.region;
 -- 
 2.56.0
 
