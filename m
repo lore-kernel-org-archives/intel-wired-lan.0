@@ -1,101 +1,108 @@
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DFA72606A326
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 19 Nov 2026 14:04:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E4424606A32A
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 19 Nov 2026 14:04:29 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=AS9XKw+t;
-	dkim=pass (2048-bit key, unprotected) header.d=mandelbit.com header.i=@mandelbit.com header.a=rsa-sha256 header.s=MBO0001 header.b=v6VIYYlx
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=LQ0dVKEu;
+	dkim=pass (2048-bit key, unprotected) header.d=mandelbit.com header.i=@mandelbit.com header.a=rsa-sha256 header.s=MBO0001 header.b=MOBe5Kq+
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C215A60602;
-	Thu, 19 Nov 2026 14:04:27 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id C2B1140577;
+	Thu, 19 Nov 2026 14:04:29 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id pmgBU76rt6kt; Thu, 19 Nov 2026 14:04:26 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org C20706066D
-Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795097066;
-	b=suYFOa/3bs8XyN4pu6QZRbPVTQIPaikQPsOpy01ZKtlAGwDeDW0KM0LH08+zubijW6ik
-	 N8nEHCGZEixPViB43m4VQtRGTJEfcHsPrFsnjZFG7iXGLt4ei5he7hyZhV9clajdf8nLJ
-	 e9Vs9BF37ANdwOzZHfo9joXoa7HBY6kU5j6oz/lGmYXDhSP1lhtG+l4U7VeA9jk48GiQS
-	 lvOjbTvGFOoZQCkYQAo6AuCmYfqvMFiA5bBbcsXOvjdN155vuJpdhlaKyPirPpJAYuWrX
-	 NdRSlFvXY2WNqsdUWm7ppicsK43nrktGJtuSXf5/G4oarCmCzqGzkvnKK4MKAtM8hQA==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id ok4Wa-aQUkZX; Thu, 19 Nov 2026 14:04:29 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org E8DFB405B7
+Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795097069;
+	b=bUNg4cli7BvClqUMa96QHVwAznibNK4Hok5N6CIUynYd8bvYGtwEIvxEkv4AeQo7/OWe
+	 gy8ne9Z90kpIPVmbwZFvvEPF24V7hSKNJxl3X5fEjnjzxXM+zniqu+mR/KTfQ49Dn6qfD
+	 2s6lUZ9NriP6VsBsJPF3L9enNyVqIlGLOo0Svh3UnViuiPgNuQIM+QBB90EkmUo9UvkcK
+	 ueZT/VXlBft5vLXKWfFABsZ8pofOkbdo1MroHATlU3uaXLhg0SlUSVpQcDB1u5BL+p03X
+	 GfV1nf6/SBtY5I/jTt2DsjPmTtoFB5vkWLan5UEXoZ2G7VOZUQYBHtd0KcfZow8RExA==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795097066;
+	c=relaxed/relaxed; t=1795097069;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
 	 DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
-	 MIME-Version:Content-Transfer-Encoding:X-Rspamd-Queue-Id:X-BeenThere:
-	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=e6oXbuZroz8JuDwbf/JEPi4sUfj0w3WvHzrO0wj5gvg=;
-	b=YYcWNJclvoXV9e/7yUWMOPqj+5nRDThmn/wV3JUcSweRiThnDweN9KPjq4Q0RJnUuFFL
-	 4EqOMw8S8qXon8OlT+iJsZvKD5An20HffcC28N6wYE5FhQ++A5B3+lo7HBi+zmzStc7Kw
-	 QwX+KEiCfsqKB33sKBW0RW8Ftxog6J0JFycMr6CExC4ZzOncTNmfoy3TPH1WlR9xuOyVM
-	 C4Oyai4dPO0m7pnFUbhVy9clrFXpAsRkeEdDQbls9wqv14z+OtmQAisLRewp5wKuRfzJ6
-	 hFE6nAj2o5kKjGC/FyLXBCNojFqkGAS8QRBXHtGRA4I/Ze2pFp1aGEkwZySt/KRfIOQ==
-ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
+	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding:
+	 X-Rspamd-Queue-Id:X-BeenThere:X-Mailman-Version:Precedence:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Errors-To;
+	bh=xYY+5HYcpNDrOfdei6j2b8H2Y6Y1Y5HfYq8ATs9GwvY=;
+	b=aCgl+EDKeBasUvOjfskgKclTyIvEcSjmdywXVvWcUN+qwXu4AH+lVreyutNKXa4gywYe
+	 B+Bpb6PZiSMEfOFHcLCUUYix2bszcWSRrz6+GbMRkkz/wvBOmVc6vxeYDfxCpziouznLJ
+	 s+nO+QbTb+sxgLwHvp0EoDup90BOh39l4i/oadAVihf/CeIh115tLZnvG1sriAXXo+ZnZ
+	 uGAKOaLWApHUUKa5PFv/w8R9tjqjXOXDgnv4Hb9q+89ntENqs4WWZs8FUIZRJlT6olQ52
+	 9zjLOU2Uc973hu4FvOU/8Vgq42IRZuNHHubAciZ2GPxa3DdwS1KzjbjrCf+McITUABA==
+ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
+	dmarc=none header.from=mandelbit.com;
+	dkim=pass header.d=mandelbit.com header.i=@mandelbit.com header.a=rsa-sha256 header.s=MBO0001 header.b=MOBe5Kq+;
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1795097066;
-	bh=e6oXbuZroz8JuDwbf/JEPi4sUfj0w3WvHzrO0wj5gvg=;
-	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=AS9XKw+tviDVDU9K5BlhXKnaCeTkiblCEkJbQotEOaVzJugyS+15CLJGrmRfbbttW
-	 cv/jp28FpmL4Lf7fvJxxcMc19NP2k9piy0sxsxRlr+S9ngfG3SoB9os4ITJoJXAOg8
-	 vcInEdbhhIAmDkPSZyj5hFI4ooi+GprQYILT3wPJyRV0bNBmfKQJTSEyCfrdF5oSkL
-	 1MuEe6zsgVYKUyugUWRnACGVDJyz8Fii0p9ezF2vN3DHehEsw1/U6mSnzgsVtQdoEZ
-	 woCkTxwxzZPfIugnqO4InWFowT+bkDuymUPae8hNI4PBBrRUuZYvY8GH4JQN665cnJ
-	 4OAQOxAa08rfw==
+	s=default; t=1795097069;
+	bh=xYY+5HYcpNDrOfdei6j2b8H2Y6Y1Y5HfYq8ATs9GwvY=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=LQ0dVKEudfEYzSE+jT2ArKkJirfPxePkTK+tX/0Ng5fYa9EVQPfUv6YhjC26eBos3
+	 /otPvLRIm0myTWlK8rwIM+wb7Hd1zXfnjLTfvoQofHso1x57WNTwc6i/nMOTdc8VCT
+	 alvhxes6teb8dc57HyYZQDUN4Qv+JHgS861W0y4kabkImJ4tKAjb6SCuZhPQV1qC4t
+	 RwLWWcGw4ClzLYfhEKhn/0UoDUCHIn8Degm8kFjcNUTdJ8KjppDiA/e55qlDTNtGPs
+	 jH9dOi0BUhpEV3WF8REPILPmtKPj6b3xp8MIdjj3lL6eIGed1g0Fbb/p9+1Hem5qbo
+	 ZBRteahM4fAGg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C20706066D;
-	Thu, 19 Nov 2026 14:04:26 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 7022C22B
+	by smtp4.osuosl.org (Postfix) with ESMTP id E8DFB405B7;
+	Thu, 19 Nov 2026 14:04:28 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id E2FBA22B
  for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Nov 2026 14:04:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 5F5C5405B7
+ by smtp4.osuosl.org (Postfix) with ESMTP id C923640555
  for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Nov 2026 14:04:25 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id YwJmSY9yXtFD for <intel-wired-lan@lists.osuosl.org>;
- Thu, 19 Nov 2026 14:04:24 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 2BB0340555
-Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=195.10.208.47
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=195.10.208.47;
- helo=mout-b-107.mailbox.org; envelope-from=antonio@mandelbit.com;
- receiver=<UNKNOWN> 
+ id M50PKtK2KuwA for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 19 Nov 2026 14:04:25 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 65FFF4055A
+Authentication-Results: smtp4.osuosl.org;
+ arc=none smtp.remote-ip="2001:67c:2050:102:465::210"
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2001:67c:2050:102:465::210; helo=mout-b-210.mailbox.org;
+ envelope-from=antonio@mandelbit.com; receiver=<UNKNOWN> 
 Authentication-Results: smtp4.osuosl.org;
  dmarc=none (p=none dis=none) header.from=mandelbit.com
 Authentication-Results: smtp4.osuosl.org; dkim=pass (2048-bit key,
  unprotected) header.d=mandelbit.com header.i=@mandelbit.com
- header.a=rsa-sha256 header.s=MBO0001 header.b=v6VIYYlx
-Received: from mout-b-107.mailbox.org (mout-b-107.mailbox.org [195.10.208.47])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 2BB0340555
- for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Nov 2026 14:04:22 +0000 (UTC)
+ header.a=rsa-sha256 header.s=MBO0001 header.b=MOBe5Kq+
+Received: from mout-b-210.mailbox.org (mout-b-210.mailbox.org
+ [IPv6:2001:67c:2050:102:465::210])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 65FFF4055A
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Nov 2026 14:04:23 +0000 (UTC)
 Received: from smtp102.mailbox.org (smtp102.mailbox.org
  [IPv6:2001:67c:2050:b231:465::102])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519MLKEM768 server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mout-b-107.mailbox.org (Postfix) with ESMTPS id 4jVgFG4tGmz3xTD;
- Thu, 19 Nov 2026 15:04:18 +0100 (CET)
+ by mout-b-210.mailbox.org (Postfix) with ESMTPS id 4jVgFH6qWZzFqsh;
+ Thu, 19 Nov 2026 15:04:19 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mandelbit.com;
- s=MBO0001; t=1795097058;
+ s=MBO0001; t=1795097059;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding;
- bh=e6oXbuZroz8JuDwbf/JEPi4sUfj0w3WvHzrO0wj5gvg=;
- b=v6VIYYlxbXPZEfVMDV8/vAIwMqcOnpgLz3zLMoYTB996BZ1u3qCv4uLsdVvkybFcIgoK+y
- 6zquKS72T1skKTK5QPxvPGZD1PuKs2TFyXz3hZl8Ag+GRqJEhNbfxpVvQkhs31+yIFKdKj
- 2zVytGqlgb4pXBpTCNdfFbmlPev2nFEnwPGTpWF1w97njok9VfFbVG5QDIoptxiyviEhGb
- nE/pjwsvFaT/nd0ePCsbOWDPTKGiS+FtPedGJ/e+M3GL36koOjtAMouBU7Fyt3JHuZy9ET
- ika4xwQqFSxls5WdFIa687wcbQFMFldaoivvqWKJ4fQpxnkTFpT4h8YR/L9mNQ==
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=xYY+5HYcpNDrOfdei6j2b8H2Y6Y1Y5HfYq8ATs9GwvY=;
+ b=MOBe5Kq+9i67JBIuH4JepPP8x9ydZ9f+9oenk5G9dddPi/wLCoTf7EzLwBnp9iLdeBOOU6
+ sFvP3Yrv9lz71QhKDuxrdx94QZOsfERRjzOuWC5oCmJXj46sxz3bTaavHYl8UU+QYDpQH/
+ xCikJ6XUxYRyFTAAubWmUaUfDweOjFxpzbjV24CzPR3DC062qYiznuj0kGOGeutVjbf/g1
+ NRJuqc6hPUnvE8zcRiPJ0M2/8XRok5RU0izhNw+Y5rikPo0pIXoh7ncs+y8JL9JZEtm6Ko
+ 8hGNNiB+mmesCNbZBTA8XvVXnTHoZNQNN0FObx0z/CT/SA6RjvEBJAeimpOnwg==
 Authentication-Results: outgoing_mbo_mout; dkim=none;
  spf=pass (outgoing_mbo_mout: domain of antonio@mandelbit.com designates
  2001:67c:2050:b231:465::102 as permitted sender)
@@ -117,17 +124,19 @@ Cc: Antonio Quartulli <antonio@mandelbit.com>,
  Stanislav Fomichev <sdf@fomichev.me>,
  Sriram Yagnaraman <sriram.yagnaraman@ericsson.com>,
  Kurt Kanzenbach <kurt@linutronix.de>,
- Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
- Heiner Kallweit <hkallweit1@gmail.com>, Joe Damato <joe@dama.to>,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org, bpf@vger.kernel.org
-Subject: [PATCH net v3 0/4] igb: fix runtime PM resume issues
-Date: Thu, 19 Nov 2026 15:04:06 +0100
-Message-ID: <20261119140412.163202-1-antonio@mandelbit.com>
+ Maciej Fijalkowski <maciej.fijalkowski@intel.com>, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, bpf@vger.kernel.org, stable@vger.kernel.org
+Subject: [PATCH net v3 1/4] igb: don't disable rings that don't exist when
+ disabling an XSK pool
+Date: Thu, 19 Nov 2026 15:04:07 +0100
+Message-ID: <20261119140412.163202-2-antonio@mandelbit.com>
 X-Mailer: git-send-email 2.56.1
+In-Reply-To: <20261119140412.163202-1-antonio@mandelbit.com>
+References: <20261119140412.163202-1-antonio@mandelbit.com>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Rspamd-Queue-Id: 4jVgFG4tGmz3xTD
+X-Rspamd-Queue-Id: 4jVgFH6qWZzFqsh
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -138,58 +147,53 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-13.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-18.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-igb can be runtime suspended when the link goes down (with
-power/control set to auto). Resuming it calls functions that need RTNL
-without holding it (patches 2 and 3), and devices that can't signal a
-wake-up are suspended anyway, so their port stays down when the link
-comes back (patch 4). Patch 1 fixes a NULL dereference in the XSK pool
-disable path when the stack has more queues than the device, which can
-happen after a fallback from MSI-X to MSI on resume.
+xsk_get_pool_from_qid() checks the queue id against the stack's real
+queue counts, which can be higher than the number of rings the device
+has, e.g. after igb falls back from MSI-X to MSI on resume. Disabling
+the pool of such a queue then passes a NULL ring to
+igb_txrx_ring_disable().
 
-Tested with the 82576 emulated by QEMU, including, with test-only hooks,
-a runtime resume and a simulated system sleep (the suspend/resume
-callbacks called directly, as the test kernel has no CONFIG_SUSPEND)
-with the device forced to come back with MSI and a single queue. Not
-tested: real hardware and PME wake-up, a real system sleep, the MSI-X
-allocation failure itself, the window before the work item runs, and
-SR-IOV.
+Only disable and re-enable the rings the device has, as
+igb_xsk_pool_enable() and igb_xsk_wakeup() already check.
 
-igc has the same issues (see the notes); Joe Damato offered to test on
-igc, so its fix will be sent separately.
+Compile-tested only: the XSK pool path isn't reachable with the QEMU
+82576 setup used for the rest of the series.
 
-Changes in v3:
-- new patch 1
-- patch 2: set the real queue counts on system sleep resume and from a
-  work item on runtime resume, and drop packets for queues the device
-  doesn't have until then (Janis, Sashiko)
-- patch 3: link the NAPIs from the same work item
+Fixes: 80f6ccf9f116 ("igb: Introduce XSK data structures and helpers")
+Cc: stable@vger.kernel.org # 6.14+
+Link: https://lore.kernel.org/netdev/20261116153041.3002666-2-antonio@mandelbit.com/
+Signed-off-by: Antonio Quartulli <antonio@mandelbit.com>
+---
+v3: new patch.
 
-Changes in v2:
-- patch 2 (v2 patch 1): keep setting the queue counts in __igb_open(),
-  only skipping them on resume (Sashiko)
-- mention the tested hardware in the commit messages
+ drivers/net/ethernet/intel/igb/igb_xsk.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-v2: https://lore.kernel.org/netdev/20261116153041.3002666-1-antonio@mandelbit.com/
-v1: https://lore.kernel.org/netdev/20261113105835.3821433-1-antonio@mandelbit.com/
-
-Antonio Quartulli (4):
-  igb: don't disable rings that don't exist when disabling an XSK pool
-  igb: fix RTNL assertion when resuming from runtime suspend
-  igb: link queues to NAPIs under RTNL after runtime resume
-  igb: only allow runtime PM if the device can wake up
-
- drivers/net/ethernet/intel/igb/igb.h      |  1 +
- drivers/net/ethernet/intel/igb/igb_main.c | 96 +++++++++++++++++------
- drivers/net/ethernet/intel/igb/igb_xsk.c  |  7 +-
- 3 files changed, 80 insertions(+), 24 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/igb/igb_xsk.c b/drivers/net/ethernet/intel/igb/igb_xsk.c
+index ce4a7b5..8ed82bb 100644
+--- a/drivers/net/ethernet/intel/igb/igb_xsk.c
++++ b/drivers/net/ethernet/intel/igb/igb_xsk.c
+@@ -148,7 +148,12 @@ static int igb_xsk_pool_disable(struct igb_adapter *adapter, u16 qid)
+ 		return -EINVAL;
+ 
+ 	rx_ring = adapter->rx_ring[qid];
+-	if_running = netif_running(adapter->netdev) && igb_xdp_is_enabled(adapter);
++	/* The stack can know more queues than the device has, e.g. after a
++	 * fallback to fewer queues on resume: skip the rings it doesn't have.
++	 */
++	if_running = netif_running(adapter->netdev) &&
++		     igb_xdp_is_enabled(adapter) &&
++		     qid < adapter->num_rx_queues;
+ 	if (if_running)
+ 		igb_txrx_ring_disable(adapter, qid);
+ 
 -- 
 2.56.1
 
