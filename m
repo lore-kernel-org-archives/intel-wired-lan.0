@@ -2,126 +2,123 @@ Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D26D9606A31C
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 19 Nov 2026 00:31:37 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6DBCE606A320
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 19 Nov 2026 00:31:41 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=xcapIB/m;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Ao/ATANz
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=npEwLCSD;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=al86r01g
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B3AE160AD4;
-	Thu, 19 Nov 2026 00:31:37 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 4F32560AC1;
+	Thu, 19 Nov 2026 00:31:41 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id LySAg0OyGp_m; Thu, 19 Nov 2026 00:31:36 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 3670160AC8
+ id kXyVIYMUNGBW; Thu, 19 Nov 2026 00:31:37 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org F1FDE60AD1
 Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795048296;
-	b=bEULWBfpI8BPC6pZHJfineB/OM3E6TZNM3XU4IiZ87N5i9j2yptW4DiPVYcCsVGPBe1V
-	 1anrYHHE26QuqvPPeZpQLTmtLKiKBMyzRzsXhOJmZ4uuZdoadRwMcmgvEAuBJ+tYOOJC+
-	 8TXNzf/DgzhH15GdZ12+EMLJvb0ZRCEd+cJOqkdiuOiPh5+dFQJhMVyKY+Z+IKO3SnH8/
-	 fqY53VgapqKvjrzYRsUIIcjXH8KCuBzBqrRmZCCjEwDn2k/S14NG+naG0776is4MMQrMC
-	 z6Sbwie7dF3xhJhuVIW7TCTHbFWgm/+fn9ufmWxdE4b3uYr+YJk6IMJvmRhMalpvehw==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795048297;
+	b=X4DPVjmeuxDJ8AyROgcxAx/BrkEiAsd7B35u0k2HtBmAYtjkxBLjujbXH9fOMqn0/S32
+	 BgMrA0p31LNGRb7TfjYt8tr6ziMmJSUkL1libBZbDi6RxgzdF0kD8gm/gh622lDd0tka/
+	 qVfglt9H/v6Wd3lZm+sqPIOgN5u1sQWjpH3itNobLnJQ+SQPSqb7MoJ++Utf9koGQNUVv
+	 PNaFYRR//FI3zU4fRhBkFciMdqPtMNYtA0S1qic8uGtTRmMtCxJt3dEorH2AQQTN7Myl1
+	 T5jHjAH75V6wEfdq8coa7E8dY7N6BbmhSL8WA/qsa6xw2DRH/VkNvmDwmxT5aqAw3Kw==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795048296;
+	c=relaxed/relaxed; t=1795048297;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
 	 DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-IronPort-AV:
 	 X-IronPort-AV:Received:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-ExtLoop1:
-	 X-IronPort-AV:Received:From:Subject:Date:Message-Id:MIME-Version:
-	 Content-Type:Content-Transfer-Encoding:X-B4-Tracking:X-Change-ID:To:
+	 X-IronPort-AV:Received:From:Date:Subject:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding:Message-Id:References:In-Reply-To:To:
 	 X-Mailer:X-Developer-Signature:X-Developer-Key:X-BeenThere:
 	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=JXJvScyq9Ldt+8iEuv0fZD7FSBifxL4ooWj1iAt++lc=;
-	b=JTgmf6hCKikWMVgFMT1BWzAL5OmXvBv5+ZFIGE/DroXnZ4gXVUSBp4/bg7Y5CA+QdKIZ
-	 P++oRN1utpOaX05gvuM5kiuRXCZGSnt9XB628JnQBrNWjm6Tu1OOLZfX1dqFwihjEGPKY
-	 YybbmL+rNx7jCw/nf0y/aprzM8gSftVSaBuYic3l+tukLR4z5CPgH6G8get7feuhTdyHy
-	 HYhw+WrSP20SMPwX7iRSRweQagtcKfJxD1LqsgRuO+wdOqXYWLNlDc4S5sI3ECkoF4Gb6
-	 VbLxdGgO1L/xTh65HJXgSctYBdAQsrEqZDx7DcQafye9GwgPArJlgNge2lO9dWraNYg==
+	bh=4Aq1zFlGmjhKRPqfYlJzq2tIC3zLZbTMfTtNfU+pZJY=;
+	b=MPUC9JfAtxopONvkLr0+YW22+w8xr8lCbNkmVNJJ50VBa/jcx2hteW2y+8tFM8oyKg9a
+	 IxznUFH8UFE0ONYNH/eqqcmxs3z6dNknUHqWt3j6lBPvMmlbYpHPtFPT3tjgggNfxHl4T
+	 Dhegbced4SL+j6P2tIhvtvaYGte5Yy21H/NntNXhh/g2FABbbt5mNP9Bxz0z/A/HHQt/w
+	 wXUWmR7zKqMuz1eAH+RQDZnIMUqbWiwWx91bM++JK4ehWiUPtFKgmQV7/H5BaUvBHmHT8
+	 utemQrvkGACCLfRqExl/xp6LtSH+GZGWiWGnOJCCYlCEgTy0D5hwELvdWORtkPv7Rng==
 ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1795048296;
-	bh=JXJvScyq9Ldt+8iEuv0fZD7FSBifxL4ooWj1iAt++lc=;
-	h=From:Subject:Date:To:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=xcapIB/mOns37pCttH8RBVqo7O6Lm4sENdK7FefqdwJJuw7oHjBKYecPVcYcCMXKL
-	 SfER83ZGlUPIjn98p9v2pKVKUzIENlMdu/Fg3n7vtFYu3OqF3nZ2bHp5d1Zo/m6t/Z
-	 N1XUw3Vz6fl27aOrpNyLn9mWWSE5vNtkKsc+wTQmYku8W3xawurcWEBSw70fDfNmBV
-	 5K3ImP2vPZiMxyuyRu3229WnKMOgyzYWuBoXUrnveINnS/Z55CYlvr+CqcJatS76iD
-	 T7jILXKmejaOBtbQYMFA9dDLZlbwAFB5ejqGOo8L601RAU7FFTiuOTRjrMtQZ+Bt9y
-	 NseTaBb49+ZAQ==
+	s=default; t=1795048297;
+	bh=4Aq1zFlGmjhKRPqfYlJzq2tIC3zLZbTMfTtNfU+pZJY=;
+	h=From:Date:Subject:References:In-Reply-To:To:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=npEwLCSDuweQwB/Ai0yc2sSvf7yL+9sv4TbEVg3XM2RIgGzNODRNHhtb0+OhemMpb
+	 Ulpm30DjBuOc/8DjK6djTEo+tGbXxDTaQGOwozfm6a0XD6BIaHDGFfw86aADHYGr2c
+	 M5B9TlmFVHy6LDLPPvhW1BLaWieXsZDuQgPWgPGtW9lIoCvGDBd+rtAs4arrh0ZX9W
+	 Ic26j5d9QNEq6KbIJ9z5IcbwiStPkrLZB1chR2FswNgYXw9liCb8OlcYSTmwg2htjB
+	 icAMmBerhYYFES3Ny/z6f9K9FeS+g7NJcPK+kY1Q8PTuGbk5BYaEag9yZNXmG2IZPb
+	 DqutWziAHDsNA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 3670160AC8;
+	by smtp3.osuosl.org (Postfix) with ESMTP id F1FDE60AD1;
 	Thu, 19 Nov 2026 00:31:36 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 835FB70B
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id C9F97392
  for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Nov 2026 00:31:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 69ADC8127D
+ by smtp1.osuosl.org (Postfix) with ESMTP id BBE0681279
  for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Nov 2026 00:31:33 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id OFMbrCvnG8M8 for <intel-wired-lan@lists.osuosl.org>;
- Thu, 19 Nov 2026 00:31:31 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 8174F81279
+ id ofv87Cw3AcEE for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 19 Nov 2026 00:31:32 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 0315081299
 Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=198.175.65.15
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.15;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
 Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=Ao/ATANz
+Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=al86r01g
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 8174F81279
- for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Nov 2026 00:31:29 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 0315081299
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Nov 2026 00:31:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1795048290; x=1826584290;
- h=from:subject:date:message-id:mime-version:
- content-transfer-encoding:to;
- bh=QC+GyWqdY5uG8OFP+ob2Vg/0DapKYCUNSRaXunRp9Qg=;
- b=Ao/ATANzKF9QG7S0Q+lUooYDAbbtof+CWDg9KdxLcV5Q7RELSUmiL3FN
- wNflJNQpfUCl4KbMTvejiY6vxU3Z4/pScNYfTqGgRK94/N6R8ttNC7L7p
- OXN/uulvlOpi/jFO9UtHJkxon0uuG2ejy2ey3+llz7FC72kV5ydevRznL
- 6CAhTWt55x3yApf+CL7YjGAGexT6hfnQKXoRaD6NGu1NRNYrJVEbCLWY0
- R/wwPLYOaVBjMIAh3vKbx4V7CKRUndEvpvdJnvEHC5OqXQQWiIpyXv7dN
- rsPBvGUATG8+VUcxp2P97I7/GdFMQfEWm3rCSGPzYqHUVoiDjI+eZnU0W g==;
-X-CSE-ConnectionGUID: S5Cc/b4nTuWZi7ukjPuf1A==
-X-CSE-MsgGUID: +E/sMMRISLCXq5PeEtiXAQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11970"; a="3886155"
+ t=1795048292; x=1826584292;
+ h=from:date:subject:mime-version:content-transfer-encoding:
+ message-id:references:in-reply-to:to;
+ bh=DZcy52XbD4GxA+yOC6Bd6wIbWtcTDhk5nlKHM28rrrU=;
+ b=al86r01gyPbC2EKLs2xJ/FqNi0SnbH39dcbi8y4nrzF/oVdXuZ09QX9t
+ GineHPhcm4fjEHsgDtbb6+tfYw1FxAXd2KW+Y56+cmRC3Q+BLmL3u/FaH
+ J26RWxfDbDRMnxp/rbOo+uQIb4Xfvkr2j17o6qRQUv49H/OadXEKdN6HG
+ actwMIraFsPj70HHX5TUnHelHTVCpatYMknltpKCmY6Sy2CVqCM0YPGQ9
+ Z5WpaSd9Y1cYgTMfDPTUAZIhnD3/c631EvKBPuaEQioqXmuxIHkuZ9WZg
+ R6g0POjuriN38n3gT/Ncuyg6fAyMRDSbjLAh7UVqBrDmBGLgPt5DWIF06 Q==;
+X-CSE-ConnectionGUID: tDzGW50tR1GkvSLXEeJy8w==
+X-CSE-MsgGUID: 5b2fLJoNRUiqrgtlLifNiQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11970"; a="3886158"
 X-IronPort-AV: E=Sophos;i="6.27,220,1787036400"; 
-   d="scan'208";a="3886155"
+   d="scan'208";a="3886158"
 Received: from fmviesa004.fm.intel.com ([10.60.135.144])
  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 18 Nov 2026 16:31:28 -0800
-X-CSE-ConnectionGUID: KwQQUesHQgGnc9pSl+YPjg==
-X-CSE-MsgGUID: 2QGmBV5qTpimW07ZdoW/aQ==
+ 18 Nov 2026 16:31:29 -0800
+X-CSE-ConnectionGUID: VY5FpNB1TEmVphPiletH3A==
+X-CSE-MsgGUID: iaSW2PRPT72JS5+aKOM1yg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,220,1787036400"; d="scan'208";a="10287239"
+X-IronPort-AV: E=Sophos;i="6.27,220,1787036400"; d="scan'208";a="10287250"
 Received: from orcnseosdtjek.amr.corp.intel.com ([10.166.28.128])
  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 18 Nov 2026 16:31:28 -0800
+ 18 Nov 2026 16:31:29 -0800
 From: Jacob Keller <jacob.e.keller@intel.com>
-Subject: [PATCH iwl-next v4 0/4] ice: E825 timer adjustment fixes
-Date: Wed, 18 Nov 2026 16:30:58 -0800
-Message-Id: <20261118-jk-e825-e830-timecounter-v4-0-0acd194b7357@intel.com>
+Date: Wed, 18 Nov 2026 16:31:01 -0800
+Subject: [PATCH iwl-next v4 3/4] ice: store cached PHC time in ice_adapter
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/4WOTU7DMBBGrxJ5XaPxOLETVtwDsQj2lE5pE2S7p
- qjK3XENiIJE2Yw0f+97JxEpMEVx25xEoMyR56k07aoRbjNOTyTZl14goFGAKLfPknrsStEgE+/
- JzYcpUZBgnOo8AZI1ory/BFrzsaLvBb/u5ETHJB4+NvHwuCWXzuTz7YZjmsNbtciqfnwG6r8Ds
- 5IgadBoANfglbnjMt/duHlfYzJ+g5S6Yp6xgHoLHpz1Vg3dBWjVfAH0P4DB6c6Olrxuh98m+tL
- EXgHpakJj63oz4k/QsizvVLrWUa8BAAA=
-X-Change-ID: 20261022-jk-e825-e830-timecounter-06c15de02e76
+Message-Id: <20261118-jk-e825-e830-timecounter-v4-3-0acd194b7357@intel.com>
+References: <20261118-jk-e825-e830-timecounter-v4-0-0acd194b7357@intel.com>
+In-Reply-To: <20261118-jk-e825-e830-timecounter-v4-0-0acd194b7357@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>, 
  Anthony Nguyen <anthony.l.nguyen@intel.com>, 
  Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
@@ -132,13 +129,13 @@ To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>,
  Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>, 
  Jacob Keller <jacob.e.keller@intel.com>
 X-Mailer: b4 0.17-dev-67df5
-X-Developer-Signature: v=1; a=openpgp-sha256; l=13774;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=27629;
  i=jacob.e.keller@intel.com; h=from:subject:message-id;
- bh=QC+GyWqdY5uG8OFP+ob2Vg/0DapKYCUNSRaXunRp9Qg=;
- b=owGbwMvMwCWWNS3WLp9f4wXjabUkhqx/zkEvFGdKVT1fK3G+eO7OtVP6Z0fXP59e67Jheusjv
- s3GavP9OkpZGMS4GGTFFFkUHEJWXjeeEKb1xlkOZg4rE8gQBi5OAZhI4maGP3zXc7cVp7hFmd75
- +/OLj/qN5GdcCdverA9XYGa8dnXliT2MDNvOLPonPlsi06BqK3/2RimlY1fr9qVWtl5qF1jf4/D
- KnB8A
+ bh=DZcy52XbD4GxA+yOC6Bd6wIbWtcTDhk5nlKHM28rrrU=;
+ b=owGbwMvMwCWWNS3WLp9f4wXjabUkhqx/zjGbfObK7RVu/9bEGhz4PPU6Q8Sf7P5pV9/lbGHxt
+ lzMUBXdUcrCIMbFICumyKLgELLyuvGEMK03znIwc1iZQIYwcHEKwER26zD84RNv+nVw27RqB9+d
+ 58zn6x9peCl1wJ3zCr/a1eNLfbgVGhj+cPNuUp54urJHxEH/5Yl1VdvkglYcWLx5SbVRIOu5Rnc
+ RPgA=
 X-Developer-Key: i=jacob.e.keller@intel.com; a=openpgp;
  fpr=204054A9D73390562AEC431E6A965D3E6F0F28E8
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -151,264 +148,717 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-23.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-18.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_NONE,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+	MAILING_LIST_MULTI,SPF_HELO_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Recently we've had reports of bad timer adjustment on E825. This series
-fixes the issues by replacing direct timer adjustments with a struct
-timecounter to maintain the phase in software instead.
+The ice driver uses a cached copy of the PTP Hardware Clock time for its
+timestamp extension algorithm implemented in ice_ptp_extend_32b_ts(). This
+algorithm is based on work originally from struct timecounter, and relies
+on a cached copy of the PTP time used to extend 32-bit snapshots of the PTP
+time into full 64-bit time values.
 
-To motivate this, the following is an analysis of how the E825 PHY
-timestamps function.
+The driver currently stores this cache once in the ice_ptp structure for
+each PF and once per each Rx ring on each PF. Each PF is then responsible
+for calling ice_ptp_update_cached_phctime() at least once every 2 seconds.
+This is handled by the per-PF periodic work task that runs on a per-PF
+kthread. Each Rx ring must be updated, which requires looping the VSI and
+ring structures, and might fail due to the rings being reconfigured.
 
-    The ice driver maintains PTP clock time in the MAC with a 96-bit
-    register. Timestamps are captured in the PHY which only stores 64
-    bits, only including the lower 32-bits of nanoseconds. The driver
-    performs clock adjustments using a hardware timer command mechanism,
-    where the clock adjustment is programmed into shadow registers in
-    both the MAC and PHY, and then a timer command is initiated to
-    synchronously update the timers.
+In order to fix some device-specific bugs, a following change is going to
+refactor the driver to support using a timecounter structure to avoid
+needing to perform direct time adjustments in hardware on E825 and E830.
 
-    Since the PHY only maintains the lower 32 bits of nanoseconds,
-    adjustments are also limited such that the maximum atomic adjustment
-    is ~2.1 seconds (2^31-1 nanoseconds).
+Use of a timecounter will require the that the Rx path have a reference to
+that structure. To ensure that all PFs on the same device have the same
+time domain, the structure must be part of the whole adapter, making
+ice_adapter the best place to store it. The initial implementation will
+focus only on migrating the E825 and E830 devices, to minimize impact and
+potential regression.
 
-    For large offsets, the driver uses a non-atomic flow where the
-    current time is read, an adjustment is applied in software, and then
-    written back. This necessarily loses some elapsed time, which
-    applications must deal with. For particular servo configurations,
-    where the parameters are tuned for a very slow servo, this error can
-    take a long time to finish correction.
+Since the Rx path will need to reference a structure anyways, it makes
+little sense to maintain both a cached copy of the PHC time in addition to
+a pointer to the adapter.
 
-    On E825, the adjustment in the PHY does not always work reliably.
-    The reason for this is subtle, and is a quirk of how the timestamps
-    are actually generated. The timestamps for Tx and Rx packets come
-    from the PCS timer rather than directly from the PHY timer. The PCS
-    timer is derived from internal PHY signaling.
+As a first step, refactor the driver to store the existing cached PHC time
+in ice_adapter, instead of per-PF in each ice_ptp structure and in the Rx
+rings.
 
-    To keep the PCS timer and PHY timer in sync, every few cycles
-    (testing seems to indicate every 8 cycles) the PHY timer is copied
-    to the PCS timer. On other cycles, the PCS timer is incremented by a
-    value determined from the PCS clock rate.
+Create a struct ice_phc structure to store the PTP Hardware Clock fields,
+and embed it in ice_adapter. Store a pointer to the PHC structure in the Rx
+rings, replacing the cached_phctime.
 
-    Crucially, the copy of the PHY timer is skipped if the current value
-    of the PHY timer is lower than the PCS timer (*and* on this cycle
-    the regular PCS clock increment is also skipped).
+Pass a pointer to the PHC structure to ice_ptp_extend_32b_ts() and obtain
+the cached time from that structure. Modify the Tx and Rx paths to stop
+using a zero value of cached_time as a canary for the clock owner
+disappearing. The ice_ptp_read_src_clk_reg() can't fail when called by the
+clock owner anyways, so this check is not very meaningful when only the
+clock owner performs the cached update.
 
-    During normal operation, the PCS timer will tick from its own source
-    for 7 ticks then copy the PCS timer. If the PCS timer is slightly
-    ahead, then PHY timer update is skipped, and the PCS timer skips an
-    update every 8 clock cycles until it is back in alignment with the
-    PHY timer.
+Modify the ice_ptp_update_cached_phctime(), removing logic to update the
+cached time within the Rx rings. Convert it to a void function since it can
+no longer fail in a meaningful way.
 
-    Unfortunately, this hardware logic did not take into account manual
-    adjustments to the PHY. If the PHY timer is adjusted backwards, (or
-    if a forward adjustment causes the PHY timer to overflow), the PHY
-    to PCS sync will not occur again until the PCS timer wraps back
-    around to zero. In the worst case, an adjustment could land the PHY
-    timer to just below the PCS timer just after it wraps around. PHY to
-    PCS syncs would stop for ~3.6 seconds.
+Change ice_ptp_periodic_work() to check ice_pf_src_tmr_owned() and only
+call ice_ptp_update_cached_phctime() for the clock owner. To ensure a
+consistent update after the clock adjustments, use a mutex to serialize the
+calls to ice_ptp_update_cached_phctime(). This lock is acquired *before*
+the read of the current time. This ensures that even if a periodic update
+races with a clock adjustment, it will either happen before or will see the
+clock adjusted after as it updates cached_time. Performing the update only
+on the clock owner does make the late_cached_phc_updates ethtool stat only
+apply for the clock owner.
 
-    During this time, the Tx and Rx timestamps will read from the PCS
-    timer. These timestamps will be fed into the timestamp extension
-    algorithm which will produce incoherent results, and data will be
-    fed into the PTP application servo. During the invalid window,
-    faulty timestamps will cause the servo to steer incorrectly, likely
-    away from the true target time. After the PCS timer synchronizes
-    again, the timestamps will return to normal. However, the servo may
-    have steered the clock incorrectly. In default ptp4l configurations,
-    direct clock adjustment is only performed once during startup. This
-    forces the application to use frequency slewing to correct any
-    remaining offset. With slow servo parameters, this can take a *very*
-    long time. In some setups, we had reports of taking several minutes
-    to nearly an hour before stabilizing, and in some configurations the
-    servo was unable to ever recover.
+Since the Rx path now has access to the PHC structure, move the timeout
+check from ice_ptp_extend_40b_ts() into ice_ptp_extend_32b_ts(). This
+ensures that Rx timestamps also get discarded if the cached PHC update
+becomes stale.
 
-    Note that adjustments work properly on the MAC timer, and indeed on
-    the first-layer PHY timer value that the driver can read over the
-    sideband queue. Only the PCS timer (which is inaccessible to the
-    driver) fails to adjust. This made tracking the precise origin of
-    the failure difficult.
+The ice_ptp_reset_cached_phctime() function previously only applied to the
+clock owner. This was wrong, as the driver should have been updating all
+ports cached time copy, and marking each port tracker as stale. Introduce
+the ice_ptp_mark_all_tx_tracker_stale() and use it here.
 
-Testing shows that pretty much all "negative" adjustments and about half
-of the positive adjustments can trigger this failure. It is also
-difficult to see without using extremely slow servo parameters. With a
-servo tuned for fast reaction, the incorrect timestamps will cause some
-difficulty in the first adjustment, but the servo will quickly correct
-and recover within a few seconds at most.
+When restoring the clock time, the driver currently uses the last cached
+copy of the PHC time, and adds the time the device took in reset. This is
+not very precise, since the time delta is calculated from a timestamp
+captured at the end of ice_ptp_prepare_for_reset(). Instead, replace using
+jiffies for the stale timestamp check with ktime values, storing the full
+ktime instead of jiffies in ice_ptp_update_cached_time(). When calculating
+the elapsed time, use the time since that last update instead. This
+calculates a more precise time with less error. It also avoids needing to
+keep an extra copy of the PHC time or reset ktime in the PTP structure. It
+should also be correct even if the reset has cleared the GLTSYN_TIME values
+before ice_ptp_prepare_for_reset() is called.
 
-I used the following P/I servo parameters in my testing:
+To protect readers from concurrent update, use a seqcount_latch_t which
+directs the ice_ptp_extend_32b_ts() to read from the secondary copy if it
+interrupts a writer. This ensures a consistent read of the update_time and
+cached_time, and will be even more necessary for the upcoming introduction
+of the timecounter.
 
-    pi_proportional_const 0.60
-    pi_integral_const 0.001
-    pi_proportional_scale 0.0
-    pi_proportional_exponent -0.3
-    pi_proportional_norm_max 0.7
-    pi_integral_scale 0.0
-    pi_integral_exponent 0.4
-    pi_integral_norm_max 0.3
+These changes eliminate failure points from the cached PHC time update,
+reduce needless duplicate work across PFs, and ensure consistency of the
+cached time update w.r.t clock adjustments. They also pave the way for
+introduction of a timecounter in a following change.
 
-In particular, the pi_integral_const will force the servo to be very
-slow at reacting.
+Careful readers may note that non-owner PFs now completely depend on the
+clock owner PF being loaded to ensure the cached time is up to date,
+as they will start discarding timestamps 2 seconds after the last update.
+However, PTP already has a strong dependency on the clock owner PF. Only
+the owner initializes the PHC mac timer and exposes the PTP clock device.
+E822 and E825 devices also depend on the clock owner miscellaneous IRQ for
+handling all Tx timestamps. PTP also will not behave right under PCIe
+device passthru unless all PFs are assigned into the same VM, due to
+depending on coordination via the ice_adapter structure. This is a
+limitation due to the quirks of the device design.
 
-Even trying to compare the MAC timer with the Tx and Rx timestamps is
-not trivial. There is no mechanism to synchronously read the MAC timer
-along with a timestamp. Additionally, timestamp extension makes this even
-harder to track. The MAC timer is immediately adjusted and the cached PHC
-time is updated. Normally timestamps from before the adjustment should
-reasonably convert, however if the adjustment is large enough the timestamp
-can flip to being detected as "in the past" and in the worst cases the
-resulting extended timestamps will have a second sudden jump of -4.2
-seconds before the PCS timer adjustment is applied and things settle. All
-of this while being fed into a servo trying to steer the clock can make it
-difficult to understand what is going on.
-
-With that background out of the way, here's a summary of the patch content:
-
-First, the SO_TX_TIME support in ice_tx_map() is adjusted to compute the
-timestamp from the full nanoseconds instead of only the sub-second portion
-of the timestamp.
-
-Next, the PTP callback functions are adjusted to check that the PTP state
-is ready. This makes them fail early if the driver is resetting or enters
-an error state. This isn't a complete synchronization fix as it doesn't
-protect against an already-running command when a reset starts. More work
-is underway to investigate and determine the best synchronization solution.
-
-Next, the timestamp extension logic is refactored to store the cached
-PHC time value inside the ice_adapter structure under a new ice_phc
-structure which will be used to store timecounter data. This change
-reduces the number of threads that need to perform timestamp extension
-and makes introduction of timecounter simpler as it gives a natural
-place for accessing the structure and simplifies modifications to the Rx
-hotpath in particular. This does further solidify the dependency on the
-clock owning PF.
-
-Finally, the driver is modified to allow use of a timecounter for
-representing the time instead of directly adjusting the phase in
-hardware. Frequency adjustments continue to be handled in hardware. For
-now, only the E825 and E830 devices are switched. The legacy
-implementation remains for supporting older installations of E810 and
-E822 platform devices. We plan to complete migration in the future, but
-felt that immediate conversion would slow down ability to validate that
-all older installations will behave correctly. Since the E825 device
-timer adjustment logic is completely useless, this can speed up ability
-to adopt the fix. Although E830 does not appear to have the same timer
-command issue, it was decided to convert both since they are the most
-recent devices and undergoing the most testing and active development.
-
-Because the timecounter already exists within the kernel, it was deemed the
-best solution, despite its trade offs required for implementation. I'm
-open to other alternative fixes if anyone has a better solution. One key
-thing is that we need the 32-bit cycle counter mask in order to enable
-timestamp extension, but this means we effectively (mostly) ignore the
-upper 32-bits of the MAC timer when they could be used for tracking time
-over the wraparound. Sashiko is not happy about this dependency on
-requiring the periodic 2 second check on the clock owner, and complains
-about ways it could break if that stops.
-
-This series fixes a separate issue from [1] and does not *directly* depend
-on it. The fixes in that series are necessary but not sufficient to
-completely eliminate PHY timer desync issues on E825.
-
-There are some structural conflicts with the ctrl_pf RCU changes at [2]
-which I have tried to integrate, so this won't be a straightforward
-cherry-pick to trees without that series.
-
-One final note, the conversion to timecounter supersedes the changes
-from [3], and that patch has been removed from more recent versions of
-that series. The reset partially helped, but was only applied to the
-non-atomic settime interface. In particular, the settime interface was
-vulnerable to the same PCS issue, but the PHY soft reset *does* clear
-both the PHY and PCS timers back to 0. Performing a reset after the
-adjustment will force both timers back to zero and then perform a
-forward adjustment that won't trigger the failure condition. However,
-attempting to add this reset to *every* timer adjustment comes with
-unnecessary delay since the whole process takes a long time especially
-with the PHY soft reset. It was ultimately deemed as not a proper fix
-suitable for deployment.
-
-Link: [1] https://lore.kernel.org/intel-wired-lan/20260925222824.270640-1-grzegorz.nitka@intel.com/
-Link: [2] https://lore.kernel.org/intel-wired-lan/20261013091235.1423979-1-sergey.temerkhanov@intel.com/
-Link: [3] https://lore.kernel.org/netdev/20261008215614.1987250-16-anthony.l.nguyen@intel.com/
+The Rx path now requires accessing the PHC structure via a dereference and
+performs the jiffies timeout check which may impact performance. However,
+this ensures that Rx timestamps do not get extended on stale data and
+access to the PHC is required for the timecounter refactor anyways.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
-Changes in v4:
-- Use the seqcount_latch_t for legacy mode as well as timecounter mode
-- Fix the locking on failure in ice_ptp_rebuild_owner()
-- Use ktime_get_boottime() for the update_time
-- Link to v3: https://patch.msgid.link/20261117-jk-e825-e830-timecounter-v3-0-87ea4c86a249@intel.com
+ drivers/net/ethernet/intel/ice/ice_adapter.h |  36 ++++
+ drivers/net/ethernet/intel/ice/ice_ptp.h     |   6 -
+ drivers/net/ethernet/intel/ice/ice_txrx.h    |   4 +-
+ drivers/net/ethernet/intel/ice/ice_adapter.c |   6 +
+ drivers/net/ethernet/intel/ice/ice_ethtool.c |   1 -
+ drivers/net/ethernet/intel/ice/ice_lib.c     |   2 +-
+ drivers/net/ethernet/intel/ice/ice_ptp.c     | 243 ++++++++++++---------------
+ 7 files changed, 152 insertions(+), 146 deletions(-)
 
-Changes in v3:
-- Fix locking for periodic output signal configuration
-- Use ktime instead of jiffies for cached PHC time check and staleness
-  check on Tx timestamps
-- Use last cached PHC time and ktime to reset clock after a reset instead
-  of reading the reset time at the end of ice_ptp_prepare_for_reset().
-- Link to v2: https://patch.msgid.link/20261113-jk-e825-e830-timecounter-v2-0-9c357a7ed349@intel.com
+diff --git a/drivers/net/ethernet/intel/ice/ice_adapter.h b/drivers/net/ethernet/intel/ice/ice_adapter.h
+index ce1fe0846265..6fa4e2a0956b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adapter.h
++++ b/drivers/net/ethernet/intel/ice/ice_adapter.h
+@@ -8,6 +8,7 @@
+ #include <linux/mutex.h>
+ #include <linux/rwsem.h>
+ #include <linux/srcu.h>
++#include <linux/seqlock.h>
+ #include <linux/spinlock_types.h>
+ #include <linux/refcount_types.h>
+ 
+@@ -35,6 +36,38 @@ struct ice_port_list {
+ 	struct srcu_struct srcu;
+ };
+ 
++/**
++ * struct ice_phc - PTP Hardware Clock fields
++ *
++ * Structure used for handling the timestamp extension logic for this device.
++ *
++ * Legacy timestamp extension fields:
++ * @cached_time: Cached copy of the PHC time for timestamp extension
++ *
++ * General fields:
++ * @update_time: Monotonic time when PHC was laste updated
++ * @seq: seqcount_latch_t used to protect readers, directing them to the
++ *       secondary copy during an update.
++ * @lock: For protecting updates to the PHC fields.
++ *
++ * Readers are lockless and rely on the latched sequence counter for
++ * a consistent view of the most recent update, even if they interrupt
++ * a writer.
++ *
++ * Writers must acquire the lock mutex to ensure that the periodic task cannot
++ * race with clock adjustment callbacks.
++ */
++struct ice_phc {
++	/* Legacy timestamp extension fields */
++	u64 cached_time[2];
++
++	/* General fields */
++	ktime_t update_time[2];
++	seqcount_latch_t seq;
++	/* Serialize updates to cached_time */
++	struct mutex lock;
++};
++
+ /**
+  * struct ice_adapter - PCI adapter resources shared across PFs
+  * @refcount: Reference count. struct ice_pf objects hold the references.
+@@ -46,6 +79,7 @@ struct ice_port_list {
+  * @cgu_synce_lock: Mutex serializing changes of the CGU registers R10 and R11,
+  *                  which all PFs reach. Used on E825C devices.
+  * @ps_lock: Mutex to serialize PHY port start/stop across adapter.
++ * @phc: PTP Hardware Clock fields
+  * @ctrl_pf_lock: Protect control PF lifetime for sleepable users
+  * @ctrl_pf: Control PF of the adapter
+  * @rebuild_lock: serialize PFR recovery across PFs of the same adapter
+@@ -73,6 +107,8 @@ struct ice_adapter {
+ 	/* For serializing PHY port start/stop sequences */
+ 	struct mutex ps_lock;
+ 
++	struct ice_phc phc;
++
+ 	struct rw_semaphore ctrl_pf_lock;
+ 	struct ice_pf __rcu *ctrl_pf;
+ 	struct ice_port_list ports;
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.h b/drivers/net/ethernet/intel/ice/ice_ptp.h
+index 40a0e654c2c6..ab9bf86f7a4c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.h
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.h
+@@ -235,8 +235,6 @@ struct ice_ptp_pin_desc {
+  * @tx_interrupt_mode: the TX interrupt mode for the PTP clock
+  * @port: data for the PHY port initialization procedure
+  * @work: delayed work function for periodic tasks
+- * @cached_phc_time: a cached copy of the PHC time for timestamp extension
+- * @cached_phc_jiffies: jiffies when cached_phc_time was last updated
+  * @kworker: kwork thread for handling periodic work
+  * @ext_ts_irq: the external timestamp IRQ in use
+  * @pin_desc: structure defining pins
+@@ -247,7 +245,6 @@ struct ice_ptp_pin_desc {
+  * @clock: pointer to registered PTP clock device
+  * @tstamp_config: hardware timestamping configuration
+  * @tx_refclks: bitmaps table to store the information about TX reference clocks
+- * @reset_time: kernel time after clock stop on reset
+  * @tx_hwtstamp_good: number of completed Tx timestamp requests
+  * @tx_hwtstamp_skipped: number of Tx time stamp requests skipped
+  * @tx_hwtstamp_timeouts: number of Tx skbs discarded with no time stamp
+@@ -270,8 +267,6 @@ struct ice_ptp {
+ 	enum ice_ptp_tx_interrupt tx_interrupt_mode;
+ 	struct ice_ptp_port port;
+ 	struct kthread_delayed_work work;
+-	u64 cached_phc_time;
+-	unsigned long cached_phc_jiffies;
+ 	struct kthread_worker *kworker;
+ 	u8 ext_ts_irq;
+ 	struct ptp_pin_desc pin_desc[ICE_N_PINS_MAX];
+@@ -282,7 +277,6 @@ struct ice_ptp {
+ 	struct ptp_clock *clock;
+ 	struct kernel_hwtstamp_config tstamp_config;
+ 	unsigned long tx_refclks[ICE_E825_MAX_PHYS][ICE_REF_CLK_MAX];
+-	u64 reset_time;
+ 	u64 tx_hwtstamp_good;
+ 	u32 tx_hwtstamp_skipped;
+ 	u32 tx_hwtstamp_timeouts;
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
+index 5e517f219379..83a34322e0d3 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.h
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
+@@ -221,7 +221,7 @@ enum ice_tx_ring_flags {
+ };
+ 
+ struct ice_pkt_ctx {
+-	u64 cached_phctime;
++	struct ice_phc *phc;
+ 	__be16 vlan_proto;
+ };
+ 
+@@ -321,7 +321,7 @@ struct ice_rx_ring {
+ 	union {
+ 		struct ice_pkt_ctx pkt_ctx;
+ 		struct {
+-			u64 cached_phctime;
++			struct ice_phc *phc;
+ 			__be16 vlan_proto;
+ 		};
+ 	};
+diff --git a/drivers/net/ethernet/intel/ice/ice_adapter.c b/drivers/net/ethernet/intel/ice/ice_adapter.c
+index 29e089a5a86e..d8e3bb122e76 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adapter.c
++++ b/drivers/net/ethernet/intel/ice/ice_adapter.c
+@@ -6,6 +6,7 @@
+ #include <linux/pci.h>
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
++#include <linux/seqlock.h>
+ #include <linux/srcu.h>
+ #include <linux/xarray.h>
+ #include "ice_adapter.h"
+@@ -83,6 +84,9 @@ static struct ice_adapter *ice_adapter_new(struct pci_dev *pdev)
+ 
+ 	mutex_init(&adapter->ps_lock);
+ 
++	seqcount_latch_init(&adapter->phc.seq);
++	mutex_init(&adapter->phc.lock);
++
+ 	return adapter;
+ }
+ 
+@@ -98,6 +102,8 @@ static void ice_adapter_free(struct ice_adapter *adapter)
+ 	cleanup_srcu_struct(&adapter->ports.srcu);
+ 	mutex_destroy(&adapter->ps_lock);
+ 
++	mutex_destroy(&adapter->phc.lock);
++
+ 	kfree(adapter);
+ }
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index 90fa11b22820..ca5137724b38 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -3338,7 +3338,6 @@ ice_set_ringparam(struct net_device *netdev, struct ethtool_ringparam *ring,
+ 		/* clone ring and setup updated count */
+ 		rx_rings[i] = *vsi->rx_rings[i];
+ 		rx_rings[i].count = new_rx_cnt;
+-		rx_rings[i].cached_phctime = pf->ptp.cached_phc_time;
+ 		rx_rings[i].desc = NULL;
+ 		rx_rings[i].xdp_buf = NULL;
+ 		rx_rings[i].xdp_rxq = (struct xdp_rxq_info){ };
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 9be3f52bb9d9..f3fefab09f8c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -1527,7 +1527,7 @@ static int ice_vsi_alloc_rings(struct ice_vsi *vsi)
+ 		ring->vsi = vsi;
+ 		ring->netdev = vsi->netdev;
+ 		ring->count = vsi->num_rx_desc;
+-		ring->cached_phctime = pf->ptp.cached_phc_time;
++		ring->phc = &pf->adapter->phc;
+ 
+ 		if (ice_is_feature_supported(pf, ICE_F_GCS))
+ 			ring->flags |= ICE_RX_FLAGS_RING_GCS;
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
+index 777db22a7c24..a2c7dbd551e9 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+@@ -274,8 +274,9 @@ int ice_ptp_read_src_clk_reg(struct ice_pf *pf,
+ 
+ /**
+  * ice_ptp_extend_32b_ts - Convert a 32b nanoseconds timestamp to 64b
+- * @cached_phc_time: recently cached copy of PHC time
++ * @phc: PTP Hardware Clock structure
+  * @in_tstamp: Ingress/egress 32b nanoseconds timestamp value
++ * @trace_rx: True if this call should trigger an Rx timestamp trace
+  *
+  * Hardware captures timestamps which contain only 32 bits of nominal
+  * nanoseconds, as opposed to the 64bit timestamps that the stack expects.
+@@ -309,13 +310,34 @@ int ice_ptp_read_src_clk_reg(struct ice_pf *pf,
+  * This is prevented by (a) periodically updating the cached PHC time once
+  * a second, and (b) discarding any Tx timestamp packet if it has waited for
+  * a timestamp for more than one second.
++ *
++ * Return: the extended timestamp value, or 0 if phc->update_time is stale.
+  */
+-static u64 ice_ptp_extend_32b_ts(u64 cached_phc_time, u32 in_tstamp)
++static u64 ice_ptp_extend_32b_ts(struct ice_phc *phc,
++				 u32 in_tstamp, bool trace_rx)
+ {
++	u64 ns, cached_phc_time;
+ 	u32 delta, phc_time_lo;
+-	u64 ns;
++	unsigned int seq, idx;
++	ktime_t update_time;
++
++	/* Get a consistent copy of the update_time and PHC time */
++	do {
++		seq = read_seqcount_latch(&phc->seq);
++		idx = seq & 0x1;
++
++		update_time = phc->update_time[idx];
++		cached_phc_time = phc->cached_time[idx];
++	} while (read_seqcount_latch_retry(&phc->seq, seq));
++
++	/* Discard the timestamp if update_time isn't initialized */
++	if (!update_time)
++		return 0;
++
++	/* Discard the hardware timestamp if update_time is stale */
++	if (ktime_ms_delta(ktime_get_coarse_boottime(), update_time) > 2000)
++		return 0;
+ 
+-	/* Extract the lower 32 bits of the PHC time */
+ 	phc_time_lo = (u32)cached_phc_time;
+ 
+ 	/* Calculate the delta between the lower 32bits of the cached PHC
+@@ -336,6 +358,9 @@ static u64 ice_ptp_extend_32b_ts(u64 cached_phc_time, u32 in_tstamp)
+ 		ns = cached_phc_time + delta;
+ 	}
+ 
++	if (trace_rx)
++		ice_trace(rx_hwtstamp, cached_phc_time, in_tstamp, ns);
++
+ 	return ns;
+ }
+ 
+@@ -359,7 +384,7 @@ static u64 ice_ptp_extend_32b_ts(u64 cached_phc_time, u32 in_tstamp)
+  * calling this function.
+  *
+  * Extract the 32bit nominal nanoseconds and extend them. Use the cached PHC
+- * time stored in the device private PTP structure as the basis for timestamp
++ * time stored in the adapter PHC structure as the basis for timestamp
+  * extension.
+  *
+  * See ice_ptp_extend_32b_ts for a detailed explanation of the extension
+@@ -367,28 +392,17 @@ static u64 ice_ptp_extend_32b_ts(u64 cached_phc_time, u32 in_tstamp)
+  */
+ static u64 ice_ptp_extend_40b_ts(struct ice_pf *pf, u64 in_tstamp)
+ {
++	struct ice_phc *phc = &pf->adapter->phc;
+ 	const u64 mask = GENMASK_ULL(31, 0);
+-	unsigned long discard_time;
+-	u64 cached_time;
++	u64 ns;
+ 
+-	/* Discard the hardware timestamp if the cached PHC time is too old */
+-	discard_time = pf->ptp.cached_phc_jiffies + msecs_to_jiffies(2000);
+-	if (time_is_before_jiffies(discard_time)) {
++	ns = ice_ptp_extend_32b_ts(phc, (in_tstamp >> 8) & mask, false);
++
++	/* A value of 0 indicates the timestamp was discarded */
++	if (!ns)
+ 		pf->ptp.tx_hwtstamp_discarded++;
+-		return 0;
+-	}
+ 
+-	/* Discard it as well if there is no cached PHC time at all, which is
+-	 * how ice_ptp_update_cached_phctime() reports that the source clock
+-	 * has become unreachable.
+-	 */
+-	cached_time = READ_ONCE(pf->ptp.cached_phc_time);
+-	if (!cached_time) {
+-		pf->ptp.tx_hwtstamp_discarded++;
+-		return 0;
+-	}
+-
+-	return ice_ptp_extend_32b_ts(cached_time, (in_tstamp >> 8) & mask);
++	return ns;
+ }
+ 
+ /**
+@@ -909,6 +923,31 @@ ice_ptp_flush_all_tx_tracker(struct ice_pf *pf)
+ 	srcu_read_unlock(&ports->srcu, srcu_idx);
+ }
+ 
++/**
++ * ice_ptp_mark_all_tx_tracker_stale - Mark all unfinished timestamps stale
++ * @pf: Board private structure
++ *
++ * Mark currently outstanding Tx timestamps for all ports as stale. Called by
++ * the clock owner when a time adjustment is made to prevent accidentally
++ * extending timestamps captured before the adjustment.
++ */
++static void ice_ptp_mark_all_tx_tracker_stale(struct ice_pf *pf)
++{
++	struct ice_port_list *ports = &pf->adapter->ports;
++	struct ice_ptp_port *port;
++	int srcu_idx;
++
++	srcu_idx = srcu_read_lock(&ports->srcu);
++	list_for_each_entry_srcu(port, &ports->list, list_node,
++				 srcu_read_lock_held(&ports->srcu)) {
++		if (!kref_get_unless_zero(&port->ref))
++			continue;
++		ice_ptp_mark_tx_tracker_stale(&port->tx);
++		kref_put(&port->ref, ice_ptp_release_port_srcu);
++	}
++	srcu_read_unlock(&ports->srcu, srcu_idx);
++}
++
+ /**
+  * ice_ptp_release_tx_tracker - Release allocated memory for Tx tracker
+  * @pf: Board private structure
+@@ -993,81 +1032,54 @@ static int ice_ptp_init_tx(struct ice_pf *pf, struct ice_ptp_tx *tx, u8 port)
+ }
+ 
+ /**
+- * ice_ptp_update_cached_phctime - Update the cached PHC time values
++ * ice_ptp_update_cached_phctime - Update the cached PHC time value
+  * @pf: Board specific private structure
+  *
+- * This function updates the system time values which are cached in the PF
+- * structure and the Rx rings.
++ * Update the cached PHC time used for timestamp extension.
+  *
+- * This function must be called periodically to ensure that the cached value
+- * is never more than 2 seconds old.
+- *
+- * Note that the cached copy in the PF PTP structure is always updated, even
+- * if we can't update the copy in the Rx rings.
+- *
+- * Return:
+- * * 0 - OK, successfully updated
+- * * -EAGAIN - PF was busy, need to reschedule the update
+- * * -ENODEV - no control PF owns the source clock register space
+- * * -EOPNOTSUPP - PTP support is not compiled in
++ * This function must be called periodically by the clock owner to ensure that
++ * the timecounter or cached value is never more than 2 seconds old.
+  */
+-static int ice_ptp_update_cached_phctime(struct ice_pf *pf)
++static void ice_ptp_update_cached_phctime(struct ice_pf *pf)
+ {
++	struct ice_phc *phc = &pf->adapter->phc;
+ 	struct device *dev = ice_pf_to_dev(pf);
+-	unsigned long update_before;
++	ktime_t now;
+ 	u64 systime;
+-	int err, i;
++	s64 delta;
++	int err;
+ 
+-	update_before = pf->ptp.cached_phc_jiffies + msecs_to_jiffies(2000);
+-	if (pf->ptp.cached_phc_time &&
+-	    time_is_before_jiffies(update_before)) {
+-		unsigned long time_taken = jiffies - pf->ptp.cached_phc_jiffies;
++	mutex_lock(&phc->lock);
+ 
+-		dev_warn(dev, "%u msecs passed between update to cached PHC time\n",
+-			 jiffies_to_msecs(time_taken));
++	now = ktime_get_boottime();
++	delta = ktime_ms_delta(now, phc->update_time[0]);
++	if (phc->update_time[0] && delta > 2000) {
++		dev_warn(dev, "%lld msecs passed between update to cached PHC time\n",
++			 delta);
+ 		pf->ptp.late_cached_phc_updates++;
+ 	}
+ 
++	write_seqcount_latch_begin(&phc->seq);
++
+ 	/* Read the current PHC time */
+ 	err = ice_ptp_read_src_clk_reg(pf, NULL, &systime);
+ 	if (err) {
+ 		/* The source clock is gone, so the cache can no longer be
+ 		 * refreshed. Publish zero instead of leaving the last good
+-		 * value behind: neither ice_ptp_get_rx_hwts() nor
+-		 * ice_ptp_extend_40b_ts() may extend against a value that no
+-		 * longer tracks the PHC, and both treat a zero cache as
+-		 * "no timestamp".
++		 * value behind.
+ 		 */
+ 		systime = 0;
+-		WRITE_ONCE(pf->ptp.cached_phc_time, 0);
+-	} else {
+-		/* Update the cached PHC time stored in the PF structure */
+-		WRITE_ONCE(pf->ptp.cached_phc_time, systime);
+-		WRITE_ONCE(pf->ptp.cached_phc_jiffies, jiffies);
++		now = ns_to_ktime(0);
+ 	}
+ 
+-	if (test_and_set_bit(ICE_CFG_BUSY, pf->state))
+-		return -EAGAIN;
++	phc->cached_time[0] = systime;
++	phc->update_time[0] = now;
++	write_seqcount_latch(&phc->seq);
++	phc->cached_time[1] = systime;
++	phc->update_time[1] = now;
++	write_seqcount_latch_end(&phc->seq);
+ 
+-	ice_for_each_vsi(pf, i) {
+-		struct ice_vsi *vsi = pf->vsi[i];
+-		int j;
+-
+-		if (!vsi)
+-			continue;
+-
+-		if (vsi->type != ICE_VSI_PF)
+-			continue;
+-
+-		ice_for_each_rxq(vsi, j) {
+-			if (!vsi->rx_rings[j])
+-				continue;
+-			WRITE_ONCE(vsi->rx_rings[j]->cached_phctime, systime);
+-		}
+-	}
+-	clear_bit(ICE_CFG_BUSY, pf->state);
+-
+-	return err;
++	mutex_unlock(&phc->lock);
+ }
+ 
+ /**
+@@ -1076,41 +1088,18 @@ static int ice_ptp_update_cached_phctime(struct ice_pf *pf)
+  *
+  * This function must be called when the cached PHC time is no longer valid,
+  * such as after a time adjustment. It marks any currently outstanding Tx
+- * timestamps as stale and updates the cached PHC time for both the PF and Rx
+- * rings.
+- *
+- * If updating the PHC time cannot be done immediately, a warning message is
+- * logged and the work item is scheduled immediately to minimize the window
+- * with a wrong cached timestamp.
++ * timestamps as stale and updates the cached PHC time.
+  */
+ static void ice_ptp_reset_cached_phctime(struct ice_pf *pf)
+ {
+-	struct device *dev = ice_pf_to_dev(pf);
+-	int err;
+-
+-	/* Update the cached PHC time immediately if possible, otherwise
+-	 * schedule the work item to execute soon.
+-	 */
+-	err = ice_ptp_update_cached_phctime(pf);
+-	if (err) {
+-		/* If another thread is updating the Rx rings, we won't
+-		 * properly reset them here. This could lead to reporting of
+-		 * invalid timestamps, but there isn't much we can do.
+-		 */
+-		dev_warn(dev, "%s: unable to immediately update cached PHC time, err %d\n",
+-			 __func__, err);
+-
+-		/* Queue the work item to update the Rx rings when possible */
+-		kthread_queue_delayed_work(pf->ptp.kworker, &pf->ptp.work,
+-					   msecs_to_jiffies(10));
+-	}
++	ice_ptp_update_cached_phctime(pf);
+ 
+ 	/* Mark any outstanding timestamps as stale, since they might have
+ 	 * been captured in hardware before the time update. This could lead
+ 	 * to us extending them with the wrong cached value resulting in
+ 	 * incorrect timestamp values.
+ 	 */
+-	ice_ptp_mark_tx_tracker_stale(&pf->ptp.port.tx);
++	ice_ptp_mark_all_tx_tracker_stale(pf);
+ }
+ 
+ /**
+@@ -2484,28 +2473,14 @@ int ice_ptp_hwtstamp_set(struct net_device *netdev,
+ u64 ice_ptp_get_rx_hwts(const union ice_32b_rx_flex_desc *rx_desc,
+ 			const struct ice_pkt_ctx *pkt_ctx)
+ {
+-	u64 ts_ns, cached_time;
+ 	u32 ts_high;
++	u64 ts_ns;
+ 
+ 	if (!(rx_desc->wb.time_stamp_low & ICE_PTP_TS_VALID))
+ 		return 0;
+ 
+-	cached_time = READ_ONCE(pkt_ctx->cached_phctime);
+-
+-	/* Do not report a timestamp if we don't have a cached PHC time */
+-	if (!cached_time)
+-		return 0;
+-
+-	/* Use ice_ptp_extend_32b_ts directly, using the ring-specific cached
+-	 * PHC value, rather than accessing the PF. This also allows us to
+-	 * simply pass the upper 32bits of nanoseconds directly. Calling
+-	 * ice_ptp_extend_40b_ts is unnecessary as it would just discard these
+-	 * bits itself.
+-	 */
+ 	ts_high = le32_to_cpu(rx_desc->wb.flex_ts.ts_high);
+-	ts_ns = ice_ptp_extend_32b_ts(cached_time, ts_high);
+-
+-	ice_trace(rx_hwtstamp, cached_time, ts_high, ts_ns);
++	ts_ns = ice_ptp_extend_32b_ts(pkt_ctx->phc, ts_high, true);
+ 
+ 	return ts_ns;
+ }
+@@ -3104,24 +3079,20 @@ static void ice_ptp_periodic_work(struct kthread_work *work)
+ {
+ 	struct ice_ptp *ptp = container_of(work, struct ice_ptp, work.work);
+ 	struct ice_pf *pf = container_of(ptp, struct ice_pf, ptp);
+-	int err;
+ 
+ 	if (pf->ptp.state != ICE_PTP_READY)
+ 		return;
+ 
+ 	ice_ptp_tspll_monitor(pf);
+ 
+-	err = ice_ptp_update_cached_phctime(pf);
++	if (ice_pf_src_tmr_owned(pf))
++		ice_ptp_update_cached_phctime(pf);
+ 
+ 	ice_ptp_maybe_trigger_tx_interrupt(pf);
+ 
+-	/* Run twice a second, or retry soon if another thread was busy
+-	 * updating the Rx rings. Other errors, such as a missing control PF,
+-	 * do not clear up on their own and must not turn the periodic worker
+-	 * into a busy loop.
+-	 */
++	/* Run twice a second */
+ 	kthread_queue_delayed_work(ptp->kworker, &ptp->work,
+-				   msecs_to_jiffies(err == -EAGAIN ? 10 : 500));
++				   msecs_to_jiffies(500));
+ }
+ 
+ /**
+@@ -3213,9 +3184,6 @@ void ice_ptp_prepare_for_reset(struct ice_pf *pf, enum ice_reset_req reset_type)
+ 
+ 	/* Disable source clock */
+ 	wr32(&pf->hw, GLTSYN_ENA(src_tmr), (u32)~GLTSYN_ENA_TSYN_ENA_M);
+-
+-	/* Acquire PHC and system timer to restore after reset */
+-	ptp->reset_time = ktime_get_real_ns();
+ }
+ 
+ /**
+@@ -3227,10 +3195,10 @@ void ice_ptp_prepare_for_reset(struct ice_pf *pf, enum ice_reset_req reset_type)
+  */
+ static int ice_ptp_rebuild_owner(struct ice_pf *pf)
+ {
++	struct ice_phc *phc = &pf->adapter->phc;
+ 	struct ice_ptp *ptp = &pf->ptp;
+ 	struct ice_hw *hw = &pf->hw;
+ 	struct timespec64 ts;
+-	u64 time_diff;
+ 	int err;
+ 
+ 	err = ice_ptp_init_phc(hw);
+@@ -3255,16 +3223,19 @@ static int ice_ptp_rebuild_owner(struct ice_pf *pf)
+ 	if (err)
+ 		goto err_unlock;
+ 
+-	/* Write the initial Time value to PHY and LAN using the cached PHC
+-	 * time before the reset and time difference between stopping and
+-	 * starting the clock.
++	/* Write the initial Time value to PHY and LAN using the last known
++	 * cached PHC time and the monotonic time difference since that
++	 * update.
+ 	 */
+-	if (ptp->cached_phc_time) {
+-		time_diff = ktime_get_real_ns() - ptp->reset_time;
+-		ts = ns_to_timespec64(ptp->cached_phc_time + time_diff);
++	mutex_lock(&phc->lock);
++	if (phc->update_time[0]) {
++		s64 delta = ktime_sub(ktime_get_boottime(), phc->update_time[0]);
++
++		ts = ns_to_timespec64(phc->cached_time[0] + delta);
+ 	} else {
+ 		ts = ktime_to_timespec64(ktime_get_real());
+ 	}
++	mutex_unlock(&phc->lock);
+ 	err = ice_ptp_write_init(pf, &ts);
+ 	if (err)
+ 		goto err_unlock;
 
-Changes in v2:
-- Replace the seqlock_t with a seqcount_latch_t and a mutex that protects
-  serialization of the periodic update with the direct updates from the PTP
-  hardware clock callbacks.
-- Replace use of "0" as a canary value of cached_time and apply the
-  cached_jiffies stale discard check to both Tx and Rx timestamps.
-- Fix the rx_hwtstamp trace to record the timecounter values and properly
-  use the same copied value of the cached_time on non-timecounter devices.
-- Fix the SO_TX_TIME support on E830 to account for timecounter phase
-  offset.
-- Modify ice_ptp_read_cycles() to always read and report the full timer
-  value, enabling proper phase calculation even as the MAC timer rolls
-  over.
-- Add ice_phc_get_phase() to compute the timecounter phase, currently used
-  only by SO_TX_TIME, but likely necessary for VF Rx timestamping in the
-  future.
-- Disable VF Rx timestamping support for devices using the timecounter.
-  This will need some investigation and virtchnl development work to enable
-  properly, which I plan on doing in a different series. I don't like
-  regressing this, but I don't have a simple alternative. I don't believe
-  that simply accounting for the phase in the GET_TIME would be sufficient,
-  as I am not certain it produces the correct math in the iavf timestamp
-  extension algorithm.
-- Fix the phase offset calculation in ice_ptp_cfg_perout(), computing the
-  timecounter domain first before adding the 500 msec.
-- Separate the E830 ETF fix out to its own patch, as it seems like the
-  driver is incorrectly programming all ETF timestamps.
-- Add a patch to have all the PTP callbacks check for the PTP ready state.
-- Target net-next despite being a bug fix since this is unlikely to be
-  accepted to net due to the scope.
-- Link to v1: https://patch.msgid.link/20261023-jk-e825-e830-timecounter-v1-0-e932602f0d16@intel.com
-
----
-Jacob Keller (4):
-      ice: fix computation of ETF timestamps for E830
-      ice: exit PTP callbacks early if not ICE_PTP_READY
-      ice: store cached PHC time in ice_adapter
-      ice: use struct timecounter for E825 and E830
-
- drivers/net/ethernet/intel/ice/ice_adapter.h   |  53 +++
- drivers/net/ethernet/intel/ice/ice_ptp.h       |  18 +-
- drivers/net/ethernet/intel/ice/ice_trace.h     |  18 +-
- drivers/net/ethernet/intel/ice/ice_txrx.h      |   5 +-
- drivers/net/ethernet/intel/ice/ice_adapter.c   |  51 +++
- drivers/net/ethernet/intel/ice/ice_ethtool.c   |   1 -
- drivers/net/ethernet/intel/ice/ice_lib.c       |   2 +-
- drivers/net/ethernet/intel/ice/ice_ptp.c       | 578 ++++++++++++++++++-------
- drivers/net/ethernet/intel/ice/ice_txrx.c      |  16 +-
- drivers/net/ethernet/intel/ice/virt/virtchnl.c |   7 +-
- 10 files changed, 568 insertions(+), 181 deletions(-)
----
-base-commit: dcd4565f5b5a8126958e787c7b5c15bbe8460e0c
-base-tree: git://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-change-id: 20261022-jk-e825-e830-timecounter-06c15de02e76
-
-Best regards,
---  
-Jacob Keller <jacob.e.keller@intel.com>
+-- 
+2.56.0.215.g47fdf2208c5b
 
