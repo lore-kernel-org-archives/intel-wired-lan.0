@@ -1,114 +1,150 @@
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A96C606A338
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 19 Nov 2026 15:55:00 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AC50D606A324
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 19 Nov 2026 16:34:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=Z3U/oVkc;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OdgDGsGP
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=jD8yHgm5;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=IXluyRq1
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 3ABE460699;
-	Thu, 19 Nov 2026 15:55:00 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 8990E8134D;
+	Thu, 19 Nov 2026 16:34:00 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id kEThvgEIS6qN; Thu, 19 Nov 2026 15:54:59 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 42C2560AD2
-Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795103699;
-	b=U4W3BRnV8B41Lgns89RNQXh4+SVoN+QuUAoiBdKzb4io9Xo9dS9eObdp1ccMdrjMKlSE
-	 m2mCj8cyMb0OEttUryjV1JSD48Ywiqa3V8+P4JSUaowacIbUUTzl8TchBvfB0OF76UPGU
-	 1t16pM5PBOjyo9dEq38E5kNxVS3iSx+bnju4iy4f/h21aKbna7QTltw8SWWlVC/4/p3iq
-	 r6kISeUj+chTqkBIdyc3lyaCf0JIeDD3EL8NXnBjUK8DpKMDpwrfjKOOopg5/rnUg2cf3
-	 LthV/zJoWrtp2EWQ/xFuAEMzw4SYRGQz8qiRl4Y/KFsCRQE3GZwfv+zEKx1cyhf9T3g==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id KMmMvrsnMuNb; Thu, 19 Nov 2026 16:34:00 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org F171681374
+Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795106040;
+	b=JsctPVxOGJwZaeJZGPJz32cD8qZbXWXhMDvTvOedzh5lKRHX3VZtVusaVokX/VGT64pi
+	 XFdzCaYCmFrllop35GoCqM2lKlxMqdxmBi00yTafV39begEVOink+cTqJvTbhViIcGtKh
+	 3VwLm7W01LQ+SjE4zbEyW/DUJtjhJaXVayIFebs7EcA9Opi/hWzXQyphT90lzLov+ddYY
+	 eRm+qE2uCGUjFCWdWOdQUPz/yHjqoJUXJMYpaq3AYRdzDLNJwC3kQG+S3RazbmxKXMDOF
+	 dV83ISyCitklKdS6jASUrZ8YI/QtBg4YK0OBx0PRW6Fxqy79xwhEVSC8/xOTUZo+F7g==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795103699;
+	c=relaxed/relaxed; t=1795106040;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 Received:DKIM-Signature:Message-ID:From:Subject:To:In-Reply-To:
-	 References:Content-Type:Content-Transfer-Encoding:Date:X-BeenThere:
-	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Reply-To:Errors-To;
-	bh=CAt5s3aLIP+AN5sLMxCB1vGQToOFJdCC66NOcTwLvUg=;
-	b=KNnCKSlUCsfhWpVkgo+DcBBRo1qltZkujdytAnv5pgSSW7LTL8unfz6Pl2MFvw8JBaea
-	 apXZh61zVhjlGB6x8Ze9UO5TE8XPoDSSB/KrVAwnLUMbiNVS3BucRer3DA+XVHaObOgKk
-	 L/Orx/EHCd63PCK0UidOqcwImUDN9lC48lx4giuWHGF6eFCzowRD7CJ7Xzt5sRM/ouDKv
-	 kMlsyNRca2fAsVZSXlQLQiyBiUnNv+hlGPMbYMIrisgBbziE40eOdNKlOsCZquA48HeS8
-	 4heW9r2q27M+XCWBU1Swlcel62Yl03JNMTbNndf1qYGcBgkAIQX86rQAnIStULOgu4A==
-ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
+	 Date:Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding:
+	 X-Mailman-Approved-At:X-BeenThere:X-Mailman-Version:Precedence:
+	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 List-Subscribe:Errors-To;
+	bh=FfJFOLv++WC9m0JyoYaS7BgHTNo/5XDIGUv7rymNFd8=;
+	b=Ppg607SicE7oh/T6sarKzoEtmtDrtUxIzail07vAlsveM8w4YR6v4theN7QVdIwtLmX3
+	 WnoI5otTlmeqfloEYtYAtxT3i5/aLkbbKFGBuvS2/gfZue0pz+zg94JxvynFc8pq7NK05
+	 QfYypW0wSxDM8xh4+xBfkA2YV99rY6a6GpUO/Mn42RCmMfEMmAsU0JVPGNNIsdypNfiu0
+	 Wwi4w1XtXUZ8CoClcejD+s48AhHX38mCvEHXkaaqOAx4WkevzFYLRWv/c7vM1TPr8DVXJ
+	 D3Jk5MfwjIO40nPTT06NX0H89fRQ/WdlRhgOUYJxaxUZxOgKgB/gw8krUjPpeM9OK1Q==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1795103699;
-	bh=CAt5s3aLIP+AN5sLMxCB1vGQToOFJdCC66NOcTwLvUg=;
-	h=From:Subject:To:In-Reply-To:References:Date:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Reply-To:From;
-	b=Z3U/oVkcWff1xxvfiUOOziVHsiCTgOZZQqThJkuftxT5DVYebe3YrcvpfAHq89z1y
-	 AfoB+tIzFVwvEnRuT2fUOBhZbV+f/cr8MtTZVChZPSmQS2e8SH1n/eHoLRE3PEWmaT
-	 oxTvSm5aZA+NUFqMWDW0nRBUQKwP/xXm316qtzFDpes3mWuDXZ3q9nz5yPWbrcB+J9
-	 nAM2L0dkwpi8nCmwUU6iOwX+Bzr2/OY87g0rWD/sGaZ9F+UNdfcFfx3m35gATnXJO7
-	 t9YOIY9JWrCJxkIqc1Ky7C8qWockIquxiKj0o02Ke6LanV5Uu656erj06OC6NVechx
-	 Xa8iQV2AMj6Sg==
+	s=default; t=1795106040;
+	bh=FfJFOLv++WC9m0JyoYaS7BgHTNo/5XDIGUv7rymNFd8=;
+	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=jD8yHgm5mKOrMFVTorDwn96/SF6urhMJchLtZGrj+IVHKJr3zPnNPdG5nQkW5NRDj
+	 1QVaioWrzluqXgJkEwfWkPmh8njcnf4qjktCzVxTAWtU6dHHH9fRpjVWwxF7A6X/1D
+	 wP8axZvY77zevBokW4IfM3QpZuKjDgBWUICD94ryD/rKq5PRlzqaAUCpaos8XgC43m
+	 4639k8YzbEd0WN4yIgUB2mp7HtvYwUzNHF/GUxlb1EuNqdqxLo5gczrLrZDKYUZcOY
+	 0gEQadb9001R630wnkdI9AdJcu3R5AbmmzEtfKBuxXbeD7EOQt923XGnBSA4IacfzM
+	 fMImxpo+qfZNg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 42C2560AD2;
-	Thu, 19 Nov 2026 15:54:59 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id F3BE83A8
- for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Nov 2026 15:54:56 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id F171681374;
+	Thu, 19 Nov 2026 16:33:59 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 6BF06E4D
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Nov 2026 05:57:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id E59FF405CD
- for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Nov 2026 15:54:56 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 4B07260A52
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Nov 2026 05:57:40 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id o038tOVPCN9d for <intel-wired-lan@lists.osuosl.org>;
- Thu, 19 Nov 2026 15:54:56 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org DAD7C4059C
-Authentication-Results: smtp2.osuosl.org; arc=none
- smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 6z2VoqE0JWpx for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 19 Nov 2026 05:57:39 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org A149460896
+Authentication-Results: smtp3.osuosl.org;
+ arc=none smtp.remote-ip="2607:f8b0:4864:20::102f"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
- envelope-from=sashiko-bot@kernel.org; receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=OdgDGsGP
-Received: from sea.source.kernel.org (sea.source.kernel.org
- [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
- by smtp2.osuosl.org (Postfix) with ESMTPS id DAD7C4059C
- for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Nov 2026 15:54:55 +0000 (UTC)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by sea.source.kernel.org (Postfix) with ESMTP id 7CD08458F9;
- Thu, 19 Nov 2026 15:54:54 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 388B51F000C4;
- Thu, 19 Nov 2026 15:54:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1795103694;
- bh=CAt5s3aLIP+AN5sLMxCB1vGQToOFJdCC66NOcTwLvUg=;
- h=From:Subject:Reply-To:To:In-Reply-To:References:Date;
- b=OdgDGsGPwykyUEQFf0ij7cqxasDS4uXXkVFCSlgv7ZZbcs/tykSzGqdItCC7QzWG2
- FDFWjnLJOmNtMGYOhDHKREckaPEP6oKeovaZlI9E60Zi4/fXlbO3VBIGxVpf5k+IiW
- K4EQ37v6aiVhG8A5deRRkw3Mb+CXrIQDd1wda+UqBRPCsDrIlsNbcI35NJZmGmSm6N
- t18TcYFnWI4YHm2LFxcWWRpjRQocUa4J/7FqG2YzwJj+VfEMyxa3Uk9Bgg1wR7HUiH
- BWL3tS0it28Y0ymHX6tgdZ2DuEydQi8ZirUlJG3FadZ+YJyHRkVZnETxs6zebQqtMf
- X7MlVzWRP48+Q==
-Message-ID: <sashiko-outbox-223440@kernel.org>
-From: sashiko-bot@kernel.org
-Subject: Re: [PATCH iwl-net v3 4/4] ice: cancel FDIR program timer on VF exit
-To: "Aleksandr Loktionov" <aleksandr.loktionov@intel.com>,
- intel-wired-lan@lists.osuosl.org
-In-Reply-To: <20261119152438.3577165-5-aleksandr.loktionov@intel.com>
-References: <20261013144435.1406126-1-aleksandr.loktionov@intel.com>
- <c858f6d0-2adb-4bd6-9889-19e14b0e30eb@intel.com>
- <20261119152438.3577165-1-aleksandr.loktionov@intel.com>
- <20261119152438.3577165-5-aleksandr.loktionov@intel.com>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-Date: Thu, 19 Nov 2026 15:54:53 +0000
+ client-ip=2607:f8b0:4864:20::102f; helo=mail-pj1-x102f.google.com;
+ envelope-from=izaiahsun@gmail.com; receiver=<UNKNOWN> 
+Authentication-Results: smtp3.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20260707 header.b=IXluyRq1
+Received: from mail-pj1-x102f.google.com (mail-pj1-x102f.google.com
+ [IPv6:2607:f8b0:4864:20::102f])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id A149460896
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Nov 2026 05:57:39 +0000 (UTC)
+Received: by mail-pj1-x102f.google.com with SMTP id
+ 98e67ed59e1d1-3b09a83d12aso1327940a91.2
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Nov 2026 21:57:39 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20260707; t=1795067858; x=1795672658; darn=lists.osuosl.org;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+ bh=FfJFOLv++WC9m0JyoYaS7BgHTNo/5XDIGUv7rymNFd8=;
+ b=IXluyRq1AgeR8593uk4SLt8nKSEC/g4kKKKWmNnKboZy6K5QzCg0Lrhx5y7/OxcDgT
+ 6qZvJJAc9x3cYl1QlzgsGPel/EgTwDaKIx6VR2mOvw7V8amwaBitWDr587K+WPrH+E/4
+ L/KcnSUEMQs+rXseCs0+zZmdQNNPdUgjp35tWJe/MXt7G9sBRQGWkYeGsyRku5Ee9KKT
+ RSVyEEtxS042EhNMI+fbqZ3cOblchl0yLuwz/l+PabY9TgZyBOuvigSIaRas00WkGJJA
+ Yiye92Jlmg3w/4AC/jEaFzjptqRm3T4kRG705VhOlhJ65CucrScZt/+Criik0X1m5fTv
+ Xxhg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20260707; t=1795067858; x=1795672658;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to:content-type;
+ bh=FfJFOLv++WC9m0JyoYaS7BgHTNo/5XDIGUv7rymNFd8=;
+ b=TJihUxe2kpaFG/vKYRWGg0EmMGjtKGUnHeAlNKUSZ6cmRb8Hc43uDxvsiQl+QKQR32
+ +fX4RQMj11JzFAMI47CibziztvCGncyMfOUANU0nsfwoUnbOmlo2q06OoILPZDaSL3sW
+ PuRru267Hq3a+M1x4ohJPVo8Cf90c2k94DXkD/ejXHsIDpl91TJ2YZLgzUpp1e9VBC7+
+ Lx+Y96G7ZJRVAnK12SBzZGaDHYxCVNqRGmvkhuQvOqVweAwJk8CfLlOKsFpUzOFOtLio
+ Oo33D4vQAYSAX5rs9oKvANSfv/gnrHRG18R8uqRDE7hlITKDRxV63DDhy8LEgRnyJy+z
+ aI+Q==
+X-Forwarded-Encrypted: i=1;
+ AL+hErExCD8dK+9JVX9eslPzTu4o74PGsOHNInEKUNTzfw8PEhVHZrmlThbXyskIs6OUlNDxxcVG8Bs6ZxAw3hb9sGM=@lists.osuosl.org
+X-Gm-Message-State: APuU4Z/6DCmVOKvGkcepwACfCo4QC8vw8JTWgywg3da4xX/R9TKUFtCc
+ SWaqtnyCBMb2BW4ig2sHx5EJqWDpjIHkPpJuL4VfM28J1UhuHQwCbg6g
+X-Gm-Gg: AZFdTZfDe3p7KebxD0UumgYwAP9NPN6RaN0dtHMV6OOKdcf8l7eJb4I5y24XLpbWa44
+ 5I7UH0z2eGJofTII9L4KgKG5LH2h6xrgkOP+3rd0UQG8lWXdmrdhN1k2r+e3j/qJ//mdnJ0s0sN
+ rTZUr/H6t/IKU6QnOWVrYHcAQEq4ss+xduJGTKrl9nGhghXJHqzezAtE/kvjctsNS/8FU0uo35m
+ zWcYHTtXvPP/OSiNYjtKURRQL33gwwTt4936NfF4Yx+Ba+oTa+6S2kcEZSBFRvHTdmVcpRmV3D0
+ VUtZ9Cr/9JsCB2RbHzr9p50MoekXKqkY/40xV/7iC+o+LJ24yETLtSffxpfFG49zIV7vfH1Vayf
+ 66S/XW4F8Y/FLxkUxKAidMQ0fsCv8JZy4F9mnK7QKRjEdRM52dd21rT4tCSLQz28mIIttMSQwVR
+ cqJAIetS41rII+xk8zv4MXVTANLGufHTuyatmajt1Js2gbA+XftVemRrry+Z0FFBFv1TxrTD+Pz
+ jCBPxAwWDJa4MECWfyyd75oOL0CfSH+clAjZaz7O+4SSjbi44/zyz5YKO+G9zP+C9ekjNXBAxJI
+ nQhsnnAddiGAgpvBIueYkhcpUYU76vJkhY+LHqt8tLzMIS/krgCNqeW1rtrI4mPbQl0djzk=
+X-Received: by 2002:a17:90b:3c04:b0:3b3:adea:4b04 with SMTP id
+ 98e67ed59e1d1-3b3d07bf9c0mr4206369a91.36.1795067858445; 
+ Wed, 18 Nov 2026 21:57:38 -0800 (PST)
+Received: from localhost.localdomain ([155.69.167.11])
+ by smtp.gmail.com with ESMTPSA id
+ d9443c01a7336-2eff5ec9cd0sm24469175ad.11.2026.11.18.21.57.35
+ (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+ Wed, 18 Nov 2026 21:57:37 -0800 (PST)
+From: Yuqiang Sun <izaiahsun@gmail.com>
+To: anthony.l.nguyen@intel.com,
+	przemyslaw.kitszel@intel.com
+Cc: m.wilczynski@samsung.com, andrew+netdev@lunn.ch, davem@davemloft.net,
+ edumazet@kernel.org, kuba@kernel.org, pabeni@redhat.com,
+ intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Subject: [PATCH iwl-net] ice: Do not free a preallocated node in
+ ice_sched_add_node()
+Date: Thu, 19 Nov 2026 13:57:31 +0800
+Message-ID: <20261119055731.55798-1-izaiahsun@gmail.com>
+X-Mailer: git-send-email 2.54.0
+X-Archived-By: <archiver.kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Thu, 19 Nov 2026 16:33:58 +0000
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -119,140 +155,55 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Reply-To: sashiko-reviews@lists.linux.dev
-X-Spam-Status: No, score=-10.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
-X-Archived-By: <archiver.kernel.org>
 
-Thank you for your contribution! Sashiko AI review found 2 potential
-issues to consider:
-- [Medium] ice: live lock and timer re-init in ice_vf_fdir_init() during
-  VF reset
-- [Medium] ice: race with ctrl_vsi IRQ and timer in ice_vf_fdir_exit()
---
+ice_devlink_rate_node_new() allocates a scheduler node and stores it in
+the devlink rate as priv. When the parent is set, ice_devlink_set_parent()
+passes it to ice_sched_add_node() as prealloc_node. If allocating
+node->children fails, ice_sched_add_node() frees the node with
+devm_kfree(), but priv still points to it, and later rate operations
+(setting tx_max or tx_share, or setting the parent again) use the freed
+node.
 
-commit eec70f4e323b99b19bb5e3e82ec01ada929fa7eb
-Author: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Only free the node when ice_sched_add_node() allocated it.
 
-ice: cancel FDIR program timer on VF exit
+Fixes: bdf96d965a20 ("ice: Add an option to pre-allocate memory for ice_sched_node")
+Cc: stable@vger.kernel.org
+Signed-off-by: Yuqiang Sun <izaiahsun@gmail.com>
+---
 
-This commit moves the setup of the VF FDIR timer to ice_vf_fdir_init()
-and cancels it with timer_delete_sync() in ice_vf_fdir_exit() before
-clearing ICE_VF_FDIR_CTX_VALID.
+Notes:
+    Bug was found by kbound, an internal static analysis prototype.
+    The fix was written with the help of Claude Opus 5.5.
+    
+    Compile-tested only (x86_64 and arm64 allmodconfig, W=1, sparse): I do
+    not have E800 hardware.
 
-> diff --git a/drivers/net/ethernet/intel/ice/virt/fdir.c b/drivers/net/eth=
-ernet/intel/ice/virt/fdir.c
-> index 244da64722713..64824b10a47a4 100644
-> --- a/drivers/net/ethernet/intel/ice/virt/fdir.c
-> +++ b/drivers/net/ethernet/intel/ice/virt/fdir.c
-[ ... ]
-> @@ -2454,6 +2453,7 @@ void ice_vf_fdir_init(struct ice_vf *vf)
->  	INIT_LIST_HEAD(&fdir->fdir_rule_list);
-> =20
->  	spin_lock_init(&fdir->ctx_lock);
-> +	timer_setup(&fdir->ctx_irq.rx_tmr, ice_vf_fdir_timer, 0);
->  	fdir->ctx_irq.flags =3D 0;
->  	fdir->ctx_done.flags =3D 0;
->  	ice_vc_fdir_reset_cnt_all(fdir);
+ drivers/net/ethernet/intel/ice/ice_sched.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-[Severity: Medium]
-Can calling timer_setup() and spin_lock_init() in ice_vf_fdir_init()
-re-initialize a live timer and spinlock during a VF reset?
+diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
+index a5c7a4e1ceba..dba6cc912b7b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sched.c
++++ b/drivers/net/ethernet/intel/ice/ice_sched.c
+@@ -210,7 +210,8 @@ ice_sched_add_node(struct ice_port_info *pi, u8 layer,
+ 						   *node->children,
+ 						   hw->max_children[layer]);
+ 		if (!node->children) {
+-			devm_kfree(ice_hw_to_dev(hw), node);
++			if (!prealloc_node)
++				devm_kfree(ice_hw_to_dev(hw), node);
+ 			return -ENOMEM;
+ 		}
+ 	}
 
-In ice_reset_vf() and ice_reset_all_vfs(), ice_vf_fdir_exit() and
-ice_vf_fdir_init() run before ice_vf_ctrl_vsi_release() stops the VF
-control VSI and frees its interrupt:
+base-commit: 6055ab4d82e42de89871db03045b568ed706ef50
+-- 
+2.53.0
 
-drivers/net/ethernet/intel/ice/ice_vf_lib.c:ice_reset_vf() {
-    ...
-	ice_vf_fdir_exit(vf);
-	ice_vf_fdir_init(vf);
-	/* clean VF control VSI when resetting VF since it should be setup
-	 * only when VF creates its first FDIR rule.
-	 */
-	if (vf->ctrl_vsi_idx !=3D ICE_NO_VSI)
-		ice_vf_ctrl_vsi_release(vf);
-    ...
-}
-
-If a VF reset occurs while an FDIR programming completion interrupt is in
-flight on ctrl_vsi, or while ice_flush_fdir_ctx() is running on another
-CPU, those paths can access fdir->ctx_lock and fdir->ctx_irq.rx_tmr at
-the same time as ice_vf_fdir_init() resets them:
-
-CPU0                              CPU1 (<hardirq>)
-ice_reset_vf()
-  ice_vf_fdir_exit()
-  ice_vf_fdir_init()
-    spin_lock_init(&fdir->ctx_lock)
-    timer_setup(&fdir->ctx_irq.rx_tmr, ...)
-                                  ice_vc_fdir_irq_handler()
-                                    spin_lock_irqsave(&fdir->ctx_lock, ...)
-                                    ...
-                                    timer_delete(&ctx_irq->rx_tmr)
-                                      <-- concurrent timer_setup() / lock i=
-nit
-  ice_vf_ctrl_vsi_release()
-
-This can corrupt spinlock, timer_list, or debugobjects state and trigger
-lockdep splats.
-
-> @@ -2465,6 +2465,14 @@ void ice_vf_fdir_init(struct ice_vf *vf)
->   */
->  void ice_vf_fdir_exit(struct ice_vf *vf)
->  {
-> +	unsigned long flags;
-> +
-> +	timer_delete_sync(&vf->fdir.ctx_irq.rx_tmr);
-> +
-> +	spin_lock_irqsave(&vf->fdir.ctx_lock, flags);
-> +	vf->fdir.ctx_irq.flags &=3D ~ICE_VF_FDIR_CTX_VALID;
-> +	spin_unlock_irqrestore(&vf->fdir.ctx_lock, flags);
-> +
->  	ice_vc_fdir_flush_entry(vf);
->  	idr_destroy(&vf->fdir.fdir_rule_idr);
->  	ice_vc_fdir_rem_prof_all(vf);
-
-[Severity: Medium]
-Can an in-flight ctrl_vsi completion interrupt race with
-ice_vf_fdir_exit() when a VF is reset or freed while an FDIR request is
-pending?
-
-All callers of ice_vf_fdir_exit() (ice_reset_vf(), ice_reset_all_vfs(),
-and ice_free_vf_res()) release ctrl_vsi only after ice_vf_fdir_exit()
-returns, so ice_vc_fdir_irq_handler() remains active throughout this
-function:
-
-CPU0                              CPU1 (<hardirq>)
-ice_vf_fdir_exit()
-  timer_delete_sync(&rx_tmr)
-  spin_lock_irqsave(&ctx_lock)
-  ctx_irq.flags &=3D ~ICE_VF_FDIR_CTX_VALID
-  spin_unlock_irqrestore(&ctx_lock)
-                                  ice_vc_fdir_irq_handler()
-                                    spin_lock_irqsave(&ctx_lock)
-                                    if (!(ctx_irq->flags &
-                                          ICE_VF_FDIR_CTX_VALID))
-                                      WARN_ON_ONCE(1);  <-- triggers warning
-  ice_vc_fdir_flush_entry()
-  ...
-ice_vf_ctrl_vsi_release()
-
-In addition, if ice_vc_fdir_irq_handler() fires after timer_delete_sync()
-deactivates rx_tmr and before ctx_lock is taken to clear
-ICE_VF_FDIR_CTX_VALID, timer_delete(&ctx_irq->rx_tmr) returns 0 and logs
-"Unexpected inactive timer!".  And if either ice_vc_fdir_irq_handler() or
-an already-running ice_vf_fdir_timer() callback waited on by
-timer_delete_sync() promotes ctx_irq.conf into ctx_done.conf with
-ICE_VF_FDIR_CTX_VALID set, ice_vf_fdir_exit() does not clear
-ctx_done.flags before ice_vc_fdir_flush_entry() frees conf, leaving a
-dangling ctx_done.conf pointer that a concurrent ice_flush_fdir_ctx() can
-observe during ice_reset_vf().
-
---=20
-Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261119152438.3577=
-165-1-aleksandr.loktionov@intel.com?part=3D4
