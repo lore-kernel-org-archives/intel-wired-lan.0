@@ -2,155 +2,145 @@ Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4CD15606A320
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 20 Nov 2026 07:39:31 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BA972606A320
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 20 Nov 2026 08:35:24 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=qz+Mv+XO;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UFMuG5uT
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=z68QAD6S;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=knwuWJ5b
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2DD9A60679;
-	Fri, 20 Nov 2026 07:39:31 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 943736065F;
+	Fri, 20 Nov 2026 08:35:24 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 2sTXRAaJdb4L; Fri, 20 Nov 2026 07:39:30 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 6F6836072A
+ id qyBfZBI4qBuG; Fri, 20 Nov 2026 08:35:23 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org B422F6068A
 Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795160370;
-	b=P/csOXSTt36es6NcuOUp7mLNi33H6JW+NR02ox7kPffdEql219+uJCfDj4dkfc6DuZx4
-	 opNAgGTdXaRR2YQEXoj+zEroKodSVpYXYLndsxB+IFJIDCxOW71ysynFT1yG+hMCRkRJm
-	 dkddZXJcyQw2XLAHgwVDIrgFVOsXjTwcQpSdbeL1OB0o3pTmg0/aYbEu052pNq433x8d3
-	 l63mWtydvqkkj0Uo9pLStm74zZXwujEjkI2yyQtFYKdH8VU0WfVdOlh2iNmUCQyAXVh5p
-	 zCToZU5XGeQ7jfNfAMTJrad0NfYaaOQ+VQDE52VO4mlEbqT5GcAqagyX6ly+gzedC+Q==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795163723;
+	b=UpRVdWP/wAReq7QuNZa6E5Z5uvrcRaLM47XSefTnL+F4am2hw43Bg1vZv7cblwPXDiG8
+	 cAf375SpIpWdKZPrk9dIo3z1JhvCz7QM9P8YbVJaztYLbiz0r8153k69gjTMg+kCM43YA
+	 9hOZd0JQ3lZVuyatkiGWmMTKudCqePCppl9TP44hhw+8VamytDjYly/qXOFEfNKjjoMe7
+	 FEl4iFrxOF5cy0Sj1FLUEEhFL3/HFnrYC5J8OGUtANahDtrAOU5gTHtS87foXK0dXRikx
+	 h5uLZTQOVzgLwS6u9U4MfEoNULZRCqCVV5TTDij5yNXDoNcHxubfKxFKnf/Ln/L49pw==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795160370;
+	c=relaxed/relaxed; t=1795163723;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
-	 DKIM-Signature:Received:X-MC-Unique:X-Mimecast-MFC-AGG-ID:Received:
-	 Received:Message-ID:Date:MIME-Version:User-Agent:Subject:To:Cc:
-	 References:From:In-Reply-To:X-Scanned-By:X-Mimecast-MFC-PROC-ID:
-	 X-Mimecast-Originator:Content-Language:Content-Type:
-	 Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:Precedence:
-	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
-	 List-Subscribe:Errors-To;
-	bh=Wbrp0Enu3xQncN9mhAX4135r3/WRAcDm9zUjrTj0T7o=;
-	b=GGE70iC06C0qoB7R3PxVosz8xjZttpJElt8Z2xG2S30fXyHgBLdkMI8CgYWYyKSejTPr
-	 BYVQJM2mL8s2BHIzkkoobtpbfpE7MRiwb6vyaLjh6tLl6BEZlJU6xtivogKXTVaotQGZ7
-	 KoqDGw8wUiyuMhnlR+3GNZjicVJoWuzIRohhj0pyykzjOyiwhmZgry9+lbyMVHEjkAq+8
-	 /Z3WOIfnzQr31C/x9VechLcc+jeCrw9Ce9KFfUZF3qNdd8Vt2UkSaI5tACM91DxZQrPSv
-	 3y6mFr63yWOAlxYf9H3yJ/NBaNalobBckpwwElr3vf3NKc6fQmlk/DsSjb6xAGbgl4Q==
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:MIME-Version:References:
+	 In-Reply-To:From:Date:X-Gm-Features:Message-ID:Subject:To:Cc:
+	 Content-Type:X-BeenThere:X-Mailman-Version:Precedence:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Errors-To;
+	bh=cGln8FVjtHumSWCLAXROuRIIllin/ovk1fH3wXcljBI=;
+	b=QoJnm6P3Q4hqT9nL/jEGUd5/MTTJAQ2qKZrHRAYELobzE5JU3rb4DEcV18tb5ZHhJKOT
+	 CUICKXQTZgUR50E/q8GFwE3XPMhitPDRj5Bkia35uHkWQ/P/l4T0SE0C9Iw5cugWgiTZN
+	 pdQZvVAiqBEKmKgjg1RHHZuUrarw0QaQiH6XrMX5C1Mx5Zxkj95BMyHeHzkzJm2ovLV58
+	 lHJix9+4CQZtOziuNUIiR+Kk3+fjW4JldG+CnMzJiFD2oSbsS5tSPuxWlCeHM4l3OnYXb
+	 Ys2LofwdCwj+1xhl/45r69/QgmHjTowHq87QwwdQo7E3LC5ymK9OY5b0k8zpuI+iX5g==
 ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
-	dmarc=pass header.from=redhat.com;
-	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UFMuG5uT;
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1795160370;
-	bh=Wbrp0Enu3xQncN9mhAX4135r3/WRAcDm9zUjrTj0T7o=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:List-Id:
+	s=default; t=1795163723;
+	bh=cGln8FVjtHumSWCLAXROuRIIllin/ovk1fH3wXcljBI=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=qz+Mv+XOq/PMSmVu7QqnCmJD4DiexEO0UtutiAn8m++AwD6rrhpwRtLgkVwBk1x5K
-	 6FSkDbYoiUBvJgY6ROiyRUAocC0qK+VEzlsId6PkKv5G99Hk5majhiuiCd/PqIPEwH
-	 0nBep7uTh175s+DH/5/dMOw0yMAJFGF3aTPRjleJH2xaj33YDP1n0MktWU3+vNSbyG
-	 8Ft1dU84dzzazu5nUoQx9B9RARapw0K1L6we1L2WMvUAMEXhik7GB0oQDaITGwoyC3
-	 0/90oEzXvioSnYdFu/F9W7yJAWUIAPUVdIsJ4SryfjcNAI876x56OAZJ7BCzOIt0jf
-	 Y6oXJ0C6ccM+g==
+	b=z68QAD6Svc0wtrJWGpEoJk8NSvBpw5ProKGfZZYZbEZqeinmQ2pwcooy3luC2k/YV
+	 AS1jGtuVFlvCO7VGBDKn2j8RgrGgQOJSB7I/vY3cnFq/C58FKo3dwxOzuoXtJpsr2V
+	 geT3CWy5Tnk5Uufhua2JFOVeoQQbDaF0hnHmzS94flAHtqD70ghlESFbUQYG7IMYz8
+	 dcMTeesofxnIXmY2ROlGAYp0YGACQ12rd5V9vZQdQj7sbDZxXH5NQCn55CdXEGedZm
+	 HZSTtKYsjNqiizFKcP5NK23GNDBOTVQTaejx5VaFuLrOIO4BQsmczAQiEjl0h0diWp
+	 AEN3wmTo7/y5A==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 6F6836072A;
-	Fri, 20 Nov 2026 07:39:30 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 85B65E52
- for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Nov 2026 07:39:26 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id B422F6068A;
+	Fri, 20 Nov 2026 08:35:23 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 469211E7
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Nov 2026 08:35:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 6B6E66072A
- for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Nov 2026 07:39:26 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 440A54020D
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Nov 2026 08:35:22 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id QeUjEhgc_qrU for <intel-wired-lan@lists.osuosl.org>;
- Fri, 20 Nov 2026 07:39:25 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 925E860679
-Authentication-Results: smtp3.osuosl.org;
- arc=none smtp.remote-ip=170.10.129.124
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
- helo=us-smtp-delivery-124.mimecast.com; envelope-from=ivecera@redhat.com;
- receiver=<UNKNOWN> 
-Authentication-Results: smtp3.osuosl.org; dmarc=pass (p=quarantine dis=none)
- header.from=redhat.com
-Authentication-Results: smtp3.osuosl.org; dkim=pass (1024-bit key,
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=UFMuG5uT
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 925E860679
- for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Nov 2026 07:39:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1795160360;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=Wbrp0Enu3xQncN9mhAX4135r3/WRAcDm9zUjrTj0T7o=;
- b=UFMuG5uTPimMky6foafcCTFXohKCsI04/ioxqxzcjO1a24E2eQdb33bHtmPAsD+SOMsU1R
- yPwr9A/NK+DjJPPAtEb5OF1ExqaUNOJFqIXQx4LGVlQqxo0XEzyYPsVr8fC4ESbNWSaL+3
- 1dTG1aW6EgmvjguLEJM072gdN1/DPQc=
-Received: from mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-277-_y26HK1iOg-_PmG2ieL5rQ-1; Fri,
- 20 Nov 2026 07:39:15 +0000
-X-MC-Unique: _y26HK1iOg-_PmG2ieL5rQ-1
-X-Mimecast-MFC-AGG-ID: _y26HK1iOg-_PmG2ieL5rQ_1795160351
-Received: from mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com
- (mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.17])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
- id 224C61956067; Fri, 20 Nov 2026 07:39:10 +0000 (UTC)
-Received: from [100.91.101.41] (headnet04.pony-001.prod.iad2.dc.redhat.com
- [10.2.32.116])
- by mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
- id 2FF61195B3C4; Fri, 20 Nov 2026 07:39:02 +0000 (UTC)
-Message-ID: <bdfa88fe-13bb-4050-b750-962586b1d846@redhat.com>
-Date: Fri, 20 Nov 2026 08:39:01 +0100
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Ncte0nYhkTpe for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 20 Nov 2026 08:35:21 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org 54D06400D6
+Authentication-Results: smtp2.osuosl.org; arc=pass header.oldest-pass=0
+ smtp.remote-ip="2607:f8b0:4864:20::62e"
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2607:f8b0:4864:20::62e; helo=mail-pl1-x62e.google.com;
+ envelope-from=magnus.karlsson@gmail.com; receiver=<UNKNOWN> 
+Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20260707 header.b=knwuWJ5b
+Received: from mail-pl1-x62e.google.com (mail-pl1-x62e.google.com
+ [IPv6:2607:f8b0:4864:20::62e])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 54D06400D6
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Nov 2026 08:35:20 +0000 (UTC)
+Received: by mail-pl1-x62e.google.com with SMTP id
+ d9443c01a7336-2f0458cc9easo3076215ad.3
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Nov 2026 00:35:20 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20260707; t=1795163720; x=1795768520; darn=lists.osuosl.org;
+ h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+ :references:mime-version:from:to:cc:subject:date:message-id:reply-to
+ :content-type; bh=cGln8FVjtHumSWCLAXROuRIIllin/ovk1fH3wXcljBI=;
+ b=knwuWJ5bQbAuwMf/fPSyUww+xWiLHt55Y7aQdZPJnMfyadODsJrCCVBuy/uDTc9LFw
+ zcYn9PhxRKuOLWhzFaRhXa5dFPZ7HXjwYZt35sTyl4yiSoljzFDAsN8N8n70y0bmpGHR
+ rRsexhn80orIoeMaTw8USVZDw0MQJv9VO6TcGnx7VQB35i0aAgGB8XIo34b17LJwlmnu
+ K9++b+6s5Kn2PjjNy3hL+ioAQIktcxp+PFd/gdZxV73ibfdWJ5oNqpNNNZw+PmDRDgJ4
+ AHFxl7eWmOuk+8cpk+u0S7rO/ptGQEuwFexjLKf9IjwmBF82ACqwWoITYMzFh7FExecs
+ WfKQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20260707; t=1795163720; x=1795768520;
+ h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+ :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to:content-type;
+ bh=cGln8FVjtHumSWCLAXROuRIIllin/ovk1fH3wXcljBI=;
+ b=nrBfa/Kfsvpf0a2y/8iBb09CYjAImXHSYoDruLwqk6GaVpH0qD+/y2DH8qJoDSQbJw
+ Fug4b8i+5xb07UOGrLI2mkHBFopVGriUBDcCWUx7RvQRZ93Pmz9KZe+R9E51rt/ZLmdm
+ p9vm0UibmDYMaYzZcShyrwif9mTEew7BcwLZYn4jdnN29ovhDoDH4PZ4cCxAw/RN6WYQ
+ 5GvEEiWck0Lw+IBgomptjSrN9wvXmAngSFFt6LeG55v5ax57/9EFqYpr80HnZwN8qVln
+ KbSeZpMgUODqqprZUTKYMxc82epLW6j+TbU3JuYpstfAM+ngIFaRioaQ0QFFs90fMKmj
+ iq8w==
+X-Forwarded-Encrypted: i=1;
+ AL+hErHRp3mMooBljMXcUhd3vmBluuuJpKU1NBhFbkCOAgjABnB0Lef5dxbvCSztXNdI+wDt1BfiKwb7jmk0hrh/oaA=@lists.osuosl.org
+X-Gm-Message-State: APuU4Z8++YqFJ2GGooM8uaQ+GRsHp97M6BXaeehhYlqzSpow1PsD+BcJ
+ 4oEeut7XO/sSk61I/QKgOY5OIam4YNPvQtyEYHBMHSBGx3GoLTeTiY28wv0uAveJUHhkVSz+M2b
+ aet6CelU8SL0HwQwBj6OKoYYcEjVOMnk=
+X-Gm-Gg: AZFdTZfkY4MSMuHq67DujwPmpev3aZErt9P/oGNC4ZmkM12dOy9+vyYwMW8oDqbDuTi
+ ahYiW408pjsJr9IUACVJ/dhEwPISzIvIUejwvhFHDbYrLZ+25NCqJq4qq1dSJjWgR9OhN5NxJIu
+ yXuaDRmH+wRqzHL0kAb6NHWSXZb+5NqZ01HUdr63yURCQg2O8BUoprlZx9nmyJbkECFPgNKc7SW
+ k/5T8G+hEtwuvgYPeDLwnQCnasebuHRnqdack7H+slgGqluYyZkUyk7z1VbEin0wlzhSpqu6YXw
+ v6xiC1CytlhVoUVXL6JlEJISjldKFlxyHvgd1ER+kJZiVuvvIEWZRYVVtLeKAJNIwBNI+/h6eK9
+ 69kM1xVUtEGErwzJZcCSYvShegY6cTQhNpnthIxo=
+X-Received: by 2002:a17:902:ef45:b0:2ef:d7ed:80dc with SMTP id
+ d9443c01a7336-2f03f1e0d55mr25140855ad.49.1795163720037; Fri, 20 Nov 2026
+ 00:35:20 -0800 (PST)
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH net-next v2 0/9] dpll: do not serialize driver callbacks
- under global dpll_lock
-To: Jakub Kicinski <kuba@kernel.org>,
- Vadim Fedorenko <vadim.fedorenko@linux.dev>, Jiri Pirko <jiri@resnulli.us>,
- Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-Cc: netdev@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
- Shuah Khan <skhan@linuxfoundation.org>, Randy Dunlap
- <rdunlap@infradead.org>, Min Li <min.li@microchip.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller"
- <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, Richard Cochran <richardcochran@gmail.com>,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org, Grzegorz Nitka <grzegorz.nitka@intel.com>,
- Karol Kolacinski <karol.kolacinski@intel.com>,
- Saeed Mahameed <saeedm@nvidia.com>, Tariq Toukan <tariqt@nvidia.com>,
- Petr Oros <poros@redhat.com>
-References: <20261111164021.273409-1-ivecera@redhat.com>
- <20261116181612.107a4b57@kernel.org>
- <fe1dcdd5-ef75-4231-bf9f-03bf8536c2aa@redhat.com>
- <20261118174424.32e9f130@kernel.org>
- <dd1d61d7-7bef-4a02-8518-e17d2f50369f@redhat.com>
- <20261119133851.3f25074c@kernel.org>
-From: Ivan Vecera <ivecera@redhat.com>
-In-Reply-To: <20261119133851.3f25074c@kernel.org>
-X-Scanned-By: MIMEDefang 3.0 on 10.30.177.17
-X-Mimecast-MFC-PROC-ID: 21jxP5pOnyKppbwHvq3_NCl99QisTo2f0p2fWU5FmqY_1795160351
-X-Mimecast-Originator: redhat.com
-Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+References: <20261119165340.1071525-1-magnus.karlsson@intel.com>
+ <20261119165340.1071525-6-magnus.karlsson@intel.com> <av9Ia2gpMyF9jTuE@boxer>
+In-Reply-To: <av9Ia2gpMyF9jTuE@boxer>
+From: Magnus Karlsson <magnus.karlsson@gmail.com>
+Date: Fri, 20 Nov 2026 09:35:05 +0100
+X-Gm-Features: AclHuK_6RZLdCqEfKboKrqBzIVM-urAOCv16V7vZrfePzBVVCw2zR12hPxAdyU4
+Message-ID: <CAJ8uoz0cv7j7=nHt6ikw4JnJOHA0NTstjN1iKYswGjH8jeWBZw@mail.gmail.com>
+Subject: Re: [PATCH net-next 5/5] selftests: net: add AF_XDP USO test
+To: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Cc: Magnus Karlsson <magnus.karlsson@intel.com>, netdev@vger.kernel.org,
+ sdf@fomichev.me, 
+ davem@davemloft.net, edumazet@kernel.org, kuba@kernel.org, pabeni@redhat.com, 
+ horms@kernel.org, bjorn@kernel.org, kerneljasonxing@gmail.com, 
+ intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com, 
+ przemyslaw.kitszel@intel.com, jacob.e.keller@intel.com
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -161,116 +151,198 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-7.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-12.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS autolearn=unavailable
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On 11/19/26 22:38, Jakub Kicinski wrote:
-> Well, I'm not convinced. The relations between objects in DPLL are
-> already quite hard to follow, and objects from one driver routinely
-> "plug" into objects from another. The explanation of the locking
-> rules in patch 9 does not look clean or clear. The driver facing
-> API needs to be much more "dummy-proof".
+On Thu, 19 Nov 2026 at 20:05, Maciej Fijalkowski
+<maciej.fijalkowski@intel.com> wrote:
+>
+> On Thu, Nov 19, 2026 at 05:53:40PM +0100, Magnus Karlsson wrote:
+> > Add xsk_uso, a functional test for AF_XDP UDP segmentation offload in
+> > copy and zero-copy mode. It sends USO requests from an AF_XDP socket
+> > and checks the datagrams received on a packet socket: the number of
+> > datagrams, the IP and UDP lengths, the checksums and the payload, for
+> > IPv4 and IPv6, and single and multi-buffer requests. It also checks
+> > that invalid requests are dropped and counted in tx_invalid_descs.
+> >
+> > The test needs root and physical NICs with an MTU of at least 1448,
+> > either two connected ports (-i TX_IFACE -r RX_IFACE) or one in NIC
+> > loopback (-l -i IFACE). Virtual devices such as veth pass the packet on
+> > without segmenting it. Zero copy (-z) also needs a native XDP program on
+> > the interface. Standalone checksum offload cases run only with -C, as
+> > they test the existing checksum offload rather than USO. As it needs
+> > real hardware, it is built but not run by default, like xdp_hw_metadata.
+> > It uses the AF_XDP library in net/lib/xsk.
+>
+> I assume the end goal for xdp_hw_metadata is to pull in its contents onto
+> xsk python runner. What is the case for this one?
 
-Fair enough. The complicated part of the rules comes exactly from
-that: a pin registered by another driver, like the zl3073x pins that
-ice registers with its TXC DPLL or uses as parents of its RCLK pins.
-A message about such a pin runs callbacks of both drivers. I have
-prototypes of the first four ways below to lock this, each with KUnit
-tests, and would like your opinion before going further.
+It should be merged into the python runner that you are working on.
+But I need that to land first before I can move this. You could say
+that this patch is just temporary until your stuff has landed.
 
-In all of them a domain is the set of objects created with the same
-module and clock_id, dpll_lock becomes an rwsem for the topology and
-lifetime, and a mutex per domain serializes the callbacks.
+> Also since you're adding support to copy mode i assume veth runs would be
+> welcome...
 
-A) Pin's domain (this series)
+While veth accepts USO, it will never segment the packet. The skb will
+just be delivered to the other side as is, so we need real HW for
+these tests.
 
-    Callbacks of a pin run under the domain of the pin, whichever
-    driver registered them.
+> Did you try to point AI to my set and ask whether it would be able to
+> produce python runner for that? Or do we don't want to have this CI'ed ?
 
-    Pros:
-    * one domain lock at a time, so no lock order
-    * a request or a message about a pin is atomic
-    Cons:
-    * the callbacks of a foreign pin are serialized with the driver
-      that created the pin, not with the other callbacks of the driver
-      that registered it, so that driver has to protect the shared
-      state itself, and lockdep cannot check it
-    * restrictions for measured_freq_get, reference sync pairs and the
-      private data of a parent pin, which patch 9 has to explain
+I am sure that is possible, but I will spend those tokens once your
+move has landed. We definitely want this to be in the CI and
+integrated with your stuff.
 
-B) Registrant's domain, deferred notifications
-
-    Each callback runs under the domain of the driver that registered
-    it. A message about a pin takes the domain locks one after another,
-    and notifications from callbacks are queued and sent once the
-    domain lock is dropped.
-
-    Pros:
-    * callbacks registered by one driver instance are always
-      serialized with each other
-    * one domain lock at a time, so no lock order
-    Cons:
-    * a request or a message about a pin registered across domains is
-      not atomic
-    * the most complex core: a notification queue per domain, a lock
-      per object to keep its messages in order, and pin setters split
-      into validation and apply parts
-
-C) Registrant's domain nested under the pin's domain
-
-    Pros:
-    * callbacks registered by one driver instance are serialized with
-      each other and with the driver that created the pin
-    * a request or a message about a pin is atomic
-    Cons:
-    * the lock order comes from the topology, so a pin of A registered
-      with a DPLL of B together with a pin of B registered with a DPLL
-      of A deadlocks, and lockdep sees it only with a lockdep class per
-      domain
-    * a stuck foreign registrant stops the domain of the pin
-
-D) Merged domains (your suggestion)
-
-    Registering a pin with a DPLL or a parent pin of another domain
-    merges both domains. They are not split again.
-
-    Pros:
-    * the rules for drivers stay as they are with the global lock
-      today, and lockdep checks them; the only new one is that state
-      shared between chips not connected by a pin needs a driver lock
-    * a request or a message is atomic
-    Cons:
-    * only hardware not connected by pins runs in parallel; on the
-      GNR-D system the zl3073x and all ice PFs end up in one domain
-    * a callback that waits for the hardware, like the planned resync
-      for up to 1 s, or for firmware still stalls all DPLL devices in
-      the merged domain
-
-E) Global dpll_lock, slow callbacks asynchronous
-
-    Pros:
-    * no change in the core
-    Cons:
-    * the resync problems from my previous mail, and a callback that
-      waits for firmware still stalls all DPLL devices in the system
-
-I wrote before that stretching the domains would not improve
-anything on that system. That holds for the ToD stall I measured,
-but the zl3073x does not need to hold its channel lock across the
-edge waits. Without that, the remaining waits are the planned resync
-and output state callbacks, and with D they stall only the devices
-wired to that chip, which depend on it anyway.
-
-So I lean towards D, as it gives drivers nothing new to get right.
-Would that address your concern, or do you see a better way?
-
-It would be good to hear from the other DPLL maintainers as well.
-Jiri, Vadim, Arkadiusz, what do you think?
-
-Thanks,
-Ivan
-
+> >
+> > Missing prerequisites are reported as skips. In zero-copy mode, the
+> > device must report xsk-zerocopy and tx-uso-zc, and checksum-only cases
+> > need tx-checksum. In both modes, cases that produce more than one
+> > datagram need tx-udp-segmentation, including the invalid ones, which
+> > would otherwise be dropped for lack of the offload whatever their
+> > headers. Cases that need more descriptors than xdp-zc-max-segs are
+> > skipped, and so are binds that the device refuses with EOPNOTSUPP.
+> > Receive-side UDP GRO (rx-udp-gro-forwarding, rx-gro-list) must be off,
+> > as it would merge the segments again before the packet socket sees them.
+> > USO with launch time must succeed in copy mode and be dropped in
+> > zero-copy mode.
+> >
+> > Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
+> > ---
+> >  tools/testing/selftests/net/.gitignore |   1 +
+> >  tools/testing/selftests/net/Makefile   |  10 +-
+> >  tools/testing/selftests/net/xsk_uso.c  | 954 +++++++++++++++++++++++++
+> >  3 files changed, 964 insertions(+), 1 deletion(-)
+> >  create mode 100644 tools/testing/selftests/net/xsk_uso.c
+> >
+>
+> ...
+>
+> > +
+> > +static void get_mac(const char *name, unsigned char *mac)
+> > +{
+> > +     struct ifreq ifr = {};
+> > +     int fd = socket(AF_INET, SOCK_DGRAM, 0);
+> > +
+> > +     if (fd < 0)
+> > +             ksft_exit_fail_msg("socket: %s\n", strerror(errno));
+> > +     snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", name);
+> > +     if (ioctl(fd, SIOCGIFHWADDR, &ifr))
+> > +             ksft_exit_fail_msg("MAC address for %s: %s\n", name, strerror(errno));
+> > +     memcpy(mac, ifr.ifr_hwaddr.sa_data, ETH_ALEN);
+> > +     close(fd);
+> > +}
+> > +
+> > +static unsigned int get_mtu(const char *name)
+> > +{
+> > +     struct ifreq ifr = {};
+> > +     int fd = socket(AF_INET, SOCK_DGRAM, 0);
+> > +
+> > +     snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", name);
+> > +     if (fd < 0 || ioctl(fd, SIOCGIFMTU, &ifr))
+> > +             ksft_exit_fail_msg("MTU of %s: %s\n", name, strerror(errno));
+> > +     close(fd);
+> > +     return ifr.ifr_mtu;
+> > +}
+>
+> this is a lib content which i'm also adding, so we're gonna clash.
+>
+> > +
+> > +/* Virtual devices have no backing device, and pass GSO packets on whole. */
+> > +static bool is_physical(const char *name)
+> > +{
+> > +     char path[64];
+> > +
+> > +     snprintf(path, sizeof(path), "/sys/class/net/%s/device", name);
+> > +     return !access(path, F_OK);
+> > +}
+> > +
+> > +static int ethtool_ioctl(const char *name, void *cmd)
+> > +{
+> > +     struct ifreq ifr = { .ifr_data = cmd };
+> > +     int fd = socket(AF_INET, SOCK_DGRAM, 0), err;
+> > +
+> > +     if (fd < 0)
+> > +             return -1;
+> > +     snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", name);
+> > +     err = ioctl(fd, SIOCETHTOOL, &ifr);
+> > +     close(fd);
+> > +     return err;
+> > +}
+> > +
+> > +/* Returns whether the netdev feature called @feature is active on @name. */
+> > +static bool feature_active(const char *name, const char *feature)
+> > +{
+> > +     struct ethtool_gfeatures *features = NULL;
+> > +     struct ethtool_gstrings *strings = NULL;
+> > +     struct ethtool_sset_info *sset;
+> > +     unsigned int count, blocks, i;
+> > +     bool active = false;
+> > +
+> > +     sset = calloc(1, sizeof(*sset) + sizeof(sset->data[0]));
+> > +     if (!sset)
+> > +             ksft_exit_fail_msg("calloc: %s\n", strerror(errno));
+> > +     sset->cmd = ETHTOOL_GSSET_INFO;
+> > +     sset->sset_mask = 1ULL << ETH_SS_FEATURES;
+> > +     if (ethtool_ioctl(name, sset))
+> > +             ksft_exit_fail_msg("ETHTOOL_GSSET_INFO: %s\n", strerror(errno));
+> > +     if (!sset->sset_mask)
+> > +             ksft_exit_fail_msg("%s reports no feature strings\n", name);
+> > +     count = sset->data[0];
+> > +     blocks = (count + 31) / 32;
+> > +     strings = calloc(1, sizeof(*strings) + count * ETH_GSTRING_LEN);
+> > +     features = calloc(1, sizeof(*features) +
+> > +                       blocks * sizeof(features->features[0]));
+> > +     if (!strings || !features)
+> > +             ksft_exit_fail_msg("calloc: %s\n", strerror(errno));
+> > +     strings->cmd = ETHTOOL_GSTRINGS;
+> > +     strings->string_set = ETH_SS_FEATURES;
+> > +     strings->len = count;
+> > +     features->cmd = ETHTOOL_GFEATURES;
+> > +     features->size = blocks;
+> > +     if (ethtool_ioctl(name, strings) || ethtool_ioctl(name, features))
+> > +             ksft_exit_fail_msg("ethtool features: %s\n", strerror(errno));
+> > +     for (i = 0; i < count; i++)
+> > +             if (!strncmp((char *)strings->data + i * ETH_GSTRING_LEN, feature,
+> > +                          ETH_GSTRING_LEN)) {
+> > +                     active = features->features[i / 32].active & (1U << (i % 32));
+> > +                     break;
+> > +             }
+> > +     free(features);
+> > +     free(strings);
+> > +     free(sset);
+> > +     return active;
+> > +}
+> > +
+> > +static void get_xdp_features(unsigned int ifindex, uint64_t *xdp, uint64_t *xsk,
+> > +                          unsigned int *zc_max_segs)
+> > +{
+> > +     struct netdev_dev_get_req *req;
+> > +     struct netdev_dev_get_rsp *rsp;
+> > +     struct ynl_error yerr;
+> > +     struct ynl_sock *ys;
+> > +
+> > +     ys = ynl_sock_create(&ynl_netdev_family, &yerr);
+> > +     if (!ys)
+> > +             ksft_exit_fail_msg("YNL: %s\n", yerr.msg);
+> > +     req = netdev_dev_get_req_alloc();
+> > +     if (!req)
+> > +             ksft_exit_fail_msg("netdev_dev_get_req_alloc failed\n");
+> > +     netdev_dev_get_req_set_ifindex(req, ifindex);
+> > +     rsp = netdev_dev_get(ys, req);
+> > +     netdev_dev_get_req_free(req);
+> > +     if (!rsp)
+> > +             ksft_exit_fail_msg("netdev dev-get: %s\n", ys->err.msg);
+> > +     *xdp = rsp->_present.xdp_features ? rsp->xdp_features : 0;
+> > +     *xsk = rsp->_present.xsk_features ? rsp->xsk_features : 0;
+> > +     *zc_max_segs = rsp->_present.xdp_zc_max_segs ? rsp->xdp_zc_max_segs : 1;
+> > +     netdev_dev_get_rsp_free(rsp);
+> > +     ynl_sock_destroy(ys);
+>
+> you really should look at python drv-net infra...
