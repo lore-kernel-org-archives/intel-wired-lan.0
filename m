@@ -2,131 +2,109 @@ Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F1D0360A2603
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 20 Nov 2026 21:01:53 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A327360A2618
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 20 Nov 2026 22:16:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=t2kpVcpI;
-	dkim=pass (2048-bit key, unprotected) header.d=mandelbit.com header.i=@mandelbit.com header.a=rsa-sha256 header.s=MBO0001 header.b=H2YdIHHe
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=jxYpHEL1;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KhuI3bL8
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id D39E181755;
-	Fri, 20 Nov 2026 21:01:53 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 87B4C817A7;
+	Fri, 20 Nov 2026 22:16:03 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id SuA6Upm-T8KY; Fri, 20 Nov 2026 21:01:53 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org E00B681750
+ id mMBSL9Ji8QjI; Fri, 20 Nov 2026 22:16:02 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org B72F5817A9
 Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795208513;
-	b=cvAJ1008fFEPs9fxXUC4au50r3LXlVRnzdJ3msuEqAjOync9l6fQwmBR6LG6hmIlt6aZ
-	 16ziJ7WX4Gp7ze+1SdkwbU3KI7v/epdFHeHVcaDPbhEQWVkDdMCfB7RgKw919xMkUtsUV
-	 2CGpAt1PfPU8x4LgKo+esyRBjKFWcXgQaQRv3LlWUD0WTq7BfAT2igiT7n7ILBm9z6lob
-	 gHgvRlhhgQbcMsVwQGPa0ooYkNbfY0RTUu8WO9Nze+1V0zfgRBuGVuFpkYF/Nu9asVsR+
-	 /hrwfZRbVKPRNWS7G+GnZggu6dqg6AFO58wjfIsRDBf9ECl0Fmh2sUhflqfMqmq9j0w==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795212962;
+	b=BBtQqbiCVYQuV2Cn8flR0xAz/lF5jUxV87J9LXihDfymy8spRG8krk5RCfwgrVFvvxQb
+	 Kq3Gc2sab0csxMlvdrMgD5roiK9xrgw/s3Q8uXTP2nnRvuJYEIIcRMQwTF3/KpadBK8wC
+	 ym6ZFzODNgwiDv2Vrp2Zn0bsveaz9C8jRkEKzNAiT4y23/gSRUHVniiGX8XjbCNSPUHlO
+	 rLdsnc6DvquQUedAwqJwEl3OsLEhOU1nfnXuBk7AmMU58dI1+IKCMQ9FTWAXnPk4b5rbl
+	 w2IFETcCWR6phjNSOzbNNFb5y7mpo48mdheCZF6t+nR1aDdg+9cZRyhMogmtMREaOkA==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795208513;
+	c=relaxed/relaxed; t=1795212962;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
-	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding:
-	 X-Rspamd-Queue-Id:X-BeenThere:X-Mailman-Version:Precedence:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Errors-To;
-	bh=n34JAgo+BYEXBsBH3HriYNhCx1OSAseNztdfnC7EmCA=;
-	b=bnlYn9nuWcfjpllyBtZpPK+I8aq14nvL+GF8co0dnvusu5YAGIU5pVQ/aymrS5hsnj1c
-	 qAPx/kOZVeQWi3XWOgKonqOtN5ye2xW4fMYsJxPiaBetqPO55CGFCNU7Q+OZc0AXwbE+3
-	 iZIzyAR5tNBA4OxK/MnV1Aj0qCWPaYE2jOHCpVdRIbWTKEBMtNqPLgGm14ciZ5tdNc04t
-	 p4Aj7Ebul4YkOzMWdzA/pfDAdLfTDpaNiGaTJc4gEjG0DQHfQaNfUxoUqg1I24Q/hABmC
-	 Mjf6DKWWz3fTXv0z0MeEc/zidSZVfCA1WpRuhwg0uSaeYjzAVnVZfLfwEBF54mGS5oQ==
+	 Received:DKIM-Signature:Message-ID:From:Subject:To:Cc:In-Reply-To:
+	 References:Content-Type:Content-Transfer-Encoding:Date:X-BeenThere:
+	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Reply-To:Errors-To;
+	bh=amNkjt+4gpii4aylkTF8IcmFKWS7LX23xgeigY3rYGA=;
+	b=Ay5Z6jBidazysDDSSc9eOKTr069XQgKyhNwyXQOSPcuPyySVaQp+5BABxj7aq38lxWvQ
+	 wxR3tSg5xOZ78WNWHwVezLtodyatMdS4FUEjAdFU5My+hPuf3oVEPIjmWIk0pzuSN6EMI
+	 G0rrgymU1dTRZHhu5Vq3aoVuknsAb3FfxgEKc6ms56EBjru2K64wjJoB3nNWKZQPq9LDq
+	 X+hHVup4iTYWnvImWOQbI3ZU9V5Jlcwj+QsTWembYYu2PnYFKXPUvH6iipJ/PHtAOcVyk
+	 tdT8H/sbXbjVvPcibFvTFetOqu3ji+ay4gHyaPITt+YKBvhYKwnQeX9V73q6UZwskyg==
 ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1795208512;
-	bh=n34JAgo+BYEXBsBH3HriYNhCx1OSAseNztdfnC7EmCA=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
+	s=default; t=1795212962;
+	bh=amNkjt+4gpii4aylkTF8IcmFKWS7LX23xgeigY3rYGA=;
+	h=From:Subject:To:Cc:In-Reply-To:References:Date:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=t2kpVcpIV6XM+l9EeMJEJNUWDCgiCmPgxSSuK9E6QV48ZwT7IYpuljhaw8l8t9jxn
-	 ZO9AG3py+vgnUCWhHwtvKzKZISloazsaUO5TiT9Lc/dFN+5lrbHXJTi/e+vlQRdEeI
-	 i1iyTOs4ZY/qrsel92OsB+W66h7eFAFa+kKwneWCE3l07QlvEwyYLOF2qC6jlW65Lk
-	 Sv7oHqH4TUnYt8Uxe8Rewqb2KJx75e7xGf+txOzpp6O8hOQ56J7d+ZINiwfv5bAyVk
-	 jdMv9gk0DR+B0P0vFoIR4Bs2nWIdN3NyzoGRYnFDBmZdTAl/UB3HmDfxO0VljhYFUx
-	 HEgmvWEzlPN/g==
+	 Reply-To:From;
+	b=jxYpHEL1W+1bMprOQGhlWwhiimF5IwvsObwyQyGP1cKHYHTv5EOEVzgiB0D7ge5Nw
+	 NqkjNspCHhEmIo97fwfUce4pCGqqh1b6AYNEJGCETgGEMz7fXdnT6bKorWJd0wUeBr
+	 TogBh3T+7DnI2+YZMQts5BHcSfXGhQo+J1VtxmobvKkJZPk4UNMeRer48OJ2Lb4Wml
+	 mRUrf25M4tS6NW0JCPjIHclCoA3Z8NgIqGDAoMI72RuoxN3uMUHkr+iOsFwFAGs/k7
+	 3dppwE8IqRrRBvdrKvYKY3tQRZ0yqMTm7riGa8WXRlMmTMMaw5SpKVT3ljEUZSZZTQ
+	 Ueqk5zRZT6WTw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id E00B681750;
-	Fri, 20 Nov 2026 21:01:52 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id C1470971
- for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Nov 2026 21:01:51 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id B72F5817A9;
+	Fri, 20 Nov 2026 22:16:02 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 00EE615D
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Nov 2026 22:16:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id A4C0140AF9
- for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Nov 2026 21:01:51 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id DB06C6065F
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Nov 2026 22:16:00 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id QmVVQtLcFnOC for <intel-wired-lan@lists.osuosl.org>;
- Fri, 20 Nov 2026 21:01:50 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org 4BEFF40AB0
-Authentication-Results: smtp2.osuosl.org;
- arc=none smtp.remote-ip="2001:67c:2050:102:465::107"
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2001:67c:2050:102:465::107; helo=mout-b-107.mailbox.org;
- envelope-from=antonio@mandelbit.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org;
- dmarc=none (p=none dis=none) header.from=mandelbit.com
-Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=mandelbit.com header.i=@mandelbit.com
- header.a=rsa-sha256 header.s=MBO0001 header.b=H2YdIHHe
-Received: from mout-b-107.mailbox.org (mout-b-107.mailbox.org
- [IPv6:2001:67c:2050:102:465::107])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 4BEFF40AB0
- for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Nov 2026 21:01:48 +0000 (UTC)
-Received: from smtp102.mailbox.org (smtp102.mailbox.org
- [IPv6:2001:67c:2050:b231:465::102])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519MLKEM768 server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mout-b-107.mailbox.org (Postfix) with ESMTPS id 4jWSST2lTlz3wjt;
- Fri, 20 Nov 2026 22:01:45 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mandelbit.com;
- s=MBO0001; t=1795208505;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=n34JAgo+BYEXBsBH3HriYNhCx1OSAseNztdfnC7EmCA=;
- b=H2YdIHHeSCyc4bQ+GvtyAWBTBiXFnjJVPo1L8cQw/bC4eWfX5sTS2rst213vmMT7ANXl+K
- UqLWCTWBQbXL1+QCYmiBEZOB6UUOfsHWWX13/NPvY8WqdhN5LHtv3U4Jyog5pmnBy/ZAZp
- TBBmdJ+REW9dSmU2skOBgoz8XPnoBWvmrdvMvlYWHwEJzGqBCA0C5BT6TvxCKjjmMRICay
- NZn+MTVAJsW4xDI6taVRZ1mfekmKFADaGpIBoueISzy+gLWetSOHiNLHJQIpW+ehooigDN
- PQKzja6RbokrD8xGDUqAATOJhzEGGjwmTBcSQR69HE+9Fcv8xw3XNk65ARnZKg==
-Authentication-Results: outgoing_mbo_mout; dkim=none;
- spf=pass (outgoing_mbo_mout: domain of antonio@mandelbit.com designates
- 2001:67c:2050:b231:465::102 as permitted sender)
- smtp.mailfrom=antonio@mandelbit.com
-From: Antonio Quartulli <antonio@mandelbit.com>
-To: intel-wired-lan@lists.osuosl.org
-Cc: Antonio Quartulli <antonio@mandelbit.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>,
- "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@kernel.org>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>,
- Janis Edvarts Lacis <janislacis06@gmail.com>, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Subject: [PATCH net v4 4/4] igb: only allow runtime PM if the device can wake
- up
-Date: Fri, 20 Nov 2026 22:01:32 +0100
-Message-ID: <20261120210134.133238-5-antonio@mandelbit.com>
-X-Mailer: git-send-email 2.56.1
-In-Reply-To: <20261120210134.133238-1-antonio@mandelbit.com>
-References: <20261120210134.133238-1-antonio@mandelbit.com>
-X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Rspamd-Queue-Id: 4jWSST2lTlz3wjt
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id bHTu6vbJKipt for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 20 Nov 2026 22:16:00 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 0022F60760
+Authentication-Results: smtp3.osuosl.org;
+ arc=none smtp.remote-ip=172.234.252.31
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
+ helo=sea.source.kernel.org; envelope-from=sashiko-bot@kernel.org;
+ receiver=<UNKNOWN> 
+Authentication-Results: smtp3.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20260515 header.b=KhuI3bL8
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 0022F60760
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Nov 2026 22:15:59 +0000 (UTC)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+ by sea.source.kernel.org (Postfix) with ESMTP id E8D444074C;
+ Fri, 20 Nov 2026 22:15:58 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 819051F000CF;
+ Fri, 20 Nov 2026 22:15:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+ s=k20260515; t=1795212958;
+ bh=amNkjt+4gpii4aylkTF8IcmFKWS7LX23xgeigY3rYGA=;
+ h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
+ b=KhuI3bL8p+6xNuVqgXYw+4OMU7s1+lH3mMEe4eZj8YvmD4oTB4p/wSYP8AZzE8wJQ
+ ye004Se7ck9R7PiI+0tJoAPmYriTQSvv8u3cvvFsiz5FZvcYw6NsRsit9ecpEJuleI
+ BpXf2a7+0GkyjywHUFsETKPr7dmv2JmH8VWwxk92FDMieARqYb44jzfn0igWhETp3Z
+ MMw2cm5ujjHmDfypkU/WMsksX/hwXUytw00vKHH8/BbV8Zq4o4TZbg84+YLO17M8Gj
+ kMQR+MeGwuIYIVjj0KzFiHkk/Eto7fV/o++M8qpP9LGOAR0KgM1w5JaSAInKdG3ATv
+ whGYBeF/5m6Dw==
+Message-ID: <sashiko-outbox-226237@kernel.org>
+From: sashiko-bot@kernel.org
+Subject: Re: [PATCH iwl-net] e1000e: fix link stuck at 10 Mb/s after DMoff exit
+To: "Craig I. Hagan" <hagan@amazon.com>
+Cc: intel-wired-lan@lists.osuosl.org
+In-Reply-To: <20261119221548.10466-1-hagan@amazon.com>
+References: <20261119221548.10466-1-hagan@amazon.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Date: Fri, 20 Nov 2026 22:15:58 +0000
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -137,65 +115,79 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-18.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+Reply-To: sashiko-reviews@lists.linux.dev
+X-Spam-Status: No, score=-10.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
+X-Archived-By: <archiver.kernel.org>
 
-igb lets the device be runtime suspended even if it can't signal a
-wake-up from D3. Such a device doesn't notice the link coming back, so
-the port stays down until it is resumed from user space.
+Thank you for your contribution! Sashiko AI review found no new issues
+in this patch, but noticed 1 related pre-existing issue it does not
+introduce:
+- [High] e1000e: data race on adapter->flags in e1000_watchdog_task()
+  [1]
+--
 
-Allow runtime PM only if pci_dev_run_wake() is true, as e1000e and
-r8169 do. Devices that can't wake up no longer runtime suspend, even
-with power/control set to auto.
+commit a2887ea1ca15cc20dbf05390436bdded73c4d7b5
+Author: Craig I. Hagan <hagan@amazon.com>
 
-Tested with the 82576 emulated by QEMU.
+e1000e: fix link stuck at 10 Mb/s after DMoff exit
 
-Fixes: 749ab2cd1270 ("igb: add basic runtime PM support")
-Cc: stable@vger.kernel.org
-Closes: https://bugzilla.ipfire.org/show_bug.cgi?id=13562
-Signed-off-by: Antonio Quartulli <antonio@mandelbit.com>
----
-v4: no changes
-v3: no changes
-v2: no code changes; mention the tested hardware
+This commit records the PCIM_STATE (DMoff) bit in the link status change
+interrupt handler so e1000_watchdog_task() still enters the DMoff wait and
+full-reset path if DMoff ends before the watchdog runs.
 
-Note: igc has the same issue: igc_probe() also allows runtime PM
-regardless of pci_dev_run_wake().
+> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/eth=
+ernet/intel/e1000e/netdev.c
+> index c3e944ee4cf9a..47a6964fa7df0 100644
+> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> @@ -1785,6 +1785,7 @@ static irqreturn_t e1000_intr_msi(int __always_unus=
+ed irq, void *data)
+>  	/* read ICR disables interrupts using IAM */
+>  	if (icr & E1000_ICR_LSC) {
+>  		hw->mac.get_link_status =3D true;
+> +		hw->mac.dmoff_at_lsc =3D er32(STATUS) & E1000_STATUS_PCIM_STATE;
+>  		/* ICH8 workaround-- Call gig speed drop workaround on cable
+>  		 * disconnect (LSC) before accessing any PHY registers
+>  		 */
 
- drivers/net/ethernet/intel/igb/igb_main.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+[Severity: High]
+This problem wasn't introduced by this patch, but can unlocked updates to
+adapter->flags in e1000_intr_msi() and e1000_watchdog_task() cause a data
+race [1]?
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 6196d7a..72eeaf3 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -3654,7 +3654,11 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	dev_pm_set_driver_flags(&pdev->dev, DPM_FLAG_NO_DIRECT_COMPLETE);
- 
--	pm_runtime_put_noidle(&pdev->dev);
-+	/* A device that can't wake up wouldn't notice the link coming back
-+	 * while runtime suspended
-+	 */
-+	if (pci_dev_run_wake(pdev))
-+		pm_runtime_put_noidle(&pdev->dev);
- 	return 0;
- 
- err_register:
-@@ -3876,7 +3880,8 @@ static void igb_remove(struct pci_dev *pdev)
- 	struct igb_adapter *adapter = netdev_priv(netdev);
- 	struct e1000_hw *hw = &adapter->hw;
- 
--	pm_runtime_get_noresume(&pdev->dev);
-+	if (pci_dev_run_wake(pdev))
-+		pm_runtime_get_noresume(&pdev->dev);
- #ifdef CONFIG_IGB_HWMON
- 	igb_sysfs_exit(adapter);
- #endif
--- 
-2.56.1
+e1000_watchdog_task() runs in process context with interrupts enabled and
+calls e1000e_enable_receives(), which clears FLAG_RESTART_NOW with a
+non-atomic read-modify-write while the LSC interrupt handler sets
+FLAG_RESTART_NOW in adapter->flags:
 
+drivers/net/ethernet/intel/e1000e/netdev.c:e1000e_enable_receives() {
+	if ((adapter->flags & FLAG_RX_NEEDS_RESTART) &&
+	    (adapter->flags & FLAG_RESTART_NOW)) {
+		...
+		ew32(RCTL, rctl | E1000_RCTL_EN);
+		adapter->flags &=3D ~FLAG_RESTART_NOW;
+	}
+}
+
+CPU0 (kworker)                    CPU1 (<hardirq>)
+e1000_watchdog_task()
+  e1000e_enable_receives()
+    tmp =3D adapter->flags
+                                  e1000_intr_msi()
+                                    adapter->flags |=3D FLAG_RESTART_NOW
+    adapter->flags =3D tmp & ~FLAG_RESTART_NOW  <-- overwrites interrupt up=
+date
+
+Losing the flag update skips the needed device reset or Rx restart and can
+stall traffic.
+
+[1] https://sashiko.dev/#/bug/linux-63b75aa0-7ff8-4f26-8fdb-d0ecb891cbfa
+
+--=20
+Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261119221548.1046=
+6-1-hagan@amazon.com?part=3D1
