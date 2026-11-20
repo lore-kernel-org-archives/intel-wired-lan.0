@@ -1,29 +1,29 @@
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A609960A2629
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 20 Nov 2026 11:10:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9F7CE60A2615
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 20 Nov 2026 11:11:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=rKg7/VNG;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Zlvkdj65
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=3u3soX3b;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gyLxsBvK
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 8489D40E1E;
-	Fri, 20 Nov 2026 11:10:59 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 802F381690;
+	Fri, 20 Nov 2026 11:11:01 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id CHQGBSoma6pU; Fri, 20 Nov 2026 11:10:57 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 5E8AC40E10
-Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795173057;
-	b=PghaUZfLEXyN9QB63L578RGKbnVjoQXTlGg/zyZkIFNf/hAT1I8NyHm94ZC9CP4yHP2Z
-	 7KgcckotfoeXkKVlrl4L4cirN8A7OGB0nGJzzRBT7Dy+8R2oJJS83FmkQsSqy3Uahw0kO
-	 8dwhb5yurTHyoifyqRcRhjcN1lUoaawL95onc9A7EiXLTnuq7hP5A+zGTi5ZitDGh7l/n
-	 8F31//suhdfXcwXCtnzlUEtoeAhbbQ068nYXa8OYevJQLYQ+DgFWV0H0EzBnwZpd8aGCt
-	 c7U6Q6qoFX1JYIZ62fDe87TEWpata+wcUktkJQuUE6jyKIBWKUuJXhWp5AdseZzlE7g==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 5L1ogYzX-3Oz; Fri, 20 Nov 2026 11:11:00 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org A6791816A2
+Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795173060;
+	b=L8juVWNee7oQ3d7sRiQJAv09VHIe4QqCBKs7KqXU3M2vLM76eLsM0gRAsUzZD1EadSK9
+	 6kmuL2Gef+5k5Hib+Cm0XNY1BP0wNhJBQbulodh9ksZZ1T6ax1noSeut30qQg7ADTPwm9
+	 lJlDgLkDXvD5iYJx/kgYpeGAhoFTjGYtcRo7jMNXdm7n1wik6FfXNxtCn4xLDEUO9vOIR
+	 E8zGbc1FGmpkjeN31LIlkoYjD/6Fc498zbMtT17fLMIFmIYVkyEquCq0CzMBCgqJNRmb5
+	 74X60rp3SPu9MH/R58uTiay7EklxM17hMGxYeY8xfYT3GIJfN18eM5GmqZJcMaMUXxA==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795173057;
+	c=relaxed/relaxed; t=1795173060;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
@@ -33,87 +33,86 @@ ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
 	 X-Original-From:Content-Transfer-Encoding:X-BeenThere:
 	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Reply-To:Errors-To;
-	bh=oCOtIdvLKf2/wzqaojXGub0GeIKIVyoMMlNfwp4jvZo=;
-	b=iiS18lHsMfLVi7QeQoIWESYF/G14klnYM54bpv3ll9tcD2FleSiOGiE5Jt42SbBUnw/e
-	 iid0TXkuOoJ7VBozAhKgXYyDTxf46lboyS2HofP3wyNKnWCMsprQ0zwWTkh2jppN2RLES
-	 LBEhzZHy0V3jHxvRHyNa9oxMVQfgvkndZKl4v0FmO2n2Ek0lCJ5JFSCKp/ZMgUVe1td11
-	 6fki0zn0amPOxuxOnHm7SBOcwufyGFU5sBO7DMi5/gkeJXf2fcnjt3VwyvrEq4p34uSAj
-	 Tbyg865UtkPJyk+xEUjmWDwBkpHdmBPhpeE70FhNCipzPAPtioL6Omu07dWlcSf/VRw==
-ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
+	bh=ZalYcQYCzRi9sIxhbRnp0bHlYxYvz0VqIZWtxK4/xBA=;
+	b=qRZQllEc4SlrxGYcDi1ufn1r0IrmV9y+QDfbFurFCYtoJLHxYl93PuxKqeAVafBZVwAW
+	 EqpXzvr+6xK2StMDMv1uOfHaWBkcBCeUamoeMetKYLxvaiId1vX+uNVU9976O1GcGEAuF
+	 QuWcLY52I87nScEFhSL5yVSpjya4+j2FZo+36B48K6dIZ8sqA2wF5oCbT6p7Bz3RIiz6+
+	 C85pSOwe6zXaAf2uExS+FQtp7tgL0T0SBPV81QW4sROYG07G1utvwqJLa4f99ymtySpyA
+	 VCb5wqzi4OysOR3mqoVr1NtGMmBfbOZW0BujXrAToeiUSeTLA3qc77sK1RyYA+kishA==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1795173057;
-	bh=oCOtIdvLKf2/wzqaojXGub0GeIKIVyoMMlNfwp4jvZo=;
+	s=default; t=1795173060;
+	bh=ZalYcQYCzRi9sIxhbRnp0bHlYxYvz0VqIZWtxK4/xBA=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Reply-To:From;
-	b=rKg7/VNG9J9kUwau/SiThD4v4+4XnWqyjKJYlvoOV8vZiHKcOdcjqD+iGspSc6TkQ
-	 MX3M/x/6k9q9g2rVgPFfu6h3MS8n8Kv7AAlvt/Zp6W6bNbe8zEVIH15Vd/G1ZMN7gB
-	 fnObH0+U694LU2PBSJg5IgLXHX77dUbjvwaARgwEZd+H+KueHs4EakVcdhGoY0Q1jV
-	 K9UAK27lAmMkVzgl4tha5Qyej9zwP2Gi56Js6y3MNTQHw4V4oMJ3c491GjtYNAY2FI
-	 5GWjdaG9+xfFgJGAOtGuvQzA91hWeMDf5t/HIczpy6MC3V3HYdliA9StPtiLe3MKf+
-	 Ms2C5JUdbRc0A==
+	b=3u3soX3bobTIEipxU8740lJQvbLPM0Gqzz6XHSJ+Tjv67J3V66KuC0NUbWDOpcNVg
+	 NEP86or8m0vXQlcTdFcHvX5VSur3d5L4AKWUv/k2WTMi8JtX8VHM0V4oRoDL5tqSiP
+	 yReLUWW4X/qereZDOK2OKd2iuiDTHeT/vmLBj9gip5LPMQ9szv9EQXoNzCNaEf/kwR
+	 aU/X8Gfcohh5igZZndccUuSse1DMX9+8qYsiAfhoHMvToe2eP0caKNd8Y3/UqekJI9
+	 5npI9gWxUR1cS10gMq1UQOYdU9qSbmCUWdHZBMiRp+ktYg1//rzfQKFw07oDVNS8Wn
+	 8b0GRth5Wu90w==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 5E8AC40E10;
-	Fri, 20 Nov 2026 11:10:57 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id A6791816A2;
+	Fri, 20 Nov 2026 11:11:00 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 5C4CAE5E
- for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Nov 2026 11:10:55 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id E533722B
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Nov 2026 11:10:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 4E6436072E
- for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Nov 2026 11:10:55 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id D3D2660752
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Nov 2026 11:10:58 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ZNw-icO0PzCs for <intel-wired-lan@lists.osuosl.org>;
- Fri, 20 Nov 2026 11:10:53 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org AE98860752
+ id jpz1w6bczx3o for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 20 Nov 2026 11:10:58 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org B0F046072E
 Authentication-Results: smtp3.osuosl.org; arc=pass header.oldest-pass=0
- smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
- envelope-from=devnull+tkusters.aweta.nl@kernel.org; receiver=<UNKNOWN> 
+ smtp.remote-ip=172.105.4.254
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
+ helo=tor.source.kernel.org; envelope-from=devnull+tkusters.aweta.nl@kernel.org;
+ receiver=<UNKNOWN> 
 Authentication-Results: smtp3.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
 Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20260515 header.b=Zlvkdj65
-Received: from sea.source.kernel.org (sea.source.kernel.org
- [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
- by smtp3.osuosl.org (Postfix) with ESMTPS id AE98860752
- for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Nov 2026 11:10:53 +0000 (UTC)
+ header.a=rsa-sha256 header.s=k20260515 header.b=gyLxsBvK
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id B0F046072E
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Nov 2026 11:10:57 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by sea.source.kernel.org (Postfix) with ESMTP id 5640943862;
- Fri, 20 Nov 2026 11:10:53 +0000 (UTC)
+ by tor.source.kernel.org (Postfix) with ESMTP id 1AFED6280A;
+ Fri, 20 Nov 2026 11:10:56 +0000 (UTC)
 Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
 Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
  (No client certificate requested)
- by smtp.kernel.org (Postfix) with ESMTPS id EC94C1F000E6;
- Fri, 20 Nov 2026 11:10:40 +0000 (UTC)
+ by smtp.kernel.org (Postfix) with ESMTPS id 119931F000CF;
+ Fri, 20 Nov 2026 11:10:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1795173052;
- bh=oCOtIdvLKf2/wzqaojXGub0GeIKIVyoMMlNfwp4jvZo=;
+ s=k20260515; t=1795173055;
+ bh=ZalYcQYCzRi9sIxhbRnp0bHlYxYvz0VqIZWtxK4/xBA=;
  h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
- b=Zlvkdj65nbLBAkxd8I8jM2rtgr7R6SqsG8lixW8ZuFyZ7k49Mq0PTqXb5Hq4L4mW/
- WT5bgJjWgC7jr7GGy8dWkk2aULd3m/GKPVks9ZWf6T7CPhLZKMb74iJCjeLwInCILo
- WtfcrxbB0aFLNohi9tX8aCxrrMVF1GBeIyRE8B+CsHSQOCeFOkHdvEoXyD3cueszUJ
- jGYmcmAiYPLHwgeS0sGYq3mDkvHvwp4EC/sv15b5JDmBXUoHvZRsjWigwG/w9PkY6x
- 9CopiX79VdRXdIA1r4lOUl9wTupkZm8wIUYLVbdiJogbfpQoB0pBLdpPIJaszyMien
- i7gWOo8qK1ObQ==
+ b=gyLxsBvKqRwCm/c9e3MQnpGTD+KCUGQwa+NfA86ADpP56Oj2tPL5S5RuI8XT1vq9x
+ cyqiWFkr2I0cmQawx3J3mPp1IgsZk102fo8tCY+eYBOTSft0zGoi9CVqwrOOSW7lNq
+ OrqCLiBTGuD4K3bBwWh7pdGktwHMBkNvldVc6/AhmABy5FT4t11IJ+1y9iWbI/Ep0o
+ OvgnoBz2/98ZjsSzsbO0KUNY24DxT6I2d839UQdJ6//DQGJyawgoy6lGxRFIrP3qlM
+ N5y2khYGsjGOI2X4pPOPE0zheo2RjIwkVKx+q25OTMFzqdqsaqJU0/BN7Q3DRz/SaZ
+ HelBBHVzZ+XLw==
 Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
- by lkml.kernel.org (Postfix) with ESMTP id 7CEAF49832;
+ by lkml.kernel.org (Postfix) with ESMTP id 941894983A;
  Fri, 20 Nov 2026 11:10:40 +0000 (UTC)
 From: Tjerk Kusters via B4 Relay <devnull+tkusters.aweta.nl@kernel.org>
-Date: Fri, 20 Nov 2026 12:10:38 +0100
-Subject: [PATCH net v7 1/3] igb: do not let XDP frames span more than one
- Rx buffer
+Date: Fri, 20 Nov 2026 12:10:39 +0100
+Subject: [PATCH net v7 2/3] igb: only strip Rx timestamp header on the
+ first buffer of a frame
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261120-igb-rx-ts-fix-v7-1-63b03045978e@aweta.nl>
+Message-Id: <20261120-igb-rx-ts-fix-v7-2-63b03045978e@aweta.nl>
 References: <20261120-igb-rx-ts-fix-v7-0-63b03045978e@aweta.nl>
 In-Reply-To: <20261120-igb-rx-ts-fix-v7-0-63b03045978e@aweta.nl>
 To: Tony Nguyen <anthony.l.nguyen@intel.com>, 
@@ -132,13 +131,16 @@ To: Tony Nguyen <anthony.l.nguyen@intel.com>,
 Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, 
  linux-kernel@vger.kernel.org, bpf@vger.kernel.org, 
  Maciej Fijalkowski <maciej.fijalkowski@intel.com>, Paul Moses <p@1g4.org>, 
- stable@vger.kernel.org, Tjerk Kusters <tkusters@aweta.nl>
+ stable@vger.kernel.org, Piotr Kwapulinski <piotr.kwapulinski@intel.com>, 
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>, 
+ Alexander Nowlin <alexander.nowlin@intel.com>, 
+ Tjerk Kusters <tkusters@aweta.nl>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1795173039; l=15756;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1795173039; l=4403;
  i=tkusters@aweta.nl; s=20260619; h=from:subject:message-id;
- bh=7M2S2saoF43jPXPM/mX4wW0lZibnTm3/rakb3CkJ9uY=;
- b=SUUON97MeqkZgQ1hDDWSpttarzJB7Ao/d/ge2HGsigZI/CTyCEZMmHEDiQG53Qo/342p10c/k
- 5Wzq6UQjbZaA4tv4ncfkzO7ARpZRQWK8fzlt2gSepQcBxoRve/5P183
+ bh=UtweYThC/f0Qx2w0Elc+jEl894+yZSIODmNIWsXcYHE=;
+ b=zo4fWZqK6OqLBYe0qtLmwELP5b28z9U6XlZZrxUYtobdOIVTVlZMKac9XSRgafCT8kf9cUqq8
+ G3Uqjg4ryQFDIW4e9KsiHhMYXIdgzbmslh6baVpe+kc7DivDyxmRT3z
 X-Developer-Key: i=tkusters@aweta.nl; a=ed25519;
  pk=JYRpYQ3+LrphEabgnxcbiOUpwvNP8WDDMcLzz+cwKsk=
 X-Endpoint-Received: by B4 Relay for tkusters@aweta.nl/20260619 with
@@ -166,372 +168,90 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 From: Tjerk Kusters <tkusters@aweta.nl>
 
-igb does not support XDP multi-buffer: igb_xdp_setup() only accepts an
-MTU whose frame fits in one Rx buffer, and the XDP program only sees
-the first buffer of a frame. The maximum receive length is not limited
-accordingly, though. RLPML is only lowered when the frame fits a
-build_skb buffer on systems with PAGE_SIZE < 8192 and no VFs. Otherwise
-the MAC still accepts frames of up to MAX_JUMBO_FRAME_SIZE while XDP is
-attached, for example at MTU 3000 on 3 KiB buffers, and at any MTU when
-PAGE_SIZE >= 8192. With VFs allocated, RLPML always stays at
-MAX_JUMBO_FRAME_SIZE and the PF pool limit in VMOLR is only lowered for
-frames that fit a build_skb buffer, so the same happens at MTU 3000.
+When Rx hardware timestamping is enabled (e.g. ptp4l, which configures
+HWTSTAMP_FILTER_ALL), the NIC prepends a 16-byte timestamp header to the
+first Rx buffer of every received frame. igb_clean_rx_irq() strips this
+header inside its per-buffer loop:
 
-Such frames span several descriptors. When the program does not return
-XDP_PASS for the first buffer, no skb is built, and igb_clean_rx_irq()
-handles the next buffer of the same frame as the start of a new frame:
-it runs the program on it and may pass it to the stack as a bogus frame
-made from the middle of the original payload.
+	if (igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP)) {
+		ts_hdr_len = igb_ptp_rx_pktstamp(rx_ring->q_vector,
+						 pktbuf, &timestamp);
+		pkt_offset += ts_hdr_len;
+		size -= ts_hdr_len;
+	}
 
-Limit the receive length to the configured maximum frame size while XDP
-is attached: in RLPML when no VFs are allocated, and in the PF pool's
-VMOLR otherwise, as RLPML then has to stay large for the VFs. Larger
-frames are dropped by the MAC.
+For a frame that spans more than one Rx buffer (e.g. a jumbo frame), this
+block runs once per buffer. The timestamp header only exists at the start
+of the first buffer, but igb_ptp_rx_pktstamp() is called for every buffer.
 
-Also make sure that the limit holds:
+On a continuation buffer the data is packet payload, not a timestamp
+header. igb_ptp_rx_pktstamp() already has two guards against acting on a
+non-header buffer: it returns 0 if PTP is disabled, and returns 0 if the
+reserved dwords (the first 8 bytes) are non-zero. Neither is sufficient
+here: PTP is enabled, and a continuation buffer whose payload happens to
+begin with 8 zero bytes passes the reserved-dword check. In that case the
+payload is mistaken for a valid timestamp header and igb_ptp_rx_pktstamp()
+returns IGB_TS_HDR_LEN, and the caller reduces that buffer's size by 16.
+igb_add_rx_frag() adds a continuation buffer from its original offset, so
+the buffer loses its last 16 bytes and the data of the next buffer
+follows directly. A frame spanning N buffers loses 16 bytes per affected
+continuation buffer, in the middle of the payload when N > 2. If the last
+buffer of a frame holds 8 to 15 bytes, all zero, the unsigned size wraps
+and a fragment of about 4 GiB is added to the skb. The sender chooses the
+frame length and content, so this can be triggered remotely.
 
-- Leave room for the inline Rx timestamp header when checking that the
-  frame fits in one Rx buffer, on XDP setup and on MTU change, where the
-  limit is the hardware buffer size. This lowers the largest MTU
-  accepted with XDP by 16 bytes: from 3046 to 3030 on 3 KiB buffers,
-  and from 2022 to 2006 with legacy-rx or PAGE_SIZE >= 8192. Setups that
-  use XDP at those MTUs will have to lower the MTU. The build_skb frame
-  limit used with 2 KiB buffers is kept, so XDP still attaches up to MTU
-  1510 on x86. The header is only prepended by 82580 and later MACs; the
-  room is reserved on all MACs for simplicity.
-- Base that check on the buffer size that igb_set_rx_buffer_len() will
-  select, not on the ring flags, which are only updated when the rings
-  are configured and can be stale on an interface that is down. As a
-  result, an MTU change with XDP attached can now also move from 2 KiB
-  to 3 KiB buffers. The check is skipped when XDP is removed.
-- Refuse XDP while rx-all is enabled, and keep rx-all off while XDP is
-  attached, as the MAC then also stores frames longer than RLPML. If
-  rx-all was requested meanwhile, it is turned on when XDP is removed,
-  unless the interface could not be opened again. A runtime-suspended
-  device is resumed for that first, as ethtool does, and the features
-  are left as they are if the resume fails.
-- Refuse to change the legacy-rx private flag while XDP is attached, as
-  that changes the Rx buffer size without checking it against the MTU.
-- Program both limits from igb_configure(), which runs when the
-  interface is (re)configured, before Rx is enabled, and no longer from
-  igb_set_rx_mode(), which can also run without RTNL, for example on an
-  IPv6 multicast join or a VF mailbox request. Otherwise such a call
-  during an XDP removal or an MTU change could apply the new limit while
-  the rings still use the old buffers.
-  Attaching or removing an XDP program on a running interface goes
-  through igb_close() and igb_open(), and an MTU change through
-  igb_down() and igb_up(), so igb_configure() runs in both cases.
-  igb_set_rx_mode() still updates other bits of the PF pool's VMOLR. The
-  core calls it under the address lock, so the limit is changed under
-  that lock. The VF mailbox path calls it from the interrupt handler
-  without the lock, but interrupts are masked while igb_configure()
-  runs.
+This is easily triggered by a GigE Vision camera streaming dark frames
+(mostly 0x00 pixel data) over jumbo UDP with PTP active on the receiver:
+the all-zero frames are dropped as truncated while frames with non-zero
+content are fine. The driver reports no error; only the IP layer counts
+the frames in IpExtInTruncatedPkts.
 
-This follows the same approach as the igc fix that limits RLPML while
-XDP is attached. igb_set_rx_mode() does not touch VMOLR on i354, but
-i354 can have VFs, and then the PF pool limit is the only one. So it is
-also written on i354 when VFs are allocated, with or without XDP.
+No content-based check can reliably tell a continuation buffer that begins
+with zero bytes from a real timestamp header, because both are all zero.
+Fix it structurally instead: only attempt the strip on the first buffer of
+a frame, which is the only buffer that can contain a timestamp header. In
+igb_clean_rx_irq() skb is NULL until the first buffer has been processed,
+so guarding the strip with !skb restricts it to the first buffer
+regardless of payload content.
 
-Tested on an I350 at MTU 3000 with Rx timestamping on and xdp-filter
-dropping all IPv4 from the peer: 8242-byte frames are now dropped by the
-MAC (rx_long_length_errors), instead of their last two buffers being
-delivered as a separate frame. XDP attach at MTU 1500 and 3030 still
-works, at MTU 3046 it is refused, as is an MTU change from 3030 to 3046
-with XDP attached; an MTU change from 1500 to 3000 with XDP attached
-now works. With XDP attached, rx-all stays off and the legacy-rx flag
-cannot be changed. XDP attach is refused with rx-all on, and at MTU
-3000 with legacy-rx on, also when the flag was set while the interface
-was down. MTU changes between 1500 and 3000 with XDP attached, while
-the peer sent 3000-byte zero-payload frames, let no frame through as a
-separate frame. On 7.3.1, removing XDP from a down, runtime-suspended
-interface with rx-all requested resumed the device and turned rx-all
-on, and the link came up normally afterwards.
+This relies on the previous patch. Without it, an XDP program that does
+not return XDP_PASS for the first buffer of a multi-buffer frame leaves
+skb NULL for the rest of that frame. With the receive length limited
+while XDP is attached, such frames no longer reach the XDP path.
 
-With two VFs allocated, the same frames are counted by the MAC but
-dropped by the PF pool limit in VMOLR before they reach the Rx queue;
-without this patch their last two buffers are again delivered as a
-separate frame. Read back from the registers, RLPML then stays at 9728
-and the PF pool limit is 3026 at MTU 3000 and 1526 at MTU 1500 with XDP
-attached. In repeated runs of about 200 MTU changes each, the limit was
-right after every change, except for one read in one run, where the
-value was not logged; eleven reruns showed no mismatch.
+igc has the same bug; Paul Moses' igc series, linked below, fixes it the
+same way.
 
-The i354 path was checked with the driver built so that the I350 takes
-the i354 branches for VMOLR. With two VFs and XDP attached, the PF pool
-limit kept its old value of 9728 when the VMOLR write was skipped on
-i354, and read back as 3026 at MTU 3000 and 1526 at MTU 1500 with this
-patch. Only the registers were checked; I have no i354 to test on.
-
-Link: https://lore.kernel.org/all/20261028083344.3047350-3-p@1g4.org/
-Fixes: 9cbc948b5a20 ("igb: add XDP support")
+Link: https://lore.kernel.org/all/20261028083344.3047350-2-p@1g4.org/
+Fixes: 5379260852b0 ("igb: Fix XDP with PTP enabled")
 Cc: stable@vger.kernel.org
-Suggested-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Reviewed-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
+Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Reviewed-by: Kurt Kanzenbach <kurt@linutronix.de>
+Tested-by: Alexander Nowlin <alexander.nowlin@intel.com>
 Signed-off-by: Tjerk Kusters <tkusters@aweta.nl>
 ---
- drivers/net/ethernet/intel/igb/igb_ethtool.c |   9 ++
- drivers/net/ethernet/intel/igb/igb_main.c    | 161 ++++++++++++++++++++-------
- 2 files changed, 127 insertions(+), 43 deletions(-)
+ drivers/net/ethernet/intel/igb/igb_main.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-index f7938c1da835..4f2891fca282 100644
---- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-@@ -3438,6 +3438,15 @@ static int igb_set_priv_flags(struct net_device *netdev, u32 priv_flags)
- 		flags |= IGB_FLAG_RX_LEGACY;
- 
- 	if (flags != adapter->flags) {
-+		/* the Rx buffer size depends on this flag, see
-+		 * igb_xdp_setup()
-+		 */
-+		if (igb_xdp_is_enabled(adapter)) {
-+			netdev_warn(netdev,
-+				    "Cannot change legacy-rx while XDP is attached\n");
-+			return -EOPNOTSUPP;
-+		}
-+
- 		adapter->flags = flags;
- 
- 		/* reset interface to repopulate queues */
 diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index ce91dda00ec0..5f1a5e2240e6 100644
+index 5f1a5e2240e6..a59ee6575c56 100644
 --- a/drivers/net/ethernet/intel/igb/igb_main.c
 +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -1964,6 +1964,57 @@ static void igb_setup_tx_mode(struct igb_adapter *adapter)
- 		   "enabled" : "disabled");
- }
+@@ -9135,8 +9135,11 @@ static int igb_clean_rx_irq(struct igb_q_vector *q_vector, const int budget)
+ 		rx_buffer = igb_get_rx_buffer(rx_ring, size, &rx_buf_pgcnt);
+ 		pktbuf = page_address(rx_buffer->page) + rx_buffer->page_offset;
  
-+/**
-+ *  igb_set_rlpml - set the receive length limits
-+ *  @adapter: private board structure
-+ *
-+ *  Called from igb_configure(), before Rx is enabled. igb_set_rx_mode() can
-+ *  also run without RTNL, so it does not change these limits.
-+ **/
-+static void igb_set_rlpml(struct igb_adapter *adapter)
-+{
-+	u32 rlpml = MAX_JUMBO_FRAME_SIZE, pool_rlpml = MAX_JUMBO_FRAME_SIZE;
-+	unsigned int vfn = adapter->vfs_allocated_count;
-+	struct e1000_hw *hw = &adapter->hw;
-+	u32 vmolr;
-+
-+#if (PAGE_SIZE < 8192)
-+	/* restrict as needed to support build_skb */
-+	if (adapter->max_frame_size <= IGB_MAX_FRAME_BUILD_SKB) {
-+		pool_rlpml = IGB_MAX_FRAME_BUILD_SKB;
-+		if (!vfn)
-+			rlpml = IGB_MAX_FRAME_BUILD_SKB;
-+	}
-+#endif
-+	/* XDP does not support frames that span more than one Rx buffer.
-+	 * With VFs the global limit stays large and the PF pool is limited
-+	 * through VMOLR.
-+	 */
-+	if (igb_xdp_is_enabled(adapter)) {
-+		pool_rlpml = min(pool_rlpml, adapter->max_frame_size);
-+		if (!vfn)
-+			rlpml = min(rlpml, adapter->max_frame_size);
-+	}
-+	wr32(E1000_RLPML, rlpml);
-+
-+	/* the PF pool's VMOLR is used on these MACs, see igb_set_rx_mode(),
-+	 * and with VFs it carries the only limit for the PF, also on i354
-+	 */
-+	if (hw->mac.type < e1000_82576 ||
-+	    (hw->mac.type > e1000_i350 && !vfn))
-+		return;
-+
-+	/* igb_set_rx_mode() also updates this register, and the core calls
-+	 * it under the address lock
-+	 */
-+	netif_addr_lock_bh(adapter->netdev);
-+	vmolr = rd32(E1000_VMOLR(vfn));
-+	vmolr &= ~E1000_VMOLR_RLPML_MASK;
-+	vmolr |= pool_rlpml | E1000_VMOLR_LPE;
-+	wr32(E1000_VMOLR(vfn), vmolr);
-+	netif_addr_unlock_bh(adapter->netdev);
-+}
-+
- /**
-  *  igb_configure - configure the hardware for RX and TX
-  *  @adapter: private board structure
-@@ -1981,6 +2032,7 @@ static void igb_configure(struct igb_adapter *adapter)
+-		/* pull rx packet timestamp if available and valid */
+-		if (igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP)) {
++		/* pull rx packet timestamp if available and valid; it is only
++		 * present on the first buffer of a frame
++		 */
++		if (!skb &&
++		    igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP)) {
+ 			int ts_hdr_len;
  
- 	igb_setup_tctl(adapter);
- 	igb_setup_mrqc(adapter);
-+	igb_set_rlpml(adapter);
- 	igb_setup_rctl(adapter);
- 
- 	igb_nfc_filter_restore(adapter);
-@@ -2468,6 +2520,14 @@ void igb_reset(struct igb_adapter *adapter)
- static netdev_features_t igb_fix_features(struct net_device *netdev,
- 	netdev_features_t features)
- {
-+	struct igb_adapter *adapter = netdev_priv(netdev);
-+
-+	/* with rx-all the MAC also stores frames longer than RLPML, which
-+	 * XDP cannot handle
-+	 */
-+	if (igb_xdp_is_enabled(adapter))
-+		features &= ~NETIF_F_RXALL;
-+
- 	/* Since there is no support for separate Rx/Tx vlan accel
- 	 * enable/disable make sure Tx flag is always in same state as Rx.
- 	 */
-@@ -2886,6 +2946,27 @@ static int igb_setup_tc(struct net_device *dev, enum tc_setup_type type,
- 	}
- }
- 
-+/* Check that a frame fits in one Rx buffer together with the inline Rx
-+ * timestamp header, for the buffer size igb_set_rx_buffer_len() selects.
-+ * The ring flags are only updated when the rings are configured, so they
-+ * are not used here. For build_skb rings the frame is limited to
-+ * IGB_MAX_FRAME_BUILD_SKB, which is below the 2 KiB hardware buffer size
-+ * even with the header.
-+ */
-+static bool igb_xdp_frame_fits(struct igb_adapter *adapter, int max_frame)
-+{
-+#if (PAGE_SIZE < 8192)
-+	if (!(adapter->flags & IGB_FLAG_RX_LEGACY)) {
-+		if (max_frame <= IGB_MAX_FRAME_BUILD_SKB &&
-+		    !IGB_2K_TOO_SMALL_WITH_PADDING)
-+			return true;
-+
-+		return max_frame + IGB_TS_HDR_LEN <= IGB_RXBUFFER_3072;
-+	}
-+#endif
-+	return max_frame + IGB_TS_HDR_LEN <= IGB_RXBUFFER_2048;
-+}
-+
- static int igb_xdp_setup(struct net_device *dev, struct netdev_bpf *bpf)
- {
- 	int i, frame_size = dev->mtu + IGB_ETH_PKT_HDR_PAD;
-@@ -2893,18 +2974,23 @@ static int igb_xdp_setup(struct net_device *dev, struct netdev_bpf *bpf)
- 	struct bpf_prog *prog = bpf->prog, *old_prog;
- 	bool running = netif_running(dev);
- 	bool need_reset;
-+	int err = 0;
- 
--	/* verify igb ring attributes are sufficient for XDP */
--	for (i = 0; i < adapter->num_rx_queues; i++) {
--		struct igb_ring *ring = adapter->rx_ring[i];
-+	/* with rx-all the MAC also stores frames longer than RLPML */
-+	if (prog && (dev->features & NETIF_F_RXALL)) {
-+		NL_SET_ERR_MSG_MOD(bpf->extack, "XDP is not supported with rx-all");
-+		return -EOPNOTSUPP;
-+	}
- 
--		if (frame_size > igb_rx_bufsz(ring)) {
--			NL_SET_ERR_MSG_MOD(bpf->extack,
--					   "The RX buffer size is too small for the frame size");
--			netdev_warn(dev, "XDP RX buffer size %d is too small for the frame size %d\n",
--				    igb_rx_bufsz(ring), frame_size);
--			return -EINVAL;
--		}
-+	/* verify igb ring attributes are sufficient for XDP, leaving room
-+	 * for the inline Rx timestamp header
-+	 */
-+	if (prog && !igb_xdp_frame_fits(adapter, frame_size)) {
-+		NL_SET_ERR_MSG_MOD(bpf->extack,
-+				   "The RX buffer size is too small for the frame size");
-+		netdev_warn(dev, "XDP RX buffer size is too small for the frame size %d\n",
-+			    frame_size);
-+		return -EINVAL;
- 	}
- 
- 	old_prog = xchg(&adapter->xdp_prog, prog);
-@@ -2933,7 +3019,20 @@ static int igb_xdp_setup(struct net_device *dev, struct netdev_bpf *bpf)
- 	}
- 
- 	if (running)
--		igb_open(dev);
-+		err = igb_open(dev);
-+
-+	/* rx-all may have been requested while XDP was attached. A failed
-+	 * igb_open() leaves NAPI disabled, so do not reconfigure then. A down
-+	 * interface can be runtime suspended; resume it first, as ethtool
-+	 * does before it changes features.
-+	 */
-+	if (!prog && !err && (dev->wanted_features & NETIF_F_RXALL)) {
-+		pm_runtime_get_sync(&adapter->pdev->dev);
-+		/* still detached if the resume failed */
-+		if (netif_device_present(dev))
-+			netdev_update_features(dev);
-+		pm_runtime_put(&adapter->pdev->dev);
-+	}
- 
- 	return 0;
- }
-@@ -5323,7 +5422,7 @@ static void igb_set_rx_mode(struct net_device *netdev)
- 	struct igb_adapter *adapter = netdev_priv(netdev);
- 	struct e1000_hw *hw = &adapter->hw;
- 	unsigned int vfn = adapter->vfs_allocated_count;
--	u32 rctl = 0, vmolr = 0, rlpml = MAX_JUMBO_FRAME_SIZE;
-+	u32 rctl = 0, vmolr = 0;
- 	int count;
- 
- 	/* Check for Promiscuous and All Multicast modes */
-@@ -5380,14 +5479,6 @@ static void igb_set_rx_mode(struct net_device *netdev)
- 				     E1000_RCTL_VFE);
- 	wr32(E1000_RCTL, rctl);
- 
--#if (PAGE_SIZE < 8192)
--	if (!adapter->vfs_allocated_count) {
--		if (adapter->max_frame_size <= IGB_MAX_FRAME_BUILD_SKB)
--			rlpml = IGB_MAX_FRAME_BUILD_SKB;
--	}
--#endif
--	wr32(E1000_RLPML, rlpml);
--
- 	/* In order to support SR-IOV and eventually VMDq it is necessary to set
- 	 * the VMOLR to enable the appropriate modes.  Without this workaround
- 	 * we will have issues with VLAN tag stripping not being done for frames
-@@ -5399,19 +5490,10 @@ static void igb_set_rx_mode(struct net_device *netdev)
- 	/* set UTA to appropriate mode */
- 	igb_set_uta(adapter, !!(vmolr & E1000_VMOLR_ROPE));
- 
-+	/* keep the receive length limit set by igb_set_rlpml() */
- 	vmolr |= rd32(E1000_VMOLR(vfn)) &
- 		 ~(E1000_VMOLR_ROPE | E1000_VMOLR_MPME | E1000_VMOLR_ROMPE);
- 
--	/* enable Rx jumbo frames, restrict as needed to support build_skb */
--	vmolr &= ~E1000_VMOLR_RLPML_MASK;
--#if (PAGE_SIZE < 8192)
--	if (adapter->max_frame_size <= IGB_MAX_FRAME_BUILD_SKB)
--		vmolr |= IGB_MAX_FRAME_BUILD_SKB;
--	else
--#endif
--		vmolr |= MAX_JUMBO_FRAME_SIZE;
--	vmolr |= E1000_VMOLR_LPE;
--
- 	wr32(E1000_VMOLR(vfn), vmolr);
- 
- 	igb_restore_vf_multicasts(adapter);
-@@ -6707,19 +6789,12 @@ static int igb_change_mtu(struct net_device *netdev, int new_mtu)
- 	struct igb_adapter *adapter = netdev_priv(netdev);
- 	int max_frame = new_mtu + IGB_ETH_PKT_HDR_PAD;
- 
--	if (igb_xdp_is_enabled(adapter)) {
--		int i;
--
--		for (i = 0; i < adapter->num_rx_queues; i++) {
--			struct igb_ring *ring = adapter->rx_ring[i];
--
--			if (max_frame > igb_rx_bufsz(ring)) {
--				netdev_warn(adapter->netdev,
--					    "Requested MTU size is not supported with XDP. Max frame size is %d\n",
--					    max_frame);
--				return -EINVAL;
--			}
--		}
-+	if (igb_xdp_is_enabled(adapter) &&
-+	    !igb_xdp_frame_fits(adapter, max_frame)) {
-+		netdev_warn(adapter->netdev,
-+			    "Requested MTU size is not supported with XDP. Frame size is %d\n",
-+			    max_frame);
-+		return -EINVAL;
- 	}
- 
- 	/* adjust max frame to be at least the size of a standard frame */
+ 			ts_hdr_len = igb_ptp_rx_pktstamp(rx_ring->q_vector,
 
 -- 
 2.27.0
