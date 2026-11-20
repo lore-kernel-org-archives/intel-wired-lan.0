@@ -1,139 +1,155 @@
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C77A2606A333
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CDB6B606A334
 	for <intel-wired-lan@archiver.kernel.org>; Fri, 20 Nov 2026 16:33:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=5KW1VWxV;
-	dkim=pass (2048-bit key, unprotected) header.d=clicseo-com.20260707.gappssmtp.com header.i=@clicseo-com.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=eh0CSHqi
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=EgFGIJkX;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=TH6LUu/W
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 35C4280281;
+	by smtp3.osuosl.org (Postfix) with ESMTP id AF71660E96;
 	Fri, 20 Nov 2026 16:33:09 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 4K2nTENCs-m7; Fri, 20 Nov 2026 16:33:08 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 509E8816F9
-Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795192388;
-	b=EIlwgzK0q4WvzQ0WlQT8m0uuc5ttVL+4iTz4JCjf0UL+bvx+2l/34vcdCir0Oma/ET8R
-	 MELhHf7sBQNj2HE++J/wTT8vpo+7uav71A6sQPX4VY6jkgPBGZmDTl243sEFthwP9krjB
-	 2O7tHGbxRD8jQ3wLnQQJUiyX3cL4PSNSivUxg+3DQoe4eEIzBwUzEDczicHoJs5gydsZx
-	 +vRz3Y5uHcbHQZPFXuqC4lZ7dUjOSg6R5FPpXDCG3wTjvpoTfdNFzpKecBLZdJeMoEkJ5
-	 z0eYF8WX2vZAJInM/SWmje56aAoGO/PNgcAoD3lE8DPYix7gEmoVXV6h4fWqVCTWAVA==
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id iOld5ym7mmt7; Fri, 20 Nov 2026 16:33:09 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 3747260E85
+Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795192389;
+	b=YHuNFUKHmCaVXD/cHryoFxJCYIv3rj0lTA1RIONpGvsHH7aouE9U+ndf/qvn2rK83Rdh
+	 C0ChZpHrXkcBoTaVywk7Yx6GpZtZIFCPAkiAJ01MAfZtmV/+iXP7EcsNEu8Nvz+G0GOqM
+	 mYOqzTj1HpzrMzzFurl2bnO4EzgX9uhHVIGwb8KeR8dYl51oBC1IGGu7IaY7WNuXaKmoh
+	 n0Si7XJ5YOg9xWkyFqs1SdsZ9nN/uxFo1v6EnaoP4dXXofpCKAsvgpSjYpgI+X83+Rovi
+	 hgsbFrAaRZZatPCl8FLcIZp0an5ykxyz8LhzQ7hdQL4NIuPNjFuoJXc4BHHOhyY3XwQ==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795192388;
+	c=relaxed/relaxed; t=1795192389;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Gm-Message-State:X-Gm-Gg:
-	 X-Received:MIME-Version:From:Date:X-Gm-Features:Message-ID:Subject:To:
-	 Cc:Content-Type:X-Mailman-Approved-At:X-BeenThere:X-Mailman-Version:
-	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
+	 Date:Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding:
+	 X-Mailman-Approved-At:X-BeenThere:X-Mailman-Version:Precedence:
+	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=WTrFO7DU8RvVQbAImxppUK3wi8vLJGpJ6ax41KF861g=;
-	b=shjIAOsZpUMksdVbfn52bUFZqUUjaASCYOhjVekYnxfJFjYzSNf+2hSSdVKYWdWYL9c+
-	 jeNPwQiaQdmeTpq7jZlDYLIUW6iR3aysADRlvJwRTENUBKapQJ5ebR3wrV7SeRUUaCmqs
-	 lXU1NYY6Bj/DfBNd/iepvXIHMQfGPSHvCVvSvGB2Vq0Fco0RZZFkyWU+4xpPjVAmg0a/Q
-	 iQ9XQR/uZgub7rc+9+6HY/2i/w2L/jJlSoVSN52ZzVPwtdzUbPwTZA2M+dTBkalaBonqv
-	 OwKqAvybemmTc2TCTfhMcGMR5Crz/rQh5+pFGnS4a/wpwnDvDEoKUdArrdHGczBRg1g==
-ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
+	bh=9Q+A2Pm/lTzn6/74RcxfPC60rEW9xoC4OYcN2wFWBNQ=;
+	b=PrlGE1Br9HRCKbyNkcRyJhfFF+qd8OnI8wKWrIwMZEwKByNrsu3UWWunpGEO3mmJZFwK
+	 yM3UwjDZAS/UW/2g+cBVYRo2GxAwLTjqdxoqhKWz2ZTROtx+vJNf7Z3803CaG3R14Erq6
+	 h39DX8198Zw7tbVwb95xP2xlxnxocRla4CYK8Byz+Dd00bdGhciiE/rC5omTYNmFGXMaL
+	 lDJyUVZpt8609bkHTKS/J/TXcbbUzicoAEB9JZwDyH6YmdSAspiftUDfo/7vb+eeAEw5q
+	 XJ8bLIQOrJb5q7FaPvPkcYJoSRDENthbz3WFS5DWLwP9hdIU/kPs/0HciXdfEFgitWQ==
+ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1795192388;
-	bh=WTrFO7DU8RvVQbAImxppUK3wi8vLJGpJ6ax41KF861g=;
-	h=From:Date:Subject:To:Cc:List-Id:List-Unsubscribe:List-Archive:
+	s=default; t=1795192389;
+	bh=9Q+A2Pm/lTzn6/74RcxfPC60rEW9xoC4OYcN2wFWBNQ=;
+	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=5KW1VWxVC17vYNsMocKaL3Vhz1lwfFz0EZ9e9cp0hzZZY5Llml9lxA4xV+EhAdRl2
-	 OA0eRCIBPeHr5pT3Iu8IzWEl9M//gvd0tuOjLLWRQfskjwLrZpYxMFmFfiqPqZxMUd
-	 ukoKr2wi5MXAF6cwKb/ZEd7+m2Ybc29ZyoaQWtLde67K5rSLYIXD3mg0pq7xCJ+gRg
-	 2xegL8nA/gx4Rpt3lG5CgwrYBpSFQNKsOvu9CpfS/y964CXkITo3Hegr31HlEdvIbd
-	 MdyiF4UzVeWrujpg4ksQG20nJTk85aR/IgjWm6WsP1eHvhHgyh+Z2tv3SLRfcEHQoU
-	 hNcdaKCMa6Scw==
+	b=EgFGIJkX5YyRydE/9NxM3Yya1aA7+HQG78yQS+S+Md6wmhukRWgn46CYXZ41nfihU
+	 LEHX71d5Xg1aJK7zdWS6INPa4rmuMJ+x01csmqRTVfj71+8gmS2GnSi/p84URQ+oa5
+	 +6GgmuIZWsnBtUQdANHEhjwK9ELSiRJg2IALko67CVfbuNnaaQoz53PRyUoGUT9qcR
+	 RnHCNRTKtfv+L+TUSyLryuA+Om8boNOMDuxG5D2Q82CLOWCoksmVOzHpvDWZBReOS5
+	 WUDShl4nfRMblwxH9qLvpxZ73tMAjDzx82s0BK5uNRDq2xXafI98sYhZA5Yt5iMJ3y
+	 8w9dO4olU3MLA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 509E8816F9;
-	Fri, 20 Nov 2026 16:33:08 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id AEA8F169
- for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Nov 2026 10:33:44 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 3747260E85;
+	Fri, 20 Nov 2026 16:33:09 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 462E415D
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Nov 2026 15:06:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id A05A440A25
- for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Nov 2026 10:33:44 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 37B0E40098
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Nov 2026 15:06:28 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id J_EHPLOMRpLR for <intel-wired-lan@lists.osuosl.org>;
- Fri, 20 Nov 2026 10:33:43 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org 2463C4016D
-Authentication-Results: smtp2.osuosl.org; arc=pass header.oldest-pass=0
- smtp.remote-ip="2607:f8b0:4864:20::b131"
-Received-SPF: None (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::b131; helo=mail-yx1-xb131.google.com;
- envelope-from=gabriel@clicseo.com; receiver=<UNKNOWN> 
+ id HG866JlXZT8o for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 20 Nov 2026 15:06:27 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org 5FBD640050
 Authentication-Results: smtp2.osuosl.org;
- dmarc=fail (p=none dis=none) header.from=clicseo.com
+ arc=none smtp.remote-ip="2607:f8b0:4864:20::122d"
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2607:f8b0:4864:20::122d; helo=mail-dl1-x122d.google.com;
+ envelope-from=shital.gandhi45@gmail.com; receiver=<UNKNOWN> 
+Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=clicseo-com.20260707.gappssmtp.com
- header.i=@clicseo-com.20260707.gappssmtp.com header.a=rsa-sha256
- header.s=20260707 header.b=eh0CSHqi
-Received: from mail-yx1-xb131.google.com (mail-yx1-xb131.google.com
- [IPv6:2607:f8b0:4864:20::b131])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 2463C4016D
- for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Nov 2026 10:33:42 +0000 (UTC)
-Received: by mail-yx1-xb131.google.com with SMTP id
- 956f58d0204a3-67dabd38cdfso1039777d50.2
- for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Nov 2026 02:33:42 -0800 (PST)
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20260707 header.b=TH6LUu/W
+Received: from mail-dl1-x122d.google.com (mail-dl1-x122d.google.com
+ [IPv6:2607:f8b0:4864:20::122d])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 5FBD640050
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Nov 2026 15:06:26 +0000 (UTC)
+Received: by mail-dl1-x122d.google.com with SMTP id
+ a92af1059eb24-1b3ada81853so1131990c88.0
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Nov 2026 07:06:26 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=clicseo-com.20260707.gappssmtp.com; s=20260707; t=1795170821; x=1795775621;
- darn=lists.osuosl.org; 
- h=content-type:cc:to:subject:message-id:date:from:mime-version:from
- :to:cc:subject:date:message-id:reply-to:content-type;
- bh=WTrFO7DU8RvVQbAImxppUK3wi8vLJGpJ6ax41KF861g=;
- b=eh0CSHqiVBG4vyvp7jOIBgznV3tXCCueRPVaa6U0jHZyUIOKNEKEaWE1JbLjHnLBCS
- idglgTkf+i85/uwhMIYkejXxTFqOHDUTTuBCQk+pJ4DyBcPU3Mgfw49fSF0pjTFjFZmK
- 9/iVTpen2aYPJx9Y/ASv00pN8DasJgBLr1GZXR2SExn6b27b0imyguhu9zBFX5Kb8kFP
- bMXecyFA5HlGrYQ2N4D5XAdnPDtOuthVcrZrcvkirxVGFMoa+M9H8NJj3QCV9UcRGuiR
- 3XOKKV7ia/mA8SbChNcPA9DejxVk4ex5e0tb1/Yh9Mo/htk7MyrmrLRfSM+9R2POXcpC
- wzOw==
+ d=gmail.com; s=20260707; t=1795187186; x=1795791986; darn=lists.osuosl.org;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+ bh=9Q+A2Pm/lTzn6/74RcxfPC60rEW9xoC4OYcN2wFWBNQ=;
+ b=TH6LUu/WkpCu5EzTBUkD1lZMMM1CYn1EYKnNzlQG4VSjNHQxmuKqCOTg9VpZ7XJxn2
+ 7YztNwfN6bXyFkFbMwCgfLHr27OEgvbZIc/kc2KRUnmxp8d9OhdV5ZUhNB4DyNHfF7vJ
+ WrWeuaXQbNX23q4oPZ0109jR65dJ4e+g7Zb/J4Q4Tss9C9/R9qOc88+R+4HKOFKjE792
+ dYoZ9JUePUEDLGgebqzgwOp8ypRFrfnqyL0SmIvoTCeNE0BtxowVcwUImDDY1DZ5Vtfq
+ O6k2ISrY88dVGGnJnuzhPsvwwZWilyoc4ckqM266RFjqv7XGNyh00zxp+Gfi92z8NefI
+ eYlA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1795170821; x=1795775621;
- h=content-type:cc:to:subject:message-id:date:from:mime-version
- :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
- :reply-to:content-type;
- bh=WTrFO7DU8RvVQbAImxppUK3wi8vLJGpJ6ax41KF861g=;
- b=jr6Ete5fWoD7taTFSTRd7n62awqsUro52pq1MjQL0qp/u/xfMjA5VUH3zGOaeuoQP9
- KySAyoT/I3/n3zxzO2/ThIfk3HiTOIi8hl+vk/cNkaVKu9muht6oCvAH9xE6H7CuO068
- 40bm/c2dunN2HqZVxVCaVRq1+AqfmLniNbiXzenxrW8STdKLirdao8hLHR/5QSDmDaMS
- FgW449u7IXUWcsG7E1+UETstF3B+ABsM3DrnydqoNXJCkXjgOh6oWW3AxISsOHr3dmYD
- uy9/7s8gVWE1nXYVkQjNbLnsQEbrnjrMraQem35+mNcyqlsBu+4MFesoozDH69j4LBLl
- KtYw==
-X-Gm-Message-State: APuU4Z9PyA5hMOmRIAnwnn68FEqxKNFSoLr8dFadrCwwgpBEy0DHnSio
- ZmuKgSnBfafnssvmmQJXsXq8NWIGhtTLiGMTAPxW71FUBnUS8INphLM3hEM/OHz1NmTxx1AHMrE
- e0peXsqQwgZcuy7K5EceFI6lDuHICh+WItDMvXOV33LEZKsByl3QHeYud8w==
-X-Gm-Gg: AZFdTZdDnd3lfLU5brSaQQvwUqLNmLwFELudPrhK4hgdO9kA0rFI/ZW2edpqqwzfbqn
- ofae595YHJKsPBJ5TTwxXerzvnLyajzXcMlVVwgWxqdy2RC1MTYRPqPOKohxr/qndHNNrQ7/21G
- tK211huo4oSET1PkgSMYlpEcp+vY7AYbRsU4ZrmBdhaCjo3tepbo3zSiNJI3n+OgZxdgH3+c1fb
- mfEwbR7yxDKQdbvTU918AsaURNg4jd8IKb9RYPj+vzdJCSstNeG7lGw7/GS6qISFNdh3EmYpeC1
- lhyDRjy0lgf9IQOre023SSshJR/DhO8XQoIXNmV08ziEJRa53cRvNNK7qAa0Q68M1LFXfbB1zRk
- +wG6nspn3QQMgG6YANe4vOLg9A9++ieuK3Wi4iregGUJ9jFwaX8L7LL4aCaBxnFXiubv8t9EFtV
- MOpazMgsf3D93CQKW6rRdVrOVT1WlGPUyspGdMXINrFesz+a5PMpphfOjaVFs+3BPOwXaqeM8=
-X-Received: by 2002:a05:690e:1387:b0:67b:f249:5b16 with SMTP id
- 956f58d0204a3-67df4410b69mr1252882d50.55.1795170821618; Fri, 20 Nov 2026
- 02:33:41 -0800 (PST)
+ d=1e100.net; s=20260707; t=1795187186; x=1795791986;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to:content-type;
+ bh=9Q+A2Pm/lTzn6/74RcxfPC60rEW9xoC4OYcN2wFWBNQ=;
+ b=wz1Fy27V5SkLW9oK5lBSOJvx5XVpH4aVd3BE6UbPPK/k8PBWrI+G0c6e1lBdwoLsI7
+ rz45GOpAk9fD5/ZOIZAZ0leKhZFvSN2xycNO98fq76y76t7nNEqNhLXJhctESzJi5lwh
+ 9K1N7BSadW+rrrnJBVmhopyhCQxvEGYbdlIX18VhIrC+InoVlIQ6nIBrqp7N8oYsdvMR
+ bvNjdE6r2eQW8SpDLkaFC+OBieS9yN5EsNDi3v1Ue5hL51FmEUKCALreqIHqc1FPyBF7
+ OnOnozFewba7QGhTKABvBdRy9D+zrEr0nSixJXfZE5eeB8QD9o/Jd5uJPliQfOAmZs53
+ IuNQ==
+X-Forwarded-Encrypted: i=1;
+ AL+hErE1AFbJB5TCTa9N+qvd3lB36+sAJOBHb8lQFDz2Ykdlrkii2Uj7BDvQhJVyA1JsM2GHOiYqXaJMw7O7BawCFlo=@lists.osuosl.org
+X-Gm-Message-State: APuU4Z8ec+mgOusmqXLVdcLLLwTKdvzG8xLLT+sUgeVL1a5NamSUL3kp
+ eyFeUrG2rYqUZdgqPQLcdGdldxTp6xNgl5u5gHybZs5kzeHJDOkqurll
+X-Gm-Gg: AYBFou1R2tNI7hOv8oQRGbCMYdruk0GWbC8fTozr6jO3zUdG7vkjy0fPMwgo1ObU2rz
+ 4Msuf8pGc5RMU3/GBKI+Ri3z1X5C6/9bQjUPKilF/sW2ia2nmlzTsoaDMpdZ0eWFIPQ+ld3cy/W
+ CLxypiyozj8EocDk6R9DsSbwHSmNSfxVk5qjWcQCzPpfY3OtsIuEVYOjsEevWxefxywKqaW4X4P
+ eqlHkau9FlCiX/kqjVLExSMGTu/jKl0jJf/wgHNrQ38FRRFZJjk/cQTUhF59HKb+qr2h1obrf68
+ egarLWbXZE5a+QL4PeIu8Q7QaLmMorURZhCFp66vZyU/o1VNz2Jo4F5ig96vjfFhwXirXjmRokx
+ 3h8Qa3AxoNd+Cg9T/el6DUOZ30ZBIYlspa7ncNXsBGqcVs90af1ygfk2VesqDkyQHJoR7rYWBhN
+ Df42+rA6n0zQFcwlAtn9p2R4K92yGm2sh2kwWdC5IG29VvOML4bMzCi9ly+hEYoSOvQykLNkD39
+ d34hPqIFwUt2GwLwyNFztcSim71tMYFw3bdgAzp+IvXvNjrgHr8WkVPwmc7oi5rndHpnhlnbBmU
+ iG7jBrPHMRk5M9IDOcFm7Ji+8/LPXncnNrZ5Bo/SUShR0tkDckKgvTK4Vi219Do=
+X-Received: by 2002:a05:7022:3f0d:b0:16c:3408:760b with SMTP id
+ a92af1059eb24-1b5568dabf1mr3023904c88.32.1795187185858; 
+ Fri, 20 Nov 2026 07:06:25 -0800 (PST)
+Received: from IN01-9QQVVV3.CAMNWK.COM ([171.76.82.79])
+ by smtp.gmail.com with ESMTPSA id
+ a92af1059eb24-1b556840494sm7844902c88.12.2026.11.20.07.06.19
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Fri, 20 Nov 2026 07:06:25 -0800 (PST)
+From: Shitalkumar Gandhi <shital.gandhi45@gmail.com>
+To: Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ intel-wired-lan@lists.osuosl.org
+Cc: netdev@vger.kernel.org, Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S . Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@kernel.org>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, Alexei Starovoitov <ast@kernel.org>,
+ Daniel Borkmann <daniel@iogearbox.net>,
+ Jesper Dangaard Brouer <hawk@kernel.org>,
+ John Fastabend <john.fastabend@gmail.com>,
+ Stanislav Fomichev <sdf@fomichev.me>, bpf@vger.kernel.org,
+ Shitalkumar Gandhi <shital.gandhi45@gmail.com>
+Subject: [PATCH iwl-next 0/2] i40e,
+ ice: one RCU grace period per XDP ring teardown
+Date: Fri, 20 Nov 2026 15:05:25 +0000
+Message-ID: <20261120150527.14649-1-shital.gandhi45@gmail.com>
+X-Mailer: git-send-email 2.53.0
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-From: Gabriel Giner <gabriel@clicseo.com>
-Date: Fri, 20 Nov 2026 11:33:30 +0100
-X-Gm-Features: AclHuK-Z7D-2DkhRgFmpnmz9P3ePO_BbhRJI67sPtSk5ZcRRRKH6AlQJm-rND9U
-Message-ID: <CAKfe=PoLDuKxiQDpVB8qcuu0+1ijQvPnOb7fVzHNc2t3oiO3AQ@mail.gmail.com>
-Subject: e1000e: I219 (8086:550b) on Meteor Lake ThinkPad powers the system
- back on after S5
-To: intel-wired-lan@lists.osuosl.org
-Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com, 
- linux-acpi@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Fri, 20 Nov 2026 16:33:05 +0000
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
@@ -145,95 +161,30 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_NONE autolearn=no
+X-Spam-Status: No, score=-10.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi,
+Both i40e and ice wait for an RCU grace period once per XDP Tx ring
+when tearing the rings down, so the time spent scales with the number
+of queues (i40e) or CPUs (ice). The wait only has to cover in-progress
+ndo_xdp_xmit and ndo_xsk_wakeup calls, and one grace period taken
+before the loop does that for all rings.
 
-On a Lenovo ThinkPad T14 Gen 5 (21MM, Core Ultra 5 125U, Meteor Lake,
-BIOS N47ET30W 1.19), kernel 6.18.63, the system powers itself back on
-2-3 seconds after a clean poweroff. It happens on battery, with no
-Ethernet cable and nothing else plugged in.
+Compile-tested with W=1 (allmodconfig, x86_64); not run on hardware.
 
-The system stays off if e1000e is not bound to the onboard I219
-(00:1f.6, 8086:550b) at poweroff:
+Shitalkumar Gandhi (2):
+  i40e: wait for one RCU grace period in i40e_down(), not one per queue
+  ice: wait for one RCU grace period when destroying XDP rings
 
-- "modprobe -r e1000e && systemctl poweroff" stays off
-- "Ethernet LAN" disabled in BIOS Security > I/O Port Access stays off
-- with e1000e bound it powers back on every time
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 15 +++++++++------
+ drivers/net/ethernet/intel/ice/ice_main.c   | 10 +++++++---
+ 2 files changed, 16 insertions(+), 9 deletions(-)
 
-Ruled out:
+-- 
+2.53.0
 
-- WoL (systemd .link with WakeOnLan=off, confirmed applied; the
-  device's power/wakeup is "disabled")
-- every power/wakeup flag under /sys/bus/{pci,usb,thunderbolt}
-- every /proc/acpi/wakeup entry (LID, SLPB, AWAC included)
-- Thunderbolt, USB, WLAN, WWAN and Bluetooth disabled in the BIOS
-- powering off through EFI ResetSystem instead of ACPI S5
-
-The state survives a warm reboot: after "systemctl reboot", a poweroff
-from the boot loader (systemd-boot), before any kernel is loaded, also
-bounces back on. After a cold start the same boot loader poweroff
-stays off. Hibernate (S4) stays off.
-
-00:1f.6 has power/control=auto and is runtime-suspended (no link)
-while the system is up, so at shutdown it is runtime-resumed and then
-goes through e1000_shutdown(). As far as I can tell from the source,
-unloading the module does the same resume and PHY power-down, yet the
-system then stays off. I have not narrowed it further than that.
-
-The same symptom is reported by others on the T14 Gen 5, P14s Gen 5
-and T16 Gen 3, without a cause so far:
-
-https://bugs.launchpad.net/bugs/2162837
-https://bugs.launchpad.net/bugs/2138359
-
-There is also an RFC patch that tries to work around it in the ACPI
-poweroff path ("[PATCH RFC v3] ACPI: PM: Use EFI power off on Lenovo
-ThinkPad T14 Gen 5", linux-acpi, 2026-09-02). That approach did not
-help on my machine.
-
-As a workaround I unload e1000e from a systemd unit ordered right
-before systemd-poweroff.service.
-
-I can test patches or collect more data.
-
-lspci -vvnn -s 00:1f.6:
-
-00:1f.6 Ethernet controller [0200]: Intel Corporation Ethernet
-Connection (18) I219-LM [8086:550b] (rev 20)
-Subsystem: Lenovo Device [17aa:2327]
-Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr-
-Stepping- SERR- FastB2B- DisINTx+
-Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-Interrupts: pin E disabled, MSI(X) routed to IRQ 193
-IOMMU group: 15
-Region 0: Memory at ab700000 (32-bit, non-prefetchable) [disabled] [size=128K]
-Capabilities: [c8] Power Management version 3
-Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
-Status: D3 NoSoftRst+ PME-Enable+ DSel=0 DScale=1 PME-
-Capabilities: [d0] MSI: Enable+ Count=1/1 Maskable- 64bit+
-Address: 00000000fee00b38  Data: 0000
-Kernel driver in use: e1000e
-Kernel modules: e1000e
-
-ethtool -i enp0s31f6:
-
-driver: e1000e
-version: 6.18.63
-firmware-version: 1.1-4
-expansion-rom-version:
-bus-info: 0000:00:1f.6
-supports-statistics: yes
-supports-test: yes
-supports-eeprom-access: yes
-supports-register-dump: yes
-supports-priv-flags: yes
-
-Thanks,
-Gabriel
