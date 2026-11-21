@@ -2,136 +2,159 @@ Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5E2B6606A333
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 23 Nov 2026 16:24:34 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 232FF606A327
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 23 Nov 2026 16:24:52 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=ohHceYZq;
-	dkim=pass (2048-bit key, unprotected) header.d=g.skku.edu header.i=@g.skku.edu header.a=rsa-sha256 header.s=google header.b=l3c1m8T2
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=K9YY5344;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=xLGxHGMD
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 415A1607C0;
-	Mon, 23 Nov 2026 16:24:34 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 060C7605F3;
+	Mon, 23 Nov 2026 16:24:52 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id kjjqZ-BK4tKD; Mon, 23 Nov 2026 16:24:32 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org B752E607A9
+ id Mub2J6P6RBD2; Mon, 23 Nov 2026 16:24:51 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 4EE6B60673
 Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795451072;
-	b=bl1R91kKNB8GjWvbBw+WzIX0IZqHuwRIyhrIlJNddLcRf7//5sX28dpcp6fX+ovIUNsK
-	 oH3lWkhsqTBnIhwO7YjDMtEg7DiyM/vyq/QAuzjC/sygJWnqqybS/Aqi4v7NGcMYwRBYK
-	 ohL1Dm9NklclgES5qwmMaeuCqr5nr4IutgoxcJC8sFVMznRIFR9/HK3D4tR4XxIrSucQB
-	 1rQzg/NS6KoU1L6QzsfHQa6psjCNmFlYcSlhmqihWY+xMI3PYLKbfxzvUZCudYCZA6X9y
-	 Mh3Lj8CaQ/HxPcvdhpfKDkM3bakiTFk0gQZrT1m1Jhd8UQvfbgMy+ZW3/k8DKT/mphA==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795451091;
+	b=ShYtAT8aBDCXUsPAC6puk0QD3Z4AGJbQH+EeVfg2QSCIaV3QFzVdroKx5BEGvXOzSEVT
+	 HeRF87TmexMaYDhx8vCA2pZuZyzfPmW/QF0pqbw/VjDg7uvsdU44SErmq6+n+N/pp8qKm
+	 sndLgVAbKjpkCgHlVvRxdiAlxos/ua/pelJqsfboasukdHy1X2tJ8Jz4cnflLLFpHPviI
+	 Vk4wjO2kzhjOOGzrb+n3p0fM8YWtu0H4nS43VYJZIcV34Xan5Wa0Hs1rOc9wuZzo7Lmyg
+	 GXNab0H43NShttasRbVjJLEoHrrpDk5kti4j9G3q5c6ERzdu4oZFXaCz0/TsqD8NDZQ==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795451072;
+	c=relaxed/relaxed; t=1795451091;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Gm-Message-State:X-Gm-Gg:
-	 X-Received:MIME-Version:From:Date:X-Gm-Features:Message-ID:Subject:To:
-	 Cc:Content-Type:X-Mailman-Approved-At:X-BeenThere:X-Mailman-Version:
-	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
-	 List-Subscribe:Errors-To;
-	bh=gJkkbu5QUHPvQj7/qFq1LEbKcJ05skU/Z9RFzwRX4Y4=;
-	b=XB5Jp9KaBVHqm7mR2lpxmS7nnEMrQs6e1w/z2TipEgP14Uu9z0VjlIHl3h32a5z7IXke
-	 ew8XHAfwQtpCDRwSUxqXEui2ujQ7HSh2zA1jVvjiShLnwRfZKzyRI+MaS3i3Eq0ltTZYq
-	 Qk7W4CD3s11S3JXsPF9PDM6JO1XL14IAHBEcQz/W3kjAEhODnzXp3TbFp+/M9Vsd6MEpA
-	 X8Nb77Mm+mlV+cqfEuli2KC2bYD1Fw3q2u+iPryUCmyI2ZGQ4uSxM94XYu+rV6wzXXr9u
-	 49d3BH/VKj1fnfYhrByo8yfLZ7RBchXUja7ttXFMuh/UqvqYEpaocfdhlwKQmLT6oww==
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
+	 Date:Message-ID:In-Reply-To:References:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding:X-Mailer:X-Mailman-Approved-At:X-BeenThere:
+	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Errors-To;
+	bh=vbgwELF6CWUmH82cJRM4qpAueUKNM+gZeKyQBoi7/Ao=;
+	b=Sdy0XMEpYb6cXxUIkFnCXt6XzoHreWryql/kPunyAUMGSEM+znSa4EMB8jGWXBnj7Edn
+	 AGuoA4UF92DF2Y+2CQvItaRnfQwU3GGxH4sQNDhC7Kz7o86FZxu++1QWfux0PseZlZSXj
+	 3VvT6yOYvZWiWLQxlG/uZ/j/EtyOAFmcFUnQKxRAbsm8eDthdiz/Jw2ZssC+qBP5uj6KQ
+	 91SU4JQai/OASwP4J7+JZDH7lE0BwbW2QXb2LEiJc63lZPbq6zoQ4d1rgmr4vTVT7yR8q
+	 fz2o/L4O6UmwSGOtxnBR7bgfcD8hi9hEdwxUgJPfvhjwwmpzOi+dKO+kA07gqwklkcA==
 ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
+	dmarc=pass header.from=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=xLGxHGMD;
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1795451072;
-	bh=gJkkbu5QUHPvQj7/qFq1LEbKcJ05skU/Z9RFzwRX4Y4=;
-	h=From:Date:Subject:To:Cc:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=ohHceYZq+yfNsfEB0ySOzABFrJbreHipSULujGY6gdWev309xMxj+AdnSpXmYMDwZ
-	 R/UFkKb4n4ekIAq1UiWZa6VSFxyU8SllCsnTKFLYup/oftFDM/v1xU0pPLTBKKT4X1
-	 o/hXKOyCLp41+WoBnxZi6hGjLeouJNkCFuYXMZISD41uO9mLuBlP2QoRRD1cSAPMSo
-	 A+V2qjp+00RiyWqshLYqeoPtxrL/XPiQCGfFC42h/QuXo3ZImrHcfzXGhuflnSHk7k
-	 tqn0bkLdDd22mRjA16HAicyWz6lpV5iKr252EW3PVxXJ9wZZQltD3QUx4vw0GzjFyP
-	 n17easFhOO5Xg==
+	s=default; t=1795451091;
+	bh=vbgwELF6CWUmH82cJRM4qpAueUKNM+gZeKyQBoi7/Ao=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=K9YY5344Ztxf83FgtwQLBsa4CkMEF2zzRF8H5SkGFyTgq17Dy1NgCQV8h5Bag99Vg
+	 NhUSpiH7Zp057xRC9rLBwSLCjrMRgSFKa65ECbDFl2K192VJs2KztYsuG2y63kNdc2
+	 JM53SAlhIJT/6tRgtcI0orkdy7YAROR+/Lf+iZRkEPtA7mFHAXqhYnF8OmsMlOTr20
+	 LOPBdhujBB6XK2eagMOV59xLsIisp4CSTOqqu7f9Is0qVITVam71CftEoEkDOXUpak
+	 +YLNUY2n/DPkqsTIgrF/VYHsgwmfHTuX3WWLHkhTG0QpQzMk+eKc3EXOn1E8vNeoTo
+	 QedfdG1lhbSng==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B752E607A9;
-	Mon, 23 Nov 2026 16:24:32 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 5296022B
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Nov 2026 15:00:00 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 4EE6B60673;
+	Mon, 23 Nov 2026 16:24:51 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id C70043A8
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 21 Nov 2026 15:03:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 3C64780C67
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Nov 2026 15:00:00 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id AE4946062C
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 21 Nov 2026 15:03:27 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id nHYxhQV4vqeA for <intel-wired-lan@lists.osuosl.org>;
- Mon, 23 Nov 2026 14:59:58 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 4F1A580C43
-Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0
- smtp.remote-ip="2607:f8b0:4864:20::1130"
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id rv7hPTDb4B-r for <intel-wired-lan@lists.osuosl.org>;
+ Sat, 21 Nov 2026 15:03:27 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org DC25A60608
+Authentication-Results: smtp3.osuosl.org;
+ arc=none smtp.remote-ip="2607:f8b0:4864:20::1332"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::1130; helo=mail-yw1-x1130.google.com;
- envelope-from=for8821@g.skku.edu; receiver=<UNKNOWN> 
-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=g.skku.edu
-Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=g.skku.edu header.i=@g.skku.edu header.a=rsa-sha256
- header.s=google header.b=l3c1m8T2
-Received: from mail-yw1-x1130.google.com (mail-yw1-x1130.google.com
- [IPv6:2607:f8b0:4864:20::1130])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 4F1A580C43
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Nov 2026 14:59:55 +0000 (UTC)
-Received: by mail-yw1-x1130.google.com with SMTP id
- 00721157ae682-8b4c2da74c0so19865837b3.1
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Nov 2026 06:59:55 -0800 (PST)
+ client-ip=2607:f8b0:4864:20::1332; helo=mail-dy1-x1332.google.com;
+ envelope-from=takano32@gmail.com; receiver=<UNKNOWN> 
+Authentication-Results: smtp3.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20260707 header.b=xLGxHGMD
+Received: from mail-dy1-x1332.google.com (mail-dy1-x1332.google.com
+ [IPv6:2607:f8b0:4864:20::1332])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id DC25A60608
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 21 Nov 2026 15:03:26 +0000 (UTC)
+Received: by mail-dy1-x1332.google.com with SMTP id
+ 5a478bee46e88-3869f03af6aso544479eec.1
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 21 Nov 2026 07:03:26 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=g.skku.edu; s=google; t=1795445995; x=1796050795; darn=lists.osuosl.org;
- h=content-type:cc:to:subject:message-id:date:from:mime-version:from
- :to:cc:subject:date:message-id:reply-to:content-type;
- bh=gJkkbu5QUHPvQj7/qFq1LEbKcJ05skU/Z9RFzwRX4Y4=;
- b=l3c1m8T2itwN+3TWrvgPPt8Oznb8260wwug+00BDaL1OYN+QGo1IR5zx3qMCKXvmpf
- eoQa8VHT46Gg2DKYpUBXM5EyJuLtQYTk7DdY7I5Dtels0sa3/GWoTOgULoDeEkyyrmJJ
- x+Fs0bMTizNn/Any9v9c6KI0CUQ2gH51IB8okzTKutIB7QQdxbJV2CC/m8g8r3UzyHnS
- EoRAELWSOnFc3nThOPL5gQVDpluNJd7p+fRSj2UNXOiEO1JbHbQFjcFKdl5xj5ZPAvPI
- TxZ0x1vlu98cvHlUIdnA600PB+buPAdZ3XRxtQRog+RTYt6dHVcpCceYw1hCCn7Z1S1d
- mhlw==
+ d=gmail.com; s=20260707; t=1795273405; x=1795878205; darn=lists.osuosl.org;
+ h=content-transfer-encoding:content-type:mime-version:references
+ :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
+ :date:message-id:reply-to:content-type;
+ bh=vbgwELF6CWUmH82cJRM4qpAueUKNM+gZeKyQBoi7/Ao=;
+ b=xLGxHGMDJVYpajXx0Kxl7LcEvAN1Jdx4nK7UKRKFvTH6VCmB/mEQT5OSrsOQsof+B3
+ 1n3VuwYaPRqFD1+dvzvotsPVttZoAjYSQi5eOzZRElG1oPfVX2TjVmRteQsilTStAmJS
+ 8cFUROXB20hWkYFvrxzx7qWWL2nMq9CnvccAIIe9M1YGRTw+5Yp1tZ6GqkfomZvjzPRx
+ PXDaRBmlVuBEOWti5ky4rh5i+OWnA+SXeMn5NQrMia8wY6vP+lSPSKcp7HNs7+oZOBM0
+ +9ETNwNuFSr0xpJLpLgEUBJpgNd+HYQU+syX0ZaMrNlXE5MA7elTMj/lmHHH89Z+qGmk
+ lIbQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1795445995; x=1796050795;
- h=content-type:cc:to:subject:message-id:date:from:mime-version
- :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
- :reply-to:content-type;
- bh=gJkkbu5QUHPvQj7/qFq1LEbKcJ05skU/Z9RFzwRX4Y4=;
- b=fc5p6YFTLpa/IkitqBYCoy35qXZKJoMPlCgmeHvHrSGesU/6yJ/4gZlnUoqyLJ6YYb
- Fv8nkcw2ppjmMEzWbhu8F1RzU82KkkKQAHjUGlagQvWeQVYZqauSFiCaTFw6AdUg5IYJ
- RPywk0eOXcYm6DT9XF42F1faJHdv5TpkcRzoeiM1z+33MjbknXXREYlv8XjONU+09qdf
- pLIepxe6qU9cZIPdAyDv3JOZGSnK/lKpjd3oacNw+lAe3OjPGIwjxIW7QqjHpbx/TLMJ
- eJZoJ1zWvyv3EwP7we7OVnnAdlIisVbHbnOrF9Zpt401yuPKYtnLZuP5p6nAbIbdPD40
- czWA==
-X-Gm-Message-State: APuU4Z93FIvwU+VM6vW30Yf6zt4HLlxgdNyS6/DUO1Bkd4JLk8UwgKnD
- rplL3YlZioyg1en70WOZNMuJvTQ4PAcJiz8BVaIHwSnMzCMCQHDLSmoyzpi7zeGY3rQwQ7/jRtq
- H0Xv4JBtX4axkUDyMO2Ad6lBdV5ZpF4HdYuVGcWCxoaLTuZgsKCj0fs3uW+BQ
-X-Gm-Gg: AZFdTZcbR1/jGfS1Y/cPYG5C5emAqnOuHBye/M8iVk7Gn/uv3XIdMYBs4Pr5BLFqSfj
- wyHXb4+Utv/rGs7H+83XCOUdlx6/3ESghMOtcwaGP5FDPvCdqbtT+y0NUk88mWYd/b0S+llnaDO
- AsktDGXanX5RH2ANSCX4x/IDbxrqYPLgvqnc+Y79MHYPKyZGxSQhxVbCo4FEtEHR9ogdZ/mNUGP
- Kky0QRCjPzbEsid18XFbnGKNHK+n+dZRfmv9DV2B57CMJLvQp4Q3fHfwv5LGLVVtwj+SmQZ/eJl
- gOFxXt/MyFLVkwA4iaC02Wsq4rgjc0MIcyXg0wlp56u5p9xO4jd5wshj+31lQw5ZuSYN5ti6CFE
- LVhQGQjQvzuKR2Zkqg1OOR13WqxOIHp3XVRvlKWaI46hIfmlGsla/wtHOtZsV3ktpEI7i
-X-Received: by 2002:a05:690e:b84:b0:679:ab08:5278 with SMTP id
- 956f58d0204a3-67df43f24eamr3304507d50.32.1795445994776; Mon, 23 Nov 2026
- 06:59:54 -0800 (PST)
+ d=1e100.net; s=20260707; t=1795273405; x=1795878205;
+ h=content-transfer-encoding:content-type:mime-version:references
+ :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
+ :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+ :content-type;
+ bh=vbgwELF6CWUmH82cJRM4qpAueUKNM+gZeKyQBoi7/Ao=;
+ b=IwvDPx3fZ3aCXDjYd70DLj2/DRGNuBXvescG5cajkSBd7Wj5nLbGyHYBI797+YIpl/
+ Wp9vHdqJI8OgMEYunsj/9OqkvRy2YeqkAChI2umZHom6V7r0XXaF0OSfxbhmOeXiE2lx
+ G/NSCTzuGIk7sZn9u/wj7+jiAdTGYqFgxXI7pZuRD+jkkjOeIgehgR8+xgCKduNXr+HS
+ Fg7X6DMJxBJ5LM9mkVpF/dwY5gOw+IBpK4iKHmcZixS1aRfUJaIF+wBOZVr4RhIgDoDf
+ vgMILjqCU/DhiVnT5UHCPLiMNuQaIwVKI0XD82Kzuf1v2FXgEtq/p/e9z8swOXEq0wW4
+ Anog==
+X-Forwarded-Encrypted: i=1;
+ AL+hErEYpk1tXF2FJMPtL2d6W4bagMHB+q8nrf9fbFwI547IViA8WiUMRe1JJd0q6gs2tl08l1pAaIQFg02TGW+yXTU=@lists.osuosl.org
+X-Gm-Message-State: APuU4Z/tiZZwjR5dFBuYHvCx6iIn1kMNgX6JMmNztAATbIvTRNS++CFh
+ mkZ7OMTeSGvlJBN7sJF1NSdN8oY0Rr4sCe7ii9HsSTclaRw0eIPduLMy
+X-Gm-Gg: AZFdTZcaiuWj+OpIrtwUEbPb6tpgpSCZwGn0DuZ11FJCbFD6oJNrDexWUh+O3vrh7Go
+ 2mZ0KPSlxQUCW+0Hq9xLfQYDvierWbKdFEI6au5UBQB/lNLWfZ93/bxtlbuY+gSkoh28vldT007
+ 01romX7MycTQGM9JaGwdD5buERFRUixM/fzTRxAV4ANVZuhbqIV7zZudLb8UOAjJK5paR6efzT8
+ eRfA++OMRau0rBrH1ktezXDnSveVg6lWjsTJPk1aYaM/CmQio2tEz6JHPskwgvL2+epPWhdCU5c
+ 70EB7PmE9148eLIRWSJzwffNDHNG8C4wyfX6inGDGpjkq6RGr3nTaDs4dUtsm70TcHzQKpf7ihW
+ f2WqDznSQ4xeLwbiobmg6udXeC1/+z/9Idd8dQHIWi1UAEerbZk7j3bpyLDoV8RtmF9ylQz0fTU
+ 22W+wyPc0hvcnn00npV42WNUI2P+Bm6hzSH/QqpD3ft7Ykll9JpJyUQv5uzP82Yc2D4K2umq4wO
+ r/gb2YXyQN+E8jzbESEY4F5N9a+RMqtDX7cnzRjT/1nvbxEqpDlJCEyFFk1zEAvQ7VHrQDUjjR4
+ unZsg250Pg44PwkbfY5HvUh/xg==
+X-Received: by 2002:a05:7301:5098:b0:381:5fe2:a079 with SMTP id
+ 5a478bee46e88-3856c6b010amr6448576eec.1.1795273405079; 
+ Sat, 21 Nov 2026 07:03:25 -0800 (PST)
+Received: from [127.0.1.1] ([161.33.196.121]) by smtp.gmail.com with ESMTPSA id
+ 5a478bee46e88-385666e7fc3sm16396954eec.8.2026.11.21.07.03.22
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Sat, 21 Nov 2026 07:03:24 -0800 (PST)
+From: TAKANO Mitsuhiro <takano32@gmail.com>
+To: Omokefe Emmanuel Onanaroghene <emmaonana18@gmail.com>
+Cc: Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>,
+ Randy Dunlap <rdunlap@infradead.org>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>,
+ Alexander Lobakin <aleksander.lobakin@intel.com>,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
+ Tudor Ambarus <tudor.ambarus@linaro.org>, Bart Van Assche <bvanassche@acm.org>,
+ linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org
+Subject: Re: [PATCH v2] docs: kdoc: fix struct_group_tagged() parsing
+ regression
+Date: Sat, 21 Nov 2026 15:03:21 +0000
+Message-ID: <179527340172.2367332.3292077208678045371@gmail.com>
+In-Reply-To: <20260916214357.22573-1-emmaonana18@gmail.com>
+References: <20260916214357.22573-1-emmaonana18@gmail.com>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-From: =?UTF-8?B?7ISx6reg6rSA64yA6rmA66+87ISd?= <for8821@g.skku.edu>
-Date: Mon, 23 Nov 2026 23:59:44 +0900
-X-Gm-Features: Aa3M54poxAkIMO5zRgIp3LWlm9Dtgn9G48qgYg1fwvEAkcRHQF-7CMlbbfgIgMY
-Message-ID: <CABBEkySNmAHTuoiC3jZqvAS31AdzMb2bHe3x0EAKQGibf0xi9g@mail.gmail.com>
-Subject: [PATCH iwl-net] ice: bound the CEE DCBX priority-group id before
- using it as a traffic-class index
-To: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org, aleksander.lobakin@intel.com, 
- stable@vger.kernel.org
-Content-Type: multipart/alternative; boundary="000000000000bb78230660f2d8bd"
-X-Mailman-Approved-At: Mon, 23 Nov 2026 16:24:27 +0000
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-Mailer: kpatch-send.py
+X-Mailman-Approved-At: Mon, 23 Nov 2026 16:24:50 +0000
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -142,204 +165,91 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-12.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	HTML_MESSAGE,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_PASS autolearn=unavailable autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-7.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
---000000000000bb78230660f2d8bd
-Content-Type: text/plain; charset="UTF-8"
+Hi Onana,
 
-The CEE DCBX priority-group ID (PGID) is a four-bit wire field spanning
-0..15, whereas prio_table[] is sized to ICE_MAX_TRAFFIC_CLASS (8):
+Thanks for the patch, and sorry it took me this long to test it. Randy
+tested v1 and carried his Tested-by and Acked-by to v2 in September; the
+run below is independent, on mainline d0f871bfb831 (2026-11-20).
 
-  #define ICE_CEE_PGID_PRIO_0_M  (0xF << ICE_CEE_PGID_PRIO_0_S)
-  #define ICE_CEE_PGID_PRIO_1_M  (0xF << ICE_CEE_PGID_PRIO_1_S)
+Short version: with a fuzz-2 apply the warnings in the four headers below
+go away and the test suite has no new failures. The patch needs a rebase
+before it can go in. Two things below are worth a look -- the rendering
+loss and the excess-warning scope -- but I do not think either has to hold
+up that rebase; that is for you and the maintainers to decide.
 
-The IEEE ETS parser in ice_dcb.c masks the equivalent nibble field with
-0x7 (ICE_IEEE_ETS_PRIO_{0,1}_M) so it cannot exceed 7, whereas neither
-CEE path bounds the value.
+git apply rejects the hunks in tools/lib/python/kdoc/xforms_lists.py and
+tools/unittests/test_kdoc_parser.py, because of 2d72a4c09867 ("docs:
+kdoc: parse context_lock_struct() as struct declaration"), which landed
+after v2. The kdoc_parser.py hunk still applies. With patch -p1 those two
+go in at fuzz 2. Everything below is from that tree.
 
-In the wire LLDP TLV path, ice_parse_cee_pgcfg_tlv() extracts each
-nibble into prio_table[i] and inspects it to select tsatable[i], but
-never rewrites prio_table[i], leaving values 8..15 intact -- including
-the defined sentinel ICE_CEE_PGID_STRICT (15).  In the firmware AQ path,
-ice_cee_to_dcb_cfg() remaps only ICE_CEE_PGID_STRICT to oper_num_tc - 1
-and lets values 8..14 fall through untouched.
+Could you rebase onto current mainline and post a v3? For v3 I am only
+asking for the rebase; the rendering follow-up and the excess-warning
+question below are for later.
 
-Downstream consumers then use prio_table[i] directly as a traffic-class
-index:
+kernel-doc -Wall, warning lines (the tool prints each of these twice, so
+4 -> 0 is two warnings):
 
-- ice_vc_get_qos_caps() (virt/virtchnl.c) indexes local array
-  u8 tc_prio[ICE_MAX_TRAFFIC_CLASS] via tc_prio[tc] |= BIT(i), writing
-  past the end of the stack array when tc >= 8.
-- ice_dcb_tc_contig() (ice_dcb_lib.c) accumulates used_tc |=
-  BIT(prio_table[i]) into a u8; for values >= 8, BIT() is >= 0x100 and
-  truncates to zero, causing the contiguity check to pass silently.
-- ice_vsi_cfg_netdev_tc() (ice_lib.c) indexes
-  vsi->tc_cfg.tc_info[ets_tc].netdev_tc with ets_tc = prio_table[i],
-  reading past the end of tc_info[].
+  include/net/page_pool/types.h                   4 -> 0
+  include/net/libeth/rx.h                         2 -> 0
+  include/net/libeth/xsk.h                        2 -> 0
+  drivers/net/ethernet/intel/ice/devlink/health.h 2 -> 0
 
-The driver already enforces this invariant when writing prio_table[] in
-ice_dcbnl_set_pg_tc_cfg_tx() and at the VF trust boundary in
-ice_vc_cfg_q_bw().  Bounding the PGID at CEE ingest enforces the
-invariant at a single boundary and prevents the u8 BIT() truncation in
-ice_dcb_tc_contig() that per-array bounds checks would miss.
+Those four files are also where the descriptions disappear. The five
+warnings above are about the group names themselves; with the
+xforms_lists.py hunk alone kernel-doc instead flags the 24 field
+descriptions as excess, and the endswith() hunk keeps them out of that
+count.
 
-Fixes: 015307754a19 ("ice: Support VF queue rate limit and quanta size
-configuration")
-Cc: stable@vger.kernel.org
-Signed-off-by: Minseok Kim <for8821@g.skku.edu>
----
-Notes on testing and tool assistance (per
-Documentation/process/generated-content.rst):
+Unit tests (cd tools && /usr/bin/python3 unittests/run.py): 122 -> 123
+tests; with only the test hunk the new case is the only failure beyond the
+four expected ones, and with the two code hunks as well there are no new
+failures.
 
-- Tool assistance: Claude Code (Anthropic) was used during static source
-  auditing of the CEE DCBX parsing paths, to draft the initial commit
-  description and bounds check, and to run build/style checks.  All
-  findings, code changes, and commit text were independently verified
-  and edited by the author, who takes full responsibility for the patch.
-- Testing: Compile-tested only on x86_64 (defconfig + CONFIG_PCI_IOV +
-  CONFIG_DCB + CONFIG_ICE) with `make W=1 drivers/net/ethernet/intel/ice/`
-  against a clean baseline build, and checked with `scripts/checkpatch.pl
-  --strict` (0 errors, 0 warnings, 0 checks).  No reproducer was built
-  and no runtime testing was performed due to lack of E810 hardware or a
-  QEMU device model; the out-of-bounds accesses are established from
-  source inspection and header constants.
+Those results -- kernel-doc -Wall on the four headers and the unit tests,
+no make htmldocs -- are what the Tested-by below covers. If the v3 hunks
+come out the same as in v2 -- same added and removed lines, only offsets
+and context differing -- and no other commit has touched
+tools/lib/python/kdoc/, tools/unittests/ or those four headers since
+d0f871bfb831, feel free to add it; if in doubt, drop it and I will re-test
+and reply with a new tag.
 
- drivers/net/ethernet/intel/ice/ice_dcb.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+The rendering follow-up: with v2 the field descriptions inside these
+groups stop being rendered. page_pool_params renders today as
+{unnamed_struct} twice plus its eleven field descriptions; with v2 it
+renders the group names fast and slow, and the eleven field descriptions
+are gone from kernel-doc's output. Across the four headers that is 24
+descriptions, and no other file's rendered output changes -- I checked
+every file that uses struct_group_tagged. They come back if those comments are
+rewritten as @fast.order:, @slow.netdev: and so on, which needs the
+xforms_lists.py change in this patch. I will send that rewrite as a
+second patch.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb.c
-b/drivers/net/ethernet/intel/ice/ice_dcb.c
-index abea84f14658..a36458b01fc2 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb.c
-@@ -407,6 +407,15 @@ ice_parse_cee_pgcfg_tlv(struct ice_cee_feat_tlv *tlv,
-                        dcbcfg->etscfg.tsatable[i] = ICE_IEEE_TSA_STRICT;
-                else
-                        dcbcfg->etscfg.tsatable[i] = ICE_IEEE_TSA_ETS;
-+
-+               /* The CEE PGID is a four-bit wire field, so a peer can
-name a
-+                * priority group this driver has no traffic class for.
-Several
-+                * consumers use the value to index
-ICE_MAX_TRAFFIC_CLASS-sized
-+                * objects, so clamp it here, after the strict-priority
-sentinel
-+                * above has been consumed.
-+                */
-+               if (etscfg->prio_table[i] >= ICE_MAX_TRAFFIC_CLASS)
-+                       etscfg->prio_table[i] = 0;
-        }
+The excess-warning question: the endswith() check in kdoc_parser.py also
+silences excess-member warnings where a comment uses the flat name for a
+nested member instead of the dotted one, in files that use no struct_group
+at all -- for example 12 warning lines to 0 in include/linux/msi.h, 24 to
+0 in include/linux/mroute_base.h, 20 to 0 in include/net/macsec.h and 30
+to 0 in drivers/gpu/drm/panthor/panthor_device.h. Each of those is printed
+twice. msi.h has no other warnings, so it goes quiet entirely; the other
+three keep their unrelated ones. In msi.h, mroute_base.h, macsec.h and
+panthor_device.h the rendered text does not change at all; only the excess
+warnings go away. If that is wider than you intend,
+restricting the check to members of a struct_group_tagged() group should
+keep those warnings; I have not tried that, and the parsed members do not
+record where they came from today.
 
-        /* Number of TCs supported (1 octet) */
-@@ -805,6 +814,10 @@ ice_cee_to_dcb_cfg(struct ice_aqc_get_cee_dcb_cfg_resp
-*cee_cfg,
-                        /* Map it to next empty TC */
-                        dcbcfg->etscfg.prio_table[i] = cee_cfg->oper_num_tc
-- 1;
-                        dcbcfg->etscfg.tsatable[i] = ICE_IEEE_TSA_STRICT;
-+               } else if (dcbcfg->etscfg.prio_table[i] >=
-+                          ICE_MAX_TRAFFIC_CLASS) {
-+                       dcbcfg->etscfg.prio_table[i] = 0;
-+                       dcbcfg->etscfg.tsatable[i] = ICE_IEEE_TSA_ETS;
-                } else {
-                        dcbcfg->etscfg.tsatable[i] = ICE_IEEE_TSA_ETS;
-                }
+The testing above was run by an AI assistant (Hermes Agent) under my
+direction, and this message was drafted with it; I checked every number,
+edited the text, and the tag below is mine.
 
---000000000000bb78230660f2d8bd
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Tested-by: TAKANO Mitsuhiro <takano32@gmail.com>
 
-<div dir=3D"ltr">The CEE DCBX priority-group ID (PGID) is a four-bit wire f=
-ield spanning<br>0..15, whereas prio_table[] is sized to ICE_MAX_TRAFFIC_CL=
-ASS (8):<br><br>=C2=A0 #define ICE_CEE_PGID_PRIO_0_M =C2=A0(0xF &lt;&lt; IC=
-E_CEE_PGID_PRIO_0_S)<br>=C2=A0 #define ICE_CEE_PGID_PRIO_1_M =C2=A0(0xF &lt=
-;&lt; ICE_CEE_PGID_PRIO_1_S)<br><br>The IEEE ETS parser in ice_dcb.c masks =
-the equivalent nibble field with<br>0x7 (ICE_IEEE_ETS_PRIO_{0,1}_M) so it c=
-annot exceed 7, whereas neither<br>CEE path bounds the value.<br><br>In the=
- wire LLDP TLV path, ice_parse_cee_pgcfg_tlv() extracts each<br>nibble into=
- prio_table[i] and inspects it to select tsatable[i], but<br>never rewrites=
- prio_table[i], leaving values 8..15 intact -- including<br>the defined sen=
-tinel ICE_CEE_PGID_STRICT (15).=C2=A0 In the firmware AQ path,<br>ice_cee_t=
-o_dcb_cfg() remaps only ICE_CEE_PGID_STRICT to oper_num_tc - 1<br>and lets =
-values 8..14 fall through untouched.<br><br>Downstream consumers then use p=
-rio_table[i] directly as a traffic-class<br>index:<br><br>- ice_vc_get_qos_=
-caps() (virt/virtchnl.c) indexes local array<br>=C2=A0 u8 tc_prio[ICE_MAX_T=
-RAFFIC_CLASS] via tc_prio[tc] |=3D BIT(i), writing<br>=C2=A0 past the end o=
-f the stack array when tc &gt;=3D 8.<br>- ice_dcb_tc_contig() (ice_dcb_lib.=
-c) accumulates used_tc |=3D<br>=C2=A0 BIT(prio_table[i]) into a u8; for val=
-ues &gt;=3D 8, BIT() is &gt;=3D 0x100 and<br>=C2=A0 truncates to zero, caus=
-ing the contiguity check to pass silently.<br>- ice_vsi_cfg_netdev_tc() (ic=
-e_lib.c) indexes<br>=C2=A0 vsi-&gt;tc_cfg.tc_info[ets_tc].netdev_tc with et=
-s_tc =3D prio_table[i],<br>=C2=A0 reading past the end of tc_info[].<br><br=
->The driver already enforces this invariant when writing prio_table[] in<br=
->ice_dcbnl_set_pg_tc_cfg_tx() and at the VF trust boundary in<br>ice_vc_cfg=
-_q_bw().=C2=A0 Bounding the PGID at CEE ingest enforces the<br>invariant at=
- a single boundary and prevents the u8 BIT() truncation in<br>ice_dcb_tc_co=
-ntig() that per-array bounds checks would miss.<br><br>Fixes: 015307754a19 =
-(&quot;ice: Support VF queue rate limit and quanta size configuration&quot;=
-)<br>Cc: <a href=3D"mailto:stable@vger.kernel.org">stable@vger.kernel.org</=
-a><br>Signed-off-by: Minseok Kim &lt;<a href=3D"mailto:for8821@g.skku.edu">=
-for8821@g.skku.edu</a>&gt;<br>---<br>Notes on testing and tool assistance (=
-per<br>Documentation/process/generated-content.rst):<br><br>- Tool assistan=
-ce: Claude Code (Anthropic) was used during static source<br>=C2=A0 auditin=
-g of the CEE DCBX parsing paths, to draft the initial commit<br>=C2=A0 desc=
-ription and bounds check, and to run build/style checks.=C2=A0 All<br>=C2=
-=A0 findings, code changes, and commit text were independently verified<br>=
-=C2=A0 and edited by the author, who takes full responsibility for the patc=
-h.<br>- Testing: Compile-tested only on x86_64 (defconfig + CONFIG_PCI_IOV =
-+<br>=C2=A0 CONFIG_DCB + CONFIG_ICE) with `make W=3D1 drivers/net/ethernet/=
-intel/ice/`<br>=C2=A0 against a clean baseline build, and checked with `scr=
-ipts/<a href=3D"http://checkpatch.pl">checkpatch.pl</a><br>=C2=A0 --strict`=
- (0 errors, 0 warnings, 0 checks).=C2=A0 No reproducer was built<br>=C2=A0 =
-and no runtime testing was performed due to lack of E810 hardware or a<br>=
-=C2=A0 QEMU device model; the out-of-bounds accesses are established from<b=
-r>=C2=A0 source inspection and header constants.<br><br>=C2=A0drivers/net/e=
-thernet/intel/ice/ice_dcb.c | 13 +++++++++++++<br>=C2=A01 file changed, 13 =
-insertions(+)<br><br>diff --git a/drivers/net/ethernet/intel/ice/ice_dcb.c =
-b/drivers/net/ethernet/intel/ice/ice_dcb.c<br>index abea84f14658..a36458b01=
-fc2 100644<br>--- a/drivers/net/ethernet/intel/ice/ice_dcb.c<br>+++ b/drive=
-rs/net/ethernet/intel/ice/ice_dcb.c<br>@@ -407,6 +407,15 @@ ice_parse_cee_p=
-gcfg_tlv(struct ice_cee_feat_tlv *tlv,<br>=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 dcbcfg-&gt;etscfg.tsat=
-able[i] =3D ICE_IEEE_TSA_STRICT;<br>=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 else<br>=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 dcbcfg-&gt;etscfg.tsatable[i] =3D ICE_IE=
-EE_TSA_ETS;<br>+<br>+ =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 /* T=
-he CEE PGID is a four-bit wire field, so a peer can name a<br>+ =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0* priority group this driver h=
-as no traffic class for.=C2=A0 Several<br>+ =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0* consumers use the value to index ICE_MAX_TRAFFIC_=
-CLASS-sized<br>+ =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0* o=
-bjects, so clamp it here, after the strict-priority sentinel<br>+ =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0* above has been consumed.<=
-br>+ =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0*/<br>+ =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 if (etscfg-&gt;prio_table[i] &gt;=
-=3D ICE_MAX_TRAFFIC_CLASS)<br>+ =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 etscfg-&gt;prio_table[i] =3D 0;<br>=C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 }<br><br>=C2=A0 =C2=A0 =C2=A0 =C2=A0 /* Number of =
-TCs supported (1 octet) */<br>@@ -805,6 +814,10 @@ ice_cee_to_dcb_cfg(struc=
-t ice_aqc_get_cee_dcb_cfg_resp *cee_cfg,<br>=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 /* Map it to next empt=
-y TC */<br>=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0 dcbcfg-&gt;etscfg.prio_table[i] =3D cee_cfg-&gt;oper_n=
-um_tc - 1;<br>=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 dcbcfg-&gt;etscfg.tsatable[i] =3D ICE_IEEE_TSA_STR=
-ICT;<br>+ =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 } else if (dcbcf=
-g-&gt;etscfg.prio_table[i] &gt;=3D<br>+ =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0ICE_MAX_TRAFFIC_CLAS=
-S) {<br>+ =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 dcbcfg-&gt;etscfg.prio_table[i] =3D 0;<br>+ =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 dcbcfg-&gt;etsc=
-fg.tsatable[i] =3D ICE_IEEE_TSA_ETS;<br>=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0 } else {<br>=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 dcbcfg-&gt;etscfg.tsatable[i] =3D=
- ICE_IEEE_TSA_ETS;<br>=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 }<br></div>
-
---000000000000bb78230660f2d8bd--
