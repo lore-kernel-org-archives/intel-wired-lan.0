@@ -1,117 +1,128 @@
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B3EF8606A320
-	for <intel-wired-lan@archiver.kernel.org>; Sat, 21 Nov 2026 18:57:32 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7642A606A32C
+	for <intel-wired-lan@archiver.kernel.org>; Sun, 22 Nov 2026 00:29:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=xBDUQs2m;
-	dkim=pass (1024-bit key) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=gtzL7uqE
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=d8KKL9HV;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kZ55sfqw
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 8854860615;
-	Sat, 21 Nov 2026 18:57:32 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 48B4B406CA;
+	Sun, 22 Nov 2026 00:29:05 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id pyxY3VjhBnuv; Sat, 21 Nov 2026 18:57:32 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org D40526061F
-Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795287451;
-	b=ZNzyjJ+P/nYn4v+bWHoQXuY8OLnXQjIFyEF9QpbO3y1MQSFjGhRS0ytUdoJehp5mzJOL
-	 o492NrSxwBNFa2yHcRI7YCo4AQkyBIY/FLbUcXB2pqxqws/WmPOwHM4cC1YMERkjENW1a
-	 KxtkvzW4jQMBLfJ/2q4CNCbWBDCkLhA/E6Ry+r4IfU1HmOrKPYBKRBe+FM9NvME5TvSLA
-	 yIEx1nxu7WxdzvJzilcMhPHHKXqDb1fMiiBTD1df50zP9J+6xdBnkusuZJLoizye+Xtp7
-	 KdZ15TJi4rR6RJfUmN0xrPd0ZBB1tDfT/Bli3uPbAtWVrJxuDGmOyR03bgC9tY9Mrog==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id ey-QFlQbT72k; Sun, 22 Nov 2026 00:29:04 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org AB631406AF
+Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795307344;
+	b=PKRoVcnLiFV0nttK7L1QRtZq2/IoTdsLSZGBtaK+u/r1mOFsqdqOZk3bxjAcaSeYvs10
+	 D0ymAYrjD1C/L3r8Rx7OBDQ2ozSOjjGB4QupDubJebmNzZmF3ZuMoUB2HbE0ViIXreiOX
+	 bvD4XVU4VZQAhuKBtZtSz8EcDkYmct2VN6s2rWc/isSrgVECD7pCDCP9AyGx1ir6I03fb
+	 fWSzxym49WPUoL2fdnCQcsAofPzNc9gDuK6c1T1Ga+nKH4dK7IjpM6p1aFYxFt/mvet5o
+	 IHTgEZXSbwnJY0VCf0dquoy7yc2a7Q7rrh33jl/hSwH1KJQbMzAXy3pwWah37ZHr/eg==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795287451;
+	c=relaxed/relaxed; t=1795307344;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:X-Greylist:Received-SPF:Received:
-	 DKIM-Signature:Received:Date:From:To:Cc:Subject:Message-ID:References:
-	 MIME-Version:Content-Type:Content-Disposition:In-Reply-To:X-BeenThere:
-	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=OvcsXvmxV2NpAo9swbfL9baT0D2RJxOhrkhotTqp33Q=;
-	b=VrixXKs8XnaU8tG8V5UOLOiUcjQfyFwKwF6cBg+Dx1Q9OLQHVdpPhlhH76mYmiCUNJP6
-	 NDRSJRBRPNbp3MWEvm820CCGN1SzDrD6WVCxEHjqfHpog0C401lTVzfacB3bhC0lEROVw
-	 WV9nABjbiKQuMUzEo9zUMDVsvYQlkK8ksR9oYNBbKGTPx71sS1t449Ezup99VHdU7MYDe
-	 zuoPXER4/LjEZjSB28cpomYSCXKyJX57t4Wtnq8gPldpx7KjmCb0ccPgC1Rr/2Hk/5+wQ
-	 ChjrDdg1xAlch9IQlFlm8sBLOvTxwH+hV6lZtl+swhXSPfMx0ZmJ/Hs9wD/J2jwpNhQ==
-ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
+	 Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 In-Reply-To:References:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:Precedence:
+	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 List-Subscribe:Errors-To;
+	bh=89c9O/yAKJRdizL+0JjVNDt8ds8ZNxXapQLM6WrXSJo=;
+	b=D2N1l1XyHkFfmspv0ziYl42fNggTZjlHdD6/dV1EwxePjl3SwfpyB3HxXgX8pr7CVcmT
+	 Eg50cC8Qq+wuesHi8ExSgED+fW/S4xm249bUuFxAbMKEfqpg55RJEHkCnvVr1gaYRVtIv
+	 nRbL7AAeV5dJgVyXjOAVJlSucgF7JKyBoPdzErPMkF2d5lhru6VpdsOu54dfS9TDrTecT
+	 tkmVc1hdOJbyR9i57xl68sspoZow94rl0qe+g3B4lh/RMGDDktq2wfnz3NUax8jWaQpQK
+	 PiXZanvTuMPHT57rEbms49FcbCHEU5I5qZ7NQaHqo1vwj1YGpp2qX4Xj7UejRAa3u4Q==
+ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1795287451;
-	bh=OvcsXvmxV2NpAo9swbfL9baT0D2RJxOhrkhotTqp33Q=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-Id:
+	s=default; t=1795307344;
+	bh=89c9O/yAKJRdizL+0JjVNDt8ds8ZNxXapQLM6WrXSJo=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=xBDUQs2moqzji/T7sMQFMHjluqqRK1r0cE5vUuxPVWEPA5BHI3tkHFpmZF0wBHuSC
-	 /yJ1TSkZ+ivuR4FD8Crxg6EgYEg2uE8Wo1/+lcYRaaBALDqCen1nFEY+ntsb9SpXkc
-	 KidBMA/7KXcukYqoF5xapbubPVrY16JsgO+NLwJeEZVr9/CJj8d8oq76YdopU8Jks1
-	 A4TPUeLwP+1JfiNKaINxgMoBDuOvP9eTyK6szlbGTR7gZecejJ8JMRRTRONABw9+RR
-	 Yz+Yp/sQiiKFJWGMP+LE5auztNTo7eNDWZaigBIWntvoN5eWODNCyXmb43GGfxXPeX
-	 VnGwzUq3ySjFQ==
+	b=d8KKL9HV48S15XBoIxDr1JcgZ+jIilAdO9ZSRrx06/ESYUH4gd6vgGKhZo6QqBq3E
+	 5iszQd2q0jlupvx0mjb4AlGg8QL1FGGiW11zup1MgyF27VyxP+dOtgkJ8TbgkoOZeg
+	 5+sYgjWzM4YDB17L/vrG8NUlhS/zZg8vKrM6qAO++4nj4JAokPM+1uanK2AmbIsFL6
+	 FGsxwd7yTaqKR1Cl024+gegJH6V4jSoCD4DuhlIx+c6B6cKUix2LhKv1VFoFUjkZUB
+	 wfPsLe8JamiZJrcvJaHGkwPGL62DJh9T3+MzBKzEglejFSBUlVZArqpB0j7tQ2jdr1
+	 vdwknbor+7RFg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id D40526061F;
-	Sat, 21 Nov 2026 18:57:31 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 8222915D
- for <intel-wired-lan@lists.osuosl.org>; Sat, 21 Nov 2026 18:57:30 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id AB631406AF;
+	Sun, 22 Nov 2026 00:29:04 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id D6013260
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 22 Nov 2026 00:29:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 682A040081
- for <intel-wired-lan@lists.osuosl.org>; Sat, 21 Nov 2026 18:57:30 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id BB90180BE2
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 22 Nov 2026 00:29:02 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 3w1dSq6-35F7 for <intel-wired-lan@lists.osuosl.org>;
- Sat, 21 Nov 2026 18:57:29 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org 5B23C40012
-Authentication-Results: smtp2.osuosl.org; arc=none smtp.remote-ip=156.67.10.101
-X-Greylist: delayed 2664 seconds by postgrey-1.37 at util1.osuosl.org;
- Sat, 21 Nov 2026 18:57:28 UTC
-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=lunn.ch
-Authentication-Results: smtp2.osuosl.org; dkim=pass (1024-bit key,
- unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256
- header.s=20171124 header.b=gtzL7uqE
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=156.67.10.101;
- helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=<UNKNOWN> 
-Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 5B23C40012
- for <intel-wired-lan@lists.osuosl.org>; Sat, 21 Nov 2026 18:57:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
- s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
- References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
- Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
- Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
- bh=OvcsXvmxV2NpAo9swbfL9baT0D2RJxOhrkhotTqp33Q=; b=gtzL7uqEKmM9OrMI93aDbnJ9HN
- 2wLP4MitspVQNyArBz+0yD9qGUwJCH+1foNqGriPr/E2bd7sKENPlNy6giHx0pcasgvLpbe/ufoU/
- 3l6m1ENOXkMvanQzoPOUW1Yc5oaN5fL0u7CzivgwcBpYm6z1M5skvI0kcVLqubf1umXo=;
-Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
- (envelope-from <andrew@lunn.ch>)
- id 1xUpZy-000TbP-0O; Sat, 21 Nov 2026 19:12:50 +0100
-Date: Sat, 21 Nov 2026 19:12:49 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-To: Maxime Chevallier <maxime.chevallier@bootlin.com>
-Cc: Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>,
- "David S . Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@kernel.org>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Willem de Bruijn <willemb@google.com>, matttbe@kernel.org,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- thomas.petazzoni@bootlin.com
-Subject: Re: [PATCH iwl-next 0/3] igb: Align the flow-control behaviour with
- ethtool's specs
-Message-ID: <4efeed7c-da91-4886-9af9-67c1df07bcca@lunn.ch>
-References: <20261121103613.166611-1-maxime.chevallier@bootlin.com>
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id wH_PQNsoCokO for <intel-wired-lan@lists.osuosl.org>;
+ Sun, 22 Nov 2026 00:29:02 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 096EC80BB7
+Authentication-Results: smtp1.osuosl.org; arc=none
+ smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
+ envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
+Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20260515 header.b=kZ55sfqw
+Received: from sea.source.kernel.org (sea.source.kernel.org
+ [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 096EC80BB7
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 22 Nov 2026 00:29:01 +0000 (UTC)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+ by sea.source.kernel.org (Postfix) with ESMTP id F1E164411F;
+ Sun, 22 Nov 2026 00:29:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6C2B41F000C0;
+ Sun, 22 Nov 2026 00:29:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+ s=k20260515; t=1795307340;
+ bh=89c9O/yAKJRdizL+0JjVNDt8ds8ZNxXapQLM6WrXSJo=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References;
+ b=kZ55sfqwCaLPWjQIuuXDWbwCt4EM1BQtUrfE3YsBanoCQqIXzZUxtMAJOaHcNYYAS
+ AxzQrtzKacYeaGNReBD+XWWaFTICpPRJJiN2UTq3DpP3iMYfm0zkHW0GPAdMj3iPwA
+ fUi1CD6SBr9OIoYT8Yn2CvHKBEK8Mkz5/YrchG4fUHpzz9K473Ma22vPacZ58aXQSY
+ oafPScAQKdtOMkMAPCqjpCUa7dVqna4RWWDYnYCuvIW11qYqSMwqXrXXkKg2Fj63YG
+ jPQa9Y8sRS+TTb8iSwpnqXzZn4EvAfrIZetww6Br83fp6oahtfnOfYu5cZbWaG2tV8
+ yb6/4swbS6iDQ==
+Date: Sat, 21 Nov 2026 16:28:59 -0800
+From: Jakub Kicinski <kuba@kernel.org>
+To: Tony Nguyen <anthony.l.nguyen@intel.com>
+Cc: Jacob Keller <jacob.e.keller@intel.com>, Petr Oros <poros@redhat.com>,
+ Maciej Fijalkowski <maciej.fijalkowski@intel.com>, Magnus Karlsson
+ <magnus.karlsson@gmail.com>, <netdev@vger.kernel.org>, Paolo Abeni
+ <pabeni@redhat.com>, <edumazet@kernel.org>, <davem@davemloft.net>,
+ <andrew+netdev@lunn.ch>, <horms@kernel.org>, Przemek Kitszel
+ <przemyslaw.kitszel@intel.com>, Marcin Szycik
+ <marcin.szycik@linux.intel.com>, Aleksandr Loktionov
+ <aleksandr.loktionov@intel.com>, <intel-wired-lan@lists.osuosl.org>
+Subject: Re: [PATCH net 0/6][pull request] Intel Wired LAN Driver Updates
+ 2026-11-13 (ice)
+Message-ID: <20261121162859.3522ab89@kernel.org>
+In-Reply-To: <fe1ce4cf-3400-4a87-8e46-072563f8fe9d@intel.com>
+References: <20261113231225.1864810-1-anthony.l.nguyen@intel.com>
+ <20261118115915.116177-1-poros@redhat.com>
+ <CAJ8uoz0MMUx68rMZWoZs-JwjodpRixwQSrgpyta1NsanGPn=dg@mail.gmail.com>
+ <av2syi6lE/Vp86QW@boxer>
+ <f7f1ae2d-a623-4eb7-a178-c618316beaf5@redhat.com>
+ <0bb65ff3-2e27-4f2e-aaa3-2b8eb7cda356@intel.com>
+ <fe1ce4cf-3400-4a87-8e46-072563f8fe9d@intel.com>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261121103613.166611-1-maxime.chevallier@bootlin.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -122,26 +133,29 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-5.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_PASS autolearn=no autolearn_force=no
-	version=4.0.1
+X-Spam-Status: No, score=-5.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Sat, Nov 21, 2026 at 11:36:09AM +0100, Maxime Chevallier wrote:
-> Hi,
-> 
-> This series makes a few changes in IGB's ethtool flow-control
-> configuration to align it with the ethtool expectations.
-> 
-> This was found while upgrading the board farm that runs the stmmac netdev
-> CI tests. I've upgraded the HW and I'm now using a bunch of I350-T4 PCIe
-> cards (running igb) as peers for my tests. Since then, the flow-control
-> tests have started failing:
+On Thu, 19 Nov 2026 10:07:10 -0800 Tony Nguyen wrote:
+> An idea, but this would still increase the queue for netdev, would be a 
+> separate budget for non-Intel authored patches. This would allow 
+> community patches to continue flowing without being blocked by Intel work.
 
-Yah! The tests are doing what they are supposed to do. I don't expect
-too many problems with devices using phylink/phylib. It is all the
-drivers which roll their own which get is wrong.
+No extra patch budget will be provided.
 
-	Andrew
+As I think I mentioned multiple times netdev maintainers are happy to
+take patches directly. My understanding is that it's Intel that wants
+to feed the patches thru their internal QA and have the ability to work
+on timelines, let's just say, different than netdev works on.
+
+We wait for an ack/review of a maintainer, from Intel such acks never
+come. Przemek / Tony can start acking things directly on netdev.
+You can also add another maintainer to your entry, or split it up
+and designate even more people.
+
+IOW I agree that the Intel process feels dated, and life would be
+easier if Intel switched to an upstream first process.
