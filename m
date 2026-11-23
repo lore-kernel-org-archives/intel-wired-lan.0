@@ -1,147 +1,179 @@
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 37816606A31A
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 23 Nov 2026 08:52:55 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 71886606A31A
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 23 Nov 2026 08:58:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=s4roH9JT;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=BQXr803l
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=n67h/38I;
+	dkim=pass (2048-bit key, unprotected) header.d=shuye.dev header.i=@shuye.dev header.a=rsa-sha256 header.s=sig1 header.b=vpSzqAyK
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 12D6980DAC;
-	Mon, 23 Nov 2026 08:52:55 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 528E840669;
+	Mon, 23 Nov 2026 08:58:42 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id rQZ5yGz6vE11; Mon, 23 Nov 2026 08:52:53 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 9E40E80DA9
-Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795423973;
-	b=S3trWahwnZQ2LgMA+mO6hcEIUOLgpr2UvjPHcgubg1S81dnLDHhRbhPc/stKgC4mhj/X
-	 HkpvOjxFkJgr4wQ/Em2RQPK/QmQmULLZ9w8xzjBCqkoEoYGlfi7S38T4TkaPqBHmqAh4g
-	 mj8JY5XSboBzJH8URYCy+o/F+ewOaAPvqIA+ljK+6pgSs24TPldz4LCnDEl4Sw25BN2Qb
-	 D+p7uLr6nmJLMc4oi9P5mZUFXMBXK5Wv4ZL+iPAyMqls/VVY9MmUl+gADNqARQhpO5d7T
-	 3pDGD4n4P4pBa9kAuDu3Sc7VkTtD7fxaTWnX5DBwRdfj5vgiwjJ1ls5hm+9gC5Lmn0Q==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id N9vs_-I-kBjA; Mon, 23 Nov 2026 08:58:41 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 780D34064E
+Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795424321;
+	b=fwck8q5ClZB0fruDxubYjxkKzq8RRUdnmOwPGDVe3rS3myA7TqyW6zV4YuBegemxItAP
+	 COd37eh29GMKfZkEKY4+802nGrx+udbO4qBsismXSNOuTkHmnHuHdhGtOUH+sIvR26UQI
+	 +kp1yPY4GEbkY3hh+lc33avU3z/H6WJjwDliJYLdwOjud2RNtUTse3oSLCy17603OFA20
+	 UnVW/9eao+/AQVjCfMI6vvAZFYzDJEH0tjgbvvE49RzgU3fq65QHu7NUwclJ4/C82wyND
+	 8UAKYKRMoNuQPEPXG2rbkLQ4VZVuNDU262fCNCXw2rK7iaf4HpdFx9Z4HrkvD0wTFzQ==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795423973;
+	c=relaxed/relaxed; t=1795424321;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:MIME-Version:References:
-	 In-Reply-To:From:Date:X-Gm-Features:Message-ID:Subject:To:Cc:
-	 Content-Type:X-BeenThere:X-Mailman-Version:Precedence:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Errors-To;
-	bh=cBy8a6PARV8Ud2jYBKY1ifWsHzxGDdjHTpckRaboeTA=;
-	b=hJhoN2l7o6UhijVj0H5+6TLejTbzfsYa/j7jBIZVJD+tMkPjkY2zv9Mwu1LQsr3IqS1R
-	 nOjUzaZv8L4tECnj7cm4D5gIk9lt6PsYPXCqWwDUJmrMmgmyosS/HOjspg4aumv8uc2rX
-	 jk7w/O48PpcK0n0xIC97HRkbxkq0QpKyFA4XeZtCpk5WGX/MMorEg4dchEmWYFu537aMk
-	 nnyXFcivQ+cFplOU0x5fvPP2Yu703EGQcspgI08h5lZbUCWCcnjC+NOVKmGdqU/IMkhGh
-	 VHfLG4jrhxRNq+aVSfnj0zF4zDbGbtduEcEYoflqp2gr/TxkxGWs5/4GQ9Nc//lL3Ow==
-ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
+	 X-Spam-Status:Received:ARC-Filter:X-Greylist:Received-SPF:Received:
+	 Received:X-ICL-RepId:Dkim-Signature:mail-alias-created-date:Received:
+	 From:Date:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:
+	 Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key:X-Authority-Info-Out:
+	 X-Proofpoint-ORIG-GUID:X-Proofpoint-Spam-Info:
+	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-GUID:X-JNJ:X-BeenThere:
+	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Errors-To;
+	bh=JYvSvDfswO2l+IyLzWQJX1wneXOmcrOuIQ0XsfOmxLo=;
+	b=taYRiglCA5330owKNQawIujoBnBimSoesZ5goqqK21eKFkCa3Ppotv7J/75WhiL27ehH
+	 YtUP/qFo6niE38h7ehjnrjOD0edbEEF6r8f09EQods0/DkiS6V0mHllrQ0b/4fKqGzpEJ
+	 B7MTZqJpFtmNblsZhov3FY411VW6wGwI963WYGgz8l3p0Nkwj81Q6p9kkJQUk+Y/rJ1Ov
+	 zVML7lpLMC8NPiSunP+Nue5KmCepEAii2lpB2lCXJI/su8dtNUv187btH8FBxcx1k5GNK
+	 4DeIB+5QKxwGLYvbjSGbKZ3x52j0RHGW8N9Nzk/9V0cFT+kuIkUihuDctHOwQ48SXNA==
+ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1795423973;
-	bh=cBy8a6PARV8Ud2jYBKY1ifWsHzxGDdjHTpckRaboeTA=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=s4roH9JTeXJ44Dx6wxFcwzPSlKOizmPavQJmQl2J6Z8w5he+iz3ReAPK4OdIaKb3L
-	 JPCmK4X/ltzAEj0UKzQPdwW3KeE7qyRSq8y8EULhowR93e4BNhX2p/R13vXl9veOJ0
-	 qKpbQP2sNEd1+b3RfPcEWfaHmR6mi9A00QcAh/b9CX57svoDlnPWKm3+sChhmI4w05
-	 kdToKJl2LyzyfwyEH2g0NeYOIkegX/ObVLL1+NwSHiHW+78nUNfIQ36swopNE6RVme
-	 bT/dc+YFjpp72zOmZKOZSj9gkx6ZOqyc2RpEFFAsZTwr6Plj0+NGGda1xs+7sZDWZI
-	 mQEqMDaQRiE/g==
+	s=default; t=1795424321;
+	bh=JYvSvDfswO2l+IyLzWQJX1wneXOmcrOuIQ0XsfOmxLo=;
+	h=From:Date:Subject:To:Cc:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=n67h/38IdhSbjRXRRhxKNVSJShVvtVbBx3hXto7IyiYAiF3LBSZcG4gy4IEtrzDnZ
+	 3VFqLwSOUJMtSAcECE6UnqTn2D06l/HGntpnjB3QozEyO9O5ynAP+6eg0gQP24zgg7
+	 tMWFzFY8VHqBrXiPIakQCMpZpxRokUOoGrVrcjMxZVQE9rSsALlCpgRtGarvViCjbA
+	 pjIHq9ReJ9wZ+iP3/lMGgCkSj6wUwS9p2oiqJl1m1L4/uOnJw/WkLqNV9mfI+3L8wO
+	 EgCTJvN0lMpKQYNS+/vdL9By1to6B6hjtdjw2HLuBiBu7oterW7XyifiOb3sVmo57N
+	 oSIZiRq8a4Kag==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 9E40E80DA9;
-	Mon, 23 Nov 2026 08:52:53 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 340D71AB
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Nov 2026 08:52:52 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 780D34064E;
+	Mon, 23 Nov 2026 08:58:41 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id A2F55D31
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Nov 2026 08:58:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 19FE840063
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Nov 2026 08:52:52 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 886A6606DB
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Nov 2026 08:58:40 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id pZCfmDPoH4IA for <intel-wired-lan@lists.osuosl.org>;
- Mon, 23 Nov 2026 08:52:50 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org 882274005D
-Authentication-Results: smtp2.osuosl.org; arc=pass header.oldest-pass=0
- smtp.remote-ip="2607:f8b0:4864:20::102b"
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Lmr4kFhRu5Ky for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 23 Nov 2026 08:58:39 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 6F55960603
+Authentication-Results: smtp3.osuosl.org;
+ arc=none smtp.remote-ip="2a01:b747:3001:202::36"
+X-Greylist: delayed 3297 seconds by postgrey-1.37 at util1.osuosl.org;
+ Mon, 23 Nov 2026 08:58:39 UTC
+Authentication-Results: smtp3.osuosl.org; dmarc=pass (p=quarantine dis=none)
+ header.from=shuye.dev
+Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=shuye.dev header.i=@shuye.dev header.a=rsa-sha256
+ header.s=sig1 header.b=vpSzqAyK
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com;
- envelope-from=magnus.karlsson@gmail.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20260707 header.b=BQXr803l
-Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com
- [IPv6:2607:f8b0:4864:20::102b])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 882274005D
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Nov 2026 08:52:49 +0000 (UTC)
-Received: by mail-pj1-x102b.google.com with SMTP id
- 98e67ed59e1d1-3b487f44ee0so441778a91.0
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Nov 2026 00:52:49 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20260707; t=1795423969; x=1796028769; darn=lists.osuosl.org;
- h=content-type:cc:to:subject:message-id:date:from:in-reply-to
- :references:mime-version:from:to:cc:subject:date:message-id:reply-to
- :content-type; bh=cBy8a6PARV8Ud2jYBKY1ifWsHzxGDdjHTpckRaboeTA=;
- b=BQXr803ljzhA72I+6ZbwyTxTRRxI/RjqdBV5ANyoy3vQrBgxcTTF1+WpICjvxt+Fbw
- g1PqqzYJLZXb3g0cmbTUAATE4QU4Y56LEG+ufx8OlTrn4DNQBu2mtlJDgwM6dmJivkkz
- Aj68fCnTWBnRpLuG+Wvsa1UUHiQD3HzD0fA0fZ0y/S1Yc1J1Er02ivVtv8OHAn82H749
- hfDkeQ/YJRKDUT9/Y7pudrBSqDyWcW3wscmqTv/HWbRq1vvwcZSPfCbeDCUgFHmIcNl2
- u/Sj1L8G4FciP2TWv06zpaqKKCyKu+sJtlmc0idDD1PhBcQ+tBX1VD7utErUJ4XXcv5d
- 7UkA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1795423969; x=1796028769;
- h=content-type:cc:to:subject:message-id:date:from:in-reply-to
- :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
- :subject:date:message-id:reply-to:content-type;
- bh=cBy8a6PARV8Ud2jYBKY1ifWsHzxGDdjHTpckRaboeTA=;
- b=yOWSBn29/LxCO9n9rEjpfe0qqN2sQnppp+x1t1SdwkDwa7awhDQ9IjR1Vo5yP6ILai
- 2NfqQ4+w0ot2OyudiIVGJBqf6dKz4piAtV6p15r7gChOpm63JeHg3bkUEmLbDgLkPpCJ
- RAF7q5u+Yp4I+5+IP8jgUsMW+TKynP5WiScVh8QiCXcMz/GBBAvSn3uVB+kttwlh3v57
- k3giyVF5efd4AD61kdMDvmutHHTH8TZLSY+AUSRFh750Lvl3xxWWVKH2Izt4IRC8y5eq
- xYDuqLeUlNPveMF7/91QC6nEz+DSrV31r1SmCyjuUPUk75oc1tMzOdil5wJOxfSMvIbg
- lRGg==
-X-Forwarded-Encrypted: i=1;
- AL+hErEb7eloMeTOa83AfcaF8sO82JNJdmfmRMlYoTqxX8/uOWoKdxYneG68qhSff5JrXHC2qKlzFIi3FPg4IypU4WY=@lists.osuosl.org
-X-Gm-Message-State: APuU4Z/oadL2Q+R/j9GM+s5i+qPXJLhlLKFc3v2k+um1NFlYIsZuVjAq
- InuUXzVhrbQo0GXAlt55dbIDDkbQycf/NFxUwugCQ+f62HzMLWD+aBtEElpVTwWnLDTS6Hfj9t5
- OdwU8DjgmEdqCrgRzdXYKllgGx9WeCko=
-X-Gm-Gg: AZFdTZdAEMkUP+/BYXtSzumgYY3qeqduxYjDkYdwMXVJH+o6h/1pA8n56rtZSmH0MAa
- kezGA8MF82XORHD+7lAjdioThM5gktimEkACz0fdw9B6LO3q+vK7hf8N8ofcSmg+mvwqhP0pQ88
- VUnRPuRbZu1qSSUyshFm20gAOJgK0arbGuWu/l3zVzgQVRWs9h7TCYYGlNhC8BUC61vFfWDwuwg
- 49ZPwJAWl2Z4s7+ARyTCRZLwn2UGd4LuotGP2LLAPev3s3vQWiimlhsexupTMu27u9NKQ50yjAR
- W+S3GHQKo/cPQ4Dtz9Oi7aWBhjmGEuNh7qIJ/uogpXWJs8MwaerDn+QGabIlmH7kwUphmsirL8m
- ubZN2pOzSqQNdPUi5eAVvQTGgpxWJVQnpnpheBGM=
-X-Received: by 2002:a17:90b:3d90:b0:3ab:b39f:41b9 with SMTP id
- 98e67ed59e1d1-3b41cb42c13mr8755285a91.61.1795423968911; Mon, 23 Nov 2026
- 00:52:48 -0800 (PST)
+ client-ip=2a01:b747:3001:202::36; helo=outbound.st.icloud.com;
+ envelope-from=hello@shuye.dev; receiver=<UNKNOWN> 
+Received: from outbound.st.icloud.com (st-2005f-snip6-1.eps.apple.com
+ [IPv6:2a01:b747:3001:202::36])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 6F55960603
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Nov 2026 08:58:38 +0000 (UTC)
+Received: from outbound.st.icloud.com (unknown [127.0.0.2])
+ by p00-icloudmta-asmtp-us-east-1a-100-percent-0 (Postfix) with ESMTPS id
+ CFD851800218; Mon, 23 Nov 2026 08:03:36 +0000 (UTC)
+X-ICL-RepId: 01a2076e-9277-7aed-a86f-ebaadef8294b
+Dkim-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=shuye.dev; s=sig1;
+ t=1795421021; x=1826957021; bh=JYvSvDfswO2l+IyLzWQJX1wneXOmcrOuIQ0XsfOmxLo=;
+ h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:x-icloud-hme;
+ b=vpSzqAyKYN9JXypjsE1N4TUp9scJJooBDOprtbzu8ybgNoqq0JJ649kUKH8bNeoAZtcRF+YUTxi1gHC1YgTdD03kMAzwYvk3LWptgekTpaEBM2b4GHD79c0QCJmjBTnEkL88UZsP6AdNUqaWO+3qtdx+f4Iu48OISYhrOx8gePBUVDo0GxRvR8Eo9EBZzjdpKA1fBMkTYF1jtKuX3lMq+rz5kIQpLZj6DtVTz0ernGYTJC1M5l5qA3HYqcUoqPW4yZMIJJEqZ8hARTd8m30/ZJzxwyD3P9VYMRF9t5lKcBR9Q+nFZU5GgFTtJFr10ZG9OmvJgAVslXvYzH2dTH2DSw==
+mail-alias-created-date: 1658105457252
+Received: from shuye.dev (unknown [17.156.216.30])
+ by p00-icloudmta-asmtp-us-east-1a-100-percent-0 (Postfix) with ESMTPSA id
+ 8A3EC1800208; Mon, 23 Nov 2026 08:03:35 +0000 (UTC)
+From: Ye Shu <hello@shuye.dev>
+Date: Mon, 23 Nov 2026 00:02:33 -0800
+Subject: [PATCH iwl-net] e1000e: add HP ZBook 8 G2i 14 to disable K1 list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-References: <20261119165340.1071525-1-magnus.karlsson@intel.com>
- <20261119165340.1071525-2-magnus.karlsson@intel.com>
- <awCA3XH25M-fZCeK@devvm16445.scu0.facebook.com>
-In-Reply-To: <awCA3XH25M-fZCeK@devvm16445.scu0.facebook.com>
-From: Magnus Karlsson <magnus.karlsson@gmail.com>
-Date: Mon, 23 Nov 2026 09:52:36 +0100
-X-Gm-Features: Aa3M54oxgzrGjZaIQauDL0BEe3Y2-VsYMMfEBMJ5bsZqtoaJcjSDlqukraajdPI
-Message-ID: <CAJ8uoz3xRjbPOHYYs=NZ5QucS6Di+USR_TxLES8qwMxfa4y=TQ@mail.gmail.com>
-Subject: Re: [PATCH net-next 1/5] xsk: add USO support for skb path
-To: Stanislav Fomichev <sdf.kernel@gmail.com>
-Cc: Magnus Karlsson <magnus.karlsson@intel.com>, netdev@vger.kernel.org, 
- maciej.fijalkowski@intel.com, sdf@fomichev.me, davem@davemloft.net, 
- edumazet@kernel.org, kuba@kernel.org, pabeni@redhat.com, horms@kernel.org, 
- bjorn@kernel.org, kerneljasonxing@gmail.com, intel-wired-lan@lists.osuosl.org, 
- anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com, 
- jacob.e.keller@intel.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20261123-e1000e-hp-zbook-k1-v1-1-468e3868229f@shuye.dev>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAA/x3MUQrCMAwG4KuE/3mBpCtOexXxYWp0YdKOVlQcu
+ 7vgd4BvRbPq1pBoRbWXNy8ZibQjXKYx3439ikQIEnaqIbCpiBhPC3/Ppcw8K0cb+l7iuD8MER1
+ hqXbzzz89wt8PzvbEadt+Vl9Bvm0AAAA=
+X-Change-ID: 20261122-e1000e-hp-zbook-k1-4e73304a8974
+To: Tony Nguyen <anthony.l.nguyen@intel.com>, 
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
+ Andrew Lunn <andrew+netdev@lunn.ch>, 
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>, 
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>
+Cc: "Chia-Lin Kao (AceLan)" <acelan.kao@canonical.com>, 
+ Dima Ruinskiy <dima.ruinskiy@intel.com>, 
+ Vitaly Lifshits <vitaly.lifshits@intel.com>, 
+ intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, Ye Shu <hello@shuye.dev>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1963; i=hello@shuye.dev;
+ h=from:subject:message-id; bh=Tk2kaEGBsjUU2+Xrzlzb0H/K/d1lZQi2yqEQQz5/qho=;
+ b=owEBbQKS/ZANAwAKAWrdZni68N7qAcsmYgBrA/NWcuNYDo8u4aF8qMy37Q7bnFL1jtPHc127Y
+ fSZwVz3epiJAjMEAAEKAB0WIQTaiAWzOwE7Z7uq/ZNq3WZ4uvDe6gUCawPzVgAKCRBq3WZ4uvDe
+ 6ta+D/9PwriDv8XRgFc/U/kIMVeThj7EebTpGu8kcFwMwPsYQfxspAmTPn0tKF3/vi0XHfE6PK8
+ IpTOaWsx2+7gJ9Z4wfQqJA41HgB7/DntHYjBI7IqtYRQFkuXX6D08mqwsCX4AIuVS9jLmXZBD3H
+ p343xw0GhxXgCBrkAHFvdWGQ1LesLZM6TMNyj9Jj0/9F/DwTRD62j9jyN2YbO/Si1+nzP4Y/Z1v
+ y94bHqEX8k4B/Ja37S9fkKXfur3hZj0ET7RQwcStQpBqKqE8UruMMOcgHb+/3dm6pIOT7ZCWg/3
+ n6Z0v7z3omLI/SQKT/XtWP8RhkibKKEbEadUtb4CEwm0qtrrrmivtHO7LOngxTDz4y0MQbdNoYq
+ Ij00FuanyDh2sSP3fWS5JkdEm008xZZVytCzZiyRkpP6QVa7806KG8TlTus9NswYDk+NtTNtoKU
+ cY/2aGuz/O91kYMJCoCC2ZUM2K46yjAmYCmvwUGnYkYs8CEv00VvPV7A/gYNCYPzjhi0uPDjbQW
+ KX0w7yYGblTk67HJCNWJwvjex91oBSxoFxPVhb0smawe/0g9mIoH9adAJDFXlUPqgxadj6kVJtM
+ HHnhmBPZrQSOdCNzJVtiQ/P6plZQQPfaTjhTzSUAHPilGlKiVm3gaqfVkX5nyAUf4f8brGQQu6Z
+ 7Q/kxBZbRey/D1A==
+X-Developer-Key: i=hello@shuye.dev; a=openpgp;
+ fpr=F021058172993F4D228EDB6972FF4E8B377057DE
+X-Authority-Info-Out: v=2.4 cv=PbNqFShd c=1 sm=1 tr=0 ts=6b03f35a
+ cx=c_apl:c_pps:t_out a=oyWFxbOnq+dmhQrAPgaJYA==:117
+ a=oyWFxbOnq+dmhQrAPgaJYA==:17 a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=AZoGnDOZhPiq548KR6q9:22 a=oPt-bpzCUupNiBt5qcZk:22
+ a=VwQbUJbxAAAA:8 a=qnVDHuHs7DX7YdgB2tMA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: HdjXjTci-5tB4pFkOoyDrfYGc9KzORrV
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTIzMDAzMSBTYWx0ZWRfX4dEOGQjMgsGb
+ Lq8PiPHkbChVwAzgBEyVPOnoyjH9nfyS8wax6h9TF9w+4JE+1nDE5m6XBNVf8sHvC93EXM5zjJF
+ qTFSQbQDsLIDGr3GCIIit7o2WxNZ9V4=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTIzMDAzMSBTYWx0ZWRfXxvq+SjnGHP7y
+ 1v5u3GOhL+kM/QSiRiniwLbclc48zyT596Pz/Si4PvCO7XwsZsCNj3rlk/qsvwr9Y4kA3bziLB+
+ gBdVIt+5vTFBMKE0SW9mMW+DOOOA6YHSD8X1bmQhhayWubK8TCuAhEzbFG2toLFSHOQoJCO9/1m
+ IjiWLI1U8JXp/Mv6VZM9Um7BDMWMJYSC8Zq+gv0I139zl9czzG8bDWlVMpaUufQqcKA+V6kZS4i
+ stUZxOG9hVsgsJi2Nta6zOcq/8GaIm9+vRAc9LmrnQRDS+zT3nw+ueIdF1OyTtb6iaePnS3pkWn
+ vQQBPp8Vjw4osSYmVrDKdmdVln5x5qMru8iGwQrBP8SPDqNj6GFB3qsNi79vAs=
+X-Proofpoint-GUID: HdjXjTci-5tB4pFkOoyDrfYGc9KzORrV
+X-JNJ: AAAAAAABLlj2GXMfJgPS6ZL5RRkrN0+SR9VBuGsw3ND80RiAZpzRIEpF3Dlr9lyz/ynVjv
+ Woll1dMWwHn2JnSryo5B/riTWwepCRbUINaKzGdbvPQcwCZN6SbfbWpJHs+VKUJnub25Ju
+ 1TqG8so0rh2Y1cGCQezxCSGburtFMaicUlhIdu0+4wG716e01ONFDv/d/AGtHP1H075Ajq
+ lLcSnGpeSKw5NmbLzKFW5P50jgVsgXqD7pM6YUTOkXauYJfQKZXBuKPFxk7PKuNCu090qm
+ /cm730GZmSPqO8nBI4YOGujMY5MZPoyC7py6TtDMA8lBPnv870rvR2D8b9yr3vWSJP2u/i
+ ts0vQLlS+op+Jjdi4MZAqB9Mz4KRwB7xYRzJnGhyq4tKPIvMJQPzqrlYgbmnLVVcHUmnsw
+ OBsrTTEieovBFBN7yZ2bIjBW4an27t0TXj4g4OFbqMJAUSuLO0Vz/0ItV7oPur0cL4uMHF
+ +3V05bLAMHFvTaLMpLP9zk1xFcLiK3y4f+JTA+wpOrciFZykHtyqIEpNHCSc8+8gieZBZQ
+ zaBS/5XBcZiYqXkF2/rNsASE9HieRLIik+i/SawHxVVkmYjLMx8JjLIk0A+yxkTC8DA88W
+ CZC5DGnLQWLUObAhIxJQRPt0+F7djNQuuTueVyHBpcSw/9w9U5SqqAXvSQlwsVQVgb8BeD
+ NYMpVqDWlCNsRcRRcGaBU90sKslSF39d5/+YofUHbubxdsLoL1OkrNkhh0D4Jn1VzKCvQU
+ T2OgJO49U6BB9Rckz56in4r1oKpN7wlW3D41ymp8d6Xj4dhV/0a0sGPxkQbo+Ly78qPuLN
+ P2Vko0tHM4/nOFbtttlHgMSKkz8cpkJwAQ+FusSMJ7igDBAIeL9sTdqt32dmkOVHornKi3
+ jMYKyCGe8pMXUdU5zm5LukhNcgXqpDI6D0+D5VZLHPPmWWzbVDwDwP7Aa47DXV5lPzMOu3
+ c3mhHxrn7hFAvpMXq9SxPoVY0qmBwZZF2ZmMJvRkficN2bq6qnDVj/seezgHGlSDw4Y2VX
+ L4r71T9eJpKSdhU7dDniikf1mMKz17Q4qKwA46U8a9Vm7AxSyGZ21OnzMvBGR4rhlaU+Ap
+ eW2y4d7RmM59inRS/ti1bUVE17iKI2QYTaoXQIiZWqt43XpbWz60K0IU6DSuDiyNbUC7Ie
+ cIYRM8AqmCC2pgnnm4CHjzIxbpjk8uBDKnY4lb3UjJfFh/P+FnuS1rTfIyliRO36G4KMc+
+ 1qyXJsYEXAqBV8UxRo5csaxTFj1wQmgJnrwNHcY2ufDJHv88Ktsx2twHXzgviPQtHRedPO
+ pXrsF3qCHU6Ual4AREoRahTgsezTbGTHwA1h9hbRxIY2O/Enczai14Itl0M3BzBGUh1+jc
+ lX+MQZIDg9ogOXz5ZKmwTwGFmLhSnPmZms14YraQrz2SQoQv+ehYLg==
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -152,499 +184,70 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-18.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Fri, 20 Nov 2026 at 18:23, Stanislav Fomichev <sdf.kernel@gmail.com> wrote:
->
-> On 11/19, Magnus Karlsson wrote:
-> > Add UDP Segmentation Offload (USO) to the AF_XDP Tx metadata interface
-> > and implement it for copy mode. An application submits one Ethernet
-> > frame holding a single IP and UDP header followed by the aggregate UDP
-> > payload, and the device emits a train of MTU-sized UDP datagrams.
-> >
-> > The uAPI adds the XDP_TXMD_FLAGS_USO flag and splits the reserved u32
-> > in the request part of struct xsk_tx_metadata into two u16 fields:
-> > gso_size, the UDP payload bytes per output datagram, and
-> > network_offset, the IP header offset. USO requires
-> > XDP_TXMD_FLAGS_CHECKSUM, with csum_start pointing at the UDP header,
-> > csum_offset at its checksum field and the checksum field seeded with
-> > the partial pseudoheader checksum of the aggregate packet. It cannot
-> > be combined with XDP_TXMD_FLAGS_TIMESTAMP or
-> > XDP_UMEM_TX_SW_CSUM. Launch time is supported and applies to the start
-> > of the segmented packet.
-> >
-> > The request is turned into a GSO skb of type SKB_GSO_UDP_L4. Before
-> > transmission, the headers are validated. The link layer is not parsed:
-> > the IP header starts at network_offset and its version selects
-> > unfragmented IPv4 or IPv6 without extension headers, followed by UDP.
-> > The IP and UDP lengths must describe the aggregate packet, every output
-> > datagram must fit the MTU, and the number of segments is limited to
-> > UDP_MAX_SEGMENTS. As skb drivers find L3 through the EtherType, the skb
-> > path also requires the EtherType, after any VLAN tags, to lead to the
-> > same IP header. A request that fits in one datagram is sent as an
-> > ordinary checksum offload request.
-> >
-> > network_offset is part of the uAPI because csum_start only locates L4,
-> > while segmentation also needs the start of L3: the device rewrites the
-> > IP header of every datagram and needs the L2 and L3 lengths, and on
-> > the skb path it becomes the network header. With it, the kernel does
-> > not need to understand the link layer, and the fields can be reused
-> > later. Any future tunnel segmentation extension to the uAPI could then
-> > treat network_offset as the outer L3 offset and csum_start as the
-> > inner L4 offset, adding only the outer L4 and inner L3 offsets.
-> >
-> > AF_XDP never segments these packets itself. A request that produces more
-> > than one datagram is rejected unless the bound device advertises
-> > NETIF_F_GSO_UDP_L4, and the GSO skb is passed to its driver unsegmented.
-> > As with UDP_SEGMENT sockets, how the segmentation is carried out is up
-> > to the driver. Stacked devices such as VLAN or bonding forward the
-> > packet to a lower device that may segment it in software.
-> >
-> > A new pool field, tx_uso_supported, records whether USO requests are
-> > accepted on a pool. It is set only for Ethernet devices (ARPHRD_ETHER)
-> > and is cleared when XDP_UMEM_TX_SW_CSUM is used.
-> >
-> > A USO request that fails validation is dropped: its buffers are
-> > completed and counted in tx_invalid_descs. Errors in other Tx metadata
-> > keep failing sendmsg() and leave the descriptor on the Tx ring, so the
-> > existing behaviour for non-USO requests is unchanged. A USO request
-> > that cannot be processed for lack of memory is also left on the Tx
-> > ring, and sendmsg() fails with -EAGAIN, unless part of it was already
-> > released to user space, either by an earlier call or while peeking
-> > further descriptors. That part may already have been reused, so the
-> > request is then dropped.
-> >
-> > The header validator works on a raw header copy instead of an skb, so
-> > that the zero-copy path in a later patch can reuse it. It lives in
-> > the new files net/xdp/xsk_tx_uso.c and include/net/xsk_tx_uso.h.
-> >
-> > Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
-> > ---
-> >  Documentation/networking/xsk-tx-metadata.rst |  91 +++++++++++++
-> >  MAINTAINERS                                  |   1 +
-> >  include/net/xdp_sock_drv.h                   |  12 ++
-> >  include/net/xsk_buff_pool.h                  |   4 +
-> >  include/net/xsk_tx_uso.h                     |  30 +++++
-> >  include/uapi/linux/if_xdp.h                  |  13 +-
-> >  net/xdp/Makefile                             |   1 +
-> >  net/xdp/xsk.c                                | 130 +++++++++++++++++--
-> >  net/xdp/xsk_buff_pool.c                      |   4 +
-> >  net/xdp/xsk_queue.h                          |   6 +
-> >  net/xdp/xsk_tx_uso.c                         |  77 +++++++++++
-> >  tools/include/uapi/linux/if_xdp.h            |  13 +-
-> >  12 files changed, 371 insertions(+), 11 deletions(-)
-> >  create mode 100644 include/net/xsk_tx_uso.h
-> >  create mode 100644 net/xdp/xsk_tx_uso.c
-> >
-> > diff --git a/Documentation/networking/xsk-tx-metadata.rst b/Documentation/networking/xsk-tx-metadata.rst
-> > index ac15e5fddc6b..41cfc5482b15 100644
-> > --- a/Documentation/networking/xsk-tx-metadata.rst
-> > +++ b/Documentation/networking/xsk-tx-metadata.rst
-> > @@ -55,6 +55,9 @@ The flags field enables the particular offload:
-> >    packet for transmission at a pre-determined time called launch time. The
-> >    value of launch time is indicated by ``request.launch_time`` field of
-> >    ``struct xsk_tx_metadata``.
-> > +- ``XDP_TXMD_FLAGS_USO``: requests UDP segmentation offload.
-> > +  ``request.gso_size`` specifies UDP payload bytes per output datagram;
-> > +  ``request.network_offset`` identifies the IP header.
-> >
-> >  Besides the flags above, in order to trigger the offloads, the first
-> >  packet's ``struct xdp_desc`` descriptor should set ``XDP_TX_METADATA``
-> > @@ -70,6 +73,69 @@ In this case, when running in ``XDP_COPY`` mode, the TX checksum
-> >  is calculated on the CPU. Do not enable this option in production because
-> >  it will negatively affect performance.
-> >
-> > +UDP Segmentation
-> > +================
-> > +
-> > +To request UDP segmentation offload (USO), bind the socket in
-> > +``XDP_COPY`` mode and set ``XDP_TXMD_FLAGS_USO | XDP_TXMD_FLAGS_CHECKSUM``
-> > +in the Tx metadata. Reserve at least 16 bytes of metadata and set
-> > +``XDP_TX_METADATA`` on the first descriptor of the packet.
-> > +
-> > +Submit an Ethernet frame containing one IP header, one UDP header, and the
-> > +aggregate UDP payload. Set ``request.network_offset`` to the IP header
-> > +offset, ``request.csum_start`` to the UDP header offset, and
-> > +``request.csum_offset`` to the UDP checksum field offset (6 bytes).
-> > +Header offsets are measured from the first descriptor's packet-data address,
-> > +excluding metadata. Set ``request.gso_size`` to the number of UDP payload
-> > +bytes per output datagram, excluding headers; the last datagram may be
-> > +shorter.
-> > +
-> > +USO is only available on Ethernet devices. ``request.network_offset``
-> > +locates the IP header, and its version selects IPv4 or IPv6. In copy mode,
-> > +the EtherType, after up to six VLAN tags, must lead to the same IP header,
-> > +since drivers rely on it. IPv4 headers may carry options but must not be
-> > +fragmented. In IPv6, the UDP header must directly follow the fixed header;
-> > +extension headers are not supported.
-> > +
-> > +The IP and UDP lengths must describe the aggregate packet. Initialize the
-> > +UDP checksum field with the partial pseudoheader checksum seed for that
-> > +packet. The device generates the per-datagram lengths and UDP checksums and,
-> > +for IPv4 segmentation, the IP header checksums. Supply a valid IPv4 header
-> > +checksum as well, since a request that fits in one datagram uses ordinary
-> > +checksum offload without segmentation.
-> > +
-> > +All headers through UDP must be in the first buffer. Multi-buffer packets
-> > +use ``XDP_USE_SG`` and ``XDP_PKT_CONTD``, with metadata only on the first
-> > +descriptor. Each output IP packet must fit the device MTU, and requests
-> > +remain subject to the device's segmentation limits. Query
-> > +``tx-udp-segmentation`` through ethtool to check whether skb UDP segmentation
-> > +offload is enabled.
-> > +
-> > +AF_XDP never segments the packet itself. In copy mode, a request that
-> > +produces more than one datagram is rejected unless the bound device
-> > +advertises UDP segmentation offload, and the packet is passed to its driver
-> > +unsegmented. A request that fits in one datagram does not need the offload,
-> > +so its success does not show that the device supports USO. As with
-> > +``UDP_SEGMENT`` sockets, how the segmentation is carried out is up to the
-> > +driver, which may build the per-datagram headers in software. Stacked
-> > +devices such as VLAN, bonding, or macvlan advertise UDP segmentation
-> > +regardless of the lower device and forward the packet through the lower
-> > +device's qdisc, where it is segmented in software if the lower device lacks
-> > +the offload.
-> > +
-> > +A USO request that is rejected is dropped: its buffers are returned
-> > +through the completion ring and counted in the socket's ``tx_invalid_descs``
-> > +statistic. This is the only indication of the failure, whatever its cause:
-> > +invalid metadata or headers, the MTU, segmentation limits, or a device
-> > +without the offload. A request that cannot be processed for lack of memory
-> > +is instead left on the Tx ring, and ``sendmsg()`` fails with ``EAGAIN``,
-> > +unless part of a multi-buffer request was already released to user space;
-> > +it is then dropped. Errors in other Tx metadata also fail ``sendmsg()`` and
-> > +leave the descriptor on the Tx ring.
-> > +
-> > +USO cannot be combined with ``XDP_UMEM_TX_SW_CSUM`` or
-> > +``XDP_TXMD_FLAGS_TIMESTAMP``.
-> > +
-> >  Launch Time
-> >  ===========
-> >
-> > @@ -127,6 +193,31 @@ cycle time is set to 1 second, the horizon of the launch time ranges
-> >  from 1 second to 2 seconds, depending on where the Qbv cycle is currently
-> >  running.
-> >
-> > +USO with launch time
-> > +====================
-> > +
-> > +Add ``XDP_TXMD_FLAGS_LAUNCH_TIME`` to the USO and checksum flags and set
-> > +``request.launch_time`` to schedule the segmented packet. This combination
-> > +requires at least 24 bytes of Tx metadata.
-> > +
-> > +The launch time applies to the start of the segmented packet: the first
-> > +output UDP datagram is scheduled, and subsequent datagrams follow according
-> > +to the device's scheduling rules. This does not request per-datagram pacing
-> > +or separate launch times.
-> > +
-> > +The skb path passes one unsegmented GSO skb and its launch time directly to
-> > +the bound device's driver, bypassing that device's qdisc, including ETF.
-> > +On stacked devices, the lower device's qdisc and software segmentation
-> > +may still apply, as described above. The driver and selected queue
-> > +must support UDP segmentation and launch time together. Separate support
-> > +for either offload does not establish support for their combination.
-> > +As with ordinary launch-time requests, drivers may ignore the time when
-> > +scheduling is disabled or unsupported. Acceptance or Tx completion alone
-> > +does not prove that a packet was transmitted at the requested time.
-> > +
-> > +The clock, queue configuration, and scheduling horizon requirements above
-> > +also apply to USO launch-time requests.
-> > +
-> >  Querying Device Capabilities
-> >  ============================
-> >
-> > diff --git a/MAINTAINERS b/MAINTAINERS
-> > index 40bb77cbc6b0..9b5f6f307d53 100644
-> > --- a/MAINTAINERS
-> > +++ b/MAINTAINERS
-> > @@ -30588,6 +30588,7 @@ F:    Documentation/networking/af_xdp.rst
-> >  F:   include/net/netns/xdp.h
-> >  F:   include/net/xdp_sock*
-> >  F:   include/net/xsk_buff_pool.h
-> > +F:   include/net/xsk_tx_uso.h
-> >  F:   include/uapi/linux/if_xdp.h
-> >  F:   include/uapi/linux/xdp_diag.h
-> >  F:   net/xdp/
-> > diff --git a/include/net/xdp_sock_drv.h b/include/net/xdp_sock_drv.h
-> > index a40ad3f90f13..6b5bb7b29f87 100644
-> > --- a/include/net/xdp_sock_drv.h
-> > +++ b/include/net/xdp_sock_drv.h
-> > @@ -263,6 +263,7 @@ xsk_buff_raw_get_ctx(const struct xsk_buff_pool *pool, u64 addr, u32 options)
-> >               XDP_TXMD_FLAGS_TIMESTAMP | \
-> >               XDP_TXMD_FLAGS_CHECKSUM | \
-> >               XDP_TXMD_FLAGS_LAUNCH_TIME | \
-> > +             XDP_TXMD_FLAGS_USO | \
-> >       0)
-> >
-> >  static inline bool
-> > @@ -270,6 +271,10 @@ xsk_buff_valid_tx_metadata(const struct xsk_buff_pool *pool,
-> >                          const struct xsk_tx_metadata *meta, u64 *flags)
-> >  {
-> >       *flags = READ_ONCE(meta->flags);
-> > +     if (*flags & XDP_TXMD_FLAGS_USO)
-> > +             if (!pool->tx_uso_supported || pool->tx_metadata_len <
-> > +                 offsetofend(struct xsk_tx_metadata, request.network_offset))
-> > +                     return false;
-> >       if (*flags & XDP_TXMD_FLAGS_LAUNCH_TIME)
-> >               if (pool->tx_metadata_len <
-> >                   offsetofend(struct xsk_tx_metadata, request.launch_time))
-> > @@ -277,6 +282,13 @@ xsk_buff_valid_tx_metadata(const struct xsk_buff_pool *pool,
-> >       return !(*flags & ~XDP_TXMD_FLAGS_VALID);
-> >  }
-> >
-> > +/* USO requires checksum offload and cannot report a Tx timestamp. */
-> > +static inline bool xsk_tx_uso_flags_valid(u64 flags)
-> > +{
-> > +     return (flags & XDP_TXMD_FLAGS_CHECKSUM) &&
-> > +            !(flags & XDP_TXMD_FLAGS_TIMESTAMP);
-> > +}
-> > +
-> >  /**
-> >   *  xsk_tx_metadata_request - Evaluate AF_XDP TX metadata at submission
-> >   *  and call appropriate xsk_tx_metadata_ops operation.
-> > diff --git a/include/net/xsk_buff_pool.h b/include/net/xsk_buff_pool.h
-> > index 02e89350faf9..ea2ff3680efa 100644
-> > --- a/include/net/xsk_buff_pool.h
-> > +++ b/include/net/xsk_buff_pool.h
-> > @@ -89,6 +89,10 @@ struct xsk_buff_pool {
-> >       bool uses_need_wakeup;
-> >       bool unaligned;
-> >       bool tx_sw_csum;
-> > +     /* USO requests accepted: Ethernet device without SW checksum, and
-> > +      * driver support in zero-copy mode. Set when the pool is bound.
-> > +      */
-> > +     bool tx_uso_supported;
-> >       void *addrs;
-> >       /* Mutual exclusion of the completion ring in the SKB mode.
-> >        * Protect: NAPI TX thread and sendmsg error paths in the SKB
-> > diff --git a/include/net/xsk_tx_uso.h b/include/net/xsk_tx_uso.h
-> > new file mode 100644
-> > index 000000000000..f23384077712
-> > --- /dev/null
-> > +++ b/include/net/xsk_tx_uso.h
-> > @@ -0,0 +1,30 @@
-> > +/* SPDX-License-Identifier: GPL-2.0 */
-> > +#ifndef _NET_XSK_TX_USO_H
-> > +#define _NET_XSK_TX_USO_H
-> > +
-> > +#include <linux/errno.h>
-> > +#include <linux/types.h>
-> > +#include <net/xsk_buff_pool.h>
-> > +
-> > +/* Header offsets are relative to the start of the supplied Ethernet frame. */
-> > +struct xsk_tx_uso_info {
-> > +     struct xsk_tx_metadata metadata;
-> > +     u32 len;
-> > +     u16 header_len;
-> > +     u16 gso_segs;
-> > +     __be16 protocol;
-> > +     u8 l4_protocol;
-> > +};
-> > +
-> > +#ifdef CONFIG_XDP_SOCKETS
-> > +int xsk_tx_uso_validate(const void *header, struct xsk_tx_uso_info *uso,
-> > +                     u32 mtu);
-> > +#else
-> > +static inline int
-> > +xsk_tx_uso_validate(const void *header, struct xsk_tx_uso_info *uso, u32 mtu)
-> > +{
-> > +     return -EOPNOTSUPP;
-> > +}
-> > +#endif
-> > +
-> > +#endif
-> > diff --git a/include/uapi/linux/if_xdp.h b/include/uapi/linux/if_xdp.h
-> > index 50d67df78911..0f7ba4859218 100644
-> > --- a/include/uapi/linux/if_xdp.h
-> > +++ b/include/uapi/linux/if_xdp.h
-> > @@ -134,6 +134,12 @@ struct xdp_options {
-> >   */
-> >  #define XDP_TXMD_FLAGS_LAUNCH_TIME           (1 << 2)
-> >
-> > +/* Request UDP segmentation offload in XDP_COPY mode. Requires CHECKSUM.
-> > + * Segment size and IP header offset are in request.
-> > + * With LAUNCH_TIME, scheduling applies to the start of the segmented packet.
-> > + */
-> > +#define XDP_TXMD_FLAGS_USO                   (1 << 3)
-> > +
-> >  /* AF_XDP offloads request. 'request' union member is consumed by the driver
-> >   * when the packet is being transmitted. 'completion' union member is
-> >   * filled by the driver when the transmit completion arrives.
-> > @@ -149,7 +155,12 @@ struct xsk_tx_metadata {
-> >                       __u16 csum_start;
-> >                       /* Offset from csum_start where checksum should be stored. */
-> >                       __u16 csum_offset;
-> > -                     __u32 reserved;
-> > +
-> > +                     /* XDP_TXMD_FLAGS_USO */
-> > +                     /* UDP payload bytes per output datagram. */
-> > +                     __u16 gso_size;
-> > +                     /* IP header offset from desc->addr. */
-> > +                     __u16 network_offset;
->
-> It is only a matter of time now until someone asks for TSO. I remember
-> there was strong opposition awhile ago, not sure the winds have changed..
-> So maybe we should at least make it more generic on the UAPI side
-> to keep the conversion open? Make it xSO, support passing protocol,
-> support only UDP for now.. And maybe gso_size is something we can
-> also rename? segment_size?
+On the HP ZBook 8 G2i 14 (Panther Lake, Intel I219 NIC [8086:57b3]),
+enabling K1 causes intermittent failures to enter S0ix during s2idle,
+despite CPU reaching package C10.
 
-Good idea. I do not think it will hurt to be future proof in this
-case, even if TSO support never materializes.
+Failed suspend reports:
+    intel_pmc_core INT33A1:00: CPU did not enter SLP_S0!!!
 
-> >
-> >                       /* XDP_TXMD_FLAGS_LAUNCH_TIME */
-> >                       /* Launch time in nanosecond against the PTP HW Clock */
-> > diff --git a/net/xdp/Makefile b/net/xdp/Makefile
-> > index 30cdc4315f42..b6109e0e5547 100644
-> > --- a/net/xdp/Makefile
-> > +++ b/net/xdp/Makefile
-> > @@ -1,4 +1,5 @@
-> >  # SPDX-License-Identifier: GPL-2.0-only
-> >  obj-$(CONFIG_XDP_SOCKETS) += xsk.o xdp_umem.o xsk_queue.o xskmap.o
-> >  obj-$(CONFIG_XDP_SOCKETS) += xsk_buff_pool.o
-> > +obj-$(CONFIG_XDP_SOCKETS) += xsk_tx_uso.o
-> >  obj-$(CONFIG_XDP_SOCKETS_DIAG) += xsk_diag.o
-> > diff --git a/net/xdp/xsk.c b/net/xdp/xsk.c
-> > index f22f9a2cdbbe..14be62b8de5f 100644
-> > --- a/net/xdp/xsk.c
-> > +++ b/net/xdp/xsk.c
-> > @@ -11,6 +11,8 @@
-> >
-> >  #define pr_fmt(fmt) "AF_XDP: %s: " fmt, __func__
-> >
-> > +#include <linux/if_arp.h>
-> > +#include <linux/if_vlan.h>
-> >  #include <linux/if_xdp.h>
-> >  #include <linux/init.h>
-> >  #include <linux/sched/mm.h>
-> > @@ -22,6 +24,7 @@
-> >  #include <linux/net.h>
-> >  #include <linux/netdevice.h>
-> >  #include <linux/rculist.h>
-> > +#include <linux/udp.h>
-> >  #include <linux/uio.h>
-> >  #include <linux/vmalloc.h>
-> >
-> > @@ -31,6 +34,7 @@
-> >  #include <net/netdev_lock.h>
-> >  #include <net/netdev_rx_queue.h>
-> >  #include <net/xdp.h>
-> > +#include <net/xsk_tx_uso.h>
-> >
-> >  #include "../core/dev.h"
-> >
-> > @@ -986,12 +990,62 @@ static void xsk_drop_skb(struct sk_buff *skb)
-> >       xs->skb = NULL;
-> >  }
-> >
-> > +static int xsk_skb_uso(struct sk_buff *skb)
-> > +{
-> > +     struct xsk_tx_uso_info uso = {
-> > +             .metadata.request = {
-> > +                     .gso_size = skb_shinfo(skb)->gso_size,
-> > +                     .csum_start = skb_transport_offset(skb),
-> > +                     .network_offset = skb_network_offset(skb),
-> > +             },
-> > +             .header_len = skb_transport_offset(skb) + sizeof(struct udphdr),
-> > +             .len = skb->len,
-> > +     };
-> > +     int depth, err;
-> > +
-> > +     /* Best effort: a bond or team device can change type while the pool
-> > +      * is bound, also after this check.
-> > +      */
-> > +     if (READ_ONCE(skb->dev->type) != ARPHRD_ETHER)
-> > +             return -EINVAL;
-> > +     if (!pskb_may_pull(skb, uso.header_len))
-> > +             return -ENOMEM;
-> > +
-> > +     err = xsk_tx_uso_validate(skb->data, &uso, READ_ONCE(skb->dev->mtu));
-> > +     if (err)
-> > +             return err;
-> > +
-> > +     skb_reset_mac_header(skb);
-> > +     skb->protocol = eth_hdr(skb)->h_proto;
-> > +     /* skb drivers find L3 through the EtherType and VLAN tags. Parse them
-> > +      * from the end of the Ethernet header, not from network_offset.
-> > +      */
-> > +     skb->mac_len = ETH_HLEN;
-> > +     if (__vlan_get_protocol(skb, skb->protocol, &depth) != uso.protocol ||
-> > +         depth != skb_network_offset(skb))
-> > +             return -EINVAL;
-> > +     skb_reset_mac_len(skb);
-> > +     if (uso.gso_segs == 1) {
-> > +             skb_gso_reset(skb);
-> > +             return 0;
-> > +     }
-> > +
-> > +     skb_shinfo(skb)->gso_segs = uso.gso_segs;
-> > +     if (netif_needs_gso(skb, netif_skb_features(skb)))
-> > +             return -EOPNOTSUPP;
-> > +
-> > +     return 0;
-> > +}
-> > +
-> > +/* A failed USO request returns -EOVERFLOW, so that the packet is dropped. Other
-> > + * metadata errors are returned to user space.
-> > + */
-> >  static int xsk_skb_metadata(struct sk_buff *skb, void *buffer,
-> >                           struct xdp_desc *desc, struct xsk_buff_pool *pool,
-> >                           u32 hr)
-> >  {
-> >       struct xsk_tx_metadata *meta = NULL;
-> > -     u16 csum_start, csum_offset;
-> > +     int err = -EINVAL;
-> >       u64 flags;
-> >
-> >       if (unlikely(pool->tx_metadata_len == 0))
-> > @@ -999,18 +1053,43 @@ static int xsk_skb_metadata(struct sk_buff *skb, void *buffer,
-> >
-> >       meta = buffer - pool->tx_metadata_len;
-> >       if (unlikely(!xsk_buff_valid_tx_metadata(pool, meta, &flags)))
-> > -             return -EINVAL;
-> > +             goto err;
-> > +
-> > +     if (flags & XDP_TXMD_FLAGS_USO) {
-> > +             u16 nhoff = READ_ONCE(meta->request.network_offset);
-> > +             u16 offset = READ_ONCE(meta->request.csum_offset);
-> > +             u16 thoff = READ_ONCE(meta->request.csum_start);
-> > +             u16 size = READ_ONCE(meta->request.gso_size);
-> > +
-> > +             if (!xsk_tx_uso_flags_valid(flags))
-> > +                     goto err;
-> > +             if (!size || size == GSO_BY_FRAGS ||
-> > +                 nhoff < ETH_HLEN || thoff < nhoff ||
-> > +                 thoff + sizeof(struct udphdr) > desc->len ||
-> > +                 offset != offsetof(struct udphdr, check) ||
-> > +                 hr + thoff >= U16_MAX)
-> > +                     goto err;
-> > +
-> > +             skb_set_network_header(skb, nhoff);
-> > +             skb_set_transport_header(skb, thoff);
-> > +             skb_shinfo(skb)->gso_size = size;
-> > +             skb_shinfo(skb)->gso_type = SKB_GSO_UDP_L4;
-> > +     }
-> >
-> >       if (flags & XDP_TXMD_FLAGS_CHECKSUM) {
-> > -             csum_start = READ_ONCE(meta->request.csum_start);
-> > -             csum_offset = READ_ONCE(meta->request.csum_offset);
-> > +             if (flags & XDP_TXMD_FLAGS_USO) {
->
-> [..]
->
-> > +                     skb->csum_start = skb_transport_offset(skb);
-> > +                     skb->csum_offset = offsetof(struct udphdr, check);
->
-> Why do we want this? Can we assume the user will do the right thing
-> if they set XDP_TXMD_FLAGS_CHECKSUM?
+Disabling K1 through the ethtool private flag restores reliable S0ix
+entry:
+    sudo ethtool --set-priv-flags eno1 disable-k1 on
 
-This is to avoid reading these variables twice from user-space. They
-might have changed in-between by some malicious user. The read from
-user-space can be found in the if-statement above this that is only
-executed for USO.
+An A/B/A test within a single boot, using 120-second suspend cycles,
+demonstrates the effectiveness:
+    disable-k1 on:   6/6 successful (~116-119 s in S0ix)
+    disable-k1 off:  1/4 successful (118, 0, 0, 0 s in S0ix)
+    disable-k1 on:   4/4 successful (~115-119 s in S0ix)
+
+This fix adds a DMI-specific exception to disable K1 by default on the
+system.
+
+Chia-Lin Kao reported a similar failure on a Dell system with the
+same NIC device ID.
+
+Cc: stable@vger.kernel.org
+Fixes: 578294b8b60d ("e1000e: Reconfigure PLL clock gate timeout and re-enable K1 on Meteor Lake")
+Link: https://lore.kernel.org/r/c4801ff7-7ff6-457e-b0a5-c2e633d35c59@shuye.dev
+Signed-off-by: Ye Shu <hello@shuye.dev>
+---
+ drivers/net/ethernet/intel/e1000e/netdev.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 6f85dab5c..060a9bcdf 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -74,6 +74,14 @@ static const struct dmi_system_id disable_k1_list[] = {
+ 			DMI_MATCH(DMI_PRODUCT_VERSION, "ThinkPad P14s Gen 5"),
+ 		},
+ 	},
++	{
++		.ident = "HP ZBook 8 G2i 14",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "HP"),
++			DMI_MATCH(DMI_PRODUCT_NAME,
++				  "HP ZBook 8 G2i 14 inch Mobile Workstation PC"),
++		},
++	},
+ 	{}
+ };
+ 
+
+---
+base-commit: af6737b9066832a2017c281159950ba92385ce00
+change-id: 20261122-e1000e-hp-zbook-k1-4e73304a8974
+
+Best regards,
+-- 
+Ye Shu <hello@shuye.dev>
+
