@@ -2,163 +2,247 @@ Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 008BA606A31E
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 23 Nov 2026 18:49:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 533AD606A31A
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 23 Nov 2026 19:04:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=SZ8/TlFi;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=rGS6m5//
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=wfwK5Vmy;
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=QkfcUM5y;
+	dkim=pass (1024-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=selector1 header.b=bqokImx9
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 008DE40478;
-	Mon, 23 Nov 2026 18:49:25 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 2E43B405B6;
+	Mon, 23 Nov 2026 19:04:46 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id OzozCkEMo2DI; Mon, 23 Nov 2026 18:49:24 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org EE83040631
+ id fFy1OOXaFnXg; Mon, 23 Nov 2026 19:04:44 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org E6B76405AC
 Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795459764;
-	b=ratFfMNe2Dk4xRDLOALdbrK7aaK9A8yOMmFL1sOYFW8vemUmO0KYlJKPUetdh1g+Epyk
-	 pEvZBe+ZujFS5ucS2zVfq3743pLLNDWRgp/GNWiSxI8K+O3qfgJPY078sZE85IcZDMneB
-	 0UbL5+hwHKGmB/1LznX1Gz1/Ikc/xTAdupVyz34QdXW4gGwpOA5M6EpKLFf6sz5uN5gsE
-	 C8svxNq3KnSmI8nR6O+GwByKBkY+i1sxDEHVN4F7WF548zKUFKo3VKGOdXXBqtZpl9xul
-	 pYGxTBspubSuNDUPwwBQpSez1Dg7ZG1dw7S2YXqJ7L+1g0RZ4cDUbrjVpzBs7NCAhFw==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795460684;
+	b=S7xorEawryurm57C4tjHxiz6WvXsQd7Bc3GLQD5o7fyG0fISfvFAnRcy+RKhINKVIoCM
+	 fnp2nuvRi14migS5oPvZJLu+PjkznHTFy4Ro9vJGfnvQY/qsJZS+8G9wI+S4uyve7JedC
+	 A9t7Imfm8YOJgptDlIR2KXlj6F8ehawM3FhzBmJEOnm7klueOLQzrmeputmnJX88ONycz
+	 yZ67d85ASkHvAZqzDxus2xWSUJ3hS0CclIRXQT2b53ll02Jy1ZRV/nczwBv/eVC+WR2KE
+	 o7cxMrVGjJ7SQlIhRpwMHFcsnUaVW8cg2KsFSoKjTFUNv+MMrloh7Ac/PzAdNfgOlnw==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795459764;
+	c=relaxed/relaxed; t=1795460684;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Message-ID:Subject:
-	 From:To:Cc:Date:In-Reply-To:References:Content-Type:
-	 Content-Transfer-Encoding:User-Agent:MIME-Version:X-BeenThere:
-	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=yuo3RMT5uLMlvZjj6lcxSmCTKfmm/IW4Uhs7jIPyUXI=;
-	b=FpoYL+DaVZ1IPukwkDySRy0Le3jR2+GIAi8ReHOTJVmHYl8nFnSnQ7eBH0wAMNoZZjSZ
-	 a3gE3BMz8II4XFLFUJ97FWWesfNhTbsrE8eBXh/OB9BNYGrnNQoLarXQaP/PyrW6TZ2tw
-	 nh0SRCpNSezX/+hFv7BDo25T9Csw2KDEx9kQTSkCqdPqkXS/Hb7U2/ZLv0yTo/zlIcRI0
-	 fnEkSoCKMvJzB/YKVfadC3f3M2nmw32UUgr4o502L6blnmf/iibqdV/oALC+TR+6W0X54
-	 yQxjoTbNLofFrDY15YUzPAPj+wamsWnKHyzW3X3v6uK5StiK16ilVTYBHP9wtVK158Q==
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
+	 DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-IronPort-AV:
+	 X-IronPort-AV:Received:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-ExtLoop1:
+	 X-IronPort-AV:Received:Received:Received:Received:DKIM-Signature:
+	 Received:Received:Message-ID:Date:User-Agent:Subject:To:CC:References:
+	 From:Content-Language:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:X-ClientProxiedBy:MIME-Version:
+	 X-MS-PublicTrafficType:X-MS-TrafficTypeDiagnostic:
+	 X-MS-Office365-Filtering-Correlation-Id:X-MS-Exchange-SenderADCheck:
+	 X-MS-Exchange-AntiSpam-Relay:X-Microsoft-Antispam:
+	 X-Microsoft-Antispam-Message-Info:X-Forefront-Antispam-Report:
+	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
+	 X-MS-Exchange-AntiSpam-MessageData-0:X-Exchange-RoutingPolicyChecked:
+	 X-MS-Exchange-CrossTenant-Network-Message-Id:
+	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
+	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
+	 X-MS-Exchange-CrossTenant-FromEntityHeader:
+	 X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
+	 X-MS-Exchange-CrossTenant-UserPrincipalName:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStamped:X-OriginatorOrg:
+	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
+	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
+	bh=GiixTGsozKKtrZUE2IQYfLTgVUIwhRTW5DxtWJSy0/g=;
+	b=R4JAd3yNV/HRiuy9HyEEX6eVLAOwxIEgb5+MWTzkOeflLnoTYJX84hak+9W/zQcLqEhn
+	 dmUJhY030GXEX5VkYJyhOYFV+9NUc/xQRUXtvh5OPY+NQD66/4qvm26j47ypOaWTQYzHY
+	 kgKzrGxmnBKRns1CuhZFj1jcvoHE0Ie/GCoUZ/aeLPt6tqFbEpgbH57Vj6FPnMxwWA9/a
+	 zu2UQsXwJqTWkgwXpWiVLMkfF8QC6hQUasLIfAHdbeQdtDokmo+p2K8C9yKDjxka3Kdm1
+	 R64Jv3g2qDcoTKlOy4rVM1bpgA2HiPYRAsIN4+qSg8ZBp/3AI1FThMJsjXJi+MKZ9Rg==
 ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1795459764;
-	bh=yuo3RMT5uLMlvZjj6lcxSmCTKfmm/IW4Uhs7jIPyUXI=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References:List-Id:
+	s=default; t=1795460684;
+	bh=GiixTGsozKKtrZUE2IQYfLTgVUIwhRTW5DxtWJSy0/g=;
+	h=Date:Subject:To:CC:References:From:In-Reply-To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=SZ8/TlFiyVxWhM98iXzSG2B1fEIGeuKuMIuzFdjs0TgrBMPHbypqNflDIiDSjahSz
-	 DkohwNaQz1+IdaHhYXy0f/5/cAZQtjsAp+BRqm3ZkPBIRbO25r7mCphGLU5Kkdzncf
-	 kHmeS/n9mclH3G1elvaRvgU/9RCZbPKzE1DHJwqn3fBEKieI+uAgMTGgwZIHkTsrdf
-	 PdrqUAli0NwbzrMe840EWVfYP3jHyAdkAaqekdYdpLN+B5Wd/iMcKGq/n18ofWeoME
-	 8DgHcoW/MDd461+fyvxQMaxmVVd9krtZ/NHsQKxtpc/VX6aswQ8Rzs5i8hbxTfwmqQ
-	 obpG/S5xNh9Nw==
+	b=wfwK5Vmye/nYK6ODbzbRoPoKFxtwrzL/caN4j92yhb2bI7OdhNBLu5gOqk/unfc65
+	 YkMxqxJJZQNSaYIOgx73J9+NxMpaBk4bXaxBTDt0jMwj5oz79jQ4VL1nX8PAlyQRX7
+	 XAVmLOMZhTlYswtDA+9mVeOooDSTVrqrLcR2vkCODWEbScsVqRHdiG6Cx35gX7S24K
+	 66qNwBcY9qV1DNpuG4hThcu3KC1n5KFeTyvEFkghDYfOgv4IbVK5j6D9CGVdXtSZrD
+	 d6QcBHn0axANSNMTde2hO5MPo07BE75btJbwGBAdA9IbJRkKwgD0Jw42LXWlT7ByXN
+	 40Id01pJGqcvA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id EE83040631;
-	Mon, 23 Nov 2026 18:49:23 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 2A3A722B
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Nov 2026 18:49:21 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id E6B76405AC;
+	Mon, 23 Nov 2026 19:04:43 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 750EF22B
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Nov 2026 19:04:42 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 1BAE3605B7
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Nov 2026 18:49:21 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 65C4880E3A
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Nov 2026 19:04:42 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id FDQ8ScMXwJAy for <intel-wired-lan@lists.osuosl.org>;
- Mon, 23 Nov 2026 18:49:20 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 3D197605F7
-Authentication-Results: smtp3.osuosl.org;
- arc=none smtp.remote-ip="2607:f8b0:4864:20::62e"
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::62e; helo=mail-pl1-x62e.google.com;
- envelope-from=alexander.duyck@gmail.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20260707 header.b=rGS6m5//
-Received: from mail-pl1-x62e.google.com (mail-pl1-x62e.google.com
- [IPv6:2607:f8b0:4864:20::62e])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 3D197605F7
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Nov 2026 18:49:19 +0000 (UTC)
-Received: by mail-pl1-x62e.google.com with SMTP id
- d9443c01a7336-2f05b465cd1so16270095ad.3
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Nov 2026 10:49:19 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20260707; t=1795459759; x=1796064559; darn=lists.osuosl.org;
- h=mime-version:user-agent:content-transfer-encoding:content-type
- :references:in-reply-to:date:cc:to:from:subject:message-id:from:to
- :cc:subject:date:message-id:reply-to:content-type;
- bh=yuo3RMT5uLMlvZjj6lcxSmCTKfmm/IW4Uhs7jIPyUXI=;
- b=rGS6m5//49e72Yw/d5tC888bPpswATgMNcRVMB+Fwnm2reCZ33VH9XkJQ2L07Utvrc
- +INOQcOR4m0yIP1jY1WWb+1gQ4dskdpQDzQhpGuuoxzrcm1gCpCCw6FxMQDcTJucGAgw
- +z1pAsr8eMl2Wrmu+XoQZ85OcXyJmFriPWECbz1CxcbRuQt+4r7ubWedYZjV/b5AZCOM
- MWhw+acWK876fbjHShK33tdh1M+WKlGgOhRvTvfK2Y694jJQLtDCwwwbE7SN5A9sXa3n
- CW505AKgBvhdzQkvax834Etw+yoIE9c7Ex5M/0zsirDDtnHK2NFix9dxne7f2t6QXf69
- LASQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1795459759; x=1796064559;
- h=mime-version:user-agent:content-transfer-encoding:content-type
- :references:in-reply-to:date:cc:to:from:subject:message-id:x-gm-gg
- :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
- :content-type;
- bh=yuo3RMT5uLMlvZjj6lcxSmCTKfmm/IW4Uhs7jIPyUXI=;
- b=sJGVP8FdWyeNJ7yJNrvCPSea9TRktsrxfB3ytKh7/giB8y7oxMNJQ3wQykSB1Z5g92
- C3bohoTN1A4UB62z6X4E3SyxOCpLkytYIETHbKc5a9n3czWXr8EN4lJlEtRDXphPBr3Z
- G7UfQVA1syWgWSsHV8nu1nfB7E+lqcaK9jRyXrVEQEhYVsg9o2XBEOeFp59QxH7r/IFY
- wFogffe6MqhtAf4+DfEi4GB8eblRnn3+zd+uHfl7XIiW/W+p6Anu88D4ejeR7ibeRAch
- s3Zo+05+DA/SX6JY4TFANtGSNB8Hzj8HvN+Xjc/p+pqFmBJZxDbp/dud6yJmnc8LW3Mv
- tipg==
-X-Forwarded-Encrypted: i=1;
- AL+hErFTDgXzC6cUEWPuEmLe7eYQtjh76cgb/PUj1LgL3AOdFYh+giRF1cUjrlLGBYmKhMrAGP/qkfz4zN5hsJjB+zA=@lists.osuosl.org
-X-Gm-Message-State: APuU4Z/nXl2XEDr+sbISVeXgUXDXRqGxTk3PBSL4OQO2S4Ft3hMgC7pR
- WdQB+vOw/pitKkl0OfyREyHakql3X5BdenV80sVdkAadcFpd0hEhqouo
-X-Gm-Gg: AZFdTZeYNCp7m45ymkl60eXXXlQBVPt8wOxQTKIQ4ZCc4H4OWzTO2/G1sGjGEagZQt1
- I9NnwejvuqrTupS6a1JGxZsx9cgiSHgjRdm/1XF0FicOHxrt+I67RW63gn/W7yFYwRG3sNBOdar
- FQZ7FXWmDDa73L7lSPk3jUHjpbgWbfqh/wAe4hrsNqADhQtSHR83CN/tm5koOhEylvBuOwNfxg9
- E+hw5nYMuYqnNiWsZFWjz8122yGseXtzm/i3gL3G8TQfSekALyih2SMKV4NhNutaquYjG4+Kaet
- FgdldR9fHzPdzsmiZ9VmhM/0Pgvc1EnKhMb8PCRlQAPDVkbK0stz6my9LDpa1zms1UpiiryA0pa
- RWO8oUNu+sc58UjYggKXLVyG98eSVB6fnD85Y0n9w6UAVkzC8n7pxxB3DWUFMrFu7bVHFsf7EfN
- 4COHU+Hmu1BE/yhquplS1rxMISiQUskn8unP32C9XadhzA8ejGjMWI8rcwegEC04vx8EdWLpv4B
- 6Wr/mtYIpp58OcCiS2DRVYZq7XzsI3j9ZIdcNz/alr4AlLwMzEoO4sapoDTwer+hs2ffpiAXG8H
- ZPEnBLlbh/bMWvbhVrR/aygl/gjQOE0EhpLXm9wtvEr80dmAOdA8YKXh4rSPQH5b9pf9qUqlnGY
- YA+zrdV0kaClJzXp5SsgaaBgUXDz37OkgXUmM/2WElOgW7rk8WPEiVCIX+2BUUJJ1W1U=
-X-Received: by 2002:a17:902:e80b:b0:2e9:9a19:c43 with SMTP id
- d9443c01a7336-2f03f118277mr119957685ad.15.1795459759098; 
- Mon, 23 Nov 2026 10:49:19 -0800 (PST)
-Received: from ?IPv6:2605:59c1:38c:400:82ee:73ff:fe41:9a02?
- ([2605:59c1:38c:400:82ee:73ff:fe41:9a02])
- by smtp.googlemail.com with ESMTPSA id
- d9443c01a7336-2f03f1207f1sm57374525ad.64.2026.11.23.10.49.17
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 23 Nov 2026 10:49:18 -0800 (PST)
-Message-ID: <3adef4b4d528780bae31f2fb02d0a08bf9c8ebd5.camel@gmail.com>
-Subject: Re: [PATCH net] ice: do not report CHECKSUM_COMPLETE when an XDP
- program is attached
-From: Alexander H Duyck <alexander.duyck@gmail.com>
-To: Tianyi Gao <tianyi@cloudflare.com>, netdev@vger.kernel.org, 
- intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Cc: Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller"
- <davem@davemloft.net>,  Eric Dumazet <edumazet@kernel.org>, Jakub Kicinski
- <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,  Simon Horman
- <horms@kernel.org>, Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann
- <daniel@iogearbox.net>,  Jesper Dangaard Brouer	 <hawk@kernel.org>, John
- Fastabend <john.fastabend@gmail.com>, Stanislav Fomichev <sdf@fomichev.me>,
- Paul Greenwalt <paul.greenwalt@intel.com>, Alice Michael	
- <alice.michael@intel.com>, Eric Joyner <eric.joyner@intel.com>, Jesse
- Brandeburg <jbrandeb@kernel.org>, Lorenzo Bianconi <lorenzo@kernel.org>,
- bpf@vger.kernel.org, 	kernel-team@cloudflare.com, tianyi.gao@linux.dev
-Date: Mon, 23 Nov 2026 10:49:17 -0800
-In-Reply-To: <20261121012402.84848-1-tianyi@cloudflare.com>
-References: <20261121012402.84848-1-tianyi@cloudflare.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.60.2 (3.60.2-1.fc44) 
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id TQtoa2SwiuBM for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 23 Nov 2026 19:04:41 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org B473880E29
+Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0
+ smtp.remote-ip=192.198.163.12
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.12;
+ helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
+ receiver=<UNKNOWN> 
+Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=QkfcUM5y; 
+ dkim=pass (1024-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=selector1 header.b=bqokImx9
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id B473880E29
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Nov 2026 19:04:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1795460681; x=1826996681;
+ h=message-id:date:subject:to:cc:references:from:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=T7U8ItOnULhNFZZbRb91nLGfISUwLWjZczPHC+dKvYE=;
+ b=QkfcUM5yhrWQEYctywA4lY7yFj1j/C1c1wsqihXYQ5Uw/FEu/oLYfrKA
+ haL3h4vFrJktmC+Krej2SH1rLxdva7AnQmz9zAmMc1fUsFKn0xtJJMRu2
+ meLkYUBXp5oCgMnDcHXxSjJMV/SDlsdVHk1qikB6fODLLTNbtHkGui0Di
+ uHXAdtbq1YAy/g6vJJAjaVN4cTaNmc0uGHWjfWmfoT4X39s/dqRekY5V6
+ BPRQ7j05EuBLmNIeV0eBRm8VtBlXAy13plY6jB9GmmMpxrZjX6sjG7ram
+ TYL+UBdTxqMmtZVqQtSg8PUYRQiqxcNy/OaMSyJ7CZQMtMko5Ezx92swf g==;
+X-CSE-ConnectionGUID: HZyJlHJRSEuquV6T6/Auzg==
+X-CSE-MsgGUID: 142fzfP3TyCQWHcXiVnG9A==
+X-IronPort-AV: E=McAfee;i="6800,10657,11975"; a="4157431"
+X-IronPort-AV: E=Sophos;i="6.27,229,1787036400"; 
+   d="scan'208";a="4157431"
+Received: from fmviesa011.fm.intel.com ([10.60.135.151])
+ by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 23 Nov 2026 11:04:39 -0800
+X-CSE-ConnectionGUID: s8Uj/2igSYWa/ToVdsibSw==
+X-CSE-MsgGUID: BrKOs//QTH6op7stziRECg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,229,1787036400"; d="scan'208";a="13158377"
+Received: from orsmsx902.amr.corp.intel.com ([10.22.229.24])
+ by fmviesa011.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 23 Nov 2026 11:04:40 -0800
+Received: from ORSMSX902.amr.corp.intel.com (10.22.229.24) by
+ ORSMSX902.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.57; Mon, 23 Nov 2026 11:04:38 -0800
+Received: from ORSEDG903.ED.cps.intel.com (10.7.248.13) by
+ ORSMSX902.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.57 via Frontend Transport; Mon, 23 Nov 2026 11:04:38 -0800
+Received: from PH7PR06CU001.outbound.protection.outlook.com (52.101.201.56) by
+ edgegateway.intel.com (134.134.137.113) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.56; Mon, 23 Nov 2026 11:04:38 -0800
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=intel.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=GiixTGsozKKtrZUE2IQYfLTgVUIwhRTW5DxtWJSy0/g=;
+ b=bqokImx9KeUfoGh0AI9yTmrm+o33Pfyj8FLtbWTO60A5wra1oeOke3vYtikiD3AxPKb6h6IBEkdgjlcn8/3fNK7jFHawpprUz7IDHhK375hmlxOqUHj1mmViKEmhq9rs2TJMM2H4kLfZkehKWX2Sh29Gythn4dm/x4PiZBfEbBg=
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Received: from SJ2PR11MB8451.namprd11.prod.outlook.com (2603:10b6:a03:56e::20)
+ by SJ0PR11MB5197.namprd11.prod.outlook.com (2603:10b6:a03:2d1::24)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.639.14; Mon, 23 Nov
+ 2026 19:04:36 +0000
+Received: from SJ2PR11MB8451.namprd11.prod.outlook.com
+ ([fe80::7d5f:b2ba:92d4:5f3c]) by SJ2PR11MB8451.namprd11.prod.outlook.com
+ ([fe80::7d5f:b2ba:92d4:5f3c%4]) with mapi id 15.21.0639.011; Mon, 23 Nov 2026
+ 19:04:36 +0000
+Message-ID: <7864ad35-402b-4ae8-b470-ac6e9a81ac8e@intel.com>
+Date: Mon, 23 Nov 2026 11:04:34 -0800
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH iwl-net] ice: fix stale cached PHC time after a time step
+To: "Korba, Przemyslaw" <przemyslaw.korba@intel.com>
+CC: "Loktionov, Aleksandr" <aleksandr.loktionov@intel.com>, "Nguyen, Anthony
+ L" <anthony.l.nguyen@intel.com>, "Kubalewski, Arkadiusz"
+ <arkadiusz.kubalewski@intel.com>, "intel-wired-lan@lists.osuosl.org"
+ <intel-wired-lan@lists.osuosl.org>, "Ilichev, Konstantin"
+ <konstantin.ilichev@intel.com>, "Olech, Milena" <milena.olech@intel.com>,
+ "Kitszel, Przemyslaw" <przemyslaw.kitszel@intel.com>
+References: <20261112102301.342584-2-przemyslaw.korba@intel.com>
+ <6fa3928e-90f2-42d3-86c6-ddc5492b51ea@intel.com>
+ <PH0PR11MB4904B8854B7457816C72D4A894452@PH0PR11MB4904.namprd11.prod.outlook.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Content-Language: en-US
+In-Reply-To: <PH0PR11MB4904B8854B7457816C72D4A894452@PH0PR11MB4904.namprd11.prod.outlook.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: MW4P221CA0024.NAMP221.PROD.OUTLOOK.COM
+ (2603:10b6:303:8b::29) To SJ2PR11MB8451.namprd11.prod.outlook.com
+ (2603:10b6:a03:56e::20)
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SJ2PR11MB8451:EE_|SJ0PR11MB5197:EE_
+X-MS-Office365-Filtering-Correlation-Id: 9e376612-85cd-445a-618b-08df49949dcb
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+ ARA:13230040|366016|23010399003|1800799024|376014|10067099003|5023799004|11063799006|4143699003|261026121527099003|261026140227099003|261022105027099003|261022075727099003|261021123027099003|261028144727099003|261021121427099003|261102123227099003|56012099006|261009223027099003|22082099003|18002099003;
+X-Microsoft-Antispam-Message-Info: j3NmvrL8ajG5RmUOgy9e9+4P9mjHijNSUbkYwgJYEvfgdpC4hNCY/zyRNoPj0voDW/H2OaZBjaqosT41z6GHLXP/tdaMsUMqIiE5CZ4W3Y1zQ60GXMbTQh35ZZwKbDq0ESxM42MV4fOz+GuOrGteLSyhjNczRxZiCxnRE6JVF4O95u5B0A3GYcJVPzAwIg9d2lJAjELrfzBESKhCD2eRplqE+x3ZsAtZvsTyDPVrW57tEjL5uwlNNpLQC42XIJEaJfOk+I8GdqQL3zeKPcqrqZrWq3/RA2L5nclE5vze+5bcwUEIyRktS9QhqjVtJP41Dq0oTPv5kpEINmttHyHbCVxszZ7dyoRePD50vgwxsQXrtJKO9xZBruOOrT/P3QmlS7HGdN3OMVdbywLk+iVPM+3gG2tNbtKiI5jQAnToxssYSieo32Dh4iO3Jx0rGOBdlSFEpiQjQ1Dw1jgho2PCcIRtdS4S+JdRomGmp+xdlVO3jdhuxWfv2GDbC0TUUrj8yU5GDyfFlPHgzWs7rNuxhgKIIoU/0UFEpb18TjHshbl7LqiEKmh51xV8uICgrI4MObUWxXhZ2eMyo3IXwMqyD7Ll3sPHpU4cEWBrpBH9JV0wWgOeGcfwjrf71s8+PKoB8vzc6X+p8IEEOcdkeVi/IPv6hxYNsYMped+wpruZtOU=
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:SJ2PR11MB8451.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230040)(366016)(23010399003)(1800799024)(376014)(10067099003)(5023799004)(11063799006)(4143699003)(261026121527099003)(261026140227099003)(261022105027099003)(261022075727099003)(261021123027099003)(261028144727099003)(261021121427099003)(261102123227099003)(56012099006)(261009223027099003)(22082099003)(18002099003);
+ DIR:OUT; SFP:1101; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?cXo0RzhUYjZmLzNGcHlnNFRkVmg0ci9SSSswekdaS2ptQjhHQUNaMmNZaFNu?=
+ =?utf-8?B?dmxMNEZSODJVVVhqendNRWRxRGc1enJubzNTWVQ1WjVqT0R1MmFCS1ovZVVz?=
+ =?utf-8?B?c010cUQxdFZvUDg2czFVT04zdVo4TE1xdkZtckZvYTZnMzFhL1MxNWYzRHhH?=
+ =?utf-8?B?alV2T0dnendUdHdndW9DT280V0g5bFl6VkZQdVdrZkpqV3N5R1N6cjhSbHFn?=
+ =?utf-8?B?anBRR2gvdnhGbWxMSVlPYlZxZ3FmeWxJNW50MFVtcTFjem9vUFVPaWx1NGl2?=
+ =?utf-8?B?VHVRa1R4ZjMxakhlVWE4T2hEQTUrS3NVYVl4dnZ6NEc1Y1VsMUUxNGxFb0Iw?=
+ =?utf-8?B?ZmFVQm9kb1VHblIza2xieDRHZUpScmZaS2gxamY0cUcrUHZRTUpIaDJkbTEr?=
+ =?utf-8?B?WXpPZlUrbksxQW9QZ2wwaDJOeGxDR2liNlQvUllnc2Q1SG1KdS9MZmU5RzBP?=
+ =?utf-8?B?bElQWGtpMDdRT1FqTmdwSWFuVGNjZXl6WFJYSC9WTncxMXBPcTBpak5rYUFY?=
+ =?utf-8?B?bTNGT0RORGkveXBUeU9MV1k5cHlQSG10Wm1pNkt4alErdHBUZjdlYmhJcXA4?=
+ =?utf-8?B?UVhGS3pSekl4YjkzeWtmYUF3TmRlZzV4SVBNUGRZMWVWR1FkQzd6RXVxeWUw?=
+ =?utf-8?B?TWJFeUUrakRTS0kvTW5hNkJyWjdKZVlWRHpub1RnUHdYZUNsczRZRTJrZEVt?=
+ =?utf-8?B?QzVFQTJMbzFBVkd1NFNZTnR0Qk9nNkhYNkJaKzdJcURGcExSTHJ1VlBMUnV2?=
+ =?utf-8?B?RkNZeFRIeUMyQnhWa2F3b2phV0E1UXBheU9XYkVORHJwZjFzTVNhVkMwQkNC?=
+ =?utf-8?B?SDJoWFlYazZ0Wjdqellidk8zOU5Sd21QTW14NnY4a09ieVVJOXpjMVJ4YkNW?=
+ =?utf-8?B?OUlXdEF4cmtEVFZOTWp1dUJSOWozNjBvcGhTRGVXL2NKSTBYUVNyL0dla0h2?=
+ =?utf-8?B?MGRxZThRVVF2L0U3TlNpUHpxVG93QXhqUHR1eCtnWHBOTWtaM2VUbTNSamZQ?=
+ =?utf-8?B?dVhVc2c1RkV0N2FmdktqVUIyeVJ4OXpmbkVXNjg3d2l5SmZoVVlnVGxTa3BZ?=
+ =?utf-8?B?bGQrdWhLWXAxME1YeWxBYVRZY0JwWXQzU2E4VDJKSzFkWjdkam0rTW9CNUxE?=
+ =?utf-8?B?Z0pPenBUQVkvVmdIQ29aMEZIVEdzb3hVQm56cTQ2VW12YXFBYjllSFZNaWdW?=
+ =?utf-8?B?eGY5UjFlaWFUdmMvbmt5SitVSHltayt4VEpGcHJqZDN5bDN2bHgvNTkxQnZS?=
+ =?utf-8?B?SU9nZEw4cVdrOUJ2bFEyWlgxS0syaXRldU5mZ0d5ckJUZHFabU9palpsVDhR?=
+ =?utf-8?B?WnRCOWgwcFVxRFZ6QXRPUFlnazIvZTR3YkdpOHd0dk5mVXRxeTFvYm8wd2d3?=
+ =?utf-8?B?UFNDRTVuMzZ4VldpUWNFSFVtZDQxdzJyRHkvZGNFcVZtZ0pjejNKWnhYTVZY?=
+ =?utf-8?B?cjlrK3dKNVJyeXhyUjZiTlU1cy9ZMk9PeU5qMzc1N0VJRzZnZm5yaXBFcDJx?=
+ =?utf-8?B?UTV1bi9BTkR5cmxjOTQrblVnV0pMempUcmRud1pid3lzS2lISTE1TXFwaGdp?=
+ =?utf-8?B?L0k1TVZ3dFJJRm5iWTduU3FzL2R4citOTkZUWUhPMmwzZm9HNFdBOGZKakM3?=
+ =?utf-8?B?Ni9MUi9BTFhOb1RtczdpSFlKU3NrV3NiQjA3YUxnem5TcXIrdjNDQ3k2dUtE?=
+ =?utf-8?B?d0JEd0hzUlhSby9OWng2VEE4c1RjZXMzOGQzM0x3RDJ3aG9lZktEYlE1bmtZ?=
+ =?utf-8?B?eDcxWGJrNXYzU2Jxek5xTEFlZ2I5ZEpLc2IzVk53NDJreWloNDRubU9seVNY?=
+ =?utf-8?B?U3NNelZFeDdhaU42QmVlT29ldEZlbVlxblBtK0FjcS9KRG1SUDFpSDVkMWlQ?=
+ =?utf-8?B?VkZRTzF0UWZCblZWZDF6ckJkeUpCNkQwYVppSGRVSFpuNGF3bTZSUGNUZFZa?=
+ =?utf-8?B?N2tkNmMzeGJZVTZVK0RNS25kdmRUUmNQNEdGUXZVMUo2Z1VvdlM4N05mVjl4?=
+ =?utf-8?B?d0V2UTNBeHRkeTYwTUs4bEMzemJUQkc2QlV5eDNyYTBESTdwNXdjTnd1UXQw?=
+ =?utf-8?B?eUc5Ni9nVE4yblRxTklZTHVhT2tzcG5KakFMUExacUt3MDMrWktvVWs2d1oy?=
+ =?utf-8?B?YVJWVlNjaHFEdU9DTzBDa01nTExSVCtscmVKa2h3QkIwQUR4eW5YTjFIZDdV?=
+ =?utf-8?B?YmpZaU04d1M1aSs5VmI2UTZsUUhKZFJRNEIvMFBIdFB2VEFHMlhrbXRYYmd4?=
+ =?utf-8?B?cjYxR0JDbnA3eUZaSURuK2o3VTZ1aVZjeE9nT1Zjdy9vZ09wL2pRVlE1bnZM?=
+ =?utf-8?B?Y2swd3pDRGhpVFZvNG5nRm5EVEVwY0xxMjBXSWVUaXRqVWw3Q2FHRS9LeVFh?=
+ =?utf-8?Q?6J6GEbw3RSdAQ4Zo=3D?=
+X-Exchange-RoutingPolicyChecked: mDL8SZb2E17xpRAEEbA+hnX0GZFYusPM21SFlLiP7NsGdgcg+WJNwTu+Ob06HSGOTDhv/2YMfhrXVAIKjA2yy3uOPBjDfZZuj0EGOVrfTpTmB6Y8QJTJ//EGjWKc0U1tTS5/MPnoYXE230YlCDZYpPx6cy5fq8TZRnszOkJh7ZwVMohvMGXP2UmdqK7ZIXBVu9UpA6F3h8MS6ecxQxf9rHnjqIkU/sYSgbpRbVd7bDTk4uHG3HZOAux3pzA8SxjBYdjKIN5WnM0PuVL8PrJOnaoGikpiRiVEQVkK8JLL+PUkHafLXJE+qgve/gIu/ZDCeGdRG8nRotLho0Hoekw1vw==
+X-MS-Exchange-CrossTenant-Network-Message-Id: 9e376612-85cd-445a-618b-08df49949dcb
+X-MS-Exchange-CrossTenant-AuthSource: SJ2PR11MB8451.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Nov 2026 19:04:36.4173 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: GSGEz47M4bu3fS2/1IegnuBILm0sFJ582JMCuTyEaV8iV9dzseANP+w4zH6M6eCaX3Jwe61ilA2YQ+ygQ96nwxbdp8H7YLCOy696CRuCei0=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR11MB5197
+X-OriginatorOrg: intel.com
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -169,103 +253,171 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-12.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS autolearn=unavailable
+X-Spam-Status: No, score=-17.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,USER_AGENT_SANE_1 autolearn=ham
 	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Sat, 2026-11-21 at 01:24 +0000, Tianyi Gao wrote:
-> On E830, ice reports CHECKSUM_COMPLETE with the generic checksum (GCS)
-> that the hardware computes over the received frame. If an XDP program
-> changes the packet and returns XDP_PASS, that checksum no longer
-> matches. The stack then checks the packet again in software and calls
-> netdev_rx_csum_fault().
->=20
-> On Cloudflare servers, an XDP load balancer removes the encapsulation
-> of the packets that it accepts locally. Our production traffic hits
-> netdev_rx_csum_fault() all the time.
->=20
-> Do not use GCS when the ring has an XDP program, as mlx5 has done since
-> commit 5d0bb3bac4b9 ("net/mlx5e: XDP, Avoid checksum complete when XDP
-> prog is loaded").
->=20
-> E830 also sets the L3L4P and checksum error bits, so the packet gets
-> CHECKSUM_UNNECESSARY or CHECKSUM_NONE, as on E810. For example, a zero
-> UDP checksum over IPv6 is marked as bad and gets CHECKSUM_NONE. A zero
-> UDP checksum over IPv4 gets CHECKSUM_UNNECESSARY.
->=20
-> Two pending series [1][2] give XDP access to the checksum status.
-> Neither of them supports CHECKSUM_COMPLETE.
->=20
-> ice_rx_csum() reads rx_ring->xdp_prog again after the poll loop ran XDP.
-> While ICE_VSI_REBUILD_PENDING is set, ice_xdp_setup_prog() can replace
-> the program without stopping NAPI, so the two reads can differ. At
-> worst, a packet in that poll gets CHECKSUM_COMPLETE as before this
-> patch. The pointer is only compared with NULL, so this cannot crash.
->=20
-> Link: https://lore.kernel.org/all/20260715-bpf-xdp-meta-rxcksum-v5-0-623d=
-5c0d0ab7@kernel.org/ [1]
-> Link: https://lore.kernel.org/all/cover.1794281983.git.tianyi@cloudflare.=
-com/ [2]
-> Fixes: 905d1a220e8d ("ice: Add E830 checksum offload support")
-> Suggested-by: Jesse Brandeburg <jbrandeb@kernel.org>
-> Signed-off-by: Tianyi Gao <tianyi@cloudflare.com>
-> ---
-> Tested on an E830 (8086:12d2, board N31483-007, fw.mgmt 7.9.5, DDP ICE
-> COMMS 1.3.63.0) with an XDP program that removes a UDP encapsulation
-> header with bpf_xdp_adjust_head() and returns XDP_PASS. The kernel was
-> based on 6.18.64, where ice_rx_csum() is the same as in net:
->=20
-> - Before: 63322069 netdev_rx_csum_fault() calls in 30 s.
-> - After: 0.
-> - Without an XDP program, the port still reports CHECKSUM_COMPLETE.
->=20
-> On an E810, which has no GCS, drivers/net/xdp.py, ping.py and
-> hw/csum.py give the same results with and without this patch.
->=20
-> Request for comment: I also prepared a drv-net selftest for net-next.
-> It removes 16 bytes from the UDP payload with bpf_xdp_adjust_head()
-> and fails if the packet reaches the stack with CHECKSUM_COMPLETE. I am
-> not sure we want to enforce this for all NICs, so asking here.
->=20
->  drivers/net/ethernet/intel/ice/ice_txrx_lib.c | 1 +
->  1 file changed, 1 insertion(+)
->=20
-> diff --git a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c b/drivers/net/=
-ethernet/intel/ice/ice_txrx_lib.c
-> index e695a664e53d..ad22d855436e 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
-> @@ -123,6 +123,7 @@ ice_rx_csum(struct ice_rx_ring *ring, struct sk_buff =
-*skb,
->  	rx_status1 =3D le16_to_cpu(rx_desc->wb.status_error1);
-> =20
->  	if ((ring->flags & ICE_RX_FLAGS_RING_GCS) &&
-> +	    !READ_ONCE(ring->xdp_prog) &&
->  	    rx_desc->wb.rxdid =3D=3D ICE_RXDID_FLEX_NIC &&
->  	    (decoded.inner_prot =3D=3D LIBETH_RX_PT_INNER_TCP ||
->  	     decoded.inner_prot =3D=3D LIBETH_RX_PT_INNER_UDP ||
->=20
-> base-commit: 92e97d7cffc7ec6adfa4699203c18b1ab0c8b314
+On 11/23/2026 2:25 AM, Korba, Przemyslaw wrote:
+> 
+> 
+> 
+>> -----Original Message-----
+>> From: Keller, Jacob E <jacob.e.keller@intel.com>
+>> Sent: Saturday, November 21, 2026 12:21 AM
+>> To: Korba, Przemyslaw <przemyslaw.korba@intel.com>
+>> Cc: Loktionov, Aleksandr <aleksandr.loktionov@intel.com>; Nguyen, Anthony L <anthony.l.nguyen@intel.com>; Kubalewski, Arkadiusz
+>> <arkadiusz.kubalewski@intel.com>; intel-wired-lan@lists.osuosl.org; Ilichev, Konstantin <konstantin.ilichev@intel.com>; Olech, Milena
+>> <milena.olech@intel.com>; Kitszel, Przemyslaw <przemyslaw.kitszel@intel.com>
+>> Subject: Re: [PATCH iwl-net] ice: fix stale cached PHC time after a time step
+>>
+>> Przemyslaw Korba said:> ice_ptp_update_cached_phctime() reads the PHC
+>> and then stores the value
+>>> in the cached time that is used to extend Tx and Rx timestamps. It is
+>>> called both from the periodic work and, after the PHC time is changed,
+>>> from the settime/adjtime paths.
+>>>
+>>> Nothing orders these refreshes. The periodic work can read the PHC just
+>>> before software changes its time, be delayed, and then store its reading
+>>> after the refresh that follows the change. The cache then holds the old
+>>> time until the next periodic update, up to 500 ms later. Timestamps
+>>> extended in that window keep the correct low 32 bits but take the upper
+>>> bits from the old time, so they are off by a multiple of 2^32 ns. Two
+>>> concurrent time changes can race in the same way.
+>>>
+>>> For a follower that steps a large initial offset this makes ptp4l see
+>>> the offset remain unchanged after the step, followed by a clockcheck
+>>> failure and a second UNCALIBRATED transition:
+>>>
+>>>   port 1: UNCALIBRATED to SLAVE on MASTER_CLOCK_SELECTED
+>>>   clockcheck: clock jumped forward or running faster than expected!
+>>>   port 1: SLAVE to UNCALIBRATED on SYNCHRONIZATION_FAULT
+>>>   port 1: UNCALIBRATED to SLAVE on MASTER_CLOCK_SELECTED
+>>>
+>>> In the failing case the offset after the step was exactly 5867 * 2^32 ns
+>>> plus noise, i.e. only the low 32 bits of the time were right.
+>>>
+>>> Hold a spinlock across both the PHC read and the store of the cached
+>>> time. Whichever refresh reads the PHC last then also stores last, so an
+>>> older reading can never overwrite a newer one. The lock is only held for
+>>> the register read and is taken before the GLTSYN_TIME lock that
+>>> ice_ptp_read_src_clk_reg() takes, which is never held while taking it.
+>>>
+>>> Steps to reproduce:
+>>> 1. Create QinQ (802.1ad outer, 802.1Q inner) VLANs on two directly
+>>>    connected E810 ports.
+>>> 2. Run a PTP leader on one side and ptp4l -s on the other, with the
+>>>    follower PHC about 7 hours behind the leader, and run iperf3 on the
+>>>    VLAN.
+>>> 3. Restart the follower repeatedly.
+>>>
+>>> This is not reliably reproducible, as it depends on the periodic work
+>>> overlapping the step. With a 200 ms delay added between the PHC read and
+>>> the store, 3 of 20 runs show the second UNCALIBRATED transition and
+>>> SYNCHRONIZATION_FAULT without this change.
+>>>
+>>> With a random delay of up to 100 ms added at the same place, and 4
+>>> parallel "phc_ctl adj 1" loops running for 20 seconds, the stored value
+>>> went backwards 579 times in 1509 stores without this change, and 0
+>>> times in 399 stores with it.
+>>>
+>>> Tested on E810-C.
+>>>
+>>> Fixes: 77a781155a65 ("ice: enable receive hardware timestamping")
+>>> Reviewed-by: Milena Olech <milena.olech@intel.com>
+>>> Signed-off-by: Przemyslaw Korba <przemyslaw.korba@intel.com>
+>>> ---
+>>>  drivers/net/ethernet/intel/ice/ice_adapter.c | 1 +
+>>>  drivers/net/ethernet/intel/ice/ice_adapter.h | 4 ++++
+>>>  drivers/net/ethernet/intel/ice/ice_ptp.c     | 9 +++++++++
+>>>  3 files changed, 14 insertions(+)
+>>>
+>>> diff --git a/drivers/net/ethernet/intel/ice/ice_adapter.c b/drivers/net/ethernet/intel/ice/ice_adapter.c
+>>> index 207e4fe97be7..9874380b642d 100644
+>>> --- a/drivers/net/ethernet/intel/ice/ice_adapter.c
+>>> +++ b/drivers/net/ethernet/intel/ice/ice_adapter.c
+>>> @@ -91,6 +91,7 @@ static struct ice_adapter *ice_adapter_new(struct pci_dev *pdev)
+>>>  	timecounter_init(&adapter->phc.tc, &adapter->phc.cc, 0);
+>>>
+>>>  	seqlock_init(&adapter->phc.tc_lock);
+>>> +	spin_lock_init(&adapter->phc.cache_lock);
+>>>
+>>
+>> I think v4 of my timecounter series fixes this because each update is
+>> protected by the phc->lock.
+>>
+>> The periodic update takes that lock in ice_ptp_update_cached_phctime,
+>> and readers get a consistent view because of the write_seqcount_latch.
+>>
+>> The updates to the cached time only ever happen under the phc->lock
+>> mutex and the read for the time to save also happens under lock. Thus, I
+>> think this patch should not be needed with that timecounter series.
+>>
+>> Do you agree?
+>>
+> 
+> Yeah, I agree. one caveat though - your series targets iwl-next, I think we'd need this
+> stale cached PHC time fix backported, no?
+> 
 
-I'm not sure this is the best fix for this. If we are needing all NICs
-that support CHECKSUM_COMPLETE *and* XDP to report CHECKSUM_NONE in the
-event of a frame being modified by XDP it really feels like we should
-probably look at moving this further up the stack.
+Fair. The problem is that other fixes we have for PTP landed on next as
+well, and the main target customer I have is going to take the tree that
+has all the fixes. Timecounter is a bit too big to backport.
 
-Otherwise the proper fix for this is probably going to need to be
-spread out to far more drivers as I suspect the intersection of the two
-is likely not that uncommon.
+I'm ok with backporting this fix, but it will probably cause
+complication on merging because we'll want to drop the unnecessary extra
+lock once we have the timecounter fix :\
 
-Also even if we go the multiple driver fix route I wonder if we
-shouldn't look at adding a new XDP return type to indicate that we are
-passing a modified frame so that we don't have every XDP program out
-there forcing NICs into a state where they have to start turning off
-various offloads across the board when they don't need to.
+>>>  	return adapter;
+>>>  }
+>>> diff --git a/drivers/net/ethernet/intel/ice/ice_adapter.h b/drivers/net/ethernet/intel/ice/ice_adapter.h
+>>> index d8da68e73177..45c82f8d7f43 100644
+>>> --- a/drivers/net/ethernet/intel/ice/ice_adapter.h
+>>> +++ b/drivers/net/ethernet/intel/ice/ice_adapter.h
+>>> @@ -51,6 +51,8 @@ struct ice_port_list {
+>>>   *
+>>>   * Legacy timestamp extension fields:
+>>>   * @cached_time: Cached copy of the PHC time for timestamp extension
+>>> + * @cache_lock: Serializes reading the PHC and updating @cached_time, so that
+>>> + *              an older reading can never overwrite a newer one
+>>>   *
+>>>   * struct timecounter fields:
+>>>   * @tc: timecounter representing the current time
+>>> @@ -64,6 +66,8 @@ struct ice_port_list {
+>>>  struct ice_phc {
+>>>  	/* Legacy timestamp extension fields */
+>>>  	u64 cached_time;
+>>> +	/* Protects reading the PHC for, and updating, cached_time */
+>>> +	spinlock_t cache_lock;
+>>>
+>>>  	/* struct timecounter fields */
+>>>  	struct timecounter tc;
+>>> diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
+>>> index 488db8298059..1486a6fc35f5 100644
+>>> --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
+>>> +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+>>> @@ -1079,6 +1079,15 @@ static void ice_ptp_update_cached_phctime(struct ice_pf *pf)
+>>>  		u64 systime;
+>>>  		int err;
+>>>
+>>> +		/* The periodic work and the time set/adjust paths all refresh
+>>> +		 * the cache. Hold the lock across both the PHC read and the
+>>> +		 * store, so that whichever refresh reads the PHC last is also
+>>> +		 * the one that stores last. Otherwise, a reading taken before
+>>> +		 * a time change can overwrite a newer one and leave timestamps
+>>> +		 * extended against the old time until the next update.
+>>> +		 */
+>>> +		guard(spinlock)(&phc->cache_lock);
+>>> +
+>>>  		err = ice_ptp_read_src_clk_reg(pf, NULL, &systime);
+>>>  		if (err) {
+>>>  			/* The source clock is gone, so the cache can no
+>>>
+>>> base-commit: 34a70a40c954fb8044ecd124840a2c38cd3aa4cc
+>>> --
+>>> 2.43.0
+>>>
 
-What we are going to end up with this current path is one group of XDP
-programs dragging down the performance of others since they will take
-the penalty for the ones that are making the dirty modifications.
