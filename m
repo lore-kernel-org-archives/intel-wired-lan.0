@@ -2,178 +2,238 @@ Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 71886606A31A
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 23 Nov 2026 08:58:42 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0CF7D606A32C
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 23 Nov 2026 09:04:24 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=n67h/38I;
-	dkim=pass (2048-bit key, unprotected) header.d=shuye.dev header.i=@shuye.dev header.a=rsa-sha256 header.s=sig1 header.b=vpSzqAyK
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=mtCfrSDr;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=O14yYNVj;
+	dkim=pass (1024-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=selector1 header.b=LRIVUYpH
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 528E840669;
-	Mon, 23 Nov 2026 08:58:42 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id DDAEB4040F;
+	Mon, 23 Nov 2026 09:04:23 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id N9vs_-I-kBjA; Mon, 23 Nov 2026 08:58:41 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 780D34064E
+ id X3niOW1QO8QN; Mon, 23 Nov 2026 09:04:22 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org BFB424041A
 Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795424321;
-	b=fwck8q5ClZB0fruDxubYjxkKzq8RRUdnmOwPGDVe3rS3myA7TqyW6zV4YuBegemxItAP
-	 COd37eh29GMKfZkEKY4+802nGrx+udbO4qBsismXSNOuTkHmnHuHdhGtOUH+sIvR26UQI
-	 +kp1yPY4GEbkY3hh+lc33avU3z/H6WJjwDliJYLdwOjud2RNtUTse3oSLCy17603OFA20
-	 UnVW/9eao+/AQVjCfMI6vvAZFYzDJEH0tjgbvvE49RzgU3fq65QHu7NUwclJ4/C82wyND
-	 8UAKYKRMoNuQPEPXG2rbkLQ4VZVuNDU262fCNCXw2rK7iaf4HpdFx9Z4HrkvD0wTFzQ==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795424662;
+	b=U5Y+/vvmvESq1roJY+ydhR2bjYR6QZ9y6OoSTlxcVCTfu1a6VkIFIUO4BJzEqpkn+ESd
+	 ULKwLos82emIU1NSe0z++54KFu6p5WRcqfHtT/VWqF5/7IO54RXP4JrMdJGrzQs+BSycq
+	 CNfK2ZzUAQoPa2FHux+0hrS3hYGVMrJ+b9UESdDhc9HN4HVp0mRgff7yjxUbbbi6rDSGe
+	 5SHqz+xEKmci3uk42ImQHZFqEoMXpDVQxKh6KEVHQkwg1/HMxwZ6S6QCz4OiEPIBru8bL
+	 toU2T8RKpeM4CnZa4G97WFOW0it2dgdIlBJZRaZiZ5DQQ5uA4FgqNp7DxV/tcLqtsiw==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795424321;
+	c=relaxed/relaxed; t=1795424662;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:X-Greylist:Received-SPF:Received:
-	 Received:X-ICL-RepId:Dkim-Signature:mail-alias-created-date:Received:
-	 From:Date:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	 Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Authority-Info-Out:
-	 X-Proofpoint-ORIG-GUID:X-Proofpoint-Spam-Info:
-	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-GUID:X-JNJ:X-BeenThere:
-	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=JYvSvDfswO2l+IyLzWQJX1wneXOmcrOuIQ0XsfOmxLo=;
-	b=taYRiglCA5330owKNQawIujoBnBimSoesZ5goqqK21eKFkCa3Ppotv7J/75WhiL27ehH
-	 YtUP/qFo6niE38h7ehjnrjOD0edbEEF6r8f09EQods0/DkiS6V0mHllrQ0b/4fKqGzpEJ
-	 B7MTZqJpFtmNblsZhov3FY411VW6wGwI963WYGgz8l3p0Nkwj81Q6p9kkJQUk+Y/rJ1Ov
-	 zVML7lpLMC8NPiSunP+Nue5KmCepEAii2lpB2lCXJI/su8dtNUv187btH8FBxcx1k5GNK
-	 4DeIB+5QKxwGLYvbjSGbKZ3x52j0RHGW8N9Nzk/9V0cFT+kuIkUihuDctHOwQ48SXNA==
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
+	 DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-IronPort-AV:
+	 X-IronPort-AV:Received:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-ExtLoop1:
+	 X-IronPort-AV:Received:Received:Received:Received:DKIM-Signature:
+	 Received:Received:Date:From:To:CC:Subject:Message-ID:References:
+	 Content-Type:Content-Disposition:In-Reply-To:X-ClientProxiedBy:
+	 MIME-Version:X-MS-PublicTrafficType:X-MS-TrafficTypeDiagnostic:
+	 X-MS-Office365-Filtering-Correlation-Id:X-MS-Exchange-SenderADCheck:
+	 X-MS-Exchange-AntiSpam-Relay:X-Microsoft-Antispam:
+	 X-Microsoft-Antispam-Message-Info:X-Forefront-Antispam-Report:
+	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
+	 X-MS-Exchange-AntiSpam-MessageData-0:X-Exchange-RoutingPolicyChecked:
+	 X-MS-Exchange-CrossTenant-Network-Message-Id:
+	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
+	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
+	 X-MS-Exchange-CrossTenant-FromEntityHeader:
+	 X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
+	 X-MS-Exchange-CrossTenant-UserPrincipalName:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStamped:X-OriginatorOrg:
+	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
+	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
+	bh=QlFqW+jK+SoBxfo/SRfS358aoFR3yGz+0/30x7CMFzk=;
+	b=FS4JUvMENzK21fiZFMdFVw1OvapMIpQ3f+b2jEhwvsZmmxAGSBwAZT1OjAouV/rgohci
+	 LkDipmBNSfsog3kXhSAdqt+sytnn6pR6u8Me8vf9/KkC/EGppIouWDj29eBJis0w+7iO/
+	 6v3JQaHDgWS/uvNX2d0rI4MVYfAAH0k8AKbAZREi4+gbfWPWXbQz6YPT8z1GujxGAS+RM
+	 PmlXhEtxWXYjkS9oQXiXefQPO/NBeko1b34XN4Dod4l9BBh7WFLDQ227yqsBD12JjtJpM
+	 PgDcxlhxyqvnlFPBpI6O82YTSHM+kyPSSA8ly3mB1rrALI/40vE1dI/3PNfXbxbkNtQ==
 ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
+	dmarc=pass header.from=intel.com;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=O14yYNVj;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=selector1 header.b=LRIVUYpH;
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1795424321;
-	bh=JYvSvDfswO2l+IyLzWQJX1wneXOmcrOuIQ0XsfOmxLo=;
-	h=From:Date:Subject:To:Cc:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=n67h/38IdhSbjRXRRhxKNVSJShVvtVbBx3hXto7IyiYAiF3LBSZcG4gy4IEtrzDnZ
-	 3VFqLwSOUJMtSAcECE6UnqTn2D06l/HGntpnjB3QozEyO9O5ynAP+6eg0gQP24zgg7
-	 tMWFzFY8VHqBrXiPIakQCMpZpxRokUOoGrVrcjMxZVQE9rSsALlCpgRtGarvViCjbA
-	 pjIHq9ReJ9wZ+iP3/lMGgCkSj6wUwS9p2oiqJl1m1L4/uOnJw/WkLqNV9mfI+3L8wO
-	 EgCTJvN0lMpKQYNS+/vdL9By1to6B6hjtdjw2HLuBiBu7oterW7XyifiOb3sVmo57N
-	 oSIZiRq8a4Kag==
+	s=default; t=1795424662;
+	bh=QlFqW+jK+SoBxfo/SRfS358aoFR3yGz+0/30x7CMFzk=;
+	h=Date:From:To:CC:Subject:References:In-Reply-To:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=mtCfrSDr7vKVs+yecTyoCnzro/NWMPjIhFqJzF193LndlZVPljP5XLU5Ad9q0naUd
+	 MBaARoiOfANwW6sSUvrKyZQZDaZIZqeEWSG3b28Uw9Se3oDlDthPJLHqAhNVHm5lbM
+	 ImqFxIUeVF5EQyv3KMfT29hHIBKSJZpwd7I0lIHbKfb1308tM9BVpRe4oDc5b73/04
+	 cQDiVCwXbGMbXExICnnZOItNOVCRSLp7yb9UCMNT8llL8a+WImEyS7fFb2Fd+3rTrF
+	 NBG5vK41B/iGoKDEfCIP4LnuKaDRlRkSdXe/ZR84SLrcFxiAzHHApRlG7bXjelQ2XB
+	 9tpvvHhV1wRlg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 780D34064E;
-	Mon, 23 Nov 2026 08:58:41 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id A2F55D31
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Nov 2026 08:58:40 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id BFB424041A;
+	Mon, 23 Nov 2026 09:04:22 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id DB9BC1AB
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Nov 2026 09:04:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 886A6606DB
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Nov 2026 08:58:40 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id BD54D403AA
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Nov 2026 09:04:21 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Lmr4kFhRu5Ky for <intel-wired-lan@lists.osuosl.org>;
- Mon, 23 Nov 2026 08:58:39 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 6F55960603
-Authentication-Results: smtp3.osuosl.org;
- arc=none smtp.remote-ip="2a01:b747:3001:202::36"
-X-Greylist: delayed 3297 seconds by postgrey-1.37 at util1.osuosl.org;
- Mon, 23 Nov 2026 08:58:39 UTC
-Authentication-Results: smtp3.osuosl.org; dmarc=pass (p=quarantine dis=none)
- header.from=shuye.dev
-Authentication-Results: smtp3.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=shuye.dev header.i=@shuye.dev header.a=rsa-sha256
- header.s=sig1 header.b=vpSzqAyK
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a01:b747:3001:202::36; helo=outbound.st.icloud.com;
- envelope-from=hello@shuye.dev; receiver=<UNKNOWN> 
-Received: from outbound.st.icloud.com (st-2005f-snip6-1.eps.apple.com
- [IPv6:2a01:b747:3001:202::36])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 6F55960603
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Nov 2026 08:58:38 +0000 (UTC)
-Received: from outbound.st.icloud.com (unknown [127.0.0.2])
- by p00-icloudmta-asmtp-us-east-1a-100-percent-0 (Postfix) with ESMTPS id
- CFD851800218; Mon, 23 Nov 2026 08:03:36 +0000 (UTC)
-X-ICL-RepId: 01a2076e-9277-7aed-a86f-ebaadef8294b
-Dkim-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=shuye.dev; s=sig1;
- t=1795421021; x=1826957021; bh=JYvSvDfswO2l+IyLzWQJX1wneXOmcrOuIQ0XsfOmxLo=;
- h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:x-icloud-hme;
- b=vpSzqAyKYN9JXypjsE1N4TUp9scJJooBDOprtbzu8ybgNoqq0JJ649kUKH8bNeoAZtcRF+YUTxi1gHC1YgTdD03kMAzwYvk3LWptgekTpaEBM2b4GHD79c0QCJmjBTnEkL88UZsP6AdNUqaWO+3qtdx+f4Iu48OISYhrOx8gePBUVDo0GxRvR8Eo9EBZzjdpKA1fBMkTYF1jtKuX3lMq+rz5kIQpLZj6DtVTz0ernGYTJC1M5l5qA3HYqcUoqPW4yZMIJJEqZ8hARTd8m30/ZJzxwyD3P9VYMRF9t5lKcBR9Q+nFZU5GgFTtJFr10ZG9OmvJgAVslXvYzH2dTH2DSw==
-mail-alias-created-date: 1658105457252
-Received: from shuye.dev (unknown [17.156.216.30])
- by p00-icloudmta-asmtp-us-east-1a-100-percent-0 (Postfix) with ESMTPSA id
- 8A3EC1800208; Mon, 23 Nov 2026 08:03:35 +0000 (UTC)
-From: Ye Shu <hello@shuye.dev>
-Date: Mon, 23 Nov 2026 00:02:33 -0800
-Subject: [PATCH iwl-net] e1000e: add HP ZBook 8 G2i 14 to disable K1 list
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Gj6ZhKiEqF4E for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 23 Nov 2026 09:04:20 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 134BE40379
+Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0
+ smtp.remote-ip=198.175.65.11
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.11;
+ helo=mgamail.intel.com; envelope-from=maciej.fijalkowski@intel.com;
+ receiver=<UNKNOWN> 
+Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=O14yYNVj; 
+ dkim=pass (1024-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=selector1 header.b=LRIVUYpH
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 134BE40379
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Nov 2026 09:04:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1795424661; x=1826960661;
+ h=date:from:to:cc:subject:message-id:references:
+ in-reply-to:mime-version;
+ bh=JJvUehBWa09I1u2XMjOKycrCPzzcUazbve56rt2tPjs=;
+ b=O14yYNVjfw3AOPSNBGEqAeRuN+34uf1EcTOH7KSbJzEOnv3jXvrKEuAc
+ XG9YTAcXC5lV652gNjQGdPSW37ToiONT/Bam3zx4cTVTnq8vi7cMaPVyL
+ HF/mnpM0vtxXo6qGy1TAWTmkrNLkTS1X6dCAEswXW+P/7ilt+p/kqA7gW
+ P6U9qkq0gGa9XfiPJX/k7rY+4U+RNOCB2FULxENehhrpBKFVjQRSvvV0w
+ uUZpMKTUPMALvwYguadEe5J4PctL2ukWgY+VQlyr+pnCjffZtNE2/8t+d
+ lybi7UpuBs0prO8lAMRoMWhie/hVkSNLoR4+nfL3UTwHit+11qD7//K83 w==;
+X-CSE-ConnectionGUID: hqtLFIqrQxWHfJT3Ahsecw==
+X-CSE-MsgGUID: o4wtz/BBRH2eSDQ8l47SwQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11974"; a="4122889"
+X-IronPort-AV: E=Sophos;i="6.27,227,1787036400"; 
+   d="scan'208";a="4122889"
+Received: from fmviesa012.fm.intel.com ([10.60.135.152])
+ by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 23 Nov 2026 01:04:19 -0800
+X-CSE-ConnectionGUID: vbtYKpdPRr+5Acru2p+h3g==
+X-CSE-MsgGUID: jwI0uFanSxmE2fAaFAeNWA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,227,1787036400"; d="scan'208";a="12951132"
+Received: from fmsmsx901.amr.corp.intel.com ([10.18.126.90])
+ by fmviesa012.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 23 Nov 2026 01:04:18 -0800
+Received: from FMSMSX901.amr.corp.intel.com (10.18.126.90) by
+ fmsmsx901.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.57; Mon, 23 Nov 2026 01:04:18 -0800
+Received: from fmsedg901.ED.cps.intel.com (10.1.192.143) by
+ FMSMSX901.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.57 via Frontend Transport; Mon, 23 Nov 2026 01:04:18 -0800
+Received: from SN4PR0501CU005.outbound.protection.outlook.com (40.93.194.15)
+ by edgegateway.intel.com (192.55.55.81) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.56; Mon, 23 Nov 2026 01:04:17 -0800
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=intel.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=QlFqW+jK+SoBxfo/SRfS358aoFR3yGz+0/30x7CMFzk=;
+ b=LRIVUYpHhks65N80cDSqznK7/OAatBNn/YHDFk3/5unn22Bq9EAyKVBL5URdZjMhHuMHBgTvml4TbPziFZpsRTpEuH1jvAuFkBkdft4iwunmeJnA4wcB4hUmRV0XmOkNko+jM4NbB+tjxoSwxU2+OB90atZyxhtCpTLC7P8KOxI=
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Received: from LV2PR11MB868673.namprd11.prod.outlook.com
+ (2603:10b6:408:422::13) by DS0PR11MB7441.namprd11.prod.outlook.com
+ (2603:10b6:8:141::8) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.639.10; Mon, 23 Nov
+ 2026 09:04:07 +0000
+Received: from LV2PR11MB868673.namprd11.prod.outlook.com
+ ([fe80::5bfd:6afe:a9db:b7de]) by LV2PR11MB868673.namprd11.prod.outlook.com
+ ([fe80::5bfd:6afe:a9db:b7de%4]) with mapi id 15.21.0639.011; Mon, 23 Nov 2026
+ 09:04:07 +0000
+Date: Mon, 23 Nov 2026 10:04:01 +0100
+From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+To: Magnus Karlsson <magnus.karlsson@gmail.com>
+CC: Magnus Karlsson <magnus.karlsson@intel.com>, <netdev@vger.kernel.org>,
+ <sdf@fomichev.me>, <davem@davemloft.net>, <edumazet@kernel.org>,
+ <kuba@kernel.org>, <pabeni@redhat.com>, <horms@kernel.org>,
+ <bjorn@kernel.org>, <kerneljasonxing@gmail.com>,
+ <intel-wired-lan@lists.osuosl.org>, <anthony.l.nguyen@intel.com>,
+ <przemyslaw.kitszel@intel.com>, <jacob.e.keller@intel.com>
+Subject: Re: [PATCH net-next 3/5] xsk: ice: add USO zero-copy support
+Message-ID: <awQBgefjtxMdZYWg@boxer>
+References: <20261119165340.1071525-1-magnus.karlsson@intel.com>
+ <20261119165340.1071525-4-magnus.karlsson@intel.com>
+ <awBXmCqkMKxsc+9i@boxer>
+ <CAJ8uoz2tKthHN6MHUJoixtjzkGqJR0ukdJCWRG0_2_J11PN_uw@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAJ8uoz2tKthHN6MHUJoixtjzkGqJR0ukdJCWRG0_2_J11PN_uw@mail.gmail.com>
+X-ClientProxiedBy: DUZPR01CA0029.eurprd01.prod.exchangelabs.com
+ (2603:10a6:10:46b::18) To LV2PR11MB868673.namprd11.prod.outlook.com
+ (2603:10b6:408:422::13)
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261123-e1000e-hp-zbook-k1-v1-1-468e3868229f@shuye.dev>
-X-B4-Tracking: v=1; b=H4sIAAAAAAAA/x3MUQrCMAwG4KuE/3mBpCtOexXxYWp0YdKOVlQcu
- 7vgd4BvRbPq1pBoRbWXNy8ZibQjXKYx3439ikQIEnaqIbCpiBhPC3/Ppcw8K0cb+l7iuD8MER1
- hqXbzzz89wt8PzvbEadt+Vl9Bvm0AAAA=
-X-Change-ID: 20261122-e1000e-hp-zbook-k1-4e73304a8974
-To: Tony Nguyen <anthony.l.nguyen@intel.com>, 
- Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
- Andrew Lunn <andrew+netdev@lunn.ch>, 
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>, 
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>
-Cc: "Chia-Lin Kao (AceLan)" <acelan.kao@canonical.com>, 
- Dima Ruinskiy <dima.ruinskiy@intel.com>, 
- Vitaly Lifshits <vitaly.lifshits@intel.com>, 
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, 
- linux-kernel@vger.kernel.org, Ye Shu <hello@shuye.dev>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1963; i=hello@shuye.dev;
- h=from:subject:message-id; bh=Tk2kaEGBsjUU2+Xrzlzb0H/K/d1lZQi2yqEQQz5/qho=;
- b=owEBbQKS/ZANAwAKAWrdZni68N7qAcsmYgBrA/NWcuNYDo8u4aF8qMy37Q7bnFL1jtPHc127Y
- fSZwVz3epiJAjMEAAEKAB0WIQTaiAWzOwE7Z7uq/ZNq3WZ4uvDe6gUCawPzVgAKCRBq3WZ4uvDe
- 6ta+D/9PwriDv8XRgFc/U/kIMVeThj7EebTpGu8kcFwMwPsYQfxspAmTPn0tKF3/vi0XHfE6PK8
- IpTOaWsx2+7gJ9Z4wfQqJA41HgB7/DntHYjBI7IqtYRQFkuXX6D08mqwsCX4AIuVS9jLmXZBD3H
- p343xw0GhxXgCBrkAHFvdWGQ1LesLZM6TMNyj9Jj0/9F/DwTRD62j9jyN2YbO/Si1+nzP4Y/Z1v
- y94bHqEX8k4B/Ja37S9fkKXfur3hZj0ET7RQwcStQpBqKqE8UruMMOcgHb+/3dm6pIOT7ZCWg/3
- n6Z0v7z3omLI/SQKT/XtWP8RhkibKKEbEadUtb4CEwm0qtrrrmivtHO7LOngxTDz4y0MQbdNoYq
- Ij00FuanyDh2sSP3fWS5JkdEm008xZZVytCzZiyRkpP6QVa7806KG8TlTus9NswYDk+NtTNtoKU
- cY/2aGuz/O91kYMJCoCC2ZUM2K46yjAmYCmvwUGnYkYs8CEv00VvPV7A/gYNCYPzjhi0uPDjbQW
- KX0w7yYGblTk67HJCNWJwvjex91oBSxoFxPVhb0smawe/0g9mIoH9adAJDFXlUPqgxadj6kVJtM
- HHnhmBPZrQSOdCNzJVtiQ/P6plZQQPfaTjhTzSUAHPilGlKiVm3gaqfVkX5nyAUf4f8brGQQu6Z
- 7Q/kxBZbRey/D1A==
-X-Developer-Key: i=hello@shuye.dev; a=openpgp;
- fpr=F021058172993F4D228EDB6972FF4E8B377057DE
-X-Authority-Info-Out: v=2.4 cv=PbNqFShd c=1 sm=1 tr=0 ts=6b03f35a
- cx=c_apl:c_pps:t_out a=oyWFxbOnq+dmhQrAPgaJYA==:117
- a=oyWFxbOnq+dmhQrAPgaJYA==:17 a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=AZoGnDOZhPiq548KR6q9:22 a=oPt-bpzCUupNiBt5qcZk:22
- a=VwQbUJbxAAAA:8 a=qnVDHuHs7DX7YdgB2tMA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: HdjXjTci-5tB4pFkOoyDrfYGc9KzORrV
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTIzMDAzMSBTYWx0ZWRfX4dEOGQjMgsGb
- Lq8PiPHkbChVwAzgBEyVPOnoyjH9nfyS8wax6h9TF9w+4JE+1nDE5m6XBNVf8sHvC93EXM5zjJF
- qTFSQbQDsLIDGr3GCIIit7o2WxNZ9V4=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTIzMDAzMSBTYWx0ZWRfXxvq+SjnGHP7y
- 1v5u3GOhL+kM/QSiRiniwLbclc48zyT596Pz/Si4PvCO7XwsZsCNj3rlk/qsvwr9Y4kA3bziLB+
- gBdVIt+5vTFBMKE0SW9mMW+DOOOA6YHSD8X1bmQhhayWubK8TCuAhEzbFG2toLFSHOQoJCO9/1m
- IjiWLI1U8JXp/Mv6VZM9Um7BDMWMJYSC8Zq+gv0I139zl9czzG8bDWlVMpaUufQqcKA+V6kZS4i
- stUZxOG9hVsgsJi2Nta6zOcq/8GaIm9+vRAc9LmrnQRDS+zT3nw+ueIdF1OyTtb6iaePnS3pkWn
- vQQBPp8Vjw4osSYmVrDKdmdVln5x5qMru8iGwQrBP8SPDqNj6GFB3qsNi79vAs=
-X-Proofpoint-GUID: HdjXjTci-5tB4pFkOoyDrfYGc9KzORrV
-X-JNJ: AAAAAAABLlj2GXMfJgPS6ZL5RRkrN0+SR9VBuGsw3ND80RiAZpzRIEpF3Dlr9lyz/ynVjv
- Woll1dMWwHn2JnSryo5B/riTWwepCRbUINaKzGdbvPQcwCZN6SbfbWpJHs+VKUJnub25Ju
- 1TqG8so0rh2Y1cGCQezxCSGburtFMaicUlhIdu0+4wG716e01ONFDv/d/AGtHP1H075Ajq
- lLcSnGpeSKw5NmbLzKFW5P50jgVsgXqD7pM6YUTOkXauYJfQKZXBuKPFxk7PKuNCu090qm
- /cm730GZmSPqO8nBI4YOGujMY5MZPoyC7py6TtDMA8lBPnv870rvR2D8b9yr3vWSJP2u/i
- ts0vQLlS+op+Jjdi4MZAqB9Mz4KRwB7xYRzJnGhyq4tKPIvMJQPzqrlYgbmnLVVcHUmnsw
- OBsrTTEieovBFBN7yZ2bIjBW4an27t0TXj4g4OFbqMJAUSuLO0Vz/0ItV7oPur0cL4uMHF
- +3V05bLAMHFvTaLMpLP9zk1xFcLiK3y4f+JTA+wpOrciFZykHtyqIEpNHCSc8+8gieZBZQ
- zaBS/5XBcZiYqXkF2/rNsASE9HieRLIik+i/SawHxVVkmYjLMx8JjLIk0A+yxkTC8DA88W
- CZC5DGnLQWLUObAhIxJQRPt0+F7djNQuuTueVyHBpcSw/9w9U5SqqAXvSQlwsVQVgb8BeD
- NYMpVqDWlCNsRcRRcGaBU90sKslSF39d5/+YofUHbubxdsLoL1OkrNkhh0D4Jn1VzKCvQU
- T2OgJO49U6BB9Rckz56in4r1oKpN7wlW3D41ymp8d6Xj4dhV/0a0sGPxkQbo+Ly78qPuLN
- P2Vko0tHM4/nOFbtttlHgMSKkz8cpkJwAQ+FusSMJ7igDBAIeL9sTdqt32dmkOVHornKi3
- jMYKyCGe8pMXUdU5zm5LukhNcgXqpDI6D0+D5VZLHPPmWWzbVDwDwP7Aa47DXV5lPzMOu3
- c3mhHxrn7hFAvpMXq9SxPoVY0qmBwZZF2ZmMJvRkficN2bq6qnDVj/seezgHGlSDw4Y2VX
- L4r71T9eJpKSdhU7dDniikf1mMKz17Q4qKwA46U8a9Vm7AxSyGZ21OnzMvBGR4rhlaU+Ap
- eW2y4d7RmM59inRS/ti1bUVE17iKI2QYTaoXQIiZWqt43XpbWz60K0IU6DSuDiyNbUC7Ie
- cIYRM8AqmCC2pgnnm4CHjzIxbpjk8uBDKnY4lb3UjJfFh/P+FnuS1rTfIyliRO36G4KMc+
- 1qyXJsYEXAqBV8UxRo5csaxTFj1wQmgJnrwNHcY2ufDJHv88Ktsx2twHXzgviPQtHRedPO
- pXrsF3qCHU6Ual4AREoRahTgsezTbGTHwA1h9hbRxIY2O/Enczai14Itl0M3BzBGUh1+jc
- lX+MQZIDg9ogOXz5ZKmwTwGFmLhSnPmZms14YraQrz2SQoQv+ehYLg==
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: LV2PR11MB868673:EE_|DS0PR11MB7441:EE_
+X-MS-Office365-Filtering-Correlation-Id: b152c371-97a3-4108-de1a-08df4940baa6
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+ ARA:13230040|376014|7416014|366016|1800799024|23010399003|6133799003|261009223027099003|18002099003|22082099003|261022115727099003|261021135927099003|261022105027099003|261026121527099003|261021121427099003|261026140227099003|261022075727099003|261028144727099003|56012099006|10067099003|261102123227099003|261102130727099003|11063799006|5023799004|4143699003;
+X-Microsoft-Antispam-Message-Info: o7MrW9wIscx2NnAb84pIFog7+VGUqYy0uOvKJTQzn8wFqkgibjIK35UQ94oj+ZKq7cvYRZ8S6kOGi/BmofTqnGUP+9HAnJO0Kl59n0zSWG8UPZpdganOsmF46oBTxJdZ2eH70ZDwwMeMloy45ASRrfeherlFqqhIqfAcYbAUXsobpxEnJq0YB5f1M0HC+HZAxvOvRARYkaTZypvcBgCSFwcq6GTFcUaa1bkDwOfm0YgSM/AGbjuLo46bVQWIADr2h4cUyVw6rxGurhEZbCpG2mWZxj33fxi86lXaWSjJPaavc2Li+qiaB+lKq/dfVo/UPeNvmqbnFBfZ7LfkrRgMM8AuusJLRPE/i8qNNFVUDTBfxwheQ3JwoRjzzom7bg7c4JSzglLWQlhieNWA20FFVs1CDX+0tpx5wEOIxkVBjqGMoNyJNEzS2LBTl5sodlPe0L+NZJIo+LUJdCjmCxEeUhjf/krdhbY+GdLWLA4tGbUuC2XDwpoDD7HJ1U8CYwFbnR2MsUxeS3thjZ8htmAwTA/ywWMeAkxY6wlBZNWHNWBOYcCBQDprpl2kTnVVJjb/JvJZP0t2KmZaLzX4lkfeyz7u61FDS+9I/ah9vPPm/dmDLnroReWYav2N2uTk1zRwlpO3F0FjL7/uOdwyP7sIbeRIMlVo/Qb2uDtTcaO/YKQ=
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:LV2PR11MB868673.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230040)(376014)(7416014)(366016)(1800799024)(23010399003)(6133799003)(261009223027099003)(18002099003)(22082099003)(261022115727099003)(261021135927099003)(261022105027099003)(261026121527099003)(261021121427099003)(261026140227099003)(261022075727099003)(261028144727099003)(56012099006)(10067099003)(261102123227099003)(261102130727099003)(11063799006)(5023799004)(4143699003);
+ DIR:OUT; SFP:1101; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?06CitorWgIXqsiGb2IHbxASeQOpGKM4pouyRRLE2bFjcvOGx/uhGg1qZBtDl?=
+ =?us-ascii?Q?Psw6i8/sLnkueaOgjfLqE2ZUbwlaCHl7ETAgNSxQcRgc6/emeyqLvqCAlxts?=
+ =?us-ascii?Q?8seV8or/diSlVTa0HbC/0NtFG6ZV8uAagZypJa86QHO1TyS3TQnt1viNbNYI?=
+ =?us-ascii?Q?90ww9iLUbasVyFGZe/RPugBVxMynjoEaX0VVygEMbCL1bWnYStbAmYeK7rMB?=
+ =?us-ascii?Q?SpisCLSTYP5cwLxvzyKpFeFyHThdgPe2siR9TOmYJzJl7sCTGIyMC7cBgW7W?=
+ =?us-ascii?Q?Ta7mOy5NbG4ilSuQZwWZqN0u9l4vRjOIKyGwG/cOC9Y0BkIGzlQPyUsAHGFC?=
+ =?us-ascii?Q?BRi3u7T4lEoMhUb0btjG82DeM1MscvzvqRXOyqrq76lSZBboslR+fpPHUKtk?=
+ =?us-ascii?Q?d/daa61wYezOzadNDtHFpleL9XA3sHGMsj5MCPSqWMHEuqDnB6Zy/ajntlsy?=
+ =?us-ascii?Q?a+NMdo96gigSgWkmqJJxCEOoUpqHlGU6JkgKeahRMNsMySSMsk5tbtJvOrET?=
+ =?us-ascii?Q?6MUs4bjiTcnqROunETz6OQvcCJ+TBu+lztD/Aj1lsM092rDarVSLOaRt3Y4X?=
+ =?us-ascii?Q?oYCLXsDOu1nIU1g7HWojphmKO78TLayZCqRdOuBVJ1pVEir1AkXKKPIZd/Nx?=
+ =?us-ascii?Q?46UhH12OGWTlOZ4V/Fw66L7VkSx5rFDUeCXMfyopp9Aex3iKf6FMUBXPCUhI?=
+ =?us-ascii?Q?EYRDywSCWMHTGH3aU3aHSQ2dOTCxgcC6x9EAfPA/WSiW5QZ4OGooC0Dlwm+C?=
+ =?us-ascii?Q?+T02ItS5iFfBFm7URm/zrVjOoE04qn5RBYrIaWgE+maVcSNic23lbeoCwCRr?=
+ =?us-ascii?Q?JHNm+Xmz4EP7kR4TnUWbi55fi89nx2tTCBrUs3EtV3SNWypjHCFmSjd1jWcs?=
+ =?us-ascii?Q?NFoGGcz/KBYb50i6HvRgzAkvkqDwgC9n5YwnoHZQxSPe664AOFN2mcsPMZN5?=
+ =?us-ascii?Q?1IsCIvlBRH0cBkuWSmcRM+V/688gUmyq8aFdY3iZAAaSzsDIuWTXqc4HcxcE?=
+ =?us-ascii?Q?TvXWOvEnVGFgJDFDv33z6XIHkc9u7ivl6mSk/cmYJ+ej9r5vI0VRClcwm6TU?=
+ =?us-ascii?Q?xdSmAislCJ5cudzzrE9zuOnfBCf+PJp/9Q0dse+LCSNUrX5daQKbgtmHdYKU?=
+ =?us-ascii?Q?/Tng9qrbOuPohdDlr0CZPDQcdxdeZTW/DqLsXl17HDw5IwnacThu5Ppui53j?=
+ =?us-ascii?Q?yI2uaydYDfE5ZmhfqHq/eI9iuMjcydNHuo9G35mEWkyynA40aTI8e/nbFQ99?=
+ =?us-ascii?Q?V2thRqjC5NJn6Q2k9GmROvLZ6aE1WK/LYZ/REGn2QxqbCn+4rvEOBA1WEAGb?=
+ =?us-ascii?Q?xnQhKJeSyKwaOrgQApeTggyS3Uk3hcS856xjeWI01Jx2KC0olDPd0PQoCGmi?=
+ =?us-ascii?Q?4KONxHLl1oUGal3r9+T3TELr0CCj8Daagm9ZcjNMmh4xPdFEF/DJt8STFdaR?=
+ =?us-ascii?Q?LJIky2p92q8i+H/KsTUiLProK1t1y7HDHegPvrwLQuPtN6NAgHuBvv3V7gtt?=
+ =?us-ascii?Q?tdg2+z8erkwzuTwS9p5n+uhd0GK/R+6RmUrUYEsoeoRlkf7bY7jh4Hrw80QW?=
+ =?us-ascii?Q?kq8gZGZ45bSqHYr9VEr3zdO2mrDxuhjMt/3cNOTrXefjJqiZydiiAIvUrN35?=
+ =?us-ascii?Q?EY059nlXjInff2Py26051Civ267UgyaO6cc6RhseekAB3R6Ktk3SrP6JFneU?=
+ =?us-ascii?Q?n9p2zYGzpLEW/g7wpe/xFj/80lNCJ7Qp6j9JZcXkhkBjk3eXvhSWNYjZq+EI?=
+ =?us-ascii?Q?ZAeHtzrjUvtUygOTZApqbMsr3UU+fKY=3D?=
+X-Exchange-RoutingPolicyChecked: BKveTCgXzSGwkSDuTc+oouf/1YByc6xNMAHI2VMPyD3euqBoqtAQ+WhKZtPug5ydAEcWH1wcUNpwJsz015MFO5bud32tioZfIFmX1wLyXwBri+MhEXBLooix3UeArKH22OqNXy1CoMX/Uk6fjp8PdAkqUHcj+dZmJOf0oq28WiXyAUniTycoHSfcXTcoPf/1z3m5y6sN9NKGJ0GE/i8zBskb57DK7p3cKEpQtKSpV4CljhAApvlXn68VPQLByGFtVuCy8j834ILkYvHlUgp7V9rhKM0XgHJhXj/NpG2xuOXfuQhXjROU7HuL83BsKGPZQQ/JdZipkbCaKB8f0fdW3w==
+X-MS-Exchange-CrossTenant-Network-Message-Id: b152c371-97a3-4108-de1a-08df4940baa6
+X-MS-Exchange-CrossTenant-AuthSource: LV2PR11MB868673.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Nov 2026 09:04:06.9966 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: RpCjnceD4XSYI6W/zqDfWM7+/Nz8hX/mOVNu7MjYsj2cfR29zfYqQ/FhEkNziSpWOi40wkM0KtiUQirAZ4jQ7y6Pj+7EIQ0bZpnkKwKk868=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR11MB7441
+X-OriginatorOrg: intel.com
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -184,70 +244,268 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-18.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=4.0.1
+X-Spam-Status: No, score=-15.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS autolearn=unavailable
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On the HP ZBook 8 G2i 14 (Panther Lake, Intel I219 NIC [8086:57b3]),
-enabling K1 causes intermittent failures to enter S0ix during s2idle,
-despite CPU reaching package C10.
+On Mon, Nov 23, 2026 at 09:40:37AM +0100, Magnus Karlsson wrote:
+> On Fri, 20 Nov 2026 at 15:22, Maciej Fijalkowski
+> <maciej.fijalkowski@intel.com> wrote:
+> >
+> > On Thu, Nov 19, 2026 at 05:53:38PM +0100, Magnus Karlsson wrote:
+> > > Add UDP Segmentation Offload (USO) for AF_XDP zero-copy and implement
+> > > it in the ice driver. Drivers advertise support with tmo_supports_uso,
+> > > which is reported to user space as the tx-uso-zc netdev XSK feature.
+> > >
+> > > The core exports xsk_tx_uso_parse() and xsk_tx_uso_prepare_headers() for
+> > > drivers, which snapshot, validate and prepare the packet header, and
+> > > xsk_tx_invalid_descs() for accounting dropped requests. Drivers without
+> > > tmo_supports_uso keep handling a USO request as invalid metadata, so
+> > > xsk_tx_metadata_request() ignores the packet's metadata. As in copy
+> > > mode, requests that produce more than one datagram also need
+> > > NETIF_F_GSO_UDP_L4 on the device.
+> > >
+> > > Packet headers are copied into kernel-owned memory before they are
+> > > validated and handed to the NIC, so that user space cannot change them
+> > > afterwards. ice keeps a DMA-mapped header slot for every two
+> > > descriptors of the XDP Tx ring, as a USO packet takes at least a
+> > > context and a header descriptor. The slots hold only header bytes and
+> > > are allocated page by page to avoid a large contiguous
+> > > allocation. They belong to the ring: they are allocated when a pool
+> > > that can carry USO requests is assigned to the ring, and freed with
+> > > the ring. They therefore follow XDP attach and detach, ring rebuilds
+> > > and netdev unregistration rather than the pool. Only the copied header
+> > > bytes are synced for the device. With fewer XDP rings than CPUs,
+> > > queues share XDP rings and would share their slots, so no slots are
+> > > allocated and USO requests are ignored for now, though support for
+> > > this could be added as a separate patch set in the future. tx-uso-zc
+> > > is still reported in this case, as documented. The slots are only
+> > > set up when an XDP program is attached. If they cannot be allocated
+> > > when a ring is reconfigured, the ring keeps its pool without USO and a
+> > > warning is logged, while a bind fails.
+> > >
+> > > When the slots exist, ice_xmit_zc() processes descriptors one packet
+> > > at a time. A USO packet gets a context and a header descriptor, then
+> > > shares the data-descriptor loop with ordinary packets. The Tx budget
+> > > reserves worst-case descriptors per packet. The per-packet path is used
+> > > for every pool with a Tx metadata area that can carry USO requests,
+> > > whether or not it sends them. Other pools keep the existing batched
+> > > fast path. Both paths share the budget, tail, stats and wakeup
+> > > handling. If the Tx ring cannot hold a maximum-size packet in this
+> > > worst case, such a packet could never be peeked and Tx would stall, so
+> > > no header slots are allocated, USO requests are ignored and a warning
+> > > is logged. The pool flag is not cleared, as the pool may still fall
+> > > back to copy mode. This is only possible when PAGE_SIZE is 64K and the
+> > > Tx ring is set to its minimum size.
+> > >
+> > > Packets that exceed the hardware limits are dropped and counted in
+> > > tx_invalid_descs through the new xsk_tx_invalid_descs() helper. Their
+> > > completions are deferred behind in-flight descriptors to keep the
+> > > completion ring in order. Packets without USO are dropped as well if
+> > > they would exceed the eight buffers, which is possible when chunks
+> > > larger than a data descriptor are split. A batch from the shared-umem
+> > > fallback can end inside a packet. That packet is dropped, and so is
+> > > its remainder in the next batch.
+> > >
+> > > On completion, a buffer of the existing fast path still stands for one
+> > > completion, so that path writes nothing to tx_buf[] and struct
+> > > ice_tx_buf keeps its size. Buffers of the USO path carry an explicit
+> > > completion count in a union with fields that zero-copy rings do not use.
+> > > USO header slots, deferred drops and buffers split into several
+> > > descriptors are tracked with a per-ring counter, so ordinary traffic
+> > > keeps the fast cleanup path. The header slot of a context descriptor is
+> > > found from its position in the ring.
+> > >
+> > > The descriptors are built with the descriptor builders that the
+> > > previous patch added for ice_tso().
+> > >
+> > > Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
 
-Failed suspend reports:
-    intel_pmc_core INT33A1:00: CPU did not enter SLP_S0!!!
+> > > +/* Returns the number of packets queued on the ring. */
+> > > +static u32 ice_xmit_zc_metadata(struct ice_tx_ring *ring, struct xsk_buff_pool *pool,
+> > > +                             u32 count, unsigned int *total_bytes)
+> > > +{
+> > > +     struct xdp_desc *descs = pool->tx_descs;
+> > > +     u32 i = 0, packets = 0;
+> > > +
+> > > +     /* Drop the rest of a packet whose start was dropped in an earlier batch. */
+> > > +     if (unlikely(ring->xsk_drain)) {
+> > > +             while (i < count && ring->xsk_drain)
+> > > +                     ring->xsk_drain = !xsk_is_eop_desc(&descs[i++]);
+> > > +             ice_xsk_drop_packet(ring, pool, i);
+> > > +     }
+> > > +
+> > > +     while (i < count) {
+> > > +             u32 cmd = 0, offset = 0, skip = 0, slot_offset;
+> > > +             u32 len = descs[i].len, nr = 1;
+> > > +             struct ice_xsk_uso_page *page;
+> > > +             struct xsk_tx_uso_info info;
+> > > +             int uso;
+> > > +
+> > > +             while (!xsk_is_eop_desc(&descs[i + nr - 1]) && i + nr < count)
+> > > +                     len += descs[i + nr++].len;
+> > > +             /* The shared-umem fallback can end a batch inside a packet. */
+> >
+> > No, it can not... or at least the intent was not to. the shared umem
+> > fallback has been written in a way that it also calls
+> > xskq_cons_read_desc_batch() which is supposed *not* to expose incomplete
+> > multi-buffer packet.
+> >
+> > Is that a special case where you don't set XDP_USE_SG but packets are not
+> > linear due to USO, or what?
+> >
+> > I wouldn't like to propagate the draining disease down to drivers. We've
+> > put enough of convoluted code onto layer above, let us address it there if
+> > there's something missing?
+> 
+> You are right. This should not be here in the driver. I will fix it in
+> the core instead.
+> 
+> At some point we really need to simplify the skb multi-buffer path.
+> Always gives me a headache.
 
-Disabling K1 through the ethtool private flag restores reliable S0ix
-entry:
-    sudo ethtool --set-priv-flags eno1 disable-k1 on
+skb mbuf is not a victim here :P regardless I agree on rewrite.
 
-An A/B/A test within a single boot, using 120-second suspend cycles,
-demonstrates the effectiveness:
-    disable-k1 on:   6/6 successful (~116-119 s in S0ix)
-    disable-k1 off:  1/4 successful (118, 0, 0, 0 s in S0ix)
-    disable-k1 on:   4/4 successful (~115-119 s in S0ix)
+> 
+> > I'm gonna cut the review here and keep the comments I had so far.
+> >
+> > > +             if (unlikely(!xsk_is_eop_desc(&descs[i + nr - 1]))) {
+> > > +                     ice_xsk_drop_packet(ring, pool, nr);
+> > > +                     ring->xsk_drain = true;
+> > > +                     break;
+> > > +             }
+> > > +             page = ice_xsk_uso_slot(ring, ring->next_to_use, &slot_offset);
+> > > +             uso = xsk_tx_uso_parse(pool, &descs[i], nr, &info,
+> > > +                                    page->addr + slot_offset + NET_IP_ALIGN);
+> > > +             if (uso < 0 || (!uso && !ice_xsk_bufs_fit(pool, &descs[i], nr)) ||
+> > > +                 (uso && ice_xsk_xmit_uso_hdr(ring, &descs[i], nr, &info,
+> > > +                                              &cmd, &offset))) {
+> > > +                     ice_xsk_drop_packet(ring, pool, nr);
+> > > +                     i += nr;
+> > > +                     continue;
+> > > +             }
+> > > +             if (uso) {
+> > > +                     skip = info.header_len;
+> > > +                     *total_bytes += (info.gso_segs - 1) * skip;
+> > > +                     packets += info.gso_segs - 1;
+> > > +             }
+> > > +             ice_xsk_xmit_descs(ring, pool, &descs[i], nr, skip, cmd, offset);
+> > > +             *total_bytes += len;
+> > > +             packets++;
+> > > +             i += nr;
+> > > +     }
+> > > +     return packets;
+> > > +}
+> > > +
+> > > +/**
+> > > + * ice_xsk_setup_metadata - register AF_XDP Tx metadata operations
+> > > + * @netdev: net_device
+> > > + */
+> > > +void ice_xsk_setup_metadata(struct net_device *netdev)
+> > > +{
+> > > +     static const struct xsk_tx_metadata_ops ops = {
+> > > +             .tmo_supports_uso = true,
+> > > +     };
+> > > +
+> > > +     netdev->xsk_tx_metadata_ops = &ops;
+> > > +}
+> > > +
+> > >  /**
+> > >   * ice_xmit_zc - take entries from XSK Tx ring and place them onto HW Tx ring
+> > >   * @xdp_ring: XDP ring to produce the HW Tx descriptors on
+> > > @@ -801,9 +1222,9 @@ static void ice_fill_tx_hw_ring(struct ice_tx_ring *xdp_ring,
+> > >  bool ice_xmit_zc(struct ice_tx_ring *xdp_ring, struct xsk_buff_pool *xsk_pool)
+> > >  {
+> > >       struct xdp_desc *descs = xsk_pool->tx_descs;
+> > > -     u32 nb_pkts, nb_processed = 0;
+> > > +     u32 nb_pkts, nb_processed = 0, packets;
+> > >       unsigned int total_bytes = 0;
+> > > -     int budget;
+> > > +     u32 budget, cost = 1;
+> > >
+> > >       ice_clean_xdp_irq_zc(xdp_ring, xsk_pool);
+> > >
+> > > @@ -811,26 +1232,38 @@ bool ice_xmit_zc(struct ice_tx_ring *xdp_ring, struct xsk_buff_pool *xsk_pool)
+> > >           !netif_running(xdp_ring->vsi->netdev))
+> > >               return true;
+> > >
+> > > -     budget = ICE_DESC_UNUSED(xdp_ring);
+> > > -     budget = min_t(u16, budget, ICE_RING_QUARTER(xdp_ring));
+> > > +     /* Reserve worst-case descriptors for each potential USO packet. */
+> > > +     if (xdp_ring->xsk_uso_pages)
+> > > +             cost = ice_xsk_uso_desc_cost(xsk_pool);
+> > > +     budget = min_t(u32, ICE_DESC_UNUSED(xdp_ring) / cost,
+> > > +                    ICE_RING_QUARTER(xdp_ring));
+> > >
+> > >       nb_pkts = xsk_tx_peek_release_desc_batch(xsk_pool, budget);
+> > >       if (!nb_pkts)
+> > >               return true;
+> > >
+> > > -     if (xdp_ring->next_to_use + nb_pkts >= xdp_ring->count) {
+> > > -             nb_processed = xdp_ring->count - xdp_ring->next_to_use;
+> > > -             ice_fill_tx_hw_ring(xdp_ring, xsk_pool, descs, nb_processed,
+> > > -                                 &total_bytes);
+> > > -             xdp_ring->next_to_use = 0;
+> > > -     }
+> > > +     if (xdp_ring->xsk_uso_pages) {
+> > > +             packets = ice_xmit_zc_metadata(xdp_ring, xsk_pool, nb_pkts,
+> >
+> > nit: could we stick to 'pkts'
+> >
+> > > +                                            &total_bytes);
+> > > +     } else {
+> > > +             if (xdp_ring->next_to_use + nb_pkts >= xdp_ring->count) {
+> > > +                     nb_processed = xdp_ring->count - xdp_ring->next_to_use;
+> > > +                     ice_fill_tx_hw_ring(xdp_ring, xsk_pool, descs, nb_processed,
+> > > +                                         &total_bytes);
+> > > +                     xdp_ring->next_to_use = 0;
+> > > +             }
+> > >
+> > > -     ice_fill_tx_hw_ring(xdp_ring, xsk_pool, &descs[nb_processed],
+> > > -                         nb_pkts - nb_processed, &total_bytes);
+> > > +             ice_fill_tx_hw_ring(xdp_ring, xsk_pool, &descs[nb_processed],
+> > > +                                 nb_pkts - nb_processed, &total_bytes);
+> > > +             packets = nb_pkts;
+> > > +     }
+> > >
+> > > -     ice_set_rs_bit(xdp_ring);
+> > > -     ice_xdp_ring_update_tail(xdp_ring);
+> > > -     ice_update_tx_ring_stats(xdp_ring, nb_pkts, total_bytes);
+> > > +     /* Metadata packets may all have been dropped. */
+> > > +     if (packets) {
+> > > +             ice_set_rs_bit(xdp_ring);
+> > > +             ice_xdp_ring_update_tail(xdp_ring);
+> > > +             ice_update_tx_ring_stats(xdp_ring, packets, total_bytes);
+> > > +     }
+> > >
+> > >       if (xsk_uses_need_wakeup(xsk_pool))
+> > >               xsk_set_tx_need_wakeup(xsk_pool);
+> > > @@ -939,12 +1372,7 @@ void ice_xsk_clean_xdp_ring(struct ice_tx_ring *xdp_ring)
+> > >       while (ntc != ntu) {
+> > >               struct ice_tx_buf *tx_buf = &xdp_ring->tx_buf[ntc];
+> > >
+> > > -             if (tx_buf->type == ICE_TX_BUF_XSK_TX) {
+> > > -                     tx_buf->type = ICE_TX_BUF_EMPTY;
+> > > -                     xsk_buff_free(tx_buf->xdp);
+> > > -             } else {
+> > > -                     xsk_frames++;
+> > > -             }
+> > > +             xsk_frames += ice_clean_xsk_buf(xdp_ring, tx_buf);
+> > >
+> > >               ntc++;
+> > >               if (ntc >= xdp_ring->count)
+> >
+> > I think we could pull out core enablement for zc uso out of this patch
+> > maybe?
+> 
+> What do you mean with "core" here? Core as in AF_XDP core, or
+> preparatory stuff to the ice driver?
 
-This fix adds a DMI-specific exception to disable K1 by default on the
-system.
-
-Chia-Lin Kao reported a similar failure on a Dell system with the
-same NIC device ID.
-
-Cc: stable@vger.kernel.org
-Fixes: 578294b8b60d ("e1000e: Reconfigure PLL clock gate timeout and re-enable K1 on Meteor Lake")
-Link: https://lore.kernel.org/r/c4801ff7-7ff6-457e-b0a5-c2e633d35c59@shuye.dev
-Signed-off-by: Ye Shu <hello@shuye.dev>
----
- drivers/net/ethernet/intel/e1000e/netdev.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 6f85dab5c..060a9bcdf 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -74,6 +74,14 @@ static const struct dmi_system_id disable_k1_list[] = {
- 			DMI_MATCH(DMI_PRODUCT_VERSION, "ThinkPad P14s Gen 5"),
- 		},
- 	},
-+	{
-+		.ident = "HP ZBook 8 G2i 14",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "HP"),
-+			DMI_MATCH(DMI_PRODUCT_NAME,
-+				  "HP ZBook 8 G2i 14 inch Mobile Workstation PC"),
-+		},
-+	},
- 	{}
- };
- 
-
----
-base-commit: af6737b9066832a2017c281159950ba92385ce00
-change-id: 20261122-e1000e-hp-zbook-k1-4e73304a8974
-
-Best regards,
--- 
-Ye Shu <hello@shuye.dev>
+I meant xsk core as preceding patch and ice changes here would only play
+in its own mud + make use of introduced api before. This would reduce size
+of this patch.
 
