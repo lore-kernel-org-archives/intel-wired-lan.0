@@ -2,110 +2,160 @@ Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 380E6606A330
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 23 Nov 2026 20:56:11 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CE10E606A31E
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 23 Nov 2026 21:10:15 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=wC9nWRFA;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SyufintC
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=X6SjuI3i;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=iCqs9lXP
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 17E8B605F7;
-	Mon, 23 Nov 2026 20:56:11 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id AAFEA60603;
+	Mon, 23 Nov 2026 21:10:15 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id cJAgg78HxoSJ; Mon, 23 Nov 2026 20:56:10 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 53B096067E
+ id ah2cUbdN_SvO; Mon, 23 Nov 2026 21:10:15 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 21A836067D
 Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795467370;
-	b=mgMXFDSiZ9Ix6WRv84D0pYRIAwui7XS3QkBwF6kgwwsARGQ/W7IXz8MvrsyEnLNLEe18
-	 9lWt2X1agiXV6Z8ItwvlX7VYjzco6DuntA0i43YxZP2M/AD4MnhP0G/zeQBoFrmn4mPHa
-	 mZzpLqB+mMeXy9r/1SjIZ/DLGCywRdxaT9uv9CYUgpkMO9Wu4b6InS1NRqPcLqHLSyCaL
-	 c70Prgu6rcVimrDmt5+BsBN6/6Qk1fFBeGPMYjE9odzt9oKESIxLY/McMFGzr3o8zSXxk
-	 oTJeJ2k6FXAruY3q39j0HWSEZgK9V5632f6wTap529ng8HUoM6Ih0o3lo9mQ6hNZENg==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795468215;
+	b=lH47F0/gBDTbL7RbYcnWHqjlpZ071jwewIs5J8rj++Nyk0Ll/OHFpZ9mj/MKiMNfZ5Yt
+	 xtOAbO4H69zq8/GaUBsjRcGKox1Ew6WS9T7Tv9IRfzRyaahnS0agF6u3ULLCLW+1zupXx
+	 vMM4iDymM7uzbteDDuy13j48Zdd37pfy2zrHylbldYj0yoqIaDli2pbQ7YKCr8nk4DYaI
+	 hfWUc07ecrr8w7QUAMcfcCVLMUgtanGohxfTAse4EHv/81hliwcESSWB/eX6Vu12+9qg4
+	 UUp1QVsOFdvtLNkUE/MTLEs37OJ39qHCmdAJZM+Uq6RKbsK9o+ww2OMSNwVlw1EWvBA==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795467370;
+	c=relaxed/relaxed; t=1795468215;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
-	 MIME-Version:Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:MIME-Version:References:
+	 In-Reply-To:From:Date:X-Gm-Features:Message-ID:Subject:To:Cc:
+	 Content-Type:Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:
 	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=HAvjf+qFnF2PlnNrWEQfKw74csMPKo5xN9MJAY/vfc0=;
-	b=XXqD8FUHitixDMGr2CcsZOGRiX65WmOthAQjajOvnjer2V3pbuOz+/cZDF/M5jMyWaIz
-	 LyaZrYHcJ8XG/4VEfJjvHC5jTQSB72mnueDj1ET/M2eqG2L3KrVO6jyT7K8o9JQMvpATt
-	 cMZ0qlGl0pE1C+4uhFD+JzbmCKLU4p7FOofb+71ejh7w7Js00fjHsafxh/cO8FHXBa8a7
-	 7RGRr2qOrlDlveg1LN7pQWXNDyxXFTE053nbR2S+Hnd8NZIzYHs8SUwy9vRR+FlVJWKvS
-	 F1Ve44B43eXtcZD3hFTqSgGQLtx+stAP9VujqmGgwV/WGWa/VSRAFjQCrZ0ifKqQFlA==
+	bh=FkFupnOVJ01TJ277CJauG6Yuwd78xHj7FKn66yy/ozg=;
+	b=awZVGgSydZigjOL1v+rsDLAG/gbxuqkRMYNoiAiQD+gffQWAaEIyLc5EonADQbSS0vfr
+	 mzJhn7L7Et3JHKfv8IaaT0qJMjy78+VfMZ3tcxofCI/F3RInt/crmDIfmsBhTs6q+B8+L
+	 /4ykrNN3wEYznCb+lQl3ctmaVrq6j4NlR0asTZPaUO6a+3GQBvXerDiLGo/9U/jszZwGO
+	 F+DQQajR11SOG7DDJy6R7kGcvJoQFz2sZbJLihTPJUNS2pWltiCAgAg0Jgm/A6S7UTjT9
+	 UByUiJf38m1yRTGUbqzy/QGSHQmLJSGLph+xfPjp/0PGSefE0UlHc4AxO20Jwx86dLg==
 ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1795467370;
-	bh=HAvjf+qFnF2PlnNrWEQfKw74csMPKo5xN9MJAY/vfc0=;
-	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=wC9nWRFA720uHNm/sZbbil1Hwgdmc6BG5rJyiXgNOOpmwz4ar1Y8BTyq6lHetAs20
-	 D+N+uyMaOgWLPc3yGgM+Z7xlRl+v29EuKg7xea8+HhschKEQBZT3v0nNhYjAoGTgWC
-	 ZqsevUOMQK4cIH/4lrf+i4VeZlPway2BmsdhPVNKzIIaMByRWq9bb1bZNJEealf+Na
-	 8X6S3m6lWT5RcyxndLSACqFCUv5ylpcXmjbJrE9Y78nlaz5qoKYIVNYJ6dgIPTI6D6
-	 7hULU61nLyb1B7FAlR73/sCVj6zu3SeMXhHe/H5B4CTYa0yqX7rbt2ovgscRRkTaD2
-	 fxfklktwSzwPQ==
+	s=default; t=1795468215;
+	bh=FkFupnOVJ01TJ277CJauG6Yuwd78xHj7FKn66yy/ozg=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=X6SjuI3ixvaIUxbiV3DJ7vIvji+JXP2kDfEyHEbO1ZsP6VrYLkqxVCyJybMeXnINq
+	 IADnZYO2NjU6cQW2pwWdbF9NfOSBoVEwhNKunhS5fUQh0+mTeLqeAEs6TEx90OHbSZ
+	 pxKHgVP/8VWCAfPtWT75/ReFQ0fD1V85ZFMRKR1wFER1VsM34WWR6+iWp3Zt6zaNbl
+	 RW3sRrRse3KAmjRjHjmg77gXuQxpLqTsMQD3DVJW0I7kWJion/iBC13sT/sHAOnlcr
+	 NHMOJqUAoKL8FJGOL6gIY+ir1EDchLXabjWe8Q9TK+IY78hjm66wQl0RvRn135xmQu
+	 +1kgSD9g9JiLA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 53B096067E;
-	Mon, 23 Nov 2026 20:56:10 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 88E34311
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Nov 2026 20:56:07 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 21A836067D;
+	Mon, 23 Nov 2026 21:10:15 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id DF83C22B
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Nov 2026 21:10:13 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 7AD7980D8A
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Nov 2026 20:56:07 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id D1075406A4
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Nov 2026 21:10:13 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id C-RFW4AOOk7t for <intel-wired-lan@lists.osuosl.org>;
- Mon, 23 Nov 2026 20:56:06 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 951F680DC5
-Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=172.105.4.254
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org; envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
-Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20260515 header.b=SyufintC
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 951F680DC5
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Nov 2026 20:56:05 +0000 (UTC)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id 27D3A6251B;
- Mon, 23 Nov 2026 20:56:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6A7431F01567;
- Mon, 23 Nov 2026 20:56:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1795467363;
- bh=HAvjf+qFnF2PlnNrWEQfKw74csMPKo5xN9MJAY/vfc0=;
- h=From:To:Cc:Subject:Date;
- b=SyufintCTIvTXofljWuywuFKxyTrKNIjBQfzoo8FX1eNNrTJvqz+ff4VSTZIFMXsK
- K+nCP53efjnW+7DH60/NPz7vYYFVf+lDu0KD8AvdVfCbtrCwcVBD5ws5DXLDO28nUG
- lA5Tp3roSpsR8wVDxeGaZzWd/DB1RgFkqQwQ35xqumPFufkpnVmgzzdmysPIWP/OHh
- TikBSeFbnjqCjsba/SNzHonKbIXNmWamhzSa9t0rGJHEjYjWcMB2KvSPaLmez5AW82
- HNa6G5hLDvd4vZfuuyNTxtpfz71MX5m4xopLdv/YN2VNMzg4MoDeHNo9J0WCDaEqwl
- 6BFhMFzDQwGpA==
-From: Jakub Kicinski <kuba@kernel.org>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, edumazet@google.com, pabeni@redhat.com,
- andrew+netdev@lunn.ch, horms@kernel.org, ahmed.zaki@intel.com,
- jacob.e.keller@intel.com, intel-wired-lan@lists.osuosl.org,
- anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
- Jakub Kicinski <kuba@kernel.org>
-Subject: [PATCH net 0/2] eth: intel: fix unintentional symmetric RSS
-Date: Mon, 23 Nov 2026 12:55:58 -0800
-Message-ID: <20261123205600.1794292-1-kuba@kernel.org>
-X-Mailer: git-send-email 2.56.1
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 1TyqYwVzItDd for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 23 Nov 2026 21:10:13 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org CC69740609
+Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0
+ smtp.remote-ip="2a00:1450:4864:20::433"
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2a00:1450:4864:20::433; helo=mail-wr1-x433.google.com;
+ envelope-from=alexander.duyck@gmail.com; receiver=<UNKNOWN> 
+Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp4.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20260707 header.b=iCqs9lXP
+Received: from mail-wr1-x433.google.com (mail-wr1-x433.google.com
+ [IPv6:2a00:1450:4864:20::433])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id CC69740609
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Nov 2026 21:10:11 +0000 (UTC)
+Received: by mail-wr1-x433.google.com with SMTP id
+ ffacd0b85a97d-4b52fcb410dso589537f8f.1
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Nov 2026 13:10:11 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20260707; t=1795468210; x=1796073010; darn=lists.osuosl.org;
+ h=content-transfer-encoding:content-type:cc:to:subject:message-id
+ :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+ :date:message-id:reply-to:content-type;
+ bh=FkFupnOVJ01TJ277CJauG6Yuwd78xHj7FKn66yy/ozg=;
+ b=iCqs9lXPMlHBPBaWSXW5ZsfGe+QtPNz0UTV3lQOqWuSpEBKoAPiSu70y5yUTa7Vqda
+ u0HITQZyHjiiH03owAVW1kVwB3SbkqInK8vC1tNfv2Tt4pgmwcnVFAWbLeK5gYRZWq+x
+ bB1X/dsdQMF7O9VWeAD0p4JBfg4Igb7HRMfP31vfCAJLtIbc9LIqeumYGAH5t1n7XO4k
+ MKo2Jv9pnGfGxr91q6VuFn8fa5VQKlIyBjUT4DkyJCwJNcs2uOAiypyiGbUTtEZb4fw0
+ 5DgEbGSuefFpDYZ2lJdOFpeeZwus088HaG/DiR1EPaKgLLnINDQ4dKle1vMmvdXSKaPd
+ aMCA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20260707; t=1795468210; x=1796073010;
+ h=content-transfer-encoding:content-type:cc:to:subject:message-id
+ :date:from:in-reply-to:references:mime-version:x-gm-gg
+ :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+ :content-type;
+ bh=FkFupnOVJ01TJ277CJauG6Yuwd78xHj7FKn66yy/ozg=;
+ b=F7LGUpeE9OW6EVSl6VpS8MvxIv1Rlf6i/ndfWFfHhh9QxJ2S/6oiYFIx9Pq1Hnu4wd
+ YjhgCvslUKT7Iaqu1n37zXvxlFHySq4ukAnvFiAqVzoA7hnq0BjjinIjLoH5mxaZwLR0
+ IDCHLUn6qZaa/fm0ORwIiWgw5M45nHHVIxJGIdcBKYgYri8jXYp7DWFjz54ax3o8LXWX
+ p5isyjAH0WbahY56z2NHTjPZfIos1zDJSOxpmT5NfpjiBw5Ctqj+abcFUpNlEhxP7YmH
+ aUVz8ojCl781ogDV5QOAfIK+Eg/l8lissPplLRvlOZB/GhqqjOXFihpY0r+dQOz/yYfF
+ Da3g==
+X-Forwarded-Encrypted: i=1;
+ AL+hErGbfHAGmJICk4lkEKINhRRk2wu6PqGN0HAC6bawXGmESwfMNxWLkuzRLZoknWvQaQC9tN9tNIo8W9nH4bvvT+c=@lists.osuosl.org
+X-Gm-Message-State: APuU4Z8wB+ZrHYFPnMUisLu6rrtIjDIaFy/Mm+0x11/7hDdYjyc1aZaX
+ uVd0TJYA4S0gayvEua9bd6EPB7CqnGpvU2RaQjFiov59bpNA4NNAacqRns3TceVvNrXR/T4uvL/
+ 5kxFf4U22dAxROdJ/oGfA3ct3kdozULM=
+X-Gm-Gg: AZFdTZdBZhMB3g8W3GKg/rKnf4+u/m1FMn7zxYu+sSW97V7OAxOLzghZIikX3Tjjczd
+ bA3bc43FiojcaK3HaSa/f24/nY+LECz2ls5HaX1a//n9dojVXQBjuJ2SG9OWqAFIsElwRYEj3gs
+ 63EJQETBxcbEcVekIuVt6sRavTyTOprBlVa3U9T6S3AuXQ3P/zVTlr+Jkp48m7qnPC9H7LaVp9V
+ kYmFlqkEsTgCtd43B+DHpbH87EGDI0uZg5gsTT7T8ifijX4ZpwomfkJOkgSSTv/i8Wr9NTlFlZ1
+ FLWcWODYL4mPZhhQ4WmJsXLckDQYpWumOCipIikL/Uqbjrs1YNwYVY3v+gN95Q2P1U2wlpKqqwN
+ kpS4o5gdwqQWMerdxg5fZeR3vLgsfgvWEZ1OGgX2cT/ExQxRkmBIx3REJ1dq227o0g2dzax1zET
+ sbFvzu06gCMpC2LaVUuHcJkD/5atufSXFiHLSlXTgqGrzBlQy8YLPpOw==
+X-Received: by 2002:a05:6000:2903:b0:491:c392:1f31 with SMTP id
+ ffacd0b85a97d-4aa5ab788d1mr32985157f8f.28.1795468209755; Mon, 23 Nov 2026
+ 13:10:09 -0800 (PST)
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20261121012402.84848-1-tianyi@cloudflare.com>
+ <3adef4b4d528780bae31f2fb02d0a08bf9c8ebd5.camel@gmail.com>
+ <CAG4wq-f18SHytDb39SdJYzRPk-dzECjH_HCSiMGAQ721Zmfomg@mail.gmail.com>
+In-Reply-To: <CAG4wq-f18SHytDb39SdJYzRPk-dzECjH_HCSiMGAQ721Zmfomg@mail.gmail.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Mon, 23 Nov 2026 13:09:33 -0800
+X-Gm-Features: Aa3M54rzlNA1FR82U1PdfiFY5TW0gboojcKZPxdPIZcmX7lagtS1GzjDMw4zL4w
+Message-ID: <CAKgT0UeWWherBt1MDcPF7R7jxt6E_3peo8VuxrgY3JdseM-0rg@mail.gmail.com>
+Subject: Re: [PATCH net] ice: do not report CHECKSUM_COMPLETE when an XDP
+ program is attached
+To: Tianyi Gao <tianyi@cloudflare.com>
+Cc: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org, 
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
+ Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>, 
+ Eric Dumazet <edumazet@kernel.org>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, 
+ Simon Horman <horms@kernel.org>, Alexei Starovoitov <ast@kernel.org>, 
+ Daniel Borkmann <daniel@iogearbox.net>,
+ Jesper Dangaard Brouer <hawk@kernel.org>, 
+ John Fastabend <john.fastabend@gmail.com>, Stanislav Fomichev <sdf@fomichev.me>,
+ Paul Greenwalt <paul.greenwalt@intel.com>,
+ Alice Michael <alice.michael@intel.com>, 
+ Eric Joyner <eric.joyner@intel.com>, Jesse Brandeburg <jbrandeb@kernel.org>, 
+ Lorenzo Bianconi <lorenzo@kernel.org>, bpf@vger.kernel.org,
+ kernel-team@cloudflare.com, tianyi.gao@linux.dev
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -116,48 +166,54 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-13.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=4.0.1
+X-Spam-Status: No, score=-2.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_PASS autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Fix Intel drivers not handling RXH_XFRM_NO_CHANGE.
+On Mon, Nov 23, 2026 at 12:35=E2=80=AFPM Tianyi Gao <tianyi@cloudflare.com>=
+ wrote:
+>
+> On Mon, 2026-11-23 at 10:49 -0800, Alexander H Duyck wrote:
+> > I'm not sure this is the best fix for this. If we are needing all NICs
+> > that support CHECKSUM_COMPLETE *and* XDP to report CHECKSUM_NONE in the
+> > event of a frame being modified by XDP it really feels like we should
+> > probably look at moving this further up the stack.
+>
+> Thanks for the review, Alex.
+>
+> IMHO we should first make sure XDP programs do not cause "hw csum
+> failure" in current kernels. Whatever an XDP program does, it should
+> not be able to trigger a hw csum failure. It's not an uncommon use
+> case, e.g., Katran from Meta [3] and Cloudflare's load balancer. And
+> existing selftests already do it (test_xdp_native_adjst_head_* and
+> test_xdp_native_adjst_tail_* in
+> tools/testing/selftests/drivers/net/xdp.py).
 
-I had an urge to "fix this in the core" and hide RXH_XFRM_NO_CHANGE
-from the drivers, by fetching the current config instead.
-But "NO_CHANGE" values are already part of the driver facing API
-(hfunc has ETH_RSS_HASH_NO_CHANGE). Besides we can't _completely_
-hide RXH_XFRM_NO_CHANGE from the drivers, since we want the drivers
-to be able to populate the defaults for new RSS contexts.
-We need a "user didn't say" value there.
+That is exactly my point though. What we have is a divergence between
+a number of the existing drivers in how they handle these things. As a
+result the behavior is currently different depending on which NIC is
+in use.
 
----
+For example, one recent one I saw was an issue on the Tx side where an
+outgoing XDP program was modifying the frame and actually not updating
+the pseudoheader checksum. As a result it was breaking Tx checksum
+offloads for NICs that were using the HW_CSUM that used that checksum
+header. We could have fixed it by forcing all the drivers to
+recalculate the pseudo-header checksum, but instead we pushed back on
+the program that was making that change.
 
-Matt pointed out that the upcoming RSS sizing series breaks
-NIPA tests, this is because the fix we shared in June:
-  https://lore.kernel.org/20260626152636.1e48330f@kernel.org
-or Maciej's version:
-  https://lore.kernel.org/20261007200311.730443-1-maciej.fijalkowski@intel.com
-is still not upstream!?
+> > Also even if we go the multiple driver fix route I wonder if we
+> > shouldn't look at adding a new XDP return type to indicate that we are
+> > passing a modified frame
+>
+> IMHO that is for net-next. There we can add optimizations, such as a
+> way to keep CHECKSUM_COMPLETE for programs that do not change the
+> frame, potentially after [1] or [2] is accepted.
 
-Recent discussions suggest that Intel maintainers may be willing
-to ack patches on netdev directly. Let's put that to tests.
-
-Note that I think this is a major bug likely to bother real
-users so I'm targetting net. Przemek's series will have to
-wait for net->net-next merge.
-
-Jakub Kicinski (2):
-  ice: don't unintentionally switch to symmetric RSS hash
-  iavf: don't unintentionally switch to symmetric RSS hash
-
- drivers/net/ethernet/intel/iavf/iavf_ethtool.c | 3 ++-
- drivers/net/ethernet/intel/ice/ice_ethtool.c   | 9 ++++++---
- 2 files changed, 8 insertions(+), 4 deletions(-)
-
--- 
-2.56.1
-
+The point is you are fixing things for your use case, but anybody who
+is using the CHECKSUM_COMPLETE to compute the checksum on the frames
+and using XDP without changing the frames will see this as a
+significant performance regression.
