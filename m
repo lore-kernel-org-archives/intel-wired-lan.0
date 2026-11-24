@@ -1,29 +1,29 @@
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 672AC606A695
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Nov 2026 23:57:46 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7F823606A333
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Nov 2026 23:57:47 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=sYvNdrT+;
-	dkim=pass (2048-bit key, unprotected) header.d=mandelbit.com header.i=@mandelbit.com header.a=rsa-sha256 header.s=MBO0001 header.b=COS+ILg0
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=pNPic1gN;
+	dkim=pass (2048-bit key, unprotected) header.d=mandelbit.com header.i=@mandelbit.com header.a=rsa-sha256 header.s=MBO0001 header.b=o8lsIACM
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 49456606F6;
-	Tue, 24 Nov 2026 23:57:46 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 6300A80D02;
+	Tue, 24 Nov 2026 23:57:47 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id TFqd7S1WX5-G; Tue, 24 Nov 2026 23:57:45 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org A505E6076B
-Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795564665;
-	b=hXn5QWMuhMV0k8Qz224OJDPvNfcm1BvJWJRd0ZGzYMObofSZwLEH1AW5P4kpWjEhNwkx
-	 q4vs9MkfF1plJhpo7V2zqhQyDZLaPBwyiDMdw5InxShMm1emOdDe+2KH9kmc9/8Paf0+B
-	 jNX0hYcM3em3iB6hKKOJUyW/Xy4NGqbFoBs3xUpyk3KT2RngoRo+sXJQAGgpP9iB1X1TZ
-	 cP77nT/oeS/rFtQetS1/qg/C5KD9XyUojOFW/N7R9P4L/qaxzjs/pfiKOjohJoPZrcwlu
-	 SETnBUr8uSZpC+ot6HvaL8mZl/RRGX9qGF0ehA00WGa75qSzFPWMFTuOzPwnFA8yMeg==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id JDAmE0Lv1ubm; Tue, 24 Nov 2026 23:57:46 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 758D480D07
+Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795564666;
+	b=c42MRVvQ7LYOuI5JYeaexJX6vP3CqIUiPDINBGD7G+hf5FNwI7cybsIOm/K0giuagpbw
+	 iM9686mqf+by3pDPUJR39ybz/jWtqFvTnojGQ7DdhDbQFlvLjkRw0j1TI2zrrNBTxN54/
+	 Mq8f1yx9XSg1/RyRIx+d8t9U6oT32Or+W4UioPeL8baZ83xU82ar3NACb0jPOvAOuTxSu
+	 W9TnAWOfzVxgUVL4fT8SOA96z4vCxwUgEu6DdlCn3FXH25DrJogA0wll2I07pJojvWlqT
+	 /zZ3xUmqYhbFSPGY5OMR4AqelTi3+gq7699DvF0OdzfxyNOFQ7lENUvXXB8dc+d/COA==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795564665;
+	c=relaxed/relaxed; t=1795564666;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
@@ -32,75 +32,75 @@ ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
 	 X-Rspamd-Queue-Id:X-BeenThere:X-Mailman-Version:Precedence:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Errors-To;
-	bh=nLNAbdcbhe94cKt1uJgEZAT+B3+pg7rFP4RoRlJ/uUg=;
-	b=pd4FoCJWsMEUW4TZ7Ot2OY4TWmNqd8L7cggujWQ7rdmhPaP5wSWd5Y79XjiJUmafiKC1
-	 sDaDfEzhvvGABUTDlPelvTsB/MgXCLrIwsbgYZnf0PEuHSK4zoTQlaT3bG+0eFFjOShTm
-	 Hnvr1oUIlkCgSIhcbzrnnw5OPQAafUCWiZQqxDJQkPgC/xNB0dsVvEo2gNyq5WkwZoGKn
-	 llN2CejzxP/CD8fpQqTQjw2rr76FobkNseGe+GssYs/a4EZzYXaHEC/mX0G6z/bd+xf91
-	 EcAtgfoZmxvErdGPVHmHf3SXPyzxvHWF91JGt3Wugxpjk6hzR1G1R3ccjPKBz2eYOWg==
-ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
+	bh=NeH4msFzp7KNZlqjZxxwoBpRbytEX5mDF3Plc/IaGJs=;
+	b=SrSxlp16T5iZbgN8K6YZ/QsD5JwKF4K1gcWm3ruMZmEQc3q+MtwVubxZt11TrqIwmci0
+	 uYs1lPGkKT23+ysdtIWFMXxj0lIBtoaB2dTkIOi2w077LwmT6gIgObG1rB/5yelS1HdG6
+	 ZRAg5QYEThWbp8Yx5xPuwmF6+eY0jZ1CtJmhBFR5iITCGf7Vxt4VYGEznvGitFb9eGflZ
+	 reUTiR/Edxd/6XLTr7jOdEZoy60U4yb/ObE+BMBfWhfaKu29BP5IvoKDcmX02USjAGoDZ
+	 nANLYBfobtMqYrEX39TG95JKUIckprUUOjmm9cPG14Oq2200rsztCBWfwvMfLeNibAQ==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1795564665;
-	bh=nLNAbdcbhe94cKt1uJgEZAT+B3+pg7rFP4RoRlJ/uUg=;
+	s=default; t=1795564666;
+	bh=NeH4msFzp7KNZlqjZxxwoBpRbytEX5mDF3Plc/IaGJs=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=sYvNdrT+N/Q/k/bnq0Jk081iSRGmTJYJbUGv5my4Flwy/0V0DgIF2xVb1gJvX8vxp
-	 omg2cHJXgjbhaVEY8J0A8xIQNDBe9+3GS68G3VFFLpKTmpTSsEdMm782s0UNHON86a
-	 dnKJ++JcrVCLkqKdbzIjVXFY5IgcrKH7UHK/bqEcOZ/t0wqgR/bAwDBJrVBaX8CzgS
-	 AE7hwh4VJBreaTMkmYZPFoI9YsLXV3S9r7zYb/GS4tPwDqmmG8iJC8yT82WimjFt+/
-	 spk7m5WBcJy/qraROGJSAaPLG1S7Z3br6f4jeWD3C11XcNdv0/37KI9cr2HYfgGl6U
-	 s0WaxalpgmMkw==
+	b=pNPic1gNJnbyNJrGKXf5JM4VCWpkPl+WIZXbsq+2P2K5H3Ax8KbHj+XV76SGwlMUh
+	 L8gpLuYixaNIVyvcMgqYXtEPtvqYpUXmnsLhudy8O6DQxAkJjLnxj41kM+L2Q5RHJG
+	 Sq6xp08CLYcl7tvoP4LlCDXv2xDn4jXPeMS9bjFyuRKUcb/UAAqjTvWOHEDZaf1NDd
+	 ghEXCIwyNUuR/ilY+ePA00Tsrn96DXwudWfwa2QywXZYkxk37RXlUiMQ7e1Lv2VdOc
+	 oXD2ePsHs/c1tU8tzMwIkEEcaBF180tyOUPxCo6IkdHs8VoZfTWC0N6sAa0ZlV+QSS
+	 T4ylYi1i91r1w==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id A505E6076B;
-	Tue, 24 Nov 2026 23:57:45 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 01E512F5
+	by smtp1.osuosl.org (Postfix) with ESMTP id 758D480D07;
+	Tue, 24 Nov 2026 23:57:46 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 27C3A2F5
  for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Nov 2026 23:57:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id E872F405AE
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Nov 2026 23:57:40 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 19E9B40072
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Nov 2026 23:57:41 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id m972scVPb_PY for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id a2zMr8rzIfec for <intel-wired-lan@lists.osuosl.org>;
  Tue, 24 Nov 2026 23:57:40 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 0B44E404EC
-Authentication-Results: smtp4.osuosl.org;
- arc=none smtp.remote-ip="2001:67c:2050:102:465::105"
+ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org DF0F040071
+Authentication-Results: smtp2.osuosl.org;
+ arc=none smtp.remote-ip="2001:67c:2050:102:465::201"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2001:67c:2050:102:465::105; helo=mout-b-105.mailbox.org;
+ client-ip=2001:67c:2050:102:465::201; helo=mout-b-201.mailbox.org;
  envelope-from=antonio@mandelbit.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org;
+Authentication-Results: smtp2.osuosl.org;
  dmarc=none (p=none dis=none) header.from=mandelbit.com
-Authentication-Results: smtp4.osuosl.org; dkim=pass (2048-bit key,
+Authentication-Results: smtp2.osuosl.org; dkim=pass (2048-bit key,
  unprotected) header.d=mandelbit.com header.i=@mandelbit.com
- header.a=rsa-sha256 header.s=MBO0001 header.b=COS+ILg0
-Received: from mout-b-105.mailbox.org (mout-b-105.mailbox.org
- [IPv6:2001:67c:2050:102:465::105])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 0B44E404EC
+ header.a=rsa-sha256 header.s=MBO0001 header.b=o8lsIACM
+Received: from mout-b-201.mailbox.org (mout-b-201.mailbox.org
+ [IPv6:2001:67c:2050:102:465::201])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id DF0F040071
  for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Nov 2026 23:57:39 +0000 (UTC)
 Received: from smtp102.mailbox.org (smtp102.mailbox.org
  [IPv6:2001:67c:2050:b231:465::102])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519MLKEM768 server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mout-b-105.mailbox.org (Postfix) with ESMTPS id 4jZ09Y387Dz9ttS;
- Wed, 25 Nov 2026 00:57:37 +0100 (CET)
+ by mout-b-201.mailbox.org (Postfix) with ESMTPS id 4jZ09W6npszLmZY;
+ Wed, 25 Nov 2026 00:57:35 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mandelbit.com;
- s=MBO0001; t=1795564657;
+ s=MBO0001; t=1795564656;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=nLNAbdcbhe94cKt1uJgEZAT+B3+pg7rFP4RoRlJ/uUg=;
- b=COS+ILg0iXL4uTSMflkkkR1xtTGh0GPyXrtxx6BTex0cDfcqYEBblZEadkQUxEMSslMyYs
- ie/szoviBKG6/BTEhjyCQBLF29EzWIOQIW0nikKpxaJLJ4ZfVRrsV2T4u+dSTSjNQPJgUm
- zR3mVYm0MaxxilOIfNHwy7ovCG1jixeBUxnNfAc92E63CDW+uSnVGtCcrqya1qIjrC9JI8
- a1MMdjdfwcwT+j8hdczMB3PMkyZK6BiBd7w20KJTyDSSd+AisWxI3ymNArxJyZ04NvvRyE
- PXpB/I5fQK+FJeExM/zBiilQQiOlYcQ0J8WLcqZZSSY09SBRl5U9ArcBF1eQEg==
+ bh=NeH4msFzp7KNZlqjZxxwoBpRbytEX5mDF3Plc/IaGJs=;
+ b=o8lsIACMTombAUPxA3EYNk+avIvK70iDEo9juR+U8nGUVhzzcRSoBFnvLL4EQWlmDgsaKU
+ j0SyREf8W6EucBR98SuYpU/Lee0dq9Mo1Zp9EznP/6SJB6jHu8GPVldUlA0AC3XwRaD9D3
+ y3hQ5ATjpSheYV4B6/3aedBwvrKFu+gkpKPVwRCYfC2r8WaQt4O/x+zRPuEHnLPXEjUf9z
+ 5zM5SpmFjSTT4IY3rE9JC3tqdtMp9OHdjDdF6Y9jWvBgsuHLM6X//GglDxtw2nY4n3kzhT
+ 66SmZqGxujzckuT8zJS3eOzutMjSpIMtfs/5lioUNxeZ+ms9B8UmyepdXxAMIw==
 Authentication-Results: outgoing_mbo_mout; dkim=none;
  spf=pass (outgoing_mbo_mout: domain of antonio@mandelbit.com designates
  2001:67c:2050:b231:465::102 as permitted sender)
@@ -115,27 +115,20 @@ Cc: Antonio Quartulli <antonio@mandelbit.com>,
  Eric Dumazet <edumazet@kernel.org>, Jakub Kicinski <kuba@kernel.org>,
  Paolo Abeni <pabeni@redhat.com>,
  Janis Edvarts Lacis <janislacis06@gmail.com>,
- Alexei Starovoitov <ast@kernel.org>,
- Daniel Borkmann <daniel@iogearbox.net>,
- Jesper Dangaard Brouer <hawk@kernel.org>,
- John Fastabend <john.fastabend@gmail.com>,
- Stanislav Fomichev <sdf@fomichev.me>,
- Sven Auhagen <sven.auhagen@voleatech.de>,
- Sriram Yagnaraman <sriram.yagnaraman@ericsson.com>,
- Kurt Kanzenbach <kurt@linutronix.de>,
- Maciej Fijalkowski <maciej.fijalkowski@intel.com>, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, bpf@vger.kernel.org, stable@vger.kernel.org
-Subject: [PATCH net v5 5/6] igb: resume the device before changing XDP or XSK
- settings
-Date: Wed, 25 Nov 2026 00:57:20 +0100
-Message-ID: <20261124235723.1135808-6-antonio@mandelbit.com>
+ Kurt Kanzenbach <kurt@linutronix.de>, Joe Damato <joe@dama.to>,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ stable@vger.kernel.org
+Subject: [PATCH net v5 4/6] igb: link queues to NAPIs under RTNL after runtime
+ resume
+Date: Wed, 25 Nov 2026 00:57:19 +0100
+Message-ID: <20261124235723.1135808-5-antonio@mandelbit.com>
 X-Mailer: git-send-email 2.56.1
 In-Reply-To: <20261124235723.1135808-1-antonio@mandelbit.com>
 References: <20261124235723.1135808-1-antonio@mandelbit.com>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Rspamd-Queue-Id: 4jZ09Y387Dz9ttS
+X-Rspamd-Queue-Id: 4jZ09W6npszLmZY
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -149,75 +142,97 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 X-Spam-Status: No, score=-18.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=4.0.1
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-igb_xdp() can run while the device is runtime suspended or resuming,
-and __igb_resume() rebuilds the queue counts and the rings without
-RTNL. igb_xdp_setup() and igb_xsk_pool_setup() can then see a queue
-count whose rings don't exist yet (NULL dereference), or a NAPI that
-isn't enabled yet (napi_disable() never returns). Changing the XDP
-program of a runtime suspended device also opened it twice.
+__igb_open() links queues to NAPIs with netif_queue_set_napi(), which
+requires RTNL, but RTNL isn't held when resuming from runtime suspend:
+this triggers "RTNL: assertion failed".
 
-Resume the device for the duration of igb_xdp(), as ethtool does. Like
-the other resumes done with RTNL held, this can still deadlock with a
-runtime suspend already in progress, which takes RTNL itself; closing
-an AF_XDP socket or changing the XDP program is now one of them.
+Link them in __igb_open() only when RTNL is held, and from the work
+item that sets the real queue counts on runtime resume. The links can't
+be kept across a suspend, because __igb_shutdown() frees the q_vectors.
+A suspend now cancels the work item before freeing them, so it only runs
+after the resume that scheduled it allocated them, and it checks
+__IGB_DOWN under RTNL for a close in the meantime.
 
-Tested with the 82576 emulated by QEMU by closing a zero-copy AF_XDP
-socket and attaching an XDP program while the device is runtime
-suspended; the latter no longer warns in __netif_napi_del_locked()
-because of the double open. The races themselves weren't reproduced.
+Tested with the 82576 emulated by QEMU.
 
-Fixes: 9cbc948b5a20 ("igb: add XDP support")
-Fixes: 80f6ccf9f116 ("igb: Introduce XSK data structures and helpers")
-Cc: stable@vger.kernel.org
+Fixes: b75a1dea500f ("igb: Link queues to NAPI instances")
+Cc: stable@vger.kernel.org # 6.16+
+Closes: https://bugzilla.ipfire.org/show_bug.cgi?id=13562
 Signed-off-by: Antonio Quartulli <antonio@mandelbit.com>
 ---
-v5: new patch (Sashiko)
+v5: cancel the work item before a suspend (Sashiko)
+v4: no changes
+v3: link the NAPIs from the work item added by the previous patch, and
+in __igb_open() whenever RTNL is held (also on system sleep resume);
+dropped Joe's Reviewed-by, as the patch changed
+v2: no code changes; mention the tested hardware
 
- drivers/net/ethernet/intel/igb/igb_main.c | 20 ++++++++++++++++----
- 1 file changed, 16 insertions(+), 4 deletions(-)
+Note: igc has the same issue: __igc_open() also links queues to NAPIs
+(igc_set_queue_napi()) on the RTNL-less runtime resume path. A fix will
+follow separately once it has been tested on igc hardware.
+
+ drivers/net/ethernet/intel/igb/igb_main.c | 22 ++++++++++++++++++++--
+ 1 file changed, 20 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index acd9a33..80ae03d 100644
+index 6961646..acd9a33 100644
 --- a/drivers/net/ethernet/intel/igb/igb_main.c
 +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -2942,16 +2942,28 @@ static int igb_xdp_setup(struct net_device *dev, struct netdev_bpf *bpf)
- static int igb_xdp(struct net_device *dev, struct netdev_bpf *xdp)
- {
- 	struct igb_adapter *adapter = netdev_priv(dev);
-+	int err;
-+
-+	/* The rings only exist while the device is resumed, and resuming
-+	 * rebuilds them without RTNL
-+	 */
-+	pm_runtime_get_sync(&adapter->pdev->dev);
- 
- 	switch (xdp->command) {
- 	case XDP_SETUP_PROG:
--		return igb_xdp_setup(dev, xdp);
-+		err = igb_xdp_setup(dev, xdp);
-+		break;
- 	case XDP_SETUP_XSK_POOL:
--		return igb_xsk_pool_setup(adapter, xdp->xsk.pool,
--					  xdp->xsk.queue_id);
-+		err = igb_xsk_pool_setup(adapter, xdp->xsk.pool,
-+					 xdp->xsk.queue_id);
-+		break;
- 	default:
--		return -EINVAL;
-+		err = -EINVAL;
- 	}
-+
-+	pm_runtime_put(&adapter->pdev->dev);
-+
-+	return err;
+@@ -4146,8 +4146,19 @@ static int igb_set_real_num_queues(struct igb_adapter *adapter)
+ 	return netif_set_real_num_queues(netdev, adapter->num_tx_queues, rxq);
  }
  
- int igb_xdp_xmit_back(struct igb_adapter *adapter, struct xdp_buff *xdp)
++static void igb_link_queue_napis(struct igb_adapter *adapter)
++{
++	int i;
++
++	for (i = 0; i < adapter->num_q_vectors; i++)
++		igb_set_queue_napi(adapter, i, &adapter->q_vector[i]->napi);
++}
++
+ /* Some settings need RTNL, which isn't held when resuming from runtime
+- * suspend: apply them from here instead, if the device is still up.
++ * suspend: apply them from here instead, if the device is still up. A
++ * suspend cancels this work before freeing the q_vectors, so it only runs
++ * after the resume that scheduled it allocated them; checking __IGB_DOWN
++ * under RTNL covers a close in the meantime.
+  */
+ static void igb_rtnl_resume_task(struct work_struct *work)
+ {
+@@ -4160,6 +4171,7 @@ static void igb_rtnl_resume_task(struct work_struct *work)
+ 		if (igb_set_real_num_queues(adapter))
+ 			netdev_err(adapter->netdev,
+ 				   "error setting real queue count\n");
++		igb_link_queue_napis(adapter);
+ 	}
+ 	rtnl_unlock();
+ }
+@@ -4237,7 +4249,8 @@ static int __igb_open(struct net_device *netdev, bool resuming,
+ 	for (i = 0; i < adapter->num_q_vectors; i++) {
+ 		napi = &adapter->q_vector[i]->napi;
+ 		napi_enable(napi);
+-		igb_set_queue_napi(adapter, i, napi);
++		if (rtnl_held)
++			igb_set_queue_napi(adapter, i, napi);
+ 	}
+ 
+ 	/* Clear any pending interrupts. */
+@@ -9548,6 +9561,11 @@ static int __igb_shutdown(struct pci_dev *pdev, bool *enable_wake,
+ 	u32 wufc = runtime ? E1000_WUFC_LNKC : adapter->wol;
+ 	bool wake;
+ 
++	/* Don't let a work item queued by an earlier resume run once the
++	 * q_vectors are freed or reallocated
++	 */
++	cancel_work_sync(&adapter->rtnl_resume_task);
++
+ 	rtnl_lock();
+ 	netif_device_detach(netdev);
+ 
 -- 
 2.56.1
 
