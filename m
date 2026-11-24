@@ -1,165 +1,157 @@
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 25B04606A31E
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Nov 2026 00:17:58 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 40892606A321
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Nov 2026 02:22:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=eBI0KRAM;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Jv8dHSVA
+	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=fkZW5fMt;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=NTRpjfSb
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id F17BE605F4;
-	Tue, 24 Nov 2026 00:17:57 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1447D40588;
+	Tue, 24 Nov 2026 02:22:46 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id jI3_J7iaaLlP; Tue, 24 Nov 2026 00:17:57 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 199546067D
-Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795479477;
-	b=HiaZe+EP+MiqIZ+eUzjzhegIFbi+Cv8Y3Vp9j+CBGRtji2hD9keFA/rxy2jFVO6aJ+64
-	 T6KfYw+ZqPHlttPuxAcROGR17dZtFBaH+YND449gsAN03NRk95ZEVYPTsXpy1fh5QLP9N
-	 Hs40aSsChBeGEmOXbneU76fn053SEATSGsvqrF9HZfHFo5RlAiACqDCpS8390cDHNQK46
-	 LYn4OYYiBP9LwuTia6UZ406m04U6FIue0z4nCgHI/grIzRXWQJNy9dREJ8guqrqGPzx1A
-	 0DwuoXAyzHzR6d0fKH/Mg7GVgFCWBq0hfRBPp21jRcEieRJscxyE9knqXv5uOoQZ9OQ==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id n2ss2DcBEoCf; Tue, 24 Nov 2026 02:22:45 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 585B24068B
+Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795486965;
+	b=rxhiBEGb0FFeHPh3EKa4I7ha+N+BFsPo/O0XSMJdDljXe/Heo5a+msK4jx974w8C15Cg
+	 DJ/9OFBXGgHSgOWpnyJ1QiO+ca6fyPK7jbEpEkLbOLNhGkfLQbKhjDy0dmnnDEAJlnMSY
+	 ss+cVytm4kxqZN6Mq3LgBGrtCFdpnSEGoCwVmCBddclGdzip6mM/CK4BMPwPuBC5jdpOT
+	 vfcR04mJes+go9XCQfC4H5PAzoW0qB5D7xQEuQYiZEUwWaYHZMgGDB8ILl05EaM6eGFCS
+	 vG9oIP/P20hCQDwPEoZTvVEhQbNQocpo04j6jN1oc27Ip1B2cRSek0iLT7hRHu5tBPw==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795479477;
+	c=relaxed/relaxed; t=1795486965;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:MIME-Version:References:
-	 In-Reply-To:From:Date:X-Gm-Features:Message-ID:Subject:To:Cc:
-	 Content-Type:Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:
-	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Gm-Message-State:X-Gm-Gg:
+	 X-Received:Received:Sender:From:To:Cc:Subject:Date:Message-ID:
+	 X-Mailer:In-Reply-To:References:MIME-Version:
+	 Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:Precedence:
+	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=+f8XxVCKUeDTBInFaSnUJudwLzQYi3S7MYVKIfTz7Oc=;
-	b=HAOgzioaiRQMajda3s4/9fHm/LG6inptBS860CgOWt0q0MfAai5cI2JAUUOdoPvkhDmd
-	 bE58mTIXSxAB6sidHl2vGGsB6UNHkrxzMAgGQJlWObtJsRahd2j6OoCkH2AvCe9+m+ULW
-	 DJwdxpBQMkcphxsy66FujNSZ5XAX70wNvkMoXeVKV+btEz63semT/94ybcOhs5hb3+fHL
-	 tlGE5ZqfMK32pkfJMJzvhFpLIdrs8T/CGr8IlZ0jNgJTiowcXnFdB1igMkWpbFV4Oj0z9
-	 IySuPQfBi5RFA+7LeGORf83yUZWeetAw4p7sNqoAcSBk678wXMvIgLGp2Z3MAVZd9LQ==
-ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
+	bh=rYPVDxBVvOltbNOoJmQqqACBIgbxppeZWxXwH8wg5Qs=;
+	b=gWJ2wlEfVntuTR1wXZ+/Df23QWlE2dcyVwcVADIuJ3LX7607JU9z4hoVvM3pEKZqahHL
+	 znSYTNF2iuK4dkr+gKyd7uL3sz249sfnIDc28tAYwVFSja6mAWh9v4CsPTOVPGXOsLJsd
+	 u2WYaX3nChn4PHxRIB242x3zAXTMhN4N8EGWoAnsFjxNtYp8Js8WGWoLcYaJ/EDbMa+V0
+	 dvplMr9sk1uyzIdPg+Lk4EpuuE5k2UJRgp4mJZaLU42H8C1gEvpsexyZBmy21NtnNNfLQ
+	 pdHO2576b7D7M2HJTIl/F0ai7e8qMrayi79yXA9T+z8xhn/DJXYCdKRAXBaxkJiqEPA==
+ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
+	dmarc=fail header.from=canonical.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=NTRpjfSb;
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1795479477;
-	bh=+f8XxVCKUeDTBInFaSnUJudwLzQYi3S7MYVKIfTz7Oc=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-Id:
+	s=default; t=1795486965;
+	bh=rYPVDxBVvOltbNOoJmQqqACBIgbxppeZWxXwH8wg5Qs=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=eBI0KRAMZOzKivDigulqkfgtepWiExNZyXPpQaAcmGy6kj7fETMOMkN76D10TGAj1
-	 HlfNmsLTywt96emAdIIw/NSALJEsSHET13HrXOx7aEQ2hHC0O5BhtFawXHWe4kcihX
-	 1PnNnBrrtUykNBlPTbQD95oajxNAM/7mRI4tMUf6rtehwfr2EMbAqUJBuxrYM4fQ6c
-	 2b9GzGGeJuE/XYvbfSf9ttX9dIHcn+F1At5VgQtdB5vljqLSz+OCq9t4+fCd41igYl
-	 bi0mn7MBBD5WhByseY0C00GGKPt7KbUehjBHxWlaZIoSniNSA6LT6ZBuTRjVFiidit
-	 R61Jry/F0K3Tw==
+	b=fkZW5fMtzSeIphC6Md5VaJiS64DzqvnyKq0JeOdi6W1NU8xspZjwy/uUzLAd16MA3
+	 eig9A6OhVygkC9VxRxbdwa2O/sK16aR4LHwxW4d2p5wN7fXSbYaZmIny5x1WcwNS4m
+	 KJ0lUg5WmDfbrPXFzxJc3mu6SJuJwu+qLXyrZjXHd0qBNuOCiHPe/z0OD4rhG6nDGn
+	 EnMu1oukj4eEgSomSt+tdiAvTILAambaqu0FohpKjfMiSpZfRw+daaglBcaFN8tHaA
+	 Wy3mta5vH81dojnmSAuoatTvQVZ/RD/kNhpCv2113lGt5QfaoaYfuQBugTrTcTg4IS
+	 paPFuTP5hBL8w==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 199546067D;
-	Tue, 24 Nov 2026 00:17:57 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id A26FF3A8
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Nov 2026 00:17:55 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 585B24068B;
+	Tue, 24 Nov 2026 02:22:45 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 0786AFBB
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Nov 2026 02:22:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 7EF9A80E07
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Nov 2026 00:17:55 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id EC9984068B;
+ Tue, 24 Nov 2026 02:22:43 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id TWod8XvWbRSQ for <intel-wired-lan@lists.osuosl.org>;
- Tue, 24 Nov 2026 00:17:54 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 4B03980BE9
-Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0
- smtp.remote-ip="2a00:1450:4864:20::335"
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id grKCQDUtNBKu; Tue, 24 Nov 2026 02:22:43 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org BDC8B40588
+Authentication-Results: smtp4.osuosl.org;
+ arc=none smtp.remote-ip="2607:f8b0:4864:20::1035"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a00:1450:4864:20::335; helo=mail-wm1-x335.google.com;
- envelope-from=alexander.duyck@gmail.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
+ client-ip=2607:f8b0:4864:20::1035; helo=mail-pj1-x1035.google.com;
+ envelope-from=acelan@gmail.com; receiver=<UNKNOWN> 
+Authentication-Results: smtp4.osuosl.org; dmarc=fail (p=reject dis=none)
+ header.from=canonical.com
+Authentication-Results: smtp4.osuosl.org; dkim=pass (2048-bit key,
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20260707 header.b=Jv8dHSVA
-Received: from mail-wm1-x335.google.com (mail-wm1-x335.google.com
- [IPv6:2a00:1450:4864:20::335])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 4B03980BE9
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Nov 2026 00:17:53 +0000 (UTC)
-Received: by mail-wm1-x335.google.com with SMTP id
- 5b1f17b1804b1-4bb55cda775so24798095e9.0
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Nov 2026 16:17:53 -0800 (PST)
+ header.s=20260707 header.b=NTRpjfSb
+Received: from mail-pj1-x1035.google.com (mail-pj1-x1035.google.com
+ [IPv6:2607:f8b0:4864:20::1035])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id BDC8B40588
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Nov 2026 02:22:42 +0000 (UTC)
+Received: by mail-pj1-x1035.google.com with SMTP id
+ 98e67ed59e1d1-3b487f44ee0so1019090a91.0
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Nov 2026 18:22:42 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20260707; t=1795479471; x=1796084271; darn=lists.osuosl.org;
- h=content-transfer-encoding:content-type:cc:to:subject:message-id
- :date:from:in-reply-to:references:mime-version:from:to:cc:subject
- :date:message-id:reply-to:content-type;
- bh=+f8XxVCKUeDTBInFaSnUJudwLzQYi3S7MYVKIfTz7Oc=;
- b=Jv8dHSVA+QCGmryHNHA/mhSAWPjEirtvFb8ERBri+OYkubUYk/1GFMNGjzYi1oGw0v
- tMHkKczjZDQ99bXw0qTIFgK4reFaNJRSYZ4y0vyUoELHjAzOVhjvenalLQpJqS89Wn7W
- l0B7o7GS+c1AWGaqzjZUBMyPhNcJ3xPNKWvctqZl8pndmk5p+NEv1o9qs4efqxnKeUa/
- 2Y1HVodOnTDXRJoPaHwzx2iwvtVvqhCXKbZN3SgEVJB7PD1hiVpNCtUO/6u0ZM/542wu
- fdWg5V3ICeVBEuoSX7qLufPomAW4jKmPLLkSVUYcTcTn13TymluOvpiLF6mfsU6Fhldr
- A3QQ==
+ d=gmail.com; s=20260707; t=1795486961; x=1796091761; darn=lists.osuosl.org;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:sender:from:to:cc:subject:date
+ :message-id:reply-to:content-type;
+ bh=rYPVDxBVvOltbNOoJmQqqACBIgbxppeZWxXwH8wg5Qs=;
+ b=NTRpjfSbeZAzjqDTJsGSC6mP3hCA93PXHW+4iKjc1K3kf4+iaaltHdwMnpXmBEvHJE
+ CfQGbOkszq9BKMKDizuwNI2Bj72VDa95KE53YV0hscxl/n09ASJ8Mikn9OxCDjKnyIS8
+ 6UOkwl6AGRFcHrQarNrGFD35gytCMkFL06ho+VWHTgx8BJymeNrLDyJw5PUePX3Cmiuo
+ Rm4H1njUAwQZV9vbBR9ZQMgVmFHE1LlOTpgP0Xe4Tyba66nJmc2xpHdGpRTI8dH4Ydkc
+ +JA1zaOJtA+Rp+D0GTNHwaXiwlgcagWo7cNXOVyOKp3U82KVomX/tGvlXkHQJpg11XR+
+ UrKA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1795479471; x=1796084271;
- h=content-transfer-encoding:content-type:cc:to:subject:message-id
- :date:from:in-reply-to:references:mime-version:x-gm-gg
+ d=1e100.net; s=20260707; t=1795486961; x=1796091761;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:sender:x-gm-gg
  :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
  :content-type;
- bh=+f8XxVCKUeDTBInFaSnUJudwLzQYi3S7MYVKIfTz7Oc=;
- b=gwH8pdMqIKnmcmHXEL9PPG9aO+/2/5UvmTXgSgT9HxaH+QOOUVLjO9JC7O+nsF4LHQ
- fUIBzXYLi/SSZMt1k13cqFFWt6eJ1JRUfAe7ilxTlGwBD0nv6C2XoNcUNUJyWQYH/U4k
- LBOJls24j1tcMcqNUfsSFjXtAlOZVWxjWPhf8r9UhH8h5rcoJdaKc372yzTv4D3iY+st
- rQeBUhgLwKdQxuqrnaPc3k1Iok4CTBjyPKiczsU8AiM8Sw1cuGk94vqySweLfltnlX+T
- oixsUrn6S6YnEgCSs+GLcCnzcecG46xNT0hXlg5BjAsJ+Mf9QmB/XEtCi/aqBBOLM5RH
- m7lQ==
-X-Forwarded-Encrypted: i=1;
- AL+hErFobDIPFzem+CxVmuHSphyB3HI9Fvr3Fwdhtzs17wLtsMTGvQtgqxgimvQ8I4r4tDvPo/DSRaoQQvM4NAjKoHk=@lists.osuosl.org
-X-Gm-Message-State: APuU4Z9S+Mbk6b4S478M0c8vpOSJEV4AuW+fFjyAtwKWf/AeSKBUpdAt
- hHTyx3K2UFsTWyA1N6LdQJUFcDKZioX2DgR87oVocJH+CM1aDp6aHf+0lyK+CMDdxSJcDCOSb2V
- ClBJ3rIxBgmZ+1xh/lba12uYsMSte+H8=
-X-Gm-Gg: AZFdTZdXXT4qvqEwYuoj6lPQcqFp0aNxSVgNI3ERU3KV2wzAX8D2cQ76yEcpxywOL24
- 8G+u93Pwvw62kH1qPx5Xy7e4swrvEkW8zoP7nHnyELxN98ISFZxXV1u7K/PgTFHrnYuCurjESAL
- UNupbt7FpjII4BekG1LsZJC01UwM6Zw4I1QzB6n0AXfwZI6fd6HWAb2qEOdWot69RXvlUIQEY1x
- sWLFdpWFB12LewwcaukYiiex1SExTcsyAQZUGaGVKfJOFatRU0heEBXV+hrIJMamW0JpoOKap3W
- bk2Zzc0XPF9G80yPb+pK9eu0/Xe2h/GfAisvy2QT+NnFEyhtpQ563/oL4FxxZsweMcTFLJ3PybC
- BJxZWU+WuX6WdiLs61uNUWP5wBKDBTbH55mhzaeljR8b1+uACqqQzQEA2MgpMzdAvyhHa2zuMmH
- KFxuDxHoUP2Dsbc9i0irwdgeJh7Et0OIV56VGtKPXCuSaLiB+9pxiLVuw=
-X-Received: by 2002:a05:600c:1d09:b0:4bb:66fd:ad68 with SMTP id
- 5b1f17b1804b1-4bb888160cdmr282174825e9.14.1795479471368; Mon, 23 Nov 2026
- 16:17:51 -0800 (PST)
+ bh=rYPVDxBVvOltbNOoJmQqqACBIgbxppeZWxXwH8wg5Qs=;
+ b=WJ3azUFrDHTxz7PrkChOHtc9MuHwFRqcluxFz4owT/0L8JO8Bir/eXIgXxrrZxuEbQ
+ v8kr6DK+qJgRMGdNzVz+SrJVh0bKPEV+pXZcxmXFSzs3OGMxlV+3DyKgTyullfvCv3j+
+ 8z+Ufv3927lCokmk0GIQGCFroe2w8rGxORiA35mpfUpnP1mrNj+SaSNYtH0hh5+VZ7PJ
+ NTEvR6vJeBXFbHagwzIg7UeAonWgNL3EBkoQeK6QO9PwxLbFo9KTRrsKyS7+0Jz+03wP
+ l+qVUIdOHRb5ddTxPyH8VHQYFw3BRQcUEDNsIqfXIEyofFuQW+Qh9Jf3ouv5cwCLykHL
+ 6JJg==
+X-Gm-Message-State: APuU4Z9RNyyXaSN/h9Dd7rFRe5TKWnAbnjkPp9AS9eBqBqLM5P3PQbjY
+ fwQPl3SKZ9fDjIjAHcrYe69KiluUQM1gcEvTkez8GQ9hfyJjtKIOILgJgRL28TQI
+X-Gm-Gg: AZFdTZf6LjuyzQF1mlfDuaBlDKCUrgbgIGKisuqa/D+6JrH+b0MSffy75DRB3ZgmMaj
+ JcPM1Vbc31sAQqn1Kwm9MXPBhF9aaT25d9L4PenMyS1+PeZHVjPNwFzIgl21vtJKhWrLv2kxQsw
+ oOz3ZXlF9GDORNQ87UR79oEAtvIVMjhSvkjveWfFpej+xaTzexSRVU2scHi+Hr0FPc7QifAZFI1
+ QKXY9lmJTF4TD+RCU92RpEfExZN90etRJrwRfu1ZRBofEYjq3KaxrbDFIgR5VUTFI2zzqapehgR
+ LCFYz3yty6LVzciTs9lpSDGrOBjRw4lAEDVfXYdL0Y8zExmeRWQN6BIF/x9hI8F8mrbvhUHsBt5
+ 6I8snb91VoY7d5i21QF1DA4xPqD4YXPLMTn60tTzJsMVeJr4PnH/NXfQ2gFnHKW1wn/YllsGzqZ
+ LjlTa45ZpNlAnBHD8d1IeeZ6cJSMhPshozG87DJWspViFbWd2wdPPUJR3kOzzvno0LFJ1UfxVAh
+ NSDBFAu75WF1TQT06qb7opnJ4iFawb8rGK7mLJDWvvWbU+zTaYw2Ey/Z5qv6N6cWBpCWRuSs/Kn
+ rbecoc5fnulDQFPj5OJyNdN+J2e3WU8UiCllUzWCiRwVhnusAqv4p+ADqncgsLonfDW09rGt/v/
+ 72WfX7lhF
+X-Received: by 2002:a17:90b:2e8c:b0:3b3:b373:6a6a with SMTP id
+ 98e67ed59e1d1-3b41c9e45c3mr12662368a91.28.1795486961522; 
+ Mon, 23 Nov 2026 18:22:41 -0800 (PST)
+Received: from acelan-Precision-5480 (211-75-139-220.hinet-ip.hinet.net.
+ [211.75.139.220]) by smtp.gmail.com with ESMTPSA id
+ 98e67ed59e1d1-3b405ecbd0bsm23559437a91.15.2026.11.23.18.22.37
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 23 Nov 2026 18:22:40 -0800 (PST)
+Sender: AceLan Kao <acelan@gmail.com>
+From: "Chia-Lin Kao (AceLan)" <acelan.kao@canonical.com>
+To: intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Cc: Ye Shu <hello@shuye.dev>, Vitaly Lifshits <vitaly.lifshits@intel.com>,
+ Dima Ruinskiy <dima.ruinskiy@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@kernel.org>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH] e1000e: disable K1 by default on more MTL+ systems
+Date: Tue, 24 Nov 2026 10:22:33 +0800
+Message-ID: <20261124022233.1234651-1-acelan.kao@canonical.com>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20261119001818.513503-1-acelan.kao@canonical.com>
+References: <20261119001818.513503-1-acelan.kao@canonical.com>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-References: <20261121012402.84848-1-tianyi@cloudflare.com>
- <3adef4b4d528780bae31f2fb02d0a08bf9c8ebd5.camel@gmail.com>
- <CAG4wq-f18SHytDb39SdJYzRPk-dzECjH_HCSiMGAQ721Zmfomg@mail.gmail.com>
- <CAKgT0UeWWherBt1MDcPF7R7jxt6E_3peo8VuxrgY3JdseM-0rg@mail.gmail.com>
- <CAG4wq-dizUz-6GB8Aj1wRTQBOzbHbT7pX9gom+AhR=5OWSyjzw@mail.gmail.com>
- <CAKgT0UffmbELMsGi8HRfu62MfC9VRYZ+TMNKFjZMWJyrV4t3jw@mail.gmail.com>
- <CAG4wq-cG1bseTFczZTjashN75J1Jsrv=u1ccuRsY-N1kZ=SXXg@mail.gmail.com>
-In-Reply-To: <CAG4wq-cG1bseTFczZTjashN75J1Jsrv=u1ccuRsY-N1kZ=SXXg@mail.gmail.com>
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Mon, 23 Nov 2026 16:17:15 -0800
-X-Gm-Features: Aa3M54pXq6mr_CU1bdkLP3MSJC2lLz1GXmfjYby6zsKSTGadaC_FLxjN5Btbots
-Message-ID: <CAKgT0UeNyyXKARjKR4nVVxNe3UB16WuXqxSz0cf4ZvCdb9A4_Q@mail.gmail.com>
-Subject: Re: [PATCH net] ice: do not report CHECKSUM_COMPLETE when an XDP
- program is attached
-To: Tianyi Gao <tianyi@cloudflare.com>
-Cc: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org, 
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
- Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>, 
- Eric Dumazet <edumazet@kernel.org>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, 
- Simon Horman <horms@kernel.org>, Alexei Starovoitov <ast@kernel.org>, 
- Daniel Borkmann <daniel@iogearbox.net>,
- Jesper Dangaard Brouer <hawk@kernel.org>, 
- John Fastabend <john.fastabend@gmail.com>, Stanislav Fomichev <sdf@fomichev.me>,
- Paul Greenwalt <paul.greenwalt@intel.com>,
- Alice Michael <alice.michael@intel.com>, 
- Eric Joyner <eric.joyner@intel.com>, Jesse Brandeburg <jbrandeb@kernel.org>, 
- Lorenzo Bianconi <lorenzo@kernel.org>, bpf@vger.kernel.org,
- kernel-team@cloudflare.com, tianyi.gao@linux.dev
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -170,77 +162,160 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-2.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_PASS autolearn=no autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-16.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Mon, Nov 23, 2026 at 3:26=E2=80=AFPM Tianyi Gao <tianyi@cloudflare.com> =
-wrote:
->
-> Hi Alex,
->
-> Thank you for being so responsive, and I really appreciate it.
->
-> On Mon, 2026-11-23 at 14:42 -0800, Alexander Duyck wrote:
-> > In the mlx5e case they were disabling the feature via the private
-> > control flag if it was enabled. In the case of your change you are
-> > just disabling it without exposing that it is disabled.
->
-> mlx5 does not change the private flag when a program is attached. It
-> sets MLX5E_RQ_STATE_NO_CSUM_COMPLETE on the RQ, and
-> rx_no_csum_complete keeps its value ("off" by default).
->
-> > is it falling through into the CHECKSUM_UNNECESSARY path with all
-> > the indications that a tunnel was still there even though you
-> > stripped the header?
->
-> Yes, the same path as E810, and mlx5 does the same with a program
-> attached.
->
-> > The issue is that the driver is making a number of assumptions about
-> > what is there based on what the hardware parsed for headers and such.
->
-> This was discussed in the thread of [1], including the decap problem
-> with csum_level. The summary there was that reporting
-> CHECKSUM_COMPLETE on the XDP-to-skb path is unsafe, and that the
-> safest option for now is CHECKSUM_UNNECESSARY only [3]. The decap
-> case with CHECKSUM_UNNECESSARY was left open as a known problem.
->
-> I am also working on the long-term design in [2], though there is
-> still a long way to go. Please take a look if you are interested.
->
-> For this patch, my aim is simple: stop the "hw csum failure", and
-> make E830 with XDP report RX checksums the same way as E810, i.e. as
-> before GCS was added.
->
-> [3] https://lore.kernel.org/all/20260721183256.6f49d6e1@kernel.org/
->
-> Thanks,
-> Tianyi
+Like the Dell Pro 5 Micro P5M1260 added by the previous patch, other
+systems with an I219 on MTL or later no longer enter S0ix during
+s2idle since commit 578294b8b60d ("e1000e: Reconfigure PLL clock gate timeout and re-enable K1 on Meteor Lake").
+Every suspend ends with:
 
-Any reason why you couldn't just strip the GCS enable flags from the
-rings when you add the XDP program in ndo_bpf instead of having to add
-a check for every packet if the XDP program is present? That would be
-closer to what they did for the Mellanox NIC and wouldn't be adding
-code to the hot path. Then it is just a matter of also adding an info
-message that you are disabling this in the log so if somebody does
-have to figure out a regression it should be more obvious.
+  intel_pmc_core INT33A1:00: CPU did not enter SLP_S0!!! (S0ix cnt=0)
 
-Thinking in terms of what the final fix for this might look like,
-currently the drivers are already starting to carry stuff for frags to
-determine if they support jumbo frames via frags or not. I suspect we
-will likely need to do something similar when the time comes
-indicating if the program can avoid corrupting a checksum or not when
-it is stripping headers.
+Each unit ran 3 s2idle cycles on kernel 7.0 with the default K1
+setting and, if all of them failed to reach SLP_S0, 3 more with
+disable-k1 on. On the following systems the default cycles never
+reached SLP_S0 and the disable-k1 cycles all did:
 
-I am not super thrilled with the idea of this becoming standardized.
-In theory this would be much better if there was some way to pass the
-data out that the frame was mangled and what the checksum adjustment
-is to the total frame. As it stands we are probably going to be
-getting CHECKSUM_UNNECESSARY on everything even if we don't expect it.
-For example I don't know what will happen with an ICMP frame sent over
-this tunnel. I assume it is likely just discaring the
-CHECKSUM_UNECESSARY since it isn't used.
+  Dell Pro 14 PC14250                       [8086:550a, 57a0]
+  Dell Pro 3 14 P314260                     [8086:57b3]
+  Dell Pro 3 16 P316260                     [8086:57b3]
+  Dell Pro 5 14 P514260                     [8086:57b3]
+  Dell Pro 5 16 P516260                     [8086:57b3]
+  Dell Pro Max 14 MC14250                   [8086:57a0]
+  Dell Pro Max 16 MC16250                   [8086:550a]
+  Dell Pro Precision 5 14 PW514261          [8086:57b3]
+  Dell Pro Precision 5 14S PW514260         [8086:57b3]
+  Dell Pro Precision 5 16S PW516260         [8086:57b3]
+  Dell Pro Rugged 10 Tablet RA00260         [8086:550e]
+  HP ZBook 8 G1i (14/16 inch)               [8086:57a0, 57a1]
+  HP EliteBook 6 G1i (13.3/14 inch)         [8086:57a0]
+  HP EliteDesk 8 Mini G2i                   [8086:57b3]
+
+Add these systems, matched by DMI vendor and product name, to
+disable_k1_list so K1 is disabled by default. The HP entries match
+the product family, which covers the screen size variants.
+
+Cc: stable@vger.kernel.org
+Fixes: 578294b8b60d ("e1000e: Reconfigure PLL clock gate timeout and re-enable K1 on Meteor Lake")
+Signed-off-by: Chia-Lin Kao (AceLan) <acelan.kao@canonical.com>
+---
+ drivers/net/ethernet/intel/e1000e/netdev.c | 98 ++++++++++++++++++++++
+ 1 file changed, 98 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index a8f0d3c0fd750..319c7a44f5a53 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -80,6 +80,104 @@ static const struct dmi_system_id disable_k1_list[] = {
+ 			DMI_MATCH(DMI_PRODUCT_NAME, "Dell Pro 5 Micro P5M1260"),
+ 		},
+ 	},
++	{
++		.ident = "Dell Pro 14 PC14250",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "Dell Pro 14 PC14250"),
++		},
++	},
++	{
++		.ident = "Dell Pro 3 14 P314260",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "Dell Pro 3 14 P314260"),
++		},
++	},
++	{
++		.ident = "Dell Pro 3 16 P316260",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "Dell Pro 3 16 P316260"),
++		},
++	},
++	{
++		.ident = "Dell Pro 5 14 P514260",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "Dell Pro 5 14 P514260"),
++		},
++	},
++	{
++		.ident = "Dell Pro 5 16 P516260",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "Dell Pro 5 16 P516260"),
++		},
++	},
++	{
++		.ident = "Dell Pro Max 14 MC14250",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "Dell Pro Max 14 MC14250"),
++		},
++	},
++	{
++		.ident = "Dell Pro Max 16 MC16250",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "Dell Pro Max 16 MC16250"),
++		},
++	},
++	{
++		.ident = "Dell Pro Precision 5 14 PW514261",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "Dell Pro Precision 5 14 PW514261"),
++		},
++	},
++	{
++		.ident = "Dell Pro Precision 5 14S PW514260",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "Dell Pro Precision 5 14S PW514260"),
++		},
++	},
++	{
++		.ident = "Dell Pro Precision 5 16S PW516260",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "Dell Pro Precision 5 16S PW516260"),
++		},
++	},
++	{
++		.ident = "Dell Pro Rugged 10 Tablet RA00260",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "Dell Pro Rugged 10 Tablet RA00260"),
++		},
++	},
++	{
++		.ident = "HP ZBook 8 G1i",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "HP"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "HP ZBook 8 G1i"),
++		},
++	},
++	{
++		.ident = "HP EliteBook 6 G1i",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "HP"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "HP EliteBook 6 G1i"),
++		},
++	},
++	{
++		.ident = "HP EliteDesk 8 Mini G2i",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "HP"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "HP EliteDesk 8 Mini G2i"),
++		},
++	},
+ 	{}
+ };
+ 
+-- 
+2.53.0
+
