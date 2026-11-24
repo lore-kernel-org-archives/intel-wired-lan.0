@@ -2,139 +2,145 @@ Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C7BB6606A68B
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Nov 2026 07:07:18 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D563A606A68E
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Nov 2026 07:07:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=uYeJ43pm;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=RIwUIx1J
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=YFsoH95j;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=o24u8jBG
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id A7C9780BB2;
-	Tue, 24 Nov 2026 07:07:18 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id B381980F4E;
+	Tue, 24 Nov 2026 07:07:21 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id fHOHVjgPJbIo; Tue, 24 Nov 2026 07:07:18 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 1533F80C1A
+ id YaRFC-b3HiBM; Tue, 24 Nov 2026 07:07:21 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 2D00380E5F
 Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795504038;
-	b=lc9YavB7G6Q/2bWozqAbViEm5C9zT8+X7q8KqyouWoSj0Av/KKu2CNko7hoKVsg2MjZj
-	 VVLiwn6xCrTYncZlv1u590PK2X5vvO/TnBoTo64Mypx8pk3p9NeUw+2PJygI1AsWnZaIN
-	 u+36Bosai/oVF4/4YM2MkS5nIf785ZEM7f7cDp62Ts6XuEA/9Aqc8njjuiu6HrsxFUrq3
-	 E0/ODvcDEc7iFvgj/5fgdqUVdwbNa7PfAbX45URT51jNFsk0KGPcNXnTFXYc8r5Qqwuzh
-	 2LdR/NHV517FFYPJ7Tj++h4OB3FmC5yYc88MiF2b23U99loQm0nkWh6g0W2aH3EC0mQ==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795504041;
+	b=kMHxJKKcCmwBSWqzZD3/2DjXK9kIKIo5Y65MgTQt9V7RALSFKptB+81FTGg/Haa73DEL
+	 vQe3nWUgmCVga5M9dOua3Nokx2f43zYFuMp+VkjHTKYvUB86cFwHTUlD9XRNAbqxjx1AH
+	 Kxa7vTBnQ6TGPJWXdVmsMHPGYfYsaa2U8MFJ2d5EXjJKFuHPtM8ZRLm8ithmebZ403NOA
+	 qHiT1xzeiyzrqrl5Ie8UCNl3EmpGxHYB6HPzugN1iVmZ6Ta/N7nv4wyhHBz1Vi+vG/4EV
+	 HGRLZsUnZfSiHwx6AABiyPzbUpG0BkRYFrt8qplTS3vQf3zzlfoFCOH6qeLyfUZlbzQ==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795504038;
+	c=relaxed/relaxed; t=1795504041;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
 	 DKIM-Signature:X-Google-DKIM-Signature:X-Gm-Message-State:X-Gm-Gg:
 	 X-Received:Received:From:To:Subject:Date:Message-ID:X-Mailer:
-	 MIME-Version:Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:
-	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
-	 List-Subscribe:Errors-To;
-	bh=IC3LVVpCgx2FAz4Ler6p5Ik5jT3gP8rGy4Uyn5vHrIU=;
-	b=es5UcRHKdsBIjnau3BlHpdP8IfOlTEzblIPWbZADyaZ2443wJ8uQazc7pEPlk5tHfmp9
-	 VE1MVHFOLDzX9O5qt96j+TX7Bx/a6e19lq9CpkezyFvRqJGSl4cKr3LE1NjVrLy9uJAKR
-	 MtRVQPOfAlaMtfHnDIgMYOIIN7XJhzTqBmuJG29sUBSNlDwQXl8ugv00NxtYYTSzZe3WR
-	 U7McCI23oXIz+1hC53sGz4YhktlA7eqw50RRP+MliWi596O3H6I150aTFaUmhY5coCp2K
-	 zaZpYPRIKSIsfAP1doRnJ7yutuJVcQonKkhFvlJbJqZypv9Ft89elONAwPfyAEtT5/g==
+	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding:
+	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
+	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
+	bh=1a1sEC0opA8FK+P5aTL8hTESPayturbzP3CdUYVKH/Q=;
+	b=BD/m4nEDlbB5GgZfXEgT6DPsCY+a5jh1J8lUeZQ1fM7NwwBed/5OhngLmR562jLHOthv
+	 /FoApKwwCdUD61x868KQO0UVyv+n9M9cbd4nu6qUKqLxFMI6kowhJ8OFSJZw1vbwUAfDw
+	 aF9ak7cAK/oyt4dTyfFrdn6LetH6dj8HEG5yD9d6N2mwwiklw+P4vmg+7InK8Xc/8qc0+
+	 Ds8O94y86X9MAKceNTK+xz68o9QoCEKVAvTBSPahfR3TrMAk9gXgI7qoaJS1E/dWnNUXc
+	 04p9xpKuRRIQu0YLI0xZrpZArEerAgXHGV0abCWujacVeoc0sqtYIijmkYlCOIYNxcg==
 ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
+	dmarc=pass header.from=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=o24u8jBG;
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1795504038;
-	bh=IC3LVVpCgx2FAz4Ler6p5Ik5jT3gP8rGy4Uyn5vHrIU=;
-	h=From:To:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=uYeJ43pmH49Yfsecna1OX9e4ANrnw9Iy91MgqrcVdLprTbq3kINdjgBfvdkmKoAIG
-	 JrpIPvhGCwu8mg9cn9nL2jPlDBkAFXxQdcJh74DzCIoNVb3Q15huXPBxkwdFOR3X/F
-	 bndVnKPD7n39EI7mKZN6S4gC0Q1oWCz5DkoUJSxFCghneoXrLrKoklp9OMWXuMHPvi
-	 UxK7L+4XIhQA2Pk9NYgD+9MLAICb7Bws7GS5NINI52eCbBuZ4Ef0kFiwMhyyacXH/k
-	 GuHDdoknWOoqefOIcL9uRs9OklcYwwubvLEPiCjBV24pOFWDWcEQwI+SHZKvbBpxlF
-	 ODSNI+cGh503w==
+	s=default; t=1795504041;
+	bh=1a1sEC0opA8FK+P5aTL8hTESPayturbzP3CdUYVKH/Q=;
+	h=From:To:Subject:Date:In-Reply-To:References:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=YFsoH95jTruMNOxM00rGPmbU4WIcQ683IuPrUwNYX9qfPRfSfEPg+SJrZYhkXEqDv
+	 S6x33v/LzX8EAHjGzqgIofE7Rqm62EJt9mOIFLANVUpD4ABlaMcC2hbVkXeVgaLS8h
+	 vDczyXs0cQVGPjHdZSWD4VpqGSC4AyFzGAWAiLwULt7b3iIwRv4Hfhnfks3/KLYzmv
+	 EIYOrRbYRee+v8KsRDkkrR4tCb9v55OJ2g1pHLD0439Y2IKLcvyXT9i5BpI5j2225l
+	 3F0OJDRctm5k9B/EN2qgV7/1sTUji2lz9it5HsMZr5l05WL3wl9DpWIS8HlSOhfBZg
+	 YIfLyGbLUkAUg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 1533F80C1A;
-	Tue, 24 Nov 2026 07:07:18 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 265E71AB
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Nov 2026 07:07:17 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 2D00380E5F;
+	Tue, 24 Nov 2026 07:07:21 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 94ABE260
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Nov 2026 07:07:19 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 17FE260789
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Nov 2026 07:07:17 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 82ABA80F4D
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Nov 2026 07:07:19 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id xgtT0yuSEhrB for <intel-wired-lan@lists.osuosl.org>;
- Tue, 24 Nov 2026 07:07:16 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 09689605EE
-Authentication-Results: smtp3.osuosl.org;
- arc=none smtp.remote-ip="2a00:1450:4864:20::431"
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id kD6Zi0Of-X3a for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 24 Nov 2026 07:07:19 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 9311F80BE6
+Authentication-Results: smtp1.osuosl.org;
+ arc=none smtp.remote-ip="2a00:1450:4864:20::42c"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a00:1450:4864:20::431; helo=mail-wr1-x431.google.com;
+ client-ip=2a00:1450:4864:20::42c; helo=mail-wr1-x42c.google.com;
  envelope-from=sashaneftin@gmail.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp3.osuosl.org;
+Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp3.osuosl.org;
+Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20260707 header.b=RIwUIx1J
-Received: from mail-wr1-x431.google.com (mail-wr1-x431.google.com
- [IPv6:2a00:1450:4864:20::431])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 09689605EE
- for <intel-wired-lan@osuosl.org>; Tue, 24 Nov 2026 07:07:15 +0000 (UTC)
-Received: by mail-wr1-x431.google.com with SMTP id
- ffacd0b85a97d-4a34ffd3e39so2213672f8f.0
- for <intel-wired-lan@osuosl.org>; Mon, 23 Nov 2026 23:07:15 -0800 (PST)
+ header.a=rsa-sha256 header.s=20260707 header.b=o24u8jBG
+Received: from mail-wr1-x42c.google.com (mail-wr1-x42c.google.com
+ [IPv6:2a00:1450:4864:20::42c])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 9311F80BE6
+ for <intel-wired-lan@osuosl.org>; Tue, 24 Nov 2026 07:07:18 +0000 (UTC)
+Received: by mail-wr1-x42c.google.com with SMTP id
+ ffacd0b85a97d-490f38e9688so2873835f8f.0
+ for <intel-wired-lan@osuosl.org>; Mon, 23 Nov 2026 23:07:18 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20260707; t=1795504034; x=1796108834; darn=osuosl.org;
- h=content-transfer-encoding:mime-version:message-id:date:subject:to
- :from:from:to:cc:subject:date:message-id:reply-to:content-type;
- bh=IC3LVVpCgx2FAz4Ler6p5Ik5jT3gP8rGy4Uyn5vHrIU=;
- b=RIwUIx1JzuX3GvZo/+8wU8B+jkH3H/4U3lfLtxgq6KF6GXC2KQ7EbKDVmpaweUUQqv
- vnzm+o8x1rSN1klCjc0c0+5178733pEBFE9moBueKq30kkfFynzhvPN+UTmUVML3ZIQB
- 03QBWnf8tA4W+Aa25wsRwZTnhiZH5x/JkyI55tkrXWxWhn1Vw3fhv/zcxw2IFq5zkpo+
- WnDxPlV20LJuedBKB2E9K4nxJ9nPMm4bTPhHSR/CLPM1zO3+A2WIjrCWSRadarI80z+s
- CypMc7N8qMhgB5YGtW2lup3O5eKs9LDTTJdweX+uUNmcTv0z+niG0dEhkFTNQhRgkn+s
- EHtQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1795504034; x=1796108834;
- h=content-transfer-encoding:mime-version:message-id:date:subject:to
- :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+ d=gmail.com; s=20260707; t=1795504036; x=1796108836; darn=osuosl.org;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:to:from:from:to:cc:subject:date:message-id
  :reply-to:content-type;
- bh=IC3LVVpCgx2FAz4Ler6p5Ik5jT3gP8rGy4Uyn5vHrIU=;
- b=xXB9pY/VU7Oe/lTwbxyKXL3t35jI30ZmPN4lF6cfLPE+fQ2lqqke7lB8EFAGxvCs3/
- ZEqsFKDYB8xEt3/ZVPQwLVKWqVq3rfVkjT3OOy86T7w9GAJOEeWSELAmmcl5CqsCL3E/
- MAM3dvuiEkyNO6i/xBd3iulD9Rb7+fV0M4IyR3mcxxO6kWR3y7Y/lzJ+xByxiVEfChzh
- o07ugif3lwBOkifCaZbkTWS8quAdspQh7GFLqDv6LRDxki63Kx1Vt4ZP37qn5iChKRGB
- 49QkrtHHX0Dejn2X4q7qXZ2YDTNzJ1WD1FUZkZqQSGMU5HMgR9tgcVgcLevu2zNkIua9
- xIdg==
-X-Gm-Message-State: APuU4Z+PMtNM85w1lw6wtirMDYjBSa94Jr76xh3fgRSEKtS32YKm5/J+
- 58AVLwVlF3z0brhdGgQEc/1Ss3uN3URXhM0WbrVhUtMuyvzTwPxNfUIvtZWLZMak
-X-Gm-Gg: AZFdTZctS1Jo0UBlZoGnbD5X9jEyG+wESEp3/BL9J4g7wPksPF/mcBHCIvsegritH3L
- EX0BBXabtk072wrD8OSAPmtBmr5X8g7Lox2EsNPeldYeVqgc3E1HwPAbA0Rl2h98i0m/VXp0S5Q
- BiN+FX77TVQOKIJKRWXSEs4/FaIYv1jVNVk69y5nfvQz2UBl43nM/JI1X5n/4D4owPL2e7a359v
- 3TE8ypcRBQDGJM/70MkwR0m5S4GAiZ/raf6R8jcokcF92tPn6VGus168A3F4TVGvfdGbYTbZzyi
- rFYBvJXZo4RvTxmM7NmO/7qxE5M8kJtYSO+Y9N3Z1l81fbWxHa3ETOlIPT4BI2xEdUELMaGIeeB
- LU0KnldrLRtpdYpu0dnlUML0Rnx784/S7egI2pZ0xE7uhaOYilYwUI8TVAibl5Q/gNVXtTPTDiU
- TIrEH3DlqAZ+xVIS+VqdOL2lhXseE+g9Jx+dyIxd1mHAmt2P7rM+k3B1cbt5grRDezJFRXgEKn8
- s2x+cG74+SFAEPmoVMl4NTjwXtDrQDamHeepRDGMypkwdIXvgLlZil0K4OOU2AD5p5Uw45dFk21
- e8omNpa4CA+TgnU6EgG7X5reyqZTMlOPsL5S2wr5BDMMTTcMdLQL+TFVF1LLMFEMHuogstlOHPw
- w8AXzHwRP/uirL7dZdAw=
-X-Received: by 2002:adf:e197:0:b0:492:b5d9:feb9 with SMTP id
- ffacd0b85a97d-4abb3a4d8f7mr23998529f8f.30.1795504033666; 
- Mon, 23 Nov 2026 23:07:13 -0800 (PST)
+ bh=1a1sEC0opA8FK+P5aTL8hTESPayturbzP3CdUYVKH/Q=;
+ b=o24u8jBGKznalCR6Y0N9p+tBXyvRIkVFdDLyrrka0K1n6FsgXoGjoIGHweJQHxH9Yw
+ L01sWDZh4E39M2mzW3nyIS+6bEnCQcX2zk3lYbUXoWwGPVhmW3Qo/nVzjIgl3ypxkMEB
+ h6JQjuuEevPrwbI85kkOrTSiKZyNfEj9oXrM5ZFBloD3R/tu3E4+wegwEA4kqsdnsZAj
+ ZhFgm0lWIB2tI5agqVmausvu8eoBIjstq3eKTM7XgmoLh6xpqKcY8Wb7619nww1XyfLh
+ 2oA3QOtY7zU+5uW8e6nVhSkYPyIvKxxbelLnzbQm0pVszuFdxfkvPqi27plaBFzKjKuV
+ VN8A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20260707; t=1795504036; x=1796108836;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:to:from:x-gm-gg:x-gm-message-state:from:to
+ :cc:subject:date:message-id:reply-to:content-type;
+ bh=1a1sEC0opA8FK+P5aTL8hTESPayturbzP3CdUYVKH/Q=;
+ b=S5Hrmu8tLTpqsmLR4XbOihbjZguru0HoCJfUTtKPq0IIU9QFORJmtjurDYhh9EBtgS
+ PPTbXlxEZdFnPNPaOT+z5E6sHRjlnlwxdqfqNEqVZ6i7q6tARL+wvO6T+MO6WgnKy32/
+ CZhCu17cIkox1Boze6HAG5WdZbMjCZVxL43qRwcmJ2A6Oo69I22cHdIhNGF/DnD7PiYg
+ TE6DC1mmKZi0e+ds+7rJDsvP2ONnCYHGAyAoVwYVa/BB6QYOPsdLyFzozqOoYxKfzNvl
+ YOwZV9za5pobOldJvTn4APNhCsiUIaFtZ8j/c+gNmonksJAZbrOwUxb78lwjCfvxpXzd
+ SB1Q==
+X-Gm-Message-State: APuU4Z/EEjOsX8L8fU3KY/WxQDBLrAMKFL9neXPzI4aDB57eUxRUL+9q
+ B51m6pxsZzU2W1PEP6Sjo1gYZCAtBxXMp3FV69B1UWSiK8nK86+XPKK9pQF4KX1O
+X-Gm-Gg: AZFdTZdkwM6Wjjezmah7YSpCet8MRPAiuDvMIkHX6sFM5AATuNKNVB7oNyR8N/iBDuG
+ 1uhfLJkk3c3+9tdH0dgOpFVuzwjewLpDiUUvm7pKRWm8xEyIG8DwLdduZ/VtoV1nxYYSz2rB+LQ
+ xmVSVIRLjZ78lLg4h592mzkStBnfUbCPGW02coJ7VOlRI14dvm42yxj6b+fLWWng3zIzjud/kTw
+ 2gB1yd0EFA+ycKvaK/Z1UoyQqYBYX1+XLPymp4ByKnoNgs97BRDbgGyjn9OwIpRIa8jQ+P6579K
+ u4LnyeYdZg2zc7zy6F3Hmac6kk5Ro8H1Mi17faBFV3q0daBlRy+6ABX6M3iLJZuuWK6OA8YRl1O
+ IatykMtjTPd11SM/kEb+oiVsh0nvzaWXE6msicnPiGG5yYNf/C0iVjX6S19ohN//BZ69SrQR9wY
+ WJIiH1XAPRxlYIg8AuYKoPdwkY/SXzs6bamm3AaRrLqy8OjM95YdNkXtciyMcaPAhheQoddkuvd
+ ZrAddCNR1B3CiHWa8I+pgXMOnkZF30wkNDrUz+G0cHcgibfoH1IKeyS2S0xBd2sfLnXuYzOl2mq
+ yJqrk6cZ3TV2uCayog+gQIjGUu7Xo4FMbNp2ikU14KrIMQrOB3nNIIRkQdptDCCfvS4SqwIlLAc
+ L068k8CcHXVVlFa6UMrM=
+X-Received: by 2002:a05:6000:27c9:10b0:4a9:9a59:c7a6 with SMTP id
+ ffacd0b85a97d-4abb2ece9d6mr19702446f8f.16.1795504036122; 
+ Mon, 23 Nov 2026 23:07:16 -0800 (PST)
 Received: from sashaneftin-pc-GB-BSi5-1135G7.home ([185.175.35.55])
  by smtp.gmail.com with ESMTPSA id
- ffacd0b85a97d-4ab6b110c3csm25700607f8f.36.2026.11.23.23.07.12
+ ffacd0b85a97d-4ab6b110c3csm25700607f8f.36.2026.11.23.23.07.13
  for <intel-wired-lan@osuosl.org>
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 23 Nov 2026 23:07:12 -0800 (PST)
+ Mon, 23 Nov 2026 23:07:14 -0800 (PST)
 From: Sasha Neftin <sashaneftin@gmail.com>
 To: intel-wired-lan@osuosl.org
-Subject: [PATCH iwl-next v1 1/2] igc: add support for rx_symbol_errors
+Subject: [PATCH iwl-next v1 2/2] e1000e: add support for rx_sym_errors
  statistic
-Date: Tue, 24 Nov 2026 09:07:09 +0200
-Message-ID: <20261124070710.9728-1-sashaneftin@gmail.com>
+Date: Tue, 24 Nov 2026 09:07:10 +0200
+Message-ID: <20261124070710.9728-2-sashaneftin@gmail.com>
 X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20261124070710.9728-1-sashaneftin@gmail.com>
+References: <20261124070710.9728-1-sashaneftin@gmail.com>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -148,77 +154,51 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-14.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FORGED_GMAIL_RCVD,
-	FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-15.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 Expose the Symbol Error Count (SYMERRS) register to ethtool statistics.
 
-The SYMERRS register (0x04008) tracks physical layer symbol errors. Define
-the register, clear it during hardware counters reset, update it in adapter
-stats, and export "rx_symbol_errors" in igc_gstrings_stats so it can be
-retrieved via `ethtool --statistics`.
+The SYMERRS register tracks physical layer symbol errors. Update the
+adapter stats by reading SYMERRS in e1000e_update_stats and export
+"rx_sym_errors" in e1000_gstrings_stats so it can be retrieved via
+`ethtool --statistics`.
 
 Signed-off-by: Sasha Neftin <sashaneftin@gmail.com>
 ---
- drivers/net/ethernet/intel/igc/igc_ethtool.c | 1 +
- drivers/net/ethernet/intel/igc/igc_mac.c     | 1 +
- drivers/net/ethernet/intel/igc/igc_main.c    | 1 +
- drivers/net/ethernet/intel/igc/igc_regs.h    | 1 +
- 4 files changed, 4 insertions(+)
+ drivers/net/ethernet/intel/e1000e/ethtool.c | 1 +
+ drivers/net/ethernet/intel/e1000e/netdev.c  | 1 +
+ 2 files changed, 2 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-index 4ebc0c7f5fc4..dead327baa17 100644
---- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
-+++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-@@ -35,6 +35,7 @@ static const struct igc_stats igc_gstrings_stats[] = {
- 	IGC_STAT("multicast", stats.mprc),
- 	IGC_STAT("collisions", stats.colc),
- 	IGC_STAT("rx_crc_errors", stats.crcerrs),
-+	IGC_STAT("rx_symbol_errors", stats.symerrs),
- 	IGC_STAT("rx_no_buffer_count", stats.rnbc),
- 	IGC_STAT("rx_missed_errors", stats.mpc),
- 	IGC_STAT("tx_aborted_errors", stats.ecol),
-diff --git a/drivers/net/ethernet/intel/igc/igc_mac.c b/drivers/net/ethernet/intel/igc/igc_mac.c
-index d6f3f6618469..db28f1c2f24a 100644
---- a/drivers/net/ethernet/intel/igc/igc_mac.c
-+++ b/drivers/net/ethernet/intel/igc/igc_mac.c
-@@ -235,6 +235,7 @@ s32 igc_force_mac_fc(struct igc_hw *hw)
- void igc_clear_hw_cntrs_base(struct igc_hw *hw)
- {
- 	rd32(IGC_CRCERRS);
-+	rd32(IGC_SYMERRS);
- 	rd32(IGC_MPC);
- 	rd32(IGC_SCC);
- 	rd32(IGC_ECOL);
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index e36d6761a0be..dbebdb0d15b8 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -5237,6 +5237,7 @@ void igc_update_stats(struct igc_adapter *adapter)
+diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
+index 6f45a37b17d4..49f4d93759c4 100644
+--- a/drivers/net/ethernet/intel/e1000e/ethtool.c
++++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
+@@ -60,6 +60,7 @@ static const struct e1000_stats e1000_gstrings_stats[] = {
+ 	E1000_NETDEV_STAT("rx_length_errors", rx_length_errors),
+ 	E1000_NETDEV_STAT("rx_over_errors", rx_over_errors),
+ 	E1000_STAT("rx_crc_errors", stats.crcerrs),
++	E1000_STAT("rx_symbol_errors", stats.symerrs),
+ 	E1000_NETDEV_STAT("rx_frame_errors", rx_frame_errors),
+ 	E1000_STAT("rx_no_buffer_count", stats.rnbc),
+ 	E1000_STAT("rx_missed_errors", stats.mpc),
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 3213f6dc123d..8a9fa8412224 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -5036,6 +5036,7 @@ static void e1000e_update_stats(struct e1000_adapter *adapter)
+ 		return;
  
- 	/* read stats registers */
- 	adapter->stats.crcerrs += rd32(IGC_CRCERRS);
-+	adapter->stats.symerrs += rd32(IGC_SYMERRS);
- 	adapter->stats.gprc += rd32(IGC_GPRC);
- 	adapter->stats.gorc += rd32(IGC_GORCL);
- 	rd32(IGC_GORCH); /* clear GORCL */
-diff --git a/drivers/net/ethernet/intel/igc/igc_regs.h b/drivers/net/ethernet/intel/igc/igc_regs.h
-index f343c6bfc6be..89f146d88d04 100644
---- a/drivers/net/ethernet/intel/igc/igc_regs.h
-+++ b/drivers/net/ethernet/intel/igc/igc_regs.h
-@@ -132,6 +132,7 @@
- /* Statistics Register Descriptions */
- #define IGC_CRCERRS	0x04000  /* CRC Error Count - R/clr */
- #define IGC_ALGNERRC	0x04004  /* Alignment Error Count - R/clr */
-+#define IGC_SYMERRS	0x04008  /* Symbol Error Count - R/clr */
- #define IGC_RXERRC	0x0400C  /* Receive Error Count - R/clr */
- #define IGC_MPC		0x04010  /* Missed Packet Count - R/clr */
- #define IGC_SCC		0x04014  /* Single Collision Count - R/clr */
+ 	adapter->stats.crcerrs += er32(CRCERRS);
++	adapter->stats.symerrs += er32(SYMERRS);
+ 	adapter->stats.gprc += er32(GPRC);
+ 	adapter->stats.gorc += er32(GORCL);
+ 	er32(GORCH);		/* Clear gorc */
 -- 
 2.53.0
 
