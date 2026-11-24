@@ -1,125 +1,123 @@
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1CF01606A31E
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Nov 2026 12:39:41 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9A7D0606A32A
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Nov 2026 13:30:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=TrTEUxic;
-	dkim=pass (2048-bit key, unprotected) header.d=steffen.cc header.i=@steffen.cc header.a=rsa-sha256 header.s=MBO0001 header.b=vT8iCsfj
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=eMv7XPM8;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=KW1bkXp1
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id E9D6C607FC;
-	Tue, 24 Nov 2026 12:39:40 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 75213405EE;
+	Tue, 24 Nov 2026 13:30:05 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id JN1tvEArGBPg; Tue, 24 Nov 2026 12:39:40 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org E6B3F60664
-Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795523980;
-	b=jY2hZYAnIr6QVsH/hIiaowJ5h5CE3iQyA3ELewIzHS6NO1rAhMlSGxRKaKMlxFsaUBa2
-	 V1GekFbWWKQQN52dIqgkoJKci5cakzle4AxtjD/zkqtyZ72TzCPqp/4A0WurvoXRD+3fT
-	 D1MS1vmDZpYthrVtyKbk/1xQyak2vBsi0wdLMxs946tHuHNuahiYb1f/AGs0AlZ4dEsc6
-	 5koXPJ4L+rRCYXMo9e6VXwmNo2qdClXtrbXS/V5qkXJnCF+x+Qmb01AaepKsUZZoHRKzB
-	 euA1zPPncWNiwZKIq3ocWozQjTvyQ0D4h0klVAcma0akOmIUMu43Kqvcuk3Wu+iI77A==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id c-WhudsPDy9b; Tue, 24 Nov 2026 13:30:03 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 7C8EF405A2
+Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795527003;
+	b=XDzbJNpPV15F/kndrnD47gERU0suHnxbj29h2UTzHn+jluBz2NcIHtAjDXx/7ZTUx04T
+	 Jq0Nn64zSwqIMMy8iZYW6N6p6Nz6KzKTfPFT3xdYX0dmg45YqG2g8A8MSmWEXyKAajryG
+	 9ns3ERXU22fOg8xkpopdTCzrGJEFLVjl4pBc7ZQ0gs/6msIlg7PKmgsnrwLkrVeiI2CWK
+	 GB6MK41+JveqqtduSDKRx/qc76TL3xdeYh5n1Y2cwO/zlwR/P7LWJrMQV9MnLtnH3lb5k
+	 r54Sn6NCxKfTaf1jvuVyiqc4vgmEE5vyRqttPNFcy1/sHbwd+DayDIGp0hPOchsnOBg==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795523980;
+	c=relaxed/relaxed; t=1795527003;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 DKIM-Signature:Message-ID:Subject:From:To:Cc:Date:In-Reply-To:
-	 References:Content-Type:Content-Transfer-Encoding:User-Agent:
-	 MIME-Version:X-Rspamd-Queue-Id:X-BeenThere:X-Mailman-Version:
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
+	 DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-IronPort-AV:
+	 X-IronPort-AV:Received:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-ExtLoop1:
+	 X-IronPort-AV:Received:From:To:Subject:Date:Message-Id:X-Mailer:
+	 MIME-Version:Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:
 	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=QtORVVgQvN/m+JUMAsht2JEt8w4lO9qAkjqbkmAaSCA=;
-	b=QHF3ez+f0Ay1x5meKNQNK4WWxMMPi3vcWj8axIHW95vfJie7LStb7ZU6Bz13QHB0Ta4p
-	 YDDfZLWAvKN4SjKAtiL3mmFgwN3hTXAbgYCk2OBqJJ5LrG9hcV3W1jtj+x3FVx9N2Rk06
-	 M5czr1YUNyzKQK02sZFSGmz28kkWDeMklIeznKvOmBZUGIp9qYjQDxGo7m3cigTaH7frx
-	 tx1zrKgBCTBEP/H5SVj0y+d2W6Tw0JSsf5fV4KDpCUxvSexFj1YTtSAwlHqLYyfkVsGC3
-	 P9a473rFnRPBe0KxErI028J9KXBtmBCy5ISKzsy9GeIk1+CZcts3JsIUJCW+iCZcKuA==
-ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
+	bh=8nLi0jNpi/3CcDARVUt+PZIVYh/lVnrkssvvVOe336M=;
+	b=RRQf1uwl6nuatAyhg3+A7zi7qXSBcNsK+mi+YCaRUjIlGOksLXMLIOFGZB83luj+cfro
+	 Arcu7nj1j+dt4WzlngXawSePn05uiMqpGNT0IW4w1TmbT8W5QliWEBgwGotZnVEnjW1Ts
+	 TscUqi4KbG2DZQ8cIQgCVlXcRtPCsWJ94QwUaO2jp//hbNbnT6g6tRt7jGdRlR7ePqSEB
+	 hLwfuPIgBPOXW3sRnpBZYz3LC5ByYrMo/IQ8wVBBAIRQGb22N6CXvgWm2g8HveHiBRmpW
+	 IcbK0N//Lt3+mCDvjd7kxkrbYQBB2lvzSahMNtcGS+heCme6bf+xqM9u1BtN+imRJfg==
+ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1795523979;
-	bh=QtORVVgQvN/m+JUMAsht2JEt8w4lO9qAkjqbkmAaSCA=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=TrTEUxic54vXCoxwpLmm1t8xY3+tsEKmrVtUFc2xxbCpsIln9LJBozNORm3zGSdO/
-	 qTFgbyGRt/UnWApNizSJmfxDe5AdZngrv2AzICPE6d+xzCPr4CPJL0Li5w+iTxguEe
-	 yMfcX8oSOtBW+sivLDlX44O+M2finxITyv2CO1+DNMmDWNMvcI4YiZeWwQaV41NPg2
-	 jU3/shvL5kVH2NKWupLmWhYh3Lc0IB5klw0CdGLjyAfh8VwrtDkxZMcSlP1+uGr3ai
-	 epS3bK6KbHFPzk6czPN3pTaFDAaY8nBq2NDSwhfF5psaFxaDdxZNvxm8toJUverphC
-	 yO1xsdn7J4y+A==
+	s=default; t=1795527003;
+	bh=8nLi0jNpi/3CcDARVUt+PZIVYh/lVnrkssvvVOe336M=;
+	h=From:To:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=eMv7XPM8Pzgq7d0wKzObK88TwXsuPpcT1Rxv+W5g/GItPXUKXgXstriewyYBMIQx/
+	 2mORJdNozFs+3eE6RLnsMcrFGJOt+dLtLDB2eWMfwVdA9zyJabhRhsvENP8pRrlSIf
+	 1e2yEKITa+QZnj0ZXVgA/EDU658pE9gQNiBftK0KrabHhajihFJSb8IUEHVdtl6aPv
+	 Po88Xq8deMjzlaxqpcCUo1ZKQV6JTYAROAYInNdJwfSIO1HxBYLW3tuIYT6JmlZIMB
+	 4mfFkBXTAJf+OcwUm4Op8WZjA49yAQ0SQe2kO+SuZZ4J/XzXrbtQ36gu9UcWuQpJ6+
+	 DzE5tM47zBBpQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id E6B3F60664;
-	Tue, 24 Nov 2026 12:39:39 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 457CF79D
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Nov 2026 12:39:39 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 7C8EF405A2;
+	Tue, 24 Nov 2026 13:30:03 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 5562679D
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Nov 2026 13:30:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 42D6580D09
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Nov 2026 12:39:39 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 3B49140116
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Nov 2026 13:30:02 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 66dOoXs6NqL1 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 24 Nov 2026 12:39:38 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org B168180CB8
-Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=80.241.56.161
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=80.241.56.161;
- helo=mout-p-103.mailbox.org; envelope-from=lists@steffen.cc;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 637s5XunL2Fk for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 24 Nov 2026 13:30:01 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org 4A75C400AC
+Authentication-Results: smtp2.osuosl.org; arc=none smtp.remote-ip=198.175.65.17
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.17;
+ helo=mgamail.intel.com; envelope-from=magnus.karlsson@intel.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=none dis=none) header.from=steffen.cc
-Authentication-Results: smtp1.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=steffen.cc header.i=@steffen.cc header.a=rsa-sha256
- header.s=MBO0001 header.b=vT8iCsfj
-Received: from mout-p-103.mailbox.org (mout-p-103.mailbox.org [80.241.56.161])
- by smtp1.osuosl.org (Postfix) with ESMTPS id B168180CB8
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Nov 2026 12:39:37 +0000 (UTC)
-Received: from smtp202.mailbox.org (smtp202.mailbox.org
- [IPv6:2001:67c:2050:b231:465::202])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519MLKEM768 server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mout-p-103.mailbox.org (Postfix) with ESMTPS id 4jYj7925GvzKm5m;
- Tue, 24 Nov 2026 13:39:33 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=steffen.cc; s=MBO0001; 
- t=1795523973;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=QtORVVgQvN/m+JUMAsht2JEt8w4lO9qAkjqbkmAaSCA=;
- b=vT8iCsfjaMtpt0qQMoZFmWskzxyxlimRS8aq4UROs6OvNEAVpS+nmYJhfrn3qB/Q0zqUM/
- llBAEN6EJ6xj3Om7lTojm1+HdXHq420TUFge4mzWLBVo+YK6MfROilfZlKpFmQMMrWRbS8
- Zn08BcoVc2Zz1pg8wa/u6HcKs9k+kHZi6nFVTsw+fCw72iytVi2rALJUbtXLKDId19r8S9
- lto8OPXQvsAsI8MmVf7/knS7Llp5KtwvsewWJb04l8azXyPQyty2fndlwkGfISTxqTNRbf
- uFJ3DKcSrVkqydOvZIdyZKI6OCxRJkaT6he/cbXWKZMvrbD8qSm/N45IjXEFQA==
-Authentication-Results: outgoing_mbo_mout; dkim=none;
- spf=pass (outgoing_mbo_mout: domain of lists@steffen.cc designates
- 2001:67c:2050:b231:465::202 as permitted sender)
- smtp.mailfrom=lists@steffen.cc
-Message-ID: <cdf95f8fc50d0ac6374eec389ab1c9c0acd6bc84.camel@dirkwinkel.cc>
-Subject: Re: [PATCH iwl-net 4/5] igc: let dev_watchdog reset the adapter
- after a Tx hang
-From: Steffen Dirkwinkel <lists@steffen.cc>
-To: sashiko-reviews@lists.linux.dev
-Cc: intel-wired-lan@lists.osuosl.org
-Date: Tue, 24 Nov 2026 13:39:31 +0100
-In-Reply-To: <sashiko-outbox-230897@kernel.org>
-References: <20261123-e1000e-tx-hang-v1-0-ecb4309942f1@beckhoff.com>
- <20261123-e1000e-tx-hang-v1-4-ecb4309942f1@beckhoff.com>
- <sashiko-outbox-230897@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.62.1 
+Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=KW1bkXp1
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 4A75C400AC
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Nov 2026 13:30:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1795527001; x=1827063001;
+ h=from:to:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=fFSev9q0WZd850aMrdmF4lCdKERC6zVxM6Qlk1NtSJs=;
+ b=KW1bkXp1Rw+mniWHNxnIaz8gcWeutiFmjITcJVFAUgySODgqADvBZiu6
+ eFoqSq1c2rp3s04BsLL1sS2OVTX2koTckqj103BS3hvA7w33G4s2MZSVX
+ X/VSsEXZUKtTl8dnNiQEddQBcOlH8D/QKOsROKLbnOyUv2muygj8B8tuj
+ K9X/XLrJwwAbOhXU0C/b9CtkRA5sKcRjSBUAQ6+fa6zzIODblRWWu5Fc2
+ ataobl4VbkS/qNlUVMWukCJCqcPM2nurF8b0D059yGtI8YXA93qYhT7ey
+ 2CuTySrbCXng4ccrdfkh2uhVzoNy6xpiS73ANKVV7RvFlYHJ/CJooZ6tM Q==;
+X-CSE-ConnectionGUID: R4olmp6NQ/GiJBNB/zABrQ==
+X-CSE-MsgGUID: 3cgi++AsTQuPOZgCleyS9w==
+X-IronPort-AV: E=McAfee;i="6800,10657,11976"; a="4381321"
+X-IronPort-AV: E=Sophos;i="6.27,230,1787036400"; 
+   d="scan'208";a="4381321"
+Received: from fmviesa008.fm.intel.com ([10.60.135.148])
+ by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 24 Nov 2026 05:30:00 -0800
+X-CSE-ConnectionGUID: LBzHLej9RqioAW1RcHKogg==
+X-CSE-MsgGUID: g7qIUsLwT/u7i20dPRGnHQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,230,1787036400"; d="scan'208";a="11860456"
+Received: from boxer.igk.intel.com ([10.102.20.173])
+ by fmviesa008.fm.intel.com with ESMTP; 24 Nov 2026 05:29:59 -0800
+From: Magnus Karlsson <magnus.karlsson@intel.com>
+To: magnus.karlsson@intel.com, magnus.karlsson@gmail.com,
+ intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
+ maciej.fijalkowski@intel.com, przemyslaw.kitszel@intel.com
+Subject: [PATCH iwl-net v2] ice: account for XDP_TX buffers when cleaning a Tx
+ ring
+Date: Tue, 24 Nov 2026 14:29:42 +0100
+Message-Id: <20261124132942.1102882-1-magnus.karlsson@intel.com>
+X-Mailer: git-send-email 2.38.1
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-Rspamd-Queue-Id: 4jYj7925GvzKm5m
+Content-Transfer-Encoding: 8bit
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -130,89 +128,69 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-10.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS autolearn=ham
+X-Spam-Status: No, score=-18.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Tue, 2026-11-24 at 09:56 +0000, sashiko-bot@kernel.org wrote:
-> Thank you for your contribution! Sashiko AI review found no new issues
-> in this patch, but noticed 1 related pre-existing issue it does not
-> introduce:
-> - [High] igc: permanent Tx queue deadlock in igc_clean_tx_irq() [1]
-> --
->=20
-> commit c5dcfb32c435e778dcb0ad6b827b371a99667e5b
-> Author: Steffen Dirkwinkel <s.dirkwinkel@beckhoff.com>
->=20
-> igc: let dev_watchdog reset the adapter after a Tx hang
->=20
-> This commit checks whether a Tx subqueue is already stopped before
-> stopping it upon detecting a Tx unit hang in igc_clean_tx_irq(), so
-> repeated hang reports do not keep resetting trans_start and preventing
-> dev_watchdog() from resetting the adapter.
->=20
-> > diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/et=
-hernet/intel/igc/igc_main.c
-> > index 1fb5f3cbe93c5..a2d383f79a29d 100644
-> > --- a/drivers/net/ethernet/intel/igc/igc_main.c
-> > +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-> > @@ -3281,8 +3281,15 @@ static bool igc_clean_tx_irq(struct igc_q_vector=
- *q_vector, int napi_budget)
-> >  =09=09=09=09   tx_buffer->next_to_watch,
-> >  =09=09=09=09   jiffies,
-> >  =09=09=09=09   tx_buffer->next_to_watch->wb.status);
-> > -=09=09=09netif_stop_subqueue(tx_ring->netdev,
-> > -=09=09=09=09=09    tx_ring->queue_index);
-> > +=09=09=09/* The hang is reported again on every watchdog run,
-> > +=09=09=09 * but stop the queue only once: stopping it again
-> > +=09=09=09 * would also restart the Tx timeout, so dev_watchdog()
-> > +=09=09=09 * would never reset the adapter.
-> > +=09=09=09 */
-> > +=09=09=09if (!__netif_subqueue_stopped(tx_ring->netdev,
-> > +=09=09=09=09=09=09      tx_ring->queue_index))
-> > +=09=09=09=09netif_stop_subqueue(tx_ring->netdev,
-> > +=09=09=09=09=09=09    tx_ring->queue_index);
-> > =20
-> >  =09=09=09/* we are about to reset, no point in enabling stuff */
-> >  =09=09=09return true;
->=20
-> [Severity: High]
-> This problem wasn't introduced by this patch, but can a stopped Tx
-> subqueue remain permanently stalled in igc_clean_tx_irq() [1] when
-> CONFIG_MAX_SKB_FRAGS is large (such as 45 for BIG TCP) and the ring is
-> sized to IGC_MIN_TXD (64)?
+xdp_tx_active counts the XDP_TX buffers on an XDP ring, so that
+ice_clean_xdp_irq_zc() can complete AF_XDP zero-copy frames in bulk when
+there are none. ice_clean_tx_ring() frees the buffers that are still on
+the ring, both through ice_xsk_clean_xdp_ring() and through
+ice_unmap_and_free_tx_buf(), but leaves the counter as it was.
 
-This is a problem and I can reproduce it on igc (I226) with
-CONFIG_MAX_SKB_FRAGS=3D45 and "ethtool -G <if> tx 64".
+After a ring is cleaned with XDP_TX frames in flight, for example when
+an AF_XDP socket is bound or unbound, xdp_tx_active therefore stays
+non-zero for the lifetime of the ring. ice_clean_xdp_irq_zc() then
+always takes the per-descriptor slow path.
 
-This isn't a default config and isn't related to the patches though. I can =
-send
-a separate patch to fix it if desired.
+ice_xsk_clean_xdp_ring() used to decrement the counter for the XDP_TX
+buffers it freed, through ice_clean_xdp_tx_buf(), until that helper was
+replaced with a plain xsk_buff_free(). Decrement it again for each
+XDP_TX buffer it frees. ice_unmap_and_free_tx_buf() frees buffers on
+regular XDP rings, which count XDP_TX and redirected frames rather than
+buffers, so reset the counter in ice_clean_tx_ring() as well, so that a
+zero-copy socket bound afterwards starts from zero.
 
->=20
-> A couple of lines below this hunk, igc_clean_tx_irq() only wakes a stoppe=
-d
-> subqueue when igc_desc_unused(tx_ring) reaches TX_WAKE_THRESHOLD:
->=20
-> drivers/net/ethernet/intel/igc/igc_main.c:igc_clean_tx_irq() {
-> =09...
-> #define TX_WAKE_THRESHOLD (DESC_NEEDED * 2)
-> =09if (unlikely(total_packets &&
-> =09=09     netif_carrier_ok(tx_ring->netdev) &&
-> =09=09     igc_desc_unused(tx_ring) >=3D TX_WAKE_THRESHOLD)) {
-> =09...
-> }
->=20
-> Because DESC_NEEDED is (MAX_SKB_FRAGS + 4), CONFIG_MAX_SKB_FRAGS=3D45 mak=
-es
-> TX_WAKE_THRESHOLD 98, while igc_desc_unused() on a 64-descriptor ring is =
-at
-> most 63.  Once igc_maybe_stop_tx() stops the queue, the wake condition ca=
-n
-> never be satisfied and the queue stays stopped until a Tx watchdog timeou=
-t.
->=20
-> [1] https://sashiko.dev/#/bug/linux-8616c413-3d5c-4d57-9eda-b2849ebf6eb4
+Fixes: 59e92bfe4df7 ("ice: xsk: Borrow xdp_tx_active logic from i40e")
+Fixes: a24b4c6e9aab ("ice: xsk: Do not convert to buff to frame for XDP_TX")
+Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
+---
+v1 -> v2:
+- Decrement the counter for each freed XDP_TX buffer (Maciej)
+- v1: https://lore.kernel.org/intel-wired-lan/20261118135952.1063685-1-magnus.karlsson@intel.com/
+---
+ drivers/net/ethernet/intel/ice/ice_txrx.c | 1 +
+ drivers/net/ethernet/intel/ice/ice_xsk.c  | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index 35a480a1e172..f26646825a1e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -228,6 +228,7 @@ void ice_clean_tx_ring(struct ice_tx_ring *tx_ring)
+ 
+ 	tx_ring->next_to_use = 0;
+ 	tx_ring->next_to_clean = 0;
++	tx_ring->xdp_tx_active = 0;
+ 
+ 	if (!tx_ring->netdev)
+ 		return;
+diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
+index 0c1ce3e86a45..2d9dbdb82cdd 100644
+--- a/drivers/net/ethernet/intel/ice/ice_xsk.c
++++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
+@@ -942,6 +942,7 @@ void ice_xsk_clean_xdp_ring(struct ice_tx_ring *xdp_ring)
+ 		if (tx_buf->type == ICE_TX_BUF_XSK_TX) {
+ 			tx_buf->type = ICE_TX_BUF_EMPTY;
+ 			xsk_buff_free(tx_buf->xdp);
++			xdp_ring->xdp_tx_active--;
+ 		} else {
+ 			xsk_frames++;
+ 		}
+-- 
+2.38.1
+
