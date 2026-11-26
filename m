@@ -2,116 +2,115 @@ Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B08AC606A329
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 26 Nov 2026 20:33:17 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C3A4C606A31C
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 26 Nov 2026 20:33:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=c3TuGlRb;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=eHBBJ2Rf
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=GnrtD/+3;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=VXCrVuD+
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 9548B60B11;
-	Thu, 26 Nov 2026 20:33:17 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id A12A560A68;
+	Thu, 26 Nov 2026 20:33:31 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id zKJvoavmKL81; Thu, 26 Nov 2026 20:33:16 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 503D660B0F
+ id 5pa-H-1jL8Xi; Thu, 26 Nov 2026 20:33:30 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 7E10660AE4
 Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795725196;
-	b=eqwSZ0FKvokqSBZSSjBUnn2REKBiEUCFis0dF6MuCqEmxs/agY8Mby4gW/dyFgKa8ofi
-	 KiIrmYXHbM5LNXAxZ7H+7kQqRmXVX4eZ0THwBOs9DEzD6JIgqVyw0FgLdsp4q5qWwbSQH
-	 1jPZrK32YVGxfr1q4B8NTabVY4P/OxpKcqK3VrScrqw5Q/vWRBQTUTP9YKPtIW2hLZ/5n
-	 SUwGIqkPmQn+nejrKXCBhwO1bjwnMfKK68yTBK9AKyaG/IvMskkjiKUaW3+IyK21WKssj
-	 WcU4eTX2DTNONyJ1Te5wzEg91rp870A3bQQk3IkzA229Iq98FbntR7T8T1vp+tkhAQQ==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795725210;
+	b=MwMaDcVrI/mVxSxmVxIX1SwGNHEcc5UUqL6LdtsEThLrg77pNoWOdY+P0kj5nLh1Dnvw
+	 EgmWs2MaoCbyYSRp5oT1L1cgF/6Gd0bxTFOR9SvGYfBWEXZRbtzlH+8+bHRKhZuXd84P9
+	 +GwzGp5zI/lqfhkOc8AxibntEu3o/ChUIQY5t4Zdcywh14o3q6eACKhfGjVPxWyQ69tEg
+	 tGn2e7tNv9D1xoDnb3ZtJrh20CG/WkMdM7S/JNK3zPpy7XoKbTuM3HGjD0WqbWHR0cyDW
+	 A9W1fafCMmbnGBOCks1FBS4/svmhGkgXH5B9Lci2zrhQAFIzW2ZmuzgmGC8V1bgXkMQ==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795725196;
+	c=relaxed/relaxed; t=1795725210;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
-	 DKIM-Signature:X-MC-Rep:Received:X-MC-Unique:X-Mimecast-MFC-AGG-ID:
-	 Received:Received:From:To:Cc:Subject:Date:Message-ID:In-Reply-To:
-	 References:MIME-Version:X-Scanned-By:X-Mimecast-MFC-PROC-ID:
+	 DKIM-Signature:Received:X-MC-Unique:X-Mimecast-MFC-AGG-ID:Received:
+	 Received:From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:X-Scanned-By:X-Mimecast-MFC-PROC-ID:
 	 X-Mimecast-Originator:Content-Transfer-Encoding:content-type:
 	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
 	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=1gAIuUl3mzk4EiOubnRQz26vNXagbUlKxFHlUdsrkEo=;
-	b=mbjoxZxllC6hGKPwW7GhISrFZx50dX68FaQwoyPmi7E/JvsuO6eMKiKs+otWkI1BmFbW
-	 Fg3n/SKDjwtdfYb1expYnkJ4TLELtZ6jruV8d3/lGmDMqumCeYcSCha4jPK/Z1GSRqJdO
-	 3B4KkS60+VWo35eQINNtXk+/Zg4wCJIUMzKCLfQbqGmBmv5s+6Eqj5V8y22LhcRwmAfRT
-	 Pdb4VfQVbMdBDExawrnoai8+alFOTiGdwyT7GDZx62xbSk9fe8t9yFIuR5gGNpFiQOplu
-	 kmkjMJSrsqA1Gkv4Y9ACGbpkMIHDTnB6CNBrd3dQVvhJT/SnwSkbzVAQCK67eecQwEA==
+	bh=JqGgfS1UYwh29myYKdlnX7yCh7x8p4QHXJzQWaApX+M=;
+	b=gEe1z+Ve90Yh2rUheDrtx9ytUQ2Z1q43x9Otwo5xKvepTThP9+hwPIWD6FzEYwBkLS5A
+	 EVxbjEZDfMvx7keAMmy9iUftWbNH1wLFid3HfciGb0cf+gHINZjoGoUvqNCLixJS+HMVU
+	 OwLrhHvmnu+zsBywxiq5jCao+cBjoYCuz/gB/BaBIH6mSsOuk7w0KbbFiU0B8c5YhfyxT
+	 knbKxsyE87lC18S65yzm5wTAX7LBEumrIv+z+M/oCqMmrD26uqU0O8uEjF01kInB+2LYU
+	 qVrtwzQD92hHvWJB5pqw1/HaN7YznXdcZigllDVAaP72BRTpRWov3nEPVYPTf4PUKOw==
 ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1795725196;
-	bh=1gAIuUl3mzk4EiOubnRQz26vNXagbUlKxFHlUdsrkEo=;
+	s=default; t=1795725210;
+	bh=JqGgfS1UYwh29myYKdlnX7yCh7x8p4QHXJzQWaApX+M=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=c3TuGlRblN94FZCYD2pNVihdIEAE0pLkRvZNNh7itFT0Bewc+l/rDWCKjZEsynLTE
-	 CkmGs3k8dKdGQNxODkh/ybJDvNm9dCjLQhHjrmeaqG7T4GRhjxB3yUtVe7+onl2J+j
-	 ccR4095SphciKEpptFQZ6AzLbx+P/+dEOQY+DP6t5oc3DXv6ly8NZ6BIupN4+CEvzq
-	 cexrXdU5xl2IkwLqWxl5exqrRwIb/uN23cOqn0jHlWYuYcE2ifrnp3HNhTkxgenUmz
-	 sWWdaJIUnDGhyNfY/rNw3cMnByyZxL4HSB1Lu3tVUYn2EzbugrQ59gVmDSmkANB8VQ
-	 QUDwa2sTf3wvA==
+	b=GnrtD/+3CDZhUpMaeSUX323vq6RNf6KluTT2SMOD3tBIicfP6YFII/wZc0ISDtv8n
+	 YNxHt3DEGQ2Fvxv5VBTNEPdvb/HXGd0ZVU1sA2dTjgOmMq47p7HBrz1zNfEvPZVe52
+	 p4/eMJK+D0Sd6W8ewkwaXkEQH+g2GBlcdiHJBRK+/iRUsfOjcDQQasu9Q+vSfQIESI
+	 ga6uWimolFk+ZZiE3peodMSyQJE3W81jv5Mb4+9NoaqGInDCiRl6infORt3bAzU38i
+	 xmquhEJEZlO57aB1SnCuv7kYrRrsrfUlVnM9XhgkhMS1zPxA0iHG4kz3Az+MkzQxf/
+	 Q/L7E+PoYPzCw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 503D660B0F;
-	Thu, 26 Nov 2026 20:33:16 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id BCDCD1AB
- for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Nov 2026 20:33:15 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 7E10660AE4;
+	Thu, 26 Nov 2026 20:33:30 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 19D4A311
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Nov 2026 20:33:29 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id A3074409EB
- for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Nov 2026 20:33:15 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 0BF1180BC0
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Nov 2026 20:33:29 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id oIBUTYvxJgEn for <intel-wired-lan@lists.osuosl.org>;
- Thu, 26 Nov 2026 20:33:14 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 494B9409E4
-Authentication-Results: smtp4.osuosl.org;
- arc=none smtp.remote-ip=170.10.129.124
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 37hXZNpGzntW for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 26 Nov 2026 20:33:27 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 602B780BB9
+Authentication-Results: smtp1.osuosl.org;
+ arc=none smtp.remote-ip=170.10.133.124
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.133.124;
  helo=us-smtp-delivery-124.mimecast.com; envelope-from=ivecera@redhat.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=quarantine dis=none)
+Authentication-Results: smtp1.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=redhat.com
-Authentication-Results: smtp4.osuosl.org;
+Authentication-Results: smtp1.osuosl.org;
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=eHBBJ2Rf
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=VXCrVuD+
 Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 494B9409E4
- for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Nov 2026 20:33:14 +0000 (UTC)
+ (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 602B780BB9
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Nov 2026 20:33:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1795725194;
+ s=mimecast20190719; t=1795725204;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=1gAIuUl3mzk4EiOubnRQz26vNXagbUlKxFHlUdsrkEo=;
- b=eHBBJ2RfrI+UeZZWflrqTebl8kQCj2nzPS1Iqma14Z1EPbJTkrBCGgE/K/9h6uFY7lvGqB
- 9sCTLIAWLY5Ape390hSqIyKUls8RX/ULoHudB+J3RrJQ4GH9idlKk/2MMCwIYAJyL+PxJd
- sXuBNWrRf+oNH8Mo88/csbkmQ0BlLDk=
-X-MC-Rep: binary re single
-Received: from mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com
+ bh=JqGgfS1UYwh29myYKdlnX7yCh7x8p4QHXJzQWaApX+M=;
+ b=VXCrVuD+0fMenCYgNKDErivQsCUgmq6yGZUIimiQr8Dq5DeWPSG89jYjxzwvcSy7Ir3bnw
+ N7hNU7Y0zc7oFcBADbA4ISS18CW4wPqUlnxNCrO0DxIL0h/SHuWIFvJxaiG9ESbjO5Vyuq
+ MsMfSpPGqoWjcdkogh2hCIC360yl7Oc=
+Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
  (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
  relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-13-CpEl3rhTMASG_hzVFsxNEA-1; Thu,
- 26 Nov 2026 20:33:11 +0000
-X-MC-Unique: CpEl3rhTMASG_hzVFsxNEA-1
-X-Mimecast-MFC-AGG-ID: CpEl3rhTMASG_hzVFsxNEA_1795725188
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-450-L4glwJpxM2mDEbujmbGR7Q-1; Thu,
+ 26 Nov 2026 20:33:18 +0000
+X-MC-Unique: L4glwJpxM2mDEbujmbGR7Q-1
+X-Mimecast-MFC-AGG-ID: L4glwJpxM2mDEbujmbGR7Q_1795725195
 Received: from mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com
  (mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.111])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
- id 2E9F919560AB; Thu, 26 Nov 2026 20:33:08 +0000 (UTC)
+ by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
+ id C96E2195608B; Thu, 26 Nov 2026 20:33:14 +0000 (UTC)
 Received: from ivecera-thinkpadp16vgen1.tpbc.csb
  (headnet04.pony-001.prod.iad2.dc.redhat.com [10.2.32.116])
  by mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
- id 87637180197A; Thu, 26 Nov 2026 20:33:01 +0000 (UTC)
+ id 900521801977; Thu, 26 Nov 2026 20:33:08 +0000 (UTC)
 From: Ivan Vecera <ivecera@redhat.com>
 To: netdev@vger.kernel.org
 Cc: Vadim Fedorenko <vadim.fedorenko@linux.dev>,
@@ -133,15 +132,16 @@ Cc: Vadim Fedorenko <vadim.fedorenko@linux.dev>,
  Karol Kolacinski <karol.kolacinski@intel.com>,
  Saeed Mahameed <saeedm@nvidia.com>, Tariq Toukan <tariqt@nvidia.com>,
  Petr Oros <poros@redhat.com>
-Subject: [PATCH RFC net-next 04/19] dpll: add KUnit tests for pin links
-Date: Thu, 26 Nov 2026 21:32:16 +0100
-Message-ID: <20261126203231.934632-5-ivecera@redhat.com>
+Subject: [PATCH RFC net-next 05/19] ice: dpll: use own pins for the TX and
+ time references
+Date: Thu, 26 Nov 2026 21:32:17 +0100
+Message-ID: <20261126203231.934632-6-ivecera@redhat.com>
 In-Reply-To: <20261126203231.934632-1-ivecera@redhat.com>
 References: <20261126203231.934632-1-ivecera@redhat.com>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.111
-X-Mimecast-MFC-PROC-ID: WWetFQHtRRf3aloCCYIVGjVB8ROTqmm0fb3Qq7APLOU_1795725188
+X-Mimecast-MFC-PROC-ID: _VeCR37NfMwxedX0oI2YZJeuV6SQg4IY-1-dhkmCzlE_1795725195
 X-Mimecast-Originator: redhat.com
 Content-Transfer-Encoding: 8bit
 content-type: text/plain; charset="US-ASCII"; x-default=true
@@ -163,578 +163,468 @@ X-Spam-Status: No, score=-15.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Add a KUnit suite with a mock driver of two owners that differ in
-clock_id: a pin of one owner with a firmware node and a pin of the other
-owner with a link to it. The tests check that:
+On E825 the TXC DPLL of each PF uses the zl3073x output pin wired to its
+SyncE TX reference input, and the TSPLL DPLL of the PF that owns the
+source timer uses the zl3073x output pin wired to its time reference
+input. The driver finds these pins by firmware node, registers them with
+its own DPLLs and uses the DPLL notifier to wait for them and to follow
+their removal.
 
-- the link is reported for both pins only while both are registered,
-  whichever of them is registered first
-- the pin at the other end gets a change notification whenever the link
-  appears or disappears
-- a pin keeps its link when it is unregistered and registered again
-- for a pin registered with two DPLLs of its owner, only the first
-  registration and the last unregistration change the link
-- a pin with neither a link nor a firmware node is not linked or notified
-- a duplicate link is rejected, also on a registered pin, and a new
-  link cannot be added to a registered pin
+Register own pins instead, EXT_SYNCE next to EXT_EREF0 with the TXC DPLL
+and TIME_REF with the TSPLL DPLL, and link each of them with the zl3073x
+pin through the same firmware node. The pins keep the callbacks they had,
+so the hardware is programmed as before. The notifier now serves the
+recovered clock pin only.
 
-The tests build the pin message with dpll_cmd_pin_get_one() under
-dpll_lock, so both are exported for KUnit.
+The pins and EXT_EREF0 get dynamic pin indices. Without a valid MAC
+address the TXC and TSPLL DPLLs fall back to the clock_id of the PF, and
+fixed indices would make TIME_REF the EXT_EREF0 pin and EXT_SYNCE a pin
+shared by the PFs of a NAC.
 
-Run them with:
+What user space sees on E825 changes:
+- the zl3073x pins list only zl3073x DPLLs as parent devices and report
+  a link to EXT_SYNCE of each PF or to TIME_REF
+- the SyncE TX reference is selected by the state of EXT_SYNCE on the
+  TXC DPLL and the time reference by the state of TIME_REF on the TSPLL
+  DPLL, instead of the state of the zl3073x pins on those DPLLs
+- EXT_SYNCE and TIME_REF report no frequency
+- both pins exist also when the zl3073x driver is not loaded
 
-  tools/testing/kunit/kunit.py run --kunitconfig=drivers/dpll
+Tested on a GNR-D platform with a dual NAC E825 and a ZL80132B DPLL: the
+EXT_SYNCE pins of the eight PFs and the TIME_REF pin report their links
+to the zl3073x outputs and stay without them while zl3073x is unloaded,
+and connecting EXT_SYNCE on the TXC DPLL of a PF locks the DPLL.
 
 Signed-off-by: Ivan Vecera <ivecera@redhat.com>
 ---
- drivers/dpll/.kunitconfig       |   5 +
- drivers/dpll/Kconfig            |  16 ++
- drivers/dpll/Makefile           |   2 +
- drivers/dpll/dpll_core.c        |   2 +
- drivers/dpll/dpll_netlink.c     |   4 +-
- drivers/dpll/dpll_netlink.h     |   6 +
- drivers/dpll/tests/dpll_kunit.c | 419 ++++++++++++++++++++++++++++++++
- 7 files changed, 453 insertions(+), 1 deletion(-)
- create mode 100644 drivers/dpll/.kunitconfig
- create mode 100644 drivers/dpll/tests/dpll_kunit.c
+ drivers/net/ethernet/intel/ice/ice_dpll.c | 276 ++++++++++------------
+ drivers/net/ethernet/intel/ice/ice_dpll.h |   2 +-
+ 2 files changed, 121 insertions(+), 157 deletions(-)
 
-diff --git a/drivers/dpll/.kunitconfig b/drivers/dpll/.kunitconfig
-new file mode 100644
-index 00000000000000..017c9d5b593a4f
---- /dev/null
-+++ b/drivers/dpll/.kunitconfig
-@@ -0,0 +1,5 @@
-+CONFIG_KUNIT=y
-+CONFIG_NET=y
-+CONFIG_DPLL_KUNIT_TEST=y
-+CONFIG_DEBUG_KERNEL=y
-+CONFIG_PROVE_LOCKING=y
-diff --git a/drivers/dpll/Kconfig b/drivers/dpll/Kconfig
-index be98969f040ab6..6f1ffc3a6e7717 100644
---- a/drivers/dpll/Kconfig
-+++ b/drivers/dpll/Kconfig
-@@ -23,6 +23,22 @@ config DPLL_REFCNT_TRACKER
+diff --git a/drivers/net/ethernet/intel/ice/ice_dpll.c b/drivers/net/ethernet/intel/ice/ice_dpll.c
+index 5148e419f49a07..15b5f4a15af915 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dpll.c
++++ b/drivers/net/ethernet/intel/ice/ice_dpll.c
+@@ -85,6 +85,8 @@ static const char * const pin_type_name[] = {
+ static const char * const ice_dpll_sw_pin_sma[] = { "SMA1", "SMA2" };
+ static const char * const ice_dpll_sw_pin_ufl[] = { "U.FL1", "U.FL2" };
+ static const char * const ice_dpll_ext_eref_pin = "EXT_EREF0";
++static const char * const ice_dpll_ext_synce_pin = "EXT_SYNCE";
++static const char * const ice_dpll_time_ref_pin = "TIME_REF";
+ static const char * const ice_dpll_fwnode_ext_synce = "clk_ref_synce";
+ static const char * const ice_dpll_fwnode_time_ref = "time_ref";
  
- 	  If unsure, say N.
+@@ -3792,8 +3794,6 @@ static void ice_dpll_pin_notify_work(struct work_struct *work)
+ 						   struct ice_dpll_pin_work,
+ 						   work);
+ 	struct ice_dpll_pin *pin, *parent = w->pin;
+-	bool is_tx_synce_parent = false;
+-	bool is_tspll_time_ref = false;
+ 	struct ice_pf *pf = parent->pf;
+ 	bool is_rclk_parent = false;
+ 	int ret;
+@@ -3811,14 +3811,7 @@ static void ice_dpll_pin_notify_work(struct work_struct *work)
+ 		}
+ 	}
  
-+config DPLL_KUNIT_TEST
-+	tristate "KUnit tests for DPLL core" if !KUNIT_ALL_TESTS
-+	depends on KUNIT && NET
-+	select DPLL
-+	default KUNIT_ALL_TESTS
-+	help
-+	  KUnit tests for the DPLL core. They use a mock driver to check
-+	  that links between pins of two devices are reported and notified
-+	  while the pins at both ends are registered.
-+
-+	  The mock devices and pins are registered with the DPLL subsystem,
-+	  so user space sees them and their notifications while the tests
-+	  run.
-+
-+	  If unsure, say N.
-+
- source "drivers/dpll/zl3073x/Kconfig"
+-	is_tx_synce_parent =
+-		ice_dpll_fwnode_eq(parent->fwnode,
+-				   pf->dplls.txclks[E825_EXT_SYNCE_PIN_IDX].fwnode);
+-
+-	is_tspll_time_ref =
+-		ice_dpll_fwnode_eq(parent->fwnode, pf->dplls.tspll_in.fwnode);
+-
+-	if (!is_rclk_parent && !is_tx_synce_parent && !is_tspll_time_ref)
++	if (!is_rclk_parent)
+ 		goto out;
  
- endmenu
-diff --git a/drivers/dpll/Makefile b/drivers/dpll/Makefile
-index 9e7a3a3e592e81..ef3081be2a113b 100644
---- a/drivers/dpll/Makefile
-+++ b/drivers/dpll/Makefile
-@@ -8,4 +8,6 @@ dpll-y                  += dpll_core.o
- dpll-y                  += dpll_netlink.o
- dpll-y                  += dpll_nl.o
+ 	switch (w->action) {
+@@ -3837,40 +3830,15 @@ static void ice_dpll_pin_notify_work(struct work_struct *work)
+ 			goto out;
+ 		}
  
-+obj-$(CONFIG_DPLL_KUNIT_TEST)	+= tests/dpll_kunit.o
-+
- obj-$(CONFIG_ZL3073X)	+= zl3073x/
-diff --git a/drivers/dpll/dpll_core.c b/drivers/dpll/dpll_core.c
-index 58a5a4a41a0b72..7fd84b0e90e993 100644
---- a/drivers/dpll/dpll_core.c
-+++ b/drivers/dpll/dpll_core.c
-@@ -8,6 +8,7 @@
+-		if (is_rclk_parent) {
+-			/* Register rclk pin via on-pin relationship */
+-			pin = &pf->dplls.rclk;
+-			ret = dpll_pin_on_pin_register(parent->pin, pin->pin,
+-						       &ice_dpll_rclk_ops, pin);
+-			if (ret) {
+-				dev_err(ice_pf_to_dev(pf),
+-					"RCLK pin register failed: %pe\n",
+-					ERR_PTR(ret));
+-				goto drop_parent_ref;
+-			}
+-		} else if (is_tx_synce_parent) {
+-			/* Register TX-CLK SYNCE pin directly to TXC DPLL */
+-			pin = &pf->dplls.txclks[E825_EXT_SYNCE_PIN_IDX];
+-			ret = dpll_pin_register(pf->dplls.txc.dpll, pin->pin,
+-						&ice_dpll_txclk_ops, pin);
+-			if (ret) {
+-				dev_err(ice_pf_to_dev(pf),
+-					"TX SYNCE pin register failed: %pe\n",
+-					ERR_PTR(ret));
+-				goto drop_parent_ref;
+-			}
+-		} else if (is_tspll_time_ref) {
+-			/* Register TIME_REF pin directly to TSPLL DPLL */
+-			ret = dpll_pin_register(pf->dplls.tspll.dpll,
+-						parent->pin,
+-						&ice_dpll_tspll_in_ops,
+-						parent);
+-			if (ret) {
+-				dev_err(ice_pf_to_dev(pf),
+-					"TSPLL TIME_REF pin register failed: %pe\n",
+-					ERR_PTR(ret));
+-				goto drop_parent_ref;
+-			}
++		/* Register rclk pin via on-pin relationship */
++		pin = &pf->dplls.rclk;
++		ret = dpll_pin_on_pin_register(parent->pin, pin->pin,
++					       &ice_dpll_rclk_ops, pin);
++		if (ret) {
++			dev_err(ice_pf_to_dev(pf),
++				"RCLK pin register failed: %pe\n",
++				ERR_PTR(ret));
++			goto drop_parent_ref;
+ 		}
+ 		break;
+ 	case DPLL_PIN_DELETED:
+@@ -3879,22 +3847,10 @@ static void ice_dpll_pin_notify_work(struct work_struct *work)
+ 			goto out;
+ 		}
  
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
- 
-+#include <kunit/visibility.h>
- #include <linux/device.h>
- #include <linux/err.h>
- #include <linux/idr.h>
-@@ -21,6 +22,7 @@
- 
- /* Mutex lock to protect DPLL subsystem devices and pins */
- DEFINE_MUTEX(dpll_lock);
-+EXPORT_SYMBOL_IF_KUNIT(dpll_lock);
- 
- DEFINE_XARRAY_FLAGS(dpll_device_xa, XA_FLAGS_ALLOC);
- DEFINE_XARRAY_FLAGS(dpll_pin_xa, XA_FLAGS_ALLOC);
-diff --git a/drivers/dpll/dpll_netlink.c b/drivers/dpll/dpll_netlink.c
-index 016f3026d2f2e5..931ea2027cf68f 100644
---- a/drivers/dpll/dpll_netlink.c
-+++ b/drivers/dpll/dpll_netlink.c
-@@ -6,6 +6,7 @@
-  *  Copyright (c) 2023 Intel and affiliates
-  *
-  */
-+#include <kunit/visibility.h>
- #include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/netdevice.h>
-@@ -735,7 +736,7 @@ static int dpll_msg_add_pin_links(struct sk_buff *msg, struct dpll_pin *pin)
- 	return 0;
+-		if (is_rclk_parent) {
+-			/* Unregister rclk pin */
+-			pin = &pf->dplls.rclk;
+-			dpll_pin_on_pin_unregister(parent->pin, pin->pin,
+-						   &ice_dpll_rclk_ops, pin);
+-		} else if (is_tx_synce_parent) {
+-			/* Unregister TX-CLK SYNCE pin from TXC DPLL */
+-			pin = &pf->dplls.txclks[E825_EXT_SYNCE_PIN_IDX];
+-			dpll_pin_unregister(pf->dplls.txc.dpll, pin->pin,
+-					    &ice_dpll_txclk_ops, pin);
+-		} else if (is_tspll_time_ref) {
+-			/* Unregister TIME_REF pin from TSPLL DPLL */
+-			dpll_pin_unregister(pf->dplls.tspll.dpll,
+-					    parent->pin,
+-					    &ice_dpll_tspll_in_ops, parent);
+-		}
++		/* Unregister rclk pin */
++		pin = &pf->dplls.rclk;
++		dpll_pin_on_pin_unregister(parent->pin, pin->pin,
++					   &ice_dpll_rclk_ops, pin);
+ drop_parent_ref:
+ 		/* Drop fwnode pin reference */
+ 		dpll_pin_put(parent->pin, &parent->tracker);
+@@ -4067,43 +4023,36 @@ ice_dpll_deinit_fwnode_pins(struct ice_pf *pf, struct ice_dpll_pin *pins,
+ 	destroy_workqueue(pf->dplls.wq);
  }
  
--static int
-+VISIBLE_IF_KUNIT int
- dpll_cmd_pin_get_one(struct sk_buff *msg, struct dpll_pin *pin,
- 		     struct netlink_ext_ack *extack)
+-static int ice_dpll_deinit_txclk_pins(struct ice_pf *pf, bool flush)
++static void ice_dpll_deinit_txclk_pins(struct ice_pf *pf)
  {
-@@ -811,6 +812,7 @@ dpll_cmd_pin_get_one(struct sk_buff *msg, struct dpll_pin *pin,
+-	struct ice_dpll_pin *synce_pin = &pf->dplls.txclks[E825_EXT_SYNCE_PIN_IDX];
+-	struct ice_dpll *dt = &pf->dplls.txc;
++	struct ice_dplls *d = &pf->dplls;
++	int i;
  
- 	return dpll_msg_add_pin_links(msg, pin);
+-	ice_dpll_stop_fwnode_pin_activity(synce_pin, flush);
+-	ice_dpll_unregister_pins(dt->dpll, pf->dplls.txclks,
+-				 &ice_dpll_txclk_ops,
+-				 ARRAY_SIZE(pf->dplls.txclks));
+-	ice_dpll_release_pins(&pf->dplls.txclks[E825_EXT_EREF_PIN_IDX], 1);
+-	/* ice_dpll_release_pins() puts the pin but does not clear the slot,
+-	 * unlike ice_dpll_release_fwnode_pin() used for SYNCE below. NULL it
+-	 * so a late ice_txclk_get_pin() returns NULL rather than a dangling
+-	 * pointer.
++	ice_dpll_unregister_pins(d->txc.dpll, d->txclks, &ice_dpll_txclk_ops,
++				 ARRAY_SIZE(d->txclks));
++	ice_dpll_release_pins(d->txclks, ARRAY_SIZE(d->txclks));
++	/* ice_dpll_release_pins() puts the pins but does not clear the slots.
++	 * Clear them so a late ice_txclk_get_pin() returns NULL rather than a
++	 * dangling pointer.
+ 	 */
+-	pf->dplls.txclks[E825_EXT_EREF_PIN_IDX].pin = NULL;
+-	ice_dpll_release_fwnode_pin(synce_pin);
+-	return 0;
++	for (i = 0; i < ARRAY_SIZE(d->txclks); i++)
++		d->txclks[i].pin = NULL;
  }
-+EXPORT_SYMBOL_IF_KUNIT(dpll_cmd_pin_get_one);
  
- static int
- dpll_device_get_one(struct dpll_device *dpll, struct sk_buff *msg,
-diff --git a/drivers/dpll/dpll_netlink.h b/drivers/dpll/dpll_netlink.h
-index 4f63aa58789a17..bc20bcd248a512 100644
---- a/drivers/dpll/dpll_netlink.h
-+++ b/drivers/dpll/dpll_netlink.h
-@@ -11,3 +11,9 @@ int dpll_device_delete_ntf(struct dpll_device *dpll);
- int dpll_pin_create_ntf(struct dpll_pin *pin, u64 src_clock_id);
+ /**
+- * ice_dpll_deinit_tspll_pins - deinitialize TSPLL fwnode pin
++ * ice_dpll_deinit_tspll_pins - deinitialize TSPLL pin
+  * @pf: board private structure
+  *
+- * Stop notifier activity and release the TIME_REF fwnode pin, unregistering
+- * it from the TSPLL DPLL if it was registered.
++ * Unregister the TIME_REF pin from the TSPLL DPLL and release it.
+  */
+ static void ice_dpll_deinit_tspll_pins(struct ice_pf *pf)
+ {
+ 	struct ice_dpll_pin *time_ref = &pf->dplls.tspll_in;
+-	struct ice_dpll *tp = &pf->dplls.tspll;
  
- int dpll_pin_delete_ntf(struct dpll_pin *pin, u64 src_clock_id);
-+
-+#if IS_ENABLED(CONFIG_KUNIT)
-+/* For KUnit tests, call with dpll_lock held for a registered pin */
-+int dpll_cmd_pin_get_one(struct sk_buff *msg, struct dpll_pin *pin,
-+			 struct netlink_ext_ack *extack);
-+#endif
-diff --git a/drivers/dpll/tests/dpll_kunit.c b/drivers/dpll/tests/dpll_kunit.c
-new file mode 100644
-index 00000000000000..7fb50fe0eea9a5
---- /dev/null
-+++ b/drivers/dpll/tests/dpll_kunit.c
-@@ -0,0 +1,419 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * KUnit tests for links between DPLL pins.
+-	ice_dpll_stop_fwnode_pin_activity(time_ref, true);
+-	if (!IS_ERR_OR_NULL(time_ref->pin))
+-		dpll_pin_unregister(tp->dpll, time_ref->pin,
+-				    &ice_dpll_tspll_in_ops, time_ref);
+-	ice_dpll_release_fwnode_pin(time_ref);
++	ice_dpll_unregister_pins(pf->dplls.tspll.dpll, time_ref,
++				 &ice_dpll_tspll_in_ops, 1);
++	ice_dpll_release_pins(time_ref, 1);
++	time_ref->pin = NULL;
+ }
+ 
+ /**
+@@ -4129,7 +4078,7 @@ static void ice_dpll_deinit_pins(struct ice_pf *pf, bool cgu)
+ 		if (ice_pf_src_tmr_owned(pf) &&
+ 		    test_bit(ICE_FLAG_PTP_SUPPORTED, pf->flags))
+ 			ice_dpll_deinit_tspll_pins(pf);
+-		ice_dpll_deinit_txclk_pins(pf, true);
++		ice_dpll_deinit_txclk_pins(pf);
+ 		ice_dpll_deinit_fwnode_pins(pf, pf->dplls.inputs, 0);
+ 	}
+ 	if (cgu) {
+@@ -4173,6 +4122,34 @@ ice_dpll_pin_node_get(struct ice_pf *pf, const char *name)
+ 	return fwnode_find_reference(fwnode, "dpll-pins", index);
+ }
+ 
++/**
++ * ice_dpll_pin_link_add - link a pin with the pin wired to it
++ * @pf: board private structure
++ * @pin: pin of the driver
++ * @name: name of the firmware node of the pin at the other end
 + *
-+ * Each test starts with two owners that differ in clock_id:
-+ *
-+ * Owner A: devices A0 and A1, pin P with firmware node F, pin U with
-+ *          neither a firmware node nor a link
-+ * Owner B: device B0, pin C with a link to F
-+ *
-+ * The devices are registered, the pins are not.
++ * Return:
++ * * 0 - success
++ * * negative - failure reason
 + */
-+
-+#include <kunit/fwnode.h>
-+#include <kunit/test.h>
-+#include <linux/dpll.h>
-+#include <linux/notifier.h>
-+#include <net/netlink.h>
-+
-+#include "../dpll_core.h"
-+#include "../dpll_netlink.h"
-+
-+MODULE_IMPORT_NS("EXPORTED_FOR_KUNIT_TESTING");
-+
-+#define DT_CLOCK_ID_A		0xd011a
-+#define DT_CLOCK_ID_B		0xd011b
-+#define DT_MAX_LINKS		4
-+
-+struct dt_dev {
-+	struct dpll_device *dpll;
-+	dpll_tracker tracker;
-+	bool registered;
-+};
-+
-+struct dt_pin {
-+	struct dpll_pin *pin;
-+	dpll_tracker tracker;
-+	int changes;		/* DPLL_PIN_CHANGED notifications */
-+};
-+
-+struct dt_ctx {
-+	struct dt_dev a0, a1, b0;
-+	struct dt_pin p, u, c;
++static int ice_dpll_pin_link_add(struct ice_pf *pf, struct dpll_pin *pin,
++				 const char *name)
++{
 +	struct fwnode_handle *fwnode;
-+	struct notifier_block nb;
-+	bool nb_registered;
-+	bool p_a0, p_a1, u_a0, c_b0;	/* registrations */
-+};
-+
-+static int dt_mode_get(const struct dpll_device *dpll, void *dpll_priv,
-+		       enum dpll_mode *mode, struct netlink_ext_ack *extack)
-+{
-+	*mode = DPLL_MODE_MANUAL;
-+	return 0;
-+}
-+
-+static int dt_lock_status_get(const struct dpll_device *dpll, void *dpll_priv,
-+			      enum dpll_lock_status *status,
-+			      enum dpll_lock_status_error *status_error,
-+			      struct netlink_ext_ack *extack)
-+{
-+	*status = DPLL_LOCK_STATUS_UNLOCKED;
-+	return 0;
-+}
-+
-+static const struct dpll_device_ops dt_dev_ops = {
-+	.mode_get = dt_mode_get,
-+	.lock_status_get = dt_lock_status_get,
-+};
-+
-+static int dt_state_get(const struct dpll_pin *pin, void *pin_priv,
-+			const struct dpll_device *dpll, void *dpll_priv,
-+			enum dpll_pin_state *state,
-+			struct netlink_ext_ack *extack)
-+{
-+	*state = DPLL_PIN_STATE_CONNECTED;
-+	return 0;
-+}
-+
-+static int dt_direction_get(const struct dpll_pin *pin, void *pin_priv,
-+			    const struct dpll_device *dpll, void *dpll_priv,
-+			    enum dpll_pin_direction *direction,
-+			    struct netlink_ext_ack *extack)
-+{
-+	*direction = DPLL_PIN_DIRECTION_INPUT;
-+	return 0;
-+}
-+
-+static const struct dpll_pin_ops dt_pin_ops = {
-+	.state_on_dpll_get = dt_state_get,
-+	.direction_get = dt_direction_get,
-+};
-+
-+static const struct dpll_pin_properties dt_pin_prop = {
-+	.type = DPLL_PIN_TYPE_EXT,
-+};
-+
-+static int dt_notify(struct notifier_block *nb, unsigned long action,
-+		     void *data)
-+{
-+	struct dt_ctx *ctx = container_of(nb, struct dt_ctx, nb);
-+	struct dpll_pin_notifier_info *info = data;
-+
-+	if (action != DPLL_PIN_CHANGED)
-+		return NOTIFY_DONE;
-+	if (info->pin == ctx->p.pin)
-+		ctx->p.changes++;
-+	else if (info->pin == ctx->u.pin)
-+		ctx->u.changes++;
-+	else if (info->pin == ctx->c.pin)
-+		ctx->c.changes++;
-+
-+	return NOTIFY_OK;
-+}
-+
-+static void dt_dev_init(struct kunit *test, struct dt_dev *dev, u64 clock_id,
-+			u32 idx)
-+{
 +	int ret;
 +
-+	dev->dpll = dpll_device_get(clock_id, idx, THIS_MODULE, &dev->tracker);
-+	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, dev->dpll);
-+	ret = dpll_device_register(dev->dpll, DPLL_TYPE_EEC, &dt_dev_ops, dev);
-+	KUNIT_ASSERT_EQ(test, ret, 0);
-+	dev->registered = true;
-+}
-+
-+static void dt_dev_fini(struct dt_dev *dev)
-+{
-+	if (IS_ERR_OR_NULL(dev->dpll))
-+		return;
-+	if (dev->registered)
-+		dpll_device_unregister(dev->dpll, &dt_dev_ops, dev);
-+	dpll_device_put(dev->dpll, &dev->tracker);
-+}
-+
-+static void dt_pin_get(struct kunit *test, struct dt_pin *pin, u64 clock_id,
-+		       u32 idx)
-+{
-+	pin->pin = dpll_pin_get(clock_id, idx, THIS_MODULE, &dt_pin_prop,
-+				&pin->tracker);
-+	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, pin->pin);
-+}
-+
-+static void dt_pin_put(struct dt_pin *pin)
-+{
-+	if (!IS_ERR_OR_NULL(pin->pin))
-+		dpll_pin_put(pin->pin, &pin->tracker);
-+}
-+
-+static void dt_reg(struct kunit *test, struct dt_dev *dev, struct dt_pin *pin,
-+		   bool *registered)
-+{
-+	int ret;
-+
-+	ret = dpll_pin_register(dev->dpll, pin->pin, &dt_pin_ops, pin);
-+	KUNIT_ASSERT_EQ(test, ret, 0);
-+	*registered = true;
-+}
-+
-+static void dt_unreg(struct dt_dev *dev, struct dt_pin *pin, bool *registered)
-+{
-+	if (!*registered)
-+		return;
-+	dpll_pin_unregister(dev->dpll, pin->pin, &dt_pin_ops, pin);
-+	*registered = false;
-+}
-+
-+/* Fill @ids with the pins reported as linked with @pin, return their count */
-+static int dt_links(struct kunit *test, struct dt_pin *pin, u32 *ids)
-+{
-+	struct sk_buff *msg;
-+	struct nlattr *attr;
-+	int n = 0, rem, ret;
-+
-+	msg = nlmsg_new(NLMSG_GOODSIZE, GFP_KERNEL);
-+	KUNIT_ASSERT_NOT_NULL(test, msg);
-+	mutex_lock(&dpll_lock);
-+	ret = dpll_cmd_pin_get_one(msg, pin->pin, NULL);
-+	mutex_unlock(&dpll_lock);
-+	if (!ret)
-+		nla_for_each_attr_type(attr, DPLL_A_PIN_LINK,
-+				       (struct nlattr *)msg->data, msg->len,
-+				       rem) {
-+			struct nlattr *id = nla_find_nested(attr,
-+							    DPLL_A_PIN_ID);
-+
-+			if (id && n < DT_MAX_LINKS)
-+				ids[n] = nla_get_u32(id);
-+			n++;
-+		}
-+	nlmsg_free(msg);
-+	KUNIT_ASSERT_EQ(test, ret, 0);
-+	KUNIT_ASSERT_LE(test, n, DT_MAX_LINKS);
-+
-+	return n;
-+}
-+
-+/* Check that @pin is reported as linked with @peer only */
-+static void dt_expect_link(struct kunit *test, struct dt_pin *pin,
-+			   struct dt_pin *peer)
-+{
-+	u32 ids[DT_MAX_LINKS];
-+
-+	KUNIT_ASSERT_EQ(test, dt_links(test, pin, ids), 1);
-+	KUNIT_EXPECT_EQ(test, ids[0], peer->pin->id);
-+}
-+
-+static void dt_expect_no_link(struct kunit *test, struct dt_pin *pin)
-+{
-+	u32 ids[DT_MAX_LINKS];
-+
-+	KUNIT_EXPECT_EQ(test, dt_links(test, pin, ids), 0);
-+}
-+
-+static int dt_init(struct kunit *test)
-+{
-+	struct dt_ctx *ctx;
-+	int ret;
-+
-+	ctx = kunit_kzalloc(test, sizeof(*ctx), GFP_KERNEL);
-+	KUNIT_ASSERT_NOT_NULL(test, ctx);
-+	test->priv = ctx;
-+
-+	ctx->fwnode = kunit_fwnode_create_software_node(test, NULL, NULL);
-+	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, ctx->fwnode);
-+
-+	dt_dev_init(test, &ctx->a0, DT_CLOCK_ID_A, 0);
-+	dt_dev_init(test, &ctx->a1, DT_CLOCK_ID_A, 1);
-+	dt_dev_init(test, &ctx->b0, DT_CLOCK_ID_B, 0);
-+	dt_pin_get(test, &ctx->p, DT_CLOCK_ID_A, 0);
-+	dt_pin_get(test, &ctx->u, DT_CLOCK_ID_A, 1);
-+	dt_pin_get(test, &ctx->c, DT_CLOCK_ID_B, 0);
-+	dpll_pin_fwnode_set(ctx->p.pin, ctx->fwnode);
-+	ret = dpll_pin_link_add(ctx->c.pin, ctx->fwnode);
-+	KUNIT_ASSERT_EQ(test, ret, 0);
-+
-+	ctx->nb.notifier_call = dt_notify;
-+	ret = register_dpll_notifier(&ctx->nb);
-+	KUNIT_ASSERT_EQ(test, ret, 0);
-+	ctx->nb_registered = true;
-+
-+	return 0;
-+}
-+
-+static void dt_exit(struct kunit *test)
-+{
-+	struct dt_ctx *ctx = test->priv;
-+
-+	if (!ctx)
-+		return;
-+	if (ctx->nb_registered)
-+		unregister_dpll_notifier(&ctx->nb);
-+	dt_unreg(&ctx->a0, &ctx->p, &ctx->p_a0);
-+	dt_unreg(&ctx->a1, &ctx->p, &ctx->p_a1);
-+	dt_unreg(&ctx->a0, &ctx->u, &ctx->u_a0);
-+	dt_unreg(&ctx->b0, &ctx->c, &ctx->c_b0);
-+	dt_pin_put(&ctx->c);
-+	dt_pin_put(&ctx->u);
-+	dt_pin_put(&ctx->p);
-+	dt_dev_fini(&ctx->b0);
-+	dt_dev_fini(&ctx->a1);
-+	dt_dev_fini(&ctx->a0);
-+}
-+
-+/* The pin with the link is registered before the pin it names */
-+static void dt_test_link_first(struct kunit *test)
-+{
-+	struct dt_ctx *ctx = test->priv;
-+
-+	dt_reg(test, &ctx->b0, &ctx->c, &ctx->c_b0);
-+	dt_expect_no_link(test, &ctx->c);
-+
-+	dt_reg(test, &ctx->a0, &ctx->p, &ctx->p_a0);
-+	KUNIT_EXPECT_EQ(test, ctx->c.changes, 1);
-+	dt_expect_link(test, &ctx->c, &ctx->p);
-+	dt_expect_link(test, &ctx->p, &ctx->c);
-+}
-+
-+/* The pin named by the link is registered first */
-+static void dt_test_link_last(struct kunit *test)
-+{
-+	struct dt_ctx *ctx = test->priv;
-+
-+	dt_reg(test, &ctx->a0, &ctx->p, &ctx->p_a0);
-+	dt_expect_no_link(test, &ctx->p);
-+
-+	dt_reg(test, &ctx->b0, &ctx->c, &ctx->c_b0);
-+	KUNIT_EXPECT_EQ(test, ctx->p.changes, 1);
-+	dt_expect_link(test, &ctx->p, &ctx->c);
-+	dt_expect_link(test, &ctx->c, &ctx->p);
-+}
-+
-+/* The pin named by the link goes away and comes back */
-+static void dt_test_peer_reregister(struct kunit *test)
-+{
-+	struct dt_ctx *ctx = test->priv;
-+
-+	dt_reg(test, &ctx->b0, &ctx->c, &ctx->c_b0);
-+	dt_reg(test, &ctx->a0, &ctx->p, &ctx->p_a0);
-+	KUNIT_EXPECT_EQ(test, ctx->c.changes, 1);
-+
-+	dt_unreg(&ctx->a0, &ctx->p, &ctx->p_a0);
-+	KUNIT_EXPECT_EQ(test, ctx->c.changes, 2);
-+	dt_expect_no_link(test, &ctx->c);
-+
-+	dt_reg(test, &ctx->a0, &ctx->p, &ctx->p_a0);
-+	KUNIT_EXPECT_EQ(test, ctx->c.changes, 3);
-+	dt_expect_link(test, &ctx->c, &ctx->p);
-+}
-+
-+/* The link stays with its pin when the pin is unregistered */
-+static void dt_test_link_reregister(struct kunit *test)
-+{
-+	struct dt_ctx *ctx = test->priv;
-+
-+	dt_reg(test, &ctx->a0, &ctx->p, &ctx->p_a0);
-+	dt_reg(test, &ctx->b0, &ctx->c, &ctx->c_b0);
-+	KUNIT_EXPECT_EQ(test, ctx->p.changes, 1);
-+
-+	dt_unreg(&ctx->b0, &ctx->c, &ctx->c_b0);
-+	KUNIT_EXPECT_EQ(test, ctx->p.changes, 2);
-+	dt_expect_no_link(test, &ctx->p);
-+
-+	dt_reg(test, &ctx->b0, &ctx->c, &ctx->c_b0);
-+	KUNIT_EXPECT_EQ(test, ctx->p.changes, 3);
-+	dt_expect_link(test, &ctx->p, &ctx->c);
-+}
-+
-+/* Only the first registration and the last unregistration change the link */
-+static void dt_test_peer_two_dplls(struct kunit *test)
-+{
-+	struct dt_ctx *ctx = test->priv;
-+
-+	dt_reg(test, &ctx->b0, &ctx->c, &ctx->c_b0);
-+	dt_reg(test, &ctx->a0, &ctx->p, &ctx->p_a0);
-+	dt_reg(test, &ctx->a1, &ctx->p, &ctx->p_a1);
-+	KUNIT_EXPECT_EQ(test, ctx->c.changes, 1);
-+
-+	dt_unreg(&ctx->a0, &ctx->p, &ctx->p_a0);
-+	KUNIT_EXPECT_EQ(test, ctx->c.changes, 1);
-+	dt_expect_link(test, &ctx->c, &ctx->p);
-+
-+	dt_unreg(&ctx->a1, &ctx->p, &ctx->p_a1);
-+	KUNIT_EXPECT_EQ(test, ctx->c.changes, 2);
-+	dt_expect_no_link(test, &ctx->c);
-+}
-+
-+/* A pin without a link and a firmware node is not linked or notified */
-+static void dt_test_unrelated(struct kunit *test)
-+{
-+	struct dt_ctx *ctx = test->priv;
-+
-+	dt_reg(test, &ctx->a0, &ctx->u, &ctx->u_a0);
-+	dt_reg(test, &ctx->b0, &ctx->c, &ctx->c_b0);
-+	dt_reg(test, &ctx->a0, &ctx->p, &ctx->p_a0);
-+	dt_unreg(&ctx->a0, &ctx->p, &ctx->p_a0);
-+
-+	KUNIT_EXPECT_EQ(test, ctx->u.changes, 0);
-+	dt_expect_no_link(test, &ctx->u);
-+	dt_expect_no_link(test, &ctx->c);
-+}
-+
-+/* A duplicate link is rejected, also on a registered pin */
-+static void dt_test_add_duplicate(struct kunit *test)
-+{
-+	struct dt_ctx *ctx = test->priv;
-+	int ret;
-+
-+	ret = dpll_pin_link_add(ctx->c.pin, ctx->fwnode);
-+	KUNIT_EXPECT_EQ(test, ret, -EEXIST);
-+	dt_reg(test, &ctx->b0, &ctx->c, &ctx->c_b0);
-+
-+	kunit_warning_suppress(test) {
-+		ret = dpll_pin_link_add(ctx->c.pin, ctx->fwnode);
-+		KUNIT_EXPECT_EQ(test, ret, -EEXIST);
-+		KUNIT_EXPECT_SUPPRESSED_WARNING_COUNT(test, 0);
++	fwnode = ice_dpll_pin_node_get(pf, name);
++	if (IS_ERR(fwnode)) {
++		dev_err(ice_pf_to_dev(pf),
++			"Failed to find %s firmware node: %pe\n", name, fwnode);
++		return -ENODEV;
 +	}
++	ret = dpll_pin_link_add(pin, fwnode);
++	fwnode_handle_put(fwnode);
++
++	return ret;
 +}
 +
-+static void dt_test_add_registered(struct kunit *test)
-+{
-+	struct dt_ctx *ctx = test->priv;
-+	struct fwnode_handle *other;
+ static int
+ ice_dpll_init_fwnode_pin(struct ice_dpll_pin *pin, const char *name)
+ {
+@@ -4266,77 +4243,58 @@ ice_dpll_init_fwnode_pins(struct ice_pf *pf, struct ice_dpll_pin *pins,
+ 	return ret;
+ }
+ 
+-static int ice_dpll_init_txclk_pins(struct ice_pf *pf, int start_idx)
++/**
++ * ice_dpll_init_txclk_pins - init and register TX reference clock pins
++ * @pf: board private structure
++ *
++ * Get the EXT_EREF0 and EXT_SYNCE pins, link EXT_SYNCE with the pin wired to
++ * it and register both pins with the TXC DPLL.
++ *
++ * Return:
++ * * 0 - success
++ * * negative - initialization failure reason
++ */
++static int ice_dpll_init_txclk_pins(struct ice_pf *pf)
+ {
+-	struct ice_dpll_pin *ref_pin = pf->dplls.txclks;
++	struct ice_dpll_pin *pins = pf->dplls.txclks;
+ 	struct ice_dpll *txc = &pf->dplls.txc;
+ 	u64 clock_id;
+-	int ret;
++	int ret, i;
+ 
+-	/* EXT_EREF0 is a non-fwnode pin; its clock_id must match the TX-CLK
+-	 * DPLL device clock_id (see dpll_pin_register()).
++	/* The clock_id of the pins must match the TXC DPLL device clock_id
++	 * (see dpll_pin_register()). Without a valid MAC address it is the
++	 * clock_id of the other DPLLs of the NIC, so the pin indices are
++	 * dynamic to keep the pins distinct.
+ 	 */
+ 	clock_id = ice_generate_dpll_clock_id(pf, txc, DPLL_TYPE_GENERIC);
+-
+-	/* Configure EXT_EREF0 pin */
+-	ret = ice_dpll_get_pins(pf, ref_pin, start_idx, 1, clock_id);
++	ret = ice_dpll_get_pins(pf, pins, DPLL_PIN_IDX_UNSPEC,
++				ICE_DPLL_TXCLK_NUM_MAX, clock_id);
+ 	if (ret)
+ 		return ret;
+-	ret = dpll_pin_register(txc->dpll, ref_pin->pin, &ice_dpll_txclk_ops,
+-				ref_pin);
++	ret = ice_dpll_pin_link_add(pf, pins[E825_EXT_SYNCE_PIN_IDX].pin,
++				    ice_dpll_fwnode_ext_synce);
+ 	if (ret)
+-		goto err_release_ext_eref;
+-
+-	/*
+-	 * Configure EXT_SYNCE pin (fwnode-backed).
+-	 * The pin may not yet be available; in that case registration
+-	 * will be deferred via the notifier path.
+-	 */
+-	ref_pin++;
+-	ret = ice_dpll_init_fwnode_pin(ref_pin, ice_dpll_fwnode_ext_synce);
+-	if (ret)
+-		goto err_unregister_ext_eref;
+-
+-	if (IS_ERR_OR_NULL(ref_pin->pin)) {
+-		dev_dbg(ice_pf_to_dev(pf),
+-			"Tx-clk SYNCE pin not registered yet\n");
+-		return 0;
+-	}
+-
+-	ret = dpll_pin_register(txc->dpll, ref_pin->pin, &ice_dpll_txclk_ops,
+-				ref_pin);
++		goto release_pins;
++	ret = ice_dpll_register_pins(txc->dpll, pins, &ice_dpll_txclk_ops,
++				     ICE_DPLL_TXCLK_NUM_MAX);
+ 	if (ret)
+-		goto err_deinit_synce;
++		goto release_pins;
+ 
+ 	return 0;
+ 
+-err_deinit_synce:
+-	/*
+-	 * Avoid deadlock against notifier workers blocked on dpll_init.
+-	 * The outer init error path will complete dpll_init and flush the
+-	 * shared workqueue before destroying it.
+-	 */
+-	ice_dpll_stop_fwnode_pin_activity(ref_pin, false);
+-	ice_dpll_release_fwnode_pin(ref_pin);
+-err_unregister_ext_eref:
+-	dpll_pin_unregister(txc->dpll,
+-			    pf->dplls.txclks[E825_EXT_EREF_PIN_IDX].pin,
+-			    &ice_dpll_txclk_ops,
+-			    &pf->dplls.txclks[E825_EXT_EREF_PIN_IDX]);
+-
+-err_release_ext_eref:
+-	ice_dpll_release_pins(&pf->dplls.txclks[E825_EXT_EREF_PIN_IDX], 1);
+-
++release_pins:
++	ice_dpll_release_pins(pins, ICE_DPLL_TXCLK_NUM_MAX);
++	for (i = 0; i < ICE_DPLL_TXCLK_NUM_MAX; i++)
++		pins[i].pin = NULL;
+ 	return ret;
+ }
+ 
+ /**
+- * ice_dpll_init_tspll_pins - init and register TSPLL TIME_REF fwnode pin
++ * ice_dpll_init_tspll_pins - init and register TSPLL TIME_REF pin
+  * @pf: board private structure
+  *
+- * Initialize the fwnode-based TIME_REF input pin for the TSPLL DPLL on E825.
+- * If the pin is not yet available in the dpll subsystem, registration will
+- * be deferred via the notifier path.
++ * Get the TIME_REF input pin of the TSPLL DPLL on E825, link it with the pin
++ * wired to it and register it with the TSPLL DPLL.
+  *
+  * Return:
+  * * 0 - success
+@@ -4346,26 +4304,36 @@ static int ice_dpll_init_tspll_pins(struct ice_pf *pf)
+ {
+ 	struct ice_dpll_pin *time_ref = &pf->dplls.tspll_in;
+ 	struct ice_dpll *tp = &pf->dplls.tspll;
++	u64 clock_id;
+ 	int ret;
+ 
+ 	time_ref->pf = pf;
+-	ret = ice_dpll_init_fwnode_pin(time_ref, ice_dpll_fwnode_time_ref);
++	time_ref->prop.type = DPLL_PIN_TYPE_EXT;
++	time_ref->prop.capabilities = DPLL_PIN_CAPABILITIES_STATE_CAN_CHANGE;
++	time_ref->prop.board_label = ice_dpll_time_ref_pin;
 +
-+	other = kunit_fwnode_create_software_node(test, NULL, NULL);
-+	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, other);
-+	dt_reg(test, &ctx->b0, &ctx->c, &ctx->c_b0);
++	/* The clock_id of the pin must match the TSPLL DPLL device clock_id
++	 * (see dpll_pin_register()), the pin index is dynamic as for the TX
++	 * reference pins.
++	 */
++	clock_id = ice_generate_dpll_clock_id(pf, tp, DPLL_TYPE_GENERIC);
++	ret = ice_dpll_get_pins(pf, time_ref, DPLL_PIN_IDX_UNSPEC, 1, clock_id);
+ 	if (ret)
+ 		return ret;
+-
+-	if (IS_ERR_OR_NULL(time_ref->pin)) {
+-		dev_dbg(ice_pf_to_dev(pf),
+-			"TSPLL TIME_REF pin not registered yet\n");
+-		return 0;
+-	}
+-
++	ret = ice_dpll_pin_link_add(pf, time_ref->pin,
++				    ice_dpll_fwnode_time_ref);
++	if (ret)
++		goto release_pin;
+ 	ret = dpll_pin_register(tp->dpll, time_ref->pin,
+ 				&ice_dpll_tspll_in_ops, time_ref);
+-	if (ret) {
+-		ice_dpll_stop_fwnode_pin_activity(time_ref, false);
+-		ice_dpll_release_fwnode_pin(time_ref);
+-	}
++	if (ret)
++		goto release_pin;
 +
-+	kunit_warning_suppress(test) {
-+		KUNIT_EXPECT_EQ(test, dpll_pin_link_add(ctx->c.pin, other),
-+				-EBUSY);
-+		KUNIT_EXPECT_SUPPRESSED_WARNING_COUNT(test, 1);
-+	}
-+}
-+
-+static struct kunit_case dt_cases[] = {
-+	KUNIT_CASE(dt_test_link_first),
-+	KUNIT_CASE(dt_test_link_last),
-+	KUNIT_CASE(dt_test_peer_reregister),
-+	KUNIT_CASE(dt_test_link_reregister),
-+	KUNIT_CASE(dt_test_peer_two_dplls),
-+	KUNIT_CASE(dt_test_unrelated),
-+	KUNIT_CASE(dt_test_add_duplicate),
-+	KUNIT_CASE(dt_test_add_registered),
-+	{}
-+};
-+
-+static struct kunit_suite dt_suite = {
-+	.name = "dpll_pin_link",
-+	.init = dt_init,
-+	.exit = dt_exit,
-+	.test_cases = dt_cases,
-+};
-+
-+kunit_test_suite(dt_suite);
-+
-+MODULE_DESCRIPTION("KUnit tests for links between DPLL pins");
-+MODULE_LICENSE("GPL");
++	return 0;
+ 
++release_pin:
++	ice_dpll_release_pins(time_ref, 1);
++	time_ref->pin = NULL;
+ 	return ret;
+ }
+ 
+@@ -4394,7 +4362,7 @@ static int ice_dpll_init_pins_e825(struct ice_pf *pf)
+ 	if (ret)
+ 		goto unregister_pins;
+ 
+-	ret = ice_dpll_init_txclk_pins(pf, 0);
++	ret = ice_dpll_init_txclk_pins(pf);
+ 	if (ret) {
+ 		ice_dpll_deinit_rclk_pin(pf);
+ 		goto unregister_pins;
+@@ -4404,12 +4372,7 @@ static int ice_dpll_init_pins_e825(struct ice_pf *pf)
+ 	    test_bit(ICE_FLAG_PTP_SUPPORTED, pf->flags)) {
+ 		ret = ice_dpll_init_tspll_pins(pf);
+ 		if (ret) {
+-			/* Avoid flushing pf->dplls.wq here: notifier work
+-			 * items block on pf->dplls.dpll_init which is
+-			 * completed by the unregister_pins path below.
+-			 * destroy_workqueue() there drains queued items.
+-			 */
+-			ice_dpll_deinit_txclk_pins(pf, false);
++			ice_dpll_deinit_txclk_pins(pf);
+ 			ice_dpll_deinit_rclk_pin(pf);
+ 		}
+ 	}
+@@ -4964,6 +4927,7 @@ static int ice_dpll_init_info_txclk_pins_e825c(struct ice_pf *pf)
+ 			tx_pin->prop.board_label = ice_dpll_ext_eref_pin;
+ 			tx_pin->tx_ref_src = ICE_REF_CLK_EREF0;
+ 		} else if (i == E825_EXT_SYNCE_PIN_IDX) {
++			tx_pin->prop.board_label = ice_dpll_ext_synce_pin;
+ 			tx_pin->tx_ref_src = ICE_REF_CLK_SYNCE;
+ 		}
+ 	}
+diff --git a/drivers/net/ethernet/intel/ice/ice_dpll.h b/drivers/net/ethernet/intel/ice/ice_dpll.h
+index 3f9a993129acef..e0b48c8af3fbbb 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dpll.h
++++ b/drivers/net/ethernet/intel/ice/ice_dpll.h
+@@ -138,7 +138,7 @@ struct ice_dpll {
+  * @outputs: output pins pointer
+  * @rclk: recovered pins pointer
+  * @txclks: TX clock reference pins pointer
+- * @tspll_in: TSPLL TIME_REF fwnode input pin (E825 only)
++ * @tspll_in: TSPLL TIME_REF input pin (E825 only)
+  * @num_inputs: number of input pins available on dpll
+  * @num_outputs: number of output pins available on dpll
+  * @cgu_state_acq_err_num: number of errors returned during periodic work
 -- 
 2.56.1
 
