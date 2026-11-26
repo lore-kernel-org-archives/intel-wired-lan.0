@@ -2,28 +2,28 @@ Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C4813606A32A
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 26 Nov 2026 20:34:47 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 08535606A337
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 26 Nov 2026 20:34:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=k54ekMwx;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=WA4VDw8k
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=ZKKYnUnZ;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=MPwcb+MB
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id A5E9E60A68;
-	Thu, 26 Nov 2026 20:34:47 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id DD6B260A68;
+	Thu, 26 Nov 2026 20:34:53 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id IqHzw41kVIlX; Thu, 26 Nov 2026 20:34:47 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 1380B60AA1
+ id aJ0WaPmM-zdG; Thu, 26 Nov 2026 20:34:53 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 31DA260A8F
 Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795725287;
-	b=UOTsM9jRvYcPmdgg4Tm5nqdKe8IJKBSyr+bGcHWGQsUyyRQyNeeB3QpqumrLmqVepxot
-	 YOdMLa0nbi9eF42uBPve6eHLaBiIfXXQwNVF7pxPa3m8TI+pJlA0GTMVz3lpaklcr7GnK
-	 h42d8cHleZGRKX1NzbzPVUkPYFNkosqG6xgjXyRelSWzVarbn8/j+SYJ9G96kTS2zE6tw
-	 gMNN9/c5uTXtt36f3ak6mhr/Ap0LwXJMfmG1f3KX3Dn/x2zAltnXUJ7Nbm+DzYGaarhUj
-	 YzbZTfzHS+1qShjTFTrhuP1uq2JA7Gi0Xo8GtAc87OzXhnKR/yNKCdspnWRuvEOf6fA==
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795725293;
+	b=iXdY+yzq3ZGqcdCcSz6hrn+ZULFO/+O6A9kn+3ZsAMcyM2gwv93HQk7nMiZkH8wQ11of
+	 oSMd1bh+C2amGplMMslHCFvfpmwK+TncPK81t8lwfyys0XiTs5aAwxl4GnzNBSRaZzHzr
+	 2izaQyX+IKY3VCl8+wHvR7PPiY4pz+VMV+4wM/ajZTYLW4f2b8LyP/o+nPu4vbxpQrLty
+	 l8Pxue8X+MOVRZfQcpkOjbFrNV9rUv4veuRj6LBBLMB9BHP+ln8BtePE3TEnPpv48KU3T
+	 X8yfNWBJXRgVw1Adxyf1SMUdJDYMe9jjfuNo9KyR6yO7dK0KAzY63aomEFpmoMdj8iQ==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795725287;
+	c=relaxed/relaxed; t=1795725293;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
@@ -33,84 +33,84 @@ ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
 	 X-Mimecast-Originator:Content-Transfer-Encoding:content-type:
 	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
 	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=GuGdWNAUUamhyAvRSygUN7vwSXLvTQpL3xsjy8x1md8=;
-	b=M7ApQPvHklK7rU98x4ErddviArAT91FQvkU2m+l82hrVCLTkHkZZhTATbXi6P9tAazlg
-	 NNy1YP34Ol1l3c/arNqQXi+6LgJE2vGuDiqcjE7PlczhiSs6ajUT8/TxV2bL/sajN+qUw
-	 GvlkQQeh8SXzwYukzwBRa9JDAYJA9MNX2ws3287Yc2sm8oGdW+h4nuek2lWhTeqlPTZyJ
-	 eBrMSywpWbzOWMhSEn4us5w925N2kixRT9qv6b1kqSXvMBi2RVt54xgB44SSgS4f5msLY
-	 fzIrP+0PjjAhvMllujFvgx1O9+IXKrc1kMnIFBCGzP853+4Ug15V/hnTviYnpd/21EA==
+	bh=XCoP2lR9dWoXQubbwuHi5uO9EefUEvGruaOQqElQJIQ=;
+	b=Otxm/wsqPFZZUekI1+eH6KfEgnNbkJaC5y4cAQ/nyudmDu0D05BvAsGux/ex9wBviJKK
+	 T3KYYw+LpoPQHerLsd8uPnJz2xBJUAZNNHWYt4RSdbqjEUpata9t2BFjKuVFax1hJPQ2b
+	 kKvH3ODy+RtzO6qVPjIt9mqgMGIyk+Dz8uHms591Fhnf+7dcZ9d7UDwOgRnzwdYdYJbjc
+	 nNmZ8JGa24tUKFT6jc3wNVmPuS2TIrn0FnwukQKk/ZDbYqbkRB62dVUSv41BrZTcacdYf
+	 7+YFpDGvePTE5ydiufGbKDmEy3a4sCmhmu0UqwyQDvht89fe2naQSwO+i2LGD2V9xyQ==
 ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1795725287;
-	bh=GuGdWNAUUamhyAvRSygUN7vwSXLvTQpL3xsjy8x1md8=;
+	s=default; t=1795725293;
+	bh=XCoP2lR9dWoXQubbwuHi5uO9EefUEvGruaOQqElQJIQ=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=k54ekMwxcjoe/3jfJ8GrURtTUy+OyeP0/s20BVkIika2EiK2lGfY43cAo/aYqjEB2
-	 /oZsh8CuXpXKLJW9Ga8VpgCJP/OG/G8H9PQoCZtttZSq8HbbMQA/ruh82Yh/pbJUp+
-	 bs9DDr30/041QntwwqwAHXSq28KxOkxTYkC+/xV54MpP/eVqZdzeY5EWKburVVwp52
-	 tor+lT0dbhTZxdI9byaOo+0InJ5Jnx6TrsndLQDvo0uwmYYAhIpC1A8s/VXNERz4oF
-	 N+kRPSTpQrhyvStugxBkd2wwOj2WEHLjk9Kn7K/Q4m5YumJY9SfrY7woT6LYhfz+S3
-	 NNkcSbUmG+aAA==
+	b=ZKKYnUnZtcNI0n/UERejzog0hv/VaeoLsjRxuGu/HjnTHrkHoFwSwbX7O2nbML0N4
+	 M+x+vbbqam3OxRa0DemMdGKBcs4EsV5+E84AAZ6ARAjpnnUSyTkfz4fUz9Z4vP8Y8P
+	 SODi5lYYhfhj5Jto1NvSyeD5ZmJrQM164fR1R2IFKOJU1fcidK4SD9GQ3UCadJtBWK
+	 XkWSP5YKTgUGV9EZ7E66BAzGeBoW9jCy+TlVk2DGWMa7Nd6HDMYWMEb9fdfGLQu8qD
+	 PGYkRXCp/rqzMWxRqpqZ6yThel0oR01xNtQmLVdzaRx6BrY8WD9PaVNW+TXnmhYFz/
+	 yfdVW4AvFgTcw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 1380B60AA1;
-	Thu, 26 Nov 2026 20:34:47 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 6D147311
- for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Nov 2026 20:34:45 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 31DA260A8F;
+	Thu, 26 Nov 2026 20:34:53 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id ECD141AB
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Nov 2026 20:34:51 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 5342440A01
- for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Nov 2026 20:34:45 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id D34294054A
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Nov 2026 20:34:51 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id P0yWtlyy-lrQ for <intel-wired-lan@lists.osuosl.org>;
- Thu, 26 Nov 2026 20:34:44 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 8620A405C8
-Authentication-Results: smtp4.osuosl.org;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 0ozOJJf3-FVy for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 26 Nov 2026 20:34:51 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org E6855400CB
+Authentication-Results: smtp2.osuosl.org;
  arc=none smtp.remote-ip=170.10.129.124
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
  helo=us-smtp-delivery-124.mimecast.com; envelope-from=ivecera@redhat.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=quarantine dis=none)
+Authentication-Results: smtp2.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=redhat.com
-Authentication-Results: smtp4.osuosl.org;
+Authentication-Results: smtp2.osuosl.org;
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=WA4VDw8k
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=MPwcb+MB
 Received: from us-smtp-delivery-124.mimecast.com
  (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 8620A405C8
- for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Nov 2026 20:34:43 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTPS id E6855400CB
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Nov 2026 20:34:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1795725283;
+ s=mimecast20190719; t=1795725289;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=GuGdWNAUUamhyAvRSygUN7vwSXLvTQpL3xsjy8x1md8=;
- b=WA4VDw8k6AZnZTNE+zCqj/a2Dw1Y2Y/wBloJyPg4GxD0ds4yV4nQJCV8h2JD1KSq/EMEde
- HcvFf8u/b++4pjh7Q8OCVSc7le9vPsmTBrOug65ON5Uc4hbZmZTvmP2wcv34HlzBuKop2/
- LAxmaEhbVsmRemXb8vio1LFYH7cKeXE=
-Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
+ bh=XCoP2lR9dWoXQubbwuHi5uO9EefUEvGruaOQqElQJIQ=;
+ b=MPwcb+MBrTck17mipHFRzmxfIExsulHdIIR62CaaoQWryZPt1E93A3T5WaQ9sww1a9xEHI
+ Zy2bz7Rmq0k0oN8Jrmq5C4b1Z1nVJ5P8sHFFGVFOp+bUcZcBQrpnFg6ZzHMeXAL9qVVN0W
+ v6RNoT7mdqHVvNP4IsmvQPep5zWVKPc=
+Received: from mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
  relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-439-SRtIgN-oM0KY7fSWuT2aaA-1; Thu,
- 26 Nov 2026 20:34:38 +0000
-X-MC-Unique: SRtIgN-oM0KY7fSWuT2aaA-1
-X-Mimecast-MFC-AGG-ID: SRtIgN-oM0KY7fSWuT2aaA_1795725275
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-275-ztZ9ANb3NOyqu-W7-jAr4g-1; Thu,
+ 26 Nov 2026 20:34:45 +0000
+X-MC-Unique: ztZ9ANb3NOyqu-W7-jAr4g-1
+X-Mimecast-MFC-AGG-ID: ztZ9ANb3NOyqu-W7-jAr4g_1795725282
 Received: from mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com
  (mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.111])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
- id AB9D8195604C; Thu, 26 Nov 2026 20:34:35 +0000 (UTC)
+ by mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
+ id 345001800471; Thu, 26 Nov 2026 20:34:42 +0000 (UTC)
 Received: from ivecera-thinkpadp16vgen1.tpbc.csb
  (headnet04.pony-001.prod.iad2.dc.redhat.com [10.2.32.116])
  by mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
- id 8E6B81801971; Thu, 26 Nov 2026 20:34:29 +0000 (UTC)
+ id 19AAF1801977; Thu, 26 Nov 2026 20:34:35 +0000 (UTC)
 From: Ivan Vecera <ivecera@redhat.com>
 To: netdev@vger.kernel.org
 Cc: Vadim Fedorenko <vadim.fedorenko@linux.dev>,
@@ -132,16 +132,16 @@ Cc: Vadim Fedorenko <vadim.fedorenko@linux.dev>,
  Karol Kolacinski <karol.kolacinski@intel.com>,
  Saeed Mahameed <saeedm@nvidia.com>, Tariq Toukan <tariqt@nvidia.com>,
  Petr Oros <poros@redhat.com>
-Subject: [PATCH RFC net-next 17/19] dpll: require a registered DPLL for pin
- registration
-Date: Thu, 26 Nov 2026 21:32:29 +0100
-Message-ID: <20261126203231.934632-18-ivecera@redhat.com>
+Subject: [PATCH RFC net-next 18/19] dpll: drop the owner reference selection
+ of pins
+Date: Thu, 26 Nov 2026 21:32:30 +0100
+Message-ID: <20261126203231.934632-19-ivecera@redhat.com>
 In-Reply-To: <20261126203231.934632-1-ivecera@redhat.com>
 References: <20261126203231.934632-1-ivecera@redhat.com>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.111
-X-Mimecast-MFC-PROC-ID: JUqYWeALyGsenDzvChCiMXCv2GgsgvQJ7XyZtyYJRCU_1795725275
+X-Mimecast-MFC-PROC-ID: 1JRODsN4mmmTrNkY2eVCNrwa2FcjYpjNtczRhMMzSEI_1795725282
 X-Mimecast-Originator: redhat.com
 Content-Transfer-Encoding: 8bit
 content-type: text/plain; charset="US-ASCII"; x-default=true
@@ -158,97 +158,137 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 X-Spam-Status: No, score=-15.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=unavailable
+	MAILING_LIST_MULTI,SPF_HELO_PASS autolearn=unavailable
 	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Since commit 33f016b23a21 ("dpll: fix NULL deref in dpll_device_ops()
-during teardown race"), dpll_pin_register() accepts a DPLL without
-registrations unless the pin has measured_freq_get, and
-dpll_pin_on_pin_register() registers a pin with the DPLLs of the parent
-pin without a check.
+Commit 2c1bd78dc8e2 ("dpll: use pin owner's dpll ref for pin-level
+attribute reporting") and commit 84e85c325e5e ("dpll: use pin owner's
+dpll ref for pin-level attribute setting") made the pin-level paths look
+for the reference of a DPLL of the pin's owner, because a pin could also
+be registered with DPLLs of other owners.
 
-The drivers register a DPLL before its pins. Reject a DPLL that is not
-registered in dpll_pin_register() before its ops are requested, and a
-parent pin with such a DPLL in dpll_pin_on_pin_register(), and document
-the order.
-
-The pin paths keep the tolerance for a DPLL without registrations from
-that commit. On E810, ice registers the recovered clock pin of a PF
-without the CGU under the input pins of the PF with the CGU, and so with
-its DPLLs. The pin stays registered with them when that PF goes first.
+Every DPLL a pin is registered with now has the owner of the pin. Use
+the first reference of a registered DPLL and drop
+dpll_pin_own_dpll_ref_first().
 
 Signed-off-by: Ivan Vecera <ivecera@redhat.com>
 ---
- Documentation/driver-api/dpll.rst |  2 ++
- drivers/dpll/dpll_core.c          | 17 +++++++++++++----
- 2 files changed, 15 insertions(+), 4 deletions(-)
+ drivers/dpll/dpll_core.c    | 27 ---------------------------
+ drivers/dpll/dpll_core.h    |  1 -
+ drivers/dpll/dpll_netlink.c | 20 +++++++++-----------
+ 3 files changed, 9 insertions(+), 39 deletions(-)
 
-diff --git a/Documentation/driver-api/dpll.rst b/Documentation/driver-api/dpll.rst
-index bc34fc83882fac..75ebed0bb95e96 100644
---- a/Documentation/driver-api/dpll.rst
-+++ b/Documentation/driver-api/dpll.rst
-@@ -634,6 +634,8 @@ of pin callbacks, and private data pointer for calling them:
- - dpll_pin_register() - register pin with a dpll device,
- - dpll_pin_on_pin_register() - register pin with another MUX type pin.
- 
-+A dpll device is registered before its pins.
-+
- Notifications of adding or removing dpll devices are created within
- subsystem itself.
- Notifications about registering/deregistering pins are also invoked by
 diff --git a/drivers/dpll/dpll_core.c b/drivers/dpll/dpll_core.c
-index e199342652d163..af61c4882c2b6f 100644
+index af61c4882c2b6f..a58cd22164f0be 100644
 --- a/drivers/dpll/dpll_core.c
 +++ b/drivers/dpll/dpll_core.c
-@@ -925,7 +925,7 @@ __dpll_pin_register(struct dpll_device *dpll, struct dpll_pin *pin,
-  * @priv: pointer to private information of owner
-  *
-  * The @dpll and the @pin must have the same owner, they must be created with
-- * the same module and clock_id.
-+ * the same module and clock_id. The @dpll must be registered.
-  *
-  * Context: Acquires a lock (dpll_lock)
-  * Return:
-@@ -951,9 +951,13 @@ dpll_pin_register(struct dpll_device *dpll, struct dpll_pin *pin,
+@@ -1229,33 +1229,6 @@ void *dpll_pin_on_pin_priv(struct dpll_pin *parent,
+ 	return reg->priv;
+ }
  
- 	mutex_lock(&dpll_lock);
+-/**
+- * dpll_pin_own_dpll_ref_first - find the first owner dpll ref of a pin
+- * @pin: pointer to a dpll pin
+- *
+- * Search pin's dpll_refs for a ref whose dpll matches the pin's
+- * (module, clock_id) tuple, i.e. the dpll registered by the driver
+- * that created the pin. This ensures pin-level attributes are
+- * reported and modified using the owner's ops even when the pin is
+- * also registered with dplls from other drivers.
+- *
+- * Return: pointer to the owner's dpll_pin_ref, or NULL if no
+- * owner ref is found.
+- */
+-struct dpll_pin_ref *dpll_pin_own_dpll_ref_first(struct dpll_pin *pin)
+-{
+-	struct dpll_pin_ref *ref;
+-	unsigned long i;
+-
+-	xa_for_each(&pin->dpll_refs, i, ref) {
+-		if (ref->dpll->module == pin->module &&
+-		    ref->dpll->clock_id == pin->clock_id)
+-			return ref;
+-	}
+-
+-	return NULL;
+-}
+-
+ const struct dpll_pin_ops *dpll_pin_ops(struct dpll_pin_ref *ref)
+ {
+ 	struct dpll_pin_registration *reg;
+diff --git a/drivers/dpll/dpll_core.h b/drivers/dpll/dpll_core.h
+index 6e10aadd2123d9..add518fef295d8 100644
+--- a/drivers/dpll/dpll_core.h
++++ b/drivers/dpll/dpll_core.h
+@@ -103,7 +103,6 @@ void *dpll_pin_on_pin_priv(struct dpll_pin *parent, struct dpll_pin *pin);
  
-+	if (ASSERT_DPLL_REGISTERED(dpll)) {
-+		ret = -EINVAL;
-+		goto out_unlock;
-+	}
- 	dev_ops = dpll_device_ops(dpll);
- 	if (WARN_ON(ops->measured_freq_get &&
--		    (!dev_ops || !dev_ops->freq_monitor_get ||
-+		    (!dev_ops->freq_monitor_get ||
- 		     !dev_ops->freq_monitor_set))) {
- 		ret = -EINVAL;
- 		goto out_unlock;
-@@ -1039,7 +1043,8 @@ EXPORT_SYMBOL_GPL(dpll_pin_unregister);
-  * Register a pin with a parent pin, create references between them and
-  * between newly registered pin and dplls connected with a parent pin.
-  * The @parent and the @pin must have the same owner, they must be created
-- * with the same module and clock_id.
-+ * with the same module and clock_id. The dpll devices of the @parent must
-+ * be registered.
-  *
-  * Context: Acquires a lock (dpll_lock)
-  * Return:
-@@ -1073,7 +1078,11 @@ int dpll_pin_on_pin_register(struct dpll_pin *parent, struct dpll_pin *pin,
- 	if (ret)
- 		goto unlock;
- 	xa_for_each(&parent->dpll_refs, i, ref) {
--		ret = __dpll_pin_register(ref->dpll, pin, ops, priv, parent);
-+		if (ASSERT_DPLL_REGISTERED(ref->dpll))
-+			ret = -EINVAL;
-+		else
-+			ret = __dpll_pin_register(ref->dpll, pin, ops, priv,
-+						  parent);
- 		if (ret) {
- 			stop = i;
- 			goto dpll_unregister;
+ const struct dpll_device_ops *dpll_device_ops(struct dpll_device *dpll);
+ struct dpll_device *dpll_device_get_by_id(int id);
+-struct dpll_pin_ref *dpll_pin_own_dpll_ref_first(struct dpll_pin *pin);
+ const struct dpll_pin_ops *dpll_pin_ops(struct dpll_pin_ref *ref);
+ struct dpll_pin_ref *dpll_xa_ref_dpll_first(struct xarray *xa_refs);
+ bool dpll_pins_linked(const struct dpll_pin *a, const struct dpll_pin *b);
+diff --git a/drivers/dpll/dpll_netlink.c b/drivers/dpll/dpll_netlink.c
+index 6a46130fc687eb..ac341e3eba61ac 100644
+--- a/drivers/dpll/dpll_netlink.c
++++ b/drivers/dpll/dpll_netlink.c
+@@ -745,9 +745,7 @@ dpll_cmd_pin_get_one(struct sk_buff *msg, struct dpll_pin *pin,
+ 	struct dpll_pin_ref *ref;
+ 	int ret;
+ 
+-	ref = dpll_pin_own_dpll_ref_first(pin);
+-	if (!ref || !dpll_device_registered(ref->dpll))
+-		ref = dpll_pin_first_registered_ref(pin);
++	ref = dpll_pin_first_registered_ref(pin);
+ 	if (!ref)
+ 		return -ENODEV;
+ 
+@@ -1134,8 +1132,8 @@ dpll_pin_freq_set(struct dpll_pin *pin, struct nlattr *a,
+ 		return -EINVAL;
+ 	}
+ 
+-	ref = dpll_pin_own_dpll_ref_first(pin);
+-	if (!ref || !dpll_device_registered(ref->dpll)) {
++	ref = dpll_pin_first_registered_ref(pin);
++	if (!ref) {
+ 		NL_SET_ERR_MSG(extack, "pin owner dpll not found");
+ 		return -ENODEV;
+ 	}
+@@ -1180,8 +1178,8 @@ dpll_pin_esync_set(struct dpll_pin *pin, struct nlattr *a,
+ 	bool supported = false;
+ 	int ret, i;
+ 
+-	ref = dpll_pin_own_dpll_ref_first(pin);
+-	if (!ref || !dpll_device_registered(ref->dpll)) {
++	ref = dpll_pin_first_registered_ref(pin);
++	if (!ref) {
+ 		NL_SET_ERR_MSG(extack, "pin owner dpll not found");
+ 		return -ENODEV;
+ 	}
+@@ -1245,8 +1243,8 @@ dpll_pin_ref_sync_state_set(struct dpll_pin *pin,
+ 		NL_SET_ERR_MSG(extack, "reference sync pin not available");
+ 		return -EINVAL;
+ 	}
+-	ref = dpll_pin_own_dpll_ref_first(pin);
+-	if (!ref || !dpll_device_registered(ref->dpll)) {
++	ref = dpll_pin_first_registered_ref(pin);
++	if (!ref) {
+ 		NL_SET_ERR_MSG(extack, "pin owner dpll not found");
+ 		return -ENODEV;
+ 	}
+@@ -1458,8 +1456,8 @@ dpll_pin_phase_adj_set(struct dpll_pin *pin, struct nlattr *phase_adj_attr,
+ 		return -EINVAL;
+ 	}
+ 
+-	ref = dpll_pin_own_dpll_ref_first(pin);
+-	if (!ref || !dpll_device_registered(ref->dpll)) {
++	ref = dpll_pin_first_registered_ref(pin);
++	if (!ref) {
+ 		NL_SET_ERR_MSG(extack, "pin owner dpll not found");
+ 		return -ENODEV;
+ 	}
 -- 
 2.56.1
 
