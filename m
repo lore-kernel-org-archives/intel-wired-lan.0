@@ -1,116 +1,119 @@
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ED94D606A321
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 26 Nov 2026 20:32:57 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 70A8F606A323
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 26 Nov 2026 20:32:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=AsL/msGS;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=hGiNmyIa
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=6UMBaNnQ;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Mh/UemT9
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C4977409E4;
-	Thu, 26 Nov 2026 20:32:57 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 47CA260A68;
+	Thu, 26 Nov 2026 20:32:58 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Lgt5Tj-19T0L; Thu, 26 Nov 2026 20:32:56 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 97348409EB
-Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795725176;
-	b=ehada5MMJWX0mW40s1yBBiUMPqlGKAXqBdcWX7iB/qv0F6a4vVapf0623+bwugCmJ0iX
-	 f4kE8w86xzTa/r8FZMMd3TjuLug0sB4i+T9E5ix6bZ2pvskXQQeAnTANgKTLvQaH95iiC
-	 HGLKx8wwg1gOqt4PKuaypd5VS1DgAJEz1kukTi0kRhHx8Ugw5YchN2zUrchahNU3yaVJi
-	 vKWQ+WR9ekMC+0hSQDZzW0BWBeUjeJ3rGW7SD39BhxwPSkBM0BGsWQ2ZYvWWRrWlbdWWl
-	 6vEdY5LBjLxr9T4f5OlgQakqj0MASbn5MIWgBvkYDdfnSrpyvtQgkX8YvI/yNn4CRwg==
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id orI0ySyXJvSJ; Thu, 26 Nov 2026 20:32:57 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 6B08A60AE4
+Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795725177;
+	b=cqAMRUHItXh+sOXoZztGXqZHj8CGdu6Qz6s7Pw0m7BcGJugMWNiJb+GquDKrNAEgmJUJ
+	 AnSddggKSwjReEYQNWzZtmk/3vVFA6tbryyQUNfp5no13F8eO5ppK3aqnU70CHUk+UlSK
+	 Hj4i6wwdhBtNswHl83NUhs1i9Gjv9EetGcd5sthHgL+onqPbPP0r6HHCzgFuezzQ4sMHl
+	 NHu3xTPXH4poQAjq3zK5ARrF2/8MqaO49wVcVJ/vtg2pBuA8y1wrWoT7G8bAvjTt5nn7n
+	 dN9XgNtfOyI8EkVDEshNu3dZ7Rqj/KJ629E6m54ZsFl9cZcdvTDRhBYkpIgugewdcsA==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795725176;
+	c=relaxed/relaxed; t=1795725177;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
-	 DKIM-Signature:Received:X-MC-Unique:X-Mimecast-MFC-AGG-ID:Received:
-	 Received:From:To:Cc:Subject:Date:Message-ID:MIME-Version:X-Scanned-By:
-	 X-Mimecast-MFC-PROC-ID:X-Mimecast-Originator:
-	 Content-Transfer-Encoding:content-type:X-BeenThere:X-Mailman-Version:
-	 Precedence:List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
-	 List-Subscribe:Errors-To;
-	bh=hteBlJecuyLDEt+A2GyVPbp3T0CryFhITZ+ug8ST7OQ=;
-	b=QG43bJP/A1d4FpQmkwf5R72Ys1BtA0qSTMC/Zz39/zMyZd+9ypiYReA3OUVc5VI3WOal
-	 HjPukMDnORlFkZPa3+YRP66N0YCTgtsMPx5wIFPD8ijtrw//QQ/ayrbjWkAESxVIkgLeK
-	 JZxzRi3ivfIcMErJdAuRgbTtqGN0SYPcnmOJ93GTp0vhLpeCdNOtg69Ovfzvp3wp7AI9Z
-	 jcoH+lQhwceLIUKaqcwXF5/8F+lLqM8GfeQYtj2Lv0srHgM1wwPpav1onPJF8urDNmIw2
-	 VEQQ1G+dq5bzfxQcupVQGT9hKdn/Kc2mTT7HpZ+u1/EeCJFnxhc8bZAgT5AVJFyesRw==
-ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
+	 DKIM-Signature:X-MC-Rep:Received:X-MC-Unique:X-Mimecast-MFC-AGG-ID:
+	 Received:Received:From:To:Cc:Subject:Date:Message-ID:In-Reply-To:
+	 References:MIME-Version:X-Scanned-By:X-Mimecast-MFC-PROC-ID:
+	 X-Mimecast-Originator:Content-Transfer-Encoding:content-type:
+	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
+	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
+	bh=NIxE4m8l1izRwK6ahSUGuo2vdx0Q2NKrDP6SB3rfqu0=;
+	b=iZI+OtilMzqBr50Za+S6KwVMiHSJnaEVlR3oMXWL6SBk+aKbHNgP2VeozIHhniTS8Dho
+	 sFW5/nSK4y5fJI1d/GFhcdt1+X4NcSXT99AaBsjsDhRd9qM9dVMMX9AxkPaNUBQU60HQT
+	 WJJFRQsvugs7Fo6rBk7xWhMlhhvG4l/4L7eIj5O7F6YdKsUzcP0l1KEtxlbJZMK51loJk
+	 8eWN0KXYhm65dAp687DKXtiKoqLo+RQcmFnytA/1IjEbai+uRlOFWR42NBSj9TeubTz7G
+	 hRsL8Ei9/Pt3CQ+0zl4VsyHH62PGmFDiEZ70JnV7NusEOx4YW18dQFb1Y1q4W1YoCtA==
+ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
 	dmarc=pass header.from=redhat.com;
-	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=hGiNmyIa;
+	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b="Mh/UemT9";
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1795725176;
-	bh=hteBlJecuyLDEt+A2GyVPbp3T0CryFhITZ+ug8ST7OQ=;
-	h=From:To:Cc:Subject:Date:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=AsL/msGScJOMp5FlEz+937kDLkW3DeqfyGgIAvPzVIrgKoFlv0sav910Neib878Eh
-	 5rRwTmHo9Lvdi7/LljrXEEMSS4skLcprZ13BqAq67I1riL/BmN0b3y21QnM11z+43h
-	 bnlu/YHnjyq/4TttLpAxp9T/InUA2ti6XgBKyV+sBWCiDJv2xPlLUwStuLxRavuZiL
-	 56quBsTVnY8DVpVKJjU/idu2R9pDrnOunkDS2PyAW3ZKpfQVo0Th/NC4ObU/BZCZWV
-	 j5Moooq0xjJ+N1mKH+QiVg4D0M0GOtWHZVLNWjvkr6u+HncknIU+ShOhHJ3XVO074X
-	 Vsl6cjdtcjkxg==
+	s=default; t=1795725177;
+	bh=NIxE4m8l1izRwK6ahSUGuo2vdx0Q2NKrDP6SB3rfqu0=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=6UMBaNnQgYgbyaPVpKqsVDoBxbt02vNwd1U5t5v7cB6G32EnWfjxbV6x+q0KXTAZq
+	 KXYv3sLcdOgqpVOhdaeHZxv59QioPVHnRTCLpkFXwCHOOdE5L7UABh9qIs4bYdYtaH
+	 8sYuISY9IGBtgjrtPdUOh9Mi2LS83ot5pHORqi6XL6z2HDVvoNj7nNC9bliUsapxyY
+	 6AAbGXWQODBAfwVsG3+pDxX9NjoJo8ODX4OLqDc9j+nx9HTciTdTn/DonqiyV89gW3
+	 F3xB0dIxlCFaHi3JPWaN0+C9/vyFWOwsKskSbnlC5wzGsxNOTStW1aUNP5RVRNAVrk
+	 RdgW95GK9uHdw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 97348409EB;
-	Thu, 26 Nov 2026 20:32:56 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 7493D1AB
- for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Nov 2026 20:32:55 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 6B08A60AE4;
+	Thu, 26 Nov 2026 20:32:57 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 509E51AB
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Nov 2026 20:32:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 5A7A5409EB
- for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Nov 2026 20:32:55 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 36BB960AE4
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Nov 2026 20:32:56 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 5q2J_JMvIbV1 for <intel-wired-lan@lists.osuosl.org>;
- Thu, 26 Nov 2026 20:32:54 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 8B689409E4
-Authentication-Results: smtp4.osuosl.org;
- arc=none smtp.remote-ip=170.10.133.124
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.133.124;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Azq9KHI_NEg6 for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 26 Nov 2026 20:32:55 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 0DEB860A68
+Authentication-Results: smtp3.osuosl.org;
+ arc=none smtp.remote-ip=170.10.129.124
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
  helo=us-smtp-delivery-124.mimecast.com; envelope-from=ivecera@redhat.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=quarantine dis=none)
+Authentication-Results: smtp3.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=redhat.com
-Authentication-Results: smtp4.osuosl.org; dkim=pass (1024-bit key,
+Authentication-Results: smtp3.osuosl.org; dkim=pass (1024-bit key,
  unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=hGiNmyIa
+ header.s=mimecast20190719 header.b=Mh/UemT9
 Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.133.124])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 8B689409E4
- for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Nov 2026 20:32:52 +0000 (UTC)
+ (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 0DEB860A68
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Nov 2026 20:32:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1795725171;
+ s=mimecast20190719; t=1795725175;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding;
- bh=hteBlJecuyLDEt+A2GyVPbp3T0CryFhITZ+ug8ST7OQ=;
- b=hGiNmyIac95YZaAyN2AghXWa7/ttR8aVMwuOeR/IcAQIt+nTnRaITi8cFKMDPa3MUV8BVA
- RXJK+zNhnXIDeFIk9jWzL6UUV+cJvA86H6dyHufdpL7BxGD4UrwP8NZl1o0dT7OjgeJmKc
- fbxHcAy+f1kZAH9PkKbsQa+RUrULVN8=
-Received: from mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=NIxE4m8l1izRwK6ahSUGuo2vdx0Q2NKrDP6SB3rfqu0=;
+ b=Mh/UemT9CFh0E5diKxznJBklmJrtJmr28nn9fqal1AqpfP6Z7htDjUjv6fTx59GthaQ1jF
+ MQdi0vBPH06DVfesjhbsA3VJjFnY3H7cg4FcAgKkOM73zyPOzvl8NRziD0dYBuONjE78n0
+ Ls07P374I4Tv0DM/VZXzDZU8niooEoQ=
+X-MC-Rep: binary re single
+Received: from mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
  relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-262-oHFUvPaKNC2yfKu9wYyJ3Q-1; Thu,
- 26 Nov 2026 20:32:44 +0000
-X-MC-Unique: oHFUvPaKNC2yfKu9wYyJ3Q-1
-X-Mimecast-MFC-AGG-ID: oHFUvPaKNC2yfKu9wYyJ3Q_1795725161
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-85-wPBfipf-POCTfNY6iEcjow-1; Thu,
+ 26 Nov 2026 20:32:50 +0000
+X-MC-Unique: wPBfipf-POCTfNY6iEcjow-1
+X-Mimecast-MFC-AGG-ID: wPBfipf-POCTfNY6iEcjow_1795725168
 Received: from mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com
  (mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.111])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
- id 8CA771955F3A; Thu, 26 Nov 2026 20:32:40 +0000 (UTC)
+ by mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
+ id 6D032180057E; Thu, 26 Nov 2026 20:32:47 +0000 (UTC)
 Received: from ivecera-thinkpadp16vgen1.tpbc.csb
  (headnet04.pony-001.prod.iad2.dc.redhat.com [10.2.32.116])
  by mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
- id 1E3B21800286; Thu, 26 Nov 2026 20:32:32 +0000 (UTC)
+ id DD006180197A; Thu, 26 Nov 2026 20:32:40 +0000 (UTC)
 From: Ivan Vecera <ivecera@redhat.com>
 To: netdev@vger.kernel.org
 Cc: Vadim Fedorenko <vadim.fedorenko@linux.dev>,
@@ -132,14 +135,15 @@ Cc: Vadim Fedorenko <vadim.fedorenko@linux.dev>,
  Karol Kolacinski <karol.kolacinski@intel.com>,
  Saeed Mahameed <saeedm@nvidia.com>, Tariq Toukan <tariqt@nvidia.com>,
  Petr Oros <poros@redhat.com>
-Subject: [PATCH RFC net-next 00/19] dpll: single-owner pins,
- board wiring as pin links
-Date: Thu, 26 Nov 2026 21:32:12 +0100
-Message-ID: <20261126203231.934632-1-ivecera@redhat.com>
+Subject: [PATCH RFC net-next 01/19] dpll: add pin links
+Date: Thu, 26 Nov 2026 21:32:13 +0100
+Message-ID: <20261126203231.934632-2-ivecera@redhat.com>
+In-Reply-To: <20261126203231.934632-1-ivecera@redhat.com>
+References: <20261126203231.934632-1-ivecera@redhat.com>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.111
-X-Mimecast-MFC-PROC-ID: FKKHfhztViO4Ttd14km9uVI_H_Pc-IO-KMbp7HSrrz0_1795725161
+X-Mimecast-MFC-PROC-ID: V6rf1ICC5-DSdFDcweWvWwLoFx1jDS0gi8Idk3lcnxM_1795725168
 X-Mimecast-Originator: redhat.com
 Content-Transfer-Encoding: 8bit
 content-type: text/plain; charset="US-ASCII"; x-default=true
@@ -155,214 +159,191 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 X-Spam-Status: No, score=-15.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_PASS autolearn=unavailable
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS autolearn=unavailable
 	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Sorry for the size, I know 19 patches is over the netdev limit of 15.
-For the RFC I kept each step in its own patch, so all the changes are
-easy to see one by one. The final series will squash some of them.
+A pin is a pad of the chip whose driver registers it. When a board wires
+a pad of one chip to a pad of another, for example an output of an
+external DPLL to the TX reference input of a network controller, a
+driver now registers the pin of the other driver with its own DPLL. The
+pin then has two owners and a request about it runs callbacks of both
+drivers.
 
-In the thread on "dpll: do not serialize driver callbacks under global
-dpll_lock" [1], Jakub was not convinced: relations between DPLL objects
-are hard to follow, objects of one driver plug into objects of another,
-and the driver API should be much more "dummy-proof" [2]. Vadim agreed
-and asked to step back, because the subsystem was shaped to model one
-NIC family and is getting more complex for its next generation [3].
-Jiri agreed with Vadim [4]. This RFC removes the sharing of pin objects
-between drivers instead of picking a lock scheme for it.
+Add a link that describes such a wire instead. A driver adds it to its
+own pin with dpll_pin_link_add() and names the pin at the other end by
+its firmware node, which the driver of that pin sets with
+dpll_pin_fwnode_set(). The link holds only the firmware node, so the
+driver needs no pointer to a pin of another driver and that pin does not
+have to exist yet.
 
-Problems in DPLL today
-Model:
-- One pin, two owners: on E825, ice registers zl3073x output pins with
-  its DPLLs (c191b319f208) and hangs its recovered clock pins under
-  zl3073x inputs, so one request runs callbacks of two drivers.
-- Per-registration needs on one object: a state change bypass for
-  firmware node pins (521b6d5de08d), zl3073x inputs typed MUX although
-  the mux is in the NIC, one pin that is both an output and an input.
-Driver API:
-- ice waits for the zl3073x pins on a notifier chain (2be467588d6b) and
-  holds references to them, so probe order and lifetime are its job.
-- Core code exists only for that: the owner check exception, the
-  notifier source id (0bf47f722fa9), the owner ref selection
-  (2c1bd78dc8e2, 84e85c325e5e) and a cached module name.
-- Callbacks run under dpll_lock and must use __dpll_*_change_ntf(),
-  notifications go out without driver locks. Only comments say so.
-Locking:
-- dpll_lock serializes every callback of every driver. With a dual NAC
-  E825 and a ZL80132B, ice DPLL requests during zl3073x ToD writes took
-  a median of 1448 ms, at most 3.9 s (idle 0.1 ms). zl3073x is narrowing
-  its waits, but callbacks that wait for hardware stay (planned zl3073x
-  resync, up to 1 s; mlx5 commands, 60 s timeout).
-- No lock scheme fits pins shared between drivers. Options A-E from the
-  thread each cost something, from callbacks invisible to lockdep (A)
-  to one domain for everything connected, the global lock again (D).
-Fragility: 13 fixes in a year in the (un)register, on-pin and
-notification paths, e.g. 32239d600236, df0ba51ccf87, 1a2292101c0d.
+Links are added before the pin is registered and are released together
+with the pin. Adding an existing link returns -EEXIST, also on a
+registered pin, so each user of a shared pin can add the same link. The
+next patch reports links to user space.
 
-All of these come from one dpll_pin being both a pad of a chip and a
-wire on the board, so two drivers end up sharing one object.
+Signed-off-by: Ivan Vecera <ivecera@redhat.com>
+---
+ drivers/dpll/dpll_core.c | 71 ++++++++++++++++++++++++++++++++++++++++
+ drivers/dpll/dpll_core.h | 12 +++++++
+ include/linux/dpll.h     |  2 ++
+ 3 files changed, 85 insertions(+)
 
-Proposal
-- I1: a pin is registered only with DPLLs and parent pins of its owner,
-  the module and clock_id it was created with. The core enforces it.
-- I2: so a request about an object runs only its owner's callbacks.
-- I3: a wire between pins of two devices is a link. The driver of one
-  end adds it to its own pin with dpll_pin_link_add() and names the
-  other end by its firmware node, so no driver holds a pin of another.
-- I4: a link is only a wire, with no state and no callbacks. pin-get
-  reports DPLL_A_PIN_LINK with the peer id for both pins while both are
-  registered, the peer is notified when one of them comes or goes.
-On E825 this covers the TX reference (zl3073x output to the ice TXC
-DPLL), the time reference (zl3073x output to the ice TSPLL) and the
-recovered clock crossbar: two ice mux devices, one per CGU output, with
-the port pins as inputs and outputs linked with zl3073x inputs.
-
-This removes the model and driver API problems and options A-E. The
-code of one fix is gone, the cross-owner cases behind other fixes cannot
-happen. The stall and unenforced rules stay, per-owner locks become
-possible. Not addressed: a netdev names only its recovered clock pin.
-
-For a driver
-TX reference and recovered clock, before and after (the first PF of the
-adapter creates the muxes):
-
-  pin = fwnode_dpll_pin_find(fwnode, &tracker); /* or wait for it */
-  dpll_pin_register(txc_dpll, pin, &txclk_ops, priv);
-  dpll_pin_on_pin_register(zl_input, rclk_pin, &rclk_ops, priv);
-
-  pin = dpll_pin_get(txc_clock_id, idx, THIS_MODULE, &prop, &tracker);
-  dpll_pin_link_add(pin, fwnode);
-  dpll_pin_register(txc_dpll, pin, &txclk_ops, priv);
-  dpll_device_register(mux, DPLL_TYPE_GENERIC, &mux_ops, adapter_mux);
-  dpll_pin_link_add(mux_out, rclk_fwnode);
-  dpll_pin_register(mux, mux_out, &out_ops, adapter_mux);
-  dpll_pin_register(mux, rclk_pin, &rclk_ops, priv);
-
-For user space (ids from the GNR-D below)
-The zl3073x output OUT3 (id 36) no longer lists the ice TXC DPLLs as
-parents; it is linked with the EXT_SYNCE pins of the eight PFs, which
-are inputs of their TXC DPLLs:
-
-  {'id': 36, 'module-name': 'zl3073x', 'package-label': 'OUT3',
-   'parent-device': [{'parent-id': 11, 'direction': 'output', ...}],
-   'link': [{'id': 4}, {'id': 8}, ..., {'id': 26}]}
-  {'id': 4, 'module-name': 'ice', 'board-label': 'EXT_SYNCE',
-   'parent-device': [{'parent-id': 1, 'direction': 'input', ...}],
-   'link': [{'id': 36}]}
-
-The port pin of eno1np0 (id 2) had the zl3073x inputs as parent pins.
-It is now an input of the muxes 2 and 3, and RCLK0 (id 0) is linked
-with REF1P (id 29):
-
-  {'id': 2, 'module-name': 'ice', 'type': 'synce-eth-port',
-   'parent-device': [{'parent-id': 2, 'state': 'connected', ...},
-                     {'parent-id': 3, 'state': 'disconnected', ...}]}
-  {'id': 0, 'board-label': 'RCLK0', 'link': [{'id': 29}], ...}
-
-pin-set {"id": 2, "parent-device": {"parent-id": 2, "state":
-"connected"}} routes the port and disconnects the one routed before.
-The clock-id of the port pin is the adapter index instead of the DSN.
-The E825 pins exist without zl3073x too.
-
-What it removes
-Core: everything under driver API above, cross-owner on-pin registration
-is rejected. ice: the notifier work, the firmware node parent pins and
-the foreign pin references. The tolerance for a DPLL without
-registrations (33f016b23a21) stays: on E810 the recovered clock pins of
-the PFs without the CGU stay registered with the DPLLs of the PF with
-the CGU when that PF goes first.
-
-  core (dpll_core, dpll_netlink, dpll.h)  +224/-173
-  ice                                     +727/-503
-  KUnit tests and build                   +563
-  docs, spec, uapi                        +69
-  exported symbols 21 -> 20 (+2 for KUnit only), ops unchanged
-
-ice grows, as the PFs of an ASIC share the muxes and the adapter
-records the routing. An E825 with N ports had N+1 DPLL devices (TXC per
-port, TSPLL) and 2N ice pins, now N+3 devices and 3N+3 ice pins. A mux
-is not a DPLL, but the generic type is for devices outside the EEC and
-PPS classes, and two driver-local devices replace two core mechanisms:
-cross-owner on-pin registration and a MUX parent of another driver.
-
-Locking series: v3 is on hold until the direction is agreed. On top of
-this the rule for drivers becomes "your callbacks run under your lock",
-and options A-E are not needed.
-
-Status: W=1 build at every patch, full build, sparse, kernel-doc,
-ynl-regen, htmldocs, KUnit (12 tests, UML, lockdep). Tested on a GNR-D
-platform with a dual NAC E825 and a ZL80132B: links, routing of all
-eight ports with notifications, the recovered clock at the zl3073x
-inputs, PF reset, CORER, GLOBR, PF unbind and bind, zl3073x reload and
-the TX reference; the test script and its results are in [5]. Not
-tested: EMPR, and the recovered clock of the second NAC, whose ports had
-no link. Prepared with the help of an AI coding assistant.
-
-Questions
-1. The E825 TX reference and recovered clock views change. Fine, or
-   should netlink translate the old view?
-2. Is a mux fine as a generic DPLL device that reports locked while it
-   routes a port, and are N+3 DPLL devices for N ports fine?
-3. The two muxes share module, clock-id and type, so device-id-get
-   finds neither. Is finding them through their output pins enough?
-4. The firmware still types the zl3073x inputs as MUX. Leave it?
-5. The ice pin does not know the frequency on the wire. Omit it, as
-   now, or read it from a firmware node property?
-6. Should the locking series be rebased on top of this?
-
-[1] https://lore.kernel.org/netdev/20261111164021.273409-1-ivecera@redhat.com/
-[2] https://lore.kernel.org/netdev/20261119133851.3f25074c@kernel.org/
-[3] https://lore.kernel.org/netdev/ff8b63b7-b943-444a-bd37-b6fb493b5d9f@linux.dev/
-[4] https://lore.kernel.org/netdev/awMP9Gj3Xhia0ZeI@FV6GYCPJ69/
-[5] https://gist.github.com/ivecera/b31f67adac6deac318719bbe0f282707
-
-Ivan Vecera (19):
-  dpll: add pin links
-  dpll: report pin links
-  dpll: notify linked pins when a pin is registered or unregistered
-  dpll: add KUnit tests for pin links
-  ice: dpll: use own pins for the TX and time references
-  ice: dpll: drop the filter of notifications from own registrations
-  dpll: register pins only with a DPLL of their owner
-  dpll: drop the state change exception for pins with a firmware node
-  dpll: drop the source clock id from pin notifications
-  dpll: drop device events from the in-kernel notifier
-  dpll: drop the cached module name of a pin
-  ice: dpll: track the E825 recovered clock routing in the adapter
-  ice: dpll: register the E825 recovered clock muxes as DPLL devices
-  ice: dpll: route the E825 recovered clock through the mux devices
-  dpll: register pins only with a parent pin of their owner
-  dpll: drop the in-kernel notifier chain
-  dpll: require a registered DPLL for pin registration
-  dpll: drop the owner reference selection of pins
-  dpll: add KUnit tests for the pin owner checks
-
- Documentation/driver-api/dpll.rst            |   53 +
- Documentation/netlink/specs/dpll.yaml        |   15 +
- drivers/dpll/.kunitconfig                    |    5 +
- drivers/dpll/Kconfig                         |   18 +
- drivers/dpll/Makefile                        |    2 +
- drivers/dpll/dpll_core.c                     |  253 ++--
- drivers/dpll/dpll_core.h                     |   20 +-
- drivers/dpll/dpll_netlink.c                  |   82 +-
- drivers/dpll/dpll_netlink.h                  |   10 +-
- drivers/dpll/tests/dpll_kunit.c              |  538 ++++++++
- drivers/net/ethernet/intel/ice/ice_adapter.c |    3 +-
- drivers/net/ethernet/intel/ice/ice_adapter.h |   33 +
- drivers/net/ethernet/intel/ice/ice_dpll.c    | 1175 ++++++++++--------
- drivers/net/ethernet/intel/ice/ice_dpll.h    |   11 +-
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c  |    8 -
- include/linux/dpll.h                         |   32 +-
- include/uapi/linux/dpll.h                    |    1 +
- 17 files changed, 1583 insertions(+), 676 deletions(-)
- create mode 100644 drivers/dpll/.kunitconfig
- create mode 100644 drivers/dpll/tests/dpll_kunit.c
-
-
-base-commit: 2388bb763e323442f4dd8189238ac0c5f334c4a0
+diff --git a/drivers/dpll/dpll_core.c b/drivers/dpll/dpll_core.c
+index 277692d12d3d1e..4d871542ddf762 100644
+--- a/drivers/dpll/dpll_core.c
++++ b/drivers/dpll/dpll_core.c
+@@ -147,6 +147,16 @@ static void __dpll_pin_hold(struct dpll_pin *pin, dpll_tracker *tracker)
+ static void dpll_pin_idx_free(u32 pin_idx);
+ static void dpll_pin_prop_free(struct dpll_pin_properties *prop);
+ 
++static void dpll_pin_links_free(struct dpll_pin *pin)
++{
++	struct dpll_pin_link *link, *tmp;
++
++	list_for_each_entry_safe(link, tmp, &pin->links, list) {
++		fwnode_handle_put(link->peer);
++		kfree(link);
++	}
++}
++
+ static void __dpll_pin_put(struct dpll_pin *pin, dpll_tracker *tracker)
+ {
+ 	dpll_pin_tracker_free(pin, tracker);
+@@ -155,6 +165,7 @@ static void __dpll_pin_put(struct dpll_pin *pin, dpll_tracker *tracker)
+ 		xa_destroy(&pin->dpll_refs);
+ 		xa_destroy(&pin->parent_refs);
+ 		xa_destroy(&pin->ref_sync_pins);
++		dpll_pin_links_free(pin);
+ 		dpll_pin_prop_free(&pin->prop);
+ 		fwnode_handle_put(pin->fwnode);
+ 		dpll_pin_idx_free(pin->pin_idx);
+@@ -665,6 +676,7 @@ dpll_pin_alloc(u64 clock_id, u32 pin_idx, struct module *module,
+ 	if (ret)
+ 		goto err_pin_prop;
+ 	refcount_set(&pin->refcount, 1);
++	INIT_LIST_HEAD(&pin->links);
+ 	xa_init_flags(&pin->dpll_refs, XA_FLAGS_ALLOC);
+ 	xa_init_flags(&pin->parent_refs, XA_FLAGS_ALLOC);
+ 	xa_init_flags(&pin->ref_sync_pins, XA_FLAGS_ALLOC);
+@@ -838,6 +850,65 @@ struct dpll_pin *fwnode_dpll_pin_find(struct fwnode_handle *fwnode,
+ }
+ EXPORT_SYMBOL_GPL(fwnode_dpll_pin_find);
+ 
++static bool dpll_pin_has_link(const struct dpll_pin *pin,
++			      const struct fwnode_handle *peer)
++{
++	struct dpll_pin_link *link;
++
++	list_for_each_entry(link, &pin->links, list)
++		if (link->peer == peer)
++			return true;
++
++	return false;
++}
++
++/**
++ * dpll_pin_link_add - add a link from a pin to another pin
++ * @pin: pointer to a dpll pin
++ * @peer: firmware node of the pin at the other end
++ *
++ * Describe a fixed board connection between @pin and the pin of another
++ * device that its driver associates with @peer by dpll_pin_fwnode_set().
++ * The other pin does not need to exist yet. The link is kept until @pin is
++ * released. An existing link is reported also when @pin is registered, so
++ * each user of a shared pin can add the same link.
++ *
++ * Context: Acquires a lock (dpll_lock). Must be called before @pin is
++ *	    registered.
++ * Return:
++ * * 0 on success
++ * * -EEXIST if @pin already has a link to @peer
++ * * -EBUSY if @pin is already registered
++ * * -ENOMEM if the link cannot be allocated
++ */
++int dpll_pin_link_add(struct dpll_pin *pin, struct fwnode_handle *peer)
++{
++	struct dpll_pin_link *link;
++	int ret = 0;
++
++	mutex_lock(&dpll_lock);
++	if (dpll_pin_has_link(pin, peer)) {
++		ret = -EEXIST;
++		goto unlock;
++	}
++	if (WARN_ON(xa_get_mark(&dpll_pin_xa, pin->id, DPLL_REGISTERED))) {
++		ret = -EBUSY;
++		goto unlock;
++	}
++	link = kzalloc_obj(*link);
++	if (!link) {
++		ret = -ENOMEM;
++		goto unlock;
++	}
++	link->peer = fwnode_handle_get(peer);
++	list_add_tail(&link->list, &pin->links);
++unlock:
++	mutex_unlock(&dpll_lock);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(dpll_pin_link_add);
++
+ static int
+ __dpll_pin_register(struct dpll_device *dpll, struct dpll_pin *pin,
+ 		    const struct dpll_pin_ops *ops, void *priv, void *cookie)
+diff --git a/drivers/dpll/dpll_core.h b/drivers/dpll/dpll_core.h
+index da8a369556ed11..26a16df2b6410d 100644
+--- a/drivers/dpll/dpll_core.h
++++ b/drivers/dpll/dpll_core.h
+@@ -47,6 +47,7 @@ struct dpll_device {
+  * @module:		module of creator
+  * @module_name:	module name of creator
+  * @fwnode:		optional reference to firmware node
++ * @links:		links to other pins (struct dpll_pin_link)
+  * @dpll_refs:		hold referencees to dplls pin was registered with
+  * @parent_refs:	hold references to parent pins pin was registered with
+  * @ref_sync_pins:	hold references to pins for Reference SYNC feature
+@@ -62,6 +63,7 @@ struct dpll_pin {
+ 	struct module *module;
+ 	char module_name[MODULE_NAME_LEN];
+ 	struct fwnode_handle *fwnode;
++	struct list_head links;
+ 	struct xarray dpll_refs;
+ 	struct xarray parent_refs;
+ 	struct xarray ref_sync_pins;
+@@ -71,6 +73,16 @@ struct dpll_pin {
+ 	struct rcu_head rcu;
+ };
+ 
++/**
++ * struct dpll_pin_link - wire between a pin and another pin
++ * @list:		entry in the links list of the pin
++ * @peer:		firmware node of the pin at the other end
++ **/
++struct dpll_pin_link {
++	struct list_head list;
++	struct fwnode_handle *peer;
++};
++
+ /**
+  * struct dpll_pin_ref - structure for referencing either dpll or pins
+  * @dpll:		pointer to a dpll
+diff --git a/include/linux/dpll.h b/include/linux/dpll.h
+index 7a6f8796cda2ad..e252d3c6b4334a 100644
+--- a/include/linux/dpll.h
++++ b/include/linux/dpll.h
+@@ -301,6 +301,8 @@ void dpll_pin_put(struct dpll_pin *pin, dpll_tracker *tracker);
+ 
+ void dpll_pin_fwnode_set(struct dpll_pin *pin, struct fwnode_handle *fwnode);
+ 
++int dpll_pin_link_add(struct dpll_pin *pin, struct fwnode_handle *peer);
++
+ int dpll_pin_on_pin_register(struct dpll_pin *parent, struct dpll_pin *pin,
+ 			     const struct dpll_pin_ops *ops, void *priv);
+ 
 -- 
 2.56.1
 
