@@ -1,29 +1,29 @@
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C8518606A31E
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 27 Nov 2026 14:21:53 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 48008606A31C
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 27 Nov 2026 14:22:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=qlXfxeEM;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jDF1YvTc
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=JCTT6XTp;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PRMnFxpA
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 99BCB60B01;
-	Fri, 27 Nov 2026 14:21:53 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 25BF340A69;
+	Fri, 27 Nov 2026 14:22:02 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 6IGibC64ZfAu; Fri, 27 Nov 2026 14:21:53 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 0499860B04
-Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795789313;
-	b=VyZE8Evc4z++XoO+2k5RGNBdO3+mDsL4vz089dc/92iMKsLj7iTzv6iUbzqewtFY2fNj
-	 MUrov/2nbd3uNHm+zje9zMn7Rax5BOulPpd2QLNWBfg02HnnX3pjtdr3XopANv7KVIjJI
-	 WfdD1b5V1QPV8+7bZVkRwave1c/glILeMB15KX+XCudPO5uyv4S0WnSX1diY/VsuaQ+VG
-	 bEGLEsO4yrO8ljDJGVMuJbNww6+TB0i0I4FY6Tbp244vbcseI5lUSY5BRCBL6Q12H1RiA
-	 /Kn6IqYjtE/mF3re4DBYXGb2coJ2tFZ67kfX0r/l6TDZGOKd5UVcnO8bJF1dasGQ+Ow==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Hbff6EDOguMQ; Fri, 27 Nov 2026 14:22:01 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 3D13140A70
+Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795789321;
+	b=MB4TzPjjaytJHacZC0Ejt/hoPty7pcF7LMt0Tme/zzoBjDIlaiGCml/Yj1vaRe+ae6P7
+	 t7+l1TYuS3YwFDusy40IwpI/EsYKNBY44fwEtBu8XAbz3I1FMQ0zKzK0I6XwTMCYeTct6
+	 ZDsTXW8ChJqfr1wuJa9Ebt2giukrE8H/MzIGLXFJMyLZZGTkHRLLuGxyE/RDywGQterwR
+	 HBFskjjcqRCvcnnTbkqQXmcU9mUDzoEkVi8L7nLbp8Pdh0GEZsGZI8xbJ/105J2jNqGeL
+	 M0iIv7xgAPL9J6Dr1YQFtzleGyypR6x2cSPNo+a6qnmBjzr83/FQFLL+pUr3siBci/w==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795789313;
+	c=relaxed/relaxed; t=1795789321;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
@@ -32,42 +32,44 @@ ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
 	 Content-Transfer-Encoding:X-BeenThere:X-Mailman-Version:Precedence:
 	 List-Id:List-Unsubscribe:List-Archive:List-Post:List-Help:
 	 List-Subscribe:Errors-To;
-	bh=7+c1Qm3VYeU1+HWEx+l1hojCUO1r8kUOKWi5tpZjEFQ=;
-	b=U8GujTApYPBZtKMw39/pgh+NLngjwcvVMc1/4e9QaBrbpc1sfL1fpPtG7BFvCkD8JHPh
-	 oY7+APjYw1nU/Oa9qBwmOto4qe8AGLuciWDxAX+fH/VM7+gY5Fsf1h17w2HAzbHzgy5ok
-	 U5MuyxmszCJfSMquK0M0s/BtRsSNmf9IP8bgRoFW95OM1+BX0xpo+49aMn3td8j90MZ6a
-	 Y1lhaEy2Jzw87dzskJvHWiR0L2tACnGKS5qbQAnjXkRnKe0gfZtuztOfQKx9n7ndFbjkY
-	 1yy9b6maa2E1MT2z3oO4XXq/qMQop/vXBVmqcq4h3TDagQVEZGDy25rdrZ/aBkYIrvw==
-ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
+	bh=V0f8oQgjyKo9koJqx3c0nxz2UuKdlWqooCmOKh4COcg=;
+	b=siuxgYjwrhUonN8eYE989K7x/JC6XYMBY1FoWbCmzqV0ptALHuwIRSZ0tzLfzNIfXr8t
+	 7TgtiWpd3SDzijaAYm+hKhbTrvqy8rI6yFIvVaP75nY7WJKOsQBTufrrU0OJlcsAyY7WY
+	 q/j7roM4U2vvxoBEcECw0mmMsUypfBLFM+gAdZ6Y3w+T2FAe24j31VUiumREPp9InI1pW
+	 V3p4K3QfMU4TaJ//DWuD2Fzs558Sm6t9bOTKC1iROPA3keH93wukF4lIbueMlBYnTqjpD
+	 FqkWH6vih67tJ+gxEr2g4U501Rvho9gBsSGFZ1T43gTLbSJyYGoKn2mVnBQMpGYpOrQ==
+ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
+	dmarc=pass header.from=kernel.org;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PRMnFxpA;
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1795789313;
-	bh=7+c1Qm3VYeU1+HWEx+l1hojCUO1r8kUOKWi5tpZjEFQ=;
+	s=default; t=1795789321;
+	bh=V0f8oQgjyKo9koJqx3c0nxz2UuKdlWqooCmOKh4COcg=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=qlXfxeEMlE4kl+LPQGyp2JrmcAV2uPdPY8biJx0yDd1RA9CVX775lxig0GgjAdy0f
-	 6xUmPkzVrPec6G4a81l9AAPs7r6LOeSYFWDrJ2UTG9uZrO467Khx8nZMUy4TxpaqBf
-	 mVLuJI1kgEmG1J08X3B3WvNnnlQlhNFE31MMIqNDZ4V/+bZkqxdaeQDlljFVVNmA4E
-	 yEoYsRHPori2Czv6aY21eoNIaWtB0on4tHwwFJCKuFg6E3JtW6DD0+2DnkHUiEb5L/
-	 fN2yjevQYdj3P5QiDiKEQJXXgdPP3LFsuCb/eMCOb73iIqVuh9c5uo5I47talWl9Pb
-	 vfHbSDz5zm0pQ==
+	b=JCTT6XTp2u9KmROHgBNIDReiKu4BxjEiovVXLHga7LO0lQDvFEhO49xXdI0ihifAe
+	 M8AxuYUEamsIErdaK82egbYCNv1z6RUkVW5Fd7fBbjeDi7W56WaKL6CT6v3YTxvVUe
+	 jt7oQSTnQ7HVS6ZMapRGfnoGGIT16H0HLdTDCn5GAiaT+JNYE7sz5cXH4cEObc0pHc
+	 7nO7Xk9vGL0LtoJ0OLKL3OkdRRtDCCMkP1EiuaXaKpWFLP73e9SY+91ZNTPLhfCN47
+	 P15vgpdXt1pWqU1EzQbj+C481jtoBc8ykBhMaKySi49Vmh0zni63M3WUmKBaGl3UOi
+	 l0BUx0KwWTkjg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 0499860B04;
-	Fri, 27 Nov 2026 14:21:53 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 3D13140A70;
+	Fri, 27 Nov 2026 14:22:01 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id E19E1373
- for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Nov 2026 14:21:51 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id B46E8D1
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Nov 2026 14:21:59 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id DF6A34095C
- for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Nov 2026 14:21:51 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 9ABB840A70
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Nov 2026 14:21:59 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id zCz1xbDOQCLG for <intel-wired-lan@lists.osuosl.org>;
- Fri, 27 Nov 2026 14:21:51 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 20A7740A70
+ id K5nG_CiKECMX for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 27 Nov 2026 14:21:58 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org B492540A69
 Authentication-Results: smtp4.osuosl.org;
  arc=none smtp.remote-ip=172.234.252.31
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
@@ -77,25 +79,25 @@ Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
 Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20260515 header.b=jDF1YvTc
+ header.a=rsa-sha256 header.s=k20260515 header.b=PRMnFxpA
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 20A7740A70
- for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Nov 2026 14:21:50 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTPS id B492540A69
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Nov 2026 14:21:58 +0000 (UTC)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by sea.source.kernel.org (Postfix) with ESMTP id 6E8A245955;
- Fri, 27 Nov 2026 14:21:50 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F29781F00898;
- Fri, 27 Nov 2026 14:21:42 +0000 (UTC)
+ by sea.source.kernel.org (Postfix) with ESMTP id 1D4DB4033A;
+ Fri, 27 Nov 2026 14:21:58 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2DC761F000C1;
+ Fri, 27 Nov 2026 14:21:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1795789310;
- bh=7+c1Qm3VYeU1+HWEx+l1hojCUO1r8kUOKWi5tpZjEFQ=;
+ s=k20260515; t=1795789318;
+ bh=V0f8oQgjyKo9koJqx3c0nxz2UuKdlWqooCmOKh4COcg=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References;
- b=jDF1YvTcOZIItHkIbN2v0sQMzIKYAr7B1NuEmMRXZfwW5guiOGIRAnfZ84fnza+ou
- KuIfaYDVPPah8qEPjKTJbF/JnsSI8vYu0suJ4MYpXaG5ZY1/+01Ac7LwPgyZDN/q7P
- O5Yfj+ZKRvXcITPli95LyIJR4t4Omb4R3oa47Sm702fWwVkP1EWCfqfGUoUQC9ItRm
- G7Rx2QVLGWzlyukn/WqOwcePlcCASoDSzaUqhAwNg6TSw/1ypspRp2Gq/Q7gGF36oP
- Nq9px5OqKlKW/JhbWZe/5mbSlGqCImLYXhl2xLCO6hENDPWFhbCtZ8DkbPgzEzdMA6
- 6e+3QF4z0GUCg==
+ b=PRMnFxpAl9rdD7GDhumW5o/0IExtKvyRvuUxGc0NmYejIzk258xQYlY7djROMm1Fp
+ mJhlfLml/NCEPedFiRdgf72XQ8ae6G5fTl3DjVnpw597rZ/kyd8TBw7ByryFAUoudp
+ fO7FgFq+2Xus15G51tWTSmWo5V8FN+i7VnB0g5gUaAzdUQk0KYcggmPyB8GEVHiZVD
+ 8hLNzihxU4u7C0LnlspUFHiVqhcSD2yEpT2tktDpAhaLAxMvUviKXlzfnkx/0IYEPR
+ 93qlzNLwyBru/RDHKQeyBiT+n0+TFWeh7R6uuwwmqk5tFuU8LBYwEQkfbwNU4+IYBq
+ MsvL5X0C87CgQ==
 From: =?UTF-8?q?Bj=C3=B6rn=20T=C3=B6pel?= <bjorn@kernel.org>
 To: Magnus Karlsson <magnus.karlsson@intel.com>,
  Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
@@ -124,9 +126,10 @@ Cc: =?UTF-8?q?Bj=C3=B6rn=20T=C3=B6pel?= <bjorn@kernel.org>,
  Bastien Curutchet <bastien.curutchet@bootlin.com>,
  Colin Ian King <colin.i.king@gmail.com>, intel-wired-lan@lists.osuosl.org,
  linux-kselftest@vger.kernel.org
-Subject: [PATCH net 1/3] libeth: xsk: Count each XDP_TX buffer on its own
-Date: Fri, 27 Nov 2026 15:21:27 +0100
-Message-ID: <20261127142131.3527737-2-bjorn@kernel.org>
+Subject: [PATCH net 2/3] xsk: Keep the shared info of zero-copy buffers in
+ kernel memory
+Date: Fri, 27 Nov 2026 15:21:28 +0100
+Message-ID: <20261127142131.3527737-3-bjorn@kernel.org>
 X-Mailer: git-send-email 2.56.1
 In-Reply-To: <20261127142131.3527737-1-bjorn@kernel.org>
 References: <20261127142131.3527737-1-bjorn@kernel.org>
@@ -152,95 +155,231 @@ X-Spam-Status: No, score=-18.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-libeth reads the shared info of an XSk XDP_TX frame when it flushes
-the bulk, not when it queues the frame. The fragment count it finds
-there decides how many completions idpf reports to the XSk pool.
+A packet that a driver receives in zero-copy mode over several buffers
+keeps its shared info, the fragment list and its count, in the
+tailroom of the UMEM chunk of its head. Userspace may write the UMEM
+at any time, also while the kernel walks the fragments, and a
+rewritten list or count makes the kernel read and write out of bounds.
 
-The shared info of a zero-copy buffer lives in the UMEM, which
-userspace may write at any time, so a rewritten count makes idpf
-report the wrong number of completions. Once the next patch moves the
-shared info into the buffer pool, the next multi-buffer frame of the
-same poll can overwrite it before the flush.
+Keep the shared info in the buffer pool, which outlives its buffers
+and the queues that point to it, and let the device write up to the
+end of the chunk. One shared info per pool is enough, as a pool builds
+one multi-buffer packet at a time. libeth read it later, at an XDP_TX
+bulk flush, which the previous patch fixes.
 
-Count each buffer on its own SQE. Head and fragments each take one off
-the in-flight count, and the head counts the packet. Stats do not
-change.
+Multi-buffer pools now give the device the whole chunk, as
+single-buffer pools already do, and allow a larger UMEM headroom.
+bpf_xdp_adjust_tail() can grow a packet up to the end of its chunk.
+Copy mode does not change.
 
-Found by code inspection.
+Found by an AI code review agent, in its review of another series.
 
-Fixes: b3ad8450b4dc ("libeth: xsk: add XSk XDP_TX sending helpers")
+Suggested-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Fixes: 24ea50127ecf ("xsk: support mbuf on ZC RX")
 Signed-off-by: Björn Töpel <bjorn@kernel.org>
 ---
- include/net/libeth/tx.h  | 3 ++-
- include/net/libeth/xdp.h | 9 ++++++++-
- include/net/libeth/xsk.h | 6 ++++--
- 3 files changed, 14 insertions(+), 4 deletions(-)
+ include/net/xdp.h           | 32 ++++++++++++++++++++++++++------
+ include/net/xdp_sock_drv.h  | 29 +++++++++--------------------
+ include/net/xsk_buff_pool.h |  2 ++
+ net/xdp/xdp_umem.c          |  3 +--
+ net/xdp/xsk_buff_pool.c     | 17 +++++++++--------
+ 5 files changed, 47 insertions(+), 36 deletions(-)
 
-diff --git a/include/net/libeth/tx.h b/include/net/libeth/tx.h
-index c3db5c6f1641..25cad5566436 100644
---- a/include/net/libeth/tx.h
-+++ b/include/net/libeth/tx.h
-@@ -22,7 +22,8 @@
-  * @LIBETH_SQE_XDP_XMIT: &xdp_frame, unmap and xdp_return_frame_bulk(), stats
-  * @LIBETH_SQE_XDP_XMIT_FRAG: &xdp_frame frag, only unmap DMA
-  * @LIBETH_SQE_XSK_TX: &libeth_xdp_buff on XSk queue, xsk_buff_free(), stats
-- * @LIBETH_SQE_XSK_TX_FRAG: &libeth_xdp_buff frag on XSk queue, xsk_buff_free()
-+ * @LIBETH_SQE_XSK_TX_FRAG: &libeth_xdp_buff frag on XSk queue, xsk_buff_free(),
-+ *			    stats
-  */
- enum libeth_sqe_type {
- 	LIBETH_SQE_EMPTY		= 0U,
-diff --git a/include/net/libeth/xdp.h b/include/net/libeth/xdp.h
-index 898723ab62e8..66a3c4ec9967 100644
---- a/include/net/libeth/xdp.h
-+++ b/include/net/libeth/xdp.h
-@@ -1794,12 +1794,19 @@ __libeth_xdp_complete_tx(struct libeth_sqe *sqe, struct libeth_cq_pp *cp,
- 	switch (type) {
- 	case LIBETH_SQE_XDP_TX:
- 	case LIBETH_SQE_XDP_XMIT:
--	case LIBETH_SQE_XSK_TX:
- 		cp->xdp_tx -= sqe->nr_frags;
- 
- 		cp->xss->packets++;
- 		cp->xss->bytes += sqe->bytes;
- 		break;
-+	case LIBETH_SQE_XSK_TX:
-+		cp->xss->packets++;
-+		fallthrough;
-+	case LIBETH_SQE_XSK_TX_FRAG:
-+		/* One buffer per SQE, see libeth_xsk_tx_fill_buf() */
-+		cp->xdp_tx--;
-+		cp->xss->bytes += sqe->bytes;
-+		break;
- 	default:
- 		break;
- 	}
-diff --git a/include/net/libeth/xsk.h b/include/net/libeth/xsk.h
-index 249b1c740788..2cd4252a3445 100644
---- a/include/net/libeth/xsk.h
-+++ b/include/net/libeth/xsk.h
-@@ -129,6 +129,10 @@ libeth_xsk_tx_fill_buf(struct libeth_xdp_tx_frame frm, u32 i,
- 
- 	sqe = &sq->sqes[i];
- 	sqe->xsk = xdp;
-+	/* Count each buffer on its own SQE. The shared info of the frame
-+	 * may change before the bulk is flushed.
+diff --git a/include/net/xdp.h b/include/net/xdp.h
+index 07231adfb5f8..68dc9caacfa9 100644
+--- a/include/net/xdp.h
++++ b/include/net/xdp.h
+@@ -65,6 +65,10 @@ struct xdp_rxq_info {
+ 	u32 reg_state;
+ 	struct xdp_mem_info mem;
+ 	u32 frag_size;
++	/* Shared info of buffers with %XDP_FLAGS_SINFO_EXT, in the XSk buffer
++	 * pool, set by xsk_pool_set_rxq_info().
 +	 */
-+	sqe->bytes = desc.len;
++	struct skb_shared_info *ext_sinfo;
+ } ____cacheline_aligned; /* perf critical, avoid false-sharing */
  
- 	if (!(desc.flags & LIBETH_XDP_TX_FIRST)) {
- 		sqe->type = LIBETH_SQE_XSK_TX_FRAG;
-@@ -136,8 +140,6 @@ libeth_xsk_tx_fill_buf(struct libeth_xdp_tx_frame frm, u32 i,
+ struct xdp_txq_info {
+@@ -81,6 +85,13 @@ enum xdp_buff_flags {
+ 	 * XDP program is not attached.
+ 	 */
+ 	XDP_FLAGS_FRAGS_UNREADABLE	= BIT(2),
++	/* The shared info lives in &xdp_rxq_info.ext_sinfo, not at the end of
++	 * the frame, as userspace may write the frame. The frame reserves no
++	 * tailroom, so the data may reach its end. The pool builds one such
++	 * buffer at a time, so a consumer that uses the shared info later
++	 * must copy what it needs.
++	 */
++	XDP_FLAGS_SINFO_EXT		= BIT(3),
+ };
+ 
+ struct xdp_buff {
+@@ -178,17 +189,26 @@ xdp_prepare_buff(struct xdp_buff *xdp, unsigned char *hard_start,
+ 
+ /* Reserve memory area at end-of data area.
+  *
+- * This macro reserves tailroom in the XDP buffer by limiting the
+- * XDP/BPF data access to data_hard_end.  Notice same area (and size)
+- * is used for XDP_PASS, when constructing the SKB via build_skb().
++ * This reserves tailroom in the XDP buffer by limiting the XDP/BPF data
++ * access to data_hard_end.  Notice same area (and size) is used for
++ * XDP_PASS, when constructing the SKB via build_skb(). Buffers with
++ * %XDP_FLAGS_SINFO_EXT keep the shared info elsewhere and reserve none.
+  */
+-#define xdp_data_hard_end(xdp)				\
+-	((xdp)->data_hard_start + (xdp)->frame_sz -	\
+-	 SKB_DATA_ALIGN(sizeof(struct skb_shared_info)))
++static __always_inline void *xdp_data_hard_end(const struct xdp_buff *xdp)
++{
++	u32 tailroom = SKB_DATA_ALIGN(sizeof(struct skb_shared_info));
++
++	if (xdp->flags & XDP_FLAGS_SINFO_EXT)
++		tailroom = 0;
++	return xdp->data_hard_start + xdp->frame_sz - tailroom;
++}
+ 
+ static inline struct skb_shared_info *
+ xdp_get_shared_info_from_buff(const struct xdp_buff *xdp)
+ {
++	if (xdp->flags & XDP_FLAGS_SINFO_EXT)
++		return xdp->rxq->ext_sinfo;
++
+ 	return (struct skb_shared_info *)xdp_data_hard_end(xdp);
+ }
+ 
+diff --git a/include/net/xdp_sock_drv.h b/include/net/xdp_sock_drv.h
+index a40ad3f90f13..fc22314e72c4 100644
+--- a/include/net/xdp_sock_drv.h
++++ b/include/net/xdp_sock_drv.h
+@@ -41,11 +41,6 @@ static inline u32 xsk_pool_get_headroom(struct xsk_buff_pool *pool)
+ 	return XDP_PACKET_HEADROOM + pool->headroom;
+ }
+ 
+-static inline u32 xsk_pool_get_tailroom(bool mbuf)
+-{
+-	return mbuf ? SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) : 0;
+-}
+-
+ static inline u32 xsk_pool_get_chunk_size(struct xsk_buff_pool *pool)
+ {
+ 	return pool->chunk_size;
+@@ -56,20 +51,13 @@ static inline u32 __xsk_pool_get_rx_frame_size(struct xsk_buff_pool *pool)
+ 	return xsk_pool_get_chunk_size(pool) - xsk_pool_get_headroom(pool);
+ }
+ 
++/* Device RX buffers typically come in 128-byte units. The shared info
++ * of zero-copy buffers lives in the pool, see xp_set_rxq_info(), so the
++ * device may write up to the end of the chunk.
++ */
+ static inline u32 xsk_pool_get_rx_frame_size(struct xsk_buff_pool *pool)
+ {
+-	u32 frame_size =  __xsk_pool_get_rx_frame_size(pool);
+-	struct xdp_umem *umem = pool->umem;
+-	bool mbuf;
+-
+-	/* Reserve tailroom only for zero-copy pools that opted into
+-	 * multi-buffer. The reserved area is used for skb_shared_info,
+-	 * matching the XDP core's xdp_data_hard_end() layout.
+-	 */
+-	mbuf = pool->dev && (umem->flags & XDP_UMEM_SG_FLAG);
+-	frame_size -= xsk_pool_get_tailroom(mbuf);
+-
+-	return ALIGN_DOWN(frame_size, 128);
++	return ALIGN_DOWN(__xsk_pool_get_rx_frame_size(pool), 128);
+ }
+ 
+ static inline u32 xsk_pool_get_rx_frag_step(struct xsk_buff_pool *pool)
+@@ -152,7 +140,6 @@ static inline void xsk_buff_free(struct xdp_buff *xdp)
+ 		xp_free(pos);
  	}
  
- 	sqe->type = LIBETH_SQE_XSK_TX;
--	libeth_xdp_tx_fill_stats(sqe, &desc,
--				 xdp_get_shared_info_from_buff(&xdp->base));
- 
- 	return desc;
+-	xdp_get_shared_info_from_buff(xdp)->nr_frags = 0;
+ 	xdp_buff_clear_frags_flag(xdp);
+ out:
+ 	xp_free(xskb);
+@@ -226,8 +213,10 @@ static inline void xsk_buff_set_size(struct xdp_buff *xdp, u32 size)
+ 	xdp->data = xdp->data_hard_start + XDP_PACKET_HEADROOM;
+ 	xdp->data_meta = xdp->data;
+ 	xdp->data_end = xdp->data + size;
+-	/* Frags flag is cleared when the frags of a head are released */
+-	xdp->flags &= XDP_FLAGS_HAS_FRAGS;
++	/* Frags flag is cleared when the frags of a head are released. The
++	 * shared info flag stays, see xp_set_rxq_info().
++	 */
++	xdp->flags &= XDP_FLAGS_HAS_FRAGS | XDP_FLAGS_SINFO_EXT;
  }
-
-base-commit: 28a371228d4eb4857cc31eeb1a0d7d01e9c3ea2f
+ 
+ static inline dma_addr_t xsk_buff_raw_get_dma(struct xsk_buff_pool *pool,
+diff --git a/include/net/xsk_buff_pool.h b/include/net/xsk_buff_pool.h
+index 02e89350faf9..f43e618ae707 100644
+--- a/include/net/xsk_buff_pool.h
++++ b/include/net/xsk_buff_pool.h
+@@ -59,6 +59,8 @@ struct xsk_buff_pool {
+ 	spinlock_t rx_lock;
+ 	struct list_head free_list;
+ 	struct list_head xskb_list;
++	/* Fragment list of the packet being built, out of userspace reach */
++	struct skb_shared_info sinfo;
+ 	u32 heads_cnt;
+ 	u16 queue_id;
+ 
+diff --git a/net/xdp/xdp_umem.c b/net/xdp/xdp_umem.c
+index cd8643360eb3..e78a43c3c3e9 100644
+--- a/net/xdp/xdp_umem.c
++++ b/net/xdp/xdp_umem.c
+@@ -203,8 +203,7 @@ static int xdp_umem_reg(struct xdp_umem *umem, struct xdp_umem_reg *mr)
+ 	if (!unaligned_chunks && chunks_rem)
+ 		return -EINVAL;
+ 
+-	if (headroom > chunk_size - XDP_PACKET_HEADROOM -
+-		       SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) - 128)
++	if (headroom > chunk_size - XDP_PACKET_HEADROOM - 128)
+ 		return -EINVAL;
+ 
+ 	if (mr->flags & XDP_UMEM_TX_METADATA_LEN) {
+diff --git a/net/xdp/xsk_buff_pool.c b/net/xdp/xsk_buff_pool.c
+index 5ec092f7cb6f..553630170229 100644
+--- a/net/xdp/xsk_buff_pool.c
++++ b/net/xdp/xsk_buff_pool.c
+@@ -125,8 +125,14 @@ void xp_set_rxq_info(struct xsk_buff_pool *pool, struct xdp_rxq_info *rxq)
+ {
+ 	u32 i;
+ 
+-	for (i = 0; i < pool->heads_cnt; i++)
++	/* Userspace may write the UMEM. Keep the shared info in the pool,
++	 * and let the device write up to the end of each chunk.
++	 */
++	for (i = 0; i < pool->heads_cnt; i++) {
+ 		pool->heads[i].xdp.rxq = rxq;
++		pool->heads[i].xdp.flags |= XDP_FLAGS_SINFO_EXT;
++	}
++	rxq->ext_sinfo = &pool->sinfo;
+ }
+ EXPORT_SYMBOL(xp_set_rxq_info);
+ 
+@@ -229,12 +235,7 @@ int xp_assign_dev(struct xsk_buff_pool *pool,
+ 		segs = 1;
+ 	}
+ 
+-	/* open-code xsk_pool_get_rx_frame_size() as pool->dev is not
+-	 * set yet at this point; we are before getting down to driver
+-	 */
+-	frame_size = __xsk_pool_get_rx_frame_size(pool) -
+-		     xsk_pool_get_tailroom(mbuf);
+-	frame_size = ALIGN_DOWN(frame_size, 128);
++	frame_size = xsk_pool_get_rx_frame_size(pool);
+ 
+ 	if (needed > frame_size * segs) {
+ 		err = -EINVAL;
+@@ -629,7 +630,7 @@ struct xdp_buff *xp_alloc(struct xsk_buff_pool *pool)
+ 
+ 	xskb->xdp.data = xskb->xdp.data_hard_start + XDP_PACKET_HEADROOM;
+ 	xskb->xdp.data_meta = xskb->xdp.data;
+-	xskb->xdp.flags &= XDP_FLAGS_HAS_FRAGS;
++	xskb->xdp.flags &= XDP_FLAGS_HAS_FRAGS | XDP_FLAGS_SINFO_EXT;
+ 
+ 	if (pool->dev)
+ 		xp_dma_sync_for_device(pool, xskb->dma, pool->frame_len);
 -- 
 2.56.1
 
