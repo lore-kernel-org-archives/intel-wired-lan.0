@@ -1,146 +1,250 @@
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ACC1F606A324
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 27 Nov 2026 08:44:26 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5984E606A32F
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 27 Nov 2026 08:45:14 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=uvD3GBiQ;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hWW1WySc
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=5zO7Lhhp;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=SvJpmIlS;
+	dkim=pass (1024-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=selector1 header.b=gfdd1/zP
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 88BAE60AB9;
-	Fri, 27 Nov 2026 08:44:26 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 3A17E811A2;
+	Fri, 27 Nov 2026 08:45:14 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id SZFslgBPvHEb; Fri, 27 Nov 2026 08:44:25 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 6D5FB60AC4
-Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795769065;
-	b=M4PkYiMa1Kau2BgxQxxRJpCMPyQN0Lek8WhTx8iQjUA+pF2CGFt2K9IfQVwjzOJfTsP0
-	 lnwYNnIm/wccpsKmsHgNZNJ9lBGuT46z3xQ/ObnHhC7OYWzXyCasUPCpHxJhhyVlcxNHu
-	 cgUecjb8Z6hKFAcSbo59dDvdMlYbBreviqMjB5bRSkayL5GDsF0eV91z0Fzj5KDoKrP7t
-	 oMbwhQCAHOOlJR2vhQVXG3+trcwg2qR4yqmVIwn5winJiYDSdbjSfXYO3FIcfIBJ9zqdi
-	 T8XRzH+K6CbiyTYndSju2tUfphBXwBlJDAc5jCRy1Vl6dsFOKqGFu9dH+B+rxryKEDQ==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id t5plTUqAq-D4; Fri, 27 Nov 2026 08:45:13 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 92A66811F0
+Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795769113;
+	b=swfD/ulenY92KADz7FxKUw2owTtAEf3OKirmNrTam+b0Bj5cZAb5ym338wc11AsOzXb3
+	 Q83W1DRiC4fYq9DKFauOUq21mDQ5QHIlYVDbNyKDy/ZgnA+oZBuL4Llh6l4qTl/0Cc6vB
+	 pkpwneoK9ssutEghpsn1UyuYX3sO5J2c57XLKO2b44KiH97lGqI/Pc7Aan04HQm5ryCKB
+	 6wEH3BU0eGSL+yQRd0S3xBHw5axuVF/yJV+TOPPWrrK5lV//+s/8ebxaTpxwrNT8BYewx
+	 F0V4ph8+I9kcr6M5CmzYK8j/YIcZoSUms2pPJZYCACTPKaOWCUXelAdKzYsidZSKapA==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795769065;
+	c=relaxed/relaxed; t=1795769113;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
-	 Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
-	 Content-Type:Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Content-Transfer-Encoding:X-BeenThere:
-	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Reply-To:Errors-To;
-	bh=ft75ArHu5r34Kk5GxNfYciluJYRTvCnqrrb0D3xZQgQ=;
-	b=NSrHFkZ2zlS/d/iVyRnVI9hlASIUfhpaWNb/zr1x/eG1i771ztOS3c3KcHP22/jshWUT
-	 V4IR5+e11TIUhNpojMcqa6/IWALE4r0qU9UrdWdbJkZaLWbbtgihkWDXyXTW9TQWTR08K
-	 QRmnPcjIDrA67KwZ98If22TzcuEpBjOQh9bm/Ab+/s+laMDFylJvuH0lbuPR0l28ClxMd
-	 obRhaqrNDpgB4OuD9eAovo6qCx3n5eUhWWpZ14GWJHCztkDCYT07i5YxokT13ZG1F4crV
-	 qVKcxTx96ThCFdxNfwWWwNUrZncCTXZX7aY8sLNIqlUEP2lzyUh3i++oDewwv2/C8Fw==
-ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
+	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:
+	 DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-IronPort-AV:
+	 X-IronPort-AV:Received:X-CSE-ConnectionGUID:X-CSE-MsgGUID:X-ExtLoop1:
+	 X-IronPort-AV:Received:Received:Received:Received:DKIM-Signature:
+	 Received:Received:Message-ID:Date:User-Agent:Subject:To:CC:References:
+	 From:Content-Language:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:X-ClientProxiedBy:MIME-Version:
+	 X-MS-PublicTrafficType:X-MS-TrafficTypeDiagnostic:
+	 X-MS-Office365-Filtering-Correlation-Id:X-MS-Exchange-SenderADCheck:
+	 X-MS-Exchange-AntiSpam-Relay:X-Microsoft-Antispam:
+	 X-Microsoft-Antispam-Message-Info:X-Forefront-Antispam-Report:
+	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
+	 X-MS-Exchange-AntiSpam-MessageData-0:X-Exchange-RoutingPolicyChecked:
+	 X-MS-Exchange-CrossTenant-Network-Message-Id:
+	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
+	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
+	 X-MS-Exchange-CrossTenant-FromEntityHeader:
+	 X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
+	 X-MS-Exchange-CrossTenant-UserPrincipalName:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStamped:X-OriginatorOrg:
+	 X-BeenThere:X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:
+	 List-Archive:List-Post:List-Help:List-Subscribe:Errors-To;
+	bh=dWIOjOKBxZgLpZEqwFlhm9JfTP/8AAEyS4G2cGr/AKo=;
+	b=n7moOYapISOX9sClvRheliABDA8FnCusdr2Podu3XTmS2DUOOzdRGK866w/LCY7b9/OC
+	 CRQsD9ovzzMvNE4nsZVhE7Hqx5ewxjiycsYIQEJ0fo/m4Q38U8rMUJUtfa1FTzRGwMJqa
+	 GyPBl9T23ndUEdY/PG4+nw6yru1yDC2QYlGX9beXp9bEU+zBiN/G2jRr2B38W89kwRfAo
+	 KmZey+ZA1hP+3TDCg/TZiB468iNdsiVzFDVJ3JsS0AU42Vkq1HEm95l6/STIbJR28ZcSH
+	 we8QBR1EBVkHjw5FfAZ5Q9tvEP5pI7n12LwE5cX15Lkcreu3YwrjI+1Ao2W31S4A3qg==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
+	dmarc=pass header.from=intel.com;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=SvJpmIlS;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=selector1 header.b="gfdd1/zP";
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1795769065;
-	bh=ft75ArHu5r34Kk5GxNfYciluJYRTvCnqrrb0D3xZQgQ=;
-	h=From:Date:Subject:To:Cc:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Reply-To:From;
-	b=uvD3GBiQgiCwEt11pZbel1BDwv2QpOrSCLu7xSBJGKZStjv0MecBQDECyxgDvNG7q
-	 xCkYnLipWGtmIZyoHFjwFsoVu1iGk2cvwhGbSa8vcA4Vsypx1bQYk3rdLG8FcvscHq
-	 e+3ppy03LuAcGBgr/mcgUqlmwDpxcGoVYCNfE0mgXyPYHJV6waCHOAE1LgAIzIlVeP
-	 O0Oi357kg9Oh4vM4McQYYkL57tHacCZ+N9157ngmOuQamsKi+FIUTkol5EvFJTKRLi
-	 SKmhNU2fFLq/17RcL/3TFGC1Gt1rTIJRuNI50oHmVlx+shqzVTVoGNMlrFWaB00z8e
-	 nDfhl1u6c8YwQ==
+	s=default; t=1795769113;
+	bh=dWIOjOKBxZgLpZEqwFlhm9JfTP/8AAEyS4G2cGr/AKo=;
+	h=Date:Subject:To:CC:References:From:In-Reply-To:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=5zO7LhhpOesUhrR274xogSN4GBSywI2g9AJ65COK6w28h+rQZxC/qciNM6XHiGxOb
+	 OhtAw6Jaq61k2zxtUv17PSw8YgriJyCH6FSvNw14Bj2P9tHQOe1/rrVU8+JY1i4gHy
+	 W9r3/7sRqgIfzdt1OllP3pfUCqkVqqhESdv9kuvQL1HzBLLMRjLYW6vOlQ05XDWLh8
+	 yeiptmzmHKdP96+hf+J4yJkKTH8XRXxyEa/IlyPk8cC8WTUfUu7qKW+SqNR9lfJ7rh
+	 lyu8aiJK04cTE+0kEfXeeMmyBfSYJV+zIVlAQSQ9AahduAmvGdmYN0qXDC1PE+isee
+	 +RvrisWVFOVXg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 6D5FB60AC4;
-	Fri, 27 Nov 2026 08:44:25 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id D43843C0
- for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Nov 2026 08:44:23 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 92A66811F0;
+	Fri, 27 Nov 2026 08:45:13 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 0AF3D3C0
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Nov 2026 08:45:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id B76794087C
- for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Nov 2026 08:44:23 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id E3EFA811F0
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Nov 2026 08:45:11 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 8lDfGHeURC0D for <intel-wired-lan@lists.osuosl.org>;
- Fri, 27 Nov 2026 08:44:22 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org 7579040873
-Authentication-Results: smtp4.osuosl.org; arc=pass header.oldest-pass=0
- smtp.remote-ip=172.105.4.254
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org; envelope-from=devnull+tkusters.aweta.nl@kernel.org;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id nG1oJoerfsG0 for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 27 Nov 2026 08:45:10 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 78E5481184
+Authentication-Results: smtp1.osuosl.org; arc=pass header.oldest-pass=0
+ smtp.remote-ip=192.198.163.10
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.10;
+ helo=mgamail.intel.com; envelope-from=przemyslaw.kitszel@intel.com;
  receiver=<UNKNOWN> 
-Authentication-Results: smtp4.osuosl.org; dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-Authentication-Results: smtp4.osuosl.org; dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20260515 header.b=hWW1WySc
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 7579040873
- for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Nov 2026 08:44:21 +0000 (UTC)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
- by tor.source.kernel.org (Postfix) with ESMTP id 2B0D460F33;
- Fri, 27 Nov 2026 08:44:20 +0000 (UTC)
-Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
-Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
- (No client certificate requested)
- by smtp.kernel.org (Postfix) with ESMTPS id 903BC1F00899;
- Fri, 27 Nov 2026 08:44:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
- s=k20260515; t=1795769059;
- bh=ft75ArHu5r34Kk5GxNfYciluJYRTvCnqrrb0D3xZQgQ=;
- h=From:Date:Subject:To:Cc:Reply-To;
- b=hWW1WySc7+j/cSN/syzUfzn2F355NkIJXfTkO3SuE0Aje7YWwmBkdq0NnutSuqKl6
- Zw7tApTdHPJ5mUy4yQftBai5I9PzC9xKtdxuSb5FLGERPMw5MBzBjWKVpK1c/PjnjO
- 8RJB/BQPPsGwpfx6XIBvYngn1yHs0cdH7hc+Qo28H/sA7qW9NZUtY6PaJBScMssTCT
- jccOOasYeSq1usd+eUokPUF4E4qXGrXFwYiEkyxNtCTJg29uB7QSl21IXXbDTU4Da7
- 91Scwmdn0l1UTQjEtVW9AC8Yi38LX2ru+uE0mv50xUb9UUy5yn2iXrYsPQ3lk9eP7e
- xUWpItORdzzEw==
-Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
- by lkml.kernel.org (Postfix) with ESMTP id 1CD6B4B63D;
- Fri, 27 Nov 2026 08:44:03 +0000 (UTC)
-From: Tjerk Kusters via B4 Relay <devnull+tkusters.aweta.nl@kernel.org>
-Date: Fri, 27 Nov 2026 09:43:59 +0100
-Subject: [PATCH net] igb: leave room for the Rx timestamp header in 2 KiB
- build_skb buffers
+Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=SvJpmIlS; 
+ dkim=pass (1024-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=selector1 header.b=gfdd1/zP
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 78E5481184
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Nov 2026 08:45:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1795769110; x=1827305110;
+ h=message-id:date:subject:to:cc:references:from:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=ceI2I2nTZG6lvwJGxFEOYF9+eqsprYFyzQIBTOGXvMM=;
+ b=SvJpmIlSg+I+Z34DNUIXw0PP1RYrjGrjUFCAbbcBL9f4MhOlsBz0/P39
+ VZlHDKMtBMU62nsNk5tMkvCsawvXbweIhbq2YR3N4kjOZUc/gcQAqE+42
+ TWfkn73yzXtCbwQOJMr5FWVj/KC+KZIjJ7lS1EjYxbYhZqoYZPvMjxdne
+ 4msGLJSQw93lnGJ0ArIHfdLws+db4g/jNzERLOpUPB5SZUrfo/E5+XSLq
+ wq1Ie3x/ntB5qsuhS6kfcy+oFH160SomEQs44r0hkKmmxjOw1e+/41qbU
+ LdKI53dquMImdL9wyaoBmXv8QXPBNBDZdQCXEqNr+3MEgPvr3c+63XCE9 g==;
+X-CSE-ConnectionGUID: LaR3ZxG7SX2UWxrYvrwvuA==
+X-CSE-MsgGUID: POBM0CQ1TAanIIuPLqgWgw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11978"; a="4565228"
+X-IronPort-AV: E=Sophos;i="6.27,236,1787036400"; 
+   d="scan'208";a="4565228"
+Received: from fmviesa008.fm.intel.com ([10.60.135.148])
+ by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 27 Nov 2026 00:45:08 -0800
+X-CSE-ConnectionGUID: /QHvTakESWaSdvcHfPo8zg==
+X-CSE-MsgGUID: caCgdDNBQnqtvEbQhn1Smg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,236,1787036400"; d="scan'208";a="12654984"
+Received: from orsmsx902.amr.corp.intel.com ([10.22.229.24])
+ by fmviesa008.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 27 Nov 2026 00:45:08 -0800
+Received: from ORSMSX901.amr.corp.intel.com (10.22.229.23) by
+ ORSMSX902.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.57; Fri, 27 Nov 2026 00:45:07 -0800
+Received: from ORSEDG901.ED.cps.intel.com (10.7.248.11) by
+ ORSMSX901.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.57 via Frontend Transport; Fri, 27 Nov 2026 00:45:07 -0800
+Received: from CO1PR03CU002.outbound.protection.outlook.com (52.101.46.54) by
+ edgegateway.intel.com (134.134.137.111) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.57; Fri, 27 Nov 2026 00:45:06 -0800
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=intel.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=dWIOjOKBxZgLpZEqwFlhm9JfTP/8AAEyS4G2cGr/AKo=;
+ b=gfdd1/zP52DGxBxzLFD2gVcxk6vpweFERlQ2tJ8mU+slUEGwaNZBMgz6gmAJzAUbNQZW+pwzyugvrOas62Zhy1CqEUtjLUggcnfnZcgGBapxsNUcGfv3frJSASO6nBdp/k6vzQMaoTPUhYYkUpYZt5QPfatiHyAdkmXSRMIOgvw=
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Received: from LV3PR11MB8508.namprd11.prod.outlook.com (2603:10b6:408:1b4::8)
+ by CY5PR11MB6164.namprd11.prod.outlook.com (2603:10b6:930:27::10)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.662.7; Fri, 27 Nov
+ 2026 08:44:58 +0000
+Received: from LV3PR11MB8508.namprd11.prod.outlook.com
+ ([fe80::a1e8:1786:e5d1:8e51]) by LV3PR11MB8508.namprd11.prod.outlook.com
+ ([fe80::a1e8:1786:e5d1:8e51%5]) with mapi id 15.21.0662.007; Fri, 27 Nov 2026
+ 08:44:58 +0000
+Message-ID: <43e42e0e-d099-47f0-a4ab-965b6e936a75@intel.com>
+Date: Fri, 27 Nov 2026 09:44:52 +0100
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2] idpf: fix vport_id used as array index in MAC filter
+ async handler
+To: Hongyu Guo <guohongyu@cmss.chinamobile.com>, <netdev@vger.kernel.org>,
+ <pabeni@redhat.com>
+CC: <anthony.l.nguyen@intel.com>, <andrew+netdev@lunn.ch>,
+ <intel-wired-lan@lists.osuosl.org>, <davem@davemloft.net>,
+ <edumazet@kernel.org>, <kuba@kernel.org>, <stable@vger.kernel.org>,
+ <13057616121@163.com>
+References: <20261126020854.233971-1-guohongyu@cmss.chinamobile.com>
+ <20261126092627.255454-1-guohongyu@cmss.chinamobile.com>
+From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Content-Language: en-US
+In-Reply-To: <20261126092627.255454-1-guohongyu@cmss.chinamobile.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: DU2PR04CA0199.eurprd04.prod.outlook.com
+ (2603:10a6:10:28d::24) To CH3PR11MB8496.namprd11.prod.outlook.com
+ (2603:10b6:610:1ba::22)
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261127-igb-skb-pad-v1-1-7e069eaf16d7@aweta.nl>
-X-B4-Tracking: v=1; b=H4sIAM5CCWsC/yWMwQrCMBAFf6W8cxeSgFH7K+Ihada6FmLJVhFK/
- 72xPc7AzALlIqzomgWFv6LyzhVs26B/hjwwSaoMZ5y31p1Jhkg6RppCoku6eg4meDYn1GIq/JD
- ffrsh84z7IfUTX9zP/w/WdQMLR1Z2dAAAAA==
-X-Change-ID: 20261127-igb-skb-pad-8d96ea0a6e05
-To: Tony Nguyen <anthony.l.nguyen@intel.com>, 
- Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
- Andrew Lunn <andrew+netdev@lunn.ch>, 
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>, 
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
- Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
- Jesper Dangaard Brouer <hawk@kernel.org>, 
- John Fastabend <john.fastabend@gmail.com>, 
- Stanislav Fomichev <sdf@fomichev.me>, 
- Sven Auhagen <sven.auhagen@voleatech.de>
-Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, 
- bpf@vger.kernel.org, stable@vger.kernel.org, 
- Tjerk Kusters <tkusters@aweta.nl>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1795769042; l=7109;
- i=tkusters@aweta.nl; s=20260619; h=from:subject:message-id;
- bh=LHZjkEOidXK7kx+tT6vj/G3tkhiPxIUoim+0JCqFf24=;
- b=AEkgnroG0gFyvAxAf2gDtHDf0wW2hJiBZV8LFjagw2b1mNptyxATLN3Htuf4uOhCZNK1fOU1e
- ipDBqw2GDHqAhCAz9ML1zYapEPSHFJVzaKpQXXJQtNZE9v4CGCfgbmN
-X-Developer-Key: i=tkusters@aweta.nl; a=ed25519;
- pk=JYRpYQ3+LrphEabgnxcbiOUpwvNP8WDDMcLzz+cwKsk=
-X-Endpoint-Received: by B4 Relay for tkusters@aweta.nl/20260619 with
- auth_id=831
-X-Original-From: Tjerk Kusters <tkusters@aweta.nl>
-Content-Transfer-Encoding: 7bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: LV3PR11MB8508:EE_|CY5PR11MB6164:EE_
+X-MS-Office365-Filtering-Correlation-Id: 1902e526-8b58-4dde-4fdd-08df4c62b768
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+ ARA:13230040|23010399003|1800799024|7416014|376014|366016|261028144727099003|261022105027099003|10067099003|261022113327099003|4143699003|11063799006|56012099006|261022075727099003|261021121427099003|261021123027099003|261102123227099003|261009223027099003|261026121527099003|261026140227099003|22082099003|18002099003;
+X-Microsoft-Antispam-Message-Info: 9DbvcXDARLIalaCGLuAmYi2bWoYTJEG8WD9wjafg+v3Sf0CRsddPVmlaFBltFqZhzzcMsXi7haKYAn3aaMh/SC9g+sc7hAKBCNt9r56NtgN1jphrMAnranGzfngRIrAFGdMdV7GrpPPNvmeUbGcifXaw3HhFEwNotTD4ev2UW8HBrSJUqE09zYfCxN7+FaP6rEN4MZJXyGv0FAuBvvSvJRL2Ab/8u6Ngn6Ha9lG40orgtgZ2xJlYpFK85ySOvEZhClkTzm5yXqa1aJ+UjKqH2NGDcHsvuyrtEc+sf+CeDlAsVXhnhYtGUtqPu4r8pnRBQlaCCBIwQRe6LWomTmFtIKDGx8p3nDHpRosm1VYsFRIcuj4lZ2kdGXLY6UmDEzEpVoZENGEwi+XkSfLaq4T+lPxsd4SFsWs6NhNCsP9dBhgIHnAFbdJFz2ppMaj6PTaDtQ8XgBqbzBO8aFZZUAiWe1UbHz9GMwIzsep3118+gZbPkSMOKn+jN02lEq2kR4u7dlBaBKXhXVjUsHRUkK/wqyBdIdynSHbVZe+X+WNUsAJhzQIybbQMEKadR/Wbjc6VqX5NV19acd5Z2SnpOBXEVsbb9Ik/n+2kCthnfKsvZjT/NKW7Tbqww2AaKBNgBedFk7CHhV9Em+RC+ze4yy/pmPhPfxmHtY5CLKcMNuEnS8k=
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:LV3PR11MB8508.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230040)(23010399003)(1800799024)(7416014)(376014)(366016)(261028144727099003)(261022105027099003)(10067099003)(261022113327099003)(4143699003)(11063799006)(56012099006)(261022075727099003)(261021121427099003)(261021123027099003)(261102123227099003)(261009223027099003)(261026121527099003)(261026140227099003)(22082099003)(18002099003);
+ DIR:OUT; SFP:1101; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?MDJMZDhGMHlValpBWkRCZEZpc09KeXZRM1Rvc0l2eFh6MlAzOHh0RG5MbVZu?=
+ =?utf-8?B?c0NnaWtpT1JzUFpTMWYyQUZHR1JYc2pjZENCY1pwdXRXNW5uTUR4WGx5Vm51?=
+ =?utf-8?B?ZkNkSUFkWXhZVjdqeCtPN2pwWU1POW9TR3REMDcrNGJEdCtTdm1PUTRIc2VY?=
+ =?utf-8?B?anUzNjJGcUhqZUE3dU5IVUxpRUR5NStnZXYxak1WbHRoQUlTMi9TL0tqb0lE?=
+ =?utf-8?B?Sno5WGc3QWJ3Nm1Ec0tWR1pYSWR2RStlSkhCSW05UGxpZ2NvbnRSdWdnTUs5?=
+ =?utf-8?B?N2Y1WGNHNFd4dE1UbDJUUU1mekVjMTBpSEdRTit0R2JtK0dBSjd1Z1FVWWxz?=
+ =?utf-8?B?VUxDd2FRWENmU2NROWFhZlpkNC8wZ2pWUkROM1lDUnU3d1FKR3pmU3g1Wnlw?=
+ =?utf-8?B?Z1ByeWpOM0RFUTZ5dGdvbUdraEFrTENxeEY4bThhSVBBcHo4MTIzLzI5WG15?=
+ =?utf-8?B?aWVXdTlHRGdaTW9oQ3M5dDhQb1dtMGFma1V2VDN4VUlSQlptSEhPWXl3Q2s5?=
+ =?utf-8?B?b3FxdlRXSzg5M1ZKWXRsbmxOUDNJbGZ0Z3pJcWRDUFh3NnFlempHL0FpS0xT?=
+ =?utf-8?B?NGVvVlNTbnZaeTBZN2FVdVlGTHZXL0tVTlR0b25OZklidmRJUm5vWlphTFc5?=
+ =?utf-8?B?VkZMSkVETWd1YkJKSXNpR2diYUtKYnUzOS8zWVQ1UERmek1JZnpFaDNxREdm?=
+ =?utf-8?B?VlhVVXU0cE85eElsT09oSm9LeG5ibm01VXkwclBkc0Rmait1ZEl2ZnlKV1FK?=
+ =?utf-8?B?NnlOR1NtWnBSbzVER3ZRaVIxR095Q3hvV29XTEIwc3VGOE1zWUJzeUdoTk43?=
+ =?utf-8?B?eUpJcFFyTmFHNnZxeWtYaWlackxYRlBhdWdXWkpIUnRRaWMrakF5UUFnR2xh?=
+ =?utf-8?B?a2JQbEY0cTl3RU4vc0ZERHNjMEhkNVJoL3hDdnRzQnpsL2R6WVlHNzZIVlZh?=
+ =?utf-8?B?Smx3NGZrYllOQnd4Sy9ib2NoNklwMkdmRE9WS2RiODBtL2xXemhucFRHTy8y?=
+ =?utf-8?B?aHZyMjdKUTNOcmNJY3FiQTViSU1sb1VsNVN3bWIyTlZnYVNKZGV6NXR2WTds?=
+ =?utf-8?B?dlFtMHZ4a0UyMEFHQ0FMZlBhTDN4SEY1MzZVOWlHaC94OXdQMyszTTUxZVFl?=
+ =?utf-8?B?dGYwWjVxSHRhZk1IVHQzck9oUkY2dk4yYUw4ejYrcWFnelZuYlBWOGhnYloy?=
+ =?utf-8?B?UjF2ekpkRlU5K29wYUFHUWk4OFo1Z0luUFIvMDdGVk1Sbk1tSzNhYlFPZjNt?=
+ =?utf-8?B?cTNCTEZ0WmR0aDF0Z2Z5bzRieXBSNk5NcEZPb1R2a3JSdlQzQnZIRm5QUllS?=
+ =?utf-8?B?cFZ3QkJuK08zSkFGV0twZnF1UFc2Z2x3MFBjVzZZaHVQU25vREovUStPaUV2?=
+ =?utf-8?B?aERGNlc5SDkweHJnc0hCQTREazh5TDRKM253cDhNOGdrZmZlMFkzbW11dDM0?=
+ =?utf-8?B?dVFBcmpub3BCQUZTdDdrMFBRZVlXeThnbndraTZrZDN1WmwvK3BOVWRNRkM3?=
+ =?utf-8?B?YllBcnpNa0RxV0JXaFJKOUdGeStzTHZORmc3Y0VSMEYwajQzUldVTEZZZ0Za?=
+ =?utf-8?B?YVI3NUtTS0pqTDNGaXFNL0gxMmhzSENpZFBOSFo4cFhBa1hFb2hGY3VrNGRH?=
+ =?utf-8?B?djNBMW0zZ09Lclcvandrc01mbmplRzZxSG91dTUxMUhRdTBIS3dQY0UxOEZw?=
+ =?utf-8?B?aWYyaTZYMG1yQU1FY3BmUHViOE85SFJEd2xZck93MnJPZ2MxUFpCYmwzOFpm?=
+ =?utf-8?B?ak9obmMwQ1k4bHJBUjdVcUxoeERoSjdqWXJwZU9KdkhDOTcvZ2xBU1hkRUFZ?=
+ =?utf-8?B?QmJMSEV1L0ljdTY3U2srYkVVbDF3VkxxanZFN1VvbWNNeHZMOGRhNmZUOVY0?=
+ =?utf-8?B?NmZmNkRFZ1lROTczU3BiSXFtQ3FIMGRIUFpZcDZhRlRyR3BzckZoclpkeFQw?=
+ =?utf-8?B?aXdGOXhlTVYzT292Ym55cWlJUmxMTmkrUS9nSDRWUnVPbVlJbUt6ank0L2Y0?=
+ =?utf-8?B?bTE4YlduZGgvcysyd3R5U3JhMEZKc1U3TU1BSUxocXArbDN6Q0s5dTBmT2Ix?=
+ =?utf-8?B?Wml3SmVzMFMyY0dNRmtoVjFkaExvY0llMGZmTElXZEdqWHRaTDZjRUN5Q0hV?=
+ =?utf-8?B?a3d0dHJLUGRidGtSd0NNVzFwWUFuOHlBcDYrZUZYcWZkMDZaaXg4Nm5MOUY1?=
+ =?utf-8?B?OXpFRmpPRGhYSld3NHMva1RENTRsOS9DZ3hXMGlUQnNvakxmc1dFb2FVcmpO?=
+ =?utf-8?B?M2wycStRWUJ5cXFkb2xxMGh0d2hKSmN4TlJ6WkRVazV0Q2RBV0xWQTV3SUVM?=
+ =?utf-8?B?S3crcnFrdkdjNVVaNUN6SVhaSTFEdC9JYjJDVE1XZ21KUFdvU0loeVE1bHR3?=
+ =?utf-8?Q?vWE+raMRzdwOL6f4=3D?=
+X-Exchange-RoutingPolicyChecked: Tpp8i0x25JjxDk6CM5RwKDL3CD/kdj0wEqvMYgT5GyYzbj/9XLjRkYu/sYoTBiXf3d5jbgcS3dMCdfpxvRVL8wHMhAwiJ7nHKOcV84vJTZUTzTKcVmjY97p425xK3UhYUq6ZypHdOZvSEIR2Ci8zrkPorQhAomwMO4Mkq1UsArb/ZYeCReO68rovdVKz5HOHUDa6a7W4Yqwkq/FVtdhNPHrzC4vhqFMaDf60nzglyEjhyR0aNBugUqPseMr+3M3h7nlHjdf9l7idxPs3lylOWgSL4ti4HIe2IEa2TIgXAdKn0JnSFG6rSIDOedZe/+/kvxijd3Xwz1uMfBsOm2OI9Q==
+X-MS-Exchange-CrossTenant-Network-Message-Id: 1902e526-8b58-4dde-4fdd-08df4c62b768
+X-MS-Exchange-CrossTenant-AuthSource: CH3PR11MB8496.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Nov 2026 08:44:58.5072 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: +kC9nIcZlgKaBRrhofo3FCYZcXW4NrB9BQOjEh+SNMRGv/eLZBCElFiRF2TWdD0AruSNgLI1hsNYGhGFxxDDbdCMkQBKmmmquCcF7uRLb1g=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY5PR11MB6164
+X-OriginatorOrg: intel.com
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -151,167 +255,85 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Reply-To: tkusters@aweta.nl
-X-Spam-Status: No, score=-18.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-17.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=4.0.1
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_NONE,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-From: Tjerk Kusters <tkusters@aweta.nl>
+On 11/26/26 10:26 AM, Hongyu Guo wrote:
+> idpf_mac_filter_async_handler() looks up the vport with
+> idpf_vid_to_vport(), but then indexes adapter->vport_config[] with
+> the raw vport_id from the message instead of using the vport it
+> just found.  vport_id is a device-assigned 32-bit number and is
+> not limited to num_max_vports, so vport_config[vport_id] can read
+> past the end of the array.  Use vport->idx, the array index the
+> rest of the driver uses.
+> 
+> During driver removal the vports are freed before the mailbox
+> work is cancelled, so this handler can still run while a vport it
+> looks up is being freed.  Return early if IDPF_REMOVE_IN_PROG is
+> set.
+> 
+> The filter removal loop in the same handler also leaks: it does
+> list_del() without kfree(), and if the response lists the same MAC
+> more than once it deletes the same entry twice.  Free the filter
+> and break out of the inner loop once it is removed.
+> 
+> Fixes: 41252855df77 ("idpf: add async_handler for MAC filter messages")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Hongyu Guo <guohongyu@cmss.chinamobile.com>
 
-On 2 KiB build_skb Rx rings (PAGE_SIZE < 8192, legacy-rx off),
-igb_skb_pad() places the DMA start so that exactly
-IGB_MAX_FRAME_BUILD_SKB bytes (1536 on x86_64) are left before
-skb_shared_info, and RLPML, or the PF pool limit in VMOLR when VFs are
-allocated, is set to the same value. With Rx timestamping on, 82580 and
-later MACs write a 16-byte timestamp header in front of the frame, so a
-frame of more than 1520 bytes (without FCS) runs into skb_shared_info.
-napi_build_skb() then zeroes the start of skb_shared_info, which holds
-the last bytes of the frame, and __skb_put() moves skb->tail past
-skb->end.
+thank you for v2, next time please post as a new thread, instead of
+in-reply-to v1
 
-The MAC has checked the TCP or UDP checksum before that, so the payload
-is delivered with its last bytes zeroed and without an error. Any
-sender on the link can trigger this with frames of 1525 to 1536 bytes on
-the wire, for example double-tagged frames or a peer with a larger MTU.
-Any Rx timestamp filter is enough, as these MACs then timestamp all
-packets. With XDP_TX, or XDP_REDIRECT to a device or CPU map,
-xdp_update_frame_from_buff() hits the "missing reserved tailroom" WARN
-for each such frame and drops it.
+here would be also good place to put changelog/link to v1
+(under additional "---")
 
-Before commit 9cbc948b5a20 ("igb: add XDP support"),
-IGB_MAX_FRAME_BUILD_SKB left room for the header. That commit fixed the
-frame size at 1536 bytes and gave the rest of the 2 KiB buffer to the
-headroom. Reserve the header again in igb_skb_pad(). IGB_SKB_PAD is the
-same for all build_skb rings, so the headroom goes from 192 to 176 bytes
-on x86_64 for 2 KiB and for 3 KiB rings, and XDP programs have 16 bytes
-less for bpf_xdp_adjust_head() and metadata. It was already below
-XDP_PACKET_HEADROOM. The frame limit, the buffer size selection and the
-MTU range for XDP do not change. IGB_2K_TOO_SMALL_WITH_PADDING already
-counts the header, so the headroom stays at least NET_SKB_PAD.
+no need to repost for any of that (as long as Paolo will merge this :))
+Acked-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 
-That commit also took the header out of igb_rx_bufsz(), which is the
-length of the DMA sync when a buffer goes to the hardware. Add
-igb_rx_dma_len() for the two syncs. igb_rx_bufsz() itself stays as it
-is, because it is also the frame size limit for XDP.
-
-Tested on an I350 with kernel 7.3.1 (igb in net is the same apart from
-the treewide kmalloc_obj conversions) at MTU 1500, with the Rx timestamp
-filter set to ALL. A peer sent UDP datagrams of 0xff bytes in frames of
-1521 to 1532 bytes (without FCS). Before this patch they were delivered
-with their last 1 to 12 bytes zeroed, starting 1520 bytes into the
-frame, and pings with a 0xff pattern of those sizes failed. With this
-patch all of them arrive intact, also with an XDP program attached.
-Frames of 1533 bytes and more are dropped by the MAC, as before. With
-the timestamp filter off, and at MTU 3000 (3 KiB rings), nothing
-changes. Frames that a VF sends to the PF, of up to 1536 bytes, arrive
-intact with and without this patch; the MAC does not put the header in
-front of them.
-
-This was found by the Sashiko AI review of another igb series.
-
-Link: https://lore.kernel.org/all/179551973551.3135.7270095499525377709@kernel.org/
-Fixes: 9cbc948b5a20 ("igb: add XDP support")
-Cc: stable@vger.kernel.org
-Signed-off-by: Tjerk Kusters <tkusters@aweta.nl>
----
-The Sashiko AI review reported this on v4 to v7 of my igb Rx timestamp
-series; it is older than that series. Most recently:
-https://lore.kernel.org/all/179551973551.3135.7270095499525377709@kernel.org/
-
-This patch is independent of that series and applies on its own.
-
-At MTU 1500, iperf3 TCP and UDP from a peer run at line rate (938 and
-950 Mbit/s) with and without this patch, with the Rx timestamp filter
-off and on, and the receiver's CPU load does not change measurably
-(6 runs of 10 s per case, the differences are within the spread).
-
-The patch and its description were prepared with the help of an AI
-coding assistant (Claude). I reviewed them and ran the tests described in
-the commit message on my test bench.
----
- drivers/net/ethernet/intel/igb/igb.h      | 21 +++++++++++++++++----
- drivers/net/ethernet/intel/igb/igb_main.c |  4 ++--
- 2 files changed, 19 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index 8c9b02058cec..74e441a140c1 100644
---- a/drivers/net/ethernet/intel/igb/igb.h
-+++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -153,9 +153,9 @@ struct vf_mac_filter {
- 
- /* Attempt to maximize the headroom available for incoming frames.  We
-  * use a 2K buffer for receives and need 1536/1534 to store the data for
-- * the frame.  This leaves us with 512 bytes of room.  From that we need
-- * to deduct the space needed for the shared info and the padding needed
-- * to IP align the frame.
-+ * the frame, plus IGB_TS_HDR_LEN for the timestamp the hardware can place
-+ * in front of it.  From the rest we need to deduct the space needed for
-+ * the shared info and the padding needed to IP align the frame.
-  *
-  * Note: For cache line sizes 256 or larger this value is going to end
-  *	 up negative.  In these cases we should fall back to the 3K
-@@ -190,7 +190,7 @@ static inline int igb_skb_pad(void)
- 	if (IGB_2K_TOO_SMALL_WITH_PADDING)
- 		rx_buf_len = IGB_RXBUFFER_3072 + SKB_DATA_ALIGN(NET_IP_ALIGN);
- 	else
--		rx_buf_len = IGB_RXBUFFER_1536;
-+		rx_buf_len = IGB_RXBUFFER_1536 + IGB_TS_HDR_LEN;
- 
- 	/* if needed make room for NET_IP_ALIGN */
- 	rx_buf_len -= NET_IP_ALIGN;
-@@ -421,6 +421,19 @@ static inline unsigned int igb_rx_bufsz(struct igb_ring *ring)
- 	return IGB_RXBUFFER_2048;
- }
- 
-+/* Number of bytes the hardware can write to an Rx buffer. On 2K build_skb
-+ * rings the frame is limited to IGB_MAX_FRAME_BUILD_SKB, and the timestamp
-+ * header comes in front of it.
-+ */
-+static inline unsigned int igb_rx_dma_len(struct igb_ring *ring)
-+{
-+#if (PAGE_SIZE < 8192)
-+	if (ring_uses_build_skb(ring) && !ring_uses_large_buffer(ring))
-+		return IGB_MAX_FRAME_BUILD_SKB + IGB_TS_HDR_LEN;
-+#endif
-+	return igb_rx_bufsz(ring);
-+}
-+
- static inline unsigned int igb_rx_pg_order(struct igb_ring *ring)
- {
- #if (PAGE_SIZE < 8192)
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 131df3e09ba1..67fd24d71746 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -5084,7 +5084,7 @@ void igb_clean_rx_ring(struct igb_ring *rx_ring)
- 		dma_sync_single_range_for_cpu(rx_ring->dev,
- 					      buffer_info->dma,
- 					      buffer_info->page_offset,
--					      igb_rx_bufsz(rx_ring),
-+					      igb_rx_dma_len(rx_ring),
- 					      DMA_FROM_DEVICE);
- 
- 		/* free resources associated with mapping */
-@@ -9225,7 +9225,7 @@ void igb_alloc_rx_buffers(struct igb_ring *rx_ring, u16 cleaned_count)
- 	bi = &rx_ring->rx_buffer_info[i];
- 	i -= rx_ring->count;
- 
--	bufsz = igb_rx_bufsz(rx_ring);
-+	bufsz = igb_rx_dma_len(rx_ring);
- 
- 	do {
- 		if (!igb_alloc_mapped_page(rx_ring, bi))
-
----
-base-commit: cc7fe6e741730fef549e484379281736d32746f0
-change-id: 20261127-igb-skb-pad-8d96ea0a6e05
-
-Best regards,
---  
-Tjerk Kusters <tkusters@aweta.nl>
-
+> ---
+>   drivers/net/ethernet/intel/idpf/idpf_virtchnl.c | 11 +++++++++--
+>   1 file changed, 9 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
+> index 1caf52706973..ff43a3d34eac 100644
+> --- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
+> +++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
+> @@ -3779,6 +3779,10 @@ static void idpf_mac_filter_async_handler(void *ctx,
+>   	if (!status || status == -ETIMEDOUT)
+>   		return;
+>   
+> +	/* vports are freed during removal, before this work is cancelled */
+> +	if (test_bit(IDPF_REMOVE_IN_PROG, adapter->flags))
+> +		return;
+> +
+>   	ma_list = buff->iov_base;
+>   	/* make sure at least struct is there */
+>   	if (buff->iov_len < sizeof(*ma_list))
+> @@ -3794,7 +3798,7 @@ static void idpf_mac_filter_async_handler(void *ctx,
+>   	if (!vport)
+>   		goto invalid_payload;
+>   
+> -	vport_config = adapter->vport_config[le32_to_cpu(ma_list->vport_id)];
+> +	vport_config = adapter->vport_config[vport->idx];
+>   	ma_list_head = &vport_config->user_config.mac_filter_list;
+>   
+>   	/* We can't do much to reconcile bad filters at this point, however we
+> @@ -3804,8 +3808,11 @@ static void idpf_mac_filter_async_handler(void *ctx,
+>   	spin_lock_bh(&vport_config->mac_filter_list_lock);
+>   	list_for_each_entry_safe(f, tmp, ma_list_head, list)
+>   		for (i = 0; i < num_entries; i++)
+> -			if (ether_addr_equal(mac_addr[i].addr, f->macaddr))
+> +			if (ether_addr_equal(mac_addr[i].addr, f->macaddr)) {
+>   				list_del(&f->list);
+> +				kfree(f);
+> +				break;
+> +			}
+>   	spin_unlock_bh(&vport_config->mac_filter_list_lock);
+>   	dev_err_ratelimited(&adapter->pdev->dev, "Received error %d on sending MAC filter request\n",
+>   			    status);
 
