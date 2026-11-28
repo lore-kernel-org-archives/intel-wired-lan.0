@@ -1,29 +1,29 @@
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 151D7606A31C
-	for <intel-wired-lan@archiver.kernel.org>; Sat, 28 Nov 2026 13:36:43 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 244D9606A32C
+	for <intel-wired-lan@archiver.kernel.org>; Sat, 28 Nov 2026 13:37:47 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=FfWosKab;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=vBSk7A04
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=cObQ0n3i;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=ylBfmaNP
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id E768D81076;
-	Sat, 28 Nov 2026 13:36:42 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 0181760635;
+	Sat, 28 Nov 2026 13:37:47 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 7hkaKPFSCE_U; Sat, 28 Nov 2026 13:36:42 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org 119118108F
-Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795873002;
-	b=LoRSSbLtZeZICwWRBvN+iOmg7KpRzzZWVhk3eDDA2cmVgyDfeS+qc6UJmaCcP/hxSboW
-	 Wpwk6TKjIeJdMLNohP5T1jVwalB11HebdUM9lPDSx6f7I0Zep2vCSu+lt9tqOZM+8ch45
-	 P/VIhbCvouH5+YR5s45f74qXlJqcuTBzWbz55wiZ/VU/HWARVsw9AkBtFy3LWzgBxh18Q
-	 YPdJMDhdvtxCxgbTqRGPHP7bWs32bCpwf18oSvAL2DWUEDHyb/quAsIfrseZHl/KkXGr8
-	 GSLSk4s+yzH1zSTDtnd+asl9dgQ+0m4GRAn3eUyOevIVZsOsqVynYKJwHUBj3QCCbEQ==
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id BLiutUfM0LyY; Sat, 28 Nov 2026 13:37:46 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org E0A726063A
+Authentication-Results: smtp3.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795873066;
+	b=b4N3Np5ELx+nw1vCbP7e0WIPrudwgRiMusDIh0T+WKIV9lbEWtB8r0BkxBasXJir3lJL
+	 NpD9frRaftkX9OtRVsOgHX9v+X42jbbpfpevicfAwFDZk5JOjDmHsVffcbuy8g5GFpJjO
+	 bMs707njY2JJly6U6+VH1h8wXhJu3Ho2Ncn5lUGPZJlKmOl92fA807/UcDZQJS5yz6kiI
+	 g7p3WUhADsxAMfQ33eio3j4lIwNQJcCBcaUDBBKr6hOYEdff+eNfEog5gGCXRKJSJtBa1
+	 nWUSSU9jKzGMvAWOGIisxJ61txe2827VN7LjVNBwOiybP7VdRPYptc5MG7QC93Za2GQ==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795873002;
+	c=relaxed/relaxed; t=1795873066;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
@@ -32,105 +32,105 @@ ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
 	 MIME-Version:Content-Type:Content-Disposition:In-Reply-To:X-BeenThere:
 	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=a5WxxRcYdBHgsweyummlp7eYA7vC+58yNVZbC9L/D58=;
-	b=WkHMmhB/A/psZJyVcFF1H7pfOBIgjjAyDN0vuNMG5QDlWgSeEAAeyH3C/FfqopoOLAy9
-	 hi4Pl7pkIwwhZ2VGCSbAxaOoeiALOr75o8q1ybDa0/XI1a7j1mYf3L6YW1RSO1maC56Ll
-	 OkyuJIc/538MiR0h0MZl1v+4Sp0MSV77Gp2AUocYelwuwEx1/HdUEnuNq8IvTZkPDXIX8
-	 sCOYDvK/R7Ni22OxnZlL8iMqa29Szjh78YfPv96LgKMruNTi4hmVQ24j31AgXEblORmg/
-	 p4rCbwPlx5/c6k90CQBmm5YFO3phY6yoWlipbhQxuplVg6EPjOWj4OgzPj4neFOr59w==
-ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
+	bh=0mQsJ7irUzhfshN0tVy8gRkAjHlT+WDYsqq+luK1uFo=;
+	b=bJjF+Z1qEkMCBpRmIyraPTPguZebMRN+RBdHxS/M3TP7j8ERHLxlJj2hYbv7iCAhyHXp
+	 2hTnI/HMW05WU8BTVxw/OB8eyYe4ncmdSGhpTS7j1+8wmH47V1rq1BB96Pau7mBqTqAZ/
+	 EVR2nC5aFYjQnWx1YDxIJ8n4Vryn/9y5hQvBwwVxPdt1MPMB3nHfKJz7lPkW7qkstHMvn
+	 AIN5W67K8/WG3kFYbq2M5kxy6LIeEYYTlUilWojrQhQZDqMhY0FE5qtgU9Gq/oYg+CPVu
+	 +Nucn6xLv/iG6t0J8fkZ66o39sN8sKZhGYd/pvQIct1URnJMNs8/AcbVALmU9hNnaFA==
+ARC-Authentication-Results: i=1; smtp3.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1795873002;
-	bh=a5WxxRcYdBHgsweyummlp7eYA7vC+58yNVZbC9L/D58=;
+	s=default; t=1795873065;
+	bh=0mQsJ7irUzhfshN0tVy8gRkAjHlT+WDYsqq+luK1uFo=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=FfWosKabS9+kofDcX68zKhpcZnzuM9AGEZk4aD9cNghfgumOKkJPWt+WrgScQZRYr
-	 5vVzZHb+lZKK4S4sAEOO2oGUvXUny8QUXHX0v6RTG1YCB/2hf0Yuidk1VPkH3BPYxu
-	 pEZlm/U6A2pXBC4qP8EQFhU4/nWUYaQXQvqwXd5I/Yrctz7Sybe5bW4m/j4l9q534S
-	 wuKTzFuUmBKzUqrYKzso1MIeiZTEtUhdhbFCJZnOOjnueZuDatC5ftF71tYSzhDhOj
-	 ijlxuVvm1noabJd4oqmL6ftduy20kgG7ht/OxJBNqY9LpClwP622GvAy2CPQZRtSZF
-	 upqE7/CIhdL0g==
+	b=cObQ0n3iAwS5TTIpvPi8YpnXMhRPRJfSSE05fjQHS9zupLp1ZiXdAtUGK3WryluaR
+	 AOZ+z1lYFEEFiNHFnrb/XysFuKZ3GE0sSlutVZgYEL2C1NZ+dMKi3+vBrAShmPnS8w
+	 0C5k8Tvuh0tdIYUcRijxpdUVTqhBxcS9qn1weFk7q1AvXMJK0dmikl2kfBK8aord8Z
+	 qjgV8/BYZEa5dGR0aKMcWyVgWNkjDKCOFAJ40jSDFncjPODeO8HgZK1OamWxoxh35N
+	 0Z08RVa1K4xEyn8HOroDr6rjfcZf3aOoqhqCvzcAq7P+e5FajseT4+BsHvOCCEIMAD
+	 xFzsCMXF0kXwg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 119118108F;
-	Sat, 28 Nov 2026 13:36:42 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 7C7073C0
- for <intel-wired-lan@lists.osuosl.org>; Sat, 28 Nov 2026 13:36:40 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id E0A726063A;
+	Sat, 28 Nov 2026 13:37:45 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 2BABB472
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 28 Nov 2026 13:37:45 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 79E0C6063A
- for <intel-wired-lan@lists.osuosl.org>; Sat, 28 Nov 2026 13:36:40 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 1102740683
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 28 Nov 2026 13:37:45 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id nBFK3N5M19gR for <intel-wired-lan@lists.osuosl.org>;
- Sat, 28 Nov 2026 13:36:39 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp3.osuosl.org 3E5E160635
-Authentication-Results: smtp3.osuosl.org;
- arc=none smtp.remote-ip="2a00:1450:4864:20::42e"
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 1CeMHN-AMkvV for <intel-wired-lan@lists.osuosl.org>;
+ Sat, 28 Nov 2026 13:37:44 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org A466840680
+Authentication-Results: smtp4.osuosl.org;
+ arc=none smtp.remote-ip="2a00:1450:4864:20::42d"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a00:1450:4864:20::42e; helo=mail-wr1-x42e.google.com;
+ client-ip=2a00:1450:4864:20::42d; helo=mail-wr1-x42d.google.com;
  envelope-from=janislacis06@gmail.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp3.osuosl.org;
+Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20260707 header.b=vBSk7A04
-Received: from mail-wr1-x42e.google.com (mail-wr1-x42e.google.com
- [IPv6:2a00:1450:4864:20::42e])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 3E5E160635
- for <intel-wired-lan@lists.osuosl.org>; Sat, 28 Nov 2026 13:36:38 +0000 (UTC)
-Received: by mail-wr1-x42e.google.com with SMTP id
- ffacd0b85a97d-4ac109a8a12so5301687f8f.3
- for <intel-wired-lan@lists.osuosl.org>; Sat, 28 Nov 2026 05:36:38 -0800 (PST)
+Authentication-Results: smtp4.osuosl.org; dkim=pass (2048-bit key,
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20260707 header.b=ylBfmaNP
+Received: from mail-wr1-x42d.google.com (mail-wr1-x42d.google.com
+ [IPv6:2a00:1450:4864:20::42d])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id A466840680
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 28 Nov 2026 13:37:43 +0000 (UTC)
+Received: by mail-wr1-x42d.google.com with SMTP id
+ ffacd0b85a97d-49412eb1474so5909266f8f.3
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 28 Nov 2026 05:37:43 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20260707; t=1795872997; x=1796477797; darn=lists.osuosl.org;
+ d=gmail.com; s=20260707; t=1795873061; x=1796477861; darn=lists.osuosl.org;
  h=in-reply-to:content-disposition:content-type:mime-version
  :references:message-id:subject:cc:to:from:date:from:to:cc:subject
  :date:message-id:reply-to:content-type;
- bh=a5WxxRcYdBHgsweyummlp7eYA7vC+58yNVZbC9L/D58=;
- b=vBSk7A04OQrM+egUW080MBYHWhZ4o3cdfVa75Y1SkJm0RXlOqiaVt5ix+ZAVhTPC/u
- igIquOA20A8KttyMZ2N8qepr5GaR2KufKf1l/YHYL8TAhsz6vWRpJqMcpo49g8bAgqX6
- SK1eCJI1zB++qlm6FRWemYl8hRuz3tSovobHyqufEaRWCSPg00CHpsSF/JgNeK7dxURZ
- jMVOFOg9810PPe8GH+8RMkf/bP+8z8SiSFG/Oeg7vkY4N+09KktWBmvhVZO/3/usBGYH
- VKyySkUinGcFJTAH6oDQqvLdXMa8RQNzR1Lcrf/8WwPdhhJD0pICtar2vRaTEtVn/EwP
- A7eA==
+ bh=0mQsJ7irUzhfshN0tVy8gRkAjHlT+WDYsqq+luK1uFo=;
+ b=ylBfmaNP8bvvree1DuzaLQNwshPr4McQM+rpmfN1LFIOzTvA8Rg4dln1B7cbARiMCe
+ Xm2JzWOGfhfbQHzkjyM17YYbTRnx41Hyo9Wmw/tkFIfHEurpF+TptbYo/1I8BbnNWIuX
+ KQxgESjEnewVJFvuduTlcDMvvoOL69fyntJ2JYHiSjh5V3sM/RgwCTxLJsfzO1MDJUNS
+ usUyKozOWIiavBniCcB1yyrrJtX6Jnh74GpGGocLgf+skwqcrnKLa4QFG6E65y2Uzr+t
+ /GU6q76mtUUlXJLnxtwh+Rvja2uIbx/igaGqiexHXvd31Kdc0pWkfN0OZPgIjkPH8T09
+ f1qQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1795872997; x=1796477797;
+ d=1e100.net; s=20260707; t=1795873061; x=1796477861;
  h=in-reply-to:content-disposition:content-type:mime-version
  :references:message-id:subject:cc:to:from:date:x-gm-gg
  :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
  :content-type;
- bh=a5WxxRcYdBHgsweyummlp7eYA7vC+58yNVZbC9L/D58=;
- b=UfFKUJL3rn91P/qIAkMMtS8wwUdCmVzwA2KycRuleHLRiziXBgB7IXgSjIgY4WowOz
- GsbgCTE06zEQHAXQOdPPd6DdFnFUDSgDLdbJdptNeIVLDJ49OyOb3R9Rsn55p7qoaHfh
- J3zMyYRprx78lg7GkkJgBtXa8jOHekJOsFFIsykj5rbLKxZSx6+p481Rh2aLXFkZJK6N
- BXUp54+3vhryXeatb9UMxyI5UHX/sCVg/pMw688pn/L9uQS53KWOu7FFTq4zB1UWezXd
- W1moNyWEW1HJvFWiewyacLmVXja5uMAA6hBWxS/hCXXv+gSzp0u9vSzlGkc3ql7+WBpN
- ZDfg==
-X-Gm-Message-State: APuU4Z8Ae2KIdylUmMB5ETJyVt4RKeS1+kQ5fGmnaPf9ON9512NERpsi
- FxOTNI4QX5zVqmm7S5JjhTw9nkv1PQfySQzqZpfXaoXjMrxKL/7w3GTm
-X-Gm-Gg: AZFdTZfe4PLA0KtQU7r393TR+4mc5YljuWOu9DOpKCYx1u5xNkm3wL5BSnNhbQcNLYg
- tazAGRxoZk+SrmN6OGrPxSiuBa+ScvMhnrpmrc/i//rqflgYBdUoX7hQAHrEHHiYPsMuJhQMwoT
- wTzvs7F36LDvfRylJnACHk2muB85znG41ANYTodu8wRMp+CiHO7NfWUpnTIFk/P1PECJU909XfT
- bI0EwdeaUouxlz8GvNxMLYXLwMd0pWczIEtqKM7uP4TDuYWhG4yklFzz+uux+q0PZHsfmPUDk0k
- uDaPTsjNcHMmNwPjYNK5j1wC78/By4CLk4Zv94MpYavXrrgwLkAQarfxXMrSV9AD7m7y0JAvjnW
- DhYhDIjICLm3Zn+S0drg7dpo0QCTI4uNpXs4vZinDmW61NJZIdV5kSnQDUO19PLbhWRXsqmwfTo
- IWzbQE5qxOzZfHwmpxkFQc6I5OSozk56WWMKltuCmPeCbASsCpupVA1F7pOLUj99U2cmfomEbdJ
- yrXJmCddH9AY4b/zRLxlYDN/yI7w2TDHFu0VHxyZQyfSw8kkD5ty+L8S12VoCVxQHbKAhRzJw+y
- xB1D2dT1ifUzqG8iatrDPWC166SXuVEq5vz+FxHnqv5+RZJuVd3yGOvs5u4dc8I8uxenJ3YOWZk
- A2xo19rwUI0ZnragdGkts72Xr09nXRsGZ8+M=
-X-Received: by 2002:a5d:64c9:0:b0:4a6:bc53:2478 with SMTP id
- ffacd0b85a97d-4abb0d5256fmr54313922f8f.13.1795872996813; 
- Sat, 28 Nov 2026 05:36:36 -0800 (PST)
+ bh=0mQsJ7irUzhfshN0tVy8gRkAjHlT+WDYsqq+luK1uFo=;
+ b=2hIUCqka9HrsXMFaCvCQODsnavkb1U0/BXsNFv7j9w4Vgst29PW+QDmK5+fct+JvyV
+ YPsSSWz3+6rvYJh2t8aKhYy9zGFiXAA5NN9ure+X7h66hf4fGKuP2GH8ZL9r6whOsirN
+ QqBfvJFqowss6a4MhB1TfSkxZRxzmn30M9bFft+mMCaG8Q9pbcAZupM0t5m7CT5w6zc/
+ n7XG+26DTJXiyg9AfUsrhMryAWWyXQ1ZM/V9ajbW7Z01TiU3gA6mFh16YIEfl1bZumd0
+ 3taRT5hBj0OiRFJuW0gfuxhgQcFpCyjkYCz5hpouGPxBVlJ53YD8Nvy1EuKaWjC/u4c2
+ AdCg==
+X-Gm-Message-State: APuU4Z84r88FKf1+FGLMPwaPyUFGDBEguyXiH1X8nTbisAas5s5Dxt3L
+ cj6hnCaLYyekk1O9yKFd47pqMUbsSNW3CNiZTX2U9KCtPwmnJeGkbBr+
+X-Gm-Gg: AZFdTZfKZrLxjuYeW8nurZMKEWzEE3DXbifY8nQB5Wf4+RekRbZkwih3tGwask8uRmt
+ nc5SyGN5YVl+w/FGBgiWIUB9xF2dCZrMxZ5mKjP4ZsiswgbfSXO+uQh9g5jEiaNOGfcwDJ9c/Lq
+ gZ7zDqnC4VURrUXhVa/7SfgZI2maBMGOGtx/8tRomD0r/v/7nFgWum8h1xvyS2pNBgJWUE8wVI8
+ RYkPjvVnEbbQGdz/Xd/m+KH+ICO5o+8A6qhnP+yZ3Q0GTL1bMtkdRccY871Dg8BeHxSODXf83ca
+ 5nOSQJD1aWQBAYQem8AlabpVgfnKGPy7+64sLF9UoNU8fTFJPWW3HPa7AIdvv06kzZpfXtcObyJ
+ x8d0woBgW3eMbZrpKImB6bWUv3RcHpXxjcGsCe9aB1oirL9ySW357D09MBNu+tm2b4Rbg7cthjR
+ J/aSBXgfw1uwsw5M/fH9b1ldwJZQSajuYs0xFSoMilb/TKztHiUHjZZbk45KEFYiHsR/3thdK5v
+ vAoUYasQbXWKYXXsEHZM1mhgSuK6cgx72eQ/mnhpMiPH4Jo7vRmxaJCc91JhlSWYOtbf8aDLPk1
+ NkW/+7uYuNxkfff6D87iixuZiCQoiwPXnQL/C6rYnE6B0vEDQge7BLQyTrjqQyX7ziZiA2qV0NJ
+ UsKKZIag94HdxJIu8/KQjnfQDajJh4Bi7SHo=
+X-Received: by 2002:a05:6000:4a0e:b0:48b:451:4f19 with SMTP id
+ ffacd0b85a97d-4abb7971c1dmr52301677f8f.51.1795873061121; 
+ Sat, 28 Nov 2026 05:37:41 -0800 (PST)
 Received: from pc.tail250202.ts.net ([87.110.86.243])
  by smtp.gmail.com with ESMTPSA id
- ffacd0b85a97d-4ab6c61f558sm54895678f8f.58.2026.11.28.05.36.33
+ ffacd0b85a97d-4ab658e2d60sm54300422f8f.3.2026.11.28.05.37.39
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sat, 28 Nov 2026 05:36:36 -0800 (PST)
-Date: Sat, 28 Nov 2026 15:36:33 +0200
+ Sat, 28 Nov 2026 05:37:40 -0800 (PST)
+Date: Sat, 28 Nov 2026 15:37:39 +0200
 From: Janis Edvarts Lacis <janislacis06@gmail.com>
 To: Antonio Quartulli <antonio@mandelbit.com>
 Cc: intel-wired-lan@lists.osuosl.org, 
@@ -138,24 +138,19 @@ Cc: intel-wired-lan@lists.osuosl.org,
  Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
  Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>, 
  Eric Dumazet <edumazet@kernel.org>, Jakub Kicinski <kuba@kernel.org>, 
- Paolo Abeni <pabeni@redhat.com>, Alexei Starovoitov <ast@kernel.org>, 
- Daniel Borkmann <daniel@iogearbox.net>,
- Jesper Dangaard Brouer <hawk@kernel.org>, 
- John Fastabend <john.fastabend@gmail.com>, Stanislav Fomichev <sdf@fomichev.me>,
- Sriram Yagnaraman <sriram.yagnaraman@ericsson.com>,
- Kurt Kanzenbach <kurt@linutronix.de>, 
- Maciej Fijalkowski <maciej.fijalkowski@intel.com>, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, bpf@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: [PATCH net v5 1/6] igb: don't touch rings that don't exist when
- disabling an XSK pool
-Message-ID: <qyifvivvv45lstdhummsoji6jdlgxzkfcai5uet53w2spppj6g@amdcea4m54w5>
+ Paolo Abeni <pabeni@redhat.com>, Heiner Kallweit <hkallweit1@gmail.com>,
+ netdev@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Subject: Re: [PATCH net v5 2/6] igb: fix RTNL assertion when resuming from
+ runtime suspend
+Message-ID: <mopuzlp25nt2tl5yogp2uwfhyw5jomop2lver6lx4ohcymxbk6@mnofvjbmjwz4>
 References: <20261124235723.1135808-1-antonio@mandelbit.com>
- <20261124235723.1135808-2-antonio@mandelbit.com>
+ <20261124235723.1135808-3-antonio@mandelbit.com>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Disposition: inline
-In-Reply-To: <20261124235723.1135808-2-antonio@mandelbit.com>
+In-Reply-To: <20261124235723.1135808-3-antonio@mandelbit.com>
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -166,130 +161,225 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FORGED_GMAIL_RCVD,
-	FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-12.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS autolearn=unavailable
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 On 25 Nov 00:57, Antonio Quartulli wrote:
->xsk_get_pool_from_qid() checks the queue id against the stack's real
->queue counts, which can be higher than the number of rings the device
->has: on 82576, enabling VFs leaves a single Tx queue while keeping two
->Rx queues, and igb can fall back from MSI-X to MSI with a single queue
->on resume. Disabling the pool of such a queue, e.g. one bound to queue 1
->before enabling VFs, then passes a NULL Tx ring to
->igb_txrx_ring_disable().
+>Since commit ac8c58f5b535 ("igb: fix deadlock caused by taking RTNL in
+>RPM resume path") __igb_resume() doesn't take RTNL for runtime resume,
+>but __igb_open() still calls netif_set_real_num_{tx,rx}_queues(), which
+>require it. An asynchronous runtime resume (e.g. after the link comes
+>back) then triggers "RTNL: assertion failed".
 >
->Only disable and re-enable the rings the device has: skip the queue if
->it has no Rx ring, and only the Tx part if it has no Tx ring, so that
->an Rx ring using the pool still stops using it. This also stops a NULL
->dereference when the socket is closed while the device is runtime
->suspended, which frees its rings.
+>Only set the real queue counts in __igb_open() when RTNL is held (open
+>and system sleep resume), and set them from a work item taking RTNL on
+>runtime resume. Until it runs, after a fallback to fewer queues on
+>resume (MSI-X to MSI), the stack can use queues the device doesn't
+>have: drop those packets in igb_xmit_frame() instead of mapping several
+>stack queues, each with its own xmit lock, onto the same ring. The
+>stack can't be kept off those queues instead, as __igb_open() and
+>netif_device_attach() start all of them and changing the count needs
+>RTNL.
 >
->Tested with the 82576 emulated by QEMU and a zero-copy AF_XDP socket on
->queue 1: closing it after enabling a VF no longer oopses and the Rx ring
->no longer references the pool afterwards (checked with a debug print, as
->QEMU doesn't spread traffic over the PF queues with VFs), and without
->VFs queue 1 keeps receiving after the close. Not run under KASAN.
+>Tested with the 82576 emulated by QEMU.
 >
->Fixes: 80f6ccf9f116 ("igb: Introduce XSK data structures and helpers")
->Cc: stable@vger.kernel.org # 6.14+
->Link: https://lore.kernel.org/netdev/20261116153041.3002666-2-antonio@mandelbit.com/
+>Fixes: ac8c58f5b535 ("igb: fix deadlock caused by taking RTNL in RPM resume path")
+>Cc: stable@vger.kernel.org
+>Closes: https://bugzilla.ipfire.org/show_bug.cgi?id=13562
 >Signed-off-by: Antonio Quartulli <antonio@mandelbit.com>
 >---
->v5: the message also mentions the runtime suspended case (no code
->changes)
->v4: also handle queues with an Rx but no Tx ring, as with VFs (Sashiko):
->tear down the Rx ring and skip only the Tx part; tested with a
->zero-copy AF_XDP socket; subject was "don't disable rings that don't exist
->..."
->v3: new patch.
+>v5: no changes
+>v4: no changes
+>v3:
+>- set the real queue counts when RTNL is held (open and system sleep
+>  resume), and from a work item on runtime resume, instead of not at all
+>  on resume (Janis, Sashiko)
+>- until then, drop packets for queues the device doesn't have
+>- stable: netif_set_real_num_queues() needs 5.15+ and
+>  dev_core_stats_tx_dropped_inc() 5.18+; older backports can use the
+>  separate tx/rx calls and netdev->stats.tx_dropped
+>v2:
+>- keep setting the queue counts in __igb_open() after igb_request_irq(),
+>  only skipping them on resume (Sashiko)
+>- drop the reference to igc
 >
-> drivers/net/ethernet/intel/igb/igb_xsk.c | 37 +++++++++++++++++-------
-> 1 file changed, 26 insertions(+), 11 deletions(-)
+>Note: igc has the same issue: it sets the real queue counts only in
+>igc_open(), before requesting the IRQs, and never on resume. A fix will
+>follow separately once it has been tested on igc hardware (Joe offered
+>to test).
 >
->diff --git a/drivers/net/ethernet/intel/igb/igb_xsk.c b/drivers/net/ethernet/intel/igb/igb_xsk.c
->index ce4a7b5..3b4212a 100644
->--- a/drivers/net/ethernet/intel/igb/igb_xsk.c
->+++ b/drivers/net/ethernet/intel/igb/igb_xsk.c
->@@ -31,15 +31,22 @@ static int igb_realloc_rx_buffer_info(struct igb_ring *ring, bool pool_present)
+> drivers/net/ethernet/intel/igb/igb.h      |  1 +
+> drivers/net/ethernet/intel/igb/igb_main.c | 73 ++++++++++++++++-------
+> 2 files changed, 54 insertions(+), 20 deletions(-)
+>
+>diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
+>index 8c9b020..79d7fcc 100644
+>--- a/drivers/net/ethernet/intel/igb/igb.h
+>+++ b/drivers/net/ethernet/intel/igb/igb.h
+>@@ -586,6 +586,7 @@ struct igb_adapter {
+>
+> 	struct work_struct reset_task;
+> 	struct work_struct watchdog_task;
+>+	struct work_struct rtnl_resume_task;
+> 	bool fc_autoneg;
+> 	u8  tx_timeout_factor;
+> 	struct timer_list blink_timer;
+>diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+>index d4a897a..2f51edc 100644
+>--- a/drivers/net/ethernet/intel/igb/igb_main.c
+>+++ b/drivers/net/ethernet/intel/igb/igb_main.c
+>@@ -110,6 +110,7 @@ static void igb_init_queue_configuration(struct igb_adapter *adapter);
+> static int igb_sw_init(struct igb_adapter *);
+> int igb_open(struct net_device *);
+> int igb_close(struct net_device *);
+>+static void igb_rtnl_resume_task(struct work_struct *);
+> static void igb_configure(struct igb_adapter *);
+> static void igb_configure_tx(struct igb_adapter *);
+> static void igb_configure_rx(struct igb_adapter *);
+>@@ -3426,6 +3427,7 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+>
+> 	INIT_WORK(&adapter->reset_task, igb_reset_task);
+> 	INIT_WORK(&adapter->watchdog_task, igb_watchdog_task);
+>+	INIT_WORK(&adapter->rtnl_resume_task, igb_rtnl_resume_task);
+>
+> 	/* Initialize link properties that are user-changeable */
+> 	adapter->fc_autoneg = true;
+>@@ -3889,6 +3891,7 @@ static void igb_remove(struct pci_dev *pdev)
+>
+> 	cancel_work_sync(&adapter->reset_task);
+> 	cancel_work_sync(&adapter->watchdog_task);
+>+	cancel_work_sync(&adapter->rtnl_resume_task);
+>
+> #ifdef CONFIG_IGB_DCA
+> 	if (adapter->flags & IGB_FLAG_DCA_ENABLED) {
+>@@ -4123,10 +4126,31 @@ static int igb_sw_init(struct igb_adapter *adapter)
 > 	return 0;
 > }
 >
->+/* With VFs, the device has a single Tx queue but can have more Rx queues */
->+static struct igb_ring *igb_xsk_tx_ring(struct igb_adapter *adapter, u16 qid)
+>+/* Some settings need RTNL, which isn't held when resuming from runtime
+>+ * suspend: apply them from here instead, if the device is still up.
+>+ */
+>+static void igb_rtnl_resume_task(struct work_struct *work)
 >+{
->+	return qid < adapter->num_tx_queues ? adapter->tx_ring[qid] : NULL;
+>+	struct igb_adapter *adapter = container_of(work, struct igb_adapter,
+>+						   rtnl_resume_task);
+>+
+>+	rtnl_lock();
+>+	if (!test_bit(__IGB_DOWN, &adapter->state) &&
+>+	    netif_running(adapter->netdev)) {
+>+		if (netif_set_real_num_queues(adapter->netdev,
+>+					      adapter->num_tx_queues,
+>+					      adapter->num_rx_queues))
+>+			netdev_err(adapter->netdev,
+>+				   "error setting real queue count\n");
+>+	}
+>+	rtnl_unlock();
 >+}
 >+
-> static void igb_txrx_ring_disable(struct igb_adapter *adapter, u16 qid)
+> /**
+>  *  __igb_open - Called when a network interface is made active
+>  *  @netdev: network interface device structure
+>  *  @resuming: indicates whether we are in a resume call
+>+ *  @rtnl_held: indicates whether RTNL is held
+>  *
+>  *  Returns 0 on success, negative value on failure
+>  *
+>@@ -4136,7 +4160,8 @@ static int igb_sw_init(struct igb_adapter *adapter)
+>  *  handler is registered with the OS, the watchdog timer is started,
+>  *  and the stack is notified that the interface is ready.
+>  **/
+>-static int __igb_open(struct net_device *netdev, bool resuming)
+>+static int __igb_open(struct net_device *netdev, bool resuming,
+>+		      bool rtnl_held)
 > {
->-	struct igb_ring *tx_ring = adapter->tx_ring[qid];
->+	struct igb_ring *tx_ring = igb_xsk_tx_ring(adapter, qid);
-> 	struct igb_ring *rx_ring = adapter->rx_ring[qid];
-> 	struct e1000_hw *hw = &adapter->hw;
+> 	struct igb_adapter *adapter = netdev_priv(netdev);
+> 	struct pci_dev *pdev = adapter->pdev;
+>@@ -4179,16 +4204,15 @@ static int __igb_open(struct net_device *netdev, bool resuming)
+> 	if (err)
+> 		goto err_req_irq;
 >
->-	set_bit(IGB_RING_FLAG_TX_DISABLED, &tx_ring->flags);
+>-	/* Notify the stack of the actual queue counts. */
+>-	err = netif_set_real_num_tx_queues(adapter->netdev,
+>-					   adapter->num_tx_queues);
+>-	if (err)
+>-		goto err_set_queues;
 >-
->-	wr32(E1000_TXDCTL(tx_ring->reg_idx), 0);
->+	if (tx_ring) {
->+		set_bit(IGB_RING_FLAG_TX_DISABLED, &tx_ring->flags);
->+		wr32(E1000_TXDCTL(tx_ring->reg_idx), 0);
+>-	err = netif_set_real_num_rx_queues(adapter->netdev,
+>-					   adapter->num_rx_queues);
+>-	if (err)
+>-		goto err_set_queues;
+>+	/* Notify the stack of the actual queue counts. This needs RTNL: on
+>+	 * runtime resume igb_rtnl_resume_task() does it.
+>+	 */
+>+	if (rtnl_held) {
+>+		err = netif_set_real_num_queues(netdev, adapter->num_tx_queues,
+>+						adapter->num_rx_queues);
+>+		if (err)
+>+			goto err_set_queues;
 >+	}
-> 	wr32(E1000_RXDCTL(rx_ring->reg_idx), 0);
 >
-> 	synchronize_net();
->@@ -47,24 +54,27 @@ static void igb_txrx_ring_disable(struct igb_adapter *adapter, u16 qid)
-> 	/* Rx/Tx share the same napi context. */
-> 	napi_disable(&rx_ring->q_vector->napi);
+> 	/* From here on the code is the same as igb_up() */
+> 	clear_bit(__IGB_DOWN, &adapter->state);
+>@@ -4242,7 +4266,7 @@ err_setup_tx:
 >
->-	igb_clean_tx_ring(tx_ring);
->+	if (tx_ring) {
->+		igb_clean_tx_ring(tx_ring);
->+		memset(&tx_ring->tx_stats, 0, sizeof(tx_ring->tx_stats));
->+	}
-> 	igb_clean_rx_ring(rx_ring);
->-
-> 	memset(&rx_ring->rx_stats, 0, sizeof(rx_ring->rx_stats));
->-	memset(&tx_ring->tx_stats, 0, sizeof(tx_ring->tx_stats));
+> int igb_open(struct net_device *netdev)
+> {
+>-	return __igb_open(netdev, false);
+>+	return __igb_open(netdev, false, true);
 > }
 >
-> static void igb_txrx_ring_enable(struct igb_adapter *adapter, u16 qid)
+> /**
+>@@ -6617,12 +6641,7 @@ cleanup_tx_tstamp:
+> static inline struct igb_ring *igb_tx_queue_mapping(struct igb_adapter *adapter,
+> 						    struct sk_buff *skb)
 > {
->-	struct igb_ring *tx_ring = adapter->tx_ring[qid];
->+	struct igb_ring *tx_ring = igb_xsk_tx_ring(adapter, qid);
-> 	struct igb_ring *rx_ring = adapter->rx_ring[qid];
+>-	unsigned int r_idx = skb->queue_mapping;
+>-
+>-	if (r_idx >= adapter->num_tx_queues)
+>-		r_idx = r_idx % adapter->num_tx_queues;
+>-
+>-	return adapter->tx_ring[r_idx];
+>+	return adapter->tx_ring[skb->queue_mapping];
+> }
 >
->-	igb_configure_tx_ring(adapter, tx_ring);
->+	if (tx_ring)
->+		igb_configure_tx_ring(adapter, tx_ring);
-> 	igb_configure_rx_ring(adapter, rx_ring);
+> static netdev_tx_t igb_xmit_frame(struct sk_buff *skb,
+>@@ -6636,6 +6655,17 @@ static netdev_tx_t igb_xmit_frame(struct sk_buff *skb,
+> 	if (skb_put_padto(skb, 17))
+> 		return NETDEV_TX_OK;
 >
-> 	synchronize_net();
->
->-	clear_bit(IGB_RING_FLAG_TX_DISABLED, &tx_ring->flags);
->+	if (tx_ring)
->+		clear_bit(IGB_RING_FLAG_TX_DISABLED, &tx_ring->flags);
->
-> 	/* call igb_desc_unused which always leaves
-> 	 * at least 1 descriptor unused to make sure
->@@ -148,7 +158,12 @@ static int igb_xsk_pool_disable(struct igb_adapter *adapter, u16 qid)
-> 		return -EINVAL;
->
-> 	rx_ring = adapter->rx_ring[qid];
->-	if_running = netif_running(adapter->netdev) && igb_xdp_is_enabled(adapter);
->+	/* The stack can know more queues than the device has, e.g. after a
->+	 * fallback to fewer queues on resume: skip the rings it doesn't have.
+>+	/* After a fallback to fewer queues on runtime resume, the stack can
+>+	 * use more queues than the device has until igb_rtnl_resume_task()
+>+	 * updates it: drop those packets instead of sharing a ring between
+>+	 * queues, which aren't serialized with each other.
 >+	 */
->+	if_running = netif_running(adapter->netdev) &&
->+		     igb_xdp_is_enabled(adapter) &&
->+		     qid < adapter->num_rx_queues;
-> 	if (if_running)
-> 		igb_txrx_ring_disable(adapter, qid);
+>+	if (unlikely(skb->queue_mapping >= adapter->num_tx_queues)) {
+>+		dev_kfree_skb_any(skb);
+>+		dev_core_stats_tx_dropped_inc(netdev);
+>+		return NETDEV_TX_OK;
+>+	}
+>+
+> 	return igb_xmit_frame_ring(skb, igb_tx_queue_mapping(adapter, skb));
+> }
 >
+>@@ -9639,8 +9669,11 @@ static int __igb_resume(struct device *dev, bool rpm)
+>
+> 	if (!rpm)
+> 		rtnl_lock();
+>-	if (!err && netif_running(netdev))
+>-		err = __igb_open(netdev, true);
+>+	if (!err && netif_running(netdev)) {
+>+		err = __igb_open(netdev, true, !rpm);
+>+		if (!err && rpm)
+>+			schedule_work(&adapter->rtnl_resume_task);
+>+	}
+>
+> 	if (!err)
+> 		netif_device_attach(netdev);
 >-- 
 >2.56.1
 >
