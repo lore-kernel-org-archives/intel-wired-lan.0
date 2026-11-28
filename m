@@ -1,29 +1,29 @@
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8DBD2606A31F
-	for <intel-wired-lan@archiver.kernel.org>; Sat, 28 Nov 2026 13:39:05 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D4F60606A31C
+	for <intel-wired-lan@archiver.kernel.org>; Sat, 28 Nov 2026 13:40:32 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=w0YN6D81;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=RDpZqYGe
+	dkim=pass (2048-bit key) header.d=osuosl.org header.i=@osuosl.org header.a=rsa-sha256 header.s=default header.b=2FRCw9Md;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=tcQjIkvV
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 6E51C40680;
-	Sat, 28 Nov 2026 13:39:05 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id AF57980DE5;
+	Sat, 28 Nov 2026 13:40:32 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id qbjIfGvY0fHa; Sat, 28 Nov 2026 13:39:04 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp4.osuosl.org B74BA40683
-Authentication-Results: smtp4.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
-ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795873144;
-	b=oRw1NuA6bZjtveKfFD/luKNivppuFMgRf/+AAnXIkGKvMwyf7zM/01a6eijfQALAXgVB
-	 E+5h3q6bw9/6XnZxTHc/dmUqwUaz/cVrXPpUunnpmVXI4JhTcZfGjsbgU6SKhWlpjSkg5
-	 6mcQmt9eGaUuf78WqbnAc7L53H6RDijGAxf8wbURV5x+CfV9MXohuVepJOar+ob28MCTn
-	 frjn4HWJjvSZUKVgA80WV/OYaJ5NoTaTn1z8raYbbxGQLYqgMEXoO5F/Di9ml2SERdieb
-	 kTOY4Rf7fUInmZvxXJSdJmiqVa6eTQRZ1kyyIzOMp0j/7M81woRCTWD9rDts1MxEwdA==
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id cRZGVfKsl6QO; Sat, 28 Nov 2026 13:40:31 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org C8C1A80F5F
+Authentication-Results: smtp1.osuosl.org; arc=none smtp.remote-ip=140.211.166.142
+ARC-Seal: i=1; d=osuosl.org; s=arc; a=rsa-sha256; cv=none; t=1795873231;
+	b=cXkJ5xFBr+ZBZv7TpVPNV15oVtJDi2Ow3MWdt/AfCZBfGuw9BaM4f42eqvJNKoO0ybUX
+	 q8LWMJFMfyzY1CxWb8h7RwtskhcL5J3kLf7IUrzX7OUDPWKL0tMHY/feXVyJ2TNZ48tZv
+	 q0ryJKQ+0j2ArDKuHjvSmvwQM1kz7QSFFkuP0DLlWJNSuWPEEhu+/YtuGbT7/vbBr8Etl
+	 iNCM3jIFLEiIjD95nfKkNU+jLQDPafQiy28RDYoHQu26N+PTVzbsssXJS1uj8i+Rhf8XO
+	 QXpVV/Y/o9MQxOyvi4y8LFVT4cGeGjM6ojRu8tvzlOsI+cAS9SzMO5RvnBLoXaVBZDg==
 ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795873144;
+	c=relaxed/relaxed; t=1795873231;
 	h=X-Comment:DKIM-Signature:X-Original-To:Delivered-To:Received:
 	 Received:X-Virus-Scanned:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
 	 X-Spam-Status:Received:ARC-Filter:Received-SPF:Received:Received:
@@ -32,105 +32,105 @@ ARC-Message-Signature: i=1; d=osuosl.org; s=arc; a=rsa-sha256;
 	 MIME-Version:Content-Type:Content-Disposition:In-Reply-To:X-BeenThere:
 	 X-Mailman-Version:Precedence:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Errors-To;
-	bh=4lDF0vQqikD7LUr8D749WPrms9ik25wN2smo9HvyhNI=;
-	b=jludFvVi+W9jT7v6jBmHAc5FMJkvieww6+Y4MTPMGtYSZXsMv5AuEiW96xTlS6d42Wc7
-	 Z5lVWNH6q5Ritfi8XUedBLWHIQBpN12f7DfAuWt6kuwS29OGl1J/4dq5UbJB4mZmCclZa
-	 U3g5ik87KP5Mff8SS8I4CiQwbm/T2qUrmPqyqnyE2Kdid/V3S4Ig6TSnT0wZz2artraGB
-	 hVLQBFJsurKme2DqH3+9emN0A6xPcKTFODrhhi4mDtsXLbB+xvJ1LAH9/LbmjT+2tVb0D
-	 JOiJLgl65gCNEhHGVMSm9zO2iJbCrwpeZNsZlXHzXg8vZZP5czt75F25iNHjjJG5dkw==
-ARC-Authentication-Results: i=1; smtp4.osuosl.org; 
+	bh=QyFV4pisqndkw4NPxkRB4pgaLfPMNmkrYfYabK5Jawo=;
+	b=L4/xNdPa++Isr/BhOfZK4M7neqj8xG3rDiVb2j2WHXmIxZiyZjcahrjTbXVNa6t8r837
+	 ZbMXSCq27hHBdQx8O3ePUXlI4Ctkswnz/n28rAuMtKgi4kDnIP5osAk7Ef5P76YM4Bkfu
+	 1h0rttGkaV7AlvoefMjWyoBaiGHrk7VVzvekKFHpnoYMcM7FJVEF+Uv6GGoaJVBUMfW5l
+	 4B5/3zMaj3Q4+Mj8lCIWI4v26rzymIDI69OzADG8M0UzY0qsHVMvu1pqFK6nrm2qJ9R2c
+	 nK4tiT8PvXXH57fWb57syqeopyCevof+QwhtuZwQZ/NTGBvr7fssfXfsrSbY5dyuSVA==
+ARC-Authentication-Results: i=1; smtp1.osuosl.org; 
 	arc=none smtp.remote-ip=140.211.166.142
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1795873144;
-	bh=4lDF0vQqikD7LUr8D749WPrms9ik25wN2smo9HvyhNI=;
+	s=default; t=1795873231;
+	bh=QyFV4pisqndkw4NPxkRB4pgaLfPMNmkrYfYabK5Jawo=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=w0YN6D81ltflL9T2jEBbWiWiYUofyJ96U+cXlUgn+2AyUC7TOeIJFWbc0yWrJFTz7
-	 EZtPCBwdTu0KRnU9rN4hC6hIt2DPo7g+Eq6siCoDinxuipYF9/XKdqrwvpgPBOV5yj
-	 Ncivys0O4LQWEr3mu0EILipsNAB6unxLErQnsbWLa6Qabw0GOJr8ZexTj101wPB3Re
-	 XDJhItPWkiGsPucde0oJL1wdlHSH4GEZWo0MRHsHdIVmgXxK9QBQX8RT53MJIZLyDQ
-	 FQtx4IVK2jXrDgmazni/jCKlslpogvAw3Zh5hPU+260av7kuSLAtbqlISLPX0xoNAh
-	 nxmT7lPS01kyA==
+	b=2FRCw9MdodC9KQNbGbzDkhKm0XG52bDLWkHUY2NjrhCQA7VDeAxwb7Bt/p+5AJiyo
+	 3TTEG1WrUAPE9R4Jqsy3WEsdMerUjARWsQnWY2NY6On8OEbUXkFcZY+wcFrLynlNyJ
+	 K3HnK2moYEjU1qqNBRJtYPoe5p42PDdq4UvS+jrQIXdG1MTJt3mKTLBuj34Mvsxgfq
+	 HJkjEXg6Tjq9wnjsv0SOwt+uEMZPHNJH7apgOnySQ/k6YVbXlxEFKLjYHTZLnF4UuL
+	 F37xVQo6dbzRmUTNJIzL4mbLlNDVoz0I9WcpYcUyoSJX7MGAjzzZxjviPjXjY0Gmca
+	 TTKdGMnew4Q4w==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B74BA40683;
-	Sat, 28 Nov 2026 13:39:04 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id A9E763C0
- for <intel-wired-lan@lists.osuosl.org>; Sat, 28 Nov 2026 13:39:02 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id C8C1A80F5F;
+	Sat, 28 Nov 2026 13:40:31 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 0F9AD3C0
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 28 Nov 2026 13:40:30 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 8FC7080E51
- for <intel-wired-lan@lists.osuosl.org>; Sat, 28 Nov 2026 13:39:02 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id E9AB6400CD
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 28 Nov 2026 13:40:29 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id mgBx9SuAyyDU for <intel-wired-lan@lists.osuosl.org>;
- Sat, 28 Nov 2026 13:39:02 +0000 (UTC)
-ARC-Filter: OpenARC Filter v1.3.2 smtp1.osuosl.org A11EA80DC0
-Authentication-Results: smtp1.osuosl.org;
- arc=none smtp.remote-ip="2a00:1450:4864:20::332"
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id ToT-NaSX25Bp for <intel-wired-lan@lists.osuosl.org>;
+ Sat, 28 Nov 2026 13:40:29 +0000 (UTC)
+ARC-Filter: OpenARC Filter v1.3.2 smtp2.osuosl.org C1AEF4005D
+Authentication-Results: smtp2.osuosl.org;
+ arc=none smtp.remote-ip="2a00:1450:4864:20::434"
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a00:1450:4864:20::332; helo=mail-wm1-x332.google.com;
+ client-ip=2a00:1450:4864:20::434; helo=mail-wr1-x434.google.com;
  envelope-from=janislacis06@gmail.com; receiver=<UNKNOWN> 
-Authentication-Results: smtp1.osuosl.org;
+Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp1.osuosl.org;
+Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20260707 header.b=RDpZqYGe
-Received: from mail-wm1-x332.google.com (mail-wm1-x332.google.com
- [IPv6:2a00:1450:4864:20::332])
- by smtp1.osuosl.org (Postfix) with ESMTPS id A11EA80DC0
- for <intel-wired-lan@lists.osuosl.org>; Sat, 28 Nov 2026 13:39:01 +0000 (UTC)
-Received: by mail-wm1-x332.google.com with SMTP id
- 5b1f17b1804b1-4bb606491faso46971195e9.3
- for <intel-wired-lan@lists.osuosl.org>; Sat, 28 Nov 2026 05:39:00 -0800 (PST)
+ header.a=rsa-sha256 header.s=20260707 header.b=tcQjIkvV
+Received: from mail-wr1-x434.google.com (mail-wr1-x434.google.com
+ [IPv6:2a00:1450:4864:20::434])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id C1AEF4005D
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 28 Nov 2026 13:40:28 +0000 (UTC)
+Received: by mail-wr1-x434.google.com with SMTP id
+ ffacd0b85a97d-4a68190a2a7so7644365f8f.1
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 28 Nov 2026 05:40:28 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20260707; t=1795873139; x=1796477939; darn=lists.osuosl.org;
+ d=gmail.com; s=20260707; t=1795873226; x=1796478026; darn=lists.osuosl.org;
  h=in-reply-to:content-disposition:content-type:mime-version
  :references:message-id:subject:cc:to:from:date:from:to:cc:subject
  :date:message-id:reply-to:content-type;
- bh=4lDF0vQqikD7LUr8D749WPrms9ik25wN2smo9HvyhNI=;
- b=RDpZqYGeomgtJfV02cgbavakfGDHsbX9HJkNmROgRibrTIOCn9SjnsVpdpeJ81w4Uz
- +Kr++JaOqttQon0ip7uPGJbEzEP1vEj4ViMovPJbCjXrCb1bm3G/Rlql1V2Nz5tcMTb1
- s0XBgPJ3knRaWSqEFuiNyhy6VxRA/gnrVK6HEG9V664U9yxF7zsLTwyw8zPPqPKP/aKR
- KAVcaWwYHZEB7oq6y/6Jl3jAn6yIpbUIccy8HgpYaJ+DBSNVB8uzyu3ZL4+3gj9BDazz
- n5OV1XjNZzGLYarq+Lth8B39Sz5RWl4ZD8VfbVctd6C3f3tjpdwaFF7nDt5VqNOyYwWm
- hyEw==
+ bh=QyFV4pisqndkw4NPxkRB4pgaLfPMNmkrYfYabK5Jawo=;
+ b=tcQjIkvVNxwSwRTE2zZCyoC+Gyb2chkfWP0lzli+e1VdirTZHmYuAYuNwF+83PM1aI
+ 9et+IAOUGfjNj9TCo8MIXuiIFbVHVr/6IYusGamuEwaqrVBerYwkUChI7nT0PjPRG4m0
+ fxiC1G5eHiWxi2BjbmdhS2zIAftMBY3oOg+zYbHakoiTjGYqDOMJqKqhRRya8Z+uj034
+ dl/QMPWoyxczIMiW8feR4KIbq0Gfrsd7dR6xMMc33vdNiZ04DvCXt8etRDSMQnFdw1ab
+ Mg0J2V5Rt2fveWjkF60vwMqGIpl71jNKlPP88EdGsH+nNRtxIyrv6yuJdZg6d5jwNf4H
+ WZrw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20260707; t=1795873139; x=1796477939;
+ d=1e100.net; s=20260707; t=1795873226; x=1796478026;
  h=in-reply-to:content-disposition:content-type:mime-version
  :references:message-id:subject:cc:to:from:date:x-gm-gg
  :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
  :content-type;
- bh=4lDF0vQqikD7LUr8D749WPrms9ik25wN2smo9HvyhNI=;
- b=yfBfJv/0mrw5PxIJEdUP5aRFTCmuz4+LUuB1WhpXlJDUCURoJObbCzZmGBkZ7+rL52
- oi0IYLA0yl1XjKbHK/y6kvX0s3XujwFrlQ3jf0rn/+JQkz3lRKS9mKXkPdZTsYHBuerB
- VMEGphHeaxywCDB5d3jNjh2iuP9zSIVNBeoVAj0XYdvPMxbgQwfW9FPndHOsEsCQja1k
- snedc56RutISDDO1AlMJ/QmHrIQIWqqepZtnoKIsdDFCgnyen0/cYl2CGVCxKvCWqGMN
- gga+hCRXdHQSDla+aP0p4w21QJxsZwpjBKPh7cCIWhXrgM1VpFjBSYY6XIlO2hE2+4sC
- dkIQ==
-X-Gm-Message-State: APuU4Z/UlGnIYf3EIR9ksRzrBpR5EcSgp9IsvMttYcAE71jNGgLKPC1p
- JoPC2+K04WLYQEZjkM9Oi3grep38orW06PPqG/hDuJgJgELs7sdx7EsY
-X-Gm-Gg: AZFdTZes4NjBG1exq9Q06AgZQaRWbSIGoRCTAwgKhw7mPjrBFFG2GNnp3TXOR0WJqd/
- ntMZzOoh/Wsmb94AiMcHvIX/eJFT86Q/d1gcQxNwrL3Xnpto4LhMv9jWw64e7jxVZEVgsbUw5NF
- 3JkuTIPnqRM4ge/A6PGgW61n4ceDRJNYjrHKjShqggFEb9mTaz3Wnxx2zFgP4UTELsuZlgJdpVx
- Q3f5O/r98eWDIcaXYhDMGtrvk3DFNRuEdKUfgm0vffZSP0bgV9fM99iupBtjZbtJDcI6JcqPPqD
- DTro3XDl1mqB6mV6QFiJzk3eiVV0ZkN9TNHe+lJwIcNDJ2CEQrd4COHBKFQKb6C++tLa0c1ARFw
- ndIkA4Vfmq/9gkFrjXbStTg30I/563j/CJ3iNwWP5G442QKzY65rvrHH+DDBSowYRinWlHVbMPy
- SnkVepLHHBmHcb7F8rkWhnTGTXJsf6MPHSPebATG28LN/3hOsVpk+WvJpxyQwZOJFJrb8+5kxMG
- yvNAFUmHSpjwLusMV4onGHfQOCSXi5rtXQak/08YmNmzXzr5OnU04d88JE57/aywPFwouEZ96zP
- NbRrvEF993qkqGecNcc0U0EKQrYOt+fipimIYS9z1d6m6B/K4VYO4weCe9sEwnn9aui+dQT1uNX
- 2fv4OW4DLrUvqeYqTOlLvdACAbG2JX2KXzAIAUp2NnHoDEZCrAJnMeuwQ
-X-Received: by 2002:a05:600c:a115:b0:4bb:a5e1:74ac with SMTP id
- 5b1f17b1804b1-4bba5e195bcmr184828885e9.4.1795873139198; 
- Sat, 28 Nov 2026 05:38:59 -0800 (PST)
+ bh=QyFV4pisqndkw4NPxkRB4pgaLfPMNmkrYfYabK5Jawo=;
+ b=dZC7gN40rK2Z9mJAun71Bwynkn/qs2xDU4faGkT9Xtz9Rhukl4Zn0dWf9xKVH+LC2o
+ b+rzrRG4V1SPzQcCC7k5Dgqz6PNkxxxMoZPuGqZ908+x7SH9go9h1B4J9QBoEw4ya5Ha
+ 9D0Q9hKUkjPr6ojOUwahh9mmXOubXnXEhYW9VIYyncqtAaMLn6924Lhle4KjEH0AfJso
+ PxbzcsogvOg3kxar24wFL/RCQ5mqLGXLLyYpXUcrn8g1WAyiDArEtNfH04tas0mo1buV
+ TbX2TIjon/KpCJB5w9nXeqJrnsoadKtJVhiO3uIzLOryFXNRKropdftJisjBo+p7FJYE
+ F3nQ==
+X-Gm-Message-State: APuU4Z8wVZ4MmG/NCIysNphApVorkW0muaOZ7lUBik0MZmURIgU5lcdM
+ CiKr4NVj5iX9Pr5XmQhlNCTOADhTy5yECOKUuwdkzcUNpVq+X8YSxM1Y
+X-Gm-Gg: AZFdTZdiVytjagptTdFl0JE8qBB/gSiiLApMpe8mjczbZysu6tejUUWZuNliuNg5p8N
+ ONWDj7+URbs8+BDSF5LLcmjAXfeuE1np8q4p4U8zrhvRR6T5rjOaYr5xsC0Wl00qv5Heq+l1Srl
+ PNlY/Eoy5wRQjv1hDzkng311MOO7U5aXCWL2x1gQwkURg6bnWydy+j4I8RMy4lNssvYpBnPPbjK
+ UgCcltmsuAadj0PXANTVCn5kQ9uvVgxx0hfjJgpeNGtBv7hpbMEh1GtGeK8AjgLQroNGkiTznfx
+ qOyvCzHLTOhgIt+cXQ4w++IB5xomBiufiso9+sdw7dOIZEM/9AsDNXekUAN8m0G9fzKvety/wEk
+ 1Ok7KCASfVrKCXLgcvUgNkRRmpxw+yNRJlDcVlkrkIJWe/sey646dvXp/dMrgzroZiU3be+35pI
+ XdgR2HnlOdlbsR/m3jJkxowio5NIBU21z6htaJ8rkV2RFyaXR9mRzNGkIfgbKENwgW6zvpFdzrh
+ cQlv+9XL6B7GEjkfPcE0Kb+F3A9FjBeAo3zX/bMaCcwEQlvwIt3bG5zJjjr45OQ9l78Hfzix02y
+ osVI1r7w4RZvjU9BVn1KlBes7WXsreeXOo6QMuUc16wyQOlKyrqPnsP80duNtYe4PSdesH7irvD
+ 8jfCEG9AE1AQG+CuUj+6dFVCtj9z/DcoGr2U=
+X-Received: by 2002:a05:600c:4e16:b0:4bb:69b2:d3df with SMTP id
+ 5b1f17b1804b1-4bb88813024mr568205445e9.25.1795873226378; 
+ Sat, 28 Nov 2026 05:40:26 -0800 (PST)
 Received: from pc.tail250202.ts.net ([87.110.86.243])
  by smtp.gmail.com with ESMTPSA id
- 5b1f17b1804b1-4bba6a0d65fsm295847225e9.3.2026.11.28.05.38.56
+ 5b1f17b1804b1-4bb8538b09bsm1404838525e9.4.2026.11.28.05.40.25
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sat, 28 Nov 2026 05:38:58 -0800 (PST)
-Date: Sat, 28 Nov 2026 15:38:55 +0200
+ Sat, 28 Nov 2026 05:40:25 -0800 (PST)
+Date: Sat, 28 Nov 2026 15:40:24 +0200
 From: Janis Edvarts Lacis <janislacis06@gmail.com>
 To: Antonio Quartulli <antonio@mandelbit.com>
 Cc: intel-wired-lan@lists.osuosl.org, 
@@ -138,25 +138,18 @@ Cc: intel-wired-lan@lists.osuosl.org,
  Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
  Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>, 
  Eric Dumazet <edumazet@kernel.org>, Jakub Kicinski <kuba@kernel.org>, 
- Paolo Abeni <pabeni@redhat.com>, Alexei Starovoitov <ast@kernel.org>, 
- Daniel Borkmann <daniel@iogearbox.net>,
- Jesper Dangaard Brouer <hawk@kernel.org>, 
- John Fastabend <john.fastabend@gmail.com>, Stanislav Fomichev <sdf@fomichev.me>,
- Sven Auhagen <sven.auhagen@voleatech.de>,
- Sriram Yagnaraman <sriram.yagnaraman@ericsson.com>, 
- Kurt Kanzenbach <kurt@linutronix.de>,
- Maciej Fijalkowski <maciej.fijalkowski@intel.com>, 
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org, bpf@vger.kernel.org
-Subject: Re: [PATCH net v5 5/6] igb: resume the device before changing XDP or
- XSK settings
-Message-ID: <lwmb2es2v4j6ec2kha24lk3uxtour2q45fqvjwihl7ik4auvet@jyhouq2ojte2>
+ Paolo Abeni <pabeni@redhat.com>, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Subject: Re: [PATCH net v5 6/6] igb: only allow runtime PM if the device can
+ wake up
+Message-ID: <ri6pk2cv4qsc3lyumnpskogyadfhhk2aybgwyvbpdfoetkrbjf@efy5saiqmdzy>
 References: <20261124235723.1135808-1-antonio@mandelbit.com>
- <20261124235723.1135808-6-antonio@mandelbit.com>
+ <20261124235723.1135808-7-antonio@mandelbit.com>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Disposition: inline
-In-Reply-To: <20261124235723.1135808-6-antonio@mandelbit.com>
+In-Reply-To: <20261124235723.1135808-7-antonio@mandelbit.com>
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -176,70 +169,74 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 On 25 Nov 00:57, Antonio Quartulli wrote:
->igb_xdp() can run while the device is runtime suspended or resuming,
->and __igb_resume() rebuilds the queue counts and the rings without
->RTNL. igb_xdp_setup() and igb_xsk_pool_setup() can then see a queue
->count whose rings don't exist yet (NULL dereference), or a NAPI that
->isn't enabled yet (napi_disable() never returns). Changing the XDP
->program of a runtime suspended device also opened it twice.
+>igb lets the device be runtime suspended even if it can't signal a
+>wake-up from D3. Such a device doesn't notice the link coming back, so
+>the port stays down until it is resumed from user space.
 >
->Resume the device for the duration of igb_xdp(), as ethtool does. Like
->the other resumes done with RTNL held, this can still deadlock with a
->runtime suspend already in progress, which takes RTNL itself; closing
->an AF_XDP socket or changing the XDP program is now one of them.
+>Only schedule a runtime suspend if pci_dev_run_wake() is true. Devices
+>that can't wake up no longer runtime suspend, even with power/control
+>set to auto. Checking it when scheduling the suspend, rather than at
+>probe and remove as e1000e and r8169 do, keeps the runtime PM usage
+>count balanced if the result changes while the driver is bound.
 >
->Tested with the 82576 emulated by QEMU by closing a zero-copy AF_XDP
->socket and attaching an XDP program while the device is runtime
->suspended; the latter no longer warns in __netif_napi_del_locked()
->because of the double open. The races themselves weren't reproduced.
+>Tested with the 82576 emulated by QEMU.
 >
->Fixes: 9cbc948b5a20 ("igb: add XDP support")
->Fixes: 80f6ccf9f116 ("igb: Introduce XSK data structures and helpers")
+>Fixes: 749ab2cd1270 ("igb: add basic runtime PM support")
 >Cc: stable@vger.kernel.org
+>Closes: https://bugzilla.ipfire.org/show_bug.cgi?id=13562
 >Signed-off-by: Antonio Quartulli <antonio@mandelbit.com>
 >---
->v5: new patch (Sashiko)
+>v5: check pci_dev_run_wake() when scheduling the suspend rather than
+>at probe and remove, which keeps the usage count balanced (Sashiko)
+>v4: no changes
+>v3: no changes
+>v2: no code changes; mention the tested hardware
 >
-> drivers/net/ethernet/intel/igb/igb_main.c | 20 ++++++++++++++++----
-> 1 file changed, 16 insertions(+), 4 deletions(-)
+>Note: igc has the same issue: igc_probe() also allows runtime PM
+>regardless of pci_dev_run_wake().
+>
+> drivers/net/ethernet/intel/igb/igb_main.c | 14 +++++++++++---
+> 1 file changed, 11 insertions(+), 3 deletions(-)
 >
 >diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
->index acd9a33..80ae03d 100644
+>index 80ae03d..853bdf4 100644
 >--- a/drivers/net/ethernet/intel/igb/igb_main.c
 >+++ b/drivers/net/ethernet/intel/igb/igb_main.c
->@@ -2942,16 +2942,28 @@ static int igb_xdp_setup(struct net_device *dev, struct netdev_bpf *bpf)
-> static int igb_xdp(struct net_device *dev, struct netdev_bpf *xdp)
-> {
-> 	struct igb_adapter *adapter = netdev_priv(dev);
->+	int err;
->+
->+	/* The rings only exist while the device is resumed, and resuming
->+	 * rebuilds them without RTNL
->+	 */
->+	pm_runtime_get_sync(&adapter->pdev->dev);
->
-> 	switch (xdp->command) {
-> 	case XDP_SETUP_PROG:
->-		return igb_xdp_setup(dev, xdp);
->+		err = igb_xdp_setup(dev, xdp);
->+		break;
-> 	case XDP_SETUP_XSK_POOL:
->-		return igb_xsk_pool_setup(adapter, xdp->xsk.pool,
->-					  xdp->xsk.queue_id);
->+		err = igb_xsk_pool_setup(adapter, xdp->xsk.pool,
->+					 xdp->xsk.queue_id);
->+		break;
-> 	default:
->-		return -EINVAL;
->+		err = -EINVAL;
-> 	}
->+
->+	pm_runtime_put(&adapter->pdev->dev);
->+
->+	return err;
+>@@ -5625,6 +5625,15 @@ static void igb_watchdog(struct timer_list *t)
+> 	schedule_work(&adapter->watchdog_task);
 > }
 >
-> int igb_xdp_xmit_back(struct igb_adapter *adapter, struct xdp_buff *xdp)
+>+/* A device that can't wake up wouldn't notice the link coming back while
+>+ * runtime suspended
+>+ */
+>+static void igb_schedule_runtime_suspend(struct igb_adapter *adapter)
+>+{
+>+	if (pci_dev_run_wake(adapter->pdev))
+>+		pm_schedule_suspend(&adapter->pdev->dev, MSEC_PER_SEC * 5);
+>+}
+>+
+> static void igb_watchdog_task(struct work_struct *work)
+> {
+> 	struct igb_adapter *adapter = container_of(work,
+>@@ -5777,8 +5786,7 @@ no_wait:
+> 					return;
+> 				}
+> 			}
+>-			pm_schedule_suspend(netdev->dev.parent,
+>-					    MSEC_PER_SEC * 5);
+>+			igb_schedule_runtime_suspend(adapter);
+>
+> 		/* also check for alternate media here */
+> 		} else if (!netif_carrier_ok(netdev) &&
+>@@ -9741,7 +9749,7 @@ static int igb_runtime_idle(struct device *dev)
+> 	struct igb_adapter *adapter = netdev_priv(netdev);
+>
+> 	if (!igb_has_link(adapter))
+>-		pm_schedule_suspend(dev, MSEC_PER_SEC * 5);
+>+		igb_schedule_runtime_suspend(adapter);
+>
+> 	return -EBUSY;
+> }
 >-- 
 >2.56.1
 >
